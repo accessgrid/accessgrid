@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.26 2003-09-19 02:15:34 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.27 2003-10-14 04:30:00 judson Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
@@ -20,7 +20,7 @@ Name: python; Parameters: C:\Software\AccessGrid\AccessGrid\packaging\makeServic
 Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\Software\AccessGrid\ag-vic C:\Software\AccessGrid\AccessGrid\dist\bin; Flags: abortonerror
 Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\Software\AccessGrid\ag-rat C:\Software\AccessGrid\AccessGrid\dist\bin; Flags: abortonerror
 Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildPutty.cmd; Parameters: C:\software\AccessGrid\putty C:\software\AccessGrid\AccessGrid\dist; Flags: abortonerror
-Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildSendSettingChange.cmd; Parameters: C:\software\AccessGrid C:\software\AccessGrid\AccessGrid\dist; Flags: abortonerror
+;Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildSendSettingChange.cmd; Parameters: C:\software\AccessGrid C:\software\AccessGrid\AccessGrid\dist; Flags: abortonerror
 Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildPythonModules.cmd; Parameters: C:\Software\AccessGrid C:\Software\AccessGrid\AccessGrid\dist; Flags: abortonerror
 
 ; This section sets the standard variables needed for the installer
@@ -35,7 +35,7 @@ SourceDir={#SourceDir}
 ; Where to put the built installer
 OutputDir={#OutputDir}
 ; Name with version information
-OutputBaseFilename={#AppNameShort}-{#AppVersionShort}
+OutputBaseFilename={#AppNameShort}-{#AppVersionLong}
 
 AppName={#AppName}
 AppCopyright=Copyright © 2003 Argonne National Laboratory / University of Chicago. All Rights Reserved.
@@ -100,7 +100,7 @@ Source: COPYING.txt; DestDir: {app}
 Source: README; DestDir: {app}; Flags: isreadme; DestName: README.txt
 
 Source: bin\VenueServer.py; DestDir: {app}\bin
-Source: bin\DataService.py; DestDir: {app}\bin
+;Source: bin\DataService.py; DestDir: {app}\bin
 Source: bin\VenueClient.py; DestDir: {app}\bin
 Source: bin\AGServiceManager.py; DestDir: {app}\bin
 Source: bin\CertificateRequestTool.py; DestDir: {app}\bin; DestName: CertificateRequestTool.pyw
@@ -120,7 +120,7 @@ Source: dist\bin\ratmedia.exe; DestDir: {app}\bin; DestName: ratmedia.exe
 Source: dist\bin\vic.exe; DestDir: {app}\bin; DestName: vic.exe
 Source: dist\bin\rat-kill.exe; DestDir: {app}\bin; DestName: rat-kill.exe
 Source: dist\bin\pscp.exe; DestDir: {app}\bin; DestName: pscp.exe
-Source: dist\bin\send_settingchange.exe; DestDir: {app}\bin; DestName: send_settingchange.exe
+;Source: dist\bin\send_settingchange.exe; DestDir: {app}\bin; DestName: send_settingchange.exe
 Source: packaging\windows\agicons.exe; DestDir: {app}\install
 
 ; begin VC system files
@@ -181,8 +181,8 @@ WelcomeLabel2=This will install the {#AppName} {#AppVersionLong} on your compute
 
 [Run]
 Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\python.exe; WorkingDir: {app}\bin; Description: Setup what video devices will produce video streams; Flags: runminimized nowait shellexec; Parameters: SetupVideo.pyw
-Filename: {app}\bin\send_settingchange.exe; Flags: runminimized waituntilidle; Description: Update system settings with globus configuration.
-Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Description: Set up Globus runtime environment; Flags: postinstall waituntilidle; Parameters: globus_init.pyw; WorkingDir: {app}\bin
+;Filename: {app}\bin\send_settingchange.exe; Flags: runminimized waituntilidle; Description: Update system settings with globus configuration.
+;Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Description: Set up Globus runtime environment; Flags: postinstall waituntilidle; Parameters: globus_init.pyw; WorkingDir: {app}\bin
 
 [UninstallDelete]
 Name: {app}; Type: filesandordirs
