@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.19 2003-04-17 23:58:21 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.20 2003-04-20 00:28:51 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -226,6 +226,14 @@ class AGServiceManager( ServiceBase ):
             #
             if serviceConfig and serviceConfig != "None":
                 Client.Handle( serviceDescription.uri ).get_proxy().SetConfiguration( serviceConfig )
+
+            # Query the service for its capabilities
+            # (the service implementation knows its capabilities better than
+            # the description file, which is where the current capabilities
+            # storage was retrieved from)
+            # 
+            serviceDescription.capabilities = \
+                Client.Handle( serviceDescription.uri ).GetProxy().GetCapabilities()
             
         except:
             log.exception("Exception in AddService, adding service to service list.")
