@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.46 2003-03-13 12:06:19 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.47 2003-03-13 15:56:20 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -42,6 +42,7 @@ class VenueManagementClient(wxApp):
     currentVenue = None
     encrypt = false
     administrators = {}
+    venueList = []
 
     def OnInit(self):
         self.frame = wxFrame(NULL, -1, "Venue Management" )
@@ -95,18 +96,19 @@ class VenueManagementClient(wxApp):
         if(handle.IsValid()):
             wxLogDebug("You have a valid proxy")
             try:
+                wxBeginBusyCursor()
                 wxLogDebug("Connect to server")
                 self.server = handle.get_proxy()
                 wxLogDebug("Get venues from server")
-                venueList = self.server.GetVenues()
+                self.venueList = self.server.GetVenues()
                 self.serverUrl = URL
 
                 # fill in venues
                 self.tabs.venuesPanel.venuesListPanel.venuesList.Clear()
                 self.tabs.venuesPanel.venueProfilePanel.ClearAllFields()
                 self.tabs.Enable(true)
-                if len(venueList) != 0 :
-                    for venue in venueList:
+                if len(self.venueList) != 0 :
+                    for venue in self.venueList:
                         wxLogDebug("Add venue: %s" %venue.name)
                         self.tabs.venuesPanel.venuesListPanel.venuesList.Append(venue.name, venue)
                     currentVenue = self.tabs.venuesPanel.venuesListPanel.venuesList.GetClientData(0)
@@ -163,8 +165,10 @@ class VenueManagementClient(wxApp):
                 wxLogDebug("Set server encryption key: %s" %key)
                 self.tabs.configurationPanel.detailPanel.encryptionButton.SetValue(key)
                 self.encrypt = key
+                wxEndBusyCursor()
 
             except:
+                wxEndBusyCursor()
                 wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
                 wxLog_GetActiveTarget().Flush()
 
@@ -277,8 +281,8 @@ class VenueManagementClient(wxApp):
 
     def ModifyAdministrator(self, oldName, dnName):
         wxLogDebug("Modify administrator: %s with new dnName: %s"%(oldName,dnName))
-        self.server.RemoveAdministrator(oldName)
         self.server.AddAdministrator(dnName)
+        self.server.RemoveAdministrator(oldName)
 
     def SetRandom(self):
         wxLogDebug("Set random address allocation method")
@@ -326,7 +330,9 @@ class VenueServerAddress(wxPanel):
 
     def CallAddress(self, event):
         URL = self.addressText.GetValue()
+        wxBeginBusyCursor()
         self.application.ConnectToServer(URL)
+        wxEndBusyCursor()
 
     def __doLayout(self):
         venueServerAddressBox = wxBoxSizer(wxVERTICAL)
@@ -775,7 +781,7 @@ class AdministratorsListPanel(wxPanel):
 
         else:
             self.administratorsList.Delete(index)
-            self.administratorsList.Append(newName, newName)
+            self.administratorsList.Append(self.application.GetCName(newName), newName)
             self.administratorsList.Select(self.administratorsList.Number()-1)
 
     def __doLayout(self):
@@ -1026,7 +1032,7 @@ class VenueParamFrame(wxDialog):
         self.title =  wxTextCtrl(self, -1, "",  size = wxSize(200, 20), validator = TextValidator())
         self.descriptionLabel = wxStaticText(self, -1, "Description:")
         self.description =  wxTextCtrl(self, -1, "", size = wxSize(200, 100), \
-                                       style = wxTE_MULTILINE|wxHSCROLL, validator = TextValidator())
+                                       style = wxTE_MULTILINE | wxTE_RICH2, validator = TextValidator())
         self.staticAddressingPanel = StaticAddressingPanel(self, -1)
         self.encryptionPanel = EncryptionPanel(self, -1)
         self.venuesLabel = wxStaticText(self, -1, "Venues on server:")
@@ -1058,13 +1064,19 @@ class VenueParamFrame(wxDialog):
             wxLogDebug("Append address to combobox: %s "%URL)
             self.address.Append(URL)
 
-    def LoadLocalVenues(self, event = None):
-        self.__loadVenues(self.application.serverUrl)
+    def LoadLocalVenues(self):
+        #self.__loadVenues(self.application.serverUrl)
+        venueList = self.application.venueList
+        
+        for venue in venueList:
+                    if(venue.name != self.title.GetValue()):
+                        self.venues.Append(venue.name, venue)
 
     def __loadVenues(self, URL):
         validVenue = false
 
         try:
+            wxBeginBusyCursor()
             wxLogDebug("Load venues from:%s "%URL)
             server = Client.Handle(URL)
             if(server.IsValid()):
@@ -1084,8 +1096,11 @@ class VenueParamFrame(wxDialog):
                  wxLogMessage("Could not connect to venue\nat: %s " %URL)
                  wxLog_GetActiveTarget().Flush()
                  self.address.SetValue(self.currentVenueUrl)
+
+            wxEndBusyCursor()
                    
         except:
+            wxEndBusyCursor()
             wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
             wxLog_GetActiveTarget().Flush()                                              
 
@@ -1418,6 +1433,7 @@ class AddVenueFrame(VenueParamFrame):
         self.ShowModal()
 
     def OnOK (self, event):
+        wxBeginBusyCursor()
         if(VenueParamFrame.Validate(self)):
             if(self.staticAddressingPanel.Validate()):
                 self.Ok()
@@ -1431,22 +1447,26 @@ class AddVenueFrame(VenueParamFrame):
                     wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
                     wxLog_GetActiveTarget().Flush()
 
-                self.Hide()
+                self.Destroy()
+        wxEndBusyCursor()
 
 
 class ModifyVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title, venueList, application):
         VenueParamFrame.__init__(self, parent, id, title, app)
+        wxBeginBusyCursor()
         self.parent = parent
         self.SetLabel('Modify Venue')
         self.list = venueList
         self.__loadCurrentVenueInfo()
         self.LoadLocalVenues()
+        wxEndBusyCursor()
      
         EVT_BUTTON (self.okButton, wxID_OK, self.OnOK)
         self.ShowModal()
 
     def OnOK (self, event):
+        wxBeginBusyCursor()
         if(VenueParamFrame.Validate(self)):
             if(self.staticAddressingPanel.Validate()):
                 self.Ok()
@@ -1460,7 +1480,10 @@ class ModifyVenueFrame(VenueParamFrame):
                 except:
                     wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
                     wxLog_GetActiveTarget().Flush()
-                self.Hide()
+
+                self.Destroy()
+
+        wxEndBusyCursor()
 
     def __loadCurrentVenueInfo(self):
         item = self.list.GetSelection()
