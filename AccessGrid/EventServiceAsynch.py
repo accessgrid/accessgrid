@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.37 2004-07-30 20:09:31 turam Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.38 2004-08-06 17:30:38 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.37 2004-07-30 20:09:31 turam Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.38 2004-08-06 17:30:38 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -438,6 +438,8 @@ class EventChannel:
             self.RemoveConnection(connObj)
             self.server.CloseConnection(connObj)
 
+        log.debug("Handling event %s (id=%s)", event, event.id)
+
         # Pass this event to the callback registered for this
         # event.eventType
         if self.typedHandlers.has_key(event.eventType):
@@ -688,7 +690,8 @@ class EventService:
         self.outQueue.put(("quit",))
         
     def EnqueueEvent(self, event, conn):
-        log.info("EventServiceAsynch: Enqueue event %s for %s...", event.eventType, conn)
+        event.id = str(GUID())
+        log.debug("EventServiceAsynch: Enqueue event %s for %s (id=%s)...", event.eventType, conn, event.id)
         self.outQueue.put(("event", event, conn))
 
     def EnqueueEOF(self, conn):

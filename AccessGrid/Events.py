@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.23 2004-08-03 14:42:40 judson Exp $
+# RCS-ID:      $Id: Events.py,v 1.24 2004-08-06 17:30:38 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Events.py,v 1.23 2004-08-03 14:42:40 judson Exp $"
+__revision__ = "$Id: Events.py,v 1.24 2004-08-06 17:30:38 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -47,6 +47,7 @@ class Event:
         self.eventType = eventType
         self.venue = venueId
         self.data = data
+        self.id = None
 
     def __repr__(self):
         string = "Event:\n"
