@@ -6,14 +6,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.33 2003-09-29 20:56:27 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.34 2003-11-19 06:48:03 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.33 2003-09-29 20:56:27 judson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.34 2003-11-19 06:48:03 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -153,11 +153,10 @@ if debugMode:
 nodeService = AGNodeService()
 
 # Load default configuration if --personal node option is set
-if pnode:
-    try:
-        nodeService.LoadDefaultConfig()
-    except:
-        log.debug("Failed to load default node configuration")
+try:
+    nodeService.LoadDefaultConfig()
+except:
+    log.debug("Failed to load default node configuration")
 
 # Create a hosting environment
 server = Server( port , auth_callback=AuthCallback )
