@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.308 2004-01-09 23:17:22 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.309 2004-01-09 23:20:15 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.308 2004-01-09 23:17:22 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.309 2004-01-09 23:20:15 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1400,7 +1400,7 @@ class VenueListPanel(wxSashLayoutWindow):
         wxSashLayoutWindow.__init__(self, parent, id)
 	self.parent = parent
         self.app = app
-        self.panel = wxPanel(self, -1)
+        self.panel = wxPanel(self, -1,  style = wxSUNKEN_BORDER)
 	self.list = VenueList(self.panel, self, app)
         self.minimizeButton = wxButton(self.panel, self.ID_MINIMIZE, "<<", \
                                        wxDefaultPosition, wxSize(17,21), wxBU_EXACTFIT )
