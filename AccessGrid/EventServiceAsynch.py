@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.13 2003-08-21 22:50:24 eolson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.14 2003-08-21 23:23:03 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -648,8 +648,8 @@ class EventService:
                                        event.venue,
                                        event.data))
                          
-            else:
-                print 'the event does not exist'
+            #else:
+                #print 'the event does not exist'
 
             connChannel.HandleEvent(event, connObj)
 
