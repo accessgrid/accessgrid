@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.2 2004-02-24 21:33:07 judson Exp $
+# RCS-ID:      $Id: Role.py,v 1.3 2004-02-25 18:33:04 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,11 +14,11 @@
 Roles
 """
 
-__revision__ = "$Id: Role.py,v 1.2 2004-02-24 21:33:07 judson Exp $"
+__revision__ = "$Id: Role.py,v 1.3 2004-02-25 18:33:04 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import xml.dom.minidom
-from xml.dom.ext import PrettyPrint
+#from xml.dom.ext import PrettyPrint
 
 from AccessGrid.Security.Subject import Subject, InvalidSubject
 from AccessGrid.Toolkit import GetApplication
