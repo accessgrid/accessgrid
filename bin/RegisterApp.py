@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: RegisterApp.py,v 1.11 2003-09-29 20:35:02 judson Exp $
+# RCS-ID:      $Id: RegisterApp.py,v 1.12 2003-10-13 17:13:16 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This program is used to register applications with the users AGTk
 installation.
 """
-__revision__ = "$Id: RegisterApp.py,v 1.11 2003-09-29 20:35:02 judson Exp $"
+__revision__ = "$Id: RegisterApp.py,v 1.12 2003-10-13 17:13:16 judson Exp $"
 
 import os
 import re
@@ -139,7 +139,9 @@ def main():
         elif opt in ("-d", "--dir"):
             workingDir = os.path.abspath(arg)
         elif opt in ("-z", "--zip"):
-            zipFile = arg
+            # Unpack the zip archive
+            # We get back the appfile and directory
+            appFile, workingDir = UnpackZip(arg)
         elif opt in ("-u", "--unregister"):
             unregister = 1
         elif opt in ("-n", "--name"):
@@ -149,22 +151,6 @@ def main():
         elif opt in ("-h", "--help"):
             Usage()
             sys.exit(0)
-
-    # If we unregister, we do that then exit
-    if unregister:
-        appdb.UnregisterApplication(name=appName)
-        sys.exit(0)
-
-    # Otherwise we go through and do the registration stuff
-    if zipFile != None:
-        # Unpack the zip archive
-        # We get back the appfile and directory
-        appFile, workingDir = UnpackZip(zipFile)
-        
-    if workingDir != None and workingDir != '':
-        # Change to the appropriate directory
-        # This won't work for zipfiles
-        os.chdir(workingDir)
 
     # If no appfile is specified, search the current directory for one
     if appFile == None:
@@ -181,6 +167,23 @@ def main():
     if appFile:
         appInfo, commands = ProcessAppFile(appFile)
                 
+    # If we unregister, we do that then exit
+    if unregister:
+        if appInfo != None and appName == None:
+            appName = appInfo["application.name"]
+        if appName != None:
+            appdb.UnregisterApplication(name=appName)
+        else:
+            print "No application name discovered, exiting without doing \
+                   unregister."
+        sys.exit(0)
+
+    # Otherwise we go through and do the registration stuff...
+    if workingDir != None and workingDir != '':
+        # Change to the appropriate directory
+        # This won't work for zipfiles
+        os.chdir(workingDir)
+
     # Register the App
     if appName == None:
         appName = appInfo["application.name"]
