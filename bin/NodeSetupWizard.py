@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.39 2004-08-05 20:58:57 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.40 2004-08-11 22:18:23 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -100,17 +100,20 @@ class NodeSetupWizard(wxWizard):
     The node setup wizard guides users through the steps necessary for
     creating and testing a node configuration. 
     '''
-    def __init__(self, parent, debugMode, log, app = None):
+    def __init__(self, parent, debugMode, log, progress, app = None):
         wxWizard.__init__(self, parent, 10,"Setup Node", wxNullBitmap)
         '''
         This class creates a wizard for node setup
         '''
         self.debugMode = debugMode
         #self.log = log
+        self.progress = progress
         self.step = 1
         self.SetIcon(icons.getAGIconIcon())
         self.SetPageSize(wxSize(510, 310))
         self.nodeClient = NodeClient(app)
+        
+        progress.UpdateOneStep("Initializing the Node Setup Wizard.")
         
         self.page1 = WelcomeWindow(self, "Welcome to the Node Setup Wizard")
         self.page2 = VideoCaptureWindow(self, self.nodeClient,
@@ -141,6 +144,7 @@ class NodeSetupWizard(wxWizard):
 
         # Start the node service which will store the configuration
         try:
+            progress.UpdateOneStep("Start the node service.")
             self.nodeClient.StartNodeService()
         except:
             log.exception("NodeSetupWizard.__init__: Can not start node service")
@@ -149,6 +153,9 @@ class NodeSetupWizard(wxWizard):
 
         else:
             # Run the wizard
+            progress.UpdateOneStep("Open wizard.")
+            progress.Destroy()
+
             self.RunWizard(self.page1)
 
             # Wizard finished; stop node service
@@ -1056,7 +1063,11 @@ def main():
 
     # Init the toolkit with the standard environment.
     app = WXGUIApplication()
-   
+
+    # Create a progress dialog
+    startupDialog = ProgressDialog("Starting Node Setup Wizard...",                                    "Initializing AccessGrid Toolkit", 5)
+    startupDialog.Show()
+       
     # Try to initialize
     try:
         app.Initialize("NodeSetupWizard")
@@ -1068,7 +1079,9 @@ def main():
     # Get the log
     log = app.GetLog()
     debug = app.GetDebugLevel()
-    nodeSetupWizard = NodeSetupWizard(None, debug, log, app)
+
+    startupDialog.UpdateOneStep("Initializing the Node Setup Wizard.")
+    nodeSetupWizard = NodeSetupWizard(None, debug, log, startupDialog, app)
        
 # The main block
 if __name__ == "__main__":
