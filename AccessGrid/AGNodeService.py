@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.18 2003-03-13 12:16:44 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.19 2003-03-14 14:29:19 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -109,8 +109,8 @@ class AGNodeService( ServiceBase ):
             Client.Handle( serviceManager.uri ).get_proxy().Ping()
         except:
             log.exception("Exception in AddServiceManager.")
-            raise faultType("Service Manager is unreachable: " + serviceManager.uri )
-
+            raise faultType("Service Manager is unreachable: "
+                            + serviceManager.uri )
 
         try:
             self.serviceManagers.append( serviceManager )
@@ -118,8 +118,8 @@ class AGNodeService( ServiceBase ):
         except:
             log.exception("Exception in AGNodeService.AddServiceManager.")
             raise faultType("Failed to set Service Manager user authorization: " + serviceManager.uri )
+        
     AddServiceManager.soap_export_as = "AddServiceManager"
-
 
     def RemoveServiceManager( self, serviceManagerToRemove ):
         """Remove a service manager"""
@@ -279,7 +279,7 @@ class AGNodeService( ServiceBase ):
             try:
                 Client.Handle( serviceManager.uri ).get_proxy().Ping()
             except:
-                log.exception("Couldn't reach service manager: %s", serviceManager.uri)
+                log.info("Couldn't reach service manager: %s", serviceManager.uri)
                 continue
 
             # Add service manager to list (since it's reachable)
