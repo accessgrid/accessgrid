@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.14 2003-05-14 19:22:44 olson Exp $
+# RCS-ID:      $Id: Server.py,v 1.15 2003-05-28 17:32:34 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -66,6 +66,12 @@ class Server:
                                   log = 0,
                                   config = config)
 
+    def IsRunning(self):
+        """
+        This is simply an accessor that returns the value of the running flag.
+        """
+        return self._running
+    
     def Run(self):
         """
         Run the server.
