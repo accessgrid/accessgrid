@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.8 2004-03-04 20:26:26 judson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.9 2004-03-04 20:27:20 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.8 2004-03-04 20:26:26 judson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.9 2004-03-04 20:27:20 judson Exp $"
 
 # External Imports
 import os
@@ -36,6 +36,7 @@ from AccessGrid.Security.Action import MethodAction
 from AccessGrid.Security import X509Subject
 
 from AccessGrid.ClientProfile import ClientProfileCache
+from AccessGrid.Platform import GetUserConfigDir
 
 class InvalidParent(Exception):
     """
