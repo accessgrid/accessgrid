@@ -6,7 +6,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.41 2003-08-28 18:45:54 judson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.42 2003-09-02 22:13:18 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -478,17 +478,17 @@ class DataStore(ServiceBase):
 
         # Stop event client
         try:
-            privateId = self.eventClient.privateId
-            channelId = self.eventClient.channelId
+            #privateId = self.eventClient.privateId
+            #channelId = self.eventClient.channelId
             
             # Don't send exiting event because this is done when the venue is
             # removed and this call might hang.
             
             #self.eventClient.Send(ClientExitingEvent(privateId, channelId))
-            self.eventClient.Stop()
-            self.eventClient = None
+            if self.eventClient:
+                self.eventClient.Stop()
         except:
-            pass
+            log.exception("Stopping datastore eventClient.")
                    
     def HeartbeatThread(self):
         """
@@ -501,7 +501,7 @@ class DataStore(ServiceBase):
             except EventClientWriteDataException:
                 self.Shutdown()
                 break
-            except:
+            except Exception:
                 log.exception("Unable to send datastore heartbeat")
                 
             time.sleep(10)
