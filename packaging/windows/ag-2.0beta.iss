@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: ag-2.0beta.iss,v 1.15 2003-04-08 15:47:51 olson Exp $
+; RCS-ID: $Id: ag-2.0beta.iss,v 1.16 2003-04-08 20:02:57 olson Exp $
 ;
 
 #define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
@@ -161,8 +161,8 @@ Name: {group}\Debug\Node Manager; IconFilename: {app}\config\agicons.exe; Filena
 Name: {group}\Debug\Setup Video; IconFilename: {app}\config\agicons.exe; Filename: {app}\SetupVideo.py; WorkingDir: {app}; Components: Video_Producer; IconIndex: 0
 Name: {group}\Debug\Venue Server; IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueServer.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
 Name: {group}\Debug\Venue Management; IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueManagement.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
-Name: {commondesktop}\Access Grid Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py; IconFilename: {app}\config\agicons.exe; WorkingDir: {app}; Tasks: desktopicon; Components: Venue_Client; IconIndex: 0
-Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py; WorkingDir: {app}; Tasks: quicklaunchicon; Components: Venue_Client; IconIndex: 0
+Name: {commondesktop}\Access Grid Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py --personalNode; IconFilename: {app}\config\agicons.exe; WorkingDir: {app}; Tasks: desktopicon; Components: Venue_Client; IconIndex: 0
+Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py --personalNode; WorkingDir: {app}; Tasks: quicklaunchicon; Components: Venue_Client; IconIndex: 0
 Name: {group}\Documentation\README; Filename: {app}\Documentation\README
 ;Name: {group}\Documentation\Developers Documentation; Filename: {app}\Documentation\index.html
 Name: {group}\Documentation\License; IconFilename: {app}\config\ag.ico; Filename: {app}\COPYING.txt
