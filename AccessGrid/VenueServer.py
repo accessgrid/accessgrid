@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.84 2003-08-11 19:46:18 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.85 2003-08-12 18:40:48 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,11 +22,9 @@ import logging
 import time
 import ConfigParser
 
-# AG Stuff
 from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.hosting import AccessControl
 from AccessGrid.hosting.pyGlobus import ServiceBase
-from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
 from AccessGrid.Utilities import GetHostname, PathFromURL
@@ -176,7 +174,9 @@ class VenueServer(ServiceBase.ServiceBase):
         # If there are no administrators set then we set it to the
         # owner of the current running process
         if len(self.GetRoleManager().GetRole("VenueServer.Administrators").GetSubjectList()) == 0:
-            dnAdmin = GetDefaultIdentityDN()
+            # Set it from the cert mgmt stuff now -- IRJ
+            certMgr = Toolkit.GetApplication().GetCertificateManager()
+            dnAdmin = certMgr.GetCurrentProxy().GetSubject()
             if dnAdmin:
                 self.GetRoleManager().GetRole("VenueServer.Administrators").AddSubject(dnAdmin)
             
@@ -268,7 +268,8 @@ class VenueServer(ServiceBase.ServiceBase):
 
     def RegisterDefaultSubjects(self):
         role = self.GetRoleManager().validRoles["VenueServer.Administrators"]
-        role.AddSubject(GetDefaultIdentityDN())
+        certMgr = Toolkit.GetApplication().GetCertificateManager()
+        role.AddSubject(certMgr.GetCurrentProxy().GetSubject())
 
     def LoadPersistentVenues(self, filename):
         """

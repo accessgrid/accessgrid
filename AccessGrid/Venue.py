@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.116 2003-08-11 19:46:54 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.117 2003-08-12 18:40:48 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -40,7 +40,6 @@ from AccessGrid.Events import MarshalledEvent
 from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import GetHostname, ServerLock
 from AccessGrid.hosting.AccessControl import RoleManager, Subject
-from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 
 # these imports are for dealing with SOAP structs, which we won't have to 
 # do when we have WSDL; at that time, these imports and the corresponding calls

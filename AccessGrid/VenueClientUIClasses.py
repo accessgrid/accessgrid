@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.226 2003-08-11 04:17:33 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.227 2003-08-12 18:40:48 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -37,9 +37,8 @@ from AccessGrid.Descriptions import ApplicationDescription
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.Platform import GetTempDir, GetInstallDir, GetSharedDocDir
+from AccessGrid.Platform import isWindows, isLinux, isOSX
 from AccessGrid.TextClient import TextClient
-
-from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 
 try:
     import win32api
@@ -1443,16 +1442,17 @@ class ContentListPanel(wxPanel):
        
         self.parent = parent
 	self.app = app
-        if sys.platform == "win32":
+        if isWindows():
             self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
                                    wxDefaultSize, style = wxTR_HAS_BUTTONS |
                                    wxTR_NO_LINES)
             
             
-        elif sys.platform == "linux2":
+        elif isLinux() or isOSX():
             self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
                                    wxDefaultSize, style = wxTR_HAS_BUTTONS |
                                    wxTR_NO_LINES | wxTR_HIDE_ROOT)
+
         self.__setImageList()
 	self.__setTree()
        	self.__setProperties()

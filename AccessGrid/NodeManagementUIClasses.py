@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.34 2003-08-12 12:49:25 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.35 2003-08-12 18:40:48 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,14 +24,12 @@ from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetPara
 from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid import icons
 from AccessGrid import Platform
-from AccessGrid.Utilities import HaveValidProxy
 from AccessGrid.UIUtilities import AboutDialog
 from AccessGrid import Toolkit
 
 # imports for Debug menu; can be removed if Debug menu is removed
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
-
 
 ###
 ### MENU DEFS
@@ -207,12 +205,12 @@ class ServicePopup(wxPopupTransientWindow):
     def PopThatMenu( self, pos ):
         self.PopupMenuXY( self.m, pos[0], pos[1] )
 
-class ServiceManagerPopup(wxPopupTransientWindow):
+class ServiceManagerPopup(wxDialog):
     """
     Popup for the service manager menu
     """
-    def __init__(self, parent, style):
-        wxPopupTransientWindow.__init__(self, parent, style)
+    def __init__(self, parent):
+        wxDialog.__init__(self, parent, -1, "ServiceManager")
         panel = wxPanel(self, -1)
         panel.SetBackgroundColour("#FFB6C1")
         self.m = BuildServiceManagerMenu()
@@ -1029,8 +1027,9 @@ class NodeManagementClientFrame(wxFrame):
         """
         Display about AG info
         """
-        aboutDialog = AboutDialog(self, wxSIMPLE_BORDER)
-        aboutDialog.Popup()
+        aboutDialog = AboutDialog(self)
+        aboutDialog.ShowModal()
+        aboutDialog.Destroy()
 
 
 
@@ -1098,7 +1097,7 @@ class NodeManagementClientFrame(wxFrame):
         """
         Popup the service menu
         """
-        win = ServicePopup(self, wxSIMPLE_BORDER )
+        win = ServicePopup(self)
 
         # Show the popup right below or above the button
         # depending on available screen space...
@@ -1110,7 +1109,7 @@ class NodeManagementClientFrame(wxFrame):
         """
         Popup the service manager menu
         """
-        win = ServiceManagerPopup(self, wxSIMPLE_BORDER )
+        win = ServiceManagerPopup(self)
 
         # Show the popup right below or above the button
         # depending on available screen space...

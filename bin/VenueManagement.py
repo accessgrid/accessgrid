@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.73 2003-08-11 23:09:46 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.74 2003-08-12 18:40:48 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,9 +18,9 @@ from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.Descriptions import StreamDescription, ConnectionDescription
 from AccessGrid.Descriptions import VenueDescription, CreateVenueDescription
 from AccessGrid.Descriptions import Capability
+from AccessGrid.CertificateManager import CertificateManager
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-from AccessGrid.Utilities import formatExceptionInfo, HaveValidProxy
 from AccessGrid import icons
 from AccessGrid.Platform import GPI
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
@@ -153,20 +153,12 @@ class VenueManagementClient(wxApp):
 
         handle = Client.Handle(URL)
 
-        if not HaveValidProxy():
-            log.debug("You do not have a valid proxy run Platform.GPI()")
-            # GPI()
+        if not self.app.certificateManager.HaveValidProxy():
+            log.debug("VenueManagement::ConnectToServer: no valid proxy")
 
-            app = Toolkit.GetApplication()
-            app.GetCertificateManager().ConfigureProxy()
+            self.app.certificateManager.CreateProxy()
 
         log.debug("check client for validity")
-        try:
-            Client.Handle(URL).IsValid()
-        except Client.InvalidHandleException:
-            log.exception("ConnectToServer: handle.IsValid Failed.")
-            MessageDialog("Client.Handle(%s).IsValid() failed." % URL)
-            return
 
         handle = Client.Handle(URL)
 
@@ -1334,13 +1326,6 @@ class VenueParamFrame(wxDialog):
         try:
             wxBeginBusyCursor()
             log.debug("Load venues from: %s " % URL)
-
-            try:
-                Client.Handle(URL).IsValid()
-            except Client.InvalidHandleException:
-                log.exception("_loadVenues handle.IsValid Failed.")
-                MessageDialog("Client.Handle(%s).IsValid() failed." % URL)
-                return
 
             server = Client.Handle(URL)
             

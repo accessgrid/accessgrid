@@ -168,18 +168,3 @@ def GetHostname():
     if ret != 0:
         host = socket.getfqdn()
     return host
-
-def GetDefaultIdentityDN():
-    """
-    Return the default identity of the user invoking this call.
-
-    Returns a Globus DN for the currently active certificate.
-
-    If there is no valid proxy certificate available, returns None.
-    """
-    
-    gss_cred = pyGlobus.security.gss_default_user_credential()
-    if gss_cred is None:
-        return None
-    else:
-        return gss_cred.get_name()

@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.185 2003-08-11 04:14:39 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.186 2003-08-12 18:40:48 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,6 @@ from wxPython.wx import *
 from wxPython.wx import wxTheMimeTypesManager as mtm
 
 from AccessGrid.hosting.pyGlobus import Server
-from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 from AccessGrid.hosting.pyGlobus import Client
 
 import AccessGrid.Types
@@ -38,7 +37,6 @@ from AccessGrid import Toolkit
 from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
 
 from AccessGrid import Events
-from AccessGrid.Utilities import HaveValidProxy
 from AccessGrid.CertificateManager import CertificateManager
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Utilities import formatExceptionInfo

@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.29 2003-08-12 17:22:02 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.30 2003-08-12 18:40:48 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,12 +19,14 @@ import threading
 
 from AccessGrid.hosting.pyGlobus import Server, ServiceBase
 from AccessGrid.VenueServer import VenueServer
-from AccessGrid.Utilities import HaveValidProxy
 from AccessGrid.Platform import GPI
 from AccessGrid import Toolkit
 
 # defaults
 log = None
+venueServer = None
+
+hostingEnvironment = None
 venueServer = None
 
 # Signal Handler for clean shutdown
@@ -120,14 +122,6 @@ def main():
         app = Toolkit.CmdlineApplication()
 
     app.Initialize()
-
-    from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
-    try:
-        me = GetDefaultIdentityDN()
-        log.debug("VenueServer running as %s", me)
-    except:
-        log.exception("Could not get identity: execution environment is not correct")
-        sys.exit(1)
 
     # Second thing we do is create a hosting environment
     hostingEnvironment = Server.Server(port, auth_callback=AuthCallback)
