@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.106 2003-04-07 22:14:59 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.107 2003-04-07 22:17:35 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,6 +16,7 @@ import os
 import logging, logging.handlers
 import cPickle
 import getopt
+import sys
 
 log = logging.getLogger("AG.VenueClient")
 
@@ -107,7 +108,8 @@ class VenueClientUI(wxApp, VenueClient):
     def __Usage(self):
         print "%s:" % (sys.argv[0])
         print "  -h|--help:      print usage"
-        print "  --personalNode: manage services as a personal node"
+        if sys.platform == "win32":
+            print "  --personalNode: manage services as a personal node"
         
     def __processArgs(self):
         """
@@ -118,8 +120,12 @@ class VenueClientUI(wxApp, VenueClient):
         """
 
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "hd",
-                                       ["personalNode", "debug", "help"])
+            if sys.platform == "win32":
+                opts, args = getopt.getopt(sys.argv[1:], "hd",
+                                           ["personalNode", "debug", "help"])
+            else:
+                opts, args = getopt.getopt(sys.argv[1:], "hd",
+                                           ["debug", "help"])
         except getopt.GetoptError:
             self.__Usage()
             sys.exit(2)
@@ -917,7 +923,6 @@ class VenueClientUI(wxApp, VenueClient):
 
 if __name__ == "__main__":
 
-    import sys
     from AccessGrid.hosting.pyGlobus.Server import Server
     from AccessGrid.hosting.pyGlobus import Client
     from AccessGrid.ClientProfile import ClientProfile
