@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueServerTest.py,v 1.8 2003-02-28 17:49:50 turam Exp $
+# RCS-ID:      $Id: VenueServerTest.py,v 1.9 2003-03-24 20:18:33 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -186,6 +186,17 @@ class VenueServerTest:
         print  "\n------------------ Get static streams"
         streamList = venue.GetStaticStreams()
         print "We have ", len(streamList), " static streams in venue"
+
+        print "\n------------------ Set venue server encryption to 1"
+        self.client.SetEncryptAllMedia(1)
+        
+        value = self.client.GetEncryptAllMedia()
+        print "\n------------------ Get venue server encryption "+str(value)
+
+        print "\n------------------ Set venue encryption with key = ' '"
+        venue.SetEncryptMedia(1, ' ')
+
+        print "\n------------------ Get venue encryption key = " +  venue.GetEncryptMedia()
             
         print "\n------------------ Remove the venue"
         self.client.RemoveVenue(uri)
