@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.56 2004-04-29 19:35:13 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.57 2004-04-30 20:34:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.56 2004-04-29 19:35:13 eolson Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.57 2004-04-30 20:34:27 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -361,7 +361,7 @@ class AGServiceManager:
         # Extract the executable from the service package
         #
         package = AGServicePackage( servicePackageFile )
-        package.ExtractExecutable( self.servicesDir )
+        package.ExtractPackage( self.servicesDir )
 
         if isNewServicePackage:
             #
