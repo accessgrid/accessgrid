@@ -1,3 +1,14 @@
+#-----------------------------------------------------------------------------
+# Name:        Utilities.py
+# Purpose:     
+#
+# Author:      Everyone
+#
+# Created:     2003/23/01
+# RCS-ID:      $Id: Utilities.py,v 1.4 2003-01-23 14:28:42 judson Exp $
+# Copyright:   (c) 2002
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
 import os
 import string
 import sys
