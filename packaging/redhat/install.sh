@@ -29,7 +29,7 @@ export PYGLOBUS="pyGlobus"
 export PYGLOBUS_VER="cvs-10"
 
 export AGRAT="AccessGrid-rat"
-export AGRAT_VER="4.2.22-2"
+export AGRAT_VER="4.2.22-3"
 export AGVIC="AccessGrid-vic"
 export AGVIC_VER="2.8ucl1.1.3-3"
 
