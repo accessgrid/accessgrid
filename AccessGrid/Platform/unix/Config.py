@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.25 2004-05-07 15:45:43 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.26 2004-05-07 22:08:21 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.25 2004-05-07 15:45:43 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.26 2004-05-07 22:08:21 turam Exp $"
 
 import os
 import mimetypes
@@ -836,7 +836,7 @@ Comment=%s
         gnomeAppFile = os.path.join(gnomeAppDir, "accessgrid.applications")
         gnomeKeysFile = os.path.join(gnomeMimeDir, "accessgrid.keys")
         gnomeMimeFile = os.path.join(gnomeMimeDir, "accessgrid.mime")
-        if os.path.exists(gnomeAppDir):
+        if os.path.exists(gnomeAppDir) and os.path.exists(gnomeMimeDir):
             log.info("registering file type " + extension + " with gnome")
 
             f = open(gnomeAppFile, "w")
@@ -852,7 +852,7 @@ Comment=%s
             f.close()
 
         else:
-            log.info("gnome directory " + gnomeAppDir + " not found, not registering file type " + extension + " with gnome")
+            log.info("gnome directory " + gnomeAppDir + " or " + gnomeMimeDir + " not found, not registering file type " + extension + " with gnome")
 
 
         """
