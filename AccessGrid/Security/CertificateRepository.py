@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.12 2004-04-16 20:31:41 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.13 2004-04-26 21:01:45 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.12 2004-04-16 20:31:41 olson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.13 2004-04-26 21:01:45 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -436,8 +436,6 @@ class CertificateRepository:
                 if passphrase is None:
                     raise RepoBadPassphrase
                 
-                print "Got pp ", passphrase
-
                 if type(passphrase) == list:
                     #
                     # Convert from list-of-numbers to a string.
