@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.73 2003-05-17 18:05:38 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.74 2003-05-20 19:46:32 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -35,9 +35,9 @@ from AccessGrid.Venue import Venue, AdministratorNotFound
 from AccessGrid.Venue import AdministratorAlreadyPresent
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.DataStore import GSIHTTPTransferServer
-from AccessGrid.EventService import EventService
+from AccessGrid.EventServiceAsynch import EventService
 from AccessGrid.scheduler import Scheduler
-from AccessGrid.TextService import TextService
+from AccessGrid.TextServiceAsynch import TextService
 
 from AccessGrid.Descriptions import ConnectionDescription, StreamDescription
 from AccessGrid.Descriptions import DataDescription, VenueDescription
