@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.56 2004-04-19 21:26:12 lefvert Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.57 2004-04-26 18:54:45 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.56 2004-04-19 21:26:12 lefvert Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.57 2004-04-26 18:54:45 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1003,8 +1003,16 @@ class AGNodeServiceIW(SOAPIWrapper):
 
     def GetAvailableServices(self):
         svcList = list()
-        for s in self.proxy.GetAvailableServices():
-            svcList.append(CreateAGServiceDescription(s))
+
+        services = self.proxy.GetAvailableServices()
+        
+        if services:
+            for s in services:
+                svcList.append(CreateAGServiceDescription(s))
+        else:
+            # No services
+            pass
+           
         return svcList
 
     def GetServices(self):
