@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.19 2004-01-26 17:30:25 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.20 2004-01-26 17:39:06 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1578,33 +1578,33 @@ if __name__ == "__main__":
     else:
         presentation.LoadFromVenue()
 
-    #presentation.Start()
+    presentation.Start()
 
     # This is needed because COM shutdown isn't clean yet.
     # This should be something like:
     #sys.exit(0)
-    #  os._exit(0)
+    os._exit(0)
 
     # Stress Test
-    import threading
-    import time
+    #import threading
+    #import time
 
-    s = SharedAppClient("test")
-    s.Join(appURL)
-    publicId = s.GetPublicId()
+    #s = SharedAppClient("test")
+    #s.Join(appURL)
+    #publicId = s.GetPublicId()
 
-    def SendEvents():
-        time.sleep(10)
-        s.SendEvent(SharedPresEvent.MASTER, (publicId, publicId))
-        print 'send next event'
-        s.SendEvent(SharedPresEvent.NEXT,(publicId, None))
-        s.SendEvent(SharedPresEvent.NEXT,(publicId, None))
-        s.SendEvent(SharedPresEvent.PREV,(publicId, None))
-        s.SendEvent(SharedPresEvent.PREV,(publicId, None))
+    #def SendEvents():
+    #    time.sleep(10)
+    #    s.SendEvent(SharedPresEvent.MASTER, (publicId, publicId))
+    #    print 'send next event'
+    #    s.SendEvent(SharedPresEvent.NEXT,(publicId, None))
+    #    s.SendEvent(SharedPresEvent.NEXT,(publicId, None))
+    #    s.SendEvent(SharedPresEvent.PREV,(publicId, None))
+    #    s.SendEvent(SharedPresEvent.PREV,(publicId, None))
         
-    thread = threading.Thread(target = SendEvents)
-    thread.start()
+    #thread = threading.Thread(target = SendEvents)
+    #thread.start()
     
-    presentation.Start()
-    os._exit(0)
+    #presentation.Start()
+    #os._exit(0)
 
