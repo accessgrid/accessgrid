@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.138 2004-07-26 17:35:01 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.139 2004-07-28 19:19:34 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.138 2004-07-26 17:35:01 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.139 2004-07-28 19:19:34 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -111,7 +111,6 @@ class VenueManagementClient(wxApp):
 
         self.app = Toolkit.WXGUIApplication()
         self.app.Initialize("VenueManagement")
-
         return true
 
     def __setEvents(self):
@@ -499,7 +498,7 @@ class VenueManagementClient(wxApp):
             log.debug("VenueManagementClient.ConnectToServer: Set server encryption key: %s" % key)
             dp.encryptionButton.SetValue(key)
             self.encrypt = key
-
+           
             self.tabs.Enable(true)
             self.EnableMenu(1)
             
@@ -572,6 +571,7 @@ class VenueManagementClient(wxApp):
 
     def SetInterval(self, address, mask):
         log.debug("VenueManagementClient.SetInterval: Set interval address allocation method with address: %s, mask: %s" %(str(address), mask))
+
         self.server.SetBaseAddress(address)
         self.server.SetAddressMask(mask)
         self.server.SetAddressAllocationMethod(MulticastAddressAllocator.INTERVAL)
@@ -911,7 +911,7 @@ class VenueListPanel(wxPanel):
                 else:
                     self.venuesList.Delete(index)
 
-                    if self.venuesList.Number() > 0:
+                    if self.venuesList.GetCount() > 0:
                         self.venuesList.SetSelection(0)
                         venue = self.venuesList.GetClientData(0)
 
@@ -1051,7 +1051,7 @@ class ConfigurationPanel(wxPanel):
         
         self.detailPanel = DetailPanel(self, application)
         self.__doLayout()
-
+        
     def __doLayout(self):
         configurationPanelSizer = wxBoxSizer(wxHORIZONTAL)
         configurationPanelSizer.Add(self.detailPanel, 2, wxEXPAND|wxALL, 10)
@@ -1066,6 +1066,7 @@ class DetailPanel(wxPanel):
     ID_RANDOM = wxNewId()
     ID_INTERVAL = wxNewId()
     ID_ENCRYPT = wxNewId()
+    ID_NEW = wxNewId()
    
 
     def __init__(self, parent, application):
@@ -1080,7 +1081,7 @@ class DetailPanel(wxPanel):
                                          size = wxSize(500, 50),
                                          name = 'encryptionBox')
         self.encryptionBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        
+
         self.randomButton = wxRadioButton(self, self.ID_RANDOM,
                                           "Standard Range")
         self.intervalButton = wxRadioButton(self, self.ID_INTERVAL,
@@ -1098,8 +1099,8 @@ class DetailPanel(wxPanel):
 
     def __setEvents(self):
         EVT_BUTTON(self, self.ID_CHANGE, self.OpenIntervalDialog)
-        EVT_RADIOBUTTON(self, self.ID_RANDOM, self.ClickedOnRandom)
-        EVT_RADIOBUTTON(self, self.ID_INTERVAL, self.ClickedOnInterval)
+        EVT_RADIOBUTTON(self.randomButton, self.ID_RANDOM, self.ClickedOnRandom)
+        EVT_RADIOBUTTON(self.intervalButton, self.ID_INTERVAL, self.ClickedOnInterval)
         EVT_CHECKBOX(self, self.ID_ENCRYPT, self.ClickedOnEncrypt)
                        
     def ClickedOnEncrypt(self, event):
@@ -1127,6 +1128,7 @@ class DetailPanel(wxPanel):
     def ClickedOnRandom(self, event):
         self.ipAddress.Enable(false)
         self.changeButton.Enable(false)
+
         try:
             log.debug("DetailPanel.ClickedOnRandom: Set multicast address to random")
             self.application.SetRandom()
@@ -1142,7 +1144,7 @@ class DetailPanel(wxPanel):
                 log.exception("DetailPanel.ClickedOnEncrypt: Set multicast address to random failed")
                 text = "The multicast option could not be set."
                 ErrorDialog(None, text, "Set Multicast Error", logFile = VENUE_MANAGEMENT_LOG)
-
+               
         except:
             self.ipAddress.Enable(true)
             self.changeButton.Enable(true)
@@ -1151,17 +1153,18 @@ class DetailPanel(wxPanel):
             text = "The multicast option could not be set."
             ErrorDialog(None, text, "Set Multicast Error",
                         logFile = VENUE_MANAGEMENT_LOG)
-         
+                    
     def ClickedOnInterval(self, event):
         self.ipAddress.Enable(true)
         self.changeButton.Enable(true)
         maskInt = int(self.maskString)
-
+      
         try:
             log.debug("DetailPanel.ClickedOnInterval: Set multicast address to interval")
             self.application.SetInterval(self.ipString, maskInt)
 
         except Exception, e:
+            log.exception('DetailPanel.ClickedOnInterval: failed')
             self.ipAddress.Enable(false)
             self.changeButton.Enable(false)
             self.randomButton.SetValue(true)
@@ -1175,6 +1178,7 @@ class DetailPanel(wxPanel):
                 ErrorDialog(None, text, "Set Multicast Error", logFile = VENUE_MANAGEMENT_LOG)
 
         except:
+            log.exception('DetailPanel.ClickedOnInterval: failed')
             self.ipAddress.Enable(false)
             self.changeButton.Enable(false)
             self.randomButton.SetValue(true)
@@ -1442,7 +1446,10 @@ class VenueParamFrame(wxDialog):
         self.venue = venue
 
     def Validate(self):
-        return true
+        return (self.generalPanel.Validate() and
+                self.staticAddressingPanel.Validate())
+                     
+        #return true
     
 class GeneralPanel(wxPanel):
     ID_TRANSFER = wxNewId()
@@ -1460,12 +1467,12 @@ class GeneralPanel(wxPanel):
         self.exitsBox = wxStaticBox(self, -1, "Exits")
         self.exitsBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         self.titleLabel =  wxStaticText(self, -1, "Title:")
-        self.title =  wxTextCtrl(self, -1, "",  size = wxSize(200, 20),
-        validator = TextValidator())
+        self.title =  wxTextCtrl(self, -1, "",  size = wxSize(200, 20))
         self.descriptionLabel = wxStaticText(self, -1, "Description:")
+
         self.description =  wxTextCtrl(self, -1, "", size = wxSize(200, 50),
                                        style = wxTE_MULTILINE |
-                                       wxTE_RICH2, validator = TextValidator())
+                                       wxTE_RICH2)
         self.defaultVenue = wxCheckBox(self, self.ID_DEFAULT, "Set this venue as default.")
         
         self.venuesLabel = wxStaticText(self, -1, "Available Venues:")
@@ -1491,6 +1498,9 @@ class GeneralPanel(wxPanel):
         self.exitsMenu = wxMenu()
         self.exitsMenu.Append(self.ID_EXIT_RENAME,"Change Title...",
                              "Give this exit a new title.")
+
+        self.SetValidator(GeneralPanelValidator())
+        
         EVT_MENU(self, self.ID_EXIT_RENAME, self.UpdateExit)
         EVT_RIGHT_DOWN(self.exits, self.OnRightClick)
         
@@ -1651,7 +1661,43 @@ class GeneralPanel(wxPanel):
         self.SetAutoLayout(1)
 
     def Validate(self):
-        return 1
+        return self.GetValidator().Validate(self)
+
+class GeneralPanelValidator(wxPyValidator):
+    '''
+    Validator used to ensure correctness of parameters entered in
+    GeneralPanel.
+    '''
+    def __init__(self):
+        wxPyValidator.__init__(self)
+                   
+    def Clone(self):
+        '''
+        Returns a new GeneralPanelValidator.
+        Note: Overrides super class method.
+        '''
+        return GeneralPanelValidator()
+
+    def Validate(self, win):
+        '''
+        Checks if win has correct parameters.
+        '''
+        
+        title = win.title.GetValue()
+        description = win.description.GetValue()
+        
+        if len(title) < 1 or len(description) < 1:
+            MessageDialog(None, "Please, fill in your name and description in the 'General' tab", "Notification")
+            return false
+        else:
+            return true
+        
+    def TransferToWindow(self):
+        return true # Prevent wxDialog from complaining.
+
+    def TransferFromWindow(self):
+        return true # Prevent wxDialog from complaining.
+
     
 class EncryptionPanel(wxPanel):
     ID_BUTTON = wxNewId()
@@ -1735,35 +1781,25 @@ class StaticAddressingPanel(wxPanel):
                                          size = wxSize(40,20), style = wxALIGN_RIGHT)
         self.audioTtlText = wxStaticText(self.panel, -1, " TTL:",
                                          size = wxSize(40,20), style = wxALIGN_RIGHT)
-        self.videoIp1 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20),
-                                   validator = DigitValidator(IP))
-        self.videoIp2 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20),
-                                   validator = DigitValidator(IP))
-        self.videoIp3 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20),
-                                   validator = DigitValidator(IP))
-        self.videoIp4 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20),
-                                   validator = DigitValidator(IP))
-        self.videoPort = wxTextCtrl(self.panel, -1, "", size = wxSize(50,20),
-                                    validator = DigitValidator(PORT))
-        self.videoTtl = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20),
-                                   validator = DigitValidator(TTL))
-        self.audioIp1 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20),
-                                   validator = DigitValidator(IP))
-        self.audioIp2 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20),
-                                   validator = DigitValidator(IP))
-        self.audioIp3 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20),
-                                   validator = DigitValidator(IP))
-        self.audioIp4 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20),
-                                   validator = DigitValidator(IP))
-        self.audioPort = wxTextCtrl(self.panel, -1, "", size = wxSize(50,20),
-                                    validator =DigitValidator(PORT))
-        self.audioTtl = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20),
-                                   validator = DigitValidator(TTL))
+        self.videoIp1 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20))
+        self.videoIp2 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20))
+        self.videoIp3 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20))
+        self.videoIp4 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20))
+        self.videoPort = wxTextCtrl(self.panel, -1, "", size = wxSize(50,20))
+        self.videoTtl = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20))
+        self.audioIp1 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20))
+        self.audioIp2 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20))
+        self.audioIp3 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20))
+        self.audioIp4 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20))
+        self.audioPort = wxTextCtrl(self.panel, -1, "", size = wxSize(50,20))
+        self.audioTtl = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20))
 
         if self.staticAddressingButton.GetValue():
             self.panel.Enable(true)
         else:
             self.panel.Enable(false)
+
+        self.SetValidator(StaticAddressingValidator())
 
         self.__doLayout()
         self.__setEvents()
@@ -1884,9 +1920,83 @@ class StaticAddressingPanel(wxPanel):
 
     def Validate(self):
         if(self.staticAddressingButton.GetValue()):
-            return self.panel.Validate()
+            return self.GetValidator().Validate(self)
         else:
             return true
+
+class StaticAddressingValidator(wxPyValidator):
+    '''
+    Validator used to ensure correctness of parameters entered in
+    StaticAddressingPanel.
+    '''
+    def __init__(self):
+        wxPyValidator.__init__(self)
+                   
+    def Clone(self):
+        '''
+        Returns a new StaticAddressingValidator.
+        Note: Overrides super class method.
+        '''
+        return StaticAddressingValidator()
+
+    def Validate(self, win):
+        '''
+        Checks if win has correct parameters.
+        '''
+              
+        return (self.__CheckIP(win.videoIp1, win.videoIp2, win.videoIp3, win.videoIp4) and
+                self.__CheckIP(win.audioIp1, win.audioIp2, win.audioIp3, win.audioIp4) and
+                self.__CheckPort(win.videoPort) and
+                self.__CheckPort(win.audioPort) and
+                self.__CheckTTL(win.videoTtl) and
+                self.__CheckTTL(win.audioTtl))
+      
+    def __CheckIP(self, ip1, ip2, ip3, ip4):
+        try:
+            i1 = int(ip1.GetValue())
+            i2 = int(ip2.GetValue())
+            i3 = int(ip3.GetValue())
+            i4 = int(ip4.GetValue())
+        except ValueError:
+            MessageDialog(None,"Please, fill in all IP Address fields in 'Addressing' tab.", "Notification")
+            return false
+        
+        if (i1 in range(224, 240) and
+            i2 in range(0,256) and
+            i3 in range(0,256) and
+            i4 in range(0,256)):
+            return true
+        else:
+            MessageDialog(None, "Allowed values for IP Address are between 224.0.0.0 - 239.255.255.255 in 'Addressing' tab", "Notification")
+            return false
+
+    def __CheckPort(self, port):
+        try:
+            int(port.GetValue())
+            return true
+        except ValueError:
+            MessageDialog(None,"%s is not a valid port in 'Addressing' tab."%(port.GetValue()), "Notification")
+            return false
+
+    def __CheckTTL(self, ttl):
+        try:
+            ttl = int(ttl.GetValue())
+        except ValueError:
+            MessageDialog(None,"%s is not a valid time to live (TTL) value in 'Addressing' tab."%(ttl.GetValue()), "Notification")
+            return false
+
+        if not ttl in range(0,128):
+            MessageDialog(None, "Time to live (TTL) should be a value between 0 - 127 in 'Addressing' tab.", "Notification")
+            return false
+        else:
+            return true
+                            
+    def TransferToWindow(self):
+        return true # Prevent wxDialog from complaining.
+
+    def TransferFromWindow(self):
+        return true # Prevent wxDialog from complaining.
+
 
 class AddVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title, venueList, application):
@@ -1906,9 +2016,9 @@ class AddVenueFrame(VenueParamFrame):
     def OnOK (self, event):
         wxBeginBusyCursor()
 
-        if (VenueParamFrame.Validate(self) and 
-            self.staticAddressingPanel.Validate() and 
-            self.generalPanel.Validate()):
+        if (VenueParamFrame.Validate(self)): #and 
+            #self.staticAddressingPanel.Validate() and 
+            #self.generalPanel.Validate()):)
             self.Ok()
             try:
                 log.debug("AddVenueFrame.OnOk: Add venue.")
@@ -1964,7 +2074,8 @@ class ModifyVenueFrame(VenueParamFrame):
     def OnOK (self, event):
         wxBeginBusyCursor()
         if(VenueParamFrame.Validate(self)):
-            if(self.staticAddressingPanel.Validate()):
+            #if(self.staticAddressingPanel.Validate()):
+            if 1:
 #FIXME - This is obviously an immediately-before-release fix;
 #        it needs to be resolved corectly
                 venueUri = self.venue.uri
@@ -2113,21 +2224,6 @@ class DigitValidator(wxPyValidator):
             MessageDialog(None,"Please, fill in all IP Address fields.", "Notification")
             return false
 
-        elif (self.flag == PORT) and index == 0:
-            MessageDialog(None,"Please, fill in port for static addressing.", "Notification")
-            return false
-
-        elif (self.flag == TTL) and index == 0:
-            MessageDialog(None, "Please, fill in time to live (TTL) for static addressing.", "Notification")
-            return false
-
-        elif self.flag == PORT:
-            return true
-
-        elif self.flag == TTL and (int(val)<0 or int(val)>127):
-            MessageDialog(None, "Time to live (TTL) should be a value between 0 - 127.", "Notification")
-            return false
-
         elif self.flag == IP and (int(val)<0 or int(val)>255):
             MessageDialog(None, "Allowed values for IP Address are between 224.0.0.0 - 239.255.255.255", "Notification")
             return false
@@ -2187,7 +2283,7 @@ class DigitValidator(wxPyValidator):
         # gets to the text control
         return
 
-class TextValidator(wxPyValidator):
+'''class TextValidator(wxPyValidator):
     def __init__(self):
         wxPyValidator.__init__(self)
 
@@ -2209,6 +2305,8 @@ class TextValidator(wxPyValidator):
 
     def TransferFromWindow(self):
         return true # Prevent wxDialog from complaining.
+'''
+
 
 class IpAddressConverter:
     def __init__(self):
