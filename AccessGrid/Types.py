@@ -1,12 +1,22 @@
+#-----------------------------------------------------------------------------
+# Name:        Types.py
+# Purpose:     
+#
+# Author:      Thomas Uram
+#
+# Created:     2003/23/01
+# RCS-ID:      $Id: Types.py,v 1.8 2003-01-23 14:25:56 judson Exp $
+# Copyright:   (c) 2002
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
 import os
 import thread
 import zipfile
 import socket
-
+import time
 import SimpleHTTPServer
 import SocketServer
-
-from AGParameter import *
+import string
 
 class Event:
     TEST_EVENT = "Test"
@@ -20,11 +30,15 @@ class Event:
     ADD_CONNECTION = "Add connection"
     REMOVE_CONNECTION = "Remove connection"
     UPDATE_VENUE_STATE = "Update venue state"
-        
+
+    HEARTBEAT = "Client Heartbeat"
+    
     def __init__( self, eventType, data ):
         self.eventType = eventType
         self.data = data
 
+from AccessGrid.AGParameter import *
+        
 class VenueState:
     def __init__( self, description, connections, users,
                   nodes, data, services, coherenceLocation ):
@@ -36,13 +50,16 @@ class VenueState:
         self.nodes = dict()
         self.data = dict()
         self.services = dict()
+        self.clients = dict()
 
         for connection in connections:
             self.connections[connection.uri] = connection
         for user in users:
             self.users[user.publicId] = user
+            self.clients[user.publicId] = time.localtime()
         for node in nodes:
             self.nodes[node.publicId] = node
+            self.clients[nodes.publicId] = time.localtime()
         for datum in data:
             self.data[datum.name] = datum
         for service in services:
@@ -88,6 +105,10 @@ class VenueState:
     def RemoveConnection( self, connectionDescription ):
         del self.connections[connectionDescription.uri]
 
+    def UpdateClient(self, update):
+        (id, time) = string.split(update, '-')
+        self.clients[id] = string.split(time, ':')
+        
     def SetCoherenceLocation( self, coherenceLocation ):
         self.coherenceLocation = coherenceLocation
     def GetCoherenceLocation( self ):
