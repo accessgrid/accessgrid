@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.54 2003-02-27 21:10:07 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.55 2003-02-27 21:25:15 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -55,7 +55,7 @@ class VenueClientUI(wxApp, VenueClient):
         self.client = None
         self.gotClient = false
         self.clientHandle = None
-    #    self.textClient = None
+        # self.textClient = None
         self.venueUri = None
         return true
 
@@ -238,7 +238,8 @@ class VenueClientUI(wxApp, VenueClient):
         # Start text client
         wxCallAfter(self.frame.OpenChat)
         wxCallAfter(self.frame.FillInAddress, None, URL)
-
+        self.venueUri = URL
+        
         self.upload_url = self.client.GetUploadDescriptor()
 
     def ExitVenue(self):

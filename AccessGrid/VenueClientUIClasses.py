@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.49 2003-02-27 21:09:49 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.50 2003-02-27 21:25:41 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -346,21 +346,28 @@ class VenueClientFrame(wxFrame):
             EVT_MENU(self, id, self.FillInAddress)
 
     def AddToMyVenues(self, event):
-        setMyVenueUrlDialog = UrlDialog(self, -1, "Add venue URL to your venues", \
-                                        '', "Please, specify the URL of the venue you want to add to\nyour venues")
-        if setMyVenueUrlDialog.ShowModal() == wxID_OK:
+        #setMyVenueUrlDialog = UrlDialog(self, -1, "Add venue URL to your venues", \
+        #                                '', "Please, specify the URL of the venue you want to add to\nyour venues")
+        #if setMyVenueUrlDialog.ShowModal() == wxID_OK:
             id = NewId()
-            url = setMyVenueUrlDialog.address.GetValue()
-            self.myVenues.Append(id, url)
-            self.myVenuesList.append(url)
-            EVT_MENU(self, id, self.FillInAddress)
+            url = self.app.venueUri#setMyVenueUrlDialog.address.GetValue()
 
-            myVenuesFile = open(self.myVenuesFile, 'w')
-            for venueUrl in self.myVenuesList:
-                myVenuesFile.write(venueUrl+'\n')
-            myVenuesFile.close()
-                                   
-        setMyVenueUrlDialog.Destroy()
+            text = url + " \nis added to your venues"
+            dlg = wxMessageDialog(self, text, "Add venue",
+                                  wxOK | wxICON_INFORMATION)
+            if(dlg.ShowModal() == wxID_OK):
+                self.myVenues.Append(id, url)
+                self.myVenuesList.append(url)
+                EVT_MENU(self, id, self.FillInAddress)
+
+                myVenuesFile = open(self.myVenuesFile, 'w')
+                for venueUrl in self.myVenuesList:
+                    myVenuesFile.write(venueUrl+'\n')
+                myVenuesFile.close()
+
+            dlg.Destroy()
+                                               
+        #setMyVenueUrlDialog.Destroy()
                        
     def Exit(self, event):
         '''
