@@ -11,8 +11,10 @@ DEST=sys.argv[2]
 RATDIR=os.path.join(SOURCE,'ag-media')
 
 def build_win(dir):
-    os.system('devenv %s\rat\rat.2003.sln /rebuild Release' % (dir,))
-    os.system('devenv %s\rat\rat.sln /rebuild Release /project rat-kill' % (dir,))
+    os.system("devenv %s /rebuild Release" % os.path.join(dir, "rat",
+                                                          "rat.sln"))
+    os.system("devenv %s /rebuild Release /project rat-kill" \
+              % os.path.join(dir, "rat", "rat.sln"))
     
 def build_linux(dir):
     os.chdir(dir)
