@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.93 2003-04-01 15:00:53 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.94 2003-04-01 16:43:36 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -191,6 +191,7 @@ class VenueClientUI(wxApp, VenueClient):
             
         else:
             profileDialog.Destroy()
+            os._exit(0)
                
     def __startMainLoop(self, profile):
         """
