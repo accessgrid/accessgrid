@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceService.py,v 1.7 2003-01-15 20:25:40 judson Exp $
+# RCS-ID:      $Id: CoherenceService.py,v 1.8 2003-01-15 22:13:32 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,6 +16,7 @@ import select
 import sys
 import time
 import struct
+import pickle
 from threading import Thread
 
 from NetworkLocation import UnicastNetworkLocation
@@ -72,10 +73,11 @@ class AcceptHandler(Thread):
         sys.stderr.write("Accept Handler Exiting\n")
         
 class CoherenceService(Thread):
+
     def __init__(self, location):
         Thread.__init__(self)
         self.location = location
-        self.connections = None
+        self.connections = {}
         self.acceptThread = None
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.bind((self.location.GetHost(), self.location.GetPort()))
@@ -107,9 +109,10 @@ class CoherenceService(Thread):
         return self.location
          
     def distribute(self, data):
+        pickledData = pickle.dumps( data )
         for c in self.connections.keys():
             if self.connections[c].isAlive():
-                self.connections[c].send(data)
+                self.connections[c].send( pickledData )
             else:
                 del self.connections[c]
             
