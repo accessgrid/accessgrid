@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.146 2004-09-03 14:41:12 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.147 2004-09-07 21:29:08 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.146 2004-09-03 14:41:12 judson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.147 2004-09-07 21:29:08 turam Exp $"
 
 # Standard imports
 import sys
@@ -25,7 +25,6 @@ if sys.platform == "darwin":
 import string
 import time
 import re
-import getopt
 import webbrowser
 import cPickle
 
@@ -207,8 +206,8 @@ class VenueManagementClient(wxApp):
         self.frame.Layout()
 
     def __fixName(self, name):
-        list = name.split('/')
-        return list[2]
+        parts = name.split('/')
+        return parts[2]
 
     def __loadMyServers(self):
         
@@ -359,8 +358,6 @@ class VenueManagementClient(wxApp):
                                       style=wxOK|wxICON_WARNING)
         
     def EditMyServersCB(self, event):
-        myServersMenu = None
-        #serversDict = self.controller.GetMyServers()
         
         editMyServersDialog = EditURLBaseDialog(self.frame, -1, "Edit your servers", 
                                                 self.myServersDict, type = 'server')
@@ -399,7 +396,7 @@ class VenueManagementClient(wxApp):
     
         # Remove it from the dictionary
         del self.myServersMenuIds[serverName]
-        del self.myServersDict[name]
+        del self.myServersDict[serverName]
 
     def OpenHelpURL(self, url):
         """
@@ -849,12 +846,11 @@ class VenueListPanel(wxPanel):
             self.DeleteVenue()
 
     def OnDoubleClick(self, event):
-        modifyVenueDialog = ModifyVenueFrame(self, -1, "", 
-                                             self.venuesList, self.application)
+        ModifyVenueFrame(self, -1, "", self.venuesList, self.application)
 
     def EvtListBox(self, event):
-        list = event.GetEventObject()
-        data = list.GetClientData(list.GetSelection())
+        listCtrl = event.GetEventObject()
+        data = listCtrl.GetClientData(listCtrl.GetSelection())
         if data is not None:
             try:
                 log.debug("VenueListPanel: EvtListBox: Change current venue")
@@ -960,7 +956,6 @@ class VenueListPanel(wxPanel):
             venue.uri = newUri
 
             if newUri:
-                exits = venue.connections
                 self.venuesList.Append(venue.name, venue)
                 self.venuesList.Select(self.venuesList.FindString(venue.name))
                 self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
@@ -993,8 +988,8 @@ class VenueListPanel(wxPanel):
             if self.defaultVenue and venue.uri != self.defaultVenue.uri:
                 # Remove default text from old default venue
                 if self.defaultVenue:
-                    id = self.venuesList.FindString(self.defaultVenue.name +self.DEFAULT_STRING)
-                    self.venuesList.SetString(id, self.defaultVenue.name)
+                    theId = self.venuesList.FindString(self.defaultVenue.name +self.DEFAULT_STRING)
+                    self.venuesList.SetString(theId, self.defaultVenue.name)
 
             # Set default venue for this server
             self.application.server.SetDefaultVenue(venue.uri)
@@ -1003,9 +998,9 @@ class VenueListPanel(wxPanel):
         self.defaultVenue = venue
         
         # Reflect the default venue setting in the UI
-        id = self.venuesList.FindString(venue.name)
-        if id != wxNOT_FOUND:
-            self.venuesList.SetString(id, venue.name+self.DEFAULT_STRING)
+        theId = self.venuesList.FindString(venue.name)
+        if theId != wxNOT_FOUND:
+            self.venuesList.SetString(theId, venue.name+self.DEFAULT_STRING)
                        
     def ModifyVenue(self, venue):
         item = self.venuesList.GetSelection()
@@ -1404,6 +1399,7 @@ class VenueParamFrame(wxDialog):
     def __init__(self, parent, id, title, application):
         wxDialog.__init__(self, parent, id, title,
                           style = wxRESIZE_BORDER | wxDEFAULT_DIALOG_STYLE)
+        self.parent = parent
         self.Centre()
         self.noteBook = wxNotebook(self, -1)
 
@@ -1462,8 +1458,8 @@ class VenueParamFrame(wxDialog):
         
         # Get Exits
         for index in range(0, self.generalPanel.exits.GetCount()):
-            exit = self.generalPanel.exits.GetClientData(index)
-            exitsList.append(exit)
+            theExit = self.generalPanel.exits.GetClientData(index)
+            exitsList.append(theExit)
 
         # Get Static Streams
         sap = self.staticAddressingPanel
@@ -1575,6 +1571,8 @@ class GeneralPanel(wxPanel):
         
         self.__doLayout()
         self.__setEvents()
+        
+        self.currentVenueUrl = None
 
     def __onSize(self,evt):
         self.__doLayout()
@@ -1596,7 +1594,6 @@ class GeneralPanel(wxPanel):
             log.debug("VenueParamFrame.__LoadVenues: Load venues from: %s " % URL)
             server = VenueServerIW(URL)
             
-            venueList = []
             vl = server.GetVenues()
             
             # Remove the current venue from the list of potential exits
@@ -1638,9 +1635,9 @@ class GeneralPanel(wxPanel):
             existingExit = 0
             numExits = self.exits.GetCount()
             for index in range(numExits):
-                exit = self.exits.GetClientData(index)
+                theExit = self.exits.GetClientData(index)
               
-                if exit.uri == venue.uri:
+                if theExit.uri == venue.uri:
                     existingExit = 1
                     break
             if existingExit:
@@ -1787,15 +1784,15 @@ class EncryptionPanel(wxPanel):
         self.__setEvents()
 
     def ClickEncryptionButton(self, event = None, value = None):
+        theId = None
         if event == None:
-            id = value
+            theId = value
             self.encryptMediaButton.SetValue(value)
         else:
-            id =  event.Checked()
-        message = "Set encrypt media, value is: "+str(id)
-        self.keyText.Enable(id)
-        self.keyCtrl.Enable(id)
-        self.genKeyButton.Enable(id)
+            theId = event.Checked()
+        self.keyText.Enable(theId)
+        self.keyCtrl.Enable(theId)
+        self.genKeyButton.Enable(theId)
 
     def ClickGenKeyButton(self, event = None, value = None):
         self.keyCtrl.Clear()
@@ -2072,7 +2069,6 @@ class StaticAddressingValidator(wxPyValidator):
 class AddVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title, venueList, application):
         VenueParamFrame.__init__(self, parent, id, title, application)
-        self.parent = parent
         self.authorizationPanel.Hide()
         self.SetSize(wxSize(600, 470))
         self.SetLabel('Add Venue')
@@ -2125,7 +2121,6 @@ class ModifyVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title, venueList, application):
         VenueParamFrame.__init__(self, parent, id, title, app)
         wxBeginBusyCursor()
-        self.parent = parent
         self.SetSize(wxSize(600, 470))
         self.SetLabel('Modify Venue')
         
@@ -2190,7 +2185,6 @@ class ModifyVenueFrame(VenueParamFrame):
 
         log.debug("ModifyVenueFrame.__loadCurrentVenueInfo: Get venue information")
         self.application.SetCurrentVenue(self.venue)
-        venueC = self.application.currentVenueClient
 
         try:
             # Set this venue as default venue for this server.
@@ -2387,7 +2381,7 @@ class IpAddressConverter:
 
     def StringToIp(self, ipString):
         ipStringList = string.split(ipString, '.')
-        self.ipIntList = map(string.atoi, ipStringList)
+        self.ipIntList = map(int, ipStringList)
         return self.ipIntList
 
     def IpToString(self, ip1, ip2, ip3, ip4):
