@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.14 2004-09-03 21:47:34 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.15 2004-09-07 21:37:23 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -321,7 +321,7 @@ class VideoService( AGService ):
         """
         Set the identity of the user driving the node
         """
-        log.info("SetIdentity: %s %s", profile.name, profile.email)
+        self.log.info("SetIdentity: %s %s", profile.name, profile.email)
         self.profile = profile
         self.__SetRTPDefaults(profile)
     SetIdentity.soap_export_as = "SetIdentity"
