@@ -1,0 +1,10 @@
+[ServiceDescription]
+name = VideoProducerService
+description = Vic-based video service to send video to multicast address
+capabilities = Capability1
+executable = VideoProducerService.py
+platform = neutral
+
+[Capability1]
+role = producer
+type = video

@@ -1,0 +1,14 @@
+[ServiceDescription]
+name = AudioService
+description = Rat-based audio service
+capabilities = Capability1 Capability2
+executable = AudioService.py
+platform = neutral
+
+[Capability1]
+role = producer
+type = audio
+
+[Capability2]
+role = consumer
+type = audio
