@@ -3,6 +3,7 @@ from wxPython.wx import *
 from AccessGrid import Toolkit
 import CertificateRequestTool
 import time
+import md5
 
 class CertificateStatusDialog(wxDialog):
     '''
