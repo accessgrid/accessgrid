@@ -1,3 +1,19 @@
+#-----------------------------------------------------------------------------
+# Name:        SharedApplication.py
+# Purpose:     This is a base class for Shared Application Client objects.
+#
+# Author:      Ivan R. Judson, Thomas D. Uram
+#
+# Created:     2002/12/12
+# RCS-ID:      $Id: SharedApplication.py,v 1.3 2003-09-16 07:26:01 judson Exp $
+# Copyright:   (c) 2003
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: SharedApplication.py,v 1.3 2003-09-16 07:26:01 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 from AccessGrid import VenueClient
 from AccessGrid import EventClient
 from AccessGrid import Events

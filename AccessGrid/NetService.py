@@ -1,4 +1,18 @@
-
+#-----------------------------------------------------------------------------
+# Name:        NetService.py
+# Purpose:     This is the base class for Network Services.
+#
+# Author:      Thomas D. Uram
+#
+# Created:     2002/12/12
+# RCS-ID:      $Id: NetService.py,v 1.5 2003-09-16 07:25:34 judson Exp $
+# Copyright:   (c) 2003
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: NetService.py,v 1.5 2003-09-16 07:25:34 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 class UnknownNetServiceType(Exception):
     pass

@@ -1,3 +1,19 @@
+#-----------------------------------------------------------------------------
+# Name:        DataStoreClientUI.py
+# Purpose:     
+#
+# Author:      Robert D. Olson
+#
+# Created:     2002/12/12
+# RCS-ID:      $Id: DataStoreClientUI.py,v 1.3 2003-09-16 07:25:16 judson Exp $
+# Copyright:   (c) 2003
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: DataStoreClientUI.py,v 1.3 2003-09-16 07:25:16 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 from AccessGrid import DataStoreClient
 
 from wxPython.wx import *

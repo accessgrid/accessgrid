@@ -1,3 +1,19 @@
+#-----------------------------------------------------------------------------
+# Name:        DataStoreClient.py
+# Purpose:     
+#
+# Author:      Robert D. Olson
+#
+# Created:     2002/12/12
+# RCS-ID:      $Id: DataStoreClient.py,v 1.8 2003-09-16 07:25:16 judson Exp $
+# Copyright:   (c) 2003
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: DataStoreClient.py,v 1.8 2003-09-16 07:25:16 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 import sys
 import os
 import tempfile
