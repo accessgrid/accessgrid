@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.11 2003-05-13 21:50:54 olson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.12 2003-05-15 19:52:38 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ class MessageDialog:
         errorDialog.ShowModal()
         errorDialog.Destroy()
 
-class MyLog(wxPyLog):
+'''class MyLog(wxPyLog):
     ERROR = 1
     WARNING = 2
     MESSAGE = 3
@@ -60,7 +60,7 @@ class MyLog(wxPyLog):
 
         elif level  == self.WARNING:
             self.log.info(message)
-
+'''
 class ErrorDialog:
     def __init__(self, frame, text, text2 = "", style = wxOK | wxICON_ERROR):
        (name, args, traceback_string_list) = formatExceptionInfo()
