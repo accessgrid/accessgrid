@@ -54,7 +54,7 @@ Summary:	The Access Grid Toolkit Video Producer Service
 Version:	%{version}
 Release:	%{release}
 Group:		Utilities/System
-Requires:	AccessGrid
+Requires:	AccessGrid AccessGrid-vic
 
 %description VideoProducer
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
@@ -78,7 +78,7 @@ Summary:	The Access Grid Toolkit Audio Service
 Version:	%{version}
 Release:	%{release}
 Group:		Utilities/System
-Requires:	AccessGrid
+Requires:	AccessGrid AccessGrid-rat
 
 %description AudioService
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
@@ -125,10 +125,11 @@ python2.2 setup.py install --prefix=%{buildroot}%{prefix} --no-compile
 %{gnomedir}/AccessGrid/VenueManagement.desktop
 %{kdedir}/AccessGrid/.desktop
 %{kdedir}/AccessGrid/VenueManagement.desktop
-
+#
 %files VideoProducer
 %defattr(-,root,root)
 %{prefix}/share/AccessGrid/local_services/VideoProducerService.*
+%{prefix}/bin/SetupVideo.py
 
 %files VideoConsumer
 %defattr(-,root,root)
@@ -156,6 +157,9 @@ python2.2 setup.py install --prefix=%{buildroot}%{prefix} --no-compile
 [ -n "%{buildroot}" -a "%{buildroot}" != / ] && rm -rf %{buildroot}
 
 %changelog
+
+* Thu Feb 13 2004 Ti Leggett <leggett@mcs.anl.gov>
+- Added SetupVideo.py to VideoProducer
 
 * Fri Feb 06 2003 Ti Leggett <leggett@mcs.anl.gov>
 - Modularized the RPMs
