@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.24 2004-05-06 20:26:30 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.25 2004-05-07 15:45:43 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.24 2004-05-06 20:26:30 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.25 2004-05-07 15:45:43 eolson Exp $"
 
 import os
 import mimetypes
@@ -703,6 +703,7 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
         verb - name of command
         command - the actual command line
         commandDesc - a description (menu format) for the command
+        example: [ (verb,command,commandDesc), ...  ]
 
         Written with this use case example:
         RegisterMimeType("application/x-ag-pkg", ".agpkg", "agpkg file", "Access Grid Package", ["agpm.py", "/usr/bin/agpm.py --wait-for-input", ""])

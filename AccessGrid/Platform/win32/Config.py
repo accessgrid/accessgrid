@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.38 2004-05-05 21:49:40 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.39 2004-05-07 15:45:43 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.38 2004-05-05 21:49:40 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.39 2004-05-07 15:45:43 eolson Exp $"
 
 import os
 import sys
@@ -1022,6 +1022,7 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
         verb - name of command
         command - the actual command line
         commandDesc - a description (menu format) for the command
+        example: [ (verb,command,commandDesc), ...  ]
         
         ----
         
