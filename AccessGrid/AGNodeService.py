@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.75 2004-07-28 22:43:07 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.76 2004-08-05 21:29:16 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.75 2004-07-28 22:43:07 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.76 2004-08-05 21:29:16 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -279,7 +279,7 @@ class AGNodeService:
                 AGServiceManagerIW(serviceManager.uri).StopServices()
             except:
                 log.exception("Exception stopping services")
-                exceptionText += sys.exc_info()[1]
+                exceptionText += str(sys.exc_info()[1])
         
         if len(exceptionText):
             raise Exception(exceptionText)
