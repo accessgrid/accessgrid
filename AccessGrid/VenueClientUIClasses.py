@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.323 2004-02-18 17:38:01 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.324 2004-02-20 20:11:00 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.323 2004-02-18 17:38:01 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.324 2004-02-20 20:11:00 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1907,14 +1907,14 @@ class ContentListPanel(wxPanel):
         if(self.applicationDict.has_key(appDesc.uri)):
             self.RemoveApplication(appDesc)
             self.AddApplication(appDesc)
-            
+                   
     def RemoveApplication(self, appDesc):
         if(self.applicationDict.has_key(appDesc.uri)):
             id = self.applicationDict[appDesc.uri]
             del self.applicationDict[appDesc.uri]
             if(id != None):
                 self.tree.Delete(id)
-
+                
     def __setTree(self):
         index = self.bullet
               
@@ -2334,7 +2334,8 @@ class ContentListPanel(wxPanel):
                 # If name is different, change data in venue
                 if newDesc.name != desc.name:
                     try:
-                        self.app.venueClient.client.ModifyData(newDesc)
+                        self.app.ModifyData(newDesc)
+                        
                     except:
                         log.exception("VenueClientUIClasses: Modify data failed")
                         MessageDialog(None, "Update data failed.", "Notification", style = wxOK|wxICON_INFORMATION) 
