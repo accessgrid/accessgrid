@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.47 2003-02-24 21:28:28 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.48 2003-02-25 22:22:21 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -223,11 +223,21 @@ class Venue(ServiceBase.ServiceBase):
                'connections' : self.connections.values(),
                'users' : self.users.values(),
                'nodes' : self.nodes.values(),
-               'data' : self.data.values(),
                'services' : self.services.values(),
                'eventLocation' : self.eventService.GetLocation(),
                'textLocation' : self.textService.GetLocation()
                }
+
+           #
+           # If we don't have a datastore, don't advertise
+           # the existence of any data. We won't be able to get
+           # at it anyway.
+           #
+           if self.dataStore is None:
+               venueState['data'] = []
+           else:
+               venueState['data'] = self.data.values()
+    
         except:
            print "Exception in GetState ", sys.exc_type, sys.exc_value
 
@@ -670,10 +680,17 @@ class Venue(ServiceBase.ServiceBase):
         uses to actually retrieve the real data.
         """
 
+        #
+        # If we do not have a running datastore, never return a descriptor
+        # (So that data doesn't even show up in the venue).
+        #
+        if self.dataStore is None:
+            return ''
+
         if self.data.has_key(name):
             return self.data[name]
         else:
-            return None
+            return ''
 
     GetData.soap_export_as = "GetData"
 
@@ -702,11 +719,14 @@ class Venue(ServiceBase.ServiceBase):
 
         If the venue has no data store configured, return None.
         """
-        
-        if self.dataStore is not None:
-            return self.dataStore.GetUploadDescriptor()
+
+        #
+        # Sigh. Return '' because None marshals as "None".
+        #
+        if self.dataStore is None:
+            return ''
         else:
-            return None
+            return self.dataStore.GetUploadDescriptor()
 
     GetUploadDescriptor.soap_export_as = "GetUploadDescriptor"
 
