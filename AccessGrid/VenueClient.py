@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.172 2004-05-12 18:40:46 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.173 2004-05-12 21:23:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.172 2004-05-12 18:40:46 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.173 2004-05-12 21:23:09 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -98,6 +98,8 @@ class VenueClient:
             self.profileFile = os.path.join(self.userConf.GetConfigDir(),
                                             "profile" )
             self.profile = ClientProfile(self.profileFile)
+            
+        self.isPersonalNode = pnode
 
         if app is not None:
             app = app
@@ -303,18 +305,18 @@ class VenueClient:
 
             from AccessGrid.AGServiceManager import AGServiceManager
             from AccessGrid.AGServiceManager import AGServiceManagerI
-            sm = AGServiceManager(self.server)
-            smi = AGServiceManagerI(sm)
+            self.sm = AGServiceManager(self.server)
+            smi = AGServiceManagerI(self.sm)
             uri = self.server.RegisterObject(smi, path="/ServiceManager")
             log.debug("__StartWebService: service manager: %s",
                       uri)
             from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
-            ns = AGNodeService()
-            nsi = AGNodeServiceI(ns)
+            self.ns = AGNodeService()
+            nsi = AGNodeServiceI(self.ns)
             uri = self.server.RegisterObject(nsi, path="/NodeService")
             log.debug("__StartWebService: node service: %s",
                       uri)
-            self.SetNodeUrl(self.server.FindURLForObject(ns))
+            self.SetNodeUrl(self.server.FindURLForObject(self.ns))
             
         self.server.RunInThread()
         
@@ -337,6 +339,12 @@ class VenueClient:
 
         
     def __StopWebService(self):
+    
+        if self.isPersonalNode:
+            self.ns.Stop()
+            self.sm.Shutdown()
+    
+        # Stop the ws server
         if self.server:
             self.server.Stop()
             
@@ -344,7 +352,8 @@ class VenueClient:
         try:
             os.remove(self.urlFile)
         except:
-            log.exception("Error removing url file")
+            log.exception("Error removing url file %s", self.urlFile)
+            
             
     def GetWebServiceUrl(self):
         return self.server.FindURLForObject(self)
