@@ -6,43 +6,15 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.6 2003-01-15 20:31:22 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.7 2003-01-15 22:46:30 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys
 from AccessGrid.hosting.pyGlobus import ServiceBase
-from AccessGrid.Types import Capability, Event, VenueState
+from AccessGrid.Types import Capability, Event
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid import NetworkLocation
-
-def list_append_unique( list, inputItem, key ):
-    itemExists = False
-    for item in list:
-        print "item = ", item.__dict__[key]
-        print "inputItem = ", inputItem.__dict__[key]
-        if item.__dict__[key] == inputItem.__dict__[key]:
-            itemExists = True
-            break
-
-    if itemExists == True:
-        raise ValueError()
-
-    list.append( inputItem )
-
-
-def list_remove( list, inputItem, key ):
-    itemExists = False
-    for item in list:
-        print "item = ", item.__dict__[key]
-        print "inputItem = ", inputItem.__dict__[key]
-        if item.__dict__[key] == inputItem.__dict__[key]:
-            list.remove( item )
-            itemExists = True
-            break
-
-    if itemExists == False:
-        raise ValueError()
 
 class Venue(ServiceBase.ServiceBase):
     """
@@ -50,11 +22,11 @@ class Venue(ServiceBase.ServiceBase):
     """
     def __init__(self, server, uniqueId, description, administrator,
                  coherenceService, multicastAddressAllocator, dataStore):
-        self.connections = []
+        self.connections = dict()
         self.users = dict()
-        self.nodes = []
-        self.data = []
-        self.services = []
+        self.nodes = dict()
+        self.data = dict()
+        self.services = dict()
 
         self.networkServices = []
         self.streams = []
@@ -76,21 +48,13 @@ class Venue(ServiceBase.ServiceBase):
 
         self.defaultTtl = 127
 
-        self.venueState = VenueState()
-        self.venueState.SetDescription( description )
 
     # Management methods
     def AddNetworkService(self, connectionInfo, networkServiceDescription):
         """ """
 
         try:
-            list_append_unique( self.networkServices, networkServiceDescription, "uri" )
-            evt = {
-                'event' : 'AddNetworkService',
-                'data' : networkServiceDescription
-                }
-            
-            self.coherenceService.distribute(evt)
+            self.networkServices[ networkServiceDescription.uri ] = networkServiceDescription
         except:
             print "Network Service already exists ", networkServiceDescription.uri
 
@@ -106,13 +70,7 @@ class Venue(ServiceBase.ServiceBase):
     def RemoveNetworkService(self, connectionInfo, networkServiceDescription):
         """ """
         try:
-            list_remove( self.networkServices, networkServiceDescription, "uri" )
-            evt = {
-                'event' : 'RemoveNetworkService',
-                'data' : networkServiceDescription
-                }
-            
-            self.coherenceService.distribute(evt)
+            del self.networkServices[ networkServiceDescription.uri ]
         except:
             print "Exception in RemoveNetworkService", sys.exc_type, sys.exc_value
             print "Network Service does not exist ", networkServiceDescription.uri
@@ -122,7 +80,7 @@ class Venue(ServiceBase.ServiceBase):
     def AddConnection(self, connectionInfo, connectionDescription):
         """ """
         try:
-            self.venueState.AddConnection( connectionDescription )
+            self.connections[connectionDescription.uri] = connectionDescription
             self.coherenceService.distribute( Event( Event.ADD_CONNECTION, connectionDescription ) )
         except:
             print "Connection already exists ", connectionDescription.uri
@@ -132,7 +90,7 @@ class Venue(ServiceBase.ServiceBase):
     def RemoveConnection(self, connectionInfo, connectionDescription):
         """ """
         try:
-            self.venueState.RemoveConnection( connectionDescription )
+            del self.connections[ connectionDescription.uri ]
             self.coherenceService.distribute( Event( Event.REMOVE_CONNECTION, connectionDescription ) )
         except:
             print "Exception in RemoveConnection", sys.exc_type, sys.exc_value
@@ -142,17 +100,17 @@ class Venue(ServiceBase.ServiceBase):
 
     def GetConnections(self, connectionInfo ):
         """ """
-#FIXME - don't access connections list directly
-        return self.venueState.connections.values()
+        return self.connections.values()
     GetConnections.pass_connection_info = 1
     GetConnections.soap_export_as = "GetConnections"
 
     def SetConnections(self, connectionInfo, connectionList ):
         """ """
         try:
-            self.venueState.SetConnections( connectionList )
+            self.connections = dict()
+            for connection in connectionList:
+                self.connections[connection.uri] = connection
 #FIXME - consider whether to push new venue state to all clients
-            self.coherenceService.distribute( Event( Event.UPDATE_VENUE_STATE, self.venueState ) )
         except:
             print "Exception in SetConnections", sys.exc_type, sys.exc_value
             print "Connection does not exist ", connectionDescription.uri
@@ -164,13 +122,13 @@ class Venue(ServiceBase.ServiceBase):
 
     def SetDescription(self, connectionInfo, description):
         """ """
-        self.venueState.SetDescription( description )
+        self.description = description
     SetDescription.pass_connection_info = 1
     SetDescription.soap_export_as = "SetDescription"
 
     def GetDescription(self, connectionInfo):
         """ """
-        return self.venueState.GetDescription()
+        return self.description
     GetDescription.pass_connection_info = 1
     GetDescription.soap_export_as = "GetDescription"
 
@@ -184,19 +142,8 @@ class Venue(ServiceBase.ServiceBase):
     def Enter(self, connectionInfo, clientProfile):
         """ """
         privateId = None
-        """
-        state = {
-            'description' : self.description,
-            'connections' : self.connections,
-            'users' : self.users.values(),
-            'nodes' : self.nodes,
-            'data' : self.data,
-            'services' : self.services,
-            'coherenceLocation' : self.coherenceService.GetLocation()
-            }
-        """
-
         streamDescriptions = None
+        state = self.GetState( connectionInfo )
 
 
         try:
@@ -219,18 +166,16 @@ class Venue(ServiceBase.ServiceBase):
             if userInVenue == False:
                 privateId = self.GetNextPrivateId()
                 self.users[privateId] = clientProfile
-                #state['users'] = self.users.values()
-                self.venueState.AddUser( clientProfile )
+                state['users'] = self.users.values()
 
                 # negotiate to get stream descriptions to return
                 streamDescriptions = self.NegotiateCapabilities( clientProfile )
-            
                 self.coherenceService.distribute( Event( Event.ENTER, clientProfile ) )
 
         except:
            print "Exception in Enter ", sys.exc_type, sys.exc_value
         
-        return ( self.venueState, privateId, streamDescriptions )
+        return ( state, privateId, streamDescriptions )
 
     Enter.pass_connection_info = 1
     Enter.soap_export_as = "Enter"
@@ -256,23 +201,22 @@ class Venue(ServiceBase.ServiceBase):
 
     def GetState(self, connectionInfo):
         """ """
-        """
+
         try:
            print "Called GetState on ", self.uniqueId
-
-           state = {
+           venueState = {
                'description' : self.description,
-               'connections' : self.connections,
+               'connections' : self.connections.values(),
                'users' : self.users.values(),
-               'nodes' : self.nodes,
-               'data' : self.data,
-               'services' : self.services,
+               'nodes' : self.nodes.values(),
+               'data' : self.data.values(),
+               'services' : self.services.values(),
                'coherenceLocation' : self.coherenceService.GetLocation()
                }
         except:
            print "Exception in GetState ", sys.exc_type, sys.exc_value
-        """
-        return self.venueState
+
+        return venueState
     
     GetState.pass_connection_info = 1
     GetState.soap_export_as = "GetState"
@@ -292,10 +236,8 @@ class Venue(ServiceBase.ServiceBase):
 
     def AddData(self, connectionInfo, dataDescription ):
         """ """
-
-#FIXME - data is not keyed on name
         try:
-            self.venueState.AddData( dataDescription )
+            self.data[dataDescription.name] = dataDescription
             self.coherenceService.distribute( Event( Event.ADD_DATA, dataDescription ) )
         except:
             print "Exception in AddData ", sys.exc_type, sys.exc_value
@@ -313,9 +255,8 @@ class Venue(ServiceBase.ServiceBase):
 
     def RemoveData(self, connectionInfo, dataDescription):
         """ """
-#FIXME - data is not keyed on name
         try:
-            self.venueState.RemoveData( dataDescription )
+            del self.data[ dataDescription.name ]
             self.coherenceService.distribute( Event( Event.REMOVE_DATA, dataDescription ) )
         except:
             print "Exception in RemoveData", sys.exc_type, sys.exc_value
@@ -329,7 +270,7 @@ class Venue(ServiceBase.ServiceBase):
         """
         print "Adding service ", serviceDescription.name, serviceDescription.uri
         try:
-            self.venueState.AddService( serviceDescription )
+            self.services[serviceDescription.uri] = serviceDescription
             self.coherenceService.distribute( Event( Event.ADD_SERVICE, serviceDescription ) )
         except:
             print "Exception in AddService ", sys.exc_type, sys.exc_value
@@ -341,7 +282,7 @@ class Venue(ServiceBase.ServiceBase):
         """ """
         
         try:
-            self.venueState.RemoveService( serviceDescription )
+            del self.services[serviceDescription.uri]
             self.coherenceService.distribute( Event( Event.REMOVE_SERVICE, serviceDescription ) )
         except:
             print "Exception in RemoveService", sys.exc_type, sys.exc_value
