@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.33 2004-03-12 21:19:23 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.34 2004-03-15 20:07:02 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -11,17 +11,16 @@
 # The standard imports
 import sys
 import signal, time, os
-import getopt
 
 if sys.version.startswith('2.2'):
     try:
-        from optik import OptionParser
+        from optik import Option
     except:
         raise Exception, "Missing module optik necessary for the AG Toolkit."
 
 if sys.version.startswith('2.3'):
     try:
-        from optparse import OptionParse
+        from optparse import Option
     except:
         raise Exception, "Missing module optparse, check your python installation."
 
@@ -58,18 +57,19 @@ def main():
     """
     global serviceManager, log
 
-    # build options for this application
-    parser = OptionParser()
-    parser.add_option("-p", "--port", type="int", dest="port",
-                      default=12000, metavar="PORT",
-                      help="Set the port the service manager should run on.")
-    parser.add_option("--pnode", dest="pnode", metavar="PNODE_TOKEN",
-                      help="Personal node rendezvous token.")
-    
+    # Create the app
     app = CmdlineApplication()
-
-    app.SetOptionParser(parser)
     
+    # build options for this application
+    portOption = Option("-p", "--port", type="int", dest="port",
+                        default=12000, metavar="PORT",
+                        help="Set the port the service manager should run on.")
+    app.AddCmdLineOption(portOption)
+    pnodeOption = Option("--pnode", dest="pnode", metavar="PNODE_TOKEN",
+                         help="Personal node rendezvous token.")
+    app.AddCmdLineOption(pnodeOption)
+    
+    # Initialize the application
     try:
         args = app.Initialize(sys.argv[1:], "ServiceManager")
     except Exception, e:

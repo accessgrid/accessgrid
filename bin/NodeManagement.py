@@ -2,41 +2,57 @@
 #-----------------------------------------------------------------------------
 # Name:        NodeManagement.py
 # Purpose:     
-#
-# Author:      Thomas D. Uram
-#
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.21 2004-02-19 17:59:02 eolson Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.22 2004-03-15 20:07:02 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
-from AccessGrid.hosting.pyGlobus import Client
 import os
 import sys
+
 from wxPython.wx import *
 
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
-from AccessGrid import Toolkit
+from AccessGrid.Toolkit import WXGUIApplication
+
+log = None
 
 class MyApp(wxApp):
+    global log
+
+    defNSUrl = "https://localhost:11000/NodeService"
+
     def OnInit(self):
-        frame = NodeManagementClientFrame(NULL, -1, "Access Grid Node Management")
+        frame = NodeManagementClientFrame(NULL, -1,
+                                          "Access Grid Node Management")
         try:
-            frame.AttachToNode( "https://localhost:11000/NodeService" )
+            frame.AttachToNode(defNSUrl)
             # Avoid UI errors if fail to attach to node.
             if frame.nodeServiceHandle().IsValid():
                 frame.UpdateUI()
         except:
-            pass
+            if log is not None:
+                log.exception("Error connecting to Node Service: %s",
+                              self.defNSUrl)
+
         frame.Show(true)
         self.SetTopWindow(frame)
+
         return true
 
-wxInitAllImageHandlers()
+def main():
+    global log
+    
+    wxInitAllImageHandlers()
 
-app = Toolkit.WXGUIApplication()
-nodeMgmtApp = MyApp(0)
-app.Initialize()
-app.InitGlobusEnvironment()
+    app = WXGUIApplication()
+    app.Initialize()
 
-nodeMgmtApp.MainLoop()
+    log = app.GetLog()
+    
+    nodeMgmtApp = MyApp(0)
+    
+    nodeMgmtApp.MainLoop()
+
+if __name__ == "__main__":
+    main()

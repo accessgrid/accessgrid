@@ -7,14 +7,14 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: CertificateRequestTool.py,v 1.4 2004-03-12 05:23:12 judson Exp $
+# RCS_ID:      $Id: CertificateRequestTool.py,v 1.5 2004-03-15 20:07:02 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the tool used to get certificates.
 """
-__revision__ = "$Id: CertificateRequestTool.py,v 1.4 2004-03-12 05:23:12 judson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.5 2004-03-15 20:07:02 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -62,11 +62,10 @@ def Main():
 #    return
 
     app = WXGUIApplication()
-    args = app.Initialize(sys.argv)
 
     # This will not work if we don't have any certificates
     try:
-        app.certificateManager.InitEnvironment()
+        args = app.Initialize()
     except:
         # Doesn't matter if we have certificates or proxies
         # we just want to request a new certificate

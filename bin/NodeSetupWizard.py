@@ -2,15 +2,19 @@
 #-----------------------------------------------------------------------------
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
-#
-# Author:      lefvert 
-#
-#
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.22 2004-03-10 23:17:09 eolson Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.23 2004-03-15 20:07:02 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+
+import os
+import string
+import getopt
+
+# Imports for user interface
+from wxPython.wx import *
+from wxPython.wizard import *
 
 # Agtk specific imports
 from AccessGrid.hosting.pyGlobus import Client
@@ -21,18 +25,11 @@ from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid import Toolkit
 from AccessGrid.Platform import isWindows, isOSX, isLinux
-
-import os
-import string
-import getopt
-
-# Imports for user interface
-from wxPython.wx import *
-from wxPython.wizard import *
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.Utilities import NODE_SETUP_WIZARD_LOG
 from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid.Platform import isWindows, isLinux
+
 log = Log.getLogger(Log.NodeSetupWizard)
 
 class ServiceUnavailableException(Exception):

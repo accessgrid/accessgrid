@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.251 2004-03-12 21:31:31 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.252 2004-03-15 20:07:02 judson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.251 2004-03-12 21:31:31 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.252 2004-03-15 20:07:02 judson Exp $"
 
 # Standard Imports
 import os
@@ -17,13 +17,13 @@ import sys
 
 if sys.version.startswith('2.2'):
     try:
-        from optik import OptionParser
+        from optik import Option
     except:
         raise Exception, "Missing module optik necessary for the AG Toolkit."
 
 if sys.version.startswith('2.3'):
     try:
-        from optparse import OptionParse
+        from optparse import Option
     except:
         raise Exception, "Missing module optparse, check your python installation."
 
@@ -52,21 +52,20 @@ def main():
                                    "Initializing AccessGrid Toolkit", 5)
     startupDialog.Show()
 
-    # build options for this application
-    parser = OptionParser()
-    parser.add_option("-p", "--port", type="int", dest="port",
-                      default=8000, metavar="PORT",
-                      help="Set the port the service manager should run on.")
-    parser.add_option("--personalNode", action="store_true", dest="pnode",
-                      default = 0,
-                  help="specify this should run with personal node services.")
-
     # Init the toolkit with the standard environment.
     app = WXGUIApplication()
 
-    # Add our options
-    app.SetOptionParser(parser)
-    
+    # build options for this application
+    portOption = Option("-p", "--port", type="int", dest="port",
+                        default=12000, metavar="PORT",
+                        help="Set the port the venueclient control interface\
+                        should listen on.")
+    app.AddCmdLineOption(portOption)
+    pnodeOption = Option("--pnode", action="store_true", dest="pnode",
+                         default=0,
+                         help="Personal node rendezvous token.")
+    app.AddCmdLineOption(pnodeOption)
+
     # Try to initialize
     try:
         args = app.Initialize(sys.argv[1:], "VenueClient")
