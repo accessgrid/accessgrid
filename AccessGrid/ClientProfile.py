@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.4 2003-01-15 23:59:32 turam Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.5 2003-01-16 20:24:17 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -36,10 +36,7 @@ class ClientProfile:
 
     def __init__(self, profileFile = None):
         """ """
-        if profileFile != None:
-            self.fileName = profileFile
-            self._LoadFromFile(self.fileName)
-        #self.profileFile = ''
+        self.profileFile = profileFile
         self.profileType = ''
         self.name = ''
         self.email = ''
@@ -54,6 +51,10 @@ class ClientProfile:
         self.distinguishedName = None
         self.capabilities = []
 
+        if profileFile != None:
+            self._LoadFromFile(self.profileFile)
+
+
 
     def _LoadFromFile(self, fileName):
 	"""
@@ -62,12 +63,12 @@ class ClientProfile:
 	This is from the python cookbook credit: Dirk Holtwick.
 	"""
         profile = {}
-	self.cp = ConfigParser.ConfigParser()
-	self.cp.read(fileName)
-	for sec in self.cp.sections():
-		for opt in self.cp.options(sec):
-                    val = string.strip(self.cp.get(sec, opt))
-                    profile[sec + "." + opt] = string.strip(self.cp.get(sec, opt))
+        self.cp = ConfigParser.ConfigParser()
+        self.cp.read(fileName)
+        for sec in self.cp.sections():
+            for opt in self.cp.options(sec):
+                        val = string.strip(self.cp.get(sec, opt))
+                        profile[sec + "." + opt] = string.strip(self.cp.get(sec, opt))
         self.profileType = profile['VenueClient.profiletype']
         self.name = profile['VenueClient.name']
         self.email = profile['VenueClient.email']
@@ -78,7 +79,7 @@ class ClientProfile:
         self.technicalSupportInformation = profile['VenueClient.technicalsupportinformation']
         self.homeVenue = profile['VenueClient.homevenue']
 
-	return profile
+        return profile
 
     def Dump(self):
         """
