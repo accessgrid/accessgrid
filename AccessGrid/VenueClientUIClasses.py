@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.118 2003-04-03 15:35:47 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.119 2003-04-03 17:37:14 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -163,8 +163,8 @@ class VenueClientFrame(wxFrame):
 	self.dataMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...",
                              "Save data to local disk")
 	self.dataMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove data")
-	self.dataMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties",
-                             "View the data properties")
+	#self.dataMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties",
+    #                         "View the data properties")
         self.venue.AppendMenu(self.ID_VENUE_DATA,"&Data", self.dataMenu)
 	self.serviceMenu = wxMenu()
 	self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
