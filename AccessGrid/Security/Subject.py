@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Subject.py,v 1.9 2004-03-05 21:45:26 judson Exp $
+# RCS-ID:      $Id: Subject.py,v 1.10 2004-03-09 17:00:42 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,13 +16,21 @@ Subjects are the basic security handle on entities that want to be a
 part of the secure Access Grid Toolkit.
 """
 
-__revision__ = "$Id: Subject.py,v 1.9 2004-03-05 21:45:26 judson Exp $"
+__revision__ = "$Id: Subject.py,v 1.10 2004-03-09 17:00:42 lefvert Exp $"
 
 # External Imports
 import xml.dom.minidom
 
+
 # Internal Imports
 from AccessGrid.GUID import GUID
+
+
+class SubjectAlreadyPresent(Exception):
+    """
+    This is already present.
+    """
+    pass
 
 class InvalidSubject(Exception):
     """
@@ -62,11 +70,11 @@ class Subject:
     def __hash__(self):
         """
         A hash method so subjects can be used as dictionary keys.
-
         @returns: the id attribute which is a globally unique
         identifier in a string.
         """
-        return id(self)
+        return id(self) 
+
     
     def __cmp__(self, other):
         """
@@ -82,19 +90,40 @@ class Subject:
         @raise SubjectTypesDifferent: if subject types don't match.
         
         """
-        # If they're not the same type, raise an exception
-        if self.auth_type != other.auth_type:
-            raise SubjectTypesDifferent
 
-        # If the names match and the auth_data matches...
-        if (self.name == other.name and
-            self.auth_data == other.auth_data):
-            # They're the same return 1
-            return 1
-        else:
-            # They don't match
-            return 0
+        # Should return:
+        # self > other = 1
+        # self == other = 0
+        # self < other = -1
         
+        if not isinstance(other, Subject):
+            return -1
+
+        result1 = cmp(self.name, other.name)
+        result2 = cmp(self.auth_data, other.auth_data)
+
+        # Both name and auth_data are the same
+        if result1 == 0 and result2 == 0:
+            return 0
+        else:
+            # Otherwise, return value based on name comparison.
+            return result1
+
+               
+        # If they are not the same type, raise an exception
+        #if self.auth_type != other.auth_type:
+        #   raise SubjectTypesDifferent
+        
+        # If the names match and the auth_data matches...
+        #if (self.name == other.name and
+        #    self.auth_data == other.auth_data):
+        # They're the same return 1
+        #    return 1
+        #else:
+        # They don't match
+        #    return 0
+        
+                    
     def _repr_(self):
         """
         This method creates an XML representation of the subject.
@@ -173,5 +202,53 @@ class Subject:
         """
         return (self.auth_type, self.name, self.auth_data)
 
+if __name__ == "__main__":
+    from AccessGrid.Security.X509Subject import X509Subject
+    from AccessGrid.Security.Role import Role
+       
+    s1 = X509Subject("1")
+    s2 = X509Subject("2")
+    s3 = X509Subject("3")
+    r1 = Role("role1")
+       
+    subDict = {}
+    subDict[s1] = "1"
+    subDict[s2] = "2"
+    subDict[s3] = "3"
+    list = []
+    list.append(s1)
+    list.append(s2)
+    list.append(s3)
+    
+    print 'is s1 == r1 ', s1 == r1
+    print 's1 is s1 ', s1 is s1
+    print 's1 is s2 ', s1 is s2
+    print 's1 == s2 ', s1 == r1
+    
+    print 'is s1 in subdir', s1 in subDict
+    print 'is s2 in subdir', s2 in subDict
+    print 'is r1 in subdir', r1 in subDict
+    print 'subdict hads key r1 ', r1 in subDict.keys()
+    print 'is s1 in the list ', s1 in list
+    print 'is s1 r1', s1 is r1
 
-
+    list.remove(s3)
+    for i in list:
+        print i.name
+    
+    '''
+    Should return
+    is s1 == r1  0
+    s1 is s1  1
+    s1 is s2  0
+    s1 == s2  0
+    is s1 in subdir 1
+    is s2 in subdir 1
+    is r1 in subdir 0
+    subdict hads key r1  0
+    is s1 in the list  1
+    is s1 r1 0
+    1
+    2
+    '''
+        
