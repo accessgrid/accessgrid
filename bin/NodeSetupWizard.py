@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.18 2003-10-21 20:09:05 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.19 2003-10-22 21:27:15 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -23,6 +23,7 @@ from AccessGrid import Toolkit
 import os
 import logging, logging.handlers
 import string
+import getopt
 
 # Imports for user interface
 from wxPython.wx import *
@@ -91,14 +92,18 @@ class NodeSetupWizard(wxWizard):
     The node setup wizard guides users through the steps necessary for
     creating and testing a node configuration. 
     '''
-    def __init__(self, parent):
+    def __init__(self, parent, debugMode):
         wxWizard.__init__(self, parent, 10,"Setup Node", wxNullBitmap)
         '''
         This class creates a wizard for node setup
         '''
+        self.debugMode = debugMode
+        
         if not self.CheckCertificate():
             return None
+        
         self.__setLogger()
+
         self.step = 1
         self.SetPageSize(wxSize(510, 310))
         self.nodeClient = NodeClient()
@@ -134,7 +139,7 @@ class NodeSetupWizard(wxWizard):
         try:
             self.nodeClient.StartNodeService()
         except:
-            log.exception("NodeSetupWizard:__init__: Can not start node service")
+            log.exception("NodeSetupWizard.__init__: Can not start node service")
             ErrorDialog(self, "Can not start Node Setup Wizard.",
                         "Error", style = wxICON_ERROR|wxOK, logFile = NODE_SETUP_WIZARD_LOG)
 
@@ -151,8 +156,7 @@ class NodeSetupWizard(wxWizard):
                 try:
                     node.Stop()
                 except:
-                    log.exception("NodeSetupWizard:__init__: Can not stop node service")
-
+                    log.exception("NodeSetupWizard.__init__: Can not stop node service")
 
     def __setLogger(self):
         """
@@ -160,8 +164,7 @@ class NodeSetupWizard(wxWizard):
         """
         # Should be set from command window.
         self.logFile = None
-        self.debugMode = 0
-        
+                
         log = logging.getLogger("AG")
         log.setLevel(logging.DEBUG)
         
@@ -181,7 +184,6 @@ class NodeSetupWizard(wxWizard):
             hdlr.setFormatter(fmt)
             log.addHandler(hdlr)
        
-
     def CheckCertificate(self):
         
         VerifyExecutionEnvironment()
@@ -190,7 +192,7 @@ class NodeSetupWizard(wxWizard):
             self.app = Toolkit.WXGUIApplication()
           
         except Exception, e:
-            #log.exception("NodeSetupWizard: WXGUIApplication creation failed")
+            log.exception("NodeSetupWizard.CheckCertificate: WXGUIApplication creation failed")
             text = "Could not start the Node Setup Wizard. \nIs your certificate configured correctly?"
             MessageDialog(None, text, "Node Setup Wizard failed")
             return 0
@@ -200,12 +202,12 @@ class NodeSetupWizard(wxWizard):
             
         except Exception, e:
             text = "Could not start the Node Setup Wizard. \nIs your certificate configured correctly?"
-            #log.exception("NodeSetupWizard: App initialization failed")
+            log.exception("NodeSetupWizard: App initialization failed")
             MessageDialog(None, text, "Node Setup Wizard failed")
             return 0
 
         if not self.app.certificateManager.HaveValidProxy():
-            #log.debug("NodeSetupWizard: You don't have a valid proxy")
+            log.debug("NodeSetupWizard: You don't have a valid proxy")
             ret = self.app.certificateManager.CreateProxy()
             if not ret:
                 return 0
@@ -329,7 +331,7 @@ class VideoCaptureWindow(TitledPage):
                                                    self.portCtrl.GetValue())
             self.canConnect = true
         except:
-            log.info("NodeSetupWizard:VideoCaptureWindow:Validate: Service manager is not started")
+            log.info("VideoCaptureWindow.Validate: Service manager is not started")
             self.canConnect = false
             
         if self.canConnect:
@@ -337,7 +339,7 @@ class VideoCaptureWindow(TitledPage):
             try:
                 cards = self.nodeClient.GetCaptureCards(self.machineCtrl.GetValue(), self.portCtrl.GetValue())
             except:
-                log.exception("NodeSetupWizard:VideoCaptureWindow:Validate: Can not get capture cards from service manager")
+                log.exception("VideoCaptureWindow.Validate: Can not get capture cards from service manager")
                 ErrorDialog(self, "Could not find your installed video capture cards.", "Error",
                             logFile = NODE_SETUP_WIZARD_LOG)
                                
@@ -553,7 +555,7 @@ class VideoDisplayWindow(TitledPage):
             self.canConnect = true
             
         except:
-            log.info("NodeSetupWizard:VideoDisplayWindow:Validate: Service manager is not started")
+            log.info("VideoDisplayWindow.Validate: Service manager is not started")
             self.canConnect = false
 
         wxEndBusyCursor()
@@ -564,7 +566,6 @@ class VideoDisplayWindow(TitledPage):
         else:
             MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
             return false
-                    
         
     def CheckBoxEvent(self, event):
         '''
@@ -654,7 +655,7 @@ class AudioWindow(TitledPage):
             self.nodeClient.CheckServiceManager(self.machineCtrl.GetValue(), self.portCtrl.GetValue())
             self.canConnect = true
         except:
-            log.info("NodeSetupWizard:AudioWindow:Validate: Service manager is not started")
+            log.info("AudioWindow.Validate: Service manager is not started")
             self.canConnect = false
 
         wxEndBusyCursor()
@@ -799,18 +800,20 @@ class ConfigWindow(TitledPage):
 
             except:
                 # We still want to continue even if a service manager is already present
-                log.info("NodeSetupWindow:ConfigWindow:Validate: Could not add service manager for video capture")
+                log.info("ConfigWindow.Validate: Could not add service manager for video capture")
                 pass
 
             try:
                 # Add video producer services
+                log.debug("ConfigWindow.Validate: Add video producer")
                 self.nodeClient.AddService( self.videoCaptUrl, "VideoProducerService", self.cameraPorts)
                 
             except ServiceUnavailableException:
-                log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not add service to video capture machine.")
+                log.exception("ConfigWindow.Validate: Could not add service to video capture machine.")
                 errors = errors + "No services supporting video capture are installed.\nThe video capture machine is not added to the configuration.\n\n"
                 
             except:
+                log.exception("ConfigWindow.Validate: Could not add service to video capture machine.")
                 errors = errors + "The video capture machine could not be added to the configuration. An error occured..\n\n"
                 
         if self.videoDispUrl:
@@ -820,18 +823,20 @@ class ConfigWindow(TitledPage):
                 self.nodeClient.AddServiceManager(text, self.videoDispUrl)
             except:
                 # We still want to continue even if a service manager is already present
-                log.info("NodeSetupWindow:ConfigWindow:Validate: Could not add service manager for video display")
+                log.info("ConfigWindow.Validate: Could not add service manager for video display")
                 pass
 
             try:
                 # Add video display service
+                log.debug("ConfigWindow.Validate: Add video display service")
                 self.nodeClient.AddService(self.videoDispUrl, "VideoConsumerService")
                 
             except ServiceUnavailableException:
-                log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not add service to video display machine.")
+                log.exception("ConfigWindow.Validate: Could not add service to video display machine.")
                 errors = errors +"No services supporting video display are installed. \nThe video display machine is not added to the configuration.\n\n"
                 
             except:
+                log.exception("ConfigWindow.Validate: Could not add service to video display machine.")
                 errors = errors + "The video display machine could not be added to the configuration. An error occured.\n\n"
                               
         if self.audioUrl:
@@ -841,17 +846,19 @@ class ConfigWindow(TitledPage):
                 self.nodeClient.AddServiceManager(text, self.audioUrl)
             except:
                 # We still want to continue even if a service manager is already present
-                log.info("NodeSetupWindow:ConfigWindow:Validate: Could not add service manager for audio")
+                log.exception("ConfigWindow.Validate: Could not add service manager for audio")
                 pass
 
             try:
                 # Add audio service
+                log.debug("ConfigWindow.Validate: Add audio service")
                 self.nodeClient.AddService(self.audioUrl, "AudioService")
                 
             except ServiceUnavailableException:
-                log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not add service to audio machine.")
+                log.exception("ConfigWindow.Validate: Could not add service to audio machine.")
                 errors = errors + "No services supporting audio are installed. \nThe audio machine is not added to the configuration.\n\n"
             except:
+                log.exception("ConfigWindow.Validate: Could not add service to audio machine")
                 errors = errors + "The audio machine could not be added to the configuration. An error occured.\n\n"
                    
         # Save configuration
@@ -860,7 +867,7 @@ class ConfigWindow(TitledPage):
         try:
             self.nodeClient.GetNodeService().StoreConfiguration(self.name)
         except:
-            log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not store node configuration.")
+            log.exception("ConfigWindow.Validate: Could not store node configuration.")
             errors = errors + "The configuration could not be saved. Error occured.\n\n"
             
             
@@ -870,7 +877,7 @@ class ConfigWindow(TitledPage):
             try:
                 self.nodeClient.GetNodeService().SetDefaultConfiguration(self.name)
             except:
-                log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not set default configuration.")
+                log.exception("ConfigWindow.Validate: Could not set default configuration.")
                 errors = errors + "The configuration could not be set as default. Error occured.\n\n"
 
     
@@ -954,7 +961,6 @@ class NodeClient:
         serviceAvailable = None
 
         # Check if we have a video producer service installed
-        
         for service in self.serviceList:
             if service.name == type:
                 serviceAvailable = service
@@ -964,37 +970,27 @@ class NodeClient:
                 # Add video producer service for each capture card
                 
                 for captureCard in self.cameraList:
+                    log.debug("NodeClient.AddService: Video Producer Service %s %s %s" %(serviceAvailable.servicePackageUri, serviceManagerUrl, captureCard))
                     serviceDesc = self.node.AddService(serviceAvailable.servicePackageUri,
-                                                       serviceManagerUrl,captureCard, None)
+                                                       serviceManagerUrl, captureCard, None)
 
                     # Get service configuration
                     conf = Client.Handle(serviceDesc.uri).GetProxy().GetConfiguration()
-                    
-                                                            
-                    # Set camera port type 
+                                                                                
+                    # Set camera port type
                     conf.parameters.append(ValueParameter("port", data[captureCard.resource]))
-
-                    # Set right executable path
-                    try:
-                        # In try statement before all service managers have GetInstallDir()
-                        installDir = Client.Handle(serviceManagerUrl).GetProxy().GetInstallDir()
-                        conf.executable = os.path.join(installDir, conf.executable)
-                    except:
-                        pass
-                    
                     Client.Handle(serviceDesc.uri).GetProxy().SetConfiguration(conf)
 
             else: # Video consumer or audio
+                log.debug("NodeClient.AddService: Audio or video consumer service")
                 self.node.AddService(serviceAvailable.servicePackageUri,
                                      serviceManagerUrl, None, None)
-
-               
+                
         else:
             # The service does not exist in your
             # node configuration. Check services directory to see
             # if you have it.
             raise ServiceUnavailableException()
-
                              
     def CheckServiceManager(self, machine, port):
         '''
@@ -1007,8 +1003,7 @@ class NodeClient:
 
         # Remove current services from service manager
         Client.Handle(mgrUri).get_proxy().RemoveServices()
-        
-              
+                      
     def GetCaptureCards(self, machine, port):
         '''
         Returns a list of video capture cards.
@@ -1021,7 +1016,7 @@ class NodeClient:
             # Get available services
             resourceList = Client.Handle(mgrUri).GetProxy().GetResources()
         except:
-            log.exception("GetCaptureCards: Could not find resources")
+            log.exception("NodeClient.GetCaptureCards: Could not find resources")
             return []
 
         for resource in resourceList:
@@ -1031,10 +1026,50 @@ class NodeClient:
         return self.cameraList
 
 
+class ArgumentManager:
+    def __init__(self):
+        self.debugMode = 0
+
+    def GetDebugMode(self):
+        return self.debugMode
+        
+    def Usage(self):
+        """
+        How to use the program.
+        """
+        print "%s:" % (sys.argv[0])
+        print "  -h|--help: print usage"
+        print "  -d|--debug: print debug output"
+        
+    def ProcessArgs(self):
+        """
+        Handle any arguments we're interested in.
+        """
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], "hdl:",
+                                       ["debug", "help"])
+
+        except getopt.GetoptError:
+            self.Usage()
+            sys.exit(2)
+            
+        for opt, arg in opts:
+            if opt in ('-h', '--help'):
+                self.Usage()
+                sys.exit(0)
+            
+            elif opt in ('--debug', '-d'):
+                self.debugMode = 1
+               
+
 if __name__ == "__main__":
+    argManager = ArgumentManager()
+    argManager.ProcessArgs()
+    debugMode = argManager.GetDebugMode()
+    del argManager
+                    
     pp = wxPySimpleApp()
-    n = NodeSetupWizard(None)
-   
+    n = NodeSetupWizard(None, debugMode)
+
     if n:
         n.Destroy()
-   
