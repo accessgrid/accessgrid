@@ -163,8 +163,10 @@ os.environ['PYTHONPATH'] = os.path.join(os.path.abspath(os.path.join(DestDir,
                                            "Lib", "site-packages")), oldpath)
 
 # run the tests
-os.system("%s test_dist.py --html -o %s" % (sys.executable,
-                                            "%s-test.html" % DestDir))
+testfile = "%s-test.html" % DestDir
+os.system("%s test_dist.py --html -o %s -t %s" % (sys.executable,
+                                            "%s-test.html" % DestDir,
+                                                  BuildTime))
 
 # put the old python path back
 os.environ['PYTHONPATH'] = oldpath
@@ -204,6 +206,8 @@ os.system(cmd)
 
 
 
+file_list = os.listdir(SourceDir)
+
 if bdir is not None:
     pkg_script = "build_package.py"
     NextDir = os.path.join(RunDir, bdir)
@@ -222,4 +226,22 @@ if bdir is not None:
     else:
         print "No directory (%s) found." % NextDir
 
+nfl = os.listdir(SourceDir)
+for f in file_list:
+    nfl.remove(f)
 
+if len(nfl) == 1:
+    pkg_file = nfl[0]
+else:
+    pkg_file = None
+
+hfi = file(os.path.join(testfile), "r")
+lines = hfi.readlines()
+hfi.close()
+
+hfo = file(os.path.join(testfile), "w+")
+for line in lines:
+    hfo.write(line.replace("PACKAGEFILE", "%s" % str(pkg_file)))
+hfo.close()
+
+    
