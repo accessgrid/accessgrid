@@ -41,7 +41,6 @@
 	<part name="venueURL" type="xsd:anyURI"/>
     </message>
     <message name="GetVenuesRequest">
-	<part name="query" type="xsd:string"/>
     </message>
     <message name="GetVenuesResponse">
 	<part name="venueDescriptionList" type="agtk:VenueDescription"/>
