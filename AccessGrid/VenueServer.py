@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.4 2003-01-07 20:27:13 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.5 2003-01-08 15:31:09 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -26,6 +26,7 @@ import NetworkLocation
 import MulticastAddressAllocator
 import DataStore
 import scheduler
+from ReadWriteLock import ReadWriteLock
 
 class VenueServer(ServiceBase.ServiceBase):
 	"""
@@ -53,29 +54,33 @@ class VenueServer(ServiceBase.ServiceBase):
 	venues = {}
 	services = []
 	
-	def __init__(self, hostEnvironment = None, configFile=''):
+	def __init__(self, hostEnvironment = None, configFile=None):
 		""" """
 		# Figure out which configuration file to use for the
 		# server configuration. If no configuration file was specified
 		# look for a configuration file named VenueServer.cfg
 		# VenueServer is the value of self.__class__
 		classpath = string.split(str(self.__class__), '.')
-		if configFile == '': 
-			self.configFile = classpath[0]+'.cfg'
+		if configFile == None: 
+			self.configFile = classpath[-1]+'.cfg'
 		else:
 			self.configFile = configFile
 		
 		# Instantiate a new config parser
-		self.config = self.LoadConfig(configFile, self.configDefaults)
+		self.config = self.LoadConfig(self.configFile,
+					      self.configDefaults)
 
 		self.hostingEnvironment = hostEnvironment
 		self.multicastAddressAllocator = MulticastAddressAllocator.MulticastAddressAllocator()
 		self.dataStorage = None
 		self.store = shelve.open(self.config['VenueServer.persistenceData'], 'c')
+		self.storeLock = ReadWriteLock()
+		
 		for vURL in self.store.keys():
 			print "Loading Venue: %s" % vURL
-			venue = self.store[vURL]
-			self.venues[vURL] = venue
+			self.storeLock.acquire_read()
+			self.venues[vURL] = self.store[vURL]
+			self.storeLock.release_read()
 			
 		houseKeeper = scheduler.Scheduler()
 #		houseKeeper.AddTask(self.Checkpoint, self.config['VenueServer.houseKeeperFrequency'], 0)
@@ -228,7 +233,7 @@ class VenueServer(ServiceBase.ServiceBase):
 		""" """
 		self.defaultVenue = venueURI
 		self.config["VenueServer.defaultVenue"] = venueURI
-#		self.cp.set("VenueServer", "defaultVenue", str(venueURI))
+		self.cp.set("VenueServer", "defaultVenue", str(venueURI))
 		
 	SetDefaultVenue.pass_connection_info = 1
 	SetDefaultVenue.soap_export_as = "SetDefaultVenue"
@@ -249,26 +254,25 @@ class VenueServer(ServiceBase.ServiceBase):
 	
 	def Shutdown(self, connectionInfo, secondsFromNow):
 		""" """
-		self.config.write(self.configFile)
-		self.store.close()
-		exit(0)
+		self.cp.write(file(self.configFile, 'w'))
+#		self.store.close()
+#		exit(0)
 		
 	Shutdown.pass_connection_info = 1
 	Shutdown.soap_export_as = "Shutdown"
 	
 	def Checkpoint(self):
 		""" """
-		for vURL in self.venues.keys():
-			print "Shelving Venue: %s" % vURL
-			self.store[vURL] = self.venues[vURL]
+# 		for vURL in self.venues.keys():
+# 			print "Shelving Venue: %s" % vURL
+# 			self.storeLock.acquire_write()
+# 			self.store[vURL] = self.venues[vURL]
+# 			self.storeLock.release_write()
 
 		self.store.close()
 		self.store = shelve.open(self.config['VenueServer.persistenceData'], 'c')
-		print "Writing config"
-#		f = file.open(self.configFile, "w")
-#		f.flush()
-#		self.cp.write(f)
-#		f.close()
+ 		print "Writing config %s" % self.configFile
+		self.cp.write(file(self.configFile, 'w+'))
 		print "Wrote config"
 	
 	Checkpoint.soap_export_as = "Checkpoint"
