@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.6 2003-08-12 19:24:36 judson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.7 2003-08-13 02:12:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -116,6 +116,7 @@ class ConnectionHandler:
             return self.readCallback(arg, handle, result, buf, n)
         except:
             log.exception("readcallback failed")
+            self.stop()
             return None
 
     def writeMarshalledEvent(self, mEvent):
