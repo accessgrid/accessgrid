@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.11 2004-03-22 22:55:42 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.12 2004-03-25 19:00:44 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.11 2004-03-22 22:55:42 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.12 2004-03-25 19:00:44 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -485,15 +485,23 @@ class CertificateManager(object):
         impCert = repo.ImportCertificatePEM(cert)
         
         impCert.SetMetadata("AG.CertificateManager.certType", "trustedCA")
-
+ 
         return impCert
         
     def CheckValidity(self, cert):
         """
         Check a certificate for validity.
         
-        Return "Expired", "OK", "Not yet valid", "Invalid CA Chain"
+        Return "Expired", "OK", "Not yet valid", "Invalid CA Chain", "Missing private key"
         """
+
+
+        if self.IsIdentityCert(cert):
+
+            hash = cert.GetModulusHash()
+            pkeyPath = self.GetCertificateRepository().GetPrivateKeyPath(hash)
+            if not pkeyPath or not os.path.isfile(pkeyPath):
+                return "Missing private key"
 
         now = time.time()
         notbefore = cert.GetNotValidBefore()
@@ -625,6 +633,12 @@ class CertificateManager(object):
         Return true if there is a valid proxy for the current identity.
         """
 
+        #
+        # Sort of a hack; if we don't need a proxy, it's "valid".
+        #
+        if not self.GetDefaultIdentity().HasEncryptedPrivateKey():
+            return 1
+        
         try:
             pcert = self._VerifyGlobusProxy()
             log.debug("HaveValidProxy: found proxy ident %s",
@@ -1092,6 +1106,44 @@ class CertificateManager(object):
 
         return proxyCert
 
+
+    def RemoveUserProxyFromRegistry(self):
+        """
+        On windows, ensure that the x509_user_proxy setting is
+        not present in the registry. This interferes with
+        the X509_RUN_AS_SERVER setting.
+        """
+        
+        import _winreg
+        
+        try:
+            k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+                                r"Software\Globus\GSI", 0,
+                                _winreg.KEY_ALL_ACCESS)
+        except WindowsError:
+            log.exception("could not open registry")
+            return
+        
+        try:
+            val = _winreg.QueryValueEx(k, "x509_user_proxy")
+            log.debug("Registry had a setting for the proxy: %s", val)
+
+
+        except WindowsError:
+            log.debug("No setting for user proxy")
+            _winreg.CloseKey(k)
+            return
+
+        try:
+            _winreg.DeleteValue(k, "x509_user_proxy")
+        except WindowsError:
+            log.exception("error deleting x509_user_proxy from registry")
+
+        try:
+            _winreg.CloseKey(k)
+        except WindowsError:
+            pass
+            
     def _InitEnvWithCert(self):
 
         log.debug("Initializing environment with unencrypted user cert %s",
@@ -1100,10 +1152,21 @@ class CertificateManager(object):
         certPath = self.defaultIdentity.GetPath()
         keyPath = self.defaultIdentity.GetKeyPath()
 
+
+        #
+        # Ugh. If x509_user_proxy is set in the registry, X509_RUN_AS_SERVER is ignored.
+        #
+
+        if Platform.isWindows():
+            self.RemoveUserProxyFromRegistry()
+         
         Utilities.unsetenv('X509_USER_PROXY')
         Utilities.setenv('X509_USER_CERT', certPath)
         Utilities.setenv('X509_USER_KEY', keyPath)
         Utilities.setenv('X509_RUN_AS_SERVER', '1')
+
+        import pyGlobus.utilc
+        print "prox: os='%s' gl='%s'" % ( os.getenv('X509_USER_PROXY'), pyGlobus.utilc.getenv('X509_USER_PROXY'))
 
     def SetDefaultIdentity(self, certDesc):
         """
@@ -1148,6 +1211,12 @@ class CertificateManager(object):
         defval = "1"
 
         return c.GetMetadata(idkey) == idval and c.GetMetadata(defkey) == defval
+    
+    def IsIdentityCert(self, c):
+        idkey = "AG.CertificateManager.certType"
+        idval = "identity"
+
+        return c.GetMetadata(idkey) == idval
     
     def GetDefaultIdentityCerts(self):
         
