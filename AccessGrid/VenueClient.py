@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.167 2004-04-29 22:56:00 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.168 2004-04-30 20:34:54 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.167 2004-04-29 22:56:00 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.168 2004-04-30 20:34:54 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -319,7 +319,10 @@ class VenueClient:
         self.server.RunInThread()
         
         if pnode:
-            ns.LoadDefaultConfig()
+            try:
+                ns.LoadDefaultConfig()
+            except:
+                log.debug("Error loading default configuration")
             
         # Save the location of the venue client url
         # for other apps to communicate with the venue client
