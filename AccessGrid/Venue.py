@@ -6,18 +6,19 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.129 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.130 2003-09-17 13:59:17 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Venue.py,v 1.129 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.130 2003-09-17 13:59:17 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
 import time
+import re
 import string
 import socket
 import os.path
@@ -448,10 +449,15 @@ class Venue(ServiceBase.ServiceBase):
         string = "\n[%s]\n" % self.uniqueId
         string += "type : %s\n" % sclass[-1]
         string += "name : %s\n" % self.name
-        string += "description : %s\n" % self.description
-        #if len(self.administrators):
-            #string += "administrators : %s\n" % ":".join(self.administrators)
-        #rm = AccessControl.GetSecurityManager().role_manager
+
+        # Don't store these control characters, but lets make sure we
+        # bring them back
+        desc = re.sub("\r\n", "<CRLF>", self.description)
+        desc = re.sub("\r", "<CR>", desc)
+        desc = re.sub("\n", "<LF>", desc)
+        
+        string += "description : %s\n" % desc
+        
         rm =self.GetRoleManager()
         if len(rm.validRoles):
             # Write a list of roles names to the config file.

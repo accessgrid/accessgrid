@@ -5,19 +5,20 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.95 2003-09-16 20:00:26 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.96 2003-09-17 13:59:17 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.95 2003-09-16 20:00:26 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.96 2003-09-17 13:59:17 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
 import sys
 import os
+import re
 import os.path
 import socket
 import string
@@ -148,8 +149,6 @@ class VenueServer(ServiceBase.ServiceBase):
         self.venues = {}
         self.services = []
         self.configFile = configFile
-        #self.dataStorageLocation = None
-        #self.dataPort = 0
         self.eventPort = 0
         self.textPort = 0
         self.internalDataService = None
@@ -326,9 +325,15 @@ class VenueServer(ServiceBase.ServiceBase):
                     except ConfigParser.NoOptionError:
                         log.warn("specific role %s details not in venue %s, registering default users", role_name, sec)
                         roleManager = None   # default roles and users will be used.
-              
-                v = Venue(self, cp.get(sec, 'name'),
-                          cp.get(sec, 'description'), roleManager, id=sec)
+
+                # We can't persist crlf or cr or lf, so we replace them
+                # on each end (when storing and loading)
+                desc = cp.get(sec, 'description')
+                desc = re.sub("<CRLF>", "\r\n", desc)
+                desc = re.sub("<CR>", "\r", desc)
+                desc = re.sub("<LF>", "\n", desc)
+                
+                v = Venue(self, cp.get(sec, 'name'), desc, roleManager, id=sec)
                 # Make sure the venue Role Manager knows about the VenueServer role manager.
                 v.GetRoleManager().RegisterExternalRoleManager("VenueServer", self.roleManager)
                 v.encryptMedia = cp.getint(sec, 'encryptMedia')
