@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.16 2003-02-14 20:45:12 olson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.17 2003-02-18 19:06:34 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -49,6 +49,15 @@ def SaveConfig(fileName, config):
             cp.set(section, option, config[k])
 
     cp.write(file(fileName, 'w+'))
+
+from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
+def HaveValidProxy():
+    """
+    This method determines whether a valid proxy exists
+    """
+    if GetDefaultIdentityDN() == None:
+        return 0
+    return 1
 
 def formatExceptionInfo(maxTBlevel=5):
     cla, exc, trbk = sys.exc_info()
