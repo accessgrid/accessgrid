@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.100 2004-06-02 02:39:41 turam Exp $
+; RCS-ID: $Id: agtk.iss,v 1.101 2004-06-02 03:13:16 turam Exp $
 ;
 
 ; Set externally
@@ -82,7 +82,7 @@ ShowLanguageDialog=yes
 Source: Lib\site-packages\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages; Flags: recursesubdirs overwritereadonly restartreplace
 
 ; Documentation
-Source: doc\Developer\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
+; Source: doc\Developer\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
 Source: doc\VenueClientManual\*.*; DestDir: {app}\doc\VenueClientManual; Flags: recursesubdirs
 Source: doc\VenueManagementManual\*.*; DestDir: {app}\doc\VenueManagementManual; Flags: recursesubdirs
 
@@ -134,7 +134,7 @@ Name: {group}\Services\Node Service; IconFilename: {app}\install\agicons.exe; Fi
 Name: {group}\Documentation\Venue Client Manual; Filename: {app}\doc\VenueClientManual\VenueClientManualHTML.htm; Comment: Read the Venue Client Manual.
 Name: {group}\Documentation\Venue Management Client Manual; Filename: {app}\doc\VenueManagementManual\VenueManagementManualHTML.htm; Comment: Read the Venue Management Manual.
 Name: {group}\Documentation\View License; IconFilename: {app}\install\agicons.exe; Filename: {app}\COPYING.txt; Comment: Read the software license under which the AGTk is distributed
-Name: {group}\Documentation\Developers Documentation; Filename: {app}\doc\Developer\index.html; Comment: epydoc-generated documentation for developers.
+; Name: {group}\Documentation\Developers Documentation; Filename: {app}\doc\Developer\index.html; Comment: epydoc-generated documentation for developers.
 
 Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}; Comment: Uninstall the Access Grid Toolkit.
 
