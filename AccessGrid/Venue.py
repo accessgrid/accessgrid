@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.52 2003-03-12 08:54:59 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.53 2003-03-13 12:13:13 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,6 +17,7 @@ import types
 import socket
 import os.path
 import logging
+import urlparse
 
 from AccessGrid.hosting.pyGlobus import ServiceBase
 
@@ -160,6 +161,11 @@ class Venue(ServiceBase.ServiceBase):
                                            HeartbeatEvent.HEARTBEAT,
                                            self.ClientHeartbeat)
 
+        # We reconstitute the real url here
+        self.description.uri = self.server.MakeVenueURI(self.uniqueId)
+        
+        log.info("URI %s", self.description.uri)
+        
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.CleanupClients, 45)
         self.houseKeeper.StartAllTasks()
@@ -418,6 +424,8 @@ class Venue(ServiceBase.ServiceBase):
         if not self.encryptMedia:
             self.encryptionKey = None
         else:
+            if key == None:
+                key = AllocateEncryptionKey()
             self.encryptionKey = key
 
         return self.encryptMedia
