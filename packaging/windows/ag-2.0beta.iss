@@ -1,8 +1,8 @@
 #define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
 #define OutputDir "C:\AccessGridBuild\AccessGrid-Build"
 #define AppName "Access Grid Toolkit"
-#define AppVersionLong "2.0 Release Candidate 1"
-#define AppVersionShort "2.0rc1"
+#define AppVersionLong "2.0 Beta 3"
+#define AppVersionShort "2.0b3"
 
 [_ISTool]
 EnableISX=true
@@ -18,7 +18,8 @@ Name: python; Parameters: C:\AccessGridBuild\AccessGrid\packaging\makeServicePac
 Name: C:\AccessGridBuild\AccessGrid\packaging\windows\Prebuild.cmd; Parameters: C:\AccessGridBuild\AccessGrid; Flags: abortonerror
 Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\AccessGridBuild\ag-vic C:\AccessGridBuild\AccessGrid\Release\bin; Flags: abortonerror
 Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\AccessGridBuild\ag-rat C:\AccessGridBuild\AccessGrid\Release\bin; Flags: abortonerror
-
+Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildOpenSSL.cmd; Parameters: C:\AccessGridBuild\openssl-0.9.6i C:\AccessGridBuild\AccessGrid\Release; Flags: abortonerror
+Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildPyOpenSSL.cmd; Parameters: C:\AccessGridBuild\pyOpenSSL C:\AccessGridBuild\AccessGrid\Release; Flags: abortonerror
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;
@@ -132,6 +133,13 @@ Source: bin\rat.exe; DestDir: {app}; Components: Audio_Service
 Source: bin\ratmedia.exe; DestDir: {app}; Components: Audio_Service
 Source: bin\ratui.exe; DestDir: {app}; Components: Audio_Service
 
+;OpenSSL/pyOpenSSL
+Source: bin\openssl.exe; DestDir: {app}
+Source: Lib\site-packages\OpenSSL\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath\win32com,|C:\Python22\Lib\site-packages}\AccessGrid; Flags: recursesubdirs
+Source: include\*.*; DestDir: {app}\include; Flags: recursesubdirs
+Source: Lib\libeay32.lib; DestDir: {app}
+Source: Lib\ssleay32.lib; DestDir: {app}
+Source: Lib\RSAglue.lib; DestDir: {app}
 
 [Icons]
 Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}
@@ -178,6 +186,7 @@ Name: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath\win32com,|C:\Python22\
 [Dirs]
 Name: {app}\config; Components: Venue_Client
 Name: {commonappdata}\AccessGrid; Components: Venue_Client
+Name: {app}\include
 
 [INI]
 Filename: {app}\config\defaultWindows; Section: node; Key: servicemanagers; String: servicemanager0
