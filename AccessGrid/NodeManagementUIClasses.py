@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.6 2003-02-10 22:10:14 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.7 2003-02-12 16:38:33 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -127,7 +127,7 @@ class ServiceConfigurationPanel( wxPanel ):
         pt = wxStaticText( self, -1, "Resource", style=wxALIGN_CENTRE )
         psz.Add( pt, 1 )
         pComp = wxTextCtrl( self, -1, serviceConfig.resource.resource )
-        pComp.SetEditable( False )
+        pComp.SetEditable( false )
         psz.Add( pComp, 1 )
         self.panelSizer.Add( psz, -1, wxEXPAND )
         self.guiComponents.append( pComp )
@@ -334,9 +334,9 @@ class NodeManagementClientFrame(wxFrame):
 
     def Connected(self):
         if self.vc != None:
-            return true
+            return 1
         else:
-            return false
+            return 0
 
     ############################
     ## FILE menu
@@ -680,7 +680,7 @@ class NodeManagementClientFrame(wxFrame):
                     itemindex = self.serviceList.InsertStringItem( i, svc.name )
                     self.serviceList.SetItemImage( itemindex, 0, 0 )
                     try:
-                        if Client.Handle( svc.uri ).get_proxy().IsStarted() == True:
+                        if Client.Handle( svc.uri ).get_proxy().IsStarted() == 1:
                             self.serviceList.SetStringItem( i,1, "Started" )
                         else:
                             self.serviceList.SetStringItem( i,1, "Stopped" )
