@@ -6,19 +6,20 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.112 2004-02-24 21:21:48 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.113 2004-03-01 17:25:07 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.112 2004-02-24 21:21:48 judson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.113 2004-03-01 17:25:07 judson Exp $"
 
 import string
 import time
 import re
 import logging, logging.handlers
 import getopt
+import webbrowser
 
 from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
@@ -270,28 +271,13 @@ class VenueManagementClient(wxApp):
             
         except Exception, e:
             wxEndBusyCursor()
-            print "Couldn't Connect: ", e
-            if e.string == "NotAuthorized":
-                text = "You and are not authorized to administrate this \
-                        server.\n"
-                MessageDialog(None, text, "Authorization Error",
-                              wxOK|wxICON_WARNING)
-                log.info("VenueManagementClient.ConnectToServer: \
-                          Not authorized to administrate the server.")
-            else:
-                log.exception("VenueManagementClient.ConnectToServer: \
-                               Can not connect")
-                text = "You were unable to connect to a venue server \
-                        located at\n%s." % URL
-                MessageDialog(None, text, "Unable To Connect",
-                              style=wxOK|wxICON_INFORMATION)
-                
-        except:
-            wxEndBusyCursor() 
-            log.exception("VenueManagementClient.ConnectToServer: \
-                           Can not connect")
-            text = "You were unable to connect to a venue server \
-                    located at\n%s." % URL
+            text = "You were unable to connect the venue server at:\n%s." % URL
+            lStr = "Can not connect."
+            if hasattr(e, "string"):
+                text += "\n%s" % e.string
+                lStr += "(%s)" % e.string
+
+            log.exception("VenueManagementClient.ConnectToServer: %s:", lStr)
             MessageDialog(None, text, "Unable To Connect",
                           style=wxOK|wxICON_INFORMATION)
             
