@@ -68,7 +68,7 @@ if sys.platform == 'win32':
     os.environ['GLOBUS_LOCATION']=os.path.join(SOURCE,'WinGlobus')
     flavor = 'win32'
 elif sys.platform == 'linux2':
-    flavor = 'gcc32pthr'
+    flavor = 'gcc32dbgpthr'
 else:
     print "Couldn't build pyGlobus; unsupported platform :", sys.platform
     sys.exit(1)
