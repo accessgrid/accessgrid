@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.32 2004-08-02 20:11:07 eolson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.33 2004-08-23 18:11:31 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.32 2004-08-02 20:11:07 eolson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.33 2004-08-23 18:11:31 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -889,9 +889,8 @@ class CertificateManager(object):
                   proxyCert.GetPath(),
                   proxyCert.GetNotValidAfterText())
 
-
         self.globusConfig.SetProxyCert(proxyCert.GetPath())
-        
+
     def _FindProxyCertificatePath(self, identity = None):
         """
         Determine the path into which the proxy should be installed.
@@ -1469,7 +1468,7 @@ class CertificateManagerUserInterface:
                 break
                 
 
-#        print "done, success=", success
+        log.debug("done, success=%s", success)
 
         return success
 
