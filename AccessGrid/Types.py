@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.19 2003-02-14 22:24:45 olson Exp $
+# RCS-ID:      $Id: Types.py,v 1.20 2003-02-18 21:17:48 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -136,6 +136,24 @@ class Capability:
         self.role = role
         self.type = type
         self.parms = dict()
+
+    def matches( self, capability ):
+        if self.type != capability.type:
+            # type mismatch
+            return 0
+        """
+        for key in self.parms.keys():
+            if key not in capability.parms.keys():
+                # keyword mismatch
+                return 0
+
+            if self.parms[key] != capability.parms[key]:
+                # value mismatch
+                return 0
+        """
+
+        # capability match
+        return 1
 
 class AGServiceManagerDescription:
     def __init__( self, name=None, description=None, uri=None ):

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.12 2003-02-14 20:42:45 olson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.13 2003-02-18 21:17:48 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -182,7 +182,7 @@ from AccessGrid.Types import Capability
 
 class StreamDescription( ObjectDescription ):
    """A Stream Description represents a stream within a venue"""
-   def __init__( self, name=None, description=None, 
+   def __init__( self, name=None, description=None,
                  location=MulticastNetworkLocation(), 
                  capability=Capability(),
                  encryptionKey=0 ):
@@ -190,3 +190,18 @@ class StreamDescription( ObjectDescription ):
       self.location = location
       self.capability = capability
       self.encryptionKey = encryptionKey
+      self.static = 0
+
+def CreateStreamDescription( streamDescriptionStruct ):
+    networkLocation = MulticastNetworkLocation( streamDescriptionStruct.location.host,
+                                                streamDescriptionStruct.location.port,
+                                                streamDescriptionStruct.location.ttl )
+    cap = Capability( streamDescriptionStruct.capability.role, 
+                      streamDescriptionStruct.capability.type )
+    streamDescription = StreamDescription( streamDescriptionStruct.name, 
+                                           streamDescriptionStruct.description,
+                                           networkLocation,
+                                           cap,
+                                           streamDescriptionStruct.encryptionKey )
+    streamDescription.static = streamDescriptionStruct.static
+    return streamDescription

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.36 2003-02-18 17:36:22 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.37 2003-02-18 21:17:48 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ import os.path
 
 from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid.Types import Capability
-from AccessGrid.Descriptions import StreamDescription
+from AccessGrid.Descriptions import StreamDescription, CreateStreamDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
 from AccessGrid.TextService import TextService
@@ -29,6 +29,131 @@ from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import GetHostname
 from AccessGrid.scheduler import Scheduler
 from AccessGrid import DataStore
+
+class StreamDescriptionList:
+    """
+    Class to represent stream descriptions in a venue.  Entries in the
+    list are a tuple of (stream description, producing users).  A stream
+    is added to the list with a producer.  Producing users can be added
+    to and removed from an existing stream.  When the number of users
+    producing a stream becomes zero, the stream is removed from the list.
+
+    Exception:  static streams remain without regard to the number of producers
+
+    """
+
+    def __init__( self ):
+        self.streams = []
+
+    def __getstate__(self):
+        """
+        Remove non-static streams from list for pickling
+        """
+        odict = self.__dict__.copy()
+        staticStreams = []
+        for stream,producerList in self.streams:
+            if stream.static:
+                staticStreams.append( stream )
+        odict['streams'] = staticStreams
+        return odict
+
+    def AddStream( self, stream ):
+        """
+        Add a stream to the list
+        """
+        self.streams.append( ( stream, [] ) )
+
+    def RemoveStream( self, stream ):
+        """
+        Remove a stream from the list
+        """
+        try:
+            index = self.index( stream )
+            del self.streams[index]
+        except:
+            pass 
+
+    def AddStreamProducer( self, producingUser, inStream ):
+        """
+        Add a stream to the list, with the given producer
+        """
+        try:
+            index = self.index( inStream )
+            stream, producerList = self.streams[index]
+            producerList.append( producingUser )
+            self.streams[index] = ( stream, producerList )
+            print "* * * Added stream producer ", producingUser
+        except:   
+            self.streams.append( (inStream, [ producingUser ] ) )
+            print "* * * Added new stream with producer ", producingUser
+            
+    def RemoveStreamProducer( self, producingUser, inStream ):
+        """
+        Remove a stream producer from the given stream.  If the last
+        producer is removed, the stream will be removed from the list
+        if it is non-static.
+        """
+        try:
+            self.__RemoveProducer( producingUser, inStream )
+            streamDesc, producerList = self.streams[index]
+            if len(producerList) == 0:  del self.streams[index]
+        except:
+            pass
+
+    def RemoveProducer( self, producingUser ):
+        """
+        Remove producer from all streams
+        """
+        for stream, producerList in self.streams:
+            self.__RemoveProducer( producingUser, stream )
+
+        self.CleanupStreams()
+
+    def __RemoveProducer( self, producingUser, inStream ):
+        """
+        Internal : Remove producer from stream with given index
+        """
+        index = self.index( inStream )
+        stream, producerList = self.streams[index]
+        if producingUser in producerList:
+            producerList.remove( producingUser )
+            self.streams[index] = ( stream, producerList )
+    
+    def CleanupStreams( self ):
+        """
+        Remove streams with empty producer list
+        """
+        streams = []
+        for stream, producerList in self.streams:
+            if len(producerList) > 0 or stream.static == 1:
+                streams.append( ( stream, producerList ) )
+        self.streams = streams
+
+    def GetStreams( self ):
+        """
+        Get the list of streams, without producing user info
+        """
+        return map( lambda streamTuple: streamTuple[0], self.streams )
+
+    def index( self, inStream ):
+        """
+        Retrieve the list index of the given stream description
+        Note:  streams are keyed on address/port
+        """
+        try:
+            index=0
+            for stream, producerList in self.streams:
+                print "-- - -- -  Address ", inStream.location.host, stream.location.host
+                print "- - - -- - Port ", inStream.location.port, stream.location.port
+                if inStream.location.host == stream.location.host and \
+                   inStream.location.port == stream.location.port:
+                    return index
+                index = index + 1
+        except:
+            print "Exception in StreamDescriptionList.index ", sys.exc_type, sys.exc_value
+
+        raise ValueError
+
 
 class VenueException(Exception):
     """
@@ -64,7 +189,7 @@ class Venue(ServiceBase.ServiceBase):
         self.administrators.append(administrator)
 
         self.data = dict()
-        self.streams = []
+        self.streamList = StreamDescriptionList()
 
         self.users = dict()
         self.clients = dict()
@@ -107,13 +232,6 @@ class Venue(ServiceBase.ServiceBase):
         for k in odict.keys():
             if k in keys:
                 del odict[k]
-
-        #
-        # When streams *can* be persistent we'll do something like this:
-        #
-#         for s in odict["streams"]:
-#             if not s.IsPersistent():
-#                 odict["streams"].remove(s)
 
         return odict
 
@@ -243,16 +361,10 @@ class Venue(ServiceBase.ServiceBase):
     def CleanupClients(self):
         now_sec = time.time()
         for privateId in self.clients.keys():
-           if privateId in self.users.keys():
             then_sec = self.clients[privateId]
             if abs(now_sec - then_sec) > self.cleanupTime:
                 print "  Removing user : ", self.users[privateId].name
-                if privateId in self.users.keys():
-                    clientProfile = self.users[privateId]
-                elif privateId in self.nodes.keys():
-                    clientProfile = self.nodes[privateId]
-                self.eventService.Distribute( Event( Event.EXIT,
-                                                         clientProfile ) )
+                self.RemoveUser( privateId )
                 del self.clients[privateId]
         
     def ClientHeartbeat(self, event):
@@ -288,21 +400,32 @@ class Venue(ServiceBase.ServiceBase):
         # to the stream descriptions, and an event is emitted to alert
         # current participants about the new stream
         # 
-        streamCapTypes = map( lambda streamDesc: streamDesc.capability.type,
-                              self.streams )
 
-        for capability in clientProfile.capabilities:
-            if capability.role == Capability.PRODUCER:
-                if capability.type not in streamCapTypes:
-                    # add new stream description
+        for clientCapability in clientProfile.capabilities:
+            if clientCapability.role == Capability.PRODUCER:
+                matchesExistingStream = 0
 
-                    print "* * Adding new producer of type ", capability.type
-                    streamDesc = StreamDescription( "noName", "noDesc",
+                # add user as producer of all existing streams that match
+                for stream in self.streamList.GetStreams():
+                    if stream.capability.matches( clientCapability ):
+                        streamDesc = stream
+                        self.streamList.AddStreamProducer( clientProfile.publicId, streamDesc )
+                        streamDescriptions.append( streamDesc )
+                        matchesExistingStream = 1
+                        print "added user as producer of existent stream"
+                
+                # add user as producer of non-existent stream
+                if not matchesExistingStream:
+                    capability = Capability( clientCapability.role, clientCapability.type )
+                    capability.parms = clientCapability.parms
+                    streamDesc = StreamDescription( self.description.name, "noDesc",
                                              self.AllocateMulticastLocation(), 
                                              capability, self.encryptionKey )
-                    self.streams.append( streamDesc )
-                    streamDescriptions.append( streamDesc )
-        
+                    print "added user as producer of non-existent stream"
+#FIXME - uses public id now; should use private id instead
+                    self.streamList.AddStreamProducer( clientProfile.publicId, streamDesc )
+
+
         #
         # Compare user's consumer capabilities with existing stream
         # description capabilities. The user will receive a list of
@@ -312,7 +435,7 @@ class Venue(ServiceBase.ServiceBase):
         for capability in clientProfile.capabilities:
             if capability.role == Capability.CONSUMER:
                 clientConsumerCapTypes.append( capability.type )
-        for stream in self.streams:
+        for stream in self.streamList.GetStreams():
             if stream.capability.type in clientConsumerCapTypes:
                 streamDescriptions.append( stream )
 
@@ -447,11 +570,26 @@ class Venue(ServiceBase.ServiceBase):
 
     GetDescription.soap_export_as = "GetDescription"
 
+    def AddStream(self, inStreamDescription ):
+        """
+        Add a stream to the list of streams "in" the venue
+        """
+        streamDescription = CreateStreamDescription( inStreamDescription )
+        self.streamList.AddStream( streamDescription )
+    AddStream.soap_export_as = "AddStream"
+
+    def RemoveStream(self, streamDescription):
+        """
+        Remove the given stream from the venue
+        """
+        self.streamList.RemoveStream( streamDescription )
+    RemoveStream.soap_export_as = "RemoveStream"
+
     def GetStreams(self):
         """
         GetStreams returns a list of stream descriptions to the caller.
         """
-        return self.streams
+        return self.streamList.GetStreams()
 
     GetStreams.soap_export_as = "GetStreams"
 
@@ -474,7 +612,6 @@ class Venue(ServiceBase.ServiceBase):
                 user = self.users[key]
                 if user.publicId == clientProfile.publicId:
                     print "* * User already in venue"
-#FIXME - temporarily ignore that user is already in venue, for testing
                     userInVenue = 1
                     privateId = key
                     break
@@ -485,10 +622,10 @@ class Venue(ServiceBase.ServiceBase):
                 self.users[privateId] = clientProfile
                 state['users'] = self.users.values()
 
-                # negotiate to get stream descriptions to return
-                streamDescriptions = self.NegotiateCapabilities(clientProfile)
-                self.eventService.Distribute( Event( Event.ENTER,
-                                                     clientProfile ) )
+            # negotiate to get stream descriptions to return
+            streamDescriptions = self.NegotiateCapabilities(clientProfile)
+            self.eventService.Distribute( Event( Event.ENTER,
+                                                 clientProfile ) )
 
         except:
            print "Exception in Enter ", formatExceptionInfo()
@@ -508,17 +645,28 @@ class Venue(ServiceBase.ServiceBase):
 
             if self.IsValidPrivateId( privateId ):
                 print "Deleting user ", privateId, self.users[privateId].name
-                clientProfile = self.users[privateId]
-                del self.users[privateId]
+                self.RemoveUser( privateId )
 
-                self.eventService.Distribute( Event( Event.EXIT,
-                                                     clientProfile ) )
             else:
                 print "* * Invalid private id !! ", privateId
         except:
             print "Exception in Exit ", sys.exc_type, sys.exc_value
         
     Exit.soap_export_as = "Exit"
+
+    def RemoveUser(self, privateId):
+        # Remove user as stream producer
+#FIXME - uses public id now; should use private id instead
+        self.streamList.RemoveProducer( self.users[privateId].publicId )
+
+        # Distribute event
+        clientProfile = self.users[privateId]
+        self.eventService.Distribute( Event( Event.EXIT,
+                                             clientProfile ) )
+
+        # Remove user from venue
+        del self.users[privateId]
+
 
     def UpdateClientProfile(self, clientProfile):
         """
