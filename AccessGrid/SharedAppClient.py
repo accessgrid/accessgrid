@@ -247,7 +247,6 @@ class SharedAppClient:
         *dataKey* Unique id of data available in the service. If dataKey is
         None, update the entire cache.
         '''
-
         if not dataKey:
             for key in self.__dataCache.keys():
                 try:
@@ -324,7 +323,7 @@ class SharedAppClient:
         try:
             id = self.__appProxy.GetId(self.__privateId)
         except Client.MethodNotFound, e:
-
+            self.log.exception("SharedAppClient.GetApplicationID: Failed to get application ID")
             try:
                 # Legacy call for servers running 2.1.2 software.
                 oldAppProxy = Client.SecureHandle(self.__appUrl).GetProxy()
@@ -332,9 +331,7 @@ class SharedAppClient:
             except:
                 self.log.exception("SharedAppClient.GetApplicationId: Failed to get application ID")
                 raise Exception, "Failed to get application ID"
-                
-            self.log.exception("SharedAppClient.GetApplicationID: Failed to get application ID")
-            raise Exception, "The server you are connecting to is running old software. This method is not implemented in that version." 
+           
         except:
             self.log.exception("SharedAppClient.GetApplicationId: Failed to get application ID")
             raise Exception, "Failed to get application ID"
