@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.132 2004-05-26 15:05:23 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.133 2004-05-27 23:21:54 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.132 2004-05-26 15:05:23 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.133 2004-05-27 23:21:54 turam Exp $"
 
 # Standard imports
 import sys
@@ -470,6 +470,7 @@ class VenueManagementClient(wxApp):
             # fill in multicast address
             ip = self.server.GetBaseAddress()
             mask = str(self.server.GetAddressMask())
+            
             method = self.server.GetAddressAllocationMethod()
             
             dp = self.tabs.configurationPanel.detailPanel
@@ -504,7 +505,7 @@ class VenueManagementClient(wxApp):
             
         except Exception, e:
             wxEndBusyCursor()
-            text = "You were unable to connect the venue server at:\n%s." % URL
+            text = "You were unable to connect to the venue server at:\n%s." % URL
             lStr = "Can not connect."
             if hasattr(e, "string"):
                 text += "\n%s" % e.string
@@ -1510,6 +1511,11 @@ class GeneralPanel(wxPanel):
             
             venueList = []
             vl = server.GetVenues()
+            
+            # Remove the current venue from the list of potential exits
+            if self.application.currentVenue:
+                vl = filter(lambda v,url=self.application.currentVenue.uri: v.uri != url, vl)
+            
             self.venues.Clear()
             cdl = map(lambda x: ConnectionDescription(x.name,
                                                       x.description,
@@ -1881,6 +1887,7 @@ class AddVenueFrame(VenueParamFrame):
         self.authorizationPanel.Hide()
         self.SetSize(wxSize(600, 470))
         self.SetLabel('Add Venue')
+        self.application.SetCurrentVenue(None)
         self.generalPanel.LoadLocalVenues()
         self.encryptionPanel.ClickEncryptionButton(None,
                                                    self.application.encrypt)
