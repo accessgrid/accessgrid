@@ -5,11 +5,10 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.175 2003-05-07 20:35:24 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.176 2003-05-08 14:50:25 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
-
 
 import os
 import os.path
@@ -1733,10 +1732,11 @@ class TextClientPanel(wxPanel):
     location = None
     Processor = None
     ID_BUTTON = wxNewId()
-    
+        
     def __init__(self, *args, **kwds):
         wxPanel.__init__(self, *args, **kwds)
-        self.TextOutput = wxTextCtrl(self, wxNewId(), "",
+        self.textOutputId = wxNewId()
+        self.TextOutput = wxTextCtrl(self, self.textOutputId, "",
                                      style= wxTE_MULTILINE|wxTE_READONLY)
         self.label = wxStaticText(self, -1, "Your message:")
         self.display = wxButton(self, self.ID_BUTTON, "Display", style = wxBU_EXACTFIT)
@@ -1746,11 +1746,22 @@ class TextClientPanel(wxPanel):
         self.TextInput.SetToolTipString("Write your message here")
         self.__set_properties()
         self.__do_layout()
- 
+
+        EVT_CHAR(self.TextOutput, self.ChangeTextWindow)
         EVT_TEXT_ENTER(self, self.textInputId, self.LocalInput)
         EVT_BUTTON(self, self.ID_BUTTON, self.LocalInput)
         self.Show(true)
 
+    def ChangeTextWindow(self, event):
+        '''Changes focus from text output field to text input field
+        to make it clear for users where to write messages.'''
+       
+        key = event.GetKeyCode()
+        self.TextInput.SetFocus()
+        
+        if(44 < key < 255):
+            self.TextInput.AppendText(chr(key)) 
+                                    
     def SetLocation(self, privateId, location, venueId):
         if self.Processor != None:
             self.Processor.Input(DisconnectEvent(self.venueId, privateId))
