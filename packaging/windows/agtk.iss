@@ -1,12 +1,13 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.10 2003-05-22 04:12:41 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.11 2003-05-23 19:17:33 judson Exp $
 ;
 
-#define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
-#define OutputDir "C:\AccessGridBuild\AccessGrid-Build"
+#define SourceDir "C:\software\AccessGrid\AccessGrid\Release"
+#define OutputDir "C:\xfer"
 #define AppName "Access Grid Toolkit"
-#define AppVersionLong "2.0 RC 2"
-#define AppVersionShort "2.0RC2"
+#define AppNameShort "AGTk"
+#define AppVersionLong "2.0"
+#define AppVersionShort "2.0"
 ;
 ; This doesn't work.
 ; #define AppConfigDir "{commonappdata}\AccessGrid"
@@ -22,10 +23,10 @@ LogFileAppend=false
 ; parameter to prebuild. Ti and I have chatted about this, it's on the
 ; to do list :-)
 ;
-Name: python; Parameters: C:\AccessGridBuild\AccessGrid\packaging\makeServicePackages.py C:\AccessGridBuild\AccessGrid\services\node; Flags: abortonerror
-Name: C:\AccessGridBuild\AccessGrid\packaging\windows\Prebuild.cmd; Parameters: C:\AccessGridBuild\AccessGrid; Flags: abortonerror
-Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\AccessGridBuild\ag-vic C:\AccessGridBuild\AccessGrid\Release\bin; Flags: abortonerror
-Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\AccessGridBuild\ag-rat C:\AccessGridBuild\AccessGrid\Release\bin; Flags: abortonerror
+Name: python; Parameters: C:\software\AccessGrid\AccessGrid\packaging\makeServicePackages.py C:\software\AccessGrid\AccessGrid\services\node; Flags: abortonerror
+Name: C:\software\AccessGrid\AccessGrid\packaging\windows\BuildAccessGrid.cmd; Parameters: C:\software\AccessGrid\AccessGrid; Flags: abortonerror
+Name: C:\software\AccessGrid\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\software\AccessGrid\ag-vic C:\software\AccessGrid\AccessGrid\Release\bin; Flags: abortonerror
+Name: C:\software\AccessGrid\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\software\AccessGrid\ag-rat C:\software\AccessGrid\AccessGrid\Release\bin; Flags: abortonerror
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -39,7 +40,7 @@ Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: 
 
 [Setup]
 ; Name with version information
-AppVerName={#AppName} {#AppVersionLong}
+AppVerName={#AppVersionLong}
 ; Version information
 AppVersion={#AppVersionShort}
 ; What to build the installer from
@@ -47,21 +48,21 @@ SourceDir={#SourceDir}
 ; Where to put the built installer
 OutputDir={#OutputDir}
 ; Name with version information
-OutputBaseFilename={#AppVersionShort}
+OutputBaseFilename={#AppNameShort}{#AppVersionShort}-snapshot-2003-05-22
 
-AppName={#AppName}
+AppName=AGTk
 AppCopyright=Copyright © 2003 University of Chicago. All Rights Reserved.
 AppPublisher=Futures Laboratory / Argonne National Laboratory
 AppPublisherURL=http://www.mcs.anl.gov/fl
 AppSupportURL=http://bugzilla.mcs.anl.gov/accessgrid
 AppUpdatesURL=http://www.mcs.anl.gov/fl/research/accessgrid
-AppID={#AppName}
+AppID={907B1500-42CA-4148-8F13-2004654CCA06}
 Compression=zip/9
-MinVersion=0,5.00.2195
-LicenseFile=..\COPYING.txt
+MinVersion=0,5.0.2195sp3
+LicenseFile=C:\software\AccessGrid\AccessGrid\COPYING.txt
 DisableDirPage=false
-DefaultGroupName={#AppName}
-DefaultDirName={pf}\{#AppName}
+DefaultGroupName={#AppName} {#AppVersionShort}
+DefaultDirName={pf}\AGTk {#AppVersionShort}
 UsePreviousAppDir=false
 UserInfoPage=false
 WindowVisible=false
@@ -81,7 +82,7 @@ WindowStartMaximized=false
 WizardImageFile=compiler:wizmodernimage.bmp
 WizardSmallImageFile=compiler:wizmodernsmallimage.bmp
 UninstallFilesDir={app}\uninst
-InfoBeforeFile=..\Install.WINDOWS
+InfoBeforeFile=C:\software\AccessGrid\AccessGrid\Install.WINDOWS
 ShowTasksTreeLines=true
 PrivilegesRequired=admin
 UninstallDisplayIcon={app}\config\agicons.exe
@@ -163,7 +164,7 @@ Name: {group}\Documentation\License; IconFilename: {app}\config\ag.ico; Filename
 [Registry]
 Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: ConfigPath; ValueData: {commonappdata}\AccessGrid; Flags: uninsdeletekey
-Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: UserConfigPath; ValueData: %USERPROFILE%\Application Data\Access Grid Toolkit\config; Flags: uninsdeletekey
+Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: UserConfigPath; ValueData: {userappdata}\Access Grid Toolkit\config; Flags: uninsdeletekey
 
 [Types]
 
@@ -183,6 +184,7 @@ Filename: {app}\SetupVideo.py; WorkingDir: {app}; Description: Setup what video 
 
 [UninstallDelete]
 Name: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath\win32com,|C:\Python22\Lib\site-packages}\AccessGrid; Type: filesandordirs
+Name: {userappdata}\Access Grid Toolkit\certmgr.cfg; Type: files
 
 [Dirs]
 Name: {app}\config; Components: Venue_Client
@@ -210,3 +212,6 @@ Filename: {commonappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configurat
 Filename: {commonappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configuration; Key: defaultNodeConfiguration; String: defaultWindows
 
 Filename: {commonappdata}\AccessGrid\AGServiceManager.cfg; Section: Service Manager; Key: servicesDirectory; String: {app}\local_services
+
+[InstallDelete]
+Name: {userappdata}\Access Grid Toolkit\certmgr.cfg; Type: files
