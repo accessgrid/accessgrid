@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.278 2003-09-18 15:48:28 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.279 2003-09-18 16:01:39 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.278 2003-09-18 15:48:28 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.279 2003-09-18 16:01:39 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1515,20 +1515,10 @@ class ContentListPanel(wxPanel):
         self.parent = parent
 	self.app = app
 
-        if isWindows():
-            self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
-                                   wxDefaultSize, style = wxTR_HAS_BUTTONS |
-                                   wxTR_LINES_AT_ROOT | wxTR_HIDE_ROOT)
-            #self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
-            #                       wxDefaultSize, style = wxTR_HAS_BUTTONS |
-            #                       wxTR_NO_LINES)
-            
-            
-        elif isLinux() or isOSX():
-            self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
-                                   wxDefaultSize, style = wxTR_HAS_BUTTONS |
-                                   wxTR_NO_LINES | wxTR_HIDE_ROOT)
-
+        self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
+                               wxDefaultSize, style = wxTR_HAS_BUTTONS |
+                               wxTR_LINES_AT_ROOT | wxTR_HIDE_ROOT)
+        
         self.__setImageList()
 	self.__setTree()
        	self.__setProperties()
@@ -1801,25 +1791,10 @@ class ContentListPanel(wxPanel):
                 self.tree.Delete(id)
 
     def __setTree(self):
-       
-
         index = self.bullet
-        index2 = -1
-
-        #
-        # Temporary fix for wxPython bug
-        # If I don't have a root item on windows, twist buttons
-        # will not show up properly, so I have to add an empty root.
-        # Default image index, -1, for empty image will, on windows,
-        # display the first image in the image list, setting it
-        # to -2 instead results in correct behaviour.
-        #
-        if sys.platform == "win32":
-            index2 = -2
-        
-        self.root = self.tree.AddRoot("")#, index2, index2)
-       
-        
+              
+        self.root = self.tree.AddRoot("")
+               
 	self.participants = self.tree.AppendItem(self.root, "Participants", index, index)
         self.data = self.tree.AppendItem(self.root, "Data", index, index) 
         self.services = self.tree.AppendItem(self.root, "Services", index, index)
@@ -2008,6 +1983,7 @@ class ContentListPanel(wxPanel):
         # useLocal = 0
         
         # Path where temporary file will exist if opened/used.
+        print 'data menu'
         a_file = os.path.join(GetTempDir(), item.name)
         ext = item.name.split('.')[-1]
         
