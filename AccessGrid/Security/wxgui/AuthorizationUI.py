@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.5 2004-03-18 21:37:38 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.6 2004-03-18 22:33:02 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.5 2004-03-18 21:37:38 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.6 2004-03-18 22:33:02 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -50,8 +50,7 @@ class AuthorizationUIPanel(wxPanel):
     ID_PERSON_PROPERTIES = wxNewId()
 
     ID_WINDOW_LEFT = wxNewId() 
-    ID_WINDOW_RIGHT = wxNewId()
-     
+         
     def __init__(self, parent, id, log):
         wxPanel.__init__(self, parent, id, wxDefaultPosition)
         self.log = log
@@ -71,11 +70,9 @@ class AuthorizationUIPanel(wxPanel):
         # Create ui componentes
         self.leftSashWindow = wxSashLayoutWindow(self, self.ID_WINDOW_LEFT,
                                                  size = wxSize(400,10))
-        self.rightSashWindow = wxSashLayoutWindow(self, self.ID_WINDOW_RIGHT,
-                                                  size = wxSize(400,10))
         self.rolePanel = wxPanel(self.leftSashWindow ,  wxNewId(),
                                  style = wxSUNKEN_BORDER)
-        self.actionPanel = wxPanel(self.rightSashWindow,  wxNewId(),
+        self.actionPanel = wxPanel(self,  wxNewId(),
                                    style = wxSUNKEN_BORDER)
         self.tree = wxTreeCtrl(self.rolePanel, wxNewId(), wxDefaultPosition, 
                                wxDefaultSize, style = wxTR_HAS_BUTTONS |
@@ -260,8 +257,7 @@ class AuthorizationUIPanel(wxPanel):
         EVT_MENU(self, self.ID_ROLE_ADDROLE, self.CreateRole)
         EVT_MENU(self, self.ID_ROLE_REMOVEROLE, self.RemoveRole)
         
-        EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_LEFT,
-                               self.ID_WINDOW_RIGHT, self.__OnSashDrag)
+        EVT_SASH_DRAGGED(self, self.ID_WINDOW_LEFT, self.__OnSashDrag)
         EVT_SIZE(self, self.__OnSize)
 
     def __OnSashDrag(self, event):
@@ -269,22 +265,24 @@ class AuthorizationUIPanel(wxPanel):
         Called when a user drags the sash window.
         '''
         if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
+            # out of range
             return
 
         eID = event.GetId()
         
-        if eID == self.ID_WINDOW_RIGHT:
+        if eID == self.ID_WINDOW_LEFT:
             width = event.GetDragRect().width
-            self.rightSashWindow.SetDefaultSize(wxSize(width, 1000))
-            
-        wxLayoutAlgorithm().LayoutWindow(self, self.leftSashWindow)
-                
+            self.leftSashWindow.SetDefaultSize(wxSize(width, 1000))
+                                           
+        wxLayoutAlgorithm().LayoutWindow(self, self.actionPanel)
+        self.actionPanel.Refresh()
+                                                
     def __OnSize(self, event = None):
         '''
         Called when a user resizes the window.
         '''
-        wxLayoutAlgorithm().LayoutWindow(self, self.leftSashWindow)
-        
+        wxLayoutAlgorithm().LayoutWindow(self, self.actionPanel)
+              
     def __participantInRole(self, roleId, person):
         '''
         Check to see if a person is added to a role.
@@ -406,14 +404,7 @@ class AuthorizationUIPanel(wxPanel):
         self.leftSashWindow.SetDefaultSize(wxSize(400, 60))
         self.leftSashWindow.SetOrientation(wxLAYOUT_VERTICAL)
         self.leftSashWindow.SetAlignment(wxLAYOUT_LEFT)
-        
-        self.rightSashWindow.SetDefaultSize(wxSize(400, 60))
-        self.rightSashWindow.SetOrientation(wxLAYOUT_VERTICAL)
-        self.rightSashWindow.SetAlignment(wxLAYOUT_RIGHT)
-        self.rightSashWindow.SetSashVisible(wxSASH_LEFT, TRUE)
-
-        wxLayoutAlgorithm().LayoutWindow(self.leftSashWindow,
-                                         self.rightSashWindow)
+        self.leftSashWindow.SetSashVisible(wxSASH_RIGHT, TRUE)
         
     def Copy(self, event):
         '''
@@ -1047,13 +1038,11 @@ class PersonPropertiesDialog(wxDialog):
     '''
     def __init__(self, parent, id, title, person):
         wxDialog.__init__(self, parent, id, title,
-                          style=wxRESIZE_BORDER,
-                          size = wxSize(650,90))
+                          style=wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE)
         self.dnText = wxStaticText(self, -1, 'Distinguished Name: ')
-        self.dnCtrl = wxTextCtrl(self, -1, person.name)
-
+        self.dnCtrl = wxTextCtrl(self, -1, person.name, size = wxSize(450, 20),
+                                 style =  wxTE_READONLY)
         self.okButton = wxButton(self, wxID_OK, "Ok")
-        
         self.__layout()
         
     def __layout(self):
@@ -1068,8 +1057,10 @@ class PersonPropertiesDialog(wxDialog):
 
         self.SetAutoLayout(1)
         self.SetSizer(sizer)
+        sizer.Fit(self)
         self.Layout()
-                
+
+                      
 class AddPeopleDialog(wxDialog):
     '''
     Dialog for adding people to roles
