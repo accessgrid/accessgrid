@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.14 2003-09-11 19:30:23 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.15 2003-10-16 23:53:18 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,7 +25,7 @@ option add Vic.muteNewSources true startupFile
 option add Vic.maxbw 6000 startupFile
 option add Vic.bandwidth %d startupFile
 option add Vic.framerate %d startupFile
-option add Vic.quality 75 startupFile
+option add Vic.quality %d startupFile
 option add Vic.defaultFormat %s startupFile
 option add Vic.inputType %s startupFile
 set device \"%s\"
@@ -62,12 +62,14 @@ class VideoProducerService( AGService ):
       self.standard = OptionSetParameter( "standard", "NTSC", VideoProducerService.standards )
       self.bandwidth = RangeParameter( "bandwidth", 800, 0, 3072 ) 
       self.framerate = RangeParameter( "framerate", 25, 1, 30 ) 
+      self.quality = RangeParameter( "quality", 75, 1, 100 )
       self.configuration.append( self.streamname )
       self.configuration.append( self.port )
       self.configuration.append( self.encoding )
       self.configuration.append( self.standard )
       self.configuration.append( self.bandwidth )
       self.configuration.append( self.framerate )
+      self.configuration.append (self.quality )
 
    def Start( self ):
       """Start service"""
@@ -88,12 +90,17 @@ class VideoProducerService( AGService ):
             'VideoProducerService_%d.vic' % ( os.getpid() ) )
 
          f = open(startupfile,"w")
+         if self.port.value == '':
+            portstr = "None"
+         else:
+            portstr = self.port.value
          f.write( vicstartup % (self.bandwidth.value,
                                  self.framerate.value, 
+                                 self.quality.value,
                                  self.encoding.value,
                                  self.standard.value,
                                  vicDevice,                 
-                                 self.port.value,
+                                 portstr,
                                  self.streamname.value ) )
          f.close()
 
