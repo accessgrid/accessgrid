@@ -12,6 +12,7 @@ from AccessGrid.ProcessManagerUnix import ProcessManagerUnix as ProcessManager
 from AccessGrid import Utilities
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.Events import Event, ConnectEvent, HeartbeatEvent
+from AccessGrid import Toolkit
 
 
 quickBridgeExec = None
@@ -325,6 +326,8 @@ def main():
     venueServerUrl = venueUrl = venueFile = None
     numExclusiveArgs = 0
     debugMode = 0
+    identityCert = None
+    identityKey = None
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hdlv:f:",
@@ -361,6 +364,10 @@ def main():
         elif opt in ('--logfile', '-l'):
             global logFile
             logFile = arg
+        elif o == "--key":
+            identityKey = a
+        elif o == "--cert":
+            identityCert = a
 
     # catch bad arguments
     if numExclusiveArgs > 1:
@@ -372,15 +379,32 @@ def main():
         usage()
         sys.exit(1)
 
+    # Initialize the application
+    if identityCert is not None or identityKey is not None:
+        # Sanity check on identity cert stuff
+        if identityCert is None or identityKey is None:
+            print "Both a certificate and key must be provided"
+            sys.exit(0)
+
+        # Init toolkit with explicit identity.
+        app = Toolkit.ServiceApplicationWithIdentity(identityCert, identityKey)
+
+    else:
+        # Init toolkit with standard environment.
+        app = Toolkit.CmdlineApplication()
+
+    app.Initialize()
+
+
     # Determine venue(s) to bridge
     venueList = []
     if venueServerUrl:
-        print "Fetching venues from venue server : ", venueServerUrl
+        print "Retrieving venues from venue server : ", venueServerUrl
         venueDescList = Client.Handle(venueServerUrl).GetProxy().GetVenues()
         venueList = map( lambda venue: venue.uri, venueDescList )
     elif venueFile:
         # Bridge venues specified in the given file
-        print "Fetching venues from file :", venueFile
+        print "Retrieving venues from file :", venueFile
         f = open(venueFile,"r")
         venueList = f.readlines()
         f.close()

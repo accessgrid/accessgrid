@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.110 2003-08-05 15:54:12 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.111 2003-08-05 17:01:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -2221,6 +2221,100 @@ class Venue(ServiceBase.ServiceBase):
 
     DestroyApplication.soap_export_as = "DestroyApplication"
 
+    def AddNetworkLocationToStream(self, privateId, streamId, networkLocation):
+        """
+        Add a transport to an existing stream
+
+        **Arguments:**
+
+            *streamId* The id of the stream to which to add the transport
+            *networkLocation* The network location (transport) to add
+            
+        **Raises:**
+ 
+
+        Note:  This method overwrites the private id in the incoming
+               network location
+
+        """
+
+        # Validate private id before allowing call
+        pass
+
+        # Add the network location to the specified stream
+        streamList = self.streamList.GetStreams()
+        for stream in streamList:
+            if stream.id == streamId:
+                # Add the network location to the stream
+                networkLocation.privateId = privateId
+                id = stream.AddNetworkLocation(networkLocation)
+                log.info("Added network location %s to stream %s for private id %s",
+                         id, streamId, privateId)
+
+                # Send a ModifyStream event
+                self.server.eventService.Distribute( self.uniqueId,
+                                         Event( Event.MODIFY_STREAM,
+                                                self.uniqueId,
+                                                stream ) )
+
+
+                return id
+
+        return None
+            
+    AddNetworkLocationToStream.soap_export_as = "AddNetworkLocationToStream"
+
+    def RemoveNetworkLocationFromStream(self, privateId, streamId, networkLocationId):
+        
+        # Validate private id before allowing call
+        pass
+
+        # Remove the network location from the specified stream
+        streamList = self.streamList.GetStreams()
+        for stream in streamList:
+            if stream.id == streamId:
+                # Remove network location from stream
+                log.info("Removing network location %s from stream %s",
+                         networkLocationId, streamId)
+                stream.RemoveNetworkLocation(networkLocationId)
+
+                # Send a ModifyStream event
+                self.server.eventService.Distribute( self.uniqueId,
+                                         Event( Event.MODIFY_STREAM,
+                                                self.uniqueId,
+                                                stream ) )
+
+                
+    RemoveNetworkLocationFromStream.soap_export_as = "RemoveNetworkLocationFromStream"
+
+    def RemoveNetworkLocationsByPrivateId(self, privateId):
+
+        # Validate private id before allowing call
+        pass
+
+        log.info("Removing network locations for private id %s", privateId)
+
+        # Remove network locations tagged with specified private id
+        streamList = self.streamList.GetStreams()
+        for stream in streamList:
+            for netloc in stream.networkLocations:
+                if netloc.privateId == privateId:
+                    # Remove network location from stream
+                    log.info("Removing network location %s from stream %s",
+                         netloc.id, stream.id)
+                    stream.RemoveNetworkLocation(netloc.id)
+
+                    # Send a ModifyStream event
+                    self.server.eventService.Distribute( self.uniqueId,
+                                             Event( Event.MODIFY_STREAM,
+                                                    self.uniqueId,
+                                                    stream ) )
+
+
+    def GetEventServiceLocation(self):
+        return (self.server.eventService.GetLocation(), self.uniqueId)
+    GetEventServiceLocation.soap_export_as = "GetEventServiceLocation"
+
     def wsAddSubjectToRole(self, subject, role_string):
         """
         Adds user to list of users authorized for a specific role.
@@ -2349,100 +2443,6 @@ def RegisterDefaultVenueRoles(role_manager):
     if "Role.VenueServer.Administrators" not in rm.validRoles: 
         rm.RegisterRole("Role.VenueServer.Administrators")
 
-
-    def AddNetworkLocationToStream(self, privateId, streamId, networkLocation):
-        """
-        Add a transport to an existing stream
-
-        **Arguments:**
-
-            *streamId* The id of the stream to which to add the transport
-            *networkLocation* The network location (transport) to add
-            
-        **Raises:**
- 
-
-        Note:  This method overwrites the private id in the incoming
-               network location
-
-        """
-
-        # Validate private id before allowing call
-        pass
-
-        # Add the network location to the specified stream
-        streamList = self.streamList.GetStreams()
-        for stream in streamList:
-            if stream.id == streamId:
-                # Add the network location to the stream
-                networkLocation.privateId = privateId
-                id = stream.AddNetworkLocation(networkLocation)
-                log.info("Added network location %s to stream %s for private id %s",
-                         id, streamId, privateId)
-
-                # Send a ModifyStream event
-                self.server.eventService.Distribute( self.uniqueId,
-                                         Event( Event.MODIFY_STREAM,
-                                                self.uniqueId,
-                                                stream ) )
-
-
-                return id
-
-        return None
-            
-    AddNetworkLocationToStream.soap_export_as = "AddNetworkLocationToStream"
-
-    def RemoveNetworkLocationFromStream(self, privateId, streamId, networkLocationId):
-        
-        # Validate private id before allowing call
-        pass
-
-        # Remove the network location from the specified stream
-        streamList = self.streamList.GetStreams()
-        for stream in streamList:
-            if stream.id == streamId:
-                # Remove network location from stream
-                log.info("Removing network location %s from stream %s",
-                         networkLocationId, streamId)
-                stream.RemoveNetworkLocation(networkLocationId)
-
-                # Send a ModifyStream event
-                self.server.eventService.Distribute( self.uniqueId,
-                                         Event( Event.MODIFY_STREAM,
-                                                self.uniqueId,
-                                                stream ) )
-
-                
-    RemoveNetworkLocationFromStream.soap_export_as = "RemoveNetworkLocationFromStream"
-
-    def RemoveNetworkLocationsByPrivateId(self, privateId):
-
-        # Validate private id before allowing call
-        pass
-
-        log.info("Removing network locations for private id %s", privateId)
-
-        # Remove network locations tagged with specified private id
-        streamList = self.streamList.GetStreams()
-        for stream in streamList:
-            for netloc in stream.networkLocations:
-                if netloc.privateId == privateId:
-                    # Remove network location from stream
-                    log.info("Removing network location %s from stream %s",
-                         netloc.id, stream.id)
-                    stream.RemoveNetworkLocation(netloc.id)
-
-                    # Send a ModifyStream event
-                    self.server.eventService.Distribute( self.uniqueId,
-                                             Event( Event.MODIFY_STREAM,
-                                                    self.uniqueId,
-                                                    stream ) )
-
-
-    def GetEventServiceLocation(self):
-        return (self.server.eventService.GetLocation(), self.uniqueId)
-    GetEventServiceLocation.soap_export_as = "GetEventServiceLocation"
 
 
 class StreamDescriptionList:
