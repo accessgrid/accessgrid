@@ -7,10 +7,20 @@ def BuildLinux():
 
 def BuildWindows():
     os.system("perl Configure VC-WIN32")
-    os.system("ms/do_masm.bat")
-    os.system("nmake -f ms/ntdll.mak")
-    os.system("nmake -f ms/nt.mak")
 
+    #os.system("ms/do_masm.bat")
+    #os.system("nmake -f ms/ntdll.mak")
+    #os.system("nmake -f ms/nt.mak")
+
+    masmPath = os.path.join(os.getcwd(), 'ms', 'do_masm.bat')
+    os.system(masmPath)
+
+    ntdllPath = os.path.join(os.getcwd(), 'ms', 'ntdll.mak')
+    os.system('nmake -f %s' %ntdllPath)
+
+    ntPath = os.path.join(os.getcwd(), 'ms', 'nt.mak')
+    os.system('nmake -f %s' %ntPath)
+    
 def BuildDarwin():
     pass
 
