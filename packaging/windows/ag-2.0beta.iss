@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: ag-2.0beta.iss,v 1.16 2003-04-08 20:02:57 olson Exp $
+; RCS-ID: $Id: ag-2.0beta.iss,v 1.17 2003-04-08 21:00:10 olson Exp $
 ;
 
 #define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
@@ -116,7 +116,7 @@ Source: Scripts\VenueServer.py; DestDir: {app}; Components: Venue_Server
 Source: Scripts\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Server
 
 ; Default node configuration
-Source: share\AccessGrid\nodeConfig\defaultWindows; DestDir: {app}\config; Flags: confirmoverwrite
+Source: share\AccessGrid\nodeConfig\defaultWindows; DestDir: {commonappdata}; Flags: confirmoverwrite
 
 ; AG Icon for programs and stuff
 Source: share\AccessGrid\agicons.exe; DestDir: {app}\config
