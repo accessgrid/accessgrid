@@ -2,7 +2,7 @@
 # Name:        Server.py
 # Purpose:     
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.19 2004-09-10 03:58:54 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.20 2004-11-29 18:47:38 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@ SOAPpy server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.19 2004-09-10 03:58:54 judson Exp $"
+__revision__ = "$Id: Server.py,v 1.20 2004-11-29 18:47:38 turam Exp $"
 
 # External imports
 import urlparse
@@ -63,6 +63,7 @@ class _Server:
                 self._server.handle_request()
             except:
                 log.exception("Exception in SOAP server main loop")
+                
 
         # Don't call server_close() here because handle_request() is blocking.
         #   We break out of handle_request() when server_close() is called from 
@@ -90,8 +91,10 @@ class _Server:
         """
         if self._running.isSet():
            self._running.clear()
+
         # Close the socket even if the thread wasn't started (isn't running).
         try:
+            self._server.socket.shutdown(2)
             self._server.server_close()
         except:
             log.exception("server_close() failed")
