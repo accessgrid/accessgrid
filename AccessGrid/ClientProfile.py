@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.31 2003-09-26 22:40:54 eolson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.32 2004-03-02 21:44:21 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.31 2003-09-26 22:40:54 eolson Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.32 2004-03-02 21:44:21 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -368,6 +368,9 @@ class ClientProfileCache:
                 # Save profile if it is different than cached profile.
                 profile.Save(filename, saveDnDetails=1)
         else:
+            # create directory in case it was removed while app was running.
+            if not os.path.exists(self.cachePath):
+                os.mkdir(self.cachePath)
             profile.Save(filename, saveDnDetails=1)
 
     def loadProfileFromDN(self, distinguished_name):

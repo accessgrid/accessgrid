@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.151 2004-03-02 19:27:30 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.152 2004-03-02 21:44:21 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.151 2004-03-02 19:27:30 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.152 2004-03-02 21:44:21 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -57,11 +57,12 @@ from AccessGrid.Events import MarshalledEvent
 from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import ServerLock, PathFromURL
 from AccessGrid.NetUtilities import GetHostname
+from AccessGrid.Platform import GetUserConfigDir
 
 # these imports are for dealing with SOAP structs, which we won't have to 
 # do when we have WSDL; at that time, these imports and the corresponding calls
 # should be removed
-from AccessGrid.ClientProfile import CreateClientProfile
+from AccessGrid.ClientProfile import CreateClientProfile, ClientProfileCache
 from AccessGrid.Descriptions import CreateServiceDescription, CreateApplicationDescription
 
 log = logging.getLogger("AG.VenueServer")
@@ -394,6 +395,15 @@ class Venue(AuthorizationMixIn):
                                              str(self.uniqueId),
                                              self.server.dataTransferServer)
         log.info("Have upload url: %s", self.dataStore.GetUploadDescriptor())
+
+        # Cache server profiles.
+        # Store in a server wide location.  You could make this different for
+        # each venue if you wanted to track who entered certain venues (secure
+        # venues or conference venues for example).
+        self.profileCachePrefix = "serverProfileCache"
+        self.profileCachePath = os.path.join(GetUserConfigDir(),
+                                             self.profileCachePrefix)
+        self.cache = ClientProfileCache(self.profileCachePath)
 
     #self.StartApplications()
 
@@ -988,6 +998,7 @@ class Venue(AuthorizationMixIn):
                                                              clientProfile)
 
         vcstate.UpdateAccessTime()
+        self._UpdateProfileCache(clientProfile)
 
         # negotiate to get stream descriptions to return
         streamDescriptions = self.NegotiateCapabilities(vcstate)
@@ -1005,6 +1016,12 @@ class Venue(AuthorizationMixIn):
             raise InvalidVenueState
 
         return ( state, privateId, streamDescriptions )
+
+    def _UpdateProfileCache(self, profile):
+        try:
+            self.cache.updateProfile(profile)
+        except InvalidProfileException:
+            log.warn("UpdateProfileCache: InvalidProfile when storing a venue user's profile in the cache.")
 
     def AddNetService(self, clientType, privateId):
         """
