@@ -165,7 +165,6 @@ def GetHostname():
     """
 
     ret, host = pyGlobus.utilc.get_hostname(256)
-    print "getting globus hostname %s %s" % ( ret, host)
     if ret != 0:
         host = socket.getfqdn()
     return host
