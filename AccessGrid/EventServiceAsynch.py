@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.35 2004-07-15 20:37:37 turam Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.36 2004-07-20 16:30:38 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.35 2004-07-15 20:37:37 turam Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.36 2004-07-20 16:30:38 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -672,7 +672,7 @@ class EventService:
             pass
         
         self.EnqueueQuit()
-        self.inQueue.put(("quit",))
+        self.inQueue.put(("quit",None))
 
         for c in self.allConnections:
             c.stop()
@@ -807,7 +807,6 @@ class EventService:
 
         connId = connObj.GetId()
         connChannel = self.findConnectionChannel(connId)
-
         if connChannel:
             log.debug("EventServiceAsynch: EventConnection: Removing client connection to %s",
                   connChannel.id)
