@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.25 2004-04-13 02:08:58 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.26 2004-04-13 02:59:50 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.25 2004-04-13 02:08:58 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.26 2004-04-13 02:59:50 judson Exp $"
 
 import os
 import sys
@@ -110,7 +110,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         self.GetPkgCacheDir()
         self.GetSharedAppDir()
         self.GetNodeServiceDir()
-        self.GetServiceDir()
+        self.GetServicesDir()
         
     def GetVersion(self):
         return self.version
@@ -144,7 +144,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         if self.installBase == None:
             self.GetInstallBase()
 
-        self.configDir = os.path.join(self.installBase, "config")
+        self.configDir = os.path.join(self.installBase, "Config")
 
         # Check dir and make it if needed.
         if self.initIfNeeded:
@@ -257,7 +257,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
         return self.nodeServiceDir
 
-    def GetServiceDir(self):
+    def GetServicesDir(self):
         if self.servicesDir == None:
             ucd = self.GetConfigDir()
             self.servicesDir = os.path.join(ucd, "Services")
@@ -333,7 +333,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         self.location = AGTkConfig.instance().GetInstallDir()
         self.proxyFileName = os.path.join(UserConfig.instance().GetTempDir(),
                                           "proxy")
-        self.caCertDir = os.path.join(agtkdata, "config", "CAcertificates")
+        self.caCertDir = os.path.join(agtkdata, "Config", "CAcertificates")
         self.certFileName = os.path.join(uappdata, "globus", "usercert.pem")
         self.keyFileName = os.path.join(uappdata, "globus", "userkey.pem")
 
@@ -785,7 +785,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
         except:
             log.warn("No Node Service Dir!")
         try:
-            self.GetServiceDir()
+            self.GetServicesDir()
         except:
             log.warn("No Service Dir!")
 
@@ -950,7 +950,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
         # check to make it if needed
         return self.nodeServiceDir
 
-    def GetServiceDir(self):
+    def GetServicesDir(self):
         if self.servicesDir == None:
             ucd = self.GetBaseDir()
             self.servicesDir = os.path.join(ucd, "Services")
@@ -1526,7 +1526,7 @@ if __name__ == "__main__":
             print "\tPkgCacheDir: ", tkConf.GetPkgCacheDir()
             print "\tSharedAppDir: ", tkConf.GetSharedAppDir()
             print "\tNodeServiceDir: ", tkConf.GetNodeServiceDir()
-            print "\tServiceDir: ", tkConf.GetServiceDir()
+            print "\tServiceDir: ", tkConf.GetServicesDir()
         except Exception, e:
             print "Error trying to retrieve AGTk Configuration:\n", e
             
@@ -1593,7 +1593,7 @@ if __name__ == "__main__":
             print "\tTemp Dir: ", userConf.GetTempDir()
             print "\tShared App Dir: ", userConf.GetSharedAppDir()
             print "\tNode Service Dir: ", userConf.GetNodeServiceDir()
-            print "\tService Dir: ", userConf.GetServiceDir()
+            print "\tService Dir: ", userConf.GetServicesDir()
         except Exception, e:
             print "Error trying to retrieve the user Configuration:\n", e
     else:
