@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: ag-2.0beta.iss,v 1.18 2003-04-09 13:15:46 olson Exp $
+; RCS-ID: $Id: ag-2.0beta.iss,v 1.19 2003-04-09 20:17:41 olson Exp $
 ;
 
 #define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
@@ -137,6 +137,7 @@ Source: share\AccessGrid\packaging\windows\Postinstall.py; DestDir: {app}\config
 Source: bin\vic.exe; DestDir: {app}; Components: Video_Consumer Video_Producer
 
 ; Rat Audio Tool
+Source: bin\rat-kill.exe; DestDir: {app}; Components: Audio_Service
 Source: bin\rat.exe; DestDir: {app}; Components: Audio_Service
 Source: bin\ratmedia.exe; DestDir: {app}; Components: Audio_Service
 Source: bin\ratui.exe; DestDir: {app}; Components: Audio_Service

@@ -16,6 +16,11 @@
 # Also need to modify setup.py to change the version there to match
 # this snapshot version.
 #
+# Arguments:
+#   -o outputdir
+#   --short short version name
+#   --long  long version name
+#
 
 import sys
 import os
@@ -23,6 +28,10 @@ import os.path
 import time
 import re
 import win32api
+import getopt
+
+#try:
+#    opts, args = getopt.getopt(sys.argv[1], "o:,
 
 build_base = r"c:\temp\snap"
 
