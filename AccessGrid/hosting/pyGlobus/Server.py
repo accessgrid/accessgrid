@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.11 2003-04-14 23:44:15 eolson Exp $
+# RCS-ID:      $Id: Server.py,v 1.12 2003-04-28 18:06:07 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,10 +13,10 @@
 import socket
 from threading import Thread
 
+# These come from the local directory
 import ServiceObject
 import ServiceBase
 import Utilities
-
 from AGGSISOAP import SOAPProxy, SOAPServer, SOAPConfig
 from pyGlobus.io import GSITCPSocketException
 
@@ -138,7 +138,14 @@ class Server:
         objInst._bind_to_service(service_obj)
 
         return objInst
-    
+
+    def UnbindService(self, objInst):
+        """
+        This method cleans up an object/web service that is no longer needed.
+        """
+
+        objInst._UnbindFromService()
+        
     def CreateServiceObject(self, pathId = None):
 	"""
         Instantiate a new service object.
