@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.61 2004-04-05 18:46:09 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.62 2004-04-09 18:36:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.61 2004-04-05 18:46:09 judson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.62 2004-04-09 18:36:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -89,16 +89,6 @@ def SaveConfig(fileName, config, separator="."):
 
     cp.write(outFile)
     outFile.close()
-    
-def formatExceptionInfo(maxTBlevel=5):
-    cla, exc, trbk = sys.exc_info()
-    excName = cla.__name__
-    try:
-        excArgs = exc.__dict__["args"]
-    except KeyError:
-        excArgs = "<no args>"
-    excTb = traceback.format_tb(trbk, maxTBlevel)
-    return (excName, excArgs, excTb)
 
 def GetRandInt(r):
     return int(r.random() * sys.maxint)
@@ -110,11 +100,6 @@ def AllocateEncryptionKey():
     
     Return: string
     """
-    
-    # I know that the python documentation says the builtin random is not
-    # cryptographically safe, but 1) our requirements are not fort knox, and 2)
-    # the random function is being upgraded to a better version in Python 2.3
-        
     rg = Random(time.time())
     
     intKey = GetRandInt(rg)
@@ -122,8 +107,6 @@ def AllocateEncryptionKey():
     for i in range(1, 8):
         intKey = intKey ^ rg.randrange(1, sys.maxint)
 
-#    print "Key: %x" % intKey
-    
     return "%x" % intKey
 
 def GetResourceList( resourceFile ):
@@ -235,10 +218,8 @@ def GetLogText(maxSize, logFileName):
             traceback += x + "\n"
 
   
-        #info = "\n\n"+"Type: "+str(sys.exc_type)+"\n"+"Value: "+str(sys.exc_value) + "\nTraceback:\n" + traceback
-        text = logFileName + " could not be located " #+ info # text for error report
+        text = logFileName + " could not be located "
 
-    #
     # Seek for todays date to just include relevant
     # log messages in the error report
     #
@@ -411,22 +392,6 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
     o.write(out)
     o.close()
 
-def PathFromURL(URL):
-    """
-    """
-    if URL[0:5] == 'httpg':
-        return urlparse.urlparse(URL[6:])[2]
-    else:
-        return urlparse.urlparse(URL)[2]
-
-def IdFromURL(URL):
-    """
-    """
-    path = PathFromURL(URL)
-    id = path.split('/')[-1]
-
-    return id
-
 class ServerLock:
     """
     Class to be used for locking entry and exit to the venue server.
@@ -460,44 +425,6 @@ class ServerLock:
             line = c[1]
             log.debug("Releasing server lock %s  %s:%s", self.name, file, line)
         self.lock.release()
-
-#
-# We define our own setenv/unsetenv to prod both the pyGlobus
-# environment and the standard python environment.
-#
-
-pyGlobusSetenv = None
-pyGlobusGetenv = None
-pyGlobusUnsetenv = None
-try:
-    import pyGlobus.utilc
-    pyGlobusSetenv = pyGlobus.utilc.setenv
-    pyGlobusUnsetenv = pyGlobus.utilc.unsetenv
-    pyGlobusGetenv = pyGlobus.utilc.getenv
-except:
-    pass
-
-def setenv(name, val):
-    os.environ[name] = val
-
-    print "normal setenv %s=%s" %(name, val)
-
-    if pyGlobusSetenv:
-        print "pyGlobus setenv %s=%s" %(name, val)
-        pyGlobusSetenv(name, val)
-
-def unsetenv(name):
-    if name in os.environ:
-        del os.environ[name]
-    if pyGlobusUnsetenv:
-        pyGlobusUnsetenv(name)
-
-def getenv(name):
-    if pyGlobusGetenv:
-        return pyGlobusGetenv(name)
-    else:
-        return os.getenv(name)
-
 
 #
 # File tree removal stuff, from ASPN recipe.
