@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.120 2004-03-05 21:43:06 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.121 2004-03-05 23:09:19 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.120 2004-03-05 21:43:06 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.121 2004-03-05 23:09:19 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -545,6 +545,7 @@ class VenueServer(AuthorizationMixIn):
                 # Change out the uri for storage,
                 # we don't bother to store the path since this is
                 # a copy of the real list we're going to dump anyway
+                venueUri = venuesToDump[venuePath].uri
                 venuesToDump[venuePath].uri = venuePath
 
                 try:            
@@ -553,8 +554,10 @@ class VenueServer(AuthorizationMixIn):
                 except:
                     self.simpleLock.release()
                     log.exception("Exception Storing Venue!")
+                    venuesToDump[venuePath].uri = venueUri
                     return 0
 
+                venuesToDump[venuePath].uri = venueUri
                 venuesToDump[venuePath].dataStore.StorePersistentData()
 
             # Close the persistent store
@@ -1005,7 +1008,7 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
 
         # Create a venue description
         vd = CreateVenueDescription(venueDescStruct)
-
+        
         # Make sure it's valid
         if vd.uri != URL:
             raise InvalidVenueDescription
@@ -1373,7 +1376,7 @@ class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
 
         if venueDescription == None:
             raise InvalidVenueDescription
-        
+
         return self.proxy.ModifyVenue(url, venueDescription)
 
     def RemoveVenue(self, url):
