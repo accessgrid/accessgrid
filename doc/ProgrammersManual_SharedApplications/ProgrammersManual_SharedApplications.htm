@@ -1,0 +1,2731 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns:st1="urn:schemas-microsoft-com:office:smarttags"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 10">
+<meta name=Originator content="Microsoft Word 10">
+<link rel=File-List
+href="ProgrammersManual_SharedApplications_files/filelist.xml">
+<link rel=Edit-Time-Data
+href="ProgrammersManual_SharedApplications_files/editdata.mso">
+<!--[if !mso]>
+<style>
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style>
+<![endif]-->
+<title>Programmer’s Manual – Shared Applications</title>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="date"/>
+<!--[if gte mso 9]><xml>
+ <o:DocumentProperties>
+  <o:Author>lefvert</o:Author>
+  <o:Template>Normal</o:Template>
+  <o:LastAuthor>lefvert</o:LastAuthor>
+  <o:Revision>11</o:Revision>
+  <o:TotalTime>43</o:TotalTime>
+  <o:Created>2004-06-05T00:50:00Z</o:Created>
+  <o:LastSaved>2004-06-05T01:20:00Z</o:LastSaved>
+  <o:Pages>1</o:Pages>
+  <o:Words>3122</o:Words>
+  <o:Characters>17802</o:Characters>
+  <o:Company> Argonne</o:Company>
+  <o:Lines>148</o:Lines>
+  <o:Paragraphs>41</o:Paragraphs>
+  <o:CharactersWithSpaces>20883</o:CharactersWithSpaces>
+  <o:Version>10.3501</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:View>Print</w:View>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:TrackRevisions/>
+  <w:Compatibility>
+   <w:UseFELayout/>
+  </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if !mso]><object
+ classid="clsid:38481807-CA0E-42D2-BF39-B33AF135CC4D" id=ieooui></object>
+<style>
+st1\:*{behavior:url(#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Courier;
+	panose-1:2 7 4 9 2 2 5 2 4 4;
+	mso-font-charset:0;
+	mso-generic-font-family:modern;
+	mso-font-format:other;
+	mso-font-pitch:fixed;
+	mso-font-signature:3 0 0 0 1 0;}
+@font-face
+	{font-family:"MS Mincho";
+	panose-1:2 2 6 9 4 2 5 8 3 4;
+	mso-font-alt:"\FF2D\FF33 \660E\671D";
+	mso-font-charset:128;
+	mso-generic-font-family:roman;
+	mso-font-format:other;
+	mso-font-pitch:fixed;
+	mso-font-signature:1 134676480 16 0 131072 0;}
+@font-face
+	{font-family:Aharoni;
+	panose-1:0 0 0 0 0 0 0 0 0 0;
+	mso-font-charset:177;
+	mso-generic-font-family:auto;
+	mso-font-pitch:variable;
+	mso-font-signature:6145 0 0 0 32 0;}
+@font-face
+	{font-family:"\@MS Mincho";
+	panose-1:0 0 0 0 0 0 0 0 0 0;
+	mso-font-charset:128;
+	mso-generic-font-family:roman;
+	mso-font-format:other;
+	mso-font-pitch:fixed;
+	mso-font-signature:1 134676480 16 0 131072 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-fareast-language:EN-US;}
+h1
+	{mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:1;
+	font-size:16.0pt;
+	font-family:Arial;
+	mso-font-kerning:16.0pt;
+	mso-fareast-language:EN-US;}
+h2
+	{mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:2;
+	font-size:14.0pt;
+	font-family:Arial;
+	mso-fareast-language:EN-US;
+	font-style:italic;}
+h3
+	{mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:3;
+	font-size:13.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-fareast-language:EN-US;}
+p.MsoHeader, li.MsoHeader, div.MsoHeader
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	tab-stops:center 3.0in right 6.0in;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-fareast-language:EN-US;}
+p.MsoFooter, li.MsoFooter, div.MsoFooter
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	tab-stops:center 3.0in right 6.0in;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-fareast-language:EN-US;}
+p.MsoCaption, li.MsoCaption, div.MsoCaption
+	{mso-style-noshow:yes;
+	mso-style-next:Normal;
+	margin-top:6.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-fareast-language:EN-US;
+	font-weight:bold;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;
+	text-underline:single;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;
+	text-underline:single;}
+span.Heading3Char
+	{mso-style-name:"Heading 3 Char";
+	mso-ansi-font-size:13.0pt;
+	mso-bidi-font-size:13.0pt;
+	font-family:Arial;
+	mso-ascii-font-family:Arial;
+	mso-hansi-font-family:Arial;
+	mso-bidi-font-family:Arial;
+	mso-ansi-language:EN-US;
+	mso-fareast-language:EN-US;
+	mso-bidi-language:AR-SA;
+	font-weight:bold;}
+p.body, li.body, div.body
+	{mso-style-name:body;
+	mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-fareast-language:EN-US;}
+ins
+	{mso-style-type:export-only;
+	text-decoration:none;}
+span.msoIns
+	{mso-style-type:export-only;
+	mso-style-name:"";
+	text-decoration:underline;
+	text-underline:single;}
+span.msoDel
+	{mso-style-type:export-only;
+	mso-style-name:"";
+	text-decoration:line-through;
+	color:red;}
+span.SpellE
+	{mso-style-name:"";
+	mso-spl-e:yes;}
+span.GramE
+	{mso-style-name:"";
+	mso-gram-e:yes;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-even-header:url("ProgrammersManual_SharedApplications_files/header.htm") eh1;
+	mso-header:url("ProgrammersManual_SharedApplications_files/header.htm") h1;
+	mso-even-footer:url("ProgrammersManual_SharedApplications_files/header.htm") ef1;
+	mso-footer:url("ProgrammersManual_SharedApplications_files/header.htm") f1;
+	mso-first-header:url("ProgrammersManual_SharedApplications_files/header.htm") fh1;
+	mso-first-footer:url("ProgrammersManual_SharedApplications_files/header.htm") ff1;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ @list l0
+	{mso-list-id:641614987;
+	mso-list-type:hybrid;
+	mso-list-template-ids:1016596994 1423232776 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;}
+@list l0:level1
+	{mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	mso-ansi-font-size:10.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Courier;
+	color:windowtext;}
+@list l0:level2
+	{mso-level-number-format:alpha-lower;
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l0:level3
+	{mso-level-tab-stop:1.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l0:level4
+	{mso-level-tab-stop:2.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l0:level5
+	{mso-level-tab-stop:2.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l0:level6
+	{mso-level-tab-stop:3.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l0:level7
+	{mso-level-tab-stop:3.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l0:level8
+	{mso-level-tab-stop:4.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l0:level9
+	{mso-level-tab-stop:4.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0in 5.4pt 0in 5.4pt;
+	mso-para-margin:0in;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";}
+</style>
+<![endif]--><!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext="edit" spidmax="3074"/>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext="edit">
+  <o:idmap v:ext="edit" data="1"/>
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=EN-US link=blue vlink=purple style='tab-interval:.5in'>
+
+<div class=Section1>
+
+<p class=MsoNormal align=center style='text-align:center'><b><span
+style='font-size:18.0pt;font-family:Arial;mso-font-kerning:16.0pt'>Programmer’s
+Manual – Shared Applications<o:p></o:p></span></b></p>
+
+<h1 align=center style='text-align:center'><a name="_Toc74143796"></a><a
+name="_Toc73255213"></a><a name="_Toc73254946"></a><a name="_Toc41878282"></a><a
+name="_Toc41882397"></a><a name="_Toc41891395"></a><a name="_Toc41891563"></a><a
+name="_Toc41891707"></a><a name="_Toc41892313"></a><a name="_Toc41893974"></a><a
+name="_Toc41983635"></a><a name="_Toc41983706"></a><a name="_Toc53300964"></a><a
+name="_Toc53301695"></a><a name="_Toc61839826"></a><a name="_Toc61846176"></a><a
+name="_Toc61847886"></a><a name="_Toc61854566"></a><a name="_Toc73180131"></a><a
+name="_Toc73181713"></a><a name="_Toc73254639"><span style='mso-bookmark:_Toc73181713'><span
+style='mso-bookmark:_Toc73180131'><span style='mso-bookmark:_Toc61854566'><span
+style='mso-bookmark:_Toc61847886'><span style='mso-bookmark:_Toc61846176'><span
+style='mso-bookmark:_Toc61839826'><span style='mso-bookmark:_Toc53301695'><span
+style='mso-bookmark:_Toc53300964'><span style='mso-bookmark:_Toc41983706'><span
+style='mso-bookmark:_Toc41983635'><span style='mso-bookmark:_Toc41893974'><span
+style='mso-bookmark:_Toc41892313'><span style='mso-bookmark:_Toc41891707'><span
+style='mso-bookmark:_Toc41891563'><span style='mso-bookmark:_Toc41891395'><span
+style='mso-bookmark:_Toc41882397'><span style='mso-bookmark:_Toc41878282'><span
+style='mso-bookmark:_Toc73254946'><span style='mso-bookmark:_Toc73255213'><span
+style='mso-bookmark:_Toc74143796'>Access Grid Toolkit Documentation</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></a></h1>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h1 align=center style='text-align:center'><a name="_Toc74143797"></a><a
+name="_Toc73255214"></a><a name="_Toc73254947"></a><a name="_Toc41878283"></a><a
+name="_Toc41882398"></a><a name="_Toc41891396"></a><a name="_Toc41891564"></a><a
+name="_Toc41891708"></a><a name="_Toc41892314"></a><a name="_Toc41893975"></a><a
+name="_Toc41983636"></a><a name="_Toc41983707"></a><a name="_Toc53300965"></a><a
+name="_Toc53301696"></a><a name="_Toc61839827"></a><a name="_Toc61846177"></a><a
+name="_Toc61847887"></a><a name="_Toc61854567"></a><a name="_Toc73180132"></a><a
+name="_Toc73181714"></a><a name="_Toc73254640"><span style='mso-bookmark:_Toc73181714'><span
+style='mso-bookmark:_Toc73180132'><span style='mso-bookmark:_Toc61854567'><span
+style='mso-bookmark:_Toc61847887'><span style='mso-bookmark:_Toc61846177'><span
+style='mso-bookmark:_Toc61839827'><span style='mso-bookmark:_Toc53301696'><span
+style='mso-bookmark:_Toc53300965'><span style='mso-bookmark:_Toc41983707'><span
+style='mso-bookmark:_Toc41983636'><span style='mso-bookmark:_Toc41893975'><span
+style='mso-bookmark:_Toc41892314'><span style='mso-bookmark:_Toc41891708'><span
+style='mso-bookmark:_Toc41891564'><span style='mso-bookmark:_Toc41891396'><span
+style='mso-bookmark:_Toc41882398'><span style='mso-bookmark:_Toc41878283'><span
+style='mso-bookmark:_Toc73254947'><span style='mso-bookmark:_Toc73255214'><span
+style='mso-bookmark:_Toc74143797'>The Futures Laboratory</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></a>
+</h1>
+
+<p class=MsoNormal align=center style='text-align:center'><st1:date Year="2004"
+Day="15" Month="1"><b><span style='font-size:16.0pt;font-family:Arial;
+ mso-font-kerning:16.0pt'>15/01/2004</span></b></st1:date><b><span
+style='font-size:16.0pt;font-family:Arial;mso-font-kerning:16.0pt'><o:p></o:p></span></b></p>
+
+<h1><o:p>&nbsp;</o:p></h1>
+
+<h1 align=center style='text-align:center'><a name="_Toc74143798"></a><a
+name="_Toc73255215"></a><a name="_Toc73254948"></a><a name="_Toc61839828"></a><a
+name="_Toc61846178"></a><a name="_Toc61847888"></a><a name="_Toc61854568"></a><a
+name="_Toc73180133"></a><a name="_Toc73181715"></a><a name="_Toc73254641"><span
+style='mso-bookmark:_Toc73181715'><span style='mso-bookmark:_Toc73180133'><span
+style='mso-bookmark:_Toc61854568'><span style='mso-bookmark:_Toc61847888'><span
+style='mso-bookmark:_Toc61846178'><span style='mso-bookmark:_Toc61839828'><span
+style='mso-bookmark:_Toc73254948'><span style='mso-bookmark:_Toc73255215'><span
+style='mso-bookmark:_Toc74143798'>Abstract</span></span></span></span></span></span></span></span></span></a></h1>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>This manual provides a guide for developers who are
+interested in creating shared applications for the Access Grid. It gives an
+overview of the shared application infrastructure currently available in the
+toolkit and step-by-step instructions on how to build an application. In
+addition, this document describes how to package and install an application to
+make it available in Venue Clients.<span style='mso-spacerun:yes'>  </span>The
+Access Grid Team highly encourages developers to build shared applications and
+this manual provides necessary information to successfully implement the task.<o:p></o:p></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h1><a name="_Toc74143799"></a><a name="_Toc73255216"></a><a name="_Toc61854569"></a><a
+name="_Toc73180134"></a><a name="_Toc73181716"></a><a name="_Toc73254642"><span
+style='mso-bookmark:_Toc73181716'><span style='mso-bookmark:_Toc73180134'><span
+style='mso-bookmark:_Toc61854569'><span style='mso-bookmark:_Toc73255216'><span
+style='mso-bookmark:_Toc74143799'>1. Introduction</span></span></span></span></span></a>
+</h1>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>A shared application is a piece of software that enhances
+collaboration, where two or more people are allowed to view, modify, and add
+information simultaneously.<span style='mso-spacerun:yes'>  </span>The Access
+Grid Toolkit supports parallel collaborative work electronically with several
+shared applications included in the software, for instance, the Shared Browser
+and the Shared Presentation viewer. But more important, the Access Grid Toolkit
+can be extended to include shared plug-in applications created by any
+developer.<o:p></o:p></span></p>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><a
+name=1113337></a><span style='font-family:Arial'>The information contained in
+this manual gives developers guidelines on how to create shared applications
+for the Access Grid. It outlines the overall system architecture as well as
+detailed instructions on how to develop, package, and install an application.
+Furthermore, developers will find the Application Monitor helpful when
+debugging shared applications. The last section of this manual explains how to
+use the monitor. <o:p></o:p></span></p>
+
+<h1><a name="_Toc61854570"></a><a name="_Toc73180135"><span style='mso-bookmark:
+_Toc61854570'><o:p>&nbsp;</o:p></span></a></h1>
+
+<h1><span style='mso-bookmark:_Toc73180135'><span style='mso-bookmark:_Toc61854570'><a
+name="_Toc74143800"></a><a name="_Toc73255217"></a><a name="_Toc73181717"></a><a
+name="_Toc73254643"><span style='mso-bookmark:_Toc73181717'><span
+style='mso-bookmark:_Toc73255217'><span style='mso-bookmark:_Toc74143800'>2.
+System Overview</span></span></span></a></span></span></h1>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>In order to support shared applications, an
+Application Factory is present in the Venue. When an application session is
+started, the Application Factory creates an <b style='mso-bidi-font-weight:
+normal'>Event Channel</b> used for sending messages between <b
+style='mso-bidi-font-weight:normal'>Application Clients</b>. It also starts a Web
+service for the application object in the Venue, the<b style='mso-bidi-font-weight:
+normal'> Application Service</b>, used for client registration and storage of
+necessary state information.<b style='mso-bidi-font-weight:normal'> </b>The
+Event Channel and the Application Service enable the Venue to provide a
+mechanism for discovery, coherence, and synchronization among application
+clients. Figure 1 shows an overview of the system.<o:p></o:p></span></p>
+
+<p class=MsoNormal align=center style='text-align:center;page-break-after:avoid'><!--[if mso & !supportInlineShapes & supportFields]><span
+style='font-family:Arial'><span style='mso-element:field-begin;mso-field-lock:
+yes'></span><span style='mso-spacerun:yes'> </span>SHAPE<span
+style='mso-spacerun:yes'>  </span>\* MERGEFORMAT <span style='mso-element:field-separator'></span></span><![endif]--><span
+style='font-family:Arial'><!--[if gte vml 1]><v:group id="_x0000_s1026"
+ editas="canvas" style='width:374.25pt;height:213.45pt;
+ mso-position-horizontal-relative:char;mso-position-vertical-relative:line'
+ coordorigin="1830,3848" coordsize="7485,4269">
+ <o:lock v:ext="edit" aspectratio="t"/>
+ <v:shapetype id="_x0000_t75" coordsize="21600,21600" o:spt="75"
+  o:preferrelative="t" path="m@4@5l@4@11@9@11@9@5xe" filled="f" stroked="f">
+  <v:stroke joinstyle="miter"/>
+  <v:formulas>
+   <v:f eqn="if lineDrawn pixelLineWidth 0"/>
+   <v:f eqn="sum @0 1 0"/>
+   <v:f eqn="sum 0 0 @1"/>
+   <v:f eqn="prod @2 1 2"/>
+   <v:f eqn="prod @3 21600 pixelWidth"/>
+   <v:f eqn="prod @3 21600 pixelHeight"/>
+   <v:f eqn="sum @0 0 1"/>
+   <v:f eqn="prod @6 1 2"/>
+   <v:f eqn="prod @7 21600 pixelWidth"/>
+   <v:f eqn="sum @8 21600 0"/>
+   <v:f eqn="prod @7 21600 pixelHeight"/>
+   <v:f eqn="sum @10 21600 0"/>
+  </v:formulas>
+  <v:path o:extrusionok="f" gradientshapeok="t" o:connecttype="rect"/>
+  <o:lock v:ext="edit" aspectratio="t"/>
+ </v:shapetype><v:shape id="_x0000_s1027" type="#_x0000_t75" style='position:absolute;
+  left:1830;top:3848;width:7485;height:4269' o:preferrelative="f">
+  <v:fill o:detectmouseclick="t"/>
+  <v:path o:extrusionok="t" o:connecttype="none"/>
+ </v:shape><v:rect id="_x0000_s1028" style='position:absolute;left:2520;top:6338;
+  width:6255;height:345'>
+  <v:textbox style='mso-next-textbox:#_x0000_s1028'>
+   <![if !mso]>
+   <table cellpadding=0 cellspacing=0 width="100%">
+    <tr>
+     <td><![endif]>
+     <div>
+     <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
+     style='font-size:10.0pt;font-family:Arial'>Event Channel<o:p></o:p></span></b></p>
+     </div>
+     <![if !mso]></td>
+    </tr>
+   </table>
+   <![endif]></v:textbox>
+ </v:rect><v:oval id="_x0000_s1029" style='position:absolute;left:3881;top:3871;
+  width:3609;height:2089'>
+  <v:textbox style='mso-next-textbox:#_x0000_s1029'>
+   <![if !mso]>
+   <table cellpadding=0 cellspacing=0 width="100%">
+    <tr>
+     <td><![endif]>
+     <div>
+     <p class=MsoNormal align=center style='text-align:center'><b
+     style='mso-bidi-font-weight:normal'><span style='font-size:14.0pt;
+     font-family:Arial'>Venue<o:p></o:p></span></b></p>
+     </div>
+     <![if !mso]></td>
+    </tr>
+   </table>
+   <![endif]></v:textbox>
+ </v:oval><v:rect id="_x0000_s1030" style='position:absolute;left:4887;top:4669;
+  width:1724;height:915' fillcolor="#ff9">
+  <v:textbox style='mso-next-textbox:#_x0000_s1030'>
+   <![if !mso]>
+   <table cellpadding=0 cellspacing=0 width="100%">
+    <tr>
+     <td><![endif]>
+     <div>
+     <p class=MsoNormal align=center style='text-align:center'><b
+     style='mso-bidi-font-weight:normal'><span style='font-family:Arial'>Application<o:p></o:p></span></b></p>
+     <p class=MsoNormal align=center style='text-align:center'><b
+     style='mso-bidi-font-weight:normal'><span style='font-family:Arial'>Service<o:p></o:p></span></b></p>
+     <p class=MsoNormal align=center style='text-align:center'><span
+     style='font-size:10.0pt;font-family:Arial'>(Stores</span><span
+     style='font-family:Arial'> </span><span style='font-size:10.0pt;
+     font-family:Arial'>state)<o:p></o:p></span></p>
+     </div>
+     <![if !mso]></td>
+    </tr>
+   </table>
+   <![endif]></v:textbox>
+ </v:rect><v:rect id="_x0000_s1031" style='position:absolute;left:4898;top:7097;
+  width:1814;height:945' fillcolor="#9cf">
+  <v:textbox style='mso-next-textbox:#_x0000_s1031'>
+   <![if !mso]>
+   <table cellpadding=0 cellspacing=0 width="100%">
+    <tr>
+     <td><![endif]>
+     <div>
+     <p class=MsoNormal align=center style='text-align:center'><b
+     style='mso-bidi-font-weight:normal'><span style='font-family:Arial'>Application<o:p></o:p></span></b></p>
+     <p class=MsoNormal align=center style='text-align:center'><b
+     style='mso-bidi-font-weight:normal'><span style='font-family:Arial'>Client<o:p></o:p></span></b></p>
+     <p class=MsoNormal align=center style='text-align:center'><span
+     style='font-size:10.0pt;font-family:Arial'>(Displays state)<o:p></o:p></span></p>
+     </div>
+     <![if !mso]></td>
+    </tr>
+   </table>
+   <![endif]></v:textbox>
+ </v:rect><v:rect id="_x0000_s1032" style='position:absolute;left:6859;top:7097;
+  width:1799;height:930' fillcolor="#9cf">
+  <v:textbox style='mso-next-textbox:#_x0000_s1032'>
+   <![if !mso]>
+   <table cellpadding=0 cellspacing=0 width="100%">
+    <tr>
+     <td><![endif]>
+     <div>
+     <p class=MsoNormal align=center style='text-align:center'><b
+     style='mso-bidi-font-weight:normal'><span style='font-family:Arial'>Application<o:p></o:p></span></b></p>
+     <p class=MsoNormal align=center style='text-align:center'><b
+     style='mso-bidi-font-weight:normal'><span style='font-family:Arial'>Client<o:p></o:p></span></b></p>
+     <p class=MsoNormal align=center style='text-align:center'><span
+     style='font-size:10.0pt;font-family:Arial'>(Displays state)<o:p></o:p></span></p>
+     </div>
+     <![if !mso]></td>
+    </tr>
+   </table>
+   <![endif]></v:textbox>
+ </v:rect><v:rect id="_x0000_s1033" style='position:absolute;left:2898;top:7108;
+  width:1814;height:930' fillcolor="#9cf">
+  <v:textbox style='mso-next-textbox:#_x0000_s1033'>
+   <![if !mso]>
+   <table cellpadding=0 cellspacing=0 width="100%">
+    <tr>
+     <td><![endif]>
+     <div>
+     <p class=MsoNormal align=center style='text-align:center'><b
+     style='mso-bidi-font-weight:normal'><span style='font-family:Arial'>Application<o:p></o:p></span></b></p>
+     <p class=MsoNormal align=center style='text-align:center'><b
+     style='mso-bidi-font-weight:normal'><span style='font-family:Arial'>Client<o:p></o:p></span></b></p>
+     <p class=MsoNormal align=center style='text-align:center'><span
+     style='font-size:10.0pt;font-family:Arial'>(Displays state)<o:p></o:p></span></p>
+     <p class=MsoNormal align=center style='text-align:center'><span
+     style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+     </div>
+     <![if !mso]></td>
+    </tr>
+   </table>
+   <![endif]></v:textbox>
+ </v:rect><v:line id="_x0000_s1034" style='position:absolute;flip:y' from="4048,5587"
+  to="5311,7057">
+  <v:stroke endarrow="block"/>
+ </v:line><v:line id="_x0000_s1035" style='position:absolute;flip:y' from="5721,5622"
+  to="5737,7097">
+  <v:stroke endarrow="block"/>
+ </v:line><v:line id="_x0000_s1036" style='position:absolute;flip:x y' from="6164,5622"
+  to="7514,7077">
+  <v:stroke endarrow="block"/>
+ </v:line><v:line id="_x0000_s1037" style='position:absolute;flip:y' from="3748,6712"
+  to="3751,7102">
+  <v:stroke endarrow="block"/>
+ </v:line><v:line id="_x0000_s1038" style='position:absolute;flip:x' from="3914,6719"
+  to="3918,7099">
+  <v:stroke endarrow="block"/>
+ </v:line><v:line id="_x0000_s1039" style='position:absolute;flip:x y' from="5296,6682"
+  to="5308,7072">
+  <v:stroke endarrow="block"/>
+ </v:line><v:line id="_x0000_s1040" style='position:absolute;flip:x' from="5444,6734"
+  to="5448,7114">
+  <v:stroke endarrow="block"/>
+ </v:line><v:line id="_x0000_s1041" style='position:absolute;flip:x y' from="7636,6697"
+  to="7648,7072">
+  <v:stroke endarrow="block"/>
+ </v:line><v:line id="_x0000_s1042" style='position:absolute;flip:x' from="7784,6719"
+  to="7788,7069">
+  <v:stroke endarrow="block"/>
+ </v:line><w:wrap type="none"/>
+ <w:anchorlock/>
+</v:group><![endif]--><![if !vml]><img width=499 height=286
+src="ProgrammersManual_SharedApplications_files/image001.gif" v:shapes="_x0000_s1026 _x0000_s1027 _x0000_s1028 _x0000_s1029 _x0000_s1030 _x0000_s1031 _x0000_s1032 _x0000_s1033 _x0000_s1034 _x0000_s1035 _x0000_s1036 _x0000_s1037 _x0000_s1038 _x0000_s1039 _x0000_s1040 _x0000_s1041 _x0000_s1042"><![endif]></span><!--[if mso & !supportInlineShapes & supportFields]><span
+style='font-family:Arial'><v:shape id="_x0000_i1025" type="#_x0000_t75"
+ style='width:374.25pt;height:213.45pt'>
+ <v:imagedata croptop="-65520f" cropbottom="65520f"/>
+</v:shape><span style='mso-element:field-end'></span></span><![endif]--></p>
+
+<p class=MsoCaption align=center style='text-align:center'><span
+style='font-family:Arial'>Figure </span><!--[if supportFields]><span
+style='font-family:Arial'><span style='mso-element:field-begin'></span><span
+style='mso-spacerun:yes'> </span>SEQ Figure \* ARABIC <span style='mso-element:
+field-separator'></span></span><![endif]--><span style='font-family:Arial'><span
+style='mso-no-proof:yes'>1</span></span><!--[if supportFields]><span
+style='font-family:Arial'><span style='mso-element:field-end'></span></span><![endif]--><span
+style='font-family:Arial'> </span><span style='font-family:Arial;font-weight:
+normal;mso-bidi-font-weight:bold'>Shared Application - System Overview<o:p></o:p></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h1><a name="_Toc74143801"></a><a name="_Toc73255218"></a><a name="_Toc73254644"></a><a
+name="_Toc73181718"></a><a name="_Toc73180136"></a><a name="_Toc61854571"></a><a
+name="_SharedAppClient"></a><span style='mso-bookmark:_Toc74143801'><span
+style='mso-bookmark:_Toc73255218'><span style='mso-bookmark:_Toc73254644'><span
+style='mso-bookmark:_Toc73181718'><span style='mso-bookmark:_Toc73180136'><span
+style='mso-bookmark:_Toc61854571'>3. Shared Application Client</span></span></span></span></span></span></h1>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial;mso-bidi-font-family:"Times New Roman"'>The Access
+Grid Toolkit provides developers with a Shared Application Client, implemented
+in the SharedAppClient class, which should be used as a client-side object when
+creating shared applications. The class interface includes methods for all
+necessary client operations and by creating a SharedAppClient instance your
+application can invoke methods that will access the Event Channel and the
+Application Service. The architecture is described in Figure 2.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><span style='mso-spacerun:yes'>  </span><o:p></o:p></span></p>
+
+<p class=MsoNormal style='page-break-after:avoid'><!--[if mso & !supportInlineShapes & supportFields]><span
+style='mso-element:field-begin;mso-field-lock:yes'></span><span
+style='mso-spacerun:yes'> </span>SHAPE<span style='mso-spacerun:yes'> 
+</span>\* MERGEFORMAT <span style='mso-element:field-separator'></span><![endif]--><!--[if gte vml 1]><v:group
+ id="_x0000_s1043" editas="canvas" style='width:6in;height:259.2pt;
+ mso-position-horizontal-relative:char;mso-position-vertical-relative:line'
+ coordorigin="1800,3758" coordsize="8640,5184">
+ <o:lock v:ext="edit" aspectratio="t"/>
+ <v:shape id="_x0000_s1044" type="#_x0000_t75" style='position:absolute;left:1800;
+  top:3758;width:8640;height:5184' o:preferrelative="f">
+  <v:fill o:detectmouseclick="t"/>
+  <v:path o:extrusionok="t" o:connecttype="none"/>
+ </v:shape><v:rect id="_x0000_s1045" style='position:absolute;left:4875;top:5727;
+  width:2484;height:3025' fillcolor="#9cf">
+  <v:textbox style='mso-next-textbox:#_x0000_s1045'>
+   <![if !mso]>
+   <table cellpadding=0 cellspacing=0 width="100%">
+    <tr>
+     <td><![endif]>
+     <div>
+     <p class=MsoNormal><o:p>&nbsp;</o:p></p>
+     <p class=MsoNormal><o:p>&nbsp;</o:p></p>
+     <p class=MsoNormal><o:p>&nbsp;</o:p></p>
+     <p class=MsoNormal><o:p>&nbsp;</o:p></p>
+     <p class=MsoNormal><o:p>&nbsp;</o:p></p>
+     <p class=MsoNormal><o:p>&nbsp;</o:p></p>
+     <p class=MsoNormal><o:p>&nbsp;</o:p></p>
+     <p class=MsoNormal><o:p>&nbsp;</o:p></p>
+     <p class=MsoNormal><o:p>&nbsp;</o:p></p>
+     <p class=MsoNormal align=center style='text-align:center'><b
+     style='mso-bidi-font-weight:normal'><span style='font-family:Arial'>Application
+     Client<o:p></o:p></span></b></p>
+     </div>
+     <![if !mso]></td>
+    </tr>
+   </table>
+   <![endif]></v:textbox>
+ </v:rect><v:rect id="_x0000_s1046" style='position:absolute;left:5367;top:3840;
+  width:1649;height:750' fillcolor="#ff9">
+  <v:textbox style='mso-next-textbox:#_x0000_s1046'>
+   <![if !mso]>
+   <table cellpadding=0 cellspacing=0 width="100%">
+    <tr>
+     <td><![endif]>
+     <div>
+     <p class=MsoNormal align=center style='text-align:center'><b
+     style='mso-bidi-font-weight:normal'><span style='font-family:Arial'>Application<o:p></o:p></span></b></p>
+     <p class=MsoNormal align=center style='text-align:center'><b
+     style='mso-bidi-font-weight:normal'><span style='font-family:Arial'>Service<o:p></o:p></span></b></p>
+     </div>
+     <![if !mso]></td>
+    </tr>
+   </table>
+   <![endif]></v:textbox>
+ </v:rect><v:rect id="_x0000_s1047" style='position:absolute;left:5210;top:7427;
+  width:1814;height:750'>
+  <v:textbox style='mso-next-textbox:#_x0000_s1047'>
+   <![if !mso]>
+   <table cellpadding=0 cellspacing=0 width="100%">
+    <tr>
+     <td><![endif]>
+     <div>
+     <p class=MsoNormal align=center style='text-align:center'><span
+     class=GramE><span style='font-family:Arial'>Your</span></span><span
+     style='font-family:Arial'> Application<o:p></o:p></span></p>
+     </div>
+     <![if !mso]></td>
+    </tr>
+   </table>
+   <![endif]></v:textbox>
+ </v:rect><v:line id="_x0000_s1048" style='position:absolute;flip:y' from="5998,6709"
+  to="5999,7407">
+  <v:stroke endarrow="block"/>
+ </v:line><v:line id="_x0000_s1049" style='position:absolute' from="6157,6741"
+  to="6163,7413">
+  <v:stroke endarrow="block"/>
+ </v:line><v:rect id="_x0000_s1050" style='position:absolute;left:4982;top:6080;
+  width:2264;height:585'>
+  <v:textbox style='mso-next-textbox:#_x0000_s1050'>
+   <![if !mso]>
+   <table cellpadding=0 cellspacing=0 width="100%">
+    <tr>
+     <td><![endif]>
+     <div>
+     <p class=MsoNormal align=center style='text-align:center'><span
+     class=SpellE><span style='font-family:Arial'>SharedAppClient</span></span><span
+     style='font-family:Arial'><o:p></o:p></span></p>
+     </div>
+     <![if !mso]></td>
+    </tr>
+   </table>
+   <![endif]></v:textbox>
+ </v:rect><v:rect id="_x0000_s1051" style='position:absolute;left:4794;top:4832;
+  width:2509;height:364'>
+  <v:textbox style='mso-next-textbox:#_x0000_s1051'>
+   <![if !mso]>
+   <table cellpadding=0 cellspacing=0 width="100%">
+    <tr>
+     <td><![endif]>
+     <div>
+     <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
+     style='font-size:8.0pt;font-family:Arial'>Event Channel<o:p></o:p></span></b></p>
+     </div>
+     <![if !mso]></td>
+    </tr>
+   </table>
+   <![endif]></v:textbox>
+ </v:rect><v:line id="_x0000_s1052" style='position:absolute;flip:x y' from="5603,5162"
+  to="5615,6018">
+  <v:stroke endarrow="block"/>
+ </v:line><v:line id="_x0000_s1053" style='position:absolute' from="5787,5185"
+  to="5791,6054">
+  <v:stroke endarrow="block"/>
+ </v:line><v:line id="_x0000_s1054" style='position:absolute;flip:y' from="6205,4589"
+  to="6210,5988">
+  <v:stroke endarrow="block"/>
+ </v:line><w:wrap type="none"/>
+ <w:anchorlock/>
+</v:group><![endif]--><![if !vml]><img width=576 height=346
+src="ProgrammersManual_SharedApplications_files/image002.gif" v:shapes="_x0000_s1043 _x0000_s1044 _x0000_s1045 _x0000_s1046 _x0000_s1047 _x0000_s1048 _x0000_s1049 _x0000_s1050 _x0000_s1051 _x0000_s1052 _x0000_s1053 _x0000_s1054"><![endif]><!--[if mso & !supportInlineShapes & supportFields]><v:shape
+ id="_x0000_i1026" type="#_x0000_t75" style='width:6in;height:259.2pt'>
+ <v:imagedata croptop="-65520f" cropbottom="65520f"/>
+</v:shape><span style='mso-element:field-end'></span><![endif]--></p>
+
+<p class=MsoCaption align=center style='text-align:center'><span
+style='font-family:Arial'>Figure </span><!--[if supportFields]><span
+style='font-family:Arial'><span style='mso-element:field-begin'></span><span
+style='mso-spacerun:yes'> </span>SEQ Figure \* ARABIC <span style='mso-element:
+field-separator'></span></span><![endif]--><span style='font-family:Arial'><span
+style='mso-no-proof:yes'>2</span></span><!--[if supportFields]><span
+style='font-family:Arial'><span style='mso-element:field-end'></span></span><![endif]--><span
+style='font-family:Arial'><span class=GramE><span style='mso-spacerun:yes'> 
+</span><span style='font-weight:normal;mso-bidi-font-weight:bold'>Shared
+Application Client</span></span></span><span style='font-family:Arial;
+font-weight:normal;mso-bidi-font-weight:bold'> - Architecture</span><span
+style='font-family:Arial'><o:p></o:p></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2><o:p>&nbsp;</o:p></h2>
+
+<h3><a name="_Toc74143802"></a><a name="_Toc73255220"></a><a
+name="_Join(applicationURL,_clientProfile)"></a><a name="_SharedAppClient(name)"></a><span
+class=SpellE><span class=GramE><span style='mso-bookmark:_Toc74143802'><span
+style='mso-bookmark:_Toc73255220'>SharedAppClient</span></span></span></span><span
+style='mso-bookmark:_Toc74143802'><span style='mso-bookmark:_Toc73255220'><span
+class=GramE>(</span>name)</span></span></h3>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>Create a shared application client. Use the client as
+an interface to the application service and event channel provided by the
+application session.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial;color:red'>Parameters<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:1.0in;text-align:justify;text-justify:
+inter-ideograph;text-indent:-1.0in'><i style='mso-bidi-font-style:normal'><span
+style='font-family:Arial'>Name<span style='mso-tab-count:1'>             </span></span></i><span
+style='font-family:Arial'>The name of the application. Log files will by
+default be named &lt;appName&gt;.log.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:1.0in;text-align:justify;text-justify:
+inter-ideograph;text-indent:-1.0in'><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:1.0in;text-align:justify;text-justify:
+inter-ideograph;text-indent:-1.0in'><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h3><a name="_Toc74143803"></a><a name="_Toc73255221"><span style='mso-bookmark:
+_Toc74143803'></span></a><span class=GramE><span style='mso-bookmark:_Toc73255221'><span
+style='mso-bookmark:_Toc74143803'>Join(</span></span></span><span
+style='mso-bookmark:_Toc73255221'><span style='mso-bookmark:_Toc74143803'>applicationURL,
+clientProfile)</span></span></h3>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>Create a connection to the Application Service at a specified
+URL. The connection gives access to the Event Channel used for data
+communication among application clients connected to the service.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Parameters<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=GramE><i style='mso-bidi-font-style:normal'><span
+style='font-family:Arial'>applicationURL</span></i></span><i style='mso-bidi-font-style:
+normal'><span style='font-family:Arial'><span style='mso-tab-count:1'>        </span></span></i><span
+style='font-family:Arial'>Location of application service (https://localhost:8000/100).<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><i style='mso-bidi-font-style:
+normal'><span style='font-family:Arial'>clientProfile</span></i></span></span><i
+style='mso-bidi-font-style:normal'><span style='font-family:Arial'><span
+style='mso-tab-count:2'>               </span></span></i><span
+style='font-family:Arial'>Your client profile.<o:p></o:p></span></p>
+
+<p class=MsoNormal><i style='mso-bidi-font-style:normal'><span
+style='font-family:Arial'><span style='mso-tab-count:1'>            </span></span></i><span
+style='font-family:Arial'><o:p></o:p></span></p>
+
+<h3><a name="_Toc74143804"></a><a name="_Toc73255222"></a><a name="_Shutdown()"></a><span
+class=GramE><span style='mso-bookmark:_Toc74143804'><span style='mso-bookmark:
+_Toc73255222'>Shutdown()</span></span></span><span style='mso-bookmark:_Toc73255222'></span><span
+style='mso-bookmark:_Toc74143804'></span></h3>
+
+<p class=MsoNormal><span style='font-family:Arial'>Close all connections to the
+Application Service and Event Channel.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h3><a name="_Toc74143805"></a><a name="_Toc73255223"></a><a
+name="_InitLogging(debugFlag_=_None,_logFi"></a><span class=SpellE><span
+class=GramE><span style='mso-bookmark:_Toc74143805'><span style='mso-bookmark:
+_Toc73255223'>InitLogging</span></span></span></span><span style='mso-bookmark:
+_Toc74143805'><span style='mso-bookmark:_Toc73255223'><span class=GramE>(</span><span
+class=SpellE>debugFlag</span> = None, <span class=SpellE>logFile</span> = None)</span></span></h3>
+
+<p class=MsoNormal><span style='font-family:Arial'>Initialize the logging
+mechanism. <o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Parameters<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:1.0in;text-indent:-1.0in'><span
+class=SpellE><span class=GramE><i style='mso-bidi-font-style:normal'><span
+style='font-family:Arial'>debugFlag</span></i></span></span> <span
+style='mso-tab-count:1'>    </span>If<span style='font-family:Arial'> set to 1,
+messages will be printed to file and command window.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><i style='mso-bidi-font-style:
+normal'><span style='font-family:Arial'>logFile</span></i></span></span> <span
+style='mso-tab-count:1'>           </span><span style='font-family:Arial'>Name
+of the log file.</span> <span style='font-family:Arial'>Defaults to name
+specified in constructor.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Returns<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><i style='mso-bidi-font-style:
+normal'><span style='font-family:Arial'>logFile</span></i></span></span><i
+style='mso-bidi-font-style:normal'><span style='font-family:Arial'> <span
+style='mso-tab-count:1'>           </span></span></i><span style='font-family:
+Arial'>Log file to use for debug and error messages.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h3><a name="_Toc74143806"></a><a name="_Toc73255224"></a><a
+name="_RegisterEventCallback()"></a><span class=SpellE><span class=GramE><span
+style='mso-bookmark:_Toc74143806'><span style='mso-bookmark:_Toc73255224'>RegisterEventCallback</span></span></span></span><span
+style='mso-bookmark:_Toc74143806'><span style='mso-bookmark:_Toc73255224'><span
+class=GramE>(</span><span class=SpellE>eventType</span>, callback)</span></span></h3>
+
+<p class=MsoNormal><span style='font-family:Arial'>Register callback for event.
+Several callbacks can be registered for each event.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><span
+style='mso-spacerun:yes'>        </span><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Parameters<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><i style='mso-bidi-font-style:
+normal'><span style='font-family:Arial'>eventType</span></i></span></span><i
+style='mso-bidi-font-style:normal'><span style='font-family:Arial'><span
+style='mso-tab-count:1'>     </span></span></i><span style='font-family:Arial'>Event
+to listen for<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=GramE><i style='mso-bidi-font-style:normal'><span
+style='font-family:Arial'>callback</span></i></span><i style='mso-bidi-font-style:
+normal'><span style='font-family:Arial'><span style='mso-tab-count:1'>         </span></span></i><span
+style='font-family:Arial'>Method invoked when receiving event of type <span
+class=SpellE>eventType</span><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><span
+style='mso-spacerun:yes'>        </span><o:p></o:p></span></p>
+
+<h3><a name="_Toc74143807"></a><a name="_Toc73255225"></a><a
+name="_SendEvent(eventType,_data)"></a><span class=SpellE><span class=GramE><span
+style='mso-bookmark:_Toc74143807'><span style='mso-bookmark:_Toc73255225'>SendEvent</span></span></span></span><span
+style='mso-bookmark:_Toc74143807'><span style='mso-bookmark:_Toc73255225'><span
+class=GramE>(</span><span class=SpellE>eventType</span>, data)</span></span></h3>
+
+<p class=MsoNormal><span style='font-family:Arial'>Post an event to all
+applications connected to the application service.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Parameters<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><i style='mso-bidi-font-style:
+normal'><span style='font-family:Arial'>eventType</span></i></span></span><i
+style='mso-bidi-font-style:normal'><span style='font-family:Arial'><span
+style='mso-tab-count:1'>     </span></span></i><span style='font-family:Arial'>Event
+to send.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=GramE><i style='mso-bidi-font-style:normal'><span
+style='font-family:Arial'>data</span></i></span><i style='mso-bidi-font-style:
+normal'><span style='mso-tab-count:2'>                </span></i><span
+style='font-family:Arial'>Information associated with the event of type <span
+class=SpellE>eventType</span>.</span><a name="_SetParticipantStatus(status)"></a></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h3><a name="_Toc74143808"></a><a name="_Toc73255226"><span style='mso-bookmark:
+_Toc74143808'></span></a><span class=SpellE><span class=GramE><span
+style='mso-bookmark:_Toc73255226'><span style='mso-bookmark:_Toc74143808'>SetParticipantStatus</span></span></span></span><span
+style='mso-bookmark:_Toc73255226'><span style='mso-bookmark:_Toc74143808'><span
+class=GramE>(</span>status)</span></span></h3>
+
+<p class=MsoNormal><span style='font-family:Arial'>Set status associated with
+this client.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Parameters<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=GramE><i style='mso-bidi-font-style:normal'><span
+style='font-family:Arial'>status</span></i></span><i style='mso-bidi-font-style:
+normal'><span style='font-family:Arial'> <span style='mso-tab-count:2'>             </span></span></i><span
+style='font-family:Arial'>Status string.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h3><a name="_Toc74143809"></a><a name="_Toc73255227"></a><a
+name="_SetParticipantProfile(profile)"></a><span class=SpellE><span
+class=GramE><span style='mso-bookmark:_Toc74143809'><span style='mso-bookmark:
+_Toc73255227'>SetParticipantProfile</span></span></span></span><span
+style='mso-bookmark:_Toc74143809'><span style='mso-bookmark:_Toc73255227'><span
+class=GramE>(</span>profile)</span></span></h3>
+
+<p class=MsoNormal><span style='font-family:Arial'>Set profile associated with this
+client.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Parameters<o:p></o:p></span></p>
+
+<p class=MsoNormal><i style='mso-bidi-font-style:normal'><span
+style='font-family:Arial'>Profile <span style='mso-tab-count:1'>            </span></span></i><span
+style='font-family:Arial'>Your profile of type <span class=SpellE>ClientProfile</span>.<i
+style='mso-bidi-font-style:normal'> <o:p></o:p></i></span></p>
+
+<p class=MsoNormal><i style='mso-bidi-font-style:normal'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></i></p>
+
+<h3><a name="_Toc74143810"></a><a name="_Toc73255228"></a><a
+name="_SetData(dataKey,_dataValue)"></a><span class=SpellE><span class=GramE><span
+style='mso-bookmark:_Toc74143810'><span style='mso-bookmark:_Toc73255228'>SetData</span></span></span></span><span
+style='mso-bookmark:_Toc74143810'><span style='mso-bookmark:_Toc73255228'><span
+class=GramE>(</span><span class=SpellE>dataKey</span>, <span class=SpellE>dataValue</span>)</span></span></h3>
+
+<p class=MsoNormal><span style='font-family:Arial'>Add data to application
+service.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><span
+style='mso-spacerun:yes'>        </span><o:p></o:p></span></p>
+
+<p class=MsoNormal><b style='mso-bidi-font-weight:normal'><u><span
+style='font-family:Arial'>Note</span></u></b><span style='font-family:Arial'>:
+If data with the same <span class=SpellE>dataKey</span> is already present in
+the application service, the old <span class=SpellE>dataValue</span> will be
+overwritten.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Parameters<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><i style='mso-bidi-font-style:
+normal'><span style='font-family:Arial'>dataKey</span></i></span></span><i
+style='mso-bidi-font-style:normal'><span style='font-family:Arial'><span
+style='mso-tab-count:1'>         </span></span></i><span style='font-family:
+Arial'>Unique id for this data.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><i style='mso-bidi-font-style:
+normal'><span style='font-family:Arial'>dataValue</span></i></span></span><i
+style='mso-bidi-font-style:normal'><span style='font-family:Arial'> <span
+style='mso-tab-count:1'>     </span></span></i><span style='font-family:Arial'>The
+actual data.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h3><a name="_Toc74143811"></a><a name="_Toc73255229"></a><a
+name="_dataValue_GetData(dataKey)"></a><span class=SpellE><span class=GramE><span
+style='mso-bookmark:_Toc74143811'><span style='mso-bookmark:_Toc73255229'>dataValue</span></span></span></span><span
+style='mso-bookmark:_Toc74143811'><span style='mso-bookmark:_Toc73255229'> <span
+class=SpellE>GetData</span>(<span class=SpellE>dataKey</span>)</span></span></h3>
+
+<p class=MsoNormal><span style='font-family:Arial'>Get data from application
+service.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Parameters<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><i style='mso-bidi-font-style:
+normal'><span style='font-family:Arial'>dataKey</span></i></span></span><i
+style='mso-bidi-font-style:normal'><span style='font-family:Arial'> <span
+style='mso-tab-count:1'>        </span></span></i><span style='font-family:
+Arial'>Unique id of data.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h3><a name="_Toc74143812"></a><a name="_Toc73255230"></a><a
+name="_[keys]_GetDataKeys()"></a><span style='mso-bookmark:_Toc74143812'><span
+style='mso-bookmark:_Toc73255230'>[<span class=SpellE><span class=GramE>dataKeys</span></span>]
+<span class=SpellE><span class=GramE>GetDataKeys</span></span><span
+class=GramE>()</span></span></span></h3>
+
+<p class=MsoNormal><span style='font-family:Arial'>Return a list of keys for
+data present in application service.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Returns<o:p></o:p></span></p>
+
+<p class=MsoNormal><i style='mso-bidi-font-style:normal'><span
+style='font-family:Arial'>[<span class=SpellE><span class=GramE>dataKeys</span></span>]</span></i><span
+style='font-family:Arial'> <span style='mso-tab-count:1'>    </span><span
+class=GramE>List of unique data IDs.</span><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h3><a name="_Toc74143813"></a><a name="_Toc73255231"></a><a
+name="_publicID_GetPublicId()"></a><span class=SpellE><span class=GramE><span
+style='mso-bookmark:_Toc74143813'><span style='mso-bookmark:_Toc73255231'>publicID</span></span></span></span><span
+style='mso-bookmark:_Toc74143813'><span style='mso-bookmark:_Toc73255231'> <span
+class=SpellE>GetPublicId</span>()</span></span></h3>
+
+<p class=MsoNormal><span style='font-family:Arial'>Return this client’s unique
+identifier.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Returns<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><i style='mso-bidi-font-style:
+normal'><span style='font-family:Arial'>publicID</span></i></span></span><span
+style='font-family:Arial'> <span style='mso-tab-count:1'>        </span>Unique
+identifier<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h3><a name="_Toc74143814"></a><a name="_Toc73255232"></a><a
+name="_[participantDescription]_GetPartici"></a><span style='mso-bookmark:_Toc74143814'><span
+style='mso-bookmark:_Toc73255232'>[<span class=SpellE><span class=GramE>participantDescription</span></span>]
+<span class=SpellE><span class=GramE>GetParticipants</span></span><span
+class=GramE>()</span></span></span><a name="_[publicId]_GetComponents()"></a></h3>
+
+<p class=MsoNormal><span style='font-family:Arial'>Get participants of this
+application session. <o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><b style='mso-bidi-font-weight:normal'><u><span
+style='font-family:Arial'>Note</span></u></b><span style='font-family:Arial'>:
+A participant is a client that joined this session with the <span class=SpellE>clientProfile</span>
+parameter set.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Returns<o:p></o:p></span></p>
+
+<p class=MsoNormal><i style='mso-bidi-font-style:normal'><span
+style='font-family:Arial'>[<span class=SpellE><span class=GramE>participantDescription</span></span>]
+</span></i><span style='font-family:Arial'><span style='mso-tab-count:1'>      </span><span
+class=GramE>List of <span class=SpellE>ParticipantDescriptions</span>.</span><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h3><a name="_Toc74143815"></a><a name="_Toc73255233"><span style='mso-bookmark:
+_Toc74143815'>[</span></a><span class=SpellE><span class=GramE><span
+style='mso-bookmark:_Toc73255233'><span style='mso-bookmark:_Toc74143815'>publicId</span></span></span></span><span
+style='mso-bookmark:_Toc73255233'><span style='mso-bookmark:_Toc74143815'>] <span
+class=SpellE><span class=GramE>GetComponents</span></span><span class=GramE>()</span></span></span></h3>
+
+<p class=MsoNormal><a name="_url_GetVenueURL()"></a><span style='font-family:
+Arial'>Get components of this application session. <o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><b style='mso-bidi-font-weight:normal'><u><span
+style='font-family:Arial'>Note</span></u></b><span style='font-family:Arial'>:
+Every client that joined this session is considered a component.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Returns<o:p></o:p></span></p>
+
+<p class=MsoNormal><i style='mso-bidi-font-style:normal'><span
+style='font-family:Arial'>[<span class=SpellE><span class=GramE>publicId</span></span>]</span></i><span
+style='font-family:Arial'> <span style='mso-tab-count:1'>       </span><span
+class=GramE>List of public IDs.</span><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h3><a name="_Toc74143816"></a><a name="_Toc73255234"></a><a
+name="_uniqueID_GetApplicationID()"></a><span class=SpellE><span class=GramE><span
+style='mso-bookmark:_Toc74143816'><span style='mso-bookmark:_Toc73255234'>uniqueID</span></span></span></span><span
+style='mso-bookmark:_Toc74143816'><span style='mso-bookmark:_Toc73255234'> <span
+class=SpellE>GetApplicationID</span>()</span></span></h3>
+
+<p class=MsoNormal><span style='font-family:Arial'>Get unique ID of application
+service as represented in the Venue.<o:p></o:p></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Returns<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><i style='mso-bidi-font-style:
+normal'><span style='font-family:Arial'>uniqueId</span></i></span></span><i
+style='mso-bidi-font-style:normal'><span style='font-family:Arial'><span
+style='mso-tab-count:1'>         </span></span></i><span style='font-family:
+Arial'>Unique identifier for this service.<i style='mso-bidi-font-style:normal'><span
+style='mso-tab-count:1'>     </span><o:p></o:p></i></span></p>
+
+<p class=MsoNormal><i style='mso-bidi-font-style:normal'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></i></p>
+
+<h3><a name="_Toc74143817"></a><a name="_Toc73255235"></a><a
+name="_url_GetVenueURL()_1"></a><span class=SpellE><span class=GramE><span
+style='mso-bookmark:_Toc74143817'><span style='mso-bookmark:_Toc73255235'>url</span></span></span></span><span
+style='mso-bookmark:_Toc74143817'><span style='mso-bookmark:_Toc73255235'> <span
+class=SpellE>GetVenueURL</span>()</span></span></h3>
+
+<p class=MsoNormal><span style='font-family:Arial'>Get URL to Venue where this
+application session is running.<o:p></o:p></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Returns<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><i style='mso-bidi-font-style:
+normal'><span style='font-family:Arial'>url</span></i></span></span><span
+style='font-family:Arial'> <span style='mso-tab-count:1'>       </span>Venue
+location (for example; https://localhost:8000/Venues/default)<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h3><a name="_Toc74143818"></a><a name="_Toc73255236"></a><a
+name="_{state}_GetApplicationState()"></a><span style='mso-bookmark:_Toc74143818'><span
+style='mso-bookmark:_Toc73255236'>{<span class=GramE>state</span>} <span
+class=SpellE><span class=GramE>GetApplicationState</span></span><span
+class=GramE>()</span></span></span></h3>
+
+<p class=MsoNormal><span style='font-family:Arial'>Get application state
+information.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial;color:red'>Returns<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'>{State}<span
+style='mso-tab-count:1'>            </span><span class=GramE>Dictionary
+containing application state.</span> <o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><b style='mso-bidi-font-weight:normal'><u><span
+style='font-family:Arial'>Note</span></u></b><span style='font-family:Arial'>:
+Keys for state dictionary are <i style='mso-bidi-font-style:normal'>name</i>, <i
+style='mso-bidi-font-style:normal'>description</i>, <i style='mso-bidi-font-style:
+normal'>id</i>, <span class=SpellE><i style='mso-bidi-font-style:normal'>mimeType</i></span>,
+<span class=SpellE><i style='mso-bidi-font-style:normal'>uri</i></span>, <span
+style='mso-bidi-font-style:italic'>and</span><i style='mso-bidi-font-style:
+normal'> data.<o:p></o:p></i></span></p>
+
+<p class=MsoNormal><i style='mso-bidi-font-style:normal'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></i></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h1><a name="_Toc74143819"></a><a name="_Toc73255237"></a><a name="_Toc61854590"></a><a
+name="_Toc73180155"></a><a name="_Toc73181737"></a><a name="_Toc73254663"><span
+style='mso-bookmark:_Toc73181737'><span style='mso-bookmark:_Toc73180155'><span
+style='mso-bookmark:_Toc61854590'><span style='mso-bookmark:_Toc73255237'><span
+style='mso-bookmark:_Toc74143819'>4. Writing a Shared Application – Shared
+Browser</span></span></span></span></span></a></h1>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>A shared application typically includes information
+that represents the state of the application session. The Application Service,
+created in the Venue when a session starts, should be used for storing the
+state data. Each client joining the session will then be able to load the data
+and perform necessary updates. Also, to synchronize participants during the
+application session, clients should send events to notify any changes they make
+to the state.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>To explain how to build a shared application, we use the
+Shared Browser, currently available in the Access Grid software, as a reference
+example throughout this section. In the Shared Browser case, the state data is
+represented by the current URL. If a participant joins the session, the Shared
+Browser retrieves the URL from the service and browses to the right Web page. If
+the participant changes the URL, the Shared Browser sends an event message,
+containing the new URL, to all participants and also changes the URL stored in
+the service to the new Web location. When other clients receive the event, they
+navigate their browser to the same URL and, hence, browse the Web together and
+maintain a synchronized view of the shared state.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>The following code includes the main implementation
+of the Shared Browser.<span style='mso-spacerun:yes'>  </span>The application
+is built using Python with its user interface developed in <span class=SpellE>wxPython</span>.
+Please note that the user interface class is not included in the example code.
+Following sections will provide a walk-through of the Shared Browser code
+below.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni;
+color:red'><span style='mso-spacerun:yes'>    </span><span class=GramE>from</span></span><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni'> <span
+class=SpellE>AccessGrid.SharedAppClient</span> <span style='color:red'>import</span>
+<span class=SpellE>SharedAppClient</span><o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni;
+color:red'><span style='mso-spacerun:yes'>    </span><span class=GramE>from</span></span><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni'> <span
+class=SpellE>AccessGrid.Platform.Config</span> <span style='color:red'>import</span>
+<span class=SpellE>UserConfig</span><o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni;
+color:red'><span style='mso-spacerun:yes'>    </span><span class=GramE>from</span></span><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni'> <span
+class=SpellE>AccessGrid.ClientProfile</span> <span style='color:red'>import</span>
+<span class=SpellE>ClientProfile</span><o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:1\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>1.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Aharoni'>class <span class=SpellE>SharedBrowser</span>( <span
+class=SpellE>wxApp</span> ):<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:2\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>2.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Aharoni;color:#339966'>&quot;&quot;&quot;<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:3\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>3.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Aharoni;color:#339966'>The <span class=SpellE>SharedBrowser</span>
+combines a <span class=SpellE>SharedApplication</span> and a <span
+class=SpellE>WebBrowser</span><o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:4\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>4.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span class=GramE><span style='font-size:10.0pt;
+font-family:Courier;mso-bidi-font-family:Aharoni;color:#339966'>to</span></span><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni;
+color:#339966'> provide shared web browsing to venue participants.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:5\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>5.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Aharoni;color:#339966'>&quot;&quot;&quot;<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:6\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>6.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Aharoni;color:red'>def <span class=SpellE>OnInit</span></span><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni'>(self):<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:7\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>7.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Aharoni;color:red'><span
+style='mso-spacerun:yes'>    </span>return</span><span style='font-size:10.0pt;
+font-family:Courier;mso-bidi-font-family:Aharoni'> 1<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:8\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>8.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Aharoni;color:red'>def <span class=SpellE>OnExit</span></span><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni'>(self):<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:9\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>9.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Arial;color:#339966'><span
+style='mso-spacerun:yes'>    </span>'''<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:10\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>10.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Arial;
+color:#339966'><span style='mso-spacerun:yes'>    </span>Shut down shared
+browser.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:11\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>11.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:#339966'><span
+style='mso-spacerun:yes'>    </span>'''<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:12\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>12.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>self.sharedAppClient.Shutdown</span>()<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:13\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>13.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>os._exit</span>(1)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:14\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>14.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni;
+color:red'>def __init__</span><span style='font-size:10.0pt;font-family:Courier'>(
+self, <span class=SpellE>appServiceUrl</span>, <span class=SpellE>debugMode</span>
+= 0, <span class=SpellE>logFile</span> = None):<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:15\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>15.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:#339966'><span
+style='mso-spacerun:yes'>  </span><span style='mso-spacerun:yes'>  </span>'''<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:16\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>16.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:#339966'><span
+style='mso-spacerun:yes'>    </span>Creates the shared application client, used
+for <o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:17\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>17.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:#339966'><span
+style='mso-spacerun:yes'>    </span>application service interaction, and opens
+a web browser <o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:18\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>18.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:#339966'><span
+style='mso-spacerun:yes'>    </span><span class=GramE>for</span> UI display. <o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:19\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>19.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:#339966'><span
+style='mso-spacerun:yes'>    </span>'''<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:20\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>20.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>wxApp.__init</span>__(self,
+False)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>        </span><o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:21\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>21.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:navy'><span
+style='mso-spacerun:yes'>    </span># Create shared application client.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:22\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>22.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>self.sharedAppClient</span>
+= <span class=SpellE>SharedAppClient</span>(&quot;<span class=SpellE>SharedBrowser</span>&quot;)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:23\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>23.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>self.log</span> = <span
+class=SpellE>self.sharedAppClient.InitLogging</span>(<span class=SpellE>debugMode,logFile</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:24\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>24.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:navy'><span
+style='mso-spacerun:yes'>    </span># Get client profile.</span><span
+style='font-size:10.0pt;font-family:Courier'><o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:25\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>25.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span>try:<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:26\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>26.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>        </span><span class=SpellE>userConf</span> = <span
+class=SpellE>userConfig.instance</span>().<span class=SpellE>GetConfigDir</span>()<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:27\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>27.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>        </span><span class=SpellE>cpFile</span> = <span
+class=SpellE>os.path.join</span>(<span class=SpellE>userConf</span>,
+&quot;profile&quot;)<span style='mso-tab-count:1'>      </span><o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:28\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>28.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>        </span><span class=SpellE>clientProfile</span>
+= <span class=SpellE>ClientProfile</span>(<span class=SpellE>cpFile</span>)<span
+style='mso-spacerun:yes'>                                                                    
+</span><o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:29\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>29.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span>except:<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:30\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>30.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:navy'><span
+style='mso-spacerun:yes'>        </span><span class=SpellE><span class=GramE>log.exception</span></span><span
+class=GramE>(</span></span><span style='font-size:10.0pt;font-family:Courier'>&quot;<span
+style='color:navy'>Failed to load profile.</span>&quot;<span style='color:navy'>)<o:p></o:p></span></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:31\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>31.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>        </span><span class=SpellE>clientProfile</span>
+= None<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:32\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>32.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:navy'><span
+style='mso-spacerun:yes'>    </span># Join the application session.</span><span
+style='font-size:10.0pt;font-family:Courier'> <o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:33\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>33.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>self.sharedAppClient.Join</span>(<span
+class=SpellE>appServiceUrl</span>, <span class=SpellE>clientProfile</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:34\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>34.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:navy'><span
+style='mso-spacerun:yes'>    </span># Register <span class=GramE>browse</span>
+event callback.</span><span style='font-size:10.0pt;font-family:Courier;
+color:#339966'><o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:35\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>35.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>self.sharedAppClient.RegisterEventCallback</span>(&quot;browse&quot;,<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:36\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>36.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>                                               </span><span
+class=SpellE>self.BrowseCallback</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:37\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>37.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:navy'><span
+style='mso-spacerun:yes'>    </span># Create Browser Window<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:38\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>38.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>self.frame</span> = <span
+class=SpellE>wxFrame</span>(None, -1, &quot;Browser&quot;)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:39\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>39.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>self.browser</span> = <span
+class=SpellE>WebBrowser</span>(<span class=SpellE>self.frame</span>, -1, <span
+class=SpellE>self.log</span>, <span class=SpellE>self.frame</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:40\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>40.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:navy'><span
+style='mso-spacerun:yes'>    </span># Add callback for local browsing<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:41\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>41.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>self.browser.add_navigation_callback</span>(<span
+class=SpellE>self.IBrowseCallback</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:42\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>42.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:navy'><span
+style='mso-spacerun:yes'>    </span># Browse to the current <span class=SpellE>url</span>,
+if exists<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:43\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>43.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>currentUrl</span> = <span
+class=SpellE>self.sharedAppClient.GetData</span>(&quot;<span class=SpellE>url</span>&quot;)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:44\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>44.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni;
+color:red'><span style='mso-spacerun:yes'>    </span>if</span><span
+style='font-size:10.0pt;font-family:Courier'> <span class=SpellE>len</span>(<span
+class=SpellE>currentUrl</span>) &gt; 0:<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:45\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>45.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>        </span><span class=SpellE>self.browser.navigate</span>(<span
+class=SpellE>currentUrl</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-align:justify;text-justify:
+inter-ideograph;text-indent:-.5in;mso-list:l0 level1 lfo1;mso-list-change:"%1\:46\:0\:\." lefvert 20040604T2032;
+tab-stops:list 27.0pt .5in'><![if !supportLists]><span style='font-size:10.0pt;
+font-family:Courier;mso-fareast-font-family:Courier;mso-bidi-font-family:Courier'><span
+style='mso-list:Ignore'>46.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>        </span><span class=SpellE>self.sharedAppClient.SetParticipantStatus</span>(<span
+class=SpellE>currentUrl</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:47\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>47.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>self.frame.Show</span>(1)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:48\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>48.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>self.SetTopWindow</span>(<span
+class=SpellE>self.frame</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:49\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>49.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni;
+color:red'>def <span class=SpellE>BrowseCallback</span></span><span
+style='font-size:10.0pt;font-family:Courier'>(self, event):<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:50\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>50.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:#339966'><span
+style='mso-spacerun:yes'>    </span>'''<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:51\:0\:\." lefvert 20040604T2032;tab-stops:list .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>51.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+color:#339966'><span style='mso-spacerun:yes'>   </span>Callback invoked when
+incoming browse events arrive.<span style='mso-spacerun:yes'>  </span>Events<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:52\:0\:\." lefvert 20040604T2032;tab-stops:list .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>52.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+color:#339966'><span style='mso-spacerun:yes'>   </span>can include this
+component's browse events, so these need to<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:53\:0\:\." lefvert 20040604T2032;tab-stops:list .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>53.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+color:#339966'><span style='mso-spacerun:yes'>   </span><span class=GramE>be</span>
+filtered out.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:54\:0\:\." lefvert 20040604T2032;tab-stops:list .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>54.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+color:#339966'><span style='mso-spacerun:yes'>   </span>'''<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:55\:0\:\." lefvert 20040604T2032;tab-stops:list .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>55.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+color:navy'><span style='mso-spacerun:yes'>   </span># Determine if the sender
+of the event is this component.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:56\:0\:\." lefvert 20040604T2032;tab-stops:list .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>56.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>   </span>(<span class=SpellE>senderId</span>, <span
+class=SpellE>url</span>) = <span class=SpellE>event.data</span><o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:57\:0\:\." lefvert 20040604T2032;tab-stops:list .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>57.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Aharoni;color:red'><span
+style='mso-spacerun:yes'>   </span>if</span><span style='font-size:10.0pt;
+font-family:Courier'> <span class=SpellE>senderId</span> == <span class=SpellE>self.sharedAppClient.GetPublicId</span>():<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:58\:0\:\." lefvert 20040604T2032;tab-stops:list .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>58.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>       </span><span class=SpellE>self.log.debug</span>(&quot;<span
+class=SpellE>Ignoring&quot;+url+&quot;from</span> myself &quot;)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:59\:0\:\." lefvert 20040604T2032;tab-stops:list .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>59.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Aharoni;color:red'><span
+style='mso-spacerun:yes'>   </span>else</span><span style='font-size:10.0pt;
+font-family:Courier'>:<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:60\:0\:\." lefvert 20040604T2032;tab-stops:list .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>60.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>       </span><span class=SpellE>self.log.debug</span>(&quot;Browse
+to &quot;+ <span class=SpellE>url</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:61\:0\:\." lefvert 20040604T2032;tab-stops:list .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>61.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>       </span><span class=SpellE>self.browser.navigate</span>(<span
+class=SpellE>url</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-align:justify;text-justify:
+inter-ideograph;text-indent:-.5in;mso-list:l0 level1 lfo1;mso-list-change:"%1\:62\:0\:\." lefvert 20040604T2032;
+tab-stops:list .5in'><![if !supportLists]><span style='font-size:10.0pt;
+font-family:Courier;mso-fareast-font-family:Courier;mso-bidi-font-family:Courier'><span
+style='mso-list:Ignore'>62.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>       </span><span class=SpellE>self.sharedAppClient.SetParticipantStatus</span>(<span
+class=SpellE>url</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:63\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>63.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni;
+color:red'>def <span class=SpellE>IBrowseCallback</span></span><span
+style='font-size:10.0pt;font-family:Courier'>(self, data):<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:64\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>64.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:#339966'><span
+style='mso-spacerun:yes'>    </span>'''<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:65\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>65.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:#339966'><span
+style='mso-spacerun:yes'>    </span>Callback invoked when local browse events
+occur.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:66\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>66.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:#339966'><span
+style='mso-spacerun:yes'>    </span>'''<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:67\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>67.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:navy'><span
+style='mso-spacerun:yes'>    </span># Send out the event, including our public
+ID in the message.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:68\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>68.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>publicId</span> = <span
+class=SpellE>self.sharedAppClient.GetPublicId</span>()<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-align:justify;text-justify:
+inter-ideograph;text-indent:-.5in;mso-list:l0 level1 lfo1;mso-list-change:"%1\:69\:0\:\." lefvert 20040604T2032;
+tab-stops:list 27.0pt .5in'><![if !supportLists]><span style='font-size:10.0pt;
+font-family:Courier;mso-fareast-font-family:Courier;mso-bidi-font-family:Courier'><span
+style='mso-list:Ignore'>69.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span>message = (<span class=SpellE>publicId</span>,
+data)</span><span style='font-family:Arial'><o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:70\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>70.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>self.sharedAppClient.SendEvent</span>(&quot;browse&quot;,
+message)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;tab-stops:list 27.0pt'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:71\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>71.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier;color:navy'><span
+style='mso-spacerun:yes'>    </span># Store the URL in the application service
+in the venue.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in;mso-list:l0 level1 lfo1;
+mso-list-change:"%1\:72\:0\:\." lefvert 20040604T2032;tab-stops:list 27.0pt .5in'><![if !supportLists]><span
+style='font-size:10.0pt;font-family:Courier;mso-fareast-font-family:Courier;
+mso-bidi-font-family:Courier'><span style='mso-list:Ignore'>72.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>    </span><span class=SpellE>self.sharedAppClient.SetData</span>(&quot;<span
+class=SpellE>url</span>&quot;, data)<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<h2><a name="_Toc74143820"></a><a name="_Toc73255238"></a><a name="_Toc73180156"></a><a
+name="_Toc73181738"></a><a name="_Toc73254664"></a><a name="_Toc61854591"><span
+style='mso-bookmark:_Toc73254664'><span style='mso-bookmark:_Toc73181738'><span
+style='mso-bookmark:_Toc73180156'><span style='mso-bookmark:_Toc73255238'><span
+style='mso-bookmark:_Toc74143820'>4.1. Creating a </span></span></span></span></span></a><span
+class=SpellE><span style='mso-bookmark:_Toc61854591'><span style='mso-bookmark:
+_Toc73254664'><span style='mso-bookmark:_Toc73181738'><span style='mso-bookmark:
+_Toc73180156'><span style='mso-bookmark:_Toc73255238'><span style='mso-bookmark:
+_Toc74143820'>SharedAppClient</span></span></span></span></span></span></span><span
+style='mso-bookmark:_Toc61854591'></span><span style='mso-bookmark:_Toc73254664'><span
+style='mso-bookmark:_Toc73181738'><span style='mso-bookmark:_Toc73180156'><span
+style='mso-bookmark:_Toc73255238'><span style='mso-bookmark:_Toc74143820'>
+Object</span></span></span></span></span></h2>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial;mso-bidi-font-family:"Times New Roman"'>When you
+develop a shared application, you should create a <a
+href="../../../../manual/ProgrammersManual_SharedApplication1.doc#_SharedAppClient"><span
+class=SpellE><span style='mso-bidi-font-family:Arial;color:windowtext;
+text-decoration:none;text-underline:none'>SharedAppClient</span></span></a>
+object to use for communication with the Application Service that is running in
+the Venue and the Event Channel. The application name, “<span class=SpellE>SharedBrowser</span>”
+in this example, is the name that identifies your application, and log files
+will by default be named <span class=SpellE>SharedBrowser.log</span>. To
+initialize logging, call the <span class=SpellE>InitLogging</span> method that
+returns a handle to the log file. <o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>21.<span
+style='mso-spacerun:yes'>       </span><span style='color:navy'># Create shared
+application client<o:p></o:p></span></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>22.<span
+style='mso-spacerun:yes'>       </span><span class=SpellE><span class=GramE>self.sharedAppClient</span></span>
+= <span class=SpellE>SharedAppClient</span>(&quot;<span class=SpellE>SharedBrowser</span>&quot;)<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>23.<span
+style='mso-spacerun:yes'>       </span><span class=SpellE><span class=GramE>self.log</span></span>
+= <span class=SpellE>self.sharedAppClient.InitLogging</span>(<span
+class=SpellE>debugMode,logFile</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<h2><a name="_Toc74143821"></a><a name="_Toc73255239"></a><a name="_Toc61854592"></a><a
+name="_Toc73180157"></a><a name="_Toc73181739"></a><a name="_Toc73254665"><span
+style='mso-bookmark:_Toc73181739'><span style='mso-bookmark:_Toc73180157'><span
+style='mso-bookmark:_Toc61854592'><span style='mso-bookmark:_Toc73255239'><span
+style='mso-bookmark:_Toc74143821'>4.2. Joining the Application Service</span></span></span></span></span></a></h2>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>The next step is to join the application session in
+the Venue by using the <b style='mso-bidi-font-weight:normal'>Join </b>method
+in the <span class=SpellE>SharedAppClient</span>. The <span class=SpellE><b
+style='mso-bidi-font-weight:normal'>appServiceURL</b></span><b
+style='mso-bidi-font-weight:normal'> </b>parameter should be provided as a
+command line option to the application and will get loaded automatically when
+the application is opened in the Venue Client (read section 5 for information
+about packaging). The <span class=SpellE><b style='mso-bidi-font-weight:normal'>ClientProfile</b></span>
+argument is used to identify you in the application. For example, your name
+will be displayed in the Application Monitor once you have joined a session
+(see Section 8). <o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier;
+color:navy'>32.<span style='mso-spacerun:yes'>    </span># Join the application
+session.</span><span style='font-size:10.0pt;font-family:Courier'> <o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>33.<span
+style='mso-spacerun:yes'>    </span><span class=SpellE><span class=GramE>self.sharedAppClient.Join</span></span><span
+class=GramE>(</span><span class=SpellE>appServiceUrl</span>, <span
+class=SpellE>clientProfile</span>)<o:p></o:p></span></p>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>You have now established a connection to the service
+and are allowed to use the event channel and access service data.<o:p></o:p></span></p>
+
+<h2><a name="_Toc74143822"></a><a name="_Toc73255240"></a><a name="_Toc61854593"></a><a
+name="_Toc73180158"></a><a name="_Toc73181740"></a><a name="_Toc73254666"><span
+style='mso-bookmark:_Toc73181740'><span style='mso-bookmark:_Toc73180158'><span
+style='mso-bookmark:_Toc61854593'><span style='mso-bookmark:_Toc73255240'><span
+style='mso-bookmark:_Toc74143822'>4.3. Sending Events</span></span></span></span></span></a></h2>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>Application clients are synchronized by exchanging
+event messages containing reference data. To send an event message to other
+application clients, you should use the <span class=SpellE>SendEvent</span>
+method.<span style='mso-spacerun:yes'>  </span><o:p></o:p></span></p>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>When a participant of the Shared Browser navigates to
+a new URL, a <span class=SpellE>tuple</span> is sent as event data (<span
+class=SpellE>publicId</span>, data) associated with the “browse” event type.
+The <span class=SpellE>publicId</span> is the unique ID of the sender of this
+event, and data is the URL you wish to browse to. Of course, when writing an
+application, you can decide the type of the data to send. It does not have to
+be a <span class=SpellE>tuple</span>.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>67.<span
+style='color:navy'><span style='mso-spacerun:yes'>    </span># Send out the
+event, including our public ID in the message.<o:p></o:p></span></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>68.<span
+style='mso-spacerun:yes'>    </span><span class=SpellE><span class=GramE>publicId</span></span>
+= <span class=SpellE>self.sharedAppClient.GetPublicId</span>()<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-size:10.0pt;font-family:Courier'>69.<span
+style='mso-spacerun:yes'>    </span><span class=GramE>message</span> = (<span
+class=SpellE>publicId</span>, data)</span><span style='font-family:Arial'><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>70.<span
+style='mso-spacerun:yes'>    </span><span class=SpellE><span class=GramE>self.sharedAppClient.SendEvent</span></span><span
+class=GramE>(</span>&quot;browse&quot;, message)<o:p></o:p></span></p>
+
+<h2><a name="_Toc74143823"></a><a name="_Toc73255241"></a><a name="_Toc61854594"></a><a
+name="_Toc73180159"></a><a name="_Toc73181741"></a><a name="_Toc73254667"><span
+style='mso-bookmark:_Toc73181741'><span style='mso-bookmark:_Toc73180159'><span
+style='mso-bookmark:_Toc61854594'><span style='mso-bookmark:_Toc73255241'><span
+style='mso-bookmark:_Toc74143823'>4.4. Receiving Events</span></span></span></span></span></a></h2>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>In order to receive events, your application should
+register event callbacks; methods that will be invoked when an event occurs.
+Callbacks are registered with the <span class=SpellE><b style='mso-bidi-font-weight:
+normal'>RegisterEventCallback</b></span> method of the <span class=SpellE>SharedAppClient</span>.
+The method should have one parameter, the <b style='mso-bidi-font-weight:normal'>event</b>
+that includes the received message.<o:p></o:p></span></p>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>The Shared Browser registers only one callback, the <span
+class=SpellE><b style='mso-bidi-font-weight:normal'>BrowseCallback</b></span>,
+which is invoked when a <b style='mso-bidi-font-weight:normal'>“browse” </b>event
+type is received. The browse event message includes two pieces of data, <span
+class=SpellE><b style='mso-bidi-font-weight:normal'>senderId</b></span> and <span
+class=SpellE><span class=GramE><b style='mso-bidi-font-weight:normal'>url</b></span></span>.
+The <span class=SpellE>senderId</span> is the unique ID of the application
+client that sent the message, and the <span class=SpellE><span class=GramE>url</span></span>
+is the address to which we should navigate our browser.<span
+style='mso-spacerun:yes'>  </span><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>34.<span
+style='mso-spacerun:yes'>        </span><span style='color:navy'># Register <span
+class=GramE>browse</span> event callback</span><span style='color:#339966'><o:p></o:p></span></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>35.<span
+style='mso-spacerun:yes'>        </span><span class=SpellE><span class=GramE>self.sharedAppClient.RegisterEventCallback</span></span><span
+class=GramE>(</span>&quot;browse&quot;,<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>36.<span
+style='mso-spacerun:yes'>                                            </span><span
+style='mso-spacerun:yes'>     </span><span class=SpellE><span class=GramE>self.BrowseCallback</span></span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>…<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>49.<span
+style='mso-spacerun:yes'>     </span></span><span class=GramE><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni;
+color:red'>def</span></span><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Aharoni;color:red'> <span class=SpellE>BrowseCallback</span></span><span
+style='font-size:10.0pt;font-family:Courier'>(self, event):<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=GramE><span style='font-size:10.0pt;font-family:
+Courier'>50.<span style='mso-spacerun:yes'>        </span><span
+style='color:#339966'>'''</span></span></span><span style='font-size:10.0pt;
+font-family:Courier;color:#339966'><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Arial'>51.</span><span style='font-size:10.0pt;font-family:
+Courier;color:#339966'><span style='mso-spacerun:yes'>        </span>Callback
+invoked when incoming browse events arrive.<span style='mso-spacerun:yes'> 
+</span>Events<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Arial'>52.</span><span style='font-size:10.0pt;font-family:
+Courier;color:#339966'><span style='mso-spacerun:yes'>        </span><span
+class=GramE>can</span> include this component's browse events, so these need to<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Arial'>53.</span><span style='font-size:10.0pt;font-family:
+Courier;color:#339966'><span style='mso-spacerun:yes'>        </span><span
+class=GramE>be</span> filtered out.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=GramE><span style='font-size:10.0pt;font-family:
+Courier;mso-bidi-font-family:Arial'>54.</span><span style='font-size:10.0pt;
+font-family:Courier;color:#339966'><span style='mso-spacerun:yes'>       
+</span>'''</span></span><span style='font-size:10.0pt;font-family:Courier;
+color:#339966'><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>55.<span
+style='mso-spacerun:yes'>        </span><span style='color:navy'># Determine if
+the sender of the event is this client.<o:p></o:p></span></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>56.<span
+style='mso-spacerun:yes'>        </span>(<span class=SpellE><span class=GramE>senderId</span></span>,
+<span class=SpellE>url</span>) = <span class=SpellE>event.data</span><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'><span
+style='mso-spacerun:yes'>        </span><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>57.<span
+style='mso-spacerun:yes'>        </span></span><span class=GramE><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni;
+color:red'>if</span></span><span style='font-size:10.0pt;font-family:Courier'> <span
+class=SpellE>senderId</span> == <span class=SpellE>self.sharedAppClient.GetPublicId</span>():<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>58.<span
+style='mso-spacerun:yes'>            </span><span class=SpellE><span
+class=GramE>self.log.debug</span></span><span class=GramE>(</span>&quot;<span
+class=SpellE>Ignoring&quot;+url+&quot;from</span> myself &quot;)<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>59.<span
+style='mso-spacerun:yes'>        </span></span><span class=GramE><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni;
+color:red'>else</span></span><span style='font-size:10.0pt;font-family:Courier'>:<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>60.<span
+style='mso-spacerun:yes'>            </span><span class=SpellE><span
+class=GramE>self.log.debug</span></span><span class=GramE>(</span>&quot;Browse
+to &quot;+ <span class=SpellE>url</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>61.<span
+style='mso-spacerun:yes'>            </span><span class=SpellE><span
+class=GramE>self.browser.navigate</span></span><span class=GramE>(</span><span
+class=SpellE>url</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-size:10.0pt;font-family:Courier'>62.<span
+style='mso-spacerun:yes'>            </span><span class=SpellE><span
+class=GramE>self.sharedAppClient.SetParticipantStatus</span></span><span
+class=GramE>(</span><span class=SpellE>url</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h2><a name="_Toc74143824"></a><a name="_Toc73255242"></a><a name="_Toc61854595"></a><a
+name="_Toc73180160"></a><a name="_Toc73181742"></a><a name="_Toc73254668"><span
+style='mso-bookmark:_Toc73181742'><span style='mso-bookmark:_Toc73180160'><span
+style='mso-bookmark:_Toc61854595'><span style='mso-bookmark:_Toc73255242'><span
+style='mso-bookmark:_Toc74143824'>4.5. Adding Data to Service</span></span></span></span></span></a></h2>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>In order to synchronize clients, state information
+should be stored in the Application Service. State values can be set by using
+the <span class=SpellE><b style='mso-bidi-font-weight:normal'>SetData</b></span>
+method of the <span class=SpellE>SharedAppClient</span>. Each piece of
+information is distinguished by the data key, in this example <b
+style='mso-bidi-font-weight:normal'>“<span class=SpellE>url</span>,”</b> and
+the actual data is contained in the data value, <b style='mso-bidi-font-weight:
+normal'>data.<span style='mso-spacerun:yes'>  </span></b><o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><b
+style='mso-bidi-font-weight:normal'><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></b></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>71.<span
+style='mso-spacerun:yes'>        </span><span style='color:navy'># Store the
+URL in the application service in the venue<o:p></o:p></span></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>72.<span
+style='mso-spacerun:yes'>        </span><span class=SpellE><span class=GramE>self.sharedAppClient.SetData</span></span><span
+class=GramE>(</span>&quot;<span class=SpellE>url</span>&quot;, data)<o:p></o:p></span></p>
+
+<h2><a name="_Toc74143825">4.</a><a name="_Toc73255243"></a><a
+name="_Toc61854596"></a><a name="_Toc73180161"></a><a name="_Toc73181743"></a><a
+name="_Toc73254669"><span style='mso-bookmark:_Toc73181743'><span
+style='mso-bookmark:_Toc73180161'><span style='mso-bookmark:_Toc61854596'><span
+style='mso-bookmark:_Toc73255243'><span style='mso-bookmark:_Toc74143825'>6.
+Retrieving Data from Service</span></span></span></span></span></a></h2>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>Application clients will join a session at different
+times and have to load current state of the session in order to participate. When
+your application needs to load current application state, you should use the <span
+class=SpellE><b style='mso-bidi-font-weight:normal'>GetData</b></span><b
+style='mso-bidi-font-weight:normal'> </b>method of the <span class=SpellE>SharedAppClient</span>.
+For the Shared Browser, the <span class=SpellE>GetData</span> method with key
+set to <b style='mso-bidi-font-weight:normal'>“<span class=SpellE>url</span>”</b>
+will return the current <span class=SpellE><span class=GramE>url</span></span>.
+<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>42.<span
+style='mso-spacerun:yes'>        </span><span style='color:navy'># Browse to
+the current <span class=SpellE><span class=GramE>url</span></span>, if exists<o:p></o:p></span></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>43.<span
+style='mso-spacerun:yes'>        </span><span class=SpellE><span class=GramE>currentUrl</span></span>
+= <span class=SpellE>self.sharedAppClient.GetData</span>(&quot;<span
+class=SpellE>url</span>&quot;)<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>44.<span
+style='mso-spacerun:yes'>        </span></span><span class=GramE><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Aharoni;
+color:red'>if</span></span><span style='font-size:10.0pt;font-family:Courier'> <span
+class=SpellE>len</span>(<span class=SpellE>currentUrl</span>) &gt; 0:<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>45.<span
+style='mso-spacerun:yes'>            </span><span class=SpellE><span
+class=GramE>self.browser.navigate</span></span><span class=GramE>(</span><span
+class=SpellE>currentUrl</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<h2><a name="_Toc74143826"></a><a name="_Toc73255244"></a><a name="_Toc61854597"></a><a
+name="_Toc73180162"></a><a name="_Toc73181744"></a><a name="_Toc73254670"><span
+style='mso-bookmark:_Toc73181744'><span style='mso-bookmark:_Toc73180162'><span
+style='mso-bookmark:_Toc61854597'><span style='mso-bookmark:_Toc73255244'><span
+style='mso-bookmark:_Toc74143826'>4.7. Setting the Client Status and Profile</span></span></span></span></span></a></h2>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>All clients joining the application session will
+automatically, when calling the Join method, submit their client profile to the
+service. The profile is used for monitoring purposes (see Application Monitor
+in Section 8). Use the <span class=SpellE><b style='mso-bidi-font-weight:normal'>SetParticipantProfile</b></span>
+method to change your profile. <o:p></o:p></span></p>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>After joining an application session, a participant
+will be assigned status “connected.” If you want additional status values to be
+set, call the <span class=SpellE><b style='mso-bidi-font-weight:normal'>SetParticipantStatus</b></span>
+method in the <span class=SpellE>SharedAppClient</span>. In order to keep track
+of which Web page each participant is currently viewing, the Shared Browser
+uses the URL as the status parameter.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>66.<span
+style='mso-spacerun:yes'>        </span><span class=SpellE><span class=GramE>self.browser.navigate</span></span><span
+class=GramE>(</span><span class=SpellE>url</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-size:10.0pt;font-family:Courier'>62.<span
+style='mso-spacerun:yes'>        </span><span class=SpellE><span class=GramE>self.sharedAppClient.SetParticipantStatus</span></span><span
+class=GramE>(</span><span class=SpellE>url</span>)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-size:10.0pt;font-family:Courier'><o:p>&nbsp;</o:p></span></p>
+
+<h2><a name="_Toc74143827"></a><a name="_Toc73255245"></a><a name="_Toc61854598"></a><a
+name="_Toc73180163"></a><a name="_Toc73181745"></a><a name="_Toc73254671"><span
+style='mso-bookmark:_Toc73181745'><span style='mso-bookmark:_Toc73180163'><span
+style='mso-bookmark:_Toc61854598'><span style='mso-bookmark:_Toc73255245'><span
+style='mso-bookmark:_Toc74143827'>4.8. Disconnecting from Service</span></span></span></span></span></a></h2>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>It is critical that you exit the application session
+properly. When closing down your client, call <b style='mso-bidi-font-weight:
+normal'>Shutdown</b> to disconnect from the service.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Aharoni'>8.<span style='mso-spacerun:yes'>     </span><span
+class=GramE><span style='color:red'>def</span></span><span style='color:red'> <span
+class=SpellE>OnExit</span></span>(self):<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=GramE><span style='font-size:10.0pt;font-family:
+Courier;mso-bidi-font-family:Arial'>9.<span style='mso-spacerun:yes'>       
+</span><span style='color:#339966'>'''</span></span></span><span
+style='font-size:10.0pt;font-family:Courier;mso-bidi-font-family:Arial;
+color:#339966'><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier;
+mso-bidi-font-family:Arial'>10.<span style='color:#339966'><span
+style='mso-spacerun:yes'>        </span>Shut down shared browser.<o:p></o:p></span></span></p>
+
+<p class=MsoNormal><span class=GramE><span style='font-size:10.0pt;font-family:
+Courier;mso-bidi-font-family:Arial'>11.</span><span style='font-size:10.0pt;
+font-family:Courier;color:#339966'><span style='mso-spacerun:yes'>       
+</span>'''</span></span><span style='font-size:10.0pt;font-family:Courier;
+color:#339966'><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>12.<span
+style='mso-spacerun:yes'>        </span><span class=SpellE><span class=GramE>self.sharedAppClient.Shutdown</span></span><span
+class=GramE>()</span><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Courier'>13.<span
+style='mso-spacerun:yes'>        </span><span class=SpellE>os._<span
+class=GramE>exit</span></span><span class=GramE>(</span>1)<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h1><a name="_Toc74143828"></a><a name="_Toc73255246"></a><a name="_Toc61854599"></a><a
+name="_Toc73180164"></a><a name="_Toc73181746"></a><a name="_Toc73254672"><span
+style='mso-bookmark:_Toc73181746'><span style='mso-bookmark:_Toc73180164'><span
+style='mso-bookmark:_Toc61854599'><span style='mso-bookmark:_Toc73255246'><span
+style='mso-bookmark:_Toc74143828'>5. Packaging the Application</span></span></span></span></span></a></h1>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>To install the application and make it available in
+Venue Clients, you must make sure that your program is packaged in a format recognized
+by the Access Grid software. The easiest way is to create necessary files and
+store them in a zip archive, but several different formats are supported
+(described in Section 6).<o:p></o:p></span></p>
+
+<h2><a name="_Toc74143829"></a><a name="_Toc73255247"></a><a name="_Toc61854600"></a><a
+name="_Toc73180165"></a><a name="_Toc73181747"></a><a name="_Toc73254673"><span
+style='mso-bookmark:_Toc73181747'><span style='mso-bookmark:_Toc73180165'><span
+style='mso-bookmark:_Toc61854600'><span style='mso-bookmark:_Toc73255247'><span
+style='mso-bookmark:_Toc74143829'>5.1 Application Description Files</span></span></span></span></span></a>
+</h2>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>In addition to program files containing the
+application code, your package should include a &lt;<span class=SpellE>applicationName</span>&gt;.app
+file describing the application.<o:p></o:p></span></p>
+
+<p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
+style='font-family:Arial'>Example - The <span class=SpellE>SharedBrowser.app</span>
+file<o:p></o:p></span></b></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'>[<span class=GramE>application</span>]<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=GramE><span style='font-family:Arial'>name</span></span><span
+style='font-family:Arial'> = Shared Browser<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><span style='font-family:
+Arial'>mimetype</span></span></span><span style='font-family:Arial'> =
+application/x-<span class=SpellE>ag</span>-shared-browser<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=GramE><span style='font-family:Arial'>extension</span></span><span
+style='font-family:Arial'> = <span class=SpellE>sharedbrowser</span><o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=GramE><span style='font-family:Arial'>files</span></span><span
+style='font-family:Arial'> = <span class=SpellE>SharedBrowser.py</span><o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'>[<span class=GramE>commands</span>]<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'>Open = %<span class=GramE>(python</span>)s
+<span class=SpellE>SharedBrowser.py</span><span style='mso-spacerun:yes'> 
+</span>-a %(<span class=SpellE>appUrl</span>)s<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h3><a name="_Toc74143830"></a><a name="_Toc73255248"></a><a name="_Toc73180166"></a><a
+name="_Toc73181748"></a><a name="_Toc73254674"></a><a name="_Toc61854601"><span
+style='mso-bookmark:_Toc73254674'><span style='mso-bookmark:_Toc73181748'><span
+style='mso-bookmark:_Toc73180166'><span style='mso-bookmark:_Toc73255248'><span
+style='mso-bookmark:_Toc74143830'>The Application Section</span></span></span></span></span></a><span
+style='mso-bookmark:_Toc73254674'><span style='mso-bookmark:_Toc73181748'><span
+style='mso-bookmark:_Toc73180166'><span style='mso-bookmark:_Toc73255248'><span
+style='mso-bookmark:_Toc74143830'> – [application]</span></span></span></span></span></h3>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE><b style='mso-bidi-font-weight:normal'><span
+style='font-family:Arial'>name</span></b></span><b style='mso-bidi-font-weight:
+normal'><span style='font-family:Arial'><o:p></o:p></span></b></p>
+
+<p class=MsoNormal style='margin-left:.5in'><span class=GramE><span
+style='font-family:Arial'>Represents the application in the Venue.</span></span><span
+style='font-family:Arial'><span style='mso-spacerun:yes'>  </span>This name
+will be added to the list of available applications under <b style='mso-bidi-font-weight:
+normal'>Venue – Start Application Session</b> in the Venue Client.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><b style='mso-bidi-font-weight:
+normal'><span style='font-family:Arial'>mimetype</span></b></span></span><b
+style='mso-bidi-font-weight:normal'><span style='font-family:Arial'> <o:p></o:p></span></b></p>
+
+<p class=MsoNormal style='margin-left:.5in'><span style='font-family:Arial'>Type
+associated with this application, recommended mime type is <i style='mso-bidi-font-style:
+normal'>application/x-<span class=SpellE>ag</span>-&lt;name&gt;.</i><o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=GramE><b style='mso-bidi-font-weight:normal'><span
+style='font-family:Arial'>extension</span></b></span><b style='mso-bidi-font-weight:
+normal'><span style='font-family:Arial'> <span style='mso-tab-count:1'>    </span><o:p></o:p></span></b></p>
+
+<p class=MsoNormal style='margin-left:.5in'><span style='font-family:Arial'>File
+extension associated with the mime type, recommended extension is <i
+style='mso-bidi-font-style:normal'>&lt;name&gt;.</i><o:p></o:p></span></p>
+
+<p class=MsoNormal><span class=GramE><b style='mso-bidi-font-weight:normal'><span
+style='font-family:Arial'>files</span></b></span><b style='mso-bidi-font-weight:
+normal'><span style='font-family:Arial'> <o:p></o:p></span></b></p>
+
+<p class=MsoNormal style='text-indent:.5in'><span class=GramE><span
+style='font-family:Arial'>Program files containing the application code.</span></span><span
+style='font-family:Arial'><o:p></o:p></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3><a name="_Toc74143831"></a><a name="_Toc73255249"></a><a name="_Toc73180167"></a><a
+name="_Toc73181749"></a><a name="_Toc73254675"></a><a name="_Toc61854602"><span
+style='mso-bookmark:_Toc73254675'><span style='mso-bookmark:_Toc73181749'><span
+style='mso-bookmark:_Toc73180167'><span style='mso-bookmark:_Toc73255249'><span
+style='mso-bookmark:_Toc74143831'>The Command Section</span></span></span></span></span></a><span
+style='mso-bookmark:_Toc73254675'><span style='mso-bookmark:_Toc73181749'><span
+style='mso-bookmark:_Toc73180167'><span style='mso-bookmark:_Toc73255249'><span
+style='mso-bookmark:_Toc74143831'> – [commands]</span></span></span></span></span></h3>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>The commands listed in this section will show up in
+the pop-up menu that appears when you right click the application session in
+the Venue Client.<span style='mso-spacerun:yes'>  </span>Selecting <b
+style='mso-bidi-font-weight:normal'>Open,</b> from the menu option in this
+example, would execute the command <b style='mso-bidi-font-weight:normal'>%python
+<span class=SpellE>SharedBrowser.py</span> -a &lt;<span class=SpellE>appUrl</span>&gt;</b>.
+The <span class=SpellE>appUrl</span> describes the location of the application
+service created in the venue and is automatically substituted by the Access
+Grid Toolkit during runtime. <o:p></o:p></span></p>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><b
+style='mso-bidi-font-weight:normal'><u><span style='font-family:Arial'>Note</span></u></b><b
+style='mso-bidi-font-weight:normal'><span style='font-family:Arial'>: </span></b><span
+style='font-family:Arial'>The <b style='mso-bidi-font-weight:normal'>Open</b>
+menu option is always the first item of the pop-up menu, illustrated in Figure
+3.<span style='mso-spacerun:yes'>  </span>Therefore, make sure to include an
+Open command in the application description file.<span
+style='mso-spacerun:yes'>  </span><b style='mso-bidi-font-weight:normal'>Delete</b>,
+<b style='mso-bidi-font-weight:normal'>Open</b> <b style='mso-bidi-font-weight:
+normal'>Monitor…</b>, and <b style='mso-bidi-font-weight:normal'>Properties </b>are
+also permanent application options; however, no command should be specified for
+these options in the application description file. Their execution is already
+specified within the toolkit.<o:p></o:p></span></p>
+
+<p class=body align=center style='text-align:center;page-break-after:avoid'><span
+style='font-family:Arial'><!--[if gte vml 1]><v:shape id="_x0000_i1027" type="#_x0000_t75"
+ style='width:293.25pt;height:323.25pt'>
+ <v:imagedata src="ProgrammersManual_SharedApplications_files/image003.png"
+  o:title="OpenCommand"/>
+</v:shape><![endif]--><![if !vml]><img border=0 width=391 height=431
+src="ProgrammersManual_SharedApplications_files/image004.jpg" v:shapes="_x0000_i1027"><![endif]></span></p>
+
+<p class=MsoCaption align=center style='text-align:center'><span
+style='font-family:Arial'>Figure </span><!--[if supportFields]><span
+style='font-family:Arial'><span style='mso-element:field-begin'></span><span
+style='mso-spacerun:yes'> </span>SEQ Figure \* ARABIC <span style='mso-element:
+field-separator'></span></span><![endif]--><span style='font-family:Arial'><span
+style='mso-no-proof:yes'>3</span></span><!--[if supportFields]><span
+style='font-family:Arial'><span style='mso-element:field-end'></span></span><![endif]--><span
+style='font-family:Arial'> </span><span style='font-family:Arial;font-weight:
+normal;mso-bidi-font-weight:bold'>Menu Options for a Shared Application Session</span><span
+style='font-family:Arial'><o:p></o:p></span></p>
+
+<p class=body align=center style='text-align:center'><span style='font-family:
+Arial'>.<o:p></o:p></span></p>
+
+<h1><a name="_Toc74143832"></a><a name="_Toc73255250"></a><a name="_Toc61854603"></a><a
+name="_Toc73180168"></a><a name="_Toc73181750"></a><a name="_Toc73254676"><span
+style='mso-bookmark:_Toc73181750'><span style='mso-bookmark:_Toc73180168'><span
+style='mso-bookmark:_Toc61854603'><span style='mso-bookmark:_Toc73255250'><span
+style='mso-bookmark:_Toc74143832'>6. Installing the Application Using AGPM</span></span></span></span></span></a></h1>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>Use the Access Grid Package Manager (AGPM) to
+register the application with your user environment. Once registered, the
+program will be available in the Venue Client under <b style='mso-bidi-font-weight:
+normal'>Venue – Start Application Session</b>. The AGPM offers several ways of
+locating the application: <o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><span style='mso-tab-count:1'>            </span><span
+class=SpellE><span class=GramE><i style='mso-bidi-font-style:normal'>agpm</i></span></span><i
+style='mso-bidi-font-style:normal'> –f<span style='mso-spacerun:yes'>  
+</span>&lt;<span class=SpellE>applicationName</span>&gt;.app<o:p></o:p></i></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><i
+style='mso-bidi-font-style:normal'><span style='font-family:Arial'><span
+style='mso-tab-count:1'>            </span><span class=SpellE><span
+class=GramE>agpm</span></span> –d<span style='mso-spacerun:yes'>  
+</span>directory containing the &lt;<span class=SpellE>applicationName</span>&gt;.app<o:p></o:p></span></i></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><i
+style='mso-bidi-font-style:normal'><span style='font-family:Arial'><span
+style='mso-tab-count:1'>            </span><span class=SpellE><span
+class=GramE>agpm</span></span> –z<span style='mso-spacerun:yes'>  </span>zip
+archive containing the &lt;<span class=SpellE>applicationName</span>&gt;.app<o:p></o:p></span></i></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><i
+style='mso-bidi-font-style:normal'><span style='font-family:Arial'><span
+style='mso-tab-count:1'>            </span><span class=SpellE><span
+class=GramE>agpm</span></span> –p<span style='mso-spacerun:yes'> 
+</span>package archive containing the &lt;<span class=SpellE>applicationName</span>&gt;.app<o:p></o:p></span></i></p>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>For example, if the <span class=SpellE>SharedBrowser.py</span>
+and <span class=SpellE>SharedBrowser.app</span> files are saved in a zip
+archive in /home/&lt;user&gt;/<span class=SpellE>SharedBrowser/SharedBrowser.zip</span>,
+you can install the application by running <o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><span style='mso-spacerun:yes'> </span><o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><b
+style='mso-bidi-font-weight:normal'><span style='font-family:Arial'>$ <span
+class=SpellE><span class=GramE>agpm</span></span> –z /home/&lt;user&gt;/<span
+class=SpellE>SharedBrowser/SharedBrowser.zip</span><o:p></o:p></span></b></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><b
+style='mso-bidi-font-weight:normal'><span style='font-family:Arial'><o:p>&nbsp;</o:p></span></b></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>For more information about different options use<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><b
+style='mso-bidi-font-weight:normal'><span style='font-family:Arial'>$ <span
+class=SpellE><span class=GramE>agpm</span></span> –h <o:p></o:p></span></b></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h1><a name="_Toc74143833"></a><a name="_Toc73255251"></a><a name="_Toc61854604"></a><a
+name="_Toc73180169"></a><a name="_Toc73181751"></a><a name="_Toc73254677"><span
+style='mso-bookmark:_Toc73181751'><span style='mso-bookmark:_Toc73180169'><span
+style='mso-bookmark:_Toc61854604'><span style='mso-bookmark:_Toc73255251'><span
+style='mso-bookmark:_Toc74143833'>7. Starting an Application Session in Venue</span></span></span></span></span></a></h1>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>After installation is completed, your application
+will be represented in the <b style='mso-bidi-font-weight:normal'>Venue – Start
+Application Session</b> menu of the Venue Client. Each participant will be able
+to select that menu option and start a session of your shared application in
+the Venue. To join, right click the session, and select <b style='mso-bidi-font-weight:
+normal'>Open</b>.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<h1><a name="_Toc74143834"></a><a name="_Toc73255252"></a><a name="_Toc61854605"></a><a
+name="_Toc73180170"></a><a name="_Toc73181752"></a><a name="_Toc73254678"><span
+style='mso-bookmark:_Toc73181752'><span style='mso-bookmark:_Toc73180170'><span
+style='mso-bookmark:_Toc61854605'><span style='mso-bookmark:_Toc73255252'><span
+style='mso-bookmark:_Toc74143834'>8. Application Monitor</span></span></span></span></span></a></h1>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>The application monitor is a piece of software that
+shows information about a specific application session. Displayed information
+includes application name and data as well as participants and their current
+status. Additionally, the event window prints all changes in application state;
+see Figure 4.<span style='mso-spacerun:yes'>  </span><o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal align=center style='text-align:center;page-break-after:avoid'><span
+style='font-family:Arial'><!--[if gte vml 1]><v:shape id="_x0000_i1028" type="#_x0000_t75"
+ style='width:171pt;height:212.25pt'>
+ <v:imagedata src="ProgrammersManual_SharedApplications_files/image005.png"
+  o:title="AppMonitor"/>
+</v:shape><![endif]--><![if !vml]><img border=0 width=228 height=283
+src="ProgrammersManual_SharedApplications_files/image006.jpg" v:shapes="_x0000_i1028"><![endif]></span></p>
+
+<p class=MsoCaption align=center style='text-align:center'><span
+style='font-family:Arial'>Figure </span><!--[if supportFields]><span
+style='font-family:Arial'><span style='mso-element:field-begin'></span><span
+style='mso-spacerun:yes'> </span>SEQ Figure \* ARABIC <span style='mso-element:
+field-separator'></span></span><![endif]--><span style='font-family:Arial'><span
+style='mso-no-proof:yes'>4</span></span><!--[if supportFields]><span
+style='font-family:Arial'><span style='mso-element:field-end'></span></span><![endif]--><span
+style='font-family:Arial'> </span><span style='font-family:Arial;font-weight:
+normal;mso-bidi-font-weight:bold'>Application Monitor</span><span
+style='font-family:Arial'><o:p></o:p></span></p>
+
+<p class=body style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'>As a developer, you will find the Application Monitor
+useful for debugging, as you can view state changes of the application session
+in the window. To open the monitor, right click the session, and select <b
+style='mso-bidi-font-weight:normal'>Open Monitor</b> in the Venue Client; see
+Figure 5.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal align=center style='text-align:center;page-break-after:avoid'><span
+style='font-family:Arial'><!--[if gte vml 1]><v:shape id="_x0000_i1029" type="#_x0000_t75"
+ style='width:289.5pt;height:229.5pt'>
+ <v:imagedata src="ProgrammersManual_SharedApplications_files/image007.png"
+  o:title="AppMonitor-Open"/>
+</v:shape><![endif]--><![if !vml]><img border=0 width=386 height=306
+src="ProgrammersManual_SharedApplications_files/image008.jpg" v:shapes="_x0000_i1029"><![endif]></span></p>
+
+<p class=MsoCaption align=center style='text-align:center'><span
+style='font-family:Arial'>Figure </span><!--[if supportFields]><span
+style='font-family:Arial'><span style='mso-element:field-begin'></span><span
+style='mso-spacerun:yes'> </span>SEQ Figure \* ARABIC <span style='mso-element:
+field-separator'></span></span><![endif]--><span style='font-family:Arial'><span
+style='mso-no-proof:yes'>5</span></span><!--[if supportFields]><span
+style='font-family:Arial'><span style='mso-element:field-end'></span></span><![endif]--><span
+style='font-family:Arial'> </span><span style='font-family:Arial;font-weight:
+normal;mso-bidi-font-weight:bold'>Open Application Monitor</span><span
+style='font-family:Arial'><o:p></o:p></span></p>
+
+<p class=MsoNormal align=center style='text-align:center'><span
+style='font-family:Arial'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='text-align:justify;text-justify:inter-ideograph'><b
+style='mso-bidi-font-weight:normal'><u><span style='font-family:Arial'>Note</span></u></b><span
+style='font-family:Arial'>: To be displayed properly in the Application Monitor,
+make sure you join the application session with the client profile parameter
+set. <span style='color:red'><o:p></o:p></span></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+</div>
+
+</body>
+
+</html>
