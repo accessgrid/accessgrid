@@ -1,4 +1,3 @@
-#from AccessGrid.VenueClient import VenueClient
 import threading
 import os
 
@@ -28,7 +27,7 @@ class VenueClientUI(wxApp, VenueClient):
         return true
 
     def ConnectToServer(self, file = None):
-        venueServerUri = "https://localhost:8000/VenueServer"
+        venueServerUri = "https://localhost:9500/VenueServer"
         venueUri = Client.Handle( venueServerUri ).get_proxy().GetDefaultVenue()
         myHomePath = os.environ['HOME']
         accessGridDir = '.AccessGrid'
@@ -36,7 +35,6 @@ class VenueClientUI(wxApp, VenueClient):
 
         if file:
             self.profile = ClientProfile(file)
-            self.profile.Dump()
         else:
             try:
                 os.listdir(myHomePath+'/'+accessGridDir)
@@ -46,7 +44,6 @@ class VenueClientUI(wxApp, VenueClient):
             self.profile = ClientProfile(self.profilePath)
                   
         if self.profile.IsDefault():  # not your profile
-            self.profile.Dump()
             profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', self.profile)
 
             if (profileDialog.ShowModal() == wxID_OK): 
@@ -99,14 +96,11 @@ class VenueClientUI(wxApp, VenueClient):
                         
         elif event.eventType == Event.ADD_CONNECTION:
             self.frame.venueListPanel.list.AddVenueDoor(event.data)
-
+         
         elif event.eventType == Event.REMOVE_CONNECTION:
             print 'remove connection'
 
         elif event.eventType == Event.MODIFY_USER:
-            print 'IN MODIFY USER EVENT'
-            print event.data.profileType
-            print event.data.name
             self.frame.contentListPanel.ModifyParticipant(event.data)
 
         elif event.eventType == Event.UPDATE_VENUE_STATE:
@@ -122,7 +116,7 @@ class VenueClientUI(wxApp, VenueClient):
         performs its own operations when the client enters a venue.
         """
         VenueClient.EnterVenue( self, URL )
-        
+
         venueState = self.venueState
         self.frame.SetLabel(venueState.description.name)
         text = self.profile.name + ', welcome to:\n' + self.venueState.description.name\
@@ -130,7 +124,6 @@ class VenueClientUI(wxApp, VenueClient):
         welcomeDialog = wxMessageDialog(NULL, text ,'', wxOK | wxICON_INFORMATION)
         welcomeDialog.ShowModal()
         welcomeDialog.Destroy()
-
         users = venueState.users.values()
         for user in users:
             if(user.profileType == 'user'):
@@ -145,7 +138,6 @@ class VenueClientUI(wxApp, VenueClient):
         nodes = venueState.nodes.values()
         for node in nodes:
             self.frame.contentListPanel.AddNode(node)
-
         services = venueState.services.values()
         for service in services:
             self.frame.contentListPanel.AddService(service)
@@ -162,10 +154,13 @@ class VenueClientUI(wxApp, VenueClient):
         """
         VenueClient.ExitVenue( self )
         
-    def GoToVenue(self, URL):
-        self.ExitVenue()
-        self.EnterVenue(URL)
-        
+    def GoToNewVenue(self, description):
+        uri =  description.uri
+        self.frame.CleanUp()
+        self.OnExit()
+        self.client = Client.Handle(uri).get_proxy()
+        self.EnterVenue(uri)
+                
 
     def OnExit(self):
         """
@@ -173,7 +168,7 @@ class VenueClientUI(wxApp, VenueClient):
         done as the application is about to exit.
         """
         self.ExitVenue()
-
+        
     def AddData(self, data):
         self.client.AddData(data)
 
@@ -187,7 +182,6 @@ class VenueClientUI(wxApp, VenueClient):
         self.client.RemoveService(service)
         
     def ChangeProfile(self, profile):
-        profile.Dump()
         self.profile = profile
         self.profile.Save(self.profilePath)
         self.SetProfile(self.profile)
@@ -207,7 +201,6 @@ if __name__ == "__main__":
     profile = None
 
     if len(sys.argv) > 1:
-        print 'length = 1'
         profile = sys.argv[1]
         
     vc = VenueClientUI()

@@ -23,6 +23,7 @@ class VenueClientFrame(wxFrame):
     def __init__(self, parent, id, title, app = None):
         wxFrame.__init__(self, parent, id, title)
 	self.app = app
+        self.parent = parent
 	self.menubar = wxMenuBar()
 	self.statusbar = self.CreateStatusBar(1)
 	self.toolbar = wxToolBar(self, -1,wxDefaultPosition,wxDefaultSize, wxTB_TEXT| \
@@ -54,6 +55,8 @@ class VenueClientFrame(wxFrame):
         self.serviceMenu.Append(232,"Delete")
 	self.venue.AppendMenu(220,"&Services",self.serviceMenu)
 	self.menubar.Append(self.venue, "&Venue")
+        self.venue.AppendSeparator()
+        self.venue.Append(320, 'Close')
 	
 	self.edit = wxMenu()
 	self.edit.Append(200, "Profile", "Change your profile")
@@ -71,8 +74,8 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, 222, self.RemoveData)
         EVT_MENU(self, 232, self.RemoveService)   
         EVT_MENU(self, 302, self.OpenAboutDialog)
-                
-	
+        EVT_MENU(self, 320, self.OnExit)
+        
     def __setToolbar(self):
 	self.toolbar.AddSimpleTool(20, icons.getWordIconBitmap(), \
                                    "ImportantPaper.doc", "ImportantPaper.doc",)
@@ -101,6 +104,10 @@ class VenueClientFrame(wxFrame):
 	self.SetSizer(self.venueClientSizer)
 	self.venueClientSizer.Fit(self)
 	self.SetAutoLayout(1)  
+
+    def OnExit(self, event):
+        self.app.OnExit()
+        self.Destroy()
 	      
     def UpdateLayout(self):
         self.__doLayout()
@@ -115,7 +122,6 @@ class VenueClientFrame(wxFrame):
         dlg.Destroy()
 
     def OpenProfileDialog(self, event):
-        print 'profile dialog'
         profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', self.app.profile)
            
         if (profileDialog.ShowModal() == wxID_OK): 
@@ -158,7 +164,10 @@ class VenueClientFrame(wxFrame):
          noSelectionDialog.ShowModal()
          noSelectionDialog.Destroy()
 
-   
+    def CleanUp(self):
+        self.venueListPanel.CleanUp()
+        self.contentListPanel.CleanUp()
+        
 '''VenueListPanel. 
 
 The venueListPanel contains a list of connected venues/exits to current venue.  
@@ -184,8 +193,6 @@ class VenueListPanel(wxPanel):
 	self.maximizeButton.SetToolTipString("Show Sidebar")
 	self.maximizeButton.Hide()
 	self.SetBackgroundColour(self.maximizeButton.GetBackgroundColour())
-#        print 'siiiiiiiiiiiiiiiiiiiiiiiiiiiiiize'
-#      	print self.GetSize().width
 	self.imageList = wxImageList(16,16)
 	self.__doLayout()
 	self.__addEvents()
@@ -233,6 +240,10 @@ class VenueListPanel(wxPanel):
 		self.parent.UpdateLayout()
 	        self.parent.SetSize(parentSize)
 
+
+    def CleanUp(self):
+        self.list.CleanUp()
+
 '''VenueList. 
 
 The venueList is a scrollable window containing all exits to current venue.
@@ -252,14 +263,16 @@ class VenueList(wxScrolledWindow):
         #exit = wxListItem()
         #exit.SetText('test')
         #self.list.InsertItem(exit)
-       # self.list.SetStringItem(0,0,'test', door)
+        # self.list.SetStringItem(0,0,'test', door)
+        self.doorsAndLabelsList = []
+        self.exitsDict = {}
         self.__doLayout()
 
     def __doLayout(self):
         self.box = wxBoxSizer(wxVERTICAL)
         # box.Add(self.list, 1, wxEXPAND)
-                
-        self.column = wxFlexGridSizer(cols=1, vgap=1, hgap=0)
+
+        self.column = wxFlexGridSizer(cols=1, vgap=5, hgap=0)
         self.column.AddGrowableCol(1)
 	       
         self.column.Add(40, 5)   
@@ -273,31 +286,54 @@ class VenueList(wxScrolledWindow):
         self.box.Fit(self)
         self.SetAutoLayout(1)  
 
-		            
+    def GoToNewVenue(self, event):
+        id = event.GetId()
+        description = self.exitsDict[id]
+        self.app.GoToNewVenue(description)
+        		            
     def AddVenueDoor(self, profile):
         #id = wxNewId()
         #exit = wxListItem()
-        #self.list.InsertImageStringItem(0,"LABEL",self.doorOpenId) 
+        #self.list.InsertImageStringItem(0,"LABEL",self.doorOpenId)
+                
         bitmap = icons.getDoorCloseBitmap()
         bitmapSelect = icons.getDoorOpenBitmap()
-            
-        tc = wxBitmapButton(self, -1, bitmap, wxPoint(0, 0), wxDefaultSize, wxBU_EXACTFIT)
+
+        id = NewId()
+        panel = wxPanel(self, -1,wxDefaultPosition, wxSize(10,50), name ='panel')
+        tc = wxBitmapButton(panel, id, bitmap, wxPoint(0, 0), wxDefaultSize, wxBU_EXACTFIT)
 	tc.SetBitmapSelected(bitmapSelect)
 	tc.SetBitmapFocus(bitmapSelect)
 	tc.SetToolTipString(profile.description)
-	label = wxStaticText(self, -1, profile.name)
-
-	self.column.Add(tc, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
-	self.column.Add(label, 0, wxALIGN_CENTER|wxLEFT|wxRIGHT, 5)
-	self.column.Add(40, 5)   
+	label = wxStaticText(panel, -1, profile.name)
+       
+        b = wxBoxSizer(wxVERTICAL)
+        b.Add(tc, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
+        b.Add(label, 0, wxALIGN_CENTER|wxLEFT|wxRIGHT, 5)
+        panel.SetSizer(b)
+        
+        self.column.Add(panel, -1, wxEXPAND)
+        self.doorsAndLabelsList.append(panel)
+        
 	self.SetSize(wxDefaultSize)
 	self.Layout()
 	self.box.SetVirtualSizeHints(self)
-
+        self.exitsDict[id] = profile
+        EVT_BUTTON(self, id, self.GoToNewVenue)
+        
     def RemoveVenueDoor(self):
         print 'remove venue door'
-	
 
+    def CleanUp(self):
+        
+        for item in self.doorsAndLabelsList:
+            self.column.Remove(item)
+            item.Destroy()
+
+        self.exitsDict.clear()
+        del self.doorsAndLabelsList[0:]
+
+                    
 '''ContentListPanel.
  
 The contentListPanel represents current venue and has information about all participants 
@@ -314,7 +350,7 @@ class ContentListPanel(wxPanel):
 	self.tree = wxTreeCtrl(self, id, wxDefaultPosition, \
 			       wxDefaultSize,  wxTR_HAS_BUTTONS \
 			       | wxTR_NO_LINES  \
-                               # | wxTR_TWIST_BUTTONS 
+                               | wxTR_TWIST_BUTTONS \
 			       | wxTR_HIDE_ROOT)
 	
         self.participantDict = {}
@@ -341,33 +377,21 @@ class ContentListPanel(wxPanel):
 	self.tree.AssignImageList(imageList)
 
     def AddParticipant(self, profile):
-        print 'add participant'
-        print self.participantDict.values()
         participant = self.tree.AppendItem(self.participants, profile.name, \
                                            self.iconId, self.iconId)
         self.participantDict[profile.publicId] = participant
         self.tree.Expand(self.participants)
-        print 'added participant'
-        print self.participantDict.values()
            
     def RemoveParticipant(self, description):
-        print 'remove participant'
-        print self.participantDict.values()
-        id = self.participantDict[description.publicId]
-        del self.participantDict[description.publicId]
-        self.tree.Delete(id)
-        print 'removed participant'
-        print self.participantDict.values()
+        if description!=None :
+            id = self.participantDict[description.publicId]
+            del self.participantDict[description.publicId]
+            self.tree.Delete(id)
         
     def ModifyParticipant(self, description):
-        print '-------- MODIFY'
         type =  description.profileType
         oldType = None
         id = description.publicId
-
-        print self.nodeDict.keys()
-        print self.participantDict.keys()
-        print id
 
         if(self.participantDict.has_key(id)):
             oldType = 'user'
@@ -400,16 +424,13 @@ class ContentListPanel(wxPanel):
                 self.AddParticipant(description)
         
     def AddData(self, profile):
-        print '-----------ADD DATA'
         data = self.tree.AppendItem(self.data, profile.name, \
                              self.importantPaperId, self.importantPaperId)
-        print 'profile name: '+ profile.name
         self.tree.SetItemData(data, wxTreeItemData(profile)) 
         self.dataDict[profile.name] = data
         self.tree.Expand(self.data)
        
     def RemoveData(self, profile):
-        print 'remove in VenueClientUI'
         id = self.dataDict[profile.name]
         if(id != None):
             self.tree.Delete(id)
@@ -426,25 +447,14 @@ class ContentListPanel(wxPanel):
         self.tree.Delete(id)
 
     def AddNode(self, profile):
-        print 'add node'
-        print 'PUBLIC ID'
-        print profile.publicId
         node = self.tree.AppendItem(self.nodes, profile.name)
         self.nodeDict[profile.publicId] = node
         self.tree.Expand(self.nodes)
 
     def RemoveNode(self, profile):
-        print 'remove node'
-        print 'PUBLIC ID'
-        print profile.publicId
         id = self.nodeDict[profile.publicId]
-        print 'after dict access'
         self.tree.Delete(id)
-        print 'after delete '
         del self.nodeDict[profile.publicId]
-        print 'after delete in tree'
-        for v in self.nodeDict.values():
-            print v.name
         
         
     def __setTree(self):
@@ -492,7 +502,24 @@ class ContentListPanel(wxPanel):
 	infoPopup.Position(position, (0, size.height))
 	infoPopup.Popup()
 
+    def CleanUp(self):
+        for index in self.participantDict.values():
+            self.tree.Delete(index)
 
+        for index in self.nodeDict.values():
+            self.tree.Delete(index)
+
+        for index in self.serviceDict.values():
+            self.tree.Delete(index)
+
+        for index in self.dataDict.values():
+            self.tree.Delete(index)                                   
+
+        self.participantDict.clear()
+        self.dataDict.clear()
+        self.serviceDict.clear()
+        self.nodeDict.clear()
+             
 class ErrorDialog:
    def __init__(self, frame, text):
        (name, args, traceback_string_list) = Utilities.formatExceptionInfo()
@@ -512,9 +539,9 @@ class AboutDialog(wxDialog):
         self.__doLayout()
 
         if (self.ShowModal() == wxID_OK): 
-            print 'ok'
-        else: 
             self.Destroy()
+
+        self.Destroy()
                     
     def __doLayout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
@@ -654,8 +681,6 @@ class AddServiceDialog(wxDialog):
         self.SetSizer(sizer1)
         sizer1.Fit(self)
         self.SetAutoLayout(1)
-
-
 
 
 '''VenueClient. 
