@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.40 2003-02-21 17:44:18 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.41 2003-02-21 17:57:41 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -207,7 +207,7 @@ class VenueServer(ServiceBase.ServiceBase):
                 venueStoragePath = os.path.join(self.dataStorageLocation, str(venueID))
                 try:
                     os.mkdir(venueStoragePath)
-                except os.OSError, e:
+                except OSError, e:
                     print "Could not create venueStoragePath: ", e
                     venueStoragePath = None
             
