@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.18 2004-08-31 19:33:01 turam Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.19 2004-09-09 22:01:30 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.18 2004-08-31 19:33:01 turam Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.19 2004-09-09 22:01:30 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -380,10 +380,6 @@ class SharedApplication(AuthorizationMixIn):
         participant = self.components[private_token]
         participant.clientProfile = profile
         self.components[private_token] = participant
-
-        for p in self.components.values():
-            if p.clientProfile != 'None' and p.clientProfile != None:
-                p.clientProfile.name
                 
         # Distribute event
         for channelId in self.channels:
@@ -401,7 +397,6 @@ class SharedApplication(AuthorizationMixIn):
 
         if not self.components.has_key(private_token):
             raise InvalidPrivateToken
-
         
         participant = self.components[private_token]
         participant.status = status
@@ -411,7 +406,6 @@ class SharedApplication(AuthorizationMixIn):
         for channelId in self.channels:
             evt = Event(Event.APP_UPDATE_PARTICIPANT, channelId, participant)
             self.eventService.Distribute(channelId, evt)
-
 
     def __CreateDataChannel(self):
         """
