@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.29 2003-10-21 03:30:39 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.30 2003-10-21 23:42:56 eolson Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
@@ -81,7 +81,7 @@ Source: dist\Lib\site-packages\*.*; DestDir: {reg:HKLM\Software\Python\PythonCor
 ; Documentation
 Source: doc\AccessGrid\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
 Source: doc\VENUE_CLIENT_MANUAL_HTML\*.*; DestDir: {app}\doc\VenueClientManual; Flags: recursesubdirs
-Source: doc\VENUE_MANAGEMENT_MANUAL_HTML\*.*; DestDir: {app}\doc\VenueManagement; Flags: recursesubdirs
+Source: doc\VENUE_MANAGEMENT_MANUAL_HTML\*.*; DestDir: {app}\doc\VenueManagementManual; Flags: recursesubdirs
 
 ; Program Files
 Source: ..\WinGlobus\globus_setup\globus_init.py; DestDir: {app}\bin; Flags: confirmoverwrite; DestName: globus_init.pyw
@@ -135,7 +135,7 @@ Name: {group}\Venue Server\Venue Server (Debug); IconFilename: {app}\install\agi
 Name: {group}\Venue Server\Manage Venue Servers; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\VenueManagement.py"""; WorkingDir: {userappdata}\AccessGrid; Comment: Run the venue management tool.
 
 Name: {group}\Documentation\Venue Client Manual; Filename: {app}\doc\VenueClientManual\VenueClientManualHTML.htm; Comment: Read the Venue Client Manual.
-Name: {group}\Documentation\Venue Management Client Manual; Filename: {app}\doc\VenueManagement\VenueManagementManualHTML.htm; Comment: Read the Venue Client Manual.
+Name: {group}\Documentation\Venue Management Client Manual; Filename: {app}\doc\VenueManagementManual\VenueManagementManualHTML.htm; Comment: Read the Venue Client Manual.
 Name: {group}\Documentation\View License; IconFilename: {app}\install\agicons.exe; Filename: {app}\COPYING.txt; Comment: Read the software license the AGTk is distributed under.
 Name: {group}\Documentation\Developers Documentation; Filename: {app}\doc\Developer\index.html; Comment: Happy Doc generated documentation for developers.
 
