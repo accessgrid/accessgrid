@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.11 2003-02-10 14:47:37 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.12 2003-02-10 14:57:00 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,6 +17,7 @@ import ConfigParser
 import time
 from random import Random
 import sha
+import urllib
 
 def LoadConfig(fileName, config={}):
     """
@@ -145,3 +146,62 @@ def GetResourceList():
 
     return resources
 
+def SubmitBug():
+    url = "http://bugzilla.mcs.anl.gov/accessgrid/post_bug.cgi"
+    args = {}
+
+    bugzilla_login = 'client-ui-bugzilla-user@mcs.anl.gov'
+    bugzilla_password = '8977f68349f93fead279e5d4cdf9c3a3'
+
+    args['Bugzilla_login'] = bugzilla_login args['Bugzilla_password'] = bugzilla_password args['product'] = "Virtual Venues Client Software" args['version'] = "2.0" args['component'] = "Client UI" args['rep_platform'] = "Other"
+    
+    #
+    # This detection can get beefed up a lot; I say
+    # NT because I can't tell if it's 2000 or XP and better
+    # to not assume there.
+    #
+    # cf http://www.lemburg.com/files/python/platform.py
+    #
+    
+    if sys.platform.startswith("linux"):
+        args['op_sys'] = "Linux"
+    elif sys.platform == "win32":
+        args['op_sys'] = "Windows NT"
+    else:
+        args['op_sys'] = "other"
+        
+        args['priority'] = "P2"
+        args['bug_severity'] = "normal"
+        args['bug_status'] = "NEW"
+        args['assigned_to'] = ""
+        args['cc'] = "olson@mcs.anl.gov"   # email to be cc'd
+        args['bug_file_loc'] = "http://"
+        
+        
+        args['submit'] = "    Commit    "
+        args['form_name'] = "enter_bug"
+        
+        # Bug information goes here
+        args['short_desc'] = "Crash in Client UI"
+        args['comment']="Here goes the backtrace"
+        
+        #
+        # Now submit to the form.
+        #
+        
+        params = urllib.urlencode(args)
+        
+        f = urllib.urlopen(url, params)
+        
+        #
+        # And read the output.
+        #
+        
+        out = f.read()
+        f.close()
+        
+        print "Submit returns ", out
+        
+        o = open("out.html", "w")
+        o.write(out)
+        o.close()
