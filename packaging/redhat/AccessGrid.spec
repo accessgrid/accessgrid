@@ -144,9 +144,12 @@ This module provides the components needed to run the Audio service. This servic
 
 #
 # The following builds the package using setup.py
+# It starts by zipping up the services in the services directory
+# then builds the package
 #
 
 %build
+python2.2 packaging/makeServicePackages.py AccessGrid/services
 python2.2 setup.py build
 
 #
