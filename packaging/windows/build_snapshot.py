@@ -29,7 +29,7 @@ AGTkVersion = "X.Y"
 # Source Directory
 #  We assume the following software is in this directory:
 #    ag-rat, ag-vic, and AccessGrid
-SourceDir = os.environ['AG_BUILD']
+SourceDir = os.environ['AGBUILDROOT']
 
 # Build Name
 #  This is the default name we use for the installer
@@ -40,6 +40,23 @@ DestDir = os.path.join(SourceDir, "dist-%s" % BuildTime)
 
 # Names for the software
 metainformation = "Snapshot %s" % BuildTime
+
+# The directory we're building from
+BuildDir = os.path.join(SourceDir, "AccessGrid-%s" % BuildTime)
+
+# Grab innosetup from the environment
+try:
+    ipreg = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+                            "Software\\Bjornar Henden\\ISTool4\\Prefs")
+    innopath, type = _winreg.QueryValueEx(ipreg, "InnoFolder")
+    ip = os.path.join(innopath, "iscc.exe")
+    inno_compiler = win32api.GetShortPathName(ip)
+except WindowsError:
+    print "Couldn't find iscc from registry key." 
+    
+    # If still not found, try default path:
+    innopath = r"\Program Files\ISTool 4"
+    inno_compiler = os.path.join(innopath, "iscc.exe")
 
 def usage():
     print """
@@ -108,37 +125,12 @@ for o, a in opts:
         usage()
         sys.exit(0)
 
-
-BuildDir = os.path.join(SourceDir, "AccessGrid-%s" % BuildTime)
-if verbose:
-    print "Build Dir: ", BuildDir
-
 #
 # Location of the Inno compiler
 #
-
 if innopath != "":
     # It was set on the command line
     inno_compiler = os.path.join(innopath, "iscc.exe")
-    if not os.path.exists(inno_compiler):
-        print "command-line innopath not found: ", inno_compiler
-        sys.exit()
-else:
-    # It wasn't specified, so go find it
-    try:
-        ipreg = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
-                                "Software\\Bjornar Henden\\ISTool4\\Prefs")
-        innopath, type = _winreg.QueryValueEx(ipreg, "InnoFolder")
-        ip = os.path.join(innopath, "iscc.exe")
-        inno_compiler = win32api.GetShortPathName(ip)
-    except WindowsError:
-        print "Couldn't find iscc from registry key." 
-
-    if innopath == "":
-        # If still not found, try default path:
-        innopath = r"\Program Files\ISTool 4"
-        inno_compiler = os.path.join(innopath, "iscc.exe")
-        
     if verbose:
         if os.path.exists(inno_compiler):
             print "Found ISXTool in default path:", inno_compiler
@@ -148,7 +140,6 @@ else:
             print "  If necessary, specify the location of iscc.exe "
             print "  with command-line option -i."
             sys.exit()
-            
 #
 # Grab stuff from cvs
 #
