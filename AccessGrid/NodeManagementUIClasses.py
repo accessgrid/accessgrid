@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.7 2003-02-12 16:38:33 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.8 2003-02-12 22:03:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -327,16 +327,16 @@ class NodeManagementClientFrame(wxFrame):
         EVT_MENU(self, ID_VIEW_REFRESH           ,  self.Update )
 
         EVT_LIST_ITEM_RIGHT_CLICK(self, self.serviceList.GetId(), self.OnShowPopupTransient)
-        EVT_LIST_ITEM_DESELECTED(self, self.serviceList.GetId(), self.OnServiceDeselected)
 
         self.serviceManagers = []
         self.services = []
 
     def Connected(self):
-        if self.vc != None:
-            return 1
-        else:
+        try:
+            self.vc.Ping()
+        except:
             return 0
+        return 1
 
     ############################
     ## FILE menu
@@ -356,7 +356,7 @@ class NodeManagementClientFrame(wxFrame):
                 return
 
             try:
-                self.vc = Client.Handle( uri ).get_proxy()
+                self.AttachToNode( uri )
             except:
                 self.Error( "Could not attach to AGNodeService " + hostname
                             + port  )
@@ -366,6 +366,10 @@ class NodeManagementClientFrame(wxFrame):
 
             self.UpdateHostList()
             self.UpdateServiceList()
+
+    def AttachToNode( self, nodeServiceUri ):
+        vcProxy = Client.Handle( nodeServiceUri ).get_proxy()
+        self.vc = vcProxy
 
     def LoadConfiguration( self, event ):
 
@@ -737,12 +741,19 @@ class NodeManagementClientFrame(wxFrame):
         self.UpdateServiceList()
 
     def GotoLobby( self, event=None ):
-        self.vc.SetMediaLocation( "video", "224.2.177.155 55524 127" )
-
+        streamDs = []
+        streamDs.append( StreamDescription( "", "",
+                             MulticastNetworkLocation( "224.2.177.155", 55524, 127 ),
+                             Capability( Capability.CONSUMER, Capability.VIDEO ) ) )
+        self.vc.ConfigureStreams( streamDs )
         self.UpdateServiceList()
 
     def GotoLocal( self, event=None ):
-        self.vc.SetMediaLocation( "video", "localhost 55524 127" )
+        streamDs = []
+        streamDs.append( StreamDescription( "", "",
+                             MulticastNetworkLocation( "localhost", 55524, 127 ),
+                             Capability( Capability.CONSUMER, Capability.VIDEO ) ) )
+        self.vc.ConfigureStreams( streamDs )
 
         self.UpdateServiceList()
 
@@ -757,10 +768,6 @@ class NodeManagementClientFrame(wxFrame):
         list = evt.GetEventObject()
         pos = list.ClientToScreen( evt.GetPoint() )
         win.PopThatMenu( pos )
-
-    def OnServiceDeselected( self, event ):
-        #self.serviceConfigPanel.Clear()
-        pass
 
     def Dum( self, event = None ):
         pass
