@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.28 2004-05-27 21:13:33 eolson Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.29 2004-06-01 19:25:54 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.28 2004-05-27 21:13:33 eolson Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.29 2004-06-01 19:25:54 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # standard imports
@@ -1028,8 +1028,8 @@ class VenueClientController:
                         return
                                          
             try:
-                my_identity = str(Application.instance().GetDefaultSubject())
-                self.__venueClient.dataStore.UploadLocalFiles([filepath], my_identity, self.__venueClient.GetProfile().publicId)
+                my_identity = Application.instance().GetDefaultSubject()
+                self.__venueClient.dataStore.UploadLocalFiles([filepath], my_identity.name, self.__venueClient.GetProfile().publicId)
 
                 # Send an event alerting about new data (only if it is new)
                 #if newData: 
