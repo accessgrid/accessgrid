@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.50 2003-09-19 22:12:48 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.51 2003-10-21 20:40:10 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.50 2003-09-19 22:12:48 judson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.51 2003-10-21 20:40:10 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -347,7 +347,8 @@ def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
                         +"\n\n--- NodeSetupWizard.log INFORMATION ---\n\n"+GetLogText(20000, "NodeSetupWizard.log")
 
     else:
-        args['short_desc'] = "Crash in Venue Client UI"
+        args['short_desc'] = "Automatic Bug Report"
+#        args['short_desc'] = "Crash in Venue Client UI"
         commentAndLog = commentAndLog \
                         +"\n\n--- VenueClient.log INFORMATION ---\n\n"+GetLogText(20000, "VenueClient.log") \
                         +"\n\n--- agns.log INFORMATION ---\n\n"+GetLogText(20000, "agns.log")\
