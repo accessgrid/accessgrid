@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.132 2003-04-09 19:45:39 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.133 2003-04-11 20:08:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -38,7 +38,10 @@ from AccessGrid.Events import ConnectEvent, TextEvent, DisconnectEvent
 try:
     from AccessGrid import CertificateManager
     CertificateManager.CertificateManagerWXGUI
-    HaveCertificateManager = 1
+    if sys.platform == "win32":
+        HaveCertificateManager = 1
+    else:
+        HaveCertificateManager = 0
 except Exception, e:
     HaveCertificateManager = 0
 
