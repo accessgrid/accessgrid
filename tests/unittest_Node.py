@@ -51,7 +51,7 @@ class NodeTestCase(unittest.TestCase):
     """A test case for a whole Node."""
 
     def test_100_Setup(self):
-        global nodeService, server, log, smurl
+        global nodeService, server, log, smurl, serviceManager
 
         # initialize toolkit and environment
         app = Toolkit.Service.instance()
@@ -85,6 +85,8 @@ class NodeTestCase(unittest.TestCase):
         print "URL ", server.FindURLForObject(serviceManager)
 
         print "SM URL: %s" % smurl
+        
+        serviceManager = AGServiceManagerIW(smurl)
         
         # Tell the world where to find the service
         log.info("Started service manager; URI: %s", smurl)
@@ -138,9 +140,9 @@ class NodeTestCase(unittest.TestCase):
         
     def test_140_GetAvailableServices(self):
         
-        global nodeService, server, smurl
+        global serviceManager, server, smurl
         
-        svcList = nodeService.GetAvailableServices()
+        svcList = serviceManager.GetAvailableServices()
         
         nsDir = AGTkConfig.instance().GetNodeServicesDir()
         svcFileList = os.listdir(nsDir)
@@ -151,19 +153,19 @@ class NodeTestCase(unittest.TestCase):
         
     def test_130_AddServices(self):
         
-        global nodeService, server, smurl
+        global nodeService, server, smurl, serviceManager
         
         serviceMgrDesc = AGServiceManagerDescription("test",
                                 smurl)
                                 
-        svcList = nodeService.GetAvailableServices()
+        svcList = serviceManager.GetAvailableServices()
         for svc in svcList:
             nodeService.AddService(svc,smurl,None,[])
         
         installedSvcList = nodeService.GetServices()
         print "*\n*\n*\n*\n"
         for svc in installedSvcList:
-            print "svc = ", svc.name, svc.servicePackageUri
+            print "svc = ", svc.name, svc.servicePackageFile
         
         print "Number of known services:", len(svcList)
         print "Number of installed services:", len(installedSvcList)
@@ -203,6 +205,7 @@ class NodeTestCase(unittest.TestCase):
     
         global nodeService, server, smurl
         global NumSavedServiceManagers, NumSavedServices
+        global ConfigName
         
         
         svcList = nodeService.GetServices()
