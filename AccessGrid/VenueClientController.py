@@ -3,12 +3,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.16 2004-04-07 16:29:57 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.17 2004-04-07 23:18:33 eolson Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.16 2004-04-07 16:29:57 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.17 2004-04-07 23:18:33 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -1259,7 +1259,7 @@ class VenueClientController:
         processManager.StartProcess(aList[0], aList[1:])
         
     def StopApplications(self):
-        self.appProcessManager.terminateAllProcesses()
+        self.appProcessManager.TerminateAllProcesses()
 
     #
     # Other
