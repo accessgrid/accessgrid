@@ -5,13 +5,12 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.35 2003-08-07 20:58:21 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.36 2003-08-28 18:05:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import os
 import zipfile
-import time
 import sys
 
 import logging
