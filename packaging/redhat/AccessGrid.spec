@@ -10,7 +10,6 @@
 %define sharedir	%{prefix}/share
 %define gnomedir	%{sharedir}/gnome/apps
 %define kdedir		%{sharedir}/applnk
-%define aghome		/var/lib/ag
 %define buildroot	/var/tmp/%{name}-%{version}
 
 #
@@ -128,16 +127,12 @@ python2.2 setup.py build
 %install
 python2.2 setup.py install --prefix=%{buildroot}%{prefix} --no-compile
 mv %{buildroot}%{prefix}/etc %{buildroot}
-#mv %{buildroot}%{prefix}/var %{buildroot}
-#mkdir -p %{aghome}/local_services
 
 #
 # Define the files that are to go into the AccessGrid package
 # - Mark documents as documents for rpm
 # - Install python modules with default permissions
 # - Install AGServiceManager.py and agsm service with executable permissions
-# - Make a directory in the ag user's home (this should be done by whatever
-#   is trying to write to that directory really)
 #
 
 %files
@@ -147,8 +142,6 @@ mv %{buildroot}%{prefix}/etc %{buildroot}
 %defattr(0755,root,root)
 %{prefix}/bin/AGServiceManager.py
 /etc/init.d/agsm
-%defattr(0755,ag,ag)
-#%dir %{aghome}/local_services
 
 #
 # Define the files that are to go into the AccessGrid-VenueClient package
@@ -174,7 +167,7 @@ mv %{buildroot}%{prefix}/etc %{buildroot}
 /etc/init.d/agns
 %defattr(0644,root,root)
 %config %{sysconfdir}/AGNodeService.cfg
-%defattr(0644,ag,ag)
+%defattr(0644,root,root)
 %config %{sysconfdir}/nodeConfig/defaultLinux
 %defattr(-,root,root)
 %{sysconfdir}/services/
@@ -213,18 +206,10 @@ mv %{buildroot}%{prefix}/etc %{buildroot}
 #
 
 %files BridgeServer
-%defattr(0775,ag,ag)
+%defattr(0775,root,root)
 %{prefix}/bin/BridgeServer.py
 %{prefix}/bin/QuickBridge
 
-#
-# AccessGrid package preinstall commands
-# If there is no ag user's home directory then there must not be an ag
-# user and group so create them
-#
-
-%pre
-/usr/sbin/useradd -c "Access Grid User" -r -m -d %{aghome} ag 2> /dev/null || :
 
 #
 # AccessGrid package postinstall commands
