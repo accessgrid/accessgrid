@@ -70,6 +70,8 @@ mkdir etc/AccessGrid/Config/Services
 mkdir etc/AccessGrid/Config/PackageCache
 mkdir etc/AccessGrid/Config/Logs
 
+
+
 # Create a usr dir, and move dirs thereunder
 mkdir usr
 mv share usr/share
@@ -85,7 +87,7 @@ mv bin usr/bin
 #
 %files
 %defattr(-,root,root)
-%{prefix}/lib/python2.2/site-packages/AccessGrid
+%{prefix}/lib
 /etc
 %{sharedir}/%{name}/ag.ico
 %defattr(0755,root,root)
@@ -134,6 +136,8 @@ mv bin usr/bin
 %{prefix}/bin/BridgeServer.py
 %{prefix}/bin/QuickBridge
 
+# Temporarily include vic to support SetupVideo.py
+#%{prefix}/bin/vic
 
 #
 # AccessGrid package postinstall commands
@@ -143,7 +147,7 @@ mv bin usr/bin
 
 %post
 cat <<EOF > /tmp/AccessGrid-Postinstall.py
-#!/usr/bin/python2.2
+#!/usr/bin/python2
 import AccessGrid
 import AccessGrid.hosting
 import AccessGrid.hosting.pyGlobus
@@ -166,24 +170,10 @@ modimport(AccessGrid.Security)
 modimport(AccessGrid.Platform)
 sys.stdout.write("Done\n")
 EOF
+. /etc/profile.d/globus.sh
 chmod +x /tmp/AccessGrid-Postinstall.py
 /tmp/AccessGrid-Postinstall.py
 rm -f /tmp/AccessGrid-Postinstall.py
-#
-# AccessGrid-VenueClient post-install
-# - Run SetupVideo to detect video devices
-#
-#%post VenueClient
-xdpyinfo >/dev/null 2>/dev/null
-if [ "$?" == 0 ]
-then
-    echo "Detecting video capture devices..."
-    /usr/bin/SetupVideo.py
-else
-    echo "Can't open X display; run SetupVideo.py as root to"
-    echo "detect video capture devices."
-fi
-
 
 #
 # AccessGrid package pre-uninstall
@@ -192,7 +182,7 @@ fi
 
 %preun
 cat <<EOF > /tmp/AccessGrid-Preuninstall.py
-#!/usr/bin/python2.2
+#!/usr/bin/python2
 import AccessGrid
 import AccessGrid.hosting
 import os
@@ -213,6 +203,7 @@ delcompiled(AccessGrid.hosting.SOAPpy)
 delcompiled(AccessGrid.hosting)
 delcompiled(AccessGrid)
 EOF
+. /etc/profile.d/globus.sh
 chmod +x /tmp/AccessGrid-Preuninstall.py
 /tmp/AccessGrid-Preuninstall.py
 rm -f /tmp/AccessGrid-Preuninstall.py
