@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.22 2003-09-16 08:04:21 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.23 2003-09-17 17:21:21 judson Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
@@ -8,6 +8,7 @@
 #define AppNameShort "AGTk"
 #define AppVersionLong "2.1.2"
 #define AppVersionShort "2.1.2"
+#define VersionInformation "Official Release"
 
 [_ISTool]
 EnableISX=true
@@ -104,7 +105,7 @@ Source: bin\certmgr.py; DestDir: {app}\bin; DestName: certmgr.py
 Source: bin\NodeManagement.py; DestDir: {app}\bin; DestName: NodeManagement.pyw
 Source: bin\NodeSetupWizard.py; DestDir: {app}\bin; DestName: NodeSetupWizard.pyw
 Source: bin\SetupVideo.py; DestDir: {app}\bin; DestName: SetupVideo.pyw
-Source: bin\VenueManagement.py; DestDir: {app}\bin; DestName: VenueManagement.pyw
+Source: bin\VenueManagement.py; DestDir: {app}\bin; DestName: VenueManagement.py
 Source: bin\AGNodeService.py; DestDir: {app}\bin
 Source: bin\RegisterApp.py; DestDir: {app}\bin
 Source: dist\services\AudioService.zip; DestDir: {commonappdata}\AccessGrid\services; DestName: AudioService.zip
@@ -155,6 +156,7 @@ Root: HKLM; Subkey: SOFTWARE\{#AppName}; ValueType: none; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersionShort}; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersionShort}; ValueType: expandsz; ValueName: ConfigPath; ValueData: {commonappdata}\AccessGrid; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersionShort}; ValueType: expandsz; ValueName: UserConfigPath; ValueData: {userappdata}\AccessGrid\config; Flags: uninsdeletekey
+Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersionShort}; ValueType: expandsz; ValueName: VersionInformation; ValueData: {#VersionInformation}
 Root: HKLM; Subkey: SYSTEM\CurrentControlSet\Control\Session Manager\Environment; ValueType: expandsz; ValueName: GLOBUS_LOCATION; ValueData: {commonappdata}\AccessGrid
 Root: HKLM; Subkey: SYSTEM\CurrentControlSet\Control\Session Manager\Environment; ValueType: expandsz; ValueName: GLOBUS_HOSTNAME
 Root: HKLM; Subkey: SOFTWARE\Globus; ValueType: expandsz; ValueName: GLOBUS_LOCATION; ValueData: {commonappdata}\AccessGrid; Flags: uninsdeletekey

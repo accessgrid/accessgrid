@@ -47,8 +47,7 @@ BuildTime = time.strftime("%Y-%m%d-%H%M%S")
 BuildName = BuildTime
 
 # Names for the software
-long_version_name = "Access Grid Toolkit 2.0 Snapshot %s" % BuildTime
-short_version_name = "%s" % BuildTime
+metainformation = "Snapshot %s" % BuildTime
 
 def usage():
     print """
@@ -63,12 +62,8 @@ def usage():
        The directory the resulting installer will be placed in.
        The default is: %s
     
-    -l|--longname <name>
-       The complete name of this snapshot.
-       The default is: %s
-    
-    -n|--shortname <name>
-       The abbreviated name of this snapshot.
+    -m|--meta <name>
+       Meta information string about this release.
        The default is: %s
     
     -c|--checkoutcvs
@@ -86,8 +81,7 @@ def usage():
     
     -v|--verbose
        The option to be very very spammy when run.
-       """ % (sys.argv[0], SourceDir, DestDir, long_version_name,
-              short_version_name, TempDir)
+       """ % (sys.argv[0], SourceDir, DestDir, metainformation, TempDir)
 
 # Innosoft config file names
 iss_orig = "agtk.iss"
@@ -123,10 +117,8 @@ for o, a in opts:
         TempDir = a
     elif o in ("-i", "--innopath"):
         innopath = a
-    elif o in ("-l", "--longname"):
-        long_version_name = a
-    elif o in ("-r", "--shortname"):
-        short_version_name = a
+    elif o in ("-m", "--metainfo"):
+        metainformation = a
     elif o in ("-c", "--checkoutcvs"):
         checkoutnew = 1
     elif o in ("-h", "--help"):
@@ -280,22 +272,23 @@ commands = []
 section = ""
 
 for line in file:
-
     # Fix up vic, rat, source, and destination paths
-
     line = re.sub(fix_dstdir_src, fix_dstdir_dst, line)
     line = re.sub(fix_vic_src, fix_vic_dst, line)
     line = re.sub(fix_rat_src, fix_rat_dst, line)
+
     # Replace srcdir last is a substring of dstdir, rat_src, and vic_src
     line = re.sub(fix_srcdir_src, fix_srcdir_dst, line)
 
     # Fix up application version strings
-    if line.startswith("#define AppVersionLong"):
-        line = '#define AppVersionLong "%s"\n' % (long_version_name)
+    if line.startswith("#define VersionInformation"):
+        line = '#define VersionInformation "%s"\n' % (metainformation)
 
-    if line.startswith("#define AppVersionShort"):
-        line = '#define AppVersionShort "%s"\n' % (short_version_name)
-
+    # Change the .exe name
+    if line.startswith("OutputBaseFilename"):
+        line = line[:-1]
+        line += "-%s\n" % BuildTime
+        
     m = section_re.search(line)
 
     if m:
