@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.15 2003-05-27 21:38:54 eolson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.16 2003-05-28 22:02:52 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -71,7 +71,7 @@ class BugReportDialog:
         reportDialog.Destroy()
 
 class AboutDialog(wxPopupTransientWindow):
-    version = "Agtk 2.0 RC1"
+    version = "Agtk 2.0"
         
     def __init__(self, parent, style):
         wxPopupTransientWindow.__init__(self, parent, style)
