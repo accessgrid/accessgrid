@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.41 2004-04-12 21:41:07 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.42 2004-04-13 02:10:47 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.41 2004-04-12 21:41:07 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.42 2004-04-13 02:10:47 judson Exp $"
 
 # Standard imports
 import os
@@ -123,7 +123,7 @@ class AppBase:
                self.name = self.name + ".log"
 
        if self.name is not None:
-           filename = os.path.join(self.userConfig.GetConfigDir(), self.name)
+           filename = os.path.join(self.userConfig.GetLogDir(), self.name)
            fh = Log.FileHandler(filename)
            
        fh.setFormatter(Log.GetFormatter())
