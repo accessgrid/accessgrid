@@ -14,7 +14,7 @@ from AccessGrid.hosting import SecureServer as Server
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.GUID import GUID
-from AccessGrid.AGService import AGService
+from AccessGrid.AGService import AGService, RunService
 
 class DebugService(AGService):
    """
@@ -106,51 +106,18 @@ class DebugServiceIW(SOAPIWrapper):
       return self.proxy.SetIdentity(profile)
 
 if __name__ == '__main__':
-   from AccessGrid.Toolkit import CmdlineApplication
-   import pprint
-
-   # Do env init
-   app = CmdlineApplication()
-   app.Initialize("DebugServiceTest")
-   
-   # Create a local hosting environment
-   hn = app.GetHostname()
-   
-   if len(sys.argv) == 2:
-      testPort = int(sys.argv[1])
+   if len(sys.argv) == 1:
+      doTest = 1
+      import pprint
+      port = 1300
    else:
-      testPort = 1300
-
-   server = Server((hn, testPort))
-
+      port = int(sys.argv[1])
+      
    # Create the display service
    debugService = DebugService()
 
    # Then it's interface
    debugServiceI = DebugServiceI(debugService)
 
-   # Then register the display service with the hosting environment
-   service = server.RegisterObject(debugServiceI, path = "/DebugService")
+   RunService(debugService, debugServiceI, port)
 
-   # Get the url and print it
-   url = server.FindURLForObject(debugService)
-   print "Starting server at", url
-
-   # run the hosting environment until interrupted
-   server.RunInThread()
-
-   # Create a client
-   debugClient = DebugServiceIW(url)
-
-   testLevel = 5
-
-   print "Original Level: ", debugClient.GetLevel()
-   print "Set Level to %d" % testLevel
-   debugClient.SetLevel(testLevel)
-   print "New Level: ", debugClient.GetLevel()
-
-   if debugClient.GetLevel() != testLevel:
-      print "Error, levels don't match."
-      
-   # Shutdown the service
-   server.Stop()
