@@ -90,6 +90,17 @@ cmd = "cp /usr/src/redhat/RPMS/i386/pyOpenSSL_AG-0.5.1-4.i386.rpm %s" % (RpmDir,
 print "cmd = ", cmd
 os.system(cmd)
 
+# 	 
+# Build globus rpm      
+#   
+os.chdir(StartDir)    
+cmd = "rpmbuild -ba globus.spec"     
+print "cmd = ", cmd     
+os.system(cmd)      
+cmd = "cp /usr/src/redhat/RPMS/i386/globus-accessgrid-2.4-1.i386.rpm %s" % (RpmDir,)   
+print "cmd = ", cmd     
+os.system(cmd)      
+
 #
 # Build the pyGlobus rpm
 #
