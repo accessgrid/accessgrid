@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.151 2004-07-19 18:13:14 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.152 2004-07-20 19:12:54 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.151 2004-07-19 18:13:14 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.152 2004-07-20 19:12:54 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -119,6 +119,7 @@ class VenueServer(AuthorizationMixIn):
             "VenueServer.serverPrefix" : 'VenueServer',
             "VenueServer.venuePathPrefix" : 'Venues',
             "VenueServer.dataStorageLocation" : 'Data',
+            "VenueServer.backupServer" : '',
             "VenueServer.addressAllocationMethod" : MulticastAddressAllocator.RANDOM,
             "VenueServer.baseAddress" : MulticastAddressAllocator.SDR_BASE_ADDRESS,
             "VenueServer.addressMask" : MulticastAddressAllocator.SDR_MASK_SIZE,
