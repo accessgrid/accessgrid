@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.30 2004-04-05 18:46:09 judson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.31 2004-04-27 19:22:19 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.30 2004-04-05 18:46:09 judson Exp $"
+__revision__ = "$Id: AGService.py,v 1.31 2004-04-27 19:22:19 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -24,7 +24,7 @@ from AccessGrid import Log
 from AccessGrid.Types import *
 from AccessGrid.AGParameter import *
 from AccessGrid.Platform import IsWindows, IsLinux
-from AccessGrid.Platform.Config import UserConfig
+from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.Descriptions import CreateResource
@@ -39,7 +39,7 @@ def GetLog():
     """
     log = Log.GetLogger(Log.AGService)
     Log.SetDefaultLevel(Log.AGService, Log.DEBUG)
-    ucd = UserConfig.instance().GetConfigDir()
+    ucd = Service.instance().GetUserConfig().GetConfigDir()
     logFile = os.path.join(ucd, "AGService.log")
     hdlr = Log.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
     hdlr.setFormatter(Log.GetFormatter())
@@ -387,7 +387,7 @@ def RunService(service,serviceInterface,port):
     from AccessGrid.Platform.Config import SystemConfig
 
     # Create the server
-    hostname = SystemConfig.instance().GetHostname()
+    hostname = Service.instance().GetHostname()
     server = Server( (hostname, port) )
     
     # Register the service interface with the server

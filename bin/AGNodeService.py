@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.53 2004-04-23 22:01:34 lefvert Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.54 2004-04-27 19:22:52 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.53 2004-04-23 22:01:34 lefvert Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.54 2004-04-27 19:22:52 judson Exp $"
 
 # The standard imports
 import sys
@@ -21,23 +21,11 @@ if sys.platform=="darwin":
     import pyGlobus.ioc
 
 import signal, time, os
-if sys.version.startswith('2.2'):
-    try:
-        from optik import Option
-    except:
-        raise Exception, "Missing module optik necessary for the AG Toolkit."
-
-if sys.version.startswith('2.3'):
-    try:
-        from optparse import Option
-    except:
-        raise Exception, "Missing module optparse, check your python installation."
+from optparse import Option
 
 # Our imports
-#from AccessGrid.Toolkit import Service
 from AccessGrid.Toolkit import Service
 from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
-from AccessGrid import Log
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.hosting import SecureServer
 
@@ -69,7 +57,6 @@ def main():
     global nodeService, log, server
 
     # Instantiate the app
-    #app = Service()
     app = Service().instance()
 
     # build options for this application
@@ -90,10 +77,10 @@ def main():
     port = app.GetOption("port")
         
     # Create a Node Service
-    nodeService = AGNodeService()
+    nodeService = AGNodeService(app=app)
 
     # Create a hosting environment
-    hostname = SystemConfig.instance().GetHostname()
+    hostname = app.GetHostname()
     server = SecureServer((hostname, port), debug = app.GetDebugLevel())
     
     # Create the Node Service Service

@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.42 2004-04-14 18:44:14 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.43 2004-04-27 19:22:52 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ def main():
     port = app.GetOption("port")
         
     # Create the hosting environment
-    hostname = SystemConfig.instance().GetHostname()
+    hostname = app.GetHostname()
     server = SecureServer((hostname, port))
 
     # Create the Service Manager

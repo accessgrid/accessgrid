@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.53 2004-04-27 17:13:58 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.54 2004-04-27 19:22:19 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.53 2004-04-27 17:13:58 judson Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.54 2004-04-27 19:22:19 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -17,9 +17,10 @@ import os
 import time
 
 from AccessGrid import Log
+from AccessGrid import Utilities
+from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
-from AccessGrid import Utilities
 from AccessGrid.Types import AGServicePackage
 from AccessGrid.DataStore import GSIHTTPDownloadFile
 from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
@@ -40,19 +41,21 @@ class AGServiceManager:
     exposes local resources and configures services to deliver them
     """
 
-    def __init__( self, server ):
+    def __init__( self, server, app=None ):
         self.server = server
+        if app is not None:
+            self.app = app
+        else:
+            self.app = Service.instance()
 
         self.resources = []
         
         # note: services dict is keyed on pid
         self.services = dict()
         self.processManager = ProcessManager()
-        self.resourcesFile = os.path.join(UserConfig.instance().GetConfigDir(),
-                                          "videoresources")
-
-
-        userConfig = UserConfig.instance()
+        userConfig = self.app.GetUserConfig().instance()
+        self.resourcesFile = os.path.join(userConfig.GetConfigDir(),
+            "videoresources")
         self.servicesDir = os.path.join(userConfig.GetConfigDir(),
                                         "local_services")
 
@@ -186,11 +189,9 @@ class AGServiceManager:
             os.chdir(self.servicesDir)
             pid = self.processManager.StartProcess( executable, options )
 
-            #
             # Wait for service to boot and become reachable,
             # timing out reasonably
-            #
-            hostname = SystemConfig.instance().GetHostname()
+            hostname = self.app.GetHostname()
             serviceUrl = 'https://%s:%s/Service' % ( hostname, port )
             elapsedTries = 0
             maxTries = 10
