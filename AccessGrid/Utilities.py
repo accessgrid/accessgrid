@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.47 2003-09-18 14:55:06 lefvert Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.48 2003-09-18 15:03:40 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.47 2003-09-18 14:55:06 lefvert Exp $"
+__revision__ = "$Id: Utilities.py,v 1.48 2003-09-18 15:03:40 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -241,16 +241,16 @@ def GetLogText(maxSize, logFileName):
     # log messages in the error report
     #
     
-    todaysDate = time.strftime("%m/%d/%Y", time.localtime())
-    dateIndex = text.find(str(todaysDate))
+    #todaysDate = time.strftime("%m/%d/%Y", time.localtime())
+    #dateIndex = text.find(str(todaysDate))
     
-    if dateIndex != -1:
+    #if dateIndex != -1:
         #
         # If today's date is found, send log info starting from that index.
         # Else, the last "maxSize" bytes of the log file is sent
         #
         
-        text = text[dateIndex:]
+        #text = text[dateIndex:]
 
     return text
 
