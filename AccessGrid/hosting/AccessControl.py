@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.11 2003-08-08 21:35:34 eolson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.12 2003-08-12 15:55:43 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -252,7 +252,7 @@ class RoleManager:
         else:
             mgrs_strng = ""
             for a in self.GetExternalRoleManagerList():
-                mgrs_strng.append(a)
+                mgrs_strng += a
             raise InvalidExternalRoleManager(manager_name + " requested from possible: " + mgrs_strng + ".")
 
     def GetRole(self, role_name):
