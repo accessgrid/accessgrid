@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.157 2004-04-07 13:13:12 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.158 2004-04-07 15:43:54 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.157 2004-04-07 13:13:12 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.158 2004-04-07 15:43:54 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -262,10 +262,14 @@ class VenueClient:
                                  "local clock can cause authorization to fail."
 
 
-    def __StartWebService(self, pnode=0, port=0):
+    def __StartWebService(self, pnode, port):
         from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
+        
         if port == 0:
-            port = NetworkAddressAllocator().AllocatePort()
+            if pnode:
+                port = 11000
+            else:
+                port = NetworkAddressAllocator().AllocatePort()
 
         self.server = Server((SystemConfig.instance().GetHostname(), port))
         vci = VenueClientI(self)
