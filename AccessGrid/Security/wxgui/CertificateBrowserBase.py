@@ -112,7 +112,13 @@ class CertificateBrowserBase(wxPanel):
         #
         # We also invoke _configList to configure the list control.
         #
+        # If a subclass wishes to add somethign below the list control, it
+        # can define _buildExtra(parent, sizer), where parent is the
+        # parent panel for any extra widgets, and sizer is the overall
+        # vsizer to which the extra-builder should add its widgets.
+        #
 
+        self.topsizer = wxBoxSizer(wxVERTICAL)
         self.sizer = wxBoxSizer(wxHORIZONTAL)
 
         self.list = wxListCtrl(self, -1, style = wxLC_REPORT | wxLC_SINGLE_SEL | wxLC_VRULES)
@@ -130,9 +136,12 @@ class CertificateBrowserBase(wxPanel):
 
         self._buildButtons(bsizer)
 
+        self.topsizer.Add(self.sizer, 1, wxEXPAND)
+        self._buildExtra(self, self.topsizer)
+        
         self._initList()
 
-        self.SetSizer(self.sizer)
+        self.SetSizer(self.topsizer)
         self.SetAutoLayout(1)
         self.Fit()
 
@@ -281,6 +290,18 @@ class CertificateBrowserBase(wxPanel):
 
         b = wxButton(self, -1, "FOo")
         sizer.Add(b, 0, wxEXPAND)
+
+    def _buildExtra(self, panel, sizer):
+        """
+        Build more stuff in the bottom of the browser panel.
+
+        @param panel: Panel to use as parent of any new widgets.
+        @param sizer: Sizer to which the widgets should be added. It's the
+        vbox that holds the overall panel.
+
+        """
+
+        pass
 
     def _getListColumns(self):
         """
