@@ -4,8 +4,8 @@
 #
 # Author:      Susanne Lefvert
 #
-# Created:     $Date: 2004-06-03 21:11:34 $
-# RCS-ID:      $Id: SharedQuestionTool.py,v 1.2 2004-06-03 21:11:34 lefvert Exp $
+# Created:     $Date: 2004-07-27 21:27:11 $
+# RCS-ID:      $Id: SharedQuestionTool.py,v 1.3 2004-07-27 21:27:11 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,6 +27,7 @@ from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid import icons
 from AccessGrid.GUID import GUID
+from AccessGrid.Toolkit import WXGUIApplication
 
 
 class SharedQuestionTool(Model):
@@ -38,7 +39,7 @@ class SharedQuestionTool(Model):
     SEND_QUESTION = "SendQuestion"
     REMOVE_QUESTION = "RemoveQuestion"
     
-    def __init__( self, appUrl, debugMode = 0, logFile = None):
+    def __init__( self, appUrl, name):
         '''
         Creates the shared application client, used for application service
         interaction, and opens the audience/moderatorView for UI display.
@@ -47,10 +48,10 @@ class SharedQuestionTool(Model):
         self.allQuestions = []
 
         # Create shared application client
-        self.sharedAppClient = SharedAppClient("SharedQuestionTool")
-        self.log = self.sharedAppClient.InitLogging(debugMode, logFile)
-        self.log.debug("SharedQuestionTool.__init__:Started shared question tool appUrl %s, debug %s, log %s"
-                       %(appUrl, debugMode, logFile))
+        self.sharedAppClient = SharedAppClient(name)
+        self.log = self.sharedAppClient.InitLogging()
+        self.log.debug("SharedQuestionTool.__init__:Started shared question tool appUrl %s"
+                       %(appUrl))
        
         # Get client profile
         try:
@@ -281,7 +282,7 @@ class SharedQuestionToolUI(wxApp):
         Layout ui components.
         '''
         sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add(10,10)
+        sizer.Add((10,10))
         sizer.Add(self.moderatorButton, 0, wxEXPAND|wxALL, 10)
         self.topPanel.SetSizer(sizer)
         sizer.Fit(self.topPanel)
@@ -495,7 +496,6 @@ class ArgumentManager:
     def __init__(self):
         self.arguments = {}
         self.arguments['applicationUrl'] = None
-        self.arguments['logging'] = None
         self.arguments['debug'] = 0
         
     def GetArguments(self):
@@ -508,7 +508,6 @@ class ArgumentManager:
         print "%s:" % sys.argv[0]
         print "    -a|--applicationURL : <url to application in venue>"
         print "    -h|--help : print usage"
-        print "    -l|--logging : <log name: defaults to SharedBrowser>"
         print "    -d|--debug : print debugging output"
                
     def ProcessArgs(self):
@@ -518,7 +517,7 @@ class ArgumentManager:
         try:
             opts, args = getopt.getopt(sys.argv[1:], "a:l:dh",
                                        ["applicationURL=",
-                                        "logging=", "debug", "help"])
+                                        "debug", "help"])
         except getopt.GetoptError:
             self.Usage()
             sys.exit(2)
@@ -526,8 +525,6 @@ class ArgumentManager:
         for o, a in opts:
             if o in ("-a", "--applicationURL"):
                 self.arguments["applicationUrl"] = a
-            elif o in ("-l", "--logging"):
-                self.arguments["logging"] = a
             elif o in ("-d", "--debug"):
                 self.arguments["debug"] = 1
             elif o in ("-h", "--help"):
@@ -536,25 +533,23 @@ class ArgumentManager:
     
         
 if __name__ == "__main__":
+    app = WXGUIApplication()
+    name = "SharedQuestionTool"
+    
     # Parse command line options
     am = ArgumentManager()
     am.ProcessArgs()
     aDict = am.GetArguments()
   
     appUrl = aDict['applicationUrl']
-    logging = aDict['logging']
     debugMode = aDict['debug']
 
-    #
-    # For testing application outside of venue client
-    #
-    #from AccessGrid.Toolkit import CmdlineApplication
-    #app = CmdlineApplication.instance()
-    #app.Initialize("SharedQuestionTool")
+    init_args = []
 
-    # Url from app properties dialog in venue client.
-    #appUrl = 'https://ag2-test.mcs.anl.gov:9000/Venues/default/apps/000000fcec30fd48008c00dd000b0037daf'
-    #debugMode = 1
+    if "--debug" in sys.argv or "-d" in sys.argv:
+        init_args.append("--debug")
+    
+    app.Initialize(name, args=init_args)
     
     if not appUrl:
         am.Usage()
@@ -562,7 +557,7 @@ if __name__ == "__main__":
         wxInitAllImageHandlers()
 
         # Create Question Tool 
-        qt = SharedQuestionTool(appUrl, debugMode, logging)
+        qt = SharedQuestionTool(appUrl, name)
 
         # Create Question Tool User Interface
         uiApp = SharedQuestionToolUI(qt, qt.log)

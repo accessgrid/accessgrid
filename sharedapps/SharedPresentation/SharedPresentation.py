@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.28 2004-05-06 17:27:11 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.29 2004-07-27 21:26:47 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -293,7 +293,7 @@ class SharedPresentationFrame(wxFrame):
                     
         # - Create checkbox for master
         self.masterCheckBox = wxCheckBox(self.panel,-1,"Take control as presentation master")
-        sizer.Add(5, 5)
+        sizer.Add((5, 5))
         sizer.Add( self.masterCheckBox, 0, wxEXPAND | wxALL, 5)
 
         # - Create sizer for remaining ctrls
@@ -334,7 +334,7 @@ class SharedPresentationFrame(wxFrame):
         rowSizer.Add( self.nextButton )
 
         sizer.Add(rowSizer, 0, wxALIGN_CENTER|wxALL, 5)
-        sizer.Add(5,5)
+        sizer.Add((5,5))
         
         self.SetAutoLayout(1)
         self.Layout()
@@ -663,7 +663,7 @@ class SharedPresentation:
     appDescription = "A shared presentation is a set of slides that someone presents to share an idea, plan, or activity with a group."
     appMimetype = "application/x-ag-shared-presentation"
     
-    def __init__(self, url, venueUrl=None, log=None, appName = 'SharedPresentation', debug = 0):
+    def __init__(self, url, venueUrl=None, appName = 'SharedPresentation'):
         """
         This is the contructor for the Shared Presentation.
         """
@@ -671,7 +671,7 @@ class SharedPresentation:
         
         # Create shared application client. 
         self.sharedAppClient = SharedAppClient(appName)
-        self.log = self.sharedAppClient.InitLogging(debug, log)
+        self.log = self.sharedAppClient.InitLogging()
 
         self.controller = UIController(0, self.log)
         
@@ -1532,7 +1532,6 @@ def Usage():
     print "    -d|--data : <url to data in venue>"
     print "    -h|--help : print usage"
     print "    -i|--information : <print information about this application>"
-    print "    -l|--logging : <log name: defaults to SharedPresentation>"
     print "    --debug : print debugging output"
 
 
@@ -1549,15 +1548,15 @@ if __name__ == "__main__":
     venueURL = None
     appURL = None
     venueDataUrl = None
-    logName = "SharedPresentation"
+    name = "SharedPresentation"
     debug = 0
 
     app = WXGUIApplication()
     init_args = []
     if "--debug" in sys.argv or "-d" in sys.argv:
         init_args.append("--debug")
-    app.Initialize("SharedPresentation",args=init_args)
-
+    app.Initialize(name,args=init_args)
+    
     wxInitAllImageHandlers()
 
     # Here we parse command line options
@@ -1565,7 +1564,7 @@ if __name__ == "__main__":
     try:
         opts, args = getopt.getopt(sys.argv[1:], "d:v:a:l:ih",
                                    ["venueURL=", "applicationURL=",
-                                    "information=", "logging=", 
+                                    "information=", 
                                     "data=", "debug", "help"])
     except getopt.GetoptError:
         Usage()
@@ -1576,8 +1575,6 @@ if __name__ == "__main__":
             venueURL = a
         elif o in ("-a", "--applicationURL"):
             appURL = a
-        elif o in ("-l", "--logging"):
-            logName = a
         elif o in ("-i", "--information"):
             print "App Name: %s" % SharedPresentation.appName
             print "App Description: %s" % SharedPresentation.appDescription
@@ -1609,7 +1606,7 @@ if __name__ == "__main__":
 
    
     # This is all that really matters!
-    presentation = SharedPresentation(appURL, venueURL, logName, "SharedPresentation", debug)
+    presentation = SharedPresentation(appURL, venueURL, name)
 
     if venueDataUrl:
         presentation.OpenVenueData(venueDataUrl)

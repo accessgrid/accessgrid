@@ -4,7 +4,7 @@ from AccessGrid import Log
 from AccessGrid.Events import Event
 from AccessGrid.Platform import IsWindows, Config
 from AccessGrid.ClientProfile import ClientProfile
-
+from AccessGrid.Toolkit import WXGUIApplication
 from AccessGrid.SharedAppClient import SharedAppClient
 
 import os
@@ -35,11 +35,12 @@ class AppMonitor:
 
         # Create UI frame
         self.frame = AppMonitorFrame(parent, -1, "Application Monitor", self)
-
-        # Create application client
-        self.sharedAppClient = SharedAppClient("Application Monitor")
-        self.sharedAppClient.InitLogging()
-              
+                
+        # Create application client. Use Log.VenueClient to make sure log output
+        # is sent to correct file.
+        self.sharedAppClient = SharedAppClient(Log.VenueClient)
+        self.log = self.sharedAppClient.InitLogging()
+                             
         # Join the application session
         self.sharedAppClient.Join(appUrl)
       
@@ -413,7 +414,7 @@ class AppMonitorFrame(wxFrame):
         
         vs.Add(self.descriptionText, 0, wxEXPAND | wxALL, 4)
         vs.Add(wxStaticLine(self.panelTop, -1), 0, wxEXPAND)
-        vs.Add(5,5)
+        vs.Add((5,5))
         vs.Add(self.partListCtrl, 2, wxEXPAND | wxALL, 4)
 
         sizer.Add(vs, 1, wxEXPAND|wxALL, 5)
