@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.28 2003-05-23 20:59:37 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.29 2003-05-28 22:08:07 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -21,6 +21,7 @@ import logging
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
+from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 
 from AccessGrid.Descriptions import AGServiceDescription, AGServiceManagerDescription
 from AccessGrid.Types import ServiceConfiguration, AGResource
@@ -30,6 +31,9 @@ from AccessGrid.Platform import GetConfigFilePath
 from AccessGrid.AGParameter import ValueParameter
 
 log = logging.getLogger("AG.NodeService")
+
+
+class SetStreamException(Exception): pass
 
 class AGNodeService( ServiceBase ):
     """
@@ -47,7 +51,7 @@ class AGNodeService( ServiceBase ):
         self.name = None
         self.description = None
         self.httpBaseUri = None
-        self.serviceManagers = []
+        self.serviceManagers = dict()
         self.authManager = AuthorizationManager()
         self.__ReadAuthFile()
         self.config = None
@@ -117,21 +121,28 @@ class AGNodeService( ServiceBase ):
         # Try to reach the service manager
         try:
             Client.Handle( serviceManager.uri ).IsValid()
-        except Client.InvalidHandleException:
+        except:
             log.exception("AddServiceManager: Invalid service manager url (%s)"
                           % serviceManager.uri)
-            raise
+            raise Exception("Service Manager is unreachable: "
+                            + serviceManager.uri)
+
+        if self.serviceManagers.has_key( serviceManager.uri ):
+            raise Exception("Service Manager already present:" + 
+                            serviceManager.uri)
 
         #
         # Add service manager to list
         #
+        self.serviceManagers[serviceManager.uri] = serviceManager
+
         try:
-            self.serviceManagers.append( serviceManager )
             Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( 
                            self.authManager.GetAuthorizedUsers() )
         except:
-            log.exception("Exception in AGNodeService.AddServiceManager.")
-            raise Exception("Failed to set Service Manager user authorization: " + 
+            log.exception("Failed to set Service Manager user authorization:" + 
+                            serviceManager.uri )
+            raise Exception("Failed to set Service Manager user authorization:" + 
                             serviceManager.uri )
         
     AddServiceManager.soap_export_as = "AddServiceManager"
@@ -139,12 +150,8 @@ class AGNodeService( ServiceBase ):
     def RemoveServiceManager( self, serviceManagerToRemove ):
         """Remove a service manager"""
         try:
-            for i in range( len(self.serviceManagers) ):
-                serviceManager = self.serviceManagers[i]
-                if serviceManager.uri == serviceManagerToRemove.uri:
-                    del self.serviceManagers[i]
-
-                    break
+            if self.serviceManagers.has_key(serviceManagerToRemove.uri):
+                del self.serviceManagers[serviceManagerToRemove.uri]
         except:
             log.exception("Exception in AGNodeService.RemoveServiceManager.")
             raise Exception("AGNodeService.RemoveServiceManager failed: " + 
@@ -154,7 +161,7 @@ class AGNodeService( ServiceBase ):
 
     def GetServiceManagers( self ):
         """Get list of service managers """
-        return self.serviceManagers
+        return self.serviceManagers.values()
     GetServiceManagers.soap_export_as = "GetServiceManagers"
 
 
@@ -169,16 +176,24 @@ class AGNodeService( ServiceBase ):
         """
 
         # Add the service to the service manager
-        serviceDescription = Client.Handle( serviceManagerUri ).GetProxy().AddService( servicePackageUri,
+        try:
+            serviceDescription = Client.Handle( serviceManagerUri ).GetProxy().AddService( servicePackageUri,
                                                                   resourceToAssign,
                                                                   serviceConfig )
+        except Exception, e:
+            log.exception("Error adding service")
+            raise Exception("Error adding service: " + e.faultstring )
         
         # Set the identity for the service
         if self.profile:
             Client.Handle( serviceDescription.uri ).GetProxy().SetIdentity( self.profile )
 
         # Configure the service with the appropriate stream description
-        self.__SendStreamsToService( serviceDescription.uri )
+        try:
+            self.__SendStreamsToService( serviceDescription.uri )
+        except SetStreamException:
+            log.exception("Unable to update service " + serviceDescription.name)
+            raise Exception("Unable to update service " + serviceDescription.name)
 
     AddService.soap_export_as = "AddService"
 
@@ -192,7 +207,7 @@ class AGNodeService( ServiceBase ):
         """Get list of installed services """
         services = []
         try:
-            for serviceManager in self.serviceManagers:
+            for serviceManager in self.serviceManagers.values():
                 serviceSubset = Client.Handle( serviceManager.uri ).get_proxy().GetServices().data
                 for service in serviceSubset:
                     service = AGServiceDescription( service.name, service.description, service.uri,
@@ -212,22 +227,49 @@ class AGNodeService( ServiceBase ):
         Enable the service, and send it a stream configuration if we have one
         """
 
-        Client.Handle( serviceUri ).GetProxy().SetEnabled(enabled)
+        try:
+            Client.Handle( serviceUri ).GetProxy().SetEnabled(enabled)
 
-        if enabled:
-            self.__SendStreamsToService( serviceUri )
+            if enabled:
+                self.__SendStreamsToService( serviceUri )
+        except faultType,e:
+            log.exception(serviceUri)
+            raise Exception(e.faultstring)
 
     SetServiceEnabled.soap_export_as = "SetServiceEnabled"
+
+
+    def SetServiceEnabledByMediaType(self, mediaType, enableFlag):
+        """
+        Enable/disable services that handle the given media type
+        """
+
+        serviceList = self.GetServices()
+        for service in serviceList:
+            serviceMediaTypes = map( lambda cap: cap.type, service.capabilities )
+            print "service : ", service.name, serviceMediaTypes
+            if mediaType in serviceMediaTypes:
+                print " -- set enable ", enableFlag
+                self.SetServiceEnabled( service.uri, enableFlag) 
+
+    SetServiceEnabledByMediaType.soap_export_as = "SetServiceEnabledByMediaType"
 
     def StopServices(self):
         """
         Stop all services
         """
-        for serviceManager in self.serviceManagers:
+        exceptionText = ""
+
+        for serviceManager in self.serviceManagers.values():
             try:
                 Client.Handle(serviceManager.uri).GetProxy().StopServices()
             except:
                 log.exception("Exception stopping services")
+                exceptionText += sys.exc_info()[1]
+        
+        if len(exceptionText):
+            raise Exception(exceptionText)
+
     StopServices.soap_export_as = "StopServices"
 
 
@@ -243,6 +285,8 @@ class AGNodeService( ServiceBase ):
         according to matching capabilities
         """
 
+        exceptionText = ""
+
         # Save the stream descriptions
         self.streamDescriptionList = dict()
         for streamDescription in streamDescriptionList:
@@ -251,7 +295,13 @@ class AGNodeService( ServiceBase ):
         # Send the streams to the services
         services = self.GetServices()
         for service in services:
-            self.__SendStreamsToService( service.uri )
+            try:
+                self.__SendStreamsToService( service.uri )
+            except SetStreamException:
+                raise
+
+        if len(exceptionText):
+            raise SetStreamException(exceptionText)
                     
     SetStreams.soap_export_as = "SetStreams"
     
@@ -282,6 +332,8 @@ class AGNodeService( ServiceBase ):
         Load named node configuration
         """
 
+        exceptionText = ""
+
         class IncomingService:
             def __init__(self):
                 self.packageName = None
@@ -289,68 +341,73 @@ class AGNodeService( ServiceBase ):
                 self.executable = None
                 self.parameters = None
 
+
         #
         # Read config file
         #
-        config = ConfigParser.ConfigParser()
-        config.read( self.configDir + os.sep + configName )
 
-        #
-        # Parse config file into usable structures
-        #
-        serviceManagerList = []
-        serviceManagerSections = string.split( config.get("node", "servicemanagers") )
-        for serviceManagerSection in serviceManagerSections:
-            #
-            # Create Service Manager
-            #
-            serviceManager = AGServiceManagerDescription( config.get( serviceManagerSection, "name" ), 
-                                                          config.get( serviceManagerSection, "url" ) )
+        try:
+            config = ConfigParser.ConfigParser()
+            config.read( self.configDir + os.sep + configName )
 
             #
-            # Extract Service List
+            # Parse config file into usable structures
             #
-            serviceList = [] 
-            serviceSections = string.split( config.get( serviceManagerSection, "services" ) )
-            for serviceSection in serviceSections:
+            serviceManagerList = []
+            serviceManagerSections = string.split( config.get("node", "servicemanagers") )
+            for serviceManagerSection in serviceManagerSections:
                 #
-                # Read the resource
+                # Create Service Manager
                 #
-                resourceSection = config.get( serviceSection, "resource" )
-                if resourceSection == "None":
-                    resource = "None"
-                else:
-                    resource = AGResource( config.get( resourceSection, "type" ),
-                                           config.get( resourceSection, "resource" ) )
+                serviceManager = AGServiceManagerDescription( config.get( serviceManagerSection, "name" ), 
+                                                              config.get( serviceManagerSection, "url" ) )
 
                 #
-                # Read the service config
+                # Extract Service List
                 #
-                serviceConfigSection = config.get( serviceSection, "serviceConfig" )
-                parameters = []
-                for parameter in config.options( serviceConfigSection ):
-                    parameters.append( ValueParameter( parameter, config.get( serviceConfigSection, parameter ) ) )
+                serviceList = [] 
+                serviceSections = string.split( config.get( serviceManagerSection, "services" ) )
+                for serviceSection in serviceSections:
+                    #
+                    # Read the resource
+                    #
+                    resourceSection = config.get( serviceSection, "resource" )
+                    if resourceSection == "None":
+                        resource = "None"
+                    else:
+                        resource = AGResource( config.get( resourceSection, "type" ),
+                                               config.get( resourceSection, "resource" ) )
 
-                #
-                # Add Service to List
-                #
-                incomingService = IncomingService()
-                incomingService.packageName = config.get( serviceSection, "packageName" )
-                incomingService.executable = config.get( serviceSection, "executable" )
-                incomingService.resource = resource
-                incomingService.parameters = parameters
-                serviceList.append( incomingService )
-                
-            #
-            # Add Service Manager to List
-            #
-            serviceManagerList.append( ( serviceManager, serviceList ) )
+                    #
+                    # Read the service config
+                    #
+                    serviceConfigSection = config.get( serviceSection, "serviceConfig" )
+                    parameters = []
+                    for parameter in config.options( serviceConfigSection ):
+                        parameters.append( ValueParameter( parameter, config.get( serviceConfigSection, parameter ) ) )
 
+                    #
+                    # Add Service to List
+                    #
+                    incomingService = IncomingService()
+                    incomingService.packageName = config.get( serviceSection, "packageName" )
+                    incomingService.executable = config.get( serviceSection, "executable" )
+                    incomingService.resource = resource
+                    incomingService.parameters = parameters
+                    serviceList.append( incomingService )
+                    
+                #
+                # Add Service Manager to List
+                #
+                serviceManagerList.append( ( serviceManager, serviceList ) )
+        except:
+            log.exception("Error reading node configuration file")
+            raise Exception("Error reading node configuration file")
 
         #
         # Add service managers and services
         #
-        self.serviceManagers = []
+        self.serviceManagers = dict()
         for serviceManager, serviceList in serviceManagerList:
 
             #
@@ -358,28 +415,42 @@ class AGNodeService( ServiceBase ):
             #
             try:
                 Client.Handle( serviceManager.uri ).IsValid()
-            except Client.InvalidHandleException:
+            except:
                 log.info("AddServiceManager: Invalid service manager url (%s)"
                          % serviceManager.uri)
+                exceptionText += "Couldn't reach service manager: %s" % serviceManager.name
+                continue
 
             # Add service manager to list
-            self.serviceManagers.append( serviceManager )
+            self.serviceManagers[serviceManager.uri] = serviceManager
 
             #
             # Remove all services from service manager
             #
-            Client.Handle( serviceManager.uri ).get_proxy().RemoveServices()
+            try:
+                Client.Handle( serviceManager.uri ).get_proxy().RemoveServices()
+            except:
+                log.exception("Exception removing services from Service Manager")
+                exceptionText += "Couldn't remove services from Service Manager: %s" %(serviceManager.name)
 
             #
             # Add Service to Service Manager
             #
             for service in serviceList:
-                serviceConfig = ServiceConfiguration( service.resource,
-                                                      service.executable,
-                                                      service.parameters)
-                Client.Handle( serviceManager.uri ).get_proxy().AddService( self.servicePackageRepository.GetPackageUrl( service.packageName ), 
-                                                                            service.resource,
-                                                                            serviceConfig )
+                try:
+                    serviceConfig = ServiceConfiguration( service.resource,
+                                                          service.executable,
+                                                          service.parameters)
+                    Client.Handle( serviceManager.uri ).get_proxy().AddService( self.servicePackageRepository.GetPackageUrl( service.packageName ), 
+                                                                                service.resource,
+                                                                                serviceConfig )
+                except:
+                    log.exception("Exception adding service %s" % (service.name))
+                    exceptionText += "Couldn't add service %s" % (service.name)
+
+        if len(exceptionText):
+            raise Exception(exceptionText)
+
     LoadConfiguration.soap_export_as = "LoadConfiguration"
 
 
@@ -388,6 +459,14 @@ class AGNodeService( ServiceBase ):
       Store node configuration with specified name
       """
       try:
+
+        file = self.configDir + os.sep + configName
+
+        # Catch inability to write config file
+        if not os.access(file, os.W_OK):
+            log.exception("Can't write config file %s" % (file))
+            raise Exception("Can't write config file %s" % (file))
+
         numServiceManagers = 0
         numServices = 0
 
@@ -398,7 +477,7 @@ class AGNodeService( ServiceBase ):
 
         node_servicemanagers = ""
 
-        for serviceManager in self.serviceManagers:
+        for serviceManager in self.serviceManagers.values():
 
             servicemanager_services = ""
 
@@ -455,7 +534,6 @@ class AGNodeService( ServiceBase ):
         #
         # Write config file
         #
-        file = self.configDir + os.sep + configName
         fp = open( file, "w" )
         config.write(fp)
         fp.close()
@@ -558,7 +636,7 @@ class AGNodeService( ServiceBase ):
         Push the list of authorized users to service managers
         """
         try:
-            for serviceManager in self.serviceManagers:
+            for serviceManager in self.serviceManagers.values():
                 Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
         except:
             log.exception("Exception in AGNodeService.RemoveAuthorizedUser.")
@@ -603,6 +681,10 @@ class AGNodeService( ServiceBase ):
         from AccessGrid.Utilities import SaveConfig
 
         configFile = GetConfigFilePath("AGNodeService.cfg")
+
+        if not os.access(configFile, os.W_OK):
+            raise Exception("Unable to write configuration file")
+
         if configFile and os.path.exists(configFile):
 
             log.info("Writing node service config file: %s" % configFile)
@@ -620,6 +702,8 @@ class AGNodeService( ServiceBase ):
         """
         Send stream description(s) to service
         """
+        failedSends = ""
+
         serviceCapabilities = map(lambda cap: cap.type, 
             Client.Handle( serviceUri ).get_proxy().GetCapabilities() )
         for streamDescription in self.streamDescriptionList.values():
@@ -631,11 +715,16 @@ class AGNodeService( ServiceBase ):
                     Client.Handle( serviceUri ).get_proxy().ConfigureStream( streamDescription )
             except:
                 log.exception("Exception in AGNodeService.ConfigureStreams.")
+                failedSends += "Error updating %s %s\n" % \
+                    ( streamDescription.capability.type, streamDescription.capability.role )
+
+        if len(failedSends):
+            raise SetStreamException(failedSends)
 
 
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-from AccessGrid.DataStore import GSIHTTPTransferServer
 from AccessGrid.Types import AGServicePackage, InvalidServicePackage
+from AccessGrid import DataStore
 
 class AGServicePackageRepository:
     """
@@ -662,7 +751,7 @@ class AGServicePackageRepository:
         #
         # Start the transfer server
         #
-        self.s = GSIHTTPTransferServer(('', self.httpd_port)) 
+        self.s = DataStore.GSIHTTPTransferServer(('', self.httpd_port)) 
         self.s.RegisterPrefix(prefix, self)
         thread.start_new_thread( self.s.run, () )
         self.running = 1
@@ -674,11 +763,17 @@ class AGServicePackageRepository:
 
     def GetDownloadFilename(self, id_token, url_path):
         """
-        Implementation of Handler interface for DataStore
+        Return the path to the file specified by the given url path
         """
-        log.info("Download filename : %s",
-                      self.servicesDir + os.sep + url_path)
-        return self.servicesDir + os.sep + url_path 
+        file = os.path.join(self.servicesDir, url_path)
+
+        # Catch request for non-existent file
+        if not os.access(file,os.R_OK):
+            log.info("Attempt to download non-existent file: %s" % (file) )
+            raise DataStore.FileNotFound(file)
+
+        log.info("Download filename : %s", file)
+        return file
 
     def GetPackageUrl( self, file ):
         return self.baseUrl + file
