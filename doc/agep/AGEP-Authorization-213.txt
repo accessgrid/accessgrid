@@ -2,7 +2,7 @@
 Authorization Refactoring for 213
 =================================
  
-:version: $Revision: 1.1 $
+:version: $Revision: 1.2 $
 :author: Ivan R. Judson <judson@mcs.anl.gov>, Thomas D. Uram <turam@mcs.anl.gov>, Eric Olson <eolson@mcs.anl.gov>
 :status: Draft
 
@@ -71,6 +71,8 @@ Module Organization
     - AuthorizationManager.py
 
     - Action.py
+    
+    - pyGlobus.py
 
 Deprecated Packages
 -------------------
