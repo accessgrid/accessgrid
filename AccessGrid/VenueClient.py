@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.146 2004-03-18 21:42:38 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.147 2004-03-19 04:54:30 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.146 2004-03-18 21:42:38 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.147 2004-03-19 04:54:30 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -25,7 +25,7 @@ from AccessGrid import Log
 from AccessGrid import Toolkit
 from AccessGrid import DataStore
 from AccessGrid import Platform
-from AccessGrid.Platform.Config import UserConfig
+from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Venue import VenueIW
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
@@ -82,7 +82,7 @@ class VenueClient:
     """    
     defaultNodeServiceUri = "https://localhost:11000/NodeService"
     
-    def __init__(self, profile=None):
+    def __init__(self, profile=None, pnode=0):
         """
         This client class is used on shared and personal nodes.
         """
@@ -93,8 +93,7 @@ class VenueClient:
             self.profileFile = os.path.join(self.userConf.GetConfigDir(),
                                             "profile" )
             self.profile = ClientProfile(self.profileFile)
-        
-        
+
         self.nodeServiceUri = self.defaultNodeServiceUri
         self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
         self.homeVenue = None
@@ -106,7 +105,7 @@ class VenueClient:
         self.state = None
 
         # takes time
-        #self.__CreateVenueClientWebService()
+        self.__CreateVenueClientWebService(pnode)
         self.__InitVenueData()
         self.isInVenue = 0
         self.isIdentitySet = 0
@@ -152,7 +151,7 @@ class VenueClient:
         self.cache = ClientProfileCache(self.profileCachePath)
 
         
-    ###########################################################################################
+    ##########################################################################
     #
     # Private Methods
 
@@ -253,20 +252,36 @@ class VenueClient:
                                  "local clock can cause authorization to fail."
 
 
-    def __CreateVenueClientWebService(self):
+    def __CreateVenueClientWebService(self, pnode=0):
         from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
         port = NetworkAddressAllocator().AllocatePort()
 
-        self.server = Server(('', port))
+        self.server = Server((SystemConfig.instance().GetHostname(), port))
         vci = VenueClientI(self)
-        self.server.RegisterObject(vci, path='/VenueClient')
+        uri = self.server.RegisterObject(vci, path='/VenueClient')
+
+        if(self.profile != None):
+            self.profile.venueClientURL = uri
+            log.debug("__CreateVenueClientWebService: venueclient: %s", uri)
+                      
+
+        if pnode:
+            from AccessGrid.AGServiceManager import AGServiceManager
+            from AccessGrid.AGServiceManager import AGServiceManagerI
+            sm = AGServiceManager(self.server)
+            smi = AGServiceManagerI(sm)
+            uri = self.server.RegisterObject(smi, path="/ServiceManager")
+            log.debug("__CreateVenueClientWebService: service manager: %s",
+                      uri)
+            from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
+            ns = AGNodeService()
+            nsi = AGNodeServiceI(ns)
+            uri = self.server.RegisterObject(nsi, path="/NodeService")
+            log.debug("__CreateVenueClientWebService: node service: %s",
+                      uri)
+            
         self.server.RunInThread()
         
-        if(self.profile != None):
-            self.profile.venueClientURL = self.server.FindURLForObject(self)
-            log.debug("__CreateVenueClientWebService: venue client serving: %s"
-                      % self.profile.venueClientURL)
-
     def __Heartbeat(self):
         if self.eventClient != None:
             try:
@@ -281,9 +296,9 @@ class VenueClient:
 
     # end Private Methods
     #
-    ###########################################################################################
+    ##########################################################################
 
-    ###########################################################################################
+    ##########################################################################
     #
     # Event Handlers
 
