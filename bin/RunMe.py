@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: RunMe.py,v 1.2 2003-03-12 08:09:44 judson Exp $
+# RCS-ID:      $Id: RunMe.py,v 1.3 2003-03-13 14:37:30 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,6 +24,14 @@ else:
 pm = ProcessManager()
 
 pm.start_process(sys.executable, ["AGServiceManager.py"])
+
+# This is icky but it's here to "mostly" ensure the service manager
+# gets started before the node service is running
+# there are much better ways to deal with this, but it should at least
+# improve the odds things get going in the right order.
+# there are *much* better ways to do this, if we keep this around
+# we'll have to pick one of them.
+time.sleep(1)
 
 pm.start_process(sys.executable, ["AGNodeService.py"])
 
