@@ -7,19 +7,20 @@ from AccessGrid.hosting.pyGlobus import Server, ServiceBase
 class C(ServiceBase.ServiceBase):
     def meth(self, x):
 
-        print "Got meth: ", x
+#        print "Got meth: ", x
 
-        sm = AccessControl.GetSecurityManager()
+#        sm = AccessControl.GetSecurityManager()
 
-        print "Executing as subject name: ", sm.GetSubject()
+#        print "Executing as subject name: ", sm.GetSubject()
 
-        x = y
+#        x = y
 
 #        ident = "/O=Grid/OU=Access Grid/OU=mcs.anl.gov/CN=Bob Olson"
 #        if not sm.ValidateUser(ident):
 #            raise Exception("Invalid user!")
         
-        return ('you sent', x)
+        return x
+        #return ('you sent', x)
     
 
     meth.pass_connection_info = 0

@@ -1,4 +1,5 @@
 from AccessGrid.hosting.pyGlobus import Client
+import sys
 import os
 
 def cb(server, g_handle, remote_user, context):
@@ -9,8 +10,7 @@ def cb(server, g_handle, remote_user, context):
 import time
 gt = time.time
 
-#h = Client.Handle('https://localhost:8000/Foobar/Baz')
-h = Client.Handle('https://localhost:8000/100', authCallback = cb)
+h = Client.Handle('https://localhost:8000/100', authCallback = None)
 
 n = 1
 
@@ -18,18 +18,23 @@ t1 = gt()
 
 ret = None
 
-try:
-    ret = h.get_proxy().method(3)
-except Client.FaultType, f:
-    print "call raised fault ", f
-    print "faultcode='%s'" % (f.faultcode)
-    print "string='%s'" % ( f.faultstring)
-    print "detail='%s'" % (f.detail)
+alen = 50
+a = []
+for i in range(alen):
+    a.append(i)
 
-else:
-    t2 = gt()
-    print "t1=%s t2=%s" % (t1, t2)
-    print "dur =", t2 - t1
-    print "avg=", (t2 - t1) / n
+for n in range(100):
+    try:
+#	print n
+        ret = h.get_proxy().method(a)
+    except Client.FaultType, f:
+        print "call raised fault ", f
+        print "faultcode='%s'" % (f.faultcode)
+        print "string='%s'" % ( f.faultstring)
+        print "detail='%s'" % (f.detail)
 
-    print "Got '%s' '%s' from method"  % (ret, map(lambda x: str(x), ret))
+t2 = gt()
+print "t1=%s t2=%s" % (t1, t2)
+print "dur =", t2 - t1
+print "avg=", (t2 - t1) / n
+
