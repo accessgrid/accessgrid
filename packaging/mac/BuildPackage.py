@@ -47,12 +47,12 @@ print "version = ", version
 os.mkdir(os.path.join(DestDir, "Services"))
 
 # copy AGNodeServiceMac.cfg to AGNodeService.cfg
-shutil.copy2(os.path.join(BuildDir, "packaging", "config", "AGNodeServiceMac.cfg"), os.path.join(DestDir, "Config"))
+shutil.copy2(os.path.join(BuildDir, "packaging", "config", "AGNodeServiceMac.cfg"), os.path.join(DestDir, "Config", "AGNodeService.cfg"))
 
 # Remove services that are not being used yet (should add a platform-specific servicesToInclude file)
 servicesToRemove = ["AudioService.zip", "VideoService.zip", "VideoConsumerService.zip", "VideoProducerService.zip"]
 for s in servicesToRemove:
-    servicePath = os.path.join(resourcesDir, "NodeServices", s)
+    servicePath = os.path.join(DestDir, "NodeServices", s)
     if os.path.exists( servicePath ):
         os.remove(servicePath)
 
