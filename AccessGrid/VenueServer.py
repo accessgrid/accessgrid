@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.112 2004-02-25 19:06:00 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.113 2004-02-26 04:59:44 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.112 2004-02-25 19:06:00 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.113 2004-02-26 04:59:44 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -760,7 +760,7 @@ class VenueServer(AuthorizationMixIn):
             
         # Setup the new default venue
         self.config["VenueServer.defaultVenue"] = id
-        vi = self.hostingEnvironment.FindObject(self.venues[id])
+        u,vi = self.hostingEnvironment.FindObject(self.venues[id])
         vaurl = self.MakeVenueURL(id)+"/Authorization"
         vai = self.hostingEnvironment.FindObjectForURL(vaurl)
         self.hostingEnvironment.RegisterObject(vi, path=defaultPath)
