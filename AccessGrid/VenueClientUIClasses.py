@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.275 2003-09-17 20:50:35 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.276 2003-09-17 20:57:51 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.275 2003-09-17 20:50:35 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.276 2003-09-17 20:57:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2242,9 +2242,9 @@ class ContentListPanel(wxPanel):
             # Fix odd commands
             if isWindows():
                 if command.find("%1") != -1:
-                    command = command.replace("%1", "\"%(localFilePath)s\"")
+                    command = command.replace("%1", "%(localFilePath)s")
                 elif command.find("%(localFilePath)s") == -1:
-                    command += " \"%(localFilePath)s\""
+                    command += " %(localFilePath)s"
             else:
                 if command.find("%s") != -1:
                     command = command.replace("%s", "\"%(localFilePath)s\"")
@@ -2268,12 +2268,12 @@ class ContentListPanel(wxPanel):
                     
             if isWindows():
                 if command.find("%1") != -1:
-                    command = command.replace("%1", "%(appUrl)s")
+                    command = command.replace("%1", "\"%(appUrl)s\"")
                 elif command.find("%(appUrl)s") == -1:
                     command += " \"%(appUrl)s\""
             else:
                 if command.find("%s") != -1:
-                    command = command.replace("%s", "%(appUrl)s")
+                    command = command.replace("%s", "\"%(appUrl)s\"")
                 elif command.find("%(appUrl)s") == -1:
                     command += " \"%(appUrl)s\""
 
