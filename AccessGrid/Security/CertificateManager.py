@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.20 2004-04-13 21:45:07 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.21 2004-04-16 20:30:44 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.20 2004-04-13 21:45:07 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.21 2004-04-16 20:30:44 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -1297,6 +1297,23 @@ class HostCertificateRequestInfo(CertificateRequestInfo):
     def GetDN(self):
         dn = self.GetDNBase()
         dn.append(("CN", self.host))
+
+        return dn
+
+class AnonymousCertificateRequestInfo(CertificateRequestInfo):
+    def __init__(self):
+        CertificateRequestInfo.__init__(self)
+        self.name = "Anonymous"
+        self.type = "anonymous"
+        self.email = ""
+
+    def GetDN(self):
+        #
+        # Make some name, though it doesn't actually matter
+        # since the cert creator service will give it a random name.
+        #
+        dn = self.GetDNBase()
+        dn.append(("CN", "Anonymous"))
 
         return dn
 
