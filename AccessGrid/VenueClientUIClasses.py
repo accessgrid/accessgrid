@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.194 2003-05-21 21:59:40 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.195 2003-05-22 04:46:44 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -17,6 +17,8 @@ import cPickle
 import threading
 import socket
 from wxPython.wx import *
+from wxPython.wx import wxTheMimeTypesManager as mtm
+from wxPython.wx import wxFileTypeInfo
 import string
 
 log = logging.getLogger("AG.VenueClientUIClasses")
@@ -82,6 +84,7 @@ class VenueClientFrame(wxFrame):
     ID_VENUE_CLOSE = wxNewId()
     ID_PROFILE = wxNewId()
     ID_PROFILE_EDIT = wxNewId()
+    ID_CERTIFICATE_MANAGE = wxNewId()
     ID_MYNODE_MANAGE = wxNewId()
     ID_MYNODE_URL = wxNewId()
     ID_MYVENUE_ADD = wxNewId()
@@ -1678,15 +1681,19 @@ class ContentListPanel(wxPanel):
         menu = wxMenu()
 
         # We always have open
-        if not commands.has_key('open'):
-            id = wxNewId()
-            menu.Append(id, "Open", "Open this item.")
-            EVT_MENU(self, id, lambda event: self.MakeAssociation(event))
-        else:
-            id = wxNewId()
-            menu.Append(id, 'Open')
+        id = wxNewId()
+        menu.Append(id, "Open", "Open this item.")
+        if commands != None and commands.has_key('open'):
             EVT_MENU(self, id, lambda event,
                      cmd=commands['open']: self.StartCmd(cmd))
+        else:
+            text = "You have nothing configured to open this item."
+            title = "Notification"
+            EVT_MENU(self, id, lambda event, text=text, title=title:
+                     MessageDialog(self, text, title,
+                                   style = wxOK|wxICON_INFORMATION))
+#            EVT_MENU(self, id, lambda event, item=item:
+#                     self.MakeAssociation(event, item))
             
         # We always have Remove
         id = wxNewId()
@@ -1724,12 +1731,17 @@ class ContentListPanel(wxPanel):
         # We always have open
         id = wxNewId()
         menu.Append(id, "Open", "Open this item.")
-        if commands.has_key('open'):
+        if commands != None and commands.has_key('open'):
             EVT_MENU(self, id, lambda event, cmd=commands['open']:
                      self.StartCmd(cmd))
         else:
-            EVT_MENU(self, id, lambda event, cmd=commands['open']:
-                     self.MakeAssociation(event))
+            text = "You have nothing configured to open this item."
+            title = "Notification"
+            EVT_MENU(self, id, lambda event, text=text, title=title:
+                     MessageDialog(self, text, title,
+                                   style = wxOK|wxICON_INFORMATION))
+#            EVT_MENU(self, id, lambda event, item=item:
+#                     self.MakeAssociation(event, item))
 
         # We always have Remove
         id = wxNewId()
@@ -1775,10 +1787,19 @@ class ContentListPanel(wxPanel):
         print "Command: %s" % command
         wxExecute(command)
         
-    def MakeAssociation(self, event):
+    def MakeAssociation(self, event, item):
         """
         """
-        pass
+        fileType = mtm.GetFileTypeFromExtension(item.name.split('.')[-1])
+        if fileType == None:
+            app = SelectAppDialog(self, -1, "Select an Application...",
+                                  item.name)
+        else:
+            app = SelectAppDialog(self, -1, "Select an Application...",
+                                  fileType.GetMimeType())
+
+        app.ShowModal()
+        app.Destroy()
     
     def CleanUp(self):
         for index in self.participantDict.values():
@@ -2702,7 +2723,8 @@ class SelectAppDialog(wxDialog):
     """
     def __init__(self, parent, id, title, mimetype ):
 
-        wxDialog.__init__(self, parent, id, title, style = wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE)
+        wxDialog.__init__(self, parent, id, title,
+                          style = wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE)
 
         # Set up sizers
         gridSizer = wxFlexGridSizer(5, 1, 5, 5)
@@ -2713,8 +2735,11 @@ class SelectAppDialog(wxDialog):
         self.SetAutoLayout(1)
 
         # Create config list label and listctrl
-        gridSizer.Add( wxStaticText(self,-1,"No client registered for mimetype:\n\t" + mimetype), 1 )
-        gridSizer.Add( wxStaticText(self,-1,"Select an application to use with this mimetype"), 1 )
+        gridSizer.Add( wxStaticText(self,-1,
+                                    "No client registered for item:\n\t"
+                                    + mimetype), 1 )
+        gridSizer.Add( wxStaticText(self,-1,
+                                    "Select an application to use with this mimetype"), 1 )
 
         # Create application text field and button
         fieldButtonSizer = wxBoxSizer(wxHORIZONTAL)
