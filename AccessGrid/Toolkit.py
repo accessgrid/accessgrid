@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.42 2004-04-13 02:10:47 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.43 2004-04-13 03:32:45 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.42 2004-04-13 02:10:47 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.43 2004-04-13 03:32:45 judson Exp $"
 
 # Standard imports
 import os
@@ -81,7 +81,7 @@ class AppBase:
 
        self.defLogHandler = Log.StreamHandler()
        self.defLogHandler.setFormatter(Log.GetFormatter())
-
+       
        # 0. Initialize logging, storing in log data memory
        mlh = Log.handlers.MemoryHandler(8192, flushLevel=Log.ERROR,
                                         target=self.defLogHandler)
@@ -210,7 +210,6 @@ class AppBase:
         first check user dir, then system dir;
         return None if not found
         """
-        
         pathToFile = os.path.join(self.userConfig.GetConfigDir(), configFile)
         self.log.debug("Looking for: %s", pathToFile)
         if os.path.exists( pathToFile ):
@@ -353,14 +352,13 @@ class Service(AppBase):
 
         certs = repo.FindCertificatesWithSubject(dn)
         validCerts = filter(lambda a: not a.IsExpired(), certs)
+
+        print "VALID CERTS: ", validCerts
         
         if len(validCerts) > 0:
             return
 
-        #
         # No certs found, see if we have a request for this one.
-        #
-
         pending = certMgr.GetPendingRequests()
 
         reqs = filter(lambda a: str(a[0].GetSubject()) == dn, pending)
