@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.24 2003-05-12 17:06:05 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.25 2003-05-19 22:52:53 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,6 +25,7 @@ from AccessGrid import icons
 from AccessGrid import Platform
 from AccessGrid.Utilities import HaveValidProxy
 from AccessGrid.UIUtilities import AboutDialog
+from AccessGrid import Toolkit
 
 # imports for Debug menu; can be removed if Debug menu is removed
 from AccessGrid.Descriptions import StreamDescription
@@ -65,13 +66,6 @@ ID_DUM = 600
 
 ID_HELP_ABOUT = 701
 
-
-def CheckCredentials():
-    """
-    Check user credentials, typically before a SOAP call
-    """
-    if not HaveValidProxy():
-        Platform.GPI()
 
 def BuildServiceManagerMenu( ):
     """
@@ -384,6 +378,9 @@ class NodeManagementClientFrame(wxFrame):
         self.services = []
         self.nodeServiceHandle = Client.Handle("")
         
+        self.app = Toolkit.WXGUIApplication()
+        self.app.Initialize()
+        
         menuBar = wxMenuBar()
 
         ## FILE menu
@@ -538,7 +535,7 @@ class NodeManagementClientFrame(wxFrame):
         This method does the real work of attaching to a node service
         """
 
-        CheckCredentials()
+        self.CheckCredentials()
 
         # Get proxy to the node service, if the url validates
         if Client.Handle( nodeServiceUri ).IsValid():
@@ -1075,3 +1072,9 @@ class NodeManagementClientFrame(wxFrame):
         pos = list.ClientToScreen( evt.GetPoint() )
         win.PopThatMenu( pos )
 
+    def CheckCredentials(self):
+        """
+        Check credentials and create a new proxy if necessary
+        """
+        if not self.app.GetCertificateManager().HaveValidProxy():
+            self.app.GetCertificateManager().InitEnvironment()
