@@ -4,7 +4,8 @@ from wxPython.lib.imagebrowser import *
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.Descriptions import VenueDescription
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-
+from AccessGrid.Utilities import formatExceptionInfo 
+from AccessGrid import Utilities  
 
 class VenueManagementClient(wxApp):
     '''VenueManagementClient. 
@@ -42,6 +43,7 @@ class VenueManagementClient(wxApp):
             venueList = self.client.GetVenues()
             
         except:
+            
             ErrorDialog(self.frame, 'The server you are trying to connect to is not running!')
                  
         else:
@@ -55,6 +57,9 @@ class VenueManagementClient(wxApp):
                 exitsList = Client.Handle(currentVenue.uri).get_proxy().GetConnections()    
                 self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(currentVenue, exitsList)
 
+            else:
+                self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(None)
+
             # fill in administrators
             administratorList = self.client.GetAdministrators()
             self.tabs.configurationPanel.administratorsListPanel.administratorsList.Clear()
@@ -67,6 +72,17 @@ class VenueManagementClient(wxApp):
             ip = self.client.GetBaseAddress()
             mask = str(self.client.GetAddressMask())
             self.tabs.configurationPanel.detailPanel.ipAddress.SetLabel(ip+'/'+mask)
+            method = self.client.GetAddressAllocationMethod()
+            
+            if method == MulticastAddressAllocator.RANDOM:
+                self.tabs.configurationPanel.detailPanel.ipAddress.Enable(false)
+                self.tabs.configurationPanel.detailPanel.changeButton.Enable(false)
+                self.tabs.configurationPanel.detailPanel.randomButton.SetValue(true)
+            else:
+                self.tabs.configurationPanel.detailPanel.ipAddress.Enable(true)
+                self.tabs.configurationPanel.detailPanel.changeButton.Enable(true)
+                self.tabs.configurationPanel.detailPanel.intervalButton.SetValue(true)
+
 
             # fill in storage location
             self.tabs.configurationPanel.detailPanel.storageLocation.SetLabel(self.client.GetStorageLocation())
@@ -90,9 +106,14 @@ class VenueManagementClient(wxApp):
         self.client.AddAdministrator(dnName)
 
     def DeleteAdministrator(self, dnName):
+        print "-------------------remove administrator"
+        print dnName
         self.client.RemoveAdministrator(dnName)
 
     def ModifyAdministrator(self, oldName, dnName):
+        print "-------------------modify administrator"
+        print oldName
+        print dnName
         self.client.RemoveAdministrator(oldName)
         self.client.AddAdministrator(dnName)
         
@@ -335,13 +356,13 @@ class VenueListPanel(wxPanel):
                     self.parent.venueProfilePanel.ChangeCurrentVenue()
   
     def InsertVenue(self, data, exitsList):
-        try:
+        #try:
             newUri = self.application.AddVenue(data, exitsList)
 
-        except: 
-            ErrorDialog(self, 'Add vanue failed in server!')
+       # except: 
+        #    ErrorDialog(self, 'Add vanue failed in server!')
 
-        else: 
+       # else: 
             if newUri :
                 data.uri = newUri
                 self.venuesList.Append(data.name, data)
@@ -480,7 +501,7 @@ class AdministratorsListPanel(wxPanel):
             ErrorDialog(self, 'Modify administrator failed in server!')
 
         else:
-            self.administratorsList.Append(newName)
+            self.administratorsList.Append(newName, newName)
             self.administratorsList.Select(self.administratorsList.Number()-1)
         
     def __doLayout(self):
@@ -504,9 +525,9 @@ class DetailPanel(wxPanel):
         self.application = application
 	self.multicastBox = wxStaticBox(self, -1, "Multicast Address",size = wxSize(50, 50), name = 'multicastBox')
 	self.storageBox = wxStaticBox(self, -1, "Storage Location", size = wxSize(500, 50), name = 'storageBox')
-	self.randomButton = wxRadioButton(self, 302, "Random Address")
-	self.intervalButton = wxRadioButton(self, 303, "Interval Address:")
-        self.ipAddress = wxStaticText(self, -1, "111.111.111.111/24", style = wxALIGN_CENTER)
+	self.randomButton = wxRadioButton(self, 302, "Standard Range")
+	self.intervalButton = wxRadioButton(self, 303, "Custom Range:")
+        self.ipAddress = wxStaticText(self, -1, "111.111.111.111/24", style = wxALIGN_LEFT)
         self.changeButton = wxButton(self, 300, "Change")
    	self.storageLocation = wxStaticText(self, -1, "/home/lefvert/cool_files/")
 	self.browseButton = wxButton(self, 301, "Change")
@@ -1022,6 +1043,9 @@ class DigitValidator(wxPyValidator):
 
 class ErrorDialog:
     def __init__(self, frame, text):
+        (name, args, traceback_string_list) = Utilities.formatExceptionInfo()
+        for x in traceback_string_list:
+            print(x)       
         noServerDialog = wxMessageDialog(frame, text, \
                                          '', wxOK | wxICON_INFORMATION)
         noServerDialog.ShowModal()
