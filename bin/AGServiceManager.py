@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.32 2004-03-12 05:23:12 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.33 2004-03-12 21:19:23 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -12,6 +12,18 @@
 import sys
 import signal, time, os
 import getopt
+
+if sys.version.startswith('2.2'):
+    try:
+        from optik import OptionParser
+    except:
+        raise Exception, "Missing module optik necessary for the AG Toolkit."
+
+if sys.version.startswith('2.3'):
+    try:
+        from optparse import OptionParse
+    except:
+        raise Exception, "Missing module optparse, check your python installation."
 
 # Our imports
 from AccessGrid.hosting import Server
@@ -41,57 +53,23 @@ def SignalHandler(signum, frame):
     serviceManager.Shutdown()
     running = 0
     
-# Print out the usage
-def Usage(agtk):
-    """
-    """
-    print "USAGE: %s:" % os.path.split(sys.argv[0])[1]
-
-    print " Toolkit Options:"
-    agtk.Usage()
-
-    print " Service Manager Options:"
-    
-    print "\t-p|--port <int> : <port number to listen on>"
-    print "\t--pnode <arg> : initialize as part of a Personal Node configuration"
-
-def ProcessArgs(app, argv):
-    """
-    """
-    options = dict()
-
-    # Parse command line options
-    try:
-        opts, args = getopt.getopt(argv, "p:l:hd", ["port=", "pnode="])
-    except getopt.GetoptError, e:
-        log.exception("Exception processing cmdline args:", e)
-        Usage(app)
-        sys.exit(2)
-
-    for opt, arg in opts:
-        if opt in ("-p", "--port"):
-            port = int(arg)
-            options['port'] = port
-            options['p'] = port
-        elif opt  == "--pnode":
-            pnode = arg
-            options['pnode'] = pnode
-
-    if app.GetCmdlineArg('help') or app.GetCmdlineArg('h'):
-        Usage(app)
-        sys.exit(0)
-
-    return options
-
 def main():
     """
     """
     global serviceManager, log
 
-    # defaults
-    port = 12000
-
+    # build options for this application
+    parser = OptionParser()
+    parser.add_option("-p", "--port", type="int", dest="port",
+                      default=12000, metavar="PORT",
+                      help="Set the port the service manager should run on.")
+    parser.add_option("--pnode", dest="pnode", metavar="PNODE_TOKEN",
+                      help="Personal node rendezvous token.")
+    
     app = CmdlineApplication()
+
+    app.SetOptionParser(parser)
+    
     try:
         args = app.Initialize(sys.argv[1:], "ServiceManager")
     except Exception, e:
@@ -100,19 +78,8 @@ def main():
         sys.exit(-1)
 
     log = app.GetLog()
-
-    options = ProcessArgs(app, args)
-
-    if options.has_key('pnode'):
-        pnode = options['pnode']
-    else:
-        pnode = None
-        
-    if options.has_key('port'):
-        port = options['port']
-
-    if options.has_key('p'):
-        port = options['p']
+    pnode = app.GetOption("pnode")
+    port = app.GetOption("port")
         
     # Create the hosting environment
     hostname = SystemConfig.instance().GetHostname()
@@ -130,12 +97,7 @@ def main():
     # initialize that state.
 
     if pnode is not None:
-        def getMyURL(url = url):
-            return url
-
-        personalNode = PersonalNode.PN_ServiceManager(getMyURL,
-                                                      serviceManager.Shutdown)
-        print "PNODE: ", pnode
+        personalNode = PersonalNode.PN_ServiceManager(url, serviceManager.Shutdown)
         personalNode.Run(pnode)
 
     # Register the signal handler so we can shut down cleanly
@@ -147,8 +109,7 @@ def main():
     server.RunInThread()
 
     # Tell the world where to find the service manager
-    log.info("Starting service; URI: %s", url)
-    print "AGServiceManager URL: ", url
+    log.info("Starting Service Manager URI: %s", url)
 
     # Keep the main thread busy so we can catch signals
     running = 1

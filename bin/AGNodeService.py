@@ -3,20 +3,33 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.40 2004-03-12 05:23:12 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.41 2004-03-12 21:19:23 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.40 2004-03-12 05:23:12 judson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.41 2004-03-12 21:19:23 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
 import sys
 import signal, time, os
 import getopt
+
+if sys.version.startswith('2.2'):
+    try:
+        from optik import OptionParser
+    except:
+        raise Exception, "Missing module optik necessary for the AG Toolkit."
+
+if sys.version.startswith('2.3'):
+    try:
+        from optparse import OptionParse
+    except:
+        raise Exception, "Missing module optparse, check your python installation."
+
 
 # Our imports
 from AccessGrid.Toolkit import CmdlineApplication
@@ -46,59 +59,23 @@ def SignalHandler(signum, frame):
 
     running = 0
 
-# Print usage
-def Usage(agtk):
-    """
-    Print out how to run this program.
-    """
-    print "USAGE %s:" % os.path.split(sys.argv[0])[1]
-
-    print " Toolkit Options:"
-    agtk.Usage()
-
-    print " Node Service Specific Options:"
-    print "\t-p|--port <int> : <port number to listen on>"
-    print "\t--pnode <arg> : Run as part of a Personal Node"
-
-def ProcessArgs(app, argv):
-    """
-    """
-    global log
-    
-    options = dict()
-    
-    # Parse command line options
-    try:
-        opts, args = getopt.getopt(argv, "p:", ["port=", "pnode="])
-    except getopt.GetoptError, e:
-        log.exception("Exception processing cmdline args:", e)
-        Usage(app)
-        sys.exit(2)
-        
-    for opt, arg in opts:
-        if opt in ("-p", "--port"):
-            port = int(arg)
-            options['port'] = port
-            options['p'] = port
-        elif opt  == "--pnode":
-            pnode = arg
-            options['pnode'] = pnode
-
-    if app.GetCmdlineArg('help') or app.GetCmdlineArg('h'):
-        Usage(app)
-        sys.exit(0)
-
-    return options
-
 def main():
     """
     """
     global nodeService, log
 
-    #defaults
-    port = 11000
-
+    # build options for this application
+    parser = OptionParser()
+    parser.add_option("-p", "--port", type="int", dest="port",
+                      default=12000, metavar="PORT",
+                      help="Set the port the service manager should run on.")
+    parser.add_option("--pnode", dest="pnode", metavar="PNODE_TOKEN",
+                      help="Personal node rendezvous token.")
+    
     app = CmdlineApplication()
+
+    app.SetOptionParser(parser)
+    
     try:
         args = app.Initialize(sys.argv[1:], "NodeService")
     except Exception, e:
@@ -107,19 +84,8 @@ def main():
         sys.exit(-1)
 
     log = app.GetLog()
-
-    options = ProcessArgs(app, args)
-
-    if options.has_key('pnode'):
-        pnode = options['pnode']
-    else:
-        pnode = None
-
-    if options.has_key('port'):
-        port = options['port']
-
-    if options.has_key('p'):
-        port = options['p']
+    pnode = app.GetOption("pnode")
+    port = app.GetOption("port")
         
     # Create a Node Service
     nodeService = AGNodeService()
@@ -164,7 +130,7 @@ def main():
     # Run the service
     server.RunInThread()
 
-    print "AGNodeService URL: ", url
+    log.info("Starting Node Service URL: %s", url)
 
     # Keep the main thread busy so we can catch signals
     running = 1
