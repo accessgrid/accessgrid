@@ -20,13 +20,13 @@ export WXWINDOWS_VER="2.4.0-1"
 export LOGGING="logging"
 export LOGGING_VER="0.4.7-2"
 export PYOPENSSL="pyOpenSSL_AG"
-export PYOPENSSL_VER="0.5.1-1"
+export PYOPENSSL_VER="0.5.1-2"
 export GPT="gpt"
 export GPT_VER="1.0-2"
 export GLOBUS="globus-accessgrid"
 export GLOBUS_VER="2.0-1"
 export PYGLOBUS="pyGlobus"
-export PYGLOBUS_VER="cvs-6"
+export PYGLOBUS_VER="cvs-7"
 
 export AGRAT="AccessGrid-rat"
 export AGRAT_VER="4.2.22-2"
@@ -39,8 +39,9 @@ AccessGrid-VenueClient
 AccessGrid-VenueServer
 AccessGrid-AudioService 
 AccessGrid-VideoConsumer
-AccessGrid-VideoProducer"
-export AG_VER="2.0cvs-20030523111514"
+AccessGrid-VideoProducer
+AccessGrid-BridgeServer"
+export AG_VER="2.1-1"
 
 
 #################################################################
