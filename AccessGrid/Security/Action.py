@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: Action.py,v 1.4 2004-03-02 19:07:12 judson Exp $
+# RCS-ID:      $Id: Action.py,v 1.5 2004-03-09 17:04:51 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ method invocation on services. There's no real limitation to what
 actions can be or what they can be used for however.
 """
 
-__revision__ = "$Id: Action.py,v 1.4 2004-03-02 19:07:12 judson Exp $"
+__revision__ = "$Id: Action.py,v 1.5 2004-03-09 17:04:51 lefvert Exp $"
 
 import xml.dom.minidom
 
@@ -46,7 +46,7 @@ class Action:
     This class provides all the common action functionality. 
     """
     TYPE = "Invalid"
-    def __init__(self, name, roles=[]):
+    def __init__(self, name, roles=None):
         """
         @param name: This is the name of the Action.
         @param roles: This is a list of roles to initialize the action with.
@@ -55,8 +55,12 @@ class Action:
         @return: The return of this is an Action object.
         """
         self.name = name
-        self.roles = roles
-
+                        
+        if roles is None:
+            self.roles = []
+        else:
+            self.roles = roles
+       
     def _repr_(self):
         """
         The repr method produces an XML representation of the action object.
@@ -166,6 +170,7 @@ class Action:
         return role
     
     def HasRole(self, role):
+
         """
         This method checks to see if the specified role is found in the
         action.
@@ -175,8 +180,15 @@ class Action:
 
         @return: a flag indicating if the role was found (1) or not (0)
         """
-        if role in self.roles:
-            return 1
+        for r in self.roles:
+            # Find name instead. Otherwise, when restarting the
+            # client, no roles are found for an action.
+            #
+            # if role in self.roles:
+            #    return 1
+
+            if r.name == role.name:
+                return 1
         else:
             return 0
 
