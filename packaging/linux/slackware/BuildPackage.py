@@ -112,6 +112,13 @@ print "cmd = ", cmd
 os.system(cmd)
 os.chmod(installsh_out,0755)
 
+#
+# Until the XDG stuff is built in, patch "Applications" menu to include AG menus
+#
+cmd = "cp applications-all-users.vfolder-info.diff %s" % (RpmDir)
+print "cmd = ", cmd
+os.system(cmd)
+
 
 #
 # Create the targz file including the rpms and install script
