@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.232 2004-12-08 17:56:08 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.233 2004-12-08 19:23:02 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.232 2004-12-08 17:56:08 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.233 2004-12-08 19:23:02 judson Exp $"
 
 import sys
 import time
@@ -214,82 +214,31 @@ class VenueClientState:
     delivered to those services (after the client connects, before the
     client's event client connects to the service).
     """
-
-    def __init__(self, venue, privateId, profile):
+    def __init__(self, timeout, venue, privateId, connectionId, profile):
+        self.profile = profile
         self.venue = venue
         self.privateId = privateId
-        self.clientProfile = profile
-        self.lastHeartbeat = -1
-
-        # messageQueue is the queue of events to be delivered
-        # to the client's event client when it connects.
-        self.messageQueue = []
-
-        # connObj is the event service connection object
-        # for this client.
-        self.eventConnObj = None
-	self.textConnObj = None
+        self.connectionId = connectionId
+        self.timeout = time.time() + timeout
 
     def __repr__(self):
         s = "VenueClientState(name=%s privateID=%s)" % (
             self.clientProfile.name, self.privateId)
         return s
 
-    def SendEvent(self, marshalledEvent):
-        if self.eventConnObj is None:
-            log.debug("Enqueue event of type %s for %s",
-	            marshalledEvent.GetEvent().eventType,
-	            self.clientProfile.GetName())
-            self.messageQueue.append(marshalledEvent)
-        else:
-            log.debug("Send event of type %s for %s",
-	            marshalledEvent.GetEvent().eventType,
-	            self.clientProfile.GetName())
-            self.eventConnObj.writeMarshalledEvent(marshalledEvent)
+    def GetClientProfile(self):
+        return self.profile
 
-    def SetConnection(self, connObj):
-        """
-        We've gotten a connection from the event client.
-
-        Send the accumulated events, if any.
-        """
-
-        log.debug("Set connection for %s", self.clientProfile.GetName())
-
-
-        while len(self.messageQueue) > 0:
-            mEvent = self.messageQueue.pop(0)
-            log.debug("Send queued event of type %s for %s",
-            mEvent.GetEvent().eventType,
-            self.clientProfile.GetName())
-            log.debug("writing marshalled event %s", mEvent.GetEvent())
-            connObj.writeMarshalledEvent(mEvent)
-
-        self.eventConnObj = connObj
-
-    def SetTextConnection(self, conn):
-	self.textConnObj = conn
-
-    def CloseEventChannel(self):
-        """
-        Close down our connection to the event service.
-        """
-        pass
-#        if self.eventConnObj is not None:
-#            self.venue.server.eventService.CloseConnection(self.eventConnObj)
-#        self.eventConnObj = None
-
-    def CloseTextChannel(self):
-        pass
-# 	if self.textConnObj is not None:
-# 	    self.venue.server.textService.CloseConnection(self.textConnObj)
-
-# 	self.textConnObj = None
+    def UpdateClientProfile(self, profile):
+        self.profile = profile
 
     def SetTimeout(self, t_next):
         log.debug("SET TIMEOUT TO: %d now = %d", t_next, time.time())
         self.timeout = t_next
 
+    def GetTimeout(self):
+        return self.timeout
+    
     def CheckTimeout(self, timeout):
         log.debug("Client Timeout Check: %d vs %d", self.timeout, timeout)
         if self.timeout < timeout:
@@ -297,25 +246,14 @@ class VenueClientState:
         else:
             return 0
         
-    def UpdateClientProfile(self, profile):
-        self.clientProfile = profile
-
-    def GetLastHeartbeat(self):
-        pass
-        #return self.lastHeartbeat
-
-    def GetTimeSinceLastHeartbeat(self, now):
-        pass
-        #return now - self.lastHeartbeat
-
     def GetPrivateId(self):
         return self.privateId
 
+    def GetConnectionId(self):
+        return self.profile.GetConnectionId()
+    
     def GetPublicId(self):
-        return self.clientProfile.GetPublicId()
-
-    def GetClientProfile(self):
-        return self.clientProfile
+        return self.profile.GetPublicId()
 
 class Venue(AuthorizationMixIn):
     """
@@ -1221,12 +1159,10 @@ class Venue(AuthorizationMixIn):
 
         # Create venue client state object
         vcstate = self.clients[privateId] = VenueClientState(self,
+                                                             self.maxTimeout,
                                                              privateId,
+                                                   clientProfile.connectionId,
                                                              clientProfile)
-        t = time.time()
-        tout = t + self.maxTimeout
-        vcstate.SetTimeout(tout)
-        
         self._UpdateProfileCache(clientProfile)
         usage_log.info("\"Enter\",\"%s\",\"%s\",\"%s\"",
                        clientProfile.GetDistinguishedName(),
