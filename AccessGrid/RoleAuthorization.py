@@ -85,9 +85,11 @@ class RoleAuthorizationPanel(wxPanel):
                 self.tree.AppendItem(roleId, person, -1, -1)
 
             # Sort the tree
-            self.tree.SortChildren(roleId)
+            if self.tree.GetChildrenCount(roleId)> 0:
+                self.tree.SortChildren(roleId)
 
-        self.tree.SortChildren(self.root)
+        if self.tree.GetChildrenCount(self.root)> 0:
+            self.tree.SortChildren(self.root)
             
     def __setEvents(self):
         '''
@@ -476,10 +478,10 @@ class AddPeopleDialog(wxDialog):
         self.addButton2 = wxButton(self, wxNewId(), "Add >>",
                                    style = wxBU_EXACTFIT)
         self.groupList = wxListCtrl(self, wxNewId(),
-                                    style = wxLC_REPORT | wxLC_SORT_ASCENDING | wxLC_NO_HEADER | wxSUNKEN_BORDER)
+                                    style = wxLC_REPORT | wxLC_SORT_ASCENDING | wxSUNKEN_BORDER)
         self.groupList.InsertColumn(0, "Groups:")
 
-        self.addList = wxListCtrl(self, wxNewId(),  style = wxLC_REPORT | wxLC_NO_HEADER|  wxLC_SORT_ASCENDING |wxSUNKEN_BORDER)
+        self.addList = wxListCtrl(self, wxNewId(),  style = wxLC_REPORT | wxLC_NO_HEADER| wxLC_SORT_ASCENDING |wxSUNKEN_BORDER)
         self.addList.InsertColumn(0, "")
         self.addButton3 = wxButton(self, wxNewId(), "Add >>",
                                    style = wxBU_EXACTFIT)
@@ -494,9 +496,9 @@ class AddPeopleDialog(wxDialog):
         self.AddGroups(self.gList)
 
         self.dnText = wxStaticText(self, -1,
-                                   "Add person by distinguished name")
-        self.peopleText = wxStaticText(self, -1, "Add people from list")
-        self.groupText = wxStaticText(self, -1, "Add groups from list")
+                                   "Add person by distinguished name ")
+        self.peopleText = wxStaticText(self, -1, "Add people from list ")
+        self.groupText = wxStaticText(self, -1, "Add groups from list ")
         self.dnText.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
 
         self.okButton = wxButton(self, wxID_OK, "Ok")
@@ -626,7 +628,7 @@ class AddPeopleDialog(wxDialog):
         tempSizer =  wxBoxSizer(wxHORIZONTAL)
         tempSizer.Add(self.dnText)
         
-        tempSizer.Add(wxStaticLine(self, -1), 1,  wxEXPAND)
+        tempSizer.Add(wxStaticLine(self, -1), 1, wxALIGN_CENTER)
         sizer.Add(tempSizer, 0, wxEXPAND)
         sizer.Add(10,10)
 
@@ -639,7 +641,7 @@ class AddPeopleDialog(wxDialog):
         sizer.Add(10,10)
         tempSizer =  wxBoxSizer(wxHORIZONTAL)
         tempSizer.Add(self.peopleText)
-        tempSizer.Add(wxStaticLine(self, -1), 1,  wxEXPAND)
+        tempSizer.Add(wxStaticLine(self, -1), 1, wxALIGN_CENTER)
         sizer.Add(tempSizer, 0, wxEXPAND)
         sizer.Add(10,10)
 
@@ -651,7 +653,7 @@ class AddPeopleDialog(wxDialog):
         sizer.Add(10,10)
         tempSizer =  wxBoxSizer(wxHORIZONTAL)
         tempSizer.Add(self.groupText)
-        tempSizer.Add(wxStaticLine(self, -1), 1,  wxEXPAND)
+        tempSizer.Add(wxStaticLine(self, -1), 1,  wxALIGN_CENTER)
         sizer.Add(tempSizer, 0, wxEXPAND)
         sizer.Add(10,10)
         
@@ -660,14 +662,12 @@ class AddPeopleDialog(wxDialog):
         tempSizer.Add(self.addButton3, 0, wxALIGN_CENTER | wxLEFT, 5)
         sizer.Add(tempSizer, 1, wxEXPAND)
         
-        box.Add(sizer, 3, wxEXPAND|wxALL, 5)
-
-
-        box.Add(10,50)
+        box.Add(sizer, 3, wxEXPAND|wxLEFT|wxBOTTOM|wxTOP, 5)
+       
         tempSizer = wxBoxSizer(wxVERTICAL)
         tempSizer.Add(self.selections, 0, wxEXPAND)
         tempSizer.Add(self.addList, 1, wxEXPAND)
-        tempSizer.Add(self.removeUserButton, 0, wxEXPAND|wxLEFT)
+        tempSizer.Add(self.removeUserButton, 0, wxEXPAND|wxTOP, 5)
         box.Add(tempSizer, 2, wxEXPAND|wxALL, 5)
 
         mainSizer = wxBoxSizer(wxVERTICAL)
@@ -683,9 +683,9 @@ class AddPeopleDialog(wxDialog):
         self.SetAutoLayout(1)
         self.SetSizer(mainSizer)
         self.Layout()
-        self.list.SetColumnWidth(0, self.list.GetSize().GetWidth())
-        self.groupList.SetColumnWidth(0, self.groupList.GetSize().GetWidth())
-        self.addList.SetColumnWidth(0, self.addList.GetSize().GetWidth())
+        self.list.SetColumnWidth(0, self.list.GetSize().GetWidth()-4)
+        self.groupList.SetColumnWidth(0, self.groupList.GetSize().GetWidth()-4)
+        self.addList.SetColumnWidth(0, self.addList.GetSize().GetWidth()-4)
 
 
 class RoleAuthorizationFrame(wxFrame):
@@ -751,10 +751,6 @@ class RoleClient:
                 user_list = self.venue.GetUsersInRole(role_name)
                 rolesDict[role_name] = user_list
         
-        #rolesDict = {"Venue Administrators":["Susanne"],
-                          #"Venue Participants":["Eric", "Tom"],
-                          #"Blocked Venue Participants":["Ivan", "Bob"]}
-        
             # Venue.VenueUsers is a temporary role to indicate which users
             #   are connected.  We will make this information part of roles later.
             if "Venue.VenueUsers" in rolesDict:
@@ -766,13 +762,38 @@ class RoleClient:
         return rolesDict
 
 if __name__ == "__main__":
+
+    # Templet class to test the ui
+    class RoleClient:
+        def __init__(self, URL=""):
+            pass
+
+        def ConnectToVenue(self, url):
+            pass
             
+        def GetCachedUsers(self):
+            users = ["susanne", "eric", "ivan"]
+            return users
+        
+        def GetGroups(self):
+            groups = ["All users", "Server Administrators"]
+            return groups
+        
+        def SetVenueRoles(self, roleDictionary):
+            pass
+        
+        def GetVenueRoles(self):
+            rolesDict = {"Venue Administrators":["Susanne"],
+                         "Venue Participants":["Eric", "Tom"],
+                         "Blocked Venue Participants":["Ivan", "Bob"]}
+            return rolesDict
+        
+        
     app = wxPySimpleApp()
-    roles = RoleAuthorizationFrame(None, -1, "Manage Roles")
-    #roles = AddPeopleDialog(None, -1, "Manage Roles")
+    #roles = RoleAuthorizationFrame(None, -1, "Manage Roles")
+    roles = AddPeopleDialog(None, -1, "Manage Roles")
     roles.Show()
-    #w = AddPeopleDialog(None, -1, "Add People")
-    #w.Show()
     app.MainLoop()
-    #w.Destroy()
+    #print "destroy"
+    #roles.Destroy()
    
