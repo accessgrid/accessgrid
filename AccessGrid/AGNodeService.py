@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.79 2004-09-03 13:22:50 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.80 2004-09-03 21:50:28 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.79 2004-09-03 13:22:50 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.80 2004-09-03 21:50:28 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -636,7 +636,7 @@ class AGNodeService:
         the user running the node (e.g., rat)
         """
 
-        log.info("NodeService.SetIdentity")
+        log.info("NodeService.SetIdentity %s %s", profile.name, profile.email)
         self.profile = profile
 
         services = self.GetServices()
