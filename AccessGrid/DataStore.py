@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.18 2003-04-08 21:04:20 olson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.19 2003-04-08 21:08:53 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1023,7 +1023,7 @@ n
     Incoming requests are just placed on the queue.
     """
 
-    def __init__(self, address = ('', 0), numThreads = 5, sslCompat = 0):
+    def __init__(self, address = ('', 0), numThreads = 1, sslCompat = 0):
         TransferServer.__init__(self)
 
         self.done = 0
