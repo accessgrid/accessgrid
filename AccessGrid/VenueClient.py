@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.158 2004-04-07 15:43:54 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.159 2004-04-07 15:54:00 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.158 2004-04-07 15:43:54 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.159 2004-04-07 15:54:00 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -708,7 +708,7 @@ class VenueClient:
             self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
                                                self.privateId))
                                
-            self.heartbeatTask = self.houseKeeper.AddTask(self.__Heartbeat, 25)
+            self.heartbeatTask = self.houseKeeper.AddTask(self.__Heartbeat, 5)
             self.heartbeatTask.start()
 
             #
