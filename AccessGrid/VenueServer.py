@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.169 2004-09-10 03:58:53 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.170 2004-09-10 16:07:02 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.169 2004-09-10 03:58:53 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.170 2004-09-10 16:07:02 judson Exp $"
 
 # Standard stuff
 import sys
@@ -193,7 +193,7 @@ class VenueServer(AuthorizationMixIn):
 
         # Initialize our state
         self.checkpointing = 0
-        self.defaultVenue = ''
+        self.defaultVenue = None
         self.multicastAddressAllocator = MulticastAddressAllocator()
         self.hostname = Service.instance().GetHostname()
         self.venues = {}
@@ -269,15 +269,15 @@ class VenueServer(AuthorizationMixIn):
         except VenueServerException, ve:
             log.exception(ve)
             self.venues = {}
-            self.defaultVenue = ''
+            self.defaultVenue = None
 
         # Reinitialize the default venue
         log.debug("CFG: Default Venue: %s", self.defaultVenue)
-        if self.defaultVenue != '' and self.defaultVenue in self.venues.keys():
+        if self.defaultVenue and self.defaultVenue in self.venues.keys():
             log.debug("Setting default venue.")
         else:
             log.debug("Creating default venue")
-            uri = self.AddVenue(self.defaultVenueDesc)
+            uri = self.AddVenue(VenueServer.defaultVenueDesc)
             self.defaultVenue = self.hostingEnvironment.FindObjectForURL(uri)
 
         self.SetDefaultVenue(self.defaultVenue)
