@@ -246,6 +246,34 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
         ident = self.certificateManager.GetDefaultIdentity()
 
+        #
+        # In order to create a globus proxy, there must be a default identity.
+        #
+        
+        if ident is None:
+            dlg = wxMessageDialog(None, 
+                                  "No default identity is available.",
+                                  "No default identity",
+                                  style = wxOK)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+
+        #
+        # See if we really need to have a proxy.
+        #
+
+        if not ident.HasEncryptedPrivateKey():
+            #
+            # We're using an unencrypted private key; proxies unnecessary.
+            #
+
+            return
+
+        #
+        # Attempt to create a proxy.
+        #
+
         while 1:
 
             ppdlg = PassphraseDialog(None, -1, "Create a globus proxy", ident)
