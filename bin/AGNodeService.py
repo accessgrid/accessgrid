@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.54 2004-04-27 19:22:52 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.55 2004-04-29 23:05:58 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.54 2004-04-27 19:22:52 judson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.55 2004-04-29 23:05:58 turam Exp $"
 
 # The standard imports
 import sys
@@ -99,6 +99,12 @@ def main():
 
     # Run the service
     server.RunInThread()
+    
+    # Load the default node config
+    try:
+        nodeService.LoadDefaultConfig()
+    except:
+        print "Error loading default node configuration"
 
     log.info("Starting Node Service URL: %s", url)
 
