@@ -159,8 +159,7 @@ else:
         ip = os.path.join(innopath, "iscc.exe")
         inno_compiler = win32api.GetShortPathName(ip)
     except WindowsError:
-        if verbose:
-            print "Couldn't find ISXTool from registry key." 
+        print "Couldn't find ISXTool from registry key." 
 
         # If still not found, try default path:
         innopath = r"\Program Files\My Inno Setup Extensions 3"
