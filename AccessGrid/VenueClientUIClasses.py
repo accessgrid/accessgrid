@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.112 2003-03-26 20:25:19 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.113 2003-03-26 21:18:15 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1543,8 +1543,9 @@ class SaveFileDialog(wxDialog):
 class UploadFilesDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title,
-                          size = wxSize(300, 200))
+                          size = wxSize(300, 100))
 
+        self.Centre()
         self.button = wxButton(self, wxNewId(), "Cancel")
         self.text = wxStaticText(self, -1, "")
 
@@ -1562,9 +1563,10 @@ class UploadFilesDialog(wxDialog):
 
     def Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add(self.text, 1, wxEXPAND)
-        sizer.Add(self.progress, 0, wxEXPAND)
-        sizer.Add(self.button, 0, wxCENTER)
+        sizer.Add(10,10)
+        sizer.Add(self.text, 1, wxEXPAND|wxALL, 5)
+        sizer.Add(self.progress, 0, wxEXPAND|wxALL, 5)
+        sizer.Add(self.button, 0, wxCENTER|wxALL, 5)
 
         self.SetSizer(sizer)
         self.SetAutoLayout(1)
