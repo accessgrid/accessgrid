@@ -16,19 +16,23 @@ inputDir = sys.argv[1]
 outputDir = sys.argv[1]
 
 services = ["AudioService", "VideoConsumerService", "VideoProducerService"]
+if not os.path.isdir(inputDir):
+    print "The following directory does not exist: ", inputDir
+
+os.chdir(inputDir)
 
 for service in services:
 
-    servDesc = os.path.join(inputDir, service) + ".svc"
-    servImplPy = os.path.join(inputDir, service) + ".py"
-    servImplWin = os.path.join(inputDir, service) + ".exe"
-    servImplLin = os.path.join(inputDir, service)
+    servDesc = service + ".svc"
+    servImplPy = service + ".py"
+    servImplWin = service + ".exe"
+    servImplLin = service
 
     if not os.path.isfile(servDesc):
         continue
     
     # if associated file found, zip em up together in the outputDir
-    serviceZipFile = os.path.join(outputDir, service) + ".zip"
+    serviceZipFile = service + ".zip"
     print "Writing Package File:", serviceZipFile
     zf = zipfile.ZipFile( serviceZipFile, "w" )
     zf.write( servDesc )
