@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.16 2003-04-14 23:44:15 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.17 2003-04-23 19:37:16 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -19,8 +19,7 @@ from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Descriptions import AGServiceManagerDescription
 
-if sys.platform == "win32":
-    from AccessGrid import PersonalNode
+from AccessGrid import PersonalNode
 
 # default arguments
 port = 11000

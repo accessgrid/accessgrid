@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.17 2003-04-14 23:44:15 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.18 2003-04-23 19:37:16 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -18,8 +18,7 @@ import getopt
 from AccessGrid.AGServiceManager import AGServiceManager
 from AccessGrid.hosting.pyGlobus.Server import Server
 
-if sys.platform == "win32":
-    from AccessGrid import PersonalNode
+from AccessGrid import PersonalNode
 
 # default arguments
 port = 12000
@@ -29,6 +28,8 @@ def Shutdown():
     global running
     global server
     server.stop()
+
+    log.debug("Removing services in Shutdown")
     serviceManager.RemoveServices()
     # shut down the node service, saving config or whatever
     running = 0

@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.126 2003-04-23 09:16:52 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.127 2003-04-23 19:37:16 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -41,8 +41,7 @@ from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
 from AccessGrid.Utilities import formatExceptionInfo
 
-if sys.platform == "win32":
-    from AccessGrid import PersonalNode
+from AccessGrid import PersonalNode
 
 try:
     from AccessGrid import CertificateManager
@@ -113,12 +112,15 @@ class VenueClientUI(wxApp, VenueClient):
             success = mtm.ReadMailcap(mimeFilename, 1)
             wxLogDebug("Read Mime Types: %d" % success)
 
+        log.debug("OnInit: ispersonal=%s", self.isPersonalNode)
+
         if self.isPersonalNode:
             def setSvcCallback(svcUrl, self = self):
                 log.debug("setting node service URI to %s from PersonalNode", svcUrl)
                 self.nodeServiceUri = svcUrl
-                self.personalNode = PersonalNode.PersonalNodeManager(setSvcCallback)
-                self.personalNode.Run()
+
+            self.personalNode = PersonalNode.PersonalNodeManager(setSvcCallback, self.debugMode)
+            self.personalNode.Run()
 
         return true
 
@@ -155,8 +157,8 @@ class VenueClientUI(wxApp, VenueClient):
     def __Usage(self):
         print "%s:" % (sys.argv[0])
         print "  -h|--help:      print usage"
-        if sys.platform == "win32":
-            print "  --personalNode: manage services as a personal node"
+        print "  -d|--debug:     show debugging messages"
+        print "  --personalNode: manage services as a personal node"
 
     def __processArgs(self):
         """
@@ -167,12 +169,9 @@ class VenueClientUI(wxApp, VenueClient):
         """
 
         try:
-            if sys.platform == "win32":
-                opts, args = getopt.getopt(sys.argv[1:], "hd",
-                ["personalNode", "debug", "help"])
-            else:
-                opts, args = getopt.getopt(sys.argv[1:], "hd",
-                ["debug", "help"])
+            opts, args = getopt.getopt(sys.argv[1:], "hd",
+                                       ["personalNode", "debug", "help"])
+
         except getopt.GetoptError:
             self.__Usage()
             sys.exit(2)
