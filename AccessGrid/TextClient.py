@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.3 2003-03-24 20:26:12 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.4 2003-03-27 20:24:56 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -96,3 +96,4 @@ class SimpleTextProcessor:
             event = pickle.loads(pdata)
             self.Output(event.data)
 
+        self.socket.close()
