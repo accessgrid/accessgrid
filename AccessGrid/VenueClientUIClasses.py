@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.252 2003-09-11 22:08:52 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.253 2003-09-12 14:45:39 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -3195,7 +3195,7 @@ VenueClientFrame.
 
 '''
 
-def VerifyExecutionEnvironment():
+def VerifyExecutionEnvironment(mainApp = None):
     """
     Verify that the current execution environment is sufficient
     for running the VV software.
@@ -3212,6 +3212,10 @@ def VerifyExecutionEnvironment():
                               "Globus configuration problem", wxOK)
         dlg.ShowModal()
         dlg.Destroy()
+        
+        if mainApp:
+            mainApp.OnExit()
+
         sys.exit(1)
 
 
@@ -3221,6 +3225,7 @@ def VerifyExecutionEnvironment():
         
     myhost = GetLocalHostname()
     log.debug("My hostname is %s", myhost)
+
 
     if not LocalHostnameValid(myhost):
         log.critical("VerifyExecutionEnvironment: bind to local hostname of %s fails", myhost)
@@ -3254,7 +3259,7 @@ def VerifyExecutionEnvironment():
                 msg = "(GLOBUS_HOSTNAME is configured in the registry, but\n" + \
                       "is not set in the process environment.\n" + msgbase
 
-        ShowNetworkInit(msg)
+        ShowNetworkInit(msg, mainApp)
 
         myhost = Utilities.GetHostname()
         log.debug("New notion of globus hostname: %s", myhost)
@@ -3275,6 +3280,9 @@ def VerifyExecutionEnvironment():
                               "Application configuration problem", wxOK)
         dlg.ShowModal()
         dlg.Destroy()
+
+        if mainApp:
+            mainApp.OnExit()
         
         sys.exit(1)
     
@@ -3320,13 +3328,13 @@ def LocalHostnameValid(myhost):
 
         return 0
 
-def ShowNetworkInit(msg = None):
+def ShowNetworkInit(msg = None, mainApp = None):
     if sys.platform == "win32":
-        ShowNetworkInitWin32(msg)
+        ShowNetworkInitWin32(msg, mainApp)
     else:
-        ShowNetworkInitNonWin32(msg)
+        ShowNetworkInitNonWin32(msg, mainApp)
 
-def ShowNetworkInitNonWin32(msg):
+def ShowNetworkInitNonWin32(msg, mainApp = None):
         dlg = wxMessageDialog(None,
                               "This computer's network configuration is not correct.\n" +
                               "Correct the problem (by setting the GLOBUS_HOSTNAME environment" +
@@ -3334,9 +3342,14 @@ def ShowNetworkInitNonWin32(msg):
                               "Globus network problem", wxOK)
         dlg.ShowModal()
         dlg.Destroy()
+     
+        # Shut down UI components 
+        if mainApp:
+            mainApp.OnExit()
+
         sys.exit(1)
 
-def ShowNetworkInitWin32(msg):
+def ShowNetworkInitWin32(msg, mainApp = None):
     if msg is  None:
         msg = ""
     else:
@@ -3370,6 +3383,11 @@ def ShowNetworkInitWin32(msg):
                               "Globus network problem", wxOK)
         dlg.ShowModal()
         dlg.Destroy()
+
+        # Shut down UI components 
+        if mainApp:
+            mainApp.OnExit()
+            
         os._exit(1)
 
     #
@@ -3392,6 +3410,11 @@ def ShowNetworkInitWin32(msg):
         import win32api
         shortpath = win32api.GetShortPathName(networkInit)
         win32api.WinExec("python %s" % (shortpath))
+
+        # Shut down UI components 
+        if mainApp:
+            mainApp.OnExit()
+            
         os._exit(0)
 
     # Else...
