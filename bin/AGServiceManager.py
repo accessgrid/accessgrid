@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.35 2004-03-15 20:49:32 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.36 2004-03-15 20:56:57 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -71,7 +71,7 @@ def main():
     
     # Initialize the application
     try:
-        args = app.Initialize(sys.argv[1:], "ServiceManager")
+        args = app.Initialize("ServiceManager")
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e

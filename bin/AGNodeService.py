@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.43 2004-03-15 20:53:16 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.44 2004-03-15 20:56:57 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.43 2004-03-15 20:53:16 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.44 2004-03-15 20:56:57 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -31,6 +31,7 @@ if sys.version.startswith('2.3'):
 
 
 # Our imports
+#from AccessGrid.Toolkit import Service
 from AccessGrid.Toolkit import CmdlineApplication
 from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
 from AccessGrid import Log
@@ -65,6 +66,7 @@ def main():
     global nodeService, log
 
     # Instantiate the app
+    #app = Service()
     app = CmdlineApplication()
 
     # build options for this application
@@ -79,7 +81,7 @@ def main():
 
     # Initialize the app
     try:
-        args = app.Initialize(sys.argv[1:], "NodeService")
+        args = app.Initialize("NodeService")
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e

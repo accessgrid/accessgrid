@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.252 2004-03-15 20:07:02 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.253 2004-03-15 20:56:57 judson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.252 2004-03-15 20:07:02 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.253 2004-03-15 20:56:57 judson Exp $"
 
 # Standard Imports
 import os
@@ -68,7 +68,7 @@ def main():
 
     # Try to initialize
     try:
-        args = app.Initialize(sys.argv[1:], "VenueClient")
+        args = app.Initialize("VenueClient")
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e

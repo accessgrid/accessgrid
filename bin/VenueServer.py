@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.49 2004-03-15 20:10:36 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.50 2004-03-15 20:56:57 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.49 2004-03-15 20:10:36 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.50 2004-03-15 20:56:57 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -74,7 +74,7 @@ def main():
     
     # Try to initialize
     try:
-        args = app.Initialize(sys.argv, "VenueServer")
+        args = app.Initialize("VenueServer")
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
