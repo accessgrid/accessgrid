@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.12 2004-04-09 14:05:26 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.13 2004-04-09 14:14:53 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.12 2004-04-09 14:05:26 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.13 2004-04-09 14:14:53 judson Exp $"
 
 import os
 import sys
@@ -363,22 +363,38 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
 #         AccessGrid.Utilities.setenv("GLOBUS_HOSTNAME", myip)
 
     def _GetGlobusKey(self):
+        gkey = None
+
         try:
             gkey = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
                                    "Software\Globus")
-            gsikey = _winreg.OpenKey(gkey, "GSI")
-            return gsikey
         except:
             log.exception("Couldn't retrieve globus key from registry.")
             # third, Create the keys
             try:
                 gkey = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
                                          "Software\Globus")
+            except:
+                log.exception("Couldn't initialize the globus registry key.")
+            return None
+
+        if gkey is None:
+            log.error("Can't do any more initialization, Globus looks misconfigured.")
+            return None
+        
+        try:
+            gsikey = _winreg.OpenKey(gkey, "GSI")
+            return gsikey
+        except:
+            log.exception("Couldn't retrieve gsi key from registry.")
+            # third, Create the keys
+            try:
                 gsikey = _winreg.CreateKey(gkey, "GSI")
                 return gsikey
             except:
-                log.exception("Couldn't initialize the globus registry keys.")
+                log.exception("Couldn't initialize the gsi registry key.")
             return None
+
 
 #    def _InitializeRegistry(self):
     def _Initialize(self):
