@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.9 2003-08-08 19:25:00 eolson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.10 2003-08-08 19:53:15 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -342,11 +342,12 @@ class SecurityManager:
             elif role in roleManager.GetRoleList():
                 return 1
             # Check for matches with roles included from other role managers.
-            elif role.startswith("Role."): # external role
-                external_role_name = s.lstrip("Role.")
-                for rm in roleManager.GetExternalManagerList():
-                   if external_role_name in rm.GetRoleList():
-                       return 1
+            elif type(role) == type(""):
+                if role.startswith("Role."): # external role
+                    external_role_name = role[len("Role."):] # same as new lstrip, strip "Role." from front.
+                    for rm in roleManager.GetExternalManagerList():
+                        if external_role_name in rm.GetRoleList():
+                            return 1
         return 0
 
     def ValidateUserInRole(self, role_name, role_manager, recursed_roles=[]):
@@ -375,7 +376,7 @@ class SecurityManager:
             if len(separated_name) < 3: # Expecting "Role.xxxx.xxxx"
                 raise "InvalidRoleName" 
             erm = role_manager.GetExternalRoleManager(separated_name[1])
-            erm_role_name = role_name.lstrip("Role.")
+            erm_role_name = role_name[len("Role."):] # same as new lstrip, strip "Role." from front.
             erm_role = erm.GetRole(erm_role_name)
             if self.ValidateUserInList(erm_role.GetSubjectList()):
                 log.info("User %s authorized for role %s", user, erm_role.name)
