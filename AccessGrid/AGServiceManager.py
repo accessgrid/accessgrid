@@ -9,7 +9,6 @@ except:  pass
 
 
 from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 
@@ -395,20 +394,6 @@ class AGServiceManager( ServiceBase ):
 
 
    def __DiscoverResources( self ):
-      """Discover local resources (audio cards, etc.)
+      """Discover local resources (video capture cards, etc.)
       """
       self.resources = Utilities.GetResourceList()
-
-
-
-
-if __name__ == '__main__':
-
-   serviceManager = AGServiceManager()
-
-   server = Server( int(sys.argv[1]) )
-   service = server.create_service_object("ServiceManager")
-
-   serviceManager._bind_to_service( service )
-   print "Starting service; URI: ", serviceManager.get_handle()
-   server.run()

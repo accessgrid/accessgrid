@@ -4,7 +4,6 @@ import pickle
 import string
 
 from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 
 from AccessGrid.Types import AGServiceImplementationRepository, AGServiceDescription, ServiceConfiguration
@@ -423,24 +422,4 @@ class AGNodeService( ServiceBase ):
             Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )   
       except:
          print "Exception in AGNodeService.RemoveAuthorizedUser ", sys.exc_type, sys.exc_value
-
-
-
-
-
-if __name__ == '__main__':
-
-   from AccessGrid.Types import AGServiceManagerDescription
-   nodeService = AGNodeService( )
-
-   # start the service
-   server = Server( int( sys.argv[1] ) )
-   service = server.create_service_object()
-   print "server base = ", server.get_url_base()
-   print "service object path = ", service.get_path()
-
-   nodeService._bind_to_service( service )
-   print "Starting server..."
-   server.run()
-
 
