@@ -5,13 +5,13 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.37 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.38 2004-02-13 22:02:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.37 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: Types.py,v 1.38 2004-02-13 22:02:07 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -103,11 +103,19 @@ class VenueState:
 
     def AddService( self, serviceDescription ):
         self.services[serviceDescription.name] = serviceDescription
+
+    def UpdateService(self, serviceDescription):
+        self.services[serviceDescription.name] = serviceDescription
+        
     def RemoveService( self, serviceDescription ):
         del self.services[serviceDescription.name]  
 
     def AddApplication( self, applicationDescription ):
         self.applications[applicationDescription.uri] = applicationDescription
+
+    def UpdateApplication(self, applicationDescription):
+        self.applications[applicationDescription.uri] = applicationDescription
+        
     def RemoveApplication( self, applicationDescription ):
         self.applications[applicationDescription.uri] = applicationDescription
 
