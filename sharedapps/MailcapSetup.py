@@ -1,6 +1,3 @@
-#!C:\Python22\python.exe
-
-
 #-----------------------------------------------------------------------------
 # Name:        MailcapSetup.py
 # Purpose:     This script will take a new shared applications mime setting
@@ -11,7 +8,7 @@
 # Author:      Ti Leggett
 # Copyright:   (c) 2002-2003
 # License:     See COPYING.txt
-# RCS-ID:      $Id: MailcapSetup.py,v 1.8 2003-05-29 23:25:46 judson Exp $
+# RCS-ID:      $Id: MailcapSetup.py,v 1.9 2003-07-11 21:12:33 eolson Exp $
 #-----------------------------------------------------------------------------
 
 import os

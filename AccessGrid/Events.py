@@ -5,10 +5,14 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.13 2003-06-26 20:48:59 lefvert Exp $
+# RCS-ID:      $Id: Events.py,v 1.14 2003-07-11 21:12:33 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+
+import pickle
+import struct
+
 class Event:
     ENTER = "Enter"
     EXIT = "Exit"
@@ -120,3 +124,63 @@ class TextEvent(Event):
 
         return string
 
+class MarshalledEvent:
+    """
+    Class to contain an event marshalled into the wire form.
+
+    Typical uses:
+
+    App reads data according to a wire protocol that matches
+    the protocol used here (pkt size + pickling). (This is a flaw
+    in the design of this, but as this is an attempt to partially
+    encapsulate something that's currently not at all encapsulated
+    it is sufficient if used with care):
+
+    myData = (get the data somehow)
+    me = MarshalledEvent()
+    me.SetData(myData)
+    myEvent = me.GetEvent()
+
+    App has an event that it wants to send to multiple file handles:
+
+    me = MarshalledEvent()
+    me.SetEvent(myEvent)
+    for fh in handles():
+        me.Write(fh)
+        
+    """
+
+    def SetEvent(self, event):
+        """
+        Create the marshalled form of the event and hold it internally.
+        """
+
+        self.pdata = pickle.dumps(event)
+        self.sizeStr = struct.pack("i", len(self.pdata))
+
+    def GetEvent(self):
+        """
+        Unmarshall the event object from the binary data held internally.
+        """
+
+        try:
+            event = pickle.loads(self.pdata)
+            return event
+        except EOFError:
+            log.exception("MarshalledEvent: could not unpickle")
+            return None
+
+    def SetData(self, data):
+        """
+        Set the binary data of the event.
+        """
+
+        self.pdata = data
+
+    def Write(self, fh):
+        """
+        Write the binary data out to the specified filehandle.
+        """
+
+        fh.write(self.sizeStr)
+        fh.write(self.pdata)

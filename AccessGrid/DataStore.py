@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.28 2003-06-26 21:01:23 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.29 2003-07-11 21:12:33 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -578,6 +578,7 @@ class DataStore(ServiceBase):
         if desc is None or desc == "":
             return 1
         else:
+            log.info("CanUploadFile: returning 0, desc='%s'", desc)
             return 0
 
     def GetUploadFilename(self, dn, file_info):
@@ -820,7 +821,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         size = int(file_info['size'])
         content_len = int(self.headers['Content-Length'])
         if size != content_len:
-            log.debug("HTTPTransferHandler::ProcessFileUpload: Error, Size in manifest != size in Content-Length")
+            log.debug("HTTPTransferHandler::ProcessFileUpload: Error, Size in manifest(%s) != size in Content-Length(%s)", size, content_len)
             self.send_error(405, "Size in manifest != size in Content-Length")
             return None
 
@@ -1030,6 +1031,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 
                 name = info['name']
                 if not transfer_handler.CanUploadFile(identityToken, info):
+                    log.info("Cannot upload file %s", name)
                     upload_okay = 0
                     upload_error_list.append("Upload error for file " + name)
                 file_list.append(name)

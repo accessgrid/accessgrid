@@ -6,17 +6,18 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.22 2003-06-27 21:30:20 lefvert Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.23 2003-07-11 21:12:33 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-from threading import Thread
+from threading import Thread, Lock
 import Queue
 import pickle
 import logging
 import struct
 import threading
+import types
 
 from pyGlobus.io import GSITCPSocket, TCPIOAttr, AuthData, IOBaseException
 from pyGlobus.util import Buffer
@@ -27,7 +28,7 @@ from AccessGrid.Events import HeartbeatEvent, ConnectEvent, DisconnectEvent
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 
 log = logging.getLogger("AG.VenueClient")
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 
 class EventClientConnectionException(Exception):
     """
@@ -55,6 +56,13 @@ class EventClientWriteDataException(Exception):
     """
     pass
 
+def readCallbackWrap(arg, handle, ret, buf, n):
+    log.debug("wrap: arg=%s", arg)
+    obj = arg()
+    if obj:
+        log.debug("Got obj %s", obj)
+        obj.readCallbackWrap(None, handle, ret, buf, n)
+
 class EventClient:
     """
     The Event Client maintains a client side connection to the Event
@@ -73,6 +81,14 @@ class EventClient:
         self.location = location
         self.callbacks = []
         self.connected = 0
+        self.cbHandle = None
+
+        #
+        # clientLock is used to ensure serialization between the
+        # started/stopped state of the event client and
+        # any asynchronously-received incoming events.
+        #
+        self.clientLock = Lock()
         
         self.queue = Queue.Queue()
 
@@ -97,22 +113,37 @@ class EventClient:
         if self.running:
             self.Stop()
         
-        log.debug("EventClient.del: closing queue")
-        self.queue.put(("quit",))
-        self.qThread.join()
 
     def queueThreadMain(self):
-        print "In queue thread"
+        """
+        Event processing thread.
+
+        This thread blocks on a read from the client-local event queue
+        (self.queue). Commands on the form are tuples where tuple[0] is the
+        name of the command.
+
+        Commands we process are
+
+            quit:  Terminate the event processing thread.
+            call:  Invoke a callback. The callback is tuple[1], the event to
+                   pass to it is tuple[2].
+
+        """
 
         while 1:
             log.debug("Queue waiting for data")
             dat = self.queue.get()
             log.debug("Queue got data %s", dat)
+
             if dat[0] == "quit":
                 log.debug("Queue exiting")
                 return
             elif dat[0] == "call":
                 try:
+                    #
+                    # Invoke the callback.
+                    #
+                    
                     callback = dat[1]
                     event = dat[2]
                     callback(event)
@@ -126,10 +157,15 @@ class EventClient:
 
         self.dataBuffer = ''
         self.waitingLen = 0
-        
+
+        self.running = 1
+
+        # h = self.sock.register_read(self.buffer, EventClient.bufsize, 1,
+        #                            readCallbackWrap, weakref.ref(self))
         h = self.sock.register_read(self.buffer, EventClient.bufsize, 1,
                                     self.readCallbackWrap, None)
         self.cbHandle = h
+        log.debug("Have callback handle %s", self.cbHandle)
 
     def readCallbackWrap(self, arg, handle, ret, buf, n):
         """
@@ -148,6 +184,22 @@ class EventClient:
     def readCallback(self, arg, handle, ret, buf, n):
 
         log.debug("Got read handle=%s ret=%s  n=%s \n", handle, ret, n)
+
+        #
+        # Check for new-style status returns
+        # 
+
+        if type(ret) == types.TupleType:
+            if ret[0] != 0:
+                log.debug("readCallback gets failure in result: %s %s", ret[1], ret[2])
+                try:
+                    self.sock.close()
+                except IOBaseException:
+                    pass
+
+                self.connected = 0
+                return
+                
 
         if n == 0:
             log.debug("EventClient got EOF")
@@ -187,11 +239,19 @@ class EventClient:
             log.debug("handleData returns")
 
             self.waitingLen = 0
-            
-        h = self.sock.register_read(self.buffer, EventClient.bufsize, 1,
-                                    self.readCallbackWrap, None)
-        self.cbHandle = h
 
+        if self.running:
+            log.debug("Freeing callback %s within callback", self.cbHandle)
+            if self.cbHandle:
+                self.sock.free_callback(self.cbHandle)
+                
+            #h = self.sock.register_read(self.buffer, EventClient.bufsize, 1,
+            #                            readCallbackWrap, weakref.ref(self))
+            h = self.sock.register_read(self.buffer, EventClient.bufsize, 1,
+                                        self.readCallbackWrap, None)
+            self.cbHandle = h
+            log.debug("Have new callback handle %s", self.cbHandle)
+        
     def handleData(self, pdata):
         try:
             # Unpack the data
@@ -250,9 +310,25 @@ class EventClient:
 #             pass
         
         self.running = 0
+
+        log.debug("Cancel pending callbacks")
+        self.sock.cancel(1)
+        if self.cbHandle:
+            log.debug("Free callback %s", self.cbHandle)
+            self.sock.free_callback(self.cbHandle)
+        
         log.debug("EventClient.Stop: closing socket")
-        self.sock.close()
+        try:
+            self.sock.close()
+        except IOBaseException:
+            pass
+        
         self.connected = 0
+
+        log.debug("EventClient.Stop: closing queue")
+        self.queue.put(("quit",))
+        self.qThread.join()
+        self.qThread = None
 
     def DefaultCallback(self, event):
         log.info("Got callback for %s event!", event.eventType)

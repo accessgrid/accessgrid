@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.21 2003-05-28 22:04:25 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.22 2003-07-11 21:12:33 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -103,9 +103,9 @@ if pnode is not None:
     log.debug("Starting personal node")
 
     personalNode = PersonalNode.PN_NodeService(Shutdown)
-    serviceManageURL =  personalNode.RunPhase1(pnode)
+    serviceManagerURL =  personalNode.RunPhase1(pnode)
 
-    log.debug("Got service mgr %s", serviceManageURL)
+    log.debug("Got service mgr %s", serviceManagerURL)
 
 else:
     if identityCert is not None or identityKey is not None:

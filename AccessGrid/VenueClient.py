@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.80 2003-07-07 17:32:00 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.81 2003-07-11 21:12:33 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -390,7 +390,7 @@ class VenueClient( ServiceBase):
                 #
                 # This is a non fatal error, users should be notified but still enter the venue
                 #
-                #log.exception("AccessGrid.VenueClient::Get node capabilities failed")
+                log.info("AccessGrid.VenueClient::Get node capabilities failed")
                 errorInNode = 1
                         
             #
@@ -537,7 +537,7 @@ class VenueClient( ServiceBase):
                 #
                 # This is a non fatal error, users should be notified but still enter the venue
                 #
-                #log.exception("AccessGrid.VenueClient::Exception configuring node service streams")
+                log.info("AccessGrid.VenueClient::Exception configuring node service streams")
                 errorInNode = 1
                  
             # Finally, set the flag that we are in a venue
@@ -623,10 +623,13 @@ class VenueClient( ServiceBase):
         # Stop the event client
         log.info(" Stopping event client")
         try:
-            
+            log.debug("  send client exiting event")
             self.eventClient.Send(ClientExitingEvent(self.venueState.uniqueId,
                                                      self.privateId))
+            log.debug("  stop event client obj")
             self.eventClient.Stop()
+            log.debug("  remove reference")
+            self.eventClient = None
         except:
             # An exception is always thrown for some reason when I exit
             # the event client

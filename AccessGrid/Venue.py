@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.103 2003-07-03 21:55:45 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.104 2003-07-11 21:12:33 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -35,6 +35,7 @@ from AccessGrid.GUID import GUID
 from AccessGrid import DataStore
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.Events import Event, HeartbeatEvent, DisconnectEvent, ClientExitingEvent
+from AccessGrid.Events import MarshalledEvent
 from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import GetHostname, ServerLock
 
@@ -174,6 +175,101 @@ class ClientNotFound(Exception):
     """
     pass
 
+class VenueClientState:
+    """
+    Instances of the VenueClientState class hold the per-client state that the
+    venue cares about. This includes the client's profile, the last time
+    a heartbeat was received from the client, the client's connections
+    to the text and event services, and any queues of events waiting to be
+    delivered to those services (after the client connects, before the
+    client's event client connects to the service).
+    """
+
+    def __init__(self, venue, privateId, profile):
+        self.venue = venue
+        self.privateId = privateId
+        self.clientProfile = profile
+        self.lastHeartbeat = None
+
+        #
+        # messageQueue is the queue of events to be delivered
+        # to the client's event client when it connects.
+        #
+        self.messageQueue = []
+
+        #
+        # connObj is the event service connection object
+        # for this client.
+        #
+        self.eventConnObj = None
+
+    def __repr__(self):
+        s = "VenueClientState(name=%s privateID=%s lastHeartbeat=%s)" % (
+            self.clientProfile.name, self.privateId, self.lastHeartbeat)
+        return s
+
+    def SendEvent(self, marshalledEvent):
+        if self.eventConnObj is None:
+            log.debug("Enqueue event of type %s for %s",
+                      marshalledEvent.GetEvent().eventType,
+                      self.clientProfile.GetName())
+            self.messageQueue.append(marshalledEvent)
+        else:
+            log.debug("Send event of type %s for %s",
+                      marshalledEvent.GetEvent().eventType,
+                      self.clientProfile.GetName())
+            self.eventConnObj.writeMarshalledEvent(marshalledEvent)
+
+    def SetConnection(self, connObj):
+        """
+        We've gotten a connection from the event client.
+
+        Send the accumulated events, if any.
+        """
+
+        log.debug("Set connection for %s", self.clientProfile.GetName())
+
+
+        while len(self.messageQueue) > 0:
+            mEvent = self.messageQueue.pop(0)
+            log.debug("Send queued event of type %s for %s",
+                      mEvent.GetEvent().eventType,
+                      self.clientProfile.GetName())
+            log.debug("writing marshalled event %s", mEvent.GetEvent())
+            connObj.writeMarshalledEvent(mEvent)
+
+        self.eventConnObj = connObj
+
+    def CloseEventChannel(self):
+        """
+        Close down our connection to the event service.
+        """
+
+        if self.eventConnObj is not None:
+            self.venue.server.eventService.CloseConnection(self.eventConnObj)
+        self.eventConnObj = None
+
+    def UpdateAccessTime(self):
+        self.lastHeartbeat = time.time()
+
+    def UpdateClientProfile(self, profile):
+        self.clientProfile = profile
+
+    def GetLastHeartbeat(self):
+        return self.lastHeartbeat
+
+    def GetTimeSinceLastHeartbeat(self, now):
+        return now - self.lastHeartbeat
+
+    def GetPrivateId(self):
+        return self.privateId
+
+    def GetPublicId(self):
+        return self.clientProfile.GetPublicId()
+
+    def GetClientProfile(self):
+        return self.clientProfile
+
 class Venue(ServiceBase.ServiceBase):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
@@ -226,7 +322,7 @@ class Venue(ServiceBase.ServiceBase):
 
         log.info("Venue URI %s", self.uri)
 
-        self.server.eventService.AddChannel(self.uniqueId)
+        self.server.eventService.AddChannel(self.uniqueId, self.channelAuthCallback)
         self.server.textService.AddChannel(self.uniqueId)
         log.debug("Registering heartbeat for %s", self.uniqueId)
         self.server.eventService.RegisterCallback(self.uniqueId,
@@ -419,7 +515,7 @@ class Venue(ServiceBase.ServiceBase):
             'connections' : self.connections.values(),
             'applications': map(lambda x: x.AsApplicationDescription(),
                                 self.applications.values()),
-            'clients' : map(lambda c: c[0], self.clients.values()),
+            'clients' : map(lambda c: c.GetClientProfile(), self.clients.values()),
             'services' : self.services.values(),
             'data' : self.dataStore.GetDataDescriptions(),
             'eventLocation' : self.server.eventService.GetLocation(),
@@ -463,22 +559,22 @@ class Venue(ServiceBase.ServiceBase):
         CleanupClients is called by a regularly scheduled task to
         cleanup stale client connections.
         """
+        users_to_remove = []
         now_sec = time.time()
 
-        users_to_remove = []
-        
         self.heartbeatLock.acquire()
         for privateId in self.clients.keys():
-            (client, then_sec) = self.clients[privateId]
             
-            if abs(now_sec - then_sec) > self.cleanupTime:
+            vclient = self.clients[privateId]
+
+            if vclient.GetTimeSinceLastHeartbeat(now_sec) > self.cleanupTime:
                 users_to_remove.append(privateId)
 
         self.heartbeatLock.release()
 
         for privateId in users_to_remove:
             log.debug("Removing user %s with expired heartbeat time",
-                      client.name)
+                      self.clients[privateId].GetClientProfile().GetName())
 
             self.RemoveUser(privateId)
 
@@ -510,8 +606,7 @@ class Venue(ServiceBase.ServiceBase):
         if self.clients.has_key(privateId):
             self.heartbeatLock.acquire()
 
-            (profile, heartbeatTime) = self.clients[privateId]
-            self.clients[privateId] = (profile, now)
+            self.clients[privateId].UpdateAccessTime()
 
             self.heartbeatLock.release()
         else:
@@ -563,7 +658,7 @@ class Venue(ServiceBase.ServiceBase):
         Service.
         """
 
-    def NegotiateCapabilities(self, clientProfile, privateId):
+    def NegotiateCapabilities(self, vcstate):
         """
         This method takes a client profile and matching privateId, then it
         finds a set of streams that matches the client profile. Later this
@@ -580,6 +675,10 @@ class Venue(ServiceBase.ServiceBase):
             the client profile passed in.
 
         """
+
+        clientProfile = vcstate.GetClientProfile()
+        privateId = vcstate.GetPrivateId()
+
         streamDescriptions = []
 
         #
@@ -689,9 +788,9 @@ class Venue(ServiceBase.ServiceBase):
 
         """
         for privateId in self.clients.keys():
-            (client, heartbeatTime) = self.clients[privateId]
+            vclient = self.clients[privateId]
             
-            if client.publicId == profile.publicId:
+            if vclient.GetPublicId() == profile.publicId:
                 return privateId
 
         return None
@@ -730,9 +829,8 @@ class Venue(ServiceBase.ServiceBase):
                 self.simpleLock.release()
                 return
 
-            self.heartbeatLock.acquire()
-            client, heartbeatTime = self.clients[privateId]
-            self.heartbeatLock.release()
+            vclient = self.clients[privateId]
+            clientProfile = vclient.GetClientProfile()
             
             # Remove clients private data
             #for description in self.data.values():
@@ -749,15 +847,18 @@ class Venue(ServiceBase.ServiceBase):
                     
                     #del self.data[description.name]
                    
-            # Distribute event
-            clientProfile, heartbeatTime = self.clients[privateId]
+            #
+            # Shut down the client's connection to the event service.
+            #
+
+            vclient.CloseEventChannel()
             
             log.debug("RemoveUser: Distribute EXIT event")
             
-            self.server.eventService.Distribute( self.uniqueId,
-                                                 Event( Event.EXIT,
-                                                        self.uniqueId,
-                                                        clientProfile ) )
+            self.DistributeEvent(Event( Event.EXIT,
+                                        self.uniqueId,
+                                        clientProfile ) )
+            
             del self.clients[privateId]
         except:
             log.exception("Venue.RemoveUser: Body of method threw exception")
@@ -787,6 +888,55 @@ class Venue(ServiceBase.ServiceBase):
                                              Event( Event.SET_CONNECTIONS,
                                                     self.uniqueId,
                                                     connectionDict.values() ) )
+
+    def DistributeEvent(self, event):
+        """
+        Distribute this event to our clients.
+
+        We can't just invoke the event channel distribute because
+        we need to enqueue the event for venue clients that haven't
+        yet connected.
+
+        Create a marshalled event object from the event and invoke
+        SendEvent on each of our client objects.
+        """
+
+        mEvent = MarshalledEvent()
+        mEvent.SetEvent(event)
+
+        for c in self.clients.values():
+            c.SendEvent(mEvent)
+
+    def channelAuthCallback(self, event, connObj):
+        """
+        Authorization callback to gate the connection of new clients
+        to the venue's event channel.
+
+        event is the incoming event that triggered the authorization request.
+        connObj is the event service connection handler object for the request.
+        """
+
+        priv = event.data
+        log.debug("Venue gets channelAuthCallback, privateID=%s", priv)
+
+        authorized = 0
+        if priv in self.clients:
+            log.debug("Private id is in client list, authorizing")
+            authorized = 1
+
+            #
+            # Snag the lock and set up the client for event service
+            #
+
+            self.simpleLock.acquire()
+            self.clients[priv].SetConnection(connObj)
+            self.simpleLock.release()
+            
+        else:
+            log.debug("Private id is not client list, denying")
+            authorized = 0
+
+        return authorized
 
     def Enter(self, clientProfile):
         """
@@ -821,22 +971,30 @@ class Venue(ServiceBase.ServiceBase):
             log.debug("Enter: Client already in venue: %s", privateId)
             # raise ClientAlreadyPresent
 
-        # reset connection information
-        self.clients[privateId] = (clientProfile, time.time())
+
+        #
+        # Send this before we set up client state, so that
+        # we don't end up getting our own enter event enqueued.
+        #
+        
+        self.DistributeEvent(Event(Event.ENTER, self.uniqueId, clientProfile))
+
+        #
+        # Create venue client state object
+        #
+
+        vcstate = self.clients[privateId] = VenueClientState(self,
+                                                             privateId,
+                                                             clientProfile)
+        vcstate.UpdateAccessTime()
         
         # negotiate to get stream descriptions to return
-        streamDescriptions = self.NegotiateCapabilities(clientProfile,
-                                                            privateId)
+        streamDescriptions = self.NegotiateCapabilities(vcstate)
 
         log.debug("Current users:")
-        for prof, tm in self.clients.values():
-            log.debug("  name=%s time=%s pubId=%s", prof.name, tm, prof.publicId)
+        for c in self.clients.values():
+            log.debug("   " + str(c))
         log.debug("Enter: Distribute enter event ")
-
-        self.server.eventService.Distribute( self.uniqueId,
-                                             Event( Event.ENTER,
-                                                    self.uniqueId,
-                                                    clientProfile ) )
 
         try:
             state = self.AsVenueState()
@@ -1637,18 +1795,16 @@ class Venue(ServiceBase.ServiceBase):
         log.debug("Called UpdateClientProfile on %s " %clientProfile.name)
 
         for privateId in self.clients.keys():
-            client, heartbeatTime = self.clients[privateId]
 
-            if client.publicId == clientProfile.publicId:
-                self.clients[privateId] = (clientProfile, time.time())
+            vclient = self.clients[privateId]
+
+            if vclient.GetPublicId() == clientProfile.publicId:
+                vclient.UpdateClientProfile(clientProfile)
+                vclient.UpdateAccessTime()
 
         log.debug("Distribute MODIFY_USER event")
 
-        self.server.eventService.Distribute( self.uniqueId,
-                                             Event( Event.MODIFY_USER,
-                                                    self.uniqueId,
-                                                    clientProfile ) )
-
+        self.DistributeEvent(Event(Event.MODIFY_USER, self.uniqueId, clientProfile))
         
     UpdateClientProfile.soap_export_as = "UpdateClientProfile"
 
