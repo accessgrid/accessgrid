@@ -18,10 +18,6 @@
 
 export FPCONST="fpconst"
 export FPCONST_VER="0.6.0-1"
-export LOGGING="logging"
-export LOGGING_VER="0.4.7-2"
-export OPTIK="Optik"
-export OPTIK_VER="1.4.1-1"
 export PYGLOBUS="pyGlobus"
 export PYGLOBUS_VER="cvs-11"
 export PYOPENSSL="pyOpenSSL_AG"
@@ -82,8 +78,6 @@ echo "***********************************************"
 echo "Installing prerequisites" 
 echo "***********************************************"
 Install $FPCONST $FPCONST_VER noarch
-Install $LOGGING $LOGGING_VER noarch
-Install $OPTIK $OPTIK_VER noarch
 Install $SOAPPY $SOAPPY_VER noarch
 Install $PYGLOBUS $PYGLOBUS_VER i386
 Install $PYOPENSSL $PYOPENSSL_VER i386
