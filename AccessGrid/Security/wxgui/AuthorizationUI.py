@@ -2,13 +2,13 @@
 # Name:        AuthorizationUI.py
 # Purpose:     Roles Management UI
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.6 2004-03-12 05:23:11 judson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.1 2004-03-12 05:35:24 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.6 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.1 2004-03-12 05:35:24 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
