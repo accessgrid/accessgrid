@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.26 2003-03-19 16:08:16 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.27 2003-03-21 23:29:44 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -64,6 +64,8 @@ class VenueState:
     def AddUser( self, userProfile ):
         self.users[userProfile.publicId] = userProfile
     def RemoveUser( self, userProfile ):
+        print "removing user", userProfile.name, userProfile.publicId
+        print "users = ", self.users.items()
         del self.users[userProfile.publicId]
     def ModifyUser( self, userProfile ):
         if userProfile.publicId in self.users.keys():
@@ -112,9 +114,10 @@ class VenueState:
         return self.textLocation
 
 class AGResource:
-    def __init__( self, type=None, resource=None ):
+    def __init__( self, type=None, resource=None, role="" ):
         self.type = type
         self.resource = resource
+        self.role = role
         self.inUse = 0
 
     def GetType( self ):
@@ -128,8 +131,8 @@ class AGResource:
         self.resource = resource
 
 class AGVideoResource( AGResource ):
-    def __init__( self, type, resource, portTypes ):
-        AGResource.__init__( self, type, resource )
+    def __init__( self, type, resource, role, portTypes ):
+        AGResource.__init__( self, type, resource, role )
         self.portTypes = portTypes
 
 class Capability:

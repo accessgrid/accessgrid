@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.19 2003-03-14 07:07:55 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.20 2003-03-21 23:29:44 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -140,7 +140,8 @@ def GetResourceList( resourceFile ):
                 portnames = string.split( match.groups()[0], ' '  )
 
                 # assume that, if we have portnames, we already have a device
-                resources.append( AGVideoResource( Capability.VIDEO, device, portnames ) )
+                resources.append( AGVideoResource( Capability.VIDEO, device,
+                                                   Capability.PRODUCER, portnames ) )
     else:
         print "Video resources file not found; run device discovery script"
 
