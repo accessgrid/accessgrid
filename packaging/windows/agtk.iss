@@ -1,40 +1,41 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.35 2004-03-19 04:28:20 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.36 2004-03-25 21:37:25 judson Exp $
 ;
 
-#define SourceDir "C:\Software\AccessGrid\AccessGrid"
-#define OutputDir "C:\Software\AccessGrid"
+; Set externally
+; SourceDir : The location of the AccessGrid Build Tree
+; AppVersion : what version are you packaging
+; VersionInformation: a string indicating the more version information
+
+#ifndef SourceDir
+#error "SourceDir must be defined to build a package."
+#endif
+
+#ifndef BuildDir
+#error "BuildDir must be defined to build a package."
+#endif
+
+#ifndef AppVersion 
+#error "AppVersion must be defined to build a package."
+#endif
+
+#ifndef VersionInformation
+#error "VersionInformation must be defined to build a package."
+#endif
+
+; used internally
 #define AppName "Access Grid Toolkit"
 #define AppNameShort "AGTk"
-#define AppVersionLong "2.1.2"
-#define AppVersionShort "2.1.2"
-#define VersionInformation "Patch 2"
-
-[_ISTool]
-EnableISX=true
-
-[_ISToolPreCompile]
-Name: mkdir; Parameters: C:\Software\AccessGrid\AccessGrid\dist\bin
-Name: mkdir; Parameters: C:\Software\AccessGrid\AccessGrid\dist\services
-Name: mkdir; Parameters: C:\Software\AccessGrid\AccessGrid\dist\sharedapps
-Name: python; Parameters: C:\Software\AccessGrid\AccessGrid\packaging\makeServicePackages.py C:\Software\AccessGrid\AccessGrid\services\node C:\Software\AccessGrid\AccessGrid\dist\services; Flags: abortonerror
-Name: python; Parameters: C:\Software\AccessGrid\AccessGrid\packaging\makeAppPackages.py C:\Software\AccessGrid\AccessGrid\sharedapps C:\Software\AccessGrid\AccessGrid\dist\sharedapps; Flags: abortonerror
-Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\Software\AccessGrid\ag-media C:\Software\AccessGrid\AccessGrid\dist\bin; Flags: abortonerror
-Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\Software\AccessGrid\ag-media C:\Software\AccessGrid\AccessGrid\dist\bin; Flags: abortonerror
-Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildPutty.cmd; Parameters: C:\software\AccessGrid\putty C:\software\AccessGrid\AccessGrid\dist; Flags: abortonerror
-Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildPythonModules.cmd; Parameters: C:\Software\AccessGrid C:\Software\AccessGrid\AccessGrid\dist; Flags: abortonerror
-
-; This section sets the standard variables needed for the installer
 
 [Setup]
-AppVerName={#AppVersionLong}
-AppVersion={#AppVersionShort}
-SourceDir={#SourceDir}
-OutputDir={#OutputDir}
-OutputBaseFilename={#AppNameShort}-{#AppVersionLong}
+AppVerName={#AppVersion}-{#VersionInformation}
+AppVersion={#AppVersion}
+SourceDir={#BuildDir}
+OutputDir={#SourceDir}
+OutputBaseFilename={#AppNameShort}-{#AppVersion}-{#VersionInformation}
 
 AppName={#AppName}
-AppCopyright=Copyright © 2003 Argonne National Laboratory / University of Chicago. All Rights Reserved.
+AppCopyright=Copyright © 2003-2004 Argonne National Laboratory / University of Chicago. All Rights Reserved.
 AppPublisher=Futures Laboratory / Argonne National Laboratory
 AppPublisherURL=http://www.mcs.anl.gov/fl
 AppSupportURL=http://bugzilla.mcs.anl.gov/accessgrid
@@ -50,7 +51,7 @@ UsePreviousAppDir=false
 UserInfoPage=false
 WindowVisible=false
 
-UninstallDisplayName={#AppNameShort} {#AppVersionShort}
+UninstallDisplayName={#AppNameShort} {#AppVersion}
 DisableStartupPrompt=false
 WindowResizable=false
 AlwaysShowComponentsList=false
@@ -76,49 +77,41 @@ UsePreviousGroup=true
 
 [Files]
 ; The Python Modules
-Source: dist\Lib\site-packages\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\Lib\site-packages; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\Lib\site-packages; Flags: recursesubdirs overwritereadonly restartreplace
 
 ; Documentation
-Source: doc\AccessGrid\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
-Source: doc\VENUE_CLIENT_MANUAL_HTML\*.*; DestDir: {app}\doc\VenueClientManual; Flags: recursesubdirs
-Source: doc\VENUE_MANAGEMENT_MANUAL_HTML\*.*; DestDir: {app}\doc\VenueManagementManual; Flags: recursesubdirs
+Source: doc\Developer\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
+Source: doc\VenueClientManual\*.*; DestDir: {app}\doc\VenueClientManual; Flags: recursesubdirs
+Source: doc\VenueManagementManual\*.*; DestDir: {app}\doc\VenueManagementManual; Flags: recursesubdirs
 
-; Program Files
-Source: ..\WinGlobus\globus_setup\globus_init.py; DestDir: {app}\bin; Flags: confirmoverwrite; DestName: globus_init.pyw
-Source: ..\WinGlobus\globus_setup\winnet.py; DestDir: {app}\bin; Flags: confirmoverwrite
-Source: ..\WinGlobus\globus_setup\network_init.py; DestDir: {app}\bin; Flags: confirmoverwrite; DestName: network_init.pyw
-Source: ..\WinGlobus\certificates\42864e48.0; DestDir: {commonappdata}\AccessGrid\certificates; DestName: 42864e48.0
-Source: ..\WinGlobus\certificates\45cc9e80.0; DestDir: {commonappdata}\AccessGrid\certificates; DestName: 45cc9e80.0
-Source: ..\WinGlobus\certificates\42864e48.signing_policy; DestDir: {commonappdata}\AccessGrid\certificates; DestName: 42864e48.signing_policy
-Source: ..\WinGlobus\certificates\45cc9e80.signing_policy; DestDir: {commonappdata}\AccessGrid\certificates; DestName: 45cc9e80.signing_policy
+; Certificates for trusted CA's
+Source: CAcertificates\*.*; DestDir: {commonappdata}\AccessGrid\certificates
 
+; General setup stuff
 Source: COPYING.txt; DestDir: {app}
 Source: README; DestDir: {app}; Flags: isreadme; DestName: README.txt
 
-Source: bin\VenueServer.py; DestDir: {app}\bin
-;Source: bin\DataService.py; DestDir: {app}\bin
-Source: bin\VenueClient.py; DestDir: {app}\bin
-Source: bin\AGServiceManager.py; DestDir: {app}\bin
+; Program Files
+Source: bin\*.*; DestDir: {app}\bin
+
+; Special short cuts to invoke without the python console
+
 Source: bin\CertificateRequestTool.py; DestDir: {app}\bin; DestName: CertificateRequestTool.pyw
-Source: bin\certmgr.py; DestDir: {app}\bin; DestName: certmgr.py
 Source: bin\NodeManagement.py; DestDir: {app}\bin; DestName: NodeManagement.pyw
 Source: bin\NodeSetupWizard.py; DestDir: {app}\bin; DestName: NodeSetupWizard.pyw
 Source: bin\SetupVideo.py; DestDir: {app}\bin; DestName: SetupVideo.pyw
-Source: bin\VenueManagement.py; DestDir: {app}\bin; DestName: VenueManagement.py
-Source: bin\AGNodeService.py; DestDir: {app}\bin
-Source: bin\agpm.py; DestDir: {app}\bin
-Source: dist\services\*.zip; DestDir: {commonappdata}\AccessGrid\services
-Source: dist\sharedapps\*.shared_app_pkg; DestDir: {commonappdata}\AccessGrid\sharedapps
-Source: dist\bin\rat.exe; DestDir: {app}\bin; DestName: rat.exe
-Source: dist\bin\ratui.exe; DestDir: {app}\bin; DestName: ratui.exe
-Source: dist\bin\ratmedia.exe; DestDir: {app}\bin; DestName: ratmedia.exe
-Source: dist\bin\vic.exe; DestDir: {app}\bin; DestName: vic.exe
-Source: dist\bin\rat-kill.exe; DestDir: {app}\bin; DestName: rat-kill.exe
-Source: dist\bin\pscp.exe; DestDir: {app}\bin; DestName: pscp.exe
-Source: packaging\windows\agicons.exe; DestDir: {app}\install
+
+; Service packages
+Source: services\*.zip; DestDir: {commonappdata}\AccessGrid\services
+
+; Shared Application packages
+Source: sharedapps\*.shared_app_pkg; DestDir: {commonappdata}\AccessGrid\sharedapps
+
+; icons file (? I forget what for)
+Source: install\agicons.exe; DestDir: {app}\install
 
 ; begin VC system files
-Source: packaging\windows\msvcr70.dll; DestDir: {win}\system32; Flags: restartreplace uninsneveruninstall onlyifdoesntexist
+Source: ..\AccessGrid\packaging\windows\msvcr70.dll; DestDir: {win}\system32; Flags: restartreplace uninsneveruninstall onlyifdoesntexist
 ; end VC system files
 
 [Icons]
@@ -129,8 +122,6 @@ Name: {group}\Venue Management Tool; IconFilename: {app}\install\agicons.exe; Fi
 Name: {group}\Request a Certificate; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\CertificateRequestTool.pyw"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe
 
 Name: {group}\Configure\Search for Video Devices (No Output Generated); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\SetupVideo.pyw"""; WorkingDir: %APPDATA%\AccessGrid; Comment: Search for video devices for the Video Producer service. There is no output for this program.
-Name: {group}\Configure\Reconfigure Globus; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\globus_init.pyw"""; WorkingDir: %APPDATA%\AccessGrid; Comment: Set up Globus runtime environment; IconFilename: {app}\install\agicons.exe
-Name: {group}\Configure\Reconfigure Network; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\network_init.pyw"""; WorkingDir: %APPDATA%\AccessGrid; Comment: Set up Globus network configuration; IconFilename: {app}\install\agicons.exe
 Name: {group}\Configure\Node Setup Wizard; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\NodeSetupWizard.pyw"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe
 
 Name: {group}\Services\Venue Server (Debug); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\python.exe; Parameters: """{app}\bin\VenueServer.py"" --debug"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the venue server software in debugging mode.
@@ -153,10 +144,10 @@ Name: {commondesktop}\Access Grid Venue Client; Filename: {reg:HKLM\Software\Pyt
 
 [Registry]
 Root: HKLM; Subkey: SOFTWARE\{#AppName}; ValueType: none; Flags: uninsdeletekey
-Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersionShort}; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
-Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersionShort}; ValueType: expandsz; ValueName: ConfigPath; ValueData: {commonappdata}\AccessGrid; Flags: uninsdeletekey
-Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersionShort}; ValueType: expandsz; ValueName: UserConfigPath; ValueData: {userappdata}\AccessGrid\config; Flags: uninsdeletekey
-Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersionShort}; ValueType: expandsz; ValueName: VersionInformation; ValueData: {#VersionInformation}
+Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersion}; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
+Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersion}; ValueType: expandsz; ValueName: ConfigPath; ValueData: {commonappdata}\AccessGrid; Flags: uninsdeletekey
+Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersion}; ValueType: expandsz; ValueName: UserConfigPath; ValueData: {userappdata}\AccessGrid\config; Flags: uninsdeletekey
+Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersion}; ValueType: expandsz; ValueName: VersionInformation; ValueData: {#VersionInformation}
 Root: HKLM; Subkey: SYSTEM\CurrentControlSet\Control\Session Manager\Environment; ValueType: expandsz; ValueName: GLOBUS_LOCATION; ValueData: {commonappdata}\AccessGrid
 Root: HKLM; Subkey: SYSTEM\CurrentControlSet\Control\Session Manager\Environment; ValueType: expandsz; ValueName: GLOBUS_HOSTNAME
 Root: HKLM; Subkey: SOFTWARE\Globus; ValueType: expandsz; ValueName: GLOBUS_LOCATION; ValueData: {commonappdata}\AccessGrid; Flags: uninsdeletekey
@@ -168,7 +159,7 @@ Name: quicklaunchicon; Description: Create a &Quick Launch Icon; GroupDescriptio
 
 [Messages]
 DirExists=The directory:%n%n%1%n%nalready exists and appears to have an {#AppName} installation in it.%n%nIt is recommended that you uninstall any existing {#AppName} software before proceeding.  Do you wish to proceed anyway?
-WelcomeLabel2=This will install the {#AppName} {#AppVersionLong} on your computer.%n%nIt is strongly recommended that you uninstall any previous version of the {#AppName} before continuing.%n%nIt is also strongly recommended that you close all other applications you have running before continuing with this installation.%n%nThese steps will help prevent any conflicts during the installation process.
+WelcomeLabel2=This will install the {#AppName} {#AppVersion}-{#VersionInformation} on your computer.%n%nIt is strongly recommended that you uninstall any previous version of the {#AppName} before continuing.%n%nIt is also strongly recommended that you close all other applications you have running before continuing with this installation.%n%nThese steps will help prevent any conflicts during the installation process.
 
 [Run]
 Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\python.exe; WorkingDir: {app}\bin; Description: Setup what video devices will produce video streams; Flags: runminimized nowait shellexec; Parameters: SetupVideo.pyw
@@ -207,3 +198,6 @@ Filename: {commonappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configurat
 [InstallDelete]
 Name: {userappdata}\AccessGrid\certmgr.cfg; Type: files
 Name: {pf}\Access Grid Toolkit; Type: filesandordirs
+
+[_ISTool]
+OutputExeFilename=C:\software\AccessGrid\build\AGTk-2.2.exe
