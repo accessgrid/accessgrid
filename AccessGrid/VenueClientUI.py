@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.33 2004-04-23 15:16:25 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.34 2004-04-23 16:29:26 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.33 2004-04-23 15:16:25 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.34 2004-04-23 16:29:26 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3439,24 +3439,18 @@ class TextClientPanel(wxPanel):
         # Someone is writing a message
         else:
             # Set names bold
-            if IsOSX():  # Work around osx font bug.
-                self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
-            else:
-                f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
-                self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
+            f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
+            textAttr = wxTextAttr(wxBLACK)
+            textAttr.SetFont(f)
+            self.textOutput.SetDefaultStyle(textAttr)
             self.textOutput.AppendText(name)
-
+          
             # Set text normal
-            if IsOSX():  # Work around osx font bug.
-                self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
-            else:
-                f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxNORMAL)
-                self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
+            f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxNORMAL)
+            textAttr = wxTextAttr(wxBLACK)
+            textAttr.SetFont(f)
+            self.textOutput.SetDefaultStyle(textAttr)
             self.textOutput.AppendText(message+'\n')
-            if IsOSX():  # Work around osx font bug.
-                self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
-            else:
-                self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
 
         if IsWindows():
             # Scrolling is not correct on windows when I use
