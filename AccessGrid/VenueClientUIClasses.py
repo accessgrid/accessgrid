@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.68 2003-03-14 21:22:23 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.69 2003-03-14 21:41:29 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ from AccessGrid.VenueClient import VenueClient, EnterVenueException
 import threading
 from AccessGrid import Utilities
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
-import AccessGrid.ClientProfile
+from AccessGrid.ClientProfile import *
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Descriptions import ServiceDescription
 from AccessGrid.TextClientUI import TextClientUI, TextClientUIStandAlone
@@ -1226,11 +1226,7 @@ class SaveFileDialog(wxDialog):
         # sizes. Rescale to 0-100.
         #
 
-        if self.fileSize == 0:
-            value = 100
-        else:
-            value = int(100 * int(value) / self.fileSize)
-            
+        value = int(100 * int(value) / self.fileSize)
         self.progress.SetValue(value)
         if doneFlag:
             self.transferDone = 1
@@ -1584,13 +1580,14 @@ class ProfileDialog(wxDialog):
         self.__doLayout()
 
     def GetNewProfile(self):
-        self.profile.SetName(self.nameCtrl.GetValue())
-        self.profile.SetEmail(self.emailCtrl.GetValue())
-        self.profile.SetPhoneNumber(self.phoneNumberCtrl.GetValue())
-        self.profile.SetTechSupportInfo(self.supportCtrl.GetValue())
-        self.profile.SetLocation(self.locationCtrl.GetValue())
-        self.profile.SetHomeVenue(self.homeVenueCtrl.GetValue())
-        self.profile.SetProfileType(self.profileTypeBox.GetValue())
+        if(self.profile != None):
+            self.profile.SetName(self.nameCtrl.GetValue())
+            self.profile.SetEmail(self.emailCtrl.GetValue())
+            self.profile.SetPhoneNumber(self.phoneNumberCtrl.GetValue())
+            self.profile.SetTechSupportInfo(self.supportCtrl.GetValue())
+            self.profile.SetLocation(self.locationCtrl.GetValue())
+            self.profile.SetHomeVenue(self.homeVenueCtrl.GetValue())
+            self.profile.SetProfileType(self.profileTypeBox.GetValue())
         return self.profile
 
     def SetProfile(self, profile):
@@ -1695,8 +1692,15 @@ class TextValidator(wxPyValidator):
         tc = self.GetWindow()
         val = tc.GetValue()
         profile = win.GetNewProfile()
-                                 
-        if len(val) < 1 or profile.IsDefault() or profile.name == '<Insert Name Here>':
+
+        #for view
+        if profile == None:
+            if val ==  '<Insert Name Here>':
+                MessageDialog(NULL, "Please, fill in the name field")
+                return false
+
+        #for real profile dialog
+        elif len(val) < 1 or profile.IsDefault() or profile.name == '<Insert Name Here>':
             MessageDialog(NULL, "Please, fill in the name field")
             return false
         return true
