@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Node Manager
+Comment=Manage AG nodes
+TryExec=NodeManagement.py
+Exec=NodeManagement.py
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=false
+Type=Application
+Encoding=UTF-8
+Categories=X-Access-Grid-Configure

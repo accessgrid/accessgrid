@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Venue Manager
+Comment=Manage venue servers
+TryExec=VenueManagement.py
+Exec=VenueManagement.py
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=false
+Type=Application
+Encoding=UTF-8
+Categories=X-Access-Grid-Base

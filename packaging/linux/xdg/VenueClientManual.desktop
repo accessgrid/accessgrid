@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Venue Client Manual
+Comment=View Venue Client Manual
+URL=file:///usr/share/doc/AccessGrid/Documentation/VenueClientManual/VenueClientManual.htm
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=false
+Type=Link
+Encoding=UTF-8
+Categories=X-Access-Grid-Documentation

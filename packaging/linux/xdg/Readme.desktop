@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=View README
+Comment=Read the ReadMe
+URL=file:///usr/share/doc/AccessGrid/README
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=false
+Type=Link
+Encoding=UTF-8
+Categories=X-Access-Grid-Base

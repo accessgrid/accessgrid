@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Service Manager (Debug)
+Comment=Run the service manager software in debug mode
+TryExec=AGServiceManager.py
+Exec=AGServiceManager.py -d
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=1
+Type=Application
+Categories=X-Access-Grid-Services

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Node Service (Debug)
+Comment=Run the node service software in debug mode
+TryExec=AGNodeService.py
+Exec=AGNodeService.py -d
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=1
+Type=Application
+Categories=X-Access-Grid-Services

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Service Manager
+Comment=Run the service manager software
+TryExec=AGServiceManager.py
+Exec=AGServiceManager.py
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=false
+Type=Application
+Encoding=UTF-8
+Categories=X-Access-Grid-Services

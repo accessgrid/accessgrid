@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Developer Documentation
+Comment=epydoc-generated documentation for developers
+URL=file:///usr/share/doc/Developer/index.html
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=false
+Type=Link
+Encoding=UTF-8
+Categories=X-Access-Grid-Documentation

@@ -1,0 +1,42 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+  "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+
+<Menu>
+	<Name>Applications</Name>
+
+	<DefaultAppDirs/>
+	<DefaultDirectoryDirs/>
+
+	<Menu>
+		<Name>Access Grid</Name>
+		<Directory>AccessGrid-Base.directory</Directory>
+		<Include>
+			<Category>X-Access-Grid-Base</Category>
+		</Include>
+
+		<Menu>
+			<Name>Configure</Name>
+			<Directory>AccessGrid-Configure.directory</Directory>
+			<Include>
+				<Category>X-Access-Grid-Configure</Category>
+			</Include>
+		</Menu>
+		<Menu>
+			<Name>Documentation</Name>
+			<Directory>AccessGrid-Documentation.directory</Directory>
+			<Include>
+				<Category>X-Access-Grid-Documentation</Category>
+			</Include>
+		</Menu>
+		<Menu>
+			<Name>Services</Name>
+			<Directory>AccessGrid-Services.directory</Directory>
+			<Include>
+				<Category>X-Access-Grid-Services</Category>
+			</Include>
+		</Menu>
+
+	</Menu>
+
+</Menu>
+
