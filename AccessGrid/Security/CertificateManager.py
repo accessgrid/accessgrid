@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.30 2004-07-17 02:37:54 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.31 2004-07-20 20:08:45 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.30 2004-07-17 02:37:54 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.31 2004-07-20 20:08:45 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -44,6 +44,8 @@ import shutil
 import getpass
 import sys
 import time
+
+from stat import *
 
 from OpenSSL_AG import crypto
 
@@ -1036,6 +1038,32 @@ class CertificateManager(object):
 
         certPath = self.defaultIdentity.GetPath()
         keyPath = self.defaultIdentity.GetKeyPath()
+        
+        #
+        # Check permissions on cert and key file according to 
+        # globus requirements, and set them if possible
+        #
+        # - Certificate file
+        s = os.stat(certPath)
+        if s[0] & (S_IXUSR |
+                   S_IWGRP | S_IXGRP |
+                   S_IWOTH | S_IXOTH):
+            if s[ST_UID] == os.getuid():
+                log.info("Setting permissions on certificate %s to 644", certPath)
+                os.chmod(certPath,0644)
+            else:
+                raise Exception, "Invalid permissions on certificate %s (must be 644 or less)" % (certPath)
+
+        # - Key file
+        s = os.stat(keyPath)
+        if s[0] & (S_IXUSR |
+                   S_IRGRP | S_IWGRP | S_IXGRP |
+                   S_IROTH | S_IWOTH | S_IXOTH):
+            if s[ST_UID] == os.getuid():
+                log.info("Setting permissions on certificate %s to 600", keyPath)
+                os.chmod(keyPath,0600)
+            else:
+                raise Exception, "Invalid permissions on private key %s (must be 600 or less)" % (keyPath)
 
         self.globusConfig.SetUserCert(certPath, keyPath)
 
@@ -1437,6 +1465,7 @@ class CertificateManagerUserInterface:
 
             except Exception, e:
                 log.exception("Error Initializing environment.")
+                raise
                 break
                 
 
