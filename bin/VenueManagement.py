@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.143 2004-08-06 19:33:59 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.144 2004-08-11 20:47:02 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.143 2004-08-06 19:33:59 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.144 2004-08-11 20:47:02 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -1828,13 +1828,13 @@ class StaticAddressingPanel(wxPanel):
         self.panel = wxPanel(self, -1)
         self.videoTitleText = wxStaticText(self.panel, -1, "Video (h261)",
                                            size = wxSize(100,20))
-        if IsOSX:
+        if IsOSX():
             self.videoTitleText.SetFont(wxFont(12, wxNORMAL, wxNORMAL, wxBOLD))
         else:
             self.videoTitleText.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         self.audioTitleText = wxStaticText(self.panel, -1, "Audio (16kHz)",
                                            size = wxSize(100,20))
-        if IsOSX:
+        if IsOSX():
             self.audioTitleText.SetFont(wxFont(12, wxNORMAL, wxNORMAL, wxBOLD))
         else:
             self.audioTitleText.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
