@@ -119,7 +119,8 @@ class TestCert:
         digest = "md5"
         c.sign(self.key, digest)
 
-    def WriteTrusted(self, dir):
+
+    def WriteTrustedCert(self, dir):
         """
         Write this cert as trusted cert in the given dir.
         """
@@ -127,11 +128,19 @@ class TestCert:
         base = self.cert.get_subject().get_hash()
 
         certPath = os.path.join(dir, "%s.0" % (base))
-        spPath = os.path.join(dir, "%s.signing_policy" %(base))
 
         fh = open(certPath, "w")
         fh.write(crypto.dump_certificate(crypto.FILETYPE_PEM, self.cert))
         fh.close()
+
+    def WriteSigningPolicy(self, dir):
+        """
+        Write a signing policy for this cert in dir.
+        """
+
+        base = self.cert.get_subject().get_hash()
+
+        spPath = os.path.join(dir, "%s.signing_policy" %(base))
 
         fh = open(spPath, "w")
         fh.write(ConstructSigningPolicy(self.cert))
@@ -248,7 +257,9 @@ class ProxyTestCase(unittest.TestCase):
         caCert = CreateCA(start, end, self.caName)
         userCert = CreateUser(start, end, caCert, self.userCertName)
 
-        caCert.WriteTrusted(self.certDir)
+        caCert.WriteTrustedCert(self.certDir)
+        caCert.WriteSigningPolicy(self.certDir)
+        
         certPath, keyPath = userCert.Write(self.userDir, "usercert", passphrase)
 
         print "certPath: ", certPath
@@ -272,7 +283,9 @@ class ProxyTestCase(unittest.TestCase):
         caCert = CreateCA(start, end, self.caName)
         userCert = CreateUser(start, end, caCert, self.userCertName)
 
-        caCert.WriteTrusted(self.certDir)
+        caCert.WriteTrustedCert(self.certDir)
+        caCert.WriteSigningPolicy(self.certDir)
+
         certPath, keyPath = userCert.Write(self.userDir, "usercert", passphrase)
 
         print "certPath: ", certPath
@@ -285,6 +298,53 @@ class ProxyTestCase(unittest.TestCase):
                           ProxyGen.CreateGlobusProxy,
                           badpassphrase, certPath, keyPath, self.certDir, outFile, 512, 12)
 
+    def test_03_MissingCA(self):
+
+        now = time.time()
+        start = now - 86400
+        end = now + 86400
+
+        passphrase = "abcd"
+        
+        caCert = CreateCA(start, end, self.caName)
+        userCert = CreateUser(start, end, caCert, self.userCertName)
+
+        certPath, keyPath = userCert.Write(self.userDir, "usercert", passphrase)
+
+        print "certPath: ", certPath
+        print "keyPath: ", keyPath
+        print "caDir: ", self.certDir
+
+        outFile = os.path.join(self.userDir, "proxy.pem")
+
+        self.assertRaises(ProxyGen.GridProxyInitError,
+                          ProxyGen.CreateGlobusProxy,
+                          passphrase, certPath, keyPath, self.certDir, outFile, 512, 12)
+
+    def test_04_MissingSigningPolicy(self):
+
+        now = time.time()
+        start = now - 86400
+        end = now + 86400
+
+        passphrase = "abcd"
+        
+        caCert = CreateCA(start, end, self.caName)
+        userCert = CreateUser(start, end, caCert, self.userCertName)
+
+        caCert.WriteTrustedCert(self.certDir)
+        
+        certPath, keyPath = userCert.Write(self.userDir, "usercert", passphrase)
+
+        print "certPath: ", certPath
+        print "keyPath: ", keyPath
+        print "caDir: ", self.certDir
+
+        outFile = os.path.join(self.userDir, "proxy.pem")
+
+        self.assertRaises(ProxyGen.GridProxyInitError,
+                          ProxyGen.CreateGlobusProxy,
+                          passphrase, certPath, keyPath, self.certDir, outFile, 512, 12)
 
 def basic_test():
     x = CreateCA(int(time.time() - 86400),
