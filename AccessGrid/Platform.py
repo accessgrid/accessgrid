@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.41 2003-08-22 16:10:55 eolson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.42 2003-08-22 19:17:17 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -154,6 +154,16 @@ def GetUserConfigDir():
 
     return configDir
 
+def GetUserAppPath():
+    """
+    """
+    
+    ucd = GetUserConfigDir()
+
+    appPath = os.path.join(ucd, "SharedApplications")
+
+    return appPath
+    
 def GetConfigFilePath( configFile ):
     """
     Locate given file in configuration directories:  
