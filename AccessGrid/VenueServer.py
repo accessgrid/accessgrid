@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.50 2003-03-24 21:47:50 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.51 2003-03-25 15:33:52 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -145,6 +145,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
         self.eventService = EventService((self.hostname, int(self.eventPort)))
         self.eventService.start()
+
         self.textService = TextService((self.hostname, int(self.textPort)))
         self.textService.start()
 
@@ -166,10 +167,11 @@ class VenueServer(ServiceBase.ServiceBase):
         #
         log.debug("CFG: Default Venue: %s", self.defaultVenue)
         
-        if len(self.defaultVenue) != 0 and \
-               self.defaultVenue in self.venues.keys():
-            self.SetDefaultVenue(self.MakeVenueURI(self.defaultVenue))
+        if len(self.defaultVenue) != 0 and self.defaultVenue in self.venues.keys():
+            log.debug("Setting default venue")
+            self.SetDefaultVenue(self.MakeVenueURL(self.defaultVenue))
         else:
+            log.debug("Creating default venue")
             self.AddVenue(self.defaultVenueName, self.defaultVenueDescription)
 
         # The houseKeeper is a task that is doing garbage collection and
@@ -190,7 +192,8 @@ class VenueServer(ServiceBase.ServiceBase):
                 name = cp.get(sec, 'name')
                 description = cp.get(sec, 'description')
                 dsp = cp.get(sec, 'dataStorePath')
-#                if dsp == 'None':
+                if dsp == 'None':
+                    dsp = self.dataStorageLocation
                 administrators = string.split(cp.get(sec, 'administrators'),
                                               ':')
                 v = Venue(self, name, description, administrators, dsp)
@@ -207,7 +210,7 @@ class VenueServer(ServiceBase.ServiceBase):
                     if len(c) != 0:
                         name = cp.get(c, 'name')
                         desc = cp.get(c, 'description')
-                        uri = self.MakeVenueURI(self.IdFromURL(cp.get(c,
+                        uri = self.MakeVenueURL(self.IdFromURL(cp.get(c,
                                                                       'uri')))
                         cd = ConnectionDescription(name, desc, uri)
                         cl.append(cd)
@@ -225,7 +228,7 @@ class VenueServer(ServiceBase.ServiceBase):
                         l = MulticastNetworkLocation(addr, int(port), int(ttl))
                         c = Capability(string.split(capability, ' '))
                         
-                        uri = self.MakeVenueURI(self.IdFromURL(cp.get(s,
+                        uri = self.MakeVenueURL(self.IdFromURL(cp.get(s,
                                                                       'uri')))
                         sd = StreamDescription(name, desc, l, c)
                         #v.AddStream(sd)
@@ -234,35 +237,6 @@ class VenueServer(ServiceBase.ServiceBase):
                     if len(d) != 0:
                         print "Data: %s" % d
                     
-#     def LoadPersistentVenues(self, filename):
-#         """
-#         This method just encapsulates persistent venue loading.
-#         """
-#         try:
-#             # Open the persistent store
-#             store = shelve.open(filename)
-
-#             # Load Venues
-#             for venuePath in store.keys():
-#                 log.info("Loading Venue: %s", venuePath)
-
-#                 # Rebuild the venue
-#                 self.venues[venuePath] = store[venuePath]
-
-#                 log.info("VS.LoadPV %s", self.venues[venuePath].uri)
-#                 # Somehow we have to register this venue as a new service
-#                 # on the server.  This gets tricky, since we're not assuming
-#                 # the VenueServer knows about the SOAP server.
-#                 if(self.hostingEnvironment != None):
-#                     venueService = self.hostingEnvironment.CreateServiceObject(venuePath)
-#                     self.venues[venuePath]._bind_to_service(venueService)
-                    
-#             # When we're done close the persistent store
-#             store.close()
-#         except:
-#             log.exception("Failed to load persistent venues")
-#             raise VenueServerException("Failed to load persistent venues.")
-
     def _authorize(self):
         """
         """
@@ -294,7 +268,7 @@ class VenueServer(ServiceBase.ServiceBase):
         path = self.PathFromURL(URL)
         return path.split('/')[-1]
     
-    def MakeVenueURI(self, uniqueId):
+    def MakeVenueURL(self, uniqueId):
         """
         Helper method to make a venue URI from a uniqueId.
         """
@@ -340,19 +314,20 @@ class VenueServer(ServiceBase.ServiceBase):
 
     AddVenue.soap_export_as = "AddVenue"
 
-#     def ModifyVenue(self, URL, venueDescription):
-#         """
-#         ModifyVenue updates a Venue Description.
-#         """
-#         if not self._authorize():
-#             raise VenueServerException("You are not authorized to perform this action.")
+    def ModifyVenue(self, URL, venueDescription):
+        """
+        ModifyVenue updates a Venue Description.
+        """
+        if not self._authorize():
+            raise VenueServerException("You are not authorized to perform this action.")
+        id = self.IdFromURL(URL)
+      
+        if(venueDescription['uri'] == URL):
+            self.venues[id].name = venueDescription['name']
+            self.venues[id].description = venueDescription['description']
+            self.venues[id].uri = venueDescription['uri']
 
-#         path = self.PathFromURL(URL)
-        
-#         if(venueDescription.uri == URL):
-#             self.venues[path].description = venueDescription
-
-#     ModifyVenue.soap_export_as = "ModifyVenue"
+    ModifyVenue.soap_export_as = "ModifyVenue"
 
     def RemoveVenue(self, URL):
         """
@@ -411,44 +386,6 @@ class VenueServer(ServiceBase.ServiceBase):
 
     GetAdministrators.soap_export_as = "GetAdministrators"
 
-    def AddService(self, serviceDescription):
-        """
-        AddService adds a service description to the list of service
-        descriptions that are available to the Virtual Venues hosted by
-        this VenueServer.
-        """
-        if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
-
-        self.services[serviceDescription.uri] = serviceDescription
-
-    AddService.soap_export_as = "AddService"
-
-    def RemoveService(self, URL, serviceDescription):
-        """
-        RemoveService removes a service description from the list of
-        service descriptions that this VenueServer knows about.
-        """
-        if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
-
-        self.services.remove(serviceDescription)
-
-    RemoveService.soap_export_as = "RemoveService"
-
-    def ModifyService(self, URL, serviceDescription):
-        """
-        ModifyService updates a service description that is in the
-        list of services for this VenueServer.
-        """
-        if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
-
-        if URL == serviceDescription.uri:
-            self.services[URL] = serviceDescription
-
-    ModifyService.soap_export_as = "ModifyService"
-
     def RegisterServer(self, URL):
         """
         This method should register the server with the venues
@@ -491,7 +428,7 @@ class VenueServer(ServiceBase.ServiceBase):
         GetDefaultVenue returns the URL to the default Venue on the
         VenueServer.
         """
-        return self.MakeVenueURI(self.defaultVenue)
+        return self.MakeVenueURL(self.defaultVenue)
 
     GetDefaultVenue.soap_export_as = "GetDefaultVenue"
 
