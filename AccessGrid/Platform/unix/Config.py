@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.50 2004-08-17 16:36:44 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.51 2004-09-07 18:55:51 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.50 2004-08-17 16:36:44 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.51 2004-09-07 18:55:51 turam Exp $"
 
 import os
 import mimetypes
@@ -580,7 +580,7 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
             try:
                 self.hostname = socket.getfqdn()
             except Exception, e:
-                self.hostname == None
+                self.hostname = None
                 raise
         
         return self.hostname
@@ -769,7 +769,7 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
             try:
                 ru = resource.getrusage(resource.RUSAGE_SELF)
                 perfData["Stats"] = "Self"
-            except error, e:
+            except resource.error, e:
                 log.exception("Error getting performance data")
                 ru = None
 
