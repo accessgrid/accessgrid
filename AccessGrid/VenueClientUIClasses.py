@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.60 2003-03-13 16:06:52 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.61 2003-03-13 23:40:20 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -68,6 +68,7 @@ class VenueClientFrame(wxFrame):
     ID_NODE_LEAD = NewId()
     ID_NODE_MANAGE = NewId()
     ID_ME_PROFILE = NewId()
+    ID_ME_DATA = NewId()
 
     textClient = None
     textClientStandAlone = None
@@ -176,6 +177,8 @@ class VenueClientFrame(wxFrame):
         self.meMenu = wxMenu()
         self.meMenu.Append(self.ID_ME_PROFILE,"View Profile...",\
                                            "View participant's profile information")
+        self.meMenu.Append(self.ID_ME_DATA,"Add personal data...",\
+                                           "Add data you can bring to other venues")
 
         self.participantMenu = wxMenu()
 	self.participantMenu.Append(self.ID_PARTICIPANT_PROFILE,"View Profile...",\
@@ -239,6 +242,7 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_MYVENUE_ADD, self.AddToMyVenues)
         EVT_MENU(self, self.ID_MYVENUE_EDIT, self.EditMyVenues)
         EVT_MENU(self, self.ID_ME_PROFILE, self.OpenParticipantProfile)
+        EVT_MENU(self, self.ID_ME_DATA, self.OpenAddPersonalDataDialog)
         EVT_MENU(self, self.ID_PARTICIPANT_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_NODE_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
@@ -337,6 +341,17 @@ class VenueClientFrame(wxFrame):
 
         except:
             pass
+
+    def OpenAddPersonalDataDialog(self, event):
+        dlg = wxFileDialog(self, "Choose a file:", style = wxOPEN | wxMULTIPLE)
+
+        if dlg.ShowModal() == wxID_OK:
+            files = dlg.GetPaths()
+
+        print '----------------add personal files'
+        #self.app.uploadPersonalFiles(files)
+
+        dlg.Destroy()
                     
     def OpenParticipantProfile(self, event):
         id = self.contentListPanel.tree.GetSelection()
@@ -452,7 +467,7 @@ class VenueClientFrame(wxFrame):
         # then there isn't a data upload service available.
         #
 
-        print "Tyring to upload to '%s'" % (self.app.upload_url)
+        print "Trying to upload to '%s'" % (self.app.upload_url)
         if self.app.upload_url is None or self.app.upload_url == "":
         
             MessageDialog(self,
@@ -499,35 +514,29 @@ class VenueClientFrame(wxFrame):
         connectToVenueDialog.Destroy()
 
     def OpenNodeMgmtApp(self, event):
-        wxBeginBusyCursor()
         frame = NodeManagementClientFrame(self, -1, "Access Grid Node Management")
         frame.AttachToNode( self.app.nodeServiceUri )
         if frame.Connected(): # Right node service uri
             frame.Update()
-            wxEndBusyCursor()
             frame.Show(true)
 
         else: # Not right node service uri
-            wxEndBusyCursor()
             setNodeUrlDialog = UrlDialog(self, -1, "Set node service URL", \
                                          self.app.nodeServiceUri, "Please, specify node service URL")
             
             if setNodeUrlDialog.ShowModal() == wxID_OK:
-                wxBeginBusyCursor()
                 self.app.SetNodeUrl(setNodeUrlDialog.address.GetValue())
                 frame.AttachToNode( self.app.nodeServiceUri )
                 
                 if frame.Connected(): # try again
                     frame.Update()
-                    wxEndBusyCursor()
                     frame.Show(true)
 
                 else: # wrong url
-                    wxEndBusyCursor()
                     MessageDialog(self, \
                                   'Can not open node service management\nbased on the URL you specified', \
                                   'Node Management Error')
-                                   
+                
             setNodeUrlDialog.Destroy()
                  
                           
@@ -859,7 +868,13 @@ class ContentListPanel(wxPanel):
     in the venue, it also shows what data and services are available in the venue, as well as 
     nodes connected to the venue.  It represents a room, with its contents visible for the user.
     
-    '''   
+    '''
+    participantDict = {}
+    dataDict = {}
+    serviceDict = {}
+    nodeDict = {}
+    personalDataDict = {}
+    
     def __init__(self, parent, app):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D)
@@ -872,21 +887,14 @@ class ContentListPanel(wxPanel):
 			       | wxTR_NO_LINES  \
                               # | wxTR_TWIST_BUTTONS \
 			       | wxTR_HIDE_ROOT)
-	
-        self.participantDict = {}
-        self.dataDict = {}
-        self.serviceDict = {}
-        self.nodeDict = {}
-	self.__setImageList()
+        self.__setImageList()
 	self.__setTree()
 	self.__setProperties()
-        
-        	
-	EVT_SIZE(self, self.OnSize)
+
+        EVT_SIZE(self, self.OnSize)
         EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
         EVT_TREE_KEY_DOWN(self.tree, id, self.OnKeyDown) 
 	EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
-
 	
     def __setImageList(self):
 	imageList = wxImageList(32,19)
@@ -899,11 +907,14 @@ class ContentListPanel(wxPanel):
     def AddParticipant(self, profile):
         participant = self.tree.AppendItem(self.participants, profile.name, \
                                            self.defaultPersonId, self.defaultPersonId)
-        #self.test = self.tree.AppendItem(participants, "data") # , image)
         self.tree.SetItemData(participant, wxTreeItemData(profile)) 
         self.participantDict[profile.publicId] = participant
         self.tree.Expand(self.participants)
-           
+
+    def RemoveParticipantData(self, dataTreeId):
+        del self.personalDataDict[id]
+        self.tree.Delete(id)
+                          
     def RemoveParticipant(self, description):
         if description!=None :
             id = self.participantDict[description.publicId]
@@ -946,23 +957,53 @@ class ContentListPanel(wxPanel):
                 self.AddParticipant(description)
         
     def AddData(self, profile):
-        data = self.tree.AppendItem(self.data, profile.name, \
-                             self.importantPaperId, self.importantPaperId)
-        self.tree.SetItemData(data, wxTreeItemData(profile)) 
-        self.dataDict[profile.name] = data
-        self.tree.Expand(self.data)
+        # ----------------- CHANGE HERE
+        #storageLocation = profile.dataLocation
+        storageLocation = 'venue'
+        # ----------------- 
+        
+        #if venue data
+        if(storageLocation == 'venue'):
+            dataId = self.tree.AppendItem(self.data, profile.name, \
+                                        self.importantPaperId, self.importantPaperId)
+            self.tree.SetItemData(dataId, wxTreeItemData(profile)) 
+            self.dataDict[profile.name] = dataId
+            self.tree.Expand(self.data)
+
+        #if personal data
+        else: 
+            id = storageLocation
+            if(self.participantDict.has_key(id)):
+                participantId = self.participantDict[id]
+                dataId = self.tree.AppendItem(participantId, profile.name, \
+                                     self.importantPaperId, self.importantPaperId)
+                self.tree.SetItemData(dataId, wxTreeItemData(profile))
+                self.personalDataDict[profile.name] = dataId
        
     def UpdateData(self, profile):
-        id = self.dataDict[profile.name]
-        
+        #if venue data
+        if(self.dataDict.has_key(profile.name)):
+            id = self.dataDict[profile.name]
+            
+        #if personal data
+        elif (self.personalDataDict.has_key(profile.name)):
+            id = self.personalDataDict[profile.name]
+            
         if(id != None):
             self.tree.SetItemData(id, wxTreeItemData(profile))
                           
     def RemoveData(self, profile):
-        id = self.dataDict[profile.name]
+        #if venue data
+        if(self.dataDict.has_key(profile.name)):
+            id = self.dataDict[profile.name]
+            del self.dataDict[profile.name]
+            
+        #if personal data
+        elif (self.personalDataDict.has_key(profile.name)):
+            id = self.personalDataDict[profile.name]
+            del self.personalDataDict[profile.name]
         
         if(id != None):
-            del self.dataDict[profile.name]
             self.tree.Delete(id)
                           
     def AddService(self, profile):
@@ -1064,6 +1105,9 @@ class ContentListPanel(wxPanel):
         elif text == 'Participants' or text == 'Nodes' or item == None:
             pass
 
+        elif self.personalDataDict.has_key(item.name):
+            self.PopupMenu(self.parent.dataMenu, wxPoint(self.x, self.y))
+            
         elif self.participantDict.has_key(item.publicId) or \
                  self.nodeDict.has_key(item.publicId):
 
@@ -1505,7 +1549,7 @@ class ProfileDialog(wxDialog):
         wxDialog.__init__(self, parent, id, title)
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
-        self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,20), validator = TextValidator())
+        self.nameCtrl = wxTextCtrl(self, -1, "", size = (400,20), validator = TextValidator())
         self.emailText = wxStaticText(self, -1, "Email:", style=wxALIGN_LEFT)
         self.emailCtrl = wxTextCtrl(self, -1, "")
         self.phoneNumberText = wxStaticText(self, -1, "Phone Number:", style=wxALIGN_LEFT)
