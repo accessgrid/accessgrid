@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.63 2004-03-23 23:46:08 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.64 2004-04-19 21:26:12 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.63 2004-03-23 23:46:08 eolson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.64 2004-04-19 21:26:12 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1478,7 +1478,7 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
 class GSIHTTPTransferServer(io.GSITCPSocketServer, TransferServer):
     """
     A GSIHTTPTransferServer is a Globus-enabled HTTP-based implementation of a TransferServer.
-n
+    
     Note that most of the work is done in HTTPTransferHandler.
 
     This implementation uses a pool of worker threads to handle the requests.

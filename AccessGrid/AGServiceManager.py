@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.50 2004-04-12 22:41:15 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.51 2004-04-19 21:26:12 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.50 2004-04-12 22:41:15 eolson Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.51 2004-04-19 21:26:12 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -415,6 +415,7 @@ class AGServiceManagerI(SOAPInterface):
 
         **Arguments:**
         **Raises:**
+        
         **Returns:**
             a list of the AGResources on the machine
         """
@@ -438,6 +439,7 @@ class AGServiceManagerI(SOAPInterface):
             *serviceDescription* description of the service to add
             *resourceToAssign* resource to assign to service
             *serviceConfig* configuration to apply to service after it's been added
+            
         **Raises:**
         **Returns:**
         """
@@ -463,6 +465,7 @@ class AGServiceManagerI(SOAPInterface):
 
         **Arguments:**
             *serviceToRemove* A description of the service to remove
+            
         **Raises:**
         **Returns:**
         """
@@ -486,6 +489,7 @@ class AGServiceManagerI(SOAPInterface):
 
         **Arguments:**
         **Raises:**
+        
         **Returns:**
             a list of AGServiceDescriptions
         """
@@ -507,6 +511,7 @@ class AGServiceManagerI(SOAPInterface):
 
         **Arguments:**
         **Raises:**
+        
         **Returns:**
             string representing the install dir of the AG software
         """

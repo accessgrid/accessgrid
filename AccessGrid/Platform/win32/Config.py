@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.30 2004-04-13 20:41:46 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.31 2004-04-19 21:27:44 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.30 2004-04-13 20:41:46 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.31 2004-04-19 21:27:44 lefvert Exp $"
 
 import os
 import sys
@@ -302,12 +302,9 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
     HKCU\Software\Globus
     HKCU\Software\Globus\GSI
     HKCU\Software\Globus\GSI\x509_user_proxy = {%TEMP%|{win}\temp}\proxy
-    HKCU\Software\Globus\GSI\x509_user_key =
-                                        {userappdata}\globus\userkey.pem
-    HKCU\Software\Globus\GSI\x509_user_cert =
-                                       {userappdata}\globus\usercert.pem
-    HKCU\Software\Globus\GSI\x509_cert_dir =
-                                 {app}\config\certificates
+    HKCU\Software\Globus\GSI\x509_user_key={userappdata}\globus\userkey.pem
+    HKCU\Software\Globus\GSI\x509_user_cert={userappdata}\globus\usercert.pem
+    HKCU\Software\Globus\GSI\x509_cert_dir={app}\config\certificates
     HKCU\Environment\GLOBUS_LOCATION = {app}
 
     @ivar location: the location of the globus installation
@@ -736,7 +733,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
     A user config object encapsulates all of the configuration data for
     a running instance of the Access Grid Toolkit software.
 
-    @ivar profile: the user profile
+    @ivar profileFilename: the user profile
     @ivar tempDir: a temporary directory for files for this user
     @ivar appDir: The directory for system installed shared applications
     @ivar nodeServicesDir: the directory for system installed node services
@@ -745,7 +742,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
     service packages for all users of this installation.
     @ivar configDir: The directory for installation configuration.
 
-    @type profileFile: the filename of the client profile
+    @type profileFilename: the filename of the client profile
     @type tempDir: string
     @type appDir: string
     @type nodeServicesDir: string
@@ -996,7 +993,7 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
     configuration data, it should be extended to retrieve and store
     additional information as necessary.
 
-    @var tempDir: the system temp directory.
+    @ivar tempDir: the system temp directory.
     @type tempDir: string
     """
     theSystemConfigInstance = None
@@ -1045,7 +1042,7 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         
         IE defines a proxy at:
         
-HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings
+        HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings
         
         The key ProxyServer has the name of the proxy, and ProxyEnable
         is nonzero if it is enabled for use.
@@ -1414,7 +1411,7 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
             log.debug("Couldn't open registry for mime registration!")
 
     def GetMimeCommands(self, mimeType = None, ext = None):
-        """
+        '''
         This gets the mime commands from one of the three types of
         specifiers windows knows about. Depending on which is passed
         in the following trail of information is retrieved:
@@ -1441,7 +1438,7 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
                 containing the commands to open/print the file (the
                 positional parameters are introduced by %1, %2, ... in
                 these strings, we change them to %s ourselves)
-        """
+        '''
         cdict = dict()
         filetype = None
         extension = ext

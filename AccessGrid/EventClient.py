@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.40 2004-04-09 18:33:57 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.41 2004-04-19 21:26:12 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.40 2004-04-09 18:33:57 judson Exp $"
+__revision__ = "$Id: EventClient.py,v 1.41 2004-04-19 21:26:12 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
@@ -122,9 +122,9 @@ class EventClient:
 
         Commands we process are
 
-            quit:  Terminate the event processing thread.
-            call:  Invoke a callback. The callback is tuple[1], the event to
-                   pass to it is tuple[2].
+        quit:  Terminate the event processing thread.
+        call:  Invoke a callback. The callback is tuple[1], the event to
+        pass to it is tuple[2].
 
         """
 

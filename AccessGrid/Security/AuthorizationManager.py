@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.17 2004-04-07 18:02:45 eolson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.18 2004-04-19 21:28:05 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.17 2004-04-07 18:02:45 eolson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.18 2004-04-19 21:28:05 lefvert Exp $"
 
 # External Imports
 import os
@@ -553,8 +553,8 @@ class AuthorizationManagerI(SOAPInterface):
         """
         Add a role to the authorization manager.
 
-        @param name: the name of the role to add.
-        @type name: string
+        @param role: the role to add.
+        @type role: AccessGrid.Security.Role object
         """
         #role = Role(name)
         r = Reconstitute(role)
@@ -616,8 +616,8 @@ class AuthorizationManagerI(SOAPInterface):
         """
         Add an action to the authorization manager.
 
-        @param name: the name of the action to add
-        @type name: string
+        @param action: the action to add
+        @type action: AccessGrid.Security.Action object
         """
         a = Reconstitute(action)
         action = self.impl.AddAction(a)
@@ -691,9 +691,9 @@ class AuthorizationManagerI(SOAPInterface):
         
         WARNING: this has to marshall data.
 
-        @param subj: the subject to add
+        @param subjectList: the subject list to add
         @param role: the role to add the subject to
-        @type subj: AccessGrid.Security.Subject object
+        @type subjectList: list of AccessGrid.Security.Subject objects
         @type role: AccessGrid.Security.Role object
         """
         r = Reconstitute(role)
@@ -756,9 +756,9 @@ class AuthorizationManagerI(SOAPInterface):
         
         WARNING: this has to marshall data.
 
-        @param subjList: the list of subjects to remove
+        @param subjectList: the list of subjects to remove
         @param role: the role to remove the subject from
-        @type subjList: a list of AccessGrid.Security.Subject objects
+        @type subjectList: a list of AccessGrid.Security.Subject objects
         @type role: AccessGrid.Security.Role object
         """
         rn = Reconstitute(role)

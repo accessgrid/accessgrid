@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.56 2004-04-05 18:46:09 judson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.57 2004-04-19 21:26:12 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.56 2004-04-05 18:46:09 judson Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.57 2004-04-19 21:26:12 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -161,11 +161,12 @@ class MultiTextFieldDialog(wxDialog):
 class StoreConfigDialog(wxDialog):
     """
     StoreConfigDialog displays the following:
-    - a list of configurations
-    - a text field (which is filled from selections in the
-      list and can be edited)
-    - a default checkbox, to specify that the saved config
-      should be the default for the node
+        - a list of configurations
+        - a text field (which is filled from selections in the
+          list and can be edited)
+        - a default checkbox, to specify that the saved config
+          should be the default for the node
+      
     """
     def __init__(self, parent, id, title, choices ):
 

@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.55 2004-04-14 19:04:58 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.56 2004-04-19 21:26:12 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.55 2004-04-14 19:04:58 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.56 2004-04-19 21:26:12 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -709,6 +709,7 @@ class AGNodeServiceI(SOAPInterface):
 
         **Arguments:**
             *serviceManager* A description of the service manager
+            
         **Raises:**
         **Returns:**
         """
@@ -723,6 +724,7 @@ class AGNodeServiceI(SOAPInterface):
 
         **Arguments:**
             *serviceManagerToRemove* A description of the service manager to remove
+            
         **Raises:**
         **Returns:**
         """
@@ -736,6 +738,7 @@ class AGNodeServiceI(SOAPInterface):
 
         **Arguments:**
         **Raises:**
+
         **Returns:**
             a list of AGServiceManagerDescriptions
         """
@@ -752,6 +755,7 @@ class AGNodeServiceI(SOAPInterface):
             *serviceManagerUri* The URI of the service manager to which the service should be added
             *resourceToAssign* The resource to assign to the service
             *serviceConfig* The service configuration to apply after adding the service
+            
         **Raises:**
         **Returns:**
         """
@@ -779,6 +783,7 @@ class AGNodeServiceI(SOAPInterface):
 
         **Arguments:**
         **Raises:**
+
         **Returns:**
             a list of AGServiceDescriptions
         """
@@ -791,6 +796,7 @@ class AGNodeServiceI(SOAPInterface):
 
         **Arguments:**
         **Raises:**
+
         **Returns:**
             a list of AGServiceDescriptions
         """
@@ -804,6 +810,7 @@ class AGNodeServiceI(SOAPInterface):
         **Arguments:**
             *serviceUri* The URI of the service to enable/disable
             *enabled* Flag whether to enable/disable
+            
         **Raises:**
         **Returns:**
         """
@@ -817,6 +824,7 @@ class AGNodeServiceI(SOAPInterface):
         **Arguments:**
             *mediaType* Media type of services to enable/disable
             *enableFlag* Flag whether to enable/disable
+            
         **Raises:**
         **Returns:**
         """
@@ -840,6 +848,7 @@ class AGNodeServiceI(SOAPInterface):
 
         **Arguments:**
             *streamDescriptionList* List of StreamDescriptions
+            
         **Raises:**
         **Returns:**
         """
@@ -855,6 +864,7 @@ class AGNodeServiceI(SOAPInterface):
 
         **Arguments:**
             *streamDescription* The StreamDescription to add
+
         **Raises:**
         **Returns:**
         """
@@ -868,6 +878,7 @@ class AGNodeServiceI(SOAPInterface):
 
         **Arguments:**
             *streamDescription* The StreamDescription to remove
+            
         **Raises:**
         **Returns:**
         """
@@ -882,6 +893,7 @@ class AGNodeServiceI(SOAPInterface):
 
         **Arguments:**
             *configName* Name under which to store the current configuration
+            
         **Raises:**
         **Returns:**
         """
@@ -894,6 +906,7 @@ class AGNodeServiceI(SOAPInterface):
 
         **Arguments:**
             *configName* Name of config file to load
+            
         **Raises:**
         **Returns:**
         """
@@ -906,6 +919,7 @@ class AGNodeServiceI(SOAPInterface):
 
         **Arguments:**
             *configName* Name of config file to use as default for the node
+            
         **Raises:**
         **Returns:**
         """
@@ -918,8 +932,9 @@ class AGNodeServiceI(SOAPInterface):
 
         **Arguments:**
         **Raises:**
+
         **Returns:**
-        Interface to get list of service 
+            Interface to get list of service 
             a list of node configuration names
         """
 
@@ -932,6 +947,7 @@ class AGNodeServiceI(SOAPInterface):
 
         **Arguments:**
         **Raises:**
+
         **Returns:**
             a list of the capabilities of the node
                (or, its services)
@@ -945,6 +961,7 @@ class AGNodeServiceI(SOAPInterface):
 
         **Arguments:**
             *profile* ClientProfile of the person commanding the node
+            
         **Raises:**
         **Returns:**
         """
