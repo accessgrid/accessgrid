@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.73 2003-03-21 15:46:20 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.74 2003-03-21 16:09:19 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -308,8 +308,8 @@ class VenueClientUI(wxApp, VenueClient):
         # Data storage location
         self.upload_url = self.client.GetUploadDescriptor()
         wxCallAfter(wxLogDebug, "Get upload url %s" %self.upload_url)
-
         
+    EnterVenue.soap_export_as = "EnterVenue"
 
     def ExitVenue(self):
         """
