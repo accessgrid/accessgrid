@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.36 2003-09-16 14:53:21 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.37 2003-09-16 16:58:05 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,8 +19,8 @@ Setup script for the Access Grid Toolkit. The module is described
 by the set up below.
 """
 
-win32_scripts = glob.glob('bin/*.py') + glob.glob('dist/bin/*.exe'),
-win32_data = []
+win32_scripts = glob.glob('bin/*.py') + glob.glob('dist/bin/*.exe')
+win32_data = list()
 
 linux_scripts = [r"bin/VenueServer.py", 
                   r"bin/VenueClient.py", 
