@@ -1,4 +1,4 @@
-import Client
+from AccessGrid.hosting.pyGlobus import Client
 import os
 
 def cb(server, g_handle, remote_user, context):

@@ -1,6 +1,6 @@
 import time
 import os
-from AccessGrid.hosting import access_control
+from AccessGrid.hosting import AccessControl
 from AccessGrid.hosting.pyGlobus import Server, ServiceBase
 
 class C(ServiceBase.ServiceBase):
@@ -8,13 +8,13 @@ class C(ServiceBase.ServiceBase):
 
         print "Got meth: ", x
 
-        sm = access_control.GetSecurityManager()
+        sm = AccessControl.GetSecurityManager()
 
         print "Executing as subject name: ", sm.GetSubject()
 
-        ident = "/O=Grid/OU=Access Grid/OU=mcs.anl.gov/CN=Bob Olson"
-        if not sm.ValidateUser(ident):
-            raise Exception("Invalid user!")
+#        ident = "/O=Grid/OU=Access Grid/OU=mcs.anl.gov/CN=Bob Olson"
+#        if not sm.ValidateUser(ident):
+#            raise Exception("Invalid user!")
         
         return ('you sent', x)
     
