@@ -6,7 +6,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.35 2003-08-22 17:38:03 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.36 2003-08-22 17:45:09 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -478,6 +478,8 @@ class DataStore(ServiceBase):
             except EventClientWriteDataException:
                 self.Shutdown()
                 break
+            except:
+                log.exception("Unable to send datastore heartbeat")
                 
             time.sleep(10)
         self.log.debug("DataStore Heartbeat thread exiting")
