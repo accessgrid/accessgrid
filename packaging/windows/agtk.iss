@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.21 2003-09-15 20:16:21 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.22 2003-09-16 08:04:21 judson Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
@@ -142,7 +142,6 @@ Name: {group}\Venue Server\Manage Venue Servers; IconFilename: {app}\install\agi
 Name: {group}\Documentation\Venue Client Manual; Filename: {app}\doc\VenueClient\VenueClientManualHTML.htm; Comment: Read the Venue Client Manual.
 Name: {group}\Documentation\Venue Management Client Manual; Filename: {app}\doc\VenueManagement\VenueManagementManualHTML.htm; Comment: Read the Venue Client Manual.
 Name: {group}\Documentation\View License; IconFilename: {app}\install\agicons.exe; Filename: {app}\COPYING.txt; Comment: Read the software license the AGTk is distributed under.
-Name: {group}\Documentation\View README; Filename: {app}\README.txt; Flags: createonlyiffileexists; Comment: Read the ReadMe.
 Name: {group}\Documentation\Developers Documentation; Filename: {app}\doc\Developer\index.html; Comment: Happy Doc generated documentation for developers.
 
 Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}; Comment: Uninstall the Access Grid Toolkit.
