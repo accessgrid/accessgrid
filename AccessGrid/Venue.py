@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.172 2004-03-30 17:54:43 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.173 2004-04-01 19:26:47 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.172 2004-03-30 17:54:43 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.173 2004-04-01 19:26:47 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1898,6 +1898,58 @@ class Venue(AuthorizationMixIn):
     def GetEventServiceLocation(self):
         return (self.server.eventService.GetLocation(), self.uniqueId)
 
+# Legacy calls
+    def AddSubjectToRole(self, subject, role_string):
+        """
+        Adds user to list of users authorized for a specific role.
+        """
+        subj = X509.CreateSubjectFromString(subject)
+        role = self.authManager.FindRole(role_string)
+        role.AddSubject(subj)
+        
+    def RemoveSubjectFromRole(self, subject, role):
+        """
+        Removes a user from list of those authorized for a specific
+        role.
+        """
+        subj = X509.CreateSubjectFromString(subject)
+        role = self.authManager.FindRole(role_string)
+        role.RemoveSubject(subj)
+
+    def SetSubjectsInRole(self, subject_list, role_string):
+        """
+        Sets the users in a role.  Be extra careful so we don't
+        wipe out all the subjects in this role if there's an error.
+        """
+        sl = map(lambda x: X509.CreateSubjectFromString(x), subject_list)
+        role = self.authManager.FindRole(role_string)
+        
+    def GetUsersInRole(self, role_string):
+        """
+        Returns a list of strings of users' names.
+        """
+        role = self.authManager.FindRole(role_string)
+        sls = role.GetSubjectListAsStrings()
+        return sls
+    
+    def GetRoleNames(self):
+        """
+        Returns a list of role names.
+        """
+        rl = self.authManager.GetRoles()
+        rnl = map(lambda x: x.GetName(), rl)
+        return rnl
+
+    def DetermineSubjectRoles(self, subject):
+        """
+        Return a list of roles for the calling subject
+        """
+        roleList = self.authManager.GetRolesForSubject(subject)
+        roleNameList = map( lambda r: r.GetName(), roleList )
+        return roleNameList
+        
+
+
 class VenueI(SOAPInterface, AuthorizationIMixIn):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
@@ -2755,26 +2807,21 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         """
         Adds user to list of users authorized for a specific role.
         """
-        subj = X509.CreateSubjectFromString(subject)
-        role = self.authManager.FindRole(role_string)
-        role.AddSubject(subj)
+        self.impl.AddSubjectToRole(subject,role_string)
         
     def RemoveSubjectFromRole(self, subject, role):
         """
         Removes a user from list of those authorized for a specific
         role.
         """
-        subj = X509.CreateSubjectFromString(subject)
-        role = self.authManager.FindRole(role_string)
-        role.RemoveSubject(subj)
+        self.impl.RemoveSubjectFromRole(subject,role)
 
     def SetSubjectsInRole(self, subject_list, role_string):
         """
         Sets the users in a role.  Be extra careful so we don't
         wipe out all the subjects in this role if there's an error.
         """
-        sl = map(lambda x: X509.CreateSubjectFromString(x), subject_list)
-        role = self.authManager.FindRole(role_string)
+        self.impl.SetSubjectsInRole(subject_list,role_string)
         
     def FlushRoles(self):
         """
@@ -2789,17 +2836,21 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         """
         Returns a list of strings of users' names.
         """
-        role = self.authManager.FindRole(role_string)
-        sls = role.GetSubjectListAsStrings()
-        return sls
+        return self.impl.GetUsersInRole(role_string)
     
     def GetRoleNames(self):
         """
         Returns a list of role names.
         """
-        rl = self.authManager.GetRoles()
-        rnl = map(lambda x: x.GetName(), rl)
-        return rnl
+        return self.impl.GetRoleNames()
+
+    def DetermineSubjectRoles(self):
+        """
+        Return a list of roles for the calling subject
+        """
+        subject = self._GetCaller()
+        return self.impl.DetermineSubjectRoles(subject)
+        
 
 class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     def __init__(self, url, faultHandler = None):
@@ -2944,6 +2995,7 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     def GetEventServiceLocation(self):
         return self.proxy.GetEventServiceLocation()
     
+
 class StreamDescriptionList:
     """
     Class to represent stream descriptions in a venue.  Entries in the
