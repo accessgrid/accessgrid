@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.106 2003-09-18 22:53:59 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.107 2003-09-19 19:26:25 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.106 2003-09-18 22:53:59 eolson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.107 2003-09-19 19:26:25 eolson Exp $"
 
 import webbrowser
 import string
@@ -1444,6 +1444,7 @@ class VenueParamFrame(wxDialog):
 
     def __loadVenues(self, URL):
         validVenue = false
+        self.currentVenueUrl = self.address.GetValue() # used in except:
         try:
             wxBeginBusyCursor()
             log.debug("VenueParamFrame.__LoadVenues: Load venues from: %s " % URL)
