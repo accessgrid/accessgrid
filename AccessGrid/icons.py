@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: icons.py,v 1.18 2003-05-07 19:15:34 lefvert Exp $
+# RCS-ID:      $Id: icons.py,v 1.19 2003-05-08 20:23:23 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -10196,5 +10196,43 @@ catalog['HeadingLine'].getData = getHeadingLineData
 catalog['HeadingLine'].getImage = getHeadingLineImage
 catalog['HeadingLine'].getBitmap = getHeadingLineBitmap
 catalog['HeadingLine'].getIcon = getHeadingLineIcon
+
+
+#----------------------------------------------------------------------
+def getFolderData():
+    return zlib.decompress(
+'x\xda\x01I\x01\xb6\xfe\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x12\
+\x00\x00\x00\x0f\x08\x06\x00\x00\x00\xe9\x86\x9f\x12\x00\x00\x00\x04sBIT\x08\
+\x08\x08\x08|\x08d\x88\x00\x00\x01\x00IDATx\x9c\xadS;\x0e\x82@\x10}$\x16\xd8\
+ia\x82\xc7\xd0#Xz\x04;\xc3\t,\xd5\xd6P\xf9i,E+\xf5\x04\xd8\xe9\x11l--!\xb1\
+\x80n\xa7\x1b\x0b\x01\x97\xdd\xc5O\xf4%\x14\xcc2\xef\x07X\xcc\xcc\xf8\x03*\
+\xf2\xcdi\xd3.\x1cv\xfa\xe7\xcf\x998\xc5q\xdd\xe2"\x84aV\x0e\x8b\x99\xf9\xb4\
+i\xa7\xea\xbe"\xe3\xe2\xb0hj\xe2\xc9\x8d\xd0\xf3\xe2\x92h\xe4\x03H\x94\x95\
+\x19\xba\x83P#\xda\x8d\xea\xdaL"\x8a\x00\x02\x0e\xfb\xa5\xf2\xc8T[\xaa5\xec\
+\xdci.\x94\xf7s\x1ds0w\xf2~\xf4Kj\xef2af\xc1\xc1\xdc\xe1\xd5\xf0\xb1#9\xcab)\
+=Q\x15\xb0Ead\xd3\x15\xc0\xb6,\x1a\xc9\xdb\xf2\x96BL\x88\xe2\x18\x8e\x12\xb7\
+\x02\x13"\xb5t\xd9\x0e \x88\x1eN\xdf\x12A\x98\xc7@\xfabI\x8bk&J^8\xca\x84\
+\x94\xc4V\xf6\xaf\x99>\xbcO\x10\xde\x00\xd7\x0b\x9fD\x00\xe0\x8f\xbe\'s\xbd\
+\xb0\xe8\xe8W\xdc\x01\xef\x8c\xd9/%\xd4\xed\x86\x00\x00\x00\x00IEND\xaeB`\
+\x82\x7f3\x8d%' )
+
+def getFolderBitmap():
+    return wxBitmapFromImage(getFolderImage())
+
+def getFolderImage():
+    stream = cStringIO.StringIO(getFolderData())
+    return wxImageFromStream(stream)
+
+def getFolderIcon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(getFolderBitmap())
+    return icon
+
+index.append('Folder')
+catalog['Folder'] = ImageClass()
+catalog['Folder'].getData = getFolderData
+catalog['Folder'].getImage = getFolderImage
+catalog['Folder'].getBitmap = getFolderBitmap
+catalog['Folder'].getIcon = getFolderIcon
 
 
