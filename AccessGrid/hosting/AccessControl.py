@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.10 2003-08-08 19:53:15 eolson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.11 2003-08-08 21:35:34 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -133,6 +133,9 @@ class Role:
         return self.manager.GetRoleList()
 
     def AddSubject(self, subject):
+        if type(subject) == type(""):
+            if len(subject) == 0:
+                return # don't append zero length strings
         for s in self.subjects:
             if isinstance(s, Subject):
                 if s.IsUser(subject):
@@ -379,7 +382,7 @@ class SecurityManager:
             erm_role_name = role_name[len("Role."):] # same as new lstrip, strip "Role." from front.
             erm_role = erm.GetRole(erm_role_name)
             if self.ValidateUserInList(erm_role.GetSubjectList()):
-                log.info("User %s authorized for role %s", user, erm_role.name)
+                log.debug("User %s authorized for role %s", user, erm_role.name)
                 #print "User",user,"authorized for role",  erm_role.name
                 return 1
             else:
@@ -391,11 +394,11 @@ class SecurityManager:
                         tmp_recursed_roles.append(erm_role_name) # append current role so we don't infinitely recurse.
                         ret_val = self.ValidateUserInRole(r, role_manager, tmp_recursed_roles)
                         if ret_val:
-                            log.info("User %s authorized for role %s", user, r.name)
+                            log.debug("User %s authorized for role %s", user, r.name)
                             #print "User",user,"authorized for role",  r.name
                             return 1
             # Failed to find user in role. 
-            log.info("User %s not authorized for role: %s", user, role_name)
+            log.debug("User %s not authorized for role: %s", user, role_name)
             #print "User",user,"not authorized for role",  role_name
             return 0
 
@@ -405,7 +408,7 @@ class SecurityManager:
         if self.ValidateRole([role], role_manager):
         
             if self.ValidateUserInList(role_manager.GetRole(role_name).GetSubjectList()):
-                log.info("User %s authorized for role %s", user, role.name)
+                log.debug("User %s authorized for role %s", user, role.name)
                 #print "User",user,"authorized for role",  role.name
                 return 1
             else:
@@ -418,12 +421,12 @@ class SecurityManager:
                         tmp2_recursed_roles.append(role_name) # append current role so we don't infinitely recurse.
                         ret_val = self.ValidateUserInRole(r, role_manager, tmp2_recursed_roles)
                         if ret_val:
-                            log.info("User %s authorized for role %s", user, role.name)
+                            log.debug("User %s authorized for role %s", user, role.name)
                             #print "User",user,"authorized for role",  role.name
                             return 1
                 
             # Failed to find user in role. 
-            log.info("User %s not authorized for role: %s", user, role.name)
+            log.debug("User %s not authorized for role: %s", user, role.name)
             #print "User",user,"not authorized for role",  role.name
             #print "Valid subjects in the role are:", role.GetSubjectListAsStrings()
             return 0

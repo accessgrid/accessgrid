@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.113 2003-08-07 21:00:27 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.114 2003-08-08 21:35:34 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -2364,14 +2364,60 @@ class Venue(ServiceBase.ServiceBase):
                 if rm.validRoles[role_string]:
                     rm.validRoles[role_string].RemoveSubject(subject)
                 else:
-                    log.exception("Role " + role_string + " exists in security manager, but not in venue ")
+                    log.exception("Role " + role_string + " validated by security manager, but not in role manager.")
             else:
-                log.exception("Role " + role.name + " is not known to security manager.")
+                log.exception("Role " + role.name + " is not a role in this role manager.")
             return 0
         except:
             log.exception("wsRemoveSubjectFromRole: exception")
 
     wsRemoveSubjectFromRole.soap_export_as = "RemoveSubjectFromRole"
+
+    def wsSetSubjectsInRole(self, subject_list, role_string):
+        """
+        Sets the users in a role.  Be extra careful so we don't
+          wipe out all the subjects in this role if there's an error.
+        """
+
+        if not self._IsInRole("Venue.Administrators"):
+            raise NotAuthorized
+
+        try:
+
+            sm = AccessControl.GetSecurityManager()
+            rm = self.GetRoleManager()
+
+            if sm.ValidateRole([role_string], rm):
+                role = rm.GetRole(role_string)
+                old_subject_list = role.GetSubjectListAsStrings()
+                try:
+                    for subject in role.GetSubjectListAsStrings():
+                        role.RemoveSubject(subject)
+                    for subject in subject_list:
+                        role.AddSubject(subject)
+                except:
+                    log.exception("wsSetSubjectsInRole: exception, re-adding old roles")
+                    # An error occurred, include original subjects.
+                    for subject in old_subject_list:
+                        role.AddSubject(subject)
+
+                # Make sure we can't remove ourselves from the administrators role.
+                #    Since we always want to leave someone in the administrator role,
+                #    we leave the current administrator to ensure that someone has access.
+                #    (leaving only other people as admins could cause severe problems if
+                #    those people aren't around, forget their passwords, etc.
+                if role_string == "Venue.Administrators":
+                    current_subject = sm.GetSubject()
+                    if not self._IsInRole("Venue.Administrators"):
+                        role.AddSubject(current_subject)
+            else:
+                raise "InvalidRole"
+        except:
+            log.exception("wsSetSubjectsInRole: exception")
+            #raise "wsSetSubjectsInRole: exception"
+        return 0
+
+    wsSetSubjectsInRole.soap_export_as = "SetSubjectsInRole"
 
     def wsAddRole(self, role_string):
         """
@@ -2401,8 +2447,8 @@ class Venue(ServiceBase.ServiceBase):
             raise NotAuthorized
 
         rm = self.GetRoleManager()
-        if role_string in rm.validRoles:
-            return rm.validRoles[role_string].GetSubjectListAsStrings()
+        if role_string in rm.GetRoleList():
+            return rm.GetRole(role_string).GetSubjectListAsStrings()
         else:
            return []
 
@@ -2428,6 +2474,27 @@ class Venue(ServiceBase.ServiceBase):
         return self.GetRoleManager().GetRoleList()
 
     wsGetRoleNames.soap_export_as = "GetRoleNames"
+
+
+    def wsGetAvailableGroupRoles(self):
+        """
+        Returns roles that can represent groups.  As a
+        venue, that includes ALL_USERS, and VenueServer
+        roles such as VenueServer.Administrators.
+        """
+        if not self._IsInRole("Venue.Administrators"):
+            raise NotAuthorized
+
+        rm = self.GetRoleManager()
+        group_roles = ["ALL_USERS"]
+        erm_names = rm.GetExternalRoleManagerList()
+        for erm_name in erm_names:
+            erm = rm.GetExternalRoleManager(erm_name)
+            for role_name in erm.GetRoleList():
+                group_roles.append(role_name)
+        return group_roles
+
+    wsGetAvailableGroupRoles.soap_export_as = "GetAvailableGroupRoles"
 
 def RegisterDefaultVenueRoles(role_manager):
     """
