@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.129 2004-03-26 17:02:12 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.130 2004-03-26 19:34:37 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.129 2004-03-26 17:02:12 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.130 2004-03-26 19:34:37 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -35,6 +35,8 @@ from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 from AccessGrid.Security import X509Subject, Role
+from AccessGrid.Security .Action import ActionAlreadyPresent
+
 from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 
 from AccessGrid.Platform.Config import SystemConfig
@@ -124,7 +126,8 @@ class VenueServer(AuthorizationMixIn):
             "VenueServer.backupServer" : '',
             "VenueServer.addressAllocationMethod" : MulticastAddressAllocator.RANDOM,
             "VenueServer.baseAddress" : MulticastAddressAllocator.SDR_BASE_ADDRESS,
-            "VenueServer.addressMask" : MulticastAddressAllocator.SDR_MASK_SIZE
+            "VenueServer.addressMask" : MulticastAddressAllocator.SDR_MASK_SIZE,
+            "VenueServer.authorizationPolicy" : ''
             }
 
     defaultVenueDesc = VenueDescription("Venue Server Lobby", """This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid.""")
@@ -279,8 +282,13 @@ class VenueServer(AuthorizationMixIn):
         
         # Get all the methodactions
         ma = vsi._GetMethodActions()
-        self.authManager.AddActions(ma)
-        
+        try:
+            self.authManager.AddActions(ma)
+        except ActionAlreadyPresent:
+            # Do not add action if it is already present.
+            pass
+            
+            
         # Then we create the VenueServer service
         self.hostingEnvironment.RegisterObject(vsi, path='/VenueServer')
 
@@ -288,6 +296,8 @@ class VenueServer(AuthorizationMixIn):
         self.hostingEnvironment.RegisterObject(
                                   AuthorizationManagerI(self.authManager),
                                   path='/VenueServer/Authorization')
+
+        
         
         # Some simple output to advertise the location of the service
         print("Server: %s \nEvent Port: %d Text Port: %d Data Port: %d" %
@@ -456,7 +466,11 @@ class VenueServer(AuthorizationMixIn):
         self.config = config
         for k in config.keys():
             (section, option) = string.split(k, '.')
-            if option == "administrators":
+          
+            if option == "authorizationPolicy":
+                self.authManager.ImportPolicy(config[k])
+            
+            elif option == "administrators":
                 adminList = string.split(config[k],':')
                 for a in adminList:
                     if a != "":
@@ -464,6 +478,7 @@ class VenueServer(AuthorizationMixIn):
                         admins = self.authManager.FindRole("Administrators")
                         admins.AddSubject(xs)
                         admins.SetRequireDefault(1)
+                                    
             else:
                 setattr(self, option, config[k])
 
@@ -595,6 +610,10 @@ class VenueServer(AuthorizationMixIn):
             return 0
 
         log.info("Checkpointing completed at %s.", time.asctime())
+
+        # Get authorization policy.
+        if self.authManager:
+            self.config["VenueServer.authorizationPolicy"] = self.authManager.ExportPolicy()
 
         # Finally we save the current config
         SaveConfig(self.configFile, self.config)
