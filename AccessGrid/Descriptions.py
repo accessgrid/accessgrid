@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.6 2003-01-14 18:59:22 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.7 2003-01-15 17:49:52 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,13 +15,13 @@ class ObjectDescription:
     An object description has four parts:
         name : string
         description : string
-        uri : uri (string)
+        url : url (string)
         icon : IconType
     """
     def __init__(self, name, description, uri, icon):
         self.name = name
         self.description = description
-        self.uri = uri
+        self.url = url
         self.icon = icon
     
     def SetName(self, name):
@@ -36,11 +36,11 @@ class ObjectDescription:
     def GetDescription(self):
         return self.description
     
-    def SetURI(self, uri):
-        self.uri = uri
+    def SetURL(self, url):
+        self.url = url
         
-    def GetURI(self):
-        return self.uri
+    def GetURL(self):
+        return self.url
     
     def SetIcon(self, icon):
         self.icon = icon
@@ -78,7 +78,6 @@ class VenueDescription(ObjectDescription):
     It is suggested that this be simply XML so that clients require no
     additional software for processing it.
     """
-    
     def __init__(self, name, description, icon, extendeddescription):
         ObjectDescription.__init__(self, name, description, "", icon)
         self.extendedDescription = extendeddescription
