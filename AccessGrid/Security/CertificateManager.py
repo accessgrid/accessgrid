@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.17 2004-04-09 18:40:18 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.18 2004-04-12 20:48:47 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.17 2004-04-09 18:40:18 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.18 2004-04-12 20:48:47 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -877,6 +877,10 @@ class CertificateManager(object):
         # as their settings will cause the proxy setting to be ignored.
         #
 
+        self.globusConfig.RemoveCertFileName()
+        self.globusConfig.RemoveKeyFileName()
+        self.globusConfig.RemoveServerFlag()
+        
         for envar in ('X509_USER_CERT', 'X509_USER_KEY', 'X509_RUN_AS_SERVER'):
             if os.environ.has_key(envar):
                 del os.environ[envar]
@@ -1028,15 +1032,11 @@ class CertificateManager(object):
         certPath = self.defaultIdentity.GetPath()
         keyPath = self.defaultIdentity.GetKeyPath()
 
-
         # Ugh. If x509_user_proxy is set in the registry,
         # X509_RUN_AS_SERVER is ignored.
 
         self.globusConfig.RemoveProxyFileName()
         
-        if os.environ.has_key('X509_USER_PROXY'):
-            del os.environ['X509_USER_PROXY']
-            
         self.globusConfig.SetCertFileName(certPath)
         self.globusConfig.SetKeyFileName(keyPath)
 
