@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.24 2003-05-16 21:26:49 leggett Exp $
+# RCS-ID:      $Id: setup.py,v 1.25 2003-05-29 23:28:10 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -85,9 +85,7 @@ setup(
                     ]
                    ),
                   ('share/AccessGrid/packaging/windows',
-                   [r"packaging/windows/Postinstall.py",
-                    r"packaging/windows/AGNodeServicePostinstall.py",
-                    r"packaging/windows/AGServiceManagerPostinstall.py"
+                   [r"packaging/windows/Postinstall.py"
                     ]
                    ),
                   ('share/gnome/apps/AccessGrid',
