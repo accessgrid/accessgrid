@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.24 2004-03-17 22:11:19 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.25 2004-03-18 14:08:24 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.24 2004-03-17 22:11:19 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.25 2004-03-18 14:08:24 turam Exp $"
 
 # Standard imports
 import os
@@ -285,8 +285,8 @@ class Application(AppBase):
        #    Identity we bail, there's nothing useful to do.
 
        if self.GetDefaultIdentityDN() is None:
-           log.error("Toolkit initialized with no default identity.")
-           log.error("Exiting because there's no default identity.")
+           self.log.error("Toolkit initialized with no default identity.")
+           self.log.error("Exiting because there's no default identity.")
            sys.exit(-1)
            
        return argvResult
