@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: RegisterApp.py,v 1.10 2003-09-28 23:13:24 judson Exp $
+# RCS-ID:      $Id: RegisterApp.py,v 1.11 2003-09-29 20:35:02 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This program is used to register applications with the users AGTk
 installation.
 """
-__revision__ = "$Id: RegisterApp.py,v 1.10 2003-09-28 23:13:24 judson Exp $"
+__revision__ = "$Id: RegisterApp.py,v 1.11 2003-09-29 20:35:02 judson Exp $"
 
 import os
 import re
@@ -121,7 +121,7 @@ def main():
                                                            "unregister",
                                                            "verbose",
                                                            "help"])[0]
-    except getopt.GetopError:
+    except getopt.GetoptError:
         Usage()
         sys.exit(2)
 
