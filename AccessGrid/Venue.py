@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.216 2004-07-26 16:54:38 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.217 2004-07-26 17:20:04 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.216 2004-07-26 16:54:38 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.217 2004-07-26 17:20:04 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -580,7 +580,9 @@ class Venue(AuthorizationMixIn):
         policy = re.sub("\r", "<CR>", policy)
         policy = re.sub("\n", "<LF>", policy)
         string += 'authorizationPolicy : %s' %policy
-        
+
+        #
+        ##  END OF VENUE SECTION
 
         
         # The blocks for other data
@@ -1219,7 +1221,11 @@ class Venue(AuthorizationMixIn):
         """
         log.debug("Enter called.")
 
-        privateId = self.GetNextPrivateId()
+        # allocate connection-specific id;
+        # this is passed back to 2.3+ clients in the private id, 
+        # which unfortunately lengthens the private id generally
+        clientProfile.connectionId = str(GUID())
+        privateId = self.GetNextPrivateId() + '_' + clientProfile.connectionId
         log.debug("Enter: Assigning private id: %s", privateId)
 
         # Send this before we set up client state, so that
