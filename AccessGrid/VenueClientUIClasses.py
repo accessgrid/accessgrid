@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.170 2003-05-07 17:50:34 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.171 2003-05-07 19:06:25 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1278,6 +1278,7 @@ class ContentListPanel(wxPanel):
 	
     def __setImageList(self):
 	imageList = wxImageList(32,19)
+        self.line = imageList.Add(icons.getHeadingLineBitmap())
      	self.participantId = imageList.Add(icons.getDefaultParticipantBitmap())
         #self.participantFollowId = imageList.Add(icons.getParticipantFollowBitmap())
         #self.participantLeadId = imageList.Add(icons.getParticipantLeadBitmap())
@@ -1298,7 +1299,7 @@ class ContentListPanel(wxPanel):
             
     def AddParticipant(self, profile, dataList = []):
         participant = self.tree.AppendItem(self.participants, profile.name, \
-                                           self.participantId, self.participantId)
+                                           self.line, self.line         )
         self.tree.SetItemData(participant, wxTreeItemData(profile)) 
         self.participantDict[profile.publicId] = participant
         self.tree.SortChildren(self.participants)
