@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.142 2003-05-15 20:01:42 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.143 2003-05-16 14:42:48 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -66,7 +66,7 @@ class VenueClientUI(wxApp, VenueClient):
     isPersonalNode = 0
     debugMode = 0
     transferEngine = None
-
+       
     def __init__(self):
         if not os.path.exists(self.accessGridPath):
             try:
@@ -361,6 +361,25 @@ class VenueClientUI(wxApp, VenueClient):
         wxCallAfter(self.frame.contentListPanel.AddParticipant, profile)
         log.debug("  add user: %s" %(profile.name))
 
+    def Heartbeat(self):
+        '''
+        Note: Overridden from VenueClient
+        This method sends a heartbeat to indicate that the client
+        is still connected to the venue. If the heartbeat is not
+        received properly, the client will exit the venue.
+        '''
+        
+        try:
+            VenueClient.Heartbeat(self)
+        except:
+            log.exception("bin::VenueClient:Heartbeat: Heartbeat exception is caught, exit venue.")
+            MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  Please, try to connect again.", "Lost Connection")
+            
+            if self.venueUri != None:
+                self.ExitVenue()
+                
+            wxCallAfter(self.frame.venueAddressBar.SetTitle, "You are not in a venue", 'Click "Go" to connect to the venue, which address is displayed in the address bar') 
+                        
     def RemoveUserEvent(self, user):
         """
         Note: Overridden from VenueClient
@@ -753,6 +772,8 @@ class VenueClientUI(wxApp, VenueClient):
             #
             uri = self.history[l - 1]
             self.EnterVenue(uri, true)
+
+    
 
     def OnExit(self):
         """
