@@ -74,7 +74,7 @@
 """
 """
 
-__revision__ = "$Id: AGGSISOAP.py,v 1.12 2003-09-16 07:20:56 judson Exp $"
+__revision__ = "$Id: AGGSISOAP.py,v 1.13 2003-10-01 19:20:30 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import xml.sax
@@ -103,7 +103,7 @@ log.setLevel(logging.WARN)
 try: from M2Crypto import SSL
 except: pass
 
-ident = '$Id: AGGSISOAP.py,v 1.12 2003-09-16 07:20:56 judson Exp $'
+ident = '$Id: AGGSISOAP.py,v 1.13 2003-10-01 19:20:30 olson Exp $'
 
 __version__ = "0.9.7"
 
@@ -3104,9 +3104,12 @@ class SOAPBuilder:
     def dump_float(self, obj, tag, typed = 1, ns_map = {}):
         # Terrible windows hack
         if not good_float:
-            if obj == float(1e300**2):
+            #
+            # See PEP 754.
+            #
+            if obj == float(1e300000):
                 obj = "INF"
-            elif obj == float(-1e300**2):
+            elif obj == float(-1e300000):
                 obj = "-INF"
 
         obj = str(obj)
