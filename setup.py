@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.31 2003-08-18 17:20:54 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.32 2003-09-10 14:50:31 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -60,7 +60,6 @@ setup(
                    ),
                   ('etc/AccessGrid',
                    [r"packaging/config/AGNodeService.cfg",
-                    r"packaging/config/AGServiceManager.cfg"
                     ]
                    ),
                   ('share/AccessGrid/nodeConfig',
