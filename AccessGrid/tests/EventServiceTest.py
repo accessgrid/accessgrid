@@ -1,11 +1,12 @@
 #!/usr/bin/python2
-#-----------------------------------------------------------------------------# Name:        EventServiceTest.py
+#-----------------------------------------------------------------------------#
+# Name:        EventServiceTest.py
 # Purpose:     Test for event client and service.
 #
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: EventServiceTest.py,v 1.3 2003-11-12 22:25:20 lefvert Exp $
+# RCS-ID:      $Id: EventServiceTest.py,v 1.4 2003-11-14 22:08:24 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
@@ -22,139 +23,269 @@ from AccessGrid.GUID import GUID
 import logging, logging.handlers
 import os, time
 from AccessGrid.Platform import GetUserConfigDir
-import threading
 from AccessGrid.Utilities import ServerLock
 from AccessGrid.ClientProfile import ClientProfile
 
+
+class StartTest:
+    '''
+    Tests event service and client
+    
+    EventServiceController - Starts event service and distributes events
+    EventServiceClient - Has an event client and receives events
+     
+    Several EventServiceClients can be started that will receive all distributed events.
+    
+    The result shows distributed events and which events got received by which client.
+    '''
+    
+    def __init__(self, host, port, nrOfClients, nrOfEvents):
+        '''
+        Starts test
+
+        *** Arguments ***
+        *host* Machine where event service will run
+        *port* Port used by event service on given host
+        *nrOfClients* Number of clients receiving events
+        *nrOfEvents* How many of each event will be sent (1 ~ 15 events)
+        '''
+        
+        print '**************************************************'
+        print 'Test Started\nThis test will take about 30 sec. to finish'
+        print '**************************************************\n'
+        
+        self.eventsOut = []
+        self.nrOfReceivedEvents = 0
+        self.sendLock = ServerLock("send")
+        self.receiveLock =  ServerLock("receive")
+        self.nrOfEvent = nrOfEvents
+        self.nrOfClients = nrOfClients
+        self.clientList = []
+        self.host = host 
+        self.port = port 
+        self.index = 1
+        self.esc = EventServiceController(self)
+                
+        # Sleep to make sure the event client gets started before sending events.
+        time.sleep(2)
+        self.CreateEvents()
+        self.StartClients()
+        time.sleep(5)
+        self.DistributeEvents()
+
+        # Shut down
+        i = 1
+        while i:
+            if self.nrOfReceivedEvents ==  self.totalEvents:
+                self.ShutDown()
+                i = 0
+        
+    def CreateEvents(self):
+        dataDescription = DataDescription("")
+        profile = ClientProfile()
+        service = ServiceDescription("service", "desc", "uri", "mime")
+        stream = StreamDescription("")
+        conn = ConnectionDescription("")
+        app = ApplicationDescription(1, 'app', 'desc', 'uri', 'mime')
+        
+        
+        self.sendEvents = [Events.AddDataEvent(self.esc.GetChannelId(), dataDescription),
+                      Events.UpdateDataEvent(self.esc.GetChannelId(), dataDescription),
+                      Events.RemoveDataEvent(self.esc.GetChannelId(), dataDescription)]
+                   
+        self.distributeEvents = [Event( Event.ADD_DATA, self.esc.GetChannelId(), dataDescription ),
+                            Event( Event.UPDATE_DATA, self.esc.GetChannelId(), dataDescription ),
+                            Event( Event.REMOVE_DATA, self.esc.GetChannelId(), dataDescription ),
+                            Event( Event.ENTER, self.esc.GetChannelId(), profile) ,
+                            Event( Event.MODIFY_USER, self.esc.GetChannelId(), profile) ,
+                            Event( Event.EXIT, self.esc.GetChannelId(), profile) ,
+                            Event( Event.ADD_SERVICE, self.esc.GetChannelId(), service),
+                            Event( Event.REMOVE_SERVICE, self.esc.GetChannelId(), service),
+                            Event( Event.ADD_APPLICATION, self.esc.GetChannelId(), app),
+                            Event( Event.REMOVE_APPLICATION, self.esc.GetChannelId(), app) ,
+                            Event( Event.ADD_CONNECTION, self.esc.GetChannelId(), conn) ,
+                            Event( Event.REMOVE_CONNECTION, self.esc.GetChannelId(), conn),
+                            Event( Event.ADD_STREAM, self.esc.GetChannelId(), stream),
+                            Event( Event.MODIFY_STREAM, self.esc.GetChannelId(), stream),
+                            Event( Event.REMOVE_STREAM, self.esc.GetChannelId(), stream)]
+
+        # Each client will receive all events.
+        self.totalEvents = self.nrOfClients * len(self.distributeEvents) * self.nrOfEvent
+        print 'Starting one event service and %s event clients' %(nrOfClients)
+        
+
+    def DistributeEvents(self):
+        index = 0
+        
+        for i in range(self.nrOfEvent):
+            index = index + 1
+           
+            for event in self.distributeEvents:
+                event.data.name =" D-"+str(index)
+                self.esc.DistributeEvents(event)
+            
+    def StartClients(self):
+        print "\nWait until clients received all events. If this hangs \nfor more than a minute, some evemts did not get received.\n"
+
+        for i in range(nrOfClients):
+            client = EventServiceClient(self)
+            client.CreateEventClient(self.esc.GetChannelId(), self.esc.GetLocation())
+            self.clientList.append(client)
+        
+    def ReceivedEvent(self):
+        self.receiveLock.acquire()
+        self.nrOfReceivedEvents = self.nrOfReceivedEvents + 1
+        
+        if self.nrOfReceivedEvents == self.totalEvents:
+            self.receiveLock.release()
+          
+            # All events are received
+            self.ShowResult()
+                                   
+        else:
+            self.receiveLock.release()
+            
+
+    def ShowResult(self):
+        print '------------ RESULT --------------\n'
+        print "['event type D/S-index'] where \nD = Distributed from event service\nS = Sent from event client\nindex = unique identifier\n"
+        print "Sent/distributed events:\n %s\n"%(self.eventsOut)
+        
+        # Print all messages sent and received
+        for client in self.clientList:
+            print "Client%s received:\n %s\n"%(client.GetName(), client.eventReceivedList)
+
+                        
+        rightOrder = 1
+        receivedAllEvts = 1
+        
+        for client in self.clientList:
+            notReceived = []
+            for event in self.eventsOut:
+                if event not in client.eventReceivedList:
+                    receivedAllEvts = 0
+                    notReceived.append(event)
+
+            if len(notReceived)>0:
+                print 'client'+client.GetName()+ " did not receive messages: "+str(notReceived)
+
+            if not self.eventsOut == client.eventReceivedList:
+                rightOrder = 0
+                print 'client'+client.GetName()+ ' did not receive events in right order.\n'
+                
+        if receivedAllEvts:
+            print '*** SUCCESS - All events sent got received. ***'
+
+        else:
+            print '*** FAIL - All events did not get received. ***'
+
+
+        if rightOrder:
+            print '*** SUCCESS - All events sent got received in right order. ***'
+        else:
+            print '*** FAIL - All events did NOT get received in right order. ***'
+                    
+        print '--------------------------------------\n'
+
+
+    def ShutDown(self):
+        '''Shut down service and clients'''
+        print 'Shut down'
+        for client in self.clientList:
+            client.ShutDown()
+        self.esc.ShutDown()
+     
+       
 class EventServiceController:
     '''
     Starts event service and distributes events.
     '''
     
-    def __init__(self, host, port, eventList, lock, nrOfEvent):
-        '''
-        Starts event service
-
-        **Arguments**
-        *host* host where event service is running
-        *port* port that event service is using
-        *eventList* buffer where to insert distributed events
-        *lock* lock for eventList (also used by EventServiceSender)
-        *nrOfEvents* how many events of each type should get sent
-        '''
+    def __init__(self, parent):
+        '''Starts event service'''
         self.uniqueId = str(GUID())
-        self.eventList = eventList
-        self.eventService = EventService((host, int(port)))
+        self.eventList = parent.eventsOut
+        self.eventService = EventService((parent.host, int(parent.port)))
         self.eventService.start()
         self.eventService.AddChannel(self.uniqueId)
-        self.lock = lock
-        self.nrOfEvent = nrOfEvent
+        self.lock = parent.sendLock
+        self.nrOfEvent = parent.nrOfEvent
         
     def DistributeEvents(self, event):
-        index = 0
-               
-        for i in range(self.nrOfEvent):
-            index = index + 1
-            event.data.name =" D-"+str(index)
-
-            self.lock.acquire()
-            self.eventList.append(event.eventType+event.data.name)
-            self.lock.release()
-            
-            self.eventService.Distribute(self.uniqueId, event)
-            time.sleep(0.01)
-
+        '''Distributes event'''
+        self.lock.acquire()
+        self.eventList.append(event.eventType+event.data.name)
+        self.lock.release()
+        
+        self.eventService.Distribute(self.uniqueId, event)
+        
     def GetChannelId(self):
+        '''Returns channel id'''
         return self.uniqueId
 
     def GetLocation(self):
+        '''Returns location (host, port)'''
         return self.eventService.GetLocation()
 
     def ShutDown(self):
+        '''Stops event service '''
         self.eventService.Stop()
 
    
-class EventServiceSender:
+class EventServiceClient:
     '''
     Sends events.
     '''
-    def __init__(self, eventList, lock, nrOfEvent):
+    def __init__(self, parent):
         '''
         Starts EventServiceSender
-
-        **Arguments**
-        *eventList* buffer where to insert sent events
-        *lock* lock for eventList (also used by EventServiceController)
-        *nrOfEvents* how many events of each type should get sent
         '''
         self.privateId = str(GUID())
-        self.eventList = eventList
-        self.lock = lock
-        self.nrOfEvent = nrOfEvent
-        
+        self.eventOutList = parent.eventsOut
+        self.eventReceivedList = []
+        self.lock = parent.sendLock
+        self.nrOfEvent = parent.nrOfEvent
+        self.parent = parent
+        self.name = parent.index
+        parent.index = parent.index + 1
+
+    def GetName(self):
+        '''Returns unique name of client'''
+        return str(self.name)
+                
     def CreateEventClient(self, channelId, eventLocation):
+        '''Create event client and register events'''
         self.eventLocation = eventLocation
         self.channelId = channelId
-        
+
         # Create event client and connect to event service.
         self.eventClient = EventClient(self.privateId,
                                        self.eventLocation,
                                        str(self.channelId))
-
+        self.ReceiveEvents()
         self.eventClient.start()
         self.eventClient.Send(ConnectEvent(self.channelId,self.privateId))
 
     def ShutDown(self):
+        '''Stop event client'''
         self.eventClient.Stop()
 
     def SendEvents(self, event):
+        '''Send events'''
         index = 0
 
         for i in range(self.nrOfEvent):
             index = index + 1
             event.data.name = " S-" + str(index)
-
+            
             self.lock.acquire()
-            self.eventList.append(event.eventType+event.data.name)
+            self.eventOutList.append(event.eventType+event.data.name)
             self.lock.release()
             
             self.eventClient.Send(event)
-            time.sleep(0.02)
-
-                         
-class EventServiceReceiver:
-    '''
-    Receives events.
-    '''    
-    def __init__(self, eventList):
-        '''
-        Starts EventServiceSender
-
-        **Arguments**
-        *eventList* buffer where to insert received events
-        '''
-        self.privateId = str(GUID())
-        self.eventList = eventList
-        self.lock = ServerLock()
-        
-    def CreateEventClient(self, channelId, eventLocation):
-        self.eventLocation = eventLocation
-        self.channelId = channelId
-       
-        # Create and connect to event client.
-        self.eventClient = EventClient(self.privateId,
-                                       self.eventLocation,
-                                       str(self.channelId))
-
-        self.ReceiveEvents()
-        self.eventClient.start()
-        self.eventClient.Send(ConnectEvent(self.channelId,
-                                           self.privateId))
-       
-    def ShutDown(self):
-        self.eventClient.Stop()
 
     def ReceiveEvents(self):
+        '''Registers event callbacks'''
         coherenceCallbacks = {
             Event.ENTER: self.AddUserEvent,
             Event.EXIT: self.RemoveUserEvent,
@@ -177,54 +308,76 @@ class EventServiceReceiver:
         for e in coherenceCallbacks.keys():
             self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
 
+    #
+    # Event callbacks
+    #
+
     def AddUserEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
             
     def RemoveUserEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
 
     def ModifyUserEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
                     
     def AddDataEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
         
     def UpdateDataEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
         
     def RemoveDataEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
                     
     def AddServiceEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
             
     def RemoveServiceEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
             
     def AddApplicationEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
               
     def RemoveApplicationEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
          
     def AddConnectionEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
              
     def RemoveConnectionEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
             
     def SetConnectionsEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
 
     def AddStreamEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
             
     def ModifyStreamEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
-            
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
+                    
     def RemoveStreamEvent(self, event):
-        self.eventList.append(event.eventType+event.data.name)
-        
+        self.eventReceivedList.append(event.eventType+event.data.name)
+        self.parent.ReceivedEvent()
+
+                         
+
 def SetLogging():
     debugMode = 1
     logFile = None
@@ -247,213 +400,41 @@ def SetLogging():
         hdlr = logging.StreamHandler()
         hdlr.setFormatter(fmt)
         log.addHandler(hdlr)
+
        
 if __name__ == "__main__":
 
-    '''
-    Tests event service and client
-
-    EventServiceController - Starts event service and distributes events
-    EventServiceSender - Has an event client and sends events
-    EventServiceReceiver - Has an event client and receives events
-
-    Separate threads for sending/distributing different events
-    are started, events are saved in the eventsOut list.
-    
-    Received events are saved in the eventsReceived list.
-
-
-    Compare the eventsOut list to eventsReceived to see if all events
-    are received and in what order.
-    '''
-    
     SetLogging()
 
-    eventsOut = []
-    eventsReceived = []
-    sendLock = ServerLock("send")
-    nrOfEvent = 2
-    
-    esc = EventServiceController(GetHostname(), 8899, eventsOut,
-                                 sendLock, nrOfEvent)
-    ess = EventServiceSender(eventsOut, sendLock, nrOfEvent)
-    esr = EventServiceReceiver(eventsReceived)
+    host = GetHostname()
+    port = 8889
+    nrOfClients = 4
+    nrOfEvents = 1
 
-    esr.CreateEventClient(esc.GetChannelId(), esc.GetLocation())
-    ess.CreateEventClient(esc.GetChannelId(), esc.GetLocation())
+    StartTest(host, port, nrOfClients, nrOfEvents)
+      
 
-    print '**************************************************'
-    print 'Test Started\nThis test will take about 30 sec. to finish'
-    print '**************************************************\n'
 
-    # Create data for events
-    dataDescription = DataDescription("")
-    profile = ClientProfile()
-    service = ServiceDescription("service", "desc", "uri", "mime")
-    stream = StreamDescription("")
-    conn = ConnectionDescription("")
-    app = ApplicationDescription(1, 'app', 'desc', 'uri', 'mime')
-        
-    #
-    # Send threads
-    #
 
-    # -- Add data
-    event = Events.AddDataEvent(esc.GetChannelId(), dataDescription)
-    sendThread1 = threading.Thread(target = ess.SendEvents, args = [event])
 
-    event = Events.UpdateDataEvent(esc.GetChannelId(), dataDescription)
-    sendThread2 = threading.Thread(target = ess.SendEvents, args = [event])
 
-    event = Events.RemoveDataEvent(esc.GetChannelId(), dataDescription)
-    sendThread3 = threading.Thread(target = ess.SendEvents, args = [event])
-        
-    #event = Events.ClientExitingEvent(esc.GetChannelId(), 1)
-    #sendThread4 = threading.Thread(target = ess.SendEvents, args = [event])
-    
-    #event = Events.HeartbeatEvent(esc.GetChannelId(), 1)
-    #sendThread5 = threading.Thread(target = ess.SendEvents, args = [event])
-    
-    
-    #
-    # Distribute threads
-    #
 
-    # -- Add data
-    event = Event( Event.ADD_DATA, esc.GetChannelId(), dataDescription ) 
-    distributeThread1 = threading.Thread(target = esc.DistributeEvents,
-                                        args = [event])
-    # -- Update data
-    event = Event( Event.UPDATE_DATA, esc.GetChannelId(), dataDescription ) 
-    distributeThread2 = threading.Thread(target = esc.DistributeEvents,
-                                        args = [event])
-    # -- Remove data
-    event = Event( Event.REMOVE_DATA, esc.GetChannelId(), dataDescription ) 
-    distributeThread3 = threading.Thread(target = esc.DistributeEvents,
-                                        args = [event])
-    # -- Add user
-    event = Event( Event.ENTER, esc.GetChannelId(), profile) 
-    distributeThread4 = threading.Thread(target = esc.DistributeEvents,
-                                         args = [event])
-    # -- Modify user
-    event = Event( Event.MODIFY_USER, esc.GetChannelId(), profile) 
-    distributeThread5 = threading.Thread(target = esc.DistributeEvents,
-                                         args = [event])
-    # -- Remove user
-    event = Event( Event.EXIT, esc.GetChannelId(), profile) 
-    distributeThread6 = threading.Thread(target = esc.DistributeEvents,
-                                         args = [event])
-    # -- Add service
-    event = Event( Event.ADD_SERVICE, esc.GetChannelId(), service) 
-    distributeThread7 = threading.Thread(target = esc.DistributeEvents,
-                                         args = [event])
-    # -- Remove service
-    event = Event( Event.REMOVE_SERVICE, esc.GetChannelId(), service) 
-    distributeThread8 = threading.Thread(target = esc.DistributeEvents,
-                                         args = [event])
-    # -- Add application
-    event = Event( Event.ADD_APPLICATION, esc.GetChannelId(), app) 
-    distributeThread9 = threading.Thread(target = esc.DistributeEvents,
-                                         args = [event])
-    # -- Remove application
-    event = Event( Event.REMOVE_APPLICATION, esc.GetChannelId(), app) 
-    distributeThread9 = threading.Thread(target = esc.DistributeEvents,
-                                         args = [event])
-    # -- Add connection
-    event = Event( Event.ADD_CONNECTION, esc.GetChannelId(), conn) 
-    distributeThread10 = threading.Thread(target = esc.DistributeEvents,
-                                         args = [event])
-    # -- Remove connection
-    event = Event( Event.REMOVE_CONNECTION, esc.GetChannelId(), conn) 
-    distributeThread11 = threading.Thread(target = esc.DistributeEvents,
-                                         args = [event])
-    # -- Add stream
-    event = Event( Event.ADD_STREAM, esc.GetChannelId(), stream) 
-    distributeThread12 = threading.Thread(target = esc.DistributeEvents,
-                                         args = [event])
-    # -- Modify stream
-    event = Event( Event.MODIFY_STREAM, esc.GetChannelId(), stream) 
-    distributeThread13 = threading.Thread(target = esc.DistributeEvents,
-                                         args = [event])
-    # -- Remove stream
-    event = Event( Event.REMOVE_STREAM, esc.GetChannelId(), stream) 
-    distributeThread14 = threading.Thread(target = esc.DistributeEvents,
-                                         args = [event])
-    sendThread1.start()
-    sendThread2.start()
-    sendThread3.start()
-    #sendThread4.start()
-    #sendThread5.start()
-    
-    distributeThread1.start()
-    distributeThread2.start()
-    distributeThread3.start()
-    distributeThread4.start()
-    distributeThread5.start()
-    distributeThread6.start()
-    distributeThread7.start()
-    distributeThread8.start()
-    distributeThread9.start()
-    distributeThread10.start()
-    distributeThread11.start()
-    distributeThread12.start()
-    distributeThread13.start()
-    distributeThread14.start()
-    
-    #
-    # Join threads
-    #
-    sendThread1.join()
-    sendThread2.join()
-    sendThread3.join()
-    #sendThread4.join()
-    #sendThread5.join()
-    
-    distributeThread1.join()
-    distributeThread2.join()
-    distributeThread3.join()
-    distributeThread4.join()
-    distributeThread5.join()
-    distributeThread6.join()
-    distributeThread7.join()
-    distributeThread8.join()
-    distributeThread9.join()
-    distributeThread10.join()
-    distributeThread11.join()
-    distributeThread12.join()
-    distributeThread13.join()
-    distributeThread14.join()
 
-    # Make sure all events are received before showing result.
-    time.sleep(20)
 
-    #
-    # Show results
-    #
-    print "['event type D/S-index'] where \nD = Distributed from event service\nS = Sent from event client\nindex = unique identifier\n"
-    print "Sent/distributed events:\n %s\n"%(eventsOut)
-    print "Received events:\n %s\n"%(eventsReceived)
-   
-    print '--- RESULT ---'
 
-    receivedAllEvts = 1
-    for event in eventsOut:
-        if event not in eventsReceived:
-            receivedAllEvts = 0
-            print event + " was not received"
 
-    if receivedAllEvts:
-        print 'All events sent got received '
 
-    if not eventsOut == eventsReceived:
-        print '\nThe events were not received in the same order as they were sent\n'
 
-    print '--------------'
 
-    #
-    # Shut down service and clients
-    #
-    esc.ShutDown()
-    ess.ShutDown()
-    esr.ShutDown()
+
+
+
+
+
+
+
+
+
+
+
 
