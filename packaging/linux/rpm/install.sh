@@ -15,30 +15,26 @@
 # To update this script to install newer versions of packages
 # change the variables defined here
 #
-export WXWINDOWS="wxGTK"
-export WXWINDOWS_VER="2.4.0-1"
+
+export FPCONST="fpconst"
+export FPCONST_VER="0.6.0-1"
 export LOGGING="logging"
 export LOGGING_VER="0.4.7-2"
-export PYOPENSSL="pyOpenSSL_AG"
-export PYOPENSSL_VER="0.5.1-3"
-export GPT="gpt"
-export GPT_VER="1.0-2"
-export GLOBUS="globus-accessgrid"
-export GLOBUS_VER="2.0-2"
+export OPTIK="Optik"
+export OPTIK_VER="1.4.1-1"
 export PYGLOBUS="pyGlobus"
-export PYGLOBUS_VER="cvs-10"
-
-export AGRAT="AccessGrid-rat"
-export AGRAT_VER="4.2.22-3"
-export AGVIC="AccessGrid-vic"
-export AGVIC_VER="2.8ucl1.1.3-3"
+export PYGLOBUS_VER="cvs-11"
+export PYOPENSSL="pyOpenSSL_AG"
+export PYOPENSSL_VER="0.5.1-4"
+export SOAPPY="SOAPpy"
+export SOAPPY_VER="0.11.3_cvs_2004_04_01-1"
 
 export AG="
 AccessGrid 
 AccessGrid-VenueClient
 AccessGrid-VenueServer
 AccessGrid-BridgeServer"
-export AG_VER="2.1.2-12"
+export AG_VER="2.2-1"
  
 
 #################################################################
@@ -72,7 +68,7 @@ Install()
   fi
 }
 
-#
+
 # Inform user what will be done and prompt to continue
 #
 echo "This script installs the necessary RPMS for the Access Grid software, " 
@@ -90,58 +86,17 @@ then
 fi
 
 #
-# Before installing, check whether globus is already installed
-#
-if [ "`rpm -q -v $GLOBUS`" == "$GLOBUS-$GLOBUS_VER" ] ; then
-  export GLOBUS_PREINSTALLED=1
-fi
-  
-
-
-#
 # Install Phase 1 RPMS
 #
 echo "***********************************************"
-echo "Installing prerequisites (phase 1) " 
+echo "Installing prerequisites" 
 echo "***********************************************"
-Install $WXWINDOWS $WXWINDOWS_VER
+Install $FPCONST $FPCONST_VER
 Install $LOGGING $LOGGING_VER 
+Install $OPTIK $OPTIK_VER
+Install $SOAPPY $SOAPPY_VER
+Install $PYGLOBUS $PYGLOBUS_VER
 Install $PYOPENSSL $PYOPENSSL_VER 
-Install $GPT $GPT_VER 
-Install $GLOBUS $GLOBUS_VER --nopostun
-
-
-#
-# Run Globus post-install scripts
-#
-if [ "$GLOBUS_PREINSTALLED" ] ; then
-  echo "Globus was already installed; skipping configuration steps"
-else
-  . /etc/profile.d/gpt.sh
-  . /etc/profile.d/globus.sh
-  ${GPT_LOCATION}/sbin/gpt_verify
-  ${GPT_LOCATION}/sbin/gpt-postinstall
-  /usr/lib/globus/setup/globus/setup-gsi
-  /usr/lib/globus/setup/globus_simple_ca_45cc9e80_setup/setup-gsi -default
-fi
-
-#
-# Install Phase 2 RPMS
-#
-echo "***********************************************"
-echo "Installing prerequisites (phase 2) "
-echo "***********************************************"
-Install $PYGLOBUS $PYGLOBUS_VER 
-
-#
-# Install AG media tools RPMS
-#
-echo "***********************************************"
-echo "Installing media tools " 
-echo "***********************************************"
-Install $AGRAT $AGRAT_VER 
-Install $AGVIC $AGVIC_VER
-
 
 #
 # Install AG RPMS
