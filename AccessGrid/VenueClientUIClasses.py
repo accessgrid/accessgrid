@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.236 2003-08-22 04:49:24 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.237 2003-08-22 05:06:16 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -119,7 +119,7 @@ class VenueClientFrame(wxFrame):
         self.myVenuesDict = {}
         self.myVenuesMenuIds = []
         self.personToFollow = None
-        self.manual_url = os.path.join(GetSharedDocDir(), "VenueClientManual",
+        self.manual_url = os.path.join(GetSharedDocDir(), "VenueClient",
                                        "VenueClientManualHTML.htm")
         self.agdp_url = "http://www.accessgrid.org/agdp"
         self.ag_url = "http://www.accessgrid.org/"

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.36 2003-08-22 04:49:24 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.37 2003-08-22 05:06:00 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -185,6 +185,7 @@ def GetInstallDir():
         try:
             AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
             installDir, type = _winreg.QueryValueEx(AG20,"InstallPath")
+            installDir = os.path.join(installDir, "bin")
         except WindowsError:
             log.exception("Cannot open install directory reg key")
             installDir = ""
