@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.43 2004-05-21 16:34:54 olson Exp $
+# RCS-ID:      $Id: Config.py,v 1.44 2004-07-12 15:32:25 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.43 2004-05-21 16:34:54 olson Exp $"
+__revision__ = "$Id: Config.py,v 1.44 2004-07-12 15:32:25 judson Exp $"
 
 import os
 import sys
@@ -1018,7 +1018,31 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
             r = AGVideoResource('video',d,'producer',['external-in'])
             resourceList.append(r)
         return resourceList
-    
+
+    def PerformanceSnapshot(self):
+        """
+        This method grabs a snapshot of relevent system information to report
+        it. This helps track the effect of the AG Toolkit on the system.
+        """
+        import win32pdhutil
+        perfData = dict()
+        counterGroup = "Process(python)"
+        counterNames = [
+            "% Processor Time",
+            "% User Time",
+            "Handle Count",
+            "Private Bytes",
+            "Thread Count",
+            "% Processor Time"
+            ]
+
+        for n in counterNames:
+            key = "%s.%s" % (counterGroup, n)
+            perfData[key] = win32pdhutil.GetPerformanceAttributes(counterGroup,
+                                                                  n)
+        
+        return perfData
+            
 class MimeConfig(AccessGrid.Config.MimeConfig):
     """
     The MimeConfig object encapsulates in single object the management
