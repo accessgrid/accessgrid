@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.6 2003-02-18 19:35:44 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.7 2003-02-21 18:27:24 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -43,8 +43,8 @@ class AudioService( AGService ):
          print "Start service"
          print "Location : ", self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl
          options = []
-         options.append( "-name" )
-         options.append( self.streamDescription.name )
+         #options.append( "-name" )
+         #options.append( self.streamDescription.name )
          options.append( "-t" )
          options.append( '%d' % (self.streamDescription.location.ttl ) )
          if self.streamDescription.encryptionKey != 0:
