@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.51 2004-03-16 22:00:12 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.52 2004-04-06 01:57:02 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.51 2004-03-16 22:00:12 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.52 2004-04-06 01:57:02 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -25,18 +25,7 @@ if sys.platform=="darwin":
 import signal
 import time
 import threading
-
-if sys.version.startswith('2.2'):
-    try:
-        from optik import Option
-    except:
-        raise Exception, "Missing module optik necessary for the AG Toolkit."
-
-if sys.version.startswith('2.3'):
-    try:
-        from optparse import Option
-    except:
-        raise Exception, "Missing module optparse, check your python installation."
+from optparse import Option
 
 # Our imports
 from AccessGrid.Platform.Config import SystemConfig
