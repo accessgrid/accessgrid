@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.135 2004-04-06 18:54:35 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.136 2004-04-07 18:02:45 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.135 2004-04-06 18:54:35 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.136 2004-04-07 18:02:45 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -153,7 +153,7 @@ class VenueServer(AuthorizationMixIn):
 
         # Initialize Auth stuff
         AuthorizationMixIn.__init__(self)
-        self.AddRequiredRole(Role.AllowRole("Administrators"))
+        self.AddRequiredRole(Role.Role("Administrators"))
         rl = self.GetRequiredRoles()
         self.authManager.AddRoles(rl)
 
@@ -470,7 +470,8 @@ class VenueServer(AuthorizationMixIn):
                     authPolicy  = re.sub("<LF>", "\n", authPolicy )
 
                     v.ImportAuthorizationPolicy(authPolicy)
-                except ConfigParser.NoOptionError:
+                except ConfigParser.NoOptionError, e:
+                    log.warn(e)
                     authPolicy = ''
 
                 

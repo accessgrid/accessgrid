@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.11 2004-04-06 20:44:37 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.12 2004-04-07 18:02:45 eolson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.11 2004-04-06 20:44:37 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.12 2004-04-07 18:02:45 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -28,7 +28,7 @@ from AccessGrid.Platform import IsWindows
 from AccessGrid.ClientProfile import ClientProfileCache
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 from AccessGrid.Security.X509Subject import X509Subject    
-from AccessGrid.Security.Role import Role, AllowRole, DenyRole, DefaultIdentityNotRemovable
+from AccessGrid.Security.Role import Role, DefaultIdentityNotRemovable
 from AccessGrid.Security.Action import Action 
 from AccessGrid import icons
 from AccessGrid.Security.Utilities import GetCNFromX509Subject
@@ -40,8 +40,7 @@ class AuthorizationUIPanel(wxPanel):
     modify roles are available, such as Create/Remove Role and Add/Remove Person to role.
     '''
     ID_ROLE_ADDPERSON = wxNewId()
-    ID_ROLE_ADDALLOWROLE = wxNewId()
-    ID_ROLE_ADDDENYROLE = wxNewId()
+    ID_ROLE_ADDROLE = wxNewId()
     ID_ROLE_REMOVEROLE = wxNewId()
     ID_PERSON_ADDPERSON = wxNewId()
     ID_PERSON_DELETE = wxNewId()
@@ -255,8 +254,7 @@ class AuthorizationUIPanel(wxPanel):
         EVT_MENU(self, self.ID_PERSON_PROPERTIES, self.OpenPersonProperties)
 
         EVT_MENU(self, self.ID_ROLE_ADDPERSON, self.AddPerson)
-        EVT_MENU(self, self.ID_ROLE_ADDALLOWROLE, self.CreateAllowRole)
-        EVT_MENU(self, self.ID_ROLE_ADDDENYROLE, self.CreateDenyRole)
+        EVT_MENU(self, self.ID_ROLE_ADDROLE, self.CreateRole)
         EVT_MENU(self, self.ID_ROLE_REMOVEROLE, self.RemoveRole)
         
         EVT_SASH_DRAGGED(self, self.ID_WINDOW_LEFT, self.__OnSashDrag)
@@ -344,20 +342,16 @@ class AuthorizationUIPanel(wxPanel):
         '''
         # Menu when user clicks the tree.
         self.treeMenu = wxMenu()
-        self.treeMenu.Append(self.ID_ROLE_ADDALLOWROLE,"Create Allow Role",
-                             "Create a new allow role")
-        self.treeMenu.Append(self.ID_ROLE_ADDDENYROLE,"Create Deny Role",
-                             "Create a new deny role")
+        self.treeMenu.Append(self.ID_ROLE_ADDROLE,"Create Role",
+                             "Create a new role")
 
         # Menu when user clicks on a role item
         self.roleMenu = wxMenu()
         self.roleMenu.Append(self.ID_ROLE_ADDPERSON,"Add Person",
                              "Add participant to selected role")
         self.roleMenu.AppendSeparator()
-        self.roleMenu.Append(self.ID_ROLE_ADDALLOWROLE,"Create Allow Role",
-                             "Create a new allow role")
-        self.roleMenu.Append(self.ID_ROLE_ADDDENYROLE,"Create Deny Role",
-                             "Create a new deny role")
+        self.roleMenu.Append(self.ID_ROLE_ADDROLE,"Create Role",
+                             "Create a new role")
         self.roleMenu.Append(self.ID_ROLE_REMOVEROLE,"Remove Role",
                              "Remove selected role")
         self.roleMenu.AppendSeparator()
@@ -631,13 +625,7 @@ class AuthorizationUIPanel(wxPanel):
                 # Do not use modal; it hangs the dialog.
                 message.Show()
 
-    def CreateAllowRole(self, event):
-        self._CreateRole(event, "Allow")
-
-    def CreateDenyRole(self, event):
-        self._CreateRole(event, "Deny")
-    
-    def _CreateRole(self, event, type="Allow"):
+    def CreateRole(self, event ):
         '''
         Create new role
         '''
@@ -655,10 +643,7 @@ class AuthorizationUIPanel(wxPanel):
                     return None
                         
             self.changed = 1
-            if type == "Deny":
-                newRole = DenyRole(name)
-            else:
-                newRole = AllowRole(name)
+            newRole = Role(name)
             roleId = self.tree.AppendItem(self.root, newRole.name, self.bulletId,
                                           self.bulletId)
             self.tree.SetItemBold(roleId)

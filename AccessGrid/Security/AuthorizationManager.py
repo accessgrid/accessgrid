@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.16 2004-04-06 18:44:55 eolson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.17 2004-04-07 18:02:45 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.16 2004-04-06 18:44:55 eolson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.17 2004-04-07 18:02:45 eolson Exp $"
 
 # External Imports
 import os
@@ -31,7 +31,7 @@ from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.hosting import Decorate, Reconstitute, Client
 from AccessGrid.GUID import GUID
 from AccessGrid.Security.Role import RoleNotFound, RoleAlreadyPresent, InvalidRole
-from AccessGrid.Security.Role import Everybody, Nobody, AllowRole, DenyRole, Role
+from AccessGrid.Security.Role import Everybody, Role
 from AccessGrid.Security.Action import Action
 from AccessGrid.Security.Action import ActionNotFound, ActionAlreadyPresent
 from AccessGrid.Security.Action import MethodAction
@@ -69,7 +69,6 @@ class AuthorizationManager:
         self.actions = list()
         self.defaultRoles = list()
         self.defaultRoles.append(Everybody)
-        self.defaultRoles.append(Nobody)
         self.parent = None
 
         # Yeah, I know
@@ -123,12 +122,7 @@ class AuthorizationManager:
             roleType = None
             if "TYPE" in node.attributes.keys():    
                 roleType = node.attributes["TYPE"].value
-            if roleType == "Allow":
-                r = AllowRole(node.attributes["name"].value, sl)
-            elif roleType == "Deny":
-                r = DenyRole(node.attributes["name"].value, sl)
-            else:
-                r = Role(node.attributes["name"].value, sl)
+            r = Role(node.attributes["name"].value, sl)
 
             if "default" in node.attributes.keys():    
                 return (r, 1)
@@ -150,7 +144,7 @@ class AuthorizationManager:
         
         domP = xml.dom.minidom.parseString(policy)
         
-        roleElements = domP.getElementsByTagName("Role") + domP.getElementsByTagName("AllowRole") + domP.getElementsByTagName("DenyRole")
+        roleElements = domP.getElementsByTagName("Role")
 
         for c in roleElements:
             (r, default) = unpackRole(c)
@@ -215,13 +209,7 @@ class AuthorizationManager:
 
         for role in rolelist:
             if role.HasSubject(subject):
-                if role.TYPE == "Deny":
-                    # Deny overrides anything else
-                    return 0
-                
-                if role.TYPE == "Allow":
-                    # We only authorize if the subject is explicitly authorized
-                    auth = 1
+                auth = 1
 
         return auth
 

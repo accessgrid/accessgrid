@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.176 2004-04-07 13:03:06 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.177 2004-04-07 18:02:45 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.176 2004-04-07 13:03:06 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.177 2004-04-07 18:02:45 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -315,20 +315,16 @@ class Venue(AuthorizationMixIn):
             self.uniqueId = str(GUID())
 
         AuthorizationMixIn.__init__(self)
-        allowedEntryRole = Role.AllowRole("AllowedEntry")
+        allowedEntryRole = Role.Role("AllowedEntry")
         allowedEntryRole.SetRequireDefault(1)
         self.AddRequiredRole(allowedEntryRole)
-        disallowedEntryRole = Role.DenyRole("DisallowedEntry")
-        disallowedEntryRole.SetRequireDefault(1)
-        self.AddRequiredRole(disallowedEntryRole)
-        venueUsersRole = Role.AllowRole("VenueUsers")
+        venueUsersRole = Role.Role("VenueUsers")
         venueUsersRole.SetRequireDefault(1)
         self.AddRequiredRole(venueUsersRole)
-        admin = Role.AllowRole("Administrators")
+        admin = Role.Role("Administrators")
         admin.SetRequireDefault(1)
         self.AddRequiredRole(admin)
         self.AddRequiredRole(Role.Everybody)
-        self.AddRequiredRole(Role.Nobody)
         # Default actions for Entry Roles.
         self.defaultEntryActionNames = ["Enter", "Exit", "GetStreams", "GetUploadDescriptor", "FindRole"]
         # Default actions for VenueUsers Roles.
@@ -459,15 +455,12 @@ class Venue(AuthorizationMixIn):
 
         # Add default entry roles to entry actions.
         allowedEntryRole = self.authManager.FindRole("AllowedEntry")
-        disallowedEntryRole = self.authManager.FindRole("DisallowedEntry")
         everybodyRole = Role.Everybody
         for actionName in self.defaultEntryActionNames:
             action = self.authManager.FindAction(actionName)
             if action != None:
                 if not action.HasRole(allowedEntryRole):
                     action.AddRole(allowedEntryRole)
-                if not action.HasRole(disallowedEntryRole):
-                    action.AddRole(disallowedEntryRole)
                 if not action.HasRole(everybodyRole):
                     action.AddRole(everybodyRole)
             else:
@@ -571,6 +564,7 @@ class Venue(AuthorizationMixIn):
         @type policy: an XML formatted string
         """
         self.authManager.ImportPolicy(policy)
+        print "\nIMPORTED:", self.authManager.ToXML(), "\n"
 
     def AsVenueDescription(self):
         """
