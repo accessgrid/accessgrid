@@ -159,5 +159,5 @@ os.chdir(spec_dir)
 rpm_command = "rpm -ba AccessGrid.spec"
 if verbose:
     print "rpm command:",rpm_command
-    os.system(rpm_command)
+os.system(rpm_command)
 
