@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.70 2003-03-20 23:48:39 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.71 2003-03-20 23:54:38 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -433,7 +433,7 @@ class VenueClientUI(wxApp, VenueClient):
             if(followerHandle.IsValid()):
                 wxLogDebug("the follower handler is valid")
                 followerProxy = self.clientHandle.get_proxy()
-                followerProxy.EnterVenue(venueUri)
+                followerProxy.EnterVenue(venueUrl)
 
     def OnExit(self):
         """
