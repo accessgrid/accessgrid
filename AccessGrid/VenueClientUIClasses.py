@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.202 2003-05-23 22:17:59 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.203 2003-05-27 20:40:24 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1990,7 +1990,18 @@ class TextClientPanel(wxPanel):
 
         self.textMessage = ''
 
-        if textPayload.sender == GetDefaultIdentityDN():
+        print textPayload.sender
+        print GetDefaultIdentityDN()
+        print profile.name
+        print self.app.profile.name
+
+        #
+        # Do not base on dn name because if you have 2 clients
+        # running with same certificates, both clients will show
+        # you say and not the correct name.
+        #
+        #if textPayload.sender == GetDefaultIdentityDN():
+        if profile.name == self.app.profile.name:
             self.textMessage =  "You say, \"%s\"\n" % (message)
         elif(textPayload.sender != None):
             self.textMessage = "%s says, \"%s\"\n" % (profile.name, message)
