@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClientUI.py,v 1.7 2003-02-22 16:34:06 judson Exp $
+# RCS-ID:      $Id: TextClientUI.py,v 1.8 2003-02-23 14:22:24 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,6 +19,8 @@ from wxPython.wx import *
 from threading import Thread
 
 from pyGlobus.io import GSITCPSocket
+from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
+
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 from AccessGrid.Events import ConnectEvent, TextEvent
@@ -63,7 +65,10 @@ class SimpleTextProcessor:
         """ """
         data = text.data
 
-        if text.sender != None:
+#        print "TS: %s GDI: %s" % (text.sender, GetDefaultIdentityDN())
+        if text.sender == GetDefaultIdentityDN():
+            string = "You say, \"%s\"\n" % (data)
+        elif text.sender != None:
             name = text.sender
             stuff = name.split('/')
             for s in stuff[1:]:
