@@ -87,26 +87,25 @@ wxPanel<br>
             <td align="LEFT" valign="TOP">
 <a href="#AddApplication">AddApplication</a><br>
 <a href="#AddData">AddData</a><br>
-<a href="#AddNode">AddNode</a><br>
 <a href="#AddParticipant">AddParticipant</a><br>
 <a href="#AddService">AddService</a><br>
 <a href="#CleanUp">CleanUp</a><br>
 <a href="#ModifyParticipant">ModifyParticipant</a><br>
+<a href="#OnDoubleClick">OnDoubleClick</a><br>
 <a href="#OnKeyDown">OnKeyDown</a><br>
-<a href="#OnRightClick">OnRightClick</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#OnRightClick">OnRightClick</a><br>
 <a href="#OnSize">OnSize</a><br>
 <a href="#RemoveApplication">RemoveApplication</a><br>
 <a href="#RemoveData">RemoveData</a><br>
-<a href="#RemoveNode">RemoveNode</a><br>
 <a href="#RemoveParticipant">RemoveParticipant</a><br>
 <a href="#RemoveParticipantData">RemoveParticipantData</a><br>
 <a href="#RemoveService">RemoveService</a><br>
 <a href="#UnSelectList">UnSelectList</a><br>
-<a href="#UpdateData">UpdateData</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#UpdateData">UpdateData</a><br>
 <a href="#__GetPersonalDataFromItem">__GetPersonalDataFromItem</a><br>
 <a href="#__init__">__init__</a><br>
 <a href="#__setImageList">__setImageList</a><br>
@@ -167,37 +166,6 @@ AddApplication ( self,  appDesc )
         <td>
         <font color="#000088"><pre>
 AddData ( self,  profile )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="AddNode"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">AddNode&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-AddNode (
-        self,
-        profile,
-        dataList=[],
-        )
 
 </pre></font>
 
@@ -310,6 +278,33 @@ CleanUp ( self )
         <td>
         <font color="#000088"><pre>
 ModifyParticipant ( self,  description )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="OnDoubleClick"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">OnDoubleClick&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+OnDoubleClick ( self,  event )
 
 </pre></font>
 
@@ -445,33 +440,6 @@ RemoveApplication ( self,  appDesc )
         <td>
         <font color="#000088"><pre>
 RemoveData ( self,  profile )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="RemoveNode"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">RemoveNode&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-RemoveNode ( self,  profile )
 
 </pre></font>
 
@@ -763,7 +731,7 @@ __setTree ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Mon Apr 28 13:48:45 2003 by
+        on Wed May 14 10:02:40 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

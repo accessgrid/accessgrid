@@ -88,6 +88,7 @@ ServiceBase<br>
 <a href="#AddConnectionEvent">AddConnectionEvent</a><br>
 <a href="#AddDataEvent">AddDataEvent</a><br>
 <a href="#AddServiceEvent">AddServiceEvent</a><br>
+<a href="#AddStreamEvent">AddStreamEvent</a><br>
 <a href="#AddUserEvent">AddUserEvent</a><br>
 <a href="#AuthorizeFollow">AuthorizeFollow</a><br>
 <a href="#AuthorizeLead">AuthorizeLead</a><br>
@@ -96,9 +97,9 @@ ServiceBase<br>
 <a href="#ExitVenue">ExitVenue</a><br>
 <a href="#Follow">Follow</a><br>
 <a href="#FollowResponse">FollowResponse</a><br>
-<a href="#GetHomeVenue">GetHomeVenue</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#GetHomeVenue">GetHomeVenue</a><br>
 <a href="#GetInstalledApps">GetInstalledApps</a><br>
 <a href="#GetVenue">GetVenue</a><br>
 <a href="#Heartbeat">Heartbeat</a><br>
@@ -110,10 +111,11 @@ ServiceBase<br>
 <a href="#RemoveConnectionEvent">RemoveConnectionEvent</a><br>
 <a href="#RemoveDataEvent">RemoveDataEvent</a><br>
 <a href="#RemoveServiceEvent">RemoveServiceEvent</a><br>
-<a href="#RemoveUserEvent">RemoveUserEvent</a><br>
-<a href="#RequestFollow">RequestFollow</a><br>
+<a href="#RemoveStreamEvent">RemoveStreamEvent</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#RemoveUserEvent">RemoveUserEvent</a><br>
+<a href="#RequestFollow">RequestFollow</a><br>
 <a href="#RequestLead">RequestLead</a><br>
 <a href="#SendFollowResponse">SendFollowResponse</a><br>
 <a href="#SendLeadResponse">SendLeadResponse</a><br>
@@ -234,6 +236,33 @@ AddDataEvent ( self,  data )
         <td>
         <font color="#000088"><pre>
 AddServiceEvent ( self,  data )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AddStreamEvent"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AddStreamEvent&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AddStreamEvent ( self,  data )
 
 </pre></font>
 
@@ -843,6 +872,33 @@ RemoveServiceEvent ( self,  data )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="RemoveStreamEvent"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">RemoveStreamEvent&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+RemoveStreamEvent ( self,  data )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="RemoveUserEvent"></a>&nbsp;
                 </font>
             </th>
@@ -1214,7 +1270,7 @@ __init__ ( self,  profile=None )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Mon Apr 28 13:48:45 2003 by
+        on Wed May 14 10:02:40 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

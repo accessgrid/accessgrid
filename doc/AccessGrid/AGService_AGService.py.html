@@ -81,15 +81,18 @@ ServiceBase<br>
               <tr>
             <td align="LEFT" valign="TOP">
 <a href="#ConfigureStream">ConfigureStream</a><br>
+<a href="#ForceStop">ForceStop</a><br>
 <a href="#GetCapabilities">GetCapabilities</a><br>
 <a href="#GetConfiguration">GetConfiguration</a><br>
+<a href="#GetEnabled">GetEnabled</a><br>
 <a href="#GetExecutable">GetExecutable</a><br>
 <a href="#GetResource">GetResource</a><br>
 <a href="#IsStarted">IsStarted</a><br>
 <a href="#SetAuthorizedUsers">SetAuthorizedUsers</a><br>
-<a href="#SetConfiguration">SetConfiguration</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#SetConfiguration">SetConfiguration</a><br>
+<a href="#SetEnabled">SetEnabled</a><br>
 <a href="#SetExecutable">SetExecutable</a><br>
 <a href="#SetResource">SetResource</a><br>
 <a href="#Shutdown">Shutdown</a><br>
@@ -157,6 +160,34 @@ faultType("AGService.ConfigureStream failed : " + str( sys.exc_value ) )<br>
 
 </td></tr>
 </table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="ForceStop"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">ForceStop&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+ForceStop ( self )
+
+</pre></font>
+
+<p>Forcefully stop the service</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -241,6 +272,34 @@ faultType("AGService.GetConfiguration failed : " + str( sys.exc_value ) )<br>
 
 </td></tr>
 </table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetEnabled"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetEnabled&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetEnabled ( self )
+
+</pre></font>
+
+<p>Get the enabled state</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -353,7 +412,7 @@ SetAuthorizedUsers ( self,  authorizedUsers )
 </pre></font>
 
 <p>Set the authorizedUsers list; this is usually pushed from a ServiceManager,
-      thus this wholesale Set of the authorized user list</p>
+        thus this wholesale Set of the authorized user list</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -438,6 +497,34 @@ faultType("AGService.SetConfiguration failed : " + str( sys.exc_value ) )<br>
 
 </td></tr>
 </table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetEnabled"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetEnabled&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetEnabled ( self,  enabled )
+
+</pre></font>
+
+<p>Enable/disable the service</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -730,7 +817,7 @@ Exception( "Can't instantiate abstract class AGService" )<br>
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Mon Apr 28 13:48:45 2003 by
+        on Wed May 14 10:02:40 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -85,29 +85,29 @@ wxFrame<br>
 <a href="#Attach">Attach</a><br>
 <a href="#AttachToNode">AttachToNode</a><br>
 <a href="#Connected">Connected</a><br>
+<a href="#DisableService">DisableService</a><br>
+<a href="#DisableServices">DisableServices</a><br>
+<a href="#EnableService">EnableService</a><br>
+<a href="#EnableServices">EnableServices</a><br>
 <a href="#Error">Error</a><br>
+</td>
+<td align="LEFT" valign="TOP">
 <a href="#GetServiceConfiguration">GetServiceConfiguration</a><br>
 <a href="#GotoArgonne">GotoArgonne</a><br>
 <a href="#GotoLobby">GotoLobby</a><br>
 <a href="#GotoLocal">GotoLocal</a><br>
-</td>
-<td align="LEFT" valign="TOP">
 <a href="#GotoTestRoom">GotoTestRoom</a><br>
 <a href="#LayoutConfiguration">LayoutConfiguration</a><br>
 <a href="#LoadConfiguration">LoadConfiguration</a><br>
 <a href="#OnAbout">OnAbout</a><br>
 <a href="#PopupHostMenu">PopupHostMenu</a><br>
 <a href="#PopupServiceMenu">PopupServiceMenu</a><br>
+</td>
+<td align="LEFT" valign="TOP">
 <a href="#RemoveHost">RemoveHost</a><br>
 <a href="#RemoveService">RemoveService</a><br>
 <a href="#ServiceManagerSelectedCB">ServiceManagerSelectedCB</a><br>
 <a href="#SetConfiguration">SetConfiguration</a><br>
-</td>
-<td align="LEFT" valign="TOP">
-<a href="#StartService">StartService</a><br>
-<a href="#StartServices">StartServices</a><br>
-<a href="#StopService">StopService</a><br>
-<a href="#StopServices">StopServices</a><br>
 <a href="#StoreConfiguration">StoreConfiguration</a><br>
 <a href="#TimeToQuit">TimeToQuit</a><br>
 <a href="#UpdateHostList">UpdateHostList</a><br>
@@ -286,6 +286,118 @@ Connected ( self )
 
 </pre></font>
 
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="DisableService"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">DisableService&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+DisableService ( self,  event=None )
+
+</pre></font>
+
+<p>Disable the selected service(s)&quot;</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="DisableServices"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">DisableServices&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+DisableServices ( self,  event )
+
+</pre></font>
+
+<p>Disable all known services</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="EnableService"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">EnableService&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+EnableService ( self,  event=None )
+
+</pre></font>
+
+<p>Enable the selected service(s)</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="EnableServices"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">EnableServices&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+EnableServices ( self,  event )
+
+</pre></font>
+
+<p>Enable all known services</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -697,123 +809,11 @@ ServiceManagerSelectedCB ( self,  event )
         <tr>
         <td>
         <font color="#000088"><pre>
-SetConfiguration ( self,  event=None )
+SetConfiguration ( self,  serviceConfig )
 
 </pre></font>
 
 <p>Configure the service according to the service configuration panel</p>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="StartService"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">StartService&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-StartService ( self,  event=None )
-
-</pre></font>
-
-<p>Start the selected service(s)</p>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="StartServices"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">StartServices&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-StartServices ( self,  event )
-
-</pre></font>
-
-<p>Start all known services</p>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="StopService"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">StopService&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-StopService ( self,  event=None )
-
-</pre></font>
-
-<p>Stop the selected service(s)&quot;</p>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="StopServices"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">StopServices&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-StopServices ( self,  event )
-
-</pre></font>
-
-<p>Stop all known services</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1000,7 +1000,7 @@ __init__ (
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Mon Apr 28 13:48:45 2003 by
+        on Wed May 14 10:02:40 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -68,7 +68,7 @@
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-socket.html">socket</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-string.html">string</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-sys.html">sys</a><br>
-<b>from</b> <a href="http://www.python.org/doc/current/lib/module-threading.html">threading</a> <b>import</b> Thread, RLock<br>
+<b>from</b> <a href="http://www.python.org/doc/current/lib/module-threading.html">threading</a> <b>import</b> Thread, Lock, Condition<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-time.html">time</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-traceback.html">traceback</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-urlparse.html">urlparse</a><br>
@@ -98,9 +98,21 @@
         <td>
         
 <table border="0" cellpadding="3" cellspacing="0">
-<tr><td valign="top" align="left"><a href="VenueServer_InvalidVenueURL.py.html">InvalidVenueURL</a></td><td valign="top" align="left"></td></tr>
-<tr><td valign="top" align="left"><a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a></td><td valign="top" align="left"></td></tr>
-<tr><td valign="top" align="left"><a href="VenueServer_RemoveVenueException.py.html">RemoveVenueException</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="VenueServer_AdministratorAlreadyPresent.py.html">AdministratorAlreadyPresent</a></td><td valign="top" align="left">
+<p>The exception raised when an administrator is already present, but</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="VenueServer_InvalidVenueURL.py.html">InvalidVenueURL</a></td><td valign="top" align="left">
+<p>The exception raised when a URL doesn't point to a venue.</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a></td><td valign="top" align="left">
+<p>The exception raised when a caller is not authorized to make the call.</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="VenueServer_UnbindVenueError.py.html">UnbindVenueError</a></td><td valign="top" align="left">
+<p>The exception raised when the hosting environment can't detach a</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="VenueServer_VenueNotFound.py.html">VenueNotFound</a></td><td valign="top" align="left">
+<p>The exception raised when a venue is not found on this venue server.</p>
+</td></tr>
 <tr><td valign="top" align="left"><a href="VenueServer_VenueServer.py.html">VenueServer</a></td><td valign="top" align="left">
 <p>The Virtual Venue Server object is responsible for creating,</p>
 </td></tr>
@@ -121,7 +133,7 @@
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Mon Apr 28 13:48:45 2003 by
+        on Wed May 14 10:02:40 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -1,3 +1,984 @@
+2003-05-14 16:56  judson
+
+	* bin/CreateVenues.py: Tried adding more debugging output, but it
+	appears to be a lower level Globus bug.
+
+2003-05-14 15:47  turam
+
+	* doc/RoomNodeConfiguration-HOWTO.doc: Remove references to
+	ServiceManager and NodeServicer packages in install section, since
+	these components are included in other packages
+
+2003-05-14 15:24  judson
+
+	* AccessGrid/: Venue.py, VenueServer.py: A round of lock fixing
+	when exceptions are raised.
+
+2003-05-14 14:38  eolson
+
+	* packaging/redhat/AccessGrid.spec: Remove .spec requirement for
+	PyIPC, since we don't need it anymore.
+
+2003-05-14 14:34  judson
+
+	* bin/VenueServer.py: made /usr/bin/python2 on top line and
+	reformatted args list.
+
+2003-05-14 14:31  eolson
+
+	* packaging/redhat/AccessGrid.spec: 
+	Require PyIPC instead of pyIPC (since our package on the web page
+	is  currently called PyIPC).
+
+2003-05-14 14:27  judson
+
+	* AccessGrid/Venue.py: Fixes for new code. Resolved conflicts.
+
+2003-05-14 14:25  eolson
+
+	* packaging/redhat/AccessGrid.spec: 
+	We're not including VenueServerRegistry.py in the package at this
+	time.
+
+2003-05-14 14:22  olson
+
+	* AccessGrid/hosting/pyGlobus/Server.py: turn off soap server
+	dumpFaultInfo (there's a log.exception in AccessControl that
+	handles this)
+
+2003-05-14 14:19  olson
+
+	* AccessGrid/hosting/AccessControl.py: fixie fixie
+
+2003-05-14 14:15  olson
+
+	* AccessGrid/hosting/pyGlobus/tests/: tclient.py, tserver.py: get
+	the fault type into the fault.
+
+2003-05-14 14:02  olson
+
+	* AccessGrid/hosting/: AccessControl.py, pyGlobus/Server.py,
+	pyGlobus/tests/tclient.py, pyGlobus/tests/tserver.py: Fixes to pass
+	server-side exception tracebacks through to the client.
+	
+	You'll want to catch AccessGrid.hosting.pyGlobus.Client.FaultType. 
+	You can see the traceback from a fault f by viewing f.detail.
+
+2003-05-14 12:56  eolson
+
+	* bin/CvsSetup.py: 
+	After setting up and running from cvs, should (really this time)
+	not look for vic and rat in an AG install and instead look in the
+	current directory or path.
+	
+	Changed backslash to quadruple backslashes in the regular
+	expression.
+
+2003-05-14 12:27  eolson
+
+	* bin/CvsSetup.py: 
+	Don't bother copying defaultLinux config file if we are on windows.
+
+2003-05-14 11:34  turam
+
+	* AccessGrid/Venue.py: Make the SOAP Enter call return a value
+
+2003-05-14 11:32  eolson
+
+	* bin/CvsSetup.py: 
+	Add line to specify location of config file defaultLinux or
+	defaultWindows.
+	
+	CvsSetup didn't seem to setup files for personal node correctly
+	(default services didn't seem to start up).  Looks to be working
+	now.  Will verify changes work in windows now.
+
+2003-05-14 08:17  turam
+
+	* doc/RoomNodeConfiguration-HOWTO.doc: Mostly formatting changes
+
+2003-05-13 16:52  olson
+
+	* AccessGrid/: CertificateManager.py, CertificateManagerWXGUI.py:
+	Robustness fixes:
+	
+	  catch errors during grid-proxy-init execution
+	  support retry of grid-proxy-init on failed password attempts
+	  show other errors to the user, give them chance to cancel
+	connection
+	
+	support for explicitly grabbing the proxy cert object iva
+	GetProxyCertificate()
+
+2003-05-13 16:50  olson
+
+	* AccessGrid/UIUtilities.py: Add ErrorDialogWithTraceback
+
+2003-05-13 16:50  olson
+
+	* bin/VenueClient.py: Changes to more completely support
+	CertificateMgr: Don't call GPI, call
+	app.GetCertificateManager().ConfigureProxy() use
+	app.GetCertificateManager().HaveValidProxy() (this explicitly
+	checks the expiration on the proxy cert)
+
+2003-05-13 14:10  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: Use hittest instead of
+	selected item on double click so tree items default action doesn't
+	get executed when you double click a twist button.
+
+2003-05-13 13:53  judson
+
+	* bin/VenueServer.py: Moved BindService to the implementation in
+	the module. cleaned up the code by 2 lines, no biggie.
+
+2003-05-13 13:52  judson
+
+	* AccessGrid/: Venue.py, VenueServer.py: Added many exception,
+	started added in locking in all interface methods. Sorted out
+	persistence details, cleaned it up in preparatoin for dealing with
+	application persistence.
+
+2003-05-13 11:51  turam
+
+	* AccessGrid/VenueClientUIClasses.py: Add application menu back in
+	for Applications heading; Remove AddData  from data entry menu;
+	Remove AddService from service entry menu
+
+2003-05-13 11:42  lefvert
+
+	* bin/VenueClient.py: catch exception thrown by EnterVenue
+
+2003-05-13 11:28  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: changed image list format to
+	display icons properly on windows
+
+2003-05-13 11:20  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: using right icons
+
+2003-05-13 10:01  lefvert
+
+	* AccessGrid/icons.py: minor changes
+
+2003-05-13 09:54  lefvert
+
+	* AccessGrid/icons.py: attempt to fix bullet icon for windows
+
+2003-05-12 17:15  turam
+
+	* AccessGrid/AGServiceManager.py: Make RemoveServices not re-raise
+	exceptions in removing services
+
+2003-05-12 17:05  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: changed bullets to lines to
+	make it work on linux, I'll change it back tomorrow.  smaller venue
+	name font
+
+2003-05-12 16:59  lefvert
+
+	* bin/VenueManagement.py: Added menu with just help-about and
+	file-exit options for now Changed Address to Path, #276
+
+2003-05-12 16:58  lefvert
+
+	* AccessGrid/icons.py: changed bullet to work on windows
+
+2003-05-12 16:11  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: Moved venue title under title
+	bar, and changed window title to Venue Client
+
+2003-05-12 15:13  judson
+
+	* AccessGrid/Descriptions.py: Cleaning up INI methods a bit.
+
+2003-05-12 12:58  lefvert
+
+	* AccessGrid/VenueClient.py: Handle EventClient exceptions
+	
+	- EnterVenue fails and a message is displayed for user - ExitVenue
+	catches but ignores the exception - Heartbeat catches but ignores
+	the exception
+
+2003-05-12 12:35  turam
+
+	* AccessGrid/AGNodeService.py: Add NodeService.AddService method
+	(NodeService sends streams to the new service, whereby it may
+	start); Add method to enable/disable services, whereby they may
+	start; Add methods for adding and removing streams in the list of
+	stream descriptions the node service now keeps (this is a hook for
+	starting services when new streams appear)
+
+2003-05-12 12:22  turam
+
+	* AccessGrid/VenueClient.py: Handle AddStream and RemoveStream
+	events; Stop node services (video, audio, etc.) on exit
+
+2003-05-12 12:06  turam
+
+	* AccessGrid/NodeManagementUIClasses.py: Clean up service
+	configuration dialog; Change Start/Stop to Enable/Disable; Call
+	NodeService.AddService method instead of ServiceManager.AddService
+	(so node service can auto start services with appropriate stream)
+
+2003-05-12 11:54  turam
+
+	* AccessGrid/AGServiceManager.py: Continue removing services
+	despite single failures in RemoveServices; Return service
+	description from AddService
+
+2003-05-12 11:36  turam
+
+	* bin/NodeManagement.py: Remove unused imports
+
+2003-05-12 11:35  turam
+
+	* AccessGrid/AGService.py: Add "enabled/disabled" state to services
+	(these are what users really care about; "started/stopped" are
+	internal); remove implicit reliance on multicast locations; removed
+	unused attributes
+
+2003-05-12 11:27  turam
+
+	* AccessGrid/NetworkLocation.py: Add a "type" instance attribute,
+	since class attributes don't survive SOAP encoding/decoding
+
+2003-05-12 11:26  turam
+
+	* AccessGrid/Venue.py: Distribute an AddStream event when a new
+	stream is added to a venue
+
+2003-05-12 11:25  turam
+
+	* AccessGrid/Events.py: Add events for adding and removing streams
+
+2003-05-12 10:20  lefvert
+
+	* AccessGrid/icons.py: added bullet icon
+
+2003-05-12 10:20  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: Changed the folder icon to a
+	bullet
+
+2003-05-12 10:19  olson
+
+	* doc/: AccessControlNotes.doc, CertificateManagement.doc,
+	DatastoreArch.doc, DatastoreDesign2.0.doc, PersonalNodeDesign.doc:
+	added additional docs
+
+2003-05-12 10:16  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: Right click now selects a
+	tree item. #274
+
+2003-05-12 10:10  olson
+
+	* AccessGrid/CertificateManager.py: Make the assignmetns for
+	haveWin32Registry correct.
+
+2003-05-12 09:58  turam
+
+	* AccessGrid/VenueClient.py: Replace True with "1"
+
+2003-05-12 09:16  olson
+
+	* AccessGrid/CertificateManager.py: remove refs to True/False
+
+2003-05-09 18:01  eolson
+
+	* tests/unittest_ClientProfile.py: 
+	Initial checkin for ClientProfile unittest.
+
+2003-05-09 17:59  eolson
+
+	* AccessGrid/ClientProfile.py: 
+	Make sure to initialize self.profile in ClientProfile even when a
+	configuration file isn't loaded.
+
+2003-05-09 15:47  olson
+
+	* bin/VenueServer.py: Switch to AccessGrid.Toolkit based
+	initialization.
+	
+	Add support for --cert/--key to explicitly choose an identity
+	certificate for this process to use.
+	
+	Removed call to GPI(), as the app.Initialize() will create a proxy
+	if one is needed.
+	
+	Fix other --XXX args to getopt to have "XXX=" for their arguments
+	to get picked up.
+
+2003-05-09 15:45  olson
+
+	* bin/VenueManagement.py: Switch to AccessGrid.Toolkit based
+	initialization.
+	
+	Instead of using GPI() to get a proxy, invoke the certificate
+	manager via
+	
+		    app = Toolkit.GetApplication()
+		    app.GetCertificateManager().ConfigureProxy()
+
+2003-05-09 15:44  olson
+
+	* bin/VenueClient.py: Switch to AccessGrid.Toolkit based
+	initialization.
+
+2003-05-09 15:43  olson
+
+	* AccessGrid/VenueClientUIClasses.py: Use the AccessGrid.Toolkit
+	methods for integrating cert stuff.
+
+2003-05-09 15:40  olson
+
+	* AccessGrid/CertificateManagerWXGUI.py: wxPython interface to the
+	cert mgr.
+
+2003-05-09 15:40  olson
+
+	* AccessGrid/Toolkit.py: Toolkit-wide initialization and
+	finalization module.
+
+2003-05-09 15:40  olson
+
+	* AccessGrid/CertificateManager.py: Split wx-specific code out to
+	CertificateManagerWXGUI.py.  Add support for forcing identity to a
+	specific cert.	Add support for inheriting identity settings from
+	process environment.
+
+2003-05-09 15:27  eolson
+
+	* AccessGrid/ClientProfile.py: 
+	Fixed mispelled Set function.
+
+2003-05-09 13:49  turam
+
+	* doc/RoomNodeConfiguration-HOWTO.doc: Added brief section on
+	installation
+
+2003-05-09 11:28  lefvert
+
+	* AccessGrid/VenueClient.py: added a try except statement
+	(containing just a pass) around EventClient.Stop() since this
+	method always raises an exception
+
+2003-05-09 10:38  lefvert
+
+	* AccessGrid/icons.py: new smaller service icon
+
+2003-05-08 17:24  lefvert
+
+	* AccessGrid/icons.py: changed data dimension to look good on
+	windows too
+
+2003-05-08 17:20  lefvert
+
+	* AccessGrid/icons.py: new smaller data icon
+
+2003-05-08 17:04  judson
+
+	* bin/VenueServer.py: Removed output to make it more reasonable,
+	added it to the VenueServer base class.
+
+2003-05-08 17:02  judson
+
+	* AccessGrid/: EventClient.py, TextClient.py: Added more
+	exceptions.
+
+2003-05-08 16:01  lefvert
+
+	* AccessGrid/icons.py: changed folder icon dimensions
+
+2003-05-08 15:56  lefvert
+
+	* AccessGrid/icons.py: changed dimensions of participant icon
+
+2003-05-08 15:23  lefvert
+
+	* AccessGrid/icons.py: new icons for headings
+
+2003-05-08 15:23  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: new icon for headings
+
+2003-05-08 09:50  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: If a user tries to write in
+	the text output field of the text chat, the focus is set on the
+	text input field instead and the character is moved to the right
+	field.	This should make the text chat a little bit clearer
+
+2003-05-07 17:55  eolson
+
+	* tests/unittest_AuthorizationManager.py: 
+	unittest for AuthorizationManager.
+	
+	One test fails because it would be expected that the Authorize()
+	function would return false for users not in the list.	Authorize()
+	has been set set to always return true, but I don't know if it's a
+	good time to change that.
+
+2003-05-07 16:31  eolson
+
+	* tests/unittest_all.py: 
+	Temporarily disable unittest_all so that people don't mistakenly
+	think it should be working.
+	
+	It needs to provide better arguments to unittest.main so that tests
+	aren't stripped from their suites.
+
+2003-05-07 16:17  eolson
+
+	* tests/unittest_AGParameter.py: 
+	unittest for AGParameter
+
+2003-05-07 15:40  judson
+
+	* AccessGrid/TextClient.py: Added a check to only split if there is
+	something to split on.
+
+2003-05-07 15:35  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: Expands root only for Windows
+
+2003-05-07 15:33  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: Shows heading on Windows when
+	not connected
+
+2003-05-07 15:12  judson
+
+	* AccessGrid/TextClient.py: Added a check to only split if there is
+	something to split on.
+
+2003-05-07 15:09  judson
+
+	* Install.LINUX, Install.WINDOWS: Added copyrights for VIC and RAT.
+
+2003-05-07 14:31  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: hide root (Linux)
+
+2003-05-07 14:27  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: If I don't hide the root item
+	in wxTreeCtrl, twist buttons are shown on Windows, so I added an
+	empty root. But, the headings get indented in an ugly way. To try
+	to make it look nicer I added a line in front of headings on
+	Windows. Hopefully, this makes things clearer.
+
+2003-05-07 14:15  lefvert
+
+	* AccessGrid/icons.py: minor change
+
+2003-05-07 14:06  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: changed dimension for line
+	image
+
+2003-05-07 13:38  lefvert
+
+	* AccessGrid/icons.py: changed name on the line icon
+
+2003-05-07 13:36  lefvert
+
+	* AccessGrid/icons.py: Added a line icon for fixing the twist
+	button problem on Windows
+
+2003-05-07 12:50  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: Changed personal data popup
+	menu to add personal data, instead of venue data.
+
+2003-05-07 10:53  lefvert
+
+	* AccessGrid/: icons.py, UIUtilities.py: Changed the about text to
+	static text separated from the background image.
+
+2003-05-07 09:46  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: If you double click an item a
+	default action is executed
+	
+	data - open participant - view profile service - open application -
+	join
+	
+	Changed bug in OpenData method
+
+2003-05-07 09:25  lefvert
+
+	* bin/VenueClient.py: Commented out all nodes code, all users are
+	participants
+
+2003-05-07 09:24  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: * edit and my node menu items
+	are moved to one menu called preferences * commented out all nodes
+	code, a user can just be a participant now * separated menus for
+	main menu, headings, and tree items
+
+2003-05-07 08:37  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: removed CTRL shortcuts
+
+2003-05-06 08:46  lefvert
+
+	* doc/VenueClientManual.doc: Venue Client Manual draft.  Whenever
+	we feel this document is complete, let me know and I'll add it to a
+	Manual option in the Help menu.
+
+2003-05-05 16:38  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: minor fix on update data
+	issue
+
+2003-05-05 15:17  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: Fixed bug #251. For some
+	reason the UI doesn't update on Windows when personal data is
+	added. This seems to be a wxPython bug and I did a temporary fix to
+	solve this.
+
+2003-05-05 13:27  olson
+
+	* AccessGrid/PersonalNodeLinuxExt.py: A start at a cleanup of the
+	sysV ipc-based personal node startup.
+	
+	This isn't complete, but I want to get it in the CVS archive for
+	historical reasons, and as an example of comprehensive error
+	checking.
+
+2003-05-05 13:26  olson
+
+	* AccessGrid/PersonalNode.py: Use the pipes-based personal node
+	setup for linux.
+
+2003-05-05 13:24  olson
+
+	* AccessGrid/PersonalNodePipes.py: Pipe-based personal node
+	startup. For unix.
+
+2003-05-02 10:12  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: Am now sorting all items in
+	alphabetical order based on name. Bugzilla #259
+	
+	If you have a lot of data/services/apps it is easy not to pay
+	attention to nodes in the venue, so I changed the order of headings
+	to have Nodes under Users instead of last.
+	
+	Changed the heading colour to blue.
+
+2003-04-30 07:11  eolson
+
+	* packaging/windows/agtk.iss: 
+	Rat was not starting on my machine (since I use drive E:)
+	
+	Changed the file that agtk.iss is updating from  
+	{commonappdata}\AccessGrid\defaultWindows to  
+	{commonappdata}\AccessGrid\nodeConfig\defaultWindows
+
+2003-04-30 00:39  judson
+
+	* packaging/redhat/AccessGrid-rat.spec: This has been moved to the
+	ag-rat module.
+
+2003-04-29 20:42  eolson
+
+	* AccessGrid/Platform.py: 
+	Daemonize is spelled "Dae..." not "Dea..."
+
+2003-04-29 18:04  judson
+
+	* AccessGrid/Platform.py: Fixed broken None usage.
+
+2003-04-29 18:02  judson
+
+	* packaging/windows/agtk.iss: Removed venueserverregistry from
+	packaging.
+
+2003-04-29 17:56  olson
+
+	* AccessGrid/Platform.py: fix typo
+
+2003-04-29 17:52  olson
+
+	* AccessGrid/Platform.py: You can't call None
+
+2003-04-29 17:48  olson
+
+	* packaging/windows/agtk.iss: remove VenuesServerReigstry here too
+
+2003-04-29 17:47  olson
+
+	* setup.py, AccessGrid/AGService.py, AccessGrid/Descriptions.py,
+	AccessGrid/Platform.py, AccessGrid/ProcessManagerUnix.py,
+	AccessGrid/Utilities.py, AccessGrid/Venue.py,
+	bin/AGServiceManager.py, packaging/gnome/.desktop,
+	packaging/gnome/VenueClient-PersonalNode.desktop,
+	packaging/gnome/VenueClient.desktop,
+	packaging/kde/VenueClient-PersonalNode.desktop,
+	packaging/kde/VenueClient.desktop,
+	packaging/redhat/AccessGrid.spec: Merge changes from HEAD between
+	ahm-synch-4 and ahm-synch-5
+
+2003-04-29 16:57  olson
+
+	* packaging/windows/agtk.iss: actually run createMailcap
+
+2003-04-29 16:55  olson
+
+	* packaging/windows/createMailcap.py: fixie
+
+2003-04-29 16:49  olson
+
+	* setup.py: add createMailcap
+
+2003-04-29 16:47  olson
+
+	* packaging/windows/agtk.iss: more app fix
+
+2003-04-29 16:45  olson
+
+	* packaging/windows/agtk.iss: more service mods
+
+2003-04-29 16:45  olson
+
+	* packaging/windows/createMailcap.py: file createMailcap.py was
+	initially added on branch ahm-dev-2003-0424.
+
+2003-04-29 16:45  olson
+
+	* packaging/windows/createMailcap.py: Create a default mailcap file
+
+2003-04-29 16:38  judson
+
+	* packaging/redhat/AccessGrid.spec: Updated to require pyIPC and
+	obsolete the right stuff.
+
+2003-04-29 16:08  turam
+
+	* AccessGrid/AGService.py: During AGService.Shutdown, also Stop the
+	service to kill the media tools
+
+2003-04-29 15:39  olson
+
+	* setup.py, packaging/windows/agtk.iss: first shot at packaging
+	support for shared apps
+
+2003-04-29 15:39  judson
+
+	* AccessGrid/Venue.py: Commented out authorization in wsAddData and
+	wsAddService because minimal authorization isn't sufficient.
+
+2003-04-29 15:32  judson
+
+	* setup.py, AccessGrid/Platform.py, AccessGrid/Utilities.py,
+	bin/AGServiceManager.py, packaging/gnome/.desktop,
+	packaging/gnome/VenueClient-PersonalNode.desktop,
+	packaging/gnome/VenueClient.desktop,
+	packaging/kde/VenueClient-PersonalNode.desktop,
+	packaging/kde/VenueClient.desktop,
+	packaging/redhat/AccessGrid.spec: Added stuff for personal node on
+	linux, testing now.
+
+2003-04-29 14:40  judson
+
+	* AccessGrid/: Descriptions.py, Venue.py, Descriptions.py,
+	Venue.py: Minor fixups to help get RC1 out.
+	
+	AddService/AddData and CreateDataDescription()
+
+2003-04-29 14:35  olson
+
+	* sharedapps/blist.py: Add support for driving shared presentations
+
+2003-04-29 14:35  olson
+
+	* AccessGrid/Venue.py: Add GetApplicationByType
+
+2003-04-29 14:01  turam
+
+	* AccessGrid/ProcessManagerUnix.py: Add code to kill processes,
+	instead of INTerrupting them
+
+2003-04-29 14:00  turam
+
+	* AccessGrid/AGService.py: Add ForceStop method to aid services
+	running apps that need to be killed
+
+2003-04-29 13:22  olson
+
+	* AccessGrid/NodeManagementUIClasses.py, bin/CvsSetup.py,
+	bin/VenueClient.py: merge from HEAD.
+
+2003-04-29 13:17  eolson
+
+	* bin/CvsSetup.py: 
+	For cvs configurations, remove from vic and rat paths the
+	"c:\program files\access grid toolkit".  We don't want to require
+	an existing install in order to run vic and rat.
+	
+	To run from cvs rat and vic will need to be in you current
+	directory or path.  We could add an option to specify their
+	location if anyone really needs it.
+
+2003-04-29 12:05  turam
+
+	* AccessGrid/NodeManagementUIClasses.py: Fix parentheses error
+
+2003-04-29 10:54  olson
+
+	* sharedapps/SharedPresentation.bat: file SharedPresentation.bat
+	was initially added on branch ahm-dev-2003-0424.
+
+2003-04-29 10:54  olson
+
+	* sharedapps/SharedPresentation.bat: batch file for starting
+	cmdline presentation tool in new window
+
+2003-04-29 10:37  lefvert
+
+	* bin/VenueClient.py: this might fill in the new url in the
+	addressbar on windows
+
+2003-04-29 10:27  olson
+
+	* ChangeLog, AccessGrid/AGNodeService.py,
+	AccessGrid/Descriptions.py, AccessGrid/EventClient.py,
+	AccessGrid/EventService.py, AccessGrid/TextClient.py,
+	AccessGrid/TextService.py, AccessGrid/UIUtilities.py,
+	AccessGrid/Utilities.py, AccessGrid/Venue.py,
+	AccessGrid/VenueClientUIClasses.py, AccessGrid/VenueServer.py,
+	AccessGrid/hosting/pyGlobus/Server.py,
+	AccessGrid/hosting/pyGlobus/ServiceBase.py,
+	AccessGrid/hosting/pyGlobus/ServiceObject.py, bin/AGNodeService.py,
+	bin/CvsSetup.py, bin/VenueClient.py,
+	doc/AccessGrid/AGNodeService.py.html,
+	doc/AccessGrid/AGNodeService_AGNodeService.py.html,
+	doc/AccessGrid/AGParameter.py.html,
+	doc/AccessGrid/AGParameter_OptionSetParameter.py.html,
+	doc/AccessGrid/AGParameter_RangeParameter.py.html,
+	doc/AccessGrid/AGParameter_ValueParameter.py.html,
+	doc/AccessGrid/AGService.py.html,
+	doc/AccessGrid/AGServiceManager.py.html,
+	doc/AccessGrid/AGServiceManager_AGServiceManager.py.html,
+	doc/AccessGrid/AGService_AGService.py.html,
+	doc/AccessGrid/AuthorizationManager.py.html,
+	doc/AccessGrid/AuthorizationManager_AuthorizationManager.py.html,
+	doc/AccessGrid/ClientProfile.py.html,
+	doc/AccessGrid/ClientProfile_ClientProfile.py.html,
+	doc/AccessGrid/ClientProfile_InvalidProfileException.py.html,
+	doc/AccessGrid/DataStore.py.html,
+	doc/AccessGrid/DataStore_DataStore.py.html,
+	doc/AccessGrid/Descriptions.py.html,
+	doc/AccessGrid/Descriptions_ConnectionDescription.py.html,
+	doc/AccessGrid/Descriptions_DataDescription.py.html,
+	doc/AccessGrid/Descriptions_ObjectDescription.py.html,
+	doc/AccessGrid/Descriptions_ServiceDescription.py.html,
+	doc/AccessGrid/Descriptions_StreamDescription.py.html,
+	doc/AccessGrid/Descriptions_VenueDescription.py.html,
+	doc/AccessGrid/EventClient.py.html,
+	doc/AccessGrid/EventClient_EventClient.py.html,
+	doc/AccessGrid/EventService.py.html,
+	doc/AccessGrid/EventService_ConnectionHandler.py.html,
+	doc/AccessGrid/EventService_EventService.py.html,
+	doc/AccessGrid/EventService_ThreadingGSITCPSocketServer.py.html,
+	doc/AccessGrid/Events.py.html, doc/AccessGrid/Events_Event.py.html,
+	doc/AccessGrid/Events_HeartbeatEvent.py.html,
+	doc/AccessGrid/Events_TextEvent.py.html,
+	doc/AccessGrid/GUID.py.html, doc/AccessGrid/GUID_GUID.py.html,
+	doc/AccessGrid/MulticastAddressAllocator.py.html,
+	doc/AccessGrid/MulticastAddressAllocator_MulticastAddressAllocator.py.html,
+	doc/AccessGrid/NetworkLocation.py.html,
+	doc/AccessGrid/NetworkLocation_MulticastNetworkLocation.py.html,
+	doc/AccessGrid/NetworkLocation_NetworkLocation.py.html,
+	doc/AccessGrid/NetworkLocation_UnicastNetworkLocation.py.html,
+	doc/AccessGrid/NodeManagementUIClasses.py.html,
+	doc/AccessGrid/NodeManagementUIClasses_NodeManagementClientFrame.py.html,
+	doc/AccessGrid/NodeManagementUIClasses_ServiceConfigurationPanel.py.html,
+	doc/AccessGrid/NodeManagementUIClasses_ServiceListCtrl.py.html,
+	doc/AccessGrid/Platform.py.html,
+	doc/AccessGrid/ProcessManagerUnix.py.html,
+	doc/AccessGrid/ProcessManagerUnix_ProcessManagerUnix.py.html,
+	doc/AccessGrid/ProcessManagerWin32.py.html,
+	doc/AccessGrid/ProcessManagerWin32_ProcessManagerWin32.py.html,
+	doc/AccessGrid/TextService.py.html,
+	doc/AccessGrid/TextService_ConnectionHandler.py.html,
+	doc/AccessGrid/TextService_TextService.py.html,
+	doc/AccessGrid/TextService_ThreadingGSITCPSocketServer.py.html,
+	doc/AccessGrid/Types.py.html,
+	doc/AccessGrid/Types_AGResource.py.html,
+	doc/AccessGrid/Types_AGVideoResource.py.html,
+	doc/AccessGrid/Types_Capability.py.html,
+	doc/AccessGrid/Types_ServiceConfiguration.py.html,
+	doc/AccessGrid/Types_VenueState.py.html,
+	doc/AccessGrid/UIUtilities.py.html,
+	doc/AccessGrid/UIUtilities_AboutDialog.py.html,
+	doc/AccessGrid/UIUtilities_BugReportDialog.py.html,
+	doc/AccessGrid/UIUtilities_ErrorDialog.py.html,
+	doc/AccessGrid/Utilities.py.html, doc/AccessGrid/Venue.py.html,
+	doc/AccessGrid/VenueClient.py.html,
+	doc/AccessGrid/VenueClientUIClasses.py.html,
+	doc/AccessGrid/VenueClientUIClasses_ContentListPanel.py.html,
+	doc/AccessGrid/VenueClientUIClasses_ProfileDialog.py.html,
+	doc/AccessGrid/VenueClientUIClasses_TextValidator.py.html,
+	doc/AccessGrid/VenueClientUIClasses_UrlDialog.py.html,
+	doc/AccessGrid/VenueClientUIClasses_VenueClientFrame.py.html,
+	doc/AccessGrid/VenueClientUIClasses_VenueList.py.html,
+	doc/AccessGrid/VenueClientUIClasses_VenueListPanel.py.html,
+	doc/AccessGrid/VenueClient_EnterVenueException.py.html,
+	doc/AccessGrid/VenueClient_VenueClient.py.html,
+	doc/AccessGrid/VenueServer.py.html,
+	doc/AccessGrid/VenueServerRegistry.py.html,
+	doc/AccessGrid/VenueServerRegistry_VenueServerRegistry.py.html,
+	doc/AccessGrid/VenueServer_VenueServer.py.html,
+	doc/AccessGrid/Venue_Venue.py.html,
+	doc/AccessGrid/__init__.py.html, doc/AccessGrid/icons.py.html,
+	doc/AccessGrid/icons_ImageClass.py.html, doc/AccessGrid/index.html,
+	doc/AccessGrid/scheduler.py.html,
+	doc/AccessGrid/scheduler_Scheduler.py.html,
+	doc/AccessGrid/scheduler_Task.py.html,
+	doc/AccessGrid/hosting/__init__.py.html,
+	doc/AccessGrid/hosting/index.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_CDATAType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_ENTITIESType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_ENTITYType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_Error.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_HTTPError.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_HTTPTransport.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_HeaderHandler.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_IDREFSType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_IDREFType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_IDType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_MethodSig.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_NCNameType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_NMTOKENSType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_NMTOKENType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_NOTATIONType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_NS.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_NameType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_QNameType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_RecursionError.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_RefHolder.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_SOAPAddress.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_SOAPBuilder.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_SOAPConfig.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_SOAPContext.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_SOAPParser.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_SOAPProxy.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_SOAPServer.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_SecureConnectionInfo.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_UnderflowError.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_UnknownTypeError.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_anyType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_anyURIType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_arrayType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_base64BinaryType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_base64Type.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_binaryType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_bodyType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_booleanType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_byteType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_centuryType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_compoundType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_dateTimeType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_dateType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_decimalType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_doubleType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_durationType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_faultType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_floatType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_gDayType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_gMonthDayType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_gMonthType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_gYearMonthType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_gYearType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_headerType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_hexBinaryType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_intType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_integerType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_languageType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_longType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_monthType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_negativeIntegerType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_negative_IntegerType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_nonNegativeIntegerType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_nonPositiveIntegerType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_non_Negative_IntegerType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_non_Positive_IntegerType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_normalizedStringType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_positiveIntegerType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_positive_IntegerType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_recurringDateType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_recurringDayType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_recurringInstantType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_shortType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_stringType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_structType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_timeDurationType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_timeInstantType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_timePeriodType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_timeType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_tokenType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_typedArrayType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_unsignedByteType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_unsignedIntType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_unsignedLongType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_unsignedShortType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_untypedType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_uriReferenceType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_uriType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_voidType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/AGGSISOAP_yearType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/Client.py.html,
+	doc/AccessGrid/hosting/pyGlobus/Client_AuthCallbackException.py.html,
+	doc/AccessGrid/hosting/pyGlobus/Client_HTTPTransport.py.html,
+	doc/AccessGrid/hosting/pyGlobus/Client_Handle.py.html,
+	doc/AccessGrid/hosting/pyGlobus/Server.py.html,
+	doc/AccessGrid/hosting/pyGlobus/Server_Server.py.html,
+	doc/AccessGrid/hosting/pyGlobus/ServiceBase.py.html,
+	doc/AccessGrid/hosting/pyGlobus/ServiceBase_ServiceBase.py.html,
+	doc/AccessGrid/hosting/pyGlobus/ServiceObject.py.html,
+	doc/AccessGrid/hosting/pyGlobus/ServiceObject_NoServiceMethodException.py.html,
+	doc/AccessGrid/hosting/pyGlobus/ServiceObject_ServiceObject.py.html,
+	doc/AccessGrid/hosting/pyGlobus/__init__.py.html,
+	doc/AccessGrid/hosting/pyGlobus/index.html,
+	doc/AccessGrid/hosting/pyGlobus/runtime.py.html,
+	doc/AccessGrid/hosting/pyGlobus/runtime_BadArgumentType.py.html,
+	doc/AccessGrid/hosting/pyGlobus/tests/tclient.py.html,
+	doc/AccessGrid/hosting/pyGlobus/tests/tserver.py.html,
+	doc/AccessGrid/hosting/pyGlobus/tests/tserver_C.py.html,
+	doc/AccessGrid/tests/ClientProfileTest.py.html,
+	doc/AccessGrid/tests/VenueServerTest.py.html,
+	doc/AccessGrid/tests/VenueServerTest_VenueServerTest.py.html,
+	packaging/gnome/VenueClient.desktop,
+	packaging/kde/VenueClient.desktop,
+	packaging/windows/build_snapshot.py: Merged from HEAD.
+
+2003-04-29 10:21  olson
+
+	* AccessGrid/Descriptions.py, AccessGrid/Venue.py,
+	bin/VenueClient.py, sharedapps/blist.py: Commit prior to merge from
+	HEAD.
+
+2003-04-29 09:17  lefvert
+
+	* AccessGrid/Venue.py: Fixed RemoveUser so venue data actually gets
+	removed from the datastore. The problem was that soap turned in the
+	None value to a string "None". Bug 252
+
+2003-04-28 20:47  judson
+
+	* ChangeLog: Updated for Release Candidate 1.
+
 2003-04-28 20:46  judson
 
 	* doc/AccessGrid/: AGNodeService.py.html,

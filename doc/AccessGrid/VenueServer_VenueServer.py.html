@@ -24,29 +24,8 @@
         <td>
         
 <p>The Virtual Venue Server object is responsible for creating,
-    destroying, and configuring Virtual Venue objects.<p>    The Virtual Venue Server object is:</p>
-<dl>
-<dt>    . adminstrators</dt>
-<dd>list of strings (each is a DN of a adminsitrative user)
-    . defaultVenue -- VenueURL
-    . hostingEnvironment -- AccessGrid.hosting.pyGlobus.Server
-    . multicastAddressAllocator -- AccessGrid.MulticastAddressAllocator
-    . hostname -- the hostname of the local machine
-    . venues -- a list of Venues Objects that are being made available
-    . dataStorageLocation -- string
-    . eventPort -- the local port to run the EventService on.
-    . textPort -- the local port to run the TextService on.
-    . configFile -- string
-    . dataTransferServer -- a DataStore Transfer Server for storing files.
-    . eventService -- an Event Service so all venues can have event
-    infrastructure.
-    . textService -- a Text Service for all venues.
-    . services -- a list of service descriptions, these are either network or
-               application services that are available so any venue hosted
-               by this venue server can add these to the services available
-               from within that venue
-    . houseKeeper -- Scheduler</dd>
-</dl>
+    destroying, and configuring Virtual Venue objects.<h3>    <strong>Extends:</strong></h3>
+<p>        <em>AccessGrid.hosting.pyGlobus.ServiceBase.</em></p>
 </p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
@@ -115,30 +94,46 @@ ServiceBase.ServiceBase<br>
 <a href="#GetEncryptAllMedia">GetEncryptAllMedia</a><br>
 <a href="#GetStorageLocation">GetStorageLocation</a><br>
 <a href="#GetVenues">GetVenues</a><br>
-</td>
-<td align="LEFT" valign="TOP">
 <a href="#IdFromURL">IdFromURL</a><br>
 <a href="#InitFromFile">InitFromFile</a><br>
 <a href="#LoadPersistentVenues">LoadPersistentVenues</a><br>
 <a href="#MakeVenueURL">MakeVenueURL</a><br>
 <a href="#ModifyVenue">ModifyVenue</a><br>
 <a href="#PathFromURL">PathFromURL</a><br>
-<a href="#RegisterServer">RegisterServer</a><br>
+</td>
+<td align="LEFT" valign="TOP">
 <a href="#RemoveAdministrator">RemoveAdministrator</a><br>
 <a href="#RemoveVenue">RemoveVenue</a><br>
 <a href="#SetAddressAllocationMethod">SetAddressAllocationMethod</a><br>
 <a href="#SetAddressMask">SetAddressMask</a><br>
-</td>
-<td align="LEFT" valign="TOP">
 <a href="#SetBaseAddress">SetBaseAddress</a><br>
 <a href="#SetDefaultVenue">SetDefaultVenue</a><br>
 <a href="#SetEncryptAllMedia">SetEncryptAllMedia</a><br>
 <a href="#SetStorageLocation">SetStorageLocation</a><br>
 <a href="#Shutdown">Shutdown</a><br>
+<a href="#_Authorize">_Authorize</a><br>
 <a href="#__init__">__init__</a><br>
-<a href="#_authorize">_authorize</a><br>
+<a href="#wsAddAdministrator">wsAddAdministrator</a><br>
 <a href="#wsAddVenue">wsAddVenue</a><br>
+<a href="#wsGetAddressAllocationMethod">wsGetAddressAllocationMethod</a><br>
+<a href="#wsGetAddressMask">wsGetAddressMask</a><br>
+<a href="#wsGetBaseAddress">wsGetBaseAddress</a><br>
+<a href="#wsGetDefaultVenue">wsGetDefaultVenue</a><br>
+</td>
+<td align="LEFT" valign="TOP">
+<a href="#wsGetEncryptAllMedia">wsGetEncryptAllMedia</a><br>
+<a href="#wsGetStorageLocation">wsGetStorageLocation</a><br>
+<a href="#wsGetVenues">wsGetVenues</a><br>
 <a href="#wsModifyVenue">wsModifyVenue</a><br>
+<a href="#wsRemoveAdministrator">wsRemoveAdministrator</a><br>
+<a href="#wsRemoveVenue">wsRemoveVenue</a><br>
+<a href="#wsSetAddressAllocationMethod">wsSetAddressAllocationMethod</a><br>
+<a href="#wsSetAddressMask">wsSetAddressMask</a><br>
+<a href="#wsSetBaseAddress">wsSetBaseAddress</a><br>
+<a href="#wsSetDefaultVenue">wsSetDefaultVenue</a><br>
+<a href="#wsSetEncryptAllMedia">wsSetEncryptAllMedia</a><br>
+<a href="#wsSetStorageLocation">wsSetStorageLocation</a><br>
+<a href="#wsShutdown">wsShutdown</a><br>
 </td>
 </tr>
             </table>
@@ -171,7 +166,14 @@ AddAdministrator ( self,  string )
 </pre></font>
 
 <p>AddAdministrator adds an administrator to the list of administrators
-        for this VenueServer.</p>
+        for this VenueServer.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>string</em> The Distinguished Name of the new administrator.</p>
+<h3>        <strong>Raises:</strong></h3>
+<p>            <em>AdministratorAlreadyPresent</em> This exception is raised if
+            the user is already an administrator.</p>
+<h3>        <strong>Returns:</strong></h3>
+<p>            <em>string</em> The DN of the administrator added.</p>
+</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -196,8 +198,7 @@ AddAdministrator ( self,  string )
         <tr>
         <td>
         
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-VenueServerException( "Administrator already present." )<br>
+<a href="VenueServer_AdministratorAlreadyPresent.py.html">AdministratorAlreadyPresent</a><br>
 
 </td></tr>
 </table>
@@ -264,36 +265,6 @@ Checkpoint ( self )
         state that is lost (the longer the time between checkpoints, the more
         that can be lost).</p>
 </p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-VenueServerException( "Checkpoint Failed!" )<br>
-VenueServerException( "Failed to store venue.!" )<br>
-e<br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -523,7 +494,13 @@ GetVenues ( self )
 </pre></font>
 
 <p>GetVenues returns a list of Venues Descriptions for the venues
-        hosted by this VenueServer.</p>
+        hosted by this VenueServer.<p>        <strong>Arguments:</strong></p>
+<h3>        <strong>Raises:</strong></h3>
+<p>            <strong>VenueServerException</strong> This is raised if there is a
+            problem creating the list of Venue Descriptions.</p>
+<h3>        <strong>Returns:</strong></h3>
+<p>            This returns a list of venue descriptions.</p>
+</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -633,6 +610,10 @@ LoadPersistentVenues ( self,  filename )
 
 </pre></font>
 
+<h3>This method loads venues from a persistent store.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>filename</em> The filename for the persistent store. It is
+            currently a INI formatted file.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -686,7 +667,7 @@ MakeVenueURL ( self,  uniqueId )
         <font color="#000088"><pre>
 ModifyVenue (
         self,
-        URL,
+        id,
         venueDesc,
         )
 
@@ -729,64 +710,6 @@ PathFromURL ( self,  URL )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="RegisterServer"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">RegisterServer&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-RegisterServer ( self,  URL )
-
-</pre></font>
-
-<p>This method should register the server with the venues
-        registry at the URL passed in. This is by default a
-        registration page at Argonne for now.</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-
-</td></tr>
-</table>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
                   <a name="RemoveAdministrator"></a>&nbsp;
                 </font>
             </th>
@@ -806,7 +729,14 @@ RemoveAdministrator ( self,  string )
 </pre></font>
 
 <p>RemoveAdministrator removes an administrator from the list of
-        administrators for this VenueServer.</p>
+        administrators for this VenueServer.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>string</em> The Distinguished Name (DN) of the administrator
+            being removed.</p>
+<h3>        <strong>Raises:</strong></h3>
+<p>            <em>AdministratorNotFound</em> This is raised when the
+            administrator specified is not found in the Venue Servers
+            administrators list.</p>
+</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -831,8 +761,7 @@ RemoveAdministrator ( self,  string )
         <tr>
         <td>
         
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-VenueServerException( "Administrator not found." )<br>
+<a href="Venue_AdministratorNotFound.py.html">AdministratorNotFound</a><br>
 
 </td></tr>
 </table>
@@ -859,11 +788,19 @@ VenueServerException( "Administrator not found." )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-RemoveVenue ( self,  URL )
+RemoveVenue ( self,  id )
 
 </pre></font>
 
-<p>RemoveVenue removes a venue from the VenueServer.</p>
+<h3>RemoveVenue removes a venue from the VenueServer.</h3>
+<p>        <strong>Arguments:</strong>
+            <em>ID</em> The id of the venue to be removed.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>UnbindVenueError</em> - This exception is raised when the
+            hosting Environment fails to unbind the venue from the
+            venue server.</p>
+<p>            <em>VenueNotFound</em> - This exception is raised when the
+            the venue is not found in the list of venues for this server.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -888,8 +825,8 @@ RemoveVenue ( self,  URL )
         <tr>
         <td>
         
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-RemoveVenueException( "Counldn't unbind venue." )<br>
+<a href="VenueServer_UnbindVenueError.py.html">UnbindVenueError</a><br>
+<a href="VenueServer_VenueNotFound.py.html">VenueNotFound</a><br>
 
 </td></tr>
 </table>
@@ -922,34 +859,6 @@ SetAddressAllocationMethod ( self,  addressAllocationMethod )
 
 <p>Set the method used for multicast address allocation:
             either RANDOM or INTERVAL (defined in MulticastAddressAllocator)</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -979,34 +888,6 @@ SetAddressMask ( self,  mask )
 
 <p>Set address mask used when allocating multicast addresses in
         an interval</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1036,34 +917,6 @@ SetBaseAddress ( self,  address )
 
 <p>Set base address used when allocating multicast addresses in
         an interval</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1093,34 +946,6 @@ SetDefaultVenue ( self,  venueURL )
 
 <p>SetDefaultVenue sets which Venue is the default venue for the
         VenueServer.</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1149,34 +974,6 @@ SetEncryptAllMedia ( self,  value )
 </pre></font>
 
 <p>Turn on or off server wide default for venue media encryption.</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1205,34 +1002,6 @@ SetStorageLocation ( self,  dataStorageLocation )
 </pre></font>
 
 <p>Set the path for data storage</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1298,6 +1067,40 @@ Shutdown ( self,  secondsFromNow )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="_Authorize"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">_Authorize&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+_Authorize ( self )
+
+</pre></font>
+
+<p>This is a placeholder authorization method. It will be
+        replaced with the Role Based Authorization. Currently
+        authorization is merely a check to see if the caller is an
+        administrator.<p>        <strong>Returns:</strong>
+            <em>1</em> on success
+            <em>0</em> on failure</p>
+</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="__init__"></a>&nbsp;
                 </font>
             </th>
@@ -1322,7 +1125,10 @@ __init__ (
 
 <p>The constructor creates a new Venue Server object, initializes
         that object, then registers signal handlers so the venue can cleanly
-        shutdown in the event of catastrophic signals.</p>
+        shutdown in the event of catastrophic signals.<p>        <strong>Arguments:</strong>
+        - <em>hostingEnvironment</em> a reference to the hosting environment.
+        - <em>configFile</em> the filename of a configuration file for this venue server.</p>
+</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1332,7 +1138,7 @@ __init__ (
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="_authorize"></a>&nbsp;
+                  <a name="wsAddAdministrator"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -1340,16 +1146,52 @@ __init__ (
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">_authorize&nbsp;</font>
+                <font color="#000000">wsAddAdministrator&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-_authorize ( self )
+wsAddAdministrator ( self,  string )
 
 </pre></font>
 
+<h3>Interface to add an administrator to the Venue Server.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>string</em> The DN of the new administrator.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>NotAuthorized</em> This exception is raised if the call is
+            coming from a non-administrator.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>string</em> The DN of the administrator added.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1377,7 +1219,17 @@ wsAddVenue ( self,  venueDescStruct )
 
 </pre></font>
 
-<p>Inteface call for Adding a venue.</p>
+<h3>Inteface call for Adding a venue.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>             <em>Venue Description Struct</em> A description of the new
+             venue, currently an anonymous struct.</p>
+<p>        <strong>Raises:</strong>
+            <em>NotAuthorized</em> When an unauthorized call is made to add a venue.<p>            <em>VenueServerException</em> When the venue description struct
+            isn't successfully converted to a real venue description
+            object and the venue isn't added.</p>
+</p>
+<p>        <strong>Returns:</strong>
+            <em>Venue URI</em> Upon success a uri to the new venue is returned.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -1416,6 +1268,226 @@ VenueServerException( "Couldn't Add Venue." )<br>
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="wsGetAddressAllocationMethod"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsGetAddressAllocationMethod&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsGetAddressAllocationMethod ( self )
+
+</pre></font>
+
+<h3>Interface for getting the Address Allocation Method.</h3>
+<p>        <strong>Arguments:</strong></p>
+<p>        <strong>Raises:</strong></p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>method</em> The address allocation method configured, either
+            RANDOM or INTERVAL.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsGetAddressMask"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsGetAddressMask&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsGetAddressMask ( self )
+
+</pre></font>
+
+<h3>Interface to retrieve the address mask of the address allocation pool.</h3>
+<p>        <strong>Arguments:</strong></p>
+<p>        <strong>Raises:</strong></p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>mask</em> the network mask of the address allocation pool.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsGetBaseAddress"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsGetBaseAddress&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsGetBaseAddress ( self )
+
+</pre></font>
+
+<h3>Interface to retrieve the base address for the address allocation pool.</h3>
+<p>        <strong>Arguments:</strong></p>
+<p>        <strong>Raises:</strong></p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>base address</em> the base address of the address allocation pool.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsGetDefaultVenue"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsGetDefaultVenue&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsGetDefaultVenue ( self )
+
+</pre></font>
+
+<p>Interface for getting the URL to the default venue.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsGetEncryptAllMedia"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsGetEncryptAllMedia&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsGetEncryptAllMedia ( self )
+
+</pre></font>
+
+<h3>Interface to retrieve the value of the media encryption flag.</h3>
+<p>        <strong>Arguments:</strong></p>
+<p>        <strong>Raises:</strong></p>
+<p>        <strong>Returns:</strong></p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsGetStorageLocation"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsGetStorageLocation&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsGetStorageLocation ( self )
+
+</pre></font>
+
+<h3>Inteface for getting the current data store path.</h3>
+<p>        <strong>Arguments:</strong></p>
+<p>        <strong>Raises:</strong></p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>location</em> The path to the data store location.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsGetVenues"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsGetVenues&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsGetVenues ( self )
+
+</pre></font>
+
+<h3>This is the interface to get a list of Venues from the Venue Server.</h3>
+<p>        <strong>Arguments:</strong></p>
+<p>        <strong>Raises:</strong></p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>venue description list</em> A list of venues descriptions.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="wsModifyVenue"></a>&nbsp;
                 </font>
             </th>
@@ -1438,6 +1510,16 @@ wsModifyVenue (
 
 </pre></font>
 
+<h3>Interface for modifying an existing Venue.</h3>
+<p>        <strong>Arguments:</strong>
+            <em>URL</em> The URL to the venue.<p>            <em>Venue Description Struct</em> An anonymous struct that is the
+            new venue description.</p>
+</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>NotAuthorized</em> When an unauthorized modify call is made.</p>
+<p>            <em>InvalideVenueURL</em> When the URL isn't a valid venue.</p>
+<p>            <em>InvalidVenueDescription</em> If the Venue Description has a
+            different URL than the URL argument passed in.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -1462,7 +1544,564 @@ wsModifyVenue (
         <tr>
         <td>
         
+InvalidVenueDescription<br>
 <a href="VenueServer_InvalidVenueURL.py.html">InvalidVenueURL</a><br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsRemoveAdministrator"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsRemoveAdministrator&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsRemoveAdministrator ( self,  string )
+
+</pre></font>
+
+<h3><strong>Arguments:</strong></h3>
+<p>            <em>string</em> The Distinguished Name (DN) of the administrator
+            being removed.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>NotAuthorized</em> This is raised when the caller is not an
+            administrator.</p>
+<h5>        <strong>Returns:</strong></h5>
+<p>            <em>string</em> The Distinguished Name (DN) of the administrator removed.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsRemoveVenue"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsRemoveVenue&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsRemoveVenue ( self,  URL )
+
+</pre></font>
+
+<h3>Interface for removing a Venue.</h3>
+<p>        <strong>Arguments:</strong>
+            <em>URL</em> The url to the venue to be removed.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>NotAuthorized</em> If a remove venue call is not authorized.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsSetAddressAllocationMethod"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsSetAddressAllocationMethod&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsSetAddressAllocationMethod ( self,  method )
+
+</pre></font>
+
+<p>Interface for setting the address allocation method for
+        multicast addresses (for now).<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>method</em> An argument specifying either RANDOM or INTERVAL
+            allocation. RANDOM is a random address from the standard
+            random range. INTERVAL means a random address from a
+            specified range.</p>
+<p>        <strong>Raises:</strong></p>
+<p>        <strong>Returns:</strong></p>
+</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsSetAddressMask"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsSetAddressMask&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsSetAddressMask ( self,  mask )
+
+</pre></font>
+
+<h3>Interface to set the network mask of the address allocation pool.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>mask</em>  The network mask for the address allocation pool.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>NotAuthorized</em> This is raised when the method is called
+            by a non-administrator.</p>
+<p>        <strong>Returns:</strong></p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsSetBaseAddress"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsSetBaseAddress&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsSetBaseAddress ( self,  address )
+
+</pre></font>
+
+<h3>Interface for setting the base address for the allocation pool.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>address</em> The base address of the address pool to allocate from.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>NotAuthorized</em>  When called by a non-administrator.</p>
+<p>        <strong>Returns:</strong></p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsSetDefaultVenue"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsSetDefaultVenue&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsSetDefaultVenue ( self,  URL )
+
+</pre></font>
+
+<h3>Interface to set default venue.</h3>
+<p>        <strong>Arguments:</strong>
+            <em>URL</em> The URL to the default venue.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>NotAuthorized</em> This exception is raised if the caller is
+            not an administrator.</p>
+<p>        <strong>Returns:</strong></p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsSetEncryptAllMedia"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsSetEncryptAllMedia&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsSetEncryptAllMedia ( self,  value )
+
+</pre></font>
+
+<h3>Interface for setting the flag to encrypt all media or turn it off.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>value</em> The flag, 1 turns encryption on, 0 turns encryption off.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>NotAuthorized</em> This is raised when the method is called
+            by a non-administrator.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>flag</em> the return value from SetEncryptAllMedia.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsSetStorageLocation"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsSetStorageLocation&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsSetStorageLocation ( self,  location )
+
+</pre></font>
+
+<h3>Interface for setting the location of the data store.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>location</em> This is a path for the data store.</p>
+<p>        <strong>Raises:</strong></p>
+<p>        <strong>Returns:</strong></p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsShutdown"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsShutdown&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsShutdown ( self,  secondsFromNow )
+
+</pre></font>
+
+<h3>Interface to shutdown the Venue Server.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>secondsFromNow</em> How long from the time the call is
+            received until the server starts to shutdown.</p>
+<p>        <strong>Raises:</strong></p>
+<p>        <strong>Returns:</strong></p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
 <a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
@@ -1480,7 +2119,7 @@ wsModifyVenue (
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Mon Apr 28 13:48:45 2003 by
+        on Wed May 14 10:02:40 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

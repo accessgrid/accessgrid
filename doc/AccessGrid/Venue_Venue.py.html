@@ -98,12 +98,13 @@ ServiceBase.ServiceBase<br>
 <a href="#FindUserByProfile">FindUserByProfile</a><br>
 <a href="#GetAdministrators">GetAdministrators</a><br>
 <a href="#GetApplication">GetApplication</a><br>
-</td>
-<td align="LEFT" valign="TOP">
 <a href="#GetConnections">GetConnections</a><br>
 <a href="#GetData">GetData</a><br>
+</td>
+<td align="LEFT" valign="TOP">
 <a href="#GetDescription">GetDescription</a><br>
 <a href="#GetEncryptMedia">GetEncryptMedia</a><br>
+<a href="#GetName">GetName</a><br>
 <a href="#GetNextPrivateId">GetNextPrivateId</a><br>
 <a href="#GetState">GetState</a><br>
 <a href="#GetStaticStreams">GetStaticStreams</a><br>
@@ -118,24 +119,27 @@ ServiceBase.ServiceBase<br>
 <a href="#RemoveUser">RemoveUser</a><br>
 <a href="#SetAdministrators">SetAdministrators</a><br>
 <a href="#SetConnections">SetConnections</a><br>
-</td>
-<td align="LEFT" valign="TOP">
 <a href="#SetDataStore">SetDataStore</a><br>
 <a href="#SetDescription">SetDescription</a><br>
 <a href="#SetEncryptMedia">SetEncryptMedia</a><br>
+</td>
+<td align="LEFT" valign="TOP">
+<a href="#SetName">SetName</a><br>
 <a href="#Shutdown">Shutdown</a><br>
 <a href="#StartApplications">StartApplications</a><br>
+<a href="#StartDataStore">StartDataStore</a><br>
 <a href="#UpdateClientProfile">UpdateClientProfile</a><br>
 <a href="#UpdateData">UpdateData</a><br>
-<a href="#__GetClients">__GetClients</a><br>
+<a href="#_Authorize">_Authorize</a><br>
+<a href="#_GetClients">_GetClients</a><br>
 <a href="#__init__">__init__</a><br>
 <a href="#__repr__">__repr__</a><br>
-<a href="#_authorize">_authorize</a><br>
-<a href="#startDataStore">startDataStore</a><br>
 <a href="#wsAddData">wsAddData</a><br>
 <a href="#wsAddService">wsAddService</a><br>
+<a href="#wsEnter">wsEnter</a><br>
 <a href="#wsGetData">wsGetData</a><br>
 <a href="#wsRemoveData">wsRemoveData</a><br>
+<a href="#wsRemoveService">wsRemoveService</a><br>
 <a href="#wsSetConnections">wsSetConnections</a><br>
 <a href="#wsUpdateData">wsUpdateData</a><br>
 </td>
@@ -169,7 +173,16 @@ AddAdministrator ( self,  string )
 
 </pre></font>
 
-<p>Management methods</p>
+<h3>Interface to add an administrator to this venue.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>string</em> The Distinguished Name (DN) of the new administrator.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>NotAuthorized</em> This is raised when the caller is not an
+            administrator.</p>
+<p>            <em>AdministratorAlreadyPresent</em> This is raised when an
+            administrator is added a second time.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>string</em> the Distinguished Name (DN) of the administrator added.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -194,8 +207,8 @@ AddAdministrator ( self,  string )
         <tr>
         <td>
         
+<a href="VenueServer_AdministratorAlreadyPresent.py.html">AdministratorAlreadyPresent</a><br>
 <a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-VenueException( "Administrator already present" )<br>
 
 </td></tr>
 </table>
@@ -227,7 +240,15 @@ AddConnection ( self,  connectionDescription )
 </pre></font>
 
 <p>AddConnection allows an administrator to add a connection to a
-        virtual venue to this virtual venue.</p>
+        virtual venue to this virtual venue.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>ConnectionDescriptionStruct</em> An anonymous struct
+            containing a connection description.</p>
+<h3>        <strong>Raises:</strong></h3>
+<p>            <em>NotAuthorized</em> Raised when the caller is not an administrator.</p>
+<p>            <em>BadConnectionDescription</em> Raised when the connection
+            description struct is not successfully converted to a
+            connection description.</p>
+</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -252,8 +273,8 @@ AddConnection ( self,  connectionDescription )
         <tr>
         <td>
         
+<a href="Venue_BadConnectionDescription.py.html">BadConnectionDescription</a><br>
 <a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-VenueException( "Add Connection Failed!" )<br>
 
 </td></tr>
 </table>
@@ -286,7 +307,14 @@ AddData ( self,  dataDescription )
 
 <p>The AddData method enables VenuesClients to put data in the Virtual
         Venue. Data put in the Virtual Venue through AddData is persistently
-        stored.</p>
+        stored.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>dataDescription</em> A real data description.</p>
+<h3>        <strong>Raises:</strong></h3>
+<p>            <em>DataAlreadyPresent</em> Raised when data is added with the
+            same name as data already in the venue.</p>
+<h3>        <strong>Returns:</strong></h3>
+<p>            <em>dataDescription</em> upon successfully adding the data.</p>
+</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -311,7 +339,7 @@ AddData ( self,  dataDescription )
         <tr>
         <td>
         
-VenueException("AddData: data %s already present" %( name ) )<br>
+DataAlreadyPresent<br>
 
 </td></tr>
 </table>
@@ -344,7 +372,13 @@ AddService ( self,  serviceDescription )
 
 <p>The AddService method enables VenuesClients to put services in
         the Virtual Venue. Service put in the Virtual Venue through
-        AddService is persistently stored.</p>
+        AddService is persistently stored.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>serviceDescription</em> A real service description.</p>
+<h3>        <strong>Raises:</strong></h3>
+<p>            <em>ServiceAlreadyPresent</em> Raised when a service is added twice.</p>
+<h3>        <strong>Returns:</strong></h3>
+<p>            <em>serviceDescription</em> Upon successfully adding the service.</p>
+</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -369,7 +403,7 @@ AddService ( self,  serviceDescription )
         <tr>
         <td>
         
-VenueException("AddService: service %s already present" %( name ) )<br>
+ServiceAlreadyPresent<br>
 
 </td></tr>
 </table>
@@ -400,7 +434,16 @@ AddStream ( self,  inStreamDescription )
 
 </pre></font>
 
-<p>Add a stream to the list of streams &quot;in&quot; the venue</p>
+<h3>Add a stream to the list of streams for this venue.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>inStreamDescription</em> An anonymous struct containing a
+            stream description.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>NotAuthorized</em> This is raised when the caller is not an
+            administrator.</p>
+<p>            <em>BadStreamDescription</em> This is raised when the struct
+            passed in cannot be successfully converted to a real
+            Stream Description.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -425,6 +468,7 @@ AddStream ( self,  inStreamDescription )
         <tr>
         <td>
         
+<a href="Venue_BadStreamDescription.py.html">BadStreamDescription</a><br>
 <a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
@@ -456,7 +500,9 @@ AllocateMulticastLocation ( self )
 
 </pre></font>
 
-<p>This method creates a new Multicast Network Location.</p>
+<h3>This method creates a new Multicast Network Location.</h3>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>location</em> A new multicast network location object.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -484,6 +530,8 @@ AsINIBlock ( self )
 
 </pre></font>
 
+<p>This serializes the data in this venue as a INI formatted
+        block of text.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -511,6 +559,8 @@ AsVenueDescription ( self )
 
 </pre></font>
 
+<p>This creates a Venue Description filled in with the data from
+        this venue.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -538,6 +588,8 @@ CleanupClients ( self )
 
 </pre></font>
 
+<p>CleanupClients is called by a regularly scheduled task to
+        cleanup stale client connections.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -561,10 +613,48 @@ CleanupClients ( self )
         <tr>
         <td>
         <font color="#000088"><pre>
-ClientHeartbeat ( self,  event )
+ClientHeartbeat ( self,  privateId )
 
 </pre></font>
 
+<p>This is an Event handler for heartbeat events. When a
+        heartbeat is received from a client we keep track of the
+        recieve time. This is important because there is an active
+        thread that is cleaning up inactive connections (ones who's
+        heartbeats haven't been seen for some time).<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>privateId</em> The privateId of the client who sent the heartbeat.</p>
+<h3>        <strong>Raises:</strong></h3>
+<p>            <em>ClientNotFound</em> This is raised when we get a heartbeat
+            for a client that we don't know about.</p>
+</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="Venue_ClientNotFound.py.html">ClientNotFound</a><br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -598,7 +688,14 @@ CreateApplication (
 </pre></font>
 
 <p>Create a new application object.  Initialize the
-        implementation, and create a web service interface for it.</p>
+        implementation, and create a web service interface for it.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>name</em> A name for the application instance.</p>
+<p>            <em>description</em> A description for the new application instance.</p>
+<p>            <em>mimeType</em> A mime-type for the new application, used to
+            match applications with clients.</p>
+<h3>        <strong>Returns:</strong></h3>
+<p>            <em>appHandle</em> A url to the new application object/service.</p>
+</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -626,7 +723,44 @@ DestroyApplication ( self,  appId )
 
 </pre></font>
 
-<p>Destroy an application object.</p>
+<h3>Destroy an application object.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>appId</em> The id of the application object to be destroyed.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>ApplicationNotFound</em> Raised when an application is not
+            found for the application id specified.</p>
+<p>            <em>ApplicationUnbindError</em> Raised when the hosting
+            environment can't unbind the application from the web
+            service layer.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+ApplicationNotFound<br>
+ApplicationUnbindError<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -650,13 +784,49 @@ DestroyApplication ( self,  appId )
         <tr>
         <td>
         <font color="#000088"><pre>
-Enter ( self,  clientProfileStruct )
+Enter ( self,  clientProfile )
 
 </pre></font>
 
 <p>The Enter method is used by a VenueClient to gain access to the
-        services, clients, and content found within a Virtual Venue.<p> Client Methods</p>
+        services, clients, and content found within a Virtual Venue.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>clientProfile</em> The profile of the client entering the venue.</p>
+<h3>        <strong>Returns:</strong></h3>
+<p>            <em>(state, privateId, streamDescriptions)</em> This tuple is
+            returned upon success. The state is a snapshot of the
+            current venuestate. The privateId is a private, unique id
+            assigned by the venue for this client session, the
+            streamDescriptions are the stream descriptions the venue
+            has found best match this clients capabilities.</p>
 </p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+InvalidVenueState<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -684,6 +854,10 @@ EventServiceDisconnect ( self,  privateId )
 
 </pre></font>
 
+<p>This is an Event handler for Disconnect events. This keeps the
+        Venue cleaned up by removing users that disconnect.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>privateId</em> The private id of the user dicsconnecting.</p>
+</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -713,7 +887,14 @@ Exit ( self,  privateId )
 
 <p>The Exit method is used by a VenueClient to cleanly leave a Virtual
         Venue. Cleanly leaving a Virtual Venue allows the Venue to cleanup
-        any state associated (or caused by) the VenueClients presence.</p>
+        any state associated (or caused by) the VenueClients presence.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>privateId</em> The privateId of the client to be removed from
+            the venue.</p>
+<h3>        <strong>Raises:</strong></h3>
+<p>            <em>ClientNotFound</em> Raised when a privateId is not found in
+            the venues list of clients.</p>
+<p> Client Methods</p>
+</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -738,7 +919,7 @@ Exit ( self,  privateId )
         <tr>
         <td>
         
-VenueException( "ExitVenue: " )<br>
+<a href="Venue_ClientNotFound.py.html">ClientNotFound</a><br>
 
 </td></tr>
 </table>
@@ -770,7 +951,12 @@ FindUserByProfile ( self,  profile )
 </pre></font>
 
 <p>Find out if a given client is in the venue from their client profile.
-        If they are, return their private id, if not, return None.</p>
+        If they are, return their private id, if not, return None.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>profile</em> The client profile of the user being searched for.</p>
+<h3>        <strong>Returns:</strong></h3>
+<p>            <em>privateId</em> if the user is found</p>
+<p>            <em>None</em> if the user is not found</p>
+</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -798,6 +984,7 @@ GetAdministrators ( self )
 
 </pre></font>
 
+<p>Interface to get the list of administrators for the venue.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -825,7 +1012,42 @@ GetApplication ( self,  id )
 
 </pre></font>
 
-<p>Return the application state for the given application object.</p>
+<h3>Return the application state for the given application object.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>id</em> The id of the application being retrieved.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>ApplicationNotFound</em> Raised when the application is not
+            found in the venue.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>appState</em> The state of the application object.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+ApplicationNotFound<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -854,7 +1076,9 @@ GetConnections ( self )
 </pre></font>
 
 <p>GetConnections returns a list of all the connections to other venues
-        that are found within this venue.</p>
+        that are found within this venue.<h3>        <strong>Returns:</strong></h3>
+<p>            <em>ConnectionList</em> A list of connection descriptions.</p>
+</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -884,7 +1108,16 @@ GetData ( self,  name )
 
 <p>GetData is the method called by a VenueClient to retrieve information
         about the data. This might also be the operation that the VenueClient
-        uses to actually retrieve the real data.</p>
+        uses to actually retrieve the real data.<p>        If there's not a running datastore we have to return a null
+        string, because SOAP doesn't serialize None correctly.</p>
+<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>name</em> The name of the data to be retrieved.</p>
+<h3>        <strong>Returns:</strong></h3>
+<p>            <em>dataDescription</em> A real data description that corresponds
+            to the name passed in.</p>
+<p>            <em>empty string</em> When the data is not found, or there is no
+            data store running.</p>
+</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -912,7 +1145,8 @@ GetDescription ( self )
 
 </pre></font>
 
-<p>GetDescription returns the description for the virtual venue.</p>
+<p>GetDescription returns the description for the virtual venue.
+        <strong>Arguments:</strong></p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -950,6 +1184,34 @@ GetEncryptMedia ( self )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="GetName"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetName&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetName ( self )
+
+</pre></font>
+
+<p>GetName returns the name for the virtual venue.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="GetNextPrivateId"></a>&nbsp;
                 </font>
             </th>
@@ -968,7 +1230,9 @@ GetNextPrivateId ( self )
 
 </pre></font>
 
-<p>This method creates the next Private Id.</p>
+<h3>This method creates the next Private Id.</h3>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>privateId</em> A unique private id.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -996,7 +1260,39 @@ GetState ( self )
 
 </pre></font>
 
-<p>GetState returns the current state of the Virtual Venue.</p>
+<h3>GetState returns the current state of the Virtual Venue.</h3>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>InvalidVenueState</em> Raised when we can't get the venue state.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>venueState</em> A dictionary containing all the state of the venue.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+InvalidVenueState<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1082,7 +1378,13 @@ GetUploadDescriptor ( self )
 </pre></font>
 
 <h3>Retrieve the upload descriptor from the Venue's datastore.</h3>
-<p>        If the venue has no data store configured, return None.</p>
+<p>        <strong>Arguments:</strong></p>
+<p>        <strong>Raises:</strong></p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>upload description</em> the upload descriptor for the data store.</p>
+<p>            <em>''</em> If there is not data store we return an empty string,
+            because None doesn't serialize right with our SOAP
+            implementation.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1118,7 +1420,12 @@ NegotiateCapabilities (
         finds a set of streams that matches the client profile. Later this
         method could use network services to find The Best Match of all the
         network services, the existing streams, and all the client
-        capabilities.</p>
+        capabilities.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>clientProfile</em> The profile of the client that needs to
+            have capabilities negotiated.</p>
+<p>            <em>privateId</em> The privateId of the client associated with
+            the client profile passed in.</p>
+</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1146,6 +1453,18 @@ RemoveAdministrator ( self,  string )
 
 </pre></font>
 
+<h3>Interface for removing an administrator from the venue.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>string</em> The Dinstinguished Name (DN) of the administrator
+            to be removed.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>NotAuthorized</em> This is raised when the caller is not an
+            administrator.</p>
+<p>            <em>AdministratorNotFound</em> This is raised when the
+            administrator specified is not an administrator on this
+            venue.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>string</em> The Distinguished Name (DN) of the administrator removed.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -1170,8 +1489,8 @@ RemoveAdministrator ( self,  string )
         <tr>
         <td>
         
+<a href="Venue_AdministratorNotFound.py.html">AdministratorNotFound</a><br>
 <a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-VenueException( "Administrator not found" )<br>
 
 </td></tr>
 </table>
@@ -1203,7 +1522,17 @@ RemoveConnection ( self,  connectionDescription )
 </pre></font>
 
 <p>RemoveConnection removes a connection to another virtual venue
-        from this virtual venue. This is an administrative operation.</p>
+        from this virtual venue. This is an administrative operation.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>connectionDescritionStruct</em> An anonymous struct
+            containing a connection description.</p>
+<h3>        <strong>Raises:</strong></h3>
+<p>            <em>NotAuthorized</em> Raised when the caller is not an administrator.</p>
+<p>            <em>ConnectionNotFound</em> Raised when a connection isn't found
+            to be rmeoved.</p>
+<p>            <em>BadConnectionDescription</em> Raised when the connection
+            description struct is not successfully converted to a
+            connection description.</p>
+</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -1228,8 +1557,9 @@ RemoveConnection ( self,  connectionDescription )
         <tr>
         <td>
         
+<a href="Venue_BadConnectionDescription.py.html">BadConnectionDescription</a><br>
+<a href="Venue_ConnectionNotFound.py.html">ConnectionNotFound</a><br>
 <a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-VenueException( "Remove Connection Failed!" )<br>
 
 </td></tr>
 </table>
@@ -1260,7 +1590,13 @@ RemoveData ( self,  dataDescription )
 
 </pre></font>
 
-<p>RemoveData removes persistent data from the Virtual Venue.</p>
+<h3>RemoveData removes persistent data from the Virtual Venue.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>dataDescription</em> A real data description.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>DataNotFound</em> Raised when the data is not found in the Venue.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>dataDescription</em> Upon successfully removing the data.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -1285,7 +1621,7 @@ RemoveData ( self,  dataDescription )
         <tr>
         <td>
         
-VenueException( "Data not found." )<br>
+DataNotFound<br>
 
 </td></tr>
 </table>
@@ -1316,7 +1652,13 @@ RemoveService ( self,  serviceDescription )
 
 </pre></font>
 
-<p>RemoveService removes persistent service from the Virtual Venue.</p>
+<h3>RemoveService removes persistent service from the Virtual Venue.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>serviceDescription</em> A real service description.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>ServiceNotFound</em> When a service not present is removed.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>serviceDescription</em> Upon successfully removing the service.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -1341,8 +1683,7 @@ RemoveService ( self,  serviceDescription )
         <tr>
         <td>
         
-VenueException( "Cannot remove service!" )<br>
-VenueException( "Service not found." )<br>
+ServiceNotFound<br>
 
 </td></tr>
 </table>
@@ -1369,11 +1710,20 @@ VenueException( "Service not found." )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-RemoveStream ( self,  streamDescription )
+RemoveStream ( self,  inStreamDescription )
 
 </pre></font>
 
-<p>Remove the given stream from the venue</p>
+<h3>Remove the given stream from the venue</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>inStreamDescription</em> An anonymous struct containing a
+            stream description to be removed.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>NotAuthorized</em> This is raised when the caller is not an
+            administrator.</p>
+<p>            <em>BadStreamDescription</em> This is raised when the struct
+            passed in cannot be successfully converted to a real
+            Stream Description.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -1398,6 +1748,7 @@ RemoveStream ( self,  streamDescription )
         <tr>
         <td>
         
+<a href="Venue_BadStreamDescription.py.html">BadStreamDescription</a><br>
 <a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
@@ -1429,6 +1780,10 @@ RemoveUser ( self,  privateId )
 
 </pre></font>
 
+<p>This method removes a user from the venue, cleaning up all the
+        state associated with that user.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>privateId</em> The private Id of the user being removed.</p>
+</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1456,6 +1811,12 @@ SetAdministrators ( self,  administratorList )
 
 </pre></font>
 
+<h3>Interface to add a list of administrators.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>administratorList</em> This is a list of Distinguished Names (DNs).</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>NotAuthorized</em> This is raised if the caller is not an
+            administrator.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -1514,7 +1875,9 @@ SetConnections ( self,  connectionDict )
 <p>SetConnections is a convenient aggregate accessor for the list of
         connections for this venue. Alternatively the user could iterate over
         a list of connections adding them one by one, but this is more
-        desirable.</p>
+        desirable.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>connectionDict</em> A dictionary of connections.</p>
+</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1543,7 +1906,9 @@ SetDataStore ( self,  dataStore )
 </pre></font>
 
 <p>Set the Data Store for the Venue. This is usually set to the data
-        store the venue server uses.</p>
+        store the venue server uses.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>dataStore</em> Path to the data store.</p>
+</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1572,7 +1937,9 @@ SetDescription ( self,  description )
 </pre></font>
 
 <p>SetDescription allows an administrator to set the venues description
-        to something new.</p>
+        to something new.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>description</em> New description for this venue.</p>
+</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -1632,7 +1999,74 @@ SetEncryptMedia (
 
 </pre></font>
 
-<p>Turn media encryption on or off.</p>
+<h3>Turn media encryption on or off.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>value</em> Flag indicating whether encryption should be on or off.</p>
+<p>            <em>key=None</em> An optional key for encryption, if not
+            provided, and the value is 1, then one is created.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>NotAuthorized</em> Raised when the caller is not an administrator.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>value</em> The value of the EncryptMedia flag.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetName"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetName&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetName ( self,  name )
+
+</pre></font>
+
+<p>SetName allows an administrator to set the venues name
+        to something new.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>name</em> New name for this venue.</p>
+</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -1730,6 +2164,45 @@ StartApplications ( self )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="StartDataStore"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">StartDataStore&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+StartDataStore ( self )
+
+</pre></font>
+
+<h3>Start the local datastore server.</h3>
+<p>        We create a DataStore to manage this Venue's data.
+        We have been already given a data transfer service instance
+        (in the call to Venue.Start()).</p>
+<p>        The DataStore is given the Venue's dataStorePath as
+        its working directory.  We then loop through the data
+        descriptions in the venue, both checking to see that the file
+        still exists for each piece of data, and updating the uri
+        field in the description with the new download URL.</p>
+<p>        Actually, we get to do both steps at once, as
+        GetDownloadDescriptor will return None if the file doesn't
+        exist in the local data store.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="UpdateClientProfile"></a>&nbsp;
                 </font>
             </th>
@@ -1750,7 +2223,41 @@ UpdateClientProfile ( self,  clientProfileStruct )
 
 <p>UpdateClientProfile allows a VenueClient to update/modify the client
         profile that is stored by the Virtual Venue that they gave to the Venue
-        when they called the Enter method.</p>
+        when they called the Enter method.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>clientProfileStruct</em> An anonymous struct containing a
+            client profile.</p>
+<h3>        <strong>Raises:</strong></h3>
+<p>            <em>InvalidClientProfile</em> Raised when the client profile
+            struct cannot be converted to a real client profile.</p>
+</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+InvalidClientProfile<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1779,7 +2286,12 @@ UpdateData ( self,  dataDescription )
 </pre></font>
 
 <p>Replace the current description for dataDescription.name with
-        this one.<p>        Send out an update event.</p>
+        this one.<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>dataDescription</em> A real data description.</p>
+<h3>        <strong>Raises:</strong></h3>
+<p>            <em>DataNotFound</em> Raised when the data is not found in the Venue.</p>
+<h3>        <strong>Returns:</strong></h3>
+<p>            <em>dataDescription</em> Upon successfully updating the data.</p>
 </p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
@@ -1805,7 +2317,7 @@ UpdateData ( self,  dataDescription )
         <tr>
         <td>
         
-VenueException( "UpdateData: data %s not already present" % name )<br>
+DataNotFound<br>
 
 </td></tr>
 </table>
@@ -1818,7 +2330,7 @@ VenueException( "UpdateData: data %s not already present" % name )<br>
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="__GetClients"></a>&nbsp;
+                  <a name="_Authorize"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -1826,13 +2338,47 @@ VenueException( "UpdateData: data %s not already present" % name )<br>
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">__GetClients&nbsp;</font>
+                <font color="#000000">_Authorize&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-__GetClients ( self )
+_Authorize ( self )
+
+</pre></font>
+
+<p>This is a simplistic authorization that only checks to see if
+        the caller is in the list of administrators of this venue, or
+        the venue server. if they are they are authorized, if they
+        aren't they are not authorized.<h3>        <strong>Returns:</strong></h3>
+<p>            <em>0</em> If authorization fails.</p>
+<p>            <em>1</em> If authorization succeeds.</p>
+</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="_GetClients"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">_GetClients&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+_GetClients ( self )
 
 </pre></font>
 
@@ -1873,9 +2419,7 @@ __init__ (
 
 </pre></font>
 
-<h3>Venue constructor.</h3>
-<p>        dataStorePath is the directory which the Venue's data storage object
-        should use for storing its files.</p>
+<p>Venue constructor.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1903,72 +2447,9 @@ __repr__ ( self )
 
 </pre></font>
 
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="_authorize"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">_authorize&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-_authorize ( self )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="startDataStore"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">startDataStore&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-startDataStore ( self )
-
-</pre></font>
-
-<h3>Start the local datastore server.</h3>
-<p>        We create a DataStore to manage this Venue's data.
-        We have been already given a data transfer service instance
-        (in the call to Venue.Start()).</p>
-<p>        The DataStore is given the Venue's dataStorePath as
-        its working directory.  We then loop through the data
-        descriptions in the venue, both checking to see that the file
-        still exists for each piece of data, and updating the uri
-        field in the description with the new download URL.</p>
-<p>        Actually, we get to do both steps at once, as
-        GetDownloadDescriptor will return None if the file doesn't
-        exist in the local data store.</p>
+<h3>A standard repr method to make a string that can be print'd.</h3>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>string</em> Simple string representation of the Venue.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1996,7 +2477,16 @@ wsAddData ( self,  dataDescriptionStruct )
 
 </pre></font>
 
-<p>Interface methods</p>
+<h3>Interface to Add data to the Venue.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>dataDescriptionStruct</em> The Data Description that's now an
+            anonymous struct that is being added to the venue.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>BadDataDescription</em> This is raised if the data
+            description struct cannot be converted to a real data
+            description.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>dataDescription</em> A data description is returned on success.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -2021,7 +2511,7 @@ wsAddData ( self,  dataDescriptionStruct )
         <tr>
         <td>
         
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+<a href="Venue_BadDataDescription.py.html">BadDataDescription</a><br>
 
 </td></tr>
 </table>
@@ -2048,10 +2538,19 @@ wsAddData ( self,  dataDescriptionStruct )
         <tr>
         <td>
         <font color="#000088"><pre>
-wsAddService ( self,  serviceDescriptionStruct )
+wsAddService ( self,  servDescStruct )
 
 </pre></font>
 
+<h3>Interface to add a service to the venue.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>servDescStruct</em> an anonymous struct that contains a
+            service description.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>BadServiceDescription</em> This is raised if the anonymous
+            struct can't be converted to a real service description.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>serviceDescription</em> A service description is returned on success.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -2076,7 +2575,78 @@ wsAddService ( self,  serviceDescriptionStruct )
         <tr>
         <td>
         
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+<a href="Venue_BadServiceDescription.py.html">BadServiceDescription</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsEnter"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsEnter&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsEnter ( self,  clientProfileStruct )
+
+</pre></font>
+
+<h3>Interface used to enter a Virtual Venue.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>clientProfileStruct</em> An anonymous struct containing a
+            client profile.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>InvalidProfileException</em> This is raised when the client
+            profile is not successfully converted to a real client
+            profile.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>(state, privateId, streamDescriptions)</em> This tuple is
+            returned to the client on success. The state is the
+            current state of the Virtual Venue and includes locations
+            for the text and event services. The private Id is a venue
+            assigned private id for the lifetime of this client
+            session. The stream descriptions are the result of the
+            venue negotiating the client capabilities.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="Venue_InvalidProfileException.py.html">InvalidProfileException</a><br>
 
 </td></tr>
 </table>
@@ -2107,34 +2677,19 @@ wsGetData ( self,  name )
 
 </pre></font>
 
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
+<h3>Interface to retrieve data from the data store.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>name</em> The name of the data to be retrieved.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>dataDescription</em> A data description is returned on success.</p>
 
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+<ul>
+<li><p>or -</p></li>
 
-</td></tr>
-</table>
+</ul>
+<p>            <em>empty string</em> If the data is not found or there is no
+            data store, then an empty string is returned, because SOAP
+            doesn't serialize None correctly.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -2162,7 +2717,16 @@ wsRemoveData ( self,  dataDescriptionStruct )
 
 </pre></font>
 
-<p>Interface methods</p>
+<h3>Interface for removing data.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>dataDescriptionStruct</em> The Data Description that's now an
+            anonymous struct that is being added to the venue.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>BadDataDescription</em> This is raised if the data
+            description struct cannot be converted to a real data
+            description.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>dataDescription</em> A data description is returned on success.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -2187,7 +2751,71 @@ wsRemoveData ( self,  dataDescriptionStruct )
         <tr>
         <td>
         
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+<a href="Venue_BadDataDescription.py.html">BadDataDescription</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsRemoveService"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsRemoveService&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsRemoveService ( self,  servDescStruct )
+
+</pre></font>
+
+<h3>Interface to remove a service from the venue.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>servDescStruct</em> an anonymous struct that contains a
+            service description.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>BadServiceDescription</em> This is raised if the anonymous
+            struct can't be converted to a real service description.</p>
+<h4>        <strong>Returns:</strong></h4>
+<p>            <em>serviceDescription</em> A service description is returned on success.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="Venue_BadServiceDescription.py.html">BadServiceDescription</a><br>
 
 </td></tr>
 </table>
@@ -2218,6 +2846,15 @@ wsSetConnections ( self,  connectionList )
 
 </pre></font>
 
+<h3>Interface for setting all the connections in a venue in a single call.</h3>
+<h4>        <strong>Arguments:</strong></h4>
+<p>            <em>connectionList</em> a list of connection descriptions that
+            have been converted to anonymous structs by the SOAP
+            module.</p>
+<h4>        <strong>Raises:</strong></h4>
+<p>            <em>BadConnectionDescription</em> This is raised when an
+            anonymous struct is not converted to a real connection
+            description.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -2242,8 +2879,8 @@ wsSetConnections ( self,  connectionList )
         <tr>
         <td>
         
+<a href="Venue_BadConnectionDescription.py.html">BadConnectionDescription</a><br>
 <a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
-VenueException( "Set Connections Failed!" )<br>
 
 </td></tr>
 </table>
@@ -2274,6 +2911,17 @@ wsUpdateData ( self,  dataDescriptionStruct )
 
 </pre></font>
 
+<p>Interface to update data that's in the venue with new data
+        (and/or description?)<h3>        <strong>Arguments:</strong></h3>
+<p>            <em>dataDescriptionStruct</em> The Data Description that's now an
+            anonymous struct that is being added to the venue.</p>
+<h3>        <strong>Raises:</strong></h3>
+<p>            <em>BadDataDescription</em> This is raised if the data
+            description struct cannot be converted to a real data
+            description.</p>
+<h3>        <strong>Returns:</strong></h3>
+<p>            <em>dataDescription</em> A data description is returned on success.</p>
+</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -2298,7 +2946,7 @@ wsUpdateData ( self,  dataDescriptionStruct )
         <tr>
         <td>
         
-<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+<a href="Venue_BadDataDescription.py.html">BadDataDescription</a><br>
 
 </td></tr>
 </table>
@@ -2315,7 +2963,7 @@ wsUpdateData ( self,  dataDescriptionStruct )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Mon Apr 28 13:48:45 2003 by
+        on Wed May 14 10:02:40 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

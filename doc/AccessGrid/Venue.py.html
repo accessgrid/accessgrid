@@ -49,7 +49,7 @@
         
 <b>from</b> AccessGrid <b>import</b> AppService, DataStore<br>
 <b>from</b> AccessGrid.ClientProfile <b>import</b> CreateClientProfile<br>
-<b>from</b> AccessGrid.Descriptions <b>import</b> StreamDescription, CreateStreamDescription, ConnectionDescription, VenueDescription, ApplicationDescription, ServiceDescription, CreateDataDescription, DataDescription, CreateServiceDescription<br>
+<b>from</b> AccessGrid.Descriptions <b>import</b> StreamDescription, CreateStreamDescription, ConnectionDescription, VenueDescription, ApplicationDescription, ServiceDescription, CreateDataDescription, DataDescription, BadDataDescription, BadServiceDescription, CreateServiceDescription<br>
 <b>from</b> AccessGrid.Events <b>import</b> Event, HeartbeatEvent, DisconnectEvent<br>
 <b>from</b> AccessGrid.GUID <b>import</b> GUID<br>
 <b>from</b> AccessGrid.NetworkLocation <b>import</b> MulticastNetworkLocation<br>
@@ -64,9 +64,9 @@
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-socket.html">socket</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-string.html">string</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-sys.html">sys</a><br>
+<b>from</b> <a href="http://www.python.org/doc/current/lib/module-threading.html">threading</a> <b>import</b> Condition, Lock<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-time.html">time</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-types.html">types</a><br>
-<b>import</b> <a href="http://www.python.org/doc/current/lib/module-urlparse.html">urlparse</a><br>
 
 </td></tr>
 
@@ -93,9 +93,44 @@
         <td>
         
 <table border="0" cellpadding="3" cellspacing="0">
-<tr><td valign="top" align="left"><a href="Venue_NotAuthorized.py.html">NotAuthorized</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="Venue_AdministratorAlreadyPresent.py.html">AdministratorAlreadyPresent</a></td><td valign="top" align="left">
+<p>The exception raised when an administrator is added, but is</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="Venue_AdministratorNotFound.py.html">AdministratorNotFound</a></td><td valign="top" align="left">
+<p>The exception raised when an administrator is not found in the</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="Venue_BadConnectionDescription.py.html">BadConnectionDescription</a></td><td valign="top" align="left">
+<p>The exception raised when a connection description struct is not</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="Venue_BadDataDescription.py.html">BadDataDescription</a></td><td valign="top" align="left">
+<p>The exception raised when a data description struct is not</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="Venue_BadServiceDescription.py.html">BadServiceDescription</a></td><td valign="top" align="left">
+<p>The exception raised when a service description struct is not</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="Venue_BadStreamDescription.py.html">BadStreamDescription</a></td><td valign="top" align="left">
+<p>The exception raised when a stream description struct is not</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="Venue_ClientNotFound.py.html">ClientNotFound</a></td><td valign="top" align="left">
+<p>The exception raised when a client is not found in the venues list</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="Venue_ConnectionNotFound.py.html">ConnectionNotFound</a></td><td valign="top" align="left">
+<p>The exception raised when a connection is not found in the venues</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="Venue_InvalidProfileException.py.html">InvalidProfileException</a></td><td valign="top" align="left">
+<p>The exception raised when a client profile struct is not</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="Venue_NotAuthorized.py.html">NotAuthorized</a></td><td valign="top" align="left">
+<p>The exception raised when the caller is not authorized to invoke the</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="Venue_StreamAlreadyPresent.py.html">StreamAlreadyPresent</a></td><td valign="top" align="left">
+<p>The exception raised when a stream is already present in the venue.</p>
+</td></tr>
 <tr><td valign="top" align="left"><a href="Venue_StreamDescriptionList.py.html">StreamDescriptionList</a></td><td valign="top" align="left">
 <p>Class to represent stream descriptions in a venue.  Entries in the</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="Venue_StreamNotFound.py.html">StreamNotFound</a></td><td valign="top" align="left">
+<p>The exception raised when a stream is not found in the venue.</p>
 </td></tr>
 <tr><td valign="top" align="left"><a href="Venue_Venue.py.html">Venue</a></td><td valign="top" align="left">
 <p>A Virtual Venue is a virtual space for collaboration on the Access Grid.</p>
@@ -117,7 +152,7 @@
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Mon Apr 28 13:48:45 2003 by
+        on Wed May 14 10:02:40 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         
