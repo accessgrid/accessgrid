@@ -164,9 +164,9 @@ EOF
 chmod +x /tmp/AccessGrid-Postinstall.py
 /tmp/AccessGrid-Postinstall.py
 rm -f /tmp/AccessGrid-Postinstall.py
-agpm.py --system -f /etc/AccessGrid/Config/SharedApplications/SharedBrowser.shared_app_pkg
-agpm.py --system -f /etc/AccessGrid/Config/SharedApplications/SharedPresentation.shared_app_pkg
-agpm.py --system -f /etc/AccessGrid/Config/SharedApplications/VenueVNC.shared_app_pkg
+agpm.py --system -p /etc/AccessGrid/Config/SharedApplications/SharedBrowser.shared_app_pkg
+agpm.py --system -p /etc/AccessGrid/Config/SharedApplications/SharedPresentation.shared_app_pkg
+agpm.py --system -p /etc/AccessGrid/Config/SharedApplications/VenueVNC.shared_app_pkg
 
 #
 # AccessGrid package pre-uninstall
