@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.22 2003-01-27 22:32:45 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.23 2003-01-30 02:39:25 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ import traceback
 # AG Stuff
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
 from AccessGrid.hosting.pyGlobus import ServiceBase
-from AccessGrid import Venue
+from AccessGrid.Venue import Venue
 from AccessGrid.GUID import GUID
 from AccessGrid.NetworkLocation import NetworkLocation
 from MulticastAddressAllocator import MulticastAddressAllocator
@@ -54,9 +54,9 @@ class VenueServer(ServiceBase.ServiceBase):
 
     configDefaults = {
             "VenueServer.houseKeeperFrequency" : 30,
-            "VenueServer.persistenceData" : 'VenueData',
-            "DataStorage.store" : 'Data/',
-            "DataStorage.port" : 8892
+            "VenueServer.persistenceFilename" : 'VenueData',
+            "VenueServer.venuePathPrefix" : 'Venues',
+            "VenueServer.dataStorePath" : 'Data'
             }
 
     def __init__(self, hostEnvironment = None, configFile=None):
@@ -65,23 +65,10 @@ class VenueServer(ServiceBase.ServiceBase):
         that object, then registers signal handlers so the venue can cleanly
         shutdown in the event of catastrophic signals.
         """
-        # Figure out which configuration file to use for the
-        # server configuration. If no configuration file was specified
-        # look for a configuration file named VenueServer.cfg
-        # VenueServer is the value of self.__class__
-        classpath = string.split(str(self.__class__), '.')
-        if configFile == None:
-            self.configFile = classpath[-1]+'.cfg'
-        else:
-            self.configFile = configFile
-
-        # Instantiate a new config parser
-        self.config = LoadConfig(self.configFile, self.configDefaults)
-
         # Initialize our state
         # We need to get the first administrator from somewhere
         self.administrators = []
-        self.dataStorage = None
+        self.dataStorage = ''
         self.defaultVenue = ''
         self.hostingEnvironment = hostEnvironment
         self.multicastAddressAllocator = MulticastAddressAllocator()
@@ -89,20 +76,42 @@ class VenueServer(ServiceBase.ServiceBase):
         self.services = []
         self.dataStorageLocation = None
 
+        # Figure out which configuration file to use for the
+        # server configuration. If no configuration file was specified
+        # look for a configuration file named VenueServer.cfg
+        # VenueServer is the value of self.__class__
+        if configFile == None:
+            classpath = string.split(str(self.__class__), '.')
+            self.configFile = classpath[-1]+'.cfg'
+        else:
+            self.configFile = configFile
+
+        # Read in and process a configuration
+        self.InitFromFile(LoadConfig(self.configFile, self.configDefaults))
+        
+        # Instantiate a new config parser
+        self.config = LoadConfig(self.configFile, self.configDefaults)
         # Try to open the persistent store for Venues. If we fail, we
         # open a temporary store, but it'll be empty.
         try:
-            store = shelve.open(
-                self.config['VenueServer.persistenceData'])
+            store = shelve.open(self.persistenceFilename)
 
             # If we've successfully opened the store, we load Venues
             # from it.
             for vURL in store.keys():
                 print "Loading Venue: %s" % vURL
                 self.venues[vURL] = store[vURL]
+                venuePath = "%s/%s" % (self.venuePathPrefix,
+                                       self.venues[vURL].uniqueId)
+                # Somehow we have to register this venue as a new service
+                # on the server.  This gets tricky, since we're not assuming
+                # the VenueServer knows about the SOAP server.
+                if(self.hostingEnvironment != None):
+                    venueService = self.hostingEnvironment.create_service_object(pathId = venuePath)
+                    self.venues[vURL]._bind_to_service(venueService)
             store.close()
         except:
-            print "Corrupt persistence database detected.", sys.exc_type, sys.exc_value
+            print "Corrupt persistence database detected.", formatExceptionInfo()
 
         # The houseKeeper is a task that is doing garbage collection and
         # other general housekeeping tasks for the Venue Server.
@@ -110,26 +119,17 @@ class VenueServer(ServiceBase.ServiceBase):
         # checkpoint, this tries to ensure that the persistent store is
         # kept up to date.
         self.houseKeeper = Scheduler()
-        self.houseKeeper.AddTask(self.Checkpoint,
-                            self.config['VenueServer.houseKeeperFrequency'], 0)
+        self.houseKeeper.AddTask(self.Checkpoint, self.houseKeeperFrequency, 0)
 
-        # We register signal handlers for the VenueServer. In the event of
-        # a signal we just try to shut down cleanly.
-        signal.signal(signal.SIGINT, self.SignalHandler)
-        # for some reason this signal doesn't work now
-        # signal.signal(signal.SIGBREAK, self.SignalHandler)
-        signal.signal(signal.SIGTERM, self.SignalHandler)
 
-    def SignalHandler(self, signum, frame):
+    def InitFromFile(self, config):
         """
-        SignalHandler catches signals and shuts down the VenueServer (and
-        all of it's Venues. Then it stops the hostingEnvironment.
         """
-        print "Got signal: ", signum
-        self.Shutdown(None, 0)
-
-
-
+        self.config = config
+        for k in config.keys():
+            (section, option) = string.split(k, '.')
+            setattr(self, option, config[k])
+            
     def AddVenue(self, connectionInfo, venueDescription):
         """
         The AddVenue method takes a venue description and creates a new
@@ -153,9 +153,12 @@ class VenueServer(ServiceBase.ServiceBase):
             # Create a new Venue object, pass it the coherenceService,
             #       the server's Multicast Address Allocator, and the server's
             #       Data Storage object
-            venue = Venue.Venue(self, venueID, venueDescription,
-                                connectionInfo.get_remote_name())
+            venue = Venue(venueID, venueDescription,
+                          connectionInfo.get_remote_name(),
+                          self.multicastAddressAllocator, self.dataStorage)
 
+            venue.Start()
+            
             # Somehow we have to register this venue as a new service
             # on the server.  This gets tricky, since we're not assuming
             # the VenueServer knows about the SOAP server.
@@ -416,10 +419,10 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         Shutdown shuts down the server.
         """
+        self.Checkpoint()
+
         for vURL in self.venues.keys():
             self.venues[vURL].Shutdown()
-
-        self.Checkpoint()
 
         self.hostingEnvironment.stop()
 
@@ -437,7 +440,7 @@ class VenueServer(ServiceBase.ServiceBase):
         that can be lost).
         """
         try:
-            store = shelve.open(self.config['VenueServer.persistenceData'])
+            store = shelve.open(self.persistenceFilename)
 
             for vURL in self.venues.keys():
                 venue = self.venues[vURL]
