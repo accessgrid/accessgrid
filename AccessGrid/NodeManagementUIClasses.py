@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.68 2004-08-11 19:54:26 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.69 2004-08-11 20:35:20 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.68 2004-08-11 19:54:26 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.69 2004-08-11 20:35:20 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -778,11 +778,8 @@ class NodeManagementClientFrame(wxFrame):
         """
         Update the service manager list
         """
-
         # Find selected service managers, to retain selections after update
         selectedServiceManagerUri = None
-
-       
             
         if self.hostList.GetSelectedItemCount() != 0:
             index = -1
@@ -807,11 +804,15 @@ class NodeManagementClientFrame(wxFrame):
 
         if self.hostList.GetSelectedItemCount() == 0:
             # if no host is selected, select the first item
+
+            if self.hostList.GetItemCount() == 0:
+                # With no hosts in the list, just clear the service list
+                self.UpdateServiceList()
             try:
                 self.hostList.SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
             except:
                 pass
-            
+
         # Update the service list
         #self.UpdateServiceList()
 
