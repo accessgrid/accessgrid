@@ -3,17 +3,13 @@
 # Purpose:     
 #
 # Created:     2004/03/30
-# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.11 2004-05-07 20:14:45 turam Exp $
+# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.12 2004-07-28 22:43:35 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import os
-import threading
 
-from AccessGrid.Toolkit import Application
-from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 from AccessGrid.Types import AGServicePackage, InvalidServicePackage
-from AccessGrid import DataStore
 from AccessGrid import Log
 
 log = Log.GetLogger("ServicePackageRepo")
@@ -24,70 +20,16 @@ class AGServicePackageRepository:
     packages and avails them to clients (service managers) via http(s)
     """
 
-    def __init__( self, servicesDir, port=0, prefix=None, secure=1):
+    def __init__( self, servicesDir, port=0, prefix=None):
         self.servicesDir = servicesDir
-        self.port = port
-        self.secure = secure
-        
-        self.baseUrl = ''
-        self.s = None
-        self.running = 0
-        self.prefix = prefix
 
-    def Start(self):
-        # Start the transfer server
-        
-        # if port is 0, find a free port
-        if self.port == 0:
-            self.port = NetworkAddressAllocator().AllocatePort()
-
-        # Define base url
-        hn = Application.instance().GetHostname()
-        if self.prefix is None:
-            self.prefix = "packages"
-        
-        # Start the transfer server
-        if self.secure:
-            self.baseUrl = 'https://%s:%d/%s/' % ( hn, self.port, self.prefix )
-            self.s = DataStore.GSIHTTPTransferServer((hn, self.port))
-        else:
-            self.baseUrl = 'http://%s:%d/%s/' % ( hn, self.port, self.prefix )
-            self.s = DataStore.HTTPTransferServer((hn, self.port))
-
-        self.s.RegisterPrefix(self.prefix, self)
-
-        threading.Thread( target=self.s.run,
-                          name="PackageRepo TransferServer" ).start()
-        self.running = 1
-        
-        log.info("Started AGServicePackageRepository Transfer Server")
-        log.info(" url = %s", self.baseUrl)
-        log.info(" dir = %s", self.servicesDir)
-
-    def Stop(self):
-        if self.running:
-            self.running = 0
-            self.s.stop()
-
-    def GetDownloadFilename(self, id_token, url_path):
-        """
-        Return the path to the file specified by the given url path
-        """
-        filename = os.path.join(self.servicesDir, url_path)
-
-        # Catch request for non-existent file
-        if not os.access(filename,os.R_OK):
-            log.info("Attempt to download non-existent file: %s" % (filename) )
-            raise DataStore.FileNotFound(filename)
-        return filename
-
-    def GetPackageUrl( self, file ):
-        return self.baseUrl + file
+    def GetServicesDir(self):
+        return self.servicesDir
         
     def GetServiceDescription(self, file):
         servicePackage = AGServicePackage( os.path.join(self.servicesDir,file) )
         serviceDesc = servicePackage.GetServiceDescription()
-        serviceDesc.servicePackageUri = self.GetPackageUrl(file)
+        serviceDesc.servicePackageFile = file
         return serviceDesc
     
 
@@ -124,7 +66,7 @@ class AGServicePackageRepository:
                     
                     # Set the service package url in the service description
                     sd = servicePkg.GetServiceDescription()
-                    sd.servicePackageUri = self.GetPackageUrl(file)
+                    sd.servicePackageFile = file
                     servicePkg.SetServiceDescription(sd)
                     
                     servicePackages.append(servicePkg)
