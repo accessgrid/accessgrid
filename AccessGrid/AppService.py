@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: AppService.py,v 1.7 2003-05-17 18:00:55 judson Exp $
+# RCS-ID:      $Id: AppService.py,v 1.8 2003-05-28 13:25:45 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -296,8 +296,10 @@ class ChannelHandler:
         self.eventService = eventService
         self.channelId = channelId
 
-    def handleEvent(self, eventType, eventData):
+    def handleEvent(self, event):
         try:
+            eventType = event.eventType
+            eventData = event.data
             log.debug("handling event type='%s' data='%s'", eventType, eventData)
             self.eventService.Distribute(self.channelId,
                                          Events.Event(eventType, self.channelId, eventData))

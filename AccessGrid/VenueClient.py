@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.70 2003-05-27 19:44:13 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.71 2003-05-28 13:25:45 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -114,80 +114,99 @@ class VenueClient( ServiceBase):
     #
     # Event Handlers
     #
-    def AddUserEvent(self, data):
+    def AddUserEvent(self, event):
         log.debug("Got Add User Event")
+
+        data = event.data
         
         self.venueState.AddUser(data)
 
-    def RemoveUserEvent(self, data):
+    def RemoveUserEvent(self, event):
         log.debug("Got Remove User Event")
+
+        data = event.data
 
         self.venueState.RemoveUser(data)
 
         log.debug("Got Remove User Event...done")
         
-    def ModifyUserEvent(self, data):
+    def ModifyUserEvent(self, event):
         log.debug("Got Modify User Event")
+
+        data = event.data
 
         self.venueState.ModifyUser(data)
 
-    def AddDataEvent(self, data):
+    def AddDataEvent(self, event):
         log.debug("Got Add Data Event")
+
+        data = event.data
 
         self.venueState.AddData(data)
 
-    def UpdateDataEvent(self, data):
+    def UpdateDataEvent(self, event):
         log.debug("Got Update Data Event")
 
+        data = event.data
         self.venueState.UpdateData(data)
 
-    def RemoveDataEvent(self, data):
+    def RemoveDataEvent(self, event):
         log.debug("Got Remove Data Event")
 
+        data = event.data
         self.venueState.RemoveData(data)
 
-    def AddServiceEvent(self, data):
+    def AddServiceEvent(self, event):
         log.debug("Got Add Service Event")
 
+        data = event.data
         self.venueState.AddService(data)
 
-    def RemoveServiceEvent(self, data):
+    def RemoveServiceEvent(self, event):
         log.debug("Got Remove Service Event")
 
+        data = event.data
         self.venueState.RemoveService(data)
 
-    def AddApplicationEvent(self, data):
+    def AddApplicationEvent(self, event):
         log.debug("Got Add Application Event")
 
+        data = event.data
         self.venueState.AddApplication(data)
 
-    def RemoveApplicationEvent(self, data):
+    def RemoveApplicationEvent(self, event):
         log.debug("Got Remove Application Event")
 
+        data = event.data
         self.venueState.RemoveApplication(data)
 
-    def AddConnectionEvent(self, data):
+    def AddConnectionEvent(self, event):
         log.debug("Got Add Connection Event")
 
+        data = event.data
         self.venueState.AddConnection(data)
 
-    def RemoveConnectionEvent(self, data):
+    def RemoveConnectionEvent(self, event):
         log.debug("Got Remove Connection Event")
 
+        data = event.data
         self.venueState.RemoveConnection(data)
 
-    def SetConnectionsEvent(self, data):
+    def SetConnectionsEvent(self, event):
         log.debug("Got Set Connections Event")
 
+        data = event.data
         self.venueState.SetConnections(data)
 
-    def AddStreamEvent(self,data):
+    def AddStreamEvent(self, event):
         log.debug("Got Add Stream Event")
+        data = event.data
         if self.nodeServiceUri != None:
             Client.Handle(self.nodeServiceUri).GetProxy().AddStream(data)
     
-    def RemoveStreamEvent(self,data):
+    def RemoveStreamEvent(self, event):
         log.debug("Got Remove Stream Event")
+        data = event.data
         if self.nodeServiceUri != None:
             Client.Handle(self.nodeServiceUri).GetProxy().RemoveStream(data)
         

@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.204 2003-05-27 22:44:34 eolson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.205 2003-05-28 13:25:45 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -21,6 +21,7 @@ from wxPython.wx import wxTheMimeTypesManager as mtm
 from wxPython.wx import wxFileTypeInfo
 import string
 import webbrowser
+import traceback
 
 log = logging.getLogger("AG.VenueClientUIClasses")
 
@@ -1424,7 +1425,10 @@ class ContentListPanel(wxPanel):
             imageId = self.nodeId
         else:
             log.exception("The user type is not a user nor a node, something is wrong")
-            
+
+        log.debug("UI: AddParticipant %s (called from %s)", profile.name,
+                  (traceback.extract_stack())[-2])
+        
         participant = self.tree.AppendItem(self.participants, profile.name, 
                                            imageId, imageId)
         self.tree.SetItemData(participant, wxTreeItemData(profile)) 

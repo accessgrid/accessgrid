@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.99 2003-05-23 22:17:59 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.100 2003-05-28 13:25:45 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -486,7 +486,7 @@ class Venue(ServiceBase.ServiceBase):
 
             self.RemoveUser(privateId)
 
-    def ClientHeartbeat(self, privateId):
+    def ClientHeartbeat(self, event):
         """
         This is an Event handler for heartbeat events. When a
         heartbeat is received from a client we keep track of the
@@ -504,8 +504,12 @@ class Venue(ServiceBase.ServiceBase):
             for a client that we don't know about.
         """
         now = time.time()
+        privateId = event.data
         
         # log.debug("Got Client Heartbeat for %s at %s." % (privateId, now))
+
+        if event.venue != self.uniqueId:
+            log.info("ClientHeartbeat: Received heartbeat for a different venue %s", event.venue)
        
         if self.clients.has_key(privateId):
             self.heartbeatLock.acquire()
@@ -517,7 +521,7 @@ class Venue(ServiceBase.ServiceBase):
         else:
             log.debug("ClientHeartbeat: Got heartbeat for missing client")
     
-    def EventServiceDisconnect(self, privateId):
+    def EventServiceDisconnect(self, event):
         """
         This is an Event handler for Disconnect events. This keeps the
         Venue cleaned up by removing users that disconnect.
@@ -526,7 +530,10 @@ class Venue(ServiceBase.ServiceBase):
 
             *privateId* The private id of the user disconnecting.
         """
-        log.debug("VenueServer: Got Client disconnect for %s", privateId)
+        privateId = event.data
+        log.debug("VenueServer: Got Client disconnect for %s venue=%s", privateId, event.venue)
+        if event.venue != self.uniqueId:
+            log.info("ClientHeartbeat: Received client disconnect for a different venue %s", event.venue)
 
         #
         # We don't lock here; RemoveUser handles the locking.
@@ -538,7 +545,7 @@ class Venue(ServiceBase.ServiceBase):
         else:
             self.RemoveUser(privateId)
         
-    def EventServiceClientExits(self, privateId):
+    def EventServiceClientExits(self, event):
         """
         This is an Event handler for normal client exits.
         
@@ -546,6 +553,9 @@ class Venue(ServiceBase.ServiceBase):
 
             *privateId* The private id of the user disconnecting.
         """
+        privateId = event.data
+        if event.venue != self.uniqueId:
+            log.info("ClientHeartbeat: Received client exits for a different venue %s", event.venue)
         log.debug("VenueServer: Got Client exiting for %s", privateId)
 
         self.clientDisconnectOK[privateId] = 1
@@ -802,8 +812,10 @@ class Venue(ServiceBase.ServiceBase):
         """
         log.debug("Enter called.")
         
+        privateId = None
+        
         # First we search for this user
-        privateId = self.FindUserByProfile(clientProfile)
+        # privateId = self.FindUserByProfile(clientProfile)
 
         # If we don't find them, we assign a new id
         if privateId == None:
@@ -819,6 +831,10 @@ class Venue(ServiceBase.ServiceBase):
         # negotiate to get stream descriptions to return
         streamDescriptions = self.NegotiateCapabilities(clientProfile,
                                                             privateId)
+
+        log.debug("Current users:")
+        for prof, tm in self.clients.values():
+            log.debug("  name=%s time=%s pubId=%s", prof.name, tm, prof.publicId)
         log.debug("Enter: Distribute enter event ")
 
         self.server.eventService.Distribute( self.uniqueId,
@@ -828,6 +844,7 @@ class Venue(ServiceBase.ServiceBase):
 
         try:
             state = self.AsVenueState()
+            log.debug("state: %s", state)
         except:
             log.exception("Enter: Can't get state.")
             raise InvalidVenueState

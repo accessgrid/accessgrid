@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.6 2003-05-23 22:17:59 olson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.7 2003-05-28 13:25:45 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -299,14 +299,14 @@ class EventService:
             logEvent("Specific event callback=%s", cb)
             if cb != None:
                 logEvent("invoke callback %s", str(cb))
-                cb(event.data)
+                cb(event)
         elif self.callbacks.has_key((event.venue,)):
             # Default handler for this channel.
             cb = self.callbacks[(event.venue,)]
             logEvent("Default channel event callback=%s", cb)
             if cb != None:
                 logEvent("invoke channel callback %s", cb)
-                cb(event.eventType, event.data)
+                cb(event)
             else:
                 log.info("EventService: No callback for %s, %s events.",
                          event.venue, event.eventType)

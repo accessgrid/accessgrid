@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.20 2003-05-23 21:39:24 olson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.21 2003-05-28 13:25:45 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -110,7 +110,9 @@ class EventClient:
                 return
             elif dat[0] == "call":
                 try:
-                    dat[1](dat[2])
+                    callback = dat[1]
+                    event = dat[2]
+                    callback(event)
                 except:
                     log.exception("callback invocation failed")
 
@@ -203,7 +205,7 @@ class EventClient:
                     log.debug("Invoking callback %s...", callback)
                     try:
                         #callback(event.data)
-                        self.queue.put(("call", callback, event.data))
+                        self.queue.put(("call", callback, event))
                     except:
                         log.exception("Callback fails")
                     log.debug("Invoking callback %s...done", callback)
