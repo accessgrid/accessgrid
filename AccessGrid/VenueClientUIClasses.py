@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.146 2003-04-22 16:46:19 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.147 2003-04-22 18:04:46 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -200,21 +200,20 @@ class VenueClientFrame(wxFrame):
 	self.menubar.Append(self.venue, "&Venue")
         
         self.venue.AppendSeparator()
-        self.venue.Append(self.ID_VENUE_CLOSE, 'Close', "Exit venue")
+        self.venue.Append(self.ID_VENUE_CLOSE,"&Exit\tALT-q", "Exit venue")
 	
 	self.edit = wxMenu()
-	self.edit.Append(self.ID_PROFILE, "&Profile...", "Change your personal information")
+	self.edit.Append(self.ID_PROFILE,"&Profile...\tALT-p", "Change your personal information")
         self.menubar.Append(self.edit, "&Edit")
         self.myNode = wxMenu()
-        self.myNode.Append(self.ID_MYNODE_MANAGE, "&Manage...", "Configure your node")
-        self.myNode.Append(self.ID_MYNODE_URL, "&Set URL...", "Specify URL address to node service")
+        self.myNode.Append(self.ID_MYNODE_MANAGE, "&Manage...\tALT-m", "Configure your node")
+        self.myNode.Append(self.ID_MYNODE_URL, "&Set URL...\tALT-u", "Specify URL address to node service")
         self.menubar.Append(self.myNode, "My &Node")
         self.myVenues = wxMenu()
-        self.myVenues.Append(self.ID_MYVENUE_ADD, "&Add Current Venue...",
-                             "Add this venue to your list of venues")
-        self.myVenues.Append(self.ID_MYVENUE_EDIT, "&Edit My Venues...", "Edit your venues")
+        self.myVenues.Append(self.ID_MYVENUE_ADD, "Add &Current Venue...\tALT-c", "Add this venue to your list of venues")
+        self.myVenues.Append(self.ID_MYVENUE_EDIT, "Edit My &Venues...\tALT-v", "Edit your venues")
         self.myVenues.AppendSeparator()
-        self.menubar.Append(self.myVenues, "My &Venues")
+        self.menubar.Append(self.myVenues, "My Ven&ues")
 
         if HaveCertificateManager:
             # certMenu = wxMenu()
@@ -224,7 +223,7 @@ class VenueClientFrame(wxFrame):
             self.menubar.Append(certMenu, "&Certificates")
               
       	self.help = wxMenu()
-        self.help.Append(self.ID_HELP_ABOUT, "About", "Information about the application")
+        self.help.Append(self.ID_HELP_ABOUT, "&About\tALT-a", "Information about the application")
         self.menubar.Append(self.help, "&Help")
         self.HideMenu()
 
@@ -713,7 +712,7 @@ class VenueClientFrame(wxFrame):
     def RemoveData(self, event):
         id = self.contentListPanel.tree.GetSelection()
         data = self.contentListPanel.tree.GetItemData(id).GetData()
-
+        
         if(data != None):
             text ="Are you sure you want to delete "+ data.name
             areYouSureDialog = wxMessageDialog(self, text, \
@@ -731,7 +730,11 @@ class VenueClientFrame(wxFrame):
         service =  self.contentListPanel.tree.GetItemData(id).GetData()
         
         if(service != None):
-            self.app.RemoveService(service)
+            text ="Are you sure you want to delete "+ service.name
+            areYouSureDialog = wxMessageDialog(self, text, \
+                                               '', wxOK |  wxCANCEL |wxICON_INFORMATION)
+            if(areYouSureDialog.ShowModal() == wxID_OK):
+                self.app.RemoveService(service)
             
         else:
             self.__showNoSelectionDialog("Please, select the service you want to delete")       
@@ -774,6 +777,18 @@ class VenueClientFrame(wxFrame):
     def RemoveApp(self,event):
         id = self.contentListPanel.tree.GetSelection()
         app =  self.contentListPanel.tree.GetItemData(id).GetData()
+
+        if(app != None):
+            text ="Are you sure you want to delete "+ app.name
+            areYouSureDialog = wxMessageDialog(self, text, \
+                                               '', wxOK |  wxCANCEL |wxICON_INFORMATION)
+            if(areYouSureDialog.ShowModal() == wxID_OK):
+                self.app.RemoveService(service)
+            
+        else:
+            self.__showNoSelectionDialog("Please, select the application you want to delete")       
+            
+        
         self.app.RemoveApp( app )
             
     def CleanUp(self):
@@ -1410,13 +1425,13 @@ class ContentListPanel(wxPanel):
 
                 if isinstance(item,DataDescription):
                     # data
-                    self.app.RemoveData(item)
+                    self.parent.RemoveData(event)
                 elif isinstance(item,ServiceDescription):
                     # service
-                    self.app.RemoveService(item)
+                    self.parent.RemoveService(event)
                 elif isinstance(item,ApplicationDescription):
                     # application
-                    self.app.RemoveApp(item)
+                    self.parent.RemoveApp(event)
 
             # service
             #for object in self.serviceDict:
