@@ -20,6 +20,10 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
         AddEventSubscriber, we will get the events.
     An external class, such as CmdLineController below, does the actual
         reading and writing to the command line.
+
+    NOTE that currently the operation is much more input driven than in
+        GuiVenueClient.  For example, we currently don't print out every change 
+        when the venue state changes.
     """
 
     history = []
@@ -53,6 +57,9 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
 
         # Default to printing to stdout.
         self.cmdLineInterface = None
+
+        # Setup caches
+        self.ClearCaches()
 
     def SetCmdLineInterface(self, cmdLineInterface):
         self.cmdLineInterface = cmdLineInterface
@@ -94,13 +101,20 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
             hdlr.setFormatter(fmt)
             log.addHandler(hdlr)
 
+    def ClearCaches(self):
+        # Cache exits when they are listed so user can type a number to identify them. 
+        self.cachedExitList = []
+
+
     # --- Callbacks called from AccessGrid.VenueClient() ---
 
     def EnterVenue(self, URL, back = AG_FALSE, warningString="", enterSuccess=AG_TRUE):
         if enterSuccess == AG_TRUE:
+            self.ClearCaches() # clear exits, etc. from last venue
             print "Successfully entered venue: " + URL
         else:
             print "Failed to enter venue: " + URL
+
 
     # --- Commands to be initiated from the command line. ---
 
@@ -137,6 +151,32 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
         else:
             self.OutputText("You are not in a venue and are unable to list participants.")
             return AG_FALSE
+
+    def ListExits(self):
+        if self.venueClient.isInVenue:
+            strng = ""
+            exitList = []
+            index = 1
+            for exit in self.venueClient.venueState.connections.values():
+                strng += "(" + str(index) + ") " + exit.name + "\n"
+                exitList.append(exit)
+                index = index + 1
+            self.OutputText("Exits:\n" + strng)
+            # Replace exit list with new exit list.
+            self.cachedExitList = exitList
+            return AG_TRUE
+        else:
+            self.OutputText("You are not in a venue and are unable to list exits.")
+            return AG_FALSE
+
+    def UseExit(self, index):
+        if len(self.cachedExitList) == 0:
+            self.ListExits() # retrieve list of exits if we don't have one
+        # Note the passed in index is 1-based and array index is 0-based
+        if index > 0 and index <= len(self.cachedExitList):
+            exit = self.cachedExitList[index-1]
+            self.OutputText("Using exit (" + str(index) + ") " + exit.name + "  ")
+            self.InitiateEnterVenue(exit.uri)
 
     def InitiateShutdown(self):
         self.venueClient.Shutdown()
@@ -201,6 +241,17 @@ class CmdLineController(cmd.Cmd, Thread):
         self.cmdLineVC.ListParticipants()
 
     do_lp = do_listparticipants
+
+    def do_listexits(self, argline):
+        self.cmdLineVC.ListExits()
+
+    do_le = do_listexits
+
+    def do_useexit(self, argline):
+        index = int(argline)
+        self.cmdLineVC.UseExit(index)
+
+    do_ue = do_useexit
 
     def do_listdata(self, argline):
         self.cmdLineVC.ListData()
