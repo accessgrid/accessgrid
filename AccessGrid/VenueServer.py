@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.150 2004-07-15 18:36:53 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.151 2004-07-19 18:13:14 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.150 2004-07-15 18:36:53 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.151 2004-07-19 18:13:14 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -140,6 +140,9 @@ class VenueServer(AuthorizationMixIn):
         - *configFile* the filename of a configuration file for this venue server.
 
         """
+        # Basic variable initializations
+        self.perfFile = None
+
         # Pointer to external world
         self.servicePtr = Service.instance()
         
