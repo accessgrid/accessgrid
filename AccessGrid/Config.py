@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.15 2004-05-04 19:32:50 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.16 2004-05-05 22:06:49 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.15 2004-05-04 19:32:50 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.16 2004-05-05 22:06:49 lefvert Exp $"
 
 import os
 import sys
@@ -131,12 +131,8 @@ class GlobusConfig:
         str = "Globus Configuration:\n"
         str += "Location: %s\n" % self.GetLocation()
         str += "Hostname: %s\n" % self.GetHostname()
-        str += "Server Flag: %s\n" % self.GetServerFlag()
-        str += "CA Cert Dir: %s\n" % self.GetCACertDir()
         str += "Proxy Filename: %s\n" % self.GetProxyFileName()
-        str += "Cert Filename: %s\n" % self.GetCertFileName()
-        str += "Key Filename: %s\n" % self.GetKeyFileName()
-
+        
         return str
 
     # We define our own setenv/unsetenv to prod both the pyGlobus
