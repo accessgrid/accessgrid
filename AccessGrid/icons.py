@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: icons.py,v 1.19 2003-05-08 20:23:23 lefvert Exp $
+# RCS-ID:      $Id: icons.py,v 1.20 2003-05-08 20:56:16 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -10234,5 +10234,38 @@ catalog['Folder'].getData = getFolderData
 catalog['Folder'].getImage = getFolderImage
 catalog['Folder'].getBitmap = getFolderBitmap
 catalog['Folder'].getIcon = getFolderIcon
+
+
+#----------------------------------------------------------------------
+def getDefaultParticipantData():
+    return zlib.decompress(
+'x\xda\xeb\x0c\xf0s\xe7\xe5\x92\xe2b``\xe0\xf5\xf4p\t\x02\xd2B@,\xcc\xc1\x06\
+$\xe7N\x8a\xfd\x04\xa4X\x8a\x9d<C8\x80\xa0\x86#\xa5\x03\xc8\xef\xf0tq\x0c\
+\xa9\x98sw\xb2\xa3X\x83\x02\x87\xcb\xccy\xe2\xaf\xbd\xee\x1e\xb3>9s\x99\xeb\
+\xd1\xd3!W\xa6\x9ds\x13\xfc\xb3\x88\xc3#H\x8a)\xa1X\xdd\xc7\xc5\xa5\x89]\xf1\
+r\xea\x8a{e\xd2\xdbv\x1e\xbf#\x10\xfa\xb6\xed\xe7\x02\xc7\x8e\x8eb\xd3I\xc1\
+\xf9!g9\x1a\x1c\x93R6\x9a\xb10%\xcc\x0eNb\xeb\x9e\xe8\x1b\xf1\x7f#\xfbV\x03\
+\x8e\xfbb\x1f\xb5>\xaf\xf8&\xda\xd5\xe3\x11\xf5\xa0\xae%\xa7\xe6\xf7\xae\x05\
+\xfb\xa3$BB\xce\xcaL}U\xd9\xfb\xba\xec\x7f\x8f\xdf\t[\xb7\x80\xb0\x0e\xd6\
+\xb3@71x\xba\xfa\xb9\xacsJh\x02\x00\x00TN\xfd' )
+
+def getDefaultParticipantBitmap():
+    return wxBitmapFromImage(getDefaultParticipantImage())
+
+def getDefaultParticipantImage():
+    stream = cStringIO.StringIO(getDefaultParticipantData())
+    return wxImageFromStream(stream)
+
+def getDefaultParticipantIcon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(getDefaultParticipantBitmap())
+    return icon
+
+index.append('DefaultParticipant')
+catalog['DefaultParticipant'] = ImageClass()
+catalog['DefaultParticipant'].getData = getDefaultParticipantData
+catalog['DefaultParticipant'].getImage = getDefaultParticipantImage
+catalog['DefaultParticipant'].getBitmap = getDefaultParticipantBitmap
+catalog['DefaultParticipant'].getIcon = getDefaultParticipantIcon
 
 
