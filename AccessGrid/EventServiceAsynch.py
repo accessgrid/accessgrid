@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.28 2004-04-09 18:33:57 judson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.29 2004-07-08 01:57:41 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.28 2004-04-09 18:33:57 judson Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.29 2004-07-08 01:57:41 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -32,26 +32,11 @@ from AccessGrid.Events import ConnectEvent, DisconnectEvent, MarshalledEvent
 from AccessGrid.Events import Event, AddPersonalDataEvent
 from AccessGrid.Events import RemovePersonalDataEvent, UpdatePersonalDataEvent
 from AccessGrid.Events import AddDataEvent, RemoveDataEvent, UpdateDataEvent
+from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 from AccessGrid.GUID import GUID
 
 log = Log.GetLogger(Log.EventService)
 Log.SetDefaultLevel(Log.EventService, Log.DEBUG)
-
-#
-# Per-event debugging might be useful sometimes, but not usually.
-# Leave the calls in the code via logEvent, but let them
-# be disabled.
-# 
-
-logEvent = log.verbose
-
-#detailedEventLogging = 0
-#if detailedEventLogging:
-    #logEvent = log.debug
-    #log.setLevel(logging.DEBUG)
-#else:
-    #logEvent = lambda *sh: 0
-    #log.setLevel(logging.WARN)
 
 class ConnectionHandler:
     """
@@ -66,6 +51,8 @@ class ConnectionHandler:
         self.server = eservice
         self.wfile = None
 
+	self.sender = "Not Connected"
+
         self.dataBuffer = ''
         self.bufsize = 4096
         self.buffer= Buffer(self.bufsize)
@@ -78,13 +65,13 @@ class ConnectionHandler:
         return self.id
 
     def registerAccept(self, attr):
-        logEvent("EventServiceAsynch: conn handler registering accept")
+        log.info("EventServiceAsynch: conn handler registering accept")
 
         socket, cb = self.lsocket.register_accept(attr, self.acceptCallback,
                                                   None)
         self.acceptCallbackHandle = cb
         
-        logEvent("EventServiceAsynch: register_accept returns socket=%s cb=%s", socket, cb)
+        log.info("EventServiceAsynch: register_accept returns socket=%s cb=%s", socket, cb)
         self.socket = socket
 
     def acceptCallback(self, arg, handle, result):
@@ -94,7 +81,7 @@ class ConnectionHandler:
                 self.server.registerForListen()
                 return
 
-            logEvent("EventServiceAsynch: Accept Callback '%s' '%s' '%s'",
+            log.info("EventServiceAsynch: Accept Callback '%s' '%s' '%s'",
                      arg, handle, result)
             self.lsocket.free_callback(self.acceptCallbackHandle)
             self.server.registerForListen()
@@ -102,6 +89,9 @@ class ConnectionHandler:
             #
             # We can now start reading.
             #
+
+            ctx = self.socket.get_security_context()
+            self.sender = CreateSubjectFromGSIContext(ctx).GetName()
 
             self.wfile = self.socket.makefile("w")
             self.registerForRead()
@@ -135,17 +125,21 @@ class ConnectionHandler:
         If the write fails for some reason, return 0.
         Otherwise, return 1.
         """
-        
-        try:
-            mEvent.Write(self.wfile)
-            return 1
-        except:
-            log.exception("writeMarshalledEvent write error!")
-            return 0
+
+	if self.wfile is not None:        
+	    try:
+                mEvent.Write(self.wfile)
+                return 1
+            except:
+                log.exception("writeMarshalledEvent write error!")
+        else:
+	    log.info("not sending event, conn obj is none.")
+
+	return 0
 
     def readCallback(self, arg, handle, result, buf, n):
 
-        logEvent("EventServiceAsynch: Got read handle=%s result=%s  n=%s waiting=%s\n",
+        log.info("EventServiceAsynch: Got read handle=%s result=%s  n=%s waiting=%s\n",
                  handle, result, n, self.waitingLen)
 
         if result[0] != 0:
@@ -175,7 +169,7 @@ class ConnectionHandler:
             self.waitingLen = dlen[0]
 
         if len(self.dataBuffer) >= self.waitingLen:
-            logEvent("EventServiceAsynch: Finished reading packet, wait=%s buflen=%s",
+            log.info("EventServiceAsynch: Finished reading packet, wait=%s buflen=%s",
                       self.waitingLen, len(self.dataBuffer))
 
             thedata = self.dataBuffer[:self.waitingLen]
@@ -210,7 +204,7 @@ class ConnectionHandler:
                 self.handleEOF()
                 return
 
-        logEvent("EventServiceAsynch: EventConnection: Received event %s", event)
+        log.info("EventServiceAsynch: EventConnection: Received event %s", event)
 
         #
         # Drop this event on the event server's queue for processing
@@ -256,6 +250,7 @@ class EventChannel:
         self.authCallback = authCallback
 
     def __del__(self):
+	self.qEvt.unset()
         log.debug("EventServiceAsynch: Delete EventChannel %s", self.id)
 
     def RegisterCallback(self, eventType, callback):
@@ -341,7 +336,7 @@ class EventChannel:
             for cb in self.typedHandlers[event.eventType]:
                 log.debug("EventServiceAsynch: Specific event callback=%s", cb)
                 if cb != None:
-                    logEvent("EventServiceAsynch: invoke callback %s", str(cb))
+                    log.info("EventServiceAsynch: invoke callback %s", str(cb))
                     try:
                         cb(event)
                     except:
@@ -354,7 +349,7 @@ class EventChannel:
             except:
                 log.exception("Event callback failed")
 
-        logEvent("EventServiceAsynch: HandleEvent returns")
+        log.info("EventServiceAsynch: HandleEvent returns")
 
 
     def Distribute(self, data):
@@ -410,7 +405,6 @@ class EventService:
         
         self.location = server_address
 
-        #
         # self.channels is a dictionary keyed on the channel id
         #
         # self.connectionMap is a dict keyed on the ConnectionHandler
@@ -420,31 +414,35 @@ class EventService:
         #
         # self.allConnections is a list of all the active connections
         # that we know about.
-        #
-
         self.channels = {}
         self.connectionMap = {}
         self.allConnections = []
 
-        #
         # The socket we're listening on.
-        #
         self.socket = GSITCPSocket()
         self.socket.allow_reuse_address = 1
         self.attr = CreateTCPAttrAlwaysAuth()
 
-        #
         # Our incoming message queue. We don't handle messages
         # in the asynch IO threads, in order that they don't block
         # on the Globus side.
-        #
-        self.queue = Queue.Queue()
-        self.queueThread = threading.Thread(target = self.QueueHandler)
-        self.queueThread.start()
+        self.outQueue = Queue.Queue()
+	self.outQEvt = threading.Event()
+	self.outQEvt.set()
+        self.outQThread = threading.Thread(target = self.RecvHandler, 
+				name = "EventService Recieve Queue Handler")
+        self.outQThread.start()
 
-        #
+	# Create a queue and thread to distribute events asynchronously
+	# This alleviates proportional calls (to the number of clients)
+	self.inQueue = Queue.Queue()
+	self.inQEvt = threading.Event()
+	self.inQEvt.set()
+	self.inQThread = threading.Thread(target = self.SendHandler,
+				name = "EventService Send Queue Handler")
+	self.inQThread.start()
+
         # Initialize socket for listening.
-        #
         port = self.socket.create_listener(self.attr, server_address[1])
         log.debug("EventServiceAsynch: Bound to %s (server_address=%s)", port, server_address)
 
@@ -471,7 +469,7 @@ class EventService:
     def registerForListen(self):
         ret = self.socket.register_listen(self.listenCallback, None)
         self.listenCallbackHandle = ret
-        logEvent("EventServiceAsynch: register_listen returns '%s'", ret)
+        log.info("EventServiceAsynch: register_listen returns '%s'", ret)
 
     def listenCallback(self, arg, handle, result):
         try:
@@ -480,7 +478,7 @@ class EventService:
                 self.registerForListen()
                 return
             
-            logEvent("EventServiceAsynch: Listen Callback '%s' '%s' '%s'", arg, handle, result)
+            log.info("EventServiceAsynch: Listen Callback '%s' '%s' '%s'", arg, handle, result)
             self.socket.free_callback(self.listenCallbackHandle)
             #
             # Don't do this! the handle that is passed in here is the
@@ -523,7 +521,25 @@ class EventService:
             #
             pass
         
-        
+    def SendHandler(self):
+	log.info("Entering SendHandler")
+
+	try:
+	    while self.inQEvt.isSet():
+		try:
+		    (channel, data) = self.inQueue.get()
+		except Empty:
+		    log.info("Didn't get anything to distribute.")
+		    data = None
+	
+		if data is not None:
+		    log.info("Calling _Distribute, in SendHandler.")
+		    self._Distribute(channel, data)		
+	except:
+	    log.exception("Body of event distribution queue handler threw.")
+
+	log.info("Exiting SendHandler")
+
     def Stop(self):
         """
         Stop the event service.
@@ -549,37 +565,37 @@ class EventService:
         for ch in self.channels.keys():
             self.RemoveChannel(ch)
             
-        self.running = 0
-        self.queueThread.join()
+	self.outQEvt.unset()
+	self.inQEvt.unset()
 
     def EnqueueQuit(self):
-        self.queue.put(("quit",))
+        self.outQueue.put(("quit",))
         
     def EnqueueEvent(self, event, conn):
-        logEvent("EventServiceAsynch: Enqueue event %s for %s...", event.eventType, conn)
-        self.queue.put(("event", event, conn))
+        log.info("EventServiceAsynch: Enqueue event %s for %s...", event.eventType, conn)
+        self.outQueue.put(("event", event, conn))
 
     def EnqueueEOF(self, conn):
-        logEvent("EventServiceAsynch: Enqueue EOF for %s...", conn)
-        self.queue.put(("eof", conn))
+        log.info("EventServiceAsynch: Enqueue EOF for %s...", conn)
+        self.outQueue.put(("eof", conn))
 
-    def QueueHandler(self):
+    def RecvHandler(self):
         """
         Thread main routine for event queue handling.
         """
 
         try:
-
-            while 1:
-                logEvent("EventServiceAsynch: Queue handler waiting for data")
-                cmd = self.queue.get()
-                logEvent("EventServiceAsynch: Queue handler received %s", cmd)
+            while self.outQEvt.isSet():
+                log.info("EventServiceAsynch: recv handler waiting for data")
+                cmd = self.outQueue.get()
+                log.info("EventServiceAsynch: recv handler received %s", cmd)
                 if cmd[0] == "quit":
-                    log.debug("EventServiceAsynch: Queue handler exiting")
+                    log.debug("EventServiceAsynch: recv handler exiting")
                     return
                 elif cmd[0] == "eof":
                     connObj = cmd[1]
-                    log.debug("EventServiceAsynch: EOF on connection %s", connObj.GetId())
+                    log.debug("EventServiceAsynch: recv handler got EOF %s", 
+			      connObj.GetId())
                     self.HandleEOF(connObj)
                 elif cmd[0] == "event":
 
@@ -588,7 +604,7 @@ class EventService:
                         connObj = cmd[2]
                         self.HandleEvent(event, connObj)
                     except:
-                        log.exception("HandleEvent threw an exception")
+                        log.exception("recv handler threw an exception")
 
                 else:
                     log.error("QueueHandler received unknown command %s", cmd[0])
@@ -739,11 +755,15 @@ class EventService:
             self.RegisterCallback(c, channel, object.callbacks[c])
             
     def Distribute(self, channelId, data):
+	log.info("Calling Distribute")
+	self.inQueue.put((channelId, data))
+
+    def _Distribute(self, channelId, data):
         """
         Distribute sends the data to all connections.
         """
 
-        logEvent("EventServiceAsynch: Sending Event %s", data)
+        log.info("EventServiceAsynch: _Distributing Event %s", data)
 
         channel = self.GetChannel(channelId)
 
@@ -752,7 +772,7 @@ class EventService:
             return
 
         channel.Distribute(data)
-        logEvent("EventServiceAsynch: Sent Event ")
+        log.info("EventServiceAsynch: Sent Event ")
             
     def GetLocation(self):
         """
