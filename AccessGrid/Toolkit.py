@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.4 2003-05-20 21:40:08 olson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.5 2003-06-27 16:43:23 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,9 @@ import logging
 import os
 
 log = logging.getLogger("AG.toolkit")
+
+AG_TRUE = 1
+AG_FALSE = 0
 
 #
 # Global application instance object.
