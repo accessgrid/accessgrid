@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: SOAPInterface.py,v 1.7 2004-03-05 21:44:31 judson Exp $
+# RCS-ID:      $Id: SOAPInterface.py,v 1.8 2004-03-22 16:38:09 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ primary methods, the constructor and a default authorization for all
 interfaces.
 """
 
-__revision__ = "$Id: SOAPInterface.py,v 1.7 2004-03-05 21:44:31 judson Exp $"
+__revision__ = "$Id: SOAPInterface.py,v 1.8 2004-03-22 16:38:09 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -148,7 +148,7 @@ class SOAPIWrapper:
     A SOAP interface wrapper object. This object helps provide a rich
     encapsulation of the SOAP implementation underneath.
     """
-    def __init__(self, url=None):
+    def __init__(self, url=None, faultHandler = None):
         """
         The constructor.
 
@@ -162,7 +162,9 @@ class SOAPIWrapper:
         self.url = url
         if url != None:
             try:
-                self.proxy = Client.Handle(self.url).GetProxy()
+                self.handle = Client.Handle(self.url, faultHandler = faultHandler)
+                self.proxy = self.handle.GetProxy()
+                
             except:
                 self.proxy = None
                 raise ConnectionFailed

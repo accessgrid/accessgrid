@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Client.py,v 1.6 2004-03-02 19:12:47 judson Exp $
+# RCS-ID:      $Id: Client.py,v 1.7 2004-03-22 16:38:46 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ This module provides a helper class Client that wraps
 the creation of the SOAP server proxy.
 """
 
-__revision__ = "$Id: Client.py,v 1.6 2004-03-02 19:12:47 judson Exp $"
+__revision__ = "$Id: Client.py,v 1.7 2004-03-22 16:38:46 olson Exp $"
 
 # External imports
 from SOAPpy import SOAPProxy
@@ -29,7 +29,7 @@ class Handle:
     A class that encapsulates a SOAP proxy.
     """
     def __init__(self, url, namespace = None, authCallback = None, debug = 0,
-                 config = None):
+                 config = None, faultHandler = None):
         """
         @param url: the url to the service
         @param namespace: the namespace for the service
@@ -46,6 +46,7 @@ class Handle:
             self.config = config
             
         self.config.debug = debug
+        self.config.faultHandler = faultHandler
         self.url = url.replace("https", "httpg")
         self.proxy = None
         self.namespace = namespace
