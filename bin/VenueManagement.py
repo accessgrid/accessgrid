@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.41 2003-03-11 21:58:13 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.42 2003-03-12 08:44:28 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -254,7 +254,7 @@ class VenueManagementClient(wxApp):
         self.SetCurrentVenue(venue)
         wxLogDebug("Set venue encryption: %s using key: %s for venue: %s" \
                      %(str(value), str(key), str(venue.uri)))
-        self.currentVenueClient.SetEncryptMedia(value, key)
+        self.currentVenueClient.SetEncryptMedia(int(value), str(key))
                            
     def ModifyVenue(self, venue, exitsList):
         wxLogDebug("Modify venue: %s" %str(venue.uri))
@@ -292,8 +292,8 @@ class VenueManagementClient(wxApp):
 
     def SetEncryption(self, value):
         wxLogDebug("Set encryption: %s" %str(value))
-        self.server.SetEncryptAllMedia(value)
-        self.encrypt = value
+        self.server.SetEncryptAllMedia(int(value))
+        self.encrypt = int(value)
     
     def SetStorageLocation(self, location):
         wxLogDebug("Set storage location: %s" %location)
