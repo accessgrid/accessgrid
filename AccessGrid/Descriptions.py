@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.4 2003-01-07 20:50:35 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.5 2003-01-13 18:26:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -62,7 +62,7 @@ class ServiceDescription(ObjectDescription):
     mimeType = ""
     
     def __init__(self, name, description, uri, icon, mimetype):
-        ObjectDescription(self, name, description, uri, icon)
+        ObjectDescription.__init__(self, name, description, uri, icon)
         self.mimeType = mimetype
 
     def SetMimeType(self, mimetype):
@@ -108,7 +108,7 @@ class DataDescription(ObjectDescription):
     storageType = ''
     
     def __init__(self, name, description, uri, icon, storageType):
-        ObjectDescription(self, name, description, uri, icon)
+        ObjectDescription.__init__(self, name, description, uri, icon)
         self.storageType = storageType
         
     def SetStorageType(self, storage_type):
