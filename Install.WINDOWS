@@ -6,20 +6,18 @@ Toolkit version 2.0, python Globus, and wxWindows python bindings version
 please see the "Links" section below. Special dependencies for specific
 platforms are listed in their respective install instructions.
 
-Reporting Bugs and Feature Requests
-===================================
-If you have found a bug either in the packaging of or the running of the
-AccessGrid Toolkit, please go to http://bugzilla.mcs.anl.gov/accessgrid
-to report them.
-
 Windows 2000/XP Install
 =======================
 Download and install the following packages in the following order.
 
 ActiveState Python 2.2 (which includes the Win32 Extensions)
 wxPython-2.4.0
-winglobus
-accessgrid
+
+Reporting Bugs and Feature Requests
+===================================
+If you have found a bug either in the packaging of or the running of the
+AccessGrid Toolkit, please go to http://bugzilla.mcs.anl.gov/accessgrid
+to report them.
 
 Links
 =====
