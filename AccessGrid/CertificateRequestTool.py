@@ -960,5 +960,5 @@ if __name__ == "__main__":
 
     else:
         # Show certificate request wizard
-        certReq = CertificateRequestTool(certificateType = "IDENTITY")
+        certReq = CertificateRequestTool(None, certificateType = "IDENTITY")
         certReq.Destroy()
