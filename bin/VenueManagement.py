@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.31 2003-02-21 17:47:28 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.32 2003-02-25 15:04:14 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1384,8 +1384,8 @@ class DigitValidator(wxPyValidator):
         elif self.flag == PORT:
             return true
 
-        elif self.flag == TTL and (int(val)<0 or int(val)>27):
-            wxMessageBox("Time to live should be a value between 0 - 27", "Error", \
+        elif self.flag == TTL and (int(val)<0 or int(val)>127):
+            wxMessageBox("Time to live should be a value between 0 - 127", "Error", \
                             style = wxOK|wxICON_INFORMATION)
             return false
         
