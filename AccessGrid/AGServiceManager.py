@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.78 2004-08-06 22:36:40 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.79 2004-08-12 14:53:03 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.78 2004-08-06 22:36:40 eolson Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.79 2004-08-12 14:53:03 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -190,12 +190,16 @@ class AGServiceManager:
 
             # Extract the package
             if extractPackage:
-                
                 servicePackageToInstall.ExtractPackage(servicePath)
+
+                pkgFile = serviceDescription.servicePackageFile 
 
                 # Get the (new) service description
                 serviceDescription = servicePackageToInstall.GetServiceDescription()
 
+                # Set the package file.
+                serviceDescription.servicePackageFile = pkgFile
+                
         except:
             log.exception("Service Manager failed to extract service implementation %s", serviceDescription.servicePackageFile)
             raise Exception("Service Manager failed to extract service implementation")
@@ -274,6 +278,7 @@ class AGServiceManager:
             #
             serviceDescription.serviceManagerUri = self.url
             serviceDescription.uri = serviceUrl
+
             self.services[pid] = serviceDescription
 
             # Configure the service
@@ -377,8 +382,6 @@ class AGServiceManager:
                 self.RemoveService( service )
             except Exception:
                 log.exception("Exception in AGServiceManager.RemoveServices; continuing")
-
-
 
     def GetServices( self ):
         """Return list of services
