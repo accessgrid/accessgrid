@@ -146,7 +146,7 @@ class ProxyBrowser(CertificateBrowserBase):
             min = int(left / 60)
             sec = left % 60
 
-            validity += "%02d:%02d:%02d left" % (hour, min, sec)
+            validity = "%02d:%02d:%02d left" % (hour, min, sec)
 
         return cert, [name, issuer, validity]
 
