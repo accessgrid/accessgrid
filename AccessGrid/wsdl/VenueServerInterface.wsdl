@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/"
+  targetNamespace="http://www.accessgrid.org/">
+
+    <types>
+      <schema targetNamespace="http://www.accessgrid.org/" 
+              elementFormDefault="qualified" 
+	      attributeFormDefault="unqualified" 
+              xmlns="http://www.w3.org/2001/XMLSchema">
+
+	  <include schemaLocation="types.xsd"/>
+
+      </schema>
+    </types>
+
+    <message name="CheckpointRequest">
+	<part name="secondsFromNow" type="xsd:integer"/>
+    </message>
+    <message name="CheckpointResponse">
+	<part name="result" type="xsd:boolean"/>
+    </message>
+    <message name="ShutdownRequest">
+	<part name="secondsFromNow" type="xsd:integer"/>
+    </message>
+    <message name="RemoveVenueRequest">
+	<part name="venueId" type="xsd:string"/>
+    </message>
+    <message name="RemoveVenueResponse">
+	<part name="result" type="xsd:boolean"/>
+    </message>
+    <message name="AddVenueRequest">
+	<part name="venueDescription" type="agtk:VenueDescription"/>
+    </message>
+    <message name="AddVenueResponse">
+	<part name="venueURL" type="xsd:anyURI"/>
+    </message>
+    <message name="GetVenuesRequest">
+	<part name="query" type="xsd:string"/>
+    </message>
+    <message name="GetVenuesResponse">
+	<part name="venueDescriptionList" type="agtk:VenueDescription"/>
+    </message>
+    <message name="GetPropertyRequest">
+	<part name="PropertyDictionary" type="agtk:Dictionary"/>
+    </message>
+    <message name="GetPropertyResponse">
+        <part name="result" type="agtk:Dictionary"/>
+    </message>
+    <message name="SetPropertyRequest">
+	<part name="PropertyDictionary" type="agtk:Dictionary"/>
+    </message>
+    <message name="SetPropertyResponse">
+	<part name="result" type="agtk:Dictionary"/>
+    </message>
+
+    <portType name="VenueServer">
+	<operation name="Checkpoint">
+	    <input message="agtk:CheckpointRequest"/>
+	    <output message="agtk:CheckpointResponse"/>
+	</operation>
+	<operation name="Shutdown">
+	    <input message="agtk:ShutdownRequest"/>
+	</operation>
+	<operation name="GetVenues">
+	    <output message="agtk:GetVenuesResponse"/>
+	    <input message="agtk:GetVenuesRequest"/>
+	</operation>
+	<operation name="AddVenue">
+	    <input message="agtk:AddVenueRequest"/>
+	    <output message="agtk:AddVenueResponse"/>
+	</operation>
+	<operation name="RemoveVenue">
+	    <input message="agtk:RemoveVenueRequest"/>
+	    <output message="agtk:RemoveVenueResponse"/>
+	</operation>
+	<operation name="GetProperty">
+	    <input message="agtk:GetPropertyRequest"/>
+	    <output message="agtk:GetPropertyResponse"/>
+	</operation>
+	<operation name="SetProperty">
+	    <input message="agtk:SetPropertyRequest"/>
+            <output message="agtk:SetPropertyResponse"/>
+	</operation>
+    </portType>
+
+</definitions>

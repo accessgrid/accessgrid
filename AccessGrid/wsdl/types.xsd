@@ -1,0 +1,56 @@
+<xs:schema targetNamespace="http://www.accessgrid.org/"
+	xmlns:tns="http://www.accessgrid.org/"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+        elementFormDefault="qualified" 
+	attributeFormDefault="unqualified">
+
+    <xs:element name="VenueDescription" type="tns:VenueDescription"/>
+    <xs:element name="Dictionary" type="tns:Dictionary"/>
+
+    <xs:complexType name="Dictionary">
+      <xs:sequence>
+        <xs:element name="entries" minOccurs="0" maxOccurs="unbounded" 
+                 type="tns:DictionaryEntry"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DictionaryEntry">
+      <xs:sequence>
+        <xs:element name="key" type="xs:string"/>
+        <xs:element name="value" type="xs:anyType"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ConnectionDescription">
+      <xs:sequence>
+        <xs:element name = "id" type = "xs:string"/>
+        <xs:element name = "name" type = "xs:string"/>
+        <xs:element name = "description" type = "xs:string"/>
+        <xs:element name = "url" type = "xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ConnectionList">
+      <xs:sequence>
+        <xs:element name="connections" minOccurs="0" maxOccurs="unbounded" 
+                 type="tns:ConnectionDescription"/>
+      </xs:sequence>
+    </xs:complexType>
+	
+    <xs:complexType name="VenueDescription">
+      <xs:sequence>
+	<xs:element name="id" type="xs:string"/>
+	<xs:element name="uri" type="xs:string"/>
+	<xs:element name="name" type="xs:string"/>
+	<xs:element name="description" type="xs:string"/>
+	<xs:element name="encryptMedia" type="xs:integer"/>
+	<xs:element name="encryptionKey" type="xs:string"/>
+	<xs:element name="connections" type="tns:ConnectionList"/>
+<!--
+        <xs:element name="streams" type="tns:StreamDescription"/>
+-->
+      </xs:sequence>
+    </xs:complexType>
+
+ </xs:schema>
+
