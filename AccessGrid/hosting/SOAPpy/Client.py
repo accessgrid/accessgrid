@@ -2,7 +2,7 @@
 # Name:        Client.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: Client.py,v 1.11 2004-09-10 03:58:54 judson Exp $
+# RCS-ID:      $Id: Client.py,v 1.12 2004-12-08 16:48:08 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -13,12 +13,11 @@ This module provides a helper class Client that wraps
 the creation of the SOAP server proxy.
 """
 
-__revision__ = "$Id: Client.py,v 1.11 2004-09-10 03:58:54 judson Exp $"
+__revision__ = "$Id: Client.py,v 1.12 2004-12-08 16:48:08 judson Exp $"
 
 # External imports
 from SOAPpy import SOAPProxy
 from SOAPpy import SOAPConfig
-from SOAPpy.GSIServer import GSIConfig
 from SOAPpy import Types
 
 # Exception mapping for SOAPpy
@@ -50,7 +49,8 @@ class _Handle:
             
         self.config.debug = debug
         self.config.faultHandler = faultHandler
-        self.url = url.replace("https", "httpg")
+        print "URL: ", url
+        self.url = url.replace('https', 'http')
         self.proxy = None
         self.namespace = namespace
         self.authCallback = authCallback
@@ -87,28 +87,4 @@ class SecureHandle(_Handle):
     """
     A class that encapsulates a SOAP proxy.
     """
-    def __init__(self, url, namespace = None, authCallback = None, debug = 0,
-                 config = None, faultHandler = None):
-        """
-        @param url: the url to the service
-        @param namespace: the namespace for the service
-        @param authCallback: LEGACY
-        @param debug: a debugging flag
-        @type url: string
-        @type namespace: string
-        @type authCallback: python method
-        @type debug: 0 or 1
-        """
-        if config == None:
-            self.config = GSIConfig()
-        else:
-            self.config = config
-            
-        self.config.debug = debug
-        self.config.faultHandler = faultHandler
-        self.url = url.replace("https", "httpg")
-        self.proxy = None
-        self.namespace = namespace
-        self.authCallback = authCallback
-        self.proxy = SOAPProxy(self.url, self.namespace, config = self.config)
-
+    pass

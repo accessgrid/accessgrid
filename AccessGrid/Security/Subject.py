@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Subject.py,v 1.13 2004-09-10 03:58:53 judson Exp $
+# RCS-ID:      $Id: Subject.py,v 1.14 2004-12-08 16:48:07 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ Subjects are the basic security handle on entities that want to be a
 part of the secure Access Grid Toolkit.
 """
 
-__revision__ = "$Id: Subject.py,v 1.13 2004-09-10 03:58:53 judson Exp $"
+__revision__ = "$Id: Subject.py,v 1.14 2004-12-08 16:48:07 judson Exp $"
 
 # External Imports
 import xml.dom.minidom
@@ -49,7 +49,7 @@ class Subject:
     A Subject is an instance of a credential used by an AG User.
 
     A Subject can be identified by various authentication
-    mechanisms. we currently support X509 certificates (per Globus).
+    mechanisms. we currently support X509 certificates.
     """
     def __init__(self, name, auth_type, auth_data = None, id = str(GUID())):
         """

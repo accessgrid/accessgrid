@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.198 2004-12-06 20:25:44 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.199 2004-12-08 16:48:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.198 2004-12-06 20:25:44 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.199 2004-12-08 16:48:06 judson Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -17,8 +17,6 @@ import string
 import threading
 import cPickle
 import time
-
-from pyGlobus.io import GSITCPSocketException
 
 from AccessGrid import Log
 from AccessGrid import DataStore
@@ -28,13 +26,13 @@ from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Venue import VenueIW, ServiceAlreadyPresent
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
-from AccessGrid.hosting import SecureServer, InsecureServer
+from AccessGrid.hosting import InsecureServer
 from AccessGrid.Utilities import LoadConfig
 from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.scheduler import Scheduler
-from AccessGrid.EventClient import EventClient
-from AccessGrid.TextClient import TextClient
+#from AccessGrid.EventClient import EventClient
+#from AccessGrid.TextClient import TextClient
 from AccessGrid.Types import *
 from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
 from AccessGrid.Events import DisconnectEvent, ClientExitingEvent
@@ -165,8 +163,8 @@ class VenueClient:
     # Private Methods
 
     def __InitVenueData( self ):
-        self.eventClient = None
-        self.textClient = None
+#        self.eventClient = None
+#        self.textClient = None
         self.venueState = None
         self.venueUri = None
         self.__venueProxy = None
@@ -189,23 +187,15 @@ class VenueClient:
                 self.personalDataStorePath = None
 
         if self.personalDataStorePath:
-            # First, check command line options
-            if self.app.GetOption("insecure"):
-                self.transferEngine = DataStore.HTTPTransferServer(('', self.personalDataStorePort))
-            # Second, check preferences
-            elif not int(self.preferences.GetPreference(Preferences.SECURE_CLIENT_CONNECTION)):
-                self.transferEngine = DataStore.HTTPTransferServer(('', self.personalDataStorePort))
-            else:
-                self.transferEngine = DataStore.GSIHTTPTransferServer(('',
-                                                                       self.personalDataStorePort))
+            self.transferEngine = DataStore.HTTPTransferServer(('',
+                                                   self.personalDataStorePort))
             self.transferEngine.run()
-            self.dataStore = DataStore.DataStore(self, self.personalDataStorePath, 
+            self.dataStore = DataStore.DataStore(self,
+                                                 self.personalDataStorePath, 
                                                  self.personalDataStorePrefix,
                                                  self.transferEngine)
                    
-            #
             # load personal data from file
-            #
             
             log.debug("__createPersonalDataStore: Load personal data from file")
             if os.path.exists(self.personalDataFile):
@@ -223,7 +213,7 @@ class VenueClient:
         failed authentication.
 
         This routine only currently sets self.warningString, and should only be
-        invoked from the GSITCPSocketException-handling code in EnterVenue.
+        invoked from the TCPSocketException-handling code in EnterVenue.
 
         """
 
@@ -276,13 +266,14 @@ class VenueClient:
                 port = NetworkAddressAllocator().AllocatePort()
                         
         # First, check cmd line option
-        if self.app.GetOption("insecure"):
-            self.server = InsecureServer((self.app.GetHostname(), port))
-        # Second, check preferences
-        elif not int(self.preferences.GetPreference(Preferences.SECURE_CLIENT_CONNECTION)):
-            self.server = InsecureServer((self.app.GetHostname(), int(port)))
-        else:
+        if self.app.GetOption("secure"):
             self.server = SecureServer((self.app.GetHostname(), int(port)))
+        # Second, check preferences
+        elif int(self.preferences.GetPreference(Preferences.SECURE_CLIENT_CONNECTION)):
+            self.server = SecureServer((self.app.GetHostname(), int(port)))
+        else:
+            self.server = InsecureServer((self.app.GetHostname(), port))
+
         vci = VenueClientI(self)
         uri = self.server.RegisterObject(vci, path='/VenueClient')
 
@@ -348,18 +339,18 @@ class VenueClient:
         return self.server.FindURLForObject(self)
         
     def __Heartbeat(self):
-        
-        if self.eventClient != None:
-            try:
-                self.eventClient.Send(HeartbeatEvent(self.venueId,
-                                                     self.privateId))
-            except:
-                log.exception("Heartbeat: Heartbeat exception is caught.")
+        pass
+#         if self.eventClient != None:
+#             try:
+#                 self.eventClient.Send(HeartbeatEvent(self.venueId,
+#                                                      self.privateId))
+#             except:
+#                 log.exception("Heartbeat: Heartbeat exception is caught.")
                 
                 # If the event client connection has broken,
                 # reconnect the venue client
-                if not self.eventClient.connected and not self.exiting:
-                    self.__Reconnect()
+#                if not self.eventClient.connected and not self.exiting:
+#                    self.__Reconnect()
                 
     def __Reconnect(self):
     
@@ -757,21 +748,21 @@ class VenueClient:
                 Event.OPEN_APP: self.OpenAppEvent
                 }
         
-            h, p = self.venueState.eventLocation
-            self.eventClient = EventClient(self.privateId,
-                                           self.venueState.eventLocation,
-                                           self.venueState.uniqueId)
+#            h, p = self.venueState.eventLocation
+#            self.eventClient = EventClient(self.privateId,
+#                                           self.venueState.eventLocation,
+#                                           self.venueState.uniqueId)
             
             
-            for e in coherenceCallbacks.keys():
-                self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
+#            for e in coherenceCallbacks.keys():
+#                self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
             
-            self.eventClient.start()
-            self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
-                                               self.privateId))
+#            self.eventClient.start()
+#            self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
+#                                               self.privateId))
                                
-            self.heartbeatTask = self.houseKeeper.AddTask(self.__Heartbeat, 5)
-            self.heartbeatTask.start()
+#            self.heartbeatTask = self.houseKeeper.AddTask(self.__Heartbeat, 5)
+#            self.heartbeatTask.start()
 
             #
             # Get personaldatastore information
@@ -781,10 +772,10 @@ class VenueClient:
             #
             # Connect the venueclient to the text client
             #
-            self.textClient = TextClient(self.profile,
-                                         self.venueState.textLocation)
-            self.textClient.Connect(self.venueState.uniqueId, self.privateId)
-            self.textClient.RegisterOutputCallback(self.AddTextEvent)
+#            self.textClient = TextClient(self.profile,
+#                                         self.venueState.textLocation)
+#            self.textClient.Connect(self.venueState.uniqueId, self.privateId)
+#            self.textClient.RegisterOutputCallback(self.AddTextEvent)
             
             log.debug("Setting isInVenue flag.")
             # Finally, set the flag that we are in a venue
@@ -813,66 +804,44 @@ class VenueClient:
         # Initialize a string of warnings that can be displayed to the user.
         self.warningString = ''
         enterSuccess = 1
-       
-        #
-        # Turn this block off when faultHandler support gets finished.
-        #
-        if not self.app.certificateManager.HaveValidProxy():
-            log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
-            ret = self.app.certificateManager.CreateProxy()
-            if not ret:
-                log.info("Proxy not created")
-                self.warningString = "You don't have a valid proxy."
-                enterSuccess = 0
-
-        if self.app.certificateManager.HaveValidProxy():
+        errorInNode = 0
+        
+        try:
+            self.profile.capabilities = self.nodeService.GetCapabilities()
+        except:
+            # This is a non fatal error, users should be notified
+            # but still enter the venue
+            log.info("EnterVenue: Error getting node capabilities")
+            errorInNode = 1
+            
             try:
-                # Get capabilities from your node
-                errorInNode = 0
+                self.capabilities = self.nodeService.GetCapabilities()
+            except:
+                # This is a non fatal error, users should be notified
+                # but still enter the venue
+                log.info("EnterVenue: Error getting node capabilities")
+                errorInNode = 1
 
-                try:
-                    self.capabilities = self.nodeService.GetCapabilities()
-                except:
-                    # This is a non fatal error, users should be notified
-                    # but still enter the venue
-                    log.info("EnterVenue: Error getting node capabilities")
-                    errorInNode = 1
+        try:
+            # Enter the venue
+            self.__EnterVenue(URL)
+            
+            # Cache profiles from venue.
+            log.debug("Updating client profile cache.")
+            for client in self.venueState.clients.values():
+                self.UpdateProfileCache(client)
+                
+            # Return a string of warnings that can be displayed to the user 
+            if errorInNode:
+                self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences->Manage My Node..." from the main menu'
 
-                # Enter the venue
-                self.__EnterVenue(URL)
+        except Exception, e:
+            log.exception("EnterVenue: failed")
+            enterSuccess = 0
+            # put error in warningString, in redesign will be raised
+            # to UI as exception.
 
-                # Cache profiles from venue.
-                log.debug("Updating client profile cache.")
-                for client in self.venueState.clients.values():
-                    self.UpdateProfileCache(client)
-
-                #
-                # Return a string of warnings that can be displayed to the user 
-                #
-
-                if errorInNode:
-                    self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences->Manage My Node..." from the main menu'
-
-            except GSITCPSocketException, e:
-                enterSuccess = 0
-
-                log.error("EnterVenue: globus tcp exception: %s", e.args)
-
-
-                if e.args[0] == 'an authentication operation failed':
-                    self.__CheckForInvalidClock()
-
-                else:
-                    log.exception("EnterVenue: failed")
-                    # pass a flag to UI if we fail to enter.
-                    enterSuccess = 0
-
-            except Exception, e:
-                log.exception("EnterVenue: failed")
-                # pass a flag to UI if we fail to enter.
-                enterSuccess = 0
-                # put error in warningString, in redesign will be raised to UI as exception.
-                #self.warningString = str(e.faultstring)
+            #self.warningString = str(e.faultstring)
 
         for s in self.observers:
             try:
@@ -882,7 +851,7 @@ class VenueClient:
                 log.exception("Exception in observer")
 
         return self.warningString
-        
+
     def __ExitVenue(self):
         # Clear the list of personal data requests.
         self.requests = []
@@ -906,27 +875,27 @@ class VenueClient:
         except Exception:
             log.exception("ExitVenue: ExitVenue exception")
 
-        try:
-            if self.eventClient:
-                log.debug("ExitVenue: Stop event client obj")
-                self.eventClient.Stop()
-                log.debug("ExitVenue: Remove event client reference")
-                self.eventClient = None
-        except:
-            log.exception("ExitVenue: Can not stop event client")
+#         try:
+#             if self.eventClient:
+#                 log.debug("ExitVenue: Stop event client obj")
+#                 self.eventClient.Stop()
+#                 log.debug("ExitVenue: Remove event client reference")
+#                 self.eventClient = None
+#         except:
+#             log.exception("ExitVenue: Can not stop event client")
 
         log.info("ExitVenue: Stopping text client")
-        try:
-          if self.textClient:
-            # Stop the text client
-            log.debug("ExitVenue: Sending client disconnect event.")
-            self.textClient.Disconnect(self.venueState.uniqueId,
-                                       self.privateId)
-            log.debug("ExitVenue: Remove text client reference")
-            self.textClient = None
+#         try:
+#           if self.textClient:
+#             # Stop the text client
+#             log.debug("ExitVenue: Sending client disconnect event.")
+#             self.textClient.Disconnect(self.venueState.uniqueId,
+#                                        self.privateId)
+#             log.debug("ExitVenue: Remove text client reference")
+#             self.textClient = None
           
-        except:
-            log.exception("ExitVenue: On text client exiting")
+#         except:
+#             log.exception("ExitVenue: On text client exiting")
         
         self.__InitVenueData()
         self.isInVenue = 0
@@ -946,11 +915,8 @@ class VenueClient:
         for s in self.observers:
             s.ExitVenue()
 
-        #
         # Exit the venue
-        #
         # This causes the venue server to do the following:
-        #
         # Remove producers for this client.
         # Remove personal data (causes remove data events?)
         # Distribute an EXIT event.
@@ -1057,9 +1023,8 @@ class VenueClient:
                                           (self.transport, self.provider.name, self.provider.location))
     
     def SendEvent(self,event):
-        self.eventClient.Send(event)
-        
-        
+        pass
+#        self.eventClient.Send(event)
 
     def Shutdown(self):
 
@@ -1139,7 +1104,7 @@ class VenueClient:
         elif(data.type == self.profile.publicId):
             # My data
             self.dataStore.RemoveFiles(dataList)
-            self.eventClient.Send(RemoveDataEvent(self.GetEventChannelId(), data))
+            #self.eventClient.Send(RemoveDataEvent(self.GetEventChannelId(), data))
             
         else:
             # Ignore this until we have authorization in place.
@@ -1160,7 +1125,7 @@ class VenueClient:
             # My data
             try:
                 self.dataStore.ModifyData(data)
-                self.eventClient.Send(UpdateDataEvent(self.GetEventChannelId(), data))
+                #self.eventClient.Send(UpdateDataEvent(self.GetEventChannelId(), data))
             except:
                 log.exception("Error modifying personal data")
                 raise
@@ -1174,10 +1139,11 @@ class VenueClient:
     #
         
     def SendText(self,text):
-        if self.textClient != None:
-            self.textClient.Input(text)
-        else:
-            raise Exception, "Text Client Not Connected"
+        pass
+#         if self.textClient != None:
+#             self.textClient.Input(text)
+#         else:
+#             raise Exception, "Text Client Not Connected"
         
     # end Basic Implementation
     #

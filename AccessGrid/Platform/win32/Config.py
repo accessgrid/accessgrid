@@ -3,21 +3,19 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.56 2004-11-29 21:08:27 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.57 2004-12-08 16:48:07 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.56 2004-11-29 21:08:27 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.57 2004-12-08 16:48:07 judson Exp $"
 
 import os
 import socket
 import re
 
 import win32api
-
-from pyGlobus import utilc, gsic, ioc
 
 from AccessGrid import Config
 from AccessGrid import Log
@@ -26,11 +24,6 @@ from AccessGrid.Version import GetVersion
 from AccessGrid.Types import AGVideoResource
 
 log = Log.GetLogger(Log.Toolkit)
-
-from AccessGrid.Security import Utilities as SecurityUtilities
-utilc.globus_module_activate(gsic.get_module())
-utilc.globus_module_activate(ioc.get_module())
-SecurityUtilities.CreateTCPAttrAlwaysAuth()
 
 # Windows Defaults
 try:
@@ -50,6 +43,24 @@ class AGTkConfig(Config.AGTkConfig):
     """
     AGTkRegBaseKey = "SOFTWARE\Access Grid Toolkit\%s" % GetVersion()
         
+    def instance(initIfNeeded=0):
+        if AGTkConfig.theAGTkConfigInstance == None:
+            AGTkConfig(initIfNeeded)
+
+        return AGTkConfig.theAGTkConfigInstance
+    
+    instance = staticmethod(instance)
+    
+    def __init__(self, initIfNeeded=0):
+        if AGTkConfig.theAGTkConfigInstance is not None:
+            raise Exception, "Only one instance of AGTkConfig is allowed."
+
+        Config.AGTkConfig.__init__(self, initIfNeeded)
+        AGTkConfig.theAGTkConfigInstance = self
+
+        if initIfNeeded:
+            self._Initialize()
+
     def GetVersion(self):
         return self.version
 
@@ -208,7 +219,7 @@ class AGTkConfig(Config.AGTkConfig):
                     log.exception("Couldn't make node config dir.")
 
         if not os.path.exists(self.nodeConfigDir):
-            raise Exception, "AGTkConfig: node config dir does not exist."
+            raise Exception, "AGTkConfig: node config dir does not exist: %s." % self.nodeConfigDir
 
         return self.nodeConfigDir
 
@@ -233,183 +244,6 @@ class AGTkConfig(Config.AGTkConfig):
 
         return self.servicesDir
 
-class GlobusConfig(Config.GlobusConfig):
-    """
-    This object encapsulates the information required to correctly configure
-    Globus and pyGlobus for use with the Access Grid Toolkit.
-
-    HKCU\Software\Globus
-    HKCU\Software\Globus\GSI
-    HKCU\Software\Globus\GSI\x509_user_proxy = {%TEMP%|{win}\temp}\proxy
-    HKCU\Software\Globus\GSI\x509_user_key={userappdata}\globus\userkey.pem
-    HKCU\Software\Globus\GSI\x509_user_cert={userappdata}\globus\usercert.pem
-    HKCU\Software\Globus\GSI\x509_cert_dir={app}\config\certificates
-    HKCU\Environment\GLOBUS_LOCATION = {app}
-
-    @ivar location: the location of the globus installation
-
-    @ivar hostname: the Hostname for the globus configuration
-
-    @ivar distCACertDir: the directory of Certificate Authority Certificates as shipped
-    with the toolkit
-    @ivar distCertFileName: The filename of the X509 certificate as used by a system
-    installation of Globus
-    @ivar distKeyFileName: The filename of the X509 private key as used by a system
-    installation of Globus
-
-    """
-
-    theGlobusConfigInstance = None
-    
-    def instance(initIfNeeded=1):
-        if GlobusConfig.theGlobusConfigInstance == None:
-            GlobusConfig(initIfNeeded)
-
-        return GlobusConfig.theGlobusConfigInstance
-
-    instance = staticmethod(instance)
-    
-    def __init__(self, initIfNeeded):
-        """
-        This is the constructor, the only argument is used to indicate
-        a desire to intialize the existing environment if it is discovered
-        to be uninitialized.
-
-        @param initIfNeeded: a flag indicating if this object should
-        initialize the system if it is not.
-
-        @type initIfNeeded: integer
-        """
-        if GlobusConfig.theGlobusConfigInstance is not None:
-            raise Exception, "Only one instance of Globus Config is allowed."
-
-        GlobusConfig.theGlobusConfigInstance = self
-
-        self.initIfNeeded = initIfNeeded
-        self.hostname = None
-        self.serverFlag = None
-        
-        # First, get the paths to stuff we need
-        uappdata = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
-        agtkdata = AGTkConfig.instance().GetConfigDir()
-
-        self.location = AGTkConfig.instance().GetInstallDir()
-        self.proxyFileName = os.path.join(UserConfig.instance().GetTempDir(),
-                                          "proxy")
-        self.distCACertDir = os.path.join(agtkdata, "CAcertificates")
-        self.distCertFileName = os.path.join(uappdata, "globus", "usercert.pem")
-        self.distKeyFileName = os.path.join(uappdata, "globus", "userkey.pem")
-
-        self._Initialize()
-        
-    def _SetHostnameToLocalIP(self):
-        try:
-            self.hostname = SystemConfig.instance().GetLocalIPAddress()
-            log.debug("retrieved local IP address %s", self.hostname)
-        except:
-            self.hostname = "127.0.0.1"
-            
-            log.exception("Failed to determine local IP address, using %s",
-                          self.hostname)
-
-        self.Setenv("GLOBUS_HOSTNAME", self.hostname)
-
-    def GetGlobusKey(self):
-        gkey = None
-
-        try:
-            gkey = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
-                                   "Software\Globus", 0, _winreg.KEY_SET_VALUE)
-        except:
-            log.exception("Couldn't retrieve globus key from registry.")
-            # third, Create the keys
-            try:
-                gkey = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
-                                         "Software\Globus")
-            except:
-                log.exception("Couldn't initialize the globus registry key.")
-            return None
-
-        if gkey is None:
-            log.error("Can't do any more initialization, Globus looks misconfigured.")
-            return None
-        
-        try:
-            gsikey = _winreg.OpenKey(gkey, "GSI", 0, _winreg.KEY_SET_VALUE)
-            return gsikey
-        except:
-            log.exception("Couldn't retrieve gsi key from registry.")
-            # third, Create the keys
-            try:
-                gsikey = _winreg.CreateKey(gkey, "GSI")
-                return gsikey
-            except:
-                log.exception("Couldn't initialize the gsi registry key.")
-            return None
-
-    def _Initialize(self):
-        """
-        right now we just want to check and see if registry settings
-        are in place for the various parts.
-        """
-
-        # Zero, get keys we need
-        gsikey = self.GetGlobusKey()
-        
-        # next try to setup GLOBUS_LOCATION, if it's not already set
-        if os.getenv("GLOBUS_LOCATION") is None:
-            self.SetLocation(self.location)
-
-        # Check GLOBUS_HOSTNAME
-        self.SetHostname()
-
-        #
-        # Check for values out of the registry.
-        # It doesn't matter if they're not there; we're going to completely
-        # configure our environment later on.
-        # 
-        try:
-            (self.distKeyFileName, val_type) = _winreg.QueryValueEx(gsikey,
-                                                             "x509_user_key")
-        except WindowsError:
-            pass
-
-        try:
-            (self.distCertFileName, val_type) = _winreg.QueryValueEx(gsikey,
-                                                                 "x509_user_cert")
-        except WindowsError:
-            pass
-
-        try:
-            (self.distCACertDir, val_type) = _winreg.QueryValueEx(gsikey,
-                                                             "x509_cert_dir")
-        except WindowsError:
-            pass
-        
-        try:
-            _winreg.CloseKey(gsikey)
-        except WindowsError:
-            log.exception("Error trying to close globus registry key.")
-            
-    def SetUserCert(self, cert, key):
-        """
-        Configure globus runtime for using a cert and key pair.
-        """
-
-        Config.GlobusConfig.SetUserCert(self, cert, key)
-
-        #
-        # On windows, if there's a proxy setting in the registry,
-        # it trumps the run_as_server setting.
-        #
-
-        gkey = self.GetGlobusKey()
-        try:
-            _winreg.DeleteValue(gkey, "x509_user_proxy")
-            _winreg.CloseKey(gkey)
-        except WindowsError:
-            pass
-        
 class UserConfig(Config.UserConfig):
     """
     A user config object encapsulates all of the configuration data for
@@ -419,6 +253,24 @@ class UserConfig(Config.UserConfig):
 
     @type profileFilename: the filename of the client profile
     """
+
+    def instance(initIfNeeded=0):
+        if UserConfig.theUserConfigInstance == None:
+            UserConfig(initIfNeeded)
+
+        return UserConfig.theUserConfigInstance
+    
+    instance = staticmethod(instance)
+    
+    def __init__(self, initIfNeeded=0):
+        if UserConfig.theUserConfigInstance is not None:
+            raise Exception, "Only one instance of UserConfig is allowed."
+
+        Config.UserConfig.__init__(self, initIfNeeded)
+        UserConfig.theUserConfigInstance = self
+
+        if initIfNeeded:
+            self._Initialize()
 
     def GetBaseDir(self):
         global AGTK_USER
@@ -456,7 +308,8 @@ class UserConfig(Config.UserConfig):
 
     def GetPreferences(self):
         if self.preferencesFilename == None:
-            self.preferencesFilename = os.path.join(self.GetConfigDir(), "preferences")
+            self.preferencesFilename = os.path.join(self.GetConfigDir(),
+                                                    "preferences")
 
         return self.preferencesFilename
 
@@ -1310,12 +1163,3 @@ if __name__ == "__main__":
         userConf = None
     else:
         print userConf
-
-    try:
-        globusConf = GlobusConfig.instance(0)
-    except Exception, e:
-        print "Error retrieving Globus Configuration:\n", e
-        globusConf = None
-    else:
-        print globusConf
-        

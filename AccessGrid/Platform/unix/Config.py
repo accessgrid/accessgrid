@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.55 2004-11-29 21:03:41 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.56 2004-12-08 16:48:07 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.55 2004-11-29 21:03:41 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.56 2004-12-08 16:48:07 judson Exp $"
 
 import os
 import mimetypes
@@ -22,7 +22,6 @@ import shutil
 import struct
 import resource
 
-from pyGlobus import security
 
 from AccessGrid import Log
 import AccessGrid.Config
@@ -203,115 +202,6 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
             raise Exception, "AGTkConfig: services dir does not exist."
 
         return self.servicesDir
-
-class GlobusConfig(AccessGrid.Config.GlobusConfig):
-    """
-    This object encapsulates the information required to correctly configure
-    Globus and pyGlobus for use with the Access Grid Toolkit.
-
-    @ivar location: the location of the globus installation
-    @ivar caCertDir: the directory of Certificate Authority Certificates
-    @ivar hostname: the Hostname for the globus configuration
-    @ivar proxyFile: THe filename for the globus proxy
-    @ivar certFile: The filename of the X509 certificate.
-    @ivar keyFile: The filename of the X509 key.
-    """
-    theGlobusConfigInstance = None
-    
-    def instance(initIfNeeded=1):
-        if GlobusConfig.theGlobusConfigInstance == None:
-            GlobusConfig(initIfNeeded)
-
-        return GlobusConfig.theGlobusConfigInstance
-
-    instance = staticmethod(instance)
-    
-    def __init__(self, initIfNeeded):
-        """
-        This is the constructor, the only argument is used to indicate
-        a desire to intialize the existing environment if it is discovered
-        to be uninitialized.
-
-        @param initIfNeeded: a flag indicating if this object should
-        initialize the system if it is not.
-
-        @type initIfNeeded: integer
-        """
-        if GlobusConfig.theGlobusConfigInstance is not None:
-            raise Exception, "Only one instance of Globus Config is allowed."
-
-        GlobusConfig.theGlobusConfigInstance = self
-
-        self.initIfNeeded = initIfNeeded
-        self.hostname = None
-        self.location = None
-        self.serverFlag = None
-        
-        # First, get the paths to stuff we need
-        uappdata = os.environ['HOME']
-        agtkdata = AGTkConfig.instance().GetConfigDir()
-        
-        self.installdir = AGTkConfig.instance().GetInstallDir()
-            
-        self.distKeyFileName = os.path.join(uappdata, ".globus", "userkey.pem")
-        self.distCertFileName = os.path.join(uappdata, ".globus", "usercert.pem")
-
-        self.proxyFileName = os.path.join(UserConfig.instance().GetTempDir(),
-                                          "x509up_u%s" %(os.getuid()))
-        self.distCACertDir = os.path.join(agtkdata, "CAcertificates")
-
-        self._Initialize()
-        
-    def _Initialize(self):
-        """
-        This is a placeholder for doing per user initialization that
-        should happen the first time the user runs any toolkit
-        application. For now, I'm putting globus registry crud in
-        here, later there might be other stuff.
-        """
-
-        if os.environ.has_key('GLOBUS_LOCATION'):
-            self.location = os.environ['GLOBUS_LOCATION']
-        else:
-            if self.initIfNeeded:
-                self.SetLocation(self.installdir)
-                
-        if os.environ.has_key('GLOBUS_HOSTNAME'):
-            self.hostname = os.environ['GLOBUS_HOSTNAME']
-        else:
-            if self.initIfNeeded:
-                self.SetHostname()
-                
-        if os.environ.has_key('X509_RUN_AS_SERVER'):
-            self.serverFlag = os.environ['X509_RUN_AS_SERVER']
-        else:
-            self.serverFlag = None
-
-        if os.environ.has_key('X509_CERT_DIR'):
-            self.distCACertDir = os.environ['X509_CERT_DIR']
-                
-        if os.environ.has_key('X509_USER_PROXY'):
-            self.proxyFileName = os.environ['X509_USER_PROXY']
-                
-        if os.environ.has_key('X509_USER_CERT'):
-            self.distCertFileName = os.environ['X509_USER_CERT']
-                
-        if os.environ.has_key('X509_USER_KEY'):
-            self.distKeyFileName = os.environ['X509_USER_KEY']
-
-
-    def _SetHostnameToLocalIP(self):
-        try:
-            self.hostname = SystemConfig.instance().GetLocalIPAddress()
-            log.debug("retrieved local IP address %s", self.hostname)
-        except:
-            self.hostname = "127.0.0.1"
-            
-            log.exception("Failed to determine local IP address, using %s",
-                          self.hostname)
-
-        self.Setenv("GLOBUS_HOSTNAME", self.hostname)
-
 
 class UserConfig(AccessGrid.Config.UserConfig):
     """
@@ -1099,25 +989,6 @@ if __name__ == "__main__":
             print "\tServicesDir: ", tkConf.GetServicesDir()
         except Exception, e:
             print "Error trying to retrieve AGTk Configuration:\n", e
-        
-    print "Globus Configuration:"
-    try:
-        globusConf = GlobusConfig.instance(0)
-    except Exception, e:
-        print "Error retrieving Globus Configuration:\n", e
-        
-    if globusConf is not None:
-        try:
-            print "\tGlobus Location: ", globusConf.GetLocation()
-            print "\tGlobus Hostname: ", globusConf.GetHostname()
-            print "\tGlobus CA Cert Dir: ", globusConf.GetCACertDir()
-            print "\tGlobus Proxy File: ", globusConf.GetProxyFileName()
-            print "\tGlobus Cert File: ", globusConf.GetCertFileName()
-            print "\tGlobus Key File: ", globusConf.GetKeyFileName()
-        except Exception, e:
-            print "Error trying to retrieve the Globus Configuration:\n", e
-    else:
-        print "The globus config object is: ", globusConf
         
     print "System Configuration:"
     try:

@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.42 2004-10-26 19:52:27 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.43 2004-12-08 16:48:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.42 2004-10-26 19:52:27 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.43 2004-12-08 16:48:06 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -371,10 +371,10 @@ def RunService(service,serviceInterface):
     # Create the server
     hostname = Service.instance().GetHostname()
     server = None
-    if svc.GetOption('insecure'):
-        server = InsecureServer( (hostname, port) )
-    else:
+    if svc.GetOption("secure"):
         server = SecureServer( (hostname, port) )
+    else:
+        server = InsecureServer( (hostname, port) )
     
     # Register the service interface with the server
     server.RegisterObject(serviceInterface, path = "/Service")

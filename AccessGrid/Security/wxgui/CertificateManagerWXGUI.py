@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.17 2004-11-19 23:24:33 lefvert Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.18 2004-12-08 16:48:08 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.17 2004-11-19 23:24:33 lefvert Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.18 2004-12-08 16:48:08 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -118,13 +118,11 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
     wxWindows-based user interfact to the certificate mgr.
     """
 
-    def __init__(self):
-        CertificateManager.CertificateManagerUserInterface.__init__(self)
+    def __init__(self, cm=None):
+        CertificateManager.CertificateManagerUserInterface.__init__(self, cm)
 
-        #
         # Perform a check to see if we're root, if we're not on windows.
         # Globus behaves badly when run as root.
-        #
 
         if not Platform.IsWindows():
             if Platform.Config.SystemConfig.instance().GetUsername() == "root":
@@ -191,7 +189,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         certMenu = wxMenu()
 
         i = wxNewId()
-        certMenu.Append(i, "Manage My Certificates...")
+        certMenu.Append(i, "Manage Certificates...")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnShowNew(event, win))
         

@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.68 2004-12-06 19:52:03 lefvert Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.69 2004-12-08 16:48:06 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.68 2004-12-06 19:52:03 lefvert Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.69 2004-12-08 16:48:06 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -399,7 +399,7 @@ class AppDataDescription:
 class VenueState:
     def __init__( self, uniqueId, name, description, uri, connections,
                   clients, data, eventLocation, textLocation, applications,
-                  services, backupServer=None ):
+                  services):
         self.uniqueId = uniqueId
         self.name = name
         self.description = description
@@ -407,7 +407,6 @@ class VenueState:
         self.eventLocation = eventLocation
         self.textLocation = textLocation
         self.services = services
-        self.backupServer = backupServer
         
         self.connections = dict()
         self.clients = dict()
@@ -679,10 +678,6 @@ def CreateVenueState(venueStateStruct):
     for service in venueStateStruct.services:
         serviceList.append(CreateServiceDescription(service))
 
-    # I hate retrofitted code.
-    if not hasattr(venueStateStruct, 'backupServer'):
-        venueStateStruct.backupServer = None
-        
     venueState = VenueState(venueStateStruct.uniqueId,
                             venueStateStruct.name,
                             venueStateStruct.description,
@@ -690,8 +685,8 @@ def CreateVenueState(venueStateStruct):
                             connectionList, clientList, dataList,
                             venueStateStruct.eventLocation,
                             venueStateStruct.textLocation,
-                            applicationList, serviceList,
-                            venueStateStruct.backupServer)    
+                            applicationList, serviceList)
+
     return venueState
 
 

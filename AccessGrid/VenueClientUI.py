@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.78 2004-11-19 23:00:02 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.79 2004-12-08 16:48:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.78 2004-11-19 23:00:02 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.79 2004-12-08 16:48:06 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -51,6 +51,7 @@ from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError
 from AccessGrid.VenueClient import DisconnectError
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
+#from AccessGrid.Security.wxgui.CertificateManagerWXGUI import CertificateManagerWXGUI
 
 try:
     import win32api
@@ -297,18 +298,18 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # Retrieve the cert mgr GUI from the application.
         #
 
-        gui = None
+        self.cmui = None
         try:
             mgr = app.GetCertificateManager()
-            gui = mgr.GetUserInterface()
         except:
             log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
                            certificate mgr user interface, continuing")
 
-        if gui is not None:
-            certMenu = gui.GetMenu(self)
-            for item in certMenu.GetMenuItems():
-	        self.preferences.AppendItem(item)
+#        self.cmui = CertificateManagerWXGUI()
+#        self.cmui.SetCertificateManager(mgr)
+#        certMenu = self.cmui.GetMenu(self)
+#        for item in certMenu.GetMenuItems():
+#            self.preferences.AppendItem(item)
 
         self.preferences.Append(self.ID_MYNODE_MANAGE, "&Manage My Node...",
                                 "Configure your node")

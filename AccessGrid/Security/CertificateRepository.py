@@ -2,7 +2,7 @@
 # Name:        CertificateRepository.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.22 2004-09-10 03:58:53 judson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.23 2004-12-08 16:48:07 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.22 2004-09-10 03:58:53 judson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.23 2004-12-08 16:48:07 judson Exp $"
 
 from __future__ import generators
 
@@ -48,8 +48,6 @@ import operator
 import cStringIO
 from AccessGrid import Log
 from AccessGrid import Utilities
-
-import ProxyGen
 
 log = Log.GetLogger(Log.CertificateRepository)
 
@@ -584,14 +582,11 @@ class CertificateRepository:
 
         """
 
-        #
         # Use a weakref so we don't unnecessarily hold
         # a reference to the observer.
         wr = weakref.ref(observer)
 
-        log.debug("Register observer %s", observer)
         if wr not in self.observers:
-            log.debug("Adding %s", wr)
             self.observers.append(wr)
 
     def UnregisterObserver(self, observer):
@@ -622,7 +617,6 @@ class CertificateRepository:
                 removeList.append(obs)
             else:
                 try:
-                    log.debug("NOTIFYing %s", obj)
                     obj(self)
                 except:
                     log.exception("Exception raised when calling observer %s", obj)
@@ -662,18 +656,8 @@ class CertificateRepository:
         path = self._GetCertDirPath(cert)
         # print "Would put cert in dir ", path
 
-        #
-        # Double check that someone's not trying to import a
-        # globus proxy cert.
-        #
-
-        if cert.IsGlobusProxy():
-            raise RepoInvalidCertificate, "Cannot import a Globus proxy certificate"
-
-        #
         # If the path already exists, we already have this (uniquely named)
         # certificate.
-        #
 
         if os.path.isdir(path):
             raise RepoInvalidCertificate("Certificate already in repository.", path)
@@ -794,11 +778,6 @@ class CertificateRepository:
         path = self._GetCertDirPath(cert)
         # print "Would put cert in dir ", path
 
-        # Double check that someone's not trying to import a
-        # globus proxy cert.
-        if cert.IsGlobusProxy():
-            raise RepoInvalidCertificate, "Cannot import a Globus proxy certificate"
-
         # If the path already exists, we already have this (uniquely named)
         # certificate.
         if os.path.isdir(path):
@@ -862,10 +841,6 @@ class CertificateRepository:
         mhash = cert.GetModulusHash()
         pkeyPath = self.GetPrivateKeyPath(mhash)
 
-        log.debug("Importing requested certificate subj=%s path=%s",
-                  cert.GetSubject(), path)
-        log.debug("Modulus hash is %s", mhash)
-
         if not os.path.isfile(pkeyPath):
             log.error("we don't have a private key for this certificate")
             raise RepoInvalidCertificate("No private key exists for this certificate")
@@ -886,7 +861,6 @@ class CertificateRepository:
         that this is a valid cert that is okay to just copy into place.
         """
 
-        log.debug("_ImportCertificate: create %s", path)
         os.makedirs(path)
 
         certPath = os.path.join(path, "cert.pem")
@@ -997,11 +971,10 @@ class CertificateRepository:
 
         certDir = self._GetCertDirPath(cert)
         if not os.path.isdir(certDir):
-            log.debug("RemoveCertificate: Cannot find path %s", certDir)
+            log.warn("RemoveCertificate: Cannot find path %s", certDir)
             return
 
         try:
-            log.debug("Remove %s", certDir)
             Utilities.removeall(certDir)
             os.rmdir(certDir)
         except:
@@ -1038,12 +1011,10 @@ class CertificateRepository:
                                     "%s.pem" % (cert.GetModulusHash()))
 
             if not os.path.isfile(pkeyfile):
-                log.debug("No private key dir found at %s", pkeyfile)
+                log.warn("No private key dir found at %s", pkeyfile)
             else:
                 try:
-                    #
                     # Need to chmod it writable before we can remove.
-                    #
                     os.chmod(pkeyfile, 0600)
                     os.remove(pkeyfile)
                 except:
@@ -1585,14 +1556,6 @@ class Certificate:
         else:
             return None
 
-    def IsGlobusProxy(self):
-        #
-        # Delegate this to ProxyGen, which can talk to the underlying
-        # globus.
-        #
-
-        return ProxyGen.IsGlobusProxy(self)
-
     def WriteCertificate(self, file):
         """
         Write the certificate to the given file.
@@ -1612,7 +1575,6 @@ class Certificate:
     def GetFilePath(self, filename):
         dirN = os.path.join(self.repo._GetCertDirPath(self), "user_files")
         if not os.path.isdir(dirN):
-            log.debug("GetFilePath: create %s", dirN)
             os.mkdir(dirN)
         return os.path.join(dirN, filename)
 
@@ -1723,8 +1685,6 @@ if __name__ == "__main__":
     keyPath = os.path.join(os.environ["HOME"], ".globus", "userkey.pem")
     c = Certificate(certPath)
 
-    proxy = r"\Documents and Settings\olson\Local Settings\Temp\x509_up_olson"
-    print proxy
     print "hash = ", c.GetSubjectHash(), c.GetIssuerSerialHash()
 
     repo = CertificateRepository("repo", 1)
@@ -1735,9 +1695,7 @@ if __name__ == "__main__":
     except RepoInvalidCertificate:
         print "Cert already there maybe"
 
-    #
     # Import some CA certs
-    #
 
     caDir = r"\Program Files\Windows Globus\certificates"
     for certFile in os.listdir(caDir):
@@ -1747,11 +1705,6 @@ if __name__ == "__main__":
             except RepoInvalidCertificate:
                 print "yup, you can't import a proxy"
     
-    try:
-        repo.ImportCertificatePEM(proxy)
-    except RepoInvalidCertificate:
-        print "yup, you can't import a proxy"
-
     certlist = list(repo._GetCertificates())
     print "Certs: "
     for c in certlist:

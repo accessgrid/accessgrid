@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.85 2004-10-22 15:02:28 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.86 2004-12-08 16:48:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.85 2004-10-22 15:02:28 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.86 2004-12-08 16:48:06 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -39,8 +39,6 @@ from AccessGrid.Descriptions import CreateStreamDescription
 from AccessGrid.Descriptions import CreateParameter
 
 from SOAPpy.Types import SOAPException
-
-from pyGlobus.io import GSITCPSocketException
 
 log = Log.GetLogger(Log.NodeService)
 
@@ -131,7 +129,7 @@ class AGNodeService:
         try:
             log.info(" service manager uri = %s", serviceManager.uri)
             AGServiceManagerIW( serviceManager.uri ).IsValid()
-        except GSITCPSocketException, e:
+        except Exception, e:
             if e.args[0].endswith('could not be resolved'):
                 parts = urlparse.urlparse(serviceManager.uri)
                 host,port = parts[1].split(':')

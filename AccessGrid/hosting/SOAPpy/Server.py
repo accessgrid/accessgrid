@@ -2,7 +2,7 @@
 # Name:        Server.py
 # Purpose:     
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.20 2004-11-29 18:47:38 turam Exp $
+# RCS-ID:      $Id: Server.py,v 1.21 2004-12-08 16:48:08 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,13 +11,12 @@ SOAPpy server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.20 2004-11-29 18:47:38 turam Exp $"
+__revision__ = "$Id: Server.py,v 1.21 2004-12-08 16:48:08 judson Exp $"
 
 # External imports
 import urlparse
 from threading import Thread, Event
 
-from SOAPpy.GSIServer import ThreadingGSISOAPServer, GSIConfig
 from SOAPpy.Server import ThreadingSOAPServer, GetSOAPContext
 from SOAPpy.Config import SOAPConfig
 
@@ -34,7 +33,7 @@ class _Server:
         @param addr: the address for the server to listen on
         @param server: the server object to use
         @type addr: (host, port) tuple
-        @type server: one of ThreadingGSISOAPServer or ThreadingSOAPServer
+        @type server: one of ThreadingSOAPServer or ThreadingSOAPServer
         """
         self.addr = addr
         self._server = server
@@ -238,7 +237,7 @@ class _Server:
 class SecureServer(_Server):
     """
     The SecureServer extends the SOAPpy server base class to use
-    GSIHTTP for connections.
+    HTTPS for connections.
     """
     def __init__(self, addr, debug = 0):
         """
@@ -249,14 +248,22 @@ class SecureServer(_Server):
         @type debug: 0, or 1
         """
         # This is where you set things for debugging
-        self.config = GSIConfig()
+        self.config = SOAPConfig()
         self.config.debug = debug
         if debug:
             self.config.dumpFaultInfo = 1
 
-        s = ThreadingGSISOAPServer(addr, config = self.config)
+        s = ThreadingSOAPServer(addr, config = self.config)
         _Server.__init__(self, addr, s)
         
+    def GetURLBase(self):
+        """
+        Return the base URL that represents this server.
+
+        @return: the url of the server
+        """
+        return "https://%s:%s" % self._server.server_address
+    
 class InsecureServer(_Server):
     """
     The InsecureServer class derives from the SOAPpy server, but doesn't

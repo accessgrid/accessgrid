@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.29 2004-09-03 18:23:33 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.30 2004-12-08 16:48:08 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.29 2004-09-03 18:23:33 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.30 2004-12-08 16:48:08 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -34,7 +34,6 @@ from AccessGrid.Security.X509Subject import X509Subject
 from AccessGrid.Security.Role import Role, DefaultIdentityNotRemovable
 from AccessGrid.Security.Action import Action 
 from AccessGrid import icons
-from AccessGrid.Security.Utilities import GetCNFromX509Subject
 
 class AuthorizationUIPanel(wxPanel):
     '''

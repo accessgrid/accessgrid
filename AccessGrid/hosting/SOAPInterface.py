@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: SOAPInterface.py,v 1.17 2004-11-19 23:00:46 lefvert Exp $
+# RCS-ID:      $Id: SOAPInterface.py,v 1.18 2004-12-08 16:48:08 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ primary methods, the constructor and a default authorization for all
 interfaces.
 """
 
-__revision__ = "$Id: SOAPInterface.py,v 1.17 2004-11-19 23:00:46 lefvert Exp $"
+__revision__ = "$Id: SOAPInterface.py,v 1.18 2004-12-08 16:48:08 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -27,7 +27,7 @@ import urlparse
 from AccessGrid import Log
 from AccessGrid.hosting import Client, GetSOAPContext
 from AccessGrid.Security.Action import MethodAction
-from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
+#from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 from AccessGrid.Toolkit import Application
 
 log = Log.GetLogger(Log.Hosting)
@@ -101,7 +101,8 @@ class SOAPInterface:
         except:
             raise
 
-        subject = CreateSubjectFromGSIContext(security_ctx)
+        subject = None
+#        subject = CreateSubjectFromGSIContext(security_ctx)
 
         return subject
 

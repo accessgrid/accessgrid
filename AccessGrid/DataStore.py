@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.74 2004-09-10 03:58:53 judson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.75 2004-12-08 16:48:06 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.74 2004-09-10 03:58:53 judson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.75 2004-12-08 16:48:06 judson Exp $"
 
 import os
 import time
@@ -28,15 +28,11 @@ import cStringIO
 import Queue
 import BaseHTTPServer
 
-from pyGlobus.io import GSITCPSocketException
-from pyGlobus import io
-
 from AccessGrid import Log
 import AccessGrid.GUID
-from AccessGrid.Platform.Config import SystemConfig, GlobusConfig
+from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.Descriptions import DataDescription, CreateDataDescription
 from AccessGrid.Events import Event
-from AccessGrid.Security import Utilities
 
 log = Log.GetLogger(Log.DataStore)
 
@@ -1129,7 +1125,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         
         #
         # Collect the response  into a string so we can
-        # issue a Content-length header. The GSIHTTP code
+        # issue a Content-length header. The HTTP code
         # appears to be happier with that, and it's good
         # practice anyway.
         #
@@ -1396,9 +1392,6 @@ class IdentityToken:
 class HTTPIdentityToken(IdentityToken):
     pass
 
-class GSIHTTPIdentityToken(IdentityToken):
-    pass
-
 class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
     """
     A HTTPTransferServer is a HTTP-based implementation of a TransferServer.
@@ -1459,160 +1452,11 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
         while not self.done:
             self.handle_request()
 
-class GSIHTTPTransferServer(io.GSITCPSocketServer, TransferServer):
-    """
-    A GSIHTTPTransferServer is a Globus-enabled HTTP-based implementation of a TransferServer.
-    
-    Note that most of the work is done in HTTPTransferHandler.
-
-    This implementation uses a pool of worker threads to handle the requests.
-    We could just use SocketServer.ThreadingMixIn, but I worry about 
-    an unbounded number of incoming request overloading the server.
-
-    self.requestQueue is a Queue object. Each worker thread runs __WorkerRun(),
-    which blocks on a get on teh request queue.
-
-    Incoming requests are just placed on the queue.
-    """
-
-    def __init__(self, address = ('', 0), numThreads = 1, sslCompat = 0):
-        TransferServer.__init__(self)
-
-        self.done = 0
-        
-        self.numThreads = numThreads
-        self.requestQueue = Queue.Queue()
-        self._CreateWorkers()
-
-        if sslCompat:
-            log.debug("creating ssl compatible server")
-            tcpAttr = Utilities.CreateTCPAttrAlwaysAuthSSL()
-        else:
-            tcpAttr = Utilities.CreateTCPAttrAlwaysAuth()
-
-        io.GSITCPSocketServer.__init__(self, address, HTTPTransferHandler,
-                                    None, None, tcpAttr = tcpAttr)
-
-    def _CreateWorkers(self):
-        self.workerThread = {}
-        self.startLock = threading.Lock()
-        for workerNum in range(self.numThreads):
-            log.debug("Creating thread %d", workerNum)
-            self.workerThread[workerNum] = threading.Thread(target = self.__WorkerRun,
-                                                            name = 'TransferWorker',
-                                                            args = (workerNum,))
-            self.startLock.acquire()
-            log.debug("Starting thread %d", workerNum)
-            self.workerThread[workerNum].start()
-            log.debug("Waiting thread %d", workerNum)
-            self.startLock.acquire()
-            self.startLock.release()
-        log.debug("Done creating workers")
-
-    def __WorkerRun(self, workerNum):
-        log.debug("Worker %d starting", workerNum)
-        self.startLock.release()
-
-        while not self.done:
-            cmd = self.requestQueue.get(1)
-            log.debug("Worker %d gets cmd %s", workerNum, cmd)
-            cmdType = cmd[0]
-            if cmdType == "quit":
-                break
-            elif cmdType == "request":
-                request = cmd[1]
-                client_address = cmd[2]
-                log.debug("handle request '%s' '%s'", request, client_address)
-                try:
-                    self.finish_request(request, client_address)
-                    self.close_request(request)
-                except:
-                    log.exception("Worker %d: Request handling threw exception", workerNum)
-        log.debug("Worker %d exiting", workerNum)
-            
-
-    def process_request(self, request, client_address):
-        log.debug("process_request: request=%s client_address=%s", request, client_address)
-        self.requestQueue.put(("request", request, client_address))
-
-    def GetIdentityToken(self, transferHandler):
-        """
-        Create an identity token for this GSIHTTP-based transfer.
-
-        It contains the DN from the connection's security context.
-        """
-
-        context = transferHandler.connection.get_security_context()
-        initiator, acceptor, valid_time, mechanism_oid, flags, local_flag, open_flag = context.inquire()
-        dn = initiator.display()
-
-        return GSIHTTPIdentityToken(dn)
-        
-    def _GetListenPort(self):
-        return self.port
-
-    def GetUploadDescriptor(self, prefix):
-        hn = GlobusConfig.instance().GetHostname()
-        return urlparse.urlunparse(("https",
-                                 "%s:%d" % (hn, self._GetListenPort()),
-                                 prefix,
-                                 "", "", ""))
-                                 
-    def GetDownloadDescriptor(self, prefix, path):
-        hn = GlobusConfig.instance().GetHostname()
-        return urlparse.urlunparse(("https",
-                                    "%s:%d" % (hn, self._GetListenPort()),
-                                    "%s/%s" % (prefix, urllib.quote(path)),
-                                    "", "", ""))
-                                 
-    def run(self):
-        self.done = 0
-        self.server_thread = threading.Thread(target = self.thread_run,
-                                              name = 'TransferServer')
-        self.server_thread.start()
-
-    def stop(self):
-        self.done = 1
-        for workerNum in range(self.numThreads):
-            log.debug("Quitting thread %d", workerNum)
-            self.requestQueue.put("quit")
-        self.server_close()
-
-    def thread_run(self):
-        """
-        thread_run is the server thread's main function.
-        """
-
-        while not self.done:
-            try:
-                self.handle_request()
-            except GSITCPSocketException:
-                log.info("GSIHTTPTransferServer: GSITCPSocket, interrupted I/O operation, most likely shutting down. ")
-            except:
-                log.exception("Exception handling request")
-                
-
 def HTTPDownloadFile(identity, download_url, destination, size, checksum,
                      progressCB = None):
     return HTTPFamilyDownloadFile(download_url, destination, size, checksum,
                                   identity, progressCB)
 
-def GSIHTTPDownloadFile(download_url, destination, size, checksum,
-                        progressCB = None):
-    """
-    Download a file with GSI HTTP.
-
-    Define a local connection class so we can poke about at the
-    tcp attributes here.
-    """
-    
-    def GSIConnectionClass(host):
-        tcpAttr = Utilities.CreateTCPAttrAlwaysAuth()
-        return io.GSIHTTPConnection(host, tcpAttr = tcpAttr)
-
-    return HTTPFamilyDownloadFile(download_url, destination, size, checksum,
-                                  None, progressCB, GSIConnectionClass)
-                                  
 def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
                            identity = None,
                            progressCB = None,
@@ -1648,7 +1492,7 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
     log.debug("Downloading %s into %s", download_url, destination)
 
     # We want strict enabled here, otherwise the empty
-    # result we get when querying a gsihttp server with an http
+    # result we get when querying a http server with an http
     # client results in a valid response, when it should have failed.
     try:
         conn.strict = 1
@@ -1788,31 +1632,6 @@ def HTTPUploadFiles(identity, upload_url, file_list, progressCB):
     uploader = HTTPUploadEngine(identity, upload_url, progressCB)
     uploader.UploadFiles(file_list)
 
-def GSIHTTPUploadFiles(upload_url, file_list, progressCB):
-    """
-    Upload the given list of files to the server using HTTP.
-
-    progressCB is a callback that will be invoked this way:
-
-       progressCB(filename, bytes_sent, total_bytes, file_done, transfer_done)
-
-    filename is the file to which the progress update applies
-    bytes_sent and total_bytes denote the file's progress
-    file_done is set when the given file upload is complete
-    transfer_done is set when the entire transfer is complete
-
-    If progressCB returns true, the transfer is to be cancelled.
-
-    """
-
-    def GSIConnectionClass(host):
-        tcpAttr = Utilities.CreateTCPAttrAlwaysAuth()
-        return io.GSIHTTPConnection(host, tcpAttr = tcpAttr)
-
-    uploader = HTTPUploadEngine(None, upload_url, progressCB,
-                                GSIConnectionClass)
-    uploader.UploadFiles(file_list)
-
 class HTTPUploadEngine:
     """
     An HTTPUploadEngine bundles up the functionality need to implement
@@ -1861,7 +1680,7 @@ class HTTPUploadEngine:
 
             #
             # We want strict enabled here, otherwise the empty
-            # result we get when querying a gsihttp server with an http
+            # result we get when querying a http server with an http
             # client results in a valid response, when it should have failed.
             #
             conn = self.connectionClass(host)
@@ -2217,10 +2036,6 @@ if __name__ == "__main__":
         def AddData(self, desc):
             self.data[desc.GetName()] = desc
             log.debug("AddData: %s", desc)
-
-    v = TestCallbackClass()
-    s = GSIHTTPTransferServer(('', 9011))
-    ds = DataStore(v, "./temp", "snap", s)
 
     class Handler:
         def GetDownloadFilename(self, id_token, url_path):

@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.81 2004-10-25 17:41:01 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.82 2004-12-08 16:48:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.81 2004-10-25 17:41:01 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.82 2004-12-08 16:48:06 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -25,7 +25,7 @@ from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid.Types import AGServicePackage
-from AccessGrid.DataStore import GSIHTTPDownloadFile, HTTPDownloadFile
+from AccessGrid.DataStore import HTTPDownloadFile
 from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.Descriptions import CreateAGServiceDescription, CreateResource
@@ -247,9 +247,9 @@ class AGServiceManager:
             options.append( '--token' )
             options.append( token )
             
-            # - if service manager is insecure, services will be too
-            if self.app.GetOption('insecure'):
-                options.append( '--insecure' )
+            # - if service manager is secure, services will be too
+            if self.app.GetOption("secure"):
+                options.append( '--secure' )
                 
             log.info("Running Service; options: %s %s", executable, str(options))
             

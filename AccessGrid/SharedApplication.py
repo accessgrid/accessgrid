@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.21 2004-09-10 03:58:53 judson Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.22 2004-12-08 16:48:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.21 2004-09-10 03:58:53 judson Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.22 2004-12-08 16:48:06 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -477,9 +477,6 @@ class SharedApplicationI(SOAPInterface, AuthorizationIMixIn):
         """
 
         log.debug("Authorizing %s %s", args, *kw)
-        
-        if self.impl.servicePtr.GetOption("insecure"):
-            return 1
         
         subject, action = self._GetContext()
         

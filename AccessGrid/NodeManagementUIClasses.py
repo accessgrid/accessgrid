@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.74 2004-10-22 21:05:19 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.75 2004-12-08 16:48:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.74 2004-10-22 21:05:19 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.75 2004-12-08 16:48:06 judson Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -564,7 +564,7 @@ class NodeManagementClientFrame(wxFrame):
 
         # Prompt for node service location
         dlg = wxTextEntryDialog(self,"Node Service URL", "Node Connect Dialog", 
-                                defaultValue = 'https://localhost:11000/NodeService')
+                                defaultValue = 'http://localhost:11000/NodeService')
 
         ret = dlg.ShowModal()
 
@@ -718,7 +718,7 @@ class NodeManagementClientFrame(wxFrame):
 
         # Prompt for service manager location
         dlg = wxTextEntryDialog(self,"Service Manager URL", "Add Service Manager Dialog",
-                                defaultValue = 'https://localhost:11000/ServiceManager')
+                                defaultValue = 'http://localhost:11000/ServiceManager')
      
         ret = dlg.ShowModal()
         if ret == wxID_OK:

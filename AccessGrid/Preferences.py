@@ -44,8 +44,8 @@ class Preferences:
         self.default = { self.RECONNECT : 1,
                          self.MAX_RECONNECT : 3,
                          self.RECONNECT_TIMEOUT : 10,
-                         self.SECURE_VENUE_CONNECTION: 1,
-                         self.SECURE_CLIENT_CONNECTION: 1,
+                         self.SECURE_VENUE_CONNECTION: 0,
+                         self.SECURE_CLIENT_CONNECTION: 0,
                          self.CLIENT_PORT: 0,
                          self.STARTUP_MEDIA: 1,
                          self.NODE_URL: "https://localhost:11000/NodeService",
@@ -74,7 +74,7 @@ class Preferences:
         # config will get saved using the node
         # service.
         self.nodeConfigs = []
-        self.config = UserConfig.instance()
+        self.config = UserConfig(initIfNeeded=0)
 
         self.LoadPreferences()
 
@@ -256,7 +256,7 @@ class PreferencesDialog(wxDialog):
     def __init__(self, parent, id, title, preferences):
         '''
         Initialize ui components and events.
-        '''\
+        '''
         wxDialog.__init__(self, parent, id, title,
                           style = wxRESIZE_BORDER | wxDEFAULT_DIALOG_STYLE,
                           size = wxSize(550, 350))

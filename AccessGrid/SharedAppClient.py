@@ -1,8 +1,8 @@
 import os
 
 from AccessGrid import Log
-from AccessGrid.EventClient import EventClient
-from AccessGrid.Events import ConnectEvent, Event
+#from AccessGrid.EventClient import EventClient
+#from AccessGrid.Events import ConnectEvent, Event
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.hosting import Client
@@ -118,20 +118,20 @@ class SharedAppClient:
             self.log.exception("SharedAppClient.Connect: Failed to get data channel")
                     
         # Subscribe to the data/event channel
-        self.eventClient = EventClient(self.__privateId, esl, self.__channelId)
-        self.RegisterEventCallback(Event.APP_SET_DATA, self.__ReceiveDataUpdate)
-        self.eventClient.start()
-        self.eventClient.Send(ConnectEvent(self.__channelId, self.__privateId))
+#        self.eventClient = EventClient(self.__privateId, esl, self.__channelId)
+#        self.RegisterEventCallback(Event.APP_SET_DATA, self.__ReceiveDataUpdate)
+#        self.eventClient.start()
+#        self.eventClient.Send(ConnectEvent(self.__channelId, self.__privateId))
 
     def Shutdown(self):
         '''
         Exit from application service and shut down event client.
         '''
-        try:
-            if self.eventClient:
-                self.eventClient.Stop()
-        except:
-            self.log.exception("SharedAppClient.Shutdown: Could not stop event client")
+#        try:
+#            if self.eventClient:
+#                self.eventClient.Stop()
+#        except:
+#            self.log.exception("SharedAppClient.Shutdown: Could not stop event client")
 
         try:
             if self.__appProxy:
@@ -149,9 +149,9 @@ class SharedAppClient:
 
         *callback* Method called when receiving event of type eventType.
         '''
-        if not self.__EventIsRegistered(eventType):
+#        if not self.__EventIsRegistered(eventType):
             # Only register the event once since the same callback method is used.
-            self.eventClient.RegisterCallback(eventType, self.HandleEvent)
+#            self.eventClient.RegisterCallback(eventType, self.HandleEvent)
 
         # Insert unique callback in table.
         self.__callbackTable.append((eventType, callback))
@@ -189,9 +189,9 @@ class SharedAppClient:
 
         *data* Data associated with this event 
         '''
-
-        evt = Event(eventType, self.__channelId, data)
-        self.eventClient.Send(evt)
+        pass
+#        evt = Event(eventType, self.__channelId, data)
+#        self.eventClient.Send(evt)
         
     def SetData(self, dataKey, dataValue):
         '''

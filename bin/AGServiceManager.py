@@ -3,19 +3,11 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.53 2004-11-29 18:46:06 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.54 2004-12-08 16:48:20 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
-
-
 import sys
-
-from AccessGrid import ServiceDiscovery
-
-if sys.platform == "darwin":
-    # OSX: pyGlobus/globus need to be loaded before modules such as socket.
-    import pyGlobus.ioc
 
 import signal, time, os
 from optparse import Option
@@ -28,10 +20,7 @@ from AccessGrid.Platform import IsLinux
 from AccessGrid.Platform.Config import AGTkConfig, SystemConfig
 from AccessGrid.AGServiceManager import AGServiceManager, AGServiceManagerI
 from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
-
-
-
-
+from AccessGrid import ServiceDiscovery
 
 # default arguments
 log = None
@@ -100,11 +89,10 @@ def main():
         
     # Create the hosting environment
     hostname = app.GetHostname()
-    if app.GetOption("insecure"):
-        server = InsecureServer((hostname, port))
-    else:
+    if app.GetOption("secure"):
         server = SecureServer((hostname, port))
-    
+    else:
+        server = InsecureServer((hostname, port))
 
     # Create the Service Manager
     gServiceManager = AGServiceManager(server)

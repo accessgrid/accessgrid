@@ -69,10 +69,6 @@ if __name__ == "__main__":
     import AccessGrid.Toolkit
     app = AccessGrid.Toolkit.WXGUIApplication()
     app.Initialize()
-#    app.GetCertificateManager().InitEnvironment()
-
-#    id = app.GetCertificateManager().GetDefaultIdentity()
-#    print "id is ", id.GetSubject()
 
     d = CertificateManagerDialog(None, -1, "CMGR", app.GetCertificateManager())
     

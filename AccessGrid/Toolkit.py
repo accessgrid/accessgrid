@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.86 2004-11-19 23:00:02 lefvert Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.87 2004-12-08 16:48:06 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.86 2004-11-19 23:00:02 lefvert Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.87 2004-12-08 16:48:06 judson Exp $"
 
 # Standard imports
 import os
@@ -20,8 +20,8 @@ import time
 # AGTk imports
 from AccessGrid import Log
 from AccessGrid.Preferences import Preferences
-from AccessGrid.Security import CertificateManager
-from AccessGrid.Security import CertificateRepository
+#from AccessGrid.Security import CertificateManager
+#from AccessGrid.Security import CertificateRepository
 from AccessGrid.Platform.Config import AGTkConfig, MimeConfig
 from AccessGrid.Platform.Config import SystemConfig, UserConfig
 from AccessGrid.Platform import IsWindows
@@ -76,15 +76,14 @@ class AppBase:
        self.parser.add_option("--version", action="store_true", dest="version",
                               default=0,
                          help="Print out what version of the toolkit this is.")
-       self.parser.add_option("-i", "--insecure", action="store_true",
-                              dest="insecure", default=0,
-                              help="Use insecure communications.")
+       self.parser.add_option("-i", "--secure", action="store_true",
+                              dest="secure", default=0,
+                              help="Use secure communications.")
 
        self.options = None
        self.certMgrUI = None
        self.userConfig = None
        self.agtkConfig = None
-       self.globusConfig = None
        self.systemConfig = SystemConfig.instance()
        self.log = None
        
@@ -223,7 +222,6 @@ class AppBase:
                                 (absdiff, direction, timeserver)
 
                self.log.warn("Toolkit.__CheckForValidClock: %s" %warningString)
-               #print "Warning: ", warningString, "\n"
                  
     def ProcessArgs(self, args=None):
        """
@@ -332,29 +330,14 @@ class AppBase:
         return self.userConfig
 
     def GetDefaultSubject(self):
-        ident = self.certificateManager.GetDefaultIdentity()
-
-        if ident is not None:
-            subject = X509Subject.CreateSubjectFromString(str(ident.GetSubject()))
-        else:
-            subject = None
-
+        subject = None
         return subject
 
-    def GetCertificateManager(self):
-       return self.certificateManager
-
-    def GetGlobusConfig(self):
-        return self.certificateManager.GetGlobusConfig()
-
-    def GetCertMgrUI(self):
-        return self.certMgrUI
+#    def GetCertificateManager(self):
+#       return self.certificateManager
 
     def GetHostname(self):
-        if self.GetOption("insecure") is not None:
-            return self.globusConfig.GetHostname()
-        else:
-            return self.systemConfig.GetHostname()
+        return self.systemConfig.GetHostname()
         
     def FindConfigFile(self, configFile):
         """
@@ -422,43 +405,14 @@ class Application(AppBase):
        
        # 5. Initialize Certificate Management
        # This has to be done by sub-classes
-       configDir = self.userConfig.GetConfigDir()
-       self.certificateManager = \
-            CertificateManager.CertificateManager(configDir, self.certMgrUI)
+#       configDir = self.userConfig.GetConfigDir()
+#       self.certificateManager = \
+#                               CertificateManager.CertificateManager(configDir)
 
-       self.globusConfig = self.certificateManager.GetGlobusConfig()
-
-       # Make sure we verify the user has all the CAs that have been
-       # put in the system ca dir
-
-       repo = self.certificateManager.GetCertificateRepository()
-
-       self.log.debug("Got repo.")
-
-       self.log.debug("looking in system ca dir: %s", self.globusConfig.GetDistCACertDir())
-       for ca_cert in [f for f in
-                       os.listdir(self.globusConfig.GetDistCACertDir())
-                                  if f.endswith(".0")]:
-           self.log.debug("Getting cert: %s", ca_cert)
-           cpath = os.path.join(self.globusConfig.GetDistCACertDir(), ca_cert)
-           try:
-               repo.ImportCertificatePEM(cpath)
-           except CertificateRepository.RepoInvalidCertificate:
-               self.log.warn("Not importing cert %s", cpath)
-           except:
-               self.log.exception("Error during ca initialization.")
-               
-       self.log.debug("Init'ing globus.")
-       
-       self.certMgrUI.InitGlobusEnvironment()
-
-       self.log.debug("Done with globus.")
-       
        # 6. Do one final check, if we don't have a default
        #    Identity we warn them, but they can still request certs.
        #
-       if self.GetDefaultSubject() is None:
-           self.log.warn("Toolkit initialized with no default identity.")
+       self.log.warn("Toolkit initialized with no default identity.")
            
        return argvResult
 
@@ -493,13 +447,13 @@ class CmdlineApplication(Application):
        
         # Create the singleton instance
         CmdlineApplication.theAppInstance = self
-        self.certMgrUI = CertificateManager.CertificateManagerUserInterface()
+#        self.certMgrUI = CertificateManager.CertificateManagerUserInterface()
 
 class WXGUIApplication(Application):
     def __init__(self):
         Application.__init__(self)
-        from AccessGrid.Security.wxgui import CertificateManagerWXGUI
-        self.certMgrUI = CertificateManagerWXGUI.CertificateManagerWXGUI()
+#        from AccessGrid.Security.wxgui import CertificateManagerWXGUI
+#        self.certMgrUI = CertificateManagerWXGUI.CertificateManagerWXGUI()
 
         # Register .agpkg mime type
         if not IsWindows():
@@ -565,75 +519,75 @@ class Service(AppBase):
                            help="Specify a service profile.")
         self.AddCmdLineOption(profileOption)
 
-    def _CheckRequestedCert(self, dn):
-        """
-        Check to see if we have a cert with this dn; if we do not,
-        check to see if there's a request pending for it. If there is,
-        install. Otherwise just return.
+#     def _CheckRequestedCert(self, dn):
+#         """
+#         Check to see if we have a cert with this dn; if we do not,
+#         check to see if there's a request pending for it. If there is,
+#         install. Otherwise just return.
 
-        @param dn: Distinguished name of identity to check for.
+#         @param dn: Distinguished name of identity to check for.
         
-        """
+#         """
 
-        certMgr = self.certificateManager
-        repo = self.certificateManager.GetCertificateRepository()
+#         certMgr = self.certificateManager
+#         repo = self.certificateManager.GetCertificateRepository()
 
-        certs = repo.FindCertificatesWithSubject(dn)
-        validCerts = filter(lambda a: not a.IsExpired(), certs)
+#         certs = repo.FindCertificatesWithSubject(dn)
+#         validCerts = filter(lambda a: not a.IsExpired(), certs)
 
-        if len(validCerts) > 0:
-            return
+#         if len(validCerts) > 0:
+#             return
 
-        # No certs found, see if we have a request for this one.
-        pending = certMgr.GetPendingRequests()
+#         # No certs found, see if we have a request for this one.
+#         pending = certMgr.GetPendingRequests()
 
-        reqs = filter(lambda a: str(a[0].GetSubject()) == dn, pending)
-        if len(reqs) == 0:
-            self.log.info("No requests found")
-            return
+#         reqs = filter(lambda a: str(a[0].GetSubject()) == dn, pending)
+#         if len(reqs) == 0:
+#             self.log.info("No requests found")
+#             return
 
-        if len(reqs) > 1:
-            self.log.warn("Multiple requests found, just picking one")
+#         if len(reqs) > 1:
+#             self.log.warn("Multiple requests found, just picking one")
             
-        request, token, server, created = reqs[0]
+#         request, token, server, created = reqs[0]
 
-        self.log.info("Found request at %s", server)
+#         self.log.info("Found request at %s", server)
 
-        # Check status. Note that if a proxy is required, we
-        # may not be using it. However, underlying library might
-        # set it up if the environment requires it.
-        status = certMgr.CheckRequestedCertificate(request, token, server)
-        success, certText = status
-        if not success:
-            # Nope, not ready.
-            self.log.info("Certificate not ready: %s", certText)
-            return
+#         # Check status. Note that if a proxy is required, we
+#         # may not be using it. However, underlying library might
+#         # set it up if the environment requires it.
+#         status = certMgr.CheckRequestedCertificate(request, token, server)
+#         success, certText = status
+#         if not success:
+#             # Nope, not ready.
+#             self.log.info("Certificate not ready: %s", certText)
+#             return
 
-        # Success! we can install the cert.
-        certhash = md5.new(certText).hexdigest()
-        tempfile = os.path.join(UserConfig.instance().GetTempDir(), 
-				"%s.pem" % (certhash))
+#         # Success! we can install the cert.
+#         certhash = md5.new(certText).hexdigest()
+#         tempfile = os.path.join(UserConfig.instance().GetTempDir(), 
+# 				"%s.pem" % (certhash))
 
-        try:
-            try:
-                fh = open(tempfile, "w")
-                fh.write(certText)
-                fh.close()
+#         try:
+#             try:
+#                 fh = open(tempfile, "w")
+#                 fh.write(certText)
+#                 fh.close()
 
-                impCert = certMgr.ImportRequestedCertificate(tempfile)
+#                 impCert = certMgr.ImportRequestedCertificate(tempfile)
 
-                self.log.info("Successfully imported certificate for %s", 
-                              str(impCert.GetSubject()))
+#                 self.log.info("Successfully imported certificate for %s", 
+#                               str(impCert.GetSubject()))
 
-            except CertificateRepository.RepoInvalidCertificate, e:
-                msg = e[0]
-                self.log.warn("The import of your approved certificate failed: %s", msg)
+#             except CertificateRepository.RepoInvalidCertificate, e:
+#                 msg = e[0]
+#                 self.log.warn("The import of your approved certificate failed: %s", msg)
 
-            except Exception, e:
-                self.log.exception("The import of your approved certificate failed")
+#             except Exception, e:
+#                 self.log.exception("The import of your approved certificate failed")
 
-        finally:
-            os.unlink(tempfile)
+#         finally:
+#             os.unlink(tempfile)
 
     # This method implements the initialization strategy outlined
     # in AGEP-0112
@@ -665,34 +619,11 @@ class Service(AppBase):
 
         # 5. Initialize Certificate Management
         # This has to be done by sub-classes
-        configDir = self.userConfig.GetConfigDir()
-        self.certMgrUI = CertificateManager.CertificateManagerUserInterface()
-        certMgr = self.certificateManager = \
-                  CertificateManager.CertificateManager(configDir,
-                                                        self.certMgrUI)
+#        configDir = self.userConfig.GetConfigDir()
+#        certMgr = self.certificateManager = \
+#                  CertificateManager.CertificateManager(configDir)
 
-        self.globusConfig = self.certificateManager.GetGlobusConfig()
-        
-        self.log.info("Initialized cert mgmt.")
-
-        # If we have a service profile, load and parse, then configure
-        # certificate manager appropriately.
-        if self.profile:
-            if self.profile.subject is not None:
-                self._CheckRequestedCert(self.profile.subject)
-                certMgr.SetTemporaryDefaultIdentity(useDefaultDN = \
-                                                   self.profile.subject)
-            elif self.profile.certfile is not None:
-                certMgr.SetTemporaryDefaultIdentity(useCertFile = \
-                                                    self.profile.certfile,
-                                                    useKeyFile = \
-                                                    self.profile.keyfile)
-
-        self.log.info("Loaded profile and configured with it.")
-        
-        self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
-
-        self.log.info("Initialized Globus.")
+#        self.log.info("Initialized cert mgmt.")
 
         # 6. Do one final check, if we don't have a default
         #    Identity we bail, there's nothing useful to do.

@@ -1,17 +1,14 @@
 #-----------------------------------------------------------------------------
 # Name:        DataStoreClient.py
 # Purpose:     
-#
-# Author:      Robert D. Olson
-#
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.23 2004-09-03 15:00:03 judson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.24 2004-12-08 16:48:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.23 2004-09-03 15:00:03 judson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.24 2004-12-08 16:48:06 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -294,7 +291,7 @@ class DataStoreClient:
             data = self.dataIndex[filename]
             url = data['uri']
             print "Downloading ", url
-            DataStore.GSIHTTPDownloadFile(url, localFile, data['size'], data['checksum'])
+            DataStore.HTTPDownloadFile(url, localFile, data['size'], data['checksum'])
         else:
             raise FileNotFound
 
@@ -305,7 +302,7 @@ class DataStoreClient:
 
         try:
             log.debug("Upload %s to %s", localFile, self.uploadURL)
-            DataStore.GSIHTTPUploadFiles(self.uploadURL, [localFile], None)
+            DataStore.HTTPUploadFiles(self.uploadURL, [localFile], None)
         except DataStore.UploadFailed, e:
             #rc, errlist = e.args[0]
             #for err in errlist:

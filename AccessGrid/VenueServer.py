@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.173 2004-09-10 20:38:50 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.174 2004-12-08 16:48:07 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.173 2004-09-10 20:38:50 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.174 2004-12-08 16:48:07 judson Exp $"
 
 # Standard stuff
 import sys
@@ -29,7 +29,7 @@ except:
 from AccessGrid.Toolkit import Service
 from AccessGrid import Log
 from AccessGrid import Version
-from AccessGrid.hosting import SecureServer, InsecureServer
+from AccessGrid.hosting import InsecureServer, SecureServer
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerI
@@ -39,7 +39,6 @@ from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 from AccessGrid.Security import X509Subject, Role
 from AccessGrid.Security .Action import ActionAlreadyPresent
 from AccessGrid.Security.Subject import InvalidSubject
-from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 
 from AccessGrid.Platform.Config import SystemConfig, UserConfig
 
@@ -48,10 +47,10 @@ from AccessGrid.hosting import PathFromURL, IdFromURL
 from AccessGrid.GUID import GUID
 from AccessGrid.Venue import Venue, VenueI
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-from AccessGrid.DataStore import GSIHTTPTransferServer, HTTPTransferServer
-from AccessGrid.EventServiceAsynch import EventService
+from AccessGrid.DataStore import HTTPTransferServer
+#from AccessGrid.EventServiceAsynch import EventService
+#from AccessGrid.TextServiceAsynch import TextService
 from AccessGrid.scheduler import Scheduler
-from AccessGrid.TextServiceAsynch import TextService
 
 from AccessGrid.Descriptions import ConnectionDescription, StreamDescription
 from AccessGrid.Descriptions import DataDescription, VenueDescription
@@ -106,11 +105,6 @@ class VenueServer(AuthorizationMixIn):
     """
     The Virtual Venue Server object is responsible for creating,
     destroying, and configuring Virtual Venue objects.
-
-    **Extends:**
-
-        *AccessGrid.hosting.pyGlobus.ServiceBase.*
-
     """
 
     configDefaults = {
@@ -207,10 +201,12 @@ class VenueServer(AuthorizationMixIn):
             self.internalHostingEnvironment = 0 # False
         else:
             defaultPort = 8000
-            if self.servicePtr.GetOption("insecure"):
-                self.hostingEnvironment = InsecureServer((self.hostname, defaultPort) )
+            if self.servicePtr.GetOption("secure"):
+                self.hostingEnvironment = SecureServer((self.hostname,
+                                                        defaultPort) )
             else:
-                self.hostingEnvironment = SecureServer((self.hostname, defaultPort) )
+                self.hostingEnvironment = InsecureServer((self.hostname,
+                                                          defaultPort) )
             self.internalHostingEnvironment = 1 # True
 
         # Figure out which configuration file to use for the
@@ -245,21 +241,15 @@ class VenueServer(AuthorizationMixIn):
         # Starting Venue Server wide Services, these *could* also
         # be separated, we just have to figure out the mechanics and
         # make sure the usability doesn't plummet for administrators.
-        if self.servicePtr.GetOption("insecure"):
-            self.dataTransferServer = HTTPTransferServer(('',
-                                                         int(self.dataPort)) )
-        else:
-            self.dataTransferServer = GSIHTTPTransferServer(('',
-                                                         int(self.dataPort)),
-                                                        numThreads = 4,
-                                                        sslCompat = 0)
+        self.dataTransferServer = HTTPTransferServer(('',
+                                                      int(self.dataPort)) )
         self.dataTransferServer.run()
 
-        self.eventService = EventService((self.hostname, int(self.eventPort)))
-        self.eventService.start()
+#        self.eventService = EventService((self.hostname, int(self.eventPort)))
+#        self.eventService.start()
 
-        self.textService = TextService((self.hostname, int(self.textPort)))
-        self.textService.start()
+#        self.textService = TextService((self.hostname, int(self.textPort)))
+#        self.textService.start()
         # End of server wide services initialization
 
         # Try to open the persistent store for Venues. If we fail, we
@@ -293,7 +283,7 @@ class VenueServer(AuthorizationMixIn):
                                  int(self.houseKeeperFrequency), 
                                  0,
                                  1)
-        self.houseKeeper.AddTask(self.CleanupVenueClients, 30, 0, 1)
+        self.houseKeeper.AddTask(self.CleanupClients, 10, 0, 1)
 
         # Create report that tracks performance if the option is in the config
         # This should get cleaned out and made a command line option
@@ -575,7 +565,7 @@ class VenueServer(AuthorizationMixIn):
         uri = string.join([url_base, self.venuePathPrefix, uniqueId], '/')
         return uri
 
-    def CleanupVenueClients(self):
+    def CleanupClients(self):
         for venue in self.venues.values():
             venue.CleanupClients()
 
@@ -616,16 +606,16 @@ class VenueServer(AuthorizationMixIn):
         # This blocks anymore checkpoints from happening
         log.info("Shutting down services...")
         log.info("                         text")
-        try:
-            self.textService.Stop()
-        except IOError, e:
-            log.exception("Exception shutting down text.", e)
-        log.info("                         event")
-        try:
-            self.eventService.Stop()
-        except IOError, e:
-            log.exception("Exception shutting down event.", e)
-        log.info("                         data")
+#         try:
+#             self.textService.Stop()
+#         except IOError, e:
+#             log.exception("Exception shutting down text.", e)
+#         log.info("                         event")
+#         try:
+#             self.eventService.Stop()
+#         except IOError, e:
+#             log.exception("Exception shutting down event.", e)
+#         log.info("                         data")
         try:
             self.dataTransferServer.stop()
         except IOError, e:
@@ -762,9 +752,11 @@ class VenueServer(AuthorizationMixIn):
                                                Role.Administrators.GetName())
         
         # This could be done by the server, and probably should be
-        venue.authManager.AddSubjectToRole(
-            self.servicePtr.GetDefaultSubject().GetName(),
-            Role.Administrators.GetName())
+        subj = self.servicePtr.GetDefaultSubject()
+        
+        if subj is not None:
+           venue.authManager.AddSubjectToRole(subj.GetName(),
+                                              Role.Administrators.GetName())
         
 #        print "Venue Policy:"
 #        print venue.authManager.xml.toprettyxml()
@@ -1106,10 +1098,10 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         just once and remove a bunch of the older code.
         """
         log.debug("Authorizing with %s, %s", args, *kw)
-        
-        if self.impl.servicePtr.GetOption("insecure"):
-            return 1
 
+        if not self.impl.servicePtr.GetOption("secure"):
+           return 1
+     
         subject, action = self._GetContext()
         
         log.info("Authorizing action: %s for subject %s", action.GetName(),

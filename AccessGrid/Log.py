@@ -102,7 +102,6 @@ NodeService = "NodeService"
 Security = "Security"
 Platform = "Platform"
 ProxyGen = "ProxyGen"  # Security
-pyGlobus = "pyGlobus"
 
 ServiceManager = "ServiceManager"
 SharedApplication = "SharedApplication"
@@ -188,10 +187,6 @@ def GetHighestLevel():
 # default loggers to high level of output.  Inputs and outputs to various 
 #   handlers can then be set with LoggerLevels object.
 logging.root.setLevel(HIGHEST_LEVEL)
-# Since we are raising the default level, pyGlobus has debug statements
-#    that will complain there's no output file unless we turn it back to normal.
-logging.getLogger(pyGlobus).setLevel(WARN)
-
 
 # ---- Formats ----
 _defaultFormatter = Formatter("%(asctime)s %(thread)s %(name)s \
@@ -216,7 +211,7 @@ def GetUsageFormatter():
 # Does NOT Need to include all components and can be empty.
 # Will optimize if needed.
 
-_categoryNames=[AGService, AppMonitor, AuthorizationUI, BridgeServer , CertificateManager , CertificateRepository , CertificateManagerWXGUI , CertificateRequestTool , CertReqService , CRSClient , DataStoreClient , DataStore , DataService , EventService , ProcessManager , NodeManagementUIClasses , NodeSetupWizard , NodeService , Security , ProxyGen , pyGlobus , ServiceManager , SharedApplication , TextClient , SimpleTextProcessor , TextConnection , TextService , Toolkit , Types , Utilities , VenueManagement , VenueClient , VenueClientController , VenueClientUIClasses , VenueClientUI , VenueServer , EventClient , Logging, Usage]
+_categoryNames=[AGService, AppMonitor, AuthorizationUI, BridgeServer , CertificateManager , CertificateRepository , CertificateManagerWXGUI , CertificateRequestTool , CertReqService , CRSClient , DataStoreClient , DataStore , DataService , EventService , ProcessManager , NodeManagementUIClasses , NodeSetupWizard , NodeService , Security , ProxyGen , ServiceManager , SharedApplication , TextClient , SimpleTextProcessor , TextConnection , TextService , Toolkit , Types , Utilities , VenueManagement , VenueClient , VenueClientController , VenueClientUIClasses , VenueClientUI , VenueServer , EventClient , Logging, Usage]
 
 def GetCategories():
     return _categoryNames

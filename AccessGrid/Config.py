@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.28 2004-11-29 21:05:04 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.29 2004-12-08 16:48:06 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.28 2004-11-29 21:05:04 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.29 2004-12-08 16:48:06 judson Exp $"
 
 import os
 import sys
@@ -128,202 +128,6 @@ class AGTkConfig:
     def GetServicesDir(self):
         raise Exception, "This should not be called directly, but through a subclass."
 
-pyGlobusSetenv = None
-pyGlobusGetenv = None
-pyGlobusUnsetenv = None
-
-try:
-    import pyGlobus.utilc
-    pyGlobusSetenv = pyGlobus.utilc.setenv
-    pyGlobusUnsetenv = pyGlobus.utilc.unsetenv
-    pyGlobusGetenv = pyGlobus.utilc.getenv
-except:
-    pass
-
-class GlobusConfig:
-    """
-    This object encapsulates the information required to correctly configure
-    Globus and pyGlobus for use with the Access Grid Toolkit.
-
-    @ivar location: the location of the globus installation
-    @ivar caCertDir: the directory of Certificate Authority Certificates
-    @ivar hostname: the Hostname for the globus configuration
-    @ivar proxyFile: THe filename for the globus proxy
-    @ivar certFile: The filename of the X509 certificate.
-    @ivar keyFile: The filename of the X509 key.
-    """
-    def __init__(self, initEnvIfNeeded=0):
-        """
-        This is the constructor, the only argument is used to indicate
-        a desire to intialize the existing environment if it is discovered
-        to be uninitialized.
-
-        @param initEnvIfNeeded: a flag indicating if this object should
-        initialize the system if it is not.
-
-        @type initEnvIfNeeded: integer
-        """
-        self.distCACertDir = None
-        self.distCertFileName = None
-        self.distKeyFileName = None
-        self.proxyFileName = None
-
-    def __str__(self):
-        return self._repr_()
-
-    def _repr_(self):
-        tmpstr = "Globus Configuration:\n"
-        tmpstr += "Location: %s\n" % self.GetLocation()
-        tmpstr += "Hostname: %s\n" % self.GetHostname()
-        tmpstr += "Proxy Filename: %s\n" % self.GetProxyFileName()
-        
-        return tmpstr
-        
-    def _SetHostnameToLocalIP(self):
-        """
-        Set the hostname to the IP address
-        """
-        raise Exception, "This should not be called directly, but through a subclass."
-
-    # We define our own setenv/unsetenv to prod both the pyGlobus
-    # environment and the standard python environment.
-    def Setenv(self, name, val):
-        global pyGlobusSetenv
-
-        os.environ[name] = val
-        
-        if pyGlobusSetenv:
-            pyGlobusSetenv(name, val)
-            
-    def Unsetenv(self, name):
-        global pyGlobusUnsetenv
-
-        if name in os.environ:
-            del os.environ[name]
-
-        if pyGlobusUnsetenv:
-            pyGlobusUnsetenv(name)
-
-    def Getenv(self, name):
-        global pyGlobusGetenv
-
-        if pyGlobusGetenv:
-            return pyGlobusGetenv(name)
-        else:
-            return os.getenv(name)
-
-    def SetHostname(self):
-        """
-        Ensure that we have a valid Globus hostname.
-
-        If GLOBUS_HOSTNAME is set, we will do nothing further.
-
-        Otherwise, we will inspect the hostname as returned by the
-        socket.getfqdn() call. If it appears to be valid (where valid
-        means that it maps to an IP address and we can locally bind to
-        that address), we needn't do anythign, since the globus
-        hostname calls will return the right thing.
-
-        Otherwise, we need to get our IP address using
-        SystemConfig.GetLocalIPAddress()
-        """
-
-        ghn = os.getenv("GLOBUS_HOSTNAME")
-            
-        if ghn is not None:
-            self.hostname = ghn
-            log.debug("Using GLOBUS_HOSTNAME=%s as set in the environment",
-                      self.hostname)
-            return
-        else:
-            hostname = socket.getfqdn()
-            #
-            # It has to really be a fqdn.
-            #
-            if hostname.find(".") < 0:
-                return self._SetHostnameToLocalIP()
-
-            #
-            # And one has to be able to bind to it.
-            #
-            
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            try:
-                sock.bind((hostname, 0))
-                # This worked, so we are okay.
-                log.debug("System hostname of %s is valid", hostname)
-                self.hostname = hostname
-                self.Setenv("GLOBUS_HOSTNAME", hostname)
-                return
-            except socket.error:
-                log.exception("Error setting globus hostname.")
-
-            # Binding to our hostname didn't work. Retrieve our IP address
-            # and use that.
-
-            return self._SetHostnameToLocalIP()
-
-    def GetHostname(self):
-        if self.hostname is None:
-            self.SetHostname()
-
-        return self.hostname
-
-    def RemoveHostname(self):
-        self.Unsetenv("GLOBUS_HOSTNAME")
-        self.hostname = None
-        
-    def GetLocation(self):
-        if self.location is not None and not os.path.exists(self.location):
-            raise Exception, "GlobusConfig: Globus directory does not exist."
-
-        return self.location
-
-    def SetLocation(self, location):
-        self.location = location
-        self.Setenv("GLOBUS_LOCATION", location)
-        
-    def RemoveLocation(self):
-
-        self.location = None
-        self.Unsetenv("GLOBUS_LOCATION")
-
-    def SetActiveCACertDir(self, dir):
-        self.Setenv("X509_CERT_DIR", dir)
-
-    def SetProxyCert(self, proxyFile):
-        """
-        Configure globus runtime for using a proxy cert.
-
-        """
-
-        self.Unsetenv("X509_USER_CERT")
-        self.Unsetenv("X509_USER_KEY")
-        self.Unsetenv("X509_RUN_AS_SERVER")
-        self.Setenv("X509_USER_PROXY", proxyFile)
-
-    def SetUserCert(self, cert, key):
-        """
-        Configure globus runtime for using a cert and key pair.
-        """
-
-        self.Setenv("X509_USER_CERT", cert)
-        self.Setenv("X509_USER_KEY", key)
-        self.Setenv("X509_RUN_AS_SERVER", "1")
-        self.Unsetenv("X509_USER_PROXY")
-
-    def GetDistCACertDir(self):
-        return self.distCACertDir
-    
-    def GetDistCertFileName(self):
-        return self.distCertFileName
-
-    def GetDistKeyFileName(self):
-        return self.distKeyFileName
-    
-    def GetProxyFileName(self):
-        return self.proxyFileName
-        
 class UserConfig:
     """
     A user config object encapsulates all of the configuration data for
@@ -366,6 +170,7 @@ class UserConfig:
         self.nodeConfigDir = None
         self.servicesDir = None
         self.profileFilename = None
+        self.preferencesFilename = None
         self.logDir = None
 
         self._Initialize()

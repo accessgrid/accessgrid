@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.79 2004-09-09 22:52:24 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.80 2004-12-08 16:48:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.79 2004-09-09 22:52:24 judson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.80 2004-12-08 16:48:06 judson Exp $"
 
 import os
 import string
@@ -240,7 +240,6 @@ def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
     # Get config information
     configData =  "\n%s" % Config.UserConfig.instance()
     configData += "\n%s" % userConfig
-    configData += "\n%s" % Config.GlobusConfig.instance()
     configData += "\n%s\n" % Config.SystemConfig.instance()
 
     # Defaults.
@@ -321,14 +320,14 @@ def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
         commentAndLog = AppendNodeLogs(commentAndLog)
 
          
-    # If we've got a logToSearch, look at it to find a GSI exception
+    # If we've got a logToSearch, look at it to find a exception
     # at the end.  If it has one, mark the component as Certificate
     # Management.
 
     if logToSearch:
         loc = logToSearch.rfind("Traceback")
         if loc >= 0:
-            m = re.search("GSI.*Exception.*", logToSearch[loc:])
+            m = re.search(".*Exception.*", logToSearch[loc:])
             if m:
                 args['component'] = "Certificate Management"
 

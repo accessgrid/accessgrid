@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.38 2004-11-19 23:00:02 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.39 2004-12-08 16:48:06 judson Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.38 2004-11-19 23:00:02 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.39 2004-12-08 16:48:06 judson Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -756,7 +756,7 @@ class VenueClientController:
         try:
             if uploadUrl.startswith("https:"):
                 log.debug("Url starts with https:")
-                DataStore.GSIHTTPUploadFiles(uploadUrl, fileList, progressCB)
+                DataStore.HTTPUploadFiles(uploadUrl, fileList, progressCB)
             else:
                 my_identity = str(Application.instance().GetDefaultSubject())
                 log.debug("Got identity %s" % my_identity)
@@ -945,9 +945,9 @@ class VenueClientController:
         try:
             if url.startswith("https"):
                 log.debug("url=%s, local path =%s, size = %s, checksum = %s"%(url, local_pathname, size, checksum))
-                DataStore.GSIHTTPDownloadFile(url, local_pathname, size,
+                DataStore.HTTPDownloadFile(url, local_pathname, size,
                                               checksum, progressCB)
-                log.debug("finished GSIHTTPDownload")
+                log.debug("finished HTTPDownload")
 
             else:
                 log.debug("url does not start with https")
@@ -1026,7 +1026,7 @@ class VenueClientController:
         error_msg = None
         try:
             if uploadUrl.startswith("https:"):
-                DataStore.GSIHTTPUploadFiles(uploadUrl, fileList)
+                DataStore.HTTPUploadFiles(uploadUrl, fileList)
             else:
                 my_identity = str(Application.instance().GetDefaultSubject())
                 DataStore.HTTPUploadFiles(my_identity, uploadUrl, fileList)
