@@ -77,6 +77,8 @@ class CertificateRequestViewerPanel(wxPanel):
         self._writeValue("Modulus", self.request.GetModulus())
         self._writeValue("Modulus hash", self.request.GetModulusHash())
 
+        self.text.SetInsertionPoint(0)
+
         #self._writeValue("Certificate location", cert.GetPath())
         #pkloc =  cert.GetKeyPath()
         #if pkloc and os.access(pkloc, os.R_OK):
