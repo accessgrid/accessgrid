@@ -5,28 +5,36 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.71 2003-03-18 17:38:44 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.72 2003-03-19 20:44:29 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 
 import os
 import os.path
+import logging, logging.handlers
+import cPickle
+import threading
 
 from wxPython.wx import *
-import cPickle
+
 from AccessGrid import icons
 from AccessGrid.VenueClient import VenueClient, EnterVenueException
-import threading
 from AccessGrid import Utilities
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.ClientProfile import *
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Descriptions import ServiceDescription
-from AccessGrid.TextClientUI import TextClientUI, TextClientUIStandAlone
 from AccessGrid.Utilities import formatExceptionInfo
-
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
+from AccessGrid.UIUtilities import MyLog 
+#from AccessGrid.TextClientUI import TextClientUI, TextClientUIStandAlone
+
+# for text chat
+from AccessGrid.TextClient import SimpleTextProcessor
+from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
+from pyGlobus.io import GSITCPSocket
+from AccessGrid.Events import ConnectEvent, TextEvent
 
 class VenueClientFrame(wxFrame):
     
@@ -70,7 +78,7 @@ class VenueClientFrame(wxFrame):
     ID_ME_PROFILE = NewId()
     ID_ME_DATA = NewId()
 
-    textClient = None
+    textClientPanel = None
     textClientStandAlone = None
     myVenuesDict = {}
     myVenuesMenuIds = []
@@ -91,7 +99,7 @@ class VenueClientFrame(wxFrame):
                                                self.myVenuesDict, 'default venue')
         self.TextWindow = wxSashLayoutWindow(self, self.ID_WINDOW_BOTTOM, wxDefaultPosition,
                                              wxSize(200, 35), wxNO_BORDER|wxSW_3D)
-        self.textClient = TextClientUI(self.TextWindow, -1)
+        self.textClientPanel = TextClientPanel(self.TextWindow, -1)
         self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT, app)
         self.contentListPanel = ContentListPanel(self, app)
                
@@ -106,8 +114,8 @@ class VenueClientFrame(wxFrame):
         self.__doLayout()
         self.__setEvents()
         self.__loadMyVenues()
+        self.__setLogger()
      
-        
     def OnSashDrag(self, event):
         if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
             return
@@ -279,7 +287,7 @@ class VenueClientFrame(wxFrame):
         self.TextWindow.SetAlignment(wxLAYOUT_BOTTOM)
         self.TextWindow.SetSashVisible(wxSASH_TOP, TRUE)
 
-        wxLayoutAlgorithm().LayoutWindow(self.TextWindow, self.textClient)
+        wxLayoutAlgorithm().LayoutWindow(self.TextWindow, self.textClientPanel)
 
         self.venueListPanel.SetDefaultSize(wxSize(120, 1000))
         self.venueListPanel.SetOrientation(wxLAYOUT_VERTICAL)
@@ -336,7 +344,7 @@ class VenueClientFrame(wxFrame):
     def SetTextLocation(self, event = None):
         textLoc = tuple(self.app.venueState.GetTextLocation())
         id = self.app.venueState.uniqueId
-        self.textClient.SetLocation(textLoc, id)
+        self.textClientPanel.SetLocation(textLoc, id)
 
         try:
             self.textClientStandAlone.SetLocation(textLoc, id)
@@ -406,7 +414,6 @@ class VenueClientFrame(wxFrame):
 
         editMyVenuesDialog.Destroy()
 
-
     def SaveMyVenuesToFile(self):
         myVenuesFile = open(self.myVenuesFile, 'w')
         cPickle.dump(self.myVenuesDict, myVenuesFile)
@@ -469,7 +476,7 @@ class VenueClientFrame(wxFrame):
         # then there isn't a data upload service available.
         #
 
-        print "Trying to upload to '%s'" % (self.app.upload_url)
+        wxDebug("Trying to upload to '%s'" % (self.app.upload_url))
         if self.app.upload_url is None or self.app.upload_url == "":
         
             MessageDialog(self,
@@ -481,7 +488,7 @@ class VenueClientFrame(wxFrame):
 
         if dlg.ShowModal() == wxID_OK:
             files = dlg.GetPaths()
-            print "Got files: ", files
+            wxDebug("Got files:%s ", str(files))
 
             # upload!
 
@@ -571,7 +578,7 @@ class VenueClientFrame(wxFrame):
                                style = wxSAVE | wxOVERWRITE_PROMPT)
             if dlg.ShowModal() == wxID_OK:
                 path = dlg.GetPath()
-                print "Saving file as ", path
+                wxDebug("Saving file as %s" %path)
 
                 dlg.Destroy()
 
@@ -612,6 +619,21 @@ class VenueClientFrame(wxFrame):
 
     def __showNoSelectionDialog(self, text):
         MessageDialog(self, text)
+
+    def __setLogger(self):
+        logger = logging.getLogger("AG.VenueClientUIClasses")
+        logger.setLevel(logging.DEBUG)
+        logname = "VenueClientUIClasses.log"
+        hdlr = logging.handlers.RotatingFileHandler(logname, "a", 10000000, 0)
+        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
+        hdlr.setFormatter(fmt)
+        logger.addHandler(hdlr)
+        log = logging.getLogger("AG.VenueClientUIClasses")
+
+        wxLog_SetActiveTarget(wxLogGui())  
+        wxLog_SetActiveTarget(wxLogChain(MyLog(log)))
+        wxLogInfo(" ")
+        wxLogInfo("--------- START VenueClientUIClasses")
         
     def CleanUp(self):
         self.venueListPanel.CleanUp()
@@ -777,11 +799,7 @@ class VenueList(wxScrolledWindow):
         self.parent = parent
         self.EnableScrolling(true, true)
         self.SetScrollRate(1, 1)
-        EVT_LEFT_DOWN(self, self.test)
-
-    def test(self, evt):
-        print '=------------------ test'
-     
+          
     def __doLayout(self):
         self.box = wxBoxSizer(wxVERTICAL)
         self.column = wxFlexGridSizer(cols=1, vgap=1, hgap=0)
@@ -1173,6 +1191,95 @@ class ContentListPanel(wxPanel):
   #      self.SetSizer(sizer1)
   #      sizer1.Fit(self)
   #      self.SetAutoLayout(1)
+
+
+class TextClientPanel(wxPanel):
+    aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
+    This has been developed as part of the Access Grid project."""
+    bufferSize = 128
+    venueId = None
+    location = None
+    Processor = None
+    ID_BUTTON = wxNewId()
+    
+    def __init__(self, *args, **kwds):
+        wxPanel.__init__(self, *args, **kwds)
+        self.TextOutput = wxTextCtrl(self, wxNewId(), "",
+                                     style= wxTE_MULTILINE|wxTE_READONLY|wxTE_RICH)
+        self.TextOutput.SetToolTipString("Text chat")
+        self.label = wxStaticText(self, -1, "Your message:", size = wxSize(95,20))
+        self.display = wxButton(self, self.ID_BUTTON, "Display", style = wxBU_EXACTFIT)
+        self.textInputId = wxNewId()
+        self.TextInput = wxTextCtrl(self, self.textInputId, "",
+                                    style= wxRAISED_BORDER| wxTE_RICH|wxTE_PROCESS_ENTER)
+        self.TextInput.SetToolTipString("Write your message here")
+        self.__set_properties()
+        self.__do_layout()
+        #self.TextOutput.EnableScrolling(true, true)
+        EVT_TEXT_ENTER(self, self.textInputId, self.LocalInput)
+        EVT_BUTTON(self, self.ID_BUTTON, self.LocalInput)
+        self.Show(true)
+
+    def SetLocation(self, location, venueId):
+        if self.Processor != None:
+            self.Processor.Stop()
+
+        self.host = location[0]
+        self.port = location[1]
+        self.venueId = venueId
+        self.attr = CreateTCPAttrAlwaysAuth()
+        self.socket = GSITCPSocket()
+        self.socket.connect(self.host, self.port, self.attr)
+
+        wxLogDebug("Set text location host:%s, port:%d, venueId:%s, attr:%s, socket:%s"
+                   %(self.host,self.port, self.venueId, str(self.attr), str(self.socket)))
+                   #%(self.host, self.port, self.venueId, self.attr, self.socket))
+        
+        self.Processor = SimpleTextProcessor(self.socket, self.venueId,
+                                             self.TextOutput)
+        
+        self.Processor.Input(ConnectEvent(self.venueId))
+        self.TextOutput.Clear()
+        self.TextInput.Clear() 
+
+    def __set_properties(self):
+        self.SetSize((375, 225))
+        
+    def __do_layout(self):
+        TextSizer = wxBoxSizer(wxVERTICAL)
+        TextSizer.Add(self.TextOutput, 2, wxEXPAND|wxALIGN_CENTER_HORIZONTAL, 0)
+
+        box = wxBoxSizer(wxHORIZONTAL)
+        box.Add(self.label, 0, wxALIGN_CENTER |wxLEFT, 5)
+        box.Add(self.TextInput, 1, wxALIGN_CENTER)
+        box.Add(self.display, 0, wxALIGN_CENTER |wxLEFT|wxRIGHT, 5)
+        
+        TextSizer.Add(box, 0, wxEXPAND|wxALIGN_BOTTOM, 0)
+        self.SetAutoLayout(1)
+        self.SetSizer(TextSizer)
+        self.Layout()
+        
+    def LocalInput(self, event):
+        """ User input """
+        if(self.venueId != None and self.Processor != None):
+            wxLogDebug("User writes: %s" %self.TextInput.GetValue())
+            textEvent = TextEvent(self.venueId, None, 0, self.TextInput.GetValue())
+            try:
+                self.Processor.Input(textEvent)
+                self.TextInput.Clear()
+            except:
+                wxLogError("Could not send message successfully")
+        else:
+            wxLogMessage( "Please, go to a venue before using the chat")
+           
+    def Stop(self):
+        wxLogDebug("Stop processor")
+        self.Processor.Stop()
+        
+    def OnCloseWindow(self):
+        wxLogDebug("Destroy text client")
+        self.Destroy()
+        
       
 class SaveFileDialog(wxDialog):
     def __init__(self, parent, id, title, message, doneMessage, fileSize):
@@ -1184,10 +1291,11 @@ class SaveFileDialog(wxDialog):
         try:
             self.fileSize = int(fileSize)
         except TypeError:
-            print "Received invalid fileSize: '%s'" % (fileSize)
+            wxDebug("Received invalid fileSize: '%s'" % (fileSize))
             fileSize = 1
             
-        print "created, size=", fileSize
+        wxDebug("created, size=%d " %fileSize)
+        
         self.button = wxButton(self, wxNewId(), "Cancel")
         self.text = wxStaticText(self, -1, message)
 
@@ -1224,7 +1332,7 @@ class SaveFileDialog(wxDialog):
         if self.transferDone:
             self.EndModal(wxID_OK)
         else:
-            print "Cancelling transfer!"
+            wxDebug("Cancelling transfer!")
             self.EndModal(wxID_CANCEL)
             self.cancelFlag = 1
 
@@ -1291,7 +1399,7 @@ class UploadFilesDialog(wxDialog):
         if self.transferDone:
             self.EndModal(wxID_OK)
         else:
-            print "Cancellign transfer!"
+            wxDebug("Cancelling transfer!")
             self.EndModal(wxID_CANCEL)
             self.cancelFlag = 1
 
@@ -1807,7 +1915,7 @@ class FileDropTarget(wxFileDropTarget):
         self.SetDataObject(self.do)
         
     def OnDropFiles(self, x, y, filenames):
-        print 'on drop files'
+        wxDebug('Drop files  %s' %str(filenames))
         for file in filenames:
             fileNameList = file.split('/')
             fileName = fileNameList[len(fileNameList)-1]
@@ -1815,7 +1923,7 @@ class FileDropTarget(wxFileDropTarget):
         return true
 
     def OnData(self, x, y, d):
-        print 'on data'
+        wxDebug('on data')
         self.GetData()
         files = self.do.GetFilenames()
         for file in files:
