@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.35 2004-04-27 02:18:31 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.36 2004-04-27 17:26:15 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.35 2004-04-27 02:18:31 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.36 2004-04-27 17:26:15 judson Exp $"
 
 import os
 import sys
@@ -335,10 +335,20 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         self.distCertFileName = os.path.join(uappdata, "globus", "usercert.pem")
         self.distKeyFileName = os.path.join(uappdata, "globus", "userkey.pem")
 
-        print "INIT globus config, proxy='%s'" % (self.proxyFileName)
-
         self._Initialize()
         
+    def _SetHostnameToLocalIP(self):
+        try:
+            self.hostname = SystemConfig.instance().GetLocalIPAddress()
+            log.debug("retrieved local IP address %s", self.hostname)
+        except:
+            self.hostname = "127.0.0.1"
+            
+            log.exception("Failed to determine local IP address, using %s",
+                          self.hostname)
+
+        self.Setenv("GLOBUS_HOSTNAME", self.hostname)
+
     def GetGlobusKey(self):
         gkey = None
 
