@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.22 2004-04-27 17:17:14 judson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.23 2004-09-03 15:00:03 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.22 2004-04-27 17:17:14 judson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.23 2004-09-03 15:00:03 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -37,8 +37,13 @@ def GetVenueDataStore(venueURL):
     """
 
     vproxy = Client.SecureHandle(venueURL).GetProxy()
-
-    ds = vproxy.GetDataStoreInformation()
+    log.info("Connecting to venue %s, to get datastore information.", venueURL)
+    
+    try:
+        ds = vproxy.GetDataStoreInformation()
+    except:
+        log.exception("Couldn't get data store information from the venue.")
+        return None
     
     # Catch failed return
     if not ds:
