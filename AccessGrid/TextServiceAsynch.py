@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.26 2004-04-09 18:34:40 judson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.27 2004-07-08 01:59:02 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.26 2004-04-09 18:34:40 judson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.27 2004-07-08 01:59:02 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -38,23 +38,6 @@ from AccessGrid.GUID import GUID
 log = Log.GetLogger(Log.TextService)
 Log.SetDefaultLevel(Log.TextService, Log.DEBUG)
 
-#
-# Per-event debugging might be useful sometimes, but not usually.
-# Leave the calls in the code via logTextEvent, but let them
-# be disabled.
-# 
-
-logTextEvent = log.verbose
-
-#detailedTextEventLogging = 0
-
-#if detailedTextEventLogging:
-    #logTextEvent = log.debug
-    #log.setLevel(logging.DEBUG)
-#else:
-    #logTextEvent = lambda *sh: 0
-    #log.setLevel(logging.WARN)
-
 class ConnectionHandler:
     """
     The ConnectionHandler is the object than handles a single event
@@ -73,6 +56,8 @@ class ConnectionHandler:
         self.buffer= Buffer(self.bufsize)
         self.waitingLen = 0
 
+	self.sender = "Not Connected"
+
         # New to try and make shutdown sane
         self.closing = 0
         
@@ -83,12 +68,12 @@ class ConnectionHandler:
         return self.id
 
     def registerAccept(self, attr):
-        logTextEvent("conn handler registering accept")
+        log.info("conn handler registering accept")
 
         socket, cb = self.lsocket.register_accept(attr, self.acceptCallback, None)
         self.acceptCallbackHandle = cb
 
-        logTextEvent("register_accept returns socket=%s cb=%s", socket, cb)
+        log.info("register_accept returns socket=%s cb=%s", socket, cb)
         self.socket = socket
 
     def acceptCallback(self, arg, handle, result):
@@ -98,7 +83,7 @@ class ConnectionHandler:
                 self.server.registerForListen()
                 return
 
-            logTextEvent("Accept Callback '%s' '%s' '%s'", arg, handle, result)
+            log.info("Accept Callback '%s' '%s' '%s'", arg, handle, result)
             self.lsocket.free_callback(self.acceptCallbackHandle)
             self.server.registerForListen()
 
@@ -146,16 +131,22 @@ class ConnectionHandler:
         Otherwise, return 1. 
         """
 
-        try:
-            mEvent.Write(self.wfile)
-            return 1
-        except:
-            log.exception("writeMarshalledEvent write error!")
-            return 0
+	# if we have actually connected to something
+	if self.wfile is not None:
+	    try:
+                mEvent.Write(self.wfile)
+                return 1
+            except:
+                log.exception("writeMarshalledEvent write error! (%s)", 
+			      self.subject)
+	else:
+	    log.info("not sending text event, conn obj is none.")
+
+        return 0
 
     def readCallback(self, arg, handle, result, buf, n):
 
-        logTextEvent("Got read handle=%s ret=%s  n=%s \n", handle, result, n)
+        log.info("Got read handle=%s ret=%s  n=%s \n", handle, result, n)
 
         if result[0] != 0:
             log.debug("TextServiceAsynch: readCallback returned failure: %d %s", result[0], result[1])
@@ -184,7 +175,7 @@ class ConnectionHandler:
             self.waitingLen = dlen[0]
 
         if len(self.dataBuffer) >= self.waitingLen:
-            logTextEvent("finished reading packet, wait=%s buflen=%s",
+            log.info("finished reading packet, wait=%s buflen=%s",
                       self.waitingLen, len(self.dataBuffer))
 
             thedata = self.dataBuffer[:self.waitingLen]
@@ -200,7 +191,7 @@ class ConnectionHandler:
                 self.wfile.close()
             self.socket.close()
         except:
-            log.info("TextServiceAsynch: IOBase exception on text service close (probably ok)")
+            log.exception("TextServiceAsynch: IOBase exception on text service close (probably ok)")
 
     def handleData(self, pdata, event):
         """
@@ -215,7 +206,7 @@ class ConnectionHandler:
                 self.handleEOF()
                 return
 
-        logTextEvent("TextConnection: Got Event %s", event)
+        log.info("TextConnection: Got Event %s", event)
 
         # Drop this event on the event server's queue for processing
         # out of the asynch event handler.
@@ -275,6 +266,7 @@ class TextChannel:
         if callback in cbList:
             log.info("TextServiceAsynch: Callback %s already in handler list for type %s",
                      callback, eventType)
+	    pass
         else:
             cbList.append(callback)
 
@@ -285,6 +277,7 @@ class TextChannel:
 
         if callback in self.channelHandlers:
             log.info("TextServiceAsynch: Callback %s already in channel handler list", callback)
+	    pass
         else:
             self.channelHandlers.append(callback)
 
@@ -346,7 +339,7 @@ class TextChannel:
             for cb in self.typedHandlers[event.eventType]:
                 log.debug("TextServiceAsynch: Specific event callback=%s", cb)
                 if cb != None:
-                    logTextEvent("invoke callback %s", str(cb))
+                    log.info("invoke callback %s", str(cb))
                     try:
                         cb(event)
                     except:
@@ -359,7 +352,7 @@ class TextChannel:
             except:
                 log.exception("TexftEvent callback failed")
 
-        logTextEvent("HandleEvent returns")
+        log.info("HandleEvent returns")
 
     def Distribute(self, data):
         """
@@ -442,7 +435,8 @@ class TextService:
         # on the Globus side.
         #
         self.queue = Queue.Queue()
-        self.queueThread = threading.Thread(target = self.QueueHandler)
+        self.queueThread = threading.Thread(target = self.QueueHandler,
+				name="TextService Queue Handler")
         self.queueThread.start()
 
         port = self.socket.create_listener(self.attr, server_address[1])
@@ -480,7 +474,7 @@ class TextService:
                 self.registerForListen()
                 return
 
-            logTextEvent("Listen Callback '%s' '%s' '%s'", arg, handle, result)
+            log.info("Listen Callback '%s' '%s' '%s'", arg, handle, result)
             self.socket.free_callback(self.listenCallbackHandle)
 
             #
@@ -556,11 +550,11 @@ class TextService:
         self.queue.put(("quit",))
 
     def EnqueueEvent(self, event, conn):
-        logTextEvent("Enqueue event %s for %s...", event.eventType, conn)
+        log.info("Enqueue event %s for %s...", event.eventType, conn)
         self.queue.put(("event", event, conn))
 
     def EnqueueEOF(self, conn):
-        logTextEvent("Enqueue EOF for %s...", conn)
+        log.info("Enqueue EOF for %s...", conn)
         self.queue.put(("eof", conn))
 
     def QueueHandler(self):
@@ -571,9 +565,9 @@ class TextService:
         try:
 
             while 1:
-                logTextEvent("Queue handler waiting for data")
+                log.info("Queue handler waiting for data")
                 cmd = self.queue.get()
-                logTextEvent("Queue handler received %s", cmd)
+                log.info("Queue handler received %s", cmd)
                 if cmd[0] == "quit":
                     log.debug("TextServiceAsynch: Queue handler exiting")
                     return
@@ -617,7 +611,7 @@ class TextService:
 
         connChannel = self.findConnectionChannel(connId)
 
-        logTextEvent("Handle event type %s", event.eventType)
+        log.info("Handle event type %s", event.eventType)
 
         if connChannel is None:
             self.HandleEventForDisconnectedChannel(event, connObj)
@@ -671,7 +665,7 @@ class TextService:
 
         channel = self.GetChannel(event.venue)
         if channel is None:
-            log.info("TextServiceAsynch: received event type %s for nonexistent channel %s",                     event.eventType, event.venue)
+            log.debug("TextServiceAsynch: received event type %s for nonexistent channel %s", event.eventType, event.venue)
             self.CloseConnection(connObj)
             return
 
@@ -735,7 +729,7 @@ class TextService:
         Distribute sends the data to all connections.
         """
 
-        logTextEvent("TextServiceAsynch: Sending Event %s", data)
+        log.info("TextServiceAsynch: Sending Event %s", data)
   
         channel = self.GetChannel(channelId)
   
@@ -745,7 +739,7 @@ class TextService:
 
         channel.Distribute(data)
 
-        logTextEvent("TextServiceAsynch: Sent Event")
+        log.info("TextServiceAsynch: Sent Event")
         
     def AddChannel(self, channelId, authCallback = None):
         """
@@ -754,7 +748,7 @@ class TextService:
         log.debug("TextServiceAsynch: AddChannel %s", channelId)
 
         if self.GetChannel(channelId) is not None:
-            log.info("TextServiceAsynch: Channel %s already exists", channelId)
+            log.warn("TextServiceAsynch: Channel %s already exists", channelId)
             return
 
         channel = TextChannel(self, channelId, authCallback)
