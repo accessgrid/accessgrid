@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.24 2003-09-17 17:34:29 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.25 2003-09-17 18:39:19 judson Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
@@ -124,7 +124,7 @@ Source: packaging\windows\agicons.exe; DestDir: {app}\install
 
 ; begin VC system files
 ; (Note: Scroll to the right to see the full lines!)
-Source: packaging\windows\msvcr70.dll; DestDir: {win}\system32; Flags: restartreplace uninsneveruninstall
+Source: packaging\windows\msvcr70.dll; DestDir: {win}\system32; Flags: restartreplace uninsneveruninstall onlyifdoesntexist
 ; end VC system files
 
 
