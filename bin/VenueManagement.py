@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.68 2003-05-30 16:54:40 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.69 2003-05-30 21:20:02 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -48,7 +48,7 @@ class VenueManagementClient(wxApp):
     ID_HELP_ABOUT = wxNewId()
     ID_HELP_MANUAL =  wxNewId()
 
-    manual_url = "http://www-unix.mcs.anl.gov/~lefvert/PROJECTS/ACCESS_GRID/MANUALS/VENUE_MANAGEMENT/VenueManagementManualFrame2-2.htm" 
+    manual_url = "http://www-unix.mcs.anl.gov/~lefvert/PROJECTS/ACCESS_GRID/MANUALS/VENUE_MANAGEMENT_MANUAL/VenueManagementManualHTML.htm" 
     server = None
     serverUrl = None
     currentVenueClient = None
