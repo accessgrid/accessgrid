@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.170 2004-09-10 16:07:02 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.171 2004-09-10 16:11:32 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.170 2004-09-10 16:07:02 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.171 2004-09-10 16:11:32 judson Exp $"
 
 # Standard stuff
 import sys
@@ -278,9 +278,12 @@ class VenueServer(AuthorizationMixIn):
         else:
             log.debug("Creating default venue")
             uri = self.AddVenue(VenueServer.defaultVenueDesc)
-            self.defaultVenue = self.hostingEnvironment.FindObjectForURL(uri)
+            oid = self.hostingEnvironment.FindObjectForURL(uri).GetId()
+            self.defaultVenue = oid
 
+        # this wants an oid not a url
         self.SetDefaultVenue(self.defaultVenue)
+
         # End of Loading of Venues from persistence
         
         # The houseKeeper is a task that is doing garbage collection and
