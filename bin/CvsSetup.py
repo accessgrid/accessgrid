@@ -231,7 +231,11 @@ BackupFile(config_file, bak_file)
 nsfile = open(config_file, 'w', )
 nsfile.write("[Node Configuration]\n")
 nsfile.write("servicesDirectory = services\n")
-nsfile.write("configDirectory = nodeConfig\n\n")
+nsfile.write("configDirectory = nodeConfig\n")
+if sys.platform == WIN:
+    nsfile.write("defaultNodeConfiguration = defaultWindows\n\n")
+elif sys.platform == LINUX:
+    nsfile.write("defaultNodeConfiguration = defaultLinux\n\n")
 nsfile.close()
 
 
