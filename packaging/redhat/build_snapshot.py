@@ -20,21 +20,57 @@ import os
 import os.path
 import time
 import re
+import getopt
 
+def usage():
+    print "%s:" % sys.argv[0]
+    print "    -h|--help : print usage"
+    print "    -n|--buildname <buildversionname> : specify build version name (such as \"2.0beta3\""
+    print "    -r|--releasename <releasename> : specify release name (such as \"12\")"
+    print "    -v|--verbose : print extra inforation"
+
+# temp directory
 build_base = "/tmp/snap"
 
-build_tag = time.strftime("%Y-%m%d-%H%M")
+# Default BuildName
+build_tag = time.strftime("%Y-%m%d-%H%M%S")
+
+# The version and release that goes into the RPM.
+build_version = "2.0beta"
+build_release = time.strftime("%Y%m%d%H%M%S")
+
+
+# Verbosity flag
+verbose = 0
+
+try:
+    opts, args = getopt.getopt(sys.argv[1:], "n:r:t:hv",
+                               ["buildname=", "releasename=",
+                                "tempdir=", "help", "verbose"])
+except:
+    usage()
+    sys.exit(2)
+
+for o, a in opts:
+    if o in ("-n", "--buildname"):
+        build_version = a
+    if o in ("-r", "--releasename"):
+        build_release = a
+    if o in ("-t", "--tempdir"):
+        build_base = a
+    elif o in ("-v", "--verbose"):
+        verbose = 1
+    elif o in ("-h", "--help"):
+        usage()
+        sys.exit(0)
 
 build_dir = os.path.join(build_base, build_tag)
 
-print "builddir ", build_dir
-
-#
-# Set the version and release that goes into the RPM.
-#
-
-build_version = "2.0beta"
-build_release = time.strftime("%Y%m%d%H%M")
+if verbose:
+    print "\nbuild version:",build_version
+    print "release name:",build_release
+    print "temp dir:",build_base
+    print "full temp path:",build_dir
 
 os.makedirs(build_dir)
 os.chdir(build_dir)
@@ -84,3 +120,4 @@ fh_new.close()
 os.chdir("/usr/src/redhat/SPECS")
 
 os.system("rpm -ba AccessGrid.spec")
+
