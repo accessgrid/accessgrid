@@ -4,8 +4,8 @@
 # 
 # Author:      Susanne Lefvert 
 # 
-# Created:     $Date: 2005-03-03 18:57:22 $ 
-# RCS-ID:      $Id: VenueRecorder.py,v 1.5 2005-03-03 18:57:22 lefvert Exp $ 
+# Created:     $Date: 2005-03-09 18:03:49 $ 
+# RCS-ID:      $Id: VenueRecorder.py,v 1.6 2005-03-09 18:03:49 lefvert Exp $ 
 # Copyright:   (c) 2002 
 # Licence:     See COPYING.TXT 
 #----------------------------------------------------------------------------- 
@@ -447,7 +447,7 @@ class VenueRecorderModel(Model):
             args = [ 
                 "-T", 
                 "-f", aFile, 
-                l.host+"/"+str(port), 
+                l.host+"/"+str(port)+"/127", 
             ]
             self.__log.debug("Starting process: %s %s"%(rtpplay, str(args))) 
             self.__processManager.StartProcess(rtpplay,args) 
@@ -465,7 +465,7 @@ class VenueRecorderModel(Model):
             args = [ 
                 "-T", 
                 "-f", vFile, 
-                l.host+"/"+str(port), 
+                l.host+"/"+str(port)+"/127", 
             ]
             self.__log.debug("Starting process: %s %s"%(rtpplay, str(args))) 
             self.__processManager.StartProcess(rtpplay,args) 
