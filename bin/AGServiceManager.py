@@ -1,15 +1,17 @@
-#!/usr/bin/python2
+#!/usr/bin/python2 
 #-----------------------------------------------------------------------------
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.52 2004-10-11 15:36:48 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.53 2004-11-29 18:46:06 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 
-# The standard imports
+
 import sys
+
+from AccessGrid import ServiceDiscovery
 
 if sys.platform == "darwin":
     # OSX: pyGlobus/globus need to be loaded before modules such as socket.
@@ -26,6 +28,10 @@ from AccessGrid.Platform import IsLinux
 from AccessGrid.Platform.Config import AGTkConfig, SystemConfig
 from AccessGrid.AGServiceManager import AGServiceManager, AGServiceManagerI
 from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
+
+
+
+
 
 # default arguments
 log = None
@@ -52,8 +58,7 @@ def SignalHandler(signum, frame):
     running = 0
     
 def main():
-    """
-    """
+
     global gServiceManager, gNodeService, log, running
 
     # Create the app
@@ -64,8 +69,7 @@ def main():
                         default=11000, metavar="PORT",
                         help="Set the port the service manager should run on.")
     app.AddCmdLineOption(portOption)
-
-    nsOption = Option("-n", "--nodeService", action="store_true", dest="ns",
+    nsOption = Option("-n", "--nodeService", action="store_true", dest="nodeService",
                         help="Run a node service interface too.")
     app.AddCmdLineOption(nsOption)
     
@@ -77,7 +81,7 @@ def main():
         print " Initialization Error: ", e
         sys.exit(-1)
 
-   
+
     log = app.GetLog()
     Log.SetDefaultLevel(Log.ServiceManager, Log.DEBUG)
 
@@ -91,7 +95,6 @@ def main():
         log.error(msg)
         print msg
         sys.exit(-1)
-
 
     port = app.GetOption("port")
         
@@ -111,7 +114,7 @@ def main():
     server.RegisterObject(smi,path="/ServiceManager")
     url = server.FindURLForObject(gServiceManager)
 
-    if app.GetOption("ns") is not None:
+    if app.GetOption("nodeService") is not None:
         # Create a Node Service
         gNodeService = AGNodeService()
         # Create the Node Service Service
@@ -130,15 +133,27 @@ def main():
     # Start the service
     server.RunInThread()
 
+
     # Tell the world where to find the service manager
     log.info("Starting Service Manager URL: %s", url)
     print "Starting Service Manager URL:", url
     
-    if app.GetOption("ns"):
-        defaultConfig = gNodeService.GetDefaultConfiguration()
-        gNodeService.MigrateNodeConfig(defaultConfig)
-        gNodeService.LoadDefaultConfig()
+    # Optionally load node configuration
+    if app.GetOption("nodeService") and app.GetOption("configfilename"):
+        nodeConfig = app.GetOption("configfilename")
+        gNodeService.MigrateNodeConfig(nodeConfig)
+        try:
+            gNodeService.LoadConfiguration(nodeConfig)
+        except Exception, e:
+            print "Failed to load default node config", e
 
+    # Advertise the service
+    sp = ServiceDiscovery.Publisher(hostname,AGServiceManager.ServiceType,
+                                    url,port=port)
+    if app.GetOption('nodeService'):
+        ServiceDiscovery.Publisher(hostname,AGNodeService.ServiceType,
+                                   nsurl,port=port)
+    
     # Keep the main thread busy so we can catch signals
     running = 1
     while running:
@@ -150,6 +165,8 @@ def main():
     # Exit cleanly
     server.Stop()
     sys.exit(0)
-    
+
+
+
 if __name__ == "__main__":
     main()
