@@ -39,7 +39,7 @@ TempDir = win32api.GetTempPath()
 
 # Destination Directory
 #  This is where the installer is left at the end
-DestDir = r"\xfer"
+DestDir = SourceDir
 
 # Build Name
 #  This is the default name we use for the installer
@@ -48,7 +48,7 @@ BuildName = BuildTime
 
 # Names for the software
 long_version_name = "Access Grid Toolkit 2.0 Snapshot %s" % BuildTime
-short_version_name = "agtk-%s" % BuildTime
+short_version_name = "%s" % BuildTime
 
 def usage():
     print """
@@ -345,6 +345,4 @@ os.system(inno_compiler_command)
 os.remove(iss_new)
 
 shutil.rmtree(build_dir)
-shutil.rmtree(os.path.join(SourceDir, r"AccessGrid\Release"))
-shutil.rmtree(os.path.join(SourceDir, r"AccessGrid\build"))
 
