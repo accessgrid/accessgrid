@@ -291,6 +291,8 @@ class CertificateManager(object):
         userKey = certLocations['user_key']
         caDir = certLocations['cert_dir']
 
+        # userKey = userCert = None
+
         #
         # First the user cert.
         #
@@ -320,6 +322,7 @@ class CertificateManager(object):
                     
                     impCert = self.ImportIdentityCertificatePEM(repo, userCert, userKey,
                                                                 passphraseCB)
+                    break
 
                 except CertificateRepository.RepoInvalidCertificate:
                     log.exception("invalid cert on import")
@@ -393,6 +396,19 @@ class CertificateManager(object):
 
         return impCert
         
+    def VerifyCertificatePath(self, cert):
+        """
+        Verify that we have CA certificates for the issuing chain of this cert.
+        """
+
+        repo = self.GetCertificateRepository()
+        c = cert
+        while 1:
+            issuers = repo.FindCertificatesWithIssuer(str(c.GetIssuer()))
+            log.debug("Issuers of %s are %s", c.GetSubject(), issuers)
+            break
+
+
     def GetUserInterface(self):
         return self.userInterface
 
@@ -730,17 +746,17 @@ class CertificateManager(object):
         identityCerts = self.certRepo.FindCertificatesWithMetadata(mdkey, mdval)
         return identityCerts
 
+    def IsDefaultIdentityCert(self, c):
+        idkey = "AG.CertificateManager.certType"
+        idval = "identity"
+        defkey = "AG.CertificateManager.isDefaultIdentity"
+        defval = "1"
+
+        return c.GetMetadata(idkey) == idval and c.GetMetadata(defkey) == defval
+    
     def GetDefaultIdentityCerts(self):
-
-        def isIdentityCert(c):
-            idkey = "AG.CertificateManager.certType"
-            idval = "identity"
-            defkey = "AG.CertificateManager.isDefaultIdentity"
-            defval = "1"
-
-            return c.GetMetadata(idkey) == idval and c.GetMetadata(defkey) == defval
         
-        return list(self.certRepo.FindCertificates(isIdentityCert))
+        return list(self.certRepo.FindCertificates(lambda c, self=self: self.IsDefaultIdentityCert(c)))
 
     def GetCACerts(self):
         mdkey = "AG.CertificateManager.certType"

@@ -27,6 +27,7 @@ import md5
 import struct
 import bsddb
 import operator
+from AccessGrid import Utilities
 
 log = logging.getLogger("AG.CertificateRepository")
 
@@ -177,7 +178,7 @@ class CertificateRepository:
         #
 
         if os.path.isdir(path):
-            raise RepoInvalidCertificate, "Certificate already in repository"
+            raise RepoInvalidCertificate, "Certificate already in repository at %s" % (path)
 
         #
         # Load the private key. This will require getting the
@@ -333,14 +334,14 @@ class CertificateRepository:
         if passwdCB is None:
             pktext = crypto.dump_privatekey(crypto.FILETYPE_PEM,
                                             pkey)
-            self.SetPrivatekeyMetadata(pkey.get_modulus(), "System.encrypted", "0")
+            self.SetPrivatekeyMetadata(hash, "System.encrypted", "0")
 
         else:
             pktext = crypto.dump_privatekey(crypto.FILETYPE_PEM,
                                             pkey,
                                             "DES3",
                                             passwdCB)
-            self.SetPrivatekeyMetadata(pkey.get_modulus(), "System.encrypted", "1")
+            self.SetPrivatekeyMetadata(hash, "System.encrypted", "1")
             
         fh = open(path, 'w')
         fh.write(pktext)
@@ -361,7 +362,68 @@ class CertificateRepository:
                             cert.GetIssuerSerialHash())
         return path
 
+    def RemoveCertificate(self, cert):
+        """
+        Remove the specificed certificate from the repository.
+        """
 
+        #
+        # Determine the certificate path.
+        #
+
+        if isinstance(cert, CertificateDescriptor):
+            cert = cert.cert
+
+        certDir = self._GetCertDirPath(cert)
+        if not os.path.isdir(certDir):
+            log.debug("RemoveCertificate: Cannot find path %s", certDir)
+            return
+
+        try:
+            log.debug("Remove %s", certDir)
+            Utilities.removeall(certDir)
+            os.rmdir(certDir)
+        except:
+            log.exception("Error removing cert directories at %s", certDir)
+
+        #
+        # Remove stuff from the metadata database.
+        #
+
+        metaPrefix = "|".join(["certificate",
+                               cert.GetSubjectHash(),
+                               cert.GetIssuerSerialHash()])
+        pkeyMetaPrefix = "|".join(["privatekey",
+                                   cert.GetModulusHash()])
+        for key in self.db.keys():
+            if key.startswith(metaPrefix):
+                del self.db[key]
+                print "Delete ", key
+            if key.startswith(pkeyMetaPrefix):
+                del self.db[key]
+                print "Delete ", key
+        self.db.sync()
+
+        #
+        # Remove any private keys.
+        #
+
+        pkeyfile = os.path.join(self.dir,
+                                "privatekeys",
+                                "%s.pem" % (cert.GetModulusHash()))
+
+        if not os.path.isfile(pkeyfile):
+            log.debug("No private key dir found at %s", pkeyfile)
+        else:
+            try:
+                #
+                # Need to chmod it writable before we can remove.
+                #
+                os.chmod(pkeyfile, 0600)
+                os.remove(pkeyfile)
+            except:
+                log.exception("Error removing private key directory at %s", pkeyfile)
+        
     #
     # Certificate Request support
     #
@@ -548,7 +610,7 @@ class CertificateDescriptor:
         return self.cert.GetModulusHash()
 
     def HasEncryptedPrivateKey(self):
-        mod = self.GetModulus()
+        mod = self.GetModulusHash()
         isEncrypted = self.repo.GetPrivatekeyMetadata(mod, "System.encrypted")
         if isEncrypted == "1":
             return 1
@@ -608,7 +670,6 @@ class Certificate:
 
         path - pathname of the stored certificate
         keyPath - pathname of the private key for the certificate
-        poicyPath - pathame of the policy definition file for this CA cert
         """
 
         self.path = path
@@ -710,7 +771,8 @@ class Certificate:
         fh.close()
 
     def _GetMetadataKey(self, key):
-        hashkey = "|".join([self.GetSubjectHash(),
+        hashkey = "|".join(["certificate",
+                            self.GetSubjectHash(),
                             self.GetIssuerSerialHash(),
                             key])
         return hashkey

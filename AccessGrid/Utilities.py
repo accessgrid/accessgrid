@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.36 2003-08-12 18:40:48 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.37 2003-08-14 21:52:05 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -390,6 +390,33 @@ class ServerLock:
             log.debug("Releasing server lock %s  %s:%s", self.name, file, line)
         self.lock.release()
 
+#
+# File tree removal stuff, from ASPN recipe.
+#
+
+def _rmgeneric(path, func):
+    try:
+        log.debug("Remove %s with %s", path, func)
+        func(path)
+    except OSError, (errno, strerror):
+        log.error("rmgeneric: error removing %s", path)
+           
+def removeall(path):
+
+    if not os.path.isdir(path):
+        return
+   
+    files=os.listdir(path)
+
+    for x in files:
+        fullpath=os.path.join(path, x)
+        if os.path.isfile(fullpath):
+            f=os.remove
+            _rmgeneric(fullpath, f)
+        elif os.path.isdir(fullpath):
+            removeall(fullpath)
+            f=os.rmdir
+            _rmgeneric(fullpath, f)
 
 if __name__ == "__main__":
     SubmitBug("This is just a test for the Bug Reporting Tool")

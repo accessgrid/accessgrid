@@ -10,6 +10,10 @@ exit on Linux if the DISPLAY environment variable is not set.
 import time
 import string
 import logging
+import os
+import os.path
+import re
+import shutil
 
 log = logging.getLogger("AG.CertificateManagerWXGUI")
 
@@ -31,6 +35,7 @@ CERTSELECTED = wxNewEventType()
 CERTIMPORT = wxNewEventType()
 CERTEXPORT = wxNewEventType()
 CERTDELETE = wxNewEventType()
+CERTSETDEFAULT = wxNewEventType()
 
 def EVT_CERT_SELECTED(window, fun):
     window.Connect(-1, -1, CERTSELECTED, fun)
@@ -43,6 +48,9 @@ def EVT_CERT_EXPORT(window, fun):
 
 def EVT_CERT_DELETE(window, fun):
     window.Connect(-1, -1, CERTDELETE, fun)
+
+def EVT_CERT_SET_DEFAULT(window, fun):
+    window.Connect(-1, -1, CERTSETDEFAULT, fun)
 
 class CertSelectedEvent(wxPyCommandEvent):
     eventType = CERTSELECTED
@@ -62,16 +70,24 @@ class CertImportEvent(wxPyCommandEvent):
         
 class CertExportEvent(wxPyCommandEvent):
     eventType = CERTEXPORT
-    def __init__(self, id):
-
+    def __init__(self, id, cert):
+        self.cert = cert
         wxPyCommandEvent.__init__(self, self.eventType, id)
     def Clone( self ):
         self.__class__( self.GetId() )
         
 class CertDeleteEvent(wxPyCommandEvent):
     eventType = CERTDELETE
-    def __init__(self, id):
-
+    def __init__(self, id, cert):
+        self.cert = cert
+        wxPyCommandEvent.__init__(self, self.eventType, id)
+    def Clone( self ):
+        self.__class__( self.GetId() )
+        
+class CertSetDefaultEvent(wxPyCommandEvent):
+    eventType = CERTSETDEFAULT
+    def __init__(self, id, cert):
+        self.cert = cert
         wxPyCommandEvent.__init__(self, self.eventType, id)
     def Clone( self ):
         self.__class__( self.GetId() )
@@ -148,13 +164,13 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
     def OpenTrustedCertDialog(self, event, win):
         dlg = TrustedCertDialog(win, -1, "View trusted certificates",
-                                self.certificateManager.certRepo)
+                                self.certificateManager)
         dlg.ShowModal()
         dlg.Destroy()
 
     def OpenIdentityCertDialog(self, event, win):
         dlg = IdentityCertDialog(win, -1, "View user identity certificates",
-                                self.certificateManager.certRepo)
+                                self.certificateManager)
         dlg.ShowModal()
         dlg.Destroy()
 
@@ -257,7 +273,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                                   style = wxOK)
             dlg.ShowModal()
             dlg.Destroy()
-            return
+            return 0
 
         #
         # See if we really need to have a proxy.
@@ -268,7 +284,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
             # We're using an unencrypted private key; proxies unnecessary.
             #
 
-            return
+            return 1
 
         #
         # Attempt to create a proxy.
@@ -466,24 +482,80 @@ class RepositoryBrowser(wxPanel):
     a more specific dialog for handling id certs.
     """
 
-    def __init__(self, parent, id, repo, certPred):
+    TYPE_IDENTITY = "identity"
+    TYPE_CA = "ca"
+    def __init__(self, parent, id, certMgr, browserType):
         """
         Create the RepositoryBrowser.
 
-        repo - a CertificateRepository instance to browse.
+        certMgr - the certificate manager instance for this browser.
 
-        certPred - 1-argument callable which returns true 
-        	when invoked with a certificate type we wish
-                to browse.
+        browerType - either TYPE_IDENTITY (for browsing identity certs)
+        	or TYPE_CA (for browsing trusted CA certs)
 
         """
 
         wxPanel.__init__(self, parent, id)
 
-        self.repo = repo
-        self.certPred = certPred
+        if browserType == self.TYPE_IDENTITY:
+            self.certPred = lambda c: c.GetMetadata("AG.CertificateManager.certType") == "identity"
+        elif browserType == self.TYPE_CA:
+            self.certPred = lambda c: c.GetMetadata("AG.CertificateManager.certType") == "trustedCA"
+        else:
+            raise RuntimeError, "Invalid type %s passed to RepostiroyBrowser constructor" % (browserType)
+            
+        self.browserType = browserType
+        self.certMgr = certMgr
+        self.repo = certMgr.GetCertificateRepository()
 
         self.__build()
+        self.LoadCerts()
+
+    def LoadCerts(self):
+        """
+        Refresh the certificate list from the repository.
+        """
+
+        selName = None
+        sel = self.certList.GetSelection()
+        if sel >= 0:
+            cert, isDefault = self.certList.GetClientData(sel)
+            selName = str(cert.GetSubject())
+            del cert
+            
+        self.certList.Clear()
+        self.ClearPerCertInfo()
+
+        idx = 0
+        certs = self.repo.FindCertificates(self.certPred)
+        for cert in certs:
+            print "cert is ", cert, cert.GetSubject()
+            name = str(cert.GetSubject().CN)
+            print "name is ", name
+
+            #
+            # Handle default identity case, if we're an identity browser.
+            #
+
+            isDefault = 0
+            if self._IsIdentityBrowser():
+                if self.certMgr.IsDefaultIdentityCert(cert):
+                    log.debug("Cert %s is default", name)
+                    name = "(DEFAULT) %s" % (name,)
+                    isDefault = 1
+                              
+            self.certList.Append(name, (cert, isDefault))
+
+            if selName == str(cert.GetSubject()):
+                self.certList.SetSelection(idx, 1)
+                self._UpdateCertInfo(cert, isDefault)
+
+            idx += 1
+        print "done"
+        
+
+    def _IsIdentityBrowser(self):
+        return self.browserType == self.TYPE_IDENTITY
 
     def __build(self):
         """
@@ -518,31 +590,40 @@ class RepositoryBrowser(wxPanel):
         self.sizer.Add(hboxTop, 1, wxEXPAND)
         self.certList = wxListBox(self, -1, style = wxLB_SINGLE)
         
-        certs = self.repo.FindCertificates(self.certPred)
-        for cert in certs:
-            print "cert is ", cert, cert.GetSubject()
-            name = str(cert.GetSubject().CN)
-            print "name is ", name
-            self.certList.Append(name, cert)
-        print "done"
         hboxTop.Add(self.certList, 1, wxEXPAND)
         EVT_LISTBOX(self, self.certList.GetId(), self.OnSelectCert)
 
         hboxTop.Add(vboxTop, 0, wxEXPAND)
 
+        #
+        # If we're browsing identity certs, we have a set as default option.
+        #
+        
+
+        if self._IsIdentityBrowser():
+            b = wxButton(self, -1, "Set as default identity")
+            EVT_BUTTON(self, b.GetId(), self.OnSetDefaultIdentity)
+            vboxTop.Add(b, 0, wxEXPAND)
+            b.Enable(False)
+            self.buttonSetDefault = b
+
         b = wxButton(self, -1, "Import...")
         EVT_BUTTON(self, b.GetId(), self.OnImport)
         vboxTop.Add(b, 0, wxEXPAND)
+        self.buttonImport = b
         # b.Enable(False)
 
-        b = wxButton(self, -1, "Export...")
-        EVT_BUTTON(self, b.GetId(), self.OnExport)
-        vboxTop.Add(b, 0, wxEXPAND)
-        # b.Enable(False)
+        
+        # b = wxButton(self, -1, "Export...")
+        # EVT_BUTTON(self, b.GetId(), self.OnExport)
+        # vboxTop.Add(b, 0, wxEXPAND)
+        # # b.Enable(False)
+        # self.buttonExport = b
 
         b = wxButton(self, -1, "Delete")
         EVT_BUTTON(self, b.GetId(), self.OnDelete)
         vboxTop.Add(b, 0, wxEXPAND)
+        self.buttonDelete = b
         # b.Enable(False)
 
         #
@@ -579,14 +660,44 @@ class RepositoryBrowser(wxPanel):
         self.SetAutoLayout(1)
         self.Fit()
 
-    def OnSelectCert(self, event):
-        sel = self.certList.GetSelection()
-        cert = self.certList.GetClientData(sel)
-        print "Selected cert ", sel, cert
+    def OnSetDefaultIdentity(self, event):
+        log.debug("Set default identity")
 
+        #
+        # Find selected cert and pass it in the event.
+        #
+
+        sel = self.certList.GetSelection()
+        cert, isDefault = self.certList.GetClientData(sel)
+
+        event = CertSetDefaultEvent(self.GetId(), cert)
+        self.GetEventHandler().AddPendingEvent(event)
+        
+
+    def ClearPerCertInfo(self):
         self.nameText.Clear()
         self.issuerText.Clear()
         self.certText.Clear()
+
+    def OnSelectCert(self, event):
+        sel = self.certList.GetSelection()
+        cert, isDefault = self.certList.GetClientData(sel)
+        print "Selected cert ", sel, cert
+
+        self._UpdateCertInfo(cert, isDefault)
+
+    def _UpdateCertInfo(self, cert, isDefault):
+        """
+        Update the gui fields for the selected cert.
+        """
+        
+        if self._IsIdentityBrowser():
+            if isDefault:
+                self.buttonSetDefault.Enable(0)
+            else:
+                self.buttonSetDefault.Enable(1)
+
+        self.ClearPerCertInfo()
 
         self.nameText.AppendText(self.__formatNameForGUI(cert.GetSubject()))
         self.issuerText.AppendText(self.__formatNameForGUI(cert.GetIssuer()))
@@ -616,24 +727,35 @@ class RepositoryBrowser(wxPanel):
         self.GetEventHandler().AddPendingEvent(event)
 
     def OnExport(self, event):
-        event = CertExportEvent(self.GetId())
+        sel = self.certList.GetSelection()
+        if sel >= 0:
+            cert, isDefault = self.certList.GetClientData(sel)
+        else:
+            cert = None
+            
+        event = CertExportEvent(self.GetId(), cert)
         self.GetEventHandler().AddPendingEvent(event)
 
 
     def OnDelete(self, event):
-        event = CertDeleteEvent(self.GetId())
+        sel = self.certList.GetSelection()
+        if sel >= 0:
+            cert, isDefault = self.certList.GetClientData(sel)
+        else:
+            cert = None
+            
+        event = CertDeleteEvent(self.GetId(), cert)
         self.GetEventHandler().AddPendingEvent(event)
 
 
 class TrustedCertDialog(wxDialog):
-    def __init__(self, parent, id, title, repo):
+    def __init__(self, parent, id, title, certMgr):
         wxDialog.__init__(self, parent, id, title, size = wxSize(400, 400))
 
-        self.repo = repo
+        self.certMgr = certMgr
 
         sizer = wxBoxSizer(wxVERTICAL)
-        pred = lambda c: c.GetMetadata("AG.CertificateManager.certType") == "trustedCA"
-        cpanel = RepositoryBrowser(self, -1, self.repo, pred)
+        self.browser = cpanel = RepositoryBrowser(self, -1, self.certMgr, RepositoryBrowser.TYPE_CA)
         sizer.Add(cpanel, 1, wxEXPAND)
 
         b = wxButton(self, -1, "OK")
@@ -649,30 +771,163 @@ class TrustedCertDialog(wxDialog):
         EVT_CERT_DELETE(self, self.OnCertDelete)
 
 
-    def OnCertSelected(self, event):
-        print "Got cert sel ", event, event.cert
-
     def OnCertImport(self, event):
-        print "Got import indlg"
+        """
+        Import a new CA certificate.
 
+        Bring up a file browser for the certificate file.
+        Then bring one up for the signing policy.
+
+        Import to repo.
+        """
+
+        dlg = wxFileDialog(None, "Choose a trusted CA certificate file",
+                           defaultDir = "",
+                           wildcard = "Trusted cert files (*.o)|*.0|PEM Files (*.pem)|*.pem|All files|*",
+                           style = wxOPEN)
+        rc = dlg.ShowModal()
+
+        if rc != wxID_OK:
+            dlg.Destroy()
+            return
+
+        dir = dlg.GetDirectory()
+        file = dlg.GetFilename()
+
+        log.debug("Chose file=%s dir=%s", file, dir)
+
+        path = os.path.join(dir, file)
+
+        root, ext = os.path.splitext(file)
+        sp = os.path.join(dir, "%s.signing_policy" % (root))
+        if os.path.isfile(sp):
+            dlg.SetFilename(sp)
+        else:
+            dlg.SetFilename("")
+        dlg.SetWildcard("Signing policy files (*.signing_policy)|*.signing_policy|All files|*")
+
+        rc = dlg.ShowModal()
+        if rc == wxID_OK:
+            spPath = dlg.GetPath()
+            log.debug("Got signing policy %s", spPath)
+        else:
+            spPath = None
+
+        #
+        # Open file and scan for cetificate and key info.
+        #
+
+        certRE = re.compile("-----BEGIN CERTIFICATE-----")
+
+        try:
+            fh = open(path)
+
+            validCert = 0
+            
+            for l in fh:
+                if certRE.search(l):
+                    validCert = 1
+                    break
+            fh.close()
+            log.debug("scan complete, validCert=%s", validCert)
+
+        except IOError:
+            log.error("Could not open certificate file %s", path)
+            dlg.Destroy()
+            dlg = wxMessageDialog(None,
+                                  "Could not open certificate file %s." % (path),
+                                  "File error",
+                                  style = wxOK | wxICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+            
+        except:
+            log.exception("Unexpected error opening certificate file %s", path)
+            dlg.Destroy()
+            dlg = wxMessageDialog(None,
+                                  "Unexpected error opening certificate file %s." % (path),
+                                  "File error",
+                                  style = wxOK | wxICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+
+        #
+        # Test to see if we had a valid PEM-formatted certificate.
+        #
+
+        if not validCert:
+            log.error("BEGIN CERTIFICATE not found in %s", path)
+            dlg.Destroy()
+            dlg = wxMessageDialog(None,
+                                  "File %s does not appear to contain a PEM-encoded certificate." % (path),
+                                  "File error",
+                                  style = wxOK | wxICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+
+        dlg.Destroy()
+
+        try:
+
+            impCert = self.certMgr.ImportCACertificatePEM(self.certMgr.GetCertificateRepository(),
+                                                          path)
+            log.debug("Imported identity %s", str(impCert.GetSubject()))
+
+            if spPath is not None and os.path.isfile(spPath):
+                log.debug("Copying signing policy %s", spPath)
+                shutil.copyfile(spPath,
+                                impCert.GetFilePath("signing_policy"))
+                
+            self.certMgr.GetUserInterface().InitGlobusEnvironment()
+            self.browser.LoadCerts()
+
+        except:
+            log.exception("Error importing certificate from %s", path)
+            dlg = wxMessageDialog(None, "Error occurred during certificate import.",
+                                  "Error on import",
+                                  style = wxOK | wxICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+            
     def OnCertExport(self, event):
         print "Got export "
 
     def OnCertDelete(self, event):
-        print "Got delete "
+        cert = event.cert
+        print "Got delete ", cert
+        if cert is None:
+            return
+
+        print "Delete ", cert.GetSubject()
+
+        isDefault = self.certMgr.IsDefaultIdentityCert(cert)
+        
+        self.certMgr.GetCertificateRepository().RemoveCertificate(cert)
+        self.certMgr.GetUserInterface().InitGlobusEnvironment()
+
+        self.browser.LoadCerts()
+
+    def OnCertSelected(self, event):
+        print "Got cert sel ", event, event.cert
+
+    def OnCertExport(self, event):
+        print "Got export "
 
     def OnOK(self, event):
         self.EndModal(wxOK)
 
 class IdentityCertDialog(wxDialog):
-    def __init__(self, parent, id, title, repo):
+    def __init__(self, parent, id, title, certMgr):
         wxDialog.__init__(self, parent, id, title, size = wxSize(400, 400))
 
-        self.repo = repo
+        self.certMgr = certMgr
 
         sizer = wxBoxSizer(wxVERTICAL)
-        pred = lambda c: c.GetMetadata("AG.CertificateManager.certType") == "identity"
-        cpanel = RepositoryBrowser(self, -1, self.repo, pred)
+        self.browser = cpanel = RepositoryBrowser(self, -1, self.certMgr, RepositoryBrowser.TYPE_IDENTITY)
         sizer.Add(cpanel, 1, wxEXPAND)
 
         b = wxButton(self, -1, "OK")
@@ -683,7 +938,205 @@ class IdentityCertDialog(wxDialog):
         self.SetAutoLayout(1)
 
         EVT_CERT_SELECTED(self, self.OnCertSelected)
+        EVT_CERT_IMPORT(self, self.OnCertImport)
+        EVT_CERT_EXPORT(self, self.OnCertExport)
+        EVT_CERT_DELETE(self, self.OnCertDelete)
+        EVT_CERT_SET_DEFAULT(self, self.OnCertSetDefault)
 
+    def OnCertSetDefault(self, event):
+        cert = event.cert
+        print "Got set default ", cert.GetSubject()
+        self.certMgr.SetDefaultIdentity(cert)
+        self.certMgr.GetUserInterface().InitGlobusEnvironment()
+        self.browser.LoadCerts()
+
+    def OnCertSelected(self, event):
+        print "Got cert sel ", event, event.cert
+
+    def OnCertImport(self, event):
+        """
+        Import a new identity certificate.
+
+        Bring up a file browser for the certificate file.
+        Check to see if it has a key embedded in it. If not,
+        bring up a file browser for the key.
+        Check if key is encrypted, if so, prompt for passphrase.
+
+        Import to repo.
+        """
+
+        dlg = wxFileDialog(None, "Choose a certificate file",
+                           defaultDir = "",
+                           wildcard = "PEM Files (*.pem)|*.pem|All files|*",
+                           style = wxOPEN)
+        rc = dlg.ShowModal()
+
+        if rc != wxID_OK:
+            dlg.Destroy()
+            return
+
+        dir = dlg.GetDirectory()
+        file = dlg.GetFilename()
+
+        log.debug("Chose file=%s dir=%s", file, dir)
+
+        path = os.path.join(dir, file)
+
+        #
+        # Open file and scan for cetificate and key info.
+        #
+
+        certRE = re.compile("-----BEGIN CERTIFICATE-----")
+        keyRE = re.compile("-----BEGIN RSA PRIVATE KEY-----")
+
+        try:
+            fh = open(path)
+
+            validCert = validKey = 0
+            
+            for l in fh:
+                if not validCert and certRE.search(l):
+                    validCert = 1
+                    if validKey:
+                        break
+                if not validKey and keyRE.search(l):
+                    validKey = 1
+                    if validCert:
+                        break
+            fh.close()
+            log.debug("scan complete, validKey=%s validCert=%s", validKey, validCert)
+
+        except IOError:
+            log.error("Could not open certificate file %s", path)
+            dlg.Destroy()
+            dlg = wxMessageDialog(None,
+                                  "Could not open certificate file %s." % (path),
+                                  "File error",
+                                  style = wxOK | wxICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+            
+        except:
+            log.exception("Unexpected error opening certificate file %s", path)
+            dlg.Destroy()
+            dlg = wxMessageDialog(None,
+                                  "Unexpected error opening certificate file %s." % (path),
+                                  "File error",
+                                  style = wxOK | wxICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+
+        #
+        # Test to see if we had a valid PEM-formatted certificate.
+        #
+
+        if not validCert:
+            log.error("BEGIN CERTIFICATE not found in %s", path)
+            dlg.Destroy()
+            dlg = wxMessageDialog(None,
+                                  "File %s does not appear to contain a PEM-encoded certificate." % (path),
+                                  "File error",
+                                  style = wxOK | wxICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+
+        #
+        # We've got our cert. See if we need to ask for a private key.
+        #
+
+        if validKey:
+            #
+            # There was a key in the cert file.
+            #
+
+            kfile = file
+            kdir = dir
+        else:
+            #
+            # Try to guess a default.
+            #
+
+            kfile = ""
+            m = re.search(r"^(.*)cert\.pem$", file)
+            print "regexp search returns ", m
+            if m:
+                kfile = "%skey.pem" % (m.group(1))
+                print "Trying ", kfile
+                if not os.path.isfile(os.path.join(dir, kfile)):
+                    kfile = ""
+
+            dlg.SetFilename(kfile)
+            dlg.SetMessage("Select the file containing the private key for this certificate.")
+            rc = dlg.ShowModal()
+
+            if rc != wxID_OK:
+                return
+
+            kfile = dlg.GetFilename();
+            kdir = dlg.GetDirectory();
+
+        kpath = os.path.join(kdir, kfile)
+        log.debug("Key location: %s", kpath)
+
+        dlg.Destroy()
+
+        try:
+            cb = self.certMgr.GetUserInterface().GetPassphraseCallback("Private key passphrase",
+                                                                     "Enter the passphrase to your private key.")
+            impCert = self.certMgr.ImportIdentityCertificatePEM(self.certMgr.GetCertificateRepository(),
+                                                                 path, kpath, cb)
+            log.debug("Imported identity %s", str(impCert.GetSubject()))
+            self.browser.LoadCerts()
+
+        except:
+            log.exception("Error importing certificate from %s keyfile %s", path, kpath)
+            dlg = wxMessageDialog(None, "Error occurred during certificate import.",
+                                  "Error on import",
+                                  style = wxOK | wxICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+            
+                      
+        #
+        # Check to see if we have the CA cert for the issuer of this cert.
+        #
+
+        if not self.certMgr.VerifyCertificatePath(impCert):
+            log.debug("can't verify issuer")
+        
+
+    def OnCertExport(self, event):
+        print "Got export "
+
+    def OnCertDelete(self, event):
+        cert = event.cert
+        print "Got delete ", cert
+        if cert is None:
+            return
+
+        print "Delete ", cert.GetSubject()
+
+        isDefault = self.certMgr.IsDefaultIdentityCert(cert)
+        
+        self.certMgr.GetCertificateRepository().RemoveCertificate(cert)
+
+        #
+        # We've deleted our default identity; arbitrarily assign a new one.
+        # User can pick a different one if he wants.
+        #
+
+        if isDefault:
+            idCerts = self.certMgr.GetIdentityCerts()
+            if len(idCerts) > 0:
+                self.certMgr.SetDefaultIdentity(idCerts[0])
+                self.certMgr.GetUserInterface().InitGlobusEnvironment()
+
+        self.browser.LoadCerts()
+        
 
     def OnCertSelected(self, event):
         print "Got cert sel ", event
