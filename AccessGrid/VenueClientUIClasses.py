@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.269 2003-09-17 16:18:59 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.270 2003-09-17 16:20:57 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.269 2003-09-17 16:18:59 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.270 2003-09-17 16:20:57 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2130,7 +2130,11 @@ class ContentListPanel(wxPanel):
                 # then register the app
                 
                 # Then execute it
-                cmd = program + " %1"
+                if isWindows():
+                    cmd = program + " %1"
+                else:
+                    cmd = program + " %s"
+                    
                 self.StartCmd(cmd, item)
                 
     def BuildAppMenu(self, event, item):
