@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.68 2003-05-23 22:17:59 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.69 2003-05-27 19:42:37 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -214,21 +214,21 @@ class VenueClient( ServiceBase):
         #
 
         errorInNode = 0
-        haveValidNodeService = 0
+        #haveValidNodeService = 0
         try:
-            if self.nodeServiceUri != None:
-                try:
-                    Client.Handle( self.nodeServiceUri ).IsValid()
-                    haveValidNodeService = 1
-                except Client.InvalidHandleException:
-                    log.exception("Invalid Node Service URI (%s)"
-                                  % self.nodeServiceUri)
+            #if self.nodeServiceUri != None:
+            #    try:
+            #        Client.Handle( self.nodeServiceUri ).IsValid()
+            #        haveValidNodeService = 1
+            #    except Client.InvalidHandleException:
+            #        log.exception("Invalid Node Service URI (%s)"
+            #                      % self.nodeServiceUri)
                 
                 #
                 # Retrieve list of node capabilities
                 #
-            if haveValidNodeService:
-                self.profile.capabilities = Client.Handle( self.nodeServiceUri ).get_proxy().GetCapabilities()
+            #if haveValidNodeService:
+            self.profile.capabilities = Client.Handle( self.nodeServiceUri ).get_proxy().GetCapabilities()
                 
         except Exception, e:
             #
@@ -356,15 +356,15 @@ class VenueClient( ServiceBase):
         # Update the node service with stream descriptions
         #
         try:
-            if haveValidNodeService:
-                if not self.isIdentitySet:
-                    """
-                    Inform the node of the identity of the person driving it
-                    """
-                    Client.Handle(self.nodeServiceUri).GetProxy().SetIdentity(self.profile)
-                    self.isIdentitySet = 1
-                    
-                Client.Handle( self.nodeServiceUri ).GetProxy().SetStreams( streamDescList )
+            #if haveValidNodeService:
+            if not self.isIdentitySet:
+                """
+                Inform the node of the identity of the person driving it
+                """
+                Client.Handle(self.nodeServiceUri).GetProxy().SetIdentity(self.profile)
+                self.isIdentitySet = 1
+                
+            Client.Handle( self.nodeServiceUri ).GetProxy().SetStreams( streamDescList )
 
         except Exception, e:
             #
