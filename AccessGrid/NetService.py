@@ -23,13 +23,22 @@ class BridgeNetService(NetService):
     def Stop(self):
         self.venue.RemoveNetworkLocationsByPrivateId(self.privateId)
 
-def CreateNetService(netServiceType, venue, privateId):
+class DataStoreNetService(NetService):
+    TYPE = "DataStoreNetService"
+    def Stop(self):
+        self.venue.RemoveNetworkLocationsByPrivateId(self.privateId)
 
+        
+def CreateNetService(netServiceType, venue, privateId):
     netService = None
     
     # Create a net service of the requested type
     if netServiceType == BridgeNetService.TYPE:
         netService = BridgeNetService(venue, privateId)
+
+    if netServiceType == DataStoreNetService.TYPE:
+        netService = DataStoreNetService(venue, privateId)
+        
     else:
         raise UnknownNetServiceType("Unknown net service requested %s" % (netServiceType) )
  
