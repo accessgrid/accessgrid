@@ -12,6 +12,7 @@ import string
 
 from OpenSSL_AG import crypto
 from wxPython.wx import *
+from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
 
 from CertificateManager import CertificateManagerUserInterface, utc2tuple
 
@@ -133,7 +134,7 @@ class PassphraseDialog(wxDialog):
         EVT_TEXT_ENTER(self, lifeTimeId, self.KeyDown)
        
         self.SetSizer(sizer)
-        self.SetAutoLayout(True)
+        self.SetAutoLayout(AG_TRUE)
         self.Fit()
 
     def GetInfo(self):
