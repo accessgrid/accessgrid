@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.12 2003-03-27 21:33:08 judson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.13 2003-03-31 21:45:52 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -58,7 +58,7 @@ class DataStore:
     
     """
     
-    def __init__(self, venue, pathname, prefix):
+    def __init__(self, callbackClass, pathname, prefix):
         """
         Create the datastore.
 
@@ -67,7 +67,7 @@ class DataStore:
 
         """
 
-        self.venue = venue
+        self.callbackClass = callbackClass
         
         if not os.path.exists(pathname):
             raise Exception("Datastore path %s does not exist" % (pathname))
@@ -83,6 +83,48 @@ class DataStore:
 
         self.transfer_engine = engine
         engine.RegisterPrefix(self.prefix, self)
+
+    def AddFile(self, fileList, dn, id):
+        '''
+        Add file to a local datastore
+        '''
+        for filename in fileList:
+            # Transfer file from local path to local data store path
+            log.debug("Add file %s to local datastore" %filename)
+            input = open(filename, 'r')
+            fileString = input.read()
+            list = filename.split('/')
+            name = list[len(list)-1]
+            dir = os.path.join(self.pathname, self.prefix)
+            path = os.path.join(self.pathname, self.prefix, name)
+          
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+
+            output = open(path, 'w')
+            log.debug("Write file to %s" %path)
+            output.write(fileString)
+            input.close()
+            output.close()
+            
+            # Create DataDescription
+            size = os.path.getsize(path)
+            log.debug("Size of file %s" %size)
+
+            # This should be done in a loop in case
+            # the file is big
+            checksum = md5.new(fileString).hexdigest()
+            log.debug("Checksum %s" %checksum)
+        
+            desc = DataDescription(name)
+            desc.SetOwner(dn)
+            desc.SetType(id) # id shows that this data is personal
+            desc.SetChecksum(checksum)
+            desc.SetSize(int(size))
+            desc.SetStatus(DataDescription.STATUS_PRESENT)
+            desc.SetURI(self.transfer_engine.GetDownloadDescriptor(self.prefix, name))
+            log.debug("CompleteUpload: updating with %s %s", desc, desc.__dict__)
+            self.callbackClass.AddData(desc)
 
     def GetUploadDescriptor(self):
         """
@@ -101,7 +143,7 @@ class DataStore:
         """
 
         path = os.path.join(self.pathname, filename)
-
+     
         if not os.path.exists(path):
             return None
         
@@ -147,7 +189,7 @@ class DataStore:
         """
 
         filename = file_info['name']
-        desc = self.venue.GetData(filename)
+        desc = self.callbackClass.GetData(filename)
 
         if desc is None or desc == "":
             return 1
@@ -172,7 +214,7 @@ class DataStore:
         #
 
         filename = file_info['name']
-        desc = self.venue.GetData(filename)
+        desc = self.callbackClass.GetData(filename)
         
         if desc is None:
             log.debug("Venue data for %s not present", filename)
@@ -199,7 +241,7 @@ class DataStore:
         from the manifest).
         """
 
-        desc = self.venue.GetData(file_info['name'])
+        desc = self.callbackClass.GetData(file_info['name'])
         log.debug("CompleteUpload: got desc %s %s", desc, desc.__dict__)
         desc.SetChecksum(file_info['checksum'])
         desc.SetSize(int(file_info['size']))
@@ -207,7 +249,7 @@ class DataStore:
         desc.SetOwner(dn)
         desc.SetURI(self.GetDownloadDescriptor(file_info['name']))
         log.debug("CompleteUpload: updating with %s %s", desc, desc.__dict__)
-        self.venue.UpdateData(desc)
+        self.callbackClass.UpdateData(desc)
 
     def DeleteFile(self, filename):
         """
@@ -235,7 +277,7 @@ class DataStore:
         desc.SetStatus(DataDescription.STATUS_PENDING)
         desc.SetOwner(dn)
         
-        self.venue.AddData(desc)
+        self.callbackClass.AddData(desc)
 
         return desc
 
@@ -1565,7 +1607,7 @@ if __name__ == "__main__":
     import time
     import os
 
-    class TestVenue:
+    class TestCallbackClass:
         def __init__(self):
             self.data = {}
             
@@ -1586,7 +1628,7 @@ if __name__ == "__main__":
             self.data[desc.GetName()] = desc
             log.debug("AddData: %s", desc)
 
-    v = TestVenue()
+    v = TestCallbackClass()
     ds = DataStore(v, "/temp")
     s = GSIHTTPTransferServer(('', 9011))
 
