@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.239 2003-10-29 20:55:28 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.240 2003-10-30 18:05:46 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
@@ -67,17 +67,20 @@ class VenueClientUI(VenueClientEventSubscriber):
     It updates its UI when it enters or exits a venue or
     receives a coherence event.
     """
-    history = []
-    accessGridPath = GetUserConfigDir()
-    profileFile = os.path.join(accessGridPath, "profile" )
-  
-    isPersonalNode = 0
-    debugMode = 0
-    transferEngine = None
-
-    fallbackRecoveryUrl = None
+    
     
     def __init__(self, startupDialog):
+
+        self.history = []
+        self.accessGridPath = GetUserConfigDir()
+        self.profileFile = os.path.join(self.accessGridPath, "profile" )
+        
+        self.isPersonalNode = 0
+        self.debugMode = 0
+        self.transferEngine = None
+        
+        self.fallbackRecoveryUrl = None
+           
         self.__processArgs()
 
         #
@@ -405,7 +408,6 @@ class VenueClientUI(VenueClientEventSubscriber):
         is still connected to the venue. If the heartbeat is not
         received properly, the client will exit the venue.
         '''
-        
         if not isSuccess:
             wxCallAfter(self.HandleServerConnectionFailure)
 
@@ -435,27 +437,29 @@ class VenueClientUI(VenueClientEventSubscriber):
                 self.fallbackRecoveryTimer = None
 
     def HandleServerConnectionFailure(self):
-        log.debug("bin::VenueClient::HandleServerConnectionFailure: call exit venue")
-        # This functionality is going to need some work, we're not
-        # going to get it into 2.1.1...sigh IRJ
-#         if len(self.venueClient.venueState.backupServer) > 0:
-#             urlparts = list(urlparse.urlparse(self.venueClient.venueUri))
-#             urlparts[1] = self.venueClient.venueState.backupServer
-#             self.fallbackRecoveryUrl = urlparse.urlunparse(urlparts)
-
-#             self.fallbackRecoveryTimer = threading.Timer(5.0,
-#                                                          self._TryReconnect)
-#             self.fallbackRecoveryTimer.start()
-
-#         self.connected.wait(30.0)
-        
-        # If not ohwell, you're stuck
-        self.frame.CleanUp()
-        self.frame.venueAddressBar.SetTitle("You are not in a venue",
-                                            'Click "Go" to connect to the venue, which address is displayed in the address bar') 
-        self.venueClient.ExitVenue()
-        MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", "Lost Connection")
-        
+        if self.venueClient and self.venueClient.isInVenue:
+            log.debug("bin::VenueClient::HandleServerConnectionFailure: call exit venue")
+            # This functionality is going to need some work, we're not
+            # going to get it into 2.1.1...sigh IRJ
+            #         if len(self.venueClient.venueState.backupServer) > 0:
+            #             urlparts = list(urlparse.urlparse(self.venueClient.venueUri))
+            #             urlparts[1] = self.venueClient.venueState.backupServer
+            #             self.fallbackRecoveryUrl = urlparse.urlunparse(urlparts)
+            
+            #             self.fallbackRecoveryTimer = threading.Timer(5.0,
+            #                                                          self._TryReconnect)
+            #             self.fallbackRecoveryTimer.start()
+            
+            #         self.connected.wait(30.0)
+            
+            # If not ohwell, you're stuck
+            
+            self.frame.CleanUp()
+            self.frame.venueAddressBar.SetTitle("You are not in a venue",
+                                                'Click "Go" to connect to the venue, which address is displayed in the address bar') 
+            self.venueClient.ExitVenue()
+            MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", "Lost Connection")
+                 
     def RemoveUserEvent(self, event):
         """
         Note: Overridden from VenueClient
