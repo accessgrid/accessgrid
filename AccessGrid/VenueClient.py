@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.64 2003-05-22 20:33:58 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.65 2003-05-23 16:39:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -533,11 +533,11 @@ class VenueClient( ServiceBase):
 
     def UnFollow( self, leaderProfile ):
         """
-        Follow tells this venue client to follow the specified client
+        UnFollow tells this venue client to stop following the specified client
         """
 
-        log.debug('AccessGrid.VenueClient::Trying to unlead: %s' %leaderProfile.name)
-        Client.Handle( leaderProfile.venueClientURL ).get_proxy().UnLead( self.profile )
+        log.debug('AccessGrid.VenueClient::Trying to unfollow: %s' %leaderProfile.name)
+        Client.Handle( leaderProfile.venueClientURL ).get_proxy().UnFollow( self.profile )
 
     def RequestLead( self, followerProfile):
         """
