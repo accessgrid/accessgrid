@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.6 2003-04-29 19:01:14 turam Exp $
+# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.7 2003-05-19 22:44:19 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -57,13 +57,18 @@ class ProcessManagerUnix:
         elapsedWaits = 0
         maxWaits = 5
         waitTime = 1
-        while elapsedWaits < maxWaits:
-            (retpid,status) = os.waitpid(pid, os.WNOHANG )
-            #print "waitpid returns ", retpid, status
-            if retpid == pid and os.WIFEXITED(status):
-                break
-            time.sleep(waitTime)
-            elapsedWaits += 1
+        retpid = 0
+        try:
+            while elapsedWaits < maxWaits:
+                (retpid,status) = os.waitpid(pid, os.WNOHANG )
+                #print "waitpid returns ", retpid, status
+                if retpid == pid and os.WIFEXITED(status):
+                    break
+                time.sleep(waitTime)
+                elapsedWaits += 1
+        except OSError, e:
+                print "_terminate_process(",pid,"):", e
+
         if retpid == pid:
             if os.WIFEXITED(status):
                 rc = os.WEXITSTATUS(status)
@@ -86,19 +91,23 @@ class ProcessManagerUnix:
        maxWaits = 5
        waitTime = 1
        elapsedWaits = 0
-       while elapsedWaits < maxWaits:
-           (retpid,status) = os.waitpid(pid, os.WNOHANG )
-           if retpid == pid and os.WIFSIGNALED(status):
-               break
-           time.sleep(waitTime)
-           elapsedWaits += 1
+       retpid = 0
+       try:
+           while elapsedWaits < maxWaits:
+               (retpid,status) = os.waitpid(pid, os.WNOHANG )
+               if retpid == pid and os.WIFSIGNALED(status):
+                   break
+               time.sleep(waitTime)
+               elapsedWaits += 1
+       except OSError, e:
+           print "_kill_process, waitpid",pid,":", e
        if retpid == pid:
            if os.WIFEXITED(status):
                rc = os.WEXITSTATUS(status)
            elif os.WIFSIGNALED(status):
                sig = os.WTERMSIG(status)
        else:
-           print "couldn't kill process (no exception)"
+           print "_kill_process, process",pid ,"not killed or waitpid() failed."
 
 
 if __name__ == "__main__":
