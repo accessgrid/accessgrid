@@ -2,7 +2,7 @@
 Core Toolkit Design Changes for 2.1.3
 =====================================
  
-:version: $Revision: 1.1 $
+:version: $Revision: 1.2 $
 :author: Ivan R. Judson <judson@mcs.anl.gov>
 :status: Draft
 
@@ -45,87 +45,17 @@ separations that are proposed in this enhancement include:
     policy is that the default authorization method disallow incoming
     actions.
  
-3. Creating an AccessGrid.security package
- [ Moving this to Authorization/Security AGEP]
-
-  This creates a sub-package space to allow us to expand and adopt other 
-  possible security solutions as they become reasonable.
-
-  - putting authorization in AccessGrid.security 
-  - putting proxy management in an AccessGrid.security.pyGlobus
-    package
-
-4. Creating an AccessGrid.logFactory module
-[Separable Task, it's own AGEP?]
-
-  This module defines the toolkit logging mechanisms so that:
-
-  - We don't have to distribute the logging module under 2.2
-  - We can use the logging module under 2.3
-  - We have a place to incorporate other logging solutions (netLogger)
-    abstractly
-
-5. Implement the memento pattern for venues
-[Separable Task, but logically part of the core...]
-
-  - create a config.ini persistor (to be followed later with other persistors)
-    This should take mementos and persist them, read them back in
-  - create Venue.GetState(self) => Memento
-  - create CreateVenueFromMemento(memento) => Venue
-
-6. Move AppDatabase from Toolkit to VenueClient
+3. Move AppDatabase from Toolkit to VenueClient
    [Done]
   
   This is the appropriate place for it to go.
 
-7. Update to latest version of pyGlobus
-8. Update to GT2.4.3 on Linux, Mac OS X
-9. Update to GT2.4.3+ on Windows
+4. Update to latest version of pyGlobus
+5. Update to GT2.4.3 on Linux, Mac OS X
+6. Update to GT2.4.3+ on Windows
   
   Updating these pieces of software should make it easier for us to
   maintain, and it will make it easier to migrate in the future.
-
-10. Add linux mime types / mail cap handling
-   
-  This will make the linux version match the windows functionality.
-
-11. Add linux init user environment functionality
-
-  This will make the linux version match the windows functionality.
-
-12. Sort platform stuff into modules more cleanly
-[ Needs it's own AGEP]
-
-  There are currently three platform specific modules:
-  
-  - netutils (needs to get integrated into a solution for platform
-  - platform
-  - process manager
-    - need a start detached process method/function
-    - then need to use that or the process manager everywhere, no more
-      spawns or forks, etc
-  - personalnode
-
-
-  - certificate manager
-
-    - This is only in the cert_locations stuff, which should be abstracted?
-
-  - datastore client
-    - the function/method pageFile is platform specific, so should be moved.
-
-  - venueclient ui classes
-    - wx bug
-    - path handling
-    - Network Init (should be moved, or fixed with initialization stuff)
-
-  - role authorization
-    - tree list control hacks for platform bugs, sigh
-
-  - utilities
-    - auto bug reporter
-
-  ### Work to be done here, thinking and writing ###
 
 Summary of Modifications
 ========================
@@ -179,29 +109,12 @@ Module Organization
 
     - <pyGridware> (Future Addition)
 
-  - security
-                
-    - AccessControl.py
-    - Authorization.py
-
-  - logFactory.py [ to implement the logging Factory inside our toolkit ]
- 
 - SOAPpy [standard SOAPpy install]
 
   - wstools [standard wstools install
 
 - pyGlobus [standard pyGlobus install]
         
-   
-Deprecated Packages
--------------------
-
-- pyOpenSSL_AG module
-- logging module
-- pyDNS module
-- putty program
-- openssl libraries
-
 Specifications
 ==============
 
@@ -217,6 +130,9 @@ VenueServer
   should be removed and replaced with self.interfaces = list() and 
   AddInterface(self, interface).
 
+  The server also has a authorize(subject, actionName) that exposes the
+  mechanism for the SOAP layer to do authorization.
+
 Venue
 
   in the __init__ method, this object creates a SOAPVenueI object 
@@ -224,6 +140,9 @@ Venue
   (self.interface), later when we support multiple interfaces per object this
   should be removed and replaced with self.interfaces = list() and 
   AddInterface(self, interface).
+
+  The venue also has a authorize(subject, actionName) that exposes the
+  mechanism for the SOAP layer to do authorization.
 
 Security Issues
 ===============
@@ -243,14 +162,9 @@ Related AGEPs
 
 - The Shared Application AGEP.
 - The Usage Logging AGEP.
-- The Initialization AGEP.
+- The Toolkit Initialization AGEP.
 - The Venue Client Refactoring AGEP.
 - The Authorization Refactoring AGEP.
-
-Implementation
-==============
-
-To Be written
 
 References
 ==========
