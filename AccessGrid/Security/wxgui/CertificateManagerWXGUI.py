@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.16 2004-09-03 18:10:54 turam Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.17 2004-11-19 23:24:33 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.16 2004-09-03 18:10:54 turam Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.17 2004-11-19 23:24:33 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -191,16 +191,10 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         certMenu = wxMenu()
 
         i = wxNewId()
-        certMenu.Append(i, "Certificate manager...")
+        certMenu.Append(i, "Manage My Certificates...")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnShowNew(event, win))
-
-        i = wxNewId()
-        certMenu.Append(i, "Request a certificate")
-        EVT_MENU(win, i,
-                 lambda event, win=win, self=self: self.OnOpenCertRequestDialog(event, win))
-
-
+        
         return certMenu
 
     def GetMenuOld(self, win):
