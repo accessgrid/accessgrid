@@ -35,6 +35,7 @@ from AccessGrid.Descriptions import VenueDescription
 from AccessGrid.VenueServer import VenueServer
 from AccessGrid.Venue import Venue
 from AccessGrid.hosting.pyGlobus.Server import Server
+from AccessGrid import Toolkit
 
 class VenueServerTestSuite(unittest.TestSuite):
     """A TestSuite that creates a server for use by VenueServerTestCase."""
@@ -50,6 +51,10 @@ class VenueServerTestSuite(unittest.TestSuite):
         fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
         hdlr.setFormatter(fmt)
         log.addHandler(hdlr)
+        # initialize toolkit and environment
+        app = Toolkit.CmdlineApplication()
+        app.Initialize()
+        app.InitGlobusEnvironment()
         # server
         venueServer = VenueServer()
         venueServer.SetStorageLocation("testData")
@@ -90,8 +95,10 @@ class VenueServerTestCase(unittest.TestCase):
         venueRemoved = 0
         venueDescList = venueServer.GetVenues()
         for v in venueDescList:
+            print "venue:", v.name, ", ", v.uri
             if v.name == "unittestVenue3":
-                venueServer.RemoveVenue(v.uri)    
+                id = venueServer.IdFromURL(v.uri)
+                venueServer.RemoveVenue(id)
                 venueRemoved = 1
         assert venueRemoved
 
@@ -136,11 +143,11 @@ class VenueServerTestCase(unittest.TestCase):
     #   This should be the last test case in the default function list 
     #   and also last when the list is sorted alphabetically.
     def testZEnd(self):
-        venueServer.Shutdown(0)
+        venueServer.Shutdown()
         # In case tests leave threads open, print them out so we
         # know why the program isn't exiting.
         for t in threading.enumerate():
-            if "MainThread" != t.getName():
+            if "MainThread" != t.getName() and t.getName().find("Dummy") == -1:
                 print "Thread ", t
 
     # Would be called after each testCase
