@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.49 2004-09-03 02:57:03 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.50 2004-09-07 19:16:55 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -29,9 +29,9 @@ from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
 
 # default arguments
 log = None
-serviceManager = None
-nodeService = None
-server = None
+running = 0
+gServiceManager = None
+gNodeService = None
 
 # Signal handler to shut down cleanly
 def SignalHandler(signum, frame):
@@ -39,29 +39,29 @@ def SignalHandler(signum, frame):
     SignalHandler catches signals and shuts down the VenueServer (and
     all of it's Venues. Then it stops the hostingEnvironment.
     """
-    global log, serviceManager, nodeService, running
+    global log, gServiceManager, gNodeService, running
 
     log.info("Caught signal, going down.")
     log.info("Signal: %d Frame: %s", signum, frame)
 
-    serviceManager.Shutdown()
+    gServiceManager.Shutdown()
 
-    if nodeService is not None:
-        nodeService.Stop()
+    if gNodeService is not None:
+        gNodeService.Stop()
         
     running = 0
     
 def main():
     """
     """
-    global serviceManager, nodeService, log, running
+    global gServiceManager, gNodeService, log, running
 
     # Create the app
     app = Service.instance()
     
     # build options for this application
     portOption = Option("-p", "--port", type="int", dest="port",
-                        default=12000, metavar="PORT",
+                        default=11000, metavar="PORT",
                         help="Set the port the service manager should run on.")
     app.AddCmdLineOption(portOption)
 
@@ -94,20 +94,20 @@ def main():
     server = SecureServer((hostname, port))
 
     # Create the Service Manager
-    serviceManager = AGServiceManager(server)
+    gServiceManager = AGServiceManager(server)
 
     # Create the Service Manager Service
-    smi = AGServiceManagerI(serviceManager)
+    smi = AGServiceManagerI(gServiceManager)
     server.RegisterObject(smi,path="/ServiceManager")
-    url = server.FindURLForObject(serviceManager)
+    url = server.FindURLForObject(gServiceManager)
 
     if app.GetOption("ns") is not None:
         # Create a Node Service
-        nodeService = AGNodeService()
+        gNodeService = AGNodeService()
         # Create the Node Service Service
-        nsi = AGNodeServiceI(nodeService)
+        nsi = AGNodeServiceI(gNodeService)
         server.RegisterObject(nsi, path="/NodeService")
-        nsurl = server.FindURLForObject(nodeService)
+        nsurl = server.FindURLForObject(gNodeService)
         log.info("Starting Node Service URL: %s", nsurl)
         print "Starting Node Service URL:", nsurl
     
