@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.36 2004-05-12 17:08:03 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.37 2004-05-21 06:04:29 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.36 2004-05-12 17:08:03 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.37 2004-05-21 06:04:29 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -143,7 +143,8 @@ class AGService:
 
             # Detect trivial re-configuration
             if self.streamDescription.location.host == streamDescription.location.host       \
-                and self.streamDescription.location.port == streamDescription.location.port:
+                and self.streamDescription.location.port == streamDescription.location.port \
+                and self.streamDescription.encryptionKey == streamDescription.encryptionKey:
                 # configuration with identical stream description;
                 # bail out
                 self.log.info("ConfigureStream: ignoring trivial re-configuration")
