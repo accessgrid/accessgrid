@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.3 2004-03-12 15:39:36 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.4 2004-03-12 22:22:44 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.3 2004-03-12 15:39:36 olson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.4 2004-03-12 22:22:44 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -29,6 +29,7 @@ import shutil
 
 from OpenSSL_AG import crypto
 from wxPython.wx import *
+from AccessGrid import UIUtilities
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog, ErrorDialogWithTraceback
 from AccessGrid import Log
 
@@ -125,7 +126,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
     def GUIPassphraseCallback(self, rwflag, caption, message):
 
-        dlg = wxPassphraseDialog(None, message, caption);
+        dlg = UIUtilities.PassphraseDialog(None, message, caption);
 
         rc = dlg.ShowModal()
 
@@ -400,6 +401,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
             # We're using an unencrypted private key; proxies unnecessary.
             #
 
+            log.debug("Default identity has unencrypted private key")
             return 1
 
         #
@@ -426,7 +428,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
             try:
                 # passphrase comes back as a unicode
-                passphrase = str(passphrase)
+                # passphrase = str(passphrase)
                 bits = int(bits)
                 lifetime = int(lifetime)
                 try:
@@ -693,8 +695,8 @@ class PassphraseDialog(wxDialog):
         self.proxySizer.Add(t)
 
         passId = wxNewId()
-        self.passphraseText = wxTextCtrl(self, passId,
-                                         style = wxTE_PASSWORD | wxTE_PROCESS_ENTER )
+        self.passphraseText = UIUtilities.SecureTextCtrl(self, passId)
+
         self.proxySizer.Add(self.passphraseText, 0, wxEXPAND)
 
         sizer.Add(self.proxySizer, 0, wxEXPAND | wxALL, 10)
@@ -762,7 +764,7 @@ class PassphraseDialog(wxDialog):
 
 
     def GetInfo(self):
-        return (self.passphraseText.GetValue(),
+        return (self.passphraseText.GetChars(),
                 self.lifetimeText.GetValue(),
                 self.keyList.GetValue())
 
