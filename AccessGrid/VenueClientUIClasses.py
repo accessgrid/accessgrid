@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.291 2003-09-25 20:28:19 eolson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.292 2003-09-26 14:06:51 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.291 2003-09-25 20:28:19 eolson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.292 2003-09-26 14:06:51 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -355,7 +355,7 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
 
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
-        self.menubar.Enable(self.ID_MYVENUE_GOTODEFAULT, false)
+        #self.menubar.Enable(self.ID_MYVENUE_GOTODEFAULT, false)
         self.menubar.Enable(self.ID_MYVENUE_SETDEFAULT, false)
         self.menubar.Enable(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES, false)
         
