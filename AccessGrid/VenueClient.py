@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.52 2003-04-18 23:00:39 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.53 2003-04-20 21:49:58 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,6 +27,10 @@ from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
 from AccessGrid.Events import DisconnectEvent
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.hosting import AccessControl
+from AccessGrid import Platform
+from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
+from AccessGrid.Descriptions import DataDescription, ConnectionDescription
+from AccessGrid.Utilities import LoadConfig
 
 class EnterVenueException(Exception):
     pass
@@ -201,22 +205,70 @@ class VenueClient( ServiceBase):
         #
         (venueState, self.privateId, self.streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
         
-        if hasattr(venueState, "applications"):
-            applications = venueState.applications
-        else:
-            applications = {}
+        #
+        # construct a venue state that consists of real objects
+        # instead of the structs we get back from the SOAP call
+        # (this code can be removed when SOAP returns real objects)
+        #
+        connectionList = []
+        for conn in venueState.connections:
+            connectionList.append( ConnectionDescription( conn.name, conn.description, conn.uri ) )
+
+        clientList = []
+        for client in venueState.clients:
+            profile = ClientProfile()
+            profile.profileFile = client.profileFile
+            profile.profileType = client.profileType
+            profile.name = client.name
+            profile.email = client.email
+            profile.phoneNumber = client.phoneNumber
+            profile.icon = client.icon
+            profile.publicId = client.publicId
+            profile.location = client.location
+            profile.venueClientURL = client.venueClientURL
+            profile.techSupportInfo = client.techSupportInfo
+            profile.homeVenue = client.homeVenue
+            profile.privateId = client.privateId
+            profile.distinguishedName = client.distinguishedName
+
+            # should also objectify the capabilities, but not doing it 
+            # for now (until it's a problem ;-)
+            profile.capabilities = client.capabilities
+
+            clientList.append( profile )
+
+        dataList = []
+        for data in dataList:
+            dataDesc = DataDescription( data.name )
+            dataDesc.status = data.status
+            dataDesc.size = data.size
+            dataDesc.checksum = data.checksum
+            dataDesc.owner = data.owner
+            dataDesc.type = data.type
+            dataList.append( dataDesc )
+
+        applicationList = []
+        for application in venueState.applications:
+            applicationList.append( ApplicationDescription( application.id, application.name,
+                                                            application.description,
+                                                            application.uri, application.mimeType) )
+
+        serviceList = []
+        for service in venueState.services:
+            serviceList.append( ServiceDescription( service.name, service.description,
+                                                    service.uri, service.mimeType ) )
         
         self.venueState = VenueState( venueState.uniqueId,
                                       venueState.name,
                                       venueState.description,
                                       venueState.uri,
-                                      venueState.connections, 
-                                      venueState.clients,
-                                      venueState.data,
+                                      connectionList, 
+                                      clientList,
+                                      dataList,
                                       venueState.eventLocation,
                                       venueState.textLocation,
-                                      applications,
-                                      venueState.services)
+                                      applicationList,
+                                      serviceList)
         self.venueUri = URL
         self.venueId = self.venueState.GetUniqueId()
         self.venueProxy = Client.Handle( URL ).get_proxy()
@@ -322,6 +374,48 @@ class VenueClient( ServiceBase):
         Bind the given node service to this venue client
         """
         self.nodeServiceUri = nodeServiceUri
+
+    def GetInstalledApps(self):
+        """
+        Return a list of installed applications
+        """
+        applicationList = []
+    
+        # Determine the applications directory
+        installDir = Platform.GetSystemConfigDir()
+        appsDir = os.path.join(installDir,"applications")
+        log.info("Applications dir = %s" % appsDir )
+
+        if os.path.exists(appsDir):
+            # Find directories in the apps directory
+            dirList = []
+            entryList = os.listdir(appsDir)
+            for entry in entryList:
+                dir = os.path.join(appsDir,entry)
+                if os.path.isdir(dir):
+                    dirList.append(dir)
+
+            # Find app files in the app directories
+            for dir in dirList:
+                fileList = os.listdir(dir)
+                for file in fileList:
+                    if file.endswith(".app"):
+                        pathfile = os.path.join(dir,file)
+
+                        # read app file contents
+                        config = LoadConfig(pathfile)
+
+                        # construct application description therefrom
+                        appName = config["application.name"]
+                        appDescription = config["application.description"]
+                        appMimetype = config["application.mimetype"]
+                        app = ApplicationDescription( None, appName,    
+                                                      appDescription,
+                                                      None,
+                                                      appMimetype )
+                        log.info("Found installed application: %s" % appName )
+                        applicationList.append( app )
+        return applicationList
 
     #
     # Method support for FOLLOW
