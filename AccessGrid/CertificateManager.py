@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.35 2004-02-23 16:49:35 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.36 2004-02-23 21:54:09 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.35 2004-02-23 16:49:35 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.36 2004-02-23 21:54:09 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -748,8 +748,8 @@ class CertificateManager(object):
             spath = c.GetFilePath("signing_policy")
             if os.path.isfile(spath):
                 shutil.copyfile(spath, os.path.join(self.caDir, "%s.signing_policy" % (nameHash)))
-        import win32api
-        Utilities.setenv('X509_CERT_DIR', win32api.GetShortPathName(self.caDir))
+
+        Utilities.setenv('X509_CERT_DIR', self.caDir)
 
     def _InitEnvWithProxy(self):
         """
