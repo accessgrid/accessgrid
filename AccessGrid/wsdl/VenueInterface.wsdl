@@ -80,14 +80,21 @@
     <message name="ExportPolicyResponse">
 	<part name="policy" type="agtk:AuthorizationPolicy"/>
     </message>
+    <message name="UpdateLifetimeRequest">
+	<part name="connectionId" type="xsd:string"/>
+	<part name="requestedTimeout" type="xsd:float" default="0"/>
+    </message>
+    <message name="UpdateLifetimeResponse">
+	<part name="timeout" type="xsd:float"/>
+    </message>
     <message name="GetPropertyRequest">
-	<part name="propertyDictionary" type="agtk:Dictionary"/>
+	<part name="propertyNameList" type="agtk:StringList"/>
     </message>
     <message name="GetPropertyResponse">
-        <part name="result" type="agtk:Dictionary"/>
+        <part name="propertyDict" type="agtk:Dictionary"/>
     </message>
     <message name="SetPropertyRequest">
-	<part name="propertyDictionary" type="agtk:Dictionary"/>
+	<part name="propertyDict" type="agtk:Dictionary"/>
     </message>
     <message name="SetPropertyResponse">
 	<part name="result" type="agtk:Dictionary"/>
@@ -140,6 +147,10 @@
 	<operation name="ExportPolicy">
 	    <input message="agtk:ExportPolicyRequest"/>
 	    <output message="agtk:ExportPolicyResponse"/>
+	</operation>
+	<operation name="UpdateLifetime">
+	    <input message="agtk:UpdateLifetimeRequest"/>
+	    <output message="agtk:UpdateLifetimeResponse"/>
 	</operation>
 	<operation name="GetProperty">
 	    <input message="agtk:GetPropertyRequest"/>
