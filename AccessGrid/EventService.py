@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.12 2003-03-30 13:24:04 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.13 2003-04-01 15:40:34 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ class ConnectionHandler(StreamRequestHandler):
                 
                 # Unpickle the event data
                 event = pickle.loads(pdata)
-                
+
                 # Pass this event to the callback registered for this
                 # event.eventType
                 log.debug("Received event %s %s", event.eventType, event.venue)
@@ -88,7 +88,7 @@ class ConnectionHandler(StreamRequestHandler):
                 else:
                     log.info("EventService: No callback for %s, %s events.",
                              event.venue, event.eventType)
-            except:
+            except: 
                 log.debug("ConnectionHandler.handle Client disconnected!")
                 self.running = 0
 
@@ -172,7 +172,7 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
                     c.wfile.write(pdata)           
                 except:
                     log.exception("EventService.Distribute Client disconnected!")
-                    self.connections.remove(c)
+                    self.connections[channel].remove(c)
             
     def GetLocation(self):
         """
