@@ -1,0 +1,121 @@
+=====================================
+Client Preferences
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: Susanne Lefvert <lefvert@mcs.anl.gov>
+:status: Draft
+:contact: ag-tech@mcs.anl.gov
+
+Abstract
+========
+
+    This document describes a restructure of the venue client menu items 
+    and introduces client preferences.
+
+Overview
+========
+
+    To better satisfy the needs of Access Grid users, we want to allow client settings
+    to be configurable through a user interface accessible from the venue client. 
+    In order to add user preferences, a restructure of current menu is
+    necessary and a new preferences dialog should be created.  After establishing
+    preferences, the toolkit can use those parameters to configure settings 
+    appropriately. 
+
+Summary of Modifications
+========================
+
+    * Add a preferences class that includes Set and Get methods for preferences with the ability to store and load the information to a configuration file.
+
+    * Add a preferences dialog that summarizes different settings a user can select. This dialog should reflect the state of the preferences class.
+
+    * Modify current venue client menu to include new preferences.
+
+        Suggested menu changes:
+            * Change current "Preferences" menu to "Tools"
+            * Add "Preferences" to new "Tools" menu
+            * Migrate "Profile" to a section in the new "Preferences" menu
+            * Change "Certificate manager" to "Manage Certificates..." to be consistent with "Manage My Node...".
+            * Remove "Set Node Url...". This option is rarely used and is available if you try "Manage My Node" without being connected to a node service.
+    
+Module Organization
+-------------------
+
+    AccessGrid
+        AccessGrid
+            **Preferences**
+                **PreferencesDialog**
+
+Specifications
+==============
+
+    AccessGrid.Preferences
+        __init__()
+        
+        LoadConfiguration()
+   
+        StoreConfiguration()
+    
+        SetProfile(ClientProfile)
+    
+        GetProfile()
+    
+        SetLogLevel(string)
+    
+        GetLogLevel()
+        
+        etc...
+
+    AccessGrid.Preferences.PreferencesDialog
+        __init__(parent, id, title, preferences)
+        
+        GetPreferences()
+    
+        Layout()
+
+    AccessGrid.Platform.Config
+
+        GetPreferences()
+
+    AccessGrid.VenueClient
+        SavePreferences(Preferences)
+
+        GetPreferences()
+
+    AccessGrid.VenueClientUI
+
+        PreferencesCB(event)
+
+Interoperability Issues
+=======================
+
+    Profile information should be migrated to the new preferences file.
+
+Implementation
+==============
+
+    The preferences class includes a dictionary with all options for 
+    preferences. cpickle will be used for saving preferences to the 
+    configuration file <AccessGrid/Config/preferences>. 
+
+    http://www-unix.mcs.anl.gov/~lefvert/PROJECTS/ACCESS_GRID/PREFERENCES/Preferences.htm
+
+    UI Prototype: http://www-unix.mcs.anl.gov/~lefvert/PROJECTS/ACCESS_GRID/PREFERENCES/Preferences_Dialog.png
+
+    Restructured menu: http://www-unix.mcs.anl.gov/~lefvert/PROJECTS/ACCESS_GRID/PREFERENCES/Menu.png
+
+    
+Copyright
+=========
+
+    This document is Copyright 2003, The University of Chicago/Argonne National Laboratory.
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
