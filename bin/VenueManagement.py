@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.65 2003-05-15 20:31:43 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.66 2003-05-20 19:51:05 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,6 +27,8 @@ from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid import Toolkit
 
 import logging, logging.handlers
+log = logging.getLogger("AG.VenueManagement")
+
 import string
 import time
 
@@ -94,6 +96,10 @@ class VenueManagementClient(wxApp):
                                 "%x %X")
         hdlr.setFormatter(fmt)
         log.addHandler(hdlr)
+        # 
+        # Uncomment this for debug output to console.
+        #
+        # logging.root.addHandler(logging.StreamHandler())
 
     def __setProperties(self):
         self.frame.SetIcon(icons.getAGIconIcon())
