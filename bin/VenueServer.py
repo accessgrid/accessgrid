@@ -1,13 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 #-----------------------------------------------------------------------------
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.22 2003-05-13 18:53:17 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.23 2003-05-14 19:34:17 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+
 import os
 import sys
 import getopt
@@ -56,10 +57,12 @@ def Usage():
     print "    -c|--configFile <filename> : config file name"
     print "    --cert <filename>: identity certificate"
     print "    --key <filename>: identity certificate's private key"
+
 # Parse command line options
 try:
     opts, args = getopt.getopt(sys.argv[1:], "p:l:c:hd",
-                               ["port=", "logfile=", "configfile=", "help", "debug", "key=", "cert="])
+                               ["port=", "logfile=", "configfile=",
+                                "help", "debug", "key=", "cert="])
 except getopt.GetoptError:
     Usage()
     sys.exit(2)
