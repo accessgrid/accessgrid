@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.4 2003-05-22 20:15:47 olson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.5 2003-05-23 21:39:24 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,6 +16,8 @@ import sys
 import pickle
 import logging
 import struct
+import Queue
+import threading
 
 from SocketServer import ThreadingMixIn, StreamRequestHandler
 from pyGlobus.io import GSITCPSocketServer, GSITCPSocketException, GSITCPSocket
@@ -28,7 +30,7 @@ from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import ConnectEvent, DisconnectEvent
 from AccessGrid.GUID import GUID
 
-log = logging.getLogger("AG.VenueServer")
+log = logging.getLogger("AG.EventService")
 log.setLevel(logging.INFO)
 
 
@@ -68,16 +70,16 @@ class ConnectionHandler:
         return self.id
 
     def registerAccept(self, attr):
-        log.debug("conn handler registering accept")
+        logEvent("conn handler registering accept")
 
         socket, cb = self.lsocket.register_accept(attr, self.acceptCallback, None)
 
-        log.debug("register_accept returns socket=%s cb=%s", socket, cb)
+        logEvent("register_accept returns socket=%s cb=%s", socket, cb)
         self.socket = socket
 
     def acceptCallback(self, arg, handle, result):
         try:
-            log.debug("Accept Callback '%s' '%s' '%s'", arg, handle, result)
+            logEvent("Accept Callback '%s' '%s' '%s'", arg, handle, result)
             self.server.registerForListen()
 
             #
@@ -111,7 +113,7 @@ class ConnectionHandler:
 
     def readCallback(self, arg, handle, ret, buf, n):
 
-        logEvent("Got read handle=%s ret=%s  n=%s \n", handle, ret, n)
+        logEvent("Got read handle=%s ret=%s  n=%s waiting=%s\n", handle, ret, n, self.waitingLen)
 
         if n == 0:
             event = DisconnectEvent(self.channel, self.privateId)
@@ -163,43 +165,20 @@ class ConnectionHandler:
                 self.running = 0
                 return
 
+        #
+        # Snag the channel and private id out of the connect event.
+        #
+        
+        if event.eventType == ConnectEvent.CONNECT:
+            self.channel = event.venue
+            self.privateId = event.data
+
+
         # Pass this event to the callback registered for this
         # event.eventType
         logEvent("EventConnection: Received event %s", event)
 
-        if event.eventType == ConnectEvent.CONNECT:
-            log.debug("EventConnection: Adding client %s to venue %s",
-                      event.data, event.venue)
-            self.channel = event.venue
-            self.privateId = event.data
-            self.server.AddChannelConnection(event.venue, self)
-
-        # Disconnect Event
-        if event.eventType == DisconnectEvent.DISCONNECT:
-            log.debug("EventConnection: Removing client connection to %s",
-                      event.venue)
-            if self.channel != None:
-                self.server.RemoveChannelConnection(self.channel, self)
-                self.running = 0
-
-        # Pass this event to the callback registered for this
-        # event.eventType
-        if self.server.callbacks.has_key((event.venue,
-                                          event.eventType)):
-            cb = self.server.callbacks[(event.venue, event.eventType)]
-            if cb != None:
-                logEvent("invoke callback %s", str(cb))
-                cb(event.data)
-        elif self.server.callbacks.has_key((event.venue,)):
-            # Default handler for this channel.
-            cb = self.server.callbacks[(event.venue,)]
-            if cb != None:
-                log.debug("invoke channel callback %s", cb)
-                cb(event.eventType, event.data)
-            else:
-                log.info("EventService: No callback for %s, %s events.",
-                         event.venue, event.eventType)
-
+        self.server.EnqueueEvent(event, self, self.channel)
 
 class EventService:
     """
@@ -219,6 +198,10 @@ class EventService:
         self.socket.allow_reuse_address = 1
         self.attr = CreateTCPAttrAlwaysAuth()
 
+        self.queue = Queue.Queue()
+        self.queueThread = threading.Thread(target = self.QueueHandler)
+        self.queueThread.start()
+
         port = self.socket.create_listener(self.attr, server_address[1])
         log.debug("Bound to %s (server_address=%s)", port, server_address)
 
@@ -227,6 +210,7 @@ class EventService:
         Start. Initialize the asynch io on accept.
         """
 
+        log.debug("Event service start")
         self.registerForListen()
 
     def registerForListen(self):
@@ -235,7 +219,7 @@ class EventService:
 
     def listenCallback(self, arg, handle, result):
         try:
-            log.debug("Listen Callback '%s' '%s' '%s'", arg, handle, result)
+            logEvent("Listen Callback '%s' '%s' '%s'", arg, handle, result)
 
             self.waiting_socket = GSITCPSocket(handle)
 
@@ -257,7 +241,78 @@ class EventService:
             
         self.running = 0
         self.socket.close()
+        self.EnqueueQuit()
+        self.queueThread.join()
+
+    def EnqueueQuit(self):
+        self.queue.put(("quit",))
         
+    def EnqueueEvent(self, event, conn, channel):
+        logEvent("Enqueue event for %s %s...", conn, channel)
+        self.queue.put(("event", event, conn, channel))
+        logEvent("Enqueue event for %s %s...done (size=%s)", conn, channel, self.queue.qsize())
+
+    def QueueHandler(self):
+        """
+        Thread main routine for event queue handling.
+        """
+
+        try:
+
+            while 1:
+                logEvent("Queue handler waiting for data")
+                cmd = self.queue.get()
+                logEvent("Queue handler received %s", cmd)
+                if cmd[0] == "quit":
+                    log.debug("Queue handler exiting")
+                    return
+                elif cmd[0] != "event":
+                    log.error("QueueHandler received unknown command %s", cmd[0])
+                    continue
+
+                try:
+                    self.HandleEvent(cmd[1], cmd[2], cmd[3])
+                except:
+                    log.exception("HandleEvent threw an exception")
+        except:
+            log.exception("Body of QueueHandler threw exception")
+
+    def HandleEvent(self, event, conn, channel):
+
+        logEvent("Handle event type %s", event.eventType)
+        if event.eventType == ConnectEvent.CONNECT:
+            log.debug("EventConnection: Adding client %s to venue %s",
+                      event.data, event.venue)
+            self.AddChannelConnection(event.venue, conn)
+
+        if event.eventType == DisconnectEvent.DISCONNECT:
+
+            log.debug("EventConnection: Removing client connection to %s",
+                      event.venue)
+            if channel != None:
+                self.RemoveChannelConnection(channel, conn)
+
+        # Pass this event to the callback registered for this
+        # event.eventType
+        if self.callbacks.has_key((event.venue, event.eventType)):
+            cb = self.callbacks[(event.venue, event.eventType)]
+            logEvent("Specific event callback=%s", cb)
+            if cb != None:
+                logEvent("invoke callback %s", str(cb))
+                cb(event.data)
+        elif self.callbacks.has_key((event.venue,)):
+            # Default handler for this channel.
+            cb = self.callbacks[(event.venue,)]
+            logEvent("Default channel event callback=%s", cb)
+            if cb != None:
+                logEvent("invoke channel callback %s", cb)
+                cb(event.eventType, event.data)
+            else:
+                log.info("EventService: No callback for %s, %s events.",
+                         event.venue, event.eventType)
+
+        logEvent("HandleEvent returns")
+
     def DefaultCallback(self, event):
         self.log.info("EventService: Got callback for %s event!",
                       event.eventType)
@@ -287,7 +342,7 @@ class EventService:
         """
         Distribute sends the data to all connections.
         """
-        self.log.debug("EventService: Sending Event %s", data)
+        logEvent("EventService: Sending Event %s", data)
 
         # This should be more generic
         pdata = pickle.dumps(data)

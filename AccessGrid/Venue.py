@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.96 2003-05-22 20:50:48 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.97 2003-05-23 21:39:24 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -36,7 +36,7 @@ from AccessGrid import DataStore
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.Events import Event, HeartbeatEvent, DisconnectEvent
 from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
-from AccessGrid.Utilities import GetHostname
+from AccessGrid.Utilities import GetHostname, ServerLock
 
 # these imports are for dealing with SOAP structs, which we won't have to 
 # do when we have WSDL; at that time, these imports and the corresponding calls
@@ -199,7 +199,8 @@ class Venue(ServiceBase.ServiceBase):
             self.encryptionKey = AllocateEncryptionKey()
         else:
             self.encryptionKey = None
-        self.simpleLock = Condition(Lock())
+        self.simpleLock = ServerLock("venue")
+        self.heartbeatLock = ServerLock("heartbeat")
         
         if id == None:
             self.uniqueId = str(GUID())
@@ -220,7 +221,7 @@ class Venue(ServiceBase.ServiceBase):
         # true if a remove is in process on this client.
         #
         self.clientsBeingRemoved = {}
-        self.clientsBeingRemovedLock = Condition(Lock())
+        self.clientsBeingRemovedLock = ServerLock("clientRemove")
 
         self.dataStore = None
         self.producerCapabilities = []
@@ -463,15 +464,23 @@ class Venue(ServiceBase.ServiceBase):
         cleanup stale client connections.
         """
         now_sec = time.time()
+
+        users_to_remove = []
         
+        self.heartbeatLock.acquire()
         for privateId in self.clients.keys():
             (client, then_sec) = self.clients[privateId]
             
             if abs(now_sec - then_sec) > self.cleanupTime:
-                log.debug("Removing user %s with expired heartbeat time",
-                          client.name)
-                
-                self.RemoveUser(privateId)
+                users_to_remove.append(privateId)
+
+        self.heartbeatLock.release()
+
+        for privateId in users_to_remove:
+            log.debug("Removing user %s with expired heartbeat time",
+                      client.name)
+
+            self.RemoveUser(privateId)
 
     def ClientHeartbeat(self, privateId):
         """
@@ -495,16 +504,14 @@ class Venue(ServiceBase.ServiceBase):
         # log.debug("Got Client Heartbeat for %s at %s." % (privateId, now))
        
         if self.clients.has_key(privateId):
-            self.simpleLock.acquire()
+            self.heartbeatLock.acquire()
 
             (profile, heartbeatTime) = self.clients[privateId]
             self.clients[privateId] = (profile, now)
 
-            self.simpleLock.notify()
-            self.simpleLock.release()
+            self.heartbeatLock.release()
         else:
-            log.exception("ClientHeartbeat: Got heartbeat for missing client")
-            raise ClientNotFound
+            log.debug("ClientHeartbeat: Got heartbeat for missing client")
     
     def EventServiceDisconnect(self, privateId):
         """
@@ -678,12 +685,10 @@ class Venue(ServiceBase.ServiceBase):
 
         if privateId in self.clientsBeingRemoved and self.clientsBeingRemoved[privateId]:
             log.debug("RemoveUser: private id %s already being removed", privateId)
-            self.clientsBeingRemovedLock.notify()
             self.clientsBeingRemovedLock.release()
             return
 
         self.clientsBeingRemoved[privateId] = 1
-        self.clientsBeingRemovedLock.notify()
         self.clientsBeingRemovedLock.release()
 
         self.simpleLock.acquire()
@@ -696,11 +701,12 @@ class Venue(ServiceBase.ServiceBase):
             # Remove clients from venue
             if not self.clients.has_key(privateId):
                 log.warn("RemoveUser: Tried to remove a client that doesn't exist")
-                self.simpleLock.notify()
                 self.simpleLock.release()
                 return
-            
+
+            self.heartbeatLock.acquire()
             client, heartbeatTime = self.clients[privateId]
+            self.heartbeatLock.release()
             
             # Remove clients private data
             for description in self.data.values():
@@ -725,10 +731,8 @@ class Venue(ServiceBase.ServiceBase):
 
         self.clientsBeingRemovedLock.acquire()
         del self.clientsBeingRemoved[privateId]
-        self.clientsBeingRemovedLock.notify()
         self.clientsBeingRemovedLock.release()
 
-        self.simpleLock.notify()
         self.simpleLock.release()
 
     def SetConnections(self, connectionDict):
@@ -859,7 +863,6 @@ class Venue(ServiceBase.ServiceBase):
         name = dataDescription.name
         
         if not name in self.data:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("RemoveData: Data not found.")
             raise DataNotFound
@@ -969,7 +972,6 @@ class Venue(ServiceBase.ServiceBase):
         name = serviceDescription.name
 
         if self.services.has_key(name):
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("AddService: service already present: %s", name)
             raise ServiceAlreadyPresent
@@ -1002,7 +1004,6 @@ class Venue(ServiceBase.ServiceBase):
             *serviceDescription* Upon successfully removing the service.
         """
         if not serviceDescription.name in self.services:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("Service not found!")
             raise ServiceNotFound
@@ -1056,12 +1057,10 @@ class Venue(ServiceBase.ServiceBase):
 
             returnValue = self.AddData(dataDescription)
 
-            self.simpleLock.notify()
             self.simpleLock.release()
         
             return returnValue
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsAddData: exception")
             raise
@@ -1103,12 +1102,10 @@ class Venue(ServiceBase.ServiceBase):
         
             returnValue = self.RemoveData(dataDescription)
 
-            self.simpleLock.notify()
             self.simpleLock.release()
         
             return returnValue
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsRemoveData: exception")
             raise
@@ -1151,12 +1148,10 @@ class Venue(ServiceBase.ServiceBase):
         
             returnValue = self.UpdateData(dataDescription)
 
-            self.simpleLock.notify()
             self.simpleLock.release()
         
             return returnValue
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsUpdateData: exception")
             raise
@@ -1189,12 +1184,10 @@ class Venue(ServiceBase.ServiceBase):
         
             returnValue = self.GetData(name)
 
-            self.simpleLock.notify()
             self.simpleLock.release()
 
             return returnValue
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsGetData: exception")
             raise
@@ -1236,12 +1229,10 @@ class Venue(ServiceBase.ServiceBase):
          
             returnValue = self.AddService(serviceDescription)
 
-            self.simpleLock.notify()
             self.simpleLock.release()
          
             return returnValue
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsAddService: exception")
             raise
@@ -1283,12 +1274,10 @@ class Venue(ServiceBase.ServiceBase):
             
             returnValue = self.RemoveService(serviceDescription)
             
-            self.simpleLock.notify()
             self.simpleLock.release()
         
             return returnValue
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsRemoveService: exception")
             raise
@@ -1328,10 +1317,8 @@ class Venue(ServiceBase.ServiceBase):
                 
                 self.AddConnection(c)       
                 
-                self.simpleLock.notify()
                 self.simpleLock.release()
             except:
-                self.simpleLock.notify()
                 self.simpleLock.release()
                 log.exception("wsSetConnections: exception")
                 raise
@@ -1372,10 +1359,8 @@ class Venue(ServiceBase.ServiceBase):
 
             self.AddConnection(c)
         
-            self.simpleLock.notify()
             self.simpleLock.release()
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsAddConnection: exception")
             raise
@@ -1443,12 +1428,10 @@ class Venue(ServiceBase.ServiceBase):
         
             returnValue = self.Enter(clientProfile)
 
-            self.simpleLock.notify()
             self.simpleLock.release()
 
             return returnValue
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsEnter: exception")
             raise
@@ -1489,7 +1472,6 @@ class Venue(ServiceBase.ServiceBase):
             
             self.administrators.append(string)
 
-            self.simpleLock.notify()
             self.simpleLock.release()
             
             return string
@@ -1533,7 +1515,6 @@ class Venue(ServiceBase.ServiceBase):
             
         self.administrators.remove(string)
 
-        self.simpleLock.notify()
         self.simpleLock.release()
             
         return string
@@ -1560,7 +1541,6 @@ class Venue(ServiceBase.ServiceBase):
         
         self.administrators = self.administrators + administratorList
 
-        self.simpleLock.notify()
         self.simpleLock.release()
 
     SetAdministrators.soap_export_as = "SetAdministrators"
@@ -1573,7 +1553,6 @@ class Venue(ServiceBase.ServiceBase):
         
         returnValue = self.administrators
 
-        self.simpleLock.notify()
         self.simpleLock.release()
 
         return returnValue
@@ -1613,7 +1592,6 @@ class Venue(ServiceBase.ServiceBase):
                 key = AllocateEncryptionKey()
             self.encryptionKey = key
 
-        self.simpleLock.notify()
         self.simpleLock.release()
         
         return self.encryptMedia
@@ -1628,7 +1606,6 @@ class Venue(ServiceBase.ServiceBase):
 
         returnValue = self.encryptionKey
 
-        self.simpleLock.notify()
         self.simpleLock.release()
 
         return returnValue
@@ -1693,7 +1670,6 @@ class Venue(ServiceBase.ServiceBase):
             
             del self.connections[connectionDescription.uri]
 
-            self.simpleLock.notify()
             self.simpleLock.release()
             
             self.server.eventService.Distribute( self.uniqueId,
@@ -1718,7 +1694,6 @@ class Venue(ServiceBase.ServiceBase):
         
         returnValue = self.connections.values()
 
-        self.simpleLock.notify()
         self.simpleLock.release()
 
         return returnValue
@@ -1741,7 +1716,6 @@ class Venue(ServiceBase.ServiceBase):
         
         self.description = description
 
-        self.simpleLock.notify()
         self.simpleLock.release()
         
     SetDescription.soap_export_as = "SetDescription"
@@ -1771,7 +1745,6 @@ class Venue(ServiceBase.ServiceBase):
         
         self.name = name
 
-        self.simpleLock.notify()
         self.simpleLock.release()
         
     SetName.soap_export_as = "SetName"
@@ -1817,7 +1790,6 @@ class Venue(ServiceBase.ServiceBase):
         
         self.streamList.AddStream( streamDescription )
 
-        self.simpleLock.notify()
         self.simpleLock.release()
         
     AddStream.soap_export_as = "AddStream"
@@ -1853,7 +1825,6 @@ class Venue(ServiceBase.ServiceBase):
         
         self.streamList.RemoveStream( streamDescription )
 
-        self.simpleLock.notify()
         self.simpleLock.release()
 
     RemoveStream.soap_export_as = "RemoveStream"
@@ -1866,7 +1837,6 @@ class Venue(ServiceBase.ServiceBase):
         
         returnValue = self.streamList.GetStreams()
 
-        self.simpleLock.notify()
         self.simpleLock.release()
 
         return returnValue
@@ -1882,7 +1852,6 @@ class Venue(ServiceBase.ServiceBase):
         
         returnValue = self.streamList.GetStaticStreams()
 
-        self.simpleLock.notify()
         self.simpleLock.release()
 
         return returnValue

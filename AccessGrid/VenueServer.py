@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.76 2003-05-23 19:48:27 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.77 2003-05-23 21:39:24 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -45,6 +45,7 @@ from AccessGrid.Descriptions import CreateVenueDescription, ServiceDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.Types import Capability
+from AccessGrid.Utilities import ServerLock
 
 log = logging.getLogger("AG.VenueServer")
 
@@ -148,7 +149,7 @@ class VenueServer(ServiceBase.ServiceBase):
             self.hostingEnvironment = Server.Server(defaultPort)
             self.internalHostingEnvironment = 1 # True
 
-        self.simpleLock = Condition(Lock())
+        self.simpleLock = ServerLock("main")
         
         # Figure out which configuration file to use for the
         # server configuration. If no configuration file was specified
@@ -180,7 +181,7 @@ class VenueServer(ServiceBase.ServiceBase):
         # Start Venue Server wide services
         self.dataTransferServer = GSIHTTPTransferServer(('',
                                                          int(self.dataPort)),
-                                                        numThreads = 5,
+                                                        numThreads = 4,
                                                         sslCompat = 0)
         self.dataTransferServer.run()
 
@@ -532,12 +533,10 @@ class VenueServer(ServiceBase.ServiceBase):
         
             venueUri = self.AddVenue(venueDesc)
         
-            self.simpleLock.notify()
             self.simpleLock.release()
         
             return venueUri
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsAddVenue: exception")
             raise
@@ -581,10 +580,8 @@ class VenueServer(ServiceBase.ServiceBase):
             
             self.ModifyVenue(id, vd)
 
-            self.simpleLock.notify()
             self.simpleLock.release()
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsModifyVenue: exception")
             raise
@@ -615,10 +612,8 @@ class VenueServer(ServiceBase.ServiceBase):
         
             self.RemoveVenue(id)
             
-            self.simpleLock.notify()
             self.simpleLock.release()
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsRemoveVenue: exception")
             raise
@@ -650,12 +645,10 @@ class VenueServer(ServiceBase.ServiceBase):
         
             returnString = self.AddAdministrator(string)
 
-            self.simpleLock.notify()
             self.simpleLock.release()
             
             return returnString
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsAddAdministrator: exception")
             raise
@@ -686,12 +679,10 @@ class VenueServer(ServiceBase.ServiceBase):
         
             returnString = self.RemoveAdministrator(string)
 
-            self.simpleLock.notify()
             self.simpleLock.release()
 
             return returnString
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsRemoveAdministrator: exception")
             raise
@@ -713,7 +704,6 @@ class VenueServer(ServiceBase.ServiceBase):
         
             vdl = self.GetVenues()
             
-            self.simpleLock.notify()
             self.simpleLock.release()
             
             # This is because our SOAP implemenation doesn't like passing
@@ -724,7 +714,6 @@ class VenueServer(ServiceBase.ServiceBase):
                 
             return vdl
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsGetVenues: exception")
             raise
@@ -740,12 +729,10 @@ class VenueServer(ServiceBase.ServiceBase):
         
             returnURL = self.GetDefaultVenue()
 
-            self.simpleLock.notify()
             self.simpleLock.release()
         
             return returnURL
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsGetDefaultVenues: exception")
             raise
@@ -776,12 +763,10 @@ class VenueServer(ServiceBase.ServiceBase):
 
             self.SetDefaultVenue(URL)
 
-            self.simpleLock.notify()
             self.simpleLock.release()
 
             return URL
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsSetDefaultVenue: exception")
             raise
@@ -812,10 +797,8 @@ class VenueServer(ServiceBase.ServiceBase):
             
             self.SetStorageLocation(location)
             
-            self.simpleLock.notify()
             self.simpleLock.release()
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsSetStorageLocation: exception")
             raise
@@ -840,12 +823,10 @@ class VenueServer(ServiceBase.ServiceBase):
         
             returnString = self.GetStorageLocation()
             
-            self.simpleLock.notify()
             self.simpleLock.release()
         
             return returnString
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsGetStorageLocation: exception")
             raise
@@ -876,10 +857,8 @@ class VenueServer(ServiceBase.ServiceBase):
             
             self.SetAddressAllocationMethod(method)
             
-            self.simpleLock.notify()
             self.simpleLock.release()
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsSetAddressAllocationMethod: exception")
             raise
@@ -904,12 +883,10 @@ class VenueServer(ServiceBase.ServiceBase):
         
             returnValue = self.GetAddressAllocationMethod()
             
-            self.simpleLock.notify()
             self.simpleLock.release()
             
             return returnValue
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsGetAddressAllocationMethod: exception")
             raise
@@ -941,12 +918,10 @@ class VenueServer(ServiceBase.ServiceBase):
             
             returnValue = self.SetEncryptAllMedia(value)
             
-            self.simpleLock.notify()
             self.simpleLock.release()
             
             return returnValue
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsSetEncryptAllMedia: exception")
             raise
@@ -969,12 +944,10 @@ class VenueServer(ServiceBase.ServiceBase):
 
             returnValue = self.GetEncryptAllMedia()
             
-            self.simpleLock.notify()
             self.simpleLock.release()
             
             return returnValue
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsGetEncryptAllMedia: exception")
             raise
@@ -1004,10 +977,8 @@ class VenueServer(ServiceBase.ServiceBase):
             
             self.SetBaseAddress(address)
             
-            self.simpleLock.notify()
             self.simpleLock.release()
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsSetBaseAddress: exception")
             raise
@@ -1031,12 +1002,10 @@ class VenueServer(ServiceBase.ServiceBase):
             
             returnValue = self.GetBaseAddress()
             
-            self.simpleLock.notify()
             self.simpleLock.release()
             
             return returnValue
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsGetBaseAddress: exception")
             raise
@@ -1066,12 +1035,10 @@ class VenueServer(ServiceBase.ServiceBase):
             
             self.SetAddressMask(mask)
 
-            self.simpleLock.notify()
             self.simpleLock.release()
 
             return mask
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsSetAddressMask: exception")
             raise
@@ -1096,12 +1063,10 @@ class VenueServer(ServiceBase.ServiceBase):
             
             returnValue = self.GetAddressMask()
             
-            self.simpleLock.notify()
             self.simpleLock.release()
             
             return returnValue
         except:
-            self.simpleLock.notify()
             self.simpleLock.release()
             log.exception("wsGetAddressMask: exception")
             raise

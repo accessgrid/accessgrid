@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.32 2003-05-17 18:02:49 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.33 2003-05-23 21:39:24 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,6 +19,7 @@ from random import Random
 import sha
 import urllib
 import urlparse
+from threading import Lock, Condition
 
 import logging
 log = logging.getLogger("AG.Utilities")
@@ -294,4 +295,38 @@ def PathFromURL(URL):
     """
     """
     return urlparse.urlparse(URL)[2]
+
+class ServerLock:
+    """
+    Class to be used for locking entry and exit to the venue server.
+    Mostly just a wrapper around a normal lock, but adds logging support.
+    """
+
+    verbose = 0
+
+    def __init__(self, name = ""):
+        if self.verbose:
+            log.debug("Create server lock %s", name)
+        self.lock = Condition(Lock())
+        self.name = name
+
+    def acquire(self):
+        if self.verbose:
+            c = (traceback.extract_stack())[-2]
+            file = c[0]
+            line = c[1]
+            log.debug("Try to acquire server lock %s...      %s:%s", self.name, file, line)
+
+        self.lock.acquire()
+
+        if self.verbose:
+            log.debug("Try to acquire server lock %s...done  %s:%s", self.name, file, line)
+
+    def release(self):
+        if self.verbose:
+            c = (traceback.extract_stack())[-2]
+            file = c[0]
+            line = c[1]
+            log.debug("Releasing server lock %s  %s:%s", self.name, file, line)
+        self.lock.release()
 

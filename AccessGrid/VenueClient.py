@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.66 2003-05-23 20:59:37 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.67 2003-05-23 21:39:24 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -413,16 +413,16 @@ class VenueClient( ServiceBase):
         self.exiting = 1
         self.exitingLock.release()
 
+        # Stop sending heartbeats
+        if self.heartbeatTask != None:
+            log.info(" Stopping heartbeats")
+            self.heartbeatTask.stop()
+
         # Exit the venue
         try:         
             self.venueProxy.Exit( self.privateId )
         except Exception, e:
             log.exception("AccessGrid.VenueClient::ExitVenue exception")
-
-        # Stop sending heartbeats
-        if self.heartbeatTask != None:
-            log.info(" Stopping heartbeats")
-            self.heartbeatTask.stop()
 
         # Stop the event client
         log.info(" Stopping event client")

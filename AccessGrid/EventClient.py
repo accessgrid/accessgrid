@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.19 2003-05-22 20:36:35 olson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.20 2003-05-23 21:39:24 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -204,7 +204,6 @@ class EventClient:
                     try:
                         #callback(event.data)
                         self.queue.put(("call", callback, event.data))
-                        print "FOOOO"
                     except:
                         log.exception("Callback fails")
                     log.debug("Invoking callback %s...done", callback)

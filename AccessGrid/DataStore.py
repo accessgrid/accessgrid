@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.23 2003-05-20 16:22:38 olson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.24 2003-05-23 21:39:24 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1058,14 +1058,23 @@ n
 
     def _CreateWorkers(self):
         self.workerThread = {}
+        self.startLock = threading.Lock()
         for workerNum in range(self.numThreads):
+            log.debug("Creating thread %d", workerNum)
             self.workerThread[workerNum] = threading.Thread(target = self.__WorkerRun,
                                                             name = 'TransferWorker',
                                                             args = (workerNum,))
+            self.startLock.acquire()
+            log.debug("Starting thread %d", workerNum)
             self.workerThread[workerNum].start()
+            log.debug("Waiting thread %d", workerNum)
+            self.startLock.acquire()
+            self.startLock.release()
+        log.debug("Done creating workers")
 
     def __WorkerRun(self, workerNum):
         log.debug("Worker %d starting", workerNum)
+        self.startLock.release()
 
         while not self.done:
             cmd = self.requestQueue.get(1)
