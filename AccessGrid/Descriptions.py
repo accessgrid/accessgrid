@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.60 2004-07-26 16:49:12 lefvert Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.61 2004-07-26 17:15:30 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.60 2004-07-26 16:49:12 lefvert Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.61 2004-07-26 17:15:30 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -405,7 +405,11 @@ class VenueState:
         for connection in connections:
             self.connections[connection.uri] = connection
         for client in clients:
-            self.clients[client.publicId] = client
+            # Pre-2.3 server compatability code
+            if not client.connectionId:
+                client.connectionId = client.venueClientURL
+
+            self.clients[client.connectionId] = client
         for datum in data:
             self.data[datum.id] = datum
         for app in applications:
@@ -429,13 +433,13 @@ class VenueState:
     def GetUri( self ):
         return self.uri
     def AddUser( self, userProfile ):
-        self.clients[userProfile.publicId] = userProfile
+        self.clients[userProfile.connectionId] = userProfile
     def RemoveUser( self, userProfile ):
-        if userProfile.publicId in self.clients.keys():
-            del self.clients[userProfile.publicId]
+        if userProfile.connectionId in self.clients.keys():
+            del self.clients[userProfile.connectionId]
     def ModifyUser( self, userProfile ):
-        if userProfile.publicId in self.clients.keys():
-            self.clients[userProfile.publicId] = userProfile
+        if userProfile.connectionId in self.clients.keys():
+            self.clients[userProfile.connectionId] = userProfile
     def GetUsers( self ):
         return self.clients.values()
     def AddConnection( self, connectionDescription ):
@@ -532,6 +536,7 @@ def CreateClientProfile( clientProfileStruct ):
     clientProfile.publicId = clientProfileStruct.publicId
     clientProfile.techSupportInfo = clientProfileStruct.techSupportInfo
     clientProfile.venueClientURL = clientProfileStruct.venueClientURL
+    clientProfile.connectionId = clientProfileStruct.connectionId
 
     # convert capabilities from structtypes to objects
     capList = []
