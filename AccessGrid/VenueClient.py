@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.92 2003-08-12 01:59:56 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.93 2003-08-12 20:57:08 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ class VenueClient( ServiceBase):
 
         # For states that matter
         self.state = None
-        
+
         # takes time
         self.CreateVenueClientWebService()
         self.__InitVenueData__()

@@ -599,5 +599,10 @@ if __name__ == "__main__":
 #    logging.root.addHandler(logging.StreamHandler())
 #    logging.root.setLevel(logging.ERROR)
 
-    testData("https://localhost:8000/Venues/default")
+
+    if len(sys.argv) < 2:
+        url = "https://localhost:8000/Venues/default"
+    else:
+        url = sys.argv[1]
+    testData(url)
 

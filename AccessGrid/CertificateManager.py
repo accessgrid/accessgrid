@@ -26,24 +26,16 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 import re
 import os
 import os.path
-import popen2
-import time
+import shutil
 import logging
-import ConfigParser
 import getpass
-import string
 import sys
 
 from AccessGrid import Platform
+from AccessGrid import CertificateRepository
+from  AccessGrid.hosting.pyGlobus import ProxyGen
 
-try:
-    import _winreg
-    import win32api
-
-    HaveWin32Registry = 1
-
-except:
-    HaveWin32Registry = 0
+import pyGlobus.sslutilsc
 
 from OpenSSL_AG import crypto
 
@@ -67,48 +59,85 @@ class InvalidPassphraseException(ProxyRequestError):
 class GridProxyInitError(ProxyRequestError):
     pass
 
-class CertificateManager:
+class NoCertificates(Exception):
+    pass
+
+class NoDefaultIdentity(Exception):
+    pass
+
+class ProxyExpired(Exception):
+    pass
+
+class NoProxyFound(Exception):
+    pass
+
+class CertificateManager(object):
     """
     A CertificateManager manages the certificates for a user.
 
-    It has two main repositories: the identity cert repository and the
-    trusted CA cert repository.
+    It uses a CertificateRepository instance to maintain the certificates.
+    The repository keeps its certificates in a single large pool; however,
+    it provides a mechanism by which the user of the repository can
+    tag certificates with metadata. The certificate manager uses this
+    tagging mechanism to distinguish between a user's identity
+    certificates and the user's set of trusted CA certificates.
 
-    User proxy certificates are managed in the context of the identity
-    cert repository.
+    We accomplish this by defining a metadata tag for each certificate
+    imported: AG.CertificateManager.certType is the key; the value is
+    "identity" or "trustedCA".
 
-    The cert manager will also be configured with a repository
-    of system-defined trusted CA certificates. If the user
-    adds or removes one of the system CA certs, a per-user
-    trusted certificate directory is created and the appropriate
-    system-defined trusted CA certificates are copied there.
-    (This functionality will not be implemented in the first phase).
+    The user's default identity is marked in the repository as well with
+    the metadat AG.CertificateManager.isDefaultIdentity, values 0/1. This default
+    is then returned by the call
 
-    We keep track of the following per-user state information. It is
-    kept in a ConfigParser-maintained initialization file in
-    the userProfile directory:
+        repo.FindCertificatesWithMetadata("AG.CertificateManager.isDefaultIdentity",
+                                           "1")
 
-       defaultIdentity: DN of the user's default identity cert
+    The repo doesn't ensure that multiple certs get set to default; that
+    is up to this code.
 
-       useSystemCADir: "yes" if the user is to use the system's
-       trusted CA directory, "no" otherwise
+    This certificate manager will not use the system trusted CA directory
+    directly; it maintains a local cache of trusted CA certs in the
+    repository. Since OpenSSL and the Globus library expect these certificates
+    to have a particular file layout, the certificate manager will regenerate
+    this cache from the certificates in teh repository each time the set of
+    trusted CA certificates  in the repo changes. This set of certificates can
+    be determined by the call
 
-    We will assume that if the initialization file is not present,
-    that the user has not run the software before. In this case we
-    will have to do some initialization of the user's state:
+        repo.FindCertificatesWithMetadata("AG.CertificateManager.certType",
+                                           "trustedCA")
 
-        Create the init file.
+    Globus proxies are also stored in the repository's space. Since they do
+    not have unique serial numbers, they are stored in filespace provided
+    for users with each certificate:
 
-        Determine defaults:
-            defaultIdentity is the current one according
-            to the standard Globus defaults.
+        certDesc = defaultCert
+        proxyPath = certDesc.GetFilePath("globus_proxy")
+        CreateGlobusProxy(certDesc.GetCertPath(),
+                          certDesc.GetKeyPath(),
+                          proxyPath)
 
-            useSystemCADir defaults to "yes"
 
-    When we start up, we'll need to do the following:
+    Initialization
+    --------------
+        
+    We will assume that if the repository  is not already present 
+    that we've not run this app before and must therefore initialize
+    the repository. It may be the case that the user has run an earlier
+    version of the AG software and therefore has an AG2.0-style certificate
+    repository already in place. We will ignore this, and initialize directly
+    from globus state. It is not likely at this stage of the game that
+    users already have a lot of new state built up in that repository.
+    
+    Runtime configuration
+    ---------------------
+
+    When an app starts up, we will need to do the following things
+    to initialize the user's environment to work properly with the Globus
+    toolkit:
 
         Set up the user's environment to point at the
-        appropriate local settings. (os.environ)
+        appropriate local settings by modifying os.environ.
 
         Determine if a valid proxy is in place. If not,
         call grid-proxy-init to create one.
@@ -117,54 +146,50 @@ class CertificateManager:
     existing proxy will expire soon, and provide a way
     to as the user for a renewal of it.
 
+    Instance variables
+    ------------------
+
+    userInterface	Reference to the UI object responsbile
+    			for manipulations on this manager.
+
+    userProfileDir	Location of the per-user profile directory
+    			for the user of this manager.
+
+    repoPath		Location of the certificate repository used by this mgr.
+
+    
+    
+
     """
 
-    CONFIG_FILE = "certmgr.cfg"
-    CONFIG_FILE_SECTION = "CertificateManager"
+    __slots__ = [
+        'userInterface',
+        'userProfileDir',
+        'certRepoPath',
+        'certRepo',
+        'caDir',
+        'proxyPath',
+        'defaultIdentity',
+        ]
 
-    USER_CERT_DIR = "identity_certificates"
-
-    def __init__(self, userProfileDir, userInterface,
-                 identityCert = None,
-                 identityKey = None,
-                 inheritIdentity = 0):
+    def __init__(self, userProfileDir, userInterface):
         """
         CertificateManager constructor.
 
         userProfileDir - directory in which this user's profile information is
-        kept. The CM uses this directory to store the user's identity certificates,
-        the user-specific CA certs (if present), and the certificate management
-        configuration ifle.
-
-        systemCACertDir - the directory in which to find the system store
-        of trusted CA certificates.
+        kept. The CM uses this directory to store the certificate repository.
 
         userInterface - the CMUserInterface object through which interactions
         with the user are managed.
+
 
         """
 
         self.userInterface = userInterface
         self.userProfileDir = userProfileDir
-        self.userCertPath = os.path.join(userProfileDir, self.USER_CERT_DIR)
-
-        #
-        # Flags that modify default runtime environment behavior
-        #
-
-        self.forceCertFile = None
-        self.forceKeyFile = None
-        self.forceCert = None
-        self.inheritIdentity = None
-
-        #
-        # Certificate mgr options.
-        #
-
-        self.defaultIdentityDN = None
-        self.proxyCertPath = None
-        self.systemCACertDir = None
-        self.useSystemCADir = 0
+        self.certRepoPath = os.path.join(userProfileDir, "certRepo")
+        self.caDir = os.path.join(userProfileDir, "trustedCACerts")
+        self.defaultIdentity = None
 
         #
         # Tie the user interface to the cert mgr.
@@ -187,66 +212,30 @@ class CertificateManager:
                             % (self.userProfileDir))
 
 
+        if not os.path.isdir(self.caDir):
+            os.mkdir(self.caDir)
+
         #
         # Configure the certificate mgr.
         #
-        # First, load the config file.
-        #
-        self.loadConfiguration()
 
         #
-        # Then create the local CertificateRepository objects for the identity
-        # certificates and the trusted CA certs.
-        #
-        self.setupRepositories()
-
-        #
-        # Check for the special cases as passed on the command line.
-        # There are two valid and mutually exclusive possibilities:
-        #     both identityCert and identityKey set
-        #     inheritIdentity set
+        # Attempt to initialize the certificate repository. First try to initialize
+        # one without specifying the create option.
         #
 
-        if identityCert is not None:
-            if identityKey is None or inheritIdentity:
-                msg = "CertificateManager: invalid usage: identityCert=%s identityKey=%s inheritIdentity=%s" % (
-                    identityCert,
-                    identityKey,
-                    inheritIdentity)
-                log.error(msg)
-
-                raise Exception, msg
-
+        try:
+            self.certRepo = CertificateRepository.CertificateRepository(self.certRepoPath,
+                                                                        create = 0)
+            log.debug("Opened repository %s", self.certRepoPath)
+        except CertificateRepository.RepoDoesNotExist:
             #
-            # We're okay, and have an identity to use.
+            # We don't have a cert repo.
+            # Initialize ourselves.
             #
 
-            self.SetForcedIdentity(identityCert, identityKey)
-
-        elif inheritIdentity:
-            if identityKey is not None or identityCert is not None:
-                msg = "CertificateManager: invalid usage: identityCert=%s identityKey=%s inheritIdentity=%s" % (
-                    identityCert,
-                    identityKey,
-                    inheritIdentity)
-                log.error(msg)
-
-                raise Exception, msg
-
-            #
-            # We're okay here too, and want to inherit the certificate
-            # management from the process environment.
-            #
-
-            self.SetInheritedIdentity()
+            self.InitializeRepository()
             
-        #
-        # At this point we're good to go.
-        # However, the local environment variables have not been set up
-        # yet. We leave it for the user to invoke the InitEnvironment()
-        # method at a time of his choosing.
-        #
-
         #
         # We need to do some sanity checking here (ensure we have at least one
         # identity certificate, for instance)
@@ -254,669 +243,488 @@ class CertificateManager:
 
         self.CheckConfiguration()
 
-    def SetForcedIdentity(self, cert, key):
+    def InitializeRepository(self):
         """
-        Use the identity certificate and private key as passed on
-        the command line as the identity for this process.
+        Initiailize the cert repository as we don't already have one.
+
+        We need to first create a new repository (by passing create=1
+        to the constructor).
+
+        Then we need to grope about in the system for the location of any
+        existing certificates, both user identity and trusted CA.
+
         """
 
-        #
-        # First see if the files exist.
-        #
-
-        if not os.access(cert, os.R_OK):
-            log.critical("SetForcedIdentity: Cannot read certificate %s", cert)
-            raise Exception, "SetForcedIdentity: Cannot read certificate ", cert
-        
-        if not os.access(key, os.R_OK):
-            log.critical("SetForcedIdentity: Cannot read private key %s", key)
-            raise Exception, "SetForcedIdentity: Cannot read private key %s" % (key,)
-
-        #
-        # Now try to create a certificate obj to ensure it's actually a cert.
-        #
+        log.debug("initializing repository")
 
         try:
-            certObj = Certificate(cert, key)
+            self.certRepo = CertificateRepository.CertificateRepository(self.certRepoPath,
+                                                                        create = 1)
+        except CertificateRepository.RepoAlreadyExists:
+            #
+            # We really shouldn't be here. Raise an exception.
+            #
 
-        except crypto.Error, e:
-            log.exception("Error reading certificate from %s %s", cert, key)
-            raise Exception, "SetForcedIdentity: invalid certificate %s %s: %s" % (cert, key, e)
+            raise Exception, "Receieved RepoAlreadyExists exception after we determined that it didn't actually exist"
 
-        #
-        # Okay, we're cool. Log a message and set us up for forcing.
-        #
+        self.InitRepoFromGlobus(self.certRepo)
 
-        log.debug("Forcing identity to %s", certObj.GetSubject())
-
-        self.forceCertFile = cert
-        self.forceKeyFile = key
-        self.forceCert = certObj
-
-    def SetInheritedIdentity(self):
+    def InitRepoFromGlobus(self, repo):
         """
-        Use the identity as defined in the process environment.
+        Initialize the given repository from the Globus cert state.
 
-        We must have settings for either X509_USER_PROXY or
-        all of X509_USER_CERT, X509_USER_KEY, and X509_RUN_AS_SERVER.
-        """
+        If we cannot find an identity certificate, do a callback on the user interface
+        when we're done with the rest of the initialization so that the user
+        has an opportunity to request a certificate.
 
-        prox = os.getenv("X509_USER_PROXY")
-        cert = os.getenv("X509_USER_CERT")
-        key = os.getenv("X509_USER_KEY")
-        server = os.getenv("X509_RUN_AS_SERVER")
+        If we cannot find any globus state, callback to the user interface for that
+        as well. That's a harder problem to solve, but it's not up to us down here.
 
-        log.debug("SetInheritedIdentity: X509_USER_PROXY=%s X509_USER_CERT=%s X509_USER_KEY=%s X509_RUN_AS_SERVER=%s",
-                  prox, cert, key, server)
-
-        #
-        # Sanity checks.
-        #
-
-        if prox is not None:
-            if cert is not None or key is not None or server is not None:
-                log.warn("X509_USER_PROXY set, but cert/key is also set")
-        else:
-            if cert is None or key is None or server is None:
-                log.warn("X509_USER_PROXY not set, but not all of cert/key/run_as_server are set")
-
-        #
-        # Possibly more sanity checking, but later. Calling process should have
-        # set up the environment properly.
-        #
+        We use the pyGlobus low-level sslutilsc.get_certificate_locations call
+        to determine where Globus assumes things are going to be placed.
         
-        self.inhertIdentity = 1
+        """
 
+        certLocations = pyGlobus.sslutilsc.get_certificate_locations()
+
+        userCert = certLocations['user_cert']
+        userKey = certLocations['user_key']
+        caDir = certLocations['cert_dir']
+
+        userCert= userKey = None
+
+        #
+        # First the user cert.
+        #
+
+        if userCert is not None and userKey is not None:
+            #
+            # Shh, don't tell. Create a cert object so we can
+            # extract the subject name to tell the user.
+            #
+
+            certObj = CertificateRepository.Certificate(userCert)
+
+            caption = "Initial import of Globus identity certificate"
+            message = "Import certificate for %s. Please enter the passphrase for the private key of this certificate." % (certObj.GetSubject())
+
+            passphraseCB = self.GetUserInterface().GetPassphraseCallback(caption, message)
+
+            impCert = self.ImportIdentityCertificatePEM(repo, userCert, userKey,
+                                                        passphraseCB)
+            impCert.SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
+            
+        #
+        # Now handle the CA certs.
+        #
+
+        if caDir is not None:
+            files = os.listdir(caDir)
+
+            #
+            # Extract the files from the caDir that match OpenSSL's
+            # 8-character dot index format.
+            #
+            regexp = re.compile(r"^[\da-fA-F]{8}\.\d$")
+            possibleCertFiles = filter(lambda f, r = regexp: r.search(f), files)
+
+            for f in possibleCertFiles:
+
+                path = os.path.join(caDir, f);
+                print "%s might be a cert" % (path)
+
+                try:
+                    desc = self.ImportCACertificatePEM(repo, path)
+                    
+                    print "Imported ", desc.GetSubject()
+
+                    #
+                    # See if there's a signing policy file. It'll be named
+                    # without the .0
+                    #
+
+                    signingPath = os.path.join(caDir,
+                                               "%s.signing_policy" %
+                                               (desc.GetSubject().get_hash()))
+                    if os.path.isfile(signingPath):
+                        print "Copying signing policy ", signingPath
+                        shutil.copyfile(signingPath,
+                                        desc.GetFilePath("signing_policy"))
+                    
+                except:
+                    print "Failure to import ", path
+
+    def ImportIdentityCertificatePEM(self, repo, userCert, userKey, passphraseCB):
+        impCert = repo.ImportCertificatePEM(userCert, userKey, passphraseCB)
+        
+        impCert.SetMetadata("AG.CertificateManager.certType", "identity")
+        return impCert
+        
+    def ImportCACertificatePEM(self, repo, cert):
+        impCert = repo.ImportCertificatePEM(cert)
+        
+        impCert.SetMetadata("AG.CertificateManager.certType", "trustedCA")
+
+        return impCert
+        
     def GetUserInterface(self):
         return self.userInterface
 
+    def GetCertificateRepository(self):
+        return self.certRepo
+
+    def CreateProxy(self):
+        self.GetUserInterface().CreateProxy()
+
+    def CreateProxyCertificate(self, passphrase, bits, hours):
+        """
+        Create a globus proxy.
+        """
+
+        ident = self.GetDefaultIdentity()
+        ProxyGen.CreateGlobusProxy(passphrase,
+                                   ident.GetPath(),
+                                   ident.GetKeyPath(),
+                                   self.caDir,
+                                   self.proxyPath,
+                                   bits,
+                                   hours)
+        
+
     def HaveValidProxy(self):
         """
-        Returns 1 if there is a valid proxy configured.
+        Return true if there is a valid proxy for the current identity.
         """
-
-        p = self.GetCurrentProxy()
-        return p is not None
-
-    def GetCurrentProxy(self):
-        """
-        Returns a Certificate object representing the
-        current proxy, if it is valid.
-        """
-        
-        #
-        # Attempt to load the proxy certificate so that we can check its
-        # validity.
-        #
 
         try:
-            pcert = Certificate(self.proxyCertPath)
-        except IOError, e:
-            log.debug("proxy certificate does not exist")
-            pcert = None
+            pcert = self._VerifyGlobusProxy()
+            log.debug("HaveValidProxy: found proxy ident %s",
+                      str(pcert.GetSubject()))
 
-        if pcert is not None:
-            if pcert.IsExpired():
-                log.debug("Proxy cert %s is expired", self.proxyCertPath)
-                pcert = None
-            else:
-                log.debug("Proxy %s is valid", self.proxyCertPath)
-
-        return pcert
-    
-    def ConfigureProxy(self):
-        """
-        Configure the proxy cert for our default identity cert.
-
-        First check to see if we have an unexpired proxy already. If so, and if
-        it has a long enough lifetime left, just return.
-
-        If we need to create a new proxy, invoke the user interface's
-        QueryForPrivateKeyPassphrase() method, passing along the
-        certificate from which we will
-
-        """
-
-        pcert = self.GetCurrentProxy()
-
-        userMessage = ""
-        if pcert is None:
-            #
-            # We don't have a valid proxy, so we need to create one.
-            #
-
-            while 1:
-                try:
-
-                    #
-                    # Create the proxy.
-                    #
-                    # This may fail in a number of ways (the user may cancel
-                    # the passphrase request since he doesn't know the passphrase,
-                    # he may type in a bad passphrase, the certificate may be invalid,
-                    # permissions may be wrong, etc).
-                    #
-                    # Some things we can recover from; if so, we retry the creation
-                    # (perhaps with a message to the user).
-                    #
-                    # Others we don't attempt to recover from, and leave the
-                    # application without a valid proxy. In that event, we're
-                    # likely to end up back here the next time the user
-                    # attempts an operation that requires the proxy. Hopefully, he
-                    # has fixed the problem that led to the error.
-                    #
-
-                    pcert = self.CreateProxy(userMessage)
-                    break
-
-                except PassphraseRequestCancelled:
-                    break
-
-                except InvalidPassphraseException:
-                    userMessage = "Passphrase incorrect, please try again."
-
-                except GridProxyInitError, e:
-                    userMessage = "Error encountered during grid-proxy-init: " + e.args[1]
-
-                except ProxyRequestError, e:
-                    #
-                    # These errors are not recoverable ... reraise
-                    #
-
-                    log.exception("Unrecoverable error during proxy creation attempt")
-                    raise e
-
-        #
-        # pcert now has information on our current proxy certificate.
-        # right now, we don't really need it.
-        #
-
-        pcert = None
-
-    def CreateProxy(self, userMessage = ""):
-        """
-        Create a proxy certificate from our default identity certificate.
-
-        We snag the certificate from our identity cert repository
-        so that we can pass it to the user interface to present to the
-        user when they are asked for a password for the cert.
-
-        """
-
+            return 1
+        except:
+            return 0
         
-        cert = self.userCertRepo.FindCertificateByDN(self.defaultIdentityDN)
-
-        if cert is None:
-            err = "Could not find certificate for %s" % (self.defaultIdentityDN)
-            log.error(err)
-            raise ProxyRequestError(err)
-
-        ret = self.GetUserInterface().GetProxyInfo(cert, userMessage)
-
-        if ret is None:
-            raise PassphraseRequestCancelled
-
-        #
-        # initialize the excpetion that we might raise if there is a problem
-        #
-        # We don't actually raise it until the process has completed, in order
-        # to ensure clean shutdown of that child process.
-        #
-        
-        exceptionToRaise = None
-        (passphrase, hours, bits) = ret
-
-        #
-        # We are going to assume Globus here. In particular, we are going
-        # to assume that we can use the commandline grid-proxy-init
-        # program with the -pwstdin flag.
-        #
-        # The other required options to grid-proxy-init are:
-        #
-        #   -hours <proxy lifetime in hours>
-        #   -bits <size of key in bits>
-        #   -cert <user cert file>
-        #   -key <user key file>
-        #   -certdir <trusted cert directory>
-        #   -out <proxyfile>
-        #
-
-        #
-        # Find grid-proxy-init in the globus directory.
-        #
-        # TODO: this could likely be factored, possibly to Platform,
-        # possibly to some other place.
-        #
-
-        if sys.platform == "win32":
-            exe = "grid-proxy-init.exe"
-        else:
-            exe = "grid-proxy-init"
-
-        gpiPath = os.path.join(os.environ['GLOBUS_LOCATION'], "bin", exe)
-
-        if not os.access(gpiPath, os.X_OK):
-            msg = "grid-proxy-init not found at %s" % (gpiPath)
-            log.error(msg)
-            raise ProxyRequestError(msg)
-
-        certPath = cert.GetPath()
-        keyPath = cert.GetKeyPath()
-        caPath = self.systemCACertDir
-        outPath = self.proxyCertPath
-
-        isWindows = sys.platform == "win32"
-        
-        #
-        # turn on gpi debugging
-        #
-        debugFlag = "-debug"
-        #debugFlag = ""
-
-        cmd = '"%s" %s -pwstdin -bits %s -hours %s -cert "%s" -key "%s" -certdir "%s" -out "%s"'
-        cmd = cmd % (gpiPath, debugFlag, bits, hours, certPath, keyPath, caPath, outPath)
-
-        #
-        # Windows pipe code needs to have the whole thing quoted. Linux doesn't.
-        #
-        
-        if isWindows:
-            cmd = '"%s"' % (cmd)
-            
-        log.debug("Running command: '%s'", cmd)
-
-        try:
-            (rd, wr) = popen2.popen4(cmd)
-
-
-            #
-            # There is ugliness here where on Linux, we need to close the
-            # write pipe before we try to read. On Windows, we need
-            # to leave it open.
-            #
-
-            wr.write(passphrase + "\n")
-
-            if not isWindows:
-                wr.close()
-
-            while 1:
-                l = rd.readline()
-                if l == '':
-                    break
-
-                #
-                # Check for errors. The response from grid-proxy-init
-                # will look something like this:
-                #
-                # error:8006940B:lib(128):proxy_init_cred:wrong pass phrase:sslutils.c:3714
-                #
-
-                if l.startswith("error"):
-
-                    err_elts = l.strip().split(":")
-                    if len(err_elts) == 7:
-                        err_num = err_elts[1]
-                        err_str = err_elts[4]
-
-                        if err_str == "wrong pass phrase":
-                            exceptionToRaise = InvalidPassphraseException()
-
-                        else:
-                            exceptionToRaise = GridProxyInitError("Unknown grid-proxy-init error", l.strip())
-                                       
-                    else:
-                        exceptionToRaise = GridProxyInitError("Unknown grid-proxy-init error", l.strip())
-
-                log.debug("Proxy returns: %s", l.rstrip())
-
-            rd.close()
-
-            if isWindows:
-                wr.close()
-
-        except IOError:
-            log.exception("Got an IO error in proxy code, ignoring")
-            pass
-
-        if exceptionToRaise is not None:
-            raise exceptionToRaise
-
-
     def InitEnvironment(self):
         """
         Configure the process environment to correspond to the chosen configuration.
 
-        We set the following variables if we are not configured to use a
-        Globus proxy:
+        This method does not attempt to remedy any
+        problems in the configuration; rather, if the situation is not
+        to its liking, it raises an exception telling the caller what
+        the problem is. It is safe to reinvoke this method as needed.
+
+        If there are no identity certificates present, raise the
+        NoCertificates exception.
+
+        If there is exactly one identity certificate, mark it as the
+        default certificate.
+
+        If there are more than one identity certificates and none is
+        marked default, or more than one is marked default, raise the
+        NoDefaultIdentity exception.
+
+        Examine the default identity certificate.
+
+        If it has an encrypted private key, check for the existence of
+        a Globus proxy for the cert. If one does not exist, raise the
+        ProxyExpired exception.
+
+        Otherwise, set the following environment variables:
+
+            X509_USER_PROXY: user proxy cert
+            X509_CERT_DIR: location of trusted CA certificates
+
+        If the default identity certificate has an unencrypted private key,
+        we can use it directly. Set the following environment variables:
 
             X509_USER_CERT: user's certificate
             X509_USER_KEY: user's private key
-            X509_RUN_AS_SERVER: set if we need to override a proxy cert setting
-            (perhaps in the registry)
+            X509_RUN_AS_SERVER: set to override any lingering proxy cert setting
 
-        If a proxy is in use, we set the following variables:
 
-            X509_USER_PROXY: user proxy cert
-
-        In any event, we set this:
-
-            X509_CERT_DIR: location of trusted CA certificates
-
-        It is possible for this function to raise an exception. If it does,
-        the certificate manager is still in a valid state, but the client
-        will not have a properly configured security environment, and will
-        have to attempt to call InitEnvironment again after fixing
-        the problem.
-
-        """
-
-        #
-        # First determine if we're forcing a particular identity or if we're
-        # inheriting from our environment.
-        #
-
-        if self.forceCertFile is not None:
-            #
-            # We're forcing. Set the X509_USER_CERT, X509_USER_KEY, X509_RUN_AS_SERVER
-            # environment variables.
-            #
-
-            log.debug("InitEnvironment: force to identity %s via %s %s",
-                      self.forceCert.GetSubject(), self.forceCertFile, self.forceKeyFile)
-            os.environ['X509_USER_CERT'] = self.forceCertFile
-            os.environ['X509_USER_KEY'] = self.forceKeyFile
-            os.environ['X509_RUN_AS_SERVER'] = "1"
-            return
-
-        elif self.inheritIdentity:
-            #
-            # We're inheriting our calling process's environment.
-            #
-            # Don't touch that environment
-            #
-            
-            log.debug("InitEnvironment: inheriting process environment")
-            return
-
-        #
-        # Special cases handled, go on with the usual.
-        #
-
-        log.debug("InitEnvironment: using standard proxy setup")
-
-        self.ConfigureProxy()
-
-        #
-        # If we're on windows, make these mangled paths without
-        # spaces
-        #
-
-        if sys.platform == "win32":
-            proxyPath = win32api.GetShortPathName(self.proxyCertPath)
-            caPath = win32api.GetShortPathName(self.systemCACertDir)
-        else:
-            proxyPath = self.proxyCertPath
-            caPath = self.systemCACertDir
-
-        log.debug("Set X509_USER_PROXY to %s", proxyPath)
-        log.debug("Set X509_CERT_DIR to %s", caPath)
-        os.environ['X509_USER_PROXY'] = proxyPath
-        os.environ['X509_CERT_DIR'] = caPath
-
-    def setupRepositories(self):
-        """
-        Create the CertificateRepository objects.
-
-        We have one for user identities and one for system CA certs.
-
-        """
-
-        gcerts = None
-        configChanged = 0
-
-        #
-        # Check to ensure that our certificate directories haven't vanished
-        # somehow.
-        #
-
-        if not os.path.isdir(self.userCertPath):
-            #
-            # Hm, user must have deleted his certificate directory.
-            # 
-            # Load up the globus info and recopy the certificate, if possible.
-            #
-
-            try:
-                os.makedirs(self.userCertPath)
-            except os.error, e:
-                log.exception("Error creating user certificate path %s", self.userCertPath)
-                raise e
-
-            gcerts = FindGlobusCerts()
-
-            if 'x509_user_cert' in gcerts and 'x509_user_key' in gcerts:
-                #
-                # We have a user cert and key.
-                #
-                # Initialize a certificate object with them, and import to the
-                # user certificate repository.
-                #
-
-                log.debug("Reloading user identity repository from globus default cert")
-
-                cert = Certificate(gcerts['x509_user_cert'],
-                                   keyPath = gcerts['x509_user_key'])
-
-                #
-                # Write the cert out to the newly-created user certificate directory
-                #
-
-                cert.WriteToRepoDir(self.userCertPath)
-
-                #
-                # Set the default identity to this cert's DN.
-                #
-                # TODO: this needs to actually use the hash of the DN,
-                # in the event that we have multiple certs with the same DN.
-                # (perhaps in the case where there's an expired cert and a new cert..)
-                #
-
-                self.defaultIdentityDN = cert.GetSubject()
-                log.debug("Loaded initial cert %s", cert.GetSubject())
-                configChanged = 1
-
-        #
-        # Check to see that the CA cert dir is still there.
-        # It might have gotten moved with a reinstallation of the Globus software.
-        #
-        if not os.path.isdir(self.systemCACertDir):
-            if gcerts is None:
-                gcerts = FindGlobusCerts()
-
-            if 'x509_cert_dir' in gcerts:
-                self.systemCACertDir = gcerts['x509_cert_dir']
-                log.debug("set new system CA cert dir %s", self.systemCACertDir)
-            configChanged = 1
-
-        if configChanged:
-            self.writeConfiguration()
-
-        self.userCertRepo = CertificateRepository(self.userCertPath)
-
-        if os.path.isdir(self.systemCACertDir):
-            self.trustedCARepo = CertificateRepository(self.systemCACertDir)
-        else:
-            self.trustedCARepo = None
-            log.error("Cannot find system CA certificate directory %s",
-                      self.systemCACertDir)
-
-
-    def loadConfiguration(self, isConfigReloadRetry = 0):
-        """
-        Load the certificate manager configuration information.
-
-        We load from certmgr.cfg in the user profile directory.
-
-        If the certmgr.cfg file does not exist, invoke
-        setupInitialConfig() to create it from defaults.
-        """
-
-        self.configFile = os.path.join(self.userProfileDir, self.CONFIG_FILE)
-
-        if not os.access(self.configFile, os.R_OK):
-            log.debug("setting up initial configuration")
-            self.setupInitialConfig()
-        else:
-            log.debug("using existing configuration")
-
-        #
-        # Here, config file should exist. Doublecheck that
-        # we will be able to write to it.
-        #
-
-        if not os.access(self.configFile, os.W_OK):
-            log.warn("Configuration file %s may not be writable", self.configFile)
-
-        cp = self.configParser = ConfigParser.ConfigParser()
-        cp.read(self.configFile)
-
-        self.options = ConfigParserSection(cp, self.CONFIG_FILE_SECTION)
-
-        #
-        # Initialize local state from config file.
-        #
-
-        try:
-            self.defaultIdentityDN = self.options['defaultIdentityDN']
-            self.useSystemCADir = self.options['useSystemCADir']
-            self.systemCACertDir = self.options['systemCACertDir']
-            self.proxyCertPath = self.options['proxyCertPath']
-        except KeyError, e:
-            log.exception("exception on loadConfiguration")
-
-            if isConfigReloadRetry:
-                log.error("Configuration file did not load properly, even after reloading defaults")
-                raise Exception, "Configuration file did not load properly, even after reloading defaults"
-            log.info("Configuration file is invalid, reloading from defaults")
-            self.setupInitialConfig()
-            self.loadConfiguration(1)
-
-    def writeConfiguration(self):
-        """
-        Write out the current state of the configuration object.
-        """
-
-        cp = ConfigParser.ConfigParser()
-        options = ConfigParserSection(cp, self.CONFIG_FILE_SECTION)
-
-        options['defaultIdentityDN'] = self.defaultIdentityDN
-        options['systemCACertDir'] = self.systemCACertDir
-        options['useSystemCADir'] = self.useSystemCADir
-        options['proxyCertPath'] = self.proxyCertPath
-        fp = open(self.configFile, "w")
-        cp.write(fp)
-        fp.close()
-
-
-    def setupInitialConfig(self):
-        """
-        There was not a configuration file in the user's profile directory.
-
-        Create one with the defaults.
-        Also, set up the user environment:
-            Create the user certificate directory.
-            Copy the default Globus user cert, if present, to it.
-            Set the default identity to the identity of the default globus cert
-            Copy the anonymous user cert, if present, to it
-        """
-
-        if not os.path.isdir(self.userCertPath):
-            try:
-                os.makedirs(self.userCertPath)
-            except os.error, e:
-                log.exception("Error creating user certificate path %s", self.userCertPath)
-                raise e
-
-        #
-        # Determine where Globus thinks the user certs are
-        #
-
-        gcerts = FindGlobusCerts()
-
-        if 'x509_user_cert' in gcerts and 'x509_user_key' in gcerts:
-            #
-            # We have a user cert and key.
-            #
-            # Initialize a certificate object with them, and import to the
-            # user certificate repository.
-            #
-
-            cert = Certificate(gcerts['x509_user_cert'],
-                               keyPath = gcerts['x509_user_key'])
-
-            #
-            # Write the cert out to the newly-created user certificate directory
-            #
-
-            cert.WriteToRepoDir(self.userCertPath)
-
-            #
-            # Set the default identity to this cert's DN.
-            #
-            # TODO: this needs to actually use the hash of the DN,
-            # in the event that we have multiple certs with the same DN.
-            # (perhaps in the case where there's an expired cert and a new cert..)
-            #
-
-            self.defaultIdentityDN = cert.GetSubject()
-            log.debug("Loaded initial cert %s", cert.GetSubject())
-
-        if 'x509_user_proxy' in gcerts:
-            #
-            # The environment defined a user proxy location.
-            # Go ahead and use this location for our purposes.
-            # This will make us a little more compatible, and it
-            # is already in a usable temporary storage.
-            #
-
-            self.proxyCertPath = gcerts['x509_user_proxy']
-        else:
-            #
-            # Otherwise, use the system temp dir.
-            #
-
-            #
-            # We do an explicit check for the existence of
-            # os.getuid() so that we can align our proxy with the defualt
-            # globus proxy location on unixlike platforms.
-            #
-
-            if hasattr(os, 'getuid'):
-                uid = os.getuid()
-                self.proxyCertPath = os.path.join(Platform.GetTempDir(),
-                                                  "x509up_u%s" % (uid,))
-            else:
-                user = Platform.GetUsername()
-                self.proxyCertPath = os.path.join(Platform.GetTempDir(), "x509_up_" + user)
-
-
-        if 'x509_cert_dir' in gcerts:
-            self.systemCACertDir = gcerts['x509_cert_dir']
-
-        self.useSystemCADir = 1
-
-        #
-        # We haven't defined how the anonymous certs are done yet,
-        # so ignore this for now.
-        #
-
-        #
-        # Write out the config file
-        #
-
-        self.writeConfiguration()
+        This method sets self.defaultIdentity as a side effect. It should be
+        viewed as the current appropriate mechanism for setting defaultIdentity.
         
+        """
+
+        #
+        # Write out the trusted CA dir as well, and set that
+        # environment variable. We do this first so that we
+        # can use it later on.
+        #
+
+        self._InitializeCADir()
+
+        idCerts = self.GetIdentityCerts()
+
+        if len(idCerts) == 0:
+            raise NoCertificates
+
+        if len(idCerts) == 1:
+            idCerts[0].SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
+
+        #
+        # Now we know we have at least one certificate. Make sure we have a unique
+        # default identity.
+        #
+        
+        defaultIdCerts = self.GetDefaultIdentityCerts()
+
+        if len(defaultIdCerts) != 1:
+            raise NoDefaultIdentity
+
+        defaultIdentity = defaultIdCerts[0]
+
+        log.debug("Using default identity %s", defaultIdentity.GetSubject())
+
+        self.defaultIdentity = defaultIdentity
+
+        #
+        # Now to see if we need a proxy.
+        #
+
+        if defaultIdentity.HasEncryptedPrivateKey():
+            self._InitEnvWithProxy()
+        else:
+            self._InitEnvWithCert()
+
+    def _InitializeCADir(self):
+        """
+        Initialize the app's trusted CA certificate directory from the cert repo.
+
+        We first clear out all state, then copy the certs and signing_policy
+        files from each of the certificates in the repo marked as being
+        trusted CA certs.
+        """
+        
+        #
+        # Clear out the ca dir first.
+        #
+
+        for file in os.listdir(self.caDir):
+            path = os.path.join(self.caDir, file)
+            log.debug("Unlink %s", path)
+            os.unlink(path)
+            
+        for c in self.GetCACerts():
+            nameHash = c.GetSubject().get_hash()
+
+            i = 0
+            while 1:
+                destPath = os.path.join(self.caDir, "%s.%d" % (nameHash, i))
+                if not os.path.isfile(destPath):
+                    break
+                i = i + 1
+                    
+            print "CA cert %s: hash=%s dest=%s" % (c.GetSubject(), nameHash, destPath)
+            shutil.copyfile(c.GetPath(), destPath)
+
+            #
+            # Look for a signing policy
+            #
+
+            spath = c.GetFilePath("signing_policy")
+            if os.path.isfile(spath):
+                shutil.copyfile(spath, os.path.join(self.caDir, "%s.signing_policy" % (nameHash)))
+        os.environ['X509_CERT_DIR'] = self.caDir
+
+    def _InitEnvWithProxy(self):
+        """
+        Set up the runtime environment for using a globus proxy to defaultIdentity.
+
+        For now, when we're just doing single identities, we write the
+        proxy out to the location where Globus is expecting it.
+
+        Later we'll think about using a per-cert location.
+
+        """
+
+        defaultIdentity = self.defaultIdentity
+        log.debug("Initializing environment with proxy cert for %s",
+                  defaultIdentity.GetSubject())
+
+        #
+        # Check to see if we have a valid proxy.
+        # This may raise a number of different exceptions; let them
+        # filter to our caller.
+        #
+        # If it succeeds, it'll return a Certificate object for the
+        # currently-valid certificate. 
+        #
+
+        proxyCert = self._VerifyGlobusProxy()
+
+        #
+        # We have a valid Globus proxy in place.
+        # Set up the environment to use this proxy certificate.
+        #
+
+        log.debug("Configuring for user proxy issued from %s",
+                  str(defaultIdentity.GetSubject()))
+        log.debug("Proxy %s will expire %s",
+                  proxyCert.GetPath(),
+                  proxyCert.GetNotValidAfter())
+
+        os.environ['X509_USER_PROXY'] = proxyCert.GetPath()
+
+        #
+        # Clear the X509_USER_CERT, X509_USER_KEY, and
+        # X509_RUN_AS_SERVER environment variables,
+        # as their settings will cause the proxy setting to be ignored.
+        #
+
+        for envar in ('X509_USER_CERT', 'X509_USER_KEY', 'X509_RUN_AS_SERVER'):
+            if envar in os.environ:
+                del os.environ[envar]
+
+    def _VerifyGlobusProxy(self):
+        """
+        Perform some exhaustive checks to see if there
+        is a valid globus proxy in place.
+        """
+
+        #
+        # Ask globus where it wants the proxy put.
+        #
+
+        certLocations = pyGlobus.sslutilsc.get_certificate_locations()
+        userProxy = certLocations['user_proxy']
+        self.proxyPath = userProxy
+
+        #
+        # The basic scheme here is to test for the various possibilities
+        # of *failure* for there to be a valid cert, and raise the appropriate
+        # exception for each. If we get to the end, we're still in the running
+        # and we can set up the environment.
+        #
+        # Doing it this way makes the code more readable than a deeply-nested
+        # set of if-tests that culminate with success down deep in the nesting.
+        # It also makes it easier to add additional tests if necessary.
+        #
+
+        #
+        # Check to see if the proxy file exists.
+        #
+
+        if not os.path.isfile(userProxy):
+            raise NoProxyFound
+        
+        #
+        # Check to see if the proxy file is actually a certificate
+        # of some sort.
+        #
+        
+        try:
+            proxyCert = CertificateRepository.Certificate(userProxy)
+
+        except crypto.Error:
+            raise NoProxyFound
+
+        #
+        # Check to see if the proxy cert we found is really a globus
+        # proxy cert.
+        #
+
+        if not proxyCert.IsGlobusProxy():
+            raise NoProxyFound
+
+        #
+        # If we got here, we were able to load the purported
+        # proxy certificate into the var proxyCert.
+        #
+        # See if this proxy matches the default identity cert. We do this by
+        # comparing the subject name on the identity cert
+        # and the issuer name on the proxy.
+        #
+
+        proxyIssuer = proxyCert.GetIssuer()
+        idSubject = self.defaultIdentity.GetSubject()
+        if proxyIssuer.get_der() != idSubject.get_der():
+            raise NoProxyFound
+
+        #
+        # Check to see if the proxy cert has expired.
+        #
+
+        if proxyCert.IsExpired():
+            raise ProxyExpired
+
+        #
+        # We're okay. Return the certificate object.
+        #
+
+        return proxyCert
+    
+
+    def _InitEnvWithCert(self):
+
+        log.debug("Initializing environment with unencrypted user cert %s",
+                  self.defaultIdentity.GetSubject())
+
+        certPath = self.defaultIdentity.GetPath()
+        keyPath = self.defaultIdentity.GetKeyPath()
+
+        if 'X509_USER_PROXY' in os.environ:
+            del os.environ['X509_USER_PROXY']
+        os.environ['X509_USER_CERT'] = certPath
+        os.environ['X509_USER_KEY'] = keyPath
+        os.environ['X509_RUN_AS_SERVER'] = '1'
+
+    def SetDefaultIdentity(self, certDesc):
+        """
+        Make the identity represented by certDesc the default identity.
+
+        This only affects the cert repository; a followup call to InitEnvironment
+        is necessary to effect the change in the environment.
+        """
+
+        #
+        # First clear the default identity state from all id certs.
+        #
+
+        for c in self.GetIdentityCerts():
+            c.SetMetadata("AG.CertificateManager.isDefaultIdentity", "0")
+
+        #
+        # And set this one to be default.
+        #
+
+        certDesc.SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
+
+    def GetDefaultIdentity(self):
+        return self.defaultIdentity
+
+    def GetProxyPath(self):
+        return self.proxyPath
+
+    def GetIdentityCerts(self):
+        mdkey = "AG.CertificateManager.certType"
+        mdval = "identity"
+        identityCerts = self.certRepo.FindCertificatesWithMetadata(mdkey, mdval)
+        return identityCerts
+
+    def GetDefaultIdentityCerts(self):
+
+        def isIdentityCert(c):
+            idkey = "AG.CertificateManager.certType"
+            idval = "identity"
+            defkey = "AG.CertificateManager.isDefaultIdentity"
+            defval = "1"
+
+            return c.GetMetadata(idkey) == idval and c.GetMetadata(defkey) == defval
+        
+        return list(self.certRepo.FindCertificates(isIdentityCert))
+
+    def GetCACerts(self):
+        mdkey = "AG.CertificateManager.certType"
+        mdval = "trustedCA"
+        
+        caCerts = self.certRepo.FindCertificatesWithMetadata(mdkey, mdval)
+        return caCerts
+
+    
+
     def CheckConfiguration(self):
         """
         Perform a sanity check on the security execution environment
@@ -927,66 +735,34 @@ class CertificateManager:
         # identity cert repository.
         #
 
-        if len(self.userCertRepo.GetCertificates()) == 0:
-            #
-            # No certificates found.
-            #
-            # Determine where Globus thinks the user certs are, and try to
-            # load one from there.
-            #
-
-            gcerts = FindGlobusCerts()
-
-            if 'x509_user_cert' in gcerts and 'x509_user_key' in gcerts:
-                #
-                # We have a user cert and key.
-                #
-                # Initialize a certificate object with them, and import to the
-                # user certificate repository.
-                #
-
-                cert = Certificate(gcerts['x509_user_cert'],
-                                   keyPath = gcerts['x509_user_key'])
-                
-                #
-                # Write the cert out to the newly-created user certificate directory
-                #
-
-                cert.WriteToRepoDir(self.userCertPath)
-
-                #
-                # And update the repository.
-                #
-                self.userCertRepo.RescanRepository()
-
-
-                #
-                # Set the default identity to this cert's DN.
-                #
-                # TODO: this needs to actually use the hash of the DN,
-                # in the event that we have multiple certs with the same DN.
-                # (perhaps in the case where there's an expired cert and a new cert..)
-                #
-
-                self.defaultIdentityDN = cert.GetSubject()
-                log.debug("Reloaded initial cert %s", cert.GetSubject())
+        identityCerts = self.certRepo.FindCertificatesWithMetadata("AG.CertificateManager.certType",
+                                                                   "identity")
+        print "Found id certs ", identityCerts
+        if len(identityCerts) == 0:
+            log.error("No identity certs found")
 
         #
-        # Ensure that the default DN has a certificate. If it does not,
-        # log a warning.
+        # Find the default identity.
         #
 
-        log.debug("Checking that default dn %s has a certificate", self.defaultIdentityDN)
+        defaultIdCerts = self.certRepo.FindCertificatesWithMetadata("AG.CertificateManager.isDefaultIdentity",
+                                                                   "1")
+        print "Default ident ", defaultIdCerts
 
-        cert = self.userCertRepo.FindCertificateByDN(self.defaultIdentityDN)
 
-        if cert is None:
-            log.warn("No certificate found for default identity %s", self.defaultIdentityDN)
+class CmdlinePassphraseCallback:
+    def __init__(self, caption, message):
+        self.caption = caption
+        self.message = message
 
+    def __call__(self, rwflag):
+        print self.caption
+        print self.message
+        return getpass.getpass("Certmgr passphrase: ")
 
 class CertificateManagerUserInterface:
     """
-    Superclass for the UI interface to a CertificateManager.
+    Base class for the UI interface to a CertificateManager.
     """
 
     def __init__(self):
@@ -1024,382 +800,136 @@ class CertificateManagerUserInterface:
 
         return (passphrase, hours, bits)
 
+    def GetPassphraseCallback(self, caption, message):
+        return CmdlinePassphraseCallback(caption, message)
 
-def FindGlobusCertsWin32():
-
-    vals = {}
-
-    reg = _winreg.ConnectRegistry(None, _winreg.HKEY_CURRENT_USER)
-
-    try:
-        k = _winreg.OpenKey(reg, r"Software\Globus\GSI")
-
-    except WindowsError:
-        log.exception("FindGlobusCertsWin32: Could not open windows registry")
-        return {}
-
-    if k is None:
-        log.warn("FindGlobusCertsWin32: Could not open windows registry")
-        return vals
-
-    for name in ('x509_cert_dir', 'x509_cert_file', 'x509_user_proxy',
-              'x509_user_cert', 'x509_user_key'):
-        try:
-            (val, type) = _winreg.QueryValueEx(k, name)
-
-            #
-            # We bypass the existence test for the globus user proxy
-            # in the event that it doesn't exist yet.
-            #
-
-            if name == 'x509_user_proxy':
-                log.debug("FindGlobusCertsWin32: Found name=%s val=%s", name, val)
-                vals[name] = val
-            else:
-                if os.access(val, os.R_OK):
-                    log.debug("FindGlobusCertsWin32: Found name=%s val=%s", name, val)
-                    vals[name] = val
-                else:
-                    log.debug("FindGlobusCertsWin32: Found name=%s val=%s, but file does not exist", name, val)
-                    
-        except Exception, e:
-            log.exception("FindGlobusCertsWin32: %s not found", name)
-            pass
-
-    k.Close()
-
-    return vals
-
-def FindGlobusCertsUnix():
-
-    vals = {}
-    try:
-        globusUserDir = os.path.join(os.environ['HOME'], ".globus")
-        userCert = os.path.join(globusUserDir, "usercert.pem")
-        userKey = os.path.join(globusUserDir, "userkey.pem")
-        if os.access(userCert, os.R_OK):
-            vals['x509_user_cert'] = userCert
-        if os.access(userKey, os.R_OK):
-            vals['x509_user_key'] = userKey
-
-        #
-        # Find the system CA directory
-        #
-
-        path = os.path.join(globusUserDir, "certificates")
-        if os.path.isdir(path):
-            vals['x509_cert_dir'] = path
-        else:
-            env = None
-            if os.environ.has_key('X509_CERT_DIR'):
-                env = os.environ['X509_CERT_DIR']
-
-            if env is not None and env != "":
-                vals['x509_cert_dir'] = env
-            else:
-                #
-                # Ugh. Nasty, but it matches the GT2.0 code.
-                #
-                path = "/etc/grid-security/certificates"
-                vals['x509_cert_dir'] = path
-
-    except:
-        log.exception("Exception in FindGlobusCertsUnix")
-
-    return vals
-
-if HaveWin32Registry:
-    FindGlobusCerts = FindGlobusCertsWin32
-else:
-    FindGlobusCerts = FindGlobusCertsUnix
-
-class CertificateRepository:
-    def __init__(self, dir):
+    def InitGlobusEnvironment(self):
         """
-        Create the repository.
+        Initialize the globus runtime environment.
 
-        dir - directory in which to store certificates.
+        This method invokes certmgr.InitEnvironment().
 
+        If the InitEnvrironment call succeeds, we are done.
+
+        If it does not succeed, it may raise a number of different exceptions
+        based on what in particular the error was. These must be handled
+        before the InitGlobusEnvironment call can succeed.
+
+        Since this is the user interface class, it can expect to do some
+        work on behalf of the user to remedy the problems.
         """
 
-        self.dir = dir
-
-        self.__scanDir()
-
-    def RescanRepository(self):
-        self.__scanDir()
-
-    def GetCertificates(self):
-        return self.certDict.values()
-
-    def FindCertificateByDN(self, dn):
-        """
-        Find a certificate that matches the given dn.
-
-        For now, we just do an exact match; we will likely move the
-        keying of certificates to be DN hashes as computed by
-        OpenSSL from the certificate itself, as that should be more reliable.
-        """
-
-        match = filter(lambda x, dn=dn: str(x.GetSubject()) == str(dn), self.GetCertificates())
-
-        if len(match) == 0:
-            return None
-        else:
-            return match[0]
-
-    def __scanDir(self):
-        """
-        Scan the certificate directory and initialize cert dict.
-        """
-
-        self.certDict = {}
-        log.debug("CertificateRepository: scanning %s", self.dir)
-        for file in os.listdir(self.dir):
-            if re.search("^[0-9A-Fa-f]+\.[0-9]$", file):
-                # print "Found cert file ", file
-
-                cert = self.loadCertFromFile(os.path.join(self.dir, file))
-                self.certDict[file] = cert
-
-    def loadCertFromFile(self, path):
-        """
-        Load a certificate from a file.
-
-        Returns the certificate object.
-
-        If we specialize the CertificateRepository, we can override the
-        default mechanism provided here.
-
-        """
-
-        key_path = path +  ".key"
-        if not os.path.exists(key_path):
-            key_path = None
-
-        #
-        # Hrm. The signing policy file doesn't use the trailing digit.
-        # Let's just doublecheck to make sure there's not more than
-        # one cert file with this hash.
-        #
-
-        policy_path = None
-        (dir, file) = os.path.split(path)
-        m = re.search("^([0-9A-Fa-f]+)\.[0-9]$", file)
-        if m:
-            hash = m.group(1)
-            policy_path = os.path.join(dir, hash + ".signing_policy")
-            if not os.path.exists(policy_path):
-                policy_path = None
-
-
-        #print "Have key %s" % (key_path)
-        #print "Have policy %s" % (policy_path)
-
-        cert = Certificate(path, keyPath = key_path, policyPath = policy_path)
-
-        return cert
-
-class Certificate:
-    def __init__(self,  path, keyPath = None, policyPath = None):
-        """
-        Create a certificate object.
-
-        This wraps an underlying OpenSSL X.509 cert object.
-
-        path - pathname of the stored certificate
-        keyPath - pathname of the private key for the certificate
-        poicyPath - pathame of the policy definition file for this CA cert
-        """
-
-        self.path = path
-        self.keyPath = keyPath
-        self.policyPath = policyPath
-
-        fh = open(self.path, "r")
-        self.certText = fh.read()
-        self.cert = crypto.load_certificate(crypto.FILETYPE_PEM, self.certText)
-        log.debug("Loaded certificate for %s", self.cert.get_subject())
-        fh.close()
-
-        #
-        # We don't load the privatekey with the load_privatekey method,
-        # as that requires the passphrase for the key.
-        # We'll just cache the text here.
-        #
-
-        if keyPath is not None:
-            fh = open(keyPath, "r")
-            self.keyText = fh.read()
-            fh.close()
-
-        #
-        # Also cache the text of the signing policy
-        #
-
-        if policyPath is not None:
-            fh = open(policyPath, "r")
-            self.policyText = fh.read()
-            fh.close()
-
-    def WriteToRepoDir(self, repoPath):
-        """
-        Write this certificate to the repository directory <repoPath>.
-
-        We determine the hash for this cert, and if there is already
-        a certificate written using that hash. (Hmm - what if we're trying
-        to write the same certficate twice?)
-
-        Compute the right numeric suffix for the certificate pathnames.
-
-        The cert itself is written as <hash>.<suffix>
-        The key is written <hash>.<suffix>.key
-        The signing policy is written <hash>.signing_policy.
-        Note the last doesn't use a suffix; this is the Globus toolkit
-        file naming policy, which has the potential of causing problems.
-
-        """
-
-        hash = self.cert.get_subject().get_hash()
-
-        suffix = 0
+        success  = 0
         while 1:
-            certPath = os.path.join(repoPath, "%s.%d" % (hash, suffix))
-            if not os.access(certPath, os.R_OK):
+            try:
+                self.certificateManager.InitEnvironment()
+                # yay!
+                success = 1
                 break
-            suffix += 1
+            except NoCertificates:
+                print ""
+                print "There are no certificates loaded; application cannot use Globus communications"
+                success = 0
+                break
 
-        fh = open(certPath, "w")
-        fh.write(crypto.dump_certificate(crypto.FILETYPE_PEM, self.cert))
-        fh.close()
+            except NoDefaultIdentity:
+                print ""
+                print "There are more than one certificates loaded and a unique default is not set"
+                print "Using the first one."
 
-        if self.keyPath is not None:
-            nkpath = certPath + ".key"
-            fh = open(nkpath, "w")
-            fh.write(self.keyText)
-            fh.close()
-            os.chmod(nkpath, 0600)
+                certs = self.certificateManager.GetIdentityCerts()
+                self.certificateManager.SetDefaultIdentity(certs[0])
+                # loop back to init env
 
-        if self.policyPath is not None:
-            fh = open(os.path.join(repoPath, "%s.signing_policy" % (hash)), "w")
-            fh.write(self.policyText)
-            fh.close()
+            except NoProxyFound, ProxyExpired:
+                print ""
+                print "No globus proxy found, creating.."
+                self.CreateProxy()
 
-    def GetPath(self):
-        return self.path
+        print "done, success=", success
 
-    def GetKeyPath(self):
-        return self.keyPath
+        return success
 
-    def GetSubject(self):
-        return self.cert.get_subject()
+    def CreateProxy(self):
+        """
+        Command-line interface for creating a Globus proxy.
 
-    def GetIssuer(self):
-        return self.cert.get_issuer()
+        Collect the passphrase, lifetime in hours, and key-size from user.
+        """
 
-    def IsExpired(self):
-        return self.cert.is_expired()
+        lifetime = "12"
+        bits = "1024"
+        ident = self.certificateManager.GetDefaultIdentity()
+        while 1:
+            print ""
+            print "Creating globus proxy for %s" % (str(ident.GetSubject()))
+            passphrase = getpass.getpass("Passphrase: ")
+            passphrase = passphrase.strip()
 
-class ConfigParserSection:
-    def __init__(self, cp, sectionName):
-        self.cp = cp
-        self.sectionName = str(sectionName)
+            if passphrase == "":
+                print "Empty passphrase received; aborting."
+                return
+            
+            print "Lifetime in hours [%s]: " % (lifetime,),
+            inp_lifetime = sys.stdin.readline()
+            inp_lifetime = inp_lifetime.strip()
+            
+            print "Keysize [%s]: " % (bits,),
+            inp_bits = sys.stdin.readline()
+            inp_bits = inp_bits.strip()
 
-        if not cp.has_section(self.sectionName):
-            cp.add_section(self.sectionName)
+            if inp_lifetime == "":
+                inp_lifetime = lifetime
+            if not re.search(r"^\d+$", str(inp_lifetime)):
+                print "Invalid lifetime."
+                continue
+            else:
+                lifetime = int(inp_lifetime)
 
-    def __getitem__(self, key):
-        key = str(key)
-        try:
-            val = self.cp.get(self.sectionName, key)
-        except ConfigParser.NoOptionError, e:
-            raise KeyError, e.args[0]
-        return val
+            if inp_bits == "":
+                inp_bits = bits
+            if not re.search(r"^\d+$", str(inp_bits)):
+                print "Invalid lifetime."
+                continue
+            else:
+                bits = int(inp_bits)
 
-    def __setitem__(self, key, val):
-        key = str(key)
-        self.cp.set(self.sectionName, key, val)
+            #
+            # Have input, try to create proxy.
+            #
 
-    def __delitem__(self, key):
-        key = str(key)
-        self.cp.remove_option(self.sectionName, key)
-
-    def keys(self):
-        return self.cp.options(self.sectionName)
-
-    def values(self):
-        for k in self.keys():
-            return self[k]
-
-#
-# YYMMDDHHMMSSZ
-#
-
-def utc2tuple(t):
-    if len(t) == 13:
-        year = int(t[0:2])
-        if year >= 50:
-            year = year + 1900
-        else:
-            year = year + 2000
-
-        month = t[2:4]
-        day = t[4:6]
-        hour = t[6:8]
-        min = t[8:10]
-        sec = t[10:12]
-    elif len(t) == 15:
-        year = int(t[0:4])
-        month = t[4:6]
-        day = t[6:8]
-        hour = t[8:10]
-        min = t[10:12]
-        sec = t[12:14]
-
-    ttuple = (year, int(month), int(day), int(hour), int(min), int(sec), 0, 0, -1)
-    return ttuple
-
-def utc2time(t):
-    ttuple = utc2tuple(t)
-    print "Tuple is ", ttuple
-    saved_timezone = time.timezone
-    saved_altzone = time.altzone
-    ret1 = int(time.mktime(ttuple))
-    time.timezone = time.altzone = 0
-    ret = int(time.mktime(ttuple))
-    # time.timezone = saved_timezone
-    # time.altzone = saved_altzone
-    print "ret=%s ret1=%s" % (ret, ret1)
-    return ret
+            try:
+                self.certificateManager.CreateProxyCertificate(passphrase, bits, lifetime)
+                print "Proxy created"
+                break
+            except:
+                print ""
+                print "Invalid passphrase."
+                continue
 
 if __name__ == "__main__":
-    dir = "c:\\program Files\\winglobus\\certificates"
 
-    cr = CertificateRepository(dir)
-    c = cr.GetCertificates()[0]
-    print "got cert ", c
-    s = c.GetSubject()
-    print "subj ", s
-    x = s.O
-    x = s.CN
-    print x
+    h = logging.StreamHandler()
 
+    logging.root.setLevel(logging.DEBUG)
+    logging.root.addHandler(h)
 
-    app = wxPySimpleApp()
+    os.system("rm -r foo")
+    os.mkdir("foo")
+    log.debug("foo")
 
-    fr = wxFrame(None, -1, "test", size = wxSize(400,300))
-    panel = wxPanel(fr, -1)
+    ui = CertificateManagerUserInterface()
+    cm = CertificateManager("foo", ui)
 
-    s = wxBoxSizer(wxVERTICAL)
+    x = cm.ImportIdentityCertificatePEM(cm.certRepo,
+                                    r"v\venueServer_cert.pem",
+                                    r"v\venueServer_key.pem", None)
 
-    panel.SetSizer(s)
-    p = RepositoryBrowser(panel, -1, cr)
-    s.Add(p, 1, wxEXPAND)
+    if 0:
+        passphraseCB = cm.GetUserInterface().GetPassphraseCallback("DOE cert", "")
+        x = cm.ImportIdentityCertificatePEM(cm.certRepo,
+                                            r"\temp\doe.pem",
+                                            r"\temp\doe.pem", passphraseCB)
 
-    b = wxButton(panel, -1, "OK")
-    s.Add(b, 0, wxALIGN_CENTER)
-
-    panel.Fit()
-    fr.Show(1)
-
-    app.MainLoop()
+    # cm.SetDefaultIdentity(x)
+    cm.InitEnvironment()

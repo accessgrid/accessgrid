@@ -16,6 +16,8 @@ from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid import CertificateRepository
 from AccessGrid.CertificateRepository import RepoDoesNotExist
+from AccessGrid.CRSClient import CRSClient
+
 import string
 
 import logging, logging.handlers
@@ -26,7 +28,8 @@ class CertificateRequestTool(wxWizard):
     This wizard guides users through the steps necessary for
     requesting either an identity, host, or service certificate. 
     '''
-    def __init__(self, parent, certificateType = None, requestId = None):
+    def __init__(self, parent, certificateType = None, requestId = None,
+                 createIdentityCertCB = None):
         '''
         Creates all ui components.
         If certificateType is set to None all wizard pages will appear.
@@ -41,6 +44,8 @@ class CertificateRequestTool(wxWizard):
         wizardId =  wxNewId()
         wxWizard.__init__(self, parent, wizardId,"", wxNullBitmap)
         self.log = self.GetLog()
+
+        self.createIdentityCertCB = createIdentityCertCB
         
         self.log.debug("__init__:Start Certificate Request Wizard")
         
@@ -295,9 +300,9 @@ class SelectCertWindow(TitledPage):
         return next
 
     def __setProperties(self):
-        self.info1.SetFont(wxFont(wxDEFAULT, wxDEFAULT, wxDEFAULT, wxBOLD))
-        self.info3.SetFont(wxFont(wxDEFAULT, wxDEFAULT, wxDEFAULT, wxBOLD))
-        self.info5.SetFont(wxFont(wxDEFAULT, wxDEFAULT, wxDEFAULT, wxBOLD))
+        self.info1.SetFont(wxFont(wxDEFAULT, wxDEFAULT, wxNORMAL, wxBOLD))
+        self.info3.SetFont(wxFont(wxDEFAULT, wxDEFAULT, wxNORMAL, wxBOLD))
+        self.info5.SetFont(wxFont(wxDEFAULT, wxDEFAULT, wxNORMAL, wxBOLD))
         
     def Layout(self):
         '''
@@ -808,40 +813,18 @@ class SubmitReqWindow(TitledPage):
                         
 
     def Validate(self):
-       
-        repositoryPath = "/home/lefvert/AccessGrid/AccessGrid/repo"
-        try:
-            log =  self.parent.log
-            log.debug("SubmitRequest:Validate:Create a certificate request")
-            
-            repo = CertificateRepository.CertificateRepository(repositoryPath)
-            
-            name = [("O", "Argonne"),
-                    ("OU", "mcs.anl.gov"),
-                    ("CN", "Susanne Lefvert")]
-            certificateRequest = repo.CreateCertificateRequest(name, "Identity Certificate")
-            pem =  certificateRequest.ExportPEM()
-            log.debug("SubmitRequest:Validate: ExportPEM returns %s"  %pem)
-            log.debug("SubmitRequest:Validate: subj is %s" %certificateRequest.GetSubject())
-            log.debug("SubmitRequest:Validate: mod is %s"%certificateRequest.GetModulus())
-            log.debug("SubmitRequest:Validate:modhash is %s"%scertificateRequest.GetModulusHash())
 
-            serverUrl = "https://serverurl"
-            
-            log.debug("SubmitRequest:Validate:Send request to certificate authority using url %s"%serverUrl)
-                        
-            certificateClient = CRSClient(serverUrl)
-            requestId = certificateClient.RequestCertificate(certificateRequest)
+        #
+        # Go ahead and try to create the certificate request.
+        #
+        # We will invoke self.identityCertCreate() callback that
+        # was passed to the constructor of the wizard.
+        #
 
-            log.debug("SubmitRequest:Validate:Request id is %i"%requestId)
-            
-        except RepoDoesNotExist:
-            log.exception("SubmitRequest:Validate:You do not have a certificate repository. Certificate request can not be completed.")
-            MessageDialog(self, "You do not have a certificate repository. Certificate request can not be completed.", style = wxICON_ERROR)
-
-        except:
-            log.exception("SubmitRequest:Validate: Certificate request can not be completed")
-            MessageDialog(self, "Error occured. Certificate request can not be completed.", style = wxICON_ERROR)
+        self.parent.createIdentityCertCB(str(self.name),
+                                         str(self.email),
+                                         'my.domain',
+                                         str(self.password))
 
         return true
 
@@ -962,86 +945,14 @@ class CertificateStatusDialog(wxDialog):
                 self.text.SetLabel("Your certificates have not been approved yet. \nPlease try again later.")
                 
                         
-#
-# Certificate Request Service Client
-#
-from xmlrpclib import ServerProxy
-
-class CRSClientInvalidURL(Exception):
-    pass
-
-class CRSClient:
-    def __init__(self, url):
-        self.url = url
-        print 'create client'
-        #if self.url != None:
-        #    self.proxy = ServerProxy(url)
-        #else:
-        #    raise CRSClientInvalidURL
-
-    def GetRequestedCertificates(self):
-        '''
-        Returns a dictionary containing certificate requests that have been
-        submitted. Checks stored requestIds/token in dir
-        '''
-        
-        # key: token, value: certificate request
-        requestedCerts = {1:("Identity", "06-02-03", ""),
-                          2:("Service", "04-02-03", "")}
-               
-        return requestedCerts
-
-    def RequestCertificate(self, certReq):
-        """
-        certificateToken = CRSClient.RequestCertificate(certificateRequest)
-            certificateRequest is a string containing the certificate request
-            certificateToken is a unique token used to retrieve the certificate
-                when it's ready.
-        """
-        token = 1
-
-        print 'request certificate'
-        #try:
-        #    token = self.proxy.RequestCertificate(certReq)
-        #except StandardError, v:
-        #     print "Error = %s", v
-        #    raise v
-
-        #
-        # this should also remove the token from the directory so
-        # we don't have to request status for this cert again
-        #
-            
-        return token
-
-    def RetrieveCertificate(self, token):
-        """
-        certificate = CRSClient.RetrieveCertificate(certificateToken)
-            certificateToken is a unique token used to retrieve the certificate
-                when it's ready.
-            certificate is the actual signed certificate from the CA
-        """
-        certificate = ""
-        print "retrieve certificate"
-        #try:
-        #    certificate = self.proxy.RetrieveCertificate(token)
-        #except StandardError, v:
-        #     print "Error = %s", v
-        #    raise v
-        #
-        return certificate
-
-    def SaveCertificate(self, certificate):
-        print "save certificate"
-        # Save certificate to right directory in cert repo
-
 if __name__ == "__main__":
     pp = wxPySimpleApp()
 
     # Check if we have any pending certificate requests
-    certificateClient = CRSClient("url")
-    nrOfReq = certificateClient.GetRequestedCertificates().keys()
-        
+    testURL = "http://www-unix.mcs.anl.gov/~judson/certReqServer.cgi"
+    certificateClient = CRSClient(testURL)
+    # nrOfReq = certificateClient.GetRequestedCertificates().keys()
+    nrOfReq = 0
     if nrOfReq > 0:
         # Show pending requests
         certStatus = CertificateStatusDialog(None, -1, "Certificate Status Dialog")

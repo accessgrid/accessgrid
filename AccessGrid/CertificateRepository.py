@@ -20,16 +20,15 @@ from __future__ import generators
 import re
 import os
 import os.path
-import popen2
 import time
 import logging
-import getpass
 import string
-import sys
 import md5
 import struct
 import bsddb
 import operator
+
+log = logging.getLogger("AG.CertificateRepository")
 
 from OpenSSL_AG import crypto
 
@@ -129,16 +128,14 @@ class CertificateRepository:
 
         cert = Certificate(certFile, keyFile, self)
         path = self._GetCertDirPath(cert)
-        print "Would put cert in dir ", path
+        # print "Would put cert in dir ", path
 
         #
         # Double check that someone's not trying to import a
         # globus proxy cert.
         #
 
-        name = cert.GetSubject().get_name_components()
-        lastComp = name[-1]
-        if lastComp[0] == "CN" and lastComp[1] == "proxy":
+        if cert.IsGlobusProxy():
             raise RepoInvalidCertificate, "Cannot import a Globus proxy certificate"
 
         #
@@ -150,10 +147,72 @@ class CertificateRepository:
             raise RepoInvalidCertificate, "Certificate already in repository"
 
         #
-        # Otherwise, we can go ahead and import.
+        # Load the private key. This will require getting the
+        # passphrase for the key. Do that here, so we can pass
+        # that passphrase down to the importPrivateKey call
+        # so it is imported with the same passphrase.
+        #
+        # We try to load the key without a passphrase first.
+        #
+
+        pkey = None
+        if keyFile is not None:
+            keyText = open(keyFile).read()
+
+            #
+            # We try to load the key without a passphrase first.
+            #
+            
+            try:
+                pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, keyText, "")
+
+                #
+                # Success.
+                #
+
+                passphrase = None
+
+            except crypto.Error:
+
+                #
+                # We need a passphrase. Get one from the user,
+                # and then try again.
+                #
+
+                if passphraseCB is None:
+                    raise Exception, "This private key requires a passphrase"
+
+                passphrase = passphraseCB(0)
+
+                try:
+                    pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, keyText,
+                                                  passphrase)
+
+                except crypto.Error:
+                    log.exception("load error")
+                    raise Exception, "Invalid passphrase"
+
+            #
+            # At this point pkey has is the privatekey.
+            # Doublecheck that the pubkey modulus on the
+            # certificate we're importing matches hte
+            # modulus on this private key. Otherwise,
+            # they're not a matching pair.
+            #
+
+            if pkey.get_modulus() != cert.GetModulus():
+                raise Exception, "Private key does not match certificate"
+            else:
+                print "Modulus match: ", pkey.get_modulus()
+
+        #
+        # Preliminary checks successful. We can go ahead and import.
         #
 
         self._ImportCertificate(cert, path)
+
+        if pkey is not None:
+            self._ImportPrivateKey(pkey, passphrase)
 
         #
         # Import done, set the metadata about the cert.
@@ -166,6 +225,8 @@ class CertificateRepository:
             cert.SetMetadata("System.hasKey", "1")
         else:
             cert.SetMetadata("System.hasKey", "0")
+
+        return CertificateDescriptor(cert, self)
             
     def _ImportCertificate(self, cert, path):
         """
@@ -226,10 +287,23 @@ class CertificateRepository:
                             "privatekeys",
                             "%s.pem" % (hash))
 
-        pktext = crypto.dump_privatekey(crypto.FILETYPE_PEM,
-                                        pkey,
-                                        "DES3",
-                                        passwdCB)
+        print "Importing pkey to ", path
+        #
+        # If passwdCB is none, don't encrypt.
+        #
+
+        if passwdCB is None:
+            pktext = crypto.dump_privatekey(crypto.FILETYPE_PEM,
+                                            pkey)
+            self.SetPrivatekeyMetadata(pkey.get_modulus(), "System.encrypted", "0")
+
+        else:
+            pktext = crypto.dump_privatekey(crypto.FILETYPE_PEM,
+                                            pkey,
+                                            "DES3",
+                                            passwdCB)
+            self.SetPrivatekeyMetadata(pkey.get_modulus(), "System.encrypted", "1")
+            
         fh = open(path, 'w')
         fh.write(pktext)
         fh.close()
@@ -279,9 +353,9 @@ class CertificateRepository:
             for k, v in nameEntries:
                 if k.lower() not in self.validNameComponents:
                     raise Exception, "Invalid name component %s" % (k)
-        except ValueError, e:
+        except ValueError:
             raise Exception, "Invalid value in nameEntry list"
-        except TypeError, e:
+        except TypeError:
             raise Exception, "nameEntries may not be a list"
 
         #
@@ -345,7 +419,7 @@ class CertificateRepository:
             isHashes = os.listdir(subjHashDir)
             for isHash in isHashes:
                 certFile = os.path.join(subjHashDir, isHash, "cert.pem")
-                desc = CertificateDescriptor(certFile, self)
+                desc = CertificateDescriptor(Certificate(certFile, repo = self), self)
                 yield desc
 
     def GetAllCertificates(self):
@@ -366,24 +440,46 @@ class CertificateRepository:
                 yield cert
 
     def FindCertificatesWithSubject(self, subj):
-        return self.FindCertificates(lambda c: str(c.GetSubject()) == subj)
+        return list(self.FindCertificates(lambda c: str(c.GetSubject()) == subj))
     
     def FindCertificatesWithIssuer(self, issuer):
-        return self.FindCertificates(lambda c: str(c.GetIssuer()) == issuer)
+        return list(self.FindCertificates(lambda c: str(c.GetIssuer()) == issuer))
     
     def FindCertificatesWithMetadata(self, mdkey, mdvalue):
-        return self.FindCertificates(lambda c: c.GetMetadata(mdkey) == mdvalue)
+        return list(self.FindCertificates(lambda c: c.GetMetadata(mdkey) == mdvalue))
+
+    def SetPrivatekeyMetadata(self, modulus, key, value):
+        hashkey = "|".join(["privatekey",
+                            modulus,
+                            key])
+        self.SetMetadata(hashkey, value)
+
+    def GetPrivatekeyMetadata(self, modulus, key):
+        hashkey = "|".join(["privatekey",
+                            modulus,
+                            key])
+        return self.GetMetadata(hashkey)
 
     def SetMetadata(self, key, value):
         self.db[key] = value
+        self.db.sync()
     
     def GetMetadata(self, key):
-        return self.db[key]
+        if self.db.has_key(key):
+            return self.db[key]
+        else:
+            return None
     
 class CertificateDescriptor:
-    def __init__(self, file, repo):
-        self.cert = Certificate(file, repo = repo)
+    def __init__(self, cert, repo):
+        self.cert = cert
         self.repo = repo
+
+    def GetPath(self):
+        return self.cert.GetPath()
+
+    def GetKeyPath(self):
+        return self.cert.GetKeyPath()
 
     def GetIssuer(self):
         return self.cert.GetIssuer()
@@ -399,6 +495,28 @@ class CertificateDescriptor:
 
     def GetFilePath(self, file):
         return self.cert.GetFilePath(file)
+
+    def GetVerboseText(self):
+        return self.cert.GetVerboseText()
+
+    def GetModulus(self):
+        return self.cert.GetModulus()
+
+    def GetModulusHash(self):
+        return self.cert.GetModulusHash()
+
+    def HasEncryptedPrivateKey(self):
+        mod = self.GetModulus()
+        isEncrypted = self.repo.GetPrivatekeyMetadata(mod, "System.encrypted")
+        if isEncrypted == "1":
+            return 1
+        else:
+            return 0
+    def GetNotValidBefore(self):
+        return self.cert.GetNotValidBefore()
+    
+    def GetNotValidAfter(self):
+        return self.cert.GetNotValidAfter()
 
 class CertificateRequestDescriptor:
     def __init__(self, req, repo):
@@ -419,6 +537,18 @@ class CertificateRequestDescriptor:
             dig = md5.new(m)
             self.modulusHash = dig.hexdigest()
         return self.modulusHash
+
+    def _GetMetadataKey(self, key):
+        hashkey = "|".join(["request",
+                            self.GetModulusHash(),
+                            key])
+        return hashkey
+
+    def GetMetadata(self, key):
+        return self.repo.GetMetadata(self._GetMetadataKey(key))
+
+    def SetMetadata(self, key, value):
+        return self.repo.SetMetadata(self._GetMetadataKey(key), value)
 
     def ExportPEM(self):
         """
@@ -448,6 +578,7 @@ class Certificate:
         #
         self.subjectHash = None
         self.issuerSerialHash = None
+        self.modulusHash = None
 
         fh = open(self.path, "r")
         self.certText = fh.read()
@@ -465,11 +596,18 @@ class Certificate:
             self.keyText = fh.read()
             fh.close()
 
+    def GetKeyPath(self):
+        #
+        # Key path is based on the modulus.
+        #
+
+        path = os.path.join(self.repo.dir,
+                            "privatekeys",
+                            "%s.pem" % (self.GetModulusHash()))
+        return path
+
     def GetPath(self):
         return self.path
-
-    def GetKeyPath(self):
-        return self.keyPath
 
     def GetSubject(self):
         return self.cert.get_subject()
@@ -500,8 +638,25 @@ class Certificate:
 
         return self.issuerSerialHash
 
+    def GetModulus(self):
+        key = self.cert.get_pubkey()
+        return key.get_modulus()
+
+    def GetModulusHash(self):
+        if self.modulusHash is None:
+            m = self.GetModulus()
+            dig = md5.new(m)
+            self.modulusHash = dig.hexdigest()
+        return self.modulusHash
+
     def IsExpired(self):
         return self.cert.is_expired()
+
+
+    def IsGlobusProxy(self):
+        name = self.GetSubject().get_name_components()
+        lastComp = name[-1]
+        return lastComp[0] == "CN" and lastComp[1] == "proxy"
 
     def WriteCertificate(self, file):
         """
@@ -519,7 +674,10 @@ class Certificate:
         return hashkey
 
     def GetFilePath(self, filename):
-        return os.path.join(self.dir, "user_files", filename)
+        dir = os.path.join(self.repo._GetCertDirPath(self), "user_files")
+        if not os.path.isdir(dir):
+            os.mkdir(dir)
+        return os.path.join(dir, filename)
 
     def GetMetadata(self, key):
         hashkey = self._GetMetadataKey(key)
@@ -529,11 +687,37 @@ class Certificate:
     def SetMetadata(self, key, value):
         hashkey = self._GetMetadataKey(key)
         self.repo.SetMetadata(hashkey, value)
-        
-if __name__ == "__main__":
 
-    import os.path
-    import os
+    def GetNotValidBefore(self):
+        notBefore = self.cert.get_not_before()
+        return time.strftime("%x %X", utc2tuple(notBefore))
+
+    def GetNotValidAfter(self):
+        notAfter = self.cert.get_not_after()
+        return time.strftime("%x %X", utc2tuple(notAfter))
+
+    def GetVerboseText(self):
+        fmt = ""
+        
+        cert = self.cert
+        fmt += "Certificate version: %s\n" % (cert.get_version())
+        fmt += "Serial number: %s\n" % (cert.get_serial_number())
+
+        notBefore = cert.get_not_before()
+        notAfter = cert.get_not_after()
+
+        fmt += "Not valid before: %s\n" % (time.strftime("%x %X", utc2tuple(notBefore)))
+        fmt += "Not valid after: %s\n" % (time.strftime("%x %X", utc2tuple(notAfter)))
+
+        (type, fp) = cert.get_fingerprint()
+        fmt += "%s Fingerprint: %s\n"  % (type,
+                                          string.join(map(lambda a: "%02X" % (a), fp), ":"))
+        fmt += "Certificate location: %s\n" % (self.GetPath(),)
+        fmt += "Private key location: %s\n" % (self.GetKeyPath(),)
+
+        return fmt
+    
+if __name__ == "__main__":
 
     certPath = os.path.join(os.environ["HOME"], ".globus", "usercert.pem")
     keyPath = os.path.join(os.environ["HOME"], ".globus", "userkey.pem")
@@ -577,3 +761,45 @@ if __name__ == "__main__":
     me = "/O=Grid/O=Globus/OU=mcs.anl.gov/CN=Bob Olson"
     print "My certs: ", repo.FindCertificatesWithSubject(me)
     print "Globus certs: ", repo.FindCertificatesWithIssuer(globus)
+
+#
+# YYMMDDHHMMSSZ
+#
+
+def utc2tuple(t):
+    if len(t) == 13:
+        year = int(t[0:2])
+        if year >= 50:
+            year = year + 1900
+        else:
+            year = year + 2000
+
+        month = t[2:4]
+        day = t[4:6]
+        hour = t[6:8]
+        min = t[8:10]
+        sec = t[10:12]
+    elif len(t) == 15:
+        year = int(t[0:4])
+        month = t[4:6]
+        day = t[6:8]
+        hour = t[8:10]
+        min = t[10:12]
+        sec = t[12:14]
+
+    ttuple = (year, int(month), int(day), int(hour), int(min), int(sec), 0, 0, -1)
+    return ttuple
+
+def utc2time(t):
+    ttuple = utc2tuple(t)
+    print "Tuple is ", ttuple
+    saved_timezone = time.timezone
+    saved_altzone = time.altzone
+    ret1 = int(time.mktime(ttuple))
+    time.timezone = time.altzone = 0
+    ret = int(time.mktime(ttuple))
+    # time.timezone = saved_timezone
+    # time.altzone = saved_altzone
+    print "ret=%s ret1=%s" % (ret, ret1)
+    return ret
+

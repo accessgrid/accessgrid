@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.5 2003-06-27 16:43:23 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.6 2003-08-12 20:57:08 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,6 +25,7 @@ AG_FALSE = 0
 #
 
 import CertificateManager
+
 from AccessGrid import Platform
 
 def GetApplication():
@@ -63,6 +64,16 @@ class Application:
     def GetCertificateManager(self):
         return self.certificateManager
 
+    def InitGlobusEnvironment(self):
+        return self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
+
+    def GetDefaultIdentityDN(self):
+        ident = self.certificateManager.GetDefaultIdentity()
+        if ident is None:
+            return None
+        else:
+            return str(ident.GetSubject())
+
 class CmdlineApplication(Application):
     """
     An application that's going to run without a gui.
@@ -77,11 +88,6 @@ class CmdlineApplication(Application):
         self.certificateManager = \
             CertificateManager.CertificateManager(self.userConfigDir,
                                                   userInterface)
-    def Initialize(self):
-        Application.Initialize(self)
-
-
-        self.certificateManager.InitEnvironment()
 
 class ServiceApplicationWithIdentity(Application):
     """
@@ -107,9 +113,6 @@ class ServiceApplicationWithIdentity(Application):
     def Initialize(self):
         Application.Initialize(self)
 
-
-        self.certificateManager.InitEnvironment()
-
         
 class ServiceApplicationInheritIdentity(Application):
     """
@@ -128,13 +131,6 @@ class ServiceApplicationInheritIdentity(Application):
                                                   userInterface,
                                                   inheritIdentity = 1)
 
-    def Initialize(self):
-        Application.Initialize(self)
-
-        self.certificateManager.InitEnvironment()
-
-        
-
 class WXGUIApplication(Application):
     def __init__(self):
         Application.__init__(self)
@@ -143,10 +139,4 @@ class WXGUIApplication(Application):
         self.gui = CertificateManagerWXGUI()
         self.certificateManager = CertificateManager.CertificateManager(self.userConfigDir,
                                                                         self.gui)
-
-
-    def Initialize(self):
-        Application.Initialize(self)
-
-        self.certificateManager.InitEnvironment()
 

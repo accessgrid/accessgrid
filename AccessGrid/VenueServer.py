@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.86 2003-08-12 19:24:36 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.87 2003-08-12 20:57:08 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -261,7 +261,10 @@ class VenueServer(ServiceBase.ServiceBase):
     def RegisterDefaultSubjects(self):
         role = self.GetRoleManager().validRoles["VenueServer.Administrators"]
         certMgr = Toolkit.GetApplication().GetCertificateManager()
-        role.AddSubject(certMgr.GetCurrentProxy().GetSubject())
+
+        defaultIdentity = certMgr.GetDefaultIdentity()
+        if defaultIdentity is not None:
+            role.AddSubject(defaultIdentity.GetSubject())
 
     def LoadPersistentVenues(self, filename):
         """

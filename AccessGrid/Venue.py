@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.117 2003-08-12 18:40:48 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.118 2003-08-12 20:57:08 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -186,6 +186,7 @@ class VenueClientState:
     delivered to those services (after the client connects, before the
     client's event client connects to the service).
     """
+    
 
     def __init__(self, venue, privateId, profile):
         self.venue = venue
