@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.51 2004-04-05 21:04:06 judson Exp $
+# RCS-ID:      $Id: setup.py,v 1.52 2004-04-07 01:25:07 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -60,7 +60,8 @@ win32_data = [
     ('doc/VenueManagementManual/VenueManagementManual_files',
      glob.glob('doc/VenueManagementManual/VenueManagementManual_files/*.*')),
     ('install', [r'packaging/windows/agicons.exe']),
-    ('CAcertificates', glob.glob('packaging/config/CAcertificates/*.*')),
+    ('config/CAcertificates',
+     glob.glob('packaging/config/CAcertificates/*.*')),
     ]
 
 linux_scripts = [ r"bin/VenueServer.py", 
