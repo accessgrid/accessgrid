@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.139 2003-04-18 20:38:28 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.140 2003-04-18 21:00:18 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1018,7 +1018,7 @@ class ExitPanel(wxPanel):
         return self.id
 
     def AdjustText(self):
-        t = 'hejsan alla glada barn nu har vi kommit till tv'
+        t = ''
         self.label.SetValue(t)
 
         line1 = self.label.GetLineText(0)
