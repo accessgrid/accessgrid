@@ -43,6 +43,7 @@
 
 @copy %OPENSSLDIR%\out32dll\openssl.exe %DESTDIR%\bin\openssl.exe
 @copy %OPENSSLDIR%\out32dll\*.lib %DESTDIR%\lib\.
+@copy %OPENSSLDIR%\out32dll\*.dll %DESTDIR%\lib\.
 @mkdir %DESTDIR%\include\openssl
 @copy %OPENSSLDIR%\inc32\openssl\*.* %DESTDIR%\include\openssl\.
 

@@ -140,6 +140,8 @@ Source: include\*.*; DestDir: {app}\include; Flags: recursesubdirs
 Source: Lib\libeay32.lib; DestDir: {app}
 Source: Lib\ssleay32.lib; DestDir: {app}
 Source: Lib\RSAglue.lib; DestDir: {app}
+Source: Lib\libeay32.dll; DestDir: {sys}; Flags: sharedfile
+Source: Lib\ssleay32.dll; DestDir: {sys}; Flags: sharedfile
 
 [Icons]
 Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}

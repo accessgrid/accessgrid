@@ -1,5 +1,6 @@
 import AccessGrid
 import AccessGrid.hosting
+import OpenSSL
 import os
 import os.path
 import glob
@@ -17,4 +18,5 @@ def modimport(module):
 sys.stdout.write("Compiling Access Grid Python modules.... ")
 modimport(AccessGrid)
 modimport(AccessGrid.hosting)
+modimport(OpenSSL)
 sys.stdout.write("Done\n")
