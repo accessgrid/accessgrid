@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.28 2004-05-27 22:40:46 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.29 2004-06-14 17:10:39 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.28 2004-05-27 22:40:46 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.29 2004-06-14 17:10:39 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -610,9 +610,19 @@ class CertificateManager(object):
         """
 
         #
+        # We have to have a default identity
+        #
+
+        defaultID = self.GetDefaultIdentity()
+
+        if not defaultID:
+            log.debug("HaveValidProxy: no default ident")
+            return 0
+        
+        #
         # Sort of a hack; if we don't need a proxy, it's "valid".
         #
-        if not self.GetDefaultIdentity().HasEncryptedPrivateKey():
+        if not defaultID.HasEncryptedPrivateKey():
             return 1
         
         try:
