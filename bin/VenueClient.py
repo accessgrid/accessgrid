@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.121 2003-04-19 16:36:59 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.122 2003-04-20 21:54:05 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -32,7 +32,7 @@ from AccessGrid.VenueClientUIClasses import SaveFileDialog, UploadFilesDialog
 from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Utilities import HaveValidProxy
-from AccessGrid.UIUtilities import MyLog 
+from AccessGrid.UIUtilities import MyLog, MessageDialog 
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN 
 from AccessGrid import DataStore
 from AccessGrid.GUID import GUID
@@ -101,6 +101,10 @@ class VenueClientUI(wxApp, VenueClient):
         self.frame = VenueClientFrame(NULL, -1,"", self)
         self.frame.SetSize(wxSize(500, 400))
         self.SetTopWindow(self.frame)
+
+        # Tell the UI about installed applications
+        self.frame.SetInstalledApps( self.GetInstalledApps() )
+        self.frame.EnableAppMenu( false )
 
         if self.isPersonalNode:
             def setSvcCallback(svcUrl, self = self):
@@ -254,7 +258,7 @@ class VenueClientUI(wxApp, VenueClient):
     
     def AuthorizeLead(self, clientProfile):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method  notifies the user that somebody wants to follow him or
         her and allows the user to approve the request.
         """
@@ -263,7 +267,7 @@ class VenueClientUI(wxApp, VenueClient):
    
     def LeadResponse(self, leaderProfile, isAuthorized):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method notifies the user if the request to follow somebody is approved
         or denied.
         """
@@ -275,7 +279,7 @@ class VenueClientUI(wxApp, VenueClient):
     
     def NotifyUnLead(self, clientProfile):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method  notifies the user that somebody wants to stop following him or
         her
         """
@@ -287,23 +291,24 @@ class VenueClientUI(wxApp, VenueClient):
         
     def AddUserEvent(self, user):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method is called every time a venue participant enters
         the venue.  Appropriate gui updates are made in client.
         """
-        VenueClient.AddUserEvent(self, user)
+
+        VenueClient.AddUserEvent(self, profile)
         
         if(user.profileType == 'user'):
-            wxCallAfter(self.frame.contentListPanel.AddParticipant, user)
-            wxCallAfter(wxLogDebug, "  add user: %s" %(user.name))
+            wxCallAfter(self.frame.contentListPanel.AddParticipant, profile)
+            wxCallAfter(wxLogDebug, "  add user: %s" %(profile.name))
             
         else:
-            wxCallAfter(self.frame.contentListPanel.AddNode, user)
-            wxCallAfter(wxLogDebug, "  add node: %s" %(user.name))
+            wxCallAfter(self.frame.contentListPanel.AddNode, profile)
+            wxCallAfter(wxLogDebug, "  add node: %s" %(profile.name))
             
     def RemoveUserEvent(self, user):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method is called every time a venue participant exits
         the venue.  Appropriate gui updates are made in client.
         """
@@ -319,7 +324,7 @@ class VenueClientUI(wxApp, VenueClient):
                         
     def ModifyUserEvent(self, data):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method is called every time a venue participant changes
         its profile.  Appropriate gui updates are made in client.
         """
@@ -329,7 +334,7 @@ class VenueClientUI(wxApp, VenueClient):
           
     def AddDataEvent(self, data):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method is called every time new data is added to the venue.
         Appropriate gui updates are made in client.
         """
@@ -340,7 +345,7 @@ class VenueClientUI(wxApp, VenueClient):
 
     def UpdateDataEvent(self, data):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method is called when a data item has been updated in the venue.
         Appropriate gui updates are made in client.
         """
@@ -350,7 +355,7 @@ class VenueClientUI(wxApp, VenueClient):
 
     def RemoveDataEvent(self, data):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method is called every time data is removed from the venue.
         Appropriate gui updates are made in client.
         """
@@ -358,10 +363,28 @@ class VenueClientUI(wxApp, VenueClient):
         wxCallAfter(wxLogDebug, "EVENT - Remove data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.RemoveData, data)
 
+    def AddApplicationEvent(self, app):
+        """
+        Note: Overridden from VenueClient
+        This method is called every time a new application is added to the venue.
+        Appropriate gui updates are made in client.
+        """
+        wxCallAfter(wxLogDebug, "EVENT - Add application: %s" %(app.name))
+        wxCallAfter(self.frame.contentListPanel.AddApplication, app)
+        
+    def RemoveApplicationEvent(self, app):
+        """
+        Note: Overridden from VenueClient
+        This method is called every time an application is removed from the venue.
+        Appropriate gui updates are made in client.
+        """
+        wxCallAfter(wxLogDebug, "EVENT - Remove application: %s" %(app.name))
+        wxCallAfter(self.frame.contentListPanel.RemoveApplication, app)
+
 
     def AddServiceEvent(self, service):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method is called every time new service is added to the venue.
         Appropriate gui updates are made in client.
         """
@@ -371,7 +394,7 @@ class VenueClientUI(wxApp, VenueClient):
         
     def RemoveServiceEvent(self, service):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method is called every time service is removed from the venue.
         Appropriate gui updates are made in client.
         """
@@ -382,7 +405,7 @@ class VenueClientUI(wxApp, VenueClient):
         
     def AddConnectionEvent(self, data):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method is called every time a new exit is added to the venue.
         Appropriate gui updates are made in client.
         """
@@ -392,7 +415,7 @@ class VenueClientUI(wxApp, VenueClient):
       
     def SetConnectionsEvent(self, data):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method is called every time a new exit is added to the venue.
         Appropriate gui updates are made in client.
         """
@@ -406,7 +429,7 @@ class VenueClientUI(wxApp, VenueClient):
 
     def EnterVenue(self, URL):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method calls the venue client method and then
         performs its own operations when the client enters a venue.
         """
@@ -467,6 +490,10 @@ class VenueClientUI(wxApp, VenueClient):
                 wxCallAfter(self.frame.contentListPanel.AddApplication, a)
                 wxCallAfter(wxLogDebug, "   %s" %(a.name))
                 
+            # Enable the application menu that is displayed over
+            # the Applications items in the list (this is not the app menu above)
+            self.frame.EnableAppMenu(true)
+
             # --- Load exits
             wxCallAfter(wxLogDebug, "Add exits")
             exits = venueState.connections.values()
@@ -536,7 +563,7 @@ class VenueClientUI(wxApp, VenueClient):
 
     def ExitVenue(self):
         """
-        Note: Overloaded from VenueClient
+        Note: Overridden from VenueClient
         This method calls the venue client method and then
         performs its own operations when the client exits a venue.
         """
@@ -1023,6 +1050,39 @@ class VenueClientUI(wxApp, VenueClient):
         self.client.UpdateData(desc)
         wxLogDebug("UpdateData: %s" %desc)
 
+    # 
+    # Application Integration code
+    #
+    def StartApp(self,app):
+        """
+        Start the specified application.  This method creates the application
+        in the venue, and then joins it by starting the appropriate client
+        """
+        wxLogDebug("Creating application: %s" % app.name)
+        app.uri = self.client.CreateApplication( app.name, app.description, app.mimeType )
+        self.JoinApp(app)
+
+    def JoinApp(self,app):
+        """
+        Join the specified application
+        """
+        fileType = wxTheMimeTypesManager.GetFileTypeFromMimeType(app.mimeType)
+        if fileType != None:
+            wxLogDebug("Joining application: %s" % app.name)
+            openCommand = fileType.GetOpenCommand(app.uri)
+            # print "open command = ", openCommand
+            wxExecute(openCommand)
+        else:
+            message = "No client registered for the selected application\n(mime type = %s)" % app.mimeType
+            dlg = MessageDialog(self.frame, message )
+            wxLogDebug(message)
+            
+    def RemoveApp(self,app):
+        """ 
+        Delete the specified application from the venue
+        """
+        self.client.DestroyApplication( app.id )
+        wxLogDebug("Destroying application: %s" % app.name)
 
 if __name__ == "__main__":
 
