@@ -418,7 +418,7 @@ class SharedAppClient:
             self.log.exception("SharedAppClient.SetParticipantStatus: Failed to set participant status")
             raise Exception, "The server you are connecting to is running old software. This method is not implemented in that version." 
         except Exception, e:                                      
-            if isinstance(e, SOAPpy.Types.faultType) and e.faultstring.startswith("No method")
+            if isinstance(e, SOAPpy.Types.faultType) and e.faultstring.startswith("No method"):
                 self.log.info("SharedAppClient.SetParticipantProfile: Failed to set participant profile due to older version of server.")
             else:
                 self.log.exception("SharedAppClient.SetParticipantProfile: Failed to set participant profile")
