@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.47 2004-05-04 05:47:59 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.48 2004-05-04 14:33:48 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.47 2004-05-04 05:47:59 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.48 2004-05-04 14:33:48 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -4423,6 +4423,8 @@ class VenuePropertiesDialog(wxDialog):
         self.list.SetColumnWidth(2, 80)
         self.list.SetColumnWidth(3, 100)
         self.list.SetColumnWidth(3, 100)
+
+        self.okButton = wxButton(self, wxID_OK, "Ok")
                
         self.__Layout()
 
@@ -4457,7 +4459,7 @@ class VenuePropertiesDialog(wxDialog):
         sizer.Add(self.list, 1, wxEXPAND| wxALL, 10)
         
         mainSizer.Add(sizer, 1, wxEXPAND| wxALL, 10)
-        
+        mainSizer.Add(self.okButton, 0, wxCENTER | wxALL, 10)
         self.SetSizer(mainSizer)
         mainSizer.Fit(self)
         self.SetAutoLayout(1)
