@@ -45,14 +45,14 @@ class VenueClientFrame(wxFrame):
         self.SetMenuBar(self.menubar)
 
         self.venue = wxMenu()
-	self.dataSubmenu = wxMenu()
-	self.dataSubmenu.Append(221,"Add")
-	self.dataSubmenu.Append(222,"Delete")
-	self.venue.AppendMenu(220,"&Data",self.dataSubmenu)
-	self.serviceSubmenu = wxMenu()
-	self.serviceSubmenu.Append(231,"Add")
-        self.serviceSubmenu.Append(232,"Delete")
-	self.venue.AppendMenu(220,"&Services",self.serviceSubmenu)
+	self.dataMenu = wxMenu()
+	self.dataMenu.Append(221,"Add")
+	self.dataMenu.Append(222,"Delete")
+	self.venue.AppendMenu(220,"&Data",self.dataMenu)
+	self.serviceMenu = wxMenu()
+	self.serviceMenu.Append(231,"Add")
+        self.serviceMenu.Append(232,"Delete")
+	self.venue.AppendMenu(220,"&Services",self.serviceMenu)
 	self.menubar.Append(self.venue, "&Venue")
 	
 	self.edit = wxMenu()
@@ -60,7 +60,7 @@ class VenueClientFrame(wxFrame):
         self.menubar.Append(self.edit, "&Edit")
 
 	self.help = wxMenu()
-	self.help.Append(301, "Manual")
+	#self.help.Append(301, "Manual")
 	self.help.Append(302, "About", "Information about developers and application")
         self.menubar.Append(self.help, "&Help")
 
@@ -105,7 +105,7 @@ class VenueClientFrame(wxFrame):
     def UpdateLayout(self):
         self.__doLayout()
 
-    def OpenAddDataDialog(self, event):
+    def OpenAddDataDialog(self, event = None):
         dlg = wxFileDialog(self, "Choose a file:")
 
         if dlg.ShowModal() == wxID_OK:
@@ -128,23 +128,35 @@ class VenueClientFrame(wxFrame):
         if (addServiceDialog.ShowModal() == wxID_OK):
             self.app.AddService(addServiceDialog.GetNewProfile())
 
-        profileDialog.Destroy()
-        
-      
-        self.app.AddService(service)
-        
+        addServiceDialog.Destroy()
+                
     def OpenAboutDialog(self, event):
         aboutDialog = AboutDialog(self, -1, "About VenueClient")
 
     def RemoveData(self, event):
         id = self.contentListPanel.tree.GetSelection()
         data =  self.contentListPanel.tree.GetItemData(id).GetData()
-        self.app.RemoveData(data)
+        if(data != None):
+            self.app.RemoveData(data)
+
+        else:
+            self.__showNoSelectionDialog("Please, select the data you want to delete")
 
     def RemoveService(self, event):
         id = self.contentListPanel.tree.GetSelection()
         service =  self.contentListPanel.tree.GetItemData(id).GetData()
-        self.app.RemoveService(service)
+        
+        if(service != None):
+            self.app.RemoveService(service)
+
+        else:
+            self.__showNoSelectionDialog("Please, select the service you want to delete")       
+
+    def __showNoSelectionDialog(self, text):
+         noSelectionDialog = wxMessageDialog(self, text, \
+                                             '', wxOK | wxICON_INFORMATION)
+         noSelectionDialog.ShowModal()
+         noSelectionDialog.Destroy()
 
    
 '''VenueListPanel. 
@@ -230,53 +242,57 @@ class VenueList(wxScrolledWindow):
     def __init__(self, parent, app):
         self.app = app
         wxScrolledWindow.__init__(self, parent, -1, style = wxRAISED_BORDER)
-        self.list = wxListCtrl(self, -1, style = wxLC_ICON)
-        self.list.SetBackgroundColour(parent.GetBackgroundColour())
-        self.imageList = wxImageList(16, 16)
-        door = self.imageList.Add(icons.getDoorOpenBitmap())
-        self.list.SetImageList(self.imageList, wxIMAGE_LIST_NORMAL,)
-        exit = wxListItem()
-        exit.SetText('test')
+        #self.list = wxListCtrl(self, -1, style = wxLC_ICON)
+        #self.list.Show(true)
+        #self.list.SetBackgroundColour(parent.GetBackgroundColour())
+        #self.imageList = wxImageList(16, 16)
+        #self.doorOpenId = self.imageList.Add(icons.getDoorOpenBitmap())
+        #self.doorCloseId = self.imageList.Add(icons.getDoorCloseBitmap())
+        #self.list.SetImageList(self.imageList, wxIMAGE_LIST_NORMAL)
+        #exit = wxListItem()
+        #exit.SetText('test')
+        #self.list.InsertItem(exit)
        # self.list.SetStringItem(0,0,'test', door)
         self.__doLayout()
 
     def __doLayout(self):
-        box = wxBoxSizer(wxVERTICAL)
-        box.Add(self.list, 1, wxEXPAND)
-        self.SetSizer(box)
-        box.Fit(self)
+        self.box = wxBoxSizer(wxVERTICAL)
+        # box.Add(self.list, 1, wxEXPAND)
+                
+        self.column = wxFlexGridSizer(cols=1, vgap=1, hgap=0)
+        self.column.AddGrowableCol(1)
+	       
+        self.column.Add(40, 5)   
+        self.EnableScrolling(true, false)
+        self.SetScrollRate(0, 20)
+        self.box.SetVirtualSizeHints(self)
+        self.SetScrollRate(20, 20)
+        
+        self.box.Add(self.column, 1, wxEXPAND)
+        self.SetSizer(self.box)
+        self.box.Fit(self)
         self.SetAutoLayout(1)  
 
-        
-#	self.column = wxFlexGridSizer(cols=1, vgap=1, hgap=0)
-#        self.column.AddGrowableCol(1)
-	
-#	self.box.Add(self.column, 1)
-#	self.column.Add(40, 5)   
-#	self.SetSizer(self.box)
- #       self.EnableScrolling(true, false)
- #       self.SetScrollRate(0, 20)
- #       self.box.SetVirtualSizeHints(self)
-#	self.EnableScrolling(true, true)
-  #      self.SetScrollRate(20, 20)
 		            
     def AddVenueDoor(self, profile):
-        print 'add venue door'
-       # bitmap = icons.getDoorCloseBitmap()
-        #bitmapSelect = icons.getDoorOpenBitmap()
+        #id = wxNewId()
+        #exit = wxListItem()
+        #self.list.InsertImageStringItem(0,"LABEL",self.doorOpenId) 
+        bitmap = icons.getDoorCloseBitmap()
+        bitmapSelect = icons.getDoorOpenBitmap()
             
-       # tc = wxBitmapButton(self, -1, bitmap, wxPoint(0, 0), wxDefaultSize, wxBU_EXACTFIT)
-#	tc.SetBitmapSelected(bitmapSelect)
-#	tc.SetBitmapFocus(bitmapSelect)
-#	tc.SetToolTipString(profile.description)
-#	label = wxStaticText(self, -1, profile.name)
-#
-	#self.column.Add(tc, 0, wxALIGN_CENTER|wxLEFT|wxRIGHT, 5)
-	#self.column.Add(label, 0, wxALIGN_CENTER|wxLEFT|wxRIGHT, 5)
-	#self.column.Add(40, 5)   
-#	self.SetSize(wxDefaultSize)
-#	self.Layout()
-	#self.box.SetVirtualSizeHints(self)
+        tc = wxBitmapButton(self, -1, bitmap, wxPoint(0, 0), wxDefaultSize, wxBU_EXACTFIT)
+	tc.SetBitmapSelected(bitmapSelect)
+	tc.SetBitmapFocus(bitmapSelect)
+	tc.SetToolTipString(profile.description)
+	label = wxStaticText(self, -1, profile.name)
+
+	self.column.Add(tc, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
+	self.column.Add(label, 0, wxALIGN_CENTER|wxLEFT|wxRIGHT, 5)
+	self.column.Add(40, 5)   
+	self.SetSize(wxDefaultSize)
+	self.Layout()
+	self.box.SetVirtualSizeHints(self)
 
     def RemoveVenueDoor(self):
         print 'remove venue door'
@@ -325,14 +341,63 @@ class ContentListPanel(wxPanel):
 	self.tree.AssignImageList(imageList)
 
     def AddParticipant(self, profile):
+        print 'add participant'
+        print self.participantDict.values()
         participant = self.tree.AppendItem(self.participants, profile.name, \
-                             self.iconId, self.iconId)
-        self.participantDict[profile.name] = participant
+                                           self.iconId, self.iconId)
+        self.participantDict[profile.publicId] = participant
         self.tree.Expand(self.participants)
-    
+        print 'added participant'
+        print self.participantDict.values()
+           
     def RemoveParticipant(self, description):
-        id = self.participantDict[description.name]
+        print 'remove participant'
+        print self.participantDict.values()
+        id = self.participantDict[description.publicId]
+        del self.participantDict[description.publicId]
         self.tree.Delete(id)
+        print 'removed participant'
+        print self.participantDict.values()
+        
+    def ModifyParticipant(self, description):
+        print '-------- MODIFY'
+        type =  description.profileType
+        oldType = None
+        id = description.publicId
+
+        print self.nodeDict.keys()
+        print self.participantDict.keys()
+        print id
+
+        if(self.participantDict.has_key(id)):
+            oldType = 'user'
+            
+        elif(self.nodeDict.has_key(id)):
+            oldType = 'node'
+        
+        if(oldType == type):   # just change details
+            if type == 'user':
+                treeId = self.participantDict[description.publicId]
+                profile = self.tree.GetItemData(treeId).GetData()
+                self.tree.SetItemText(treeId, description.name)
+                profile = description
+
+            else:
+                treeId = self.nodeDict[description.publicId]
+                profile = self.tree.GetItemData(treeId).GetData()
+                self.tree.SetItemText(treeId, description.name)
+                profile = description
+
+        elif(oldType != None): # move to new category type
+            if type == 'node':
+                treeId = self.participantDict[description.publicId]
+                self.RemoveParticipant(description)
+                self.AddNode(description)
+                
+            else:
+                treeId = self.nodeDict[description.publicId]
+                self.RemoveNode(description)
+                self.AddParticipant(description)
         
     def AddData(self, profile):
         print '-----------ADD DATA'
@@ -346,7 +411,8 @@ class ContentListPanel(wxPanel):
     def RemoveData(self, profile):
         print 'remove in VenueClientUI'
         id = self.dataDict[profile.name]
-        self.tree.Delete(id)
+        if(id != None):
+            self.tree.Delete(id)
                
     def AddService(self, profile):
         service = self.tree.AppendItem(self.services, profile.name,\
@@ -360,14 +426,27 @@ class ContentListPanel(wxPanel):
         self.tree.Delete(id)
 
     def AddNode(self, profile):
+        print 'add node'
+        print 'PUBLIC ID'
+        print profile.publicId
         node = self.tree.AppendItem(self.nodes, profile.name)
-        self.nodeDict[profile.name] = node
+        self.nodeDict[profile.publicId] = node
         self.tree.Expand(self.nodes)
 
     def RemoveNode(self, profile):
-        id = self.nodeDict[profile.name]
+        print 'remove node'
+        print 'PUBLIC ID'
+        print profile.publicId
+        id = self.nodeDict[profile.publicId]
+        print 'after dict access'
         self.tree.Delete(id)
-
+        print 'after delete '
+        del self.nodeDict[profile.publicId]
+        print 'after delete in tree'
+        for v in self.nodeDict.values():
+            print v.name
+        
+        
     def __setTree(self):
         self.root = self.tree.AddRoot("The Lobby")
              
