@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.30 2003-05-23 21:26:00 olson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.31 2003-05-28 19:44:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -408,6 +408,7 @@ class NodeManagementClientFrame(wxFrame):
         menuBar.Append(menu, "&Service");
 
         ## DEBUG menu
+        """
         debugMenu = wxMenu()
         debugMenu.Append(ID_VENUE_TESTROOM, "Go to Test Room", "Dum")
         debugMenu.Append(ID_VENUE_ARGONNE, "Go to Argonne", "Dum")
@@ -416,6 +417,7 @@ class NodeManagementClientFrame(wxFrame):
         debugMenu.AppendSeparator()
         debugMenu.Append(ID_DUM, "Kill Services", "")
         menuBar.Append(debugMenu, "&Debug");
+        """
 
         ## HELP menu
         helpMenu = wxMenu()
@@ -490,7 +492,7 @@ class NodeManagementClientFrame(wxFrame):
         try:
             self.nodeServiceHandle.IsValid()
             return 1
-        except Client.InvalidHandleException:
+        except:
             return 0
 
     ############################
@@ -541,10 +543,12 @@ class NodeManagementClientFrame(wxFrame):
 
         # Get proxy to the node service, if the url validates
         try:
-            Client.Handle(nodeServiceUri).IsValid()
             self.nodeServiceHandle = Client.Handle( nodeServiceUri )
+            self.nodeServiceHandle.IsValid()
             self.SetTitle( "Access Grid Node Management - Connected" )
-        except Client.InvalidHandleException:
+        except:
+            self.SetTitle( "Access Grid Node Management" )
+            self.ClearUI()
             print "Invalid Node Service URI: %s" % nodeServiceUri
 
     def LoadConfiguration( self, event ):
@@ -622,7 +626,10 @@ class NodeManagementClientFrame(wxFrame):
 
         # Update the service manager list
         # (this call updates the services list, too)
-        self.UpdateHostList()
+        try:
+            self.UpdateHostList()
+        except Exception:
+            self.Error("Error updating UI")
 
 
     ############################
@@ -660,6 +667,11 @@ class NodeManagementClientFrame(wxFrame):
             except faultType, e:
                 print "Exception in AddHost", sys.exc_type, sys.exc_value
                 self.Error(e.faultstring)
+                self.ClearUI()
+                return
+            except:
+                self.Error("Error adding service manager")
+                self.ClearUI()
                 return
 
             # Update the service manager list
@@ -701,6 +713,7 @@ class NodeManagementClientFrame(wxFrame):
 
         # Add service managers to the list
         i = 0
+
         self.serviceManagers = self.nodeServiceHandle.GetProxy().GetServiceManagers()
         for serviceManager in self.serviceManagers:
             item = self.hostList.InsertStringItem( i, serviceManager.name )
@@ -829,12 +842,12 @@ class NodeManagementClientFrame(wxFrame):
         Enable the selected service(s)
         """
 
-        try:
+        # Require a service to be selected
+        if self.serviceList.GetSelectedItemCount() == 0:
+            self.Error( "No service selected!" )
+            return
 
-            # Require a service to be selected
-            if self.serviceList.GetSelectedItemCount() == 0:
-                self.Error( "No service selected!" )
-                return
+        try:
 
             # Enable all selected services
             index = -1
@@ -846,8 +859,9 @@ class NodeManagementClientFrame(wxFrame):
             # Update the services list
             self.UpdateServiceList()
 
-        except:
+        except faultType,e:
             print "Exception in EnableService ", sys.exc_type, sys.exc_value
+            self.Error(e.faultstring)
 
     def EnableServices( self, event ):
         """
@@ -869,14 +883,19 @@ class NodeManagementClientFrame(wxFrame):
             self.Error( "No service selected!" )
             return
 
-        # Disable all selected services
-        index = -1
-        for i in range( self.serviceList.GetSelectedItemCount() ):
-            index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-            self.nodeServiceHandle.GetProxy().SetServiceEnabled(self.services[index].uri,0)
+        try:
+            # Disable all selected services
+            index = -1
+            for i in range( self.serviceList.GetSelectedItemCount() ):
+                index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
+                self.nodeServiceHandle.GetProxy().SetServiceEnabled(self.services[index].uri,0)
 
-        # Update the service list
-        self.UpdateServiceList()
+            # Update the service list
+            self.UpdateServiceList()
+        except faultType,e:
+            print "Exception in EnableService ", sys.exc_type, sys.exc_value
+            self.Error(e.faultstring)
+
 
     def DisableServices( self, event ):
         """
@@ -1099,3 +1118,10 @@ class NodeManagementClientFrame(wxFrame):
         """
         if not self.app.GetCertificateManager().HaveValidProxy():
             self.app.GetCertificateManager().InitEnvironment()
+
+    def ClearUI(self):
+        """
+        Clear the UI
+        """
+        self.hostList.DeleteAllItems()
+        self.serviceList.DeleteAllItems()
