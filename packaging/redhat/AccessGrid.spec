@@ -180,7 +180,6 @@ python2.2 setup.py build
 # The following installs the package in the buildroot,
 # moves the etc directory to the "root" directory,
 # moves the var directory to the "root" directory,
-# makes a /tmp/local_services directory (this is for a temporary workaround
 # until services are starting at boot)
 #
 
@@ -188,7 +187,7 @@ python2.2 setup.py build
 python2.2 setup.py install --prefix=%{buildroot}%{prefix} --no-compile
 mv %{buildroot}%{prefix}/etc %{buildroot}
 #mv %{buildroot}%{prefix}/var %{buildroot}
-mkdir -p %{buildroot}/tmp/local_services
+mkdir -p %{aghome}/local_services
 
 #
 # Define the files that are to go into the AccessGrid package
@@ -197,10 +196,6 @@ mkdir -p %{buildroot}/tmp/local_services
 # - Install AGServiceManager.py and agsm service with executable permissions
 # - Make a directory in the ag user's home (this should be done by whatever
 #   is trying to write to that directory really)
-# - Make the temporary local_services fix directory and make it world
-#   readable and writeable
-# - Install the AGServiceManager config file and tag it as a config file
-#   for rpm
 #
 
 %files
@@ -232,6 +227,7 @@ mkdir -p %{buildroot}/tmp/local_services
 %{prefix}/bin/NodeSetupWizard.py
 %{prefix}/bin/CertificateRequestTool.py
 %{prefix}/bin/certmgr.py
+%{prefix}/bin/SetupVideo.py
 %{sharedir}/doc/AccessGrid
 /etc/init.d/agns
 %defattr(0644,root,root)
@@ -273,29 +269,29 @@ mkdir -p %{buildroot}/tmp/local_services
 # - Install the local service file and make them owned by user ag
 #
 
-%files VideoProducer
-%defattr(0755,root,root)
-%{prefix}/bin/SetupVideo.py
-%defattr(0664,ag,ag)
-%{aghome}/local_services/VideoProducerService.*
+#%files VideoProducer
+#%defattr(0755,root,root)
+#%{prefix}/bin/SetupVideo.py
+#%defattr(0664,ag,ag)
+#%{aghome}/local_services/VideoProducerService.*
 
 #
 # Define the files that are to go into the AccessGrid-VideoConsumer package
 # - Install the local service file and make them owned by user ag
 #
 
-%files VideoConsumer
-%defattr(0664,ag,ag)
-%{aghome}/local_services/VideoConsumerService.*
+#%files VideoConsumer
+#%defattr(0664,ag,ag)
+#%{aghome}/local_services/VideoConsumerService.*
 
 #
 # Define the files that are to go into the AccessGrid-AudioService package
 # - Install the local service file and make them owned by user ag
 #
 
-%files AudioService
-%defattr(0664,ag,ag)
-%{aghome}/local_services/AudioService.*
+#%files AudioService
+#%defattr(0664,ag,ag)
+#%{aghome}/local_services/AudioService.*
 
 #
 # Define the files that are to go into the AccessGrid-AudioService package
