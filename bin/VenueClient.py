@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.235 2003-10-14 21:03:32 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.236 2003-10-14 21:37:51 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -187,12 +187,13 @@ class VenueClientUI(VenueClientEventSubscriber):
             self.isPersonalNode = 0
             log.debug("Can't start personal node without an identity.")
             title = "Venue Client startup error."
-            message = "You do not have a valid identity. \nThe Venue Client cannot start personal node services \nwithout a valid identity."
-            dlg = wxMessageDialog(None, message, title, style = wxICON_ERROR)
-            dlg.ShowModal()
-            dlg.Destroy()
-            self.OnExit()
-            sys.exit(1)
+            message = "You do not have a valid identity. \nThe Venue Client cannot start personal node services \nwithout a valid identity.\n\nShould the venue client\nbe started without the personal node services?"
+            dlg = wxMessageDialog(None, message, title,
+                                  style = wxICON_ERROR|wxYES_NO|wxNO_DEFAULT)
+            if dlg.ShowModal() == wxID_NO:
+                dlg.Destroy()
+                self.OnExit()
+                sys.exit(1)
             
         #
         # Check if profile is created then open venue client
