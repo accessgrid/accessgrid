@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.58 2004-02-23 23:06:57 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.59 2004-02-24 21:56:52 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.58 2004-02-23 23:06:57 lefvert Exp $"
+__revision__ = "$Id: DataStore.py,v 1.59 2004-02-24 21:56:52 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -31,21 +31,17 @@ import ConfigParser
 import cStringIO
 import Queue
 from time import localtime , strftime
+import logging
+
+from pyGlobus.io import GSITCPSocketException
 
 import AccessGrid.GUID
-from AccessGrid.Utilities import GetHostname
+from AccessGrid.NetUtilities import GetHostname
 from AccessGrid.Descriptions import DataDescription, CreateDataDescription
 from AccessGrid import Platform
-from AccessGrid.hosting.pyGlobus import Server
-from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
-from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.EventServiceAsynch import EventService
 from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent,  AddDataEvent
-from pyGlobus.io import GSITCPSocketException
-#from AccessGrid.DataStore import GSIHTTPTransferServer
-import logging
 from AccessGrid.EventClient import EventClient, EventClientWriteDataException
-from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
 from AccessGrid.Events import Event, ConnectEvent, HeartbeatEvent
 
 log = logging.getLogger("AG.DataStore")
@@ -73,159 +69,6 @@ class DataAlreadyPresent(Exception):
 
 class DataNotFound(Exception):
     pass
-
-
-class DataService(ServiceBase):
-    '''
-    The DataService class is used for venue data storage. Each venue
-    calls the RegisterVenue soap method to create a venue
-    datastore. The data service has a transfer engine that is used for
-    data upload and download by all datastores.  The venue
-    communicates to its datastore via a SOAP interface
-    '''
-   
-    def __init__(self, path, port, webServicePort):
-        '''
-        Starts a DataService
-
-        **Arguments:**
-        
-         *path* Base path for all datastores (string).
-         *port* Port used by transfer engine for data transfer (int).
-         *webServicePort* Port for DataService SOAP service (int)
-        '''
-
-        self.path = path
-        self.dataPort = port
-        self.webServicePort = webServicePort
-        self.dataStores = dict()
-        self.__CreateWebService()
-        self.__CreateTransferEngine()
-        self.__CheckPath()
-        self.running = 1
-            
-    def __CreateWebService(self):
-        '''
-        Initiates the DataStore SOAP service.
-        '''
-        
-        def AuthCallback(server, g_handle, remote_user, context):
-            return 1
-        
-        self.server = Server.Server(self.webServicePort, auth_callback=AuthCallback)
-        self.service = self.server.CreateServiceObject("DataService")
-        self._bind_to_service( self.service )
-        self.server.run_in_thread()
-        print "Data Service running at ", self.service.GetHandle()
-        print "Port used for data transfer: ", self.dataPort
-        print "Storage path: ", self.path
-        #log.debug("DataService.__CreateWebService: Start data service %s"%self.service.GetHandle())
-        
-    def __CreateTransferEngine(self):
-        '''
-        Start transfer engine used by all datastores in this service object
-        '''
-
-        self.dataTransferServer = GSIHTTPTransferServer(('',
-                                                         int(self.dataPort)),
-                                                        numThreads = 4,
-                                                        sslCompat = 0)
-        self.dataTransferServer.run()
-
-    def __CheckPath(self):
-        '''
-        Create base path for data service used by all created datastores.
-        '''
-
-        if not os.path.exists(self.path):
-            #self.log.exception("DataStore::init: Datastore path %s does not exist" % (self.path))
-            try:
-                os.mkdir(self.path)
-            except OSError:
-                #self.log.exception("Could not create Data Service.")
-                self.path = None
-       
-    def RegisterVenue(self, privateId, eventServiceLocation, channelId):
-        '''
-        This methods creates a datastore and adds the transfer engine
-        and an event client to the created datastore. It returns the
-        handler to its SOAP interface.  
-        
-        **Arguments:**
-        
-         *privateId* Unique id for this datastore (int).
-         *eventServiceLocation* Event service location used by venue (host, port)
-         *channelId* Channel id (Venues private id) to use for events.(int)
-
-        *Returns*
-         *url* location of SOAP interface (string)
-        '''
-
-        #self.log.debug('Register venue with channelId %s' %channelId)
-        #self.log.debug("Create Data Store at %s" %self.path)
-
-        # Create event client
-        eventClient = EventClient(privateId, eventServiceLocation, str(channelId))
-        eventClient.start()
-        eventClient.Send(ConnectEvent(channelId, privateId))
-        
-        # Create data store based on venues unique channelId 
-        pathName = os.path.join(self.path, str(channelId))
-        dataStore = DataStore(pathName, str(channelId), self.dataPort)
-        dataStore.SetTransferEngine(self.dataTransferServer)
-                
-        # Set event channel for data store
-        dataStore.SetEventDistributor(eventClient, channelId)
-        dataStore.privateId = privateId
-                      
-        # Start sending heartbeats to venue
-        threading.Thread(target=dataStore.HeartbeatThread).start()
-
-        # Store the datastore
-        self.dataStores[channelId] = dataStore
-       
-        url = dataStore.service.GetHandle()
-        #self.log.debug("Create web interface at %s"%url)
-        
-        return url
-
-    RegisterVenue.soap_export_as = "RegisterVenue"
-
-       
-    def UnRegisterVenue(self, channelId):
-        '''
-        This method shuts down the data store allocated for venue with channelId. 
-
-        **Arguments:**
-         *channelId* Channel id (Venues private id) (int)
-
-        '''
-         
-        #self.log.debug('Unregister venue with channelId %s' %channelId)
-
-        # Stop the dataStore
-        self.dataStores[channelId].Shutdown()
-        del self.dataStores[channelId]
-        
-    UnRegisterVenue.soap_export_as = "UnRegisterVenue"
-
-
-    def Shutdown(self):
-        """
-        This method shuts down the DataService
-        """
-        self.server.Stop()
-
-        while self.dataStores:
-            self.UnRegisterVenue(self.dataStores.keys()[0])
-
-        self.dataTransferServer.stop()
-
-        self.running = 0
-
-    def IsRunning(self):
-        return self.running
-
 
 class DataDescriptionContainer:
     
@@ -1629,7 +1472,7 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
             self.handle_request()
 
 from pyGlobus import io
-from AccessGrid.hosting.pyGlobus import Utilities
+from AccessGrid.Security.pyGlobus import Utilities
 
 class GSIHTTPTransferServer(io.GSITCPSocketServer, TransferServer):
     """
