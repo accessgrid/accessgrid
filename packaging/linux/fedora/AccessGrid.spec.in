@@ -216,11 +216,12 @@ rm -rf %{buildroot}
 
 %changelog
 
-* Mon Aug 30 2004 Douglas Kosovic <douglask@itee.uq.edu.au>
-- Merged Fedora Core 1 & 2 AccessGrid.spec.in files into this single file
-
 * Mon Sep 13 2004 Douglas Kosovic <douglask@itee.uq.edu.au>
 - clean up some non-RPM managed files and dirs in preun step
 - moved python module compiling from post to install step
-- generat optimized python bytecode with -O python switch
+- generate optimized python bytecode with -O python switch
+
+* Mon Aug 30 2004 Douglas Kosovic <douglask@itee.uq.edu.au>
+- Merged Fedora Core 1 & 2 AccessGrid.spec.in files into this single file
+
 
