@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.97 2003-04-01 21:57:33 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.98 2003-04-01 23:27:03 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -605,13 +605,14 @@ class VenueClientUI(wxApp, VenueClient):
                     
     def UploadPersonalFiles(self, fileList):
         wxLogDebug("Upload personal files")
-        self.dataStore.AddFile(fileList, self.profile.distinguishedName, self.profile.publicId)
-        #self.uploadPersonalDataUrl = self.dataStore.GetUploadDescriptor()
-        #self.UploadFiles(fileList, self.uploadPersonalDataUrl, self.get_ident_and_upload)
+        self.uploadPersonalDataUrl = self.dataStore.GetUploadDescriptor()
+        self.UploadFiles(fileList, self.uploadPersonalDataUrl,
+                         self.get_ident_and_upload)
 
     def UploadVenueFiles(self, fileList):
         wxLogDebug("Upload venue files")
-        self.UploadFiles(fileList, self.upload_url, self.get_ident_and_upload)
+        self.UploadFiles(fileList, self.upload_url,
+                         self.get_ident_and_upload)
     
     def UploadFiles(self, file_list, url, method):
         """
@@ -628,8 +629,10 @@ class VenueClientUI(wxApp, VenueClient):
         dlg.Show(1)
 
         # Plumbing for getting progress callbacks to the dialog
-        def progressCB(filename, sent, total, file_done, xfer_done, dialog = dlg):
-            wxCallAfter(dialog.SetProgress, filename, sent, total, file_done, xfer_done)
+        def progressCB(filename, sent, total, file_done, xfer_done,
+                       dialog = dlg):
+            wxCallAfter(dialog.SetProgress, filename, sent, total,
+                        file_done, xfer_done)
             return dialog.IsCancelled()
 
         # Create the thread to run the upload.
@@ -641,7 +644,9 @@ class VenueClientUI(wxApp, VenueClient):
         # Arguments to pass to get_ident_and_upload
         ul_args = (url, file_list, progressCB)
 
-        wxCallAfter(wxLogDebug, "Have args, creating thread, url: %s, files: %s"%(url, file_list))
+        wxCallAfter(wxLogDebug,
+                    "Have args, creating thread, url: %s, files: %s" %
+                    (url, file_list))
             
         upload_thread = threading.Thread(target = method, args = ul_args)
         
@@ -668,8 +673,9 @@ class VenueClientUI(wxApp, VenueClient):
                 DataStore.GSIHTTPUploadFiles(upload_url, file_list, progressCB)
             else:
                 my_identity = GetDefaultIdentityDN()
-                wxCallAfter(wxLogDebug, "Got identity %s" %my_identity)
-                DataStore.HTTPUploadFiles(my_identity, upload_url, file_list, progressCB)
+                wxCallAfter(wxLogDebug, "Got identity %s" % my_identity)
+                DataStore.HTTPUploadFiles(my_identity, upload_url,
+                                          file_list, progressCB)
                  
         except DataStore.FileNotFound, e:
             error_msg = "File not found: %s" % (e[0])
@@ -692,7 +698,8 @@ class VenueClientUI(wxApp, VenueClient):
 
         wxCallAfter(wxLogDebug, "Upload files - no dialog")
         upload_url = self.upload_url
-        wxCallAfter(wxLogDebug, "Have identity=%s upload_url=%s" % (my_identity, upload_url))
+        wxCallAfter(wxLogDebug, "Have identity=%s upload_url=%s" %
+                    (my_identity, upload_url))
 
         error_msg = None
         try:
