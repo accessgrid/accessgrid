@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.47 2004-09-08 16:53:56 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.48 2004-09-09 05:19:40 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.47 2004-09-08 16:53:56 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.48 2004-09-09 05:19:40 judson Exp $"
 
 import os
 import sys
@@ -114,6 +114,12 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
     def GetVersion(self):
         return self.version
 
+    def GetInstallDir(self):
+        if self.installDir is None:
+            self.installDir = self.GetBaseDir()
+            
+        return self.installDir
+
     def GetBaseDir(self):
         global AGTK_LOCATION
         
@@ -156,8 +162,6 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
         return self.configDir
 
-    GetInstallDir = GetBaseDir
-    
     def GetBinDir(self):
         if self.installBase == None:
             self.GetBaseDir()
@@ -481,7 +485,8 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
         if UserConfig.theUserConfigInstance is not None:
             raise Exception, "Only one instance of User Config is allowed."
-                
+
+        AccessGrid.Config.UserConfig.__init__(self)
         UserConfig.theUserConfigInstance = self
 
         self.initIfNeeded = initIfNeeded
@@ -679,6 +684,7 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         if SystemConfig.theSystemConfigInstance is not None:
             raise Exception, "Only one instance of SystemConfig is allowed."
 
+        AccessGrid.Config.SystemConfig.__init__(self)
         SystemConfig.theSystemConfigInstance = self
         
         self.tempDir = None
@@ -737,14 +743,9 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
 
             proxyStr = str(val)
 
-            #
             # See if it is set for different protocols
-            #
-            if proxyStr.find(";"):
-                #
+            if proxyStr.find(";") < 0:
                 # It is. Find the http= part.
-                #
-
                 protos = proxyStr.split(";")
                 http = filter(lambda a: a.startswith("http="), protos)
                 if len(http) > 0:
