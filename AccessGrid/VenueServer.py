@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.164 2004-08-26 19:28:43 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.165 2004-08-30 18:10:38 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.164 2004-08-26 19:28:43 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.165 2004-08-30 18:10:38 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -29,6 +29,7 @@ except:
 
 from AccessGrid.Toolkit import Service
 from AccessGrid import Log
+from AccessGrid import Version
 from AccessGrid.hosting import SecureServer, InsecureServer
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
@@ -658,6 +659,7 @@ class VenueServer(AuthorizationMixIn):
 
         # Open the persistent store
         store = file(self.persistenceFilename, "w")
+        store.write("# AGTk %s\n" % (Version.GetVersion()))
 
         try:
                        

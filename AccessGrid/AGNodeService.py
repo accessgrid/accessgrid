@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.77 2004-08-06 17:23:29 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.78 2004-08-30 18:10:38 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.77 2004-08-06 17:23:29 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.78 2004-08-30 18:10:38 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -20,6 +20,7 @@ import shutil
 import urlparse
 
 from AccessGrid import Log
+from AccessGrid import Version
 from AccessGrid.Toolkit import Service
 from AccessGrid.hosting import Client
 from AccessGrid.Descriptions import AGServiceDescription
@@ -576,6 +577,7 @@ class AGNodeService:
         # Write config file
         #
         fp = open( fileName, "w" )
+        fp.write("# AGTk %s node configuration\n" % (Version.GetVersion()))
         config.write(fp)
         fp.close()
 
