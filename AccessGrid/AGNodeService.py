@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.26 2003-05-12 17:35:23 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.27 2003-05-15 03:08:50 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -55,6 +55,7 @@ class AGNodeService( ServiceBase ):
         self.configDir = "config"
         self.servicesDir = "services"
         self.streamDescriptionList = dict()
+        self.profile = None
 
         #
         # Read the configuration file (directory options and such)
@@ -170,6 +171,10 @@ class AGNodeService( ServiceBase ):
                                                                   resourceToAssign,
                                                                   serviceConfig )
         
+        # Set the identity for the service
+        if self.profile:
+            Client.Handle( serviceDescription.uri ).GetProxy().SetIdentity( self.profile )
+
         # Configure the service with the appropriate stream description
         self.__SendStreamsToService( serviceDescription.uri )
 
@@ -498,6 +503,21 @@ class AGNodeService( ServiceBase ):
         return capabilities
     GetCapabilities.soap_export_as = "GetCapabilities"
 
+    def SetIdentity(self, profile):
+        """
+        Push this identity out to the services, so they can identify
+        the user running the node (e.g., rat)
+        """
+
+        self.profile = profile
+
+        services = self.GetServices()
+        for service in services:
+            try:
+                Client.Handle( service.uri ).GetProxy().SetIdentity(profile)
+            except:
+                log.exception("Exception setting identity; continuing")
+    SetIdentity.soap_export_as = "SetIdentity"
 
     ####################
     ## INTERNAL methods

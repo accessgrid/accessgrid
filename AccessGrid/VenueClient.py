@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.60 2003-05-12 17:58:50 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.61 2003-05-15 03:08:49 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -62,6 +62,7 @@ class VenueClient( ServiceBase):
         self.CreateVenueClientWebService()
         self.__InitVenueData__()
         self.isInVenue = 0
+        self.isIdentitySet = 0
 
         # attributes for follow/lead
         self.pendingLeader = None
@@ -330,7 +331,14 @@ class VenueClient( ServiceBase):
         #
         try:
             if haveValidNodeService:
-                Client.Handle( self.nodeServiceUri ).get_proxy().SetStreams( streamDescList )
+                if not self.isIdentitySet:
+                    """
+                    Inform the node of the identity of the person driving it
+                    """
+                    Client.Handle(self.nodeServiceUri).GetProxy().SetIdentity(self.profile)
+                    self.isIdentitySet = 1
+
+                Client.Handle( self.nodeServiceUri ).GetProxy().SetStreams( streamDescList )
         except:
             log.exception("AccessGrid.VenueClient::Exception configuring node service streams")
 
@@ -421,6 +429,10 @@ class VenueClient( ServiceBase):
         Bind the given node service to this venue client
         """
         self.nodeServiceUri = nodeServiceUri
+
+        # assume that when the node service uri changes, the node service
+        # needs identity info
+        self.isIdentitySet = 0
 
     def GetInstalledApps(self):
         """
