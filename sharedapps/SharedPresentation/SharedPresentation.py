@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.12 2003-11-05 18:51:01 eolson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.13 2003-11-05 21:56:14 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -86,12 +86,14 @@ class PowerPointViewer:
     self.presentation -- The current presentation.
     self.win -- The window showing a slideshow of the current presentation.
     """
+
     def __init__(self):
         """
         We aren't doing anything in here because we really don't need
         anything yet. Once things get started up externally, this gets fired
         up through the other methods.
         """
+        
         self.ppt = None
         self.presentation = None
         self.win = None
@@ -226,10 +228,10 @@ class SharedPresentationFrame(wxFrame):
 
     def __init__(self, parent, ID, title, log=None):
         wxFrame.__init__(self, parent, ID, title,
-                         wxDefaultPosition, wxSize(450, 300))
+                         wxDefaultPosition)
 
         self.log = log
-
+        
         # Initialize callbacks
         noOp = lambda x=0:0
         self.loadCallback = noOp
@@ -246,7 +248,7 @@ class SharedPresentationFrame(wxFrame):
         #
         # Create UI controls
         #
-        
+                
         # - Create menu bar
         menubar = wxMenuBar()
         fileMenu = wxMenu()
@@ -259,30 +261,40 @@ class SharedPresentationFrame(wxFrame):
      	menubar.Append(fileMenu, "&File")
         self.SetMenuBar(menubar)
 
-        # - Create main sizer
+        # - Create main panel
+        self.panel = wxPanel(self, -1, size = wxSize(350, 150))
+        
+        # - Create main sizer 
+        mainSizer = wxBoxSizer(wxVERTICAL)
+        self.SetSizer(mainSizer)
+    
+        mainSizer.Add(self.panel, 1, wxEXPAND)
+        
+        # - Create panel sizer
         sizer = wxBoxSizer(wxVERTICAL)
-        self.SetSizer(sizer)
-
+        self.panel.SetSizer(sizer)
+              
         # - Create checkbox for master
-        self.masterCheckBox = wxCheckBox(self,-1,"Take control as presentation master")
-        sizer.Add( self.masterCheckBox, 0, wxEXPAND)
+        self.masterCheckBox = wxCheckBox(self.panel,-1,"Take control as presentation master")
+        sizer.Add(5, 5)
+        sizer.Add( self.masterCheckBox, 0, wxEXPAND | wxALL, 5)
 
         # - Create sizer for remaining ctrls
         staticBoxSizer = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
-        gridSizer = wxFlexGridSizer(3, 3, 5, 5)
+        gridSizer = wxFlexGridSizer(2, 3, 5, 5)
         gridSizer.AddGrowableCol(1)
         staticBoxSizer.Add(gridSizer, 1, wxEXPAND)
-        sizer.Add(staticBoxSizer, 1, wxEXPAND)
+        sizer.Add(staticBoxSizer, 1, wxEXPAND| wxALL, 5)
 
         # - Create textctrl for slide url
-        staticText = wxStaticText(self, -1, "Slides")
+        staticText = wxStaticText(self.panel, -1, "Slides")
         #self.slidesText = wxTextCtrl(self,-1)
-        self.slidesCombo = wxComboBox(self,-1, style=wxCB_DROPDOWN|wxCB_SORT)
+        self.slidesCombo = wxComboBox(self.panel ,wxNewId(), style=wxCB_DROPDOWN|wxCB_SORT)
         self.slidesCombo.Append("")
-        self.loadButton = wxButton(self,-1,"Load", wxDefaultPosition, wxSize(40,21) )
+        self.loadButton = wxButton(self.panel ,-1,"Load", wxDefaultPosition, wxSize(40,21) )
 
         gridSizer.Add( staticText, 0, wxALIGN_LEFT)
-        gridSizer.Add( self.slidesCombo, 1, wxALIGN_LEFT)
+        gridSizer.Add( self.slidesCombo, 1, wxEXPAND | wxALIGN_LEFT)
         gridSizer.Add( self.loadButton, 2, wxALIGN_RIGHT)
 
         # Don't update the filelist until user becomes a master (it won't 
@@ -290,25 +302,33 @@ class SharedPresentationFrame(wxFrame):
         # self.updateVenueFileList()
 
         # - Create textctrl for slide num
-        staticText = wxStaticText(self, -1, "Slide number")
-        self.slideNumText = wxTextCtrl(self,-1)
-        self.goButton = wxButton(self,-1,"Go", wxDefaultPosition, wxSize(40,21))
+        staticText = wxStaticText(self.panel, -1, "Slide number")
+        self.slideNumText = wxTextCtrl(self.panel ,-1, size = wxSize(40, 20))
+        self.goButton = wxButton(self.panel ,-1,"Go", wxDefaultPosition, wxSize(40,21))
         gridSizer.Add( staticText, wxALIGN_LEFT)
         gridSizer.Add( self.slideNumText )
         gridSizer.Add( self.goButton, wxALIGN_RIGHT )
 
         # - Create buttons for control 
         rowSizer = wxBoxSizer(wxHORIZONTAL)
-        self.prevButton = wxButton(self,-1,"<Prev")
-        self.nextButton = wxButton(self,-1,"Next>")
-        rowSizer.Add( self.prevButton )
+        self.prevButton = wxButton(self.panel ,-1,"<Prev")
+        self.nextButton = wxButton(self.panel ,-1,"Next>")
+        rowSizer.Add( self.prevButton , 0, wxRIGHT, 5)
         rowSizer.Add( self.nextButton )
-        gridSizer.Add( wxStaticText(self,-1,"") )
-        gridSizer.Add( rowSizer, 0, wxALIGN_RIGHT )
+
+        sizer.Add(rowSizer, 0, wxALIGN_CENTER|wxALL, 5)
+        sizer.Add(5,5)
         
+        self.SetAutoLayout(1)
+        self.Layout()
+
+        # Initially, I'm not the master
+        self.SetMaster(0)
+               
         # Set up event callbacks
         EVT_TEXT_ENTER(self, self.slidesCombo.GetId(), self.OpenCB)
         EVT_CHECKBOX(self, self.masterCheckBox.GetId(), self.MasterCB)
+        EVT_SET_FOCUS(self.slidesCombo, self.ComboCB)
         EVT_BUTTON(self, self.prevButton.GetId(), self.PrevSlideCB)
         EVT_TEXT_ENTER(self, self.slideNumText.GetId(), self.GotoSlideNumCB)
         EVT_BUTTON(self, self.nextButton.GetId(), self.NextSlideCB)
@@ -325,6 +345,15 @@ class SharedPresentationFrame(wxFrame):
     #
     # Callback stubs for the UI
     #
+    def ComboCB(self, event):
+        """
+        Callback for clicking on combobox for slides
+        """
+        # Load list of presentation slides from venue to combobox
+        self.updateVenueFileList()
+
+        # Skip event to preserve normal behaviour of the combobox 
+        event.Skip()
 
     def PrevSlideCB(self,event):
         """
@@ -357,12 +386,11 @@ class SharedPresentationFrame(wxFrame):
         """
         Callback for "enter" presses in the slide URL text field
         """
-
+                
         if self.masterCheckBox.IsChecked():
-
             # Get slide url from text field
             slidesUrl = self.slidesCombo.GetValue()
-
+           
             # Call the load callback
             self.loadCallback(slidesUrl)
 
@@ -416,7 +444,6 @@ class SharedPresentationFrame(wxFrame):
         """
         This method is used to set callbacks for the UI
         """
-        
         self.loadCallback = loadCallback
         self.prevCallback = prevCallback
         self.nextCallback = nextCallback
