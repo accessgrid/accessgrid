@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.9 2004-03-04 20:27:20 judson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.10 2004-03-09 16:57:58 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,18 +19,19 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.9 2004-03-04 20:27:20 judson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.10 2004-03-09 16:57:58 lefvert Exp $"
 
 # External Imports
 import os
 import xml.dom.minidom
 
-# AGTk Imports
+#AGTk Importsfrom AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.hosting import Decorate, Reconstitute, Client
 from AccessGrid.GUID import GUID
 from AccessGrid.Security.Role import RoleNotFound, RoleAlreadyPresent
 from AccessGrid.Security.Role import Everybody, Role
+from AccessGrid.Security.Action import Action
 from AccessGrid.Security.Action import ActionNotFound, ActionAlreadyPresent
 from AccessGrid.Security.Action import MethodAction
 from AccessGrid.Security import X509Subject
@@ -215,6 +216,7 @@ class AuthorizationManager:
         """
         if not self.FindAction(action.GetName()):
             self.actions.append(action)
+            return action
         else:
             raise ActionAlreadyPresent
 
@@ -237,6 +239,7 @@ class AuthorizationManager:
 
         @raise ActionNotFound: if the specified action is not found.
         """
+                
         if action in self.actions:
             self.actions.remove(action)
         else:
@@ -270,6 +273,7 @@ class AuthorizationManager:
             for a in self.actions:
                 if a.HasRole(role) and a not in actionlist:
                     actionlist.append(a)
+                  
         else:
             print "GetActions called with both a subject and a role"
 
@@ -304,10 +308,13 @@ class AuthorizationManager:
         else:
             r = self.roles
 
-        if not self.FindRole(role.GetName()):
+        if not self.FindRole(role.name):
             r.append(role)
         else:
             raise RoleAlreadyPresent
+
+        return role
+    
 
     def RemoveRole(self, role):
         """
@@ -346,7 +353,12 @@ class AuthorizationManager:
         if action == None:
             rolelist = self.roles
         else:
-            rolelist = self.FindAction(action.GetName()).GetRoles()
+            action = self.FindAction(action.GetName())
+
+            if not action:
+                raise ActionNotFound(action.GetName())
+                
+            rolelist = action.GetRoles()
 
         return rolelist
 
@@ -358,8 +370,9 @@ class AuthorizationManager:
         @type name: string
         @return: the AccessGrid.Security.Role object or None
         """
+                        
         for r in self.roles:
-            if r.GetName() == name:
+            if r.name == name:
                 return r
         return None
     
@@ -379,6 +392,7 @@ class AuthorizationManager:
 
         return rolelist
     
+
     def GetSubjects(self, role=None):
         """
         Get the subjects known by this authorization manager, possibly for the
@@ -388,14 +402,16 @@ class AuthorizationManager:
         @type role: AccessGrid.Security.Role object
         @return: a list of AccessGrid.Security.Subject objects
         """
-        subjectlist = list()
 
-        if role == None:
+        subjectlist = list()
+                   
+        if role == None or role == 'None':
             for r in self.roles:
-                subjectlist.append(r.GetSubjects)
+                for s in r.GetSubjects():
+                    subjectlist.append(s)
         else:
             subjectlist = role.GetSubjects()
-            
+                      
         return subjectlist
 
     def GetParent(self):
@@ -502,15 +518,18 @@ class AuthorizationManagerI(SOAPInterface):
         """
         return self.impl.ToXML()
     
-    def AddRole(self, name):
+    def AddRole(self, role):
         """
         Add a role to the authorization manager.
 
         @param name: the name of the role to add.
         @type name: string
         """
-        role = Role(name)
-        self.impl.AddRole(role)
+        #role = Role(name)
+        r = Reconstitute(role)
+        r2 = self.impl.AddRole(r)
+        newRole = Decorate(r2)
+        return newRole
 
     def RemoveRole(self, name):
         """
@@ -520,6 +539,10 @@ class AuthorizationManagerI(SOAPInterface):
         @type name: string
         """
         r = self.impl.FindRole(name)
+
+        if not r:
+            raise RoleNotFound(name)
+        
         self.impl.RemoveRole(r)
 
     def ListRoles(self, action = None):
@@ -538,6 +561,10 @@ class AuthorizationManagerI(SOAPInterface):
         else:
             a = Reconstitute(action)
             a1 = self.impl.FindAction(a)
+
+            if not a1:
+                raise ActionNotFound(a.name)
+            
             roles = a1.GetRoles()
             
         dr = Decorate(roles)
@@ -551,8 +578,10 @@ class AuthorizationManagerI(SOAPInterface):
         @type name: string
         """
         a = Reconstitute(action)
-        self.impl.AddAction(a)
-
+        action = self.impl.AddAction(a)
+        a1 = Decorate(action)
+        return a1
+        
     def RemoveAction(self, name):
         """
         Remove an action from the authorization manager.
@@ -561,9 +590,13 @@ class AuthorizationManagerI(SOAPInterface):
         @type name: string.
         """
         a = self.impl.FindAction(name)
+
+        if not a:
+            raise ActionNotFound(name)
+        
         self.impl.RemoveAction(a)
 
-    def ListActions(self):
+    def ListActions(self, subject = None, role = None):
         """
         List the actions known by this authorization manager.
 
@@ -571,7 +604,10 @@ class AuthorizationManagerI(SOAPInterface):
         
         @return: a list of AccessGrid.Security.Action objects.
         """
-        alist = self.impl.GetActions()
+
+        r = Reconstitute(role)
+        s = Reconstitute(subject)
+        alist = self.impl.GetActions(s, r)
         al = Decorate(alist)
         return al
 
@@ -585,6 +621,7 @@ class AuthorizationManagerI(SOAPInterface):
         @type role: an AccessGrid.Security.Role object
         @return: a list of AccessGrid.Security.Subject objects
         """
+
         subjs = None
         if role == None:
             # This is not a great engineering solution, and we should
@@ -595,12 +632,18 @@ class AuthorizationManagerI(SOAPInterface):
                         profiles)
         else:
             r = Reconstitute(role)
-            roleR = self.impl.FindRole(r)
+            roleR = self.impl.FindRole(r.name)
+            
+            if not roleR :
+                raise RoleNotFound(name)
+            
             subjs = self.impl.GetSubjects(roleR)
+
         subjs2 = Decorate(subjs)
         return subjs2
 
     def AddSubjectsToRole(self, role, subjectList):
+
         """
         Add a subject to a particular role.
         This uses AddSubjectsToRole internally.
@@ -613,10 +656,15 @@ class AuthorizationManagerI(SOAPInterface):
         @type role: AccessGrid.Security.Role object
         """
         r = Reconstitute(role)
-        role = self.impl.FindRole(r.GetName())
+        role = self.impl.FindRole(r.name)
         sl = Reconstitute(subjectList)
+
+        if not role:
+            return RoleNotFound(r.name)
+            
         for s in sl:
-            role.AddSubject(s)
+            subject = Decorate(s)
+            role.AddSubject(subject)
 
     def AddRoleToAction(self, action, role):
         """
@@ -631,8 +679,14 @@ class AuthorizationManagerI(SOAPInterface):
         """
         an = Reconstitute(action)
         a = self.impl.FindAction(an.name)
+
+        if not a:
+            raise ActionNotFound(an.name)
+        
         r = Reconstitute(role)
+        
         a.AddRole(r)
+
 
     def AddRolesToAction(self, action, roleList):
         """
@@ -648,6 +702,10 @@ class AuthorizationManagerI(SOAPInterface):
         rl = Reconstitute(roleList)
         an = Reconstitute(action)
         a = self.impl.FindAction(an.name)
+
+        if not a:
+            raise ActionNotFound(an.name)
+        
         for r in rl:
             a.AddRole(r)
             
@@ -664,6 +722,10 @@ class AuthorizationManagerI(SOAPInterface):
         """
         rn = Reconstitute(role)
         r = self.impl.FindRole(rn.name)
+        
+        if not r:
+            raise RoleNotFound(rn.name)
+        
         sl = Reconstitute(subjectList)
         for s in sl:
             r.RemoveSubject(s)
@@ -682,8 +744,15 @@ class AuthorizationManagerI(SOAPInterface):
         an = Reconstitute(action)
         rn = Reconstitute(role)
         a = self.impl.FindAction(an.name)
+
+        if not a:
+            return ActionNotFound(an.name)
+        
         r = a.FindRole(rn.name)
 
+        if not r:
+            return RoleNotFound(rn.name)
+      
         a.RemoveRole(r)
 
     def GetRolesForSubject(self, subject):
@@ -762,7 +831,12 @@ class AuthorizationManagerIW(SOAPIWrapper):
         @param name: the name of the role to add.
         @type name: string
         """
-        self.proxy.AddRole(name)
+        # Create a role from the name.
+        r = Decorate(Role(name))
+        role = self.proxy.AddRole(r)
+        r1 = Reconstitute(role)
+        return r1
+
 
     def RemoveRole(self, name):
         """
@@ -792,7 +866,13 @@ class AuthorizationManagerIW(SOAPIWrapper):
         @param name: the name of the action to add
         @type name: string
         """
-        self.proxy.AddAction(name)
+        # Create action from name.
+        a = Decorate(Action(name))
+        action = self.proxy.AddAction(a)
+
+        a1 = Reconstitute(a)
+        return a1
+        
 
     def RemoveAction(self, name):
         """
@@ -803,7 +883,7 @@ class AuthorizationManagerIW(SOAPIWrapper):
         """
         self.proxy.RemoveAction(name)
 
-    def ListActions(self):
+    def ListActions(self, subject = None, role = None):
         """
         List the actions known by this authorization manager.
 
@@ -811,9 +891,12 @@ class AuthorizationManagerIW(SOAPIWrapper):
         
         @return: a list of AccessGrid.Security.Action objects.
         """
-        al = self.proxy.ListActions()
-        alr = Reconstitute(al)
-        return alr
+
+        r = Decorate(role)
+        s = Decorate(subject)
+        al = self.proxy.ListActions(s, r)
+        a =  Reconstitute(al)
+        return a
 
     def ListSubjects(self, role = None):
         """
@@ -827,9 +910,9 @@ class AuthorizationManagerIW(SOAPIWrapper):
         """
         if role != None:
             r = Decorate(role)
-            sl = self.proxy.ListSubjectsInRole(r) 
+            sl = self.proxy.ListSubjects(r) 
         else:
-            sl = self.proxy.ListSubjectsInRole(r) 
+            sl = self.proxy.ListSubjects(r) 
 
         s = Reconstitute(sl)
         return s
@@ -864,6 +947,7 @@ class AuthorizationManagerIW(SOAPIWrapper):
         subjList = [subj,]
         r = Decorate(role)
         s = Decorate(subjList)
+          
         self.proxy.AddSubjectsToRole(r, s)
 
     def AddSubjectsToRole(self, subjList, role):
