@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/17/12
-# RCS-ID:      $Id: VenueManagementClient.py,v 1.2 2003-01-07 20:27:13 judson Exp $
+# RCS-ID:      $Id: VenueManagementClient.py,v 1.3 2003-01-08 15:26:27 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -28,7 +28,5 @@ print "\nVenue List: "
 for v in vl:
     print v
 
-#print "\nCheckpointing"
-#vms.Checkpoint()
-
-
+print "\nCheckpointing"
+vms.Checkpoint()
