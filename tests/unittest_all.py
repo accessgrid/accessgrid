@@ -14,8 +14,8 @@ import unittest
 
 def suite():
     # List modules to test
-    modules_to_test = ['unittest_AGServiceManager',
-                       'unittest_Platform',
+    modules_to_test = ['unittest_VenueServer',
+                       'unittest_version',
                        ]
 
     alltests = unittest.TestSuite()
@@ -24,7 +24,5 @@ def suite():
     return alltests
 
 if __name__ == '__main__':
-    #unittest.main(defaultTest='suite')
-    print "\n    unittest_all is temporarily disabled until we can better combine different"
-    print "        test suites to work with the unittest module.\n"
+    unittest.main(defaultTest='suite')
 

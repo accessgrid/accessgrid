@@ -41,27 +41,7 @@ class VenueServerTestSuite(unittest.TestSuite):
     """A TestSuite that creates a server for use by VenueServerTestCase."""
 
     def __init__(self, tests=()):
-        global venueServer  # so TestCases can access it
-        global venue1       # so TestCases can access it
         unittest.TestSuite.__init__(self, tests) # Important to call base class constructor
-        logFile = "VenueServer.log"
-        log = logging.getLogger("AG")
-        log.setLevel(logging.DEBUG)
-        hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
-        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-        hdlr.setFormatter(fmt)
-        log.addHandler(hdlr)
-        # initialize toolkit and environment
-        app = Toolkit.CmdlineApplication()
-        app.Initialize()
-        # server
-        venueServer = VenueServer()
-        venueServer.SetStorageLocation("testData")
-        # A venue for testing
-        venue1 = VenueDescription("unittestVenue1", "venue for unittest")
-        venue1.uri = "LocalVenueServer/default1"
-        venueServer.AddVenue(venue1)
-
 
 class VenueServerTestCase(unittest.TestCase):
     """A test case for VenueServers."""
@@ -122,6 +102,28 @@ class VenueServerTestCase(unittest.TestCase):
         venueServer.authManager.FindRole("Administrators").RemoveSubject("testAdmin")
         assert "testAdmin" not in venueServer.authManager.FindRole("Administrators").GetSubjectListAsStrings()
 
+    def testAAABegin(self):
+        print "__INIT__"
+        global venueServer  # so TestCases can access it
+        global venue1       # so TestCases can access it
+        logFile = "VenueServer.log"
+        log = logging.getLogger("AG")
+        log.setLevel(logging.DEBUG)
+        hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
+        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
+        hdlr.setFormatter(fmt)
+        log.addHandler(hdlr)
+        # initialize toolkit and environment
+        app = Toolkit.CmdlineApplication()
+        app.Initialize()
+        # server
+        venueServer = VenueServer()
+        venueServer.SetStorageLocation("testData")
+        # A venue for testing
+        venue1 = VenueDescription("unittestVenue1", "venue for unittest")
+        venue1.uri = "LocalVenueServer/default1"
+        venueServer.AddVenue(venue1)
+
     # Test not finished yet
     # def testGetSetDefaultVenue(self):
         #original = venueServer.GetDefaultVenue()
@@ -141,7 +143,7 @@ class VenueServerTestCase(unittest.TestCase):
     # But we don't want to shutdown and restart the server for each test.
     #   This should be the last test case in the default function list 
     #   and also last when the list is sorted alphabetically.
-    def testZEnd(self):
+    def testZZZEnd(self):
         venueServer.Shutdown()
         # In case tests leave threads open, print them out so we
         # know why the program isn't exiting.
