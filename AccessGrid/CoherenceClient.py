@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceClient.py,v 1.9 2003-01-21 11:50:55 judson Exp $
+# RCS-ID:      $Id: CoherenceClient.py,v 1.10 2003-01-21 18:37:38 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,9 @@
 from threading import Thread
 import socket
 import string
+
+from pyGlobus.io import GSITCPSocket,TCPIOAttr,AuthData
+from pyGlobus import ioc
 
 class CoherenceClient(Thread):
     """
@@ -24,7 +27,8 @@ class CoherenceClient(Thread):
     rbufsize = -1
     wbufsize = 0
     
-    def __init__(self, host = '', port = 0, callback = None, id = ''):
+    def __init__(self, id = '', host = 'localhost', port = 6500, 
+                 callback = None):
         """
         The CoherenceClient constructor takes a host, port and a
         callback for coherence data.
@@ -51,9 +55,20 @@ class CoherenceClient(Thread):
         initialization code so that it can be easily modified without having
         to delve into the rest of the coherence client implementation.
         """
+        print "Host %s Port %d" % (host, port)
+        
+        attr = TCPIOAttr()
+        attr.set_authentication_mode(ioc.GLOBUS_IO_SECURE_AUTHENTICATION_MODE_GSSAPI)
+        authData = AuthData()
+        attr.set_authorization_mode(ioc.GLOBUS_IO_SECURE_AUTHORIZATION_MODE_SELF, authData)
+        attr.set_channel_mode(ioc.GLOBUS_IO_SECURE_CHANNEL_MODE_GSI_WRAP)
+        attr.set_delegation_mode(ioc.GLOBUS_IO_SECURE_DELEGATION_MODE_LIMITED_PROXY)
+        self.sock = GSITCPSocket()
+        self.sock.connect(host, port, attr)
+            
         # Open the socket part
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((host, port))
+        #self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #self.sock.connect((host, port))
         
         # Some cool trick for IO from SocketServer.py
         self.rfile = self.sock.makefile('rb', self.rbufsize)
@@ -128,5 +143,5 @@ class Heartbeat(Thread):
         
 if __name__ == "__main__":
     import sys
-    coherenceClient = CoherenceClient(sys.argv[1], int(sys.argv[2]))
+    coherenceClient = CoherenceClient(sys.argv[1], sys.argv[2])
     coherenceClient.start()
