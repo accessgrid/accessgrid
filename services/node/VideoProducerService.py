@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.8 2003-05-12 16:52:31 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.9 2003-05-15 03:03:20 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -160,6 +160,14 @@ class VideoProducerService( AGService ):
           self.configuration["port"] = OptionSetParameter( "port", self.resource.portTypes[0], 
                                                            self.resource.portTypes )
    SetResource.soap_export_as = "SetResource"
+
+   def SetIdentity(self, profile):
+      """
+      Set the identity of the user driving the node
+      """
+      Platform.SetRtpDefaults( profile )
+   SetIdentity.soap_export_as = "SetIdentity"
+
 
 
 def AuthCallback(server, g_handle, remote_user, context):

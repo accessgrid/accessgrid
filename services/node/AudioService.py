@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.4 2003-05-12 16:52:31 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.5 2003-05-15 03:03:20 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -119,6 +119,13 @@ class AudioService( AGService ):
       if self.enabled:
          self.Start()
    ConfigureStream.soap_export_as = "ConfigureStream"
+
+   def SetIdentity(self, profile):
+      """
+      Set the identity of the user driving the node
+      """
+      Platform.SetRtpDefaults( profile )
+   SetIdentity.soap_export_as = "SetIdentity"
 
 
 
