@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.12 2003-05-15 19:52:38 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.13 2003-05-21 21:31:36 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,33 +34,6 @@ class MessageDialog:
         errorDialog.ShowModal()
         errorDialog.Destroy()
 
-'''class MyLog(wxPyLog):
-    ERROR = 1
-    WARNING = 2
-    MESSAGE = 3
-    INFO = 5
-    DEBUG = 6
-            
-    def __init__(self, log):
-        wxPyLog.__init__(self)
-        self.log = log
-              
-    def DoLog(self, level, message, timeStamp):
-        if level  == self.ERROR:
-            self.log.exception(message)
-
-        elif level  == self.MESSAGE:
-            self.log.info(message)
-            
-        elif level  == self.DEBUG:
-            self.log.debug(message)
-
-        elif level  == self.INFO:
-            self.log.info(message)
-
-        elif level  == self.WARNING:
-            self.log.info(message)
-'''
 class ErrorDialog:
     def __init__(self, frame, text, text2 = "", style = wxOK | wxICON_ERROR):
        (name, args, traceback_string_list) = formatExceptionInfo()
@@ -125,16 +98,7 @@ class AboutDialog(wxPopupTransientWindow):
         self.SetBackgroundColour('BLACK')
         self.SetSize(wxSize(panelWidth + 2, panelHeight + 2))
         self.SetPosition(winPos + wxPoint(diffWidth, diffHeight))
-        #self.__layout()
-
-    #def __layout(self):
-    #    box = wxBoxSizer(wxVERTICAL)
-    #    box.Add(self.image, wxEXPAND, 0)
-    #    box.Add(self.text, wxEXPAND, 0)
-    #    self.SetSizer(box)
-    #    box.Fit(self)
-    #	self.SetAutoLayout(1)
-        
+               
     def ProcessLeftDown(self, evt):
         self.Hide()
         return false
