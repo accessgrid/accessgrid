@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.71 2003-08-04 22:19:17 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.72 2003-08-11 19:44:50 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -302,40 +302,6 @@ class VenueManagementClient(wxApp):
                                                          str(venue.uri)))
             self.currentVenue = venue
             self.currentVenueClient = Client.Handle(venue.uri).get_proxy()
-
-    def DisableStaticStreams(self, venue):
-        self.SetCurrentVenue(venue)
-        streamList = self.currentVenueClient.GetStaticStreams()
-        log.debug("Disable static streams for venue: %s" %str(venue.uri))
-        for stream in streamList:
-            l = stream.location
-            log.debug("Remove stream - type:%s host:%s port:%s ttl:%s"
-                       % (stream.capability.type, l.host, l.port, l.ttl))
-            self.currentVenueClient.RemoveStream(stream)
-
-    def EnableStaticVideo(self, venue, videoAddress, videoPort, videoTtl):
-        location = MulticastNetworkLocation(videoAddress, int(videoPort),
-                                            int(videoTtl))
-        capability = Capability( Capability.PRODUCER, Capability.VIDEO)
-        videoStreamDescription = StreamDescription( "", location,
-                                                    capability, 0, None, 1)
-        self.SetCurrentVenue(venue)
-        log.debug("Enable static video: %s addr: %s, port: %s, ttl %s" 
-                     % (str(venue.uri), str(videoAddress),
-                        str(videoPort), str(videoTtl)))
-        self.currentVenueClient.AddStream(videoStreamDescription)
-
-    def EnableStaticAudio(self, venue, audioAddress, audioPort, audioTtl):
-        location = MulticastNetworkLocation(audioAddress, int(audioPort),
-                                            int(audioTtl))
-        capability = Capability( Capability.PRODUCER, Capability.AUDIO)
-        audioStreamDescription = StreamDescription( "", location,
-                                                    capability, 0, None, 1)
-        log.debug("Enable static audio: %s addr: %s, port: %s, ttl %s"
-                   % (str(venue.uri), str(audioAddress), str(audioPort),
-                      str(audioTtl)))
-        self.SetCurrentVenue(venue)
-        self.currentVenueClient.AddStream(audioStreamDescription)
 
     def SetVenueEncryption(self, venue, value = 0, key = ''):
         self.SetCurrentVenue(venue)
@@ -760,32 +726,12 @@ class VenueListPanel(wxPanel):
                 self.venuesList.SetString(item, venue.name)
                 venue.connections = connectionDict
                 self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
-
-            self.DisableStaticStreams()
      
     def SetEncryption(self, value, key):
         item = self.venuesList.GetSelection()
         venue =  self.venuesList.GetClientData(item)
         log.debug("Set encryption value:%s key:%s"%(value,key))
         self.application.SetVenueEncryption(venue, value, key)
-
-    def SetStaticVideo(self, videoAddress, videoPort, videoTtl):
-        item = self.venuesList.GetSelection()
-        venue =  self.venuesList.GetClientData(item)
-
-        self.application.EnableStaticVideo(venue, videoAddress,
-                                           videoPort, videoTtl)
-
-    def SetStaticAudio(self, audioAddress, audioPort, audioTtl):
-        item = self.venuesList.GetSelection()
-        venue =  self.venuesList.GetClientData(item)
-        self.application.EnableStaticAudio(venue, audioAddress,
-                                           audioPort, audioTtl)
-
-    def DisableStaticStreams(self):
-        item = self.venuesList.GetSelection()
-        venue =  self.venuesList.GetClientData(item)
-        self.application.DisableStaticStreams(venue)
 
     def __doLayout(self):
         venueListPanelSizer = wxStaticBoxSizer(self.venuesListBox, wxVERTICAL)
@@ -1441,18 +1387,6 @@ class VenueParamFrame(wxDialog):
 
         self.parent.SetEncryption(toggled, key)
 
-    def SetStaticAddressing(self):
-        sap = self.staticAddressingPanel
-        if(sap.staticAddressingButton.GetValue()==1):
-            
-            self.parent.SetStaticVideo(sap.GetVideoAddress(), 
-                                       sap.GetVideoPort(), 
-                                       sap.GetVideoTtl())
-
-            self.parent.SetStaticAudio(sap.GetAudioAddress(), 
-                                       sap.GetAudioPort(), 
-                                       sap.GetAudioTtl())
-
     def Ok(self):
         exitsList = []
         streams = []
@@ -1734,8 +1668,6 @@ class AddVenueFrame(VenueParamFrame):
                     log.info("Add venue")
                     self.parent.AddVenue(self.venue)
                     # from super class
-                    self.SetStaticAddressing() 
-                    # from super class
                     self.SetEncryption() 
 
                 except:
@@ -1771,8 +1703,6 @@ class ModifyVenueFrame(VenueParamFrame):
                 try:
                     log.info("Modify venue")
                     self.parent.ModifyVenue(self.venue)
-                    # from super class
-                    self.SetStaticAddressing() 
                     # from super class
                     self.SetEncryption()
                 except:
