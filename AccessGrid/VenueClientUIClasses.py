@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.89 2003-03-21 00:12:17 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.90 2003-03-21 16:37:39 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -192,9 +192,9 @@ class VenueClientFrame(wxFrame):
                                            "View participant's profile information")
         self.participantMenu.AppendSeparator()
         self.participantMenu.Append(self.ID_PARTICIPANT_FOLLOW,"Follow",\
-                                           "Follow this person", wxITEM_CHECK)
+                                           "Follow this person")
         self.participantMenu.Append(self.ID_PARTICIPANT_LEAD,"Lead",\
-                                           "Lead this person", wxITEM_CHECK)
+                                           "Lead this person")
 
         self.nodeMenu = wxMenu()
         self.nodeMenu.Append(self.ID_NODE_PROFILE,"View Profile...",\
@@ -204,9 +204,9 @@ class VenueClientFrame(wxFrame):
         self.nodeMenu.AppendSeparator()
 
         self.nodeMenu.Append(self.ID_NODE_FOLLOW,"Follow",\
-                                           "Follow this node", wxITEM_CHECK)
+                                           "Follow this node")
         self.nodeMenu.Append(self.ID_NODE_LEAD,"Lead",\
-                                           "Lead this node", wxITEM_CHECK)
+                                           "Lead this node")
         # until implemented
         self.nodeMenu.Enable(self.ID_NODE_LEAD, false)
         #self.nodeMenu.Enable(self.ID_NODE_FOLLOW, false)
@@ -313,7 +313,6 @@ class VenueClientFrame(wxFrame):
 
 
     def Follow(self, event):
-        #unfollow everybody else!!!
         wxLogDebug("VenueClientUIClasses: In Follow")
         id = self.contentListPanel.tree.GetSelection()
         personToFollow = self.contentListPanel.tree.GetItemData(id).GetData()
