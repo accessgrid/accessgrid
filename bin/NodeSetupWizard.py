@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.37 2004-08-05 20:20:19 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.38 2004-08-05 20:55:40 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -40,7 +40,7 @@ from AccessGrid.UIUtilities import ProgressDialog
 from AccessGrid.AGService import AGServiceIW
 from AccessGrid.AGServiceManager import AGServiceManagerIW
 
-log = Log.GetLogger(Log.NodeSetupWizard)
+#log = Log.GetLogger(Log.NodeSetupWizard)
 
 class ServiceUnavailableException(Exception):
     pass
@@ -106,7 +106,7 @@ class NodeSetupWizard(wxWizard):
         This class creates a wizard for node setup
         '''
         self.debugMode = debugMode
-        self.log = log
+        #self.log = log
         self.step = 1
         self.SetIcon(icons.getAGIconIcon())
         self.SetPageSize(wxSize(510, 310))
@@ -932,12 +932,12 @@ class NodeClient:
         if not self.app:
             self.app = Service().instance()
 
-        #Initialize node service
-        try:
-            self.app.Initialize("NodeService")
-        except Exception, e:
-            log.exception("NodeClient: init failed. Exiting.")
-            sys.exit(-1)
+            #Initialize node service
+            try:
+                self.app.Initialize("NodeService")
+            except Exception, e:
+                log.exception("NodeClient: init failed. Exiting.")
+                sys.exit(-1)
         
         self.nodeService = AGNodeService(self.app)
         
@@ -1056,11 +1056,10 @@ def main():
 
     # Init the toolkit with the standard environment.
     app = WXGUIApplication()
-    app.Initialize("NodeSetupWizard")
-
+   
     # Try to initialize
     try:
-        args = app.Initialize("VenueNodeSetupWizard")
+        app.Initialize("NodeSetupWizard")
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
