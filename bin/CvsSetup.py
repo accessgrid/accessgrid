@@ -94,7 +94,7 @@ if DST_CONFIG_DIR == "" or not os.path.exists( DST_CONFIG_DIR ):
 
 # Make sure we can find AG source.
 
-file_to_find = os.path.join(AG_BASE_DIR, "AccessGrid", "VenueClientUIClasses.py")
+file_to_find = os.path.join(AG_BASE_DIR, "AccessGrid", "MulticastAddressAllocator.py")
 if not (os.path.exists( file_to_find )):
     PrintUsage()
     print "Cannot find AccessGrid source location.", file_to_find, " not found." 
