@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.2 2003-02-12 20:06:11 turam Exp $
+# RCS-ID:      $Id: Platform.py,v 1.3 2003-02-13 20:11:31 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -41,9 +41,8 @@ def GetSystemConfigDir():
         y=_winreg.OpenKey(x, r"SOFTWARE\AccessGridToolkit\2.0\ConfigPath")
         configDir = _winreg.QueryValue(y,None)
 
-    elif sys.platform == 'linux-i386': 
+    elif sys.platform == 'linux2': 
         configDir = "/etc/AccessGrid/config"
-
     return configDir
 
 def GetUserConfigDir():
@@ -57,7 +56,7 @@ def GetUserConfigDir():
         y=_winreg.OpenKey(x, r"SOFTWARE\AccessGridToolkit\2.0\UserConfigPath")
         configDir = _winreg.QueryValue(y,None)
 
-    elif sys.platform == 'linux-i386': 
+    elif sys.platform == 'linux2': 
         
         configDir = os.environ["HOME"] + os.sep + ".AccessGrid"
 
