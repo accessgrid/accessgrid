@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.31 2004-07-08 19:43:50 turam Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.32 2004-07-08 20:22:15 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.31 2004-07-08 19:43:50 turam Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.32 2004-07-08 20:22:15 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -527,13 +527,16 @@ class EventService:
 	    while self.inQEvt.isSet():
 		try:
 		    (channel, data) = self.inQueue.get()
+                    if channel == 'quit':
+                        self.inQEvt.clear()
+                        break
 		except Empty:
 		    log.info("Didn't get anything to distribute.")
 		    data = None
 	
 		if data is not None:
-		    log.info("Calling _Distribute, in SendHandler.")
-		    self._Distribute(channel, data)		
+                    log.info("Calling _Distribute, in SendHandler.")
+                    self._Distribute(channel, data)         
 	except:
 	    log.exception("Body of event distribution queue handler threw.")
 
@@ -556,6 +559,7 @@ class EventService:
             pass
         
         self.EnqueueQuit()
+        self.inQueue.put(("quit",))
 
         for c in self.allConnections:
             c.stop()
