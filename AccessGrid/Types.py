@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.12 2003-01-29 22:50:07 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.13 2003-01-30 23:34:10 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -109,10 +109,6 @@ class VenueState:
     def RemoveConnection( self, connectionDescription ):
         del self.connections[connectionDescription.uri]
 
-    def UpdateClient(self, update):
-        (id, time) = string.split(update, '-')
-        self.clients[id] = string.split(time, ':')
-        
     def SetCoherenceLocation( self, coherenceLocation ):
         self.coherenceLocation = coherenceLocation
     def GetCoherenceLocation( self ):
@@ -133,6 +129,11 @@ class AGResource:
         return self.resource
     def SetResource( self, resource ):
         self.resource = resource
+
+class AGVideoResource( AGResource ):
+    def __init__( self, type, resource, portTypes ):
+        AGResource.__init__( self, type, resource )
+        self.portTypes = portTypes
 
 class Capability:
 
@@ -254,12 +255,17 @@ class AGServiceImplementationRepository:
     def __ReadServiceImplementations( self ):
         self.serviceImplementations = []
 
+        servicesDir = "services"
+
 # FIXME - location of services should be configurable by clients
-        files = os.listdir("services")
-        for file in files:
-            if file.endswith(".zip"):
-                self.serviceImplementations.append( 'http://%s:%d/services/%s' %
-                   ( socket.gethostname(), self.httpd_port, file ) )
+        if os.path.exists(servicesDir):
+            files = os.listdir(servicesDir)
+            for file in files:
+                if file.endswith(".zip"):
+                    self.serviceImplementations.append( 'http://%s:%d/services/%s' %
+                       ( socket.gethostname(), self.httpd_port, file ) )
+        else:
+            os.mkdir(servicesDir)
 
 
     def GetServiceImplementations( self ):
