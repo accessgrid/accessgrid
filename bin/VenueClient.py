@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.183 2003-08-07 18:46:54 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.184 2003-08-08 21:37:39 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,6 +17,9 @@ import logging, logging.handlers
 import cPickle
 import getopt
 import sys
+import urlparse
+import time
+
 
 log = logging.getLogger("AG.VenueClient")
 
@@ -64,7 +67,9 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
     isPersonalNode = 0
     debugMode = 0
     transferEngine = None
-       
+
+    fallbackRecoveryUrl = None
+    
     def __init__(self):
        
         
@@ -375,14 +380,51 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
         
         if not isSuccess:
             wxCallAfter(self.HandleServerConnectionFailure)
-                                        
+
+    def _TryReconnect(self):
+        """
+        """
+        log.debug("Trying to reconnect")
+        if self.venueClient.venueUri != self.fallbackRecoveryUrl:
+            self.venueClient.EnterVenue(self.fallbackRecoveryUrl)
+            self.fallbackRecoveryUri = None
+        else:
+            self.fallbackRecoveryTimer.cancel()
+            self.fallbackRecoveryTimer = None
+
     def HandleServerConnectionFailure(self):
         log.debug("bin::VenueClient::HandleServerConnectionFailure: call exit venue")
-        self.frame.CleanUp()
-        self.frame.venueAddressBar.SetTitle("You are not in a venue",
-                                            'Click "Go" to connect to the venue, which address is displayed in the address bar') 
-        self.venueClient.ExitVenue()
-        MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", "Lost Connection")
+        # Try backup server if that's configured
+        if len(self.venueClient.venueState.backupServer) > 0:
+            log.debug("falling back to server: %s",
+                      self.venueClient.venueState.backupServer)
+
+            urlparts = list(urlparse.urlparse(self.venueClient.venueUri))
+            urlparts[1] = self.venueClient.venueState.backupServer
+            backupurl = urlparse.urlunparse(urlparts)
+
+            log.debug("current venue: %s, backup venue: %s",
+                      self.venueClient.venueUri,
+                      backupurl)
+
+            oldUrl = self.venueClient.venueUri
+
+            self.venueClient.EnterVenue(backupurl)
+
+            log.debug("Testing recovery url")
+            if self.fallbackRecoveryUrl == None:
+                log.debug("trying to recover")
+                self.fallbackRecoveryUrl = oldUrl
+                self.fallbackRecoveryTimer = threading.Timer(10.0,
+                                                             self._TryReconnect)
+                self.fallbackRecoveryTimer.start()
+        else:
+            # If not ohwell, you're stuck
+            self.frame.CleanUp()
+            self.frame.venueAddressBar.SetTitle("You are not in a venue",
+                                                'Click "Go" to connect to the venue, which address is displayed in the address bar') 
+            self.venueClient.ExitVenue()
+            MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", "Lost Connection")
 
     def RemoveUserEvent(self, event):
         """
@@ -584,7 +626,8 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
             log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
             self.app.certificateManager.CreateProxy()
 
-    def EnterVenue(self, URL, back = false, warningString="", enterSuccess=AG_TRUE):
+    def EnterVenue(self, URL, back = false, warningString="",
+                   enterSuccess=AG_TRUE):
         """
         Note: Overridden from VenueClient
         This method calls the venue client method and then
@@ -600,7 +643,7 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
                   % URL)
 
         if not enterSuccess:
-            text = "You have not entered the venue located at %s.\nAn error occured.  Please, try again."%URL
+            text = "You have not entered the venue located at %s.\nAn error occured.  Please, try again." % URL
             ErrorDialog(None, text, "Enter Venue Error",
                           style = wxOK  | wxICON_ERROR)
             return
@@ -680,7 +723,9 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
             # Tell the text client which location it should listen to
             #
             log.debug("Set text location and address bar")
-            wxCallAfter(self.frame.SetTextLocation)
+            self.venueClient.textClient.RegisterOutputCallback(self.frame.textClientPanel.OutputText)
+#            wxCallAfter(self.frame.SetTextLocation)
+
             wxCallAfter(self.frame.FillInAddress, None, URL)
             
             # Venue data storage location
