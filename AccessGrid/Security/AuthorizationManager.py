@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.13 2004-03-18 21:42:38 eolson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.14 2004-03-19 22:47:48 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.13 2004-03-18 21:42:38 eolson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.14 2004-03-19 22:47:48 lefvert Exp $"
 
 # External Imports
 import os
@@ -397,7 +397,6 @@ class AuthorizationManager:
 
         return rolelist
     
-
     def GetSubjects(self, role=None):
         """
         Get the subjects known by this authorization manager, possibly for the
@@ -544,6 +543,17 @@ class AuthorizationManagerI(SOAPInterface):
         r2 = self.impl.AddRole(r)
         newRole = Decorate(r2)
         return newRole
+
+    def FindRole(self, name):
+        """
+        Find a role in this authorization manager.
+
+        @param name: the name of the role to find
+        @type name: string
+        @return: the AccessGrid.Security.Role object or None
+        """
+        r = self.impl.FindRole(name)
+        return Decorate(r)
 
     def RemoveRole(self, name):
         """
@@ -838,8 +848,7 @@ class AuthorizationManagerIW(SOAPIWrapper):
         @type policy: a string containing an XML formatted policy.
         """
         self.proxy.ImportPolicy(policy)
-    
-        
+            
     def GetPolicy(self):
         """
         Retrieve the policy.
@@ -861,7 +870,19 @@ class AuthorizationManagerIW(SOAPIWrapper):
         r1 = Reconstitute(role)
         return r1
 
+    def FindRole(self, name):
+        """
+        Find a role in this authorization manager.
 
+        @param name: the name of the role to find
+        @type name: string
+        @return: the AccessGrid.Security.Role object or None
+        """
+        
+        r = self.proxy.FindRole(name)
+
+        return Reconstitute(r)
+        
     def RemoveRole(self, name):
         """
         Remove a role from the authorization manager.
@@ -896,7 +917,6 @@ class AuthorizationManagerIW(SOAPIWrapper):
 
         a1 = Reconstitute(a)
         return a1
-        
 
     def RemoveAction(self, name):
         """
