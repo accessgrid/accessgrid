@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.26 2003-09-03 18:01:25 lefvert Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.27 2003-09-03 19:10:08 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -130,7 +130,7 @@ class ClientProfile:
         print "Public ID: " + str(self.publicId)
         print "Home Venue: " + self.homeVenue
 
-    def AsString(self):
+    def __str__(self):
         returnVal =  " Profile Type: " + self.profileType \
                     + "\n Name: " + self.name \
                     + "\n Email: " + self.email\
