@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.18 2004-05-25 19:51:46 eolson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.19 2004-08-19 16:49:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.18 2004-05-25 19:51:46 eolson Exp $"
+__revision__ = "$Id: agpm.py,v 1.19 2004-08-19 16:49:18 turam Exp $"
 
 import os
 import re
@@ -32,8 +32,9 @@ tempfile.tmpdir = SystemConfig.instance().GetTempDir()
 def ProcessArgs():
     doc = """
     By default this program registers/installs a shared application
-    with the users environment. Using the -u argument applications can
-    be unregistered/uninstalled.
+    or node service with the users environment. Using the -u argument applications 
+    can be unregistered/uninstalled.  To unregister node services, use 
+    the '--unregister-service' argument.
     """
     tkConf = AGTkConfig.instance()
 
@@ -41,6 +42,10 @@ def ProcessArgs():
     parser.add_option("-u", "--unregister", action="store_true",
                       dest="unregister", default=0,
           help="Unregister the application, instead of registering it.")
+    parser.add_option("--unregister-service", action="store_true",
+                      dest="unregisterservice", default=0,
+          help="Unregister the node service, instead of registering it. \
+                (Requires administrative access)")
     parser.add_option("-n", "--name", dest="appname",
           help="specify a name other than the default on from the .app file.")
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
@@ -50,11 +55,15 @@ def ProcessArgs():
     parser.add_option("-d", "--dir", dest="appdir",
                       help="The name of a directory containing a .app file.")
     parser.add_option("-z", "--zip", dest="apppkg",
-                      help="The name of a .zip file containing a .app file.")
+                      help="The name of a .zip file containing a .app or .svc file.\
+                            (Requires administrative access to install services)")
     parser.add_option("-p", "--package", dest="appzip",
-                    help="The name of an agpkg file containing a .app file.")
+                    help="The name of an agpkg file containing a .app or .svc \
+                    file. (Requires administrative access to install services)")
     parser.add_option("-l", "--list-apps", action="store_true",
                       dest="listapps", help="List installed shared apps.")
+    parser.add_option("--list-services", action="store_true",
+                      dest="listservices", help="List installed node services.")
     parser.add_option("-s", "--system", action="store_true",
                       dest="sys_install", default=0,
                       help="Install the package for all users. \
@@ -68,9 +77,17 @@ def ProcessArgs():
                       dest="wait_for_input", default=0,
                       help="After completing wait for the user to confirm by\
                       pressing a key.")
-    
+                      
     (options, args) = parser.parse_args()
 
+    # At least one of the following must be given
+    if not (options.appzip or options.apppkg 
+            or options.post_install or options.appfile
+            or options.appdir):
+        parser.print_help()
+        print "Error: no action specified"
+        sys.exit(1)
+    
     if options.sys_install or options.post_install:
         appdb = AppDb(path=tkConf.GetConfigDir())
         dest = tkConf.GetSharedAppDir()
@@ -192,7 +209,7 @@ def PrepPackage(package):
         
     return appInfo, commands, workingDir, cleanup
 
-def UnregisterPackage(appdb, appInfo, name):
+def UnregisterAppPackage(appdb, appInfo, name):
         if appInfo != None and name == None:
             name = appInfo["application.name"]
         if name != None:
@@ -200,7 +217,7 @@ def UnregisterPackage(appdb, appInfo, name):
         else:
             raise Exception, "No application name discovered, exiting without doing unregister."
 
-def RegisterPackage(appdb, dest, appInfo, commands, workingDir=None,
+def RegisterAppPackage(appdb, dest, appInfo, commands, workingDir=None,
                     cleanup=0):
     origDir = os.getcwd()
 
@@ -233,6 +250,28 @@ def RegisterPackage(appdb, dest, appInfo, commands, workingDir=None,
         os.chdir(origDir)
         if workingDir is not None:
             shutil.rmtree(workingDir)
+            
+            
+def RegisterServicePackage(servicePackage):
+    tkConf = AGTkConfig.instance()
+    servicePackageFile = os.path.split(servicePackage)[1]
+    servicePackagePath = os.path.join(tkConf.GetNodeServicesDir(),servicePackageFile)
+    shutil.copy(servicePackage,servicePackagePath)
+        
+    # Set the permissions correctly
+    os.chmod(servicePackagePath,0644)
+    
+    # print "File written to ", servicePackagePath
+    
+
+def UnregisterServicePackage(servicePackageFile):
+    tkConf = AGTkConfig.instance()
+    servicePackagePath = os.path.join(tkConf.GetNodeServicesDir(),servicePackageFile)
+    
+    # print "Removing file ", servicePackagePath
+    os.remove(servicePackagePath)
+    
+
 
 def main():
     """
@@ -255,12 +294,25 @@ def main():
 
     options, appdb, dest = ProcessArgs()
 
-    # We only want to list apps
+    #
+    # Handle list-only options
+    #
     if options.listapps:
         apps = appdb.ListApplications()
         import pprint
         pprint.pprint(apps)
+        sys.exit(0)
         
+    if options.listservices:
+        files = os.listdir(tkConf.GetNodeServicesDir())
+        for file in files:
+            print file
+        sys.exit(0)
+        
+        
+    # 
+    # Handle command-line errors
+    #   
     if options.appfile and not os.path.exists(options.appfile):
         print "Error: app file does not exist:", options.appfile
         sys.exit(1)
@@ -274,39 +326,81 @@ def main():
         print "Error: zip file does not exist:", options.appzip
         sys.exit(1)
         
-
-    pkgList = []
-
-    # We are doing a post install setup run
-    if options.post_install:
-        pkgCache = tkConf.GetSharedAppDir()
-        for pkg in os.listdir(pkgCache):
-            fnl = pkg.split('.')
-            if len(fnl) == 2:
-                (name, ext) = fnl
-                if ext == "agpkg":
-                    pkgInfo = PrepPackage(os.path.join(pkgCache, pkg))
-                    pkgList.append(pkgInfo)
-    elif not options.listapps:
-        # At this point we have an appFile and workingDir
-        pkgInfo = PrepPackageFromCmdLine(options)
-        pkgList.append(pkgInfo)
-
-    for pkg in pkgList:
-        appInfo, commands, workingDir, cleanup = pkg
+    #
+    # Determine whether it's a service or app package
+    #
+    isServicePackage = 0
+    if options.appzip or options.apppkg:
         
-        if options.verbose:
-            print "Name: %s" % appInfo["application.name"]
-            print "Mime Type: %s" % appInfo["application.mimetype"]
-            print "Extension: %s" % appInfo["application.extension"]
-            print "From: %s" % workingDir
+        filename=options.appzip or options.apppkg
+        zipArchive = zipfile.ZipFile(filename)
+        for filename in zipArchive.namelist():
+            if filename.endswith('.svc'):
+                isServicePackage = 1
+                break
+    
+    if options.unregisterservice:
+        isServicePackage = 1
 
-        # If we unregister, we do that then exit
-        if options.unregister:
-            UnregisterPackage(appdb, appInfo, options.appname)
+    #
+    # Register/Unregister packages
+    #    
+    if isServicePackage:
+    
+        #
+        # Handle a service package
+        #
+        filename=options.appzip or options.apppkg or options.appname
+        if options.unregisterservice:
+            if options.verbose:
+                print "Unregistering service package: ", filename
+            UnregisterServicePackage(filename)
         else:
-            RegisterPackage(appdb, dest, appInfo, commands,
-                            workingDir, cleanup)
+            if options.verbose:
+                print "Registering service package: ", filename
+            RegisterServicePackage(filename)
+    
+    else:
+    
+        #
+        # Handle an application package
+        #
+
+        pkgList = []
+
+        #
+        # Post-install setup run
+        #
+        if options.post_install:
+            pkgCache = tkConf.GetSharedAppDir()
+            for pkg in os.listdir(pkgCache):
+                fnl = pkg.split('.')
+                if len(fnl) == 2:
+                    (name, ext) = fnl
+                    if ext == "agpkg":
+                        pkgInfo = PrepPackage(os.path.join(pkgCache, pkg))
+                        pkgList.append(pkgInfo)
+        else:
+
+            # At this point we have an appFile and workingDir
+            pkgInfo = PrepPackageFromCmdLine(options)
+            pkgList.append(pkgInfo)
+
+        for pkg in pkgList:
+            appInfo, commands, workingDir, cleanup = pkg
+
+            if options.verbose:
+                print "Name: %s" % appInfo["application.name"]
+                print "Mime Type: %s" % appInfo["application.mimetype"]
+                print "Extension: %s" % appInfo["application.extension"]
+                print "From: %s" % workingDir
+
+            # If we unregister, we do that then exit
+            if options.unregister:
+                UnregisterAppPackage(appdb, appInfo, options.appname)
+            else:
+                RegisterAppPackage(appdb, dest, appInfo, commands,
+                                workingDir, cleanup)
     
     if options.wait_for_input:
         try:
