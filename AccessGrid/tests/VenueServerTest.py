@@ -114,11 +114,11 @@ class VenueServerTest:
         else:
             print "------------------ Get allocator: MulticastAddressAllocator.INTERVAL"
 
-        path = "home/venue"
+        path = "/homes/"
         print " "
         print "------------------ SetStorageLocation: "+path
-        self.client.SetStorageLocation()
-        store = self.client.GetStorageLocation(path)
+        self.client.SetStorageLocation(path)
+        store = self.client.GetStorageLocation()
         print " "
         print "------------------ GetStorageLocation: "+store
 
