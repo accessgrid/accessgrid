@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.50 2004-03-26 14:06:33 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.51 2004-04-12 22:42:14 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.50 2004-03-26 14:06:33 judson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.51 2004-04-12 22:42:14 eolson Exp $"
 
 # The standard imports
 import sys
@@ -29,7 +29,7 @@ from AccessGrid.Toolkit import CmdlineApplication
 from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
 from AccessGrid import Log
 from AccessGrid.Platform.Config import SystemConfig
-from AccessGrid.hosting import Server
+from AccessGrid.hosting import SecureServer
 
 # default arguments
 log = None
@@ -84,7 +84,7 @@ def main():
 
     # Create a hosting environment
     hostname = SystemConfig.instance().GetHostname()
-    server = Server((hostname, port), debug = app.GetDebugLevel())
+    server = SecureServer((hostname, port), debug = app.GetDebugLevel())
     
     # Create the Node Service Service
     nsi = AGNodeServiceI(nodeService)

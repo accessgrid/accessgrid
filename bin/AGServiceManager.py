@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.40 2004-04-05 18:46:10 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.41 2004-04-12 22:42:14 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ import signal, time, os
 from optparse import Option
 
 # Our imports
-from AccessGrid.hosting import Server
+from AccessGrid.hosting import SecureServer
 from AccessGrid.Toolkit import CmdlineApplication
 from AccessGrid.Platform import IsLinux
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig, SystemConfig
@@ -73,7 +73,7 @@ def main():
         
     # Create the hosting environment
     hostname = SystemConfig.instance().GetHostname()
-    server = Server((hostname, port))
+    server = SecureServer((hostname, port))
 
     # Create the Service Manager
     serviceManager = AGServiceManager(server)
