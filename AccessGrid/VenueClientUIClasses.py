@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.169 2003-05-07 14:46:28 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.170 2003-05-07 17:50:34 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -278,6 +278,20 @@ class VenueClientFrame(wxFrame):
         self.dataEntryMenu.AppendSeparator()
 	self.dataEntryMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties...",
                              "View information about the selected data")
+
+        self.personalDataEntryMenu = wxMenu()
+        self.personalDataEntryMenu.Append(self.ID_VENUE_PERSONAL_DATA_ADD,"Add personal data...",
+                             "Add personal data")
+        self.personalDataEntryMenu.AppendSeparator()
+        self.personalDataEntryMenu.Append(self.ID_VENUE_DATA_OPEN,"Open",
+                             "Open selected data")
+	self.personalDataEntryMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...",
+                             "Save selected data to local disk")
+	self.personalDataEntryMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove selected data")
+        self.personalDataEntryMenu.AppendSeparator()
+	self.personalDataEntryMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties...",
+                             "View information about the selected data")
+
 
         self.serviceEntryMenu = wxMenu()
       	self.serviceEntryMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
@@ -1275,6 +1289,13 @@ class ContentListPanel(wxPanel):
         #self.nodeLeadId = imageList.Add(icons.getNodeLeadBitmap())
         self.tree.AssignImageList(imageList)
 
+        # No images so twist buttons work on Windows
+        #if sys.platform == "win32":
+        #    self.participantId = -1
+        #    self.defaultDataId = -1
+        #    self.serviceId = -1
+        #    self.applicationId = -1
+            
     def AddParticipant(self, profile, dataList = []):
         participant = self.tree.AppendItem(self.participants, profile.name, \
                                            self.participantId, self.participantId)
@@ -1652,8 +1673,13 @@ class ContentListPanel(wxPanel):
             self.PopupMenu(self.parent.applicationEntryMenu, wxPoint(self.x, self.y))
             
         elif isinstance(item, DataDescription):
-            self.PopupMenu(self.parent.dataEntryMenu, wxPoint(self.x, self.y))
-
+            parent = self.tree.GetItemParent(treeId)
+            
+            if(self.tree.GetItemText(parent) == 'Data'):
+                self.PopupMenu(self.parent.dataEntryMenu, wxPoint(self.x, self.y))
+            else:
+                self.PopupMenu(self.parent.personalDataEntryMenu, wxPoint(self.x, self.y))
+               
         elif isinstance(item,ClientProfile):
             wxLogDebug("Is this me? public is = %s, my id = %s "%(item.publicId, self.app.profile.publicId))
             if(item.publicId == self.app.profile.publicId):
