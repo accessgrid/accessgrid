@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.270 2003-09-17 16:20:57 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.271 2003-09-17 16:23:19 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.270 2003-09-17 16:20:57 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.271 2003-09-17 16:23:19 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2009,7 +2009,8 @@ class ContentListPanel(wxPanel):
             EVT_MENU(self, id, lambda event,
                      cmd=commands['Open'], itm=item: self.StartCmd(cmd, item=itm))
         else:
-            EVT_MENU(self, id, lambda itm=item: self.FindUnregistered(itm))
+            EVT_MENU(self, id, lambda event,
+                     itm=item: self.FindUnregistered(itm))
 
         # We always have save for data
         id = wxNewId()
