@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.82 2003-04-28 20:20:31 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.83 2003-04-29 14:17:37 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1027,7 +1027,8 @@ class Venue(ServiceBase.ServiceBase):
             del self.data[ dataDescription.name ]
             
             # This is venue resident so delete the file
-            if(dataDescription.type is None):
+                    
+            if(dataDescription.type is None or dataDescription.type == "None"):
                 self.dataStore.DeleteFile(dataDescription.name)
                 
             # Send the event
