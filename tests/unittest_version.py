@@ -15,7 +15,7 @@ Unittest for Version
 """
 
 import unittest
-from AccessGrid.Toolkit import GetVersion, CreateVersionFromString
+from AccessGrid.Version import GetVersion, CreateVersionFromString
 
 class AGVersionTestCase(unittest.TestCase):
     """A test case for Version."""
@@ -29,7 +29,7 @@ class AGVersionTestCase(unittest.TestCase):
        assert not a < b
        assert not a > b
        assert not (a <> b)
-       assert a.AsString() == b.AsString()
+       assert str(a) == str(b)
        assert a.AsTuple3() == b.AsTuple3()
 
     def testB(self):
@@ -41,8 +41,8 @@ class AGVersionTestCase(unittest.TestCase):
        assert a > b
        assert not a < b
        assert a <> b
-       assert a.AsString() == "2.1.0"
-       assert b.AsString() == "2.0.0"
+       assert str(a) == "2.1.0"
+       assert str(b) == "2.0.0"
        assert a.AsTuple3() == (2,1,0)
        assert b.AsTuple3() == (2,0,0)
 
@@ -55,8 +55,8 @@ class AGVersionTestCase(unittest.TestCase):
        assert not a > b
        assert a < b
        assert a <> b
-       assert a.AsString() == "2.1.0"
-       assert b.AsString() == "2.1.1"
+       assert str(a) == "2.1.0"
+       assert str(b) == "2.1.1"
        assert a.AsTuple3() == (2,1,0)
        assert b.AsTuple3() == (2,1,1)
 
@@ -69,8 +69,8 @@ class AGVersionTestCase(unittest.TestCase):
        assert not a > b
        assert a < b
        assert a <> b
-       assert a.AsString() == "2.0.1"
-       assert b.AsString() == "2.1.1"
+       assert str(a) == "2.0.1"
+       assert str(b) == "2.1.1"
        assert a.AsTuple3() == (2,0,1)
        assert b.AsTuple3() == (2,1,1)
 
@@ -83,8 +83,8 @@ class AGVersionTestCase(unittest.TestCase):
        assert not a > b
        assert a < b
        assert a <> b
-       assert a.AsString() == "0.2.3"
-       assert b.AsString() == "1.2.3"
+       assert str(a) == "0.2.3"
+       assert str(b) == "1.2.3"
        assert a.AsTuple3() == (0,2,3)
        assert b.AsTuple3() == (1,2,3)
 
@@ -97,8 +97,8 @@ class AGVersionTestCase(unittest.TestCase):
        assert not a < b
        assert a > b
        assert a <> b
-       assert a.AsString() == "1.2.3"
-       assert b.AsString() == "0.2.3"
+       assert str(a) == "1.2.3"
+       assert str(b) == "0.2.3"
        assert a.AsTuple3() == (1,2,3)
        assert b.AsTuple3() == (0,2,3)
 
@@ -111,8 +111,8 @@ class AGVersionTestCase(unittest.TestCase):
        assert not a < b
        assert a > b
        assert a <> b
-       assert a.AsString() == "2.1.1"
-       assert b.AsString() == "2.1.0"
+       assert str(a) == "2.1.1"
+       assert str(b) == "2.1.0"
        assert a.AsTuple3() == (2,1,1)
        assert b.AsTuple3() == (2,1,0)
 
@@ -125,8 +125,8 @@ class AGVersionTestCase(unittest.TestCase):
        assert a < b
        assert not a > b
        assert a <> b
-       assert a.AsString() == "2.1.0"
-       assert b.AsString() == "2.1.1"
+       assert str(a) == "2.1.0"
+       assert str(b) == "2.1.1"
        assert a.AsTuple3() == (2,1,0)
        assert b.AsTuple3() == (2,1,1)
 
