@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Subject.py,v 1.2 2004-02-24 21:33:07 judson Exp $
+# RCS-ID:      $Id: Subject.py,v 1.3 2004-02-25 18:29:31 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ Subjects are the basic security handle on entities that want to be a
 part of the security environment.
 """
 
-__revision__ = "$Id: Subject.py,v 1.2 2004-02-24 21:33:07 judson Exp $"
+__revision__ = "$Id: Subject.py,v 1.3 2004-02-25 18:29:31 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import xml.dom.minidom
@@ -58,7 +58,7 @@ class Subject:
     def _repr_(self):
         domImpl = xml.dom.minidom.getDOMImplementation()
         doc = domImpl.createDocument(xml.dom.minidom.EMPTY_NAMESPACE,
-                                     "Subject", '')
+                                     "Subject", None)
         return self.ToXML(doc).toxml()
 
     def __str__(self):
