@@ -1,9 +1,11 @@
 import os
 import sys
 import signal
+import logging, logging.handlers
 
 from AccessGrid.DataStore import DataService
 from AccessGrid import Toolkit
+from AccessGrid.Platform import GetUserConfigDir
 
 
 dataService = None
@@ -24,6 +26,8 @@ def Main():
         path = 'DATA'
         dataPort = 8886
         servicePort = 8500
+        logFile = os.path.join(GetUserConfigDir(), "DataService.log")
+        debugMode = 0
 
         index = len(sys.argv) - 1
 
@@ -51,6 +55,19 @@ def Main():
 
         app = Toolkit.CmdlineApplication()
         app.InitGlobusEnvironment()
+
+        # Start up the logging
+        log = logging.getLogger("AG")
+        log.setLevel(logging.DEBUG)
+        hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
+        extfmt = logging.Formatter("%(asctime)s %(thread)s %(name)s %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
+        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
+        hdlr.setFormatter(extfmt)
+        log.addHandler(hdlr)
+        if debugMode:
+            hdlr = logging.StreamHandler()
+            hdlr.setFormatter(fmt)
+            log.addHandler(hdlr)
                            
         # Register a signal handler so we can shut down cleanly
         signal.signal(signal.SIGINT, SignalHandler)
