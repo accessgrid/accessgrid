@@ -5,17 +5,13 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.19 2003-08-20 18:28:41 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.20 2003-09-10 21:10:11 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 wxPython GUI code for the Certificate Manager.
-
-This needs to be in a separate file because any attempt to import
-wxPython.wx, even inside a try/except block, will result in a process
-exit on Linux if the DISPLAY environment variable is not set.
 
 """
 
