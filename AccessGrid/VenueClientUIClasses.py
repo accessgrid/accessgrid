@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.74 2003-03-19 21:50:52 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.75 2003-03-19 22:54:21 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -28,12 +28,12 @@ from AccessGrid.Descriptions import ServiceDescription
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import MyLog 
-#from AccessGrid.TextClientUI import TextClientUI, TextClientUIStandAlone
+#from AccessGrid.TextClientUI import TextClientPanel
 
-# for text chat
-from AccessGrid.TextClient import SimpleTextProcessor
-from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
+# for TextClientPanel
+from AccessGrid.TextClientUI import SimpleTextProcessor
 from pyGlobus.io import GSITCPSocket
+from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 from AccessGrid.Events import ConnectEvent, TextEvent
 
 class VenueClientFrame(wxFrame):
@@ -1235,6 +1235,8 @@ class ContentListPanel(wxPanel):
   #      self.SetAutoLayout(1)
 
 
+
+
 class TextClientPanel(wxPanel):
     aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
     This has been developed as part of the Access Grid project."""
@@ -1247,17 +1249,17 @@ class TextClientPanel(wxPanel):
     def __init__(self, *args, **kwds):
         wxPanel.__init__(self, *args, **kwds)
         self.TextOutput = wxTextCtrl(self, wxNewId(), "",
-                                     style= wxTE_MULTILINE|wxTE_READONLY|wxTE_RICH)
+                                     style= wxTE_MULTILINE|wxTE_READONLY)
         self.TextOutput.SetToolTipString("Text chat")
-        self.label = wxStaticText(self, -1, "Your message:", size = wxSize(90,20))
+        self.label = wxStaticText(self, -1, "Your message:", size = wxSize(80,20))
         self.display = wxButton(self, self.ID_BUTTON, "Display", style = wxBU_EXACTFIT)
         self.textInputId = wxNewId()
         self.TextInput = wxTextCtrl(self, self.textInputId, "",
-                                    style= wxTE_RICH|wxTE_PROCESS_ENTER)
+                                    style= wxTE_PROCESS_ENTER)
         self.TextInput.SetToolTipString("Write your message here")
         self.__set_properties()
         self.__do_layout()
-        #self.TextOutput.EnableScrolling(true, true)
+ 
         EVT_TEXT_ENTER(self, self.textInputId, self.LocalInput)
         EVT_BUTTON(self, self.ID_BUTTON, self.LocalInput)
         self.Show(true)
@@ -1275,7 +1277,6 @@ class TextClientPanel(wxPanel):
 
         wxLogDebug("Set text location host:%s, port:%d, venueId:%s, attr:%s, socket:%s"
                    %(self.host,self.port, self.venueId, str(self.attr), str(self.socket)))
-                   #%(self.host, self.port, self.venueId, self.attr, self.socket))
         
         self.Processor = SimpleTextProcessor(self.socket, self.venueId,
                                              self.TextOutput)
@@ -1290,7 +1291,6 @@ class TextClientPanel(wxPanel):
     def __do_layout(self):
         TextSizer = wxBoxSizer(wxVERTICAL)
         TextSizer.Add(self.TextOutput, 2, wxEXPAND|wxALIGN_CENTER_HORIZONTAL, 0)
-
         box = wxBoxSizer(wxHORIZONTAL)
         box.Add(self.label, 0, wxALIGN_CENTER |wxLEFT, 5)
         box.Add(self.TextInput, 1, wxALIGN_CENTER)
@@ -1303,7 +1303,7 @@ class TextClientPanel(wxPanel):
         
     def LocalInput(self, event):
         """ User input """
-        if(self.venueId != None and self.Processor != None):
+        if(self.venueId != None):
             wxLogDebug("User writes: %s" %self.TextInput.GetValue())
             textEvent = TextEvent(self.venueId, None, 0, self.TextInput.GetValue())
             try:
@@ -1313,6 +1313,7 @@ class TextClientPanel(wxPanel):
                 wxLogError("Could not send message successfully")
         else:
             wxLogMessage( "Please, go to a venue before using the chat")
+            wxLog_GetActiveTarget().Flush()
            
     def Stop(self):
         wxLogDebug("Stop processor")

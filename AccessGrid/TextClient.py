@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.1 2003-03-19 20:45:51 lefvert Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.2 2003-03-19 22:54:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -70,14 +70,16 @@ class SimpleTextProcessor:
             self._RawOutput(event.data.data + '\n')
 
         # the exception should be caught in UI not here.
-        # try: 
-        self.log.debug("In try statement")
-        pdata = pickle.dumps(event)
-        lenStr = "%s\n" % len(pdata)
-        self.wfile.write(lenStr)
-        self.wfile.write(pdata)
-        # except:
-        #     pass
+        try: 
+            self.log.debug("Before dump event")
+            pdata = pickle.dumps(event)
+            lenStr = "%s\n" % len(pdata)
+            self.log.debug("Before write")
+            self.wfile.write(lenStr)
+            self.wfile.write(pdata)
+            self.log.debug("pdata:%s" %pdata)
+        except:
+            self.log.debug("in except")
            
     def Output(self, text):
         """ """
