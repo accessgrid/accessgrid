@@ -150,7 +150,13 @@ class WebBrowser(wxPanel):
         else:
             message = "Ignoring DocComplete for ", event.GetText1()
             self.log.debug(message)
-           
+
+    def LocalEvent(self):
+        # Reset just_received_navigate flag when url is triggered by combobox or buttons.
+        # Else, the browser may not be able to receive incoming remote events
+        # from other clients.
+        self.just_received_navigate = 0
+
     def OnTitleChange(self, event):
         self.log.debug("titlechange: " + event.GetText1())
         if self.frame:
@@ -173,8 +179,9 @@ class WebBrowser(wxPanel):
         self.ie.GoHome()
 
     def OnRefresh(self, event):
+        self.LocalEvent()
         self.ie.Refresh(wxIEHTML_REFRESH_COMPLETELY)
-
+       
     def navigate(self, url):
         if self.just_received_navigate:
             self.log.debug("___cancelled NAVIGATE to "+url)
@@ -183,13 +190,15 @@ class WebBrowser(wxPanel):
             self.just_received_navigate = 1
             self.docLoading = url
             self.ie.Navigate(url)
-    
+         
     def OnLocationSelect(self, event):
+        self.LocalEvent()
         url = self.location.GetStringSelection()
         self.ie.Navigate(url)
 
     def OnLocationKey(self, event):
         if event.KeyCode() == WXK_RETURN:
+            self.LocalEvent()
             URL = self.location.GetValue()
             self.location.Append(URL)
             self.ie.Navigate(URL)
@@ -270,7 +279,6 @@ class SharedBrowser( wxApp ):
         # Send out the event, including our public ID in the message.
         publicId = self.sharedAppClient.GetPublicId()
         self.sharedAppClient.SendEvent("browse", ( publicId, data ) )
-       
         # Store the URL in the application service in the venue
         self.sharedAppClient.SetData("url", data)
         
@@ -360,4 +368,34 @@ if __name__ == "__main__":
         sb = SharedBrowser( appUrl, debugMode, logging)
         sb.MainLoop()
         
-   
+    #
+    # Stress test
+    #
+    #import threading
+    #import time
+    
+    #browsers = []
+    #threadList = []
+    #sharedAppClient = SharedAppClient("Test sharedAppClient")
+    
+    #def StartBrowser():
+    #    sb = SharedBrowser(appUrl, debugMode, logging)
+    #    sharedAppClient.InitLogging()
+    #    browsers.append(sb)
+    #    sb.MainLoop()
+
+    #def SendEvents():
+    #    while 1:
+    #        publicId = sharedAppClient.GetPublicId()
+    #        sharedAppClient.SendEvent("browse", (publicId, "http://www.aftonbladet.se"))
+    #        # Store the URL in the application service in the venue
+    #        sharedAppClient.SetData("url", "http://www.aftonbladet.se")
+    #        time.sleep(0.5)
+
+    #sharedAppClient.Join(appUrl)
+    #thread = threading.Thread(target = SendEvents)
+    #thread.start()
+    
+    #StartBrowser()
+    
+
