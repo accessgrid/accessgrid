@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.71 2003-05-15 02:10:06 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.72 2003-05-16 04:17:57 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -32,7 +32,8 @@ from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
 from AccessGrid.Utilities import GetHostname
 from AccessGrid.GUID import GUID
-from AccessGrid.Venue import Venue
+from AccessGrid.Venue import Venue, AdministratorNotFound
+from AccessGrid.Venue import AdministratorAlreadyPresent
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.DataStore import GSIHTTPTransferServer
 from AccessGrid.EventService import EventService
@@ -78,10 +79,10 @@ class VenueNotFound(Exception):
     """
     pass
 
-class AdministratorAlreadyPresent(Exception):
+class InvalidVenueDescription(Exception):
     """
-    The exception raised when an administrator is already present, but
-    added a second time.
+    The exception raised when a venue description cannot be made from an
+    anonymous struct.
     """
     pass
 
@@ -123,9 +124,22 @@ class VenueServer(ServiceBase.ServiceBase):
         
         """
         # Initialize our state
+        self.persistenceFilename = 'VenueServer.dat'
+        self.houseKeeperFrequency = 30
+        self.venuePathPrefix = 'Venues'
         self.administrators = ''
         self.administratorList = []
         self.defaultVenue = ''
+        self.multicastAddressAllocator = MulticastAddressAllocator()
+        self.hostname = GetHostname()
+        self.venues = {}
+        self.services = []
+        self.configFile = configFile
+        self.dataStorageLocation = None
+        self.dataPort = 0
+        self.eventPort = 0
+        self.textPort = 0
+
         if hostEnvironment != None:
             self.hostingEnvironment = hostEnvironment
             self.internalHostingEnvironment = 0 # False
@@ -133,14 +147,7 @@ class VenueServer(ServiceBase.ServiceBase):
             defaultPort = 8000
             self.hostingEnvironment = Server.Server(defaultPort)
             self.internalHostingEnvironment = 1 # True
-        self.multicastAddressAllocator = MulticastAddressAllocator()
-        self.hostname = GetHostname()
-        self.venues = {}
-        self.services = []
-        self.configFile = configFile
-        self.dataStorageLocation = None
-        self.eventPort = 0
-        self.textPort = 0
+
         self.simpleLock = Condition(Lock())
         
         # Figure out which configuration file to use for the
@@ -157,7 +164,7 @@ class VenueServer(ServiceBase.ServiceBase):
         if not os.path.exists(self.dataStorageLocation):
             try:
                 os.mkdir(self.dataStorageLocation)
-            except OSError, e:
+            except OSError:
                 log.exception("Could not create VenueServer Data Store.")
                 self.dataStorageLocation = None
 
@@ -245,8 +252,13 @@ class VenueServer(ServiceBase.ServiceBase):
         for sec in cp.sections():
             if cp.has_option(sec, 'type'):
                 log.debug("Loading Venue: %s", sec)
-                administrators = string.split(cp.get(sec, 'administrators'),
-                                              ':')
+                try:
+                    administrators = string.split(cp.get(sec,
+                                                         'administrators'),
+                                                  ':')
+                except ConfigParser.NoOptionError:
+                    log.warn("No adminstrators for venue %s", sec)
+                    administrators = []
                 v = Venue(self, cp.get(sec, 'name'),
                           cp.get(sec, 'description'), administrators,
                           self.dataStorageLocation, id=sec)
@@ -260,37 +272,29 @@ class VenueServer(ServiceBase.ServiceBase):
                 try:
                     connections = cp.get(sec, 'connections')
                 except ConfigParser.NoOptionError:
-                    log.debug("No connections for venue being loaded")
                     connections = ""
                     
-                cl = dict()
-                for c in string.split(connections, ':'):
-                    if len(c) != 0:
+                if len(connections) != 0:
+                    for c in string.split(connections, ':'):
                         uri = self.MakeVenueURL(self.IdFromURL(cp.get(c,
                                                                       'uri')))
                         cd = ConnectionDescription(cp.get(c, 'name'),
                                                    cp.get(c, 'description'),
                                                    uri)
-                        cl[cd.uri] = cd
-                        
-                        v.SetConnections(cl)
-                cl = None
-                    
+                        v.AddConnection(cd)
+
+                else:
+                    log.debug("No connections to load for venue %s", sec)
                         
                 # Deal with streams if there are any
                 try:
                     streams = cp.get(sec, 'streams')
                 except ConfigParser.NoOptionError:
-                    log.debug("No streams for venue being loaded")
                     streams = ""
-                    
-                for s in string.split(streams, ':'):
-                    if len(s) != 0:
+
+                if len(streams) != 0:
+                    for s in string.split(streams, ':'):
                         name = cp.get(s, 'name')
-                        try:
-                            desc = cp.get(s, 'description')
-                        except ConfigParser.NoOptionError:
-                            desc = None
                         encryptionFlag = cp.getint(s, 'encryptionFlag')
                         if encryptionFlag:
                             encryptionKey = cp.get(s, 'encryptionKey')
@@ -298,36 +302,40 @@ class VenueServer(ServiceBase.ServiceBase):
                             encryptionKey = None
                         (addr, port, ttl) = string.split(cp.get(s, 'location'),
                                                          " ")
-                        capability = cp.get(s, 'capability')
+                        capability = string.split(cp.get(s, 'capability'), ' ')
                         loc = MulticastNetworkLocation(addr, int(port),
                                                        int(ttl))
-                        cap = Capability(string.split(capability, ' '))
+                        cap = Capability(capability[0], capability[1])
 
                         sd = StreamDescription(name, loc, cap, 
                                                encryptionFlag, encryptionKey,
-                                               static=1)
+                                               1)
                         v.AddStream(sd)
-                    else:
-                        log.debug("Not loading stream: %s", sec)
+                else:
+                    log.debug("No streams to load for venue %s", sec)
 
                 try:
                     dataList = cp.get(sec, 'data')
                 except ConfigParser.NoOptionError:
                     dataList = ""
-                    
-                for d in string.split(dataList, ':'):
-                    if len(d) != 0:
+
+                if len(dataList) != 0:
+                    for d in string.split(dataList, ':'):
                         dd = DataDescription(cp.get(d, 'name'))
                         dd.SetId(d)
-                        dd.SetDescription(cp.get(d, 'description'))
+                        try:
+                            dd.SetDescription(cp.get(d, 'description'))
+                        except ConfigParser.NoOptionError:
+                            log.info("LoadPersistentVenues: Data has no description")
                         dd.SetURI(cp.get(d, 'uri'))
                         dd.SetStatus(cp.get(d, 'status'))
                         dd.SetSize(cp.getint(d, 'size'))
                         dd.SetChecksum(cp.get(d, 'checksum'))
                         dd.SetOwner(cp.get(d, 'owner'))
+
                         v.AddData(dd)
-                    else:
-                        log.debug("Not loading data: %s", sec)
+                else:
+                    log.debug("No data to load for Venue %s", sec)
 
     def _Authorize(self):
         """
@@ -398,12 +406,12 @@ class VenueServer(ServiceBase.ServiceBase):
             if os.path.isfile(nfn):
                 try:
                     os.remove(nfn)
-                except OSError, e:
+                except OSError:
                     log.exception("Couldn't remove backup file.")
                     return 0
             try:
                 os.rename(self.persistenceFilename, nfn)
-            except OSError, e:
+            except OSError:
                 log.exception("Couldn't rename backup file.")
                 return 0
             
@@ -465,20 +473,27 @@ class VenueServer(ServiceBase.ServiceBase):
             log.exception("Unauthorized attempt to Add Venue.")
             raise NotAuthorized
 
+        venueDesc = CreateVenueDescription(venueDescStruct)
+
+        if venueDesc == None:
+            raise InvalidVenueDescription
+            
+        venueDesc.administrators.append(GetDefaultIdentityDN())
+
         try:
             self.simpleLock.acquire()
-
-            venueDesc = CreateVenueDescription(venueDescStruct)
-            venueDesc.administrators.append(GetDefaultIdentityDN())
+        
             venueUri = self.AddVenue(venueDesc)
-
+        
             self.simpleLock.notify()
             self.simpleLock.release()
-
+        
             return venueUri
         except:
-            log.exception("Exception in AddVenue!")
-            raise VenueServerException("Couldn't Add Venue.")
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsAddVenue: exception")
+            raise
 
     wsAddVenue.soap_export_as = "AddVenue"
     
@@ -511,15 +526,21 @@ class VenueServer(ServiceBase.ServiceBase):
         id = self.IdFromURL(URL)   
         vd = CreateVenueDescription(venueDescStruct)
         
-        if vd.uri == URL:
+        if vd.uri != URL:
+            raise InvalidVenueDescription
+
+        try:
             self.simpleLock.acquire()
             
             self.ModifyVenue(id, vd)
 
             self.simpleLock.notify()
             self.simpleLock.release()
-        else:
-            raise InvalidVenueDescription
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsModifyVenue: exception")
+            raise
         
     wsModifyVenue.soap_export_as = "ModifyVenue"
 
@@ -540,15 +561,20 @@ class VenueServer(ServiceBase.ServiceBase):
         if not self._Authorize():
             raise NotAuthorized
 
-        # Get the venue from the id (from the URL)
         id = self.IdFromURL(URL)
 
-        self.simpleLock.acquire()
+        try:
+            self.simpleLock.acquire()
         
-        self.RemoveVenue(id)
-
-        self.simpleLock.notify()
-        self.simpleLock.release()
+            self.RemoveVenue(id)
+            
+            self.simpleLock.notify()
+            self.simpleLock.release()
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsRemoveVenue: exception")
+            raise
         
     wsRemoveVenue.soap_export_as = "RemoveVenue"
 
@@ -572,14 +598,20 @@ class VenueServer(ServiceBase.ServiceBase):
         if not self._Authorize():
             raise NotAuthorized
 
-        self.simpleLock.acquire()
+        try:
+            self.simpleLock.acquire()
         
-        returnString = self.AddAdministrator(string)
+            returnString = self.AddAdministrator(string)
 
-        self.simpleLock.notify()
-        self.simpleLock.release()
-
-        return returnString
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            
+            return returnString
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsAddAdministrator: exception")
+            raise
         
     wsAddAdministrator.soap_export_as = "AddAdministrator"
 
@@ -602,14 +634,20 @@ class VenueServer(ServiceBase.ServiceBase):
         if not self._Authorize():
             raise NotAuthorized
 
-        self.simpleLock.acquire()
+        try:
+            self.simpleLock.acquire()
         
-        returnString = self.RemoveAdministrator(string)
+            returnString = self.RemoveAdministrator(string)
 
-        self.simpleLock.notify()
-        self.simpleLock.release()
+            self.simpleLock.notify()
+            self.simpleLock.release()
 
-        return returnString
+            return returnString
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsRemoveAdministrator: exception")
+            raise
     
     wsRemoveAdministrator.soap_export_as = "RemoveAdministrator"
 
@@ -618,46 +656,52 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         This is the interface to get a list of Venues from the Venue Server.
 
-        **Arguments:**
-
-        **Raises:**
-
         **Returns:**
 
             *venue description list* A list of venues descriptions.
         """
 
-        # Authorization missing
+        try:
+            self.simpleLock.acquire()
         
-        self.simpleLock.acquire()
+            vdl = self.GetVenues()
+            
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            
+            # This is because our SOAP implemenation doesn't like passing
+            # dictionaries that have URLs for the keys.
+            # This *should* go away.
+            for v in vdl:
+                v.connections = v.connections.values()
+                
+            return vdl
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsGetVenues: exception")
+            raise
         
-        vdl = self.GetVenues()
-
-        self.simpleLock.notify()
-        self.simpleLock.release()
-        
-        # This is because our SOAP implemenation doesn't like passing
-        # dictionaries that have URLs for the keys.
-        # This *should* go away.
-        for v in vdl:
-            v.connections = v.connections.values()
-
-        return vdl
-
     wsGetVenues.soap_export_as = "GetVenues"
 
     def wsGetDefaultVenue(self):
         """
         Interface for getting the URL to the default venue.
         """
-        self.simpleLock.acquire()
+        try:
+            self.simpleLock.acquire()
         
-        returnURL = self.GetDefaultVenue()
+            returnURL = self.GetDefaultVenue()
 
-        self.simpleLock.notify()
-        self.simpleLock.release()
+            self.simpleLock.notify()
+            self.simpleLock.release()
         
-        return returnURL
+            return returnURL
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsGetDefaultVenues: exception")
+            raise
         
     wsGetDefaultVenue.soap_export_as = "GetDefaultVenue"
 
@@ -674,18 +718,27 @@ class VenueServer(ServiceBase.ServiceBase):
             not an administrator.
 
         **Returns:**
-        
+
+            *URL* the url of the default venue upon success.
         """
         if not self._Authorize():
             raise NotAuthorized
 
-        self.simpleLock.acquire()
+        try:
+            self.simpleLock.acquire()
 
-        self.SetDefaultVenue(URL)
+            self.SetDefaultVenue(URL)
 
-        self.simpleLock.notify()
-        self.simpleLock.release()
+            self.simpleLock.notify()
+            self.simpleLock.release()
 
+            return URL
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsSetDefaultVenue: exception")
+            raise
+        
     wsSetDefaultVenue.soap_export_as = "SetDefaultVenue"
 
     def wsSetStorageLocation(self, location):
@@ -698,18 +751,28 @@ class VenueServer(ServiceBase.ServiceBase):
             
         **Raises:**
 
+            *NotAuthorized* Raised when the caller is not an administrator.
+            
         **Returns:**
+
+            *location* The new location on success.
         """
         if not self._Authorize():
             raise NotAuthorized
 
-        self.simpleLock.acquire()
-        
-        self.SetStorageLocation(location)
+        try:
+            self.simpleLock.acquire()
+            
+            self.SetStorageLocation(location)
+            
+            self.simpleLock.notify()
+            self.simpleLock.release()
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsSetStorageLocation: exception")
+            raise
 
-        self.simpleLock.notify()
-        self.simpleLock.release()
-        
     wsSetStorageLocation.soap_export_as = "SetStorageLocation"
 
     def wsGetStorageLocation(self):
@@ -725,15 +788,21 @@ class VenueServer(ServiceBase.ServiceBase):
             *location* The path to the data store location.
         """
 
-        self.simpleLock.acquire()
+        try:
+            self.simpleLock.acquire()
         
-        returnString = self.GetStorageLocation()
-
-        self.simpleLock.notify()
-        self.simpleLock.release()
+            returnString = self.GetStorageLocation()
+            
+            self.simpleLock.notify()
+            self.simpleLock.release()
         
-        return returnString
-
+            return returnString
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsGetStorageLocation: exception")
+            raise
+            
     wsGetStorageLocation.soap_export_as = "GetStorageLocation"
 
     def wsSetAddressAllocationMethod(self, method):
@@ -755,13 +824,19 @@ class VenueServer(ServiceBase.ServiceBase):
         if not self._Authorize():
             raise NotAuthorized
 
-        self.simpleLock.acquire()
+        try:
+            self.simpleLock.acquire()
+            
+            self.SetAddressAllocationMethod(method)
+            
+            self.simpleLock.notify()
+            self.simpleLock.release()
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsSetAddressAllocationMethod: exception")
+            raise
         
-        self.SetAddressAllocationMethod(method)
-
-        self.simpleLock.notify()
-        self.simpleLock.release()
-
     wsSetAddressAllocationMethod.soap_export_as = "SetAddressAllocationMethod"
 
     def wsGetAddressAllocationMethod(self):
@@ -777,14 +852,20 @@ class VenueServer(ServiceBase.ServiceBase):
             *method* The address allocation method configured, either
             RANDOM or INTERVAL.
         """
-        self.simpleLock.acquire()
+        try:
+            self.simpleLock.acquire()
         
-        returnValue = self.GetAddressAllocationMethod()
-
-        self.simpleLock.notify()
-        self.simpleLock.release()
-        
-        return returnValue
+            returnValue = self.GetAddressAllocationMethod()
+            
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            
+            return returnValue
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsGetAddressAllocationMethod: exception")
+            raise
     
     wsGetAddressAllocationMethod.soap_export_as = "GetAddressAllocationMethod"
 
@@ -808,14 +889,20 @@ class VenueServer(ServiceBase.ServiceBase):
         if not self._Authorize():
             raise NotAuthorized
 
-        self.simpleLock.acquire()
-        
-        returnValue = self.SetEncryptAllMedia(value)
-
-        self.simpleLock.notify()
-        self.simpleLock.release()
-        
-        return returnValue
+        try:
+            self.simpleLock.acquire()
+            
+            returnValue = self.SetEncryptAllMedia(value)
+            
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            
+            return returnValue
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsSetEncryptAllMedia: exception")
+            raise
 
     wsSetEncryptAllMedia.soap_export_as = "SetEncryptAllMedia"
 
@@ -830,15 +917,20 @@ class VenueServer(ServiceBase.ServiceBase):
         **Returns:**
         
         """
+        try:
+            self.simpleLock.acquire()
 
-        self.simpleLock.acquire()
-
-        returnValue = self.GetEncryptAllMedia()
-
-        self.simpleLock.notify()
-        self.simpleLock.release()
-
-        return returnValue
+            returnValue = self.GetEncryptAllMedia()
+            
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            
+            return returnValue
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsGetEncryptAllMedia: exception")
+            raise
         
     wsGetEncryptAllMedia.soap_export_as = "GetEncryptAllMedia"
 
@@ -859,15 +951,21 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         if not self._Authorize():
             raise NotAuthorized
-        else:
+
+        try:
             self.simpleLock.acquire()
             
             self.SetBaseAddress(address)
-
+            
             self.simpleLock.notify()
             self.simpleLock.release()
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsSetBaseAddress: exception")
+            raise
 
-    wsSetBaseAddress.soap_export_as = "SetBassAddress"
+    wsSetBaseAddress.soap_export_as = "SetBaseAddress"
 
     def wsGetBaseAddress(self):
         """
@@ -881,14 +979,20 @@ class VenueServer(ServiceBase.ServiceBase):
 
             *base address* the base address of the address allocation pool.
         """
-        self.simpleLock.acquire()
-        
-        returnValue = self.GetBaseAddress()
-
-        self.simpleLock.notify()
-        self.simpleLock.release()
-        
-        return returnValue
+        try:
+            self.simpleLock.acquire()
+            
+            returnValue = self.GetBaseAddress()
+            
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            
+            return returnValue
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsGetBaseAddress: exception")
+            raise
     
     wsGetBaseAddress.soap_export_as = "GetBaseAddress"
 
@@ -910,7 +1014,20 @@ class VenueServer(ServiceBase.ServiceBase):
         if not self._Authorize():
             raise NotAuthorized
 
-        self.SetAddressMask(mask)
+        try:
+            self.simpleLock.acquire()
+            
+            self.SetAddressMask(mask)
+
+            self.simpleLock.notify()
+            self.simpleLock.release()
+
+            return mask
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsSetAddressMask: exception")
+            raise
 
     wsSetAddressMask.soap_export_as = "SetAddressMask"
 
@@ -927,14 +1044,20 @@ class VenueServer(ServiceBase.ServiceBase):
             *mask* the network mask of the address allocation pool.
         """
 
-        self.simpleLock.acquire()
-        
-        returnValue = self.GetAddressMask()
-
-        self.simpleLock.notify()
-        self.simpleLock.release()
-
-        return returnValue
+        try:
+            self.simpleLock.acquire()
+            
+            returnValue = self.GetAddressMask()
+            
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            
+            return returnValue
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsGetAddressMask: exception")
+            raise
 
     wsGetAddressMask.soap_export_as = "GetAddressMask"
 
@@ -954,13 +1077,8 @@ class VenueServer(ServiceBase.ServiceBase):
         if not self._Authorize():
             raise NotAuthorized
 
-        self.simpleLock.acquire()
+        self.houseKeeper.AddTask(self.Shutdown, 0, secondsFromNow)
         
-        self.Shutdown(secondsFromNow)
-
-        self.simpleLock.notify()
-        self.simpleLock.release()
-
     wsShutdown.soap_export_as = "Shutdown"
 
     def AddVenue(self, venueDesc):
@@ -1036,8 +1154,6 @@ class VenueServer(ServiceBase.ServiceBase):
         try:
             venue = self.venues[id]
         except KeyError:
-            self.simpleLock.notify()
-            self.simpleLock.release()
             log.exception("RemoveVenue: Venue not found.")
             raise VenueNotFound
 
@@ -1045,8 +1161,6 @@ class VenueServer(ServiceBase.ServiceBase):
         try:
             self.hostingEnvironment.UnbindService(venue)
         except:
-            self.simpleLock.notify()
-            self.simpleLock.release()
             log.exception("RemoveVenue: Couldn't unbind venue.")
             raise UnbindVenueError
         
@@ -1079,8 +1193,6 @@ class VenueServer(ServiceBase.ServiceBase):
 
         """
         if string in self.administratorList:
-            self.simpleLock.notify()
-            self.simpleLock.release()
             log.exception("AddAdministrator: Adminstrator already present.")
             raise AdministratorAlreadyPresent
         
@@ -1111,8 +1223,6 @@ class VenueServer(ServiceBase.ServiceBase):
             self.config["VenueServer.administrators"] = ":".join(self.administratorList)
             return string
         else:
-            self.simpleLock.notify()
-            self.simpleLock.release()
             log.exception("RemoveAdministrator: Administrator not found.")
             raise AdministratorNotFound
         
@@ -1162,8 +1272,6 @@ class VenueServer(ServiceBase.ServiceBase):
 
             return venueDescList
         except:
-            self.simpleLock.notify()
-            self.simpleLock.release()
             log.exception("GetVenues: GetVenues failed!")
             raise VenueServerException("GetVenues Failed!")
 
@@ -1255,7 +1363,7 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         return self.multicastAddressAllocator.GetAddressMask( )
 
-    def Shutdown(self, secondsFromNow):
+    def Shutdown(self):
         """
         Shutdown shuts down the server.
         """
@@ -1267,8 +1375,6 @@ class VenueServer(ServiceBase.ServiceBase):
         self.houseKeeper.StopAllTasks()
 
         if not self._Authorize():
-            self.simpleLock.notify()
-            self.simpleLock.release()
             log.exception("Shutdown: Not authorized.")
             raise NotAuthorized
 

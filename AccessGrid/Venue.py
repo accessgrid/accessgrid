@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.92 2003-05-15 02:10:06 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.93 2003-05-16 04:17:57 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -83,10 +83,16 @@ class BadStreamDescription(Exception):
     """
     pass
 
-class InvalidProfileException(Exception):
+class InvalidClientProfileException(Exception):
     """
     The exception raised when a client profile struct is not
     successfully converted to a client profile.
+    """
+    pass
+
+class InvalidVenueState(Exception):
+    """
+    The exception raised when the venue state cannot be retrieved.
     """
     pass
 
@@ -111,10 +117,38 @@ class ConnectionNotFound(Exception):
     """
     pass
 
+class ApplicationNotFound(Exception):
+    """
+    The exception raised when an application is not found in the
+    venues list of applications.
+    """
+    pass
+
+class ApplicationUnbindError(Exception):
+    """
+    The exception raised when the server can't unbind an application
+    web service.
+    """
+    pass
+
 class NotAuthorized(Exception):
     """
     The exception raised when the caller is not authorized to invoke the
     method.
+    """
+    pass
+
+class DataAlreadyPresent(Exception):
+    """
+    The exception raised when a data description is already present in
+    the venue.
+    """
+    pass
+
+class DataNotFound(Exception):
+    """
+    The exception raised when a data description is not found in
+    the venue.
     """
     pass
 
@@ -127,6 +161,18 @@ class StreamAlreadyPresent(Exception):
 class StreamNotFound(Exception):
     """
     The exception raised when a stream is not found in the venue.
+    """
+    pass
+
+class ServiceAlreadyPresent(Exception):
+    """
+    The exception raised when a service is already present in the venue.
+    """
+    pass
+
+class ServiceNotFound(Exception):
+    """
+    The exception raised when a service is not found in the venue.
     """
     pass
 
@@ -185,7 +231,7 @@ class Venue(ServiceBase.ServiceBase):
             if not os.path.exists(self.dataStorePath):
                 try:
                     os.mkdir(self.dataStorePath)
-                except OSError, e:
+                except OSError:
                     log.exception("Could not create venueStoragePath.")
                     self.dataStorePath = None
                 
@@ -354,9 +400,9 @@ class Venue(ServiceBase.ServiceBase):
         """
 
         for appImpl in self.applications.values():
-            appImpl.Awaken(self.eventService)
+            appImpl.Awaken(self.server.eventService)
             app = AppService.AppObject(appImpl)
-            hostObj = self.hostingEnvironment.create_service_object()
+            hostObj = self.server.hostingEnvironment.create_service_object()
             app._bind_to_service(hostObj)
             appHandle = hostObj.GetHandle()
             appImpl.SetHandle(appHandle)
@@ -431,25 +477,20 @@ class Venue(ServiceBase.ServiceBase):
 
         log.debug("Called GetState on %s", self.uniqueId)
 
-        try:
-            venueState = {
-                'uniqueId' : self.uniqueId,
-                'name' : self.name,
-                'description' : self.description,
-                'uri' : self.uri,
-                'connections' : self.connections.values(),
-                'applications': map(lambda x: x.GetState(),
-                                    self.applications.values()),
-                'clients' : self._GetClients().values(),
-                'services' : self.services.values(),
-                'eventLocation' : self.server.eventService.GetLocation(),
-                'textLocation' : self.server.textService.GetLocation()
-                }
-        except:
-            self.simpleLock.notify()
-            self.simpleLock.release()
-            log.exception("Couldn't get venuestate")
-            raise InvalidVenueState
+        venueState = {
+            'uniqueId' : self.uniqueId,
+            'name' : self.name,
+            'description' : self.description,
+            'uri' : self.uri,
+            'connections' : self.connections.values(),
+            'applications': map(lambda x: x.GetState(),
+                                self.applications.values()),
+            'clients' : self._GetClients().values(),
+            'services' : self.services.values(),
+            'eventLocation' : self.server.eventService.GetLocation(),
+            'textLocation' : self.server.textService.GetLocation()
+            }
+
         #
         # If we don't have a datastore, don't advertise
         # the existence of any data. We won't be able to get
@@ -683,17 +724,18 @@ class Venue(ServiceBase.ServiceBase):
         log.debug("Called RemoveUser on %s", privateId)
         self.streamList.RemoveProducer(privateId)
 
-        # Remove clients private data
-        for description in self.data.values():
-            client, heartbeatTime = self.clients[privateId]
-
-            if description.type == client.publicId:
-                log.debug("RemoveUser: Remove private data %s"
-                          % description.name)
-                del self.data[description.name]
-                   
         # Remove clients from venue
         if self.clients.has_key(privateId):
+            
+            # Remove clients private data
+            for description in self.data.values():
+                client, heartbeatTime = self.clients[privateId]
+                
+                if description.type == client.publicId:
+                    log.debug("RemoveUser: Remove private data %s"
+                              % description.name)
+                    del self.data[description.name]
+                   
             # Distribute event
             clientProfile, heartbeatTime = self.clients[privateId]
             
@@ -774,8 +816,6 @@ class Venue(ServiceBase.ServiceBase):
         try:
             state = self.GetState()
         except:
-            self.simpleLock.notify()
-            self.simpleLock.release()
             log.exception("Enter: Can't get state.")
             raise InvalidVenueState
         
@@ -1026,14 +1066,20 @@ class Venue(ServiceBase.ServiceBase):
             log.exception("wsAddData: Bad Data Description.")
             raise BadDataDescription
 
-        self.simpleLock.acquire()
-        
-        returnValue = self.AddData(dataDescription)
+        try:
+            self.simpleLock.acquire()
 
-        self.simpleLock.notify()
-        self.simpleLock.release()
+            returnValue = self.AddData(dataDescription)
+
+            self.simpleLock.notify()
+            self.simpleLock.release()
         
-        return returnValue
+            return returnValue
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsAddData: exception")
+            raise
 
     wsAddData.soap_export_as = "AddData"
 
@@ -1067,14 +1113,20 @@ class Venue(ServiceBase.ServiceBase):
             log.exception("wsRemoveData: Bad Data Description.")
             raise BadDataDescription
 
-        self.simpleLock.acquire()
+        try:
+            self.simpleLock.acquire()
         
-        returnValue = self.RemoveData(dataDescription)
+            returnValue = self.RemoveData(dataDescription)
 
-        self.simpleLock.notify()
-        self.simpleLock.release()
+            self.simpleLock.notify()
+            self.simpleLock.release()
         
-        return returnValue
+            return returnValue
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsRemoveData: exception")
+            raise
 
     wsRemoveData.soap_export_as = "RemoveData"
 
@@ -1109,14 +1161,20 @@ class Venue(ServiceBase.ServiceBase):
             log.exception("wsUpdateData: Bad data description.")
             raise BadDataDescription
 
-        self.simpleLock.acquire()
+        try:
+            self.simpleLock.acquire()
         
-        returnValue = self.UpdateData(dataDescription)
+            returnValue = self.UpdateData(dataDescription)
 
-        self.simpleLock.notify()
-        self.simpleLock.release()
+            self.simpleLock.notify()
+            self.simpleLock.release()
         
-        return returnValue
+            return returnValue
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsUpdateData: exception")
+            raise
 
     wsUpdateData.soap_export_as = "UpdateData"
 
@@ -1141,14 +1199,20 @@ class Venue(ServiceBase.ServiceBase):
         """
         log.debug("wsGetData")
 
-        self.simpleLock.acquire()
+        try:
+            self.simpleLock.acquire()
         
-        returnValue = self.GetData(name)
+            returnValue = self.GetData(name)
 
-        self.simpleLock.notify()
-        self.simpleLock.release()
+            self.simpleLock.notify()
+            self.simpleLock.release()
 
-        return returnValue
+            return returnValue
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsGetData: exception")
+            raise
 
     wsGetData.soap_export_as = "GetData"
 
@@ -1182,14 +1246,20 @@ class Venue(ServiceBase.ServiceBase):
             log.exception("wsAddService: Bad service description.")
             raise BadServiceDescription
 
-        self.simpleLock.acquire()
+        try:
+            self.simpleLock.acquire()
          
-        returnValue = self.AddService(serviceDescription)
+            returnValue = self.AddService(serviceDescription)
 
-        self.simpleLock.notify()
-        self.simpleLock.release()
+            self.simpleLock.notify()
+            self.simpleLock.release()
          
-        return returnValue
+            return returnValue
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsAddService: exception")
+            raise
      
     wsAddService.soap_export_as = "AddService"
 
@@ -1222,16 +1292,22 @@ class Venue(ServiceBase.ServiceBase):
         except:
             log.exception("wsRemoveService: Bad service description.")
             raise BadServiceDescription
+
+        try:
+            self.simpleLock.acquire()
+            
+            returnValue = self.RemoveService(serviceDescription)
+            
+            self.simpleLock.notify()
+            self.simpleLock.release()
         
-        self.simpleLock.acquire()
-        
-        returnValue = self.RemoveService(serviceDescription)
-        
-        self.simpleLock.notify()
-        self.simpleLock.release()
-        
-        return returnValue
-     
+            return returnValue
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsRemoveService: exception")
+            raise
+            
     wsRemoveService.soap_export_as = "RemoveService"
 
     def wsSetConnections(self, connectionList):
@@ -1253,27 +1329,74 @@ class Venue(ServiceBase.ServiceBase):
         if not self._Authorize():
             raise NotAuthorized
 
-        cdict = {}
-
         for connection in connectionList:
-            try:
-                c = ConnectionDescription(connection.name,
-                                          connection.description,
-                                          connection.uri)
-                cdict[connection.uri] = c
-            except:
+            c = ConnectionDescription(connection.name,
+                                      connection.description,
+                                      connection.uri)
+
+            if c == None:
                 log.exception("wsSetConnections: Bad connection description.")
                 raise BadConnectionDescription
-
-        self.simpleLock.acquire()
+                
+            try:
+                self.simpleLock.acquire()
+                
+                self.AddConnection(c)       
+                
+                self.simpleLock.notify()
+                self.simpleLock.release()
+            except:
+                self.simpleLock.notify()
+                self.simpleLock.release()
+                log.exception("wsSetConnections: exception")
+                raise
         
-        self.SetConnections(cdict)
-
-        self.simpleLock.notify()
-        self.simpleLock.release()
-            
     wsSetConnections.soap_export_as = "SetConnections"
+
+    def wsAddConnection(self, connectionDescStruct):
+        """
+        AddConnection allows an administrator to add a connection to a
+        virtual venue to this virtual venue.
+
+        **Arguments:**
+
+            *ConnectionDescriptionStruct* An anonymous struct
+            containing a connection description.
+
+        **Raises:**
+
+            *NotAuthorized* Raised when the caller is not an administrator.
+
+            *BadConnectionDescription* Raised when the connection
+            description struct is not successfully converted to a
+            connection description.
+        """
+        if not self._Authorize():
+            raise NotAuthorized
+
+        c = ConnectionDescription(connectionDescStruct.name,
+                                  connectionDescStruct.description,
+                                  connectionDescStruct.uri)
         
+        if c == None:
+            log.exception("AddConnection: Bad connection description.")
+            raise BadConnectionDescription
+
+        try:
+            self.simpleLock.acquire()
+
+            self.AddConnection(c)
+        
+            self.simpleLock.notify()
+            self.simpleLock.release()
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsAddConnection: exception")
+            raise
+        
+    wsAddConnection.soap_export_as = "AddConnection"
+    
     def wsEnter(self, clientProfileStruct):
         """
         Interface used to enter a Virtual Venue.
@@ -1285,7 +1408,7 @@ class Venue(ServiceBase.ServiceBase):
 
         **Raises:**
 
-            *InvalidProfileException* This is raised when the client
+            *InvalidClientProfileException* This is raised when the client
             profile is not successfully converted to a real client
             profile.
             
@@ -1321,21 +1444,29 @@ class Venue(ServiceBase.ServiceBase):
         #                   sm.GetSubject(), self)
         #         raise VenueException("Entry denied")
 
+        log.debug("wsEnter: Called.")
+        
         clientProfile = CreateClientProfile(clientProfileStruct)
 
         if clientProfile == None:
-            raise InvalidProfileException
+            raise InvalidClientProfileException
 
         clientProfile.distinguishedName = AccessControl.GetSecurityManager().GetSubject().GetName()
 
-        self.simpleLock.acquire()
+        try:
+            self.simpleLock.acquire()
         
-        returnValue = self.Enter(clientProfile)
+            returnValue = self.Enter(clientProfile)
 
-        self.simpleLock.notify()
-        self.simpleLock.release()
+            self.simpleLock.notify()
+            self.simpleLock.release()
 
-        return returnValue
+            return returnValue
+        except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("wsEnter: exception")
+            raise
     
     wsEnter.soap_export_as = "Enter"
 
@@ -1526,41 +1657,17 @@ class Venue(ServiceBase.ServiceBase):
 
         **Arguments:**
 
-            *ConnectionDescriptionStruct* An anonymous struct
-            containing a connection description.
-
-        **Raises:**
-
-            *NotAuthorized* Raised when the caller is not an administrator.
-
-            *BadConnectionDescription* Raised when the connection
-            description struct is not successfully converted to a
-            connection description.
+            *ConnectionDescription* A real connection description to
+            be added to this venue.
+            
         """
-        if not self._Authorize():
-            raise NotAuthorized
-
-        c = ConnectionDescription(connectionDescription.name,
-                                  connectionDescription.description,
-                                  connectionDescription.uri)
+        self.connections[connectionDescription.uri] = connectionDescription
         
-        if c == None:
-            log.exception("AddConnection: Bad connection description.")
-            raise BadConnectionDescription
-        
-        self.simpleLock.acquire()
-        
-        self.connections[connectionDescription.uri] = c
-        
-        self.simpleLock.notify()
-        self.simpleLock.release()
-
         self.server.eventService.Distribute( self.uniqueId,
                                              Event( Event.ADD_CONNECTION,
-                                                    self.uniqueId, c ) )
+                                                    self.uniqueId,
+                                                    connectionDescription ) )
         
-    AddConnection.soap_export_as = "AddConnection"
-
     def RemoveConnection(self, connectionDescription):
         """
         RemoveConnection removes a connection to another virtual venue
@@ -1568,7 +1675,7 @@ class Venue(ServiceBase.ServiceBase):
 
         **Arguments:**
 
-            *connectionDescritionStruct* An anonymous struct
+            *connectionDescriptionStruct* An anonymous struct
             containing a connection description.
 
         **Raises:**
@@ -1604,10 +1711,10 @@ class Venue(ServiceBase.ServiceBase):
             self.simpleLock.notify()
             self.simpleLock.release()
             
-            self.eventService.Distribute( self.uniqueId,
-                                          Event( Event.REMOVE_CONNECTION,
-                                                 self.uniqueId,
-                                                 connectionDescription ) )
+            self.server.eventService.Distribute( self.uniqueId,
+                                                 Event( Event.REMOVE_CONNECTION,
+                                                        self.uniqueId,
+                                                        connectionDescription ) )
 
     RemoveConnection.soap_export_as = "RemoveConnection"
 
@@ -1837,15 +1944,16 @@ class Venue(ServiceBase.ServiceBase):
 
         **Raises:**
 
-            *InvalidClientProfile* Raised when the client profile
-            struct cannot be converted to a real client profile.
+            *InvalidClientProfileException* Raised when the client
+            profile struct cannot be converted to a real client
+            profile.
         """
 
         clientProfile = CreateClientProfile( clientProfileStruct )
 
         if clientProfile == None:
             log.exception("UpdatelClientProfile: Invalid client profile.")
-            raise InvalidClientProfile
+            raise InvalidClientProfileException
         
         log.debug("Called UpdateClientProfile on %s " %clientProfile.name)
 
