@@ -179,11 +179,13 @@ os.chdir(RunDir)
 # Run the setup script first to create the distribution directory structure
 # and auxillary packages, config, and documentation
 #
-cmd = "%s %s" % (sys.executable, os.path.join(SourceDir, "setup.py"))
+cmd = "%s %s" % (sys.executable, os.path.join(BuildDir, "setup.py"))
 for c in ["clean", "build"]:
     os.system("%s %s" % (cmd, c))
 
 os.system("%s install --prefix=%s --no-compile" % (cmd, DestDir))
+
+sys.exit(0)
 
 #
 # Run precompile scripts
