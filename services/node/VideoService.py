@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.15 2004-09-07 21:37:23 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.16 2004-09-07 22:16:48 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,9 +16,10 @@ except: pass
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
-from AccessGrid import Platform
+from AccessGrid.Platform import IsWindows, IsLinux
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
+from AccessGrid import Toolkit
 
 vicstartup="""option add Vic.disable_autoplace %s startupFile
 option add Vic.muteNewSources %s startupFile
@@ -126,7 +127,7 @@ class VideoService( AGService ):
             self.log.exception("Invalid profile (None)")
             raise Exception, "Can't set RTP Defaults without a valid profile."
 
-        if sys.platform == 'linux2':
+        if IsLinux():
             try:
                 rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
                 rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
@@ -141,7 +142,7 @@ class VideoService( AGService ):
             except:
                 self.log.exception("Error writing RTP defaults file: %s", rtpDefaultsFile)
 
-        elif sys.platform == 'win32':
+        elif IsWindows():
             try:
                 #
                 # Set RTP defaults according to the profile
@@ -163,6 +164,8 @@ class VideoService( AGService ):
                 _winreg.CloseKey(k)
             except:
                 self.log.exception("Error writing RTP defaults to registry")
+        else:
+            self.log.error("No support for platform: %s", sys.platform)
         
 
     def Start( self ):
@@ -198,6 +201,15 @@ class VideoService( AGService ):
                 # streams are not muted, so don't disable autoplace
                 # (flags should not be negative!)
                 disableAutoplace = "false"
+
+            name=email="Participant"
+            if self.profile:
+                name = self.profile.name
+                email = self.profile.email
+            else:
+                # Error case
+                name = email = Toolkit.GetDefaultSubject().GetCN()
+                self.log.error("Starting service without profile set")
                 
             f.write( vicstartup % ( disableAutoplace,
                                     OnOff(self.muteSources.value),
@@ -207,9 +219,9 @@ class VideoService( AGService ):
                                     self.encoding.value,
                                     self.standard.value,
                                     vicDevice,
-                                    "%s(%s)" % (self.profile.name,self.streamname.value),
-                                    self.profile.email,
-                                    self.profile.email,
+                                    "%s(%s)" % (name,self.streamname.value),
+                                    email,
+                                    email,
                                     OnOff(self.transmitOnStart.value),
                                     vicDevice,
                                     portstr,
@@ -218,7 +230,7 @@ class VideoService( AGService ):
 
             # Replace double backslashes in the startupfile name with single
             #  forward slashes (vic will crash otherwise)
-            if sys.platform == Platform.WIN:
+            if IsWindows():
                 startupfile = startupfile.replace("\\","/")
 
             #

@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.20 2004-09-07 21:37:23 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.21 2004-09-07 22:16:48 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,10 +13,12 @@ import sys, os
 try:    import _winreg
 except: pass
 
+from AccessGrid import Toolkit
+
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
-from AccessGrid import Platform
+from AccessGrid.Platform import IsWindows, IsLinux
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
@@ -27,6 +29,8 @@ class VideoConsumerService( AGService ):
 
         self.capabilities = [ Capability( Capability.CONSUMER, Capability.VIDEO ) ]
         self.executable = os.path.join('.','vic')
+        
+        self.profile = None
 
         #
         # Set configuration parameters
@@ -42,7 +46,7 @@ class VideoConsumerService( AGService ):
             self.log.exception("Invalid profile (None)")
             raise Exception, "Can't set RTP Defaults without a valid profile."
 
-        if sys.platform == 'linux2':
+        if IsLinux():
             try:
                 rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
                 rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
@@ -57,7 +61,7 @@ class VideoConsumerService( AGService ):
             except:
                 self.log.exception("Error writing RTP defaults file: %s", rtpDefaultsFile)
 
-        elif sys.platform == 'win32':
+        elif IsWindows():
             try:
                 #
                 # Set RTP defaults according to the profile
@@ -79,6 +83,9 @@ class VideoConsumerService( AGService ):
                 _winreg.CloseKey(k)
             except:
                 self.log.exception("Error writing RTP defaults to registry")
+        else:
+            self.log.error("No support for platform: %s", sys.platform)
+            
         
     def Start( self ):
         """Start service"""
@@ -103,6 +110,19 @@ class VideoConsumerService( AGService ):
                 if self.streamDescription.location.type == MulticastNetworkLocation.TYPE:
                     options.append( "-t" )
                     options.append( '%d' % ( self.streamDescription.location.ttl ) )
+
+            # Set name and email on command line, in case rtp defaults haven't been written
+            # (to avoid vic prompting for name/email)
+            name=email="Participant"
+            if self.profile:
+                name = self.profile.name
+                email = self.profile.email
+            else:
+                # Error case
+                name = email = Toolkit.GetDefaultSubject().GetCN()
+                self.log.error("Starting service without profile set")
+            options.append('-XrtpName=%s' % (name,))
+            options.append('-XrtpEmail=%s' % (email,))
 
             # This is a consumer, so disable device selection in vic
             options.append('-XrecvOnly=1')

@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.33 2004-09-07 21:37:23 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.34 2004-09-07 22:16:48 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,10 +13,12 @@ import sys, os
 try:    import _winreg
 except: pass
 
+from AccessGrid import Toolkit
+
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
-from AccessGrid import Platform
+from AccessGrid.Platform import IsWindows, IsLinux
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
@@ -108,7 +110,7 @@ class VideoProducerService( AGService ):
             self.log.exception("Invalid profile (None)")
             raise Exception, "Can't set RTP Defaults without a valid profile."
 
-        if sys.platform == 'linux2':
+        if IsLinux():
             try:
                 rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
                 rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
@@ -123,7 +125,7 @@ class VideoProducerService( AGService ):
             except:
                 self.log.exception("Error writing RTP defaults file: %s", rtpDefaultsFile)
 
-        elif sys.platform == 'win32':
+        elif IsWindows():
             try:
                 #
                 # Set RTP defaults according to the profile
@@ -145,6 +147,8 @@ class VideoProducerService( AGService ):
                 _winreg.CloseKey(k)
             except:
                 self.log.exception("Error writing RTP defaults to registry")
+        else:
+            self.log.error("No support for platform: %s", sys.platform)
         
     def Start( self ):
         """Start service"""
@@ -173,15 +177,25 @@ class VideoProducerService( AGService ):
                 portstr = "None"
             else:
                 portstr = self.port.value
+            
+            name=email="Participant"
+            if self.profile:
+                name = self.profile.name
+                email = self.profile.email
+            else:
+                # Error case
+                name = email = Toolkit.GetDefaultSubject().GetCN()
+                self.log.error("Starting service without profile set")
+                
             f.write( vicstartup % (self.bandwidth.value,
                                     self.framerate.value,
                                     self.quality.value,
                                     self.encoding.value,
                                     self.standard.value,
                                     vicDevice,
-                                    "%s(%s)" % (self.profile.name,self.streamname.value),
-                                    self.profile.email,
-                                    self.profile.email,
+                                    "%s(%s)" % (name,self.streamname.value),
+                                    email,
+                                    email,
                                     vicDevice,
                                     portstr,
                                     portstr ) )
@@ -189,7 +203,7 @@ class VideoProducerService( AGService ):
 
             # Replace double backslashes in the startupfile name with single
             #  forward slashes (vic will crash otherwise)
-            if sys.platform == Platform.WIN:
+            if IsWindows():
                 startupfile = startupfile.replace("\\","/")
             
             #
