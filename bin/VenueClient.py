@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.88 2003-03-26 15:33:46 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.89 2003-03-26 18:34:41 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ from AccessGrid.hosting.pyGlobus import Server
 if sys.platform == "win32":
     from win32com.shell import shell, shellcon
 
-#https://vv2.mcs.anl.gov:8880/Venues/000000f42704a7fa008c00dd000b00371fc 
+#https://vv2.mcs.anl.gov:8880/Venues/000000f42b3dd2fc008c00dd000b0037a34
 
     
 class VenueClientUI(wxApp, VenueClient):
@@ -123,6 +123,18 @@ class VenueClientUI(wxApp, VenueClient):
         """
         wxCallAfter(self.frame.AuthorizeLeadDialog, clientProfile)
 
+   
+    def LeadResponse(self, leaderProfile, isAuthorized):
+        """
+        Note: Overloaded from VenueClient
+        This method notifies the user if the request to follow somebody is approved
+        or denied.
+        """
+        VenueClient.LeadResponse(self, leaderProfile, isAuthorized)
+        wxCallAfter(self.frame.NotifyLeadDialog, leaderProfile, isAuthorized)
+
+    LeadResponse.soap_export_as = "LeadResponse"
+    
     
     def NotifyUnLead(self, clientProfile):
         """
@@ -245,10 +257,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
 
         wxCallAfter(wxLogDebug, "EVENT- Enter venue with url: %s" %(URL))
-
-        # Make people you lead go to this venue
-        #self.__getFollowers(URL)
-
+        
         if self.venueUri != None:
             self.oldUri = self.venueUri
         else:
@@ -312,8 +321,6 @@ class VenueClientUI(wxApp, VenueClient):
         self.upload_url = self.client.GetUploadDescriptor()
         wxCallAfter(wxLogDebug, "Get upload url %s" %self.upload_url)
         
-    EnterVenue.soap_export_as = "EnterVenue"
-
     EnterVenue.soap_export_as = "EnterVenue"
 
     def ExitVenue(self):
@@ -433,18 +440,7 @@ class VenueClientUI(wxApp, VenueClient):
             wxCallAfter(wxLogMessage, text)
             wxLog_GetActiveTarget().Flush()
 
-    def __getFollowers(self, venueUrl):
-        wxCallAfter(wxLogDebug, 'Tell followers to go to url:%s ' %venueUrl)
-        for person in self.followerProfiles.values():
-            url = person.venueClientURL
-            followerHandle = Client.Handle(url)
-            wxCallAfter(wxLogDebug, 'This person is following me, url:%s ' %url)
-            if(followerHandle.IsValid()):
-                wxCallAfter(wxLogDebug, "the follower handler is valid")
-                followerProxy = followerHandle.get_proxy()
-                followerProxy.EnterVenue(venueUrl)
-                wxCallAfter(wxLogDebug, "told followers to enter url: %s "%venueUrl)
-
+   
     def OnExit(self):
         """
         This method performs all processing which needs to be
@@ -716,22 +712,6 @@ class VenueClientUI(wxApp, VenueClient):
             wxCallAfter(wxLogMessage, error_msg)
             wxCallAfter(wxLog_GetActiveTarget().Flush)
            
-
-    def FollowParticipant(self, personToFollow):
-        #url = personToFollow.venueClientURL
-        #followHandle = Client.Handle(url)
-        #if(followHandle.IsValid()):
-        #    wxLogDebug("the follow handler is valid")
-        try:
-            #personToFollowProxy = self.clientHandle.get_proxy()
-            #personToFollowProxy.Follow(personToFollow.venueClientURL)
-            wxCallAfter(wxLogDebug, "You are trying to follow %s" %personToFollow.name)
-            self.Follow(personToFollow.venueClientURL)
-            wxCallAfter(wxLogDebug,"You are following %s" %personToFollow.name)
-                
-        except:
-            wxCallAfter(wxLogError, "Can not follow %s" %personToFollow.name)
-
     def AddData(self, data):
         """
         This method adds data to the venue
