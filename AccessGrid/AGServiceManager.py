@@ -5,24 +5,23 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.38 2004-02-24 23:29:25 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.39 2004-03-04 23:03:45 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.38 2004-02-24 23:29:25 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.39 2004-03-04 23:03:45 turam Exp $"
 __docformat__ = "restructuredtext en"
 
-from AccessGrid.hosting.pyGlobus import Client
 import sys
 import os
 import time
 import logging
 
-from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
-from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
+from AccessGrid.hosting import Client
+from AccessGrid.NetUtilities import GetHostname
 
 from AccessGrid import Platform
 from AccessGrid.ProcessManager import ProcessManager
@@ -35,7 +34,7 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 
 log = logging.getLogger("AG.ServiceManager")
 
-class AGServiceManager( ServiceBase ):
+class AGServiceManager:
     """
     AGServiceManager : exposes local resources and configures services
     to deliver them
@@ -69,8 +68,7 @@ class AGServiceManager( ServiceBase ):
         log.info("Remove services")
         self.RemoveServices()
         log.info("Stop network interface")
-        self.server.stop()
-    Shutdown.soap_export_as = "Shutdown"
+        self.server.Stop()
 
     ####################
     ## AUTHORIZATION methods
@@ -90,7 +88,6 @@ class AGServiceManager( ServiceBase ):
             log.exception("AGServiceManager.SetAuthorizedUsers.")
             raise Exception("AGServiceManager.SetAuthorizedUsers failed: " + str( sys.exc_value ))
         
-    SetAuthorizedUsers.soap_export_as = "SetAuthorizedUsers"
 
 
     ####################
@@ -103,7 +100,6 @@ class AGServiceManager( ServiceBase ):
         """
         self.__DiscoverResources()
         return self.resources
-    GetResources.soap_export_as = "GetResources"
 
 
     def DiscoverResources( self ):
@@ -113,7 +109,6 @@ class AGServiceManager( ServiceBase ):
             self.__DiscoverResources()
         except:
             raise Exception("AGServiceManager.DiscoverResources failed: " + str( sys.exc_value ))
-    DiscoverResources.soap_export_as = "DiscoverResources"
 
 
     ####################
@@ -249,7 +244,6 @@ class AGServiceManager( ServiceBase ):
 
         return serviceDescription
 
-    AddService.soap_export_as = "AddService"
 
     
     def RemoveService( self, serviceToRemove ):
@@ -303,7 +297,6 @@ class AGServiceManager( ServiceBase ):
         if exc:
             raise Exception("AGServiceManager.RemoveService failed : ", str( exc ) )
 
-    RemoveService.soap_export_as = "RemoveService"
 
 
     def RemoveServices( self ):
@@ -315,14 +308,12 @@ class AGServiceManager( ServiceBase ):
             except Exception:
                 log.exception("Exception in AGServiceManager.RemoveServices; continuing")
 
-    RemoveServices.soap_export_as = "RemoveServices"
 
 
     def GetServices( self ):
         """Return list of services
         """
         return self.services.values()
-    GetServices.soap_export_as = "GetServices"
 
 
     def StopServices( self ):
@@ -332,7 +323,6 @@ class AGServiceManager( ServiceBase ):
         for service in self.services.values():
             Client.Handle( service.uri ).get_proxy().Stop()
 
-    StopServices.soap_export_as = "StopServices"
 
 
     def GetInstallDir(self):
@@ -342,7 +332,6 @@ class AGServiceManager( ServiceBase ):
 
         return GetInstallDir()
     
-    GetInstallDir.soap_export_as = "GetInstallDir"
         
     ####################
     ## INTERNAL methods
@@ -403,3 +392,127 @@ class AGServiceManager( ServiceBase ):
             # If relative path in config file, use SystemConfigDir as the base
             if not os.path.isabs(self.servicesDir):
                 self.servicesDir = GetConfigFilePath(self.servicesDir)
+
+
+
+
+
+
+from AccessGrid.hosting.SOAPInterface import SOAPInterface
+
+class AGServiceManagerI(SOAPInterface):
+    """
+    Interface Class for AGServiceManager
+    """
+    
+    def __init__(self,impl):
+        SOAPInterface.__init__(self,impl)
+    
+    def Shutdown(self):
+        """
+        Interface to shut down the service manager
+
+        **Arguments:**
+        **Raises:**
+        **Returns:**
+        """
+        self.impl.Shutdown()
+
+    def SetAuthorizedUsers(self, authorizedUsers):
+        """
+        Interface to set the list of users authorized to 
+
+        **Arguments:**
+        **Raises:**
+        **Returns:**
+        """
+        self.impl.SetAuthorizedUsers()
+
+    def GetResources(self):
+        """
+        Interface to get a list of the resources known to the service manager
+
+        **Arguments:**
+        **Raises:**
+        **Returns:**
+            a list of the AGResources on the machine
+        """
+        return self.impl.GetResources()
+
+    def DiscoverResources(self):
+        """
+        Interface to discover local resources
+
+        **Arguments:**
+        **Raises:**
+        **Returns:**
+        """
+        self.impl.DiscoverResources()
+
+    def AddService(self, servicePackageUri, resourceToAssign, serviceConfig):
+        """
+        Interface to add a service to the service manager
+
+        **Arguments:**
+            *servicePackageUri* URI from which service package can be retrieved
+            *resourceToAssign* resource to assign to service
+            *serviceConfig* configuration to apply to service after it's been added
+        **Raises:**
+        **Returns:**
+        """
+        return self.impl.AddService()
+
+    def RemoveService(self, serviceToRemove):
+        """
+        Interface to remove a service from the service manager
+
+        **Arguments:**
+            *serviceToRemove* A description of the service to remove
+        **Raises:**
+        **Returns:**
+        """
+        self.impl.RemoveService()
+
+    def RemoveServices(self):
+        """
+        Interface to remove the services on a service manager
+
+        **Arguments:**
+        **Raises:**
+        **Returns:**
+        """
+        self.impl.RemoveServices()
+
+    def GetServices(self):
+        """
+        Interface to get a list of AGServiceDescriptions representing
+        the services on the service manager
+
+        **Arguments:**
+        **Raises:**
+        **Returns:**
+            a list of AGServiceDescriptions
+        """
+        return self.impl.GetServices()
+
+    def StopServices(self):
+        """
+        Interface to stop services on the service manager
+
+        **Arguments:**
+        **Raises:**
+        **Returns:**
+        """
+        self.impl.StopServices()
+
+    def GetInstallDir(self):
+        """
+        Interface to get the install dir
+
+        **Arguments:**
+        **Raises:**
+        **Returns:**
+            string representing the install dir of the AG software
+        """
+        return self.impl.GetInstallDir()
+

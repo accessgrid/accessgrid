@@ -6,18 +6,18 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.27 2004-02-19 17:59:02 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.28 2004-03-04 23:03:45 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
-from AccessGrid.hosting.pyGlobus.Server import Server
+from AccessGrid.hosting import Server
 import sys
 import signal, time, os
 import logging, logging.handlers
 import getopt
 
 from AccessGrid import Platform
-from AccessGrid.AGServiceManager import AGServiceManager
+from AccessGrid.AGServiceManager import AGServiceManager, AGServiceManagerI
 from AccessGrid import PersonalNode
 from AccessGrid import Toolkit
 
@@ -88,15 +88,15 @@ for o, a in opts:
         sys.exit(0)
 
 # Create the hosting environment
-server = Server( port, auth_callback=AuthCallback )
+server = Server( ('localhost',port))
 
 # Create the Service Manager
 serviceManager = AGServiceManager(server)
 
 # Create the Service Manager Service
-service = server.CreateServiceObject("ServiceManager")
-serviceManager._bind_to_service( service )
-
+smi = AGServiceManagerI(serviceManager)
+server.RegisterObject(smi,path="/ServiceManager")
+url = server.GetURLForObject(serviceManager)
 
 #
 # If we are starting as a part of a personal node,
@@ -104,7 +104,7 @@ serviceManager._bind_to_service( service )
 #
 
 if pnode is not None:
-    def getMyURL(url = serviceManager.get_handle()):
+    def getMyURL(url = url):
         return url
 
     personalNode = PersonalNode.PN_ServiceManager(getMyURL, Shutdown)
@@ -137,7 +137,7 @@ else:
 
 # Start up the logging
 log = logging.getLogger("AG")
-log.setLevel(logging.WARN)
+log.setLevel(logging.DEBUG)
 hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
 fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
 hdlr.setFormatter(fmt)
@@ -155,11 +155,11 @@ if sys.platform == Platform.LINUX:
     signal.signal(signal.SIGHUP, SignalHandler)
 
 # Start the service
-server.run_in_thread()
+server.RunInThread()
 
 # Tell the world where to find the service manager
-log.info("Starting service; URI: %s", serviceManager.get_handle())
-print "AGServiceManager URL: ", serviceManager.GetHandle()
+log.info("Starting service; URI: %s", url)
+print "AGServiceManager URL: ", url
 
 # Keep the main thread busy so we can catch signals
 running = 1
