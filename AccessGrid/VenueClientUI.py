@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.9 2004-03-04 19:02:45 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.10 2004-03-04 22:32:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.9 2004-03-04 19:02:45 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.10 2004-03-04 22:32:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -691,8 +691,15 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                           "Cannot upload")
             return
 
-        # Prompt for files to upload
-        fileList = self.SelectFiles("Choose file(s):")
+        if not fileList:
+            # Prompt for files to upload
+            dlg = wxFileDialog(self, "Choose file(s):",
+                               style = wxOPEN | wxMULTIPLE)
+            if dlg.ShowModal() == wxID_OK:
+                fileList = dlg.GetPaths()
+                
+            dlg.Destroy()
+
         if fileList:
             self.controller.AddDataCB(fileList)
 
