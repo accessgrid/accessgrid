@@ -1,12 +1,12 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.7 2003-04-30 12:11:44 eolson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.8 2003-05-20 15:42:24 leggett Exp $
 ;
 
 #define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
 #define OutputDir "C:\AccessGridBuild\AccessGrid-Build"
 #define AppName "Access Grid Toolkit"
-#define AppVersionLong "2.0 Beta 3"
-#define AppVersionShort "2.0b3"
+#define AppVersionLong "2.0 RC 2"
+#define AppVersionShort "2.0RC2"
 ;
 ; This doesn't work.
 ; #define AppConfigDir "{commonappdata}\AccessGrid"
@@ -85,6 +85,7 @@ UninstallFilesDir={app}\uninst
 InfoBeforeFile=..\Install.WINDOWS
 ShowTasksTreeLines=true
 PrivilegesRequired=admin
+UninstallDisplayIcon={app}\config\agicons.exe
 
 [Components]
 Name: Venue_Client; Description: Basic client software to use Access Grid Virtual Venues.; Types: custom compact full; Flags: fixed
@@ -116,6 +117,7 @@ Source: Scripts\AGServiceManager.py; DestDir: {app}
 Source: Scripts\SetupVideo.py; DestDir: {app}; Components: Video_Producer
 Source: Scripts\VenueManagement.py; DestDir: {app}; Components: Venue_Server
 Source: Scripts\VenueServer.py; DestDir: {app}; Components: Venue_Server
+Source: Scripts\MailcapSetup.py; DestDir: {app}
 ;Source: Scripts\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Server
 
 ; Default node configuration
