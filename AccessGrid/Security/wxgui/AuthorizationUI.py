@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.20 2004-07-08 02:25:19 judson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.21 2004-07-26 17:12:29 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.20 2004-07-08 02:25:19 judson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.21 2004-07-26 17:12:29 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -224,8 +224,7 @@ class AuthorizationUIPanel(wxPanel):
         if self.tree.GetChildrenCount(self.root)> 0:
             self.tree.SortChildren(self.root)
 
-        cookie = 1
-        firstItem, stupidCookie = self.tree.GetFirstChild(self.root)
+        firstItem, cookie = self.tree.GetFirstChild(self.root)
         self.tree.SelectItem(firstItem)
 
         currentItem = self.tree.GetSelection()
