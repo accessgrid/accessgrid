@@ -6,6 +6,7 @@ import logging
 import getopt
 import fnmatch
 
+from AccessGrid import Platform
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid import DataStore
 from pyGlobus import ftpClient
@@ -29,6 +30,167 @@ def GetVenueDataStore(venueURL):
 
     return dsc
     
+
+class DataStoreFileReader:
+    """
+    This is a file handle lookalike class that manages the reading
+    from a venue-based file.
+    """
+
+    def __init__(self, dsc, name):
+        """
+        Create a new venue file reader. dsc is the datastore client, name
+        is the name of the file in the venue.
+        """
+
+        self.dsc = dsc
+        self.name = name
+        self.open = 0
+
+        try:
+            dot = name.rindex(".")
+            ext = name[dot + 1:]
+        except ValueError:
+            ext = ""
+        
+        self.localFile = tempfile.mktemp(ext)
+
+        try:
+            self.dsc.Download(self.name, self.localFile)
+        except Exception, e:
+            print "DataStoreFileReader: download failed"
+            raise e
+
+        self.fh = open(self.localFile)
+        self.open = 1
+
+    def __del__(self):
+        self.close()
+
+    def close(self):
+
+        if not self.open:
+            return
+        self.fh.close()
+        os.unlink(self.localFile)
+        self.open = 0
+
+    def flush(self):
+        pass
+
+    def isatty(self):
+        return 0
+
+    def fileno(self):
+        return self.fh.fileno()
+
+    def read(self, size = -1):
+        return self.fh.read(size)
+
+    def readline(self, size = -1):
+        return self.fh.readline(size)
+
+    def xreadlines(self):
+        return self.fh.xreadlines()
+
+    def seek(self, offset, whence = 0):
+        return self.fh.seek(offset, whence)
+
+    def tell(self):
+        return self.fh.tell()
+
+    def truncate(self, size = 0):
+        raise Exception, "truncate not implemented on venue files"
+
+    def write(self, str):
+        raise Exception, "write not implemented on readonly venue files"
+
+    def writelines(self, seq):
+        raise Exception, "writelines not implemented on readonly venue files"
+
+    def __iter__(self):
+        return self.fh.__iter__()
+                 
+class DataStoreFileWriter:
+    """
+    This is a file handle lookalike class that manages the writing 
+    to a venue-based file.
+    """
+
+    def __init__(self, dsc, name):
+        """
+        Create a new venue file writer. dsc is the datastore client, name
+        is the name of the file in the venue.
+        """
+
+        self.dsc = dsc
+        self.name = name
+        self.open = 0
+
+        #
+        # create a temporary directory for this file so
+        # we can write it with the correct filename.
+        #
+
+        self.tempdir = os.path.join(Platform.GetTempDir(),
+                               "DSClientTemp-%s" % (os.getpid()))
+        os.mkdir(self.tempdir)
+        self.localFile = os.path.join(self.tempdir, name)
+        print "Creating local file ", self.localFile
+        
+        self.fh = open(self.localFile, "w")
+        self.open = 1
+
+    def __del__(self):
+        self.close()
+
+    def close(self):
+
+        if not self.open:
+            return
+        self.fh.close()
+
+        self.dsc.Upload(self.localFile)
+        os.unlink(self.localFile)
+        os.rmdir(self.tempdir)
+        self.open = 0
+
+    def flush(self):
+        pass
+
+    def isatty(self):
+        return 0
+
+    def fileno(self):
+        return self.fh.fileno()
+
+    def read(self, size = -1):
+        raise Exception, "read not implemented on readonly venue files"
+
+    def readline(self, size = -1):
+        raise Exception, "readline not implemented on readonly venue files"
+
+    def xreadlines(self):
+        raise Exception, "xreadlines not implemented on readonly venue files"
+
+    def seek(self, offset, whence = 0):
+        return self.fh.seek(offset, whence)
+
+    def tell(self):
+        return self.fh.tell()
+
+    def truncate(self, size = None):
+        return self.fh.truncate(size)
+
+    def write(self, str):
+        return self.fh.write(str)
+
+    def writelines(self, seq):
+        return self.fh.writelines(seq)
+
+    def __iter__(self):
+        return self.fh.__iter__()
+                 
 
 class DataStoreClient:
     """
@@ -86,7 +248,7 @@ class DataStoreClient:
         ret = []
         for data in self.dataCache:
             fname = data['name']
-            if fnmatch.fnmatch(fname, pattern):
+            if fnmatch.fnmatchcase(fname, pattern):
                 ret.append(str(fname))
 
         return ret
@@ -122,9 +284,30 @@ class DataStoreClient:
     def RemoveFile(self, file):
         try:
             data = self.dataIndex[file]
+            print "File=%s data=%s" % (file, data)
             self.datastoreProxy.RemoveFiles([data])
         except:
             print "Error removing data ", e
+
+    def OpenFile(self, file, mode = "r"):
+
+        if mode == "r":
+            try:
+                fh = DataStoreFileReader(self, file)
+            except Exception, e:
+                print "Open failed", e
+                fh = None
+            return fh
+        elif mode == "w":
+            try:
+                fh = DataStoreFileWriter(self, file)
+            except Exception, e:
+                print "Open failed", e
+                fh = None
+            return fh
+        else:
+            print "Unknown mode ", mode
+            return None
 
 
 import cmd
@@ -193,7 +376,14 @@ class DataStoreShell(cmd.Cmd):
         return 0
 
     def do_put(self, arg):
-        self.dsc.Upload(arg)
+        for file in arg.split():
+            if os.path.isfile(file):
+                try:
+                    self.dsc.Upload(arg)
+                except:
+                    print "Upload failed"
+            else:
+                print "%s is not a regular file" % (file)
         self.dsc.LoadData()
         return 0
 
@@ -206,6 +396,52 @@ class DataStoreShell(cmd.Cmd):
 
     def do_rm(self, arg):
         return self.do_del(arg)
+
+    def do_head(self, arg):
+        files = self.dsc.QueryMatchingFilesMultiple(arg.split())
+        for file in files:
+            fh = self.dsc.OpenFile(file, "r")
+            if fh is None:
+                print "Couldn't open file ", file
+                continue
+
+            for i in range(0, 10):
+                l = fh.readline()
+                if l is None:
+                    break
+                print l,
+            fh.close()
+
+    def do_cat(self, arg):
+        files = self.dsc.QueryMatchingFilesMultiple(arg.split())
+        for file in files:
+            fh = self.dsc.OpenFile(file, "r")
+            if fh is None:
+                print "Couldn't open file ", file
+                continue
+
+            for l in fh:
+                print l,
+            fh.close()
+
+    def do_copystdin(self, arg):
+        """
+        Copy stdin to a file.
+        """
+
+        fh = self.dsc.OpenFile(arg, "w")
+        print """Enter data, followed by "." on a line by itself."""
+        while 1:
+            l = sys.stdin.readline()
+            if l.startswith(".") or l is None:
+                break
+
+            print "Read <%s>" % (l)
+
+            fh.write(l)
+        fh.close()
+        self.dsc.LoadData()
+            
         
     #
     # Impls
@@ -257,10 +493,10 @@ class DataStoreShell(cmd.Cmd):
         for f in files:
             if verb and url:
                 data = self.dsc.GetFileData(f)
-                print "%-20s %5s %-12s %s" % (f, data['size'], data['type'], data['uri'])
+                print "%-20s %10s %-12s %s" % (f, data['size'], data['type'], data['uri'])
             elif verb:
                 data = self.dsc.GetFileData(f)
-                print "%-20s %5s %s " % (f, data['size'], data['type'])
+                print "%-20s %10s %s " % (f, data['size'], data['type'])
             elif url:
                 data = self.dsc.GetFileData(f)
                 print "%-20s %s" % (f, data['uri'])
