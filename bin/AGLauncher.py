@@ -34,6 +34,7 @@ class LauncherFrame(wxFrame):
         wxFrame.__init__(self,parent,id,title,size=wxSize(600,300),style=wxDEFAULT_FRAME_STYLE&(~wxMAXIMIZE_BOX))
 
 	self.processManager=ProcessManager();
+	self.browser=None;
         
         if IsOSX():
             self.mainButton=wxRadioButton(self,self.BUTTON_MAIN_ID,"Main",style=wxRB_GROUP);
@@ -88,7 +89,7 @@ class LauncherFrame(wxFrame):
         self.docsButtonList=[];
         self.docsButtonActions=[];
         self.docsButtonList.append(wxButton(self,self.BUTTON_README_ID,"Read Me"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/README.txt"%(agtk_location),[]]);
+        self.docsButtonActions.append([self.LoadURL,"file://%s/README"%(agtk_location),[]]);
         self.docsButtonList.append(wxButton(self,self.BUTTON_VCM_ID,"Venue Client Manual"));
         self.docsButtonActions.append([self.LoadURL,"file://%s/doc/VenueClientManual/VenueClientManualHTML.htm"%(agtk_location),[]]);
         self.docsButtonList.append(wxButton(self,self.BUTTON_VMCM_ID,"Venue Management Manual"));
@@ -221,7 +222,7 @@ class LauncherFrame(wxFrame):
         else:
             self.processManager.StartProcess(command,[cmd]+args);
     
-    def LoadURL(self,url):
+    def LoadURL(self,url,args):
         print "URL: %s"%(url);
         needNewWindow = 0
         if not self.browser:
@@ -289,6 +290,8 @@ if __name__ == '__main__':
     #app=MyApp();
     #app.MainLoop();
 
+    import sys
+
     app=WXGUIApplication();
     try:
         args = app.Initialize('AGLauncher')
@@ -296,7 +299,7 @@ if __name__ == '__main__':
         pass
 
     pp = wxPySimpleApp();
-    frame=LauncherFrame(None,-1,"Access Grid Launcher","/Applications/Access Grid Toolkit.app");
+    frame=LauncherFrame(None,-1,"Access Grid Launcher",sys.argv[1]);
     frame.Show();
     pp.SetTopWindow(frame);
     pp.MainLoop();
