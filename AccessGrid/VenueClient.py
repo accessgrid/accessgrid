@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.22 2003-02-22 16:34:06 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.23 2003-03-13 23:53:33 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -137,10 +137,8 @@ class VenueClient( ServiceBase ):
                                           venueState.services, 
                                           venueState.eventLocation,
                                           venueState.textLocation )
-            self.venueUri = URL
             self.venueId = self.venueState.GetUniqueId()
-            
-            self.venueProxy = Client.Handle( self.venueUri ).get_proxy()
+            self.venueProxy = Client.Handle( URL ).get_proxy()
 
             #
             # Create the event client
@@ -181,7 +179,11 @@ class VenueClient( ServiceBase ):
             #
             for profile in self.followerProfiles.values():
                 Client.Handle( profile.venueClientUri ).get_proxy().wsEnterVenue( URL )
-                
+
+            # Finally, set the venue uri now that we have successfully
+            # entered the venue
+            self.venueUri = URL
+
         except:
             print "Exception in EnterVenue : ", sys.exc_type, sys.exc_value
             raise EnterVenueException("Enter Failed!")
