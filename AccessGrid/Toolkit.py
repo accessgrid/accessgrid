@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.7 2003-08-20 14:48:57 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.8 2003-08-20 14:54:16 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ from AccessGrid import Platform
 # Call GetVersion() to get AGTK version information.
 MAJOR_VERSION = 2
 MINOR_VERSION = 1
-POINT_VERSION = 0
+POINT_VERSION = 1
 
 
 class Version:
