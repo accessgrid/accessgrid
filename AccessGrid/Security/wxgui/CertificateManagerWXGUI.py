@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.7 2004-03-22 20:11:38 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.8 2004-03-25 19:01:51 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.7 2004-03-22 20:11:38 olson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.8 2004-03-25 19:01:51 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -392,6 +392,21 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
             dlg.ShowModal()
             dlg.Destroy()
             return 0
+
+        #
+        # Ensure we have a private key.
+        #
+
+        keypath = ident.GetKeyPath()
+        if keypath is None or not os.path.isfile(keypath):
+            dlg = wxMessageDialog(None, "Private key is not available for this certificate:\n" +
+                                  str(ident.GetSubject()) + "\nYou will have to reimport or otherwise obtain a new copy.",
+                                  "Missing private key",
+                                  style = wxOK)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+
 
         #
         # See if we really need to have a proxy.
