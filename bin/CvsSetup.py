@@ -158,7 +158,7 @@ os.system(mk_command)
 
 # Copy default configuration files
 
-if sys.platform == 'win32':
+if sys.platform == WIN:
     win_config_src = os.path.join( AG_BASE_DIR, "packaging", "config", "defaultWindows")
     win_config_dst = os.path.join( DST_CONFIG_DIR, "nodeConfig", "defaultWindows")
     #if verbose:
@@ -184,12 +184,14 @@ if sys.platform == 'win32':
     file.close()
     new_file.close()
 
+# copy defaultLinux file if we are using linux
+if sys.platform == LINUX:
+    unix_config_src = os.path.join( AG_BASE_DIR, "packaging", "config", "defaultLinux")
+    unix_config_dst = os.path.join( DST_CONFIG_DIR, "nodeConfig", "defaultLinux")
+    if verbose:
+        print "    copying file ", unix_config_src, "to ", unix_config_dst
 
-unix_config_src = os.path.join( AG_BASE_DIR, "packaging", "config", "defaultLinux")
-unix_config_dst = os.path.join( DST_CONFIG_DIR, "nodeConfig", "defaultLinux")
-if verbose:
-    print "    copying file ", unix_config_src, "to ", unix_config_dst
-shutil.copyfile( unix_config_src, unix_config_dst )
+    shutil.copyfile( unix_config_src, unix_config_dst )
 
 
 # Define function to help manage config files.
