@@ -9,7 +9,7 @@ set SOURCE=%1
 set AGDIR=%2
 set DEST=%3
 
-set PDIR=%SOURCE%\WinGlobus\WinProjects\SourceSolutions
+set PDIR=%SOURCE%\WinGlobus\WinProjects\SourceSolution
 
 devenv %PDIR%\DebugLib\All_Libs.sln /rebuild Debug
 devenv %PDIR%\DebugThreadedLib\All_Libs.sln /build Debug
