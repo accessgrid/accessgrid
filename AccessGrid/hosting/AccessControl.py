@@ -1,3 +1,15 @@
+#-----------------------------------------------------------------------------
+# Name:        AccessControl.py
+# Purpose:     Server-side method invocation support.
+#
+# Author:      Robert Olson
+#
+# Created:     
+# RCS-ID:      $Id: AccessControl.py,v 1.6 2003-05-14 19:19:39 olson Exp $
+# Copyright:   (c) 2002
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
+
 """
 Access Control mechanisms for the AG system.
 
@@ -282,14 +294,15 @@ class InvocationWrapper(MethodSig):
         except Exception, e:
 
               # print "call raised exception: ", e
-              log.exception("Exception in call to %s", self.callback)
+              log.exception("Exception '%s' in call to %s", str(e), self.callback)
               del _managers[thread_id]
             
-              fault = faultType(faultstring = str(e))
 
               import traceback
               info = sys.exc_info()
 
+              ftype = traceback.format_exception_only(info[0], info[1])
+              fault = faultType(faultstring = ftype[0])
               fault._setDetail("".join(traceback.format_exception(
                                     info[0], info[1], info[2])))
               raise fault
