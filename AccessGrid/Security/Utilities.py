@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Utilities.py,v 1.1 2004-03-02 22:43:08 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.2 2004-03-04 21:22:35 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@
 pyGlobus hosting environment utility classes and functions.
 """
 
-__revision__ = "$Id: Utilities.py,v 1.1 2004-03-02 22:43:08 judson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.2 2004-03-04 21:22:35 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pyGlobus.io
@@ -160,3 +160,62 @@ def CreateTCPAttrAlwaysAuthSSL():
 
     return attr
     
+#
+# Create get_certificate_locations from either old AG pyGlobus build
+# or from the new 2.4 pyGlobus.
+#
+
+#
+# First the 2.0/2.2 pyGlobus which has a sslutilsc module.
+#
+
+try:
+    from pyGlobus import sslutilsc
+    get_certificate_locations = sslutilsc.get_certificate_locations
+except:
+    # This is old old old pyGlobus modified by ANL
+    pass
+
+#
+# Alternatively, the 2.4 version. We need to emulate the
+# behavior of the get_certificate_locations call.
+#
+
+try:
+    from pyGlobus.security import get_cert_dir, get_proxy_filename
+    from pyGlobus.security import get_user_cert_filename
+
+    def get_certificate_locations():
+        """
+        returns a dictionary of the form:
+        foo['cert_dir'] = dir
+        foo['user_proxy'] = file
+        foo['user_cert'] = file
+        foo['user_key'] = file
+        """
+        retDict = dict()
+
+        try:
+            retDict['cert_dir'] = get_cert_dir()
+        except:
+            # handle error
+            pass
+
+        try:
+            retDict['user_proxy'] = get_proxy_filename()
+        except:
+            # handle error
+            pass
+
+        user_ck_tuple = get_user_cert_filename()
+        if user_ck_tuple[0] == 0:
+            retDict['user_cert'] = user_ck_tuple[1][0]
+            retDict['user_key'] = user_ck_tuple[1][1]
+        else:
+            # handle error
+            pass
+
+        return retDict
+
+except:
+    pass
