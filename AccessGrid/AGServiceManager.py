@@ -5,14 +5,12 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.17 2003-03-14 17:12:32 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.18 2003-03-19 23:13:58 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import sys
-import urllib
 import os
-import socket
 import time
 import logging
 
@@ -26,14 +24,14 @@ else:
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
+from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
 
-from AccessGrid.Descriptions import AGServiceDescription
 from AccessGrid.Types import AGServicePackage
 from AccessGrid.AuthorizationManager import AuthorizationManager
 from AccessGrid.DataStore import GSIHTTPDownloadFile
 from AccessGrid import Utilities
 from AccessGrid.Platform import GetConfigFilePath, GetSystemConfigDir
-from AccessGrid import GUID
+from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 
 log = logging.getLogger("AG.ServiceManager")
 
@@ -160,39 +158,77 @@ class AGServiceManager( ServiceBase ):
             raise faultType("AGServiceManager.AddService failed: " + str( sys.exc_value ) )
 
         #
-        # Add service
+        # Execute service implementation
         #
         try:
             options = []
-
-
+    
+            #
+            # Execute the service implementation
+            #
             if serviceDescription.executable.endswith(".py"):
                 executable = sys.executable
                 options.append( self.servicesDir + os.sep + serviceDescription.executable )
             else:
                 executable = self.servicesDir + os.sep + serviceDescription.executable
 
-            token = str(GUID.GUID())
-            options.append( token )
-            options.append( self.get_handle() )
-
+            # Designate port for service
+            port = MulticastAddressAllocator().AllocatePort()
+            options.append( port )
             print "Running Service; options:", executable, options
             pid = self.processManager.start_process( executable, options )
 
+            #
+            # Wait for service to boot and become reachable,
+            # timing out reasonably
+            #
+            serviceUrl = 'https://%s:%s/Service' % ( GetHostname(), port )
+            elapsedTries = 0
+            maxTries = 10
+            while elapsedTries < maxTries:
+                print "Trying client handle "
+                if Client.Handle(serviceUrl).IsValid():
+                    print "* * Service handle is valid ! "
+                    break
+                print "Wait another sec for service to boot; elapsedTime = ", elapsedTries
+                time.sleep(1)
+                elapsedTries += 1
+
+            # Detect unreachable service
+            if elapsedTries >= maxTries:
+                raise Exception("Add service failed; service is unreachable")
+
         except:
-            print "Exception in AddService, starting service ", sys.exc_type, sys.exc_value
+            print "Exception in AddService, executing service ", sys.exc_type, sys.exc_value
             raise sys.exc_value
 
+        #
+        # Add and configure the service
+        #
         try:
 
             #
-            # Add the service to the list
+            # Set the uri and add service to list of services
             #
             serviceDescription.serviceManagerUri = self.get_handle()
-            self.unregisteredServices[token] = ( pid, serviceDescription, serviceConfig )
+            serviceDescription.uri = serviceUrl
+            self.services[pid] = serviceDescription
 
+            # Push authorized user list
+            Client.Handle( serviceDescription.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
+
+            # Assign resource to the service
+            #
+            if serviceDescription.resource and serviceDescription.resource != "None":
+                Client.Handle( serviceDescription.uri ).get_proxy().SetResource( serviceDescription.resource )
+
+            # Configure the service
+            #
+            if serviceConfig and serviceConfig != "None":
+                Client.Handle( serviceDescription.uri ).get_proxy().SetConfiguration( serviceConfig )
+            
         except:
-            log.exception("Exception in AddService, retrieving service implementation.")
+            log.exception("Exception in AddService, adding service to service list.")
             raise sys.exc_value
 
     AddService.soap_export_as = "AddService"
@@ -281,51 +317,6 @@ class AGServiceManager( ServiceBase ):
             Client.Handle( service.uri ).get_proxy().Stop()
 
     StopServices.soap_export_as = "StopServices"
-
-
-    def RegisterService( self, token, uri ):
-        """
-        Register a service with the service manager.  Why?  When the
-        service manager executes a service implementation, it assigns
-        it a token.  When the service actually starts, it registers
-        with the service manager by passing this token and its uri
-        """
-
-        try:
-
-            # Use the token to identify the unregistered service
-            #
-            pid, service, serviceConfig = self.unregisteredServices[token]
-            del self.unregisteredServices[token]
-
-            # Set the uri and add service to list of services
-            #
-            service.uri = uri
-            self.services[pid] = service
-
-            # Push authorized user list
-            Client.Handle( service.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
-
-            # Assign resource to the service
-            #
-            if service.resource and service.resource != "None":
-                Client.Handle( service.uri ).get_proxy().SetResource( service.resource )
-
-            # Configure the service
-            #
-            if serviceConfig and serviceConfig != "None":
-                Client.Handle( service.uri ).get_proxy().SetConfiguration( serviceConfig )
-            
-        except:
-            log.exception("Exception in RegisterService.")
-            raise faultType("AGServiceManager.RegisterService failed: " + str( sys.exc_value ))
-
-    RegisterService.soap_export_as = "RegisterService"
-
-
-    def Ping( self ):
-        return 1
-    Ping.soap_export_as = "Ping"
 
 
     ####################
