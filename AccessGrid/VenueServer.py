@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.90 2003-08-21 20:14:05 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.91 2003-09-02 22:27:57 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1464,7 +1464,7 @@ class VenueServer(ServiceBase.ServiceBase):
         #   when connecting to "/Venues/default" or the venue's long name.
         self.venues[id].SetRoleManager(rm)
         if "VenueServer" not in self.venues[id].GetRoleManager().GetExternalRoleManagerList():
-            raise "BLAH"
+            log.exception("\"VenueServer\" not in external role manager list.")
         
     def SetStorageLocation(self,  dataStorageLocation):
         """
