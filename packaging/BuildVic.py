@@ -13,13 +13,11 @@ DEST=sys.argv[3]
 VICDIR = os.path.join(SOURCE,'ag-media')
 
 
-def build_win():
-    os.system('devenv %s\vic\vic.2003.sln /rebuild "DDraw Release"')
+def build_win(dir):
+    os.system('devenv %s\vic\vic.2003.sln /rebuild "DDraw Release"' % (dir,))
     
-def build_linux():
-    global VICDIR
-    print "vicdir = ", VICDIR
-    os.chdir(VICDIR)
+def build_linux(dir):
+    os.chdir(dir)
     os.system('./vic-build')
 
 
@@ -38,7 +36,7 @@ else:
     
 # Build if necessary
 if not os.path.exists(VIC_EXE):
-    build()
+    build(VICDIR)
 
     if os.path.exists(VIC_EXE):
         copyCmd = "%s %s %s" % (copyExe, VIC_EXE, DEST)
