@@ -3,7 +3,7 @@
 # Name:        certmgr.py
 # Purpose:     Command line certificate management tool.
 # Created:     9/10/2003
-# RCS-ID:      $Id: certmgr.py,v 1.11 2004-08-02 14:19:56 turam Exp $
+# RCS-ID:      $Id: certmgr.py,v 1.12 2004-09-07 20:25:59 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This tool is used on the command line to interact with the users certificate
 environment.
 """
-__revision__ = "$Id: certmgr.py,v 1.11 2004-08-02 14:19:56 turam Exp $"
+__revision__ = "$Id: certmgr.py,v 1.12 2004-09-07 20:25:59 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -48,6 +48,8 @@ class CertMgrCmdProcessor(cmd.Cmd):
         self.forceOverwrite = 0
 
         self.setIdentityMode()
+        
+        self.certs = []
 
     def setInteractive(self, interactive):
         self.interactive = interactive
@@ -257,7 +259,7 @@ class CertMgrCmdProcessor(cmd.Cmd):
         """
         try:
             proxy = self.certMgr.GetGlobusProxyCert()
-        except Exception, e:
+        except Exception:
             proxy = None
 
         if proxy is None:
@@ -782,7 +784,7 @@ def main():
 
     try:
         args = app.Initialize("CertificateManager")
-    except Exception, e:
+    except Exception:
         sys.exit(0)
 
     cmd = CertMgrCmdProcessor(app.GetCertificateManager(), app.GetLog())
