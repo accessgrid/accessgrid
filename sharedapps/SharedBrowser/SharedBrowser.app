@@ -5,5 +5,5 @@ extension = sharedbrowser
 files = SharedBrowser.py
 
 [commands]
-Open = %(python)s SharedBrowser.py %(appUrl)s
-
+Join = %(python)s SharedBrowser.py -a %(appUrl)s
+ 
