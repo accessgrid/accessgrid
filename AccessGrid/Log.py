@@ -57,6 +57,7 @@ Logger = logging.Logger
 LogRecord = logging.LogRecord
 PlaceHolder = logging.PlaceHolder
 StreamHandler = logging.StreamHandler
+RotatingFileHandler = handlers.RotatingFileHandler
 
 # --- Levels ----
 CRITICAL=logging.CRITICAL
