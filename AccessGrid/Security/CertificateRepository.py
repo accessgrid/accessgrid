@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.7 2004-03-19 22:45:21 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.8 2004-03-22 20:12:04 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.7 2004-03-19 22:45:21 olson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.8 2004-03-22 20:12:04 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -239,12 +239,14 @@ class CertificateRepository:
         """
         Create the repository.
 
-        dir - directory in which to store certificates.
+        @param repoDir: directory in which to store certificates.
+        @param create: true if we should create the repository
 
         """
 
         self.dir = repoDir
         self.dbPath = os.path.join(self.dir, "metadata.db")
+        self.metadataLocked = 0
 
         if create:
             if os.path.isdir(self.dir):
@@ -340,6 +342,21 @@ class CertificateRepository:
                     log.exception("Error in attempt to move aside corrupted repository")
                     
                     raise Exception("Cannot open repository, and cannot initialize new repository")
+
+    def LockMetadata(self):
+        """
+        Lock the metadata in the repo. If metadata is locked, any attempts
+        to call SetMetadata will fail.
+        """
+    
+        self.metadataLocked = 1
+        
+    def UnlockMetadata(self):
+        """
+        Unlock the metadata in the repo.
+        """
+    
+        self.metadataLocked = 0
 
     def ImportCertificatePEM(self, certFile, keyFile = None,
                              passphraseCB = None):
@@ -1021,6 +1038,10 @@ class CertificateRepository:
         return self.GetMetadata(hashkey)
 
     def SetMetadata(self, key, value):
+        if self.metadataLocked:
+            log.error("Attempting to set metadata on locked repository")
+            return
+        
         try:
             self.db[key] = value
         finally:

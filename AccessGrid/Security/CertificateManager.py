@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.9 2004-03-19 22:44:56 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.10 2004-03-22 20:12:04 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.9 2004-03-19 22:44:56 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.10 2004-03-22 20:12:04 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -189,6 +189,9 @@ class CertificateManager(object):
         'proxyPath',
         'defaultIdentity',
         'issuedGlobusWarning',
+        'useDefaultDN',
+        'useCertFile',
+        'useKeyFile',
         ]
 
     def __init__(self, userProfileDir, userInterface):
@@ -210,6 +213,10 @@ class CertificateManager(object):
         self.caDir = os.path.join(userProfileDir, "trustedCACerts")
         self.defaultIdentity = None
         self.issuedGlobusWarning = 0
+
+        self.useDefaultDN = None
+        self.useCertFile = None
+        self.useKeyFile = None
 
         #
         # Tie the user interface to the cert mgr.
@@ -628,6 +635,27 @@ class CertificateManager(object):
             log.exception("_VerifyGlobusProxy failed")
             return 0
         
+    def SetTemporaryDefaultIdentity(self,
+                                    useDefaultDN = None,
+                                    useCertFile = None,
+                                    useKeyFile = None):
+        """
+        Set the default identity to use for this instance of the
+        certificate manager.
+
+        """
+
+        #
+        # Disallow the use of both a specified DN and a specified cert file.
+        #
+        if useDefaultDN is not None and useCertFile is not None:
+            log.error("CertificateManger.SetTemporaryDefaultIdentity(): Cannot specify both a default DN and a certificate file")
+            raise CertificateManagerError("Cannot specify both a default DN and a certificate file")
+
+        self.useDefaultDN = useDefaultDN
+        self.useCertFile = useCertFile
+        self.useKeyFile = useKeyFile
+
     def InitEnvironment(self):
         """
         Configure the process environment to correspond to the chosen
@@ -637,6 +665,13 @@ class CertificateManager(object):
         configuration; rather, if the situation is not to its liking,
         it raises an exception telling the caller what the problem
         is. It is safe to reinvoke this method as needed.
+
+        If self.useDefaultDN is set, use the given DN to be the default
+        for this instance of the class.
+
+        If self.useCertFile is set, use that certificate as the default.
+
+        Otherwise,
 
         If there are no identity certificates present, raise the
         NoCertificates exception.
@@ -680,6 +715,79 @@ class CertificateManager(object):
 
         self._InitializeCADir()
 
+
+        if self.useDefaultDN is not None:
+            log.debug("Configuring env with default DN %s", self.useDefaultDN)
+            return self.InitEnvironmentWithDN(self.useDefaultDN)
+        elif self.useCertFile is not None:
+            log.debug("Configuring env with cert file %s key %s",
+                      self.useCertFile, self.useKeyFile)
+            return self.InitEnvironmentWithCert(self.useCertFile, self.useKeyFile)
+        else:
+            log.debug("Configuring standard environment")
+            return self.InitEnvironmentStandard()
+
+    def InitEnvironmentWithDN(self, dn):
+        """
+        Set up the cert mgr to run with the specified DN as the default
+        for this instance. Do not modify the default identity keys in
+        the repository.
+        """
+
+        #
+        # Find the certificate with this dn.
+        #
+
+        certs = self.certRepo.FindCertificatesWithSubject(dn)
+        validCerts = filter(lambda a: not a.IsExpired(), certs)
+        
+        if len(validCerts) == 0:
+            raise NoIdentityCertificateError("No certificate found with dn " + str(dn))
+
+        if len(validCerts) > 1:
+            log.warn("More than one valid cert with dn %s found, choosing one at random.",
+                     dn)
+
+        self.defaultIdentity = validCerts[0]
+
+        print "Loaded identity ", self.defaultIdentity.GetVerboseText()
+
+        #
+        # Lock down the repository so it doesn't get modified.
+        #
+
+        self.certRepo.LockMetadata()
+
+        if defaultIdentity.HasEncryptedPrivateKey():
+            self._InitEnvWithProxy()
+        else:
+            self._InitEnvWithCert()
+        
+    def InitEnvironmentWithCert(self, certFile, keyFile):
+        """
+        Set up the cert mgr to run with the specified cert and file.
+        Do not modify the default identity keys in the repository.
+        """
+
+        self.defaultIdentity = CertificateRepository.Certificate(certFile, keyFile,
+                                                                 self.certRepo)
+
+        print certFile, keyFile
+        print "Loaded identity ", self.defaultIdentity.GetVerboseText()
+
+        #
+        # Lock down the repository so it doesn't get modified.
+        #
+
+        self.certRepo.LockMetadata()
+
+        if defaultIdentity.HasEncryptedPrivateKey():
+            self._InitEnvWithProxy()
+        else:
+            self._InitEnvWithCert()
+
+    def InitEnvironmentStandard(self):
+        
         idCerts, defaultIdCerts, defaultIdentity = self.CheckConfiguration()
 
         log.debug("Using default identity %s", defaultIdentity.GetSubject())
