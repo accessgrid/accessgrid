@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.52 2003-09-30 21:39:44 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.53 2003-09-30 22:04:42 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.52 2003-09-30 21:39:44 eolson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.53 2003-09-30 22:04:42 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -807,22 +807,22 @@ class DataStore:
     def CancelPendingUpload(self, filename):
         desc = self.GetDescription(filename)
 
+        # Make sure datadescription exists in datastore.
+        if desc == None:
+            log.warn("CancelPendingUpload: didn't find file description that should be pending.")
+            return
+
         # Make sure file is still pending upload
         if desc.GetStatus() != DataDescription.STATUS_PENDING:
             log.error("CancelPendingUpload: found file description but status was not pending.")
             return
 
-        # Remove file and its description.
-        if desc:
-            # Remove the file from the datastore
-            self.RemoveFiles([desc])
-            # distribute updated event.
-            self.cbLock.acquire()
-            self.callbackClass.DistributeEvent(Event( Event.REMOVE_DATA, self.callbackClass.uniqueId, desc ))
-            self.cbLock.release()
-        else:
-            log.warn("CancelPendingUpload: didn't find file description that should be pending.")
-            
+        # Remove the file from the datastore
+        self.RemoveFiles([desc])
+        # distribute updated event.
+        self.cbLock.acquire()
+        self.callbackClass.DistributeEvent(Event( Event.REMOVE_DATA, self.callbackClass.uniqueId, desc ))
+        self.cbLock.release()
 
     def GetDescription(self, filename):
         return self.dataDescContainer.GetData(filename)
