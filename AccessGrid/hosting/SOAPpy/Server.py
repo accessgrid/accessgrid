@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.9 2004-03-18 21:42:38 eolson Exp $
+# RCS-ID:      $Id: Server.py,v 1.10 2004-03-19 05:02:54 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ SOAPpy server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.9 2004-03-18 21:42:38 eolson Exp $"
+__revision__ = "$Id: Server.py,v 1.10 2004-03-19 05:02:54 judson Exp $"
 
 # External imports
 import urlparse
@@ -127,7 +127,8 @@ class Server:
 
         self._serving[uri] = obj
         self._server.registerObject(obj, namespace=namespace, path = path)
-
+        return uri
+    
     def UnregisterObject(self, obj):
         """
         This method removes a object from the server, making it unavailable.
