@@ -14,7 +14,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClientObserver.py,v 1.1 2004-02-24 17:04:56 turam Exp $"
+__revision__ = "$Id: VenueClientObserver.py,v 1.2 2004-02-24 18:36:21 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -33,16 +33,19 @@ class PassiveVenueClientObserver:
     # Service Methods
     def AddService(self,serviceDescription):        pass
     def RemoveService(self,serviceDescription):     pass
+    def UpdateService(self,serviceDescription):     pass
     
     # Application Methods
     def AddApplication(self,appDescription):        pass
     def RemoveApplication(self,appDescription):     pass
+    def UpdateApplication(self,appDescription):     pass
     
     # Exit/Connection Methods
     def AddConnection(self,connDescription):        pass
     def RemoveConnection(self,connDescription):     pass
     def SetConnections(self,connDescriptionList):   pass
     
+    # Stream methods
     def AddStream(self, streamDesc):                pass
     def RemoveStream(self, streamDesc):             pass
     def ModifyStream(self, streamDesc):             pass
@@ -82,12 +85,18 @@ class RestrictiveVenueClientObserver:
     def RemoveService(self,serviceDescription):
 		raise Exception("VenueClientObserver.RemoveService not implemented")
     
+    def UpdateService(self,serviceDescription):
+		raise Exception("VenueClientObserver.UpdateService not implemented")
+
     # Application Methods
     def AddApplication(self,appDescription):
 		raise Exception("VenueClientObserver.AddApplication not implemented")
 
     def RemoveApplication(self,appDescription):
 		raise Exception("VenueClientObserver.RemoveApplication not implemented")
+
+    def UpdateApplication(self,appDescription):
+		raise Exception("VenueClientObserver.UpdateApplication not implemented")
 
     # Exit/Connection Methods
     def AddConnection(self,connDescription):

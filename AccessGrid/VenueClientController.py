@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.1 2004-02-24 17:04:56 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.2 2004-02-24 18:36:21 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
@@ -677,7 +677,8 @@ class VenueClientController:
                 self.venueClient.UpdateClientProfile(profile)
             except:
                 log.exception("bin.VenueClient::ChangeProfile: Error occured when trying to update profile")
-                self.gui.Error("Your profile could not be changed", "Change Profile Error")
+                # User does not need to know about this. The profile info got saved locally anyhow.                
+                #self.gui.Error("Your profile could not be changed", "Change Profile Error")
         else:
             log.debug("Can not update client profile in venue - not connected")
 

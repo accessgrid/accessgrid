@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.1 2004-02-24 17:04:56 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.2 2004-02-24 18:36:21 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.1 2004-02-24 17:04:56 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.2 2004-02-24 18:36:21 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -979,6 +979,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         itemList = self.GetSelectedItems()
         self.controller.RemoveServiceCB(itemList)
         
+        
             
     #
     # Application Actions
@@ -1615,6 +1616,19 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         wxCallAfter(self.statusbar.SetStatusText, "Service '%s' has been removed from the venue" %serviceDescription.name)
         wxCallAfter(self.contentListPanel.RemoveService, serviceDescription)
 
+    def UpdateService(self, serviceDescription):
+        """
+        This method is called when a service is updated in the venue.
+        Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *serviceDescription* The ServiceDescription representing the service that got updated.
+        """
+        log.debug("EVENT - Update service: %s" %(serviceDescription.name))
+        wxCallAfter(self.SetStatusText, "Service '%s' just got updated." %serviceDescription.name)
+        wxCallAfter(self.contentListPanel.UpdateService, serviceDescription)
+    
     def AddApplication(self, appDescription):
         """
         This method is called every time a new application is added to the venue.
@@ -1644,6 +1658,22 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         log.debug("EVENT - Remove application: %s" %(appDescription.name))
         wxCallAfter(self.statusbar.SetStatusText, "Application '%s' has been removed from the venue" %appDescription.name)
         wxCallAfter(self.contentListPanel.RemoveApplication, appDescription)
+
+    def UpdateApplication(self, appDescription):
+        """
+        This method is called when an application is updated in the venue.
+        Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *appDescription* The ApplicationDescription representing the application that should be updated.
+        """
+        wxCallAfter(self.SetStatusText,
+                    "Application '%s' just got updated." %appDescription.name)
+        log.debug("EVENT - Update application: %s, Mime Type: %s"
+                  % (appDescription.name, appDescription.mimeType))
+        wxCallAfter(self.contentListPanel.UpdateApplication, appDescription)
+
 
     def AddConnection(self, connDescription):
         """
