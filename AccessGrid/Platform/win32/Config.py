@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.51 2004-09-10 03:58:53 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.52 2004-09-10 17:01:32 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.51 2004-09-10 03:58:53 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.52 2004-09-10 17:01:32 turam Exp $"
 
 import os
 import socket
@@ -990,13 +990,17 @@ class SystemConfig(Config.SystemConfig):
             vfwscanexe = os.path.join(AGTkConfig.instance().GetBinDir(),
                                       'vfwscan.exe')
             if os.path.exists(vfwscanexe):
-                log.info("Using vfwscan to get devices")
-                f = os.popen(vfwscanexe,'r')
-                deviceList = f.readlines()
-                f.close()
+                try:
+                    log.info("Using vfwscan to get devices")
+                    f = os.popen(vfwscanexe,'r')
+                    filelines = f.readlines()
+                    f.close()
 
-                deviceList = map( lambda d: d.strip(), deviceList)
-            else:
+                    deviceList = map( lambda d: d.strip(), filelines)
+                except:
+                    log.exception("vfw device scan failed")
+            
+            if not len(deviceList):
                 log.info("Retrieving devices from registry")
                 
                 # Get the name of the video key in the registry
