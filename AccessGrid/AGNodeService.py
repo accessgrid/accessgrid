@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.71 2004-05-12 21:20:35 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.72 2004-05-27 20:59:11 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.71 2004-05-12 21:20:35 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.72 2004-05-27 20:59:11 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -194,7 +194,10 @@ class AGNodeService:
         
         log.debug("serviceDesc = %s", str(serviceDesc))
         log.debug("serviceManagerUri = %s", str(serviceManagerUri))
-        log.debug("resourceToAssign = %s", str(resourceToAssign))
+        if resourceToAssign:
+            log.debug("resourceToAssign = %s", str(resourceToAssign.resource))
+        else:
+            log.debug("resourceToAssign = %s", str(resourceToAssign))
         log.debug("serviceConfig = %s", str(serviceConfig))
 
         serviceDescription = None
@@ -416,7 +419,7 @@ class AGNodeService:
                     #
                     resourceSection = config.get( serviceSection, "resource" )
                     if resourceSection == "None":
-                        resource = "None"
+                        resource = None
                     else:
                         resource = AGResource( config.get( resourceSection, "type" ),
                                                config.get( resourceSection, "resource" ) )
