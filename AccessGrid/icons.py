@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: icons.py,v 1.20 2003-05-08 20:56:16 lefvert Exp $
+# RCS-ID:      $Id: icons.py,v 1.21 2003-05-08 21:01:58 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -10267,5 +10267,43 @@ catalog['DefaultParticipant'].getData = getDefaultParticipantData
 catalog['DefaultParticipant'].getImage = getDefaultParticipantImage
 catalog['DefaultParticipant'].getBitmap = getDefaultParticipantBitmap
 catalog['DefaultParticipant'].getIcon = getDefaultParticipantIcon
+
+
+#----------------------------------------------------------------------
+def getFolderData():
+    return zlib.decompress(
+'x\xda\x01U\x01\xaa\xfe\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x12\
+\x00\x00\x00\x12\x08\x06\x00\x00\x00V\xce\x8eW\x00\x00\x00\x04sBIT\x08\x08\
+\x08\x08|\x08d\x88\x00\x00\x01\x0cIDATx\x9c\xadT;r\x82P\x14=8\x16\xd8i\xe1\
+\x0cYF\\\x82\xa5KH\xe7\xb0\x02\xcb`\x9b\xa1J\xb0\xb1\x14\xa9\xd4\x15`\'KHki\
+\t3\x16\xd0\xbd\xdb\xdd\x14\x02y\xbc\xf70f\xe4\xccPp\xe1\x9e\x1f\x1f\x8b\x99\
+\x19\x1d\xa0\xd7\x05I\xa7D}\xf9$\x89&\x8d\x8b\xd3\xf9\xf7\xe3L\\\xe2\xb4}\
+\xe5&\x84a\xd6\x0e\x8b\x999\x89&\xa5z\xa8\xc8\xb88\xae^4\xf1\xe2Jx\xf3\xf3\
+\x96h\x14\x02(\x94\x95/\xcc\x16\xa9F\xb4\xf7F\xdaL"\xca\x00\x02\x8e\x87\xb5r\
+\xcb\xa7\xb64\x1c\xdb\xb5\xd3Z\xa8\xee\xe7\xb2\xe48p\xea~\xf4Cj\xef\xfc\xc1\
+\xcc\x82\xe3\xc0\xe1\xcd\xfbmGrT\xc5Rz\xa2\x01`\x8b\xc6\xc8\xa6\x0b\x80][4\
+\x92\xb7\xe5-\x85\x98\x90\xe59\x1c%n\x1f&dj\xe9\xb2\x1d@\x10\xdd\x9c\xfeI\
+\x04a\x1e\x03\xe5\x83%-\xae\x99\xa8\xb8\xe3\xa8\x12R\x12[\xd5\xd7oz\xf1\x1eA\
+z\x05\\?\xfd%\x02\x80\xd0\xfb?\x99\xeb\xa7MG\xcf\xa2\xb3\xdf\xc8\x0f<\x02\
+\xd95<p\xcf)\x00\x00\x00\x00IEND\xaeB`\x82Cl\x92I' )
+
+def getFolderBitmap():
+    return wxBitmapFromImage(getFolderImage())
+
+def getFolderImage():
+    stream = cStringIO.StringIO(getFolderData())
+    return wxImageFromStream(stream)
+
+def getFolderIcon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(getFolderBitmap())
+    return icon
+
+index.append('Folder')
+catalog['Folder'] = ImageClass()
+catalog['Folder'].getData = getFolderData
+catalog['Folder'].getImage = getFolderImage
+catalog['Folder'].getBitmap = getFolderBitmap
+catalog['Folder'].getIcon = getFolderIcon
 
 
