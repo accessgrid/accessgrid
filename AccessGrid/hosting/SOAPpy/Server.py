@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.12 2004-04-07 23:48:07 eolson Exp $
+# RCS-ID:      $Id: Server.py,v 1.13 2004-05-17 15:32:35 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ SOAPpy server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.12 2004-04-07 23:48:07 eolson Exp $"
+__revision__ = "$Id: Server.py,v 1.13 2004-05-17 15:32:35 judson Exp $"
 
 # External imports
 import urlparse
@@ -146,7 +146,11 @@ class _Server:
             for u,o in self._serving.items():
                 if obj == o:
                     del self._serving[u]
-        self._server.unregisterObject(obj, namespace, path)
+        try:
+            self._server.unregisterObject(obj, namespace, path)
+        except KeyError, e:
+            log.exception("Couldn't remove object from SOAP Server: %s", obj)
+            raise 
 
     # Don't forget we expose interfaces, so
     # interfaces.impl == passed in object
