@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.124 2003-04-22 19:07:18 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.125 2003-04-22 19:33:51 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -107,7 +107,7 @@ class VenueClientUI(wxApp, VenueClient):
         self.frame.EnableAppMenu( false )
 
         # Load user mime.types from AG Config Dir
-        mimeFilename = os.path.join(GetUserDir(), "mime.types")
+        mimeFilename = os.path.join(GetUserConfigDir(), "mime.types")
         if os.path.isfile(mimeFilename):
             wxTheMimeTypesManager.ReadMailcap(mimeFilename)
 
