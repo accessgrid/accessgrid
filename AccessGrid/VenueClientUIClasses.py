@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.220 2003-06-27 22:12:43 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.221 2003-07-01 16:43:13 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -182,36 +182,10 @@ class VenueClientFrame(wxFrame):
 
         # ---- menus for main menu bar
         self.venue = wxMenu()
-#	self.dataMenu = wxMenu()
         self.venue.Append(self.ID_VENUE_DATA_ADD,"Add Data...",
                              "Add data to the venue.")
-#        self.dataMenu.Append(self.ID_VENUE_PERSONAL_DATA_ADD,"Add personal data...",
-#                             "Add personal data")
-#         self.dataMenu.AppendSeparator()
-#         self.dataMenu.Append(self.ID_VENUE_DATA_OPEN,"Open",
-#                              "Open selected data")
-# 	self.dataMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...",
-#                              "Save selected data to local disk")
-# 	self.dataMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove selected data")
-#         self.dataMenu.AppendSeparator()
-# 	self.dataMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties...",
-#                              "View information about the selected data")
-
-#        self.venue.AppendMenu(self.ID_VENUE_DATA,"&Data", self.dataMenu)
-
-#	self.serviceMenu = wxMenu()
 	self.venue.Append(self.ID_VENUE_SERVICE_ADD,"Add Service...",
                                 "Add a service to the venue.")
-#         self.serviceMenu.Append(self.ID_VENUE_SERVICE_OPEN,
-#                                      "Open",  "Launch service client")
-#         self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete",
-#                                 "Remove selected service")
-#         self.serviceMenu.AppendSeparator()
-#         self.serviceMenu.Append(self.ID_VENUE_SERVICE_PROPERTIES,"Properties...",
-#                                      "View information about the selected service")
-#        self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",
-#                              self.serviceMenu)
-
      	self.applicationMenu = wxMenu()
       
         self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"&Applications",
@@ -361,16 +335,6 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
 
-#        self.menubar.Enable(self.ID_VENUE_PERSONAL_DATA_ADD, false)
-#        self.menubar.Enable(self.ID_VENUE_DATA_SAVE, false)
-#        self.menubar.Enable(self.ID_VENUE_DATA_OPEN, false)
-#        self.menubar.Enable(self.ID_VENUE_DATA_DELETE, false)
-#        self.menubar.Enable(self.ID_VENUE_DATA_PROPERTIES, false)
-#        self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, false)
-#        self.menubar.Enable(self.ID_VENUE_SERVICE_OPEN, false)
-#        self.menubar.Enable(self.ID_VENUE_SERVICE_PROPERTIES, false)
-
-
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
 
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, false)
@@ -387,14 +351,6 @@ class VenueClientFrame(wxFrame):
     def ShowMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
-#        self.menubar.Enable(self.ID_VENUE_PERSONAL_DATA_ADD, true)
-#        self.menubar.Enable(self.ID_VENUE_DATA_SAVE, true)
-#        self.menubar.Enable(self.ID_VENUE_DATA_OPEN, true)
-#        self.menubar.Enable(self.ID_VENUE_DATA_DELETE, true)
-#        self.menubar.Enable(self.ID_VENUE_DATA_PROPERTIES, true)
-#        self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, true)
-#        self.menubar.Enable(self.ID_VENUE_SERVICE_OPEN, true)
-#        self.menubar.Enable(self.ID_VENUE_SERVICE_PROPERTIES, true)
         self.menubar.Enable(self.ID_MYVENUE_ADD, true)
         
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, true)
@@ -1270,7 +1226,6 @@ class VenueList(wxScrolledWindow):
     def AddVenueDoor(self, profile):
         panel = ExitPanel(self, wxNewId(), profile)
         self.doorsAndLabelsList.append(panel)
-        
         self.doorsAndLabelsList.sort(lambda x, y: cmp(x.GetName(), y.GetName()))
         index = self.doorsAndLabelsList.index(panel)
                       
@@ -1382,7 +1337,7 @@ class ExitPanel(wxPanel):
         doorView.Destroy()
             
     def GetName(self):
-        return self.label.GetLabel()
+        return self.label.GetValue().lower()
 
     def GetButtonId(self):
         return self.id
