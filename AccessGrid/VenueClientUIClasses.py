@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.316 2004-01-28 22:48:43 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.317 2004-01-29 20:35:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.316 2004-01-28 22:48:43 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.317 2004-01-29 20:35:38 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2251,12 +2251,11 @@ class ContentListPanel(wxPanel):
         log.info("Got commands: (%s) %s" % (item.mimeType, str(commands)))
         
         menu = wxMenu()
-
+        id = wxNewId()
+        menu.Append(id, "Open", "Open application and join the session.")
         # We always have open
             
         if commands != None and 'Open' in commands:
-            id = wxNewId()
-            menu.Append(id, "Open", "Open application and join the session.")
             EVT_MENU(self, id, lambda event, cmd='Open':
                      self.StartCmd(appdb.GetCommandLine(item.mimeType,
                                                         'Open'),
