@@ -26,7 +26,12 @@ class ServiceBase:
 
         exported_methods = {}
         
-        for name, value in self.__class__.__dict__.items():
+        # collect items from superclasses
+        superitems = []
+        for super in self.__class__.__bases__:
+           superitems = superitems + super.__dict__.items()
+        
+        for name, value in superitems + self.__class__.__dict__.items():
             if callable(value):
                 method = getattr(self, name)
                 dstr = value.__doc__
