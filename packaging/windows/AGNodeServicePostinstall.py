@@ -10,5 +10,6 @@ if sys.platform == 'win32':
     AGNodeServiceFD.write("[Node Configuration]\n")
     AGNodeServiceFD.write("servicesDirectory = " + os.path.join(InstallDir, "services\n"))
     AGNodeServiceFD.write("configDirectory = " + ConfigDir + "\n")
+    AGNodeServiceFD.write("defaultNodeConfiguration = defaultWindows\n")
     AGNodeServiceFD.close()
     
