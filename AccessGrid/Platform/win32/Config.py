@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.6 2004-03-26 19:34:19 olson Exp $
+# RCS-ID:      $Id: Config.py,v 1.7 2004-03-26 20:39:51 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.6 2004-03-26 19:34:19 olson Exp $"
+__revision__ = "$Id: Config.py,v 1.7 2004-03-26 20:39:51 judson Exp $"
 
 import os
 import sys
@@ -768,7 +768,7 @@ HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings
                             r"Software\Microsoft\Windows\CurrentVersion\Internet Settings")
         
         try:
-            (val, type) = _winreg.QueryValueEx(k, "ProxyServer")
+            (val, vtype) = _winreg.QueryValueEx(k, "ProxyServer")
 
             proxyStr = str(val)
 
@@ -789,7 +789,7 @@ HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings
             return proxies
 
         try:
-            (val, type) = _winreg.QueryValueEx(k, "ProxyEnable")
+            (val, vtype) = _winreg.QueryValueEx(k, "ProxyEnable")
             enabled = val
         except WindowsError:
             pass
@@ -799,7 +799,7 @@ HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings
             
         return proxies
 
-    def GetFileSystemFreeSpace(self, path):
+    def FileSystemFreeSpace(self, path):
         """
         Retrieve the amount of free space on the file system the path is
         housed on.
@@ -947,10 +947,10 @@ HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings
         for l in p:
             parts = l.strip().split()
             if parts[0] == "0.0.0.0":
-                int = parts[3]
+                interf = parts[3]
                 metric= parts[4]
                 gw = parts[2]
-                def_routes.append((metric, int, gw))
+                def_routes.append((metric, interf, gw))
             elif parts[0] == "255.255.255.255":
                 host_routes.append((parts[4], parts[3]))
             elif l.startswith("Default Gateway"):
