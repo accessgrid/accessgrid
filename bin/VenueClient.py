@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.206 2003-09-10 16:50:40 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.207 2003-09-11 19:26:50 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -903,7 +903,7 @@ class VenueClientUI(VenueClientEventSubscriber):
             self.venueClient.Shutdown()
             
             self.frame.Destroy()
-
+            
             #os._exit(0)  # this should not be necessary, replace if needed.
 
         else:
@@ -1416,6 +1416,8 @@ if __name__ == "__main__":
     dlg.Show()
     
     vc = VenueClientUI(dlg)
+    app.SetTopWindow(vc.frame)
+
     dlg.Destroy()
     app.MainLoop()
     
