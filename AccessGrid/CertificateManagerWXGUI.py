@@ -1,3 +1,15 @@
+#-----------------------------------------------------------------------------
+# Name:        CertificateManagerWXGUI.py
+# Purpose:     Cert management code = WX-based GUI.
+#
+# Author:      Robert Olson
+#
+# Created:     2003
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.16 2003-08-15 16:39:33 olson Exp $
+# Copyright:   (c) 2002
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
+
 """
 wxPython GUI code for the Certificate Manager.
 

@@ -1,3 +1,15 @@
+#-----------------------------------------------------------------------------
+# Name:        CertificateRepository.py
+# Purpose:     Cert management code.
+#
+# Author:      Robert Olson
+#
+# Created:     2003
+# RCS-ID:      $Id: CertificateRepository.py,v 1.8 2003-08-15 16:39:33 olson Exp $
+# Copyright:   (c) 2002
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
+
 """
 Certificate management module.
 
