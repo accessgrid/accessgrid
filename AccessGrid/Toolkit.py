@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.23 2004-03-15 20:59:49 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.24 2004-03-17 22:11:19 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.23 2004-03-15 20:59:49 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.24 2004-03-17 22:11:19 judson Exp $"
 
 # Standard imports
 import os
@@ -66,8 +66,6 @@ class AppBase:
                          help="Specify a configuration file for the program.")
        
        self.certMgrUI = None
-       self.log = None
-       self.debugLevel = 0
        self.userConfig = None
        self.agtkConfig = None
        self.globusConfig = None
@@ -114,14 +112,18 @@ class AppBase:
        # 4. Redirect logging to files in the user's directory,
        #    purging memory to file
 
-       if self.name is not None:
+       fh = self.defLogHandler
+
+       if self.options.logfilename is not None:
+           if not self.options.logfilename.endswith(".log"):
+               self.name = self.options.logfilename + ".log"
+       elif self.name is not None:
            if not self.name.endswith(".log"):
                self.name = self.name + ".log"
-               
+
+       if self.name is not None:
            filename = os.path.join(self.userConfig.GetConfigDir(), self.name)
            fh = Log.FileHandler(filename)
-       else:
-           fh = self.defLogHandler
            
        fh.setFormatter(Log.GetFormatter())
        levelHandler = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
@@ -146,8 +148,14 @@ class AppBase:
        Process toolkit wide standard arguments. Then return the modified
        argv so the app can choose to parse more if it requires that.
        """
+       
        (self.options, args) = self.parser.parse_args()
 
+       if self.options.debug:
+           levelHandler = Log.HandleLoggers(Log.StreamHandler(),
+                                           Log.GetDefaultLoggers())
+           levelHandler.SetLevel(Log.DEBUG)
+           
        return args
 
     def AddCmdLineOption(self, option):
