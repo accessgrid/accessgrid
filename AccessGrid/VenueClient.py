@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.120 2003-09-26 20:10:22 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.121 2003-09-29 21:47:53 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.120 2003-09-26 20:10:22 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.121 2003-09-29 21:47:53 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -458,6 +458,15 @@ class VenueClient( ServiceBase):
 
             try:
                 Client.Handle( URL ).IsValid()
+            except pyGlobus.io.GSITCPSocketException, e:
+                if e.args[0] == 'an authentication operation failed':
+                    self.__CheckForInvalidClock()
+
+                else:
+                    log.exception("AccessGrid.VenueClient::EnterVenue failed")
+
+                raise EnterVenueException("No reachable venue at given venue URL")
+            
             except:
                 log.exception("No reachable venue at given venue URL")
                 raise EnterVenueException("No reachable venue at given venue URL")
