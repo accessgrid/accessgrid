@@ -205,7 +205,7 @@ cmd = "%s %s --html -o %s -n \"Access Grid Toolkit\" -u \"%s\" AccessGrid" % \
       (sys.executable, ep, os.path.join(DestDir, 'doc','Developer'),
        "http://www.mcs.anl.gov/fl/research/accessgrid")
 
-#os.system(cmd)
+os.system(cmd)
 
 # put the old python path back
 if oldpath is not None:
