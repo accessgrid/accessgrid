@@ -6,8 +6,15 @@ REM
 set SOURCE=%1
 set AGDIR=%2
 set DEST=%3
+set PYVER=%4
 
 cd %SOURCE%
+
+if %PYVER% == "2.2" goto do_2_2
+if %PYVER% == "2.3" goto do_2_3
+goto :end
+
+:do_2_2
 
 cd logging-0.4.7
 python setup.py clean --all
@@ -18,6 +25,8 @@ cd ..\Optik-1.4.1
 python setup.py clean --all
 python setup.py build
 python setup.py install --prefix=%DEST% --no-compile
+
+:do_2_3
 
 cd ..\fpconst-0.6.0
 python setup.py clean --all
@@ -40,4 +49,5 @@ set GLOBUS_LOCATION=%SOURCE%\WinGlobus
 python setup.py build --flavor=win32
 python setup.py install --flavor=win32 --prefix=%DEST%
 
+:end
 @cd %AGDIR%\packaging\windows

@@ -162,7 +162,7 @@ for cmd in [
     "BuildGlobus.cmd",
     "BuildPythonModules.cmd"
     ]:
-    cmd = "%s %s %s %s" % (cmd, SourceDir, BuildDir, DestDir)
+    cmd = "%s %s %s %s %s" % (cmd, SourceDir, BuildDir, DestDir, options.pyver)
     if options.verbose:
         print "BUILD: Running: %s" % cmd
 
