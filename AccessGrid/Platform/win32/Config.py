@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.22 2004-04-12 20:53:08 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.23 2004-04-12 21:33:55 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.22 2004-04-12 20:53:08 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.23 2004-04-12 21:33:55 judson Exp $"
 
 import os
 import sys
@@ -492,8 +492,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             _winreg.DeleteValue(key, "GLOBUS_HOSTNAME")
             _winreg.CloseKey(key)
         except WindowsError:
-            log.exception("Couldn't remove GLOBUS_HOSTNAME.")
-            return 0
+            log.info("Couldn't remove GLOBUS_HOSTNAME, no big deal.")
         self.hostname = None
         
     def GetLocation(self):
@@ -522,8 +521,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             _winreg.DeleteValue(key, "GLOBUS_LOCATION")
             _winreg.CloseKey(key)
         except WindowsError:
-            log.exception("Couldn't remove GLOBUS_LOCATION.")
-            return 0
+            log.info("Couldn't remove GLOBUS_LOCATION, no big deal.")
         self.location = None
 
     def GetServerFlag(self):
@@ -559,8 +557,11 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             _winreg.DeleteValue(key, "X509_RUN_AS_SERVER")
             _winreg.CloseKey(key)
         except WindowsError:
-            log.exception("Couldn't remove X509_RUN_AS_SERVER.")
-            return 0
+            log.info("Couldn't remove X509_RUN_AS_SERVER, no big deal.")
+
+        if os.environ.has_key('X509_RUN_AS_SERVER'):
+            del os.environ['X509_RUN_AS_SERVER']
+            
         self.serverFlag = None
 
     def GetCACertDir(self):
@@ -590,9 +591,12 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             _winreg.DeleteValue(gkey, "x509_cert_dir")
             _winreg.CloseKey(gkey)
         except WindowsError:
-            log.exception("Couldn't delete x509_cert_dir from registry.")
+            log.info("Couldn't delete x509_cert_dir from registry, no big deal.")
+        if os.environ.has_key('X509_CERT_DIR'):
+            del os.environ['X509_CERT_DIR']
+            
         self.caCertDir = None
-        
+
     def GetProxyFileName(self):
         if self.proxyFileName is not None and \
                not os.path.exists(self.proxyFileName):
@@ -617,7 +621,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             _winreg.DeleteValue(gkey, "x509_user_proxy")
             _winreg.CloseKey(gkey)
         except WindowsError:
-            log.exception("Couldn't delete x509_user_proxy from registry.")
+            log.info("Couldn't delete x509_user_proxy from registry, no big deal.")
 
         if os.environ.has_key('X509_USER_PROXY'):
             del os.environ['X509_USER_PROXY']
@@ -648,8 +652,11 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             _winreg.DeleteValue(gkey, "x509_user_cert")
             _winreg.CloseKey(gkey)
         except WindowsError:
-            log.exception("Couldn't delete x509_user_cert from registry.")
+            log.info("Couldn't delete x509_user_cert from registry, no big deal.")
 
+        if os.environ.has_key('X509_USER_CERT'):
+            del os.environ['X509_USER_CERT']
+            
         self.certFileName = None
 
     def GetKeyFileName(self):
@@ -676,8 +683,11 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             _winreg.DeleteValue(gkey, "x509_user_key")
             _winreg.CloseKey(gkey)
         except WindowsError:
-            log.exception("Couldn't delete x509_user_key from registry.")
+            log.exception("Couldn't delete x509_user_key from registry, no big deal.")
 
+        if os.environ.has_key('X509_USER_KEY'):
+            del os.environ['X509_USER_KEY']
+            
         self.keyFileName = None
         
 class UserConfig(AccessGrid.Config.UserConfig):
