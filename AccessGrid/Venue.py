@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.69 2003-04-04 00:33:09 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.70 2003-04-04 19:34:29 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -147,7 +147,7 @@ class Venue(ServiceBase.ServiceBase):
         # dlist = ":".join(map( lambda data: self.server.IdFromURL(data.GetId()),
         # self.data.values() ))
         
-        string += "data : %s\n" % dlist
+        # string += "data : %s\n" % dlist
         slist = ":".join(map( lambda stream: stream.GetId(),
                               self.streamList.GetStaticStreams() ))
         string += "streams : %s\n" % slist
