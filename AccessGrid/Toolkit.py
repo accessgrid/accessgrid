@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.65 2004-06-01 23:36:48 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.66 2004-06-02 02:46:33 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.65 2004-06-01 23:36:48 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.66 2004-06-02 02:46:33 eolson Exp $"
 
 # Standard imports
 import os
@@ -397,7 +397,7 @@ class WXGUIApplication(Application):
         if not IsWindows():
             agpmFile = os.path.join(AGTkConfig.instance().GetBinDir(),
                                     "agpm.py")
-            agpmCmd = agpmFile + " --wait-for-input --package %f"
+            agpmCmd = agpmFile + " --package %f"
             MimeConfig.instance().RegisterMimeType(
                 "application/x-ag-pkg",
                 ".agpkg", "agpkg file",
