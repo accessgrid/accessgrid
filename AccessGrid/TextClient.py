@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.34 2004-03-12 05:23:11 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.35 2004-05-04 05:05:51 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.34 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.35 2004-05-04 05:05:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -33,7 +33,7 @@ class SimpleTextProcessor:
         self.textConnection = textConnection
         self.outputCallback = outputCallback
         self.log = Log.GetLogger(Log.SimpleTextProcessor)
-        Log.SetDefaultLevel(Log.SimpleTextProcessor, Log.WARN)
+        Log.SetDefaultLevel(Log.SimpleTextProcessor, Log.DEBUG)
         
     def SetProfile(self, profile):
         """
