@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.166 2004-03-22 19:48:44 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.167 2004-03-23 22:56:27 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.166 2004-03-22 19:48:44 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.167 2004-03-23 22:56:27 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -315,7 +315,10 @@ class Venue(AuthorizationMixIn):
         self.AddRequiredRole(Role.Role("AllowedEntry"))
         self.AddRequiredRole(Role.Role("DisallowedEntry"))
         self.AddRequiredRole(Role.Role("VenueUsers"))
-        self.AddRequiredRole(Role.Role("Administrators"))
+        admin = Role.Role("Administrators")
+        admin.SetRequireDefault(1)
+        self.AddRequiredRole(admin)
+        
         # Set parent auth mgr to server so administrators cascades?
 
         log.debug("------------ STARTING VENUE")

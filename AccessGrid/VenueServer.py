@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.126 2004-03-23 17:59:13 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.127 2004-03-23 22:56:27 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.126 2004-03-23 17:59:13 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.127 2004-03-23 22:56:27 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -160,6 +160,7 @@ class VenueServer(AuthorizationMixIn):
         ds = X509Subject.CreateSubjectFromString(di)
         admins = self.authManager.FindRole("Administrators")
         admins.AddSubject(ds)
+        admins.SetRequireDefault(1)
 
         # In the venueserver we default to admins
         self.authManager.SetDefaultRoles([admins])
@@ -450,6 +451,7 @@ class VenueServer(AuthorizationMixIn):
                         xs = X509Subject.CreateSubjectFromString(a)
                         admins = self.authManager.FindRole("Administrators")
                         admins.AddSubject(xs)
+                        admins.SetRequireDefault(1)
             else:
                 setattr(self, option, config[k])
 
