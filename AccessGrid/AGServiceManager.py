@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.24 2003-05-12 22:15:26 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.25 2003-05-15 03:06:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -360,7 +360,14 @@ class AGServiceManager( ServiceBase ):
         #
         # Extract the executable from the service package
         #
-        AGServicePackage( servicePackageFile ).ExtractExecutable( self.servicesDir )
+        package = AGServicePackage( servicePackageFile )
+        package.ExtractExecutable( self.servicesDir )
+
+        #
+        # Open permissions on the service package and executable 
+        #
+        os.chmod( servicePackageFile, 0777 )
+        os.chmod( os.path.join(self.servicesDir, package.exeFile), 0777 )
 
         return servicePackageFile
 
