@@ -53,7 +53,7 @@ class VenueManagementClient(wxApp):
             exitsList = Client.Handle(currentVenue.uri).get_proxy().GetConnections()    
             self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(currentVenue, exitsList)
                    
-        administratorList = self.client.GetAdminstrators()
+        administratorList = self.client.GetAdministrators()
         self.tabs.configurationPanel.administratorsListPanel.administratorsList.Clear()
         if len(administratorList) != 0 :
             for admin in administratorList:
@@ -88,10 +88,10 @@ class VenueManagementClient(wxApp):
             self.__showNoServerDialog('The item is not deleted')
             
     def AddAdministrator(self, name):
-        print "from add admin" + self.client.AddAdministrator(name)
+        self.client.AddAdministrator(name)
 
     def DeleteAdministrator(self, name):
-        self.client.RemoveAdminstrator(name)
+        self.client.RemoveAdministrator(name)
 
    # def ModifyAdministrator(self, name, dnName):
    #    self.client.ModifyAdministrator(name)
@@ -227,10 +227,11 @@ class VenueProfilePanel(wxPanel):
         if data == None:
             self.venueProfileBox.SetLabel("")
             self.description.SetLabel("No venues in server")
-                     
+            
         else:
             self.venueProfileBox.SetLabel(data.name)
             self.description.SetLabel(data.description)
+           # self.icon.SetBitmap(wxBitmap(data.icon))
             print 'in change current venue before we set the exits'
             self.exits.Clear()
             index = 0
@@ -294,14 +295,13 @@ class VenueListPanel(wxPanel):
             self.parent.venueProfilePanel.ChangeCurrentVenue(data, exits)
 
     def OpenAddVenueDialog(self, event):
-        addVenueDialog = AddVenueFrame(self, -1, "")
+        addVenueDialog = AddVenueFrame(self, -1, "", venueList = self.venuesList)
         addVenueDialog.InsertData(self.venuesList)
 
     def OpenModifyVenueDialog(self, event):
 	if(self.venuesList.GetSelection() != -1):    
-		modifyVenueDialog = ModifyVenueFrame(self, -1, "")
-
-		modifyVenueDialog.InsertData(self.venuesList)
+		modifyVenueDialog = ModifyVenueFrame(self, -1, "", venueList = self.venuesList)
+	#	modifyVenueDialog.InsertData(self.venuesList)
 	
     def DeleteVenue(self, event):
         if (self.venuesList.GetSelection() != -1):
@@ -329,6 +329,7 @@ class VenueListPanel(wxPanel):
         clientData =  self.venuesList.GetClientData(item)
         clientData.name = data.name
         clientData.description = data.description
+     #   self.icon.SetBitmap(data.icon)
         print "in modify venue client data!"
         print clientData.uri
         self.application.ModifyVenue(clientData, exitsList)
@@ -559,9 +560,9 @@ class ServicesPanel(wxPanel):
 
 
 
-class VenueParamFrame(wxFrame):
+class VenueParamFrame(wxDialog):
     def __init__(self, *args):
-        wxFrame.__init__(self, *args)
+        wxDialog.__init__(self, *args)
 	self.SetSize(wxSize(400, 350))
 	exitsList = ['Chemistry', 'Physics']
   
@@ -586,15 +587,14 @@ class VenueParamFrame(wxFrame):
         self.removeExitButton = wxButton(self, 180, "Remove Exit")
 	self.exitsLabel = wxStaticText(self, -1, "Exits for your venue:")
         self.exits = wxListBox(self, -1, size = wxSize(150, 100))
-	self.okButton = wxButton(self, 140, "Ok")
-	self.cancelButton =  wxButton(self, 150, "Cancel")
+	self.okButton = wxButton(self, wxID_OK, "Ok")
+	self.cancelButton =  wxButton(self, wxID_CANCEL, "Cancel")
 	self.doLayout() 
 	self.__addEvents()
 	self.Show()
 
     def __addEvents(self):
-        EVT_BUTTON(self, 150, self.Cancel) 
-	EVT_BUTTON(self, 160, self.BrowseForImage)
+     	EVT_BUTTON(self, 160, self.BrowseForImage)
         EVT_BUTTON(self, 170, self.TransferVenue)
         EVT_BUTTON(self, 180, self.RemoveExit) 
     
@@ -607,8 +607,8 @@ class VenueParamFrame(wxFrame):
 	    self.bitmap =  wxBitmap(file, wxBITMAP_TYPE_GIF)
 	    self.icon.SetBitmap(self.bitmap)
 	    self.Layout()
-        else:
-	    imageDialog.Destroy()
+     
+        imageDialog.Destroy()
 			
     def doLayout(self):
         boxSizer = wxBoxSizer(wxVERTICAL)
@@ -666,10 +666,9 @@ class VenueParamFrame(wxFrame):
 	boxSizer.Fit(self)
 	self.SetAutoLayout(1)  
 
-    def Cancel(self,  event):
-        self.Destroy()
-
+  
     def InsertData(self, venues, exits = None):
+        print 'insert data in addVenueFrame'
         index = 0
         while index < venues.Number():
             venue = venues.GetClientData(index)
@@ -728,71 +727,68 @@ class VenueParamFrame(wxFrame):
 
  
 class AddVenueFrame(VenueParamFrame):
-    def __init__(self, parent, id, title):
+    def __init__(self, parent, id, title, venueList = list):
         VenueParamFrame.__init__(self, parent, id, title)
 	self.parent = parent
-	self.__addEvents()
+        self.InsertData(venueList)
+        if (self.ShowModal() == wxID_OK ):
+            self.Ok()
+        self.Destroy()
  
-    def __addEvents(self):
-        EVT_BUTTON(self, 140, self.Ok)   
+  #  def __addEvents(self):
+   #     EVT_BUTTON(self, 140, self.Ok)   
     
-    def Ok(self, event):
+    def Ok(self):
         if self.RightValues():
             index = 0
             exitsList = []
             while index < self.exits.Number():
                 exitsList.append(self.exits.GetClientData(index))
                 index = index + 1
-                
+
+            print 'it is weird exits doesnt show up...'
             data = VenueDescription(self.title.GetValue(), \
                          self.description.GetValue(), "", None)
-        
-            self.parent.InsertVenue(data, exitsList)
-            self.Destroy()
 
+            self.parent.InsertVenue(data, exitsList)
+          
             
 class ModifyVenueFrame(VenueParamFrame):
-    def __init__(self, parent, id, title):
+    def __init__(self, parent, id, title, venueList = list):
         VenueParamFrame.__init__(self, parent, id, title)
 	self.parent = parent
-	self.__addEvents()
- 
-    def __addEvents(self):
-        EVT_BUTTON(self, 140, self.Ok)   
+        self.InsertData(venueList)
+        if (self.ShowModal() == wxID_OK ):
+            self.Ok()
+        self.Destroy()
     
-    def Ok(self, event):
+    def Ok(self):
         if self.RightValues():
             index = 0
             exitsList = []
             while index < self.exits.Number():
                 exitsList.append(self.exits.GetClientData(index))
                 index = index + 1
-                
+
+            print 'it is weird exits doesnt show up...'
             data = VenueDescription(self.title.GetValue(), \
                          self.description.GetValue(), "", None)
             self.parent.ModifyCurrentVenue(data, exitsList)
-            self.Destroy()
-
+           
     def InsertData(self, venuesList):
+        print 'insert data in modify venue'
         item = venuesList.GetSelection()
         data = venuesList.GetClientData(item)
+        print 'datas name '+data.name
         self.title.AppendText(data.name)
         self.description.AppendText(data.description)
+        #self.icon.SetBitmap(data.icon)
         exitsList = Client.Handle(data.uri).get_proxy().GetConnections()
         VenueParamFrame.InsertData(self, venuesList, exitsList)
                            
 #        bitmap =  wxBitmap("IMAGES/icon.gif", wxBITMAP_TYPE_GIF)
 #	self.icon.SetBitmap(bitmap)
 	self.Layout()
-#	item = 0
-	#exitList = data.GetExits()
-	#index = 0
-	#if len(exitList) != self.exits.Number():
-		#print 'error in VenueManagement.py::ModifyVenueFrame::InsertData'
-
-    #	while index < len(exitList):
-	#	self.exits.Check(index, exitList[index])
-		#index = index + 1
 
 
 class AdministratorParamFrame(wxDialog):
@@ -841,7 +837,6 @@ class AddAdministratorFrame(AdministratorParamFrame):
         AdministratorParamFrame.__init__(self, parent, id, title)
         self.parent = parent
         if (self.ShowModal() == wxID_OK ):
-            print 'click ok and send name to parent' + self.name.GetValue()
             self.parent.InsertAdministrator(self.name.GetValue())
         
         self.Destroy();
