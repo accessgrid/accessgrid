@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.23 2003-04-29 23:04:20 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.24 2003-04-30 01:42:16 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -417,6 +417,6 @@ def DaemonizeUnix(self):
 #
 
 if sys.platform == WIN:
-    Deamonize = lambda : None
+    Daemonize = lambda : None
 else:
     Daemonize = DaemonizeUnix
