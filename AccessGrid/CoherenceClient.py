@@ -6,14 +6,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceClient.py,v 1.8 2003-01-17 16:49:32 judson Exp $
+# RCS-ID:      $Id: CoherenceClient.py,v 1.9 2003-01-21 11:50:55 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 from threading import Thread
 import socket
-import pickle
+import string
 
 class CoherenceClient(Thread):
     """
@@ -21,17 +21,43 @@ class CoherenceClient(Thread):
     Service to maintain state among a set of clients. This is done by sending
     coherence events through the event service.
     """
-    def __init__(self, host = '', port = 0, callback = None):
+    rbufsize = -1
+    wbufsize = 0
+    
+    def __init__(self, host = '', port = 0, callback = None, id = ''):
         """
         The CoherenceClient constructor takes a host, port and a
         callback for coherence data.
         """
+        # Standard initialization
         Thread.__init__(self)
         self.host = host
         self.port = port
-        self.callback = callback
+        if callback == None:
+            self.callback = self.__TestCallback
+        else:
+            self.callback = callback
+            
+        # Setup socket stuff
+        self.__SetupSocket(host, port)
+        
+        # Start the heartbeat thread
+        self.heartbeat = Heartbeat(self, 30, id)
+        self.heartbeat.start()
+        
+    def __SetupSocket(self, host, port):
+        """
+        __setupSocket is a private method used to consolidate socket
+        initialization code so that it can be easily modified without having
+        to delve into the rest of the coherence client implementation.
+        """
+        # Open the socket part
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((host, port))
+        
+        # Some cool trick for IO from SocketServer.py
+        self.rfile = self.sock.makefile('rb', self.rbufsize)
+        self.wfile = self.sock.makefile('wb', self.wbufsize)
         
     def run(self):
         """
@@ -39,42 +65,68 @@ class CoherenceClient(Thread):
         processing Coherence data provided by a CoherenceService.
         """
         while self.sock != None:
-#FIXME - bad: assumed message length limit
-            pickledData = self.sock.recv(10000)
-            data = pickle.loads( pickledData )
-            self.callback( data )
+            try:
+                data = self.rfile.readline()
+                self.callback(data)
+            except:
+                print "Server closed connection!"
+                self.sock.close()
+                self.heartbeat.stop()
+                self.sock = None
 
-    def send(self, ):
+    def send(self, data):
         """
         This method sends data to the Coherence Service.
         """
         if self.sock != None:
-            self.sock.send(data)
-        
-    def TestServe(self, label):
+            self.wfile.write(data)
+         
+    def __TestCallback(self, data):
         """
-        test_serve is used to send a constant stream of events with a user
-        supplied text label, a timestamp and a hostname of the CoherenceClient.
+        The __TestCallback method is used to test the CoherenceService, it
+        simply prints out Coherence Events received over the CoherenceService.
+        This is kept private since it really isn't for general use.
+        """
+        print "Got Data from Coherence: " + data[:-1]
+    
+class Heartbeat(Thread):
+    """
+    This class is derived from Thread and provides the CoherenceClient with a
+    constant periodic heartbeat sent to the Virtual Venue.
+    """
+    def __init__(self, coherenceClient = None, period = 15, id = ''):
+        """
+        The constructor takes the CoherenceClient and the number of seconds
+        between heartbeats. The default period for heartbeats is 15 seconds.
+        """
+        Thread.__init__(self)
+        self.client = coherenceClient
+        self.period = period
+        self.id = id
+        self.running = 0
+
+    def run(self):
+        """
+        The run method starts the thread looping sending a heartbeat then
+        sleeping until the next time.
         """
         import time
-        while self.sock != None:
-            data = "%s : %s : %s" % (label, socket.getfqdn(),
-                                     time.asctime())
-            self.send(data)
-            time.sleep(1)
+        self.running = 1
+        while self.running:
+            # Data is a string, simply parsable: Heartbeat id time, e.g.
+            # Heartbeat--2003:1:21:0:0:1:1:21:0
+            evt = string.join(('Heartbeat', self.id, 
+                               string.join(map(str, time.localtime()), ':')), 
+                               '-')
+            print "HB Sending: %s" % evt
+            self.client.send(evt + '\n')
+            time.sleep(self.period)
             
-    def TestCallback(data):
-        """
-        The testCallback function is used to test the CoherenceService, it
-        simply prints out Coherence Events received over the CoherenceService.
-        """
-        print "Got Data from Coherence: " + data
-    
+    def stop(self):
+        """ This method stops the VenueClientHeartbeat."""
+        self.running = 0
+        
 if __name__ == "__main__":
     import sys
-    coherenceClient = CoherenceClient(sys.argv[1], int(sys.argv[2]),
-                                      CoherenceClient.TestCallback)
+    coherenceClient = CoherenceClient(sys.argv[1], int(sys.argv[2]))
     coherenceClient.start()
-
-    if len(sys.argv) > 3:
-        coherenceClient.test_serve(sys.argv[1])
