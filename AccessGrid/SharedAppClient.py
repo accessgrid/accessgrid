@@ -93,12 +93,13 @@ class SharedAppClient:
         try:
             # Join the application object with your client profile
             (self.__publicId, self.__privateId) = self.__appProxy.Join(clientProfile)
-        except Exception, e:
+        except:
 #        except Client.MethodFailed, e:
 
             self.log.exception("SharedAppClient.Join failed: %s",
                                self.__appUrl)
             try:
+                # Legacy call for servers running 2.1.2 software.
                 oldAppProxy = Client.SecureHandle(self.__appUrl).GetProxy()
                 (self.__publicId, self.__privateId) = oldAppProxy.Join()
                 self.log.info("SharedAppClient.Join: %s using old software",
@@ -234,6 +235,33 @@ class SharedAppClient:
             raise Exception, "Failed to get data for key '%s'" %dataKey
         
         return data
+
+    def UpdateDataCache(self, dataKey = None):
+        '''
+        Make sure we have the most recent value for a cached data key.
+
+        **Arguments**
+        
+        *dataKey* Unique id of data available in the service. If dataKey is
+        None, update the entire cache.
+        '''
+
+        if not dataKey:
+            for key in self.__dataCache.keys():
+                try:
+                    data = self.__appProxy.GetData(self.__privateId, key)
+                    self.__dataCache[key] = data
+                except:
+                    # Log the exception and continue.
+                    self.log.exception("SharedAppClient.GetData: Failed to get data for key %s" %dataKey)
+            return
+        
+        try:
+            data = self.__appProxy.GetData(self.__privateId, dataKey)
+            self.__dataCache[dataKey] = data
+        except:
+            self.log.exception("SharedAppClient.GetData: Failed to get data for key %s" %dataKey)
+            raise Exception, "Failed to get data for key '%s'" %dataKey
   
     def GetPublicId(self):
         '''
@@ -291,12 +319,18 @@ class SharedAppClient:
         *appId* ID associated with the application service we are connected to.
         '''
         
-        # Check GetState instead of GetId; GetId exists on old servers but with no
-        # private id as argument.
-
         try:
             id = self.__appProxy.GetId(self.__privateId)
         except Client.MethodNotFound, e:
+
+            try:
+                # Legacy call for servers running 2.1.2 software.
+                oldAppProxy = Client.SecureHandle(self.__appUrl).GetProxy()
+                id = oldAppProxy.GetId()
+            except:
+                self.log.exception("SharedAppClient.GetApplicationId: Failed to get application ID")
+                raise Exception, "Failed to get application ID"
+                
             self.log.exception("SharedAppClient.GetApplicationID: Failed to get application ID")
             raise Exception, "The server you are connecting to is running old software. This method is not implemented in that version." 
         except:
@@ -383,8 +417,8 @@ class SharedAppClient:
         except Client.MethodNotFound, e:
             self.log.exception("SharedAppClient.SetParticipantStatus: Failed to set participant status")
             raise Exception, "The server you are connecting to is running old software. This method is not implemented in that version." 
-        except Exception, e:                                       
-            if isinstance(e, SOAPpy.Types.faultType) and e.faultstring.startswith("No method"):
+        except Exception, e:                                      
+            if isinstance(e, SOAPpy.Types.faultType) and e.faultstring.startswith("No method")
                 self.log.info("SharedAppClient.SetParticipantProfile: Failed to set participant profile due to older version of server.")
             else:
                 self.log.exception("SharedAppClient.SetParticipantProfile: Failed to set participant profile")
