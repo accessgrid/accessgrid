@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.61 2004-04-21 17:12:27 lefvert Exp $
+# RCS-ID:      $Id: setup.py,v 1.62 2004-04-21 18:24:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,7 @@ import os
 import sys
 import glob
 import string
+import traceback
 
 """
 Setup script for the Access Grid Toolkit. The module is described
@@ -41,7 +42,12 @@ if dest is not None:
            os.path.join("doc", "Developer"),
            "-n", "Access Grid Toolkit", "-u",
            "http://www.mcs.anl.gov/fl/research/accessgrid/", "AccessGrid"]
-    spawn(cmd, verbose=1)
+    print "cmd = ", cmd
+    try:
+        spawn(cmd, verbose=1)
+    except Exception, e:
+        print "** Error generating documentation"
+        traceback.print_exc()
 
 win32_scripts = list()
 win32_data = [
@@ -195,4 +201,3 @@ functionality of the Access Grid.
     #    Data Files list -- these are things like the services, etc.
     data_files = inst_data
 )
-
