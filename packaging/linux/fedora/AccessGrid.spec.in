@@ -36,7 +36,6 @@ URL:		http://www.accessgrid.org
 Vendor:		Argonne National Laboratory
 Source:		%{name}-%{version}-%{release}.tar.gz
 BuildRoot:	%{buildroot}
-Requires:	python >= 2.2.3
 Requires:	wxPython
 Requires:	globus-accessgrid
 Requires:	alsa-lib >= 1.0
@@ -46,6 +45,8 @@ Requires:	python-optik
 %if %{has_fc1_appmenu_file}
 Requires:	patch
 %endif
+BuildRequires:	globus-accessgrid
+BuildRequires:	wxPython
 Obsoletes:	AccessGrid-BridgeServer
 Obsoletes:	AccessGrid-VenueServer
 Obsoletes:	AccessGrid-VenueClient
@@ -61,14 +62,7 @@ This module provides the core components to start participating in the Access Gr
 %prep
 %setup -n AccessGrid-%{version} -c
 
-#
-# The following builds the package using setup.py
-# It starts by zipping up the services in the services directory
-# then builds the package
-#
-
 %build
-
 
 #
 # The following installs the package in the buildroot,
@@ -80,7 +74,6 @@ This module provides the core components to start participating in the Access Gr
 # Move node services and shared apps into etc 
 mv NodeServices etc/AccessGrid
 mv SharedApplications etc/AccessGrid
-rm -rf etc/AccessGrid/SharedBrowser*
 rm -f share/applications/AccessGrid/DevelopersDocumentation.desktop
 mkdir etc/AccessGrid/Services
 mkdir etc/AccessGrid/PackageCache
@@ -91,6 +84,11 @@ mkdir usr
 mv share usr/share
 mv lib usr/lib
 mv bin usr/bin
+
+# compile python modules
+. /etc/profile.d/globus.sh
+python -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'/usr/lib/python%{pyver}",10,"/usr/lib/python%{pyver}", 1)'
+python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'/usr/lib/python%{pyver}",10,"/usr/lib/python%{pyver}")'
 
 
 #
@@ -150,38 +148,16 @@ mv bin usr/bin
 
 #
 # AccessGrid package postinstall commands
-# - Make a file, /tmp/AccessGrid-Postinstall.py, run it, then delete.
-#   This script will compile all the AccessGrid python modules
 #
 
 %post
-cat <<EOF > /tmp/AccessGrid-Postinstall.py
-#!/usr/bin/python
-import AccessGrid
-import AccessGrid.hosting
-import os
-import os.path
-import glob
-import sys
-
-def modimport(module):
-    for module_file in glob.glob(os.path.join(module.__path__[0], "*.py")):
-	try:
-            __import__(module.__name__ + "." + os.path.basename(module_file[:-3]))
-	except:
-	    pass
-
-sys.stdout.write("Compiling Access Grid Python modules.... ")
-modimport(AccessGrid)
-modimport(AccessGrid.hosting)
-modimport(AccessGrid.Platform)
-sys.stdout.write("Done\n")
-EOF
-. /etc/profile.d/globus.sh
-chmod +x /tmp/AccessGrid-Postinstall.py
-/tmp/AccessGrid-Postinstall.py
-rm -f /tmp/AccessGrid-Postinstall.py
-agpm.py --post-install
+rm -f /etc/AccessGrid/Config/ApplicationDatabase
+rm -rf /etc/AccessGrid/SharedApplications/Shared_Browser
+rm -rf /etc/AccessGrid/SharedApplications/Shared_Presentation
+rm -rf /etc/AccessGrid/SharedApplications/Shared_Question_Tool
+rm -rf /etc/AccessGrid/SharedApplications/VenueVNC
+agpm.py --post-install 2>&1 > /dev/null
+chmod a+x /etc/AccessGrid/SharedApplications/VenueVNC/vncviewer
 
 %if %{has_fc1_appmenu_file}
   # patch /etc/X11/desktop-menus/applications.menu to add an AccessGrid menu
@@ -197,41 +173,16 @@ agpm.py --post-install
 
 #
 # AccessGrid package pre-uninstall
-# - Create a file, /tmp/AccessGrid-Preuninstall.py, run it, then delete it.
-#   This script will remove those compiled AccessGrid python modules
+#
 
 %preun
-cat <<EOF > /tmp/AccessGrid-Preuninstall.py
-#!/usr/bin/python
-import AccessGrid
-import AccessGrid.hosting
-import AccessGrid.Security
-import AccessGrid.Security.wxgui
-import AccessGrid.Platform
-import AccessGrid.Platform.unix
-import os
-import os.path
-import glob
-
-def delcompiled(module):
-    for module_file in glob.glob(os.path.join(module.__path__[0], "*.pyc")):
-        try:
-            os.remove(module_file)
-        except os.error:
-            pass
-
-delcompiled(AccessGrid.Security.wxgui)
-delcompiled(AccessGrid.Security)
-delcompiled(AccessGrid.Platform.unix)
-delcompiled(AccessGrid.Platform)
-delcompiled(AccessGrid.hosting.SOAPpy)
-delcompiled(AccessGrid.hosting)
-delcompiled(AccessGrid)
-EOF
-. /etc/profile.d/globus.sh
-chmod +x /tmp/AccessGrid-Preuninstall.py
-/tmp/AccessGrid-Preuninstall.py
-rm -f /tmp/AccessGrid-Preuninstall.py
+if [ $1 = 0 ]; then
+  # clean up non-RPM managed files and dirs
+  rm -f /etc/AccessGrid/Config/ApplicationDatabase
+  rm -rf /etc/AccessGrid/SharedApplications/Shared_Browser
+  rm -rf /etc/AccessGrid/SharedApplications/Shared_Presentation
+  rm -rf /etc/AccessGrid/SharedApplications/Shared_Question_Tool
+  rm -rf /etc/AccessGrid/SharedApplications/VenueVNC
 
 %if %{has_fc1_appmenu_file}
   # remove AccessGrid menu from /etc/X11/desktop-menus/applications.menu
@@ -244,6 +195,7 @@ rm -f /tmp/AccessGrid-Preuninstall.py
       patch -p0 -N -t -l -s -R < $APPMENU_PATCH
   fi
 %endif
+fi
 
 #
 # After the RPMs have been successfully built remove the temporary build
@@ -260,8 +212,11 @@ rm -rf %{buildroot}
 
 %changelog
 
-* Mon May 23 2004 Douglas Kosovic <douglask@itee.uq.edu.au>
+* Mon Aug 30 2004 Douglas Kosovic <douglask@itee.uq.edu.au>
 - Merged Fedora Core 1 & 2 AccessGrid.spec.in files into this single file
 
-
+* Mon Sep 13 2004 Douglas Kosovic <douglask@itee.uq.edu.au>
+- clean up some non-RPM managed files and dirs in preun step
+- moved python module compiling from post to install step
+- generat optimized python bytecode with -O python switch
 
