@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.33 2004-07-14 19:49:18 turam Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.34 2004-07-15 20:23:08 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.33 2004-07-14 19:49:18 turam Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.34 2004-07-15 20:23:08 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -702,8 +702,8 @@ class EventService:
         Thread main routine for event queue handling.
         """
 
-        try:
-            while self.outQEvt.isSet():
+        while self.outQEvt.isSet():
+            try:
                 log.info("EventServiceAsynch: recv handler waiting for data")
                 cmd = self.outQueue.get()
                 log.info("EventServiceAsynch: recv handler received %s", cmd)
@@ -728,8 +728,8 @@ class EventService:
                     log.error("QueueHandler received unknown command %s", cmd[0])
                     continue
 
-        except:
-            log.exception("Body of QueueHandler threw exception")
+            except:
+                log.exception("Body of QueueHandler threw exception")
 
     def HandleEvent(self, event, connObj):
         """
@@ -808,9 +808,12 @@ class EventService:
         connId = connObj.GetId()
         connChannel = self.findConnectionChannel(connId)
 
-        log.debug("EventServiceAsynch: EventConnection: Removing client connection to %s",
+        if connChannel:
+            log.debug("EventServiceAsynch: EventConnection: Removing client connection to %s",
                   connChannel.id)
-        connChannel.RemoveConnection(connObj)
+            connChannel.RemoveConnection(connObj)
+        else:
+            log.debug("EventServiceAsynch: EOF on connection that doesn't belong to a channel")
 
     def HandleEventForDisconnectedChannel(self, event, connObj):
         """

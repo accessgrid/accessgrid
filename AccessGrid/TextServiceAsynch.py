@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.29 2004-07-15 18:06:08 turam Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.30 2004-07-15 20:22:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.29 2004-07-15 18:06:08 turam Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.30 2004-07-15 20:22:25 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -567,9 +567,9 @@ class TextService:
         Thread main routine for event queue handling.
         """
 
-        try:
+        while 1:
+            try:
 
-            while 1:
                 log.info("Queue handler waiting for data")
                 cmd = self.queue.get()
                 log.info("Queue handler received %s", cmd)
@@ -592,8 +592,8 @@ class TextService:
                     log.error("QueueHandler received unknown command %s", cmd[0])
                     continue
 
-        except:
-            log.exception("Body of QueueHandler threw exception")
+            except:
+                log.exception("Body of QueueHandler threw exception")
 
     def HandleEvent(self, event, connObj ):
         """
@@ -655,7 +655,6 @@ class TextService:
         """
 
         connId = connObj.GetId()
-        connChannel = self.findConnectionChannel(connId)
         self.CloseConnection(connObj)
 
     def HandleEventForDisconnectedChannel(self, event, connObj):
