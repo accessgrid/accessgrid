@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.46 2003-09-17 22:39:04 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.47 2003-09-18 16:35:35 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.46 2003-09-17 22:39:04 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.47 2003-09-18 16:35:35 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -76,10 +76,11 @@ class DataNotFound(Exception):
 
 class DataService(ServiceBase):
     '''
-    The DataService class is used for venue data storage. Each venue calls the
-    RegisterVenue soap method to create a venue datastore. The data service has a
-    transfer engine that is used for data upload and download by all datastores.
-    The venue communicates to its datastore via a SOAP interface
+    The DataService class is used for venue data storage. Each venue
+    calls the RegisterVenue soap method to create a venue
+    datastore. The data service has a transfer engine that is used for
+    data upload and download by all datastores.  The venue
+    communicates to its datastore via a SOAP interface
     '''
    
     def __init__(self, path, port, webServicePort):
