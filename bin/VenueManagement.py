@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 #-----------------------------------------------------------------------------
 # Name:        VenueManagement.py
 # Purpose:     This is the user interface for Virtual Venues Server Management
@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.70 2003-08-04 22:16:07 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.71 2003-08-04 22:19:17 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1829,7 +1829,7 @@ class ModifyVenueFrame(VenueParamFrame):
         
 class AdministratorParamFrame(wxDialog):
     def __init__(self, *args):
-        wxDialog.__init__(self, *args)
+        wxDialog.__init__(self, args)
         self.Centre()
         self.SetSize(wxSize(400, 40))
         self.text = wxStaticText(self, -1, "Please, fill in the distinguished name for the administator you want to add.")

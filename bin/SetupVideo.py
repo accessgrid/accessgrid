@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 #-----------------------------------------------------------------------------
 # Name:        SetupVideo.py
 # Purpose:     
@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: SetupVideo.py,v 1.5 2003-03-14 16:31:42 turam Exp $
+# RCS-ID:      $Id: SetupVideo.py,v 1.6 2003-08-04 22:19:17 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
