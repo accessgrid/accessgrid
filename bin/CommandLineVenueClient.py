@@ -5,7 +5,7 @@
 # Author:      Eric Olson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: CommandLineVenueClient.py,v 1.6 2003-10-29 20:45:50 eolson Exp $
+# RCS-ID:      $Id: CommandLineVenueClient.py,v 1.7 2003-12-12 02:04:45 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -285,6 +285,7 @@ class CmdLineController(cmd.Cmd, Thread):
         We only have to pass the init to our super class for Thread
         setup and keep track of our callbacks.
         """
+        cmd.Cmd.__init__(self)
         self.cmdLineVC = cmd_line_venueclient
         Thread.__init__(self)
         self.prompt = "VenueClient>" 
