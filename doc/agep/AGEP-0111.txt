@@ -1,8 +1,8 @@
-===================================
-Shared Application Client for 2.1.3
-===================================
+==========================
+Shared Application Client
+==========================
 
-:version: $Revision: 1.1 $
+:version: $Revision: 1.2 $
 :author: Susanne Lefvert <lefvert@mcs.anl.gov>
 :status: Draft
 :contact: ag-tech@mcs.anl.gov
@@ -41,7 +41,7 @@ SharedAppClient Specification
   * Connect(appServiceUrl)
   * Shutdown()
   * RegisterEventCallback (name, callback)
-  * SendEvent(event)
+  * SendEvent(eventType, data)
   * GetData(dataKey)
   * SetData(dataKey, dataValue)
   * GetPublicId()
@@ -92,6 +92,11 @@ References
 
     .. [1] Reference implementation: http://www-unix.mcs.anl.gov/~lefvert/AGEP/AGEP.html (AGEP Shared Application Client for AGTk 2.0)
  
+Comments
+=========
+    
+    * Cache data in shared app client - change based on events
+    * Create callback table in shared app client
 
 Copyright
 =========

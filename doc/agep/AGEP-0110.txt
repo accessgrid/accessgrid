@@ -1,17 +1,15 @@
-====================================
-Shared Application Changes for 2.1.3 
-====================================
+===============================
+Finishing Shared Applications
+===============================
 
-:version: $Revision: 1.1 $
+:version: $Revision: 1.2 $
 :author: Susanne Lefvert <lefvert@mcs.anl.gov>
 :status: Draft
 :contact: ag-tech@mcs.anl.gov
 
 Abstract
 ========
-
     This enhancement proposal includes changes and additions to the shared application implementation and interface currently available in AGTk 2.0.  The suggested modifications address several issues that will enhance the shared application infrastructure in the toolkit. 
-
 
 Application Monitor
 ===================
@@ -21,10 +19,8 @@ Overview
 
     To increase usability of shared applications, it would be beneficial to be able to create a monitor that remotely can connect to a shared application and display application state including name, description, and data as well as current participants and their status (see feature request in Bugzilla, [1]).  Ideally, the Application Monitor would also include event logging that would make it possible to display who is doing what, for example, who is changing a web page in the shared browser. 
 
-
 Design
 --------
-
     In order to display participant and application information, this have to be stored somewhere accessible for the monitor.  The monitor also needs to get updated whenever the application state is changed.  With the AppService.py class already containing application state and methods to retrieve the state, minor additions to the AppService would allow us to use this interface for monitoring purposes. 
 
 Specifications
@@ -35,25 +31,34 @@ Methods:
 
     **Modifications to SharedApps.py interface:**
 
-    * void Join(ClientProfile = None)
-    
+    * (privateId, publicId) Join(ClientConnectionId = None)
+
     **Additions to SharedApps.py interface:**
 
-    * [ParticipantDescription] GetParticipants()
+    * [ParticipantDescription] GetParticipants(privateId)
+
     * void SetParticipantStatus(privateId, statusString)
-    * {key:value} GetAllData()
-    * AppState GetState()
+
+    * [key] GetDataKeys(privateId)
+
+    * {key:value} GetAllData(privateId)
+
+    * AppState GetState(privateId)
 
 New Events:
 '''''''''''
+
+    New events will be introduced in AppService.py
 
     * PARTICIPANT_JOIN (distributed in Join method)
     * PARTICIPANT_LEAVE (distributed in Leave method)
     * UPDATE_PARTICIPANT_STATUS (distributed in SetParticipantStatus method)
     * SET_DATA (distributed in SetData method)
-        
+
 New Descriptions:
 '''''''''''''''''
+
+    New descriptions will be introduced in AppService.py
 
     AppParticipantDescription(appId, clientProfile, status)
 
@@ -62,18 +67,21 @@ New Descriptions:
         * *status* - current status for client (string)
 
     AppDataDescription(appId, key, value)
-    
+
         * *appId* - unique ID of client sending this data
         * *key* - data key
         * *value* - data value
-        
 
 Reference Implementation
 -------------------------
-    Sample code can be found at [2].  
+
+    Sample code can be found at [2]. 
+
+    **Note:** Currently, not reflecting the design in this document. Needs to be updated. 
 
 Relevant classes:
 '''''''''''''''''
+
     * Descriptions.py - New descriptions
     * Events.py - New events
     * AppService.py - Added and modified methods
@@ -82,43 +90,34 @@ Relevant classes:
 
 Rationale
 ----------
-    By adding a ClientProfile as parameter to the Join method, information about participants can be saved in the AppService.py class.  Even though the ClientProfile includes a unique id, the private application ID created in the Join method will still act as unique identifier for application clients.
 
-    **Why not use the private ID from the client profile as unique app ID?**
+    By adding a client connection ID as parameter to the Join method, information about participants can be retreived from the Venue and saved in the AppService.py class.  The private application ID created in the Join method will still act as unique identifier for application clients.
 
-    1. If the private ID found in the ClientProfile would be used as 
-       unique application ID, a participant can not open more than one shared 
-       application client successfully at the same time.  
-  
-    2. To preserve backwards compatibility, the clientProfile parameter
-       in Join can be set to None. Another private ID is then necessary to 
-       identify the client.
-    
-    3. The application monitor should be able to run independently, invisible 
-       for people participating in the application session.  To achieve this, the 
-       monitor would join with ClientProfile set to None.  Another private ID is 
-       then necessary to identify the participant.    
+    **Why not use the client connection ID from the join method as unique app ID?**
+
+    1. If the client connection ID would be used as unique application ID, a participant can not open more than one shared application client successfully at the same time.  
+
+    2. To preserve backwards compatibility, the client connection ID parameter in Join can be set to None. Another private ID is then necessary to identify the client.
+
+    3. The application monitor should be able to run independently, invisible for people participating in the application session.  To achieve this, the monitor would join with client connection ID set to None.  Another private ID is then necessary to identify the participant.    
 
     **Why not use AppParticipantDescription/AppDataDescription as parameters instead of privateId/(dataKey,dataValue)?**
 
     To preserve backwards compatibility.  For example, the Join method would then return an AppParticipantDescription instead of privateId and that would break old shared applications.
 
     **Why creating new descriptions?**
-    
+
     The application service has to notify when state information changes in order for a monitor to update properly. Events that are distributed from the event service take a data parameter that can be used for this purpose.  Data could be sent as tuples, however, it is easier to document more complex messages that are exchanged between SOAP connections if they are created as description classes.
+
+    **Why not use SetData for participant status updates?**
+    
+    Participants and their status are something that will be present in all shared applications and can be separated from the data dictionary. If we would remove the SetParticipantStatus method from the interface, it is impossible to tell which data is for status updates and which is not, consequently, making it hard to implement a general application monitor that will work for all shared applications. For example, some application clients might decide to send status as a "status" event, and others as "statusEvent".  The application monitor would then have to be re-implemented for each new application.
+
 
 Interoperability Issues
 ------------------------
 
-    Already implemented shared applications will not be affected by the changes described.  However, to be displayed as a participant in an application monitor, the shared application has to include a ClientProfile when calling the Join method.  Also, if more status values other than 'connected' are desirable for participants, calls to the SetParticipantStatus method have to be added.
-
-
-Open Issues
------------
-
-    Should new events be introduced in Events.py? 
-
-    Should new descriptions be added to Descriptions.py?
+    Already implemented shared applications will not be affected by the changes described.  However, to be displayed as a participant in an application monitor, the shared application has to include a client connection ID when calling the Join method.  Also, if more status values other than 'connected' are desirable for participants, calls to the SetParticipantStatus method have to be added.
 
 
 Application distribution information
@@ -132,132 +131,79 @@ Overview
 Design
 -------
 
-    Information about shared applications are summarized in the **<application name>.app** file. It would be appropriate to extend that file to include installer location that would get loaded into the description of the application.  The ApplicationDescription class currently has an unused **description** parameter that is shown in the **Properties** dialog of an application and could be used for this purpose.  By adding a description field in the .app file, the developer can decide which information to include, for example installation URL, author, and so forth.  This solution would also require minor UI changes to the properties dialog so that random length descriptions always are visible.
+    The ApplicationDescription class currently has an unused **description** parameter that is shown in the **Properties** dialog of an application that could be used for this purpose.  The Venue Client would open a dialog for adding a description to the application before it is placed under the **Application** heading.  Additionally, the properties dialog for applications, data, and so forth, should be editable.
 
-    Additionally, in order to save the application description, the application database class would get extended with methods for handling description storage.
-
-
-    **Example -  SharedPresentation.app file:**
-
-    ::
-
-        [application]
-
-        name = Shared Presentation
-        mimetype = application/x-ag-shared-presentation
-        extension = sharedpresentation
-        files = SharedPresentation.py
-        description = You can download application from: http://www.install_url.com
-
-        [commands]
-        Open = %(python)s SharedPresentation.py -v %(venueUrl)s -a %(appUrl)s
-
-
-    
 Implementation
---------------
-    **Additions to AppDb.py**
+---------------
 
-    *New Methods*
-        ::
-        
-            def AddDescription(self, name, description):
-                namekey = self._GetPrivName(name)
-                descriptionStr = self.defaultSeparator.join(["descriptions", namekey])
-            	self.AppDb[descriptionStr] = description
+**In VenueClientUIClasses**
 
-            	self._Flush()
-
-            def _GetDescription(self, pName):
-            	for key in self.AppDb.keys():
-                    (section, option) = key.split(self.defaultSeparator)
-                    if section == "descriptions":
-                        if option == pName:
-                            return self.AppDb[key]
-
-    
-
-
-    *In RegisterApplication Method*
-
-        self.AddDescription(name, description)
-
-    *Change RegisterApplication Interface*
-
-        def RegisterApplication(self, name, mimeType, extension, commandDict,
-                                fileList, srcPath, dstPath=None, description = None):
-
-    *In ListAppsAsAppDescriptions Method*
-        ::
-        
-	    description = self._GetDescription(option)
-            apps.append(ApplicationDescription(None, name, description, None, mimetype))
-
-
-    **Additions to agpm.py**
-
-    *In main*
-	
 	::
 
-	    appdb.RegisterApplication(appName, appInfo["application.mimetype"], 
-	                              appInfo["application.extension"], commands, 
-                                      files, workingDir, description = appInfo["application.description"])
+	    def StartApp(self, app, event=None):
+           	dlg = AddAppDialog(self, "Add Application", app)
+              	    if dlg.ShowModal() == wxID_OK:
+                	description = dlg.GetDescription()
+			dlg.Destroy()
 
-	
+            	    else:
+			# User canceled, application will not be added
+			dlg.Destroy()
+			return	
+
+        	appDesc = self.app.venueClient.client.CreateApplication( app.name,
+                                                                 	description,
+                                                                 	app.mimeType )	
+
 
 Add Application User Scenario
 ==============================
 
 Overview
 ---------
+
     Current user scenario for adding applications seem confusing to participants. It is easy to add several shared applications that are named the same, consequently making it hard to know which session to join (see feature request in Bugzilla, [4]).  
 
 Design
 -------
-    By allowing participants to re-name a shared application before adding it to the **Application** heading, the separation of applications would be more obvious.  This is a simple UI fix that would let a participant input the application name and change the name parameter in the ApplicationDescription that is created and distributed.
+
+    By allowing participants to re-name a shared application before adding it to the **Application** heading, the separation of applications would be more obvious.  This is a simple UI fix that would let a participant input the application name and change the name parameter in the ApplicationDescription that is created and distributed.  The dialog would include both a name and a description field for the application, see earlier discussion about **Application Distribution Information**. 
 
 Implementation
 --------------
-    
+
 	**In VenueClientUIClasses**
+
 	::
-	
+
 	    def StartApp(self, app, event=None):
            	dlg = AddAppDialog(self, "Add Application", app)
-		
               	    if dlg.ShowModal() == wxID_OK:
                 	name = dlg.GetName()
 			dlg.Destroy()
-                
+
             	    else:
 			# User canceled, application will not be added
 			dlg.Destroy()
 			return	
-		
+
 		appName = app.name + ' - ' + name
-         
         	appDesc = self.app.venueClient.client.CreateApplication( appName,
                                                                  	app.description,
                                                                  	app.mimeType )	
 
-
 	**Note:** CreateApp might be a more appropriate name for this method since the application is not actually started.
-
 
 References
 ===========
     .. [1] http://bugzilla.mcs.anl.gov/accessgrid/show_bug.cgi?id=322
-
     .. [2] Reference implementation: http://www-unix.mcs.anl.gov/~lefvert/AGEP/AGEP.html (AGPE Shared Application Changes for AGTk 2.0 - App Monitor)
-    
     .. [3] http://bugzilla.mcs.anl.gov/accessgrid/show_bug.cgi?id=317
-
     .. [4] http://bugzilla.mcs.anl.gov/accessgrid/show_bug.cgi?id=311
 
 Copyright
 =========
-    
+
     This document is Copyright 2003, The University of Chicago/Argonne National Laboratory.
 
 
@@ -268,3 +214,5 @@ Copyright
    sentence-end-double-space: t
    fill-column: 70
    End:
+
+
