@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.161 2004-03-18 14:09:41 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.162 2004-03-18 19:47:27 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.161 2004-03-18 14:09:41 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.162 2004-03-18 19:47:27 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -842,9 +842,6 @@ class Venue(AuthorizationMixIn):
         self.simpleLock.acquire()
 
         try:
-            # Log RemoveUser in case of abrupt disconnects that don't call Exit().
-            usage_log.info("\"RemoveUser\",\"%s\",\"%s\",\"%s\"", self.clients[privateId].GetClientProfile().GetDistinguishedName(), self.name, self.uniqueId)
-
             # Remove user as stream producer
             log.debug("Called RemoveUser on %s", privateId)
             self.streamList.RemoveProducer(privateId)
@@ -853,7 +850,12 @@ class Venue(AuthorizationMixIn):
             if not self.clients.has_key(privateId):
                 log.warn("RemoveUser: Tried to remove a client that doesn't exist")
                 self.simpleLock.release()
+                usage_log.info("\"RemoveUser\",\"%s\",\"%s\",\"%s\"", "DN Unavailable", self.name, self.uniqueId)
                 return
+            else:
+                usage_log.info("\"RemoveUser\",\"%s\",\"%s\",\"%s\"", self.clients[privateId].GetClientProfile().GetDistinguishedName(), self.name, self.uniqueId)
+
+            self.authManager.FindRole("VenueUsers").RemoveSubject(X509Subject.CreateSubjectFromString(self.clients[privateId].GetClientProfile().GetDistinguishedName()))
 
             vclient = self.clients[privateId]
             clientProfile = vclient.GetClientProfile()
@@ -1017,6 +1019,8 @@ class Venue(AuthorizationMixIn):
         for c in self.clients.values():
             log.debug("   " + str(c))
         log.debug("Enter: Distribute enter event ")
+
+        self.authManager.FindRole("VenueUsers").AddSubject(X509Subject.CreateSubjectFromString(clientProfile.GetDistinguishedName()))
 
         try:
             state = self.AsVenueState()
