@@ -73,7 +73,7 @@ if 1:
     wr.close()
     rd.close()
 
-    os.system("cvs export -D now AccessGrid")
+    os.system("cvs -z6 export -D now AccessGrid")
 
 #
 # Okay, we've got our code checked out. Go to the packaging
@@ -102,6 +102,9 @@ commands = []
 section = ""
 
 for l in fp:
+
+    l = re.sub(";.*", "", l)
+
 
     l = re.sub(fix_vic_src, fix_vic_dst, l)
     l = re.sub(fix_rat_src, fix_rat_dst, l)
