@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.84 2003-03-25 21:09:07 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.85 2003-03-25 21:16:51 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -111,13 +111,13 @@ class VenueClientUI(wxApp, VenueClient):
         else:
             self.__startMainLoop(self.profile)
 
-    def AuthorizeLead(self,clientProfile):
+    def AuthorizeLead(self, clientProfile):
         """
         Note: Overloaded from VenueClient
         This method calls the notifies the user that somebody wants to follow him or
         her and allows the user to approve the request.
         """
-        wxCallAfter(self.frame.AuthorizeLeadDialog)
+        wxCallAfter(self.frame.AuthorizeLeadDialog, clientProfile)
         
 
     def __openProfileDialog(self):
