@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.138 2003-05-07 14:25:08 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.139 2003-05-09 20:44:56 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -44,13 +44,7 @@ from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
 
 from AccessGrid import PersonalNode
-    
-try:
-    from AccessGrid import CertificateManager
-    CertificateManager.CertificateManagerWXGUI
-    HaveCertificateManager = 1
-except Exception, e:
-    HaveCertificateManager = 0
+from AccessGrid import Toolkit
 
 class VenueClientUI(wxApp, VenueClient):
     """
@@ -89,15 +83,19 @@ class VenueClientUI(wxApp, VenueClient):
         """
         self.__processArgs()
         self.__setLogger()
+
+        #
+        # We verify first because the Toolkit code assumes a valid
+        # globus proxy.
+        #
+
         VerifyExecutionEnvironment()
+        
+        self.app = Toolkit.WXGUIApplication()
+        self.app.Initialize()
+        
         self.__createPersonalDataStore()
-
-        if HaveCertificateManager:
-            self.certificateManagerGUI = CertificateManager.CertificateManagerWXGUI()
-            self.certificateManager = CertificateManager.CertificateManager(GetUserConfigDir(),
-            self.certificateManagerGUI)
-            self.certificateManager.InitEnvironment()
-
+        
         self.frame = VenueClientFrame(NULL, -1,"", self)
         self.frame.SetSize(wxSize(500, 400))
         self.SetTopWindow(self.frame)
