@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: AppService.py,v 1.14 2004-01-05 19:05:34 lefvert Exp $
+# RCS-ID:      $Id: AppService.py,v 1.15 2004-01-07 20:45:08 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,7 +17,7 @@ AppObjectImpl is its implementation.
 
 """
 
-__revision__ = "$Id: AppService.py,v 1.14 2004-01-05 19:05:34 lefvert Exp $"
+__revision__ = "$Id: AppService.py,v 1.15 2004-01-07 20:45:08 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import logging
@@ -49,13 +49,13 @@ class AppObject(ServiceBase.ServiceBase):
         return self.impl.Join(clientProfile)
     Join.soap_export_as = "Join"
 
-    def GetId(self, private_token):
-        return self.impl.GetId()
-    GetId.soap_export_as = "GetId"
-
     def Leave(self, private_token):
         return self.impl.Leave(private_token)
     Leave.soap_export_as = "Leave"
+
+    def GetId(self, private_token):
+        return self.impl.GetId()
+    GetId.soap_export_as = "GetId"
 
     def SetData(self, private_token, key, value):
         return self.impl.SetData(private_token, key, value)
@@ -80,6 +80,10 @@ class AppObject(ServiceBase.ServiceBase):
     def GetParticipants(self, private_token):
         return self.impl.GetParticipants(private_token)
     GetParticipants.soap_export_as = "GetParticipants"
+
+    def GetComponents(self, private_token):
+        return self.impl.GetComponents(private_token)
+    GetComponents.soap_export_as = "GetComponents"
 
     def GetDataKeys(self, private_token):
         return self.impl.GetDataKeys(private_token)
@@ -336,13 +340,32 @@ class AppObjectImpl:
     
     def GetParticipants(self, private_token):
         '''
-        Returns a list of AppParticipantDescriptions
+        Returns a list of AppParticipantDescriptions that have client profile set.
         '''
         if not self.components.has_key(private_token):
             raise InvalidPrivateToken
-                       
-        return self.components.values()
 
+        participants = []
+        for c in self.components.values():
+            if c.clientProfile != None:
+                participants.append(c)
+
+        return participants
+        
+    def GetComponents(self, private_token):
+        '''
+        Return all public ids of instances connected to this service
+        (application clients, monitors, etc).
+        '''
+        if not self.components.has_key(private_token):
+            raise InvalidPrivateToken
+
+        ids = []
+        for c in self.components.values():
+            ids.append(c.appId)
+
+        return ids
+        
     def SetParticipantProfile(self, private_token, profile):
         '''
         Sets profile of participant associated with private_token
@@ -355,15 +378,18 @@ class AppObjectImpl:
             raise InvalidPrivateToken
         
         participant = self.components[private_token]
-        participant.profile = profile
+        participant.clientProfile = profile
         self.components[private_token] = participant
-        
+
+        for p in self.components.values():
+            if p.clientProfile != 'None' and p.clientProfile != None:
+                p.clientProfile.name
+                
         # Distribute event
         for channelId in self.channels:
             evt = Event(Event.APP_UPDATE_PARTICIPANT, channelId, participant)
             self.eventService.Distribute(channelId, evt)
-                
-                  
+                          
     def SetParticipantStatus(self, private_token, status):
         '''
         Sets status of participant associated with private_token
