@@ -12,6 +12,7 @@
 import threading
 import select
 import time
+import socket
 
 from AccessGrid import Log
 
@@ -71,7 +72,7 @@ try:
                                           serviceName,        
                                           regtype,            
                                           'local.',           
-                                          'munich',           
+                                          socket.gethostbyname(socket.gethostname()),           
                                           port,               
                                           txtRecordLen,       
                                           txtRecordBytes,     
@@ -245,9 +246,10 @@ def BrowseCB(op,serviceName,url=None):
 
 if __name__ == "__main__":
 
+    hostname = socket.gethostbyname(socket.gethostname())
     serviceName = 'myservice'
     serviceType = '_ftp._tcp'
-    serviceUrl  = 'http://localhost:9876/my/service'
+    serviceUrl  = 'http://%s:9876/my/service' % hostname
 
     print "* Registering service: ", serviceName, serviceType
     p = Publisher(serviceName,serviceType,serviceUrl,port=9876)
