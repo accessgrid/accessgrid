@@ -2,15 +2,17 @@
 # Name:        ProcessManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.6 2004-03-15 19:55:01 turam Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.7 2004-04-29 20:05:50 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.6 2004-03-15 19:55:01 turam Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.7 2004-04-29 20:05:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
+import win32api
+import win32event
 import win32process
 from AccessGrid import Log
 
@@ -19,6 +21,7 @@ log = Log.GetLogger(Log.ProcessManager)
 class ProcessManager:
     def __init__(self):
         self.processes = []
+        self.threadid = dict()
 
     def StartProcess(self, command, arglist, detached = 1, maxWait = 20):
         """
@@ -73,6 +76,7 @@ class ProcessManager:
             pHandle = info[0]
             
             self.processes.append(pHandle)
+            self.threadid[pHandle] = info[3]
 
             if not detached:
                 pHandle = info[0]
@@ -106,6 +110,9 @@ class ProcessManager:
                 self.TerminateProcess(phandle)
             except Exception, e:
                 log.exception("couldn't terminate process %s: %s", phandle, e)
+               
+        self.processes = []
+        self.threadid = dict()
 
     def TerminateProcess(self, pid):
         """
@@ -114,11 +121,26 @@ class ProcessManager:
         @param pid: the id of the process to terminate.
         @type pid: string? integer?
         """
+        terminated = 0
         try:
-            win32process.TerminateProcess(pid, 0)
-            self.processes.remove(pid)
-        except win32process.error, e:
-            log.exception("couldn't terminate process %s: %s", pid, e)
+            ret = 0
+            win32api.PostThreadMessage(self.threadid[pid], 18, 0, 0)
+            ret = win32event.WaitForSingleObject(pid, 500 )
+            if ret == win32event.WAIT_OBJECT_0:
+                terminated = 1
+            else:
+                log.warn("Couldn't terminate process %s cleanly (%s)", pid, str(ret))
+        except win32process.error,e:
+            log.exception("couldn't shutdown process %s: %s", pid, e)
+
+        if not terminated:
+            try:
+                win32process.TerminateProcess(pid, 0)
+                self.processes.remove(pid)
+            except win32process.error, e:
+                log.exception("couldn't terminate process %s: %s", pid, e)
+            
+        del self.threadid[pid]
 
     def KillAllProcesses(self):
         """
