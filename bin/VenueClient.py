@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.260 2004-04-14 15:24:29 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.261 2004-04-27 17:28:06 judson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.260 2004-04-14 15:24:29 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.261 2004-04-27 17:28:06 judson Exp $"
 
 # Standard Imports
 import os
@@ -19,17 +19,7 @@ if sys.platform=="darwin":
     # On osx pyGlobus/globus need to be loaded before various modules such as socket.
     import pyGlobus.ioc
 
-if sys.version.startswith('2.2'):
-    try:
-        from optik import Option
-    except:
-        raise Exception, "Missing module optik necessary for the AG Toolkit."
-
-if sys.version.startswith('2.3'):
-    try:
-        from optparse import Option
-    except:
-        raise Exception, "Missing module optparse, check your python installation."
+from optparse import Option
 
 # GUI related imports
 from wxPython.wx import wxPySimpleApp
@@ -90,7 +80,8 @@ def main():
     startupDialog.UpdateOneStep("Creating venue client components.")
 
     # Create venue client components
-    vc = VenueClient(pnode=pnode, port=port, progressCB=startupDialog.UpdateOneStep)
+    vc = VenueClient(pnode=pnode, port=port,
+                     progressCB=startupDialog.UpdateOneStep, app=app)
     vcc = VenueClientController()
     vcc.SetVenueClient(vc)
     vcui = VenueClientUI(vc, vcc)

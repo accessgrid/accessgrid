@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.54 2004-04-13 03:53:58 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.55 2004-04-27 17:28:06 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.54 2004-04-13 03:53:58 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.55 2004-04-27 17:28:06 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -79,7 +79,7 @@ def main():
     port = app.GetOption("port")
 
     # Second thing we do is create a hosting environment
-    hostname = SystemConfig.instance().GetHostname()
+    hostname = app.GetHostname()
     if app.GetOption("insecure"):
         server = InsecureServer((hostname, port), debug = app.GetDebugLevel())
     else:
