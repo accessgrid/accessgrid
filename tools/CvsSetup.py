@@ -209,20 +209,23 @@ print "       set the environment as instructed below, "
 print "       and run: \"python SetupVideo.py\" \n"
 print "    To use this configuration:\n"
 print "       Make sure media-related programs (vic, rat, etc.) are in your path."
-if sys.platform == WIN:
+from AccessGrid.Platform import isOSX, isLinux, isWindows
+if isWindows():
     print "          On Windows: copying the vic and rat related binaries (if needed, "
     print "          from a real install) into their own directory before adding them "
     print "          to your path is recommended.  If you don't want to bother modifying "
     print "          your path, copying them into AccessGrid/bin is a quick fix.\n"
-elif sys.platform == LINUX:
+elif isLinux() or isOSX():
     print "          On linux: if you've installed the vic and rat rpm packages,"
     print "          they should already be in your path.\n"
+else:
+    print "Error, your platform is not defined.  Please add it to CvsSetup.py"
 
 print "       set AGTK_LOCATION to", os.path.join( os.path.abspath(options.srcdir), "bin" )
 print "       set PYTHONPATH to", os.path.abspath(options.srcdir)
 print ""
 
-if sys.platform == LINUX:
+if isLinux() or isOSX():
     fh = open("env-init.sh", "w")
     fh.write("export AGTK_LOCATION=%s\n" % (os.path.join(os.path.abspath(options.srcdir), "bin")))
     fh.write("export PYTHONPATH=%s\n" % os.path.abspath(options.srcdir))
@@ -233,10 +236,12 @@ if sys.platform == LINUX:
     fh.write("setenv PYTHONPATH %s\n" % os.path.abspath(options.srcdir))
     fh.close()
     print "Wrote csh config to env-init.csh, bash config to env-init.sh"
-elif sys.platform == WIN:
+elif isWindows():
     fh = open("env-init.bat", "w")
     fh.write("set AGTK_LOCATION=%s\n" % (os.path.join( os.path.abspath(options.srcdir), "bin")))
     fh.write("set PYTHONPATH=%s\n" % os.path.abspath(options.srcdir))
     fh.close()
     print "Wrote win32 batchfile init to env-init.bat"
+else:
+    print "Error, a script appropriate for your platform has not been defined.  Please add it to CvsSetup.py"
 
