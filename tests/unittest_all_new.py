@@ -2,7 +2,7 @@
 # Name:        unittest_all.py
 # Purpose:     Automatic testing with machine readable output
 # Created:     2004/04/014
-# RCS-ID:      $Id: unittest_all_new.py,v 1.2 2004-04-14 22:29:34 judson Exp $
+# RCS-ID:      $Id: unittest_all_new.py,v 1.3 2004-04-14 22:45:17 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -11,6 +11,52 @@ import sys, time
 import xml.dom.minidom
 from unittest import TestResult, TestSuite, findTestCases
 from optparse import OptionParser
+
+default_xform = """
+<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">
+<xsl:output method=\"html\"/>
+ <xsl:template match=\"BeaconReport\">
+ <html>
+  <head>
+   <title>Multicast Beacon Report</title>
+  </head>
+  <body bgcolor=\"#A0A0A0\" text=\"#000000\">
+   <H2>Multicast Beacon Report for <xsl:value-of select=\"@time\"/></H2>
+     <table border=\"1\" cellpadding=\"2\">
+      <tbody>
+       <xsl:apply-templates select=\"Beacon\"/>
+      </tbody>
+     </table>
+  </body>
+ </html>
+ </xsl:template>
+	
+ <xsl:template match=\"Beacon\">
+  <tr>
+   <td>
+    SSRC: <xsl:value-of select=\"@ssrc\"/><br/>	
+    Host: <xsl:value-of select=\"@name\"/><br/>
+    IP: <xsl:value-of select=\"@ip\"/>
+   </td>
+   <xsl:apply-templates select=\"Data\"/>
+  </tr>
+ </xsl:template>
+	
+ <xsl:template match=\"Data\">
+  <td>
+   SSRC: <xsl:value-of select=\"@send_ssrc\"/><br/>
+   <xsl:apply-templates select=\"Loss\"/>
+  </td>
+ </xsl:template>
+ 
+ <xsl:template match=\"Loss\">
+  Total Loss: <xsl:value-of select=\"@total\"/><br/>
+  Fractional Loss: <xsl:value-of select=\"@fractional\"/>
+ </xsl:template>
+ 
+</xsl:stylesheet>
+"""
 
 class _XMLTestResult(TestResult):
     """
@@ -94,23 +140,6 @@ class XMLTestRunner:
         stopTime = time.time()
         timeTaken = float(stopTime - startTime)
         outxml = result.getResults(timeTaken)
-#         result.printErrors()
-#         self.stream.write(result.separator2 + "\n")
-#         run = result.testsRun
-#         self.stream.write("Ran %d test%s in %.3fs\n" %
-#                             (run, run != 1 and "s" or "", timeTaken))
-#         self.stream.write("\n")
-#         if not result.wasSuccessful():
-#             self.stream.write("FAILED (")
-#             failed, errored = map(len, (result.failures, result.errors))
-#             if failed:
-#                 self.stream.write("failures=%d" % failed)
-#             if errored:
-#                 if failed: self.stream.write(", ")
-#                 self.stream.write("errors=%d" % errored)
-#             self.stream.write(")\n")
-#         else:
-#             self.stream.write("OK\n")
         return outxml, result
 
 if __name__ == '__main__':
@@ -144,23 +173,28 @@ if __name__ == '__main__':
 
     output, result = XMLTestRunner().run(suite)
 
-    if options.outputFile is not None:
+    ro = output
+    if options.ohtml:
+        try:
+            from Ft.Lib import Uri
+            from Ft.Xml.InputSource import DefaultFactory
+            from Ft.Xml.Xslt.Processor import Processor
+        except:
+            print "Couldn't import modules to generate HTML."
+            
+        processor = Processor()
+        stylesheet = DefaultFactory.fromString(default_xform)
+        processor.appendStylesheet(stylesheet)
+        
+        try:
+            ro = processor.run(output)
+        except:
+            print "Failed to generate HTML."
+            ro = None
+                
+    if options.outputFile is not None and ro is not None:
         f = file(options.outputFile, 'w')
-        if options.ohtml:
-            try:
-                from Ft.Lib import Uri
-                from Ft.Xml import InputSource
-                from Ft.Xml.Xslt.Processor import Processor
-
-                processor = Processor()
-                processor.appendStylesheet("default.css")
-                result = processor.run(output)
-                f.write(result)
-            except:
-                print "Couldn't import modules to generate HTML."
-                print output
-        else:
-            f.write(output)
+        f.write(ro)
         f.close()
     else:
         print output
