@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.13 2004-04-09 14:14:53 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.14 2004-04-09 14:20:26 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.13 2004-04-09 14:14:53 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.14 2004-04-09 14:20:26 judson Exp $"
 
 import os
 import sys
@@ -402,6 +402,10 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         right now we just want to check and see if registry settings
         are in place for the various parts.
         """
+
+        # Zero, get keys we need
+        gsikey = self._GetGlobusKey()
+        
         # First, get the paths to stuff we need
         uappdata = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
         agtkdata = AGTkConfig.instance().GetConfigDir()
