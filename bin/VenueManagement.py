@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.128 2004-04-29 16:12:32 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.129 2004-04-29 18:47:36 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.128 2004-04-29 16:12:32 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.129 2004-04-29 18:47:36 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -1444,6 +1444,7 @@ class GeneralPanel(wxPanel):
     ID_REMOVE_EXIT = wxNewId()
     ID_LOAD = wxNewId()
     ID_DEFAULT = wxNewId()
+    ID_EXIT_RENAME = wxNewId()
     
     def __init__(self, parent, id, app):
         wxPanel.__init__(self, parent, id)
@@ -1480,7 +1481,14 @@ class GeneralPanel(wxPanel):
         # This is the exits this venue has
         self.exits = wxListBox(self, -1, size = wxSize(250, 100),
                                style = wxLB_SORT)
-                
+
+        # Menu for exits:
+        self.exitsMenu = wxMenu()
+        self.exitsMenu.Append(self.ID_EXIT_RENAME,"Change Title...",
+                             "Give this exit a new title.")
+        EVT_MENU(self, self.ID_EXIT_RENAME, self.UpdateExit)
+        EVT_RIGHT_DOWN(self.exits, self.OnRightClick)
+        
         self.__doLayout()
         self.__setEvents()
 
@@ -1520,7 +1528,16 @@ class GeneralPanel(wxPanel):
             log.exception("VenueParamFrame.__LoadVenues: Could not load exits from server at %s" %URL)
             MessageDialog(None, "Could not load exits from server at " + str(URL), "Load Exits Error", wxOK|wxICON_INFORMATION)
     
-
+    def OnRightClick(self, event):
+        index = self.exits.GetSelection()
+        if index == -1:
+            return
+        self.x = event.GetX() + self.exits.GetPosition().x
+        self.y = event.GetY() + self.exits.GetPosition().y
+        
+        self.PopupMenu(self.exitsMenu, wxPoint(self.x, self.y))
+       
+                
     def AddExit(self, event):
         index = self.venues.GetSelection()
         if index != -1:
@@ -1542,7 +1559,24 @@ class GeneralPanel(wxPanel):
                 exitExistDialog.Destroy()
             else:
                 self.exits.Append(venue.name, venue)
+              
 
+    def UpdateExit(self, event):
+        index = self.exits.GetSelection()
+        oldName = self.exits.GetString(index)
+        name = None
+        
+        dlg = RenameExitDialog(self, -1, "Change Venue Title", oldName)
+        if (dlg.ShowModal() == wxID_OK ):
+            name = dlg.GetName()
+        else:
+            return
+        
+        if index != -1:
+            self.exits.SetString(index, name)
+            connDesc = self.exits.GetClientData(index)
+            connDesc.SetName(name)
+            
     def RemoveExit(self, event):
         index = self.exits.GetSelection()
         if index != -1:
@@ -1984,73 +2018,45 @@ class ModifyVenueFrame(VenueParamFrame):
                     self.staticAddressingPanel.SetStaticAudio(sl.host, sl.port,
                                                               sl.ttl)
 
-        
-class AdministratorParamFrame(wxDialog):
-    def __init__(self, *args):
-        wxDialog.__init__(self, *args)
-        self.Centre()
-        self.SetSize(wxSize(400, 40))
-        self.text = wxStaticText(self, -1, "Please, fill in the distinguished name for the administrator you want to add.")
-        self.informationBox = wxStaticBox(self, -1, "Information")
-        self.informationBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        self.nameLabel =  wxStaticText(self, -1, "DN Name:")
-        self.name =  wxTextCtrl(self, -1, "",  size = wxSize(400, 20))
+class RenameExitDialog(wxDialog):
+    def __init__(self, parent, id, title, oldName):
+        wxDialog.__init__(self, parent, id, title)
+        self.text = wxStaticText(self, -1, "Please, enter a new title for the venue.", style=wxALIGN_LEFT)
+       
+        self.line = wxStaticLine(self, -1)
+
+        self.nameText = wxStaticText(self, -1, "Title:")
+        self.nameBox =  wxTextCtrl(self, -1, oldName)
+        self.nameBox.SetSize(wxSize(200, 20))
+
         self.okButton = wxButton(self, wxID_OK, "Ok")
-        self.cancelButton =  wxButton(self, wxID_CANCEL, "Cancel")
-        self.doLayout()
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.Centre()
+        self.Layout()
+    
+    def GetName(self):
+        return self.nameBox.GetValue()
+        
+    def Layout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer.Add(self.text, 0, wxALL, 10)
+        sizer.Add(2,2)
 
-    def doLayout(self):
-        topSizer = wxBoxSizer(wxVERTICAL)
-        boxSizer = wxStaticBoxSizer(self.informationBox, wxVERTICAL)
+        s2 =  wxBoxSizer(wxHORIZONTAL)
+        s2.Add(self.nameText, 0, wxCENTER | wxRIGHT, 5)
+        s2.Add(self.nameBox, 0,  wxCENTER | wxLEFT, 5)
+        sizer.Add(s2, 0, wxEXPAND| wxALL, 10)
+        sizer.Add(self.line, 0, wxALL | wxEXPAND, 10)
 
-        boxSizer.Add(self.text, 0, wxALL, 10)
-        paramFrameSizer = wxFlexGridSizer(10, 2, 10, 10)
-        paramFrameSizer.Add(self.nameLabel, 0, wxALIGN_RIGHT)
-        paramFrameSizer.Add(self.name, 0, wxEXPAND)
-        paramFrameSizer.AddGrowableCol(2)
-        boxSizer.Add(paramFrameSizer, 1,  wxEXPAND|wxALL, 10)
-
-        buttonSizer =  wxBoxSizer(wxHORIZONTAL)
-        buttonSizer.Add(20, 20, 1)
-        buttonSizer.Add(self.okButton, 0)
-        buttonSizer.Add(10, 10)
-        buttonSizer.Add(self.cancelButton, 0)
-        buttonSizer.Add(20, 20, 1)
-
-        topSizer.Add(boxSizer, 1, wxALL | wxEXPAND, 10)
-        topSizer.Add(buttonSizer, 0, wxEXPAND | wxBOTTOM, 5)
-
-        self.SetSizer(topSizer)
-        topSizer.Fit(self)
+        buttonSizer = wxBoxSizer(wxHORIZONTAL)
+        buttonSizer.Add(self.okButton, 0, wxALL, 5)
+        buttonSizer.Add(self.cancelButton, 0, wxALL, 5)
+        sizer.Add(buttonSizer, 0, wxALIGN_CENTER | wxBOTTOM, 5) 
+            
+        self.SetSizer(sizer)
+        sizer.Fit(self)
         self.SetAutoLayout(1)
 
-class AddAdministratorFrame(AdministratorParamFrame):
-    def __init__(self, parent, id, title):
-        AdministratorParamFrame.__init__(self, parent, id, title)
-        self.parent = parent
-        if (self.ShowModal() == wxID_OK ):
-            if self.name.GetValue() == '':
-                MessageDialog(self, "Enter distinguished name for the administrator you wish to add. The field can not be blank.", "Notification")
-            else:
-                self.parent.InsertAdministrator(self.name.GetValue())
-
-        self.Destroy();
-
-class ModifyAdministratorFrame(AdministratorParamFrame):
-    def __init__(self, parent, id, title, oldName):
-        AdministratorParamFrame.__init__(self, parent, id, title)
-        self.text.SetLabel("Please, fill in a new distinguished name for the administator")
-        self.parent = parent
-        self.name.Clear()
-        self.name.AppendText(oldName)
-        if (self.ShowModal() == wxID_OK ):
-
-            if self.name.GetValue() == '':
-                MessageDialog(self, "Enter distinguished name for the administrator you wish to modify. The field can not be blank.", "Notification")
-            else:
-                self.parent.ModifyAdministrator(oldName, self.name.GetValue())
-
-        self.Destroy();
 
 class DigitValidator(wxPyValidator):
     def __init__(self, flag):
