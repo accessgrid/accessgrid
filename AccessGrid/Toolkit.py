@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.55 2004-04-29 21:12:40 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.56 2004-05-06 15:55:46 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.55 2004-04-29 21:12:40 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.56 2004-05-06 15:55:46 eolson Exp $"
 
 # Standard imports
 import os
@@ -21,7 +21,7 @@ from optparse import OptionParser, Option
 from AccessGrid import Log
 from AccessGrid.Security import CertificateManager
 from AccessGrid.Security import CertificateRepository
-from AccessGrid.Platform.Config import AGTkConfig
+from AccessGrid.Platform.Config import AGTkConfig, MimeConfig
 from AccessGrid.Platform.Config import SystemConfig, UserConfig
 from AccessGrid.ServiceProfile import ServiceProfile
 from AccessGrid.Version import GetVersion
@@ -83,8 +83,8 @@ class AppBase:
        
        # This initializes logging
        self.log = Log.GetLogger(Log.Toolkit)
-       levelHandler = Log.HandleLoggers(self.mlh, Log.GetDefaultLoggers())
-       levelHandler.SetLevel(Log.DEBUG)
+       memLevels = Log.HandleLoggers(self.mlh, Log.GetDefaultLoggers())
+       memLevels.SetLevel(Log.DEBUG)
        self.log.debug("Initializing AG Toolkit version %s", GetVersion())
 
     # This method implements the initialization strategy outlined
@@ -130,8 +130,9 @@ class AppBase:
            fh = Log.FileHandler(filename)
            
            fh.setFormatter(Log.GetFormatter())
-           levelHandler = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
-           levelHandler.SetLevel(Log.ERROR)
+           self.fhLoggerLevels = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
+           self.fhLoggerLevels.SetLevel(Log.ERROR)
+           self.loggerLevels = self.fhLoggerLevels
        
        # Send the log in memory to stream (debug) or file handler.
        if self.options.debug:
@@ -159,9 +160,15 @@ class AppBase:
            sys.exit(0)
            
        if self.options.debug:
-           levelHandler = Log.HandleLoggers(self.defLogHandler,
+           self.streamLoggerLevels = Log.HandleLoggers(self.defLogHandler,
                                            Log.GetDefaultLoggers())
-           levelHandler.SetLevel(Log.DEBUG)
+           self.streamLoggerLevels.SetLevel(Log.DEBUG)
+           # When in debug mode, we'll make the stream the primary handler.
+           self.loggerLevels = self.streamLoggerLevels
+       else:
+           # If not in debug, we only used the StreamHandler before Logging was initialized.
+           #    so we don't have a StreamLoggerLevels.  
+           self.streamLoggerLevels = None
            
        return ret_args
 
@@ -184,7 +191,7 @@ class AppBase:
         """
         return self.GetOption("logfilename")
     
-    def GetLogFilename(self):
+    def GetConfigFilename(self):
         """
         """
         return self.GetOption("configfilename")
@@ -194,6 +201,34 @@ class AppBase:
         Return a toolkit wide log.
         """
         return self.log
+
+    def GetLogLevels(self):
+        """
+        Return the primary loggingLevels object.
+          in debug mode: self.streamLoggerLevels
+          otherwise:     self.fhLoggerLevels
+
+        Should be called after initialization.
+        Levels can be set like this:
+            ll = GetFileLevels()
+            ll.SetLevel(Log.DEBUG)
+        and tuned like this:
+            ll.SetLevel(Log.WARN, Log.Hosting)
+        """
+        return self.loggerLevels
+
+    def GetFileLogLevels(self):
+        """
+        Return the loggingLevels object for the current log file.
+        """
+        return self.fhLoggerLevels
+
+    def GetStreamLogLevels(self):
+        """
+        Return the loggingLevels object for the current output stream.
+        Returns None when not in debug mode.
+        """
+        return self.streamLoggerLevels
 
     def GetToolkitConfig(self):
         return self.agtkConfig
@@ -366,6 +401,10 @@ class WXGUIApplication(Application):
         Application.__init__(self)
         from AccessGrid.Security.wxgui import CertificateManagerWXGUI
         self.certMgrUI = CertificateManagerWXGUI.CertificateManagerWXGUI()
+
+        # Register .agpkg mime type
+        agpmCmd = os.path.join(AGTkConfig.instance().GetBinDir(), "agpm.py") + " --wait-for-input"
+        MimeConfig.instance().RegisterMimeType("application/x-ag-pkg", ".agpkg", "agpkg file", "Access Grid Package", ["agpm.py", agpmCmd, "Access Grid Package Manager"])
 
 class Service(AppBase):
     """
