@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.12 2003-04-28 18:06:07 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.13 2003-05-14 19:02:22 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -55,7 +55,11 @@ class Server:
 
         config = SOAPConfig()
         config.debug = debug
-        config.returnFaultInfo = 1
+        #
+        # This is zero because we, through the AccessControl module,
+        # pass the fault info back ourselves.
+        #
+        config.returnFaultInfo = 0
         config.dumpFaultInfo = 1
         self._server = SOAPServer(('localhost', port),
                                   tcpAttr = attr,

@@ -10,7 +10,7 @@ import time
 gt = time.time
 
 #h = Client.Handle('https://localhost:8000/Foobar/Baz')
-h = Client.Handle('https://localhost:9011/100', authCallback = cb)
+h = Client.Handle('https://localhost:8000/100', authCallback = cb)
 
 n = 1
 
@@ -21,9 +21,10 @@ ret = None
 try:
     ret = h.get_proxy().method(3)
 except Client.FaultType, f:
-    print "call raised fault ", f, dir(f)
+    print "call raised fault ", f
     print "faultcode='%s'" % (f.faultcode)
     print "string='%s'" % ( f.faultstring)
+    print "detail=%s" % (f.detail)
 
 else:
     t2 = gt()

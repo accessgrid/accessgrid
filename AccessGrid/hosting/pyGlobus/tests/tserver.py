@@ -12,6 +12,8 @@ class C(ServiceBase.ServiceBase):
 
         print "Executing as subject name: ", sm.GetSubject()
 
+        raise Exception("foo")
+
 #        ident = "/O=Grid/OU=Access Grid/OU=mcs.anl.gov/CN=Bob Olson"
 #        if not sm.ValidateUser(ident):
 #            raise Exception("Invalid user!")

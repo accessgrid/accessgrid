@@ -11,6 +11,10 @@ Access Control mechanisms for the AG system.
 # ServiceObject.
 #
 
+import sys
+import logging
+log = logging.getLogger("AG.hosting.AccessControl")
+
 from AccessGrid.hosting.pyGlobus.Utilities import SecureConnectionInfo
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import MethodSig, faultType
 
@@ -277,14 +281,20 @@ class InvocationWrapper(MethodSig):
 
         except Exception, e:
 
-            # print "call raised exception: ", e
+              # print "call raised exception: ", e
+              log.exception("Exception in call to %s", self.callback)
+              del _managers[thread_id]
+            
+              fault = faultType(faultstring = str(e))
 
-            del _managers[thread_id]
+              import traceback
+              info = sys.exc_info()
 
-            fault = faultType(faultstring = str(e))
-            raise fault
+              fault._setDetail("".join(traceback.format_exception(
+                                    info[0], info[1], info[2])))
+              raise fault
         else:
-            del _managers[thread_id]
+              del _managers[thread_id]
 
         # print "Wrapper returning ", rc
         return rc
