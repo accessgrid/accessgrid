@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.39 2003-02-21 17:37:58 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.40 2003-02-21 17:44:18 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -69,7 +69,7 @@ class VenueServer(ServiceBase.ServiceBase):
             "VenueServer.persistenceFilename" : 'VenueServer.dat',
             "VenueServer.serverPrefix" : 'VenueServer',
             "VenueServer.venuePathPrefix" : 'Venues',
-            "VenueServer.dataLocation" : 'Data',
+            "VenueServer.dataStorageLocation" : 'Data',
             "VenueServer.dataSize" : '10M'
             }
 
@@ -200,11 +200,11 @@ class VenueServer(ServiceBase.ServiceBase):
             # Create the directory to hold the venue's data.
             #
 
-            if self.dataLocation is None or not os.path.exists(self.dataLocation):
+            if self.dataStorageLocation is None or not os.path.exists(self.dataStorageLocation):
                 print "Creating venue: Data storage location %s not valid" % (self.dataStorageLocation)
                 venueStoragePath = None
             else:
-                venueStoragePath = os.path.join(self.dataLocation, str(venueID))
+                venueStoragePath = os.path.join(self.dataStorageLocation, str(venueID))
                 try:
                     os.mkdir(venueStoragePath)
                 except os.OSError, e:
