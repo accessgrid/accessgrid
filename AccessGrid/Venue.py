@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.198 2004-05-12 18:54:50 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.199 2004-05-14 17:02:58 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.198 2004-05-12 18:54:50 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.199 2004-05-14 17:02:58 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1904,12 +1904,16 @@ class Venue(AuthorizationMixIn):
         # Validate private id before allowing call
         if privateId not in self.netServices.keys():
             # Raise location not found?
+            log.info("AddNetworkLocationToStream: unrecognized private id %s; skipping", 
+                     privateId)
             return None
         
         # Add the network location to the specified stream
+        nid = 0
         streamList = self.streamList.GetStreams()
         for stream in streamList:
             if stream.id == streamId:
+                
             
                 # Set the private id as passed in
                 networkLocation.privateId = privateId
@@ -1924,11 +1928,13 @@ class Venue(AuthorizationMixIn):
                                                      Event( Event.MODIFY_STREAM,
                                                             self.uniqueId,
                                                             stream ) )
-                
-                
-                return nid
-            
-        return None
+                break
+                                                            
+        if not nid:
+            log.info("AddNetworkLocationToStream: stream id=%s not found",
+                     streamId)
+                     
+        return nid
 
     def RemoveNetworkLocationFromStream(self, privateId, streamId,
                                         networkLocationId):
