@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.9 2003-03-12 02:26:42 leggett Exp $
+# RCS-ID:      $Id: setup.py,v 1.10 2003-03-13 23:41:16 leggett Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -49,7 +49,22 @@ setup(
               ],
 
 # Data Files list -- these are things like the services, etc.
-    data_files = [('share/AccessGrid/local_services',
+    data_files = [('etc/init.d',
+                   [r"etc/init.d/agns",
+                    r"etc/init.d/agsm"
+                    ]
+                   ),
+                  ('etc/AccessGrid',
+                   [r"etc/AccessGrid/AGNodeService",
+                    r"etc/AccessGrid/AGServiceManager"
+                    ]
+                   ),
+                  ('share/AccessGrid',
+                   [r"etc/AccessGrid/defaultLinux",
+                    r"etc/AccessGrid/defaultWindows"
+                    ]
+                   ),
+                  ('var/lib/ag/local_services',
                    [r"AccessGrid/services/AudioService.py",
                     r"AccessGrid/services/AudioService.svc",
                     r"AccessGrid/services/VideoConsumerService.py",
