@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/13/12
-# RCS-ID:      $Id: NetworkLocation.py,v 1.1.1.1 2002-12-16 22:25:37 judson Exp $
+# RCS-ID:      $Id: NetworkLocation.py,v 1.2 2003-01-06 21:26:39 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -47,15 +47,15 @@ class UnicastNetworkLocation(NetworkLocation):
 
 class MulticastNetworkLocation(NetworkLocation):
     __doc__ = """
-    Multicast network locattion encapsulates the configuration information about
+    Multicast network location encapsulates the configuration information about
     a multicsat network connection.
     """
     TYPE = 'multicast'
     ttl = 0
     
-    def __init__(self, host, port, ttl):
+    def __init__(self, host=None, port=None, ttl=None):
         self.ttl = ttl
-        NetworkLocation(self, host, port)
+        NetworkLocation.__init__(self, host, port)
     
     def SetTTL(self, ttl):
         self.ttl = ttl
