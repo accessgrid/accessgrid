@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.2 2003-10-20 21:15:54 judson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.3 2003-10-21 03:27:40 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This program is used to register applications with the users AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.2 2003-10-20 21:15:54 judson Exp $"
+__revision__ = "$Id: agpm.py,v 1.3 2003-10-21 03:27:40 judson Exp $"
 
 import os
 import re
@@ -54,7 +54,7 @@ def UnpackZip(filename):
     """
     zipArchive = zipfile.ZipFile(filename)
     # We have to unpack things some where we can use them
-    workingDir = os.path.join(GetTempDir(), os.tmpnam())
+    workingDir = os.path.join(GetTempDir(), os.path.basename(os.tmpnam()))
     os.mkdir(workingDir)
     for filename in zipArchive.namelist():
         parts = filename.split('.')
@@ -109,6 +109,7 @@ def main():
     unregister = 0
     app = CmdlineApplication()
     appdb = app.GetAppDatabase()
+    cleanup = 0
     
     # We're going to assume there's a .app file in the current directory,
     # but only after we check for a command line argument that specifies one.
@@ -145,6 +146,7 @@ def main():
             # Unpack the zip archive
             # We get back the appfile and directory
             appFile, workingDir = UnpackZip(arg)
+            cleanup = 1
         elif opt in ("-u", "--unregister"):
             unregister = 1
         elif opt in ("-n", "--name"):
@@ -207,11 +209,10 @@ def main():
 
     # Clean up, remove the temporary directory and files from
     # unpacking the zip file
-    if zipFile != None:
-        for filename in os.listdir(workingDir):
-            os.remove(os.path.join(workingDir, filename))
+    if cleanup:
+        import shutil
         os.chdir(origDir)
-        os.rmdir(workingDir)
+        shutil.rmtree(workingDir)
         
 if __name__ == "__main__":
     main()
