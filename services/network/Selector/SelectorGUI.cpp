@@ -87,7 +87,7 @@ void SelectorGUI::update(){
   Initial creation of ui components.
 */
 void SelectorGUI::create(){
-  Fl_Window *window = new Fl_Window(400,460);
+  Fl_Window *window = new Fl_Window(400,460,"Stream Selector");
   x = 80;
   y = 10;
   char* participantList[100];
