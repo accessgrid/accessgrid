@@ -15,10 +15,12 @@ from wxPython.wizard import *
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid import CertificateRepository
+from AccessGrid import Toolkit
 from AccessGrid.CertificateRepository import RepoDoesNotExist
 from AccessGrid.CRSClient import CRSClient
 
 import string
+import time
 
 import logging, logging.handlers
 log = logging.getLogger("AG.CertificateRequestTool")
@@ -841,14 +843,16 @@ class CertificateStatusDialog(wxDialog):
     of requests and store them to right location.
     '''
     def __init__(self, parent, id, title):
-        wxDialog.__init__(self, parent, id, title, style=wxDEFAULT_DIALOG_STYLE)
-        self.SetSize(wxSize(400,250))
+        wxDialog.__init__(self, parent, id, title,
+                          style=wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER )
+        self.SetSize(wxSize(800,250))
         self.info = wxStaticText(self, -1, "You have requested following certificates:")
         self.list = wxListCtrl(self, wxNewId(),
-                               style = wxLC_REPORT | wxLC_SORT_ASCENDING | wxSUNKEN_BORDER)
+                               style = wxLC_REPORT | wxSUNKEN_BORDER)
         
         self.text = wxStaticText(self, -1, "Click 'Ok' to check their status.")
-        self.certificateClient = CRSClient("a url")
+
+        self.getStatusButton = wxButton(self, -1, "Check Status")
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.newRequestButton = wxButton(self, wxNewId(), "New Request")
@@ -857,7 +861,6 @@ class CertificateStatusDialog(wxDialog):
         self.beforeStatus = 0
         self.afterStatus = 1
         self.state = self.beforeStatus
-
        
         self.__setProperties()
         self.__layout()
@@ -866,6 +869,7 @@ class CertificateStatusDialog(wxDialog):
         self.AddCertificates()
                                      
     def __setEvents(self):
+        EVT_BUTTON(self, self.getStatusButton.GetId(), self.OnUpdateStatus)
         EVT_BUTTON(self, self.okButton.GetId(), self.Ok)
         EVT_BUTTON(self, self.newRequestButton.GetId(), self.RequestCertificate)
 
@@ -878,6 +882,7 @@ class CertificateStatusDialog(wxDialog):
         sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND)
 
         box = wxBoxSizer(wxHORIZONTAL)
+        box.Add(self.getStatusButton, 0 , wxALL, 5)
         box.Add(self.okButton, 0 , wxALL, 5)
         box.Add(self.cancelButton, 0 , wxALL, 5)
         box.Add(self.newRequestButton, 0 , wxALL, 5)
@@ -888,61 +893,119 @@ class CertificateStatusDialog(wxDialog):
         self.SetSizer(sizer)
         self.Layout()
 
-        self.list.SetColumnWidth(0, self.list.GetSize().GetWidth()/3.0)
-        self.list.SetColumnWidth(1, self.list.GetSize().GetWidth()/3.0)
-        self.list.SetColumnWidth(2, self.list.GetSize().GetWidth()/3.0)
+        #self.list.SetColumnWidth(0, self.list.GetSize().GetWidth()/3.0)
+        #self.list.SetColumnWidth(1, self.list.GetSize().GetWidth()/3.0)
+        #self.list.SetColumnWidth(2, self.list.GetSize().GetWidth()/3.0)
                 
     def __setProperties(self):
         self.list.InsertColumn(0, "Certificate Type")
-        self.list.InsertColumn(1, "Date")
-        self.list.InsertColumn(2, "Status")
+        self.list.InsertColumn(1, "Subject Name")
+        self.list.InsertColumn(2, "Date Requested")
+        self.list.InsertColumn(3, "Status")
            
+    def OnUpdateStatus(self, event):
+        self.CheckStatus()
+            
     def Ok(self, event):
-        if self.state == self.beforeStatus:
-            self.CheckStatus()
-            self.state = self.afterStatus
-        else:
-            self.Close()
+        self.Close()
             
     def RequestCertificate(self, event):
         self.Hide()
         certReq = CertificateRequestTool(self, None)
                             
     def AddCertificates(self):
-        
-        self.certReqDict = self.certificateClient.GetRequestedCertificates()
 
-        row = 0 
-        for requestId, request in self.certReqDict.items():
-            type, date, status = request
+        certMgr = Toolkit.GetApplication().GetCertificateManager()
+
+        #
+        # reqList is a list of tuples (requestDescriptor, token, server, creationTime)
+        #
+        
+        self.reqList = certMgr.GetPendingRequests()
+
+        self.list.DeleteAllItems()
+
+        row = 0
+        for reqItem in self.reqList:
+
+            requestDescriptor, token, server, creationTime = reqItem
+
+            #
+            # For now we're just doing identity certificates.
+            #
+
+            type = "Identity"
+            subject = str(requestDescriptor.GetSubject())
+
+            if creationTime is not None:
+                date = time.strftime("%x %X", time.localtime(int(creationTime)))
+            else:
+                date = ""
+
+            status = "?"
+
             self.list.InsertStringItem(row, type)
-            self.list.SetStringItem(row, 1, date)
-            self.list.SetStringItem(row, 2, status)
-            self.requestStatus[requestId] = row
+            self.list.SetStringItem(row, 1, subject)
+            self.list.SetStringItem(row, 2, date)
+            self.list.SetStringItem(row, 3, status)
+            self.list.SetItemData(row, row)
             row = row+1
+
+        self.list.SetColumnWidth(0, wxLIST_AUTOSIZE)
+        self.list.SetColumnWidth(1, wxLIST_AUTOSIZE)
+        self.list.SetColumnWidth(2, wxLIST_AUTOSIZE_USEHEADER)
+        self.list.SetColumnWidth(3, wxLIST_AUTOSIZE_USEHEADER)
                                 
     def CheckStatus(self):
-        nrOfApprovedCerts = 0
-                
+        """
+        Update the status of the certificate requests we have listed in the GUI.
+
+        """
+
+        certMgr = Toolkit.GetApplication().GetCertificateManager()
+        
         # Check status of certificate requests
-        for requestId in self.certReqDict.keys():
-                       
-            # Get certificate and save it
-            cert = self.certificateClient.RetrieveCertificate(requestId)
-            row = self.requestStatus[requestId]
-            self.cancelButton.Enable(false)
+        for row in range(0, self.list.GetItemCount()):
+            
+            itemId = self.list.GetItemData(row)
+            reqItem = self.reqList[itemId]
+            requestDescriptor, token, server, creationTime = reqItem
 
-            if cert != "":
-                self.certificateClient.SaveCertificate(cert)
-                nrOfApprovedCerts = nrOfApprovedCerts + 1
-                # Change the status text
-                self.text.SetLabel("%i of you certificates are installed. Click 'Ok' to start using them." %nrOfApprovedCerts)
-                self.list.SetStringItem(row, 2, "Installed")
+            print "Testing request %s server=%s token=%s" % (requestDescriptor,
+                                                             server, token)
+            self.list.SetStringItem(row, 3, "Checking...")
+            self.Refresh()
+            self.Update()
+            if server is None or token is None:
+                #
+                # Can't check.
+                #
+                self.list.SetStringItem(row, 3, "Invalid")
+                continue
+            
+            certReturn = certMgr.CheckRequestedCertificate(requestDescriptor, token, server)
 
+            success, msg = certReturn
+            if not success:
+                self.list.SetStringItem(row, 3, "Not ready")
             else:
-                # Change status text to something else
-                self.list.SetStringItem(row, 2, "Not approved")
-                self.text.SetLabel("Your certificates have not been approved yet. \nPlease try again later.")
+                self.list.SetStringItem(row, 3, "Ready for installation")
+
+            self.list.SetColumnWidth(3, wxLIST_AUTOSIZE)
+            
+#              self.cancelButton.Enable(false)
+
+#              if cert != "":
+#                  self.certificateClient.SaveCertificate(cert)
+#                  nrOfApprovedCerts = nrOfApprovedCerts + 1
+#                  # Change the status text
+#                  self.text.SetLabel("%i of you certificates are installed. Click 'Ok' to start using them." %nrOfApprovedCerts)
+#                  self.list.SetStringItem(row, 2, "Installed")
+
+#              else:
+#                  # Change status text to something else
+#                  self.list.SetStringItem(row, 2, "Not approved")
+#                  self.text.SetLabel("Your certificates have not been approved yet. \nPlease try again later.")
                 
                         
 if __name__ == "__main__":

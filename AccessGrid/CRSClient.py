@@ -16,7 +16,7 @@ class CRSClient:
         log.debug('create client')
 
         if self.url is not None:
-            self.proxy = ServerProxy(url, verbose = 1)
+            self.proxy = ServerProxy(url, verbose = 0)
         else:
             raise CRSClientInvalidURL
 

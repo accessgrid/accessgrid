@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.16 2003-08-15 16:39:33 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.17 2003-08-19 19:35:03 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -36,7 +36,7 @@ from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 
 from AccessGrid import CertificateManager
 from AccessGrid import CertificateRepository
-from AccessGrid.CertificateRequestTool import CertificateRequestTool
+from AccessGrid.CertificateRequestTool import CertificateRequestTool, CertificateStatusDialog
 from AccessGrid.CRSClient import CRSClient
 
 #
@@ -172,6 +172,16 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OpenIdentityCertDialog(event, win))
 
+        i = wxNewId()
+        certMenu.Append(i, "Request a certificate...")
+        EVT_MENU(win, i,
+                 lambda event, win=win, self=self: self.OpenCertRequestDialog(event, win))
+
+        i = wxNewId()
+        certMenu.Append(i, "View pending requests...")
+        EVT_MENU(win, i,
+                 lambda event, win=win, self=self: self.OpenPendingRequestsDialog(event, win))
+
         return certMenu
 
     def OpenTrustedCertDialog(self, event, win):
@@ -185,6 +195,12 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                                 self.certificateManager)
         dlg.ShowModal()
         dlg.Destroy()
+
+    def OpenCertRequestDialog(self, event, win):
+        self.RunCertificateRequestTool(win)
+
+    def OpenPendingRequestsDialog(self, event, win):
+        self.RunCertificateStatusTool(win)
 
     def InitGlobusEnvironment(self):
         """
@@ -252,13 +268,22 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
         """
 
-        reqTool = CertificateRequestTool(None,
+        self.RunCertificateRequestTool()
+        
+        return 1
+
+    def RunCertificateRequestTool(self, win = None):
+        reqTool = CertificateRequestTool(win,
                                          certificateType = 'IDENTITY',
                                          createIdentityCertCB = self.CreateCertificateRequestCB)
         reqTool.Destroy()
-
-        return 1
     
+    def RunCertificateStatusTool(self, win = None):
+        statTool = CertificateStatusDialog(win, -1,
+                                           "View certificate status")
+        statTool.ShowModal()
+        statTool.Destroy()
+
     def CreateProxy(self):
         """
         GUI interface for creating a Globus proxy.
@@ -384,6 +409,11 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
             certificateRequest.SetMetadata("AG.CertificateManager.requestToken",
                                            str(requestId))
+            certificateRequest.SetMetadata("AG.CertificateManager.requestURL",
+                                           submitServerURL)
+            certificateRequest.SetMetadata("AG.CertificateManager.creationTime",
+                                           str(int(time.time())))
+            
             
         except CertificateRepository.RepoDoesNotExist:
             log.exception("SubmitRequest:Validate:You do not have a certificate repository. Certificate request can not be completed.")

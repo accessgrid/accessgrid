@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.25 2003-08-18 15:21:06 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.26 2003-08-19 19:35:03 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,6 +46,7 @@ import sys
 from AccessGrid import Platform
 from AccessGrid import CertificateRepository
 from  AccessGrid.hosting.pyGlobus import ProxyGen
+from AccessGrid import CRSClient
 
 import pyGlobus.sslutilsc
 
@@ -943,6 +944,72 @@ class CertificateManager(object):
                                                                    "1")
         print "Default ident ", defaultIdCerts
 
+
+    #
+    # Certificate request stuff
+    #
+
+    def GetPendingRequests(self):
+        """
+        Return a list of the certificate requests in the repository
+        for which we don't have a certificate, and for which the
+        metadata AG.CertificateManager.requestToken is set.
+
+        Return is actually a list of triples
+        (certReqDescriptor, requestToken, serverURL)
+
+        """
+
+        cr = self.GetCertificateRepository()
+
+        tokenKey = "AG.CertificateManager.requestToken"
+        pred = lambda c: c.GetMetadata(tokenKey) is not None
+        reqs = cr.FindCertificateRequests(pred)
+
+        out = []
+        for req in reqs:
+            token = req.GetMetadata(tokenKey)
+            server = req.GetMetadata("AG.CertificateManager.requestURL")
+            created = req.GetMetadata("AG.CertificateManager.creationTime")
+            log.debug("Found request for %s with key %s server=%s", req.GetSubject(), token, server)
+
+            #
+            # See if this request has a corresponding certificate.
+            #
+
+            modhash = req.GetModulusHash()
+            mpred = lambda c, modhash = modhash: c.GetModulusHash() == modhash
+            certs = list(cr.FindCertificates(mpred))
+            log.debug("Certs matching modulus hash %s:", modhash)
+            for cert in certs:
+                log.debug("    %s", cert.GetSubject())
+
+            if len(certs) > 0:
+                continue
+
+            out.append((req, token, server, created))
+
+        return out
+
+    def CheckRequestedCertificate(self, req, token, server):
+        """
+        Check the server to see if the given request has been granted.
+        Return a tuple of (success, msg). If successful, success=1
+        and msg is the granted certificate. If not successful, success=0
+        and msg is an error message.
+        """
+
+        success = 0
+        client = CRSClient.CRSClient(server)
+        try:
+            certRet = client.RetrieveCertificate(token)
+            log.debug("Retrieve returns %s", certRet)
+        except:
+            log.exception("Error retrieving certificate")
+            certRet = (0, "Error retrieving certificate")
+            
+        return certRet
+    
 
 class CmdlinePassphraseCallback:
     def __init__(self, caption, message):
