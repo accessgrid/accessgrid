@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceService.py,v 1.3 2002-12-18 04:37:21 judson Exp $
+# RCS-ID:      $Id: CoherenceService.py,v 1.4 2003-01-06 20:50:22 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -69,20 +69,23 @@ class AcceptHandler(Thread):
                                                                  addressString)
             self.server.connections[addressString].start()    
 
-class CoherenceService:
+class CoherenceService(Thread):
     connections = {}
     location = None
     sock = None
     acceptThread = None
     
     def __init__(self, location):
+        Thread.__init__(self)
         self.location = location
+    
+    def run(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((location.GetHost(), location.GetPort()))
+        sock.bind((self.location.GetHost(), self.location.GetPort()))
         sock.listen(1)
         acceptThread = AcceptHandler(self, sock)
         acceptThread.start()
-        
+        
     def SetLocation(self, location):
         self.location = location
         
@@ -96,9 +99,10 @@ class CoherenceService:
             else:
                 del self.connections[c]
             
-if __name__ == "__main__":
+if __name__ == "__main__":
   # just print out a for testing
   import string
   nl = UnicastNetworkLocation(string.lower(socket.getfqdn()), 6500)
-  print "Creating new CoherenceService at %s %d." % (nl.GetHost(), nl.GetPort())
+  print "Creating new CoherenceService at %s %d." % (nl.GetHost(), nl.GetPort())
   coherence = CoherenceService(nl)
+  coherence.start()
