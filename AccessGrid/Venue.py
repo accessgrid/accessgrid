@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.37 2003-02-18 21:17:48 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.38 2003-02-19 23:21:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -50,11 +50,7 @@ class StreamDescriptionList:
         Remove non-static streams from list for pickling
         """
         odict = self.__dict__.copy()
-        staticStreams = []
-        for stream,producerList in self.streams:
-            if stream.static:
-                staticStreams.append( stream )
-        odict['streams'] = staticStreams
+        odict['streams'] = self.GetStaticStreams()
         return odict
 
     def AddStream( self, stream ):
@@ -421,6 +417,7 @@ class Venue(ServiceBase.ServiceBase):
                     streamDesc = StreamDescription( self.description.name, "noDesc",
                                              self.AllocateMulticastLocation(), 
                                              capability, self.encryptionKey )
+                    streamDesc.static = 1
                     print "added user as producer of non-existent stream"
 #FIXME - uses public id now; should use private id instead
                     self.streamList.AddStreamProducer( clientProfile.publicId, streamDesc )
@@ -592,6 +589,18 @@ class Venue(ServiceBase.ServiceBase):
         return self.streamList.GetStreams()
 
     GetStreams.soap_export_as = "GetStreams"
+
+    def GetStaticStreams(self):
+        """
+        GetStaticStreams returns a list of static stream descriptions to the caller.
+        """
+        staticStreams = []
+        streams = self.streamList.GetStreams()
+        for stream in streams:
+            if stream.static:
+                staticStreams.append( stream )
+        return staticStreams
+    GetStaticStreams.soap_export_as = "GetStaticStreams"
 
     # Client Methods
     def Enter(self, clientProfile):
