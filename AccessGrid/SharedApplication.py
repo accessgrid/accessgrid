@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.10 2004-04-08 20:52:10 eolson Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.11 2004-04-16 22:27:40 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,17 +14,18 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.10 2004-04-08 20:52:10 eolson Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.11 2004-04-16 22:27:40 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
 from AccessGrid import GUID
 from AccessGrid import Events
-from AccessGrid.Descriptions import ApplicationDescription
+from AccessGrid.Events import Event
+from AccessGrid.Descriptions import ApplicationDescription, AppParticipantDescription
 
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
-from AccessGrid.Toolkit import Application
+from AccessGrid.Toolkit import Application, Service
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
@@ -82,7 +83,7 @@ class SharedApplication(AuthorizationMixIn):
         self.authManager.AddRoles(self.GetRequiredRoles())
 
         admins = self.authManager.FindRole("Administrators")
-        admins.AddSubject(Application.instance().GetDefaultSubject())
+        admins.AddSubject(Service.instance().GetDefaultSubject())
                                                                                 
         # Default to admins
         self.authManager.SetDefaultRoles([admins])
@@ -189,10 +190,24 @@ class SharedApplication(AuthorizationMixIn):
     def GetId(self):
         return self.id
 
-    def Join(self):
+    def Join(self, clientProfile=None):
+
+        # Takes a client profile until venue client has been refactored
+        # to include  a connection ID.
+
         public_id = str(GUID.GUID())
         private_id = str(GUID.GUID())
-        self.components[private_id] = public_id
+
+        # Create participant description
+        participant = AppParticipantDescription(public_id, clientProfile,
+                                                'connected')
+        # Store description
+        self.components[private_id] = participant
+
+        # Distribute event
+        for channelId in self.channels:
+            evt = Event(Event.APP_PARTICIPANT_JOIN, channelId, participant)
+            self.eventService.Distribute(channelId, evt)
 
         return (public_id, private_id)
 
@@ -248,6 +263,52 @@ class SharedApplication(AuthorizationMixIn):
             return self.app_data[key]
         else:
             return ""
+
+    def SetParticipantProfile(self, private_token, profile):
+        '''
+        Sets profile of participant associated with private_token
+
+        **Arguments**
+        
+        *profile* New client profile.
+        '''
+        if not self.components.has_key(private_token):
+            raise InvalidPrivateToken
+        
+        participant = self.components[private_token]
+        participant.clientProfile = profile
+        self.components[private_token] = participant
+
+        for p in self.components.values():
+            if p.clientProfile != 'None' and p.clientProfile != None:
+                p.clientProfile.name
+                
+        # Distribute event
+        for channelId in self.channels:
+            evt = Event(Event.APP_UPDATE_PARTICIPANT, channelId, participant)
+            self.eventService.Distribute(channelId, evt)
+                          
+    def SetParticipantStatus(self, private_token, status):
+        '''
+        Sets status of participant associated with private_token
+
+        **Arguments**
+        
+        *status* New status value.
+        '''
+
+        if not self.components.has_key(private_token):
+            raise InvalidPrivateToken
+
+        
+        participant = self.components[private_token]
+        participant.status = status
+        self.components[private_token] = participant
+        
+        # Distribute event
+        for channelId in self.channels:
+            evt = Event(Event.APP_UPDATE_PARTICIPANT, channelId, participant)
+            self.eventService.Distribute(channelId, evt)
 
     def __CreateDataChannel(self):
         """
@@ -328,8 +389,8 @@ class SharedApplicationI(SOAPInterface, AuthorizationIMixIn):
     def GetId(self):
         return self.impl.GetId()
         
-    def Join(self):
-        return self.impl.Join()
+    def Join(self, clientProfile=None):
+        return self.impl.Join(clientProfile)
 
     def GetComponents(self):
         return self.impl.GetComponents()
@@ -349,6 +410,12 @@ class SharedApplicationI(SOAPInterface, AuthorizationIMixIn):
     def GetVenueURL(self, private_token):
         return self.impl.GetVenueURL(private_token)
 
+    def SetParticipantStatus(self, private_token, status):
+        return self.impl.SetParticipantStatus(private_token, status)
+
+    def SetParticipantProfile(self, private_token, profile):
+        return self.impl.SetParticipantProfile(private_token, profile)
+
 class SharedApplicationIW(SOAPIWrapper, AuthorizationIWMixIn):
     """
     """
@@ -358,8 +425,8 @@ class SharedApplicationIW(SOAPIWrapper, AuthorizationIWMixIn):
     def GetId(self):
         return self.proxy.GetId()
 
-    def Join(self):
-        return self.proxy.Join()
+    def Join(self, clientProfile=None):
+        return self.proxy.Join(clientProfile)
 
     def GetComponents(self):
         return self.proxy.GetComponents()
@@ -378,5 +445,11 @@ class SharedApplicationIW(SOAPIWrapper, AuthorizationIWMixIn):
 
     def GetVenueURL(self, private_token):
         return self.proxy.GetVenueURL(private_token)
+
+    def SetParticipantStatus(self, private_token, status):
+        return self.proxy.SetParticipantStatus(private_token, status)
+
+    def SetParticipantProfile(self, private_token, profile):
+        return self.proxy.SetParticipantProfile(private_token, profile)
 
 

@@ -6,6 +6,7 @@ from AccessGrid.Events import ConnectEvent, Event
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.hosting import Client
+from AccessGrid.SharedApplication import SharedApplicationIW
 
 class SharedAppClient:
     '''
@@ -78,7 +79,7 @@ class SharedAppClient:
             Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
         return self.log
-       
+
     def Join(self, appServiceUrl, clientProfile = None):
         '''
         Connect registers this client with the SharedApplication at
@@ -94,7 +95,7 @@ class SharedAppClient:
         self.__appUrl = appServiceUrl
         
         # Get a handle to the application service in the venue
-        self.__appProxy = Client.SecureHandle(appServiceUrl).GetProxy()
+        self.__appProxy = SharedApplicationIW(appServiceUrl)
                 
 
         try:
