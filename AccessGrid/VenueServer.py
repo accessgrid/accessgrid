@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.105 2003-09-26 15:20:55 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.106 2003-09-26 15:42:30 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.105 2003-09-26 15:20:55 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.106 2003-09-26 15:42:30 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -421,53 +421,6 @@ class VenueServer(ServiceBase.ServiceBase):
                         v.AddStream(sd)
                 else:
                     log.debug("No streams to load for venue %s", sec)
-
-                # Deal with data if there is any
-                try:
-                    dataList = cp.get(sec, 'data')
-                except ConfigParser.NoOptionError:
-                    dataList = ""
-
-
-#FIXME
-                """
-                # Handle data lists found in venue persistence
-                # (data was persisted with venues in 2.0, so this is 
-                # for backward compatibility)
-                if dataStoreUrl and len(dataList) != 0:
-                    log.info("dataList found in venue persistence")
-
-                    # Get the list of files in the venue
-                    venueFiles = Client.Handle(dataStoreUrl).GetProxy().GetFiles()
-
-                    # For each file referenced in venue persistence
-                    for d in string.split(dataList, ':'):
-
-                        # Does the file exist in the data store?
-                        for f in venueFiles:
-                            if  f[0] == cp.get(d, 'name') and f[1] == cp.getint(d, 'size'):
-
-                                log.info(" - found match between venue persisted data and file in datastore")
-                        
-                                # Create the data description from the venue-persisted data
-                                dd = DataDescription(cp.get(d, 'name'))
-                                dd.SetId(d)
-                                try:
-                                    dd.SetDescription(cp.get(d, 'description'))
-                                except ConfigParser.NoOptionError:
-                                    log.info("LoadPersistentVenues: Data has no description")
-                                dd.SetStatus(cp.get(d, 'status'))
-                                dd.SetSize(cp.getint(d, 'size'))
-                                dd.SetChecksum(cp.get(d, 'checksum'))
-                                dd.SetOwner(cp.get(d, 'owner'))
-
-                                # Add the data description to the data store
-                                log.info(" - setting description for file %s" % f[0] )
-                                Client.Handle(dataStoreUrl).GetProxy().SetDescription(f[0],dd)
-
-                                break
-
-                """
 
                 # Deal with apps if there are any
                 try:
