@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.16 2004-04-05 18:38:52 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.17 2004-04-09 18:40:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.16 2004-04-05 18:38:52 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.17 2004-04-09 18:40:18 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -49,9 +49,9 @@ from OpenSSL_AG import crypto
 
 from AccessGrid import Log
 from AccessGrid import Utilities
+from AccessGrid.Platform.Config import GlobusConfig
 from AccessGrid.Security import CertificateRepository, ProxyGen
 from AccessGrid.Security import CRSClient
-from AccessGrid.Security.Utilities import get_certificate_locations
 from AccessGrid import Platform
 
 from OpenSSL_AG import crypto
@@ -192,6 +192,7 @@ class CertificateManager(object):
         'useDefaultDN',
         'useCertFile',
         'useKeyFile',
+        'globusConfig'
         ]
 
     def __init__(self, userProfileDir, userInterface):
@@ -203,8 +204,6 @@ class CertificateManager(object):
 
         userInterface - the CMUserInterface object through which interactions
         with the user are managed.
-
-
         """
 
         self.userInterface = userInterface
@@ -214,6 +213,11 @@ class CertificateManager(object):
         self.defaultIdentity = None
         self.issuedGlobusWarning = 0
 
+        # I'd rather this were not conditional and the config object
+        # were either a required argument, or entirely created inside
+        # this object and an accessor could be used to retrieve it
+        self.globusConfig = GlobusConfig.instance(initIfNeeded=0)
+        
         self.useDefaultDN = None
         self.useCertFile = None
         self.useKeyFile = None
@@ -306,52 +310,16 @@ class CertificateManager(object):
 
         If we cannot find any globus state, callback to the user interface for that
         as well. That's a harder problem to solve, but it's not up to us down here.
-
-        We use the pyGlobus low-level sslutilsc.get_certificate_locations call
-        to determine where Globus assumes things are going to be placed.
-        
         """
+        userCert = self.globusConfig.GetCertFileName()
+        userKey = self.globusConfig.GetKeyFileName()
+        caDir = self.globusConfig.GetCACertDir()
 
-        try:
-            
-            certLocations = get_certificate_locations()
-
-            if certLocations is None:
-                self.GetUserInterface().ReportError("We were not able to determine some Globus configuration\n" +
-                                                    "information required for the importation of an existing\n" +
-                                                    "Globus environment. We will proceed without doing that importation;\n" +
-                                                    "you may have to manually import your identity and trusted CA\n" +
-                                                    "certificates via the certificate managment interface.")
-                return
-            
-        except AttributeError:
-            if Platform.IsWindows():
-                sw = "WinGlobus"
-            else:
-                sw = "pyGlobus"
-                
-            self.GetUserInterface().ReportError(("It appears that your system has an out-of-date version of \n" +
-                                                "%(sw)s installed. You should check your configuration.\n" +
-                                                "We will attempt to work around the problem, but you may see\n" +
-                                                "other errors in the execution of your software.") %
-                                                {"sw": sw})
-            return
-
-        userCert = certLocations['user_cert']
-        userKey = certLocations['user_key']
-        caDir = certLocations['cert_dir']
-
-        # userKey = userCert = None
-
-        #
         # First the user cert.
-        #
 
         if userCert is not None and userKey is not None:
-            #
             # Shh, don't tell. Create a cert object so we can
             # extract the subject name to tell the user.
-            #
 
             try:
                 certObj = CertificateRepository.Certificate(userCert)
@@ -862,7 +830,7 @@ class CertificateManager(object):
             if os.path.isfile(spath):
                 shutil.copyfile(spath, os.path.join(self.caDir, "%s.signing_policy" % (nameHash)))
 
-        Utilities.setenv('X509_CERT_DIR', self.caDir)
+        self.globusConfig.SetCACertDir(self.caDir)
 
     def _InitEnvWithProxy(self):
         """
@@ -901,7 +869,7 @@ class CertificateManager(object):
                   proxyCert.GetPath(),
                   proxyCert.GetNotValidAfterText())
 
-        Utilities.setenv('X509_USER_PROXY', proxyCert.GetPath())
+        self.globusConfig.SetProxyFileName(proxyCert.GetPath())
 
         #
         # Clear the X509_USER_CERT, X509_USER_KEY, and
@@ -910,7 +878,8 @@ class CertificateManager(object):
         #
 
         for envar in ('X509_USER_CERT', 'X509_USER_KEY', 'X509_RUN_AS_SERVER'):
-            Utilities.unsetenv(envar)
+            if os.environ.has_key(envar):
+                del os.environ[envar]
 
     def _FindProxyCertificatePath(self, identity = None):
         """
@@ -920,73 +889,11 @@ class CertificateManager(object):
         for the identity we're creating a proxy (future support for
         multiple active identities).
         """
-
-        #
         # For now, ignore the value of identity.
         #
         # Look up in Globus for its idea of where a proxy cert
         # should be located.
-        #
-        # 
-        
-        try:
-            certLocations = get_certificate_locations()
-
-            if certLocations is None:
-                log.error("get_certificate_locations() returns None")
-                if not self.issuedGlobusWarning:
-                    self.GetUserInterface().ReportError("We were not able to determine some Globus configuration\n" +
-                                                        "information required for creating a proxy. We will work\n" +
-                                                        "around the problem, but it may be a symptom of other \n" +
-                                                        "configuration problems with the AGTk software.")
-                    self.issuedGlobusWarning = 1
-
-        except AttributeError:
-            #
-            # Hsm. We probably have a bad pyGlobus.
-            # Report an error to the user and work around it.
-            # 
-
-            log.exception("get_certificate_locations() not found")
-
-            if not self.issuedGlobusWarning:
-                if Platform.IsWindows():
-                    self.GetUserInterface().ReportError("It appears that your system has an out-of-date version of \n" +
-                                                        "WinGlobus installed. You should check your configuration.\n" +
-                                                        "We will attempt to work around the problem, but you may see\n" +
-                                                        "other errors in the execution of your software.")
-                    self.issuedGlobusWarning = 1
-                else:
-                    self.GetUserInterface().ReportError("It appears that your system has an out-of-date version of \n" +
-                                                        "pyGlobus installed. You should check your configuration.\n" +
-                                                        "We will attempt to work around the problem, but you may see\n" +
-                                                        "other errors in the execution of your software.")
-                    self.issuedGlobusWarning = 1
-
-            certLocations = None
-
-        #
-        # If we received None here, we may have a Globus instllation
-        # problem. Assign the proxy to be in the user temp directory.
-        #
-
-        if certLocations is None or certLocations['user_proxy'] is None:
-
-            if hasattr(os, 'getuid'):
-                uid = os.getuid()
-                userProxy = os.path.join(Platform.GetTempDir(), "x509up_u%s" % (uid,))
-            else:
-                user = Platform.Config.SystemConfig.instance().GetUsername()
-                temp = Platform.Config.UserConfig.instance().GetTempDir()
-                userProxy = os.path.join(temp, "x509_up_" + user)
-
-            log.error("Working around certLocations = None; assigned userProxy=%s", userProxy)
-
-        else:
-            
-            userProxy = certLocations['user_proxy']
-
-        return userProxy
+        return self.globusConfig.GetProxyFileName()
 
     def _VerifyGlobusProxy(self):
         """
@@ -1113,44 +1020,6 @@ class CertificateManager(object):
 
         return proxyCert
 
-
-    def RemoveUserProxyFromRegistry(self):
-        """
-        On windows, ensure that the x509_user_proxy setting is
-        not present in the registry. This interferes with
-        the X509_RUN_AS_SERVER setting.
-        """
-        
-        import _winreg
-        
-        try:
-            k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
-                                r"Software\Globus\GSI", 0,
-                                _winreg.KEY_ALL_ACCESS)
-        except WindowsError:
-            log.exception("could not open registry")
-            return
-        
-        try:
-            val = _winreg.QueryValueEx(k, "x509_user_proxy")
-            log.debug("Registry had a setting for the proxy: %s", val)
-
-
-        except WindowsError:
-            log.debug("No setting for user proxy")
-            _winreg.CloseKey(k)
-            return
-
-        try:
-            _winreg.DeleteValue(k, "x509_user_proxy")
-        except WindowsError:
-            log.exception("error deleting x509_user_proxy from registry")
-
-        try:
-            _winreg.CloseKey(k)
-        except WindowsError:
-            pass
-            
     def _InitEnvWithCert(self):
 
         log.debug("Initializing environment with unencrypted user cert %s",
@@ -1160,20 +1029,20 @@ class CertificateManager(object):
         keyPath = self.defaultIdentity.GetKeyPath()
 
 
-        #
-        # Ugh. If x509_user_proxy is set in the registry, X509_RUN_AS_SERVER is ignored.
-        #
+        # Ugh. If x509_user_proxy is set in the registry,
+        # X509_RUN_AS_SERVER is ignored.
 
-        if Platform.IsWindows():
-            self.RemoveUserProxyFromRegistry()
-         
-        Utilities.unsetenv('X509_USER_PROXY')
-        Utilities.setenv('X509_USER_CERT', certPath)
-        Utilities.setenv('X509_USER_KEY', keyPath)
-        Utilities.setenv('X509_RUN_AS_SERVER', '1')
+        self.globusConfig.RemoveProxyFileName()
+        
+        if os.environ.has_key('X509_USER_PROXY'):
+            del os.environ['X509_USER_PROXY']
+            
+        self.globusConfig.SetCertFileName(certPath)
+        self.globusConfig.SetKeyFileName(keyPath)
 
         import pyGlobus.utilc
-        print "prox: os='%s' gl='%s'" % ( os.getenv('X509_USER_PROXY'), pyGlobus.utilc.getenv('X509_USER_PROXY'))
+        print "PROXY TEST: os='%s' gl='%s'" % ( os.getenv('X509_USER_PROXY'),
+                                          pyGlobus.utilc.getenv('X509_USER_PROXY'))
 
     def SetDefaultIdentity(self, certDesc):
         """
@@ -1199,6 +1068,9 @@ class CertificateManager(object):
 
         certDesc.SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
 
+    def GetGlobusConfig(self):
+        return self.globusConfig
+    
     def GetDefaultIdentity(self):
         return self.defaultIdentity
 
