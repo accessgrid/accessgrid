@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.11 2004-03-16 07:14:50 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.12 2004-03-18 20:48:43 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,7 +17,7 @@ from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
 from AccessGrid import Platform
-from AccessGrid.Platform.Config import AGTkConfig
+from AccessGrid.Platform.Config import AGTkConfig, UserConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
 class AudioService( AGService ):
@@ -194,7 +194,7 @@ class AudioService( AGService ):
       """
       Set the identity of the user driving the node
       """
-      Platform.SetRtpDefaults( profile )
+      UserConfig.instance().SetRtpDefaults( profile )
    SetIdentity.soap_export_as = "SetIdentity"
 
 
