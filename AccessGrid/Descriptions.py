@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.40 2004-02-13 22:06:02 lefvert Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.41 2004-02-23 22:55:07 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.40 2004-02-13 22:06:02 lefvert Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.41 2004-02-23 22:55:07 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -111,6 +111,13 @@ class DataDescription(ObjectDescription):
         self.checksum = None
         self.owner = None
         self.type = None # this is venue data
+        self.lastModified = None
+
+    def SetLastModified(self, date):
+        self.lastModified = date
+
+    def GetLastModified(self):
+        return self.lastModified
 
     def SetType(self, type):
         self.type = type
@@ -172,7 +179,12 @@ def CreateDataDescription(dataDescStruct):
     dd.SetSize(dataDescStruct.size)
     dd.SetChecksum(dataDescStruct.checksum)
     dd.SetOwner(dataDescStruct.owner)
-
+    try:
+        dd.SetLastModified(dataDescStruct.lastModified)
+    except:
+        # This is an old description, has no lastModified parameter
+        pass
+    
     return dd
 
 class ConnectionDescription(ObjectDescription):
