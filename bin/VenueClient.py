@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.181 2003-08-04 22:19:17 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.182 2003-08-07 16:21:55 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -701,11 +701,12 @@ class VenueClientUI(wxApp):
 
             # Enable/disable the unicast menu entry appropriately
             enableUnicastToggle = 0
-            if self.venueClient.streamDescList[0].__dict__.has_key("networkLocations"):
-                netlocs = self.venueClient.streamDescList[0].networkLocations
-                for netloc in netlocs:
-                    if netloc.type == "unicast":
-                        enableUnicastToggle = 1
+            if len(self.venueClient.streamDescList):
+                if self.venueClient.streamDescList[0].__dict__.has_key("networkLocations"):
+                    netlocs = self.venueClient.streamDescList[0].networkLocations
+                    for netloc in netlocs:
+                        if netloc.type == "unicast":
+                            enableUnicastToggle = 1
             self.frame.SetUnicastEnabled(enableUnicastToggle)
             
             # Call EnterVenue on users that are following you.
