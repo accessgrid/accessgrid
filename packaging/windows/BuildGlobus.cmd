@@ -5,9 +5,9 @@ REM the magic is, build debuglib, build debugthreadedlib, then
 REM rebuild gss_assist and gss_api nonthreaded again
 REM
 
-set SOURCE="%1"
-set AGDIR="%2"
-set DEST="%3"
+set SOURCE=%1
+set AGDIR=%2
+set DEST=%3
 
 set PDIR=%SOURCE%\WinGlobus\WinProjects\SourceSolutions
 
