@@ -6,23 +6,23 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.35 2004-02-19 17:59:02 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.36 2004-03-04 23:04:47 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.35 2004-02-19 17:59:02 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.36 2004-03-04 23:04:47 turam Exp $"
 __docformat__ = "restructuredtext en"
 
-from AccessGrid.hosting.pyGlobus.Server import Server
 import sys
 import signal, time, os
 import logging, logging.handlers
 import getopt
 
-from AccessGrid.AGNodeService import AGNodeService
+from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
+from AccessGrid.hosting import Server
 
 from AccessGrid import PersonalNode
 from AccessGrid.Platform import GetUserConfigDir
@@ -40,7 +40,7 @@ def Shutdown():
     """
     global running
     global server
-    server.stop()
+    server.Stop()
     # shut down the node service, saving config or whatever
     running = 0
 
@@ -140,7 +140,7 @@ else:
 
 # Start up the logging
 log = logging.getLogger("AG")
-log.setLevel(logging.WARN)
+log.setLevel(logging.DEBUG)
 hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
 fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
 hdlr.setFormatter(fmt)
@@ -159,10 +159,12 @@ except:
     log.debug("Failed to load default node configuration")
 
 # Create a hosting environment
-server = Server( port , auth_callback=AuthCallback )
+server = Server( ('localhost',port))
 
 # Create the Node Service Service
-server.BindService(nodeService, "NodeService")
+nsi = AGNodeServiceI(nodeService)
+server.RegisterObject(nsi, path="/NodeService")
+url = server.GetURLForObject(nodeService)
 
 #
 # If we are starting as a part of a personal node,
@@ -178,7 +180,7 @@ if pnode is not None:
     log.debug("Personal node done")
 
 # Tell the world where to find the service
-log.info("Starting service; URI: %s", nodeService.get_handle())
+log.info("Starting service; URI: %s", url)
 
 # Register a signal handler so we can shut down cleanly
 try:
@@ -187,9 +189,9 @@ except SystemError, v:
     log.exception(v)
 
 # Run the service
-server.run_in_thread()
+server.RunInThread()
 
-print "AGNodeService URL: ", nodeService.GetHandle()
+print "AGNodeService URL: ", url
 
 # Keep the main thread busy so we can catch signals
 running = 1

@@ -5,17 +5,15 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.44 2004-02-24 23:29:25 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.45 2004-03-04 23:04:47 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.44 2004-02-24 23:29:25 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.45 2004-03-04 23:04:47 turam Exp $"
 __docformat__ = "restructuredtext en"
-
-from AccessGrid.hosting.pyGlobus import Client
 
 import os
 import sys
@@ -25,9 +23,8 @@ import ConfigParser
 import logging
 import shutil
 
-from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
-from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
-from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
+from AccessGrid.hosting import Client
+from AccessGrid.NetUtilities import GetHostname
 
 from AccessGrid import Platform
 from AccessGrid.Descriptions import AGServiceDescription
@@ -41,7 +38,7 @@ log = logging.getLogger("AG.NodeService")
 
 class SetStreamException(Exception): pass
 
-class AGNodeService( ServiceBase ):
+class AGNodeService:
     """
     AGNodeService is the central engine of an Access Grid node.
     It is the contact point for clients to access underlying Service Managers
@@ -129,7 +126,6 @@ class AGNodeService( ServiceBase ):
         except:
             log.exception("Exception in AGNodeService.AddAuthorizedUser.")
             raise Exception("Failed to add user authorization: " + authorizedUser )
-    AddAuthorizedUser.soap_export_as = "AddAuthorizedUser"
 
 
     def RemoveAuthorizedUser( self, authorizedUser ):
@@ -140,7 +136,6 @@ class AGNodeService( ServiceBase ):
         except:
             log.exception("Exception in AGNodeService.RemoveAuthorizedUser.")
             raise Exception("Failed to remove user authorization: " + authorizedUser )
-    RemoveAuthorizedUser.soap_export_as = "RemoveAuthorizedUser"
 
 
     ####################
@@ -176,8 +171,6 @@ class AGNodeService( ServiceBase ):
                             serviceManager.uri )
             raise Exception("Failed to set Service Manager user authorization:" + 
                             serviceManager.uri )
-        
-    AddServiceManager.soap_export_as = "AddServiceManager"
 
     def RemoveServiceManager( self, serviceManagerToRemove ):
         """Remove a service manager"""
@@ -188,13 +181,11 @@ class AGNodeService( ServiceBase ):
             log.exception("Exception in AGNodeService.RemoveServiceManager.")
             raise Exception("AGNodeService.RemoveServiceManager failed: " + 
                             serviceManagerToRemove.uri )
-    RemoveServiceManager.soap_export_as = "RemoveServiceManager"
 
 
     def GetServiceManagers( self ):
         """Get list of service managers """
         return self.serviceManagers.values()
-    GetServiceManagers.soap_export_as = "GetServiceManagers"
 
 
     ####################
@@ -230,12 +221,10 @@ class AGNodeService( ServiceBase ):
 
         return serviceDescription
 
-    AddService.soap_export_as = "AddService"
 
     def GetAvailableServices( self ):
         """Get list of available services """
         return self.servicePackageRepository.GetServiceDescriptions()
-    GetAvailableServices.soap_export_as = "GetAvailableServices"
 
 
     def GetServices( self ):
@@ -255,7 +244,6 @@ class AGNodeService( ServiceBase ):
             log.exception("Exception in AGNodeService.GetServices.")
             raise Exception("AGNodeService.GetServices failed: " + str( sys.exc_value ) )
         return services
-    GetServices.soap_export_as = "GetServices"
 
     def SetServiceEnabled(self, serviceUri, enabled):
         """
@@ -271,7 +259,6 @@ class AGNodeService( ServiceBase ):
             log.exception(serviceUri)
             raise Exception(e.faultstring)
 
-    SetServiceEnabled.soap_export_as = "SetServiceEnabled"
 
 
     def SetServiceEnabledByMediaType(self, mediaType, enableFlag):
@@ -282,10 +269,11 @@ class AGNodeService( ServiceBase ):
         serviceList = self.GetServices()
         for service in serviceList:
             serviceMediaTypes = map( lambda cap: cap.type, service.capabilities )
+            print "service : ", service.name, serviceMediaTypes
             if mediaType in serviceMediaTypes:
+                print " -- set enable ", enableFlag
                 self.SetServiceEnabled( service.uri, enableFlag) 
 
-    SetServiceEnabledByMediaType.soap_export_as = "SetServiceEnabledByMediaType"
 
     def StopServices(self):
         """
@@ -303,7 +291,6 @@ class AGNodeService( ServiceBase ):
         if len(exceptionText):
             raise Exception(exceptionText)
 
-    StopServices.soap_export_as = "StopServices"
 
 
 
@@ -336,7 +323,6 @@ class AGNodeService( ServiceBase ):
         if len(exceptionText):
             raise SetStreamException(exceptionText)
                     
-    SetStreams.soap_export_as = "SetStreams"
     
     def AddStream( self, streamDescription ):
         self.streamDescriptionList[streamDescription.capability.type] = streamDescription
@@ -346,7 +332,6 @@ class AGNodeService( ServiceBase ):
         for service in services:
             self.__SendStreamsToService( service.uri )
 
-    AddStream.soap_export_as = "AddStream"
 
     def RemoveStream( self, streamDescription ):
 
@@ -357,7 +342,6 @@ class AGNodeService( ServiceBase ):
         # Stop services using that stream's media type
         # (er, not yet)
 
-    RemoveStream.soap_export_as = "RemoveStream"
 
 
     def LoadConfiguration( self, configName ):
@@ -488,7 +472,6 @@ class AGNodeService( ServiceBase ):
         if len(exceptionText):
             raise Exception(exceptionText)
 
-    LoadConfiguration.soap_export_as = "LoadConfiguration"
 
 
     def StoreConfiguration( self, configName ):
@@ -581,7 +564,6 @@ class AGNodeService( ServiceBase ):
         log.exception("Exception in AGNodeService.StoreConfiguration.")
         raise Exception("Error while saving configuration")
     
-    StoreConfiguration.soap_export_as = "StoreConfiguration"
 
 
     def SetDefaultConfiguration( self, configName ):
@@ -599,13 +581,11 @@ class AGNodeService( ServiceBase ):
         # Write out the node service config file with the new default config name
         self.__WriteConfigFile()
 
-    SetDefaultConfiguration.soap_export_as = "SetDefaultConfiguration"
 
     def GetConfigurations( self ):
         """Get list of available configurations"""
         files = os.listdir( self.configDir )
         return files
-    GetConfigurations.soap_export_as = "GetConfigurations"
 
 
     ####################
@@ -625,7 +605,6 @@ class AGNodeService( ServiceBase ):
             log.exception("Exception in AGNodeService.GetCapabilities.")
             raise Exception("AGNodeService.GetCapabilities failed: " + str( sys.exc_value ) )
         return capabilities
-    GetCapabilities.soap_export_as = "GetCapabilities"
 
     def SetIdentity(self, profile):
         """
@@ -641,7 +620,6 @@ class AGNodeService( ServiceBase ):
                 Client.Handle( service.uri ).GetProxy().SetIdentity(profile)
             except:
                 log.exception("Exception setting identity; continuing")
-    SetIdentity.soap_export_as = "SetIdentity"
 
     ####################
     ## INTERNAL methods
@@ -835,4 +813,258 @@ class AGServicePackageRepository:
         if invalidServicePackages:
             log.exception("AGServicePackageRepository.__ReadServicePackages: %i invalid service package found" %invalidServicePackages)
             raise InvalidServicePackage('%d invalid service package(s) found' % invalidServicePackages )
+
+
+
+
+
+from AccessGrid.hosting.SOAPInterface import SOAPInterface
+
+class AGNodeServiceI(SOAPInterface):
+    """
+    Interface Class for the AGNodeService
+    """
+
+    def __init__(self,impl):
+
+        SOAPInterface.__init__(self, impl)
+
+    def AddAuthorizedUser(self, authorizedUser):
+        """
+        Interface to add authorized users
+        """
+
+        self.impl.AddAuthorizedUser(authorizedUser)
+
+    def RemoveAuthorizedUser( self, authorizedUser ):
+        """
+        Interface to remove authorized user
+        """
+
+        self.impl.RemoveAuthorizedUser(authorizedUser)
+
+    def AddServiceManager( self, serviceManager ):
+        """
+        Interface to add service manager
+
+        **Arguments:**
+            *serviceManager* A description of the service manager
+        **Raises:**
+        **Returns:**
+        """
+
+        self.impl.AddServiceManager(serviceManager)
+
+    def RemoveServiceManager( self, serviceManagerToRemove ):
+        """
+        Interface to remove service manager
+
+        **Arguments:**
+            *serviceManagerToRemove* A description of the service manager to remove
+        **Raises:**
+        **Returns:**
+        """
+
+        self.impl.RemoveServiceManager(serviceManagerToRemove)
+
+    def GetServiceManagers(self):
+        """
+        Interface to get list of service managers
+
+        **Arguments:**
+        **Raises:**
+        **Returns:**
+            a list of AGServiceManagerDescriptions
+        """
+
+        return self.impl.GetServiceManagers()
+
+    def AddService( self, servicePackageUri, serviceManagerUri, 
+                    resourceToAssign, serviceConfig ):
+        """
+        Interface to add a service
+
+        **Arguments:**
+            *servicePackageUri* The URI from where the service package can be retrieved
+            *serviceManagerUri* The URI of the service manager to which the service should be added
+            *resourceToAssign* The resource to assign to the service
+            *serviceConfig* The service configuration to apply after adding the service
+        **Raises:**
+        **Returns:**
+        """
+
+        return self.impl.AddService(servicePackageUri, serviceManagerUri, 
+                    resourceToAssign, serviceConfig )
+
+    def GetAvailableServices(self):
+        """
+        Interface to get a list of available services
+
+        **Arguments:**
+        **Raises:**
+        **Returns:**
+            a list of AGServiceDescriptions
+        """
+
+        return self.impl.GetAvailableServices()
+
+    def GetServices(self):
+        """
+        Interface to get a list of services
+
+        **Arguments:**
+        **Raises:**
+        **Returns:**
+            a list of AGServiceDescriptions
+        """
+
+        return self.impl.GetServices()
+
+    def SetServiceEnabled(self, serviceUri, enabled):
+        """
+        Interface to enable/disable a service
+
+        **Arguments:**
+            *serviceUri* The URI of the service to enable/disable
+            *enabled* Flag whether to enable/disable
+        **Raises:**
+        **Returns:**
+        """
+
+        self.impl.SetServiceEnabled(serviceUri, enabled)
+
+    def SetServiceEnabledByMediaType(self, mediaType, enableFlag):
+        """
+        Interface to enable/disable services by media type
+
+        **Arguments:**
+            *mediaType* Media type of services to enable/disable
+            *enableFlag* Flag whether to enable/disable
+        **Raises:**
+        **Returns:**
+        """
+
+        self.impl.SetServiceEnabledByMediaType()
+
+    def StopServices(self):
+        """
+        Interface to stop services
+
+        **Arguments:**
+        **Raises:**
+        **Returns:**
+        """
+
+        self.impl.StopServices()
+
+    def SetStreams( self, streamDescriptionList ):
+        """
+        Interface to set streams used by node
+
+        **Arguments:**
+            *streamDescriptionList* List of StreamDescriptions
+        **Raises:**
+        **Returns:**
+        """
+
+        self.impl.SetStreams(streamDescriptionList)
+
+    def AddStream( self, streamDescription ):
+        """
+        Interface to add a stream
+
+        **Arguments:**
+            *streamDescription* The StreamDescription to add
+        **Raises:**
+        **Returns:**
+        """
+
+        self.impl.AddStream(streamDescription)
+
+    def RemoveStream( self, streamDescription ):
+        """
+        Interface to remove a stream
+
+        **Arguments:**
+            *streamDescription* The StreamDescription to remove
+        **Raises:**
+        **Returns:**
+        """
+
+        self.impl.RemoveStream(streamDescription)
+
+    def LoadConfiguration( self, configName ):
+        """
+        Interface to load a node configuration
+
+        **Arguments:**
+            *configName* Name under which to store the current configuration
+        **Raises:**
+        **Returns:**
+        """
+
+        self.impl.LoadConfiguration(configName)
+
+    def StoreConfiguration( self, configName ):
+        """
+        Interface to store a node configuration
+
+        **Arguments:**
+            *configName* Name of config file to load
+        **Raises:**
+        **Returns:**
+        """
+
+        self.impl.StoreConfiguration(configName)
+
+    def SetDefaultConfiguration( self, configName ):
+        """
+        Interface to set the default node configuration
+
+        **Arguments:**
+            *configName* Name of config file to use as default for the node
+        **Raises:**
+        **Returns:**
+        """
+
+        self.impl.SetDefaultConfiguration(configName)
+
+    def GetConfigurations(self):
+        """
+        Interface to get a list of node configurations
+
+        **Arguments:**
+        **Raises:**
+        **Returns:**
+        Interface to get list of service 
+            a list of node configuration names
+        """
+
+        return self.impl.GetConfigurations()
+
+    def GetCapabilities(self):
+        """
+        Interface to get a list of the node's capabilities
+        (aggregated from its services)
+
+        **Arguments:**
+        **Raises:**
+        **Returns:**
+            a list of the capabilities of the node
+               (or, its services)
+        """
+
+        return self.impl.GetCapabilities()
+
+    def SetIdentity(self, profile):
+        """
+        Interface to set the identity of the node executor
+
+        **Arguments:**
+            *profile* ClientProfile of the person commanding the node
+        **Raises:**
+        **Returns:**
+        """
+
+        self.impl.SetIdentity()
 
