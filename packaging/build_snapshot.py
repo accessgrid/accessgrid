@@ -1,3 +1,4 @@
+#!/usr/bin/python2
 #
 # Build a windows installer snapshot.
 #
@@ -80,9 +81,10 @@ DestDir = os.path.join(SourceDir, "dist-%s" % BuildTime)
 
 # The directory we're building from
 if options.nocheckout:
-    BuildDir = os.path.join(SourceDir, "AccessGrid")
+    BuildDirName = "AccessGrid"
 else:
-    BuildDir = os.path.join(SourceDir, "AccessGrid-%s" % BuildTime)
+    BuildDirName = "AccessGrid-%s" % BuildTime
+BuildDir = os.path.join(SourceDir,BuildDirName)
 
 #
 # Grab stuff from cvs
@@ -94,9 +96,13 @@ if not options.nocheckout:
 
     # WE ASSUME YOU HAVE ALREADY LOGGED IN WITH:
     # cvs -d :pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl login
+    
+    # Go to the source dir, and checkout using relative path;
+    # cvs (linux) complains about checking out to an absolute path
+    os.chdir(SourceDir)
 
     cvs_cmd = "cvs -z6 -d %s export -d %s -D now AccessGrid" % (cvsroot,
-                                                                BuildDir)
+                                                                BuildDirName)
     if options.verbose:
         print "BUILD: Checking out code with command: ", cvs_cmd
 
@@ -107,10 +113,7 @@ if not options.nocheckout:
 #
 
 if not options.nocheckout:
-    if sys.platform == 'win32':
-        RunDir = os.path.join(BuildDir, "packaging")
-    else:
-        RunDir = os.path.join(BuildDir, "packaging")
+    RunDir = os.path.join(BuildDir, "packaging")
 
     if options.verbose:
         print "BUILD: Changing to directory: %s" % RunDir
