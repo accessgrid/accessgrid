@@ -107,7 +107,6 @@ mv bin usr/bin
 %{prefix}/bin/CertificateRequestTool.py
 %{prefix}/bin/certmgr.py
 %{prefix}/bin/agpm.py
-%{prefix}/bin/SetupVideo.py
 %{sharedir}/doc/AccessGrid
 %defattr(-,root,root)
 #
@@ -189,7 +188,6 @@ def delcompiled(module):
         except os.error:
             pass
 
-delcompiled(AccessGrid.Platform)
 delcompiled(AccessGrid.hosting.SOAPpy)
 delcompiled(AccessGrid.hosting)
 delcompiled(AccessGrid)
