@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.301 2003-10-29 20:53:14 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.302 2003-10-29 21:03:56 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.301 2003-10-29 20:53:14 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.302 2003-10-29 21:03:56 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -94,7 +94,8 @@ class VenueClientFrame(wxFrame):
     ID_VENUE_APPLICATION = wxNewId() 
     ID_VENUE_APPLICATION_JOIN = wxNewId()
     ID_VENUE_APPLICATION_DELETE = wxNewId()
-    ID_VENUE_APPLICATION_PROPERTIES = wxNewId() 
+    ID_VENUE_APPLICATION_PROPERTIES = wxNewId()
+    ID_VENUE_SAVE_TEXT = wxNewId() 
     ID_VENUE_OPEN_CHAT = wxNewId()
     ID_VENUE_CLOSE = wxNewId()
     ID_PROFILE = wxNewId()
@@ -207,7 +208,11 @@ class VenueClientFrame(wxFrame):
      	self.applicationMenu = self.BuildAppMenu(None, "")
         self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"Add &Application...",
                               self.applicationMenu)
-        
+
+        self.venue.AppendSeparator()
+        self.venue.Append(self.ID_VENUE_SAVE_TEXT,"Save Text...",
+                             "Save text from chat to file.")
+        self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES,"Administrate Roles...",
                              "Change venue authorization settings.")
         self.venue.AppendSeparator()
@@ -359,7 +364,6 @@ class VenueClientFrame(wxFrame):
     def HideMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
-
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
         #self.menubar.Enable(self.ID_MYVENUE_GOTODEFAULT, false)
         self.menubar.Enable(self.ID_MYVENUE_SETDEFAULT, false)
@@ -392,6 +396,7 @@ class VenueClientFrame(wxFrame):
                 
         EVT_MENU(self, self.ID_VENUE_DATA_OPEN, self.OpenData)
         EVT_MENU(self, self.ID_VENUE_DATA_ADD, self.OpenAddDataDialog)
+        EVT_MENU(self, self.ID_VENUE_SAVE_TEXT, self.SaveText)
         EVT_MENU(self, self.ID_VENUE_ADMINISTRATE_VENUE_ROLES, self.OpenModifyVenueRolesDialog)
         EVT_MENU(self, self.ID_VENUE_PERSONAL_DATA_ADD, self.OpenAddPersonalDataDialog)
         EVT_MENU(self, self.ID_VENUE_DATA_SAVE, self.SaveData)
@@ -649,8 +654,6 @@ class VenueClientFrame(wxFrame):
                                      
         dlg.Destroy()
 
-    
-
     def OpenDataProfile(self, event):
         id = self.contentListPanel.tree.GetSelection()
         data = self.contentListPanel.tree.GetItemData(id).GetData()
@@ -701,6 +704,44 @@ class VenueClientFrame(wxFrame):
         else:
             self.__showNoSelectionDialog("Please, select the participant yow want to view information about") 
          
+    def SaveText(self, event):
+        '''
+        Saves text from text chat to file.
+        '''
+        
+        wildcard = "Text Files |*.txt|" \
+                   "All Files |*.*"
+        dlg = wxFileDialog(self, "Choose a file:", "", "",
+                           wildcard, style = wxSAVE)
+        
+        # Open file dialog
+        if dlg.ShowModal() == wxID_OK:
+            filePath = dlg.GetPath()
+            fileName = (os.path.split(filePath))[1]
+            text = self.textClientPanel.TextOutput.GetValue()
+
+            # Check if file already exists
+            if os.access(filePath, os.R_OK):
+                messageDlg = wxMessageDialog(self, "The file %s already exists. Do you want to replace it?"%fileName, "Save Text" , style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT)
+                # Do we want to overwrite?
+                if messageDlg.ShowModal() == wxID_NO:
+                    log.debug("VenueClientFrame.SaveText: Do not replace existing text file.")
+                    messageDlg.Destroy()
+                    # Do not save text; return
+                    return
+                else:
+                    messageDlg.Destroy()
+                
+            # Save the text from chat in file.
+            try:
+                textFile = open(filePath, "w")
+                textFile.write(text)
+                textFile.close()
+            except:
+                log.exception("VenueClientFrame.SaveText: Can not save text.")
+                MessageDialog(self,"Text could not be saved.", "Save Text", style = wxICON_ERROR)
+        dlg.Destroy()
+        
     def __loadMyVenues(self, venueURL = None):
         for id in self.myVenuesMenuIds.values():
             self.myVenues.Delete(id)
