@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.7 2004-03-26 20:39:51 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.8 2004-03-26 22:24:16 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.7 2004-03-26 20:39:51 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.8 2004-03-26 22:24:16 olson Exp $"
 
 import os
 import sys
@@ -28,7 +28,6 @@ log = Log.GetLogger(Log.Toolkit)
 # To speed things up on windows
 from pyGlobus import utilc, gsic, ioc
 from AccessGrid.Security import Utilities as SecurityUtilities
-from AccessGrid import Utilities
 utilc.globus_module_activate(gsic.get_module())
 utilc.globus_module_activate(ioc.get_module())
 SecurityUtilities.CreateTCPAttrAlwaysAuth()
@@ -357,7 +356,8 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             myip = "127.0.0.1"
             log.exception("Failed to determine local IP address, using %s", myip)
 
-        Utilities.setenv("GLOBUS_HOSTNAME", myip)
+        import AccessGrid.Utilities
+        AccessGrid.Utilities.setenv("GLOBUS_HOSTNAME", myip)
 
     def _InitializeRegistry(self):
         """

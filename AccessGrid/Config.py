@@ -3,21 +3,19 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.3 2004-03-26 20:41:16 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.4 2004-03-26 22:23:56 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.3 2004-03-26 20:41:16 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.4 2004-03-26 22:23:56 olson Exp $"
 
 import sys
 import struct
 import time
 import select
 import socket
-
-from AccessGrid import Utilities
 
 class AGTkConfig:
     """
