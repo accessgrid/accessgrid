@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.93 2003-09-10 17:46:45 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.94 2003-09-10 18:47:54 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -668,7 +668,7 @@ class VenueListPanel(wxPanel):
                        " is the default venue on this server.  If you delete this venue, \nit is highly recommended that you select another venue as default from the \n'Modify Venue' dialog.  \n\nAre you sure you want to delete this venue?" 
                 
             else:
-                text =  "Are you sure you want to delete " + venueToDelete.name
+                text =  "Are you sure you want to delete " + venueToDelete.name +"?"
                
 
             text2 = "Delete venue"
@@ -905,7 +905,7 @@ class AdministratorsListPanel(wxPanel):
         index = self.administratorsList.GetSelection()
         if (index != -1):
             adminToDelete = self.administratorsList.GetClientData(index)
-            text =  "Are you sure you want to delete " + self.application.GetCName(adminToDelete)
+            text =  "Are you sure you want to delete " + self.application.GetCName(adminToDelete) + "?"
             text2 = "Delete administrator"
             message = wxMessageDialog(self, text, text2,
                                       style = wxOK|wxCANCEL|wxICON_INFORMATION)
@@ -1936,7 +1936,7 @@ class AdministratorParamFrame(wxDialog):
         wxDialog.__init__(self, *args)
         self.Centre()
         self.SetSize(wxSize(400, 40))
-        self.text = wxStaticText(self, -1, "Please, fill in the distinguished name for the administator you want to add.")
+        self.text = wxStaticText(self, -1, "Please, fill in the distinguished name for the administrator you want to add.")
         self.informationBox = wxStaticBox(self, -1, "Information")
         self.nameLabel =  wxStaticText(self, -1, "DN Name:")
         self.name =  wxTextCtrl(self, -1, "",  size = wxSize(400, 20))
@@ -2070,11 +2070,11 @@ class DigitValidator(wxPyValidator):
             return false
 
         elif self.flag == IP and (int(val)<0 or int(val)>255):
-            MessageDialog(None, "Allowed values for IP Address are between 224.0.0.0 - 239.225.225.225", "Notification")
+            MessageDialog(None, "Allowed values for IP Address are between 224.0.0.0 - 239.255.255.255", "Notification")
             return false
 
         elif self.flag == IP_1 and (int(val)<224 or int(val)>239):
-            MessageDialog(None, "Allowed values for IP Address are between 224.0.0.0 - 239.225.225.225", "Notification")
+            MessageDialog(None, "Allowed values for IP Address are between 224.0.0.0 - 239.255.255.255", "Notification")
             return false
 
         elif index == 0 and self.flag == MASK:
