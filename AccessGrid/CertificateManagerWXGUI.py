@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.31 2003-10-14 04:26:35 judson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.32 2004-02-23 16:50:40 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.31 2003-10-14 04:26:35 judson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.32 2004-02-23 16:50:40 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -36,6 +36,7 @@ from AccessGrid import CertificateManager
 from AccessGrid import CertificateRepository
 from AccessGrid.CertificateRequestTool import CertificateRequestTool, CertificateStatusDialog
 from AccessGrid.CRSClient import CRSClient, CRSClientInvalidURL, CRSClientConnectionFailed
+from AccessGrid.hosting.pyGlobus import ProxyGenExceptions
 
 #
 # Custom event types for the cert browser.
@@ -163,69 +164,69 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         i = wxNewId()
         certMenu.Append(i, "Import Identity Certificate")
         EVT_MENU(win, i,
-                 lambda event, win=win, self=self: self.ImportIdentityCert(event, win))
+                 lambda event, win=win, self=self: self.OnImportIdentityCert(event, win))
 
         i = wxNewId()
         certMenu.Append(i, "View &Identity Certificates")
         EVT_MENU(win, i,
-                 lambda event, win=win, self=self: self.OpenIdentityCertDialog(event, win))
+                 lambda event, win=win, self=self: self.OnOpenIdentityCertDialog(event, win))
 
         certMenu.AppendSeparator()
 
         i = wxNewId()
         certMenu.Append(i, "Import Trusted CA Certificate")
         EVT_MENU(win, i,
-                 lambda event, win=win, self=self: self.ImportTrustedCert(event, win))
+                 lambda event, win=win, self=self: self.OnImportTrustedCert(event, win))
 
         i = wxNewId()
         certMenu.Append(i, "View &Trusted CA Certificates")
         EVT_MENU(win, i,
-                 lambda event, win=win, self=self: self.OpenTrustedCertDialog(event, win))
+                 lambda event, win=win, self=self: self.OnOpenTrustedCertDialog(event, win))
 
         certMenu.AppendSeparator()
 
         i = wxNewId()
         certMenu.Append(i, "Import Default Globus Certificates")
         EVT_MENU(win, i,
-                 lambda event, win=win, self=self: self.ImportGlobusDefaultEnv(event, win))
+                 lambda event, win=win, self=self: self.OnImportGlobusDefaultEnv(event, win))
 
         i = wxNewId()
         certMenu.Append(i, "Request a certificate")
         EVT_MENU(win, i,
-                 lambda event, win=win, self=self: self.OpenCertRequestDialog(event, win))
+                 lambda event, win=win, self=self: self.OnOpenCertRequestDialog(event, win))
 
         i = wxNewId()
         certMenu.Append(i, "View pending requests")
         EVT_MENU(win, i,
-                 lambda event, win=win, self=self: self.OpenPendingRequestsDialog(event, win))
+                 lambda event, win=win, self=self: self.OnOpenPendingRequestsDialog(event, win))
 
         return certMenu
 
-    def ImportTrustedCert(self, event, win):
+    def OnImportTrustedCert(self, event, win):
         dlg = TrustedCertDialog(win, -1, "View trusted certificates",
                                 self.certificateManager)
         dlg.OnCertImport(event)
         dlg.Destroy()
 
-    def OpenTrustedCertDialog(self, event, win):
+    def OnOpenTrustedCertDialog(self, event, win):
         dlg = TrustedCertDialog(win, -1, "View trusted certificates",
                                 self.certificateManager)
         dlg.ShowModal()
         dlg.Destroy()
 
-    def ImportIdentityCert(self, event, win):
+    def OnImportIdentityCert(self, event, win):
         dlg = IdentityCertDialog(win, -1, "View user identity certificates",
                                 self.certificateManager)
         dlg.OnCertImport(event)
         dlg.Destroy()
 
-    def OpenIdentityCertDialog(self, event, win):
+    def OnOpenIdentityCertDialog(self, event, win):
         dlg = IdentityCertDialog(win, -1, "View user identity certificates",
                                 self.certificateManager)
         dlg.ShowModal()
         dlg.Destroy()
 
-    def ImportGlobusDefaultEnv(self, event, win):
+    def OnImportGlobusDefaultEnv(self, event, win):
         certRepo = self.certificateManager.GetCertificateRepository()
         try:
             self.certificateManager.InitRepoFromGlobus(certRepo)
@@ -243,10 +244,10 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
 
 
-    def OpenCertRequestDialog(self, event, win):
+    def OnOpenCertRequestDialog(self, event, win):
         self.RunCertificateRequestTool(win)
 
-    def OpenPendingRequestsDialog(self, event, win):
+    def OnOpenPendingRequestsDialog(self, event, win):
         self.RunCertificateStatusTool(win)
 
     def InitGlobusEnvironment(self):
@@ -299,14 +300,10 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                 if not retry:
                     break
 
-#        print "done, success=", success
-
-        return success
-
     def HandleNoCertificateInteraction(self):
         """
         Encapsulate the user interaction that takes place when the
-        app starts up and tehre are no users.
+        app starts up and there are no identity certificates installed.
 
         This should check for pending certificates and bring up the
         status dialog if there are.
@@ -333,7 +330,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
     def RunCertificateRequestTool(self, win = None):
         reqTool = CertificateRequestTool(win,
-                                         certificateType = 'IDENTITY',
+                                         certificateType = None,
                                          createIdentityCertCB = self.CreateCertificateRequestCB)
         reqTool.Destroy()
 
@@ -418,7 +415,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
                 print "Proxy created"
                 break
-            except:
+            except ProxyGenExceptions.InvalidPassphraseException:
                 dlg = wxMessageDialog(None, "Invalid passphrase. Try again?",
                                       "Invalid passphrase",
                                       style= wxYES_NO | wxYES_DEFAULT)
@@ -427,8 +424,127 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
                 if rc != wxID_YES:
                     return 0
+            except ProxyGenExceptions.GridProxyInitError, e:
+                msg = "Error in proxy initialization:\n"
+                msg += e.args[0] 
+                if e.args[1] != "":
+                    msg += "\n" + e.args[1]
+                msg += "\nTry again? "
+                dlg = wxMessageDialog(None, msg,
+                                      "Error in proxy initialization",
+                                      style= wxYES_NO | wxYES_DEFAULT)
+                rc = dlg.ShowModal()
+                dlg.Destroy()
 
+                if rc != wxID_YES:
+                    return 0
+                
         return 1
+
+    def RequestCertificate(self, reqInfo, password,
+                           proxyEnabled, proxyHost, proxyPort):
+        """
+        Request a certificate.
+
+        reqInfo is an instance of CertificateManager.CertificateRequestInfo.
+
+        Perform the actual certificate request mechanics.
+
+        Returns 1 on success, 0 on failure.
+        """
+
+        log.debug("RequestCertificate: Create a certificate request")
+        log.debug("Proxy enabled: %s value: %s:%s", proxyEnabled, proxyHost, proxyPort)
+
+        try:
+            repo = self.certificateManager.GetCertificateRepository()
+
+            #
+            # Ptui. Hardcoding name for the current AGdev CA.
+            # Also hardcoding location of submission URL.
+            #
+
+            submitServerURL = "http://www-unix.mcs.anl.gov/~judson/certReqServer.cgi"
+
+            name = reqInfo.GetDN()
+            log.debug("Requesting certificate for dn %s", name)
+            log.debug("reqinfo isident: %s info: %s", reqInfo.IsIdentityRequest(), str(reqInfo))
+
+            #
+            # Service/host certs don't have encrypted private keys.
+            #
+            if not reqInfo.IsIdentityRequest():
+                password = None
+
+            certificateRequest = repo.CreateCertificateRequest(name, password)
+
+            pem =  certificateRequest.ExportPEM()
+
+            log.debug("SubmitRequest:Validate: ExportPEM returns %s", pem)
+            log.debug("SubmitRequest:Validate: subj is %s",
+                      certificateRequest.GetSubject())
+            log.debug("SubmitRequest:Validate: mod is %s",
+                      certificateRequest.GetModulus())
+            log.debug("SubmitRequest:Validate:modhash is %s",
+                      certificateRequest.GetModulusHash())
+
+            if proxyEnabled:
+                certificateClient = CRSClient(submitServerURL, proxyHost, proxyPort)
+            else:
+                certificateClient = CRSClient(submitServerURL)
+
+            try:
+                requestId = certificateClient.RequestCertificate(reqInfo.GetEmail(), pem)
+
+                log.debug("SubmitRequest:Validate:Request id is %s", requestId)
+
+                certificateRequest.SetMetadata("AG.CertificateManager.requestToken",
+                                               str(requestId))
+                certificateRequest.SetMetadata("AG.CertificateManager.requestURL",
+                                               submitServerURL)
+                certificateRequest.SetMetadata("AG.CertificateManager.requestType",
+                                               reqInfo.GetType())
+                certificateRequest.SetMetadata("AG.CertificateManager.creationTime",
+                                               str(int(time.time())))
+
+                return 1
+            except CRSClientInvalidURL:
+                MessageDialog(None,
+                              "Certificate request failed: invalid request URL",
+                              style = wxICON_ERROR)
+                return 0
+            except CRSClientConnectionFailed:
+                if proxyEnabled:
+                    MessageDialog(None,
+                                  "Certificate request failed: Connection failed.\n"  +
+                                  "Did you specify the http proxy address correctly?",
+                                  style = wxICON_ERROR)
+                else:
+                    MessageDialog(None,
+                                  "Certificate request failed: Connection failed.\n"  +
+                                  "Do you need to configure an http proxy address?",
+                                  style = wxICON_ERROR)
+                return 0
+            except:
+                log.exception("Unexpected error in cert request")
+                MessageDialog(None,
+                              "Certificate request failed",
+                              style = wxICON_ERROR)
+                return 0
+            
+            
+        except CertificateRepository.RepoDoesNotExist:
+            log.exception("SubmitRequest:Validate:You do not have a certificate repository. Certificate request can not be completed.")
+
+            MessageDialog(None,
+                          "You do not have a certificate repository. Certificate request can not be completed.",
+                          style = wxICON_ERROR)
+
+        except:
+            log.exception("SubmitRequest:Validate: Certificate request can not be completed")
+            MessageDialog(None,
+                          "Error occured. Certificate request can not be completed.",
+                          style = wxICON_ERROR)
 
     def CreateCertificateRequestCB(self, name, email, domain, password,
                                    proxyEnabled, proxyHost, proxyPort):
@@ -525,6 +641,11 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
             MessageDialog(None,
                           "Error occured. Certificate request can not be completed.",
                           style = wxICON_ERROR)
+
+
+#
+# Toplevel functions for the various high-level certificate options.#
+
 
 
 class PassphraseDialog(wxDialog):
@@ -667,7 +788,7 @@ class RepositoryBrowser(wxPanel):
         elif browserType == self.TYPE_CA:
             self.certPred = lambda c: c.GetMetadata("AG.CertificateManager.certType") == "trustedCA"
         else:
-            raise RuntimeError, "Invalid type %s passed to RepostiroyBrowser constructor" % (browserType)
+            raise RuntimeError, "Invalid type %s passed to RepositoryBrowser constructor" % (browserType)
 
         self.browserType = browserType
         self.certMgr = certMgr
@@ -943,10 +1064,10 @@ class TrustedCertDialog(wxDialog):
         self.SetSizer(sizer)
         self.SetAutoLayout(1)
 
-        EVT_CERT_SELECTED(self, self.OnCertSelected)
-        EVT_CERT_IMPORT(self, self.OnCertImport)
-        EVT_CERT_EXPORT(self, self.OnCertExport)
-        EVT_CERT_DELETE(self, self.OnCertDelete)
+        EVT_CERT_SELECTED(self.browser, self.OnCertSelected)
+        EVT_CERT_IMPORT(self.browser, self.OnCertImport)
+        EVT_CERT_EXPORT(self.browser, self.OnCertExport)
+        EVT_CERT_DELETE(self.browser, self.OnCertDelete)
 
 
     def OnCertImport(self, event):
