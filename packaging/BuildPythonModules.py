@@ -57,8 +57,8 @@ if PYVER=="2.2":
 print "Building fpconst 0.7.0"
 SetupModule("fpconst-0.7.0", SOURCE, DEST)
 
-print "Building SOAPpy 0.11.4"
-SetupModule("SOAPpy-0.11.4", SOURCE, DEST)
+print "Building SOAPpy 0.11.5"
+SetupModule("SOAPpy-0.11.5", SOURCE, DEST)
 
 print "Building pyOpenSSL_AG"
 SetupModule("pyOpenSSL", SOURCE, DEST)
@@ -67,7 +67,7 @@ print "Building pyGlobus"
 if sys.platform == 'win32':
     os.environ['GLOBUS_LOCATION']=os.path.join(SOURCE,'WinGlobus')
     flavor = 'win32'
-elif sys.platform == 'linux2':
+elif sys.platform == 'linux2' or sys.platform == 'darwin':
     flavor = 'gcc32dbgpthr'
 else:
     print "Couldn't build pyGlobus; unsupported platform :", sys.platform
