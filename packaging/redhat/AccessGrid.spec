@@ -3,8 +3,8 @@
 # spec file. If you see %{variable_name} this is where it's assigned
 #
 %define	name		AccessGrid
-%define	version		2.0beta
-%define	release		3
+%define	version		2.0RC
+%define	release		2
 %define	prefix		/usr
 %define sysconfdir	/etc/%{name}
 %define sharedir	%{prefix}/share
@@ -192,6 +192,7 @@ mkdir -p %{buildroot}/tmp/local_services
 %{sharedir}/%{name}/ag.ico
 %defattr(0755,root,root)
 %{prefix}/bin/AGServiceManager.py
+%{prefix}/bin/MailcapSetup.py
 /etc/init.d/agsm
 %defattr(0755,ag,ag)
 %dir %{aghome}/local_services
@@ -287,10 +288,7 @@ mkdir -p %{buildroot}/tmp/local_services
 #
 
 %pre
-if [ ! -d %{aghome} ]; then
-	/usr/sbin/groupadd -r ag
-	/usr/sbin/useradd -r -m -d %{aghome} -g ag -c "Access Grid User" ag
-fi
+/usr/sbin/useradd -c "Access Grid User" -r -m -d %{aghome} ag 2> /dev/null || :
 
 #
 # AccessGrid package postinstall commands
@@ -390,6 +388,10 @@ rm -f /tmp/AccessGrid-Preuninstall.py
 #
 
 %changelog
+
+* Fri May 16 2003 Ti Leggett <leggett@mcs.anl.gov>
+- Fixed the ag user add problems (hopefully)
+- Added MailcapSetup.py to the AccessGrid package
 
 * Wed Mar 26 2003 Ti Leggett <leggett@mcs.anl.gov>
 - Added a plethora of comments
