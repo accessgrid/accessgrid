@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.16 2004-05-04 20:03:20 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.17 2004-05-07 21:29:15 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ class AudioService( AGService ):
         Set values used by rat for identification
         """
         if profile == None:
-            log.exception("Invalid profile (None)")
+            self.log.exception("Invalid profile (None)")
             raise Exception, "Can't set RTP Defaults without a valid profile."
 
         if sys.platform == 'linux2':
@@ -63,7 +63,7 @@ class AudioService( AGService ):
                                        profile.publicId ) )
                 rtpDefaultsFH.close()
             except:
-                log.exception("Error writing RTP defaults file: %s", rtpDefaultsFile)
+                self.log.exception("Error writing RTP defaults file: %s", rtpDefaultsFile)
 
         elif sys.platform == 'win32':
             try:
@@ -88,7 +88,7 @@ class AudioService( AGService ):
                                    _winreg.REG_SZ, str(self.profile.publicId) )
                 _winreg.CloseKey(k)
             except:
-                log.exception("Error writing RTP defaults to registry")
+                self.log.exception("Error writing RTP defaults to registry")
         
 
 
