@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.20 2004-03-18 14:17:05 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.21 2004-03-18 19:38:05 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.20 2004-03-18 14:17:05 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.21 2004-03-18 19:38:05 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2185,16 +2185,10 @@ class VenueAddressBar(wxSashLayoutWindow):
                                   choices = venuesList.keys(),
                                   style = wxCB_DROPDOWN)
         
-        if isOSX():
-            self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go",
-                                 wxDefaultPosition, wxSize(40, 21))
-            self.backButton = wxButton(self.addressPanel, self.ID_BACK ,
-                                   "<<", wxDefaultPosition, wxSize(36, 21))
-        else:
-            self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go",
-                                 wxDefaultPosition, wxSize(20, 21))
-            self.backButton = wxButton(self.addressPanel, self.ID_BACK ,
-                                   "<<", wxDefaultPosition, wxSize(20, 21))
+        self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go",
+                             wxDefaultPosition, wxSize(40, 21))
+        self.backButton = wxButton(self.addressPanel, self.ID_BACK ,
+                               "<<", wxDefaultPosition, wxSize(36, 21))
         self.Layout()
         self.__AddEvents()
         
