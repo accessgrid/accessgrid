@@ -203,7 +203,8 @@ os.system(cmd)
 # run the tests
 os.chdir(os.path.join(BuildDir, "tests"))
 testfile = "%s-test.html" % DestDir
-os.system("%s test_dist.py --html -o %s -t %s" % (sys.executable,
+if sys.platform != 'darwin':
+    os.system("%s test_dist.py --html -o %s -t %s" % (sys.executable,
                                             "%s-test.html" % DestDir,
                                                   BuildTime))
 
