@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.58 2004-05-03 17:42:45 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.59 2004-05-03 22:42:24 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.58 2004-05-03 17:42:45 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.59 2004-05-03 22:42:24 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -107,7 +107,7 @@ class AGServiceManager:
             self.url = self.server.FindURLForObject(self)
 
         # Determine resource to assign to service
-        resource = None
+        res = None
         if resourceToAssign != None and resourceToAssign != "None":
             foundResource = 0
             for res in self.resources:
