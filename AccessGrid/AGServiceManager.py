@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.49 2004-03-31 22:12:39 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.50 2004-04-12 22:41:15 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.49 2004-03-31 22:12:39 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.50 2004-04-12 22:41:15 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -394,6 +394,10 @@ class AGServiceManagerI(SOAPInterface):
     
     def __init__(self,impl):
         SOAPInterface.__init__(self,impl)
+
+    def _authorize(self, *args, **kw):
+        # Authorize everybody.
+        return 1
     
     def Shutdown(self):
         """

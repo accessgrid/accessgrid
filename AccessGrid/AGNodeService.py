@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.53 2004-03-31 22:10:34 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.54 2004-04-12 22:41:15 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.53 2004-03-31 22:10:34 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.54 2004-04-12 22:41:15 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -698,6 +698,10 @@ class AGNodeServiceI(SOAPInterface):
     def __init__(self,impl):
 
         SOAPInterface.__init__(self, impl)
+
+    def _authorize(self, *args, **kw):
+        # Authorize everybody.
+        return 1
 
     def AddServiceManager( self, svcMgrDescStruct ):
         """
