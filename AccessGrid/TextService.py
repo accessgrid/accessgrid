@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextService.py,v 1.9 2003-02-21 21:42:10 judson Exp $
+# RCS-ID:      $Id: TextService.py,v 1.10 2003-02-27 20:32:01 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -123,11 +123,11 @@ class TextService(ThreadingGSITCPSocketServer, Thread):
                 print "EventService.Distribute: Client disconnected!"
                 self.connections[data.venue].remove(c)
         
-    def AddVenue(self, venueId):
-        self.connections[venueId] = []
+    def AddChannel(self, channelId):
+        self.connections[channelId] = []
 
-    def RemoveVenue(self, venueId):
-        del self.connections[venueId]
+    def RemoveChannel(self, channelId):
+        del self.connections[channelId]
 
 if __name__ == "__main__":
   import string
