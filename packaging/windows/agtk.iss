@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.42 2004-04-07 02:31:41 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.43 2004-04-07 02:36:11 judson Exp $
 ;
 
 ; Set externally
@@ -16,7 +16,7 @@
 #error "BuildDir must be defined to build a package."
 #endif
 
-#ifndef AppVersion 
+#ifndef AppVersion
 #error "AppVersion must be defined to build a package."
 #endif
 
@@ -204,19 +204,15 @@ Name: {pf}\Access Grid Toolkit; Type: filesandordirs
 var
   PythonPath : String;
 
-;#include "registry.iss"
-
 function GetPythonDir(version: String): Boolean;
 var
   mbret: Integer;
 
 begin
-  // {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath}
-  if not RegQueryStringValue(HKLM, 'Software\Python\PythonCore\2.2\InstallPath', '', PythonPath) 
-    then 
-        begin
-	    PythonPath := 'C:\Python22';
-        end;
+  if not RegQueryStringValue(HKLM, 'Software\Python\PythonCore\2.2\InstallPath', '', PythonPath) then
+	begin
+		PythonPath := 'C:\Python22';
     end;
 end;
+
 
