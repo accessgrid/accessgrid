@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.127 2004-02-19 17:59:02 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.128 2004-02-20 20:15:14 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.127 2004-02-19 17:59:02 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.128 2004-02-20 20:15:14 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting.pyGlobus import Client
@@ -34,7 +34,7 @@ from AccessGrid.TextClient import TextClient
 from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache
 from AccessGrid.Types import *
 from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
-from AccessGrid.Events import DisconnectEvent, ClientExitingEvent, RemoveDataEvent
+from AccessGrid.Events import DisconnectEvent, ClientExitingEvent, RemoveDataEvent, UpdateDataEvent
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.hosting import AccessControl
 from AccessGrid import Platform
@@ -47,7 +47,8 @@ from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.ProcessManager import ProcessManager
 import pyGlobus.io
-from AccessGrid.Descriptions import CreateDataDescription
+from AccessGrid.Descriptions import CreateDataDescription, CreateServiceDescription
+from AccessGrid.Descriptions import CreateApplicationDescription
 
 class EnterVenueException(Exception):
     pass
@@ -289,6 +290,7 @@ class VenueClient( ServiceBase):
       
         if data.type == "None" or data.type == None:
             # Venue data gets saved in venue state
+                       
             self.venueState.AddData(data)
                       
         elif data.type not in self.requests:
@@ -358,7 +360,7 @@ class VenueClient( ServiceBase):
 
     def AddApplicationEvent(self, event):
         log.debug("AddApplicationEvent: Got Add Application Event")
-
+              
         data = event.data
         self.venueState.AddApplication(data)
         for s in self.eventSubscribers:
@@ -373,7 +375,7 @@ class VenueClient( ServiceBase):
 
     def RemoveApplicationEvent(self, event):
         log.debug("RemoveApplicationEvent: Got Remove Application Event")
-
+              
         data = event.data
         self.venueState.RemoveApplication(data)
         for s in self.eventSubscribers:
@@ -547,17 +549,16 @@ class VenueClient( ServiceBase):
             for data in venueState.data:
                 dataDesc = CreateDataDescription(data)
                 dataList.append( dataDesc )
-
+                
             applicationList = []
             for application in venueState.applications:
-                applicationList.append( ApplicationDescription( application.id, application.name,
-                                                                application.description,
-                                                                application.uri, application.mimeType) )
+                appDesc = CreateApplicationDescription(application)
+                applicationList.append(appDesc)
 
             serviceList = []
             for service in venueState.services:
-                serviceList.append( ServiceDescription( service.name, service.description,
-                                                        service.uri, service.mimeType ) )
+                serviceDesc = CreateServiceDescription(service)
+                serviceList.append(serviceDesc)
 
             # I hate retrofitted code.
             if hasattr(venueState, 'backupServer'):
@@ -975,7 +976,23 @@ class VenueClient( ServiceBase):
             #if ownerProfile != None:
             #    uploadDescriptor, dataStoreUrl = Client.Handle(ownerProfile.venueClientURL).get_proxy().GetDataStoreInformation()
             #    Client.Handle(dataStoreUrl).get_proxy().RemoveFiles(dataList)
-                
+
+    def ModifyData(self, data):
+        log.debug("Modify data: %s from venue" %data.name)
+        
+        if data.type == None or data.type == 'None':
+            # Venue data
+            self.venueProxy.ModifyData(data)
+            
+        elif(data.type == self.profile.publicId):
+            # My data
+            self.dataStore.ModifyData(data)
+            self.eventClient.Send(UpdateDataEvent(self.GetEventChannelId(), data))
+            
+        else:
+            # Ignore this until we have authorization in place.
+            raise NotAuthorizedError
+                        
     def GetPersonalData(self, clientProfile):
         '''
         Get personal data from client
