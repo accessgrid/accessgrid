@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: SetupVideo.py,v 1.7 2003-09-22 14:12:08 judson Exp $
+# RCS-ID:      $Id: SetupVideo.py,v 1.8 2003-12-17 16:18:18 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ This is the script that searches for video devices and gets them ready for
 the node to use.
 """
 
-__revision__ = "$Id: SetupVideo.py,v 1.7 2003-09-22 14:12:08 judson Exp $"
+__revision__ = "$Id: SetupVideo.py,v 1.8 2003-12-17 16:18:18 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -25,7 +25,7 @@ tclScript = """set id [ open "videoresources" "w" ]
 if { [ info exists inputDeviceList] == 1 } { 
    foreach d $inputDeviceList {
        set nick [$d nickname]
-       if { $nick == "still"  || $nick == "x11" } {
+       if { $nick == "still" } {
        continue
        }
        set attr [$d attributes]
