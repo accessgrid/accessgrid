@@ -1,0 +1,943 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+          "http://www.w3.org/TR/html40/loose.dtd">
+
+<html>
+         
+  <head>
+    <title>Class: VenueServer</title>
+  </head>
+
+  <body bgcolor="#ffffff">
+
+        <p><i><a href="../index.html">Table of Contents</a></i></p>
+        
+        <table border="0" cellpadding="5" cellspacing="0" width="100%">
+        <tr bgcolor="#88bbee">
+            <th rowspan="2"
+                valign="top"
+                align="left"
+                width="10%"><font color="#000000">Class: VenueServer</font>
+            </th>
+            <th width="90%" align="right"><font color="#000000">AccessGrid/VenueServer.py</font></th>
+        </tr>
+        <tr>
+        <td>
+        
+<p>The Virtual Venue Server object is responsible for creating,
+    destroying, and configuring Virtual Venue objects.<p>    The Virtual Venue Server object is:</p>
+<p>    configFile : string
+    config : dictionary of Key/Value pairs that holds configuration parameters.
+    adminstrators : list of strings (each is a DN of a adminsitrative user)
+    dataStorageLocation : string
+    defaultVenue : VenueURL
+    hostingEnvironment : AccessGrid.hosting.pyGlobus.Server
+    multicastAddressAllocator : AccessGrid.MulticastAddressAllocator
+    venues : a list of Venues Objects that are being made available
+    services : a list of service descriptions, these are either network or
+               application services that are available so any venue hosted
+               by this venue server can add these to the services available
+               from within that venue
+    houseKeeper : Scheduler</p>
+</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Base Classes">Base Classes</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+ServiceBase.ServiceBase<br>
+
+</td></tr>
+</table>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Methods">Methods</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+
+            <table border="0" cellspacing="2" cellpadding="2" width="100%">
+              <tr>
+            <td align="LEFT" valign="TOP">
+<a href="#AddAdministrator">AddAdministrator</a><br>
+<a href="#AddService">AddService</a><br>
+<a href="#AddVenue">AddVenue</a><br>
+<a href="#Checkpoint">Checkpoint</a><br>
+<a href="#GetAddressAllocationMethod">GetAddressAllocationMethod</a><br>
+<a href="#GetAddressMask">GetAddressMask</a><br>
+<a href="#GetAdministrators">GetAdministrators</a><br>
+<a href="#GetBaseAddress">GetBaseAddress</a><br>
+<a href="#GetDefaultVenue">GetDefaultVenue</a><br>
+</td>
+<td align="LEFT" valign="TOP">
+<a href="#GetStorageLocation">GetStorageLocation</a><br>
+<a href="#GetVenues">GetVenues</a><br>
+<a href="#InitFromFile">InitFromFile</a><br>
+<a href="#ModifyService">ModifyService</a><br>
+<a href="#ModifyVenue">ModifyVenue</a><br>
+<a href="#RegisterServer">RegisterServer</a><br>
+<a href="#RemoveAdministrator">RemoveAdministrator</a><br>
+<a href="#RemoveService">RemoveService</a><br>
+<a href="#RemoveVenue">RemoveVenue</a><br>
+</td>
+<td align="LEFT" valign="TOP">
+<a href="#SetAddressAllocationMethod">SetAddressAllocationMethod</a><br>
+<a href="#SetAddressMask">SetAddressMask</a><br>
+<a href="#SetBaseAddress">SetBaseAddress</a><br>
+<a href="#SetDefaultVenue">SetDefaultVenue</a><br>
+<a href="#SetStorageLocation">SetStorageLocation</a><br>
+<a href="#Shutdown">Shutdown</a><br>
+<a href="#__init__">__init__</a><br>
+</td>
+</tr>
+            </table>
+            
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AddAdministrator"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AddAdministrator&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AddAdministrator (
+        self,
+        connectionInfo,
+        string,
+        )
+
+</pre></font>
+
+<p>AddAdminstrator adds an administrator to the list of administrators
+        for this VenueServer.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AddService"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AddService&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AddService (
+        self,
+        connectionInfo,
+        serviceDescription,
+        )
+
+</pre></font>
+
+<p>AddService adds a service description to the list of service
+        descriptions that are available to the Virtual Venues hosted by
+        this VenueServer.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AddVenue"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AddVenue&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AddVenue (
+        self,
+        connectionInfo,
+        venueDescription,
+        )
+
+</pre></font>
+
+<p>The AddVenue method takes a venue description and creates a new
+        Venue Object, complete with a event service, then makes it
+        available from this Venue Server.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Checkpoint"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">Checkpoint&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+Checkpoint ( self )
+
+</pre></font>
+
+<p>Checkpoint stores the current state of the running VenueServer to
+        non-volatile storage. In the event of catastrophic failure, the
+        non-volatile storage can be used to restart the VenueServer.<p>        The fequency at which Checkpointing is done will bound the amount of
+        state that is lost (the longer the time between checkpoints, the more
+        that can be lost).</p>
+</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetAddressAllocationMethod"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetAddressAllocationMethod&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetAddressAllocationMethod ( self,  connectionInfo )
+
+</pre></font>
+
+<p>Get the method used for multicast address allocation:
+            either RANDOM or INTERVAL (defined in MulticastAddressAllocator)</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetAddressMask"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetAddressMask&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetAddressMask ( self,  connectionInfo )
+
+</pre></font>
+
+<p>Get address mask used when allocating multicast addresses in
+        an interval</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetAdministrators"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetAdministrators&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetAdministrators ( self,  connectionInfo )
+
+</pre></font>
+
+<p>GetAdministrators returns a list of adminsitrators for this
+        VenueServer.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetBaseAddress"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetBaseAddress&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetBaseAddress ( self,  connectionInfo )
+
+</pre></font>
+
+<p>Get base address used when allocating multicast addresses in
+        an interval</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetDefaultVenue"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetDefaultVenue&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetDefaultVenue ( self,  connectionInfo )
+
+</pre></font>
+
+<p>GetDefaultVenue returns the URL to the default Venue on the
+        VenueServer.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetStorageLocation"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetStorageLocation&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetStorageLocation ( self,  connectionInfo )
+
+</pre></font>
+
+<p>Get the path for data storage</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetVenues"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetVenues&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetVenues ( self,  connectionInfo )
+
+</pre></font>
+
+<p>GetVenues returns a list of Venues Descriptions for the venues hosted by
+        this VenueServer.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="InitFromFile"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">InitFromFile&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+InitFromFile ( self,  config )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="ModifyService"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">ModifyService&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+ModifyService (
+        self,
+        connectionInfo,
+        URL,
+        serviceDescription,
+        )
+
+</pre></font>
+
+<p>ModifyService updates a service description that is in the
+        list of services for this VenueServer.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="ModifyVenue"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">ModifyVenue&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+ModifyVenue (
+        self,
+        connectionInfo,
+        URL,
+        venueDescription,
+        )
+
+</pre></font>
+
+<p>ModifyVenue updates a Venue Description.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="RegisterServer"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">RegisterServer&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+RegisterServer (
+        self,
+        connectionInfo,
+        URL,
+        )
+
+</pre></font>
+
+<p>This method should register the server with the venues
+        registry at the URL passed in. This is by default a
+        registration page at Argonne for now.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="RemoveAdministrator"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">RemoveAdministrator&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+RemoveAdministrator (
+        self,
+        connectionInfo,
+        string,
+        )
+
+</pre></font>
+
+<p>RemoveAdministrator removes an administrator from the list of
+        administrators for this VenueServer.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="RemoveService"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">RemoveService&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+RemoveService (
+        self,
+        connectionInfo,
+        URL,
+        serviceDescription,
+        )
+
+</pre></font>
+
+<p>RemoveService removes a service description from the list of
+        service descriptions that this VenueServer knows about.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="RemoveVenue"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">RemoveVenue&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+RemoveVenue (
+        self,
+        connectionInfo,
+        URL,
+        )
+
+</pre></font>
+
+<p>RemoveVenue removes a venue from the VenueServer.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetAddressAllocationMethod"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetAddressAllocationMethod&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetAddressAllocationMethod (
+        self,
+        connectionInfo,
+        addressAllocationMethod,
+        )
+
+</pre></font>
+
+<p>Set the method used for multicast address allocation:
+            either RANDOM or INTERVAL (defined in MulticastAddressAllocator)</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetAddressMask"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetAddressMask&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetAddressMask (
+        self,
+        connectionInfo,
+        mask,
+        )
+
+</pre></font>
+
+<p>Set address mask used when allocating multicast addresses in
+        an interval</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetBaseAddress"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetBaseAddress&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetBaseAddress (
+        self,
+        connectionInfo,
+        address,
+        )
+
+</pre></font>
+
+<p>Set base address used when allocating multicast addresses in
+        an interval</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetDefaultVenue"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetDefaultVenue&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetDefaultVenue (
+        self,
+        connectionInfo,
+        venueURL,
+        )
+
+</pre></font>
+
+<p>SetDefaultVenue sets which Venue is the default venue for the
+        VenueServer.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetStorageLocation"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetStorageLocation&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetStorageLocation (
+        self,
+        connectionInfo,
+        dataStorageLocation,
+        )
+
+</pre></font>
+
+<p>Set the path for data storage</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Shutdown"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">Shutdown&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+Shutdown (
+        self,
+        connectionInfo,
+        secondsFromNow,
+        )
+
+</pre></font>
+
+<p>Shutdown shuts down the server.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="__init__"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">__init__&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+__init__ (
+        self,
+        hostEnvironment=None,
+        configFile=None,
+        )
+
+</pre></font>
+
+<p>The constructor creates a new Venue Server object, initializes
+        that object, then registers signal handlers so the venue can cleanly
+        shutdown in the event of catastrophic signals.</p>
+</td></tr>
+</td></tr>
+</table>
+
+        </td>
+        </tr>
+        </table>
+
+        <hr>
+
+        <p><i><a href="../index.html">Table of Contents</a></i></p>
+
+        <font size="-2"><i>This document was automatically generated
+        on Wed Feb 12 22:45:16 2003 by
+        <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
+        2.0</i></font>
+        
+        </body>
+        </html>
+        

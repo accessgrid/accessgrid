@@ -1,0 +1,351 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+          "http://www.w3.org/TR/html40/loose.dtd">
+
+<html>
+         
+  <head>
+    <title>Module: Utilities</title>
+  </head>
+
+  <body bgcolor="#ffffff">
+
+        <p><i><a href="../index.html">Table of Contents</a></i></p>
+        
+        <table border="0" cellpadding="5" cellspacing="0" width="100%">
+        <tr bgcolor="#88bbee">
+            <th rowspan="2"
+                valign="top"
+                align="left"
+                width="10%"><font color="#000000">Module: Utilities</font>
+            </th>
+            <th width="90%" align="right"><font color="#000000">AccessGrid/Utilities.py</font></th>
+        </tr>
+        <tr>
+        <td>
+        
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Imported modules">Imported modules</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-ConfigParser.html">ConfigParser</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-os.html">os</a><br>
+<b>from</b> <a href="http://www.python.org/doc/current/lib/module-random.html">random</a> <b>import</b> Random<br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-sha.html">sha</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-string.html">string</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-sys.html">sys</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-time.html">time</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-traceback.html">traceback</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-urllib.html">urllib</a><br>
+
+</td></tr>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Functions">Functions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="#AllocateEncryptionKey">AllocateEncryptionKey</a><br>
+<a href="#GetRandInt">GetRandInt</a><br>
+<a href="#GetResourceList">GetResourceList</a><br>
+<a href="#LoadConfig">LoadConfig</a><br>
+<a href="#SaveConfig">SaveConfig</a><br>
+<a href="#SubmitBug">SubmitBug</a><br>
+<a href="#Which">Which</a><br>
+<a href="#formatExceptionInfo">formatExceptionInfo</a><br>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AllocateEncryptionKey"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AllocateEncryptionKey&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AllocateEncryptionKey ()
+
+</pre></font>
+
+<p>This function returns a key that can be used to encrypt/decrypt media
+    streams.    <p>    Return: string</p>
+</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetRandInt"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetRandInt&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetRandInt ( r )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetResourceList"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetResourceList&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetResourceList ()
+
+</pre></font>
+
+<p>This method reads a file generated by vic and a tcl script
+    (courtesy Bob Olson) which contains a vic-compatible description
+    of video capture devices on the local machine.  
+    Note:  the name of the file is hardcoded
+    Note:  for now, the file should be generated at installation, and the
+            user should be provided with instructions for generating the 
+            file by hand.
+           later, users should be able to force generation of the file
+            from within the AG software<h3>    An example of the file is as follows:</h3>
+<p>        device: o100vc.dll - Osprey Capture Card 2
+        portnames:  external-in 
+        device: Microsoft WDM Image Capture (Win32)
+        portnames:  external-in 
+        device: o100vc.dll - Osprey Capture Card 1
+        portnames:  external-in</p>
+</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="LoadConfig"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">LoadConfig&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+LoadConfig ( fileName,  config={} )
+
+</pre></font>
+
+<p>Returns a dictionary with keys of the form &lt;section&gt;.&lt;option&gt;
+    and the corresponding values.
+    This is from the python cookbook credit: Dirk Holtwick.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SaveConfig"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SaveConfig&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SaveConfig ( fileName,  config )
+
+</pre></font>
+
+<p>This method saves the current configuration out to the specified file.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SubmitBug"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SubmitBug&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SubmitBug ()
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Which"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">Which&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+Which ( file )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="formatExceptionInfo"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">formatExceptionInfo&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+formatExceptionInfo ( maxTBlevel=5 )
+
+</pre></font>
+
+</td></tr>
+</td></tr>
+</table>
+
+        </td>
+        </tr>
+        </table>
+
+        <hr>
+
+        <p><i><a href="../index.html">Table of Contents</a></i></p>
+
+        <font size="-2"><i>This document was automatically generated
+        on Wed Feb 12 22:45:16 2003 by
+        <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
+        2.0</i></font>
+        
+        </body>
+        </html>
+        
