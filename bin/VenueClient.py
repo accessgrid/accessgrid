@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.58 2003-02-28 16:57:59 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.59 2003-03-05 16:25:02 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -210,8 +210,8 @@ class VenueClientUI(wxApp, VenueClient):
         name = self.profile.name
         title = self.venueState.description.name
         description = self.venueState.description.description
-        welcomeDialog = WelcomeDialog(NULL, -1, 'Enter Venue', name,
-                                      title, description)
+        # welcomeDialog = WelcomeDialog(NULL, -1, 'Enter Venue', name,
+        #                               title, description)
 
         users = venueState.users.values()
         for user in users:
@@ -285,7 +285,9 @@ class VenueClientUI(wxApp, VenueClient):
                     
                          
         else:
+            print '---------else'
             if not HaveValidProxy():
+                print '------ bit have valid proxy'
                 text = 'You do not have a valid proxy.' +\
                        '\nPlease, run "grid-proxy-init" on the command line"'
                 text2 = 'Invalid proxy'
@@ -298,8 +300,9 @@ class VenueClientUI(wxApp, VenueClient):
                     wxCallAfter(self.frame.FillInAddress, None, oldUri)
                     
 
-            text = 'The venue URL you specified is not valid'
-            text2 = 'Invalid URL'
+                    text = 'The venue URL you specified is not valid'
+                    text2 = 'Invalid URL'
+
             MessageDialog(self.frame, text, text2, style = wxOK|wxICON_INFORMATION)
             
     def OnCloseWindow(self):
