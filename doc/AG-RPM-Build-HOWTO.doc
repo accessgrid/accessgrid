@@ -1,13 +1,13 @@
 {\rtf1\ansi\ansicpg1252\uc1\deff0\stshfdbch0\stshfloch0\stshfhich0\stshfbi0\deflang1033\deflangfe1033{\fonttbl{\f0\froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\f1\fswiss\fcharset0\fprq2{\*\panose 020b0604020202020204}Arial;}
 {\f2\fmodern\fcharset0\fprq1{\*\panose 02070309020205020404}Courier New;}{\f3\froman\fcharset2\fprq2{\*\panose 05050102010706020507}Symbol;}{\f10\fnil\fcharset2\fprq2{\*\panose 05000000000000000000}Wingdings;}
-{\f35\fswiss\fcharset0\fprq2{\*\panose 020b0604030504040204}Tahoma;}{\f104\froman\fcharset238\fprq2 Times New Roman CE;}{\f105\froman\fcharset204\fprq2 Times New Roman Cyr;}{\f107\froman\fcharset161\fprq2 Times New Roman Greek;}
-{\f108\froman\fcharset162\fprq2 Times New Roman Tur;}{\f109\froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\f110\froman\fcharset178\fprq2 Times New Roman (Arabic);}{\f111\froman\fcharset186\fprq2 Times New Roman Baltic;}
-{\f112\froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\f114\fswiss\fcharset238\fprq2 Arial CE;}{\f115\fswiss\fcharset204\fprq2 Arial Cyr;}{\f117\fswiss\fcharset161\fprq2 Arial Greek;}{\f118\fswiss\fcharset162\fprq2 Arial Tur;}
-{\f119\fswiss\fcharset177\fprq2 Arial (Hebrew);}{\f120\fswiss\fcharset178\fprq2 Arial (Arabic);}{\f121\fswiss\fcharset186\fprq2 Arial Baltic;}{\f122\fswiss\fcharset163\fprq2 Arial (Vietnamese);}{\f124\fmodern\fcharset238\fprq1 Courier New CE;}
-{\f125\fmodern\fcharset204\fprq1 Courier New Cyr;}{\f127\fmodern\fcharset161\fprq1 Courier New Greek;}{\f128\fmodern\fcharset162\fprq1 Courier New Tur;}{\f129\fmodern\fcharset177\fprq1 Courier New (Hebrew);}
-{\f130\fmodern\fcharset178\fprq1 Courier New (Arabic);}{\f131\fmodern\fcharset186\fprq1 Courier New Baltic;}{\f132\fmodern\fcharset163\fprq1 Courier New (Vietnamese);}{\f454\fswiss\fcharset238\fprq2 Tahoma CE;}{\f455\fswiss\fcharset204\fprq2 Tahoma Cyr;}
-{\f457\fswiss\fcharset161\fprq2 Tahoma Greek;}{\f458\fswiss\fcharset162\fprq2 Tahoma Tur;}{\f459\fswiss\fcharset177\fprq2 Tahoma (Hebrew);}{\f460\fswiss\fcharset178\fprq2 Tahoma (Arabic);}{\f461\fswiss\fcharset186\fprq2 Tahoma Baltic;}
-{\f462\fswiss\fcharset163\fprq2 Tahoma (Vietnamese);}{\f463\fswiss\fcharset222\fprq2 Tahoma (Thai);}}{\colortbl;\red0\green0\blue0;\red0\green0\blue255;\red0\green255\blue255;\red0\green255\blue0;\red255\green0\blue255;\red255\green0\blue0;
+{\f35\fswiss\fcharset0\fprq2{\*\panose 020b0604030504040204}Tahoma;}{\f36\froman\fcharset238\fprq2 Times New Roman CE;}{\f37\froman\fcharset204\fprq2 Times New Roman Cyr;}{\f39\froman\fcharset161\fprq2 Times New Roman Greek;}
+{\f40\froman\fcharset162\fprq2 Times New Roman Tur;}{\f41\froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\f42\froman\fcharset178\fprq2 Times New Roman (Arabic);}{\f43\froman\fcharset186\fprq2 Times New Roman Baltic;}
+{\f44\froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\f46\fswiss\fcharset238\fprq2 Arial CE;}{\f47\fswiss\fcharset204\fprq2 Arial Cyr;}{\f49\fswiss\fcharset161\fprq2 Arial Greek;}{\f50\fswiss\fcharset162\fprq2 Arial Tur;}
+{\f51\fswiss\fcharset177\fprq2 Arial (Hebrew);}{\f52\fswiss\fcharset178\fprq2 Arial (Arabic);}{\f53\fswiss\fcharset186\fprq2 Arial Baltic;}{\f54\fswiss\fcharset163\fprq2 Arial (Vietnamese);}{\f56\fmodern\fcharset238\fprq1 Courier New CE;}
+{\f57\fmodern\fcharset204\fprq1 Courier New Cyr;}{\f59\fmodern\fcharset161\fprq1 Courier New Greek;}{\f60\fmodern\fcharset162\fprq1 Courier New Tur;}{\f61\fmodern\fcharset177\fprq1 Courier New (Hebrew);}
+{\f62\fmodern\fcharset178\fprq1 Courier New (Arabic);}{\f63\fmodern\fcharset186\fprq1 Courier New Baltic;}{\f64\fmodern\fcharset163\fprq1 Courier New (Vietnamese);}{\f386\fswiss\fcharset238\fprq2 Tahoma CE;}{\f387\fswiss\fcharset204\fprq2 Tahoma Cyr;}
+{\f389\fswiss\fcharset161\fprq2 Tahoma Greek;}{\f390\fswiss\fcharset162\fprq2 Tahoma Tur;}{\f391\fswiss\fcharset177\fprq2 Tahoma (Hebrew);}{\f392\fswiss\fcharset178\fprq2 Tahoma (Arabic);}{\f393\fswiss\fcharset186\fprq2 Tahoma Baltic;}
+{\f394\fswiss\fcharset163\fprq2 Tahoma (Vietnamese);}{\f395\fswiss\fcharset222\fprq2 Tahoma (Thai);}}{\colortbl;\red0\green0\blue0;\red0\green0\blue255;\red0\green255\blue255;\red0\green255\blue0;\red255\green0\blue255;\red255\green0\blue0;
 \red255\green255\blue0;\red255\green255\blue255;\red0\green0\blue128;\red0\green128\blue128;\red0\green128\blue0;\red128\green0\blue128;\red128\green0\blue0;\red128\green128\blue0;\red128\green128\blue128;\red192\green192\blue192;}{\stylesheet{
 \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext0 \styrsid16088027 Normal;}{
 \s1\ql \li0\ri0\sb240\sa60\keepn\widctlpar\aspalpha\aspnum\faauto\outlinelevel0\adjustright\rin0\lin0\itap0 \b\f1\fs32\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext0 \styrsid16088027 heading 1;}{
@@ -15,7 +15,7 @@
 \s3\ql \li0\ri0\sb240\sa60\keepn\widctlpar\aspalpha\aspnum\faauto\outlinelevel2\adjustright\rin0\lin0\itap0 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext0 \styrsid16088027 heading 3;}{\*\cs10 \additive 
 \ssemihidden \styrsid16088027 Default Paragraph Font;}{\*
 \ts11\tsrowd\trftsWidthB3\trpaddl108\trpaddr108\trpaddfl3\trpaddft3\trpaddfb3\trpaddfr3\trcbpat1\trcfpat1\tscellwidthfts0\tsvertalt\tsbrdrt\tsbrdrl\tsbrdrb\tsbrdrr\tsbrdrdgl\tsbrdrdgr\tsbrdrh\tsbrdrv 
-\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs20\lang1024\langfe1024\cgrid\langnp1024\langfenp1024 \snext11 \ssemihidden \styrsid16088027 Normal Table;}{\s15\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 
+\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs20\lang1024\langfe1024\cgrid\langnp1024\langfenp1024 \snext11 \ssemihidden Normal Table;}{\s15\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 
 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext15 Dashed List;}{\s16\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext16 Box List;}{
 \s17\ql \li0\ri0\keepn\widctlpar\tx1584\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f1\fs24\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 \sbasedon31 \snext0 Section Heading;}{\s18\ql \li0\ri0\keepn\widctlpar
 \tx431\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \i\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon2 \snext0 Numbered Heading 2;}{\s19\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 
@@ -106,11 +106,11 @@
 ;}\listid2107612293}}{\*\listoverridetable{\listoverride\listid2107612293\listoverridecount0\ls1}{\listoverride\listid2107612293\listoverridecount0\ls2}{\listoverride\listid2107612293\listoverridecount0\ls3}{\listoverride\listid192734754
 \listoverridecount0\ls4}{\listoverride\listid1586128940\listoverridecount0\ls5}{\listoverride\listid818376912\listoverridecount0\ls6}{\listoverride\listid1705248686\listoverridecount0\ls7}{\listoverride\listid1244681304\listoverridecount0\ls8}
 {\listoverride\listid1632905741\listoverridecount0\ls9}{\listoverride\listid635722587\listoverridecount0\ls10}{\listoverride\listid2040616483\listoverridecount0\ls11}{\listoverride\listid1424766927\listoverridecount0\ls12}{\listoverride\listid884172567
-\listoverridecount0\ls13}}{\*\pgptbl {\pgp\ipgp0\itap0\li0\ri0\sb0\sa0}}{\*\rsidtbl \rsid5730313\rsid14225503\rsid16088027}{\*\generator Microsoft Word 10.0.4524;}{\info{\author Ivan R. Judson}{\operator Ivan R. Judson}
-{\creatim\yr2003\mo5\dy15\hr14\min37}{\revtim\yr2003\mo5\dy22\hr9\min53}{\version3}{\edmins2}{\nofpages8}{\nofwords1985}{\nofchars11321}{\*\company  }{\nofcharsws13280}{\vern16475}}\margl1440\margr1440 
-\widowctrl\ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\linkstyles\hyphcaps0\horzdoc\dghspace120\dgvspace120\dghorigin1701\dgvorigin1984\dghshow0\dgvshow3\jcompress\viewkind1\viewscale100\nolnhtadjtbl\rsidroot14225503 \fet0
-{\*\template C:\\Documents and Settings\\judson\\Application Data\\Microsoft\\Templates\\AG2.dot}\sectd \sbknone\linex0\colsx360\sectdefaultcl\sftnbj {\footer \pard\plain \s39\qc \li0\ri0\widctlpar
-\tqc\tx4320\tqr\tx8640\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid14225503 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\fs20\insrsid14225503 Copyright 2003 Argonne National Laboratory/University of Chicago.
+\listoverridecount0\ls13}}{\*\pgptbl {\pgp\ipgp0\itap0\li0\ri0\sb0\sa0}}{\*\rsidtbl \rsid5730313\rsid10189455\rsid14225503\rsid16088027}{\*\generator Microsoft Word 10.0.4524;}{\info{\author Ivan R. Judson}{\operator Ivan R. Judson}
+{\creatim\yr2003\mo5\dy15\hr14\min37}{\revtim\yr2003\mo6\dy4\hr23\min15}{\version4}{\edmins3}{\nofpages8}{\nofwords1985}{\nofchars11321}{\*\company  }{\nofcharsws13280}{\vern16475}}\margl1440\margr1440 
+\widowctrl\ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\hyphcaps0\horzdoc\dghspace120\dgvspace120\dghorigin1701\dgvorigin1984\dghshow0\dgvshow3\jcompress\viewkind1\viewscale100\nolnhtadjtbl\rsidroot14225503 \fet0{\*\template 
+C:\\software\\AccessGrid\\AccessGrid\\doc\\AG.dot}\sectd \sbknone\linex0\colsx360\sectdefaultcl\sftnbj {\footer \pard\plain \s39\qc \li0\ri0\widctlpar\tqc\tx4320\tqr\tx8640\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid14225503 
+\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\fs20\insrsid14225503 Copyright 2003 Argonne National Laboratory/University of Chicago.
 \par 
 \par }\pard\plain \qc \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid14225503 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\fs20\insrsid14225503 For more information email: ag-mcs@mcs.anl.gov.
 \par }\pard\plain \s39\ql \li0\ri0\widctlpar\tqc\tx4320\tqr\tx8640\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid14225503 
@@ -118,7 +118,7 @@
 {\*\pnseclvl5\pndec\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl6\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl7\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl8
 \pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl9\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}\pard\plain 
 \s1\qc \li0\ri0\sb240\sa60\keepn\widctlpar\aspalpha\aspnum\faauto\outlinelevel0\adjustright\rin0\lin0\itap0\pararsid16088027 \b\f1\fs32\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 {\insrsid14225503\charrsid16088027 
-Access Grid RPM Package mini-HOWTO}{\insrsid14225503\charrsid16088027 
+Access Grid RPM Package mini-HOWTO
 \par }\pard\plain \qc \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid16088027 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 Author: Ti Leggett <leggett@mcs.anl.gov>
 \par Date: March 26, 2003
 \par {\listtext\pard\plain\s31 \b\f1\fs34\kerning32\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 1.\tab}}\pard\plain \s31\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin0\itap0 
@@ -129,28 +129,29 @@ This document will attempt to describe how to build RPMs of the Access Grid 2.0 
 \par {\listtext\pard\plain\s31 \b\f1\fs34\kerning32\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 2.\tab}}\pard\plain \s31\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin0\itap0 
 \f1\fs24\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 {\b\fs34\insrsid14225503\charrsid16088027 Behind RPM
 \par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
-What an rpm is is basically a tarball with some metadata about that the contents of the tarball. When you install the rpm it basically untars  the contents and add the metada
-ta to a database. Examples of the metadata that are tracked are the files in the package, the name of the package, the person and machine who packaged it, what the package provides and what the package depends on to install.
+What an rpm is is basically a tarball with some metadata about that the cont
+ents of the tarball. When you install the rpm it basically untars  the contents and add the metadata to a database. Examples of the metadata that are tracked are the files in the package, the name of the package, the person and machine who packaged it, wh
+at the package provides and what the package depends on to install.
 \par 
 \par To build an rpm you need an rpm spec file. This file lays out the metadata, the packages and sub packages, files that go in those packages, and scripts that can be run at various points of the (un)installation process. 
 \par {\listtext\pard\plain\s18 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 2.1.\tab}}\pard\plain \s18\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls2\ilvl1\adjustright\rin0\lin0\itap0 
 \i\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\b\fs28\insrsid14225503\charrsid16088027 BuildRoot
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 One of the pieces of metadata is the BuildRoot. Nor
-mally when you have a source package, you compile it using make or some other method and then install it using make. If you're root, this usually gets installed in /usr or /usr/local. Part of the rpm build process is to compile your software and install i
-t
-, but you don't want to install the files in /usr or /usr/local while you're building it (especially if you're still debugging your rpm build process). This is where BuildRoot comes. It defines a virtual root point where you can install your files tempora
-r
-ily while you're building the rpm. We use /var/tmp/AccessGrid-<version> (2.0beta as of 03/26/2003). If you were to go into that directory during the build process you'd see what you're install tree looks like. Say your package should have /usr/lib/foo.so,
- there would be a /var/tmp/AccessGrid-2.0beta/usr/lib/foo.so.
+\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
+One of the pieces of metadata is the BuildRoot. Normally when you have a source package, you compile it using make or some other method and then install it using make. If you're root, this usually gets install
+ed in /usr or /usr/local. Part of the rpm build process is to compile your software and install it, but you don't want to install the files in /usr or /usr/local while you're building it (especially if you're still debugging your rpm build process). This 
+i
+s where BuildRoot comes. It defines a virtual root point where you can install your files temporarily while you're building the rpm. We use /var/tmp/AccessGrid-<version> (2.0beta as of 03/26/2003). If you were to go into that directory during the build pr
+ocess you'd see what you're install tree looks like. Say your package should have /usr/lib/foo.so, there would be a /var/tmp/AccessGrid-2.0beta/usr/lib/foo.so.
 \par 
-\par So if you where you would normally run ./configure --prefix=/usr/local to set your install prefix, now you would run ./configure --prefix=%\{buildroot\}/usr/local (more on this a bit later). RPM u
-ses the BuildRoot implictly when you define the files that are to go in to the package. So where you see /usr/lib/foo.so in the %files section, rpm is really looking at %\{buildroot\}/usr/lib/foo.so
- to find the file, but it will ultimately put the file in /usr/lib/foo.so when you install the rpm.
+\par So if you where you would normally run ./configure --prefix=/usr/local to set your install prefix, now you would run ./configure --prefix=%\{buildroot\}
+/usr/local (more on this a bit later). RPM uses the BuildRoot implictly when you define the files that are to go in to the package. So where you see /usr/lib/foo.so in the %files section, rpm is really looking at %\{buildroot\}
+/usr/lib/foo.so to find the file, but it will ultimately put the file in /usr/lib/foo.so when you install the rpm.
 \par {\listtext\pard\plain\s31 \b\f1\fs34\kerning32\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.\tab}}\pard\plain \s31\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin0\itap0 
 \f1\fs24\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 {\b\fs34\insrsid14225503\charrsid16088027 The Access Grid 2.0 Spec File
 \par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
-If you haven't already done so, grab the spec file out of CVS. If you really want to follow along grab version 1.8 as that's the version I'm using in this document. I'm going to break
- the spec file into 6 large sections: Preamble, Package Definitions, Building/Installing Source, File Definitions, Pre/Post Install Scripts, and ChangeLog.
+If you haven't already done so, grab the spec file out of CVS. If you really want to 
+follow along grab version 1.8 as that's the version I'm using in this document. I'm going to break the spec file into 6 large sections: Preamble, Package Definitions, Building/Installing Source, File Definitions, Pre/Post Install Scripts, and ChangeLog.
+
 \par {\listtext\pard\plain\s18 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.1.\tab}}\pard\plain \s18\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls3\ilvl1\adjustright\rin0\lin0\itap0 
 \i\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\b\fs28\insrsid14225503\charrsid16088027 Preamble
 \par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
@@ -191,13 +192,13 @@ The Package Definitions are we define the metadata for a package or sub-package.
 \par Obsoletes:\tab AccessGrid-2.0alpha
 \par 
 \par %description
-\par The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node service
-s to extend the functionality of the Access Grid.
+\par The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access 
+Grid.
 \par 
 \par This module provides the core components to start participating in the Access Grid.
 \par 
-\par Here you can see the metadata for the "top level" package. Notice that there is a name, version, and release. These are used to make the actual rpm filename and it would look like        %\{name\}-%\{version\}-%\{release\}.i386.rpm
- and with the variable substituted from the Preamble you get AccessGrid-2.0beta-2.i386.rpm. 
+\par Here you can see the metadata for the "top level" package. Notice that there is a name, version, and release. These are used to make the actual rpm filename and it would look like        %\{name\}-%\{version\}-%\{release\}
+.i386.rpm and with the variable substituted from the Preamble you get AccessGrid-2.0beta-2.i386.rpm. 
 \par 
 \par A sub-package looks like:
 \par 
@@ -210,19 +211,19 @@ s to extend the functionality of the Access Grid.
 \par Obsoletes:\tab AccessGrid-VenueClient-2.0alpha
 \par 
 \par %description VenueClient
-\par The Access Grid Toolkit provides the necessary components fo
-r users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
+\par The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based c
+ollaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
 \par 
 \par This module provides the components needed to connect to an Access Grid Venue.
 \par 
-\par Notice that there is no Name, there is now a line with a %package directive, and the %description directive no
-w has an "argument." The reason a sub-package has no Name is because it derives it from the "top level" package. A sub-package file name has the form "top level name"-%\{package\}-%[version\}-%\{release\}.i386.rpm or in this case 
-AccessGrid-VenueClient-2.0beta-2.i386.rpm.
+\par Notice that there i
+s no Name, there is now a line with a %package directive, and the %description directive now has an "argument." The reason a sub-package has no Name is because it derives it from the "top level" package. A sub-package file name has the form "top level nam
+e"-%\{package\}-%[version\}-%\{release\}.i386.rpm or in this case AccessGrid-VenueClient-2.0beta-2.i386.rpm.
 \par {\listtext\pard\plain\s18 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.3.\tab}}\pard\plain \s18\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls3\ilvl1\adjustright\rin0\lin0\itap0 
 \i\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\b\fs28\insrsid14225503\charrsid16088027 Building/Installing Source
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
-The Access Grid 2.0 Toolkit is based by and large on python. It only makes sense to make use of some of the built-in python tools like distutils. We use distutils to build the python source and install it into th
-e BuildRoot. There are three rpm directives that are useful here:
+\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 The Access Grid 
+2.0 Toolkit is based by and large on python. It only makes sense to make use of some of the built-in python tools like distutils. We use distutils to build the python source and install it into the BuildRoot. There are three rpm directives that are useful
+ here:
 \par {\pntext\pard\plain\f3\insrsid14225503\charrsid16088027 \loch\af3\dbch\af0\hich\f3 \'b7\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlblt\ilvl0\ls4\pnrnot0\pnf3\pnindent360\pnsp120\pnhang {\pntxtb \'b7}}
 \aspalpha\aspnum\faauto\ls4\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 %prep - Untar the source tarball and prep the source tree
 \par {\pntext\pard\plain\f3\insrsid14225503\charrsid16088027 \loch\af3\dbch\af0\hich\f3 \'b7\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlblt\ilvl0\ls4\pnrnot0\pnf3\pnindent360\pnsp120\pnhang {\pntxtb \'b7}}
@@ -244,9 +245,9 @@ e BuildRoot. There are three rpm directives that are useful here:
 \par mv %\{buildroot\}%\{prefix\}/var %\{buildroot\}
 \par mkdir -p %\{buildroot\}/tmp/local_services
 \par 
-\par Here you can see we untar the source tarball (using the %setup rpm macro), remove any previous BuildRoot, build the source using python, install using python, and then make some modifications
- to the installed tree to better fit our needs. We make these modifications because of some minor limitations in distutils. Namely, in distutils you can either install a file relative to the prefix or to an absolute path. So by default, everything is inst
-alled into /usr. This is fine except we really do want some of these files under /, like etc/ and var/ so we just move them down to the BuildRoot level. At this point our BuildRoot looks like:
+\par Here you can see we untar the source tarball (using the %setup rpm macro), remove any previous BuildRoot, build the source using python, install using python, and then make some modifications to the installed tree to better fit our needs. We make these mo
+difications because of some minor limitations in distutils. Namely, in distutils you can either install a file relative to the prefix or to an absolute path. So by default, everything is installed into /usr. This is fine except we really do want some of t
+hese files under /, like etc/ and var/ so we just move them down to the BuildRoot level. At this point our BuildRoot looks like:
 \par 
 \par usr/
 \par etc/
@@ -280,8 +281,8 @@ ition list looks like:
 \par {\pntext\pard\plain\f3\insrsid14225503\charrsid16088027 \loch\af3\dbch\af0\hich\f3 \'b7\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlblt\ilvl0\ls5\pnrnot0\pnf3\pnindent360\pnsp120\pnhang {\pntxtb \'b7}}
 \aspalpha\aspnum\faauto\ls5\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 %doc - This specifies to RPM that the file following the directive is a documentation file
 \par {\pntext\pard\plain\f3\insrsid14225503\charrsid16088027 \loch\af3\dbch\af0\hich\f3 \'b7\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlblt\ilvl0\ls5\pnrnot0\pnf3\pnindent360\pnsp120\pnhang {\pntxtb \'b7}}
-\aspalpha\aspnum\faauto\ls5\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 %defattr - This specifies attrib
-utes for files below it. It's of the form (<perms>,<owner>,<group>). A dash (-) in any of those fields means use value of the installed file.
+\aspalpha\aspnum\faauto\ls5\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 %defattr - This specifies attributes for fil
+es below it. It's of the form (<perms>,<owner>,<group>). A dash (-) in any of those fields means use value of the installed file.
 \par {\pntext\pard\plain\f3\insrsid14225503\charrsid16088027 \loch\af3\dbch\af0\hich\f3 \'b7\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlblt\ilvl0\ls5\pnrnot0\pnf3\pnindent360\pnsp120\pnhang {\pntxtb \'b7}}
 \aspalpha\aspnum\faauto\ls5\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 %dir - This directive specifies to only package the directory and no files, if any, underneath it
 \par {\pntext\pard\plain\f3\insrsid14225503\charrsid16088027 \loch\af3\dbch\af0\hich\f3 \'b7\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlblt\ilvl0\ls5\pnrnot0\pnf3\pnindent360\pnsp120\pnhang {\pntxtb \'b7}}
@@ -289,8 +290,8 @@ utes for files below it. It's of the form (<perms>,<owner>,<group>). A dash (-) 
 \par {\listtext\pard\plain\s18 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.5.\tab}}\pard\plain \s18\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls3\ilvl1\adjustright\rin0\lin0\itap0 
 \i\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\b\fs28\insrsid14225503\charrsid16088027 Pre/Postinstall Scripts
 \par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
-You can specify that commands be run prior to installing, after installing, prior to uninstalling, and after uninstalling a rpm package using the rpm directives %pre, %post, %preun, and %postun
- respectively. By default these are run from a bash shell and so bash scripting can be used. A simple example of a script is:
+You can specify that commands be run prior to installing, after installing, prior to uninstalling, and after uninstalling a rpm package using the rpm directives %p
+re, %post, %preun, and %postun respectively. By default these are run from a bash shell and so bash scripting can be used. A simple example of a script is:
 \par 
 \par %post VenueClient
 \par /sbin/chkconfig --add agns
@@ -326,8 +327,9 @@ You can specify that commands be run prior to installing, after installing, prio
 \par rm -f /tmp/AccessGrid-Postinstall.py
 \par /sbin/chkconfig --add agsm
 \par 
-\par The first script just calls the chkconfig command to remove the agns service prior to uninstalling the AccessGrid-VenueClient rpm. The second script creates a file that is actually a python script that compiles all the modules in the AccessGrid rpm, runs 
-it, then deletes it as well as running chkconfig to add the agsm service.
+\par The first script just calls the chkconfig command 
+to remove the agns service prior to uninstalling the AccessGrid-VenueClient rpm. The second script creates a file that is actually a python script that compiles all the modules in the AccessGrid rpm, runs it, then deletes it as well as running chkconfig t
+o add the agsm service.
 \par {\listtext\pard\plain\s18 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.6.\tab}}\pard\plain \s18\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls3\ilvl1\adjustright\rin0\lin0\itap0 
 \i\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\b\fs28\insrsid14225503\charrsid16088027 ChangeLog
 \par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
@@ -363,8 +365,8 @@ The ChangeLog is where you keep a history of the changes to the rpm spec file. I
 \par - This file was created
 \par {\listtext\pard\plain\s31 \b\f1\fs34\kerning32\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 4.\tab}}\pard\plain \s31\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin0\itap0 
 \f1\fs24\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 {\b\fs34\insrsid14225503\charrsid16088027 Packaging the Access Grid Toolkit
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
-Once you have an understanding of the above you need to actually make the rpms. The process of doing this is as follows:
+\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 Once you have an understandin
+g of the above you need to actually make the rpms. The process of doing this is as follows:
 \par {\pntext\pard\plain\f1\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 1.\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlbody\ilvl0\ls6\pnrnot0\pndec\pnstart1\pnindent360\pnsp120\pnhang {\pntxta .}}
 \aspalpha\aspnum\faauto\ls6\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 Checkout the Access Grid Toolkit from CVS
 \par {\pntext\pard\plain\f1\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 2.\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlbody\ilvl0\ls6\pnrnot0\pndec\pnstart1\pnindent360\pnsp120\pnhang {\pntxta .}}
@@ -390,8 +392,9 @@ Once you have an understanding of the above you need to actually make the rpms. 
 \par cd SPECS
 \par rpm -ba AccessGrid.spec
 \par 
-\par Here's what this does. First you need to change to a directory where you will checkout the package and delete any previous cvs module currently there. Then you need to check out the AccessGrid module. Then you make the source tarball. The name of the tarb
-all comes from the spec file from the "top level" package description where the line looks like:
+\par Here's what this does. First you need to change to a directory where you will checkout t
+he package and delete any previous cvs module currently there. Then you need to check out the AccessGrid module. Then you make the source tarball. The name of the tarball comes from the spec file from the "top level" package description where the line loo
+ks like:
 \par 
 \par Source:\tab \tab %\{name\}-%\{version\}.tar.gz
 \par 
