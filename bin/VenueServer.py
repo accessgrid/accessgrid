@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.33 2003-08-19 19:19:08 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.34 2003-08-20 18:57:17 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -69,8 +69,6 @@ def Usage():
     print "    -p|--port <int> : <port number to listen on>"
     print "    -l|--logFile <filename> : log file name"
     print "    -c|--configFile <filename> : config file name"
-    print "    --cert <filename>: identity certificate"
-    print "    --key <filename>: identity certificate's private key"
 
 def main():
 
@@ -93,6 +91,7 @@ def main():
         sys.exit(2)
 
     debugMode = 0
+    certWarn = 0
 
     for o, a in opts:
         if o in ("-p", "--port"):
@@ -104,12 +103,22 @@ def main():
         elif o in ("-c", "--configFile"):
             configFile = a
         elif o == "--key":
-            identityKey = a
+            certWarn = 1
         elif o == "--cert":
-            identityCert = a
+            certWarn = 1
         elif o in ("-h", "--help"):
             Usage()
             sys.exit(0)
+
+    if certWarn:
+        print ""
+        print "The --cert/--key options are no longer used. To accomplish"
+        print "the same effect, start the venue client, bring up the"
+        print "identity certificate browser, and import an identity"
+        print "certifiate that has an unencrypted private key."
+        print""
+        Usage()
+        sys.exit(0)
 
     # Start up the logging
     log = logging.getLogger("AG")
