@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.4 2004-02-26 04:58:16 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.5 2004-02-26 17:33:11 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.4 2004-02-26 04:58:16 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.5 2004-02-26 17:33:11 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -42,9 +42,8 @@ from AccessGrid.Descriptions import ApplicationDescription
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.Platform import GetTempDir, GetSharedDocDir
 from AccessGrid.Platform import isWindows
-from AccessGrid.RoleAuthorization import AddPeopleDialog
+from AccessGrid.AuthorizationUI import AddPeopleDialog
 from AccessGrid.Utilities import SubmitBug
-from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.AppMonitor import AppMonitor
 from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError

@@ -5,16 +5,16 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.50 2004-02-24 21:34:51 judson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.51 2004-02-26 17:33:11 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.50 2004-02-24 21:34:51 judson Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.51 2004-02-26 17:33:11 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
-from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid.hosting import Client
 
 import sys
 

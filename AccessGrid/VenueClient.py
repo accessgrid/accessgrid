@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.131 2004-02-26 04:57:45 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.132 2004-02-26 17:33:11 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,10 +13,10 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.131 2004-02-26 04:57:45 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.132 2004-02-26 17:33:11 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
-from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid.hosting import Client
 import sys
 import string
 import threading
@@ -27,8 +27,8 @@ import logging, logging.handlers
 
 from pyGlobus.io import GSITCPSocketException
 
-from AccessGrid.hosting.pyGlobus import Server
-from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
+from AccessGrid.hosting import Server
+from AccessGrid.hosting.ServiceBase import ServiceBase
 
 from AccessGrid.EventClient import EventClient
 from AccessGrid.TextClient import TextClient
@@ -45,7 +45,6 @@ from AccessGrid.Utilities import LoadConfig
 from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid import DataStore
 from AccessGrid.Platform import GetUserConfigDir
-from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.ProcessManager import ProcessManager
 from AccessGrid import Toolkit
 from AccessGrid.VenueClientObserver import VenueClientObserver

@@ -1,3 +1,5 @@
+import os
+
 # Linux Defaults
 AGTkBasePath = "/etc/AccessGrid"
 
