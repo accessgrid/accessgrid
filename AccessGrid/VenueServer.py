@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.130 2004-03-26 19:34:37 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.131 2004-03-26 20:42:30 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.130 2004-03-26 19:34:37 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.131 2004-03-26 20:42:30 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -857,6 +857,13 @@ class VenueServer(AuthorizationMixIn):
         """
         return int(self.encryptAllMedia)
 
+    def RegenerateEncryptionKeys(self):
+        """
+        This regenerates all the encryptions keys in all the venues.
+        """
+        for v in self.venues:
+            v.RegenerateEncryptionKeys()
+            
     def SetBackupServer(self, server):
         """
         Turn on or off server wide default for venue media encryption.
@@ -1300,6 +1307,17 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
             log.exception("GetEncryptAllMedia: exception")
             raise
 
+    def RegenerateEcryptionKeys(self):
+        """
+        Interface method to regenerate all encryption keys for all
+        venues on this server.
+        """
+        try:
+            self.impl.RegenerateEncryptionKeys()
+        except Exception, e:
+            log.exception("Failed to regenerate all encryption keys.")
+            raise
+            
     def SetBackupServer(self, server):
         """
         Interface for setting a fallback venue server.
@@ -1462,6 +1480,9 @@ class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
     def GetEncryptAllMedia(self):
         return self.proxy.GetEncryptAllMedia()
 
+    def RegenerateEncryptionKeys(self):
+        return self.proxy.RegenerateEncryptionKeys()
+    
     def SetBackupServer(self, serverURL):
         return self.proxy.SetBackupServer(serverURL)
 
