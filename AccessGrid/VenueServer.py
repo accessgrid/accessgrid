@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.109 2003-11-17 15:02:14 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.110 2004-02-13 22:08:26 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.109 2003-11-17 15:02:14 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.110 2004-02-13 22:08:26 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -461,7 +461,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
                         sd = ServiceDescription(name, description, uri,
                                                 mimeType)
-                        v.services[name] = sd
+                        v.services[id] = sd
                 else:
                     log.debug("No services to load for Venue %s", sec)
 
