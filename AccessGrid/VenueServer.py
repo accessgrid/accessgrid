@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.100 2003-09-18 16:30:11 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.101 2003-09-18 22:40:04 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.100 2003-09-18 16:30:11 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.101 2003-09-18 22:40:04 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -113,6 +113,7 @@ class VenueServer(ServiceBase.ServiceBase):
             "VenueServer.textPort" : 8004,
             "VenueServer.dataServiceUrl" : '',
             "VenueServer.dataPort" : 8006,
+            "VenueServer.administrators" : '',
             "VenueServer.encryptAllMedia" : 1,
             "VenueServer.houseKeeperFrequency" : 30,
             "VenueServer.persistenceFilename" : 'VenueServer.dat',
@@ -250,6 +251,9 @@ class VenueServer(ServiceBase.ServiceBase):
         self.service = self.hostingEnvironment.BindService(self, 'VenueServer')
         self.BindRoleManager()
         self.RegisterDefaultSubjects() # Register primary user as administrator
+        # Prepare to save admin list in SaveConfig
+        admin_role = self.GetRoleManager().GetRole("VenueServer.Administrators")
+        self.config["VenueServer.administrators"] = ":".join(admin_role.GetSubjectListAsStrings())
 
         # Some simple output to advertise the location of the service
         print("Server URL: %s \nEvent Port: %d Text Port: %d" %
@@ -283,6 +287,10 @@ class VenueServer(ServiceBase.ServiceBase):
         defaultIdentity = certMgr.GetDefaultIdentity()
         if defaultIdentity is not None:
             role.AddSubject(defaultIdentity.GetSubject())
+
+        # Server admins may have been changed here.  Prepare to store
+        #  in config file later.
+        self.config["VenueServer.administrators"] = ":".join(role.GetSubjectListAsStrings())
 
     def LoadPersistentVenues(self, filename):
         """        This method loads venues from a persistent store.
