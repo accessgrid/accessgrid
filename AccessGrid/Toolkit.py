@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.46 2004-04-13 20:25:37 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.47 2004-04-13 21:45:06 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.46 2004-04-13 20:25:37 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.47 2004-04-13 21:45:06 olson Exp $"
 
 # Standard imports
 import os
@@ -195,7 +195,11 @@ class AppBase:
 
     def GetDefaultSubject(self):
         ident = self.certificateManager.GetDefaultIdentity()
-        subject = X509Subject.CreateSubjectFromString(str(ident.GetSubject()))
+
+        if ident is not None:
+            subject = X509Subject.CreateSubjectFromString(str(ident.GetSubject()))
+        else:
+            subject = None
         return subject
 
     def GetCertificateManager(self):
@@ -343,7 +347,6 @@ class CmdlineApplication(AppBase):
         #
         if self.GetDefaultSubject() is None:
             self.log.warn("Toolkit initialized with no default identity.")
-            self.log.warn("Exiting because there's no default identity.")
            
         return argvResult
 
@@ -530,8 +533,6 @@ class Service(AppBase):
 
         if self.GetDefaultSubject() is None:
             self.log.error("Toolkit initialized with no default identity.")
-            self.log.error("Exiting because there's no default identity.")
-            sys.exit(-1)
 
         return argvResult
 

@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.19 2004-04-12 21:38:02 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.20 2004-04-13 21:45:07 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.19 2004-04-12 21:38:02 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.20 2004-04-13 21:45:07 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -1120,7 +1120,7 @@ class CertificateManager(object):
         identityCerts = self.GetIdentityCerts()
 
         if len(identityCerts) == 0:
-            log.error("No identity certs found")
+            log.warn("No identity certs found")
 
         if len(identityCerts) == 1:
             identityCerts[0].SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
