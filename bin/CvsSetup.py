@@ -72,6 +72,12 @@ for o, a in opts:
         verbose = 1
 
 
+# Create destination directory if it doesn't exist.
+
+if DST_CONFIG_DIR != "":
+    if not os.path.exists( DST_CONFIG_DIR ):
+        os.mkdir(DST_CONFIG_DIR)
+
 # Make sure a destination was specified.
 
 if DST_CONFIG_DIR == "" or not os.path.exists( DST_CONFIG_DIR ):
@@ -139,8 +145,8 @@ if not os.path.exists(dir):
 # python packaging/makeServicePackages.py AccessGrid/services
 
 mk_service_exec = sys.executable + " " + os.path.join( AG_BASE_DIR, "packaging", "makeServicePackages.py" )
-service_input_dir = os.path.join( ABS_AG_BASE_DIR, "services", "node")
-service_output_dir = os.path.join( ABS_DST_CONFIG_DIR, "services")
+service_input_dir = "\"" + os.path.join( ABS_AG_BASE_DIR, "services", "node") + "\""
+service_output_dir = "\"" + os.path.join( ABS_DST_CONFIG_DIR, "services") + "\""
 mk_command = mk_service_exec + " " + service_input_dir + " " + service_output_dir
 #mk_command = mk_service_exec + " " + service_input_dir
 if verbose:
