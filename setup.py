@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.64 2004-04-26 15:19:04 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.65 2004-04-26 17:15:10 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ linux_data = [('etc/init.d',
                 ]
                ),
               ('etc/AccessGrid/Config/CAcertificates',
-               glob.glob('packaging/config/CAcertificates/*'),
+               filter(os.path.isfile, glob.glob('packaging/config/CAcertificates/*')),
                ),
               ('share/AccessGrid',
                [r"packaging/ag.ico"
@@ -113,7 +113,7 @@ linux_data = [('etc/init.d',
                 ]
                ),
               ('share/doc/AccessGrid/Documentation/VenueClientManual/VenueClientManual_files',
-               glob.glob("doc/VenueClientManual/VenueClientManual_files/*")
+               filter(os.path.isfile, glob.glob("doc/VenueClientManual/VenueClientManual_files/*"))
                ),
               ('share/doc/AccessGrid/Documentation/VenueManagementManual',
                [r"doc/VenueManagementManual/VenueManagementManual.htm",
@@ -122,7 +122,7 @@ linux_data = [('etc/init.d',
                 ]
                ),
               ('share/doc/AccessGrid/Documentation/VenueManagementManual/VenueManagementManual_files',
-               glob.glob("doc/VenueManagementManual/VenueManagementManual_files/*")
+               filter(os.path.isfile, glob.glob("doc/VenueManagementManual/VenueManagementManual_files/*"))
                )
               ]
 
