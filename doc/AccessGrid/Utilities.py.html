@@ -47,8 +47,10 @@
         <tr>
         <td>
         
+<b>from</b> AccessGrid.Platform <b>import</b> GetInstallDir<br>
 <b>from</b> AccessGrid.hosting.pyGlobus.Utilities <b>import</b> GetDefaultIdentityDN<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-ConfigParser.html">ConfigParser</a><br>
+<b>import</b> logging<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-os.html">os</a><br>
 <b>from</b> <a href="http://www.python.org/doc/current/lib/module-random.html">random</a> <b>import</b> Random<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-sha.html">sha</a><br>
@@ -82,15 +84,26 @@
         <tr>
         <td>
         
+
+            <table border="0" cellspacing="2" cellpadding="2" width="100%">
+              <tr>
+            <td align="LEFT" valign="TOP">
 <a href="#AllocateEncryptionKey">AllocateEncryptionKey</a><br>
 <a href="#GetRandInt">GetRandInt</a><br>
 <a href="#GetResourceList">GetResourceList</a><br>
 <a href="#HaveValidProxy">HaveValidProxy</a><br>
 <a href="#LoadConfig">LoadConfig</a><br>
+</td>
+<td align="LEFT" valign="TOP">
 <a href="#SaveConfig">SaveConfig</a><br>
+<a href="#SetMimeTypeAssociation">SetMimeTypeAssociation</a><br>
+<a href="#StartDetachedProcess">StartDetachedProcess</a><br>
 <a href="#SubmitBug">SubmitBug</a><br>
 <a href="#formatExceptionInfo">formatExceptionInfo</a><br>
-
+</td>
+</tr>
+            </table>
+            
 
         <tr>
             <th bgcolor="#99ccff"
@@ -189,7 +202,10 @@ GetResourceList ( resourceFile )
         device: Microsoft WDM Image Capture (Win32)
         portnames:  external-in 
         device: o100vc.dll - Osprey Capture Card 1
-        portnames:  external-in</p>
+        portnames:  external-in </p>
+<p>    Note: there's a bad assumption here: the caller specifies the resources
+    file; if it's not found, we generate the resource file in the location
+    that the system expects.  This should be fixed, and it's on my list. -Tom</p>
 </p>
 
         <tr>
@@ -286,6 +302,70 @@ SaveConfig ( fileName,  config )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="SetMimeTypeAssociation"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetMimeTypeAssociation&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetMimeTypeAssociation (
+        mimetype,
+        ext=None,
+        desc=None,
+        cmds=None,
+        )
+
+</pre></font>
+
+<p>This function registers information with the local machines mime types
+    database so it can be retrieved later.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="StartDetachedProcess"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">StartDetachedProcess&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+StartDetachedProcess ( cmd )
+
+</pre></font>
+
+<h3>Start cmd as a detached process.</h3>
+<p>    We start the process using a command processor (cmd on windows,
+    sh on linux).</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="SubmitBug"></a>&nbsp;
                 </font>
             </th>
@@ -344,7 +424,7 @@ formatExceptionInfo ( maxTBlevel=5 )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Sun Apr 20 09:11:36 2003 by
+        on Mon Apr 28 13:48:45 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

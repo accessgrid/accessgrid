@@ -87,11 +87,12 @@ ServiceBase<br>
 <a href="#GetResource">GetResource</a><br>
 <a href="#IsStarted">IsStarted</a><br>
 <a href="#SetAuthorizedUsers">SetAuthorizedUsers</a><br>
+<a href="#SetConfiguration">SetConfiguration</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#SetConfiguration">SetConfiguration</a><br>
 <a href="#SetExecutable">SetExecutable</a><br>
 <a href="#SetResource">SetResource</a><br>
+<a href="#Shutdown">Shutdown</a><br>
 <a href="#Start">Start</a><br>
 <a href="#Stop">Stop</a><br>
 <a href="#_Start">_Start</a><br>
@@ -502,6 +503,34 @@ SetResource ( self,  resource )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="Shutdown"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">Shutdown&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+Shutdown ( self )
+
+</pre></font>
+
+<p>Shut down the service</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="Start"></a>&nbsp;
                 </font>
             </th>
@@ -656,7 +685,7 @@ _Start ( self,  options )
         <tr>
         <td>
         <font color="#000088"><pre>
-__init__ ( self )
+__init__ ( self,  server )
 
 </pre></font>
 
@@ -701,7 +730,7 @@ Exception( "Can't instantiate abstract class AGService" )<br>
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Sun Apr 20 09:11:36 2003 by
+        on Mon Apr 28 13:48:45 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

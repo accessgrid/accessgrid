@@ -91,15 +91,17 @@ ServiceBase<br>
 <a href="#GetServiceManagers">GetServiceManagers</a><br>
 <a href="#GetServices">GetServices</a><br>
 <a href="#LoadConfiguration">LoadConfiguration</a><br>
+<a href="#RemoveAuthorizedUser">RemoveAuthorizedUser</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#RemoveAuthorizedUser">RemoveAuthorizedUser</a><br>
 <a href="#RemoveServiceManager">RemoveServiceManager</a><br>
+<a href="#SetDefaultConfiguration">SetDefaultConfiguration</a><br>
 <a href="#Stop">Stop</a><br>
 <a href="#StoreConfiguration">StoreConfiguration</a><br>
 <a href="#__PushAuthorizedUserList">__PushAuthorizedUserList</a><br>
 <a href="#__ReadAuthFile">__ReadAuthFile</a><br>
 <a href="#__ReadConfigFile">__ReadConfigFile</a><br>
+<a href="#__WriteConfigFile">__WriteConfigFile</a><br>
 <a href="#__init__">__init__</a><br>
 </td>
 </tr>
@@ -593,6 +595,62 @@ Exception( "AGNodeService.RemoveServiceManager failed: " + serviceManagerToRemov
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="SetDefaultConfiguration"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetDefaultConfiguration&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetDefaultConfiguration ( self,  configName )
+
+</pre></font>
+
+<p>Set the name of the default configuration</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+ValueError( "Attempt to set default config to non-existent configuration" )<br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="Stop"></a>&nbsp;
                 </font>
             </th>
@@ -720,11 +778,39 @@ __ReadAuthFile ( self )
         <tr>
         <td>
         <font color="#000088"><pre>
-__ReadConfigFile ( self,  configFile )
+__ReadConfigFile ( self )
 
 </pre></font>
 
 <p>Read the node service configuration file</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="__WriteConfigFile"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">__WriteConfigFile&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+__WriteConfigFile ( self )
+
+</pre></font>
+
+<p>Write the node service configuration file</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -765,7 +851,7 @@ __init__ ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Sun Apr 20 09:11:36 2003 by
+        on Mon Apr 28 13:48:45 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

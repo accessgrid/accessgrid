@@ -49,9 +49,99 @@
         
 <b>from</b> AccessGrid <b>import</b> icons<br>
 <b>from</b> AccessGrid.Utilities <b>import</b> formatExceptionInfo<br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-mailcap.html">mailcap</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-string.html">string</a><br>
 <b>from</b> wxPython.lib.imagebrowser <b>import</b> *<br>
-<b>from</b> wxPython.wx <b>import</b> *<br>
+<b>from</b> wxPython.wx <b>import</b> wxTheMimeTypesManager, wxFileTypeInfo, *<br>
 
+</td></tr>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Functions">Functions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="#GetMimeCommands">GetMimeCommands</a><br>
+<a href="#InitMimeTypes">InitMimeTypes</a><br>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetMimeCommands"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetMimeCommands&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetMimeCommands (
+        filename=None,
+        type=None,
+        ext=None,
+        )
+
+</pre></font>
+
+<p>This function returns anything in the local mime type database for the
+    type or extension specified.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="InitMimeTypes"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">InitMimeTypes&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+InitMimeTypes ( file )
+
+</pre></font>
+
+<p>This function is used to load in our AG specific mimetypes.</p>
 </td></tr>
 
         <tr>
@@ -96,7 +186,7 @@
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Sun Apr 20 09:11:36 2003 by
+        on Mon Apr 28 13:48:45 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -49,12 +49,12 @@
         
 <b>from</b> AccessGrid <b>import</b> icons, Utilities<br>
 <b>from</b> AccessGrid.ClientProfile <b>import</b> *<br>
-<b>from</b> AccessGrid.Descriptions <b>import</b> DataDescription, ServiceDescription<br>
+<b>from</b> AccessGrid.Descriptions <b>import</b> DataDescription, ServiceDescription, ApplicationDescription<br>
 <b>from</b> AccessGrid.Events <b>import</b> ConnectEvent, TextEvent, DisconnectEvent<br>
 <b>from</b> AccessGrid.NodeManagementUIClasses <b>import</b> NodeManagementClientFrame<br>
 <b>from</b> AccessGrid.Platform <b>import</b> GetTempDir, GetInstallDir<br>
 <b>from</b> AccessGrid.TextClient <b>import</b> SimpleTextProcessor, TextClientConnectException<br>
-<b>from</b> AccessGrid.UIUtilities <b>import</b> AboutDialog, MessageDialog, MyLog<br>
+<b>from</b> AccessGrid.UIUtilities <b>import</b> AboutDialog, MessageDialog, GetMimeCommands, MyLog<br>
 <b>from</b> AccessGrid.Utilities <b>import</b> formatExceptionInfo<br>
 <b>from</b> AccessGrid.VenueClient <b>import</b> VenueClient, EnterVenueException<br>
 <b>from</b> AccessGrid.hosting.pyGlobus.Utilities <b>import</b> CreateTCPAttrAlwaysAuth, GetHostname<br>
@@ -233,16 +233,17 @@ VerifyExecutionEnvironment ()
         
 <table border="0" cellpadding="3" cellspacing="0">
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_AddMyVenueDialog.py.html">AddMyVenueDialog</a></td><td valign="top" align="left"></td></tr>
-<tr><td valign="top" align="left"><a href="VenueClientUIClasses_AddServiceDialog.py.html">AddServiceDialog</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_ContentListPanel.py.html">ContentListPanel</a></td><td valign="top" align="left">
 <p>ContentListPanel.</p>
 </td></tr>
+<tr><td valign="top" align="left"><a href="VenueClientUIClasses_DataDialog.py.html">DataDialog</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_DataDropTarget.py.html">DataDropTarget</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_EditMyVenuesDialog.py.html">EditMyVenuesDialog</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_ExitPanel.py.html">ExitPanel</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_ProfileDialog.py.html">ProfileDialog</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_RenameDialog.py.html">RenameDialog</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_SaveFileDialog.py.html">SaveFileDialog</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="VenueClientUIClasses_ServiceDialog.py.html">ServiceDialog</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_TextClientPanel.py.html">TextClientPanel</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_TextValidator.py.html">TextValidator</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_UploadFilesDialog.py.html">UploadFilesDialog</a></td><td valign="top" align="left"></td></tr>
@@ -271,7 +272,7 @@ VerifyExecutionEnvironment ()
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Sun Apr 20 09:11:36 2003 by
+        on Mon Apr 28 13:48:45 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -96,9 +96,10 @@ ServiceBase<br>
 <a href="#ExitVenue">ExitVenue</a><br>
 <a href="#Follow">Follow</a><br>
 <a href="#FollowResponse">FollowResponse</a><br>
+<a href="#GetHomeVenue">GetHomeVenue</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#GetHomeVenue">GetHomeVenue</a><br>
+<a href="#GetInstalledApps">GetInstalledApps</a><br>
 <a href="#GetVenue">GetVenue</a><br>
 <a href="#Heartbeat">Heartbeat</a><br>
 <a href="#Lead">Lead</a><br>
@@ -110,9 +111,9 @@ ServiceBase<br>
 <a href="#RemoveDataEvent">RemoveDataEvent</a><br>
 <a href="#RemoveServiceEvent">RemoveServiceEvent</a><br>
 <a href="#RemoveUserEvent">RemoveUserEvent</a><br>
+<a href="#RequestFollow">RequestFollow</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#RequestFollow">RequestFollow</a><br>
 <a href="#RequestLead">RequestLead</a><br>
 <a href="#SendFollowResponse">SendFollowResponse</a><br>
 <a href="#SendLeadResponse">SendLeadResponse</a><br>
@@ -525,6 +526,34 @@ GetHomeVenue ( self )
 </pre></font>
 
 <p>GetHomeVenue returns the default venue for this venue client.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetInstalledApps"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetInstalledApps&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetInstalledApps ( self )
+
+</pre></font>
+
+<p>Return a list of installed applications</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1185,7 +1214,7 @@ __init__ ( self,  profile=None )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Sun Apr 20 09:11:36 2003 by
+        on Mon Apr 28 13:48:45 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -127,7 +127,6 @@ ServiceBase.ServiceBase<br>
 <a href="#StartApplications">StartApplications</a><br>
 <a href="#UpdateClientProfile">UpdateClientProfile</a><br>
 <a href="#UpdateData">UpdateData</a><br>
-<a href="#_ChangeUniqueId">_ChangeUniqueId</a><br>
 <a href="#__GetClients">__GetClients</a><br>
 <a href="#__init__">__init__</a><br>
 <a href="#__repr__">__repr__</a><br>
@@ -136,6 +135,7 @@ ServiceBase.ServiceBase<br>
 <a href="#wsAddData">wsAddData</a><br>
 <a href="#wsAddService">wsAddService</a><br>
 <a href="#wsGetData">wsGetData</a><br>
+<a href="#wsRemoveData">wsRemoveData</a><br>
 <a href="#wsSetConnections">wsSetConnections</a><br>
 <a href="#wsUpdateData">wsUpdateData</a><br>
 </td>
@@ -342,9 +342,9 @@ AddService ( self,  serviceDescription )
 
 </pre></font>
 
-<p>The AddService method enables VenuesClients to put services in the Virtual
-        Venue. Service put in the Virtual Venue through AddService is persistently
-        stored.</p>
+<p>The AddService method enables VenuesClients to put services in
+        the Virtual Venue. Service put in the Virtual Venue through
+        AddService is persistently stored.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -650,7 +650,7 @@ DestroyApplication ( self,  appId )
         <tr>
         <td>
         <font color="#000088"><pre>
-Enter ( self,  clientProfile )
+Enter ( self,  clientProfileStruct )
 
 </pre></font>
 
@@ -680,7 +680,7 @@ Enter ( self,  clientProfile )
         <tr>
         <td>
         <font color="#000088"><pre>
-EventServiceDisconnect ( self,  event )
+EventServiceDisconnect ( self,  privateId )
 
 </pre></font>
 
@@ -1285,7 +1285,6 @@ RemoveData ( self,  dataDescription )
         <tr>
         <td>
         
-VenueException( "Cannot remove data!" )<br>
 VenueException( "Data not found." )<br>
 
 </td></tr>
@@ -1745,7 +1744,7 @@ StartApplications ( self )
         <tr>
         <td>
         <font color="#000088"><pre>
-UpdateClientProfile ( self,  clientProfile )
+UpdateClientProfile ( self,  clientProfileStruct )
 
 </pre></font>
 
@@ -1819,33 +1818,6 @@ VenueException( "UpdateData: data %s not already present" % name )<br>
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="_ChangeUniqueId"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">_ChangeUniqueId&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-_ChangeUniqueId ( self,  id )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
                   <a name="__GetClients"></a>&nbsp;
                 </font>
             </th>
@@ -1896,6 +1868,7 @@ __init__ (
         description,
         administrators,
         dataStoreLocation,
+        id=None,
         )
 
 </pre></font>
@@ -2019,7 +1992,7 @@ startDataStore ( self )
         <tr>
         <td>
         <font color="#000088"><pre>
-wsAddData ( self,  dataDescription )
+wsAddData ( self,  dataDescriptionStruct )
 
 </pre></font>
 
@@ -2075,7 +2048,7 @@ wsAddData ( self,  dataDescription )
         <tr>
         <td>
         <font color="#000088"><pre>
-wsAddService ( self,  serviceDescription )
+wsAddService ( self,  serviceDescriptionStruct )
 
 </pre></font>
 
@@ -2134,6 +2107,62 @@ wsGetData ( self,  name )
 
 </pre></font>
 
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsRemoveData"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsRemoveData&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsRemoveData ( self,  dataDescriptionStruct )
+
+</pre></font>
+
+<p>Interface methods</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -2241,7 +2270,7 @@ VenueException( "Set Connections Failed!" )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-wsUpdateData ( self,  dataDescription )
+wsUpdateData ( self,  dataDescriptionStruct )
 
 </pre></font>
 
@@ -2286,7 +2315,7 @@ wsUpdateData ( self,  dataDescription )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Sun Apr 20 09:11:36 2003 by
+        on Mon Apr 28 13:48:45 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

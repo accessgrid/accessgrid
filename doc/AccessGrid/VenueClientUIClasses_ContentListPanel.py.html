@@ -93,11 +93,11 @@ wxPanel<br>
 <a href="#CleanUp">CleanUp</a><br>
 <a href="#ModifyParticipant">ModifyParticipant</a><br>
 <a href="#OnKeyDown">OnKeyDown</a><br>
-<a href="#OnLeftDown">OnLeftDown</a><br>
+<a href="#OnRightClick">OnRightClick</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#OnRightClick">OnRightClick</a><br>
 <a href="#OnSize">OnSize</a><br>
+<a href="#RemoveApplication">RemoveApplication</a><br>
 <a href="#RemoveData">RemoveData</a><br>
 <a href="#RemoveNode">RemoveNode</a><br>
 <a href="#RemoveParticipant">RemoveParticipant</a><br>
@@ -349,33 +349,6 @@ OnKeyDown ( self,  event )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="OnLeftDown"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">OnLeftDown&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-OnLeftDown ( self,  event )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
                   <a name="OnRightClick"></a>&nbsp;
                 </font>
             </th>
@@ -418,6 +391,33 @@ OnRightClick ( self,  event )
         <td>
         <font color="#000088"><pre>
 OnSize ( self,  event )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="RemoveApplication"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">RemoveApplication&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+RemoveApplication ( self,  appDesc )
 
 </pre></font>
 
@@ -552,7 +552,7 @@ RemoveParticipantData ( self,  dataTreeId )
         <tr>
         <td>
         <font color="#000088"><pre>
-RemoveService ( self,  appDesc )
+RemoveService ( self,  profile )
 
 </pre></font>
 
@@ -763,7 +763,7 @@ __setTree ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Sun Apr 20 09:11:36 2003 by
+        on Mon Apr 28 13:48:45 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

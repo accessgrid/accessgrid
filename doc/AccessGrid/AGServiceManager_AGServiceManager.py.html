@@ -90,6 +90,7 @@ ServiceBase<br>
 <a href="#SetAuthorizedUsers">SetAuthorizedUsers</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#Shutdown">Shutdown</a><br>
 <a href="#StopServices">StopServices</a><br>
 <a href="#__DiscoverResources">__DiscoverResources</a><br>
 <a href="#__PushAuthorizedUserList">__PushAuthorizedUserList</a><br>
@@ -454,6 +455,33 @@ faultType("AGServiceManager.SetAuthorizedUsers failed: " + str( sys.exc_value ) 
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="Shutdown"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">Shutdown&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+Shutdown ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="StopServices"></a>&nbsp;
                 </font>
             </th>
@@ -608,7 +636,7 @@ __RetrieveServicePackage ( self,  servicePackageUrl )
         <tr>
         <td>
         <font color="#000088"><pre>
-__init__ ( self )
+__init__ ( self,  server )
 
 </pre></font>
 
@@ -625,7 +653,7 @@ __init__ ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Sun Apr 20 09:11:36 2003 by
+        on Mon Apr 28 13:48:45 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

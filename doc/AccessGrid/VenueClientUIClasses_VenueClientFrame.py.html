@@ -94,35 +94,44 @@ wxFrame<br>
 <a href="#AuthorizeLeadDialog">AuthorizeLeadDialog</a><br>
 <a href="#CleanUp">CleanUp</a><br>
 <a href="#EditMyVenues">EditMyVenues</a><br>
+<a href="#EnableAppMenu">EnableAppMenu</a><br>
 <a href="#Exit">Exit</a><br>
 <a href="#FillInAddress">FillInAddress</a><br>
 <a href="#Follow">Follow</a><br>
 <a href="#HideMenu">HideMenu</a><br>
+<a href="#JoinApp">JoinApp</a><br>
 <a href="#Layout">Layout</a><br>
 <a href="#NotifyLeadDialog">NotifyLeadDialog</a><br>
 <a href="#NotifyUnLeadDialog">NotifyUnLeadDialog</a><br>
 <a href="#OnSashDrag">OnSashDrag</a><br>
 <a href="#OnSize">OnSize</a><br>
+<a href="#OpenAboutDialog">OpenAboutDialog</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#OpenAboutDialog">OpenAboutDialog</a><br>
 <a href="#OpenAddDataDialog">OpenAddDataDialog</a><br>
 <a href="#OpenAddPersonalDataDialog">OpenAddPersonalDataDialog</a><br>
 <a href="#OpenAddServiceDialog">OpenAddServiceDialog</a><br>
+<a href="#OpenApplicationProfile">OpenApplicationProfile</a><br>
 <a href="#OpenData">OpenData</a><br>
+<a href="#OpenDataProfile">OpenDataProfile</a><br>
 <a href="#OpenDataProfileDialog">OpenDataProfileDialog</a><br>
 <a href="#OpenNodeMgmtApp">OpenNodeMgmtApp</a><br>
 <a href="#OpenParticipantProfile">OpenParticipantProfile</a><br>
 <a href="#OpenProfileDialog">OpenProfileDialog</a><br>
+<a href="#OpenService">OpenService</a><br>
+<a href="#OpenServiceProfile">OpenServiceProfile</a><br>
 <a href="#OpenSetNodeUrlDialog">OpenSetNodeUrlDialog</a><br>
+<a href="#RemoveApp">RemoveApp</a><br>
 <a href="#RemoveData">RemoveData</a><br>
 <a href="#RemoveService">RemoveService</a><br>
-<a href="#SaveData">SaveData</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#SaveData">SaveData</a><br>
 <a href="#SaveMyVenuesToFile">SaveMyVenuesToFile</a><br>
+<a href="#SetInstalledApps">SetInstalledApps</a><br>
 <a href="#SetTextLocation">SetTextLocation</a><br>
 <a href="#ShowMenu">ShowMenu</a><br>
+<a href="#StartApp">StartApp</a><br>
 <a href="#UnFollow">UnFollow</a><br>
 <a href="#UpdateLayout">UpdateLayout</a><br>
 <a href="#__fillTempHelp">__fillTempHelp</a><br>
@@ -254,6 +263,33 @@ EditMyVenues ( self,  event )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="EnableAppMenu"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">EnableAppMenu&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+EnableAppMenu ( self,  flag )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="Exit"></a>&nbsp;
                 </font>
             </th>
@@ -355,6 +391,33 @@ Follow ( self,  event )
         <td>
         <font color="#000088"><pre>
 HideMenu ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="JoinApp"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">JoinApp&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+JoinApp ( self,  event )
 
 </pre></font>
 
@@ -616,6 +679,33 @@ OpenAddServiceDialog ( self,  event )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="OpenApplicationProfile"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">OpenApplicationProfile&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+OpenApplicationProfile ( self,  event )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="OpenData"></a>&nbsp;
                 </font>
             </th>
@@ -631,6 +721,33 @@ OpenAddServiceDialog ( self,  event )
         <td>
         <font color="#000088"><pre>
 OpenData ( self,  event )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="OpenDataProfile"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">OpenDataProfile&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+OpenDataProfile ( self,  event )
 
 </pre></font>
 
@@ -751,6 +868,60 @@ OpenProfileDialog ( self,  event )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="OpenService"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">OpenService&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+OpenService ( self,  event )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="OpenServiceProfile"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">OpenServiceProfile&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+OpenServiceProfile ( self,  event )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="OpenSetNodeUrlDialog"></a>&nbsp;
                 </font>
             </th>
@@ -766,6 +937,33 @@ OpenProfileDialog ( self,  event )
         <td>
         <font color="#000088"><pre>
 OpenSetNodeUrlDialog ( self,  event=None )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="RemoveApp"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">RemoveApp&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+RemoveApp ( self,  event )
 
 </pre></font>
 
@@ -886,6 +1084,35 @@ SaveMyVenuesToFile ( self )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="SetInstalledApps"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetInstalledApps&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetInstalledApps ( self,  applicationList )
+
+</pre></font>
+
+<h3>Build the menu of installed applications</h3>
+<p> Applications Integration code</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="SetTextLocation"></a>&nbsp;
                 </font>
             </th>
@@ -928,6 +1155,37 @@ SetTextLocation ( self,  event=None )
         <td>
         <font color="#000088"><pre>
 ShowMenu ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="StartApp"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">StartApp&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+StartApp (
+        self,
+        event,
+        app,
+        )
 
 </pre></font>
 
@@ -1220,7 +1478,7 @@ __showNoSelectionDialog ( self,  text )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Sun Apr 20 09:11:36 2003 by
+        on Mon Apr 28 13:48:45 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         
