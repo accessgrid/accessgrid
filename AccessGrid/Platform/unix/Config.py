@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.27 2004-05-12 21:05:34 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.28 2004-05-13 20:17:43 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.27 2004-05-12 21:05:34 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.28 2004-05-13 20:17:43 turam Exp $"
 
 import os
 import mimetypes
@@ -420,13 +420,32 @@ class UserConfig(AccessGrid.Config.UserConfig):
             
         return self.profileFilename
 
-    def GetConfigDir(self):
+    def GetBaseDir(self):
         global AGTK_USER
 
         try:
-            self.configDir = os.path.join(os.environ[AGTK_USER],'Config')
+            self.baseDir = os.environ[AGTK_USER]
         except:
-            self.configDir = os.path.join(os.environ["HOME"],'.AccessGrid','Config')
+            self.baseDir = os.path.join(os.environ['HOME'], ".AccessGrid")
+
+        try:
+            # Create directory if it doesn't exist
+            if self.initIfNeeded:
+                # Create directory if it doesn't exist
+                if not os.path.exists(self.baseDir):
+                    os.mkdir(self.baseDir)
+            
+        except:
+            log.exception("Can not create base directory")
+            # check to make it if needed
+            self.baseDir = ""
+                
+        return self.baseDir
+
+    def GetConfigDir(self):
+
+        baseDir = self.GetBaseDir()
+        self.configDir = os.path.join(baseDir,'Config')
 
         try:
             if not os.path.exists(self.configDir):
@@ -448,7 +467,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
     
     def GetLogDir(self):
         if self.logDir == None:
-            ucd = self.GetConfigDir()
+            ucd = self.GetBaseDir()
             self.logDir = os.path.join(ucd, "Logs")
 
         # check to make it if needed
@@ -463,7 +482,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
     def GetSharedAppDir(self):
         if self.appDir == None:
-            ucd = self.GetConfigDir()
+            ucd = self.GetBaseDir()
             self.appDir = os.path.join(ucd, "SharedApplications")
 
         # Check dir and make it if needed.
@@ -478,7 +497,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
     def GetNodeServicesDir(self):
         if self.nodeServicesDir == None:
-            ucd = self.GetConfigDir()
+            ucd = self.GetBaseDir()
             self.nodeServicesDir = os.path.join(ucd, "NodeService")
 
         # Check dir and make it if needed.
@@ -493,28 +512,21 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
     def GetServicesDir(self):
         if self.servicesDir == None:
-            ucd = self.GetConfigDir()
+            ucd = self.GetBaseDir()
             self.servicesDir = os.path.join(ucd, "Services")
 
-        # check to make it if needed
+        # Check dir and create it if needed.
+        if self.initIfNeeded:
+            if self.servicesDir is not None and \
+                   not os.path.exists(self.servicesDir):
+                os.mkdir(self.servicesDir)
+
+        # Check the installation
+        if not os.path.exists(self.servicesDir):
+            raise Exception, "AGTkConfig: services dir does not exist."
+
         return self.servicesDir
 
-    def SetRtpDefaults(self, profile ):
-        """
-        Set registry values used by vic and rat for identification
-        """
-        #
-        # Write the rtp defaults file
-        #
-        rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
-                         %s\n*rtpNote: %s\n"
-        rtpDefaultsFile=open( os.path.join(os.environ["HOME"], ".RTPdefaults"),"w")
-        rtpDefaultsFile.write( rtpDefaultsText % ( profile.name,
-        profile.email,
-        profile.location,
-        profile.phoneNumber,
-        profile.publicId ) )
-        rtpDefaultsFile.close()
 
 class SystemConfig(AccessGrid.Config.SystemConfig):
     """
