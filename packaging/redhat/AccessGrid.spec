@@ -4,7 +4,7 @@
 #
 %define	name		AccessGrid
 %define version		2.1.2
-%define release		10
+%define release		11
 %define	prefix		/usr
 %define sysconfdir	/etc/%{name}
 %define sharedir	%{prefix}/share
@@ -162,6 +162,7 @@ mv %{buildroot}%{prefix}/etc %{buildroot}
 %{prefix}/bin/NodeSetupWizard.py
 %{prefix}/bin/CertificateRequestTool.py
 %{prefix}/bin/certmgr.py
+%{prefix}/bin/agpm.py
 %{prefix}/bin/SetupVideo.py
 %{sharedir}/doc/AccessGrid
 %defattr(0644,root,root)
