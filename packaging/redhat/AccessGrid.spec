@@ -187,7 +187,7 @@ python2.2 setup.py build
 %install
 python2.2 setup.py install --prefix=%{buildroot}%{prefix} --no-compile
 mv %{buildroot}%{prefix}/etc %{buildroot}
-mv %{buildroot}%{prefix}/var %{buildroot}
+#mv %{buildroot}%{prefix}/var %{buildroot}
 mkdir -p %{buildroot}/tmp/local_services
 
 #
