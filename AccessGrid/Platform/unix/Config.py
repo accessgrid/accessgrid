@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.16 2004-04-26 18:15:30 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.17 2004-04-26 18:21:27 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.16 2004-04-26 18:15:30 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.17 2004-04-26 18:21:27 olson Exp $"
 
 import os
 import mimetypes
@@ -135,7 +135,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
                 os.mkdir(self.configDir)
 
         if self.configDir is not None and not os.path.exists(self.configDir):
-            raise IOError("AGTkConfig: config dir does not exist.")
+            raise IOError("AGTkConfig: config dir %s does not exist." % (self.configDir))
 
         return self.configDir
 
