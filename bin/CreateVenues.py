@@ -2,6 +2,7 @@ import ConfigParser
 import sys
 import os
 import string
+import logging
 
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.ClientProfile import ClientProfile
@@ -21,6 +22,11 @@ venueServer = Client.Handle(venueServerUri).get_proxy()
 cp = ConfigParser.ConfigParser()
 cp.read(configFile)
 venues = {}
+
+# Start up the logging
+log = logging.getLogger("AG")
+log.setLevel(logging.INFO)
+log.addHandler(logging.StreamHandler())
 
 # We do this in two iterations because we need valid URLs for connections
 for sec in cp.sections():
@@ -65,16 +71,16 @@ for sec in cp.sections():
     print "CE #%s : %s ( %s )" % (sec, venues[sec].name, str(exits))
     for x in exits:
         if venues.has_key(x):
-            current.append(ConnectionDescription(venues[x].name,
-                                                 venues[x].description,
-                                                 venues[x].uri))
+            c = ConnectionDescription(venues[x].name, venues[x].description,
+                                      venues[x].uri)
+            current[c.uri] = c
         else:
             print "Error finding description for venue: ", x
 
     # Set the connections on the given venue
     print "CD #%s/%s: %s" % (sec, venues[sec].name, cp.get(sec, 'exits'))
     venue = Client.Handle(venues[sec].uri).get_proxy()
-    venue.SetConnections(venues[sec].connections)
+    venue.SetConnections(venues[sec].connections.values())
 
 
 
