@@ -6,7 +6,7 @@ import string
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 
-from AccessGrid.Types import AGServiceImplementationRepository, AGServiceDescription, ServiceConfiguration
+from AccessGrid.Types import AGServiceImplementationRepository, AGServiceDescription, ServiceConfiguration, AGServiceManagerDescription
 from AccessGrid.AuthorizationManager import AuthorizationManager
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 
@@ -87,7 +87,7 @@ class AGNodeService( ServiceBase ):
          self.serviceManagers.append( serviceManager )
          Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
       except:
-         print "Exception in AGNodeService.RemoveAuthorizedUser ", sys.exc_type, sys.exc_value
+         print "Exception in AGNodeService.AddServiceManager ", sys.exc_type, sys.exc_value
          raise faultType("Failed to set Service Manager user authorization: " + serviceManager.uri )
    AddServiceManager.soap_export_as = "AddServiceManager"
    AddServiceManager.pass_connection_info = 1
@@ -198,7 +198,8 @@ class AGNodeService( ServiceBase ):
    ConfigureStreams.pass_connection_info = 1
 
 
-
+#FIXME - LoadConfig and StoreConfig work with some level of reliability, 
+#        but do need a complete reworking.  
    def LoadConfiguration( self, connInfo, configName ):
       """Load named node configuration"""
 
@@ -269,6 +270,7 @@ class AGNodeService( ServiceBase ):
       # Add services to hosts
       #
       print "Add services to hosts"
+      serviceIndex = 0
       for s in services:
 
 
@@ -278,22 +280,36 @@ class AGNodeService( ServiceBase ):
             ## need map from service description to service implementation description;
             ## otherwise, don't know how to add a service from a service description
 
+            s.description = serviceIndex
+            serviceIndex = serviceIndex + 1
+
             print "*** trying to add service ", s.name, " to servicemanager ", s.serviceManagerUri
             Client.Handle( s.serviceManagerUri ).get_proxy().AddServiceDescription( s )
          except:
             print "Exception adding service", sys.exc_type, sys.exc_value
             hadServiceException = 1
 
-         try:
-            # - Configure the service
+
+      import time
+      time.sleep(1)
+
+      for s in services:
+
+         smservices = Client.Handle( s.serviceManagerUri ).get_proxy().GetServices()
+
+         for sms in smservices:
+            if sms.description == s.description:
+                 print "found service to configure ; desc = ", s.description
+                 try:
+                    # - Configure the service
 ## FIXME - all of this config store/load code is bad, but fetching this index by searching the list
 ##          should go even if the bad code stays for a while
-            index = services.index( s )
-            print "*** trying to configure service ", s.name, " using config ", serviceConfigs[index]
-            Client.Handle( s.uri ).get_proxy().SetConfiguration( serviceConfigs[index] )
-         except:
-            print "Exception setting config", sys.exc_type, sys.exc_value
-            hadServiceException = 1
+                    index = services.index( s )
+                    print "*** trying to configure service ", s.name, " using config ", serviceConfigs[index]
+                    Client.Handle( sms.uri ).get_proxy().SetConfiguration( serviceConfigs[index] )
+                 except:
+                    print "Exception setting config", sys.exc_type, sys.exc_value
+                    hadServiceException = 1
 
       if hadServiceManagerException and hadServiceException:
          raise faultType("AGNodeService.LoadConfiguration failed: service manager and service faults")
