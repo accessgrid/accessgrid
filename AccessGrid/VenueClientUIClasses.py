@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.297 2003-10-14 20:51:16 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.298 2003-10-21 03:28:28 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.297 2003-10-14 20:51:16 turam Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.298 2003-10-21 03:28:28 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2055,9 +2055,12 @@ class ContentListPanel(wxPanel):
         # Path where temporary file will exist if opened/used.
         a_file = os.path.join(GetTempDir(), item.name)
         ext = item.name.split('.')[-1]
+
+        log.debug("looking for mime commands for extension: %s", ext)
         
         commands = GetMimeCommands(ext = ext)
 
+        log.debug("Commands: %d %s", len(commands), str(commands))
         menu = wxMenu()
 
         # We always have open
