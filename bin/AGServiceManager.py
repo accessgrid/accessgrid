@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.37 2004-03-17 23:30:05 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.38 2004-03-18 21:42:38 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -96,7 +96,7 @@ def main():
     # Create the Service Manager Service
     smi = AGServiceManagerI(serviceManager)
     server.RegisterObject(smi,path="/ServiceManager")
-    url = server.GetURLForObject(serviceManager)
+    url = server.FindURLForObject(serviceManager)
 
     # If we are starting as a part of a personal node,
     # initialize that state.

@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.145 2004-03-18 14:17:05 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.146 2004-03-18 21:42:38 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.145 2004-03-18 14:17:05 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.146 2004-03-18 21:42:38 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -263,7 +263,7 @@ class VenueClient:
         self.server.RunInThread()
         
         if(self.profile != None):
-            self.profile.venueClientURL = self.server.GetURLForObject(self)
+            self.profile.venueClientURL = self.server.FindURLForObject(self)
             log.debug("__CreateVenueClientWebService: venue client serving: %s"
                       % self.profile.venueClientURL)
 
@@ -1365,7 +1365,7 @@ class VenueClient:
     def SetProfile(self, profile):
         self.profile = profile
         if(self.profile != None):
-           self.profile.venueClientURL = self.server.GetURLForObject(self)
+           self.profile.venueClientURL = self.server.FindURLForObject(self)
 
     def GetProfile(self):
         return self.profile

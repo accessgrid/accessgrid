@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.8 2004-03-05 21:45:00 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.9 2004-03-18 21:42:38 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,9 +14,10 @@ SOAPpy server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.8 2004-03-05 21:45:00 judson Exp $"
+__revision__ = "$Id: Server.py,v 1.9 2004-03-18 21:42:38 eolson Exp $"
 
 # External imports
+import urlparse
 from threading import Thread, Event
 
 from SOAPpy.GSIServer import ThreadingGSISOAPServer, GSIConfig
@@ -155,7 +156,7 @@ class Server:
                 return u,o
         return None,None
             
-    def GetURLForObject(self, obj):
+    def FindURLForObject(self, obj):
         """
         Retrieve the url that represents the web service endpoint for
         the specified object.

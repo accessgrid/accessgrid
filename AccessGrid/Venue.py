@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.162 2004-03-18 19:47:27 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.163 2004-03-18 21:42:37 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.162 2004-03-18 19:47:27 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.163 2004-03-18 21:42:37 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1655,18 +1655,18 @@ class Venue(AuthorizationMixIn):
         appI = SharedApplicationI(app)
 
         # pull out the venue path, so these can be a subspace
-        path = self.hostingEnvironment.FindPathForObject(self)
+        path = self.server.hostingEnvironment.FindPathForObject(self)
         path = path + "/apps/%s" % appId
 
         # register the app with the hosting environment
         self.server.hostingEnvironment.RegisterObject(appI, path=path)
 
         # pull the url back out and put it in the app object
-        appURL = self.server.hostingEnvironment.GetURLForObject(app)
+        appURL = self.server.hostingEnvironment.FindURLForObject(app)
         app.SetHandle(appURL)
 
         # grab the description, and update the universe with it
-        appDesc = appImpl.AsApplicationDescription()
+        appDesc = app.AsApplicationDescription()
 
         self.server.eventService.Distribute( self.uniqueId,
                                              Event( Event.ADD_APPLICATION,

@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.47 2004-03-17 23:30:05 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.48 2004-03-18 21:42:38 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.47 2004-03-17 23:30:05 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.48 2004-03-18 21:42:38 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -118,7 +118,7 @@ def main():
     # Create the Node Service Service
     nsi = AGNodeServiceI(nodeService)
     server.RegisterObject(nsi, path="/NodeService")
-    url = server.GetURLForObject(nodeService)
+    url = server.FindURLForObject(nodeService)
 
     # If we are starting as a part of a personal node,
     # initialize that state.

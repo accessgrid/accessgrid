@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.47 2004-03-16 07:00:30 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.48 2004-03-18 21:42:37 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.47 2004-03-16 07:00:30 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.48 2004-03-18 21:42:37 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -101,7 +101,7 @@ class AGServiceManager:
         
         # Get the service manager url (first time only)
         if not self.url:
-            self.url = self.server.GetURLForObject(self)
+            self.url = self.server.FindURLForObject(self)
 
 
         #
