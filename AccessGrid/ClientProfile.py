@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.29 2003-09-16 07:20:17 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.30 2003-09-19 16:36:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.29 2003-09-16 07:20:17 judson Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.30 2003-09-19 16:36:18 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -76,7 +76,7 @@ class ClientProfile:
         self.email = ''
         self.phoneNumber = ''
         self.icon = None
-        self.publicId = ''
+        self.publicId = str(GUID())
         self.location = ''
         self.venueClientURL = ''
         self.techSupportInfo = ''
@@ -89,15 +89,14 @@ class ClientProfile:
             self.Load(self.profileFile)
         else:
             self.profile = ClientProfile.defaultProfile.copy()
-            self.profile['ClientProfile.id'] = GUID()
-
+            self.profile['ClientProfile.id'] = self.publicId
+            
     def Load(self, fileName, loadDnDetails=0):
 	"""
         loadDnDetails is used by the cache to include the reading
           of a DN when reading from the stored profile.
 	"""
         profile = ClientProfile.defaultProfile.copy()
-        profile['ClientProfile.id'] = GUID()
         self.profile = LoadConfig(fileName, profile)
 
         if self.CheckProfile():
