@@ -26,7 +26,14 @@ print "smlist ", smlist
 if len(smlist) == 0:
    print "\n------------------ Add a Service Manager"
    # add known service manager
-   nodesvc.AddServiceManager( AGServiceManagerDescription( "sm1_name", 'https://%s:12000/ServiceManager' % ( host ) ) )
+   smdesc = AGServiceManagerDescription( "sm1_name", 'https://%s:12000/ServiceManager' % ( host ) )
+   nodesvc.AddServiceManager( smdesc )
+
+   smlist = Client.Handle( nodeServiceUri ).get_proxy().GetServiceManagers().data
+   if len(smlist) != 1:
+      print "* * ERROR: Failed to add service manager", smdesc.uri
+
+Client.Handle( smlist[0].uri ).get_proxy().RemoveServices()
 
 print "\n------------------ List Installed Service Managers"
 smlist = Client.Handle( nodeServiceUri ).get_proxy().GetServiceManagers()
@@ -48,6 +55,11 @@ for sm in smlist:
    for si in silist:
       print "      ", si.name
       Client.Handle( sm.uri ).get_proxy().AddService( si.servicePackageUri, "None", "None" )
+   svclist = Client.Handle( sm.uri ).get_proxy().GetServices()
+   if len(svclist) != len(silist):
+      print "* * ERROR: Fewer services added than are available"
+      print "* *        sm.uri = ", sm.uri
+      print "* *        numAdded = %d ; numAvailable = %d" % (len(svclist), len(silist))
 
 
 # list services
@@ -93,3 +105,15 @@ for sm in smlist:
    for svc in sm_svclist:
       print "   ", svc.name
       Client.Handle( sm.uri ).get_proxy().RemoveService( svc )
+svclist = nodesvc.GetServices()
+if len(svclist) > 0:
+    print "* * ERROR: Services remain (%d)" % len(svclist)
+
+# remove all services managers
+print "\n------------------ Remove Service Managers"
+for sm in smlist:
+    nodesvc.RemoveServiceManager( sm )
+
+smlist = nodesvc.GetServiceManagers()
+if len(smlist) > 0:
+    print "* * ERROR: Service managers remain (%d)" % len(smlist)
