@@ -91,7 +91,7 @@ import time
 try: from M2Crypto import SSL
 except: pass
 
-ident = '$Id: AGGSISOAP.py,v 1.7 2003-02-10 14:48:06 judson Exp $'
+ident = '$Id: AGGSISOAP.py,v 1.8 2003-02-14 20:50:34 olson Exp $'
 
 __version__ = "0.9.7"
 
@@ -3461,7 +3461,7 @@ class HTTPTransport:
 
         # read response line
         code, msg, headers = r.getreply()
-        l = string.split(headers.headers[-1], ":")
+        l = headers['Content-length']
         contentLen = int(l[1].strip())
         if config.dumpHeadersIn:
             s = 'Incoming HTTP headers'
@@ -3476,7 +3476,7 @@ class HTTPTransport:
         if config.dumpSOAPIn:
             data = r.getfile().read(contentLen)
 
-            s = 'Incoming SOAP'
+            s = 'Incoming SOAP : Content-length=%s Length=%s' % (contentLen, len(data))
             debugHeader(s)
             print data,
             if data[-1] != '\n':
