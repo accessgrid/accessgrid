@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.61 2004-07-28 21:50:35 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.62 2004-08-04 18:51:37 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.61 2004-07-28 21:50:35 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.62 2004-08-04 18:51:37 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -35,6 +35,7 @@ from wxPython.lib.imagebrowser import *
 from AccessGrid import icons
 from AccessGrid.Utilities import SubmitBug, VENUE_CLIENT_LOG
 from AccessGrid.Utilities import formatExceptionInfo
+from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Version import GetVersion
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig
 from AccessGrid.Platform import Config
@@ -59,8 +60,16 @@ class ErrorDialog:
                 # Submit the error report to Bugzilla
                 comment = bugReportCommentDialog.GetComment()
                 email = bugReportCommentDialog.GetEmail()
-
-                SubmitBug(comment,  email, logFile, Config.UserConfig.instance())
+                try:
+                    # load profile
+                    userConfig = Config.UserConfig.instance()
+                    profileFile = os.path.join(userConfig.GetConfigDir(),
+                                               "profile" )
+                    profile = ClientProfile(profileFile)
+                except:
+                    profile = None
+                
+                SubmitBug(comment, profile, email, logFile)
                 bugFeedbackDialog = wxMessageDialog(frame, "Your error report has been sent, thank you.",
                                                     "Error Reported", style = wxOK|wxICON_INFORMATION)
                 bugFeedbackDialog.ShowModal()

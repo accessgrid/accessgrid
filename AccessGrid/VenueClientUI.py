@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.64 2004-08-02 20:20:31 binns Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.65 2004-08-04 18:51:37 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.64 2004-08-02 20:20:31 binns Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.65 2004-08-04 18:51:37 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -744,6 +744,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                         info = "A file named %s already exists, do you want to overwrite?" % name
                         if self.Prompt(info,title):
                             try:
+                                
                                 self.controller.RemoveDataCB(data)
                                 filesToAdd.append(filepath)
                             except:
@@ -1128,9 +1129,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             comment = bugReportCommentDialog.GetComment()
             email = bugReportCommentDialog.GetEmail()
             
-            #SubmitBug(comment, email)
-            SubmitBug(comment, self.venueClient.GetProfile(), email,
-                      Config.UserConfig.instance())
+            SubmitBug(comment, self.venueClient.GetProfile(), email)
             bugFeedbackDialog = wxMessageDialog(self, 
                                   "Your error report has been sent, thank you.",
                                   "Error Reported", 

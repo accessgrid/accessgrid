@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.72 2004-07-15 15:24:41 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.73 2004-08-04 18:51:37 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.72 2004-07-15 15:24:41 judson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.73 2004-08-04 18:51:37 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -34,7 +34,6 @@ log = Log.GetLogger(Log.Utilities)
 from AccessGrid.Version import GetVersion
 from AccessGrid import Platform
 from AccessGrid.Platform import Config
-
 
 # Global variables for sending log files
 VENUE_CLIENT_LOG = 0
@@ -199,7 +198,7 @@ def GetLogText(maxSize, logFileName):
 
     return text
 
-def SubmitBug(comment, profile, email, NOT_USED, logFile = VENUE_CLIENT_LOG):
+def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
     """
     Submits a bug to bugzilla. 
 
@@ -208,7 +207,6 @@ def SubmitBug(comment, profile, email, NOT_USED, logFile = VENUE_CLIENT_LOG):
       *profile* = Client Profile describing reporter
       *email* = Entered email address for support information. If the email
                 is blank, the reporter does not want to be contacted.
-      
     """
      
     url = "http://bugzilla.mcs.anl.gov/accessgrid/post_bug.cgi"
@@ -267,7 +265,7 @@ def SubmitBug(comment, profile, email, NOT_USED, logFile = VENUE_CLIENT_LOG):
     args['product'] = "Virtual Venues Client Software"
     args['component'] = "Client UI"
     logToSearch = None
-    
+
     if profile:
         # Always set profile email to empty string so we don't write
         # to wrong email address.
@@ -285,9 +283,9 @@ def SubmitBug(comment, profile, email, NOT_USED, logFile = VENUE_CLIENT_LOG):
     
     def AppendNodeLogs(text):
         text = text +"\n\n--- VenueClientServices.log INFORMATION ---\n\n"+ \
-               GetLogText(10000,"VenueClientServices.log")\
+               GetLogText(2000,"VenueClientServices.log")\
                +"\n\n--- ServiceManager.log INFORMATION ---\n\n"+ \
-               GetLogText(10000, "ServiceManager.log")\
+               GetLogText(2000, "ServiceManager.log")\
              
         logDir = userConfig.GetLogDir()
         otherServiceLogs = os.listdir(logDir)          
@@ -296,7 +294,7 @@ def SubmitBug(comment, profile, email, NOT_USED, logFile = VENUE_CLIENT_LOG):
             if serviceLog.endswith('Service.log'):
                 text = text \
                        +"\n\n--- %s INFORMATION ---\n\n" % (serviceLog,)    \
-                       +GetLogText(10000, serviceLog)
+                       +GetLogText(2000, serviceLog)
 
         return text
         
@@ -304,6 +302,7 @@ def SubmitBug(comment, profile, email, NOT_USED, logFile = VENUE_CLIENT_LOG):
                 +"\n\n--- REPORTER CLIENT PROFILE --- \n\n" + profileString \
                 +"\n\n--- COMMENT FROM REPORTER --- \n\n" + comment 
 
+    logText = None
 
     if logFile == NO_LOG:
         args['short_desc'] = "Feature or bug report from menu option"
@@ -314,7 +313,7 @@ def SubmitBug(comment, profile, email, NOT_USED, logFile = VENUE_CLIENT_LOG):
         args['product'] = "Virtual Venue Server Software"
         args['component'] = "Management UI"
         
-        logText = GetLogText(20000, "VenueManagement.log")
+        logText = GetLogText(10000, "VenueManagement.log")
         commentAndLog = commentAndLog \
             +"\n\n--- VenueManagement.log INFORMATION ---\n\n"+ logText
         
@@ -324,7 +323,7 @@ def SubmitBug(comment, profile, email, NOT_USED, logFile = VENUE_CLIENT_LOG):
         args['product'] = "Node Management Software"
         args['component'] = "NodeSetupWizard"
 
-        logText = GetLogText(20000, "NodeSetupWizard.log")
+        logText = GetLogText(10000, "NodeSetupWizard.log")
         commentAndLog = commentAndLog \
             +"\n\n--- NodeSetupWizard.log INFORMATION ---\n\n"+ logText
 
@@ -332,7 +331,7 @@ def SubmitBug(comment, profile, email, NOT_USED, logFile = VENUE_CLIENT_LOG):
 
     else:
         args['short_desc'] = "Automatic Bug Report - Venue Client"
-        logToSearch = GetLogText(20000, "VenueClient.log")
+        logToSearch = GetLogText(10000, "VenueClient.log")
       
         commentAndLog = commentAndLog \
              +"\n\n--- VenueClient.log INFORMATION ---\n\n"+ logToSearch \
@@ -358,12 +357,13 @@ def SubmitBug(comment, profile, email, NOT_USED, logFile = VENUE_CLIENT_LOG):
       
     # Now submit to the form.
     params = urllib.urlencode(args)
+
     f = urllib.urlopen(url, params)
 
     # And read the output.
     out = f.read()
     f.close()
-        
+       
     o = open("out.html", "w")
     o.write(out)
     o.close()
