@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.11 2003-08-20 04:29:02 turam Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.12 2003-08-21 20:23:19 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,6 +29,7 @@ from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import ConnectEvent, DisconnectEvent, MarshalledEvent
 from AccessGrid.Events import Event, AddPersonalDataEvent
 from AccessGrid.Events import RemovePersonalDataEvent, UpdatePersonalDataEvent
+from AccessGrid.Events import AddDataEvent, RemoveDataEvent, UpdateDataEvent
 from AccessGrid.GUID import GUID
 
 log = logging.getLogger("AG.EventService")
@@ -120,7 +121,6 @@ class ConnectionHandler:
             return self.readCallback(arg, handle, result, buf, n)
         except:
             log.exception("readcallback failed")
-            self.close()
             return None
 
     def writeMarshalledEvent(self, mEvent):
@@ -615,8 +615,8 @@ class EventService:
         if connChannel is None:
             self.HandleEventForDisconnectedChannel(event, connObj)
         else:
-            if event.eventType == AddPersonalDataEvent.ADD_PERSONAL_DATA:
-                log.debug("EventServiceAsynch: ConnectionHandlet: ADD_PERSONAL_DATA, venue id: %s, data: %s",
+            if event.eventType == AddDataEvent.ADD_DATA:
+                log.debug("EventServiceAsynch: ConnectionHandlet: ADD_DATA, venue id: %s, data: %s",
                           event.venue, event.data)
 
                 #if self.channel != None:
@@ -625,8 +625,21 @@ class EventService:
                                        event.venue,
                                        event.data))
 
-            if event.eventType == RemovePersonalDataEvent.REMOVE_PERSONAL_DATA:
-                log.debug("EventServiceAsynch: EventService.ConnectionHandlet: REMOVE_PERSONAL_DATA, venue id: %s, data: %s",
+                
+            elif event.eventType == UpdateDataEvent.UPDATE_DATA:
+                log.debug("EventServiceAsynch: ConnectionHandlet: UPDATE_DATA, venue id: %s, data: %s",
+                          event.venue, event.data)
+
+                #if self.channel != None:
+              
+                self.Distribute(event.venue,
+                                Event( Event.UPDATE_DATA,
+                                       event.venue,
+                                       event.data))
+
+              
+            elif event.eventType == RemoveDataEvent.REMOVE_DATA:
+                log.debug("EventServiceAsynch: EventService.ConnectionHandlet: REMOVE_DATA, venue id: %s, data: %s",
                           event.venue, event.data)
 
                 #if self.channel != None:
@@ -634,16 +647,9 @@ class EventService:
                                 Event( Event.REMOVE_DATA,
                                        event.venue,
                                        event.data))
-
-            if event.eventType == UpdatePersonalDataEvent.UPDATE_PERSONAL_DATA:
-                log.debug("EventServiceAsynch: ConnectionHandlet: ADD_PERSONAL_DATA, venue id: %s, data: %s",
-                          event.venue, event.data)
-
-                #if self.channel != None:
-                self.Distribute(event.venue,
-                                Event( Event.UPDATE_DATA,
-                                       event.venue,
-                                       event.data))
+                         
+            else:
+                print 'the event does not exist'
 
             connChannel.HandleEvent(event, connObj)
 
