@@ -5,10 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ProcessManager.py,v 1.2 2003-09-02 16:45:55 eolson Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.3 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: ProcessManager.py,v 1.3 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
 

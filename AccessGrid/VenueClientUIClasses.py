@@ -5,10 +5,15 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.259 2003-09-15 21:58:22 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.260 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+"""
+"""
+
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.260 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import os
 import os.path

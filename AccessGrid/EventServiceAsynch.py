@@ -6,10 +6,14 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.15 2003-08-28 18:45:54 judson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.16 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: EventServiceAsynch.py,v 1.16 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import sys
 import pickle

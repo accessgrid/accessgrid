@@ -6,10 +6,14 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: RoleAuthorization.py,v 1.9 2003-08-18 16:05:12 lefvert Exp $ 
+# RCS_ID:      $Id: RoleAuthorization.py,v 1.10 2003-09-16 07:20:18 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: RoleAuthorization.py,v 1.10 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog

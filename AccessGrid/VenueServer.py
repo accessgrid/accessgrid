@@ -5,10 +5,15 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.93 2003-09-11 20:43:41 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.94 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+
+__revision__ = "$Id: VenueServer.py,v 1.94 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 # Standard stuff
 import sys

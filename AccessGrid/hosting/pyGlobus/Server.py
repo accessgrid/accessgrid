@@ -5,10 +5,14 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.17 2003-05-28 18:26:54 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.18 2003-09-16 07:20:56 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: Server.py,v 1.18 2003-09-16 07:20:56 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import socket
 from threading import Thread, Event

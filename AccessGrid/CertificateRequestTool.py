@@ -9,6 +9,11 @@
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+"""
+"""
+
+__revision__ = "$Id: CertificateRequestTool.py,v 1.21 2003-09-16 07:20:17 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
 from wxPython.wizard import *

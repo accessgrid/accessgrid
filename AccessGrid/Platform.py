@@ -5,14 +5,15 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.49 2003-09-15 20:34:38 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.50 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 The Platform Module is to isolate OS specific interfaces.
 """
-__revision__ = "$Id: Platform.py,v 1.49 2003-09-15 20:34:38 judson Exp $"
+__revision__ = "$Id: Platform.py,v 1.50 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import os
 import sys

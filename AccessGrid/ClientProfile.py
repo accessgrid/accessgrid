@@ -6,10 +6,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.28 2003-09-11 20:43:41 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.29 2003-09-16 07:20:17 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: ClientProfile.py,v 1.29 2003-09-16 07:20:17 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import os
 import ConfigParser

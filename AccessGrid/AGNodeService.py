@@ -5,12 +5,16 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.39 2003-09-16 06:59:43 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.40 2003-09-16 07:20:17 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
-__revision__ = "$Id: AGNodeService.py,v 1.39 2003-09-16 06:59:43 judson Exp $"
+"""
+"""
+
+__revision__ = "$Id: AGNodeService.py,v 1.40 2003-09-16 07:20:17 judson Exp $"
 __docformat__ = "restructuredtext en"
+
 import os
 import sys
 import string

@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.13 2003-09-10 21:13:41 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.14 2003-09-16 07:20:17 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -26,6 +26,10 @@ The on-disk repository looks like this:
 
 
 """
+
+__revision__ = "$Id: CertificateRepository.py,v 1.14 2003-09-16 07:20:17 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 
 from __future__ import generators
 

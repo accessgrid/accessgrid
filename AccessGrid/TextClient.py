@@ -5,10 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.20 2003-09-03 20:07:19 eolson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.21 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: TextClient.py,v 1.21 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import pickle
 import logging

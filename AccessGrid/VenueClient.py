@@ -5,10 +5,16 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.108 2003-09-11 20:43:41 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.109 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+
+"""
+"""
+
+__revision__ = "$Id: VenueClient.py,v 1.109 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import sys
 import urlparse

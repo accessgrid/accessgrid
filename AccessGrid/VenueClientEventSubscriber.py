@@ -11,6 +11,11 @@
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
+"""
+"""
+
+__revision__ = "$Id: VenueClientEventSubscriber.py,v 1.3 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import logging, logging.handlers
 log = logging.getLogger("AG.VenueClient")

@@ -5,10 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/13/12
-# RCS-ID:      $Id: NetworkLocation.py,v 1.13 2003-08-12 15:47:09 turam Exp $
+# RCS-ID:      $Id: NetworkLocation.py,v 1.14 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: NetworkLocation.py,v 1.14 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 class ProviderProfile:
     """

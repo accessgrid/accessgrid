@@ -5,10 +5,14 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.5 2003-09-15 15:01:03 judson Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.6 2003-09-16 07:20:17 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: AppDb.py,v 1.6 2003-09-16 07:20:17 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import os
 import sys

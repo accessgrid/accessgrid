@@ -5,10 +5,15 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.41 2003-09-08 21:52:19 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.42 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.42 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 import sys
 
 from wxPython.wx import *

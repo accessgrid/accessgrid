@@ -5,10 +5,16 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.34 2003-09-10 14:22:20 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.35 2003-09-16 07:20:17 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+"""
+"""
+
+__revision__ = "$Id: AGServiceManager.py,v 1.35 2003-09-16 07:20:17 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 import sys
 import os
 import time

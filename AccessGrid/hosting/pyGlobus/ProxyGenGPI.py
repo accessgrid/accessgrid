@@ -1,8 +1,22 @@
+#-----------------------------------------------------------------------------
+# Name:        ProxyGenGPI.py
+# Purpose:     Generate certificate proxies via GPI.
+#
+# Author:      Robert D. Olson
+#
+# Created:     2003/08/02
+# RCS-ID:      $Id: ProxyGenGPI.py,v 1.4 2003-09-16 07:20:56 judson Exp $
+# Copyright:   (c) 2002-2003
+# Licence:     See COPYING.txt
+#-----------------------------------------------------------------------------
 
 """
 Globus proxy generation using external grid_proxy_init.
 
 """
+
+__revision__ = "$Id: ProxyGenGPI.py,v 1.4 2003-09-16 07:20:56 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import sys
 import os

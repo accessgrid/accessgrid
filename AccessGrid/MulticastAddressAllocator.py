@@ -5,10 +5,14 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.15 2003-09-12 04:03:55 turam Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.16 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: MulticastAddressAllocator.py,v 1.16 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import sys
 import socket

@@ -5,10 +5,15 @@
 # Author:      From the Python Cookbook
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: scheduler.py,v 1.5 2003-05-23 21:37:51 olson Exp $
+# RCS-ID:      $Id: scheduler.py,v 1.6 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: scheduler.py,v 1.6 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 import time
 from threading import Thread, Event
 

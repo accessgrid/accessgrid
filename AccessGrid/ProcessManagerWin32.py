@@ -5,10 +5,15 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerWin32.py,v 1.7 2003-04-24 18:36:47 judson Exp $
+# RCS-ID:      $Id: ProcessManagerWin32.py,v 1.8 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: ProcessManagerWin32.py,v 1.8 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 import win32process
 
 import logging

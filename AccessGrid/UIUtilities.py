@@ -5,11 +5,15 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.32 2003-09-11 20:43:41 judson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.33 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
-import mailcap
+"""
+"""
+__revision__ = "$Id: UIUtilities.py,v 1.33 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 import string
 
 try:

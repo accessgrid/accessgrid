@@ -5,10 +5,16 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.23 2003-08-28 20:36:13 judson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.24 2003-09-16 07:20:17 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+"""
+"""
+
+__revision__ = "$Id: AGService.py,v 1.24 2003-09-16 07:20:17 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 import os
 import sys
 import logging

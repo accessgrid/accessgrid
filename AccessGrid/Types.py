@@ -5,10 +5,15 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.36 2003-08-28 18:05:11 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.37 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: Types.py,v 1.37 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 import os
 import zipfile
 import sys

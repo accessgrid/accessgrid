@@ -5,10 +5,15 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.10 2003-08-28 18:04:26 judson Exp $
+# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.11 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: ProcessManagerUnix.py,v 1.11 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 import signal
 import os
 import time

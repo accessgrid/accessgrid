@@ -5,10 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: PersonalNode.py,v 1.11 2003-05-05 18:26:23 olson Exp $
+# RCS-ID:      $Id: PersonalNode.py,v 1.12 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: PersonalNode.py,v 1.12 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import sys
 

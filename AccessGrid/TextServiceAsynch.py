@@ -6,10 +6,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.7 2003-08-13 02:12:52 turam Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.8 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: TextServiceAsynch.py,v 1.8 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import socket
 import sys

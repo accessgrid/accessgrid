@@ -5,10 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.37 2003-08-22 23:15:01 eolson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.38 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: Descriptions.py,v 1.38 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import string
 from AccessGrid.GUID import GUID

@@ -5,11 +5,10 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.30 2003-09-11 21:10:19 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.31 2003-09-16 07:20:17 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
-
 """
 Certificate management module.
 
@@ -34,6 +33,9 @@ Each certificate also has a related signing policy file, used by the
 Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
+
+__revision__ = "$Id: CertificateManager.py,v 1.31 2003-09-16 07:20:17 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import re
 import os

@@ -6,10 +6,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.26 2003-09-11 13:32:19 turam Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.27 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: EventClient.py,v 1.27 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
 import Queue

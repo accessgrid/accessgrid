@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/05
-# RCS-ID:      $Id: PersonalNodePipes.py,v 1.2 2003-08-28 17:27:03 judson Exp $
+# RCS-ID:      $Id: PersonalNodePipes.py,v 1.3 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -45,6 +45,9 @@ Svc mgr:
     go
 
 """
+
+__revision__ = "$Id: PersonalNodePipes.py,v 1.3 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import sys
 import time

@@ -5,10 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.13 2003-09-11 21:09:15 olson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.14 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: Toolkit.py,v 1.14 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import logging
 import os

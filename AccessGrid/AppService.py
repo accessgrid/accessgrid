@@ -5,11 +5,10 @@
 # Author:      Robert Olson
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: AppService.py,v 1.12 2003-09-16 06:54:26 judson Exp $
+# RCS-ID:      $Id: AppService.py,v 1.13 2003-09-16 07:20:17 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
-
 """
 An AG Application Service.
 
@@ -17,6 +16,9 @@ AppObject is the web service interface for the Application object.
 AppObjectImpl is its implementation.
 
 """
+
+__revision__ = "$Id: AppService.py,v 1.13 2003-09-16 07:20:17 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import logging
 

@@ -1,4 +1,3 @@
-
 #-----------------------------------------------------------------------------
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
@@ -6,10 +5,15 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.44 2003-09-12 04:02:40 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.45 2003-09-16 07:20:17 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+
+__revision__ = "$Id: DataStore.py,v 1.45 2003-09-16 07:20:17 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import os
 import time

@@ -5,10 +5,16 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGParameter.py,v 1.7 2003-02-28 17:20:43 turam Exp $
+# RCS-ID:      $Id: AGParameter.py,v 1.8 2003-09-16 07:20:17 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+"""
+"""
+
+__revision__ = "$Id: AGParameter.py,v 1.8 2003-09-16 07:20:17 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 class ValueParameter:
 
     TYPE = "ValueParameter"

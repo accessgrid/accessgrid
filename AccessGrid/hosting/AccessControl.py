@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.19 2003-09-05 05:07:32 eolson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.20 2003-09-16 07:20:38 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,9 @@
 Access Control mechanisms for the AG system.
 
 """
+
+__revision__ = "$Id: AccessControl.py,v 1.20 2003-09-16 07:20:38 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 #
 # This is an unfortunate import from the individual hosting environment.

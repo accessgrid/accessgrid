@@ -1,8 +1,22 @@
+#-----------------------------------------------------------------------------
+# Name:        ProxyGenProgrammatic.py
+# Purpose:     Generate certificate proxies programmatically.
+#
+# Author:      Robert D. Olson
+#
+# Created:     2003/08/02
+# RCS-ID:      $Id: ProxyGenProgrammatic.py,v 1.4 2003-09-16 07:20:56 judson Exp $
+# Copyright:   (c) 2002-2003
+# Licence:     See COPYING.txt
+#-----------------------------------------------------------------------------
 """
 Globus proxy generation using the programmatic method. We can currently (circa AGTk
 2.1) do this on windows only.
 
 """
+
+__revision__ = "$Id: ProxyGenProgrammatic.py,v 1.4 2003-09-16 07:20:56 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 from pyGlobus import security
 

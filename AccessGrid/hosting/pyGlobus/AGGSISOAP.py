@@ -70,6 +70,13 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 ################################################################################
+
+"""
+"""
+
+__revision__ = "$Id: AGGSISOAP.py,v 1.12 2003-09-16 07:20:56 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 import xml.sax
 import UserList
 import base64
@@ -96,7 +103,7 @@ log.setLevel(logging.WARN)
 try: from M2Crypto import SSL
 except: pass
 
-ident = '$Id: AGGSISOAP.py,v 1.11 2003-03-19 16:08:16 judson Exp $'
+ident = '$Id: AGGSISOAP.py,v 1.12 2003-09-16 07:20:56 judson Exp $'
 
 __version__ = "0.9.7"
 

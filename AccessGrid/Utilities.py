@@ -5,10 +5,16 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.45 2003-09-10 19:57:22 lefvert Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.46 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+
+__revision__ = "$Id: Utilities.py,v 1.46 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 import os
 import string
 import sys
@@ -247,7 +253,7 @@ def GetLogText(maxSize, logFileName):
 
 
 def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
-    '''
+    """
     Submits a bug to bugzilla. 
 
     **Parameters**
@@ -256,7 +262,7 @@ def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
       *email* = Entered email address for support information. If the email
                 is blank, the reporter does not want to be contacted.
       
-    '''
+    """
      
     url = "http://bugzilla.mcs.anl.gov/accessgrid/post_bug.cgi"
     args = {}

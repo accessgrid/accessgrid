@@ -6,10 +6,16 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.128 2003-09-15 22:42:11 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.129 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+
+__revision__ = "$Id: Venue.py,v 1.129 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 import sys
 import time
 import string

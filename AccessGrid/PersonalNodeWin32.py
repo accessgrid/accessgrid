@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: PersonalNodeWin32.py,v 1.2 2003-08-28 18:03:11 judson Exp $
+# RCS-ID:      $Id: PersonalNodeWin32.py,v 1.3 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,6 +15,9 @@ Classes for managing the startup and synchronization of the components
 of a Personal Node.
 
 """
+
+__revision__ = "$Id: PersonalNodeWin32.py,v 1.3 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import os
 import win32api

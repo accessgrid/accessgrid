@@ -1,7 +1,14 @@
+#-----------------------------------------------------------------------------
+# Name:        CRSClient.py
+# Purpose:     Certificate Request Service Client code.
 #
-# Certificate Request Service Client
+# Author:      Ivan R. Judson
 #
-
+# Created:     2002/12/12
+# RCS-ID:      $Id: CRSClient.py,v 1.8 2003-09-16 07:20:17 judson Exp $
+# Copyright:   (c) 2002
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
 
 """
 Sample code using a proxy.
@@ -17,8 +24,10 @@ proxy = xmlrpclib.ServerProxy(url, transport = transport, verbose=1)
 
 """
 
-import xmlrpclib
+__revision__ = "$Id: CRSClient.py,v 1.8 2003-09-16 07:20:17 judson Exp $"
+__docformat__ = "restructuredtext en"
 
+import xmlrpclib
 import logging
 
 log = logging.getLogger("AG.CRSClient")

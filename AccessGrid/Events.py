@@ -5,10 +5,14 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.18 2003-08-21 20:58:05 lefvert Exp $
+# RCS-ID:      $Id: Events.py,v 1.19 2003-09-16 07:20:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: Events.py,v 1.19 2003-09-16 07:20:18 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import pickle
 import struct

@@ -5,10 +5,15 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ServiceObject.py,v 1.9 2003-04-28 17:58:29 judson Exp $
+# RCS-ID:      $Id: ServiceObject.py,v 1.10 2003-09-16 07:20:56 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+"""
+"""
+
+__revision__ = "$Id: ServiceObject.py,v 1.10 2003-09-16 07:20:56 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import AccessControl
 

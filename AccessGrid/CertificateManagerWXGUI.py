@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.26 2003-09-12 20:36:57 lefvert Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.27 2003-09-16 07:20:17 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,9 @@
 wxPython GUI code for the Certificate Manager.
 
 """
+
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.27 2003-09-16 07:20:17 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import time
 import string
