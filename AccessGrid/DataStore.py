@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.56 2004-02-18 17:39:56 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.57 2004-02-23 22:55:35 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.56 2004-02-18 17:39:56 lefvert Exp $"
+__revision__ = "$Id: DataStore.py,v 1.57 2004-02-23 22:55:35 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -30,6 +30,7 @@ import md5
 import ConfigParser
 import cStringIO
 import Queue
+from time import localtime , strftime
 
 import AccessGrid.GUID
 from AccessGrid.Utilities import GetHostname
@@ -439,6 +440,12 @@ class DataStore:
             dd.SetChecksum(cp.get(sec, 'checksum'))
             dd.SetOwner(cp.get(sec, 'owner'))
             dd.SetType(cp.get(sec, 'type'))
+
+            try:
+                dd.SetLastModified(sec, 'lastModified')
+            except:
+                log.info("LoadPersistentVenues: Data has no last modified date")
+            
             url = self.GetDownloadDescriptor(dd.name)
             if url != None:
                 dd.SetURI(url)
@@ -597,7 +604,7 @@ class DataStore:
             if not os.path.exists(oldPath):
                 errorFlag = 1
                 log.error("DataStore.ModifyData: The path does not exist %s"%path)
-            
+           
             try:
                 os.rename(oldPath, newPath)
             except:
@@ -611,6 +618,12 @@ class DataStore:
 
         if errorFlag:
             raise FileNotFound()
+
+    def GetTime(self):
+        '''
+        Get current time to use in descriptions.
+        '''
+        return strftime("%a, %b %d, %Y, %H:%M:%S", localtime() )
         
     def UploadLocalFiles(self, fileList, dn, id):
         '''
@@ -655,6 +668,7 @@ class DataStore:
                     desc.SetChecksum(checksum)
                     desc.SetSize(int(size))
                     desc.SetStatus(DataDescription.STATUS_PRESENT)
+                    desc.SetLastModified(self.GetTime())
 
                     self.transferEngineLock.acquire()
                     desc.SetURI(self.transfer_engine.GetDownloadDescriptor(self.prefix,
@@ -816,6 +830,7 @@ class DataStore:
         desc.SetStatus(DataDescription.STATUS_PRESENT)
         desc.SetOwner(identityToken.dn)
         desc.SetURI(self.GetDownloadDescriptor(file_info['name']))
+        desc.SetLastModified(self.GetTime())
         
         log.debug("Datastore::CompleteUpload: updating with %s %s", desc, desc.__dict__)
 
