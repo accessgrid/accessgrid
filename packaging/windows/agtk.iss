@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.59 2004-04-07 20:27:36 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.60 2004-04-07 20:36:25 judson Exp $
 ;
 
 ; Set externally
@@ -206,13 +206,6 @@ var
   PythonPath : String;
   DefaultVersion : String;
 
-function GetPythonPath(Default: String): String;
-begin
-  MsgBox('Python at: ', PythonPath, MB_OK);
-
-  Result := PythonPath;
-end;
-
 function InitializeSetup(): Boolean;
 begin
   DefaultVersion := ExpandConstant('{#PythonVersion}');
@@ -221,5 +214,12 @@ begin
 	begin
 		PythonPath := 'C:\Python22';
 	end;
+end;
+
+function GetPythonPath(Default: String): String;
+begin
+  MsgBox('Python at: ', PythonPath, MB_OK);
+
+  Result := PythonPath;
 end;
 
