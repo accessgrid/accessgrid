@@ -29,6 +29,20 @@ from win32com.shell import shell, shellcon
 SourceDir = os.environ['AGBUILDROOT']
 
 #
+# Get the version via popen
+#
+try:
+    cmd = "%s %s" % (sys.executable, os.path.join(SourceDir, "AccessGrid",
+                                                  "AccessGrid", "Version.py"))
+    print "cmd ", cmd
+    po = os.popen(cmd)
+except IOError:
+    print "Error getting AGTk Version."
+
+version = po.read()
+po.close()
+
+#
 # Parse command line options
 #
 
@@ -47,8 +61,6 @@ parser.add_option("-i", "--innopath", dest="innopath", metavar="INNOPATH",
 parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
                   default=0,
                   help="A flag that indicates to build verbosely.")
-parser.add_option("--version", dest="version", metavar="VERSION",
-                  default="", help="The version of the toolkit.")
 parser.add_option("-p", "--pythonversion", dest="pyver",
                   metavar="PYTHONVERSION", default="2.2",
                   help="Which version of python to build the installer for.")
@@ -175,7 +187,7 @@ for cmd in [
 #
 
 # Add quotes around command.
-iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" /dSourceDir=%s /dBuildDir=%s /dPythonVersion=%s" % (inno_compiler, iss_orig, options.version, metainfo.replace(' ', '_'), SourceDir, DestDir, options.pyver)
+iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" /dSourceDir=%s /dBuildDir=%s /dPythonVersion=%s" % (inno_compiler,iss_orig, version, metainfo.replace(' ', '_'), SourceDir, DestDir, options.pyver)
 
 if options.verbose:
     print "BUILD: Executing:", iscc_cmd
