@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: SOAPInterface.py,v 1.6 2004-03-04 22:39:45 judson Exp $
+# RCS-ID:      $Id: SOAPInterface.py,v 1.7 2004-03-05 21:44:31 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,15 +16,16 @@ primary methods, the constructor and a default authorization for all
 interfaces.
 """
 
-__revision__ = "$Id: SOAPInterface.py,v 1.6 2004-03-04 22:39:45 judson Exp $"
+__revision__ = "$Id: SOAPInterface.py,v 1.7 2004-03-05 21:44:31 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
 import re
 
 # AGTk imports
-from AccessGrid.hosting import Client
+from AccessGrid.hosting import Client, GetSOAPContext
 from AccessGrid.Security.Action import MethodAction
+from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 
 methodPat = re.compile("^<(slot wrapper|bound method|built-in method) .+>$")
 
@@ -65,6 +66,39 @@ class SOAPInterface:
         @return: 1, things are authorized by default right now.
         """
         return 1
+
+    def _GetContext(self):
+        """
+        This method implements the guts of extracting the subject and
+        the action from the SOAP call. It can be used by subclasses
+        for retrieving this information for doing authorization, or
+        other things.
+
+        @returns: a tuple of (subject, action)
+        """
+        soap_ctx = GetSOAPContext()
+        action = MethodAction(soap_ctx.soapaction)
+        subject = self._GetCaller()
+
+        return subject, action
+
+    def _GetCaller(self):
+        """
+        This method implements the guts of extracting the subject from
+        the soap call.
+
+        @returns: a subject
+        """
+        soap_ctx = GetSOAPContext()
+
+        try:
+            security_ctx = soap_ctx.connection.get_security_context()
+        except:
+            raise
+
+        subject = CreateSubjectFromGSIContext(security_ctx)
+
+        return subject
 
     def _GetMethodActions(self):
         """
