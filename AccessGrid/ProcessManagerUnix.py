@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.2 2003-02-10 14:47:37 judson Exp $
+# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.3 2003-03-14 16:36:25 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -33,10 +33,12 @@ class ProcessManagerUnix:
 
         self.processes.append(pid)
 
+        return pid
+
     def terminate_all_processes(self):
         for pid in self.processes:
             try:
-                os.kill(pid, signal.SIGINT)
+                os.kill(pid, signal.SIGKILL)
                 ret = os.waitpid(pid, 0)
                 print "waitpid returns ", ret
                 status = ret[1]
@@ -51,6 +53,23 @@ class ProcessManagerUnix:
                 print "couldn't terminate process: ", e
 
         self.processes = []
+
+    def terminate_process(self, pid):
+        try:
+            os.kill(pid, signal.SIGKILL)
+            ret = os.waitpid(pid, 0)
+            print "waitpid returns ", ret
+            status = ret[1]
+            if os.WIFEXITED(status):
+                rc = os.WEXITSTATUS(status)
+                print "processes exited normally with rc ", rc
+            elif os.WIFSIGNALED(status):
+                sig = os.WTERMSIG(status)
+                print "Process was killed with signal ", sig
+            self.processes.remove(pid)
+                
+        except OSError, e:
+            print "couldn't terminate process: ", e
 
 if __name__ == "__main__":
 
