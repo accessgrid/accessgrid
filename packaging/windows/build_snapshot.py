@@ -84,11 +84,10 @@ else:
     metainfo = "Snapshot %s" % BuildTime
 
 # Create the dest dir stamped with the same time stamp
-DestDir = os.path.join(SourceDir, "dist-%s-%s" % (BuildTime, options.pyver))
+DestDir = os.path.join(SourceDir, "dist-%s" % BuildTime)
 
 # The directory we're building from
-BuildDir = os.path.join(SourceDir, "AccessGrid-%s-%s" % (BuildTime,
-                                                         options.pyver))
+BuildDir = os.path.join(SourceDir, "AccessGrid-%s" % BuildTime)
 
 # Grab innosetup from the environment
 try:
