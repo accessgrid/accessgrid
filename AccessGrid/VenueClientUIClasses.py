@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.39 2003-02-21 20:00:15 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.40 2003-02-21 21:40:25 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ class VenueClientFrame(wxFrame):
         self.parent = parent
 	self.menubar = wxMenuBar()
 	self.statusbar = self.CreateStatusBar(1)
-	self.toolbar = wxToolBar(self, 600,wxDefaultPosition,wxDefaultSize, wxTB_TEXT| \
+	self.toolbar = wxToolBar(self, 600, wxDefaultPosition,wxDefaultSize, wxTB_TEXT| \
 		  wxTB_HORIZONTAL| wxTB_FLAT)
        	self.venueListPanel = VenueListPanel(self, app) 
 	self.contentListPanel = ContentListPanel(self, app)
@@ -221,14 +221,16 @@ class VenueClientFrame(wxFrame):
         self.venueClientSizer = wxBoxSizer(wxVERTICAL)
         self.venueClientSizer.Add(self.venueAddressBar, 0, wxEXPAND)
         self.venueContentSizer = wxBoxSizer(wxHORIZONTAL)
-	self.venueContentSizer.Add(self.venueListPanel, 0, wxEXPAND)
+	self.venueContentSizer.Add(self.venueListPanel, 0 , wxEXPAND)
 	self.venueContentSizer.Add(self.contentListPanel, 2, wxEXPAND)
-	self.venueClientSizer.Add(self.venueContentSizer, 2, wxEXPAND)
+	self.venueClientSizer.Add(self.venueContentSizer, 1, wxEXPAND)
 	self.venueClientSizer.Add(self.toolbar)
-
+        
 	self.SetSizer(self.venueClientSizer)
-	self.venueClientSizer.Fit(self)
+        self.venueClientSizer.Fit(self)
 	self.SetAutoLayout(1)
+        self.Layout()
+
 
     def Follow(self, event):
         print 'follow'
@@ -302,8 +304,10 @@ class VenueClientFrame(wxFrame):
         self.app.OnExit()
                      	      
     def UpdateLayout(self):
-        self.__doLayout()
-
+        s1 = self.venueListPanel.GetSize()
+        self.venueContentSizer.SetItemMinSize(self.venueListPanel,s1.GetWidth(),s1.GetHeight())
+        self.Layout()
+                
     def OpenSetNodeUrlDialog(self, event = None):
 
         setNodeUrlDialog = UrlDialog(self, -1, "Set node service URL", \
@@ -518,7 +522,7 @@ class VenueListPanel(wxPanel):
         wxPanel.__init__(self, parent, -1)
 	self.parent = parent
         self.app = app
-       
+           
 	self.list = VenueList(self, app)
         self.minimizeButton = wxButton(self, 10, "<<", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT )
 	self.minimizeButton.SetFont(wxFont(5, wxSWISS, wxNORMAL, wxNORMAL, 0, "adventure"))
@@ -557,23 +561,29 @@ class VenueListPanel(wxPanel):
     def OnClick(self, event):
 	currentHeight = self.GetSize().GetHeight()
 	parentSize = self.parent.GetSize()
+        
         if event.GetId() == 10:
-		self.minimizeButton.Hide()  
-		self.maximizeButton.Show()
-		self.list.HideDoors()
-		self.SetSize(wxSize(20, currentHeight))
-		self.Layout()
-                self.parent.UpdateLayout()
-		self.parent.SetSize(parentSize)
-					
+            self.minimizeButton.Hide()  
+            self.maximizeButton.Show()
+            self.list.HideDoors()
+            #self.parent.SetSize(parentSize)
+            self.SetSize(wxSize(20, currentHeight))
+            #self.Layout()
+            self.parent.UpdateLayout()
+            #self.parent.Layout()
+            #self.parent.SetSize(parentSize)
+                       
 	if event.GetId() == 20:
-		self.maximizeButton.Hide()
-		self.minimizeButton.Show()  
-		self.list.ShowDoors()
-		self.SetSize(wxSize(100, currentHeight))
-                self.parent.UpdateLayout()
-	        self.parent.SetSize(parentSize)
+            self.maximizeButton.Hide()
+            self.minimizeButton.Show()  
+            self.list.ShowDoors()
+            self.SetSize(wxSize(100, currentHeight))
+            #self.parent.SetSize(parentSize)
+            #self.Layout()
+            self.parent.UpdateLayout()
+            #self.parent.Layout()
 
+               
     def CleanUp(self):
         self.list.CleanUp()
 
