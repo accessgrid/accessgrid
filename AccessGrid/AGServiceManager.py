@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.13 2003-02-28 17:20:43 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.14 2003-02-28 17:45:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -103,6 +103,7 @@ class AGServiceManager( ServiceBase ):
         """
         Add a service package to the service manager.  
         """
+        resource = None
         try:
             #
             # Determine resource to assign to service
@@ -188,7 +189,7 @@ class AGServiceManager( ServiceBase ):
 
                     #
                     # Free the resource
-                    if service.resource != "None":
+                    if service.resource and service.resource != "None":
                         foundResource = 0
                         for resource in self.resources:
                             if resource.resource == service.resource.resource:
@@ -272,12 +273,12 @@ class AGServiceManager( ServiceBase ):
 
             # Assign resource to the service
             #
-            if service.resource != "None":
+            if service.resource and service.resource != "None":
                 Client.Handle( service.uri ).get_proxy().SetResource( service.resource )
 
             # Configure the service
             #
-            if serviceConfig != "None":
+            if serviceConfig and serviceConfig != "None":
                 Client.Handle( service.uri ).get_proxy().SetConfiguration( serviceConfig )
             
         except:
