@@ -1,11 +1,8 @@
 #-----------------------------------------------------------------------------
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
-#
-# Author:      Ivan R. Judson
-#
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.43 2003-10-21 18:48:49 eolson Exp $
+# RCS-ID:      $Id: setup.py,v 1.44 2004-03-22 21:57:05 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -116,7 +113,7 @@ else:
 setup (
     name = 'AGTk',
     fullname = 'AccessGrid Toolkit',
-    version = '2.1.2',
+    version = '2.2',
     description = "The Access Grid Toolkit",
     long_description = """
 The Access Grid Toolkit provides the necessary components
