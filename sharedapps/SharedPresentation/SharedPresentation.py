@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.23 2004-01-29 17:32:42 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.24 2004-04-16 22:35:31 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -21,6 +21,8 @@ import shutil
 from wxPython.wx import *
 
 from AccessGrid import Platform
+from AccessGrid import Log
+
 if sys.platform == Platform.WIN:
     # Win 32 COM interfaces that we use
     try:
@@ -37,13 +39,14 @@ else:
 
 # Imports we need from the Access Grid Module
 from AccessGrid import Platform
+from AccessGrid.Toolkit import WXGUIApplication
 from AccessGrid import DataStore
 from AccessGrid.SharedAppClient import SharedAppClient
 from AccessGrid.DataStoreClient import GetVenueDataStore
-from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.hosting import Client
+from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.UIUtilities import MessageDialog
+#from AccessGrid.UIUtilities import MessageDialog
 from AccessGrid import icons
 
 class ViewerSoftwareNotInstalled(Exception):
@@ -696,7 +699,7 @@ class SharedPresentation:
 
         # Get client profile
         try:
-            clientProfileFile = os.path.join(GetUserConfigDir(), "profile")
+            clientProfileFile = os.path.join(UserConfig.instance().GetConfigDir(), "profile")
             clientProfile = ClientProfile(clientProfileFile)
         except:
             self.log.info("Could not load client profile, set clientProfile = None")
@@ -1137,7 +1140,7 @@ class SharedPresentation:
         self.stepNum = 0
         
     def stripDatastorePrefix(self, url):
-        vproxy = Client.Handle(venueURL).GetProxy()
+        vproxy = Client.SecureHandle(venueURL).GetProxy()
         ds = vproxy.GetDataStoreInformation()
         ds_prefix = str(ds[0])
         url_beginning = url[:len(ds_prefix)]
@@ -1535,6 +1538,12 @@ if __name__ == "__main__":
     logName = "SharedPresentation"
     debug = 0
 
+    app = WXGUIApplication()
+    init_args = []
+    if "--debug" in sys.argv or "-d" in sys.argv:
+        init_args.append("--debug")
+    app.Initialize("SharedPresentation",args=init_args)
+
     wxInitAllImageHandlers()
 
     # Here we parse command line options
@@ -1577,7 +1586,7 @@ if __name__ == "__main__":
     # with the Venue Client, the application will only be started with
     # some applicatoin URL (it will never know about the Venue URL)
     if appURL == None and venueURL != None:
-        venueProxy = Client.Handle(venueURL).get_proxy()
+        venueProxy = Client.SecureHandle(venueURL).get_proxy()
         appURL = venueProxy.CreateApplication(SharedPresentation.appName,
                                               SharedPresentation.appDescription,
                                               SharedPresentation.appMimetype)
