@@ -2,7 +2,7 @@
 Test Strategy
 =====================================
  
-:version: $Revision: 1.1 $
+:version: $Revision: 1.2 $
 :author: Eric Olson <eolson@mcs.anl.gov>
 :status: Draft
 
@@ -42,6 +42,9 @@ Summary of Modifications
 ========================
 
 Unittests need to be written for any components of the toolkit that are not yet covered.
+
+When additional unittests are finished, their names should be added to unittest_all.py
+so they can be included when the entire toolkit is tested.
 
 Module Organization
 -------------------
@@ -83,6 +86,14 @@ class GUIDTestCase(unittest.TestCase):
        g2 = GUID("asdadsf")
        assert g1.guid == g2.guid
 
+    # Would be called before each testCase
+    # def setUp(self):
+        #
+
+    # Would be called after each testCase
+    # def tearDown(self):
+        #
+                                                                                                 
 def suite():
     """Returns a suite containing all the test cases in this module."""
     suite1 = unittest.makeSuite(GUIDTestCase)
@@ -91,6 +102,32 @@ def suite():
 if __name__ == '__main__':
     # When this module is executed from the command-line, run the test suite
     unittest.main(defaultTest='suite')
+
+
+
+Although unittests are normally designed to be entirely separate tests
+  with no possible interference from each other, in some cases there is no
+  reasonable way to test without setting up an environment (such as a server) for
+  multiple tests.
+
+It should be avoided when possible and was not designed into the unittest system, but
+  here is an example of how to setup conditions for multiple tests.
+
+class VenueServerTestCase(unittest.TestCase):
+
+    def testAAABegin(self):
+        global server
+        # Setup server
+
+    def test1(self):
+        # perform test
+
+    def test2(self):
+        # perform test
+
+    def testZZZEnd(self):
+        global server
+        # Shutdown Server
 
 
 Copyright
