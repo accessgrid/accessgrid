@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.4 2003-02-21 17:52:40 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.5 2003-02-21 19:27:45 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,8 +46,7 @@ class ConnectionHandler(StreamRequestHandler):
                 event = pickle.loads(pdata)
                 # Pass this event to the callback registered for this
                 # event.eventType
-                if event.venue not in self.server.connections.keys():
-                    self.server.connections[event.venue] = []
+                if self not in self.server.connections[event.venue]:
                     self.server.connections[event.venue].append(self)
 
                 if self.server.callbacks.has_key((event.venue,
@@ -59,10 +58,11 @@ class ConnectionHandler(StreamRequestHandler):
             except:
                 print "Client disconnected!"
                 self.running = 0
-                if event.venue in self.server.connections.keys():
-                    if self in self.server.connections[event.venue]:
-                        self.server.connections[event.venue].remove(self)
-                
+                # Find the connection and remove it
+                for v in self.server.connections.keys():
+                    if self in self.server.connections[v]:
+                        self.server.connections[v].remove(self)
+                    
 class EventService(ThreadingGSITCPSocketServer, Thread):
     """
     The EventService provides a secure event layer. This might be more 
@@ -120,21 +120,26 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         # This should be more generic
         pdata = pickle.dumps(data)
         lenStr = "%s\n" % len(pdata)
-        if self.connections.has_key(venueId):
-            for c in self.connections[venueId]:
-                try:
-                    c.wfile.write(lenStr)
-                    c.wfile.write(pdata)           
-                except:
-                    print "Client disconnected!"
-                    self.server.connections[venue].remove(c)
+        for c in self.connections[venueId]:
+            try:
+                c.wfile.write(lenStr)
+                c.wfile.write(pdata)           
+            except:
+                print "Client disconnected!"
+                self.server.connections[venue].remove(c)
             
     def GetLocation(self):
         """
         GetLocation returns the (host,port) for this service.
         """
         return self.location
-            
+
+    def AddVenue(self, venueId):
+        self.connections[venueId] = []
+
+    def RemoveVenue(self, venueId):
+        del self.connections[venueId]
+
 if __name__ == "__main__":
   import string
   host = string.lower(socket.getfqdn())

@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.41 2003-02-21 17:57:41 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.42 2003-02-21 19:27:45 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -61,7 +61,6 @@ class VenueServer(ServiceBase.ServiceBase):
     """
 
     configDefaults = {
-            "VenueServer.serverPort" : 8000,
             "VenueServer.eventPort" : 8002,
             "VenueServer.textPort" : 8004,
             "VenueServer.dataPort" : 8006,

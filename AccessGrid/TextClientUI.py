@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClientUI.py,v 1.4 2003-02-21 16:10:29 judson Exp $
+# RCS-ID:      $Id: TextClientUI.py,v 1.5 2003-02-21 19:27:45 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -77,7 +77,10 @@ class SimpleTextProcessor:
         else:
             string = "Someone says, \"%s\"\n" % (data)
 
-        self.textOut.AppendText(string)
+        try:
+            wxCallAfter(self.textOut.AppendText, string)
+        except:
+            self.Stop()
             
 
     def ProcessNetwork(self):

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.44 2003-02-21 17:52:40 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.45 2003-02-21 19:27:45 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -141,6 +141,9 @@ class Venue(ServiceBase.ServiceBase):
         self.eventService = eventService
         self.textService = textService
 
+        self.eventService.AddVenue(self.uniqueId)
+        self.textService.AddVenue(self.uniqueId)
+        
         # log.debug("Registering heartbeat for %s", self.uniqueId)
         self.eventService.RegisterCallback(self.uniqueId,
                                            HeartbeatEvent.HEARTBEAT, 

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.19 2003-02-21 16:10:29 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.20 2003-02-21 19:27:45 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -77,6 +77,7 @@ class VenueClient( ServiceBase ):
         self.venueState.ModifyUser(data)
 
     def AddDataEvent(self, data):
+        print "Getting Add Data Event in VenueClient.AddDataEvent"
         self.venueState.AddData(data)
 
     def UpdateDataEvent(self, data):
