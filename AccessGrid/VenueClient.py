@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.185 2004-07-27 15:52:23 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.186 2004-08-18 20:17:09 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.185 2004-07-27 15:52:23 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.186 2004-08-18 20:17:09 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -645,7 +645,15 @@ class VenueClient:
 
         for s in self.observers:
             s.RemoveStream(streamDesc)
-            
+
+    def OpenAppEvent(self, event):
+        appCmdDesc = event.data
+        log.debug("OpenAppEvent: Got Start App Event %s %s %s"
+                  %(appCmdDesc.appDesc, appCmdDesc.command, appCmdDesc.verb))
+       
+        for s in self.observers:
+            s.OpenApplication(appCmdDesc)
+                   
     def AddTextEvent(self,name, text):
         log.debug("TextEvent: Got Text Event")
         
@@ -743,7 +751,8 @@ class VenueClient:
                 Event.SET_CONNECTIONS: self.SetConnectionsEvent,
                 Event.ADD_STREAM: self.AddStreamEvent,
                 Event.MODIFY_STREAM: self.ModifyStreamEvent,
-                Event.REMOVE_STREAM: self.RemoveStreamEvent
+                Event.REMOVE_STREAM: self.RemoveStreamEvent,
+                Event.OPEN_APP: self.OpenAppEvent
                 }
         
             h, p = self.venueState.eventLocation

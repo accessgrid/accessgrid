@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.63 2004-07-28 22:41:52 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.64 2004-08-18 20:17:09 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.63 2004-07-28 22:41:52 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.64 2004-08-18 20:17:09 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -249,6 +249,13 @@ class ServiceDescription(ObjectDescription):
         string += "mimeType: %s" % self.mimeType
 
         return string
+
+class ApplicationCmdDescription:
+    def __init__(self, appDesc, verb, cmd, senderProfile):   
+        self.appDesc = appDesc
+        self.verb = verb
+        self.command = cmd
+        self.profile = senderProfile
     
 class ApplicationDescription(ObjectDescription):
     """

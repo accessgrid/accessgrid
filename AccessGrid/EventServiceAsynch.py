@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.38 2004-08-06 17:30:38 turam Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.39 2004-08-18 20:17:09 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.38 2004-08-06 17:30:38 turam Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.39 2004-08-18 20:17:09 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -32,7 +32,7 @@ from AccessGrid.Security.Utilities import CreateTCPAttrAlwaysAuth
 from AccessGrid.Events import ConnectEvent, DisconnectEvent, MarshalledEvent
 from AccessGrid.Events import Event, AddPersonalDataEvent
 from AccessGrid.Events import RemovePersonalDataEvent, UpdatePersonalDataEvent
-from AccessGrid.Events import AddDataEvent, RemoveDataEvent, UpdateDataEvent
+from AccessGrid.Events import AddDataEvent, RemoveDataEvent, UpdateDataEvent, OpenAppEvent
 from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 from AccessGrid.GUID import GUID
 
@@ -789,10 +789,20 @@ class EventService:
                                 Event( Event.REMOVE_DATA,
                                        event.venue,
                                        event.data))
-                         
-            #else:
-                #print 'the event does not exist'
 
+            elif event.eventType == OpenAppEvent.OPEN_APP:
+                log.debug("EventServiceAsynch: EventService.ConnectionHandlet: OPEN_APP, venue id: %s, data: %s",
+                          event.venue, event.data)
+
+                #if self.channel != None:
+                self.Distribute(event.venue,
+                                Event( Event.OPEN_APP,
+                                       event.venue,
+                                       event.data))
+                         
+            else:
+                log.info("EventServiceAsynch.HandleEvent: the %s event does not exist"%(event.eventType))
+                
             connChannel.HandleEvent(event, connObj)
 
     def HandleEOF(self, connObj):

@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.34 2004-07-28 21:49:48 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.35 2004-08-18 20:17:09 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.34 2004-07-28 21:49:48 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.35 2004-08-18 20:17:09 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # standard imports
@@ -24,7 +24,7 @@ from AccessGrid import DataStore
 from AccessGrid.AppDb import AppDb
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Descriptions import ServiceDescription, DataDescription
-from AccessGrid.Descriptions import ApplicationDescription
+from AccessGrid.Descriptions import ApplicationDescription, ApplicationCmdDescription
 from AccessGrid.NetworkLocation import ProviderProfile
 from AccessGrid.Platform.Config import UserConfig, MimeConfig, AGTkConfig
 from AccessGrid.Platform import IsWindows, Config
@@ -1091,8 +1091,18 @@ class VenueClientController:
     
     def GetCommands(self,objDesc):
         return self.__venueClientApp.GetCommands(objDesc)
-        
-        
+
+
+    def StartAllCmd(self, objDesc, verb=None,cmd=None):
+        '''
+        This method sends an event to all participants inviting them
+        to join a shared application session.
+        '''
+        # Distribute event to all participants so they can join.
+        data = ApplicationCmdDescription(objDesc, verb, cmd, self.__venueClient.GetProfile())
+        self.__venueClient.SendEvent(Events.OpenAppEvent(self.__venueClient.GetEventChannelId(), 
+                                                          data))
+                        
     def StartCmd(self, objDesc, verb=None,cmd=None):
         """
         This method builds up the command line given a command-line
@@ -1216,6 +1226,7 @@ class VenueClientController:
         #
         # Build up named vars
         #
+        
         namedVars = dict()
         if verb != None:
             namedVars['appCmd'] = verb

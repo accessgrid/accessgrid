@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.70 2004-08-18 16:55:33 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.71 2004-08-18 20:17:09 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.70 2004-08-18 16:55:33 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.71 2004-08-18 20:17:09 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -643,6 +643,26 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         transport = self.venueClient.GetTransport()
         self.SetTransport(transport)
+
+    def __OpenApplication(self, appCmdDesc):
+        '''
+        This method is called when someone wants to invite you to join a shared
+        application session.
+        '''
+        
+        if self.venueClient.GetProfile().GetPublicId() == appCmdDesc.profile.GetPublicId():
+            # I wanted to open the application client so don't pop up a message dialog.
+            ret = wxID_OK
+        else:
+            # Ask everyone else if they want to open the application client.
+            text = '%s would like to invite you to a shared application session (%s). Do you wish to join?'%(appCmdDesc.profile.name, appCmdDesc.appDesc.name)
+            dlg = wxMessageDialog(self, text, 'Join Shared Application Session', style = wxOK|wxCANCEL)
+            ret = dlg.ShowModal()
+
+        # Open the client
+        if ret == wxID_OK:
+            self.controller.StartCmd(appCmdDesc.appDesc, appCmdDesc.verb, appCmdDesc.command)
+                    
         
     # end Private Methods
     #
@@ -1642,6 +1662,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         """
         log.debug("Go back")
         self.controller.GoBackCB()
+
+    def StartAllCmd(self, objDesc, verb=None, cmd=None):
+        self.controller.StartAllCmd(objDesc, verb, cmd)
         
     def StartCmd(self, objDesc, verb=None,cmd=None):
         self.controller.StartCmd(objDesc,verb,cmd)
@@ -2045,7 +2068,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         """
         
         wxCallAfter(self.textClientPanel.OutputText, name, text)
-        
+
+    def OpenApplication(self, appCmdDesc):
+        '''
+        This method is called when someone wants to invite you to a
+        shared application session.
+        '''
+        wxCallAfter(self.__OpenApplication, appCmdDesc)
+
     def EnterVenue(self, URL, warningString="", enterSuccess=1):
         """
         This method calls the venue client method and then
@@ -3322,7 +3352,7 @@ class ContentListPanel(wxPanel):
         if commands != None and 'Open' in commands:
             EVT_MENU(self, id, lambda event, cmd='Open':
                      self.parent.StartCmd(item,verb='Open'))
-      
+
         else:
             text = "You have nothing configured to open this application."
             title = "Notification"
@@ -3330,6 +3360,14 @@ class ContentListPanel(wxPanel):
                      MessageDialog(self, text, title,
                                    style = wxOK|wxICON_INFORMATION))
 
+        # - Open for All Participants
+        if commands != None and 'Open for All Participants' in commands:
+            key = 'Open for All Participants'
+            id = wxNewId()
+            menu.Append(id, key)
+            EVT_MENU(self, id, lambda event, verb=key, itm=item:
+                     self.parent.StartAllCmd(item,verb=key))
+                          
         # - Delete
         id = wxNewId()
         menu.Append(id, "Delete", "Delete this application.")
@@ -3341,7 +3379,7 @@ class ContentListPanel(wxPanel):
         othercmds = 0
         if commands != None:
             for key in commands:
-                if key != 'Open':
+                if key != 'Open' and key != 'Open for All Participants':
                     othercmds = 1
                     id = wxNewId()
                     menu.Append(id, string.capwords(key))

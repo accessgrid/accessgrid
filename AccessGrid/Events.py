@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.24 2004-08-06 17:30:38 turam Exp $
+# RCS-ID:      $Id: Events.py,v 1.25 2004-08-18 20:17:09 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Events.py,v 1.24 2004-08-06 17:30:38 turam Exp $"
+__revision__ = "$Id: Events.py,v 1.25 2004-08-18 20:17:09 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -37,7 +37,8 @@ class Event:
     ADD_STREAM = "Add stream"
     MODIFY_STREAM = "Modify stream"
     REMOVE_STREAM = "Remove stream"
-
+    OPEN_APP = "Start application"
+       
     APP_PARTICIPANT_JOIN = 'Join application'
     APP_PARTICIPANT_LEAVE = 'Leave application'
     APP_UPDATE_PARTICIPANT = 'Update application participant status'
@@ -64,6 +65,14 @@ class ConnectEvent(Event):
     def __init__(self, venueId, privateId):
         Event.__init__(self, ConnectEvent.CONNECT, venueId, privateId)
 
+class OpenAppEvent(Event):
+    '''
+    Event for opening a shared application client for all participants.
+    '''
+    OPEN_APP = 'Open application'
+    
+    def __init__(self, venueId, privateId):
+        Event.__init__(self, OpenAppEvent.OPEN_APP, venueId, privateId)
 
 class AddDataEvent(Event):
     '''
