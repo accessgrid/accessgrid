@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.55 2003-04-23 09:15:26 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.56 2003-04-25 15:55:40 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -245,6 +245,7 @@ class VenueClient( ServiceBase):
             dataDesc.checksum = data.checksum
             dataDesc.owner = data.owner
             dataDesc.type = data.type
+            dataDesc.uri = data.uri
             dataList.append( dataDesc )
 
         applicationList = []
