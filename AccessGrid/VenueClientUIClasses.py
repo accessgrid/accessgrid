@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.243 2003-08-22 19:50:07 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.244 2003-08-22 19:52:28 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1830,7 +1830,7 @@ class ContentListPanel(wxPanel):
                         MessageDialog(None,
                                       "You have nothing configured for this data.",
                                       "Application not configured.",
-                                      style = wxOK  | wxICON_ERROR)
+                                      style = wxOK  | wxICON_INFORMATION)
                         return None
                 elif isinstance(item, ServiceDescription):
                     list = item.name.split('.')
@@ -1844,7 +1844,7 @@ class ContentListPanel(wxPanel):
                         MessageDialog(None,
                                       "You have nothing configured for this data.",
                                       "Application not configured.",
-                                      style = wxOK  | wxICON_ERROR)
+                                      style = wxOK  | wxICON_INFORMATION)
                         return None
                 else:
                     appdb = Toolkit.GetApplication().GetAppDatabase()
