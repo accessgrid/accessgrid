@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.76 2003-03-21 17:12:22 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.77 2003-03-21 17:55:44 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -243,15 +243,15 @@ class VenueClientUI(wxApp, VenueClient):
         # Make people you lead go to this venue
         self.__getFollowers(URL)
 
-        if self.venueUri != None:
-            self.oldUri = self.venueUri
-        else:
-            self.oldUri = None
+        #if self.venueUri != None:
+        #    self.oldUri = self.venueUri
+        #else:
+        #    self.oldUri = None
 
         # clean up ui from last venue
-        if self.oldUri != None:
-            wxCallAfter(wxLogDebug, "clean up frame and exit")
-            wxCallAfter(self.frame.CleanUp)
+        #if self.oldUri != None:
+        #    wxCallAfter(wxLogDebug, "clean up frame and exit")
+        #    wxCallAfter(self.frame.CleanUp)
             #self.ExitVenue()
 
         VenueClient.EnterVenue( self, URL )
@@ -415,11 +415,11 @@ class VenueClientUI(wxApp, VenueClient):
                 text2 = 'Invalid proxy'
 
             else:
-                if oldUri is None:
+                if self.oldUri is None:
                     wxCallAfter(self.frame.FillInAddress, None, self.profile.homeVenue)
 
                 else:
-                    wxCallAfter(self.frame.FillInAddress, None, oldUri)
+                    wxCallAfter(self.frame.FillInAddress, None, self.oldUri)
                     
 
                 text = 'The venue URL you specified is not valid'
