@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.33 2003-08-08 23:28:43 judson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.34 2003-08-12 12:49:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -194,12 +194,12 @@ class StoreConfigDialog(wxDialog):
         # Get value of textfield and checkbox
         return (self.configText.GetValue(), self.defaultCheckbox.IsChecked())
 
-class ServicePopup(wxDialog):
+class ServicePopup(wxPopupTransientWindow):
     """
     Popup for the service menu
     """
-    def __init__(self, parent):
-        wxDialog.__init__(self, parent, -1, "Node Management UI")
+    def __init__(self, parent, style):
+        wxPopupTransientWindow.__init__(self, parent, style)
         panel = wxPanel(self, -1)
         panel.SetBackgroundColour("#FFB6C1")
         self.m = BuildServiceMenu()
@@ -241,20 +241,21 @@ class ServiceConfigurationPanel( wxPanel ):
     A panel that displays service configuration parameters based on
     their type.
     """
-    def __init__( self, parent, ID, pos=wxDefaultPosition, size=wxDefaultSize, style=0 ):
+    def __init__( self, parent, ID, pos=wxDefaultPosition, size=(400,400), style=0 ):
         wxPanel.__init__( self, parent, ID, pos, size, style )
         self.panel = self
         self.callback = None
+        self.CentreOnParent()
 
     def SetConfiguration( self, serviceConfig ):
         self.config = serviceConfig
         self.guiComponents = []
 
-        self.panelSizer = wxBoxSizer( wxVERTICAL )
-        self.panel.SetSizer( self.panelSizer )
+        rows = len(serviceConfig.parameters)
+        self.panelSizer = wxFlexGridSizer( rows, 1, 2, 2 ) #rows, cols, hgap, vgap
 
         psz= wxBoxSizer( wxHORIZONTAL )
-        pt = wxStaticText( self, -1, "Resource", style=wxALIGN_CENTRE )
+        pt = wxStaticText( self, -1, "Resource", style=wxALIGN_LEFT )
         psz.Add( pt, 1 )
         if serviceConfig.resource == "None":
             resource = "None"
@@ -262,15 +263,15 @@ class ServiceConfigurationPanel( wxPanel ):
             resource = serviceConfig.resource.resource
         pComp = wxTextCtrl( self, -1, resource )
         pComp.SetEditable( false )
-        psz.Add( pComp, 1 )
+        psz.Add( pComp, 2 )
         self.panelSizer.Add( psz, -1, wxEXPAND )
         self.guiComponents.append( pComp )
 
         psz= wxBoxSizer( wxHORIZONTAL )
-        pt = wxStaticText( self.panel, -1, "Executable", style=wxALIGN_CENTRE )
-        psz.Add( pt, -1 )
-        pComp = wxTextCtrl( self.panel, -1, serviceConfig.executable )
-        psz.Add( pComp, -1 )
+        pt = wxStaticText( self, -1, "Executable", style=wxALIGN_LEFT )
+        psz.Add( pt, 1 )
+        pComp = wxTextCtrl( self, -1, serviceConfig.executable )
+        psz.Add( pComp, 2 )
         self.panelSizer.Add( psz, -1, wxEXPAND )
         self.guiComponents.append( pComp )
 
@@ -278,14 +279,14 @@ class ServiceConfigurationPanel( wxPanel ):
 
             psz= wxBoxSizer( wxHORIZONTAL )
 
-            pt = wxStaticText( self.panel, -1, parameter.name, style=wxALIGN_CENTRE )
-            psz.Add( pt, -1, wxEXPAND )
+            pt = wxStaticText( self, -1, parameter.name, style=wxALIGN_LEFT )
+            psz.Add( pt, 1 )
 
             pComp = None
             if parameter.TYPE == RangeParameter.TYPE:
-                pComp = wxSlider( self.panel, -1, parameter.value, parameter.low, parameter.high, style = wxSL_LABELS )
+                pComp = wxSlider( self, -1, parameter.value, parameter.low, parameter.high, style = wxSL_LABELS )
             elif parameter.TYPE == OptionSetParameter.TYPE:
-                pComp = wxComboBox( self.panel, 3, "", style=wxCB_READONLY )
+                pComp = wxComboBox( self, -1, "", style=wxCB_READONLY )
                 for option in parameter.options:
                     pComp.Append( option )
                 pComp.SetValue( parameter.value )
@@ -296,11 +297,14 @@ class ServiceConfigurationPanel( wxPanel ):
                 pComp = wxTextCtrl( self.panel, -1, val )
 
             self.guiComponents.append( pComp )
-            psz.Add( pComp, -1 )
+            psz.Add( pComp, 2 )
 
             self.panelSizer.Add( psz, -1, wxEXPAND )
 
+        self.panel.SetSizer( self.panelSizer )
+        self.panel.SetAutoLayout( true )
         self.panel.Layout()
+        self.panel.Fit()
 
     def GetConfiguration( self ):
 
@@ -341,7 +345,9 @@ class ServiceConfigurationDialog(wxDialog):
         self.serviceConfigPanel = ServiceConfigurationPanel( self, -1 )
         self.serviceConfigPanel.SetConfiguration( serviceConfig )
         self.serviceConfigPanel.SetSize( wxSize(200,200) )
+        self.serviceConfigPanel.SetAutoLayout(true)
         self.serviceConfigPanel.Layout()
+        self.serviceConfigPanel.Fit()
         sizer2.Add( self.serviceConfigPanel, 1, wxEXPAND )
 
         # Create ok/cancel buttons
