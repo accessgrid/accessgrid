@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.120 2003-04-03 18:29:41 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.121 2003-04-03 20:17:11 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -32,6 +32,14 @@ from pyGlobus.io import GSITCPSocket
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 from AccessGrid.Events import ConnectEvent, TextEvent, DisconnectEvent
 
+try:
+    from AccessGrid import CertificateManager
+    CertificateManager.CertificateManagerWXGUI
+    HaveCertificateManager = 1
+except Exception, e:
+    HaveCertificateManager = 0
+
+#https://vv2.mcs.anl.gov:8880/Venues/000000f42b3dd2fc008c00dd000b0037a34
 class VenueClientFrame(wxFrame):
     
     '''VenueClientFrame. 
@@ -200,6 +208,13 @@ class VenueClientFrame(wxFrame):
         self.myVenues.Append(self.ID_MYVENUE_EDIT, "&Edit My Venues...", "Edit your venues")
         self.myVenues.AppendSeparator()
         self.menubar.Append(self.myVenues, "My &Venues")
+
+        if HaveCertificateManager:
+            # certMenu = wxMenu()
+            # certMenu.Append(self.ID_CERT_TRUSTED, "View &Trusted CA Certificates...")
+            # certMenu.Append(self.ID_CERT_IDENTITY, "View &Identity Certificates...")
+            certMenu = self.app.certificateManagerGUI.GetMenu(self)
+            self.menubar.Append(certMenu, "&Certificates")
               
       	self.help = wxMenu()
         self.help.Append(self.ID_HELP_ABOUT, "About", "Information about the application")

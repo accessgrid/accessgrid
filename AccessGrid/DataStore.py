@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.16 2003-04-01 23:19:44 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.17 2003-04-03 20:17:11 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1023,7 +1023,7 @@ n
     Incoming requests are just placed on the queue.
     """
 
-    def __init__(self, address = ('', 0), numThreads = 5):
+    def __init__(self, address = ('', 0), numThreads = 5, sslCompat = 0):
         TransferServer.__init__(self)
 
         self.done = 0
@@ -1040,7 +1040,12 @@ n
             # print "Got remote ", remote_user
             return 1
         # tcpAttr = Utilities.CreateTCPAttrAlwaysAuth()
-        tcpAttr = Utilities.CreateTCPAttrCallbackAuth(auth_cb)
+
+        if sslCompat:
+            log.debug("creating ssl compatible server")
+            tcpAttr = Utilities.CreateTCPAttrCallbackAuthSSL(auth_cb)
+        else:
+            tcpAttr = Utilities.CreateTCPAttrCallbackAuth(auth_cb)
         io.GSITCPSocketServer.__init__(self, address, HTTPTransferHandler,
                                     None, None, tcpAttr = tcpAttr)
 
@@ -1064,7 +1069,7 @@ n
             elif cmdType == "request":
                 request = cmd[1]
                 client_address = cmd[2]
-
+                log.debug("handle request '%s' '%s'", request, client_address)
                 try:
                     self.finish_request(request, client_address)
                     self.close_request(request)
