@@ -5,12 +5,12 @@
 # Author:      From the Python Cookbook
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: scheduler.py,v 1.3 2003-02-10 14:47:37 judson Exp $
+# RCS-ID:      $Id: scheduler.py,v 1.4 2003-05-20 17:15:34 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     
 #-----------------------------------------------------------------------------
 import time
-from threading import Thread
+from threading import Thread, Event
 
 class Task( Thread ):
     def __init__( self, action, loopdelay, initdelay ):
@@ -18,6 +18,7 @@ class Task( Thread ):
         self._loopdelay = loopdelay
         self._initdelay = initdelay
         self._running = 1
+        self._quitEvent = Event()
         Thread.__init__( self )
 
     def __repr__( self ):
@@ -25,17 +26,28 @@ class Task( Thread ):
             self._action, self._loopdelay, self._initdelay )
 
     def run( self ):
+        q = self._quitEvent
+        
         if self._initdelay:
-            time.sleep( self._initdelay )
+            q.wait(self._initdelay)
+            if q.isSet():
+                return
+            
+            #time.sleep( self._initdelay )
         self._runtime = time.time()
         while self._running:
             start = time.time()
             self._action()
             self._runtime += self._loopdelay
-            time.sleep( self._runtime - start )
+            delay = self._runtime - start
+            q.wait(delay)
+            if q.isSet():
+                return
+            #time.sleep(delay)
 
     def stop( self ):
         self._running = 0
+        self._quitEvent.set()
 
 class Scheduler:
     def __init__( self ):
