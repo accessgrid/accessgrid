@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.57 2003-04-03 20:22:59 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.58 2003-04-03 22:05:39 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -153,7 +153,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
         self.dataTransferServer = GSIHTTPTransferServer(('',
                                                          int(self.dataPort)),
-                                                        sslCompat = 1)
+                                                        sslCompat = 0)
         self.dataTransferServer.run()
 
         self.eventService = EventService((self.hostname, int(self.eventPort)))
