@@ -1,10 +1,11 @@
 %define	name		AccessGrid
 %define	version		2.0alpha
-%define	release		2
+%define	release		3
 %define	prefix		/usr
-%define sysconfdir	/etc/%{name}
-%define gnomedir	/usr/share/gnome/apps
-%define kdedir		/usr/share/applnk
+%define sysconfdir	/etc/%{name}/config
+%define sharedir	%{prefix}/share
+%define gnomedir	%{sharedir}/gnome/apps
+%define kdedir		%{sharedir}/applnk
 %define buildroot	/var/tmp/%{name}-%{version}
 
 Summary:	The Access Grid Toolkit
@@ -19,6 +20,7 @@ Source:		%{name}-%{version}.tar.gz
 BuildRoot:	%{buildroot}
 Requires:	/usr/bin/python2.2
 Requires:	pyGlobus
+Requires:	logging
 
 %description
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
@@ -96,24 +98,26 @@ python2.2 setup.py build
 python2.2 setup.py install --prefix=%{buildroot}%{prefix} --no-compile
 
 %files
-%doc %{prefix}/doc/
+%doc %{sharedir}/doc/
 %defattr(-,root,root)
 %{prefix}/lib
 %defattr(0755,root,root)
 %{prefix}/bin/AGServiceManager.py
+%defattr(0777,root,root)
+%dir %{sharedir}/%{name}/local_services
 
 %files VenueClient
 %defattr(-,root,root)
 %{prefix}/bin/AGNodeService.py
 %{prefix}/bin/VenueClient.py
 %{prefix}/bin/NodeManagement.py
-%{prefix}/share/AccessGrid/services/
-%{gnomedir}/AccessGrid/.desktop
-%{gnomedir}/AccessGrid/VenueClient.desktop
-%{gnomedir}/AccessGrid/NodeManagement.desktop
-%{kdedir}/AccessGrid/.desktop
-%{kdedir}/AccessGrid/VenueClient.desktop
-%{kdedir}/AccessGrid/NodeManagement.desktop
+%{sharedir}/%{name}/services/
+%{gnomedir}/%{name}/.desktop
+%{gnomedir}/%{name}/VenueClient.desktop
+%{gnomedir}/%{name}/NodeManagement.desktop
+%{kdedir}/%{name}/.desktop
+%{kdedir}/%{name}/VenueClient.desktop
+%{kdedir}/%{name}/NodeManagement.desktop
 
 
 %files VenueServer
@@ -121,23 +125,37 @@ python2.2 setup.py install --prefix=%{buildroot}%{prefix} --no-compile
 %{prefix}/bin/VenueManagement.py
 %{prefix}/bin/VenueServer.py
 %{prefix}/bin/VenuesServerRegistry.py
-%{gnomedir}/AccessGrid/.desktop
-%{gnomedir}/AccessGrid/VenueManagement.desktop
-%{kdedir}/AccessGrid/.desktop
-%{kdedir}/AccessGrid/VenueManagement.desktop
+%{gnomedir}/%{name}/.desktop
+%{gnomedir}/%{name}/VenueManagement.desktop
+%{kdedir}/%{name}/.desktop
+%{kdedir}/%{name}/VenueManagement.desktop
 #
 %files VideoProducer
 %defattr(-,root,root)
-%{prefix}/share/AccessGrid/local_services/VideoProducerService.*
 %{prefix}/bin/SetupVideo.py
+%defattr(0666,root,root)
+%{sharedir}/%{name}/local_services/VideoProducerService.*
 
 %files VideoConsumer
-%defattr(-,root,root)
-%{prefix}/share/AccessGrid/local_services/VideoConsumerService.*
+%defattr(0666,root,root)
+%{sharedir}/%{name}/local_services/VideoConsumerService.*
 
 %files AudioService
-%defattr(-,root,root)
-%{prefix}/share/AccessGrid/local_services/AudioService.*
+%defattr(0666,root,root)
+%{prefix}/share/%{name}/local_services/AudioService.*
+
+%post VenueClient
+mkdir -p %{sysconfdir}
+cat <<EOF > %{sysconfdir}/AGNodeService.cfg
+[Node Configuration]
+servicesDirectory = %{sharedir}/%{name}/services
+configDirectory = %{sysconfdir}
+defaultNodeConfiguration = defaultLinux
+EOF
+
+if [ ! -f %{sysconfdir}/defaultLinux ]; then
+	cp %{sharedir}/doc/%{name}/defaultLinux %{sysconfdir}
+fi
 
 #%post
 #import AccessGrid
@@ -157,6 +175,13 @@ python2.2 setup.py install --prefix=%{buildroot}%{prefix} --no-compile
 [ -n "%{buildroot}" -a "%{buildroot}" != / ] && rm -rf %{buildroot}
 
 %changelog
+
+* Fri Feb 21 2003 Ti Leggett <leggett@mcs.anl.gov>
+- Fixed where docs go
+- Added default node configuration file
+
+* Fri Feb 14 2003 Ti Leggett <leggett@mcs.anl.gov>
+- Added postinstall for VenueClient to create AGNodeService config file
 
 * Thu Feb 13 2004 Ti Leggett <leggett@mcs.anl.gov>
 - Added SetupVideo.py to VideoProducer
