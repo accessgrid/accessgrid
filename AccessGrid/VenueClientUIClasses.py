@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.37 2003-02-21 17:38:30 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.38 2003-02-21 19:42:00 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -615,7 +615,7 @@ class VenueList(wxScrolledWindow):
         #self.EnableScrolling(true, false)
         #self.SetScrollRate(0, 20)
         self.box.SetVirtualSizeHints(self)
-        self.SetScrollRate(20, 20)
+        self.SetScrollRate(10, 10)
         
         self.box.Add(self.column, 1, wxEXPAND)
         self.SetSizer(self.box)
