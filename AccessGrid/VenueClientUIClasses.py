@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.317 2004-01-29 20:35:38 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.318 2004-01-29 20:47:34 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.317 2004-01-29 20:35:38 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.318 2004-01-29 20:47:34 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1610,6 +1610,11 @@ class ContentListPanel(wxPanel):
     the user.
     
     '''
+    PARTICIPANTS_HEADING = 'Participants'
+    DATA_HEADING = 'Data'
+    SERVICES_HEADING = 'Services'
+    APPLICATIONS_HEADING = 'Application Sessions'
+    
     def __init__(self, parent, app):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, 
 			 wxDefaultSize, style = wxSUNKEN_BORDER)
@@ -1903,10 +1908,10 @@ class ContentListPanel(wxPanel):
               
         self.root = self.tree.AddRoot("")
                
-	self.participants = self.tree.AppendItem(self.root, "Participants", index, index)
-        self.data = self.tree.AppendItem(self.root, "Data", index, index) 
-        self.services = self.tree.AppendItem(self.root, "Services", index, index)
-        self.applications = self.tree.AppendItem(self.root, "Application Sessions", index, index)
+	self.participants = self.tree.AppendItem(self.root, self.PARTICIPANTS_HEADING, index, index)
+        self.data = self.tree.AppendItem(self.root, self.DATA_HEADING, index, index) 
+        self.services = self.tree.AppendItem(self.root, self.SERVICES_HEADING, index, index)
+        self.applications = self.tree.AppendItem(self.root, self.APPLICATIONS_HEADING, index, index)
        
         self.tree.SetItemBold(self.participants)
         self.tree.SetItemBold(self.data)
@@ -2044,16 +2049,16 @@ class ContentListPanel(wxPanel):
             item = self.tree.GetItemData(treeId).GetData()
             text = self.tree.GetItemText(treeId)
                         
-            if text == 'Data':
+            if text == self.DATA_HEADING:
                 self.PopupMenu(self.parent.dataHeadingMenu,
                                wxPoint(self.x, self.y))
-            elif text == 'Services':
+            elif text == self.SERVICES_HEADING:
                 self.PopupMenu(self.parent.serviceHeadingMenu,
                                wxPoint(self.x, self.y))
-            elif text == 'Applications':
+            elif text == self.APPLICATIONS_HEADING:
                 self.PopupMenu(self.parent.BuildAppMenu(None, "Add "),
                                wxPoint(self.x, self.y))
-            elif text == 'Participants' or item == None:
+            elif text == self.PARTICIPANTS_HEADING or item == None:
                 # We don't have anything to do with this heading
                 pass
             
