@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.24 2004-09-09 05:35:04 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.25 2004-09-09 13:16:46 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.24 2004-09-09 05:35:04 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.25 2004-09-09 13:16:46 judson Exp $"
 
 import os
 import sys
@@ -638,7 +638,14 @@ class SystemConfig:
 	    return "127.0.0.1"
 
 	return ip
-        
+
+    def AppFirewallConfig(self, path, enableFlag):
+        """
+        This call enables or disables an applications access via a firewall.
+        """
+        err_str = "This should not be called directly, but through a subclass."
+        raise Exception(err_str)
+
 class MimeConfig:
     """
     The MimeConfig object encapsulates in single object the management
