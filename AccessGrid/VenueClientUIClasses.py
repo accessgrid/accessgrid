@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.212 2003-05-31 02:51:01 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.213 2003-06-26 20:34:40 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -22,6 +22,7 @@ from wxPython.wx import wxFileTypeInfo
 import string
 import webbrowser
 import traceback
+import cPickle
 
 log = logging.getLogger("AG.VenueClientUIClasses")
 
@@ -787,8 +788,8 @@ class VenueClientFrame(wxFrame):
         # then there isn't a data upload service available.
         #
 
-        log.debug("Trying to upload to '%s'" % (self.app.upload_url))
-        if self.app.upload_url is None or self.app.upload_url == "":
+        log.debug("Trying to upload to '%s'" % (self.app.dataStoreUploadUrl))
+        if self.app.dataStoreUploadUrl is None or self.app.dataStoreUploadUrl == "":
         
             MessageDialog(self,
                           "Cannot add data: Venue does not have an operational\ndata storage server.",
@@ -1414,6 +1415,7 @@ class ContentListPanel(wxPanel):
     serviceDict = {}
     applicationDict = {}
     personalDataDict = {}
+    temporaryDataDict = {}
     
     def __init__(self, parent, app):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, 
@@ -1439,7 +1441,8 @@ class ContentListPanel(wxPanel):
         EVT_SIZE(self, self.OnSize)
         EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
         EVT_LEFT_DCLICK(self.tree, self.OnDoubleClick)
-        EVT_TREE_KEY_DOWN(self.tree, id, self.OnKeyDown) 
+        EVT_TREE_KEY_DOWN(self.tree, id, self.OnKeyDown)
+        EVT_TREE_ITEM_EXPANDING(self.tree, id, self.OnExpand) 
        
     def __setImageList(self):
         imageList = wxImageList(18,18)
@@ -1473,18 +1476,22 @@ class ContentListPanel(wxPanel):
         self.tree.SortChildren(self.participants)
         self.tree.Expand(self.participants)
 
-       
-            
-
         for data in dataList:
             participantData = self.tree.AppendItem(participant, data.name,
                                                    self.defaultDataId, self.defaultDataId)
-            self.personalDataDict[data.name] = participantData 
+            self.personalDataDict[data.id] = participantData 
             self.tree.SetItemData(participantData, wxTreeItemData(data))
 
+        if(self.tree.GetChildrenCount(participant) == 0):
+            # Add this text to force a + in front of empty participant
+            tempId = self.tree.AppendItem(participant, "No personal data available")
+            self.temporaryDataDict[profile.publicId] = tempId
         self.tree.SortChildren(participant)
             
     def RemoveParticipantData(self, dataTreeId):
+        #
+        # This is weird, does it work?
+        #
         del self.personalDataDict[id]
         self.tree.Delete(id)
                           
@@ -1537,7 +1544,7 @@ class ContentListPanel(wxPanel):
             dataId = self.tree.AppendItem(self.data, profile.name,
                                       self.defaultDataId, self.defaultDataId)
             self.tree.SetItemData(dataId, wxTreeItemData(profile)) 
-            self.dataDict[profile.name] = dataId
+            self.dataDict[profile.id] = dataId
             self.tree.SortChildren(self.data)
             self.tree.Expand(self.data)
             
@@ -1545,27 +1552,47 @@ class ContentListPanel(wxPanel):
         else:
             log.debug("This is personal data")
             id = profile.type
+                        
             if(self.participantDict.has_key(id)):
                 log.debug("Data belongs to a participant")
                 participantId = self.participantDict[id]
+                log.debug("Before try participantId")
 
-                ownerProfile = self.tree.GetItemData(participantId).GetData()
-                self.parent.statusbar.SetStatusText("%s just added personal file '%s'"%(ownerProfile.name, profile.name))
-                
-                dataId = self.tree.AppendItem(participantId, profile.name, \
-                                     self.defaultDataId, self.defaultDataId)
-                self.tree.SetItemData(dataId, wxTreeItemData(profile))
-                self.personalDataDict[profile.name] = dataId
-                self.tree.SortChildren(participantId)
-                #
-                # I select the participant to ensure the twist button is
-                # visible when first data item is added. I have to do
-                # this due to a bug in wxPython.
-                #              
-                if(self.tree.GetSelection() == participantId):
-                    self.tree.Unselect()
+                if participantId:
+                    log.debug("participantId ok")
+                    ownerProfile = self.tree.GetItemData(participantId).GetData()
 
-                self.tree.SelectItem(participantId)
+                    #
+                    # Test if personal data is already added
+                    #
+                                        
+                    if not self.personalDataDict.has_key(profile.id):
+                        self.parent.statusbar.SetStatusText("%s just added personal file '%s'"%(ownerProfile.name, profile.name))
+                        log.debug("after statusbar")
+                        # Remove the temporary text "No personal data available"
+                        if self.temporaryDataDict.has_key(id):
+                            tempText = self.temporaryDataDict[id]
+                            if tempText:
+                                self.tree.Delete(tempText)
+                                del self.temporaryDataDict[id]
+                            
+                        log.debug("after remove temp data")
+                        
+                        dataId = self.tree.AppendItem(participantId, profile.name, \
+                                                      self.defaultDataId, self.defaultDataId)
+                        self.tree.SetItemData(dataId, wxTreeItemData(profile))
+                        self.personalDataDict[profile.id] = dataId
+                        self.tree.SortChildren(participantId)
+                        log.debug("down below")
+                        #
+                        # I select the participant to ensure the twist button is
+                        # visible when first data item is added. I have to do
+                        # this due to a bug in wxPython.
+                        #              
+                        if(self.tree.GetSelection() == participantId):
+                            self.tree.Unselect()
+                            
+                        self.tree.SelectItem(participantId)
                                                     
             else:
                 log.info("Owner of data does not exist")
@@ -1573,16 +1600,16 @@ class ContentListPanel(wxPanel):
        
     def UpdateData(self, profile):
         id = None
-        
+
         #if venue data
-        if(self.dataDict.has_key(profile.name)):
+        if(self.dataDict.has_key(profile.id)):
             log.debug("VenueManagementUIClasses::DataDict has data")
-            id = self.dataDict[profile.name]
+            id = self.dataDict[profile.id]
             
         #if personal data
-        elif (self.personalDataDict.has_key(profile.name)):
+        elif (self.personalDataDict.has_key(profile.id)):
             log.debug("VenueManagementUIClasses::Personal DataDict has data")
-            id = self.personalDataDict[profile.name]
+            id = self.personalDataDict[profile.id]
             
         if(id != None):
             self.tree.SetItemData(id, wxTreeItemData(profile))
@@ -1593,20 +1620,20 @@ class ContentListPanel(wxPanel):
         #if venue data
         id = None
         
-        if(self.dataDict.has_key(profile.name)):
+        if(self.dataDict.has_key(profile.id)):
             log.debug("Remove venue data")
-            id = self.dataDict[profile.name]
-            del self.dataDict[profile.name]
+            id = self.dataDict[profile.id]
+            del self.dataDict[profile.id]
             
         #if personal data
-        elif (self.personalDataDict.has_key(profile.name)):
-            id = self.personalDataDict[profile.name]
+        elif (self.personalDataDict.has_key(profile.id)):
+            id = self.personalDataDict[profile.id]
             ownerId = self.tree.GetItemParent(id)
             ownerProfile = self.tree.GetItemData(ownerId).GetData()
             self.parent.statusbar.SetStatusText("%s just removed personal file '%s'"%(ownerProfile.name, profile.name))
             log.debug("Remove personal data")
-            id = self.personalDataDict[profile.name]
-            del self.personalDataDict[profile.name]
+            id = self.personalDataDict[profile.id]
+            del self.personalDataDict[profile.id]
             
         if(id != None):
             log.debug("Delete id")
@@ -1715,7 +1742,17 @@ class ContentListPanel(wxPanel):
                 elif isinstance(item,ApplicationDescription):
                     # application
                     self.parent.RemoveApp(event)
-     
+
+    def OnExpand(self, event):
+        treeId = event.GetItem()
+        item = self.tree.GetItemData(treeId).GetData()
+
+        if item:
+            dataDescriptionList = self.app.GetPersonalData(item)
+            if dataDescriptionList:
+                for data in dataDescriptionList:
+                    self.AddData(data)
+                          
     def OnDoubleClick(self, event):
         self.x = event.GetX()
         self.y = event.GetY()
