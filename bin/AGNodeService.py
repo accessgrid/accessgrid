@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.51 2004-04-12 22:42:14 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.52 2004-04-14 19:04:57 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.51 2004-04-12 22:42:14 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.52 2004-04-14 19:04:57 eolson Exp $"
 
 # The standard imports
 import sys
@@ -25,7 +25,7 @@ from optik import Option
 
 # Our imports
 #from AccessGrid.Toolkit import Service
-from AccessGrid.Toolkit import CmdlineApplication
+from AccessGrid.Toolkit import Service
 from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
 from AccessGrid import Log
 from AccessGrid.Platform.Config import SystemConfig
@@ -60,7 +60,7 @@ def main():
 
     # Instantiate the app
     #app = Service()
-    app = CmdlineApplication()
+    app = Service().instance()
 
     # build options for this application
     portOption = Option("-p", "--port", type="int", dest="port",

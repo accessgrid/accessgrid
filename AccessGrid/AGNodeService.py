@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.54 2004-04-12 22:41:15 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.55 2004-04-14 19:04:58 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.54 2004-04-12 22:41:15 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.55 2004-04-14 19:04:58 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -19,7 +19,7 @@ import ConfigParser
 import shutil
 import urlparse
 
-from AccessGrid.Toolkit import Application
+from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.Config import SystemConfig, UserConfig, AGTkConfig
 from AccessGrid.hosting import Client
 from AccessGrid import Log
@@ -619,7 +619,7 @@ class AGNodeService:
         Note:  it is read from the user config dir if it exists, 
                then from the system config dir
         """
-        app = Application.instance()
+        app = Service.instance()
 
         try:
             configFile = app.FindConfigFile(AGNodeService.NodeConfigFile)
