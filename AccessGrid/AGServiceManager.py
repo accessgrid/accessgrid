@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.32 2003-08-28 20:36:13 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.33 2003-09-10 03:56:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -18,6 +18,7 @@ from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
 
+from AccessGrid import Platform
 from AccessGrid.ProcessManager import ProcessManager
 from AccessGrid.Types import AGServicePackage
 from AccessGrid.AuthorizationManager import AuthorizationManager
@@ -27,6 +28,9 @@ from AccessGrid.Platform import GetConfigFilePath, GetSystemConfigDir, GetInstal
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 
 log = logging.getLogger("AG.ServiceManager")
+
+class InvalidServicesDirectory(Exception):
+    pass
 
 class AGServiceManager( ServiceBase ):
     """
@@ -44,17 +48,18 @@ class AGServiceManager( ServiceBase ):
         self.executable = None
         self.processManager = ProcessManager()
 
-        self.servicesDir = "local_services"
-
-        # note: unregisteredServices dict is keyed on token
-        self.unregisteredServices = dict()
+        self.servicesDir = os.path.join(Platform.GetUserConfigDir(),"local_services")
 
         #
-        # Read the configuration file (directory options and such)
+        # Create directory if not exist
         #
-        configFile = GetConfigFilePath("AGServiceManager.cfg")
-        if configFile:
-            self.__ReadConfigFile( configFile )
+        if not os.path.exists(self.servicesDir):
+            log.info("Creating user services directory %s", self.servicesDir)
+            try:
+                os.mkdir(self.servicesDir)
+            except:
+                log.exception("Couldn't create user services directory %s", self.servicesDir)
+                raise InvalidServicesDirectory("Couldn't create user services directory %s" % self.servicesDir)
 
         self.__DiscoverResources()
 
