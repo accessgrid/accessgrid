@@ -10,7 +10,7 @@ MinVersion=0,5.00.2195
 AppCopyright=Copyright © 2003 University of Chicago. All Rights Reserved.
 AppName=Access Grid Toolkit
 AppVerName=Access Grid Toolkit 2.0alpha
-LicenseFile=C:\AccessGridBuild\AG2-Build\doc\COPYING.txt
+LicenseFile=C:\AccessGridBuild\AG2-Build\share\doc\AccessGrid\COPYING.txt
 AdminPrivilegesRequired=true
 ChangesAssociations=true
 DisableDirPage=false
@@ -43,7 +43,7 @@ WindowStartMaximized=false
 WizardImageFile=compiler:wizmodernimage.bmp
 WizardSmallImageFile=compiler:wizmodernsmallimage.bmp
 UninstallFilesDir={app}\uninst
-InfoBeforeFile=C:\AccessGridBuild\AG2-Build\doc\INSTALL
+InfoBeforeFile=C:\AccessGridBuild\AG2-Build\share\doc\AccessGrid\INSTALL
 
 [Components]
 Name: Venue_Client; Description: Component that allows you to connect to Access Grid Venues.; Types: custom compact full
@@ -71,9 +71,10 @@ Source: Scripts\VenueServer.py; DestDir: {app}; Components: Venue_Server
 Source: Scripts\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Server
 Source: ..\AG-vic-Build\bin\*.*; DestDir: {app}; Components: Video_Consumer Video_Producer
 Source: ..\rat-4.2.22-Build\*.*; DestDir: {app}; Components: Audio_Service
-Source: doc\*.*; DestDir: {app}\Documentation
+Source: share\doc\AccessGrid\*.*; DestDir: {app}\Documentation
 Source: ..\AccessGrid\packaging\windows\Postinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
 Source: ..\AccessGrid\packaging\windows\AGNodeServicePostinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
+Source: share\doc\AccessGrid\defaultWindows; DestDir: {app}\config; Flags: confirmoverwrite
 
 [Icons]
 Name: {group}\Venue Client; Filename: {app}\VenueClient.py; WorkingDir: {app}; IconFilename: {app}\VenueClient.py; Components: Venue_Client
