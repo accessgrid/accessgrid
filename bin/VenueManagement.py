@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.34 2003-02-27 20:13:20 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.35 2003-03-05 19:19:40 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -296,8 +296,9 @@ class VenueProfilePanel(wxPanel):
 				       name = "urlLabel", style = wxALIGN_RIGHT)
 	self.url = wxTextCtrl(self, -1, '', name = 'url', style = wxALIGN_LEFT | wxTE_READONLY)
 	self.exitsLabel = wxStaticText(self, -1, 'Exits:', size = wxSize(50, 20), \
-				       name = "exitsLabel", style = wxALIGN_RIGHT)
-	self.exits = wxListBox(self, 10, size = wxSize(250, 100), style = wxTE_READONLY)
+				       name = "exitsLabel", style = wxALIGN_RIGHT |wxLB_SORT)
+	self.exits = wxListBox(self, 10, size = wxSize(250, 100), \
+                               style = wxTE_READONLY | wxLB_SORT)
         self.description.SetValue("Not connected to server")
         self.description.SetBackgroundColour(wxColour(215, 214, 214))
         self.url.SetBackgroundColour(wxColour(215, 214, 214))
@@ -381,12 +382,12 @@ class VenueListPanel(wxPanel):
         self.parent = parent
         self.application = application
 	self.venuesListBox = wxStaticBox(self, -1, "Venues", name = 'venueListBox')
-	self.venuesList = wxListBox(self, 50, name = 'venueList')
-	self.addButton = wxButton(self, 10, 'Add', \
-				  size = wxSize(50,20), name = 'addButton')
-	self.modifyButton = wxButton(self, 20, 'Modify',\
+	self.venuesList = wxListBox(self, 50, name = 'venueList', style = wxLB_SORT)
+        self.addButton = wxButton(self, 10, 'Add', 
+                                  size = wxSize(50,20), name = 'addButton')
+	self.modifyButton = wxButton(self, 20, 'Modify',
 				     size = wxSize(50, 20), name = 'modifyButton')
-	self.deleteButton = wxButton(self, 30, 'Delete',\
+	self.deleteButton = wxButton(self, 30, 'Delete',
 				     size = wxSize(50, 20), name = 'deleteButton')
 	self.__doLayout()
 	self.__addEvents()
@@ -554,7 +555,7 @@ class AdministratorsListPanel(wxPanel):
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D)
         self.application = application
 	self.administratorsListBox = wxStaticBox(self, -1, "Administrators", name = 'venueListBox')
-	self.administratorsList = wxListBox(self, 90, name = 'venueList')
+	self.administratorsList = wxListBox(self, 90, name = 'venueList', style = wxLB_SORT)
 	self.addButton = wxButton(self, 60, 'Add', \
 				  size = wxSize(50, 20), name = 'addButton')
 	self.deleteButton = wxButton(self, 61, 'Delete',\
@@ -842,7 +843,7 @@ class VenueParamFrame(wxDialog):
                                        style = wxTE_MULTILINE|wxHSCROLL, validator = TextValidator())
         self.staticAddressingPanel = StaticAddressingPanel(self, -1)
         self.venuesLabel = wxStaticText(self, -1, "Venues on server:")
-        self.venues = wxListBox(self, -1, size = wxSize(250, 100))
+        self.venues = wxListBox(self, -1, size = wxSize(250, 100), style = wxLB_SORT)
         self.transferVenueLabel = wxStaticText(self, -1, "Add Exit")
         self.transferVenueButton = wxButton(self, 170, ">>", size = wxSize(30, 20))
         url = self.application.url
@@ -854,7 +855,7 @@ class VenueParamFrame(wxDialog):
         #self.remoteServerButton = wxButton(self, 200, "Remote server")
         self.removeExitButton = wxButton(self, 180, "     Remove Exit     ")
 	self.exitsLabel = wxStaticText(self, -1, "Exits for your venue:")
-        self.exits = wxListBox(self, -1, size = wxSize(250, 100))
+        self.exits = wxListBox(self, -1, size = wxSize(250, 100), style = wxLB_SORT)
 	self.okButton = wxButton(self, wxID_OK, "Ok")
 	self.cancelButton =  wxButton(self, wxID_CANCEL, "Cancel")
 	self.doLayout() 
