@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.44 2003-02-24 23:02:46 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.45 2003-02-25 22:03:00 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -589,24 +589,16 @@ class VenueListPanel(wxPanel):
             self.minimizeButton.Hide()  
             self.maximizeButton.Show()
             self.list.HideDoors()
-            #self.parent.SetSize(parentSize)
             self.SetSize(wxSize(20, currentHeight))
-            #self.Layout()
             self.parent.UpdateLayout()
-            #self.parent.Layout()
-            #self.parent.SetSize(parentSize)
-                       
+                                   
 	if event.GetId() == 20:
             self.maximizeButton.Hide()
             self.minimizeButton.Show()  
             self.list.ShowDoors()
             self.SetSize(wxSize(100, currentHeight))
-            #self.parent.SetSize(parentSize)
-            #self.Layout()
             self.parent.UpdateLayout()
-            #self.parent.Layout()
-
-               
+                           
     def CleanUp(self):
         self.list.CleanUp()
 
@@ -619,59 +611,86 @@ class VenueList(wxScrolledWindow):
     '''   
     def __init__(self, parent, app):
         self.app = app
-        wxScrolledWindow.__init__(self, parent, -1, style = wxRAISED_BORDER | wxSB_HORIZONTAL| wxSB_VERTICAL)
+        wxScrolledWindow.__init__(self, parent, -1, style = wxRAISED_BORDER )
+        #\ |wxSB_HORIZONTAL| wxSB_VERTICAL)
+        
         self.doorsAndLabelsList = []
         self.exitsDict = {}
         self.__doLayout()
+        self.parent = parent
         self.EnableScrolling(true, true)
-
-    def __doLayout(self):
-        self.box = wxBoxSizer(wxVERTICAL)
-        
-        self.column = wxFlexGridSizer(cols=1, vgap=5, hgap=0)
-        self.column.AddGrowableCol(1)
-	       
-        self.column.Add(40, 5)   
-        self.box.SetVirtualSizeHints(self)
         self.SetScrollRate(1, 1)
+     
+    def __doLayout(self):
+       # self.box = wxBoxSizer(wxVERTICAL)
         
-        self.box.Add(self.column, 1, wxEXPAND)
-        self.SetSizer(self.box)
-        self.box.Fit(self)
-        self.SetAutoLayout(1)
+       # self.column = wxFlexGridSizer(cols=1, vgap=5, hgap=0)
+       # self.column.AddGrowableCol(1)
+	       
+       # self.column.Add(40, 5)   
+       # self.box.SetVirtualSizeHints(self)
+       # self.SetScrollRate(1, 1)
         
+       # self.box.Add(self.column, 1, wxEXPAND)
+       # self.SetSizer(self.box)
+       # self.box.Fit(self)
+       # self.SetAutoLayout(1)
+       self.box = wxBoxSizer(wxVERTICAL)
+       self.column = wxFlexGridSizer(cols=1, vgap=1, hgap=0)
+       self.column.AddGrowableCol(1)
+       self.box.Add(self.column, 1, wxEXPAND|wxTOP |wxBOTTOM, 5)
+       
+       self.SetSizer(self.box)
+       self.box.Fit(self)
+       self.SetAutoLayout(1)
+             
     def GoToNewVenue(self, event):
         id = event.GetId()
         description = self.exitsDict[id]
         self.app.GoToNewVenue(description.uri)
         		            
     def AddVenueDoor(self, profile):
-        bitmap = icons.getDoorClosedBitmap()
-        bitmapSelect = icons.getDoorOpenBitmap()
+        #bitmap = icons.getDoorClosedBitmap()
+        #bitmapSelect = icons.getDoorOpenBitmap()
 
-        id = NewId()
-        panel = wxPanel(self, -1,wxDefaultPosition, wxSize(10,50), name ='panel')
-        tc = wxBitmapButton(panel, id, bitmap, wxPoint(0, 0), wxDefaultSize, wxBU_EXACTFIT)
-	tc.SetBitmapSelected(bitmapSelect)
-	tc.SetBitmapFocus(bitmapSelect)
-	tc.SetToolTipString(profile.description)
-	label = wxStaticText(panel, -1, profile.name)
-        b = wxBoxSizer(wxVERTICAL)
-        b.Add(tc, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
-        b.Add(label, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
-        panel.SetSizer(b)
-        b.Fit(panel)
+        #id = NewId()
+        #panel = wxPanel(self, -1,wxDefaultPosition, wxSize(10,50), name ='panel')
+        #tc = wxBitmapButton(panel, id, bitmap, wxPoint(0, 0), wxDefaultSize, wxBU_EXACTFIT)
+	#tc.SetBitmapSelected(bitmapSelect)
+	#tc.SetBitmapFocus(bitmapSelect)
+	#tc.SetToolTipString(profile.description)
+	#label = wxStaticText(panel, -1, profile.name)
+        #b = wxBoxSizer(wxVERTICAL)
+        #b.Add(tc, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
+        #b.Add(label, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
+        #panel.SetSizer(b)
+        #b.Fit(panel)
+
+        # print "detach all doors"
+        # for p in self.doorsAndLabelsList:
+        #     self.column.Detach(p)
               
-        self.column.Add(panel, -1, wxEXPAND)
+        #self.column.Add(panel, -1, wxEXPAND)
+
+        panel = ExitPanel(self, profile)
         self.doorsAndLabelsList.append(panel)
+
+        self.doorsAndLabelsList.sort(lambda x, y: cmp(x.GetName(), y.GetName()))
+        index = self.doorsAndLabelsList.index(panel)
+                      
+        #self.column.Add(panel, 1, wxEXPAND)
+        self.column.Insert(index, panel, 1, wxEXPAND)
+               
+        #self.box.SetVirtualSizeHints(self)
         
-	#self.SetSize(wxDefaultSize)
-	self.Layout()
-        #panel.SetAutoLayout(1)
-	self.box.SetVirtualSizeHints(self)
+        id = panel.GetButtonId()
         self.exitsDict[id] = profile
         EVT_BUTTON(self, id, self.GoToNewVenue)
-            
+        #self.EnableScrolling(true, true)
+        
+        self.Layout()
+        self.parent.Layout()
+                            
     def RemoveVenueDoor(self):
         print 'remove venue door'
 
@@ -680,21 +699,49 @@ class VenueList(wxScrolledWindow):
             self.column.Remove(item)
             item.Destroy()
 
-        #self.box.Layout(self)
-        self.column.Layout()
         self.Layout()
-        
+        self.parent.Layout()  
+
         self.exitsDict.clear()
         del self.doorsAndLabelsList[0:]
-              
+                                          
     def HideDoors(self):
         for item in self.doorsAndLabelsList:
             item.Hide()
+        self.SetScrollRate(0, 0)
             
     def ShowDoors(self):
         for item in self.doorsAndLabelsList:
             item.Show()
-                   
+        self.SetScrollRate(1, 1)
+
+class ExitPanel(wxPanel):
+    def __init__(self, parent, profile):
+        wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
+			 size = wxSize(200,200), style = wxNO_BORDER|wxSW_3D)
+        self.id = NewId()
+        bitmap = icons.getDoorClosedBitmap()
+        bitmapSelect = icons.getDoorOpenBitmap()
+        self.button = wxBitmapButton(self, self.id, bitmap, wxPoint(0, 0), wxDefaultSize, wxBU_EXACTFIT)
+	self.button.SetBitmapSelected(bitmapSelect)
+	self.button.SetBitmapFocus(bitmapSelect)
+	self.button.SetToolTipString(profile.description)
+	self.label = wxStaticText(self, -1, profile.name)
+        self.__layout()
+
+    def GetName(self):
+        return self.label.GetLabel()
+
+    def GetButtonId(self):
+        return self.id
+        
+    def __layout(self):
+        b = wxBoxSizer(wxVERTICAL)
+        b.Add(self.button, 2, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
+        b.Add(self.label, 1,  wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
+       
+        self.SetSizer(b)
+        b.Fit(self)
 
 class ContentListPanel(wxPanel):                   
     '''ContentListPanel.
@@ -734,8 +781,7 @@ class ContentListPanel(wxPanel):
 	
     def __setImageList(self):
 	imageList = wxImageList(32,19)
-        # self.emptyImageId = imageList.Add(icons.getEmptyBitmap())
-	self.defaultPersonId = imageList.Add(icons.getDefaultParticipantBitmap())
+     	self.defaultPersonId = imageList.Add(icons.getDefaultParticipantBitmap())
         self.importantPaperId = imageList.Add(icons.getDefaultDataBitmap())
 	self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
         self.nodeId = imageList.Add(icons.getDefaultNodeBitmap())
