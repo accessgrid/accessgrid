@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.156 2004-03-05 22:46:03 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.157 2004-03-08 23:00:42 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.156 2004-03-05 22:46:03 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.157 2004-03-08 23:00:42 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -308,8 +308,6 @@ class Venue(AuthorizationMixIn):
         else:
             self.uniqueId = str(GUID())
 
-        print self.uniqueId
-
         AuthorizationMixIn.__init__(self)
         self.AddRequiredRole(Role.Role("AllowedEntry"))
         self.AddRequiredRole(Role.Role("DisallowedEntry"))
@@ -506,7 +504,6 @@ class Venue(AuthorizationMixIn):
                                 self.connections,
                                 self.GetStaticStreams())
         uri = self.server.MakeVenueURL(self.uniqueId)
-        print "Setting uri to: ", uri
         desc.SetURI(uri)
 
         return desc
@@ -1176,7 +1173,7 @@ class Venue(AuthorizationMixIn):
         *serviceDescription* Upon successfully removing the service.
         """
               
-        if not serviceDescription.id in self.services:
+        if not self.services.has_key(serviceDescription.id):
             log.exception("Service not found!")
             raise ServiceNotFound
 
@@ -1668,6 +1665,45 @@ class Venue(AuthorizationMixIn):
 
         return appDesc
 
+    def UpdateApplication(self, appDescStruct):
+        """
+        Update application.
+
+        **Arguments:**
+
+        *applicationDesc* Object describing the application.
+
+        **Raises:**
+
+        *ApplicationNotFound* Raised when an application is not
+        found for the application id specified.
+        """
+             
+        if not self.applications.has_key(appDescStruct.id):
+            raise ApplicationNotFound
+
+        try:
+            applicationDesc = CreateApplicationDescription(appDescStruct)
+        except:
+            log.exception("UpdateApplication: Bad application description.")
+            raise BadApplicationDescription
+
+        appImpl = self.applications[applicationDesc.id]
+        appImpl.name = applicationDesc.name
+        appImpl.description = applicationDesc.description
+        
+        self.applications[applicationDesc.id] = appImpl
+        
+        self.server.eventService.Distribute( self.uniqueId,
+                                             Event( Event.UPDATE_APPLICATION,
+                                                    self.uniqueId,
+                                                    applicationDesc ) )
+
+        log.debug("Update Application: id=%s handle=%s",
+                  applicationDesc.id, applicationDesc.uri)
+
+        return applicationDesc
+
     def DestroyApplication(self, appId):
         """
         Destroy an application object.
@@ -1994,6 +2030,37 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
 
         return returnValue
 
+    def UpdateService(self, servDescStruct ):
+        """
+        Interface to update a service from the venue.
+
+        **Arguments:**
+
+        *servDescStruct* an anonymous struct that contains a
+        service description.
+
+        **Raises:**
+
+        *BadServiceDescription* This is raised if the anonymous
+        struct can't be converted to a real service description.
+
+        **Returns:**
+
+        *serviceDescription* A service description is returned on success.
+
+        """
+        log.debug("VenueI.UpdateService")
+
+        serviceDescription = CreateServiceDescription(servDescStruct)
+
+        try:
+            returnValue = self.impl.UpdateService(serviceDescription)
+        except:
+            log.exception("VenueI.UpdateService: exception")
+            raise
+
+        return returnValue
+
     def GetServices(self):
         """
         Interface to remove a service from the venue.
@@ -2063,7 +2130,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         try:
             self.impl.AddConnection(c)
         except:
-            log.exception("wsAddConnection: exception")
+            log.exception("AddConnection: exception")
             raise
 
     def RemoveConnection(self, connectionDescription):
@@ -2388,8 +2455,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
 
     def UpdateData(self, dataDescriptionStruct):
         """
-        Replace the current description for dataDescrip            
-tion.name with
+        Replace the current description for dataDescription.name with
         this one.
         """
         dataDescription = CreateDataDescription(dataDescriptionStruct)
@@ -2516,47 +2582,6 @@ tion.name with
             log.exception("VenueI.CreateApplication.")
             raise
 
-    def UpdateApplication(self, appDescStruct):
-        """
-        Update application.
-
-        **Arguments:**
-
-        *applicationDesc* Object describing the application.
-
-        **Raises:**
-
-        *ApplicationNotFound* Raised when an application is not
-        found for the application id specified.
-        """
-             
-        if not self.applications.has_key(appDescStruct.id):
-            raise ApplicationNotFound
-
-        try:
-            applicationDesc = CreateApplicationDescription(appDescStruct)
-        except:
-            log.exception("wsUpdateApplication: Bad application description.")
-            raise BadApplicationDescription
-
-        appImpl = self.applications[applicationDesc.id]
-        appImpl.name = applicationDesc.name
-        appImpl.description = applicationDesc.description
-        
-        self.applications[applicationDesc.id] = appImpl
-        
-        self.server.eventService.Distribute( self.uniqueId,
-                                             Event( Event.UPDATE_APPLICATION,
-                                                    self.uniqueId,
-                                                    applicationDesc ) )
-
-        log.debug("Update Application: id=%s handle=%s",
-                  applicationDesc.id, applicationDesc.uri)
-
-        return applicationDesc
-
-    UpdateApplication.soap_export_as = "UpdateApplication"
-
     def DestroyApplication(self, appId):
         """
         Destroy an application object.
@@ -2580,6 +2605,37 @@ tion.name with
             log.exception("VenueI.DestroyApplication.")
             raise
 
+    def UpdateApplication(self, appDescStruct ):
+        """
+        Interface to update a service from the venue.
+
+        **Arguments:**
+
+        *appDescStruct* an anonymous struct that contains an
+        application description.
+
+        **Raises:**
+
+        *BadApplicationDescription* This is raised if the anonymous
+        struct can't be converted to a real application description.
+
+        **Returns:**
+
+        *applicationDescription* An app description is returned on success.
+
+        """
+        log.debug("VenueI.UpdateApplication")
+
+        applicationDescription = CreateApplicationDescription(appDescStruct)
+
+        try:
+            returnValue = self.impl.UpdateApplication(applicationDescription)
+        except:
+            log.exception("VenueI.UpdateApplication: exception")
+            raise
+
+        return returnValue
+        
     def AddNetworkLocationToStream(self, privateId, streamId, networkLocation):
         """
         Add a transport to an existing stream
@@ -2756,14 +2812,16 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     def RemoveService(self, sid):
         return self.proxy.RemoveService(sid)
 
+    def UpdateService(self, serviceDesc):
+        return self.proxy.UpdateService(serviceDesc)
+
     def GetServices(self):
         sl = self.proxy.GetServices()
         rsl = list()
         for s in sl:
             rsl.append(CreateServiceDescription(s))
-
         return rsl
-    
+
     def AddData(self, dataDescription):
         return self.proxy.AddData(dataDescription)
 
@@ -2797,6 +2855,9 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
 
     def DestroyApplication(self, aid):
         return self.proxy.DestroyApplication(aid)
+        
+    def UpdateApplication(self, applicationDesc):
+        return self.proxy.UpdateApplication(applicationDesc)
 
     def AddNetworkLocationToStream(self, privId, streamId, networkLocation):
         return self.proxy.AddNetworkLocationToStream(privId, streamId,
