@@ -34,7 +34,12 @@ if not os.path.isdir(inputDir):
 else:
     things = [d for d in os.listdir(inputDir) if os.path.isdir(os.path.join(inputDir, d))]
     print "THINGS: ", things
-    
+
+# Remove CVS from the list if exists
+if 'CVS' in things:
+    things.remove('CVS')
+
+
 for thing in things:
     Desc = None
     adir = os.path.join(inputDir, thing)
