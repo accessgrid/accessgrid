@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.17 2003-02-27 20:03:26 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.18 2003-03-13 14:15:58 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -188,6 +188,10 @@ class ClientProfile:
         """ """
         return self.name
     
+    def GetDistinguishedName(self):
+        """ """
+        return self.distinguishedName
+
     def SetPhoneNumber(self, phoneNumber):
         """ """
         self.phoneNumber = phoneNumber
