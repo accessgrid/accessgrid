@@ -1,9 +1,9 @@
 [Desktop Entry]
 Name=Node Service (Debug)
 Comment=Run the node service software in debug mode
-TryExec=AGNodeService.py
-Exec=AGNodeService.py -d
+TryExec=AGServiceManager.py
+Exec=/bin/sh -c "AGServiceManager.py -n -d; sleep 2"
 Icon=/usr/share/AccessGrid/ag.ico
-Terminal=1
+Terminal=true
 Type=Application
 Categories=X-Access-Grid-Services

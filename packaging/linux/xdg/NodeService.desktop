@@ -1,8 +1,8 @@
 [Desktop Entry]
 Name=Node Service
 Comment=Run the node service software
-TryExec=AGNodeService.py
-Exec=AGNodeService.py
+TryExec=AGServiceManager.py
+Exec=AGServiceManager.py -n
 Icon=/usr/share/AccessGrid/ag.ico
 Terminal=false
 Type=Application
