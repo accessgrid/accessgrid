@@ -5,13 +5,12 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.11 2003-04-01 16:46:50 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.12 2003-04-03 21:16:47 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys
 
-from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
@@ -54,7 +53,7 @@ class VideoConsumerService( AGService ):
          self._Start( options )
       except:
          print "Exception in VideoConsumerService.Start", sys.exc_type, sys.exc_value
-         raise faultType("Failed to start service")
+         raise Exception("Failed to start service")
    Start.soap_export_as = "Start"
 
 
