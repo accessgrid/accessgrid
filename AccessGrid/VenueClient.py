@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.17 2003-02-10 22:03:43 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.18 2003-02-14 21:14:39 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -77,6 +77,9 @@ class VenueClient( ServiceBase ):
     def AddDataEvent(self, data):
         self.venueState.AddData(data)
 
+    def UpdateDataEvent(self, data):
+        self.venueState.UpdateData(data)
+
     def RemoveDataEvent(self, data):
         self.venueState.RemoveData(data)
 
@@ -138,6 +141,7 @@ class VenueClient( ServiceBase ):
                Event.EXIT: self.RemoveUserEvent,
                Event.MODIFY_USER: self.ModifyUserEvent,
                Event.ADD_DATA: self.AddDataEvent,
+               Event.UPDATE_DATA: self.UpdateDataEvent,
                Event.REMOVE_DATA: self.RemoveDataEvent,
                Event.ADD_SERVICE: self.AddServiceEvent,
                Event.REMOVE_SERVICE: self.RemoveServiceEvent,

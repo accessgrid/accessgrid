@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.42 2003-02-14 20:54:02 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.43 2003-02-14 21:14:57 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT -----------------------------------------------------------------------------
 import threading
@@ -146,6 +146,15 @@ class VenueClientUI(wxApp, VenueClient):
         Appropriate gui updates are made in client.
         """
         wxCallAfter(self.frame.contentListPanel.AddData, data)
+        pass
+
+    def UpdateDataEvent(self, data):
+        """
+        Note: Overloaded from VenueClient
+        This method is called when a data item has been updated in the venue.
+        Appropriate gui updates are made in client.
+        """
+        wxCallAfter(self.frame.contentListPanel.UpdateData, data)
         pass
 
     def RemoveDataEvent(self, data):
