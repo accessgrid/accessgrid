@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.14 2004-03-30 18:39:35 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.15 2004-04-05 18:37:45 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.14 2004-03-30 18:39:35 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.15 2004-04-05 18:37:45 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -1613,6 +1613,106 @@ class CertificateManagerUserInterface:
                 print ""
                 print "Invalid passphrase."
                 continue
+
+    def RequestCertificate(self, reqInfo, password,
+                           proxyEnabled, proxyHost, proxyPort):
+        """
+        Request a certificate.
+
+        reqInfo is an instance of CertificateManager.CertificateRequestInfo.
+
+        Perform the actual certificate request mechanics.
+
+        Returns 1 on success, 0 on failure.
+        """
+
+        log.debug("RequestCertificate: Create a certificate request")
+        log.debug("Proxy enabled: %s value: %s:%s", proxyEnabled, proxyHost, proxyPort)
+
+        try:
+            repo = self.certificateManager.GetCertificateRepository()
+
+            #
+            # Ptui. Hardcoding name for the current AGdev CA.
+            # Also hardcoding location of submission URL.
+            #
+
+            submitServerURL = "http://www-unix.mcs.anl.gov/~judson/certReqServer.cgi"
+
+            name = reqInfo.GetDN()
+            log.debug("Requesting certificate for dn %s", name)
+            log.debug("reqinfo isident: %s info: %s", reqInfo.IsIdentityRequest(), str(reqInfo))
+
+            #
+            # Service/host certs don't have encrypted private keys.
+            #
+            if not reqInfo.IsIdentityRequest():
+                password = None
+
+            certificateRequest = repo.CreateCertificateRequest(name, password)
+
+            pem =  certificateRequest.ExportPEM()
+
+            log.debug("SubmitRequest:Validate: ExportPEM returns %s", pem)
+            log.debug("SubmitRequest:Validate: subj is %s",
+                      certificateRequest.GetSubject())
+            log.debug("SubmitRequest:Validate: mod is %s",
+                      certificateRequest.GetModulus())
+            log.debug("SubmitRequest:Validate:modhash is %s",
+                      certificateRequest.GetModulusHash())
+
+            if proxyEnabled:
+                certificateClient = CRSClient.CRSClient(submitServerURL, proxyHost, proxyPort)
+            else:
+                certificateClient = CRSClient.CRSClient(submitServerURL)
+
+            try:
+                requestId = certificateClient.RequestCertificate(reqInfo.GetEmail(), pem)
+
+                log.debug("SubmitRequest:Validate:Request id is %s", requestId)
+
+                certificateRequest.SetMetadata("AG.CertificateManager.requestToken",
+                                               str(requestId))
+                certificateRequest.SetMetadata("AG.CertificateManager.requestURL",
+                                               submitServerURL)
+                certificateRequest.SetMetadata("AG.CertificateManager.requestType",
+                                               reqInfo.GetType())
+                certificateRequest.SetMetadata("AG.CertificateManager.creationTime",
+                                               str(int(time.time())))
+
+                return 1
+            except CRSClient.CRSClientInvalidURL:
+                print "Certificate request failed: invalid request URL"
+                log.error("Certificate request failed: invalid request URL")
+                return 0
+
+            except CRSClient.CRSClientConnectionFailed:
+                if proxyEnabled:
+                    log.error("Cert request failed with proxy address %s %s",
+                              proxyHost, proxyPort)
+                    print "Certificate request failed: Connection failed."
+                    print "Did you specify the http proxy address correctly?",
+                else:
+                    log.error("Cert request failed")
+                    print "Certificate request failed: Connection failed."
+                    print "Do you need to configure an http proxy address?",
+                return 0
+            
+            except:
+                print "Unexpected error in cert request"
+                log.exception("Unexpected error in cert request")
+                return 0
+            
+            
+        except CertificateRepository.RepoDoesNotExist:
+            log.exception("SubmitRequest:Validate:You do not have a certificate repository. Certificate request can not be completed.")
+
+
+            print "Your certificate repository is not initialized; certificate request cannot be completed"
+
+        except:
+            log.exception("SubmitRequest:Validate: Certificate request can not be completed")
+            print "Error occured. Certificate request can not be completed.",
 
 if __name__ == "__main__":
 
