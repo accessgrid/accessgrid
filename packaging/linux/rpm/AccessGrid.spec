@@ -29,11 +29,16 @@ URL:		http://www.accessgrid.org
 Vendor:		Argonne National Laboratory
 Source:		%{name}-%{version}.tar.gz
 BuildRoot:	%{buildroot}
-Requires:	wxGTK
 Requires:	wxPythonGTK-py2.2
 Requires:	globus-accessgrid
 Obsoletes:	AccessGrid-2.0alpha
 Obsoletes:	AccessGrid-2.0beta
+Provides:       AccessGrid-VenueClient
+Provides:       AccessGrid-VenueServer
+Provides:       AccessGrid-BridgeServer
+Provides:       pyGlobus
+Provides:       pyOpenSSL_AG
+
 
 %description
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
@@ -161,7 +166,6 @@ def modimport(module):
 sys.stdout.write("Compiling Access Grid Python modules.... ")
 modimport(AccessGrid)
 modimport(AccessGrid.hosting)
-modimport(AccessGrid.Security)
 modimport(AccessGrid.Platform)
 sys.stdout.write("Done\n")
 EOF
@@ -169,6 +173,9 @@ EOF
 chmod +x /tmp/AccessGrid-Postinstall.py
 /tmp/AccessGrid-Postinstall.py
 rm -f /tmp/AccessGrid-Postinstall.py
+agpm.py --system -f /etc/AccessGrid/Config/SharedApplications/SharedBrowser.shared_app_pkg
+agpm.py --system -f /etc/AccessGrid/Config/SharedApplications/SharedPresentation.shared_app_pkg
+agpm.py --system -f /etc/AccessGrid/Config/SharedApplications/VenueVNC.shared_app_pkg
 
 #
 # AccessGrid package pre-uninstall
@@ -191,8 +198,6 @@ def delcompiled(module):
         except os.error:
             pass
 
-delcompiled(AccessGrid.Security)
-delcompiled(AccessGrid.Platform.unix)
 delcompiled(AccessGrid.Platform)
 delcompiled(AccessGrid.hosting.SOAPpy)
 delcompiled(AccessGrid.hosting)
