@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.18 2003-08-14 21:22:32 eolson Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.19 2003-09-11 16:30:04 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -33,7 +33,9 @@ class MyApp(wxApp):
 
 wxInitAllImageHandlers()
 
-Toolkit.WXGUIApplication().Initialize()
-
 nodeMgmtApp = MyApp(0)
+app = Toolkit.WXGUIApplication()
+app.Initialize()
+app.InitGlobusEnvironment()
+
 nodeMgmtApp.MainLoop()
