@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.14 2004-12-16 21:43:32 leggett Exp $
+ * $Id: QuickBridge.c,v 1.15 2004-12-16 21:45:28 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -601,8 +601,8 @@ void process_session( Session *head, fd_set *readfds, u_long myip )
 	      sourceaddrlen = sizeof( sourceaddr );
 	      memset( (char *)&sourceaddr,0, sourceaddrlen );
 	      debug( 9, "Before recvfrom( )\n" );
-	      nr = recvfrom( s->ucfd[i], recvbuf, MSGBUFSIZE, 0,
-			     (struct sockaddr *)&sourceaddr, &sourceaddrlen );
+	      //nr = recvfrom( s->ucfd[i], recvbuf, MSGBUFSIZE, 0,
+	      //(struct sockaddr *)&sourceaddr, &sourceaddrlen );
 	      debug( 2, "\nreading from ucfd[%d], got data from %s:%d\n", i, inet_ntoa( sourceaddr.sin_addr ), ntohs( sourceaddr.sin_port ) );
 	      if ( debugFlag > 0 )
 		{
