@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.38 2003-08-20 21:35:18 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.39 2003-08-21 16:18:30 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -170,6 +170,7 @@ class StoreConfigDialog(wxDialog):
         # Create config text label and field
         self.configText = wxTextCtrl(self,-1,"")
         gridSizer.Add( self.configText, 1, wxEXPAND )
+        EVT_TEXT(self,self.configText.GetId(), self.__TextEnteredCallback)
 
         # Create default checkbox
         self.defaultCheckbox = wxCheckBox(self,-1,"Set as default")
@@ -177,16 +178,33 @@ class StoreConfigDialog(wxDialog):
 
         # Create ok/cancel buttons
         sizer3 = wxBoxSizer(wxHORIZONTAL)
-        okButton = wxButton( self, wxID_OK, "OK" )
+        self.okButton = wxButton( self, wxID_OK, "OK" )
         cancelButton = wxButton( self, wxID_CANCEL, "Cancel" )
-        sizer3.Add(okButton, 0, wxALL, 10)
+        sizer3.Add(self.okButton, 0, wxALL, 10)
         sizer3.Add(cancelButton, 0, wxALL, 10)
         sizer1.Add(sizer3, 0, wxALIGN_CENTER)
+
+        # Ensure nothing is selected 
+        items = self.configList.GetSelections()
+        for item in items:
+            self.configList.Deselect(item)
+
+        # Disable the ok button until something is selected
+        self.okButton.Enable(false)
 
         sizer1.Fit(self)
 
     def __ListItemSelectedCallback(self, event):
         self.configText.SetValue( event.GetString() )
+        self.okButton.Enable(true)
+
+    def __TextEnteredCallback(self,event):
+
+        # Enable the ok button if text in text field
+        if self.configText.GetValue():
+            self.okButton.Enable(true)
+        else:
+            self.okButton.Enable(false)
 
     def GetValue(self):
         # Get value of textfield and checkbox
