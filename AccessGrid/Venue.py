@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.192 2004-05-04 15:43:34 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.193 2004-05-05 19:09:26 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.192 2004-05-04 15:43:34 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.193 2004-05-05 19:09:26 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1832,6 +1832,7 @@ class Venue(AuthorizationMixIn):
         environment can't unbind the application from the web
         service layer.
         """
+                
         # Get the application object
         try:
             app = self.applications[appId]
@@ -1840,19 +1841,23 @@ class Venue(AuthorizationMixIn):
             raise ApplicationNotFound
 
         # Shut down the application
+        
         app.Shutdown()
 
         # Remove the interface
-        self.server.hostingEnvironment.UnregisterObject(app)
+        try:
+            self.server.hostingEnvironment.UnregisterObject(app)
+        except KeyError:
+            log.exception ("DestroyApp: SOAPpy.UnregisterObject returned a key error.")
                 
         # Create the application description
-        appDesc = appImpl.AsApplicationDescription()
+        appDesc = app.AsApplicationDescription()
 
         # Send the remove application event
         self.server.eventService.Distribute(self.uniqueId,
                                             Event(Event.REMOVE_APPLICATION,
                                                   self.uniqueId,
-                                                  ad))
+                                                  appDesc))
 
         # Get rid of it for good
         del self.applications[appId]
