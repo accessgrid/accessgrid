@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.11 2003-11-03 17:08:59 judson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.12 2003-11-07 21:46:41 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.11 2003-11-03 17:08:59 judson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.12 2003-11-07 21:46:41 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -307,7 +307,7 @@ class DataStoreClient:
             data = self.dataIndex[file]
             print "File=%s data=%s" % (file, data)
             self.datastoreProxy.RemoveFiles([data])
-        except:
+        except Exception, e:
             print "Error removing data ", e
 
     def OpenFile(self, file, mode = "r"):
