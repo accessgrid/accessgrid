@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.219 2004-07-28 22:03:03 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.220 2004-08-03 19:09:36 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.219 2004-07-28 22:03:03 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.220 2004-08-03 19:09:36 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -398,7 +398,7 @@ class Venue(AuthorizationMixIn):
         self.heartbeatLock = ServerLock("heartbeat")
         self.clientDisconnectOK = {}
         
-        self.cleanupTime = 30
+        self.cleanupTime = 300
 
         self.connections = list()
         self.applications = dict()
