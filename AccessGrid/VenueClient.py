@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.147 2004-03-19 04:54:30 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.148 2004-03-19 04:59:00 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.147 2004-03-19 04:54:30 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.148 2004-03-19 04:59:00 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -82,7 +82,7 @@ class VenueClient:
     """    
     defaultNodeServiceUri = "https://localhost:11000/NodeService"
     
-    def __init__(self, profile=None, pnode=0):
+    def __init__(self, profile=None, pnode=0, port=0):
         """
         This client class is used on shared and personal nodes.
         """
@@ -105,7 +105,7 @@ class VenueClient:
         self.state = None
 
         # takes time
-        self.__CreateVenueClientWebService(pnode)
+        self.__CreateVenueClientWebService(pnode, port)
         self.__InitVenueData()
         self.isInVenue = 0
         self.isIdentitySet = 0
@@ -252,9 +252,10 @@ class VenueClient:
                                  "local clock can cause authorization to fail."
 
 
-    def __CreateVenueClientWebService(self, pnode=0):
+    def __CreateVenueClientWebService(self, pnode=0, port=0):
         from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
-        port = NetworkAddressAllocator().AllocatePort()
+        if port == 0:
+            port = NetworkAddressAllocator().AllocatePort()
 
         self.server = Server((SystemConfig.instance().GetHostname(), port))
         vci = VenueClientI(self)
