@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.9 2003-02-12 23:16:12 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.10 2003-02-14 23:21:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -362,14 +362,18 @@ class NodeManagementClientFrame(wxFrame):
                             + port  )
                 return
 
-            self.SetTitle( "Access Grid Node Management - " )
 
             self.UpdateHostList()
             self.UpdateServiceList()
 
     def AttachToNode( self, nodeServiceUri ):
         vcProxy = Client.Handle( nodeServiceUri ).get_proxy()
-        self.vc = vcProxy
+        try:
+            vcProxy.Ping()
+            self.vc = vcProxy
+            self.SetTitle( "Access Grid Node Management - Connected" )
+        except:
+            pass
 
     def LoadConfiguration( self, event ):
 
