@@ -109,14 +109,12 @@ mv bin usr/bin
 %{sharedir}/%{name}/ag-ellipse.png
 %defattr(0755,root,root)
 %{prefix}/bin/AGServiceManager.py
-# - Install AGNodeService.py, VenueClient.py, and NodeManagement.py with
-#   executable permissions
+# - Install VenueClient.py, and NodeManagement.py with executable permissions
 # - Install the AGNodeService config file and tag it as a config file
 #   for rpm
 # - Install the default node configuration, make it owned by ag, and tag it
 #   as a config file for rpm
 %defattr(0755,root,root)
-%{prefix}/bin/AGNodeService.py
 %{prefix}/bin/VenueClient.py
 %{prefix}/bin/NodeManagement.py
 %{prefix}/bin/NodeSetupWizard.py
