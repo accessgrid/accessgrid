@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.32 2003-05-20 21:57:33 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.33 2003-08-04 18:10:09 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -290,6 +290,30 @@ class StreamDescription( ObjectDescription ):
       self.encryptionFlag = encryptionFlag
       self.encryptionKey = encryptionKey
       self.static = static
+      self.networkLocations = []
+      
+      if location:
+          self.AddNetworkLocation(location)
+          
+   def AddNetworkLocation(self,networkLocation):
+       """
+       Add the specified network location to the list
+       
+       Note: This method overwrites the network location id 
+             in the incoming network location
+       """
+       id = str(GUID())
+       networkLocation.id = id
+       self.networkLocations.append(networkLocation)
+       return id
+       
+   def RemoveNetworkLocation(self, networkLocationId):
+       """
+       Remove the network location with specified id
+       """
+       for networkLocation in self.networkLocations:
+           if networkLocation.id == networkLocationId:
+               self.networkLocations.remove(networkLocation)
 
    def AsINIBlock(self):
        string = ObjectDescription.AsINIBlock(self)
