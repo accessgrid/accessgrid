@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.139 2004-04-09 18:37:50 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.140 2004-04-13 03:53:27 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.139 2004-04-09 18:37:50 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.140 2004-04-13 03:53:27 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -25,7 +25,7 @@ from threading import Thread, Lock, Condition
 import time
 import ConfigParser
 
-from AccessGrid.Toolkit import Application, UserConfig
+from AccessGrid.Toolkit import Service
 from AccessGrid import Log
 from AccessGrid.hosting import SecureServer, InsecureServer
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
@@ -39,7 +39,7 @@ from AccessGrid.Security .Action import ActionAlreadyPresent
 
 from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 
-from AccessGrid.Platform.Config import SystemConfig
+from AccessGrid.Platform.Config import SystemConfig, UserConfig
 
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.hosting import PathFromURL, IdFromURL
@@ -143,11 +143,15 @@ class VenueServer(AuthorizationMixIn):
         - *configFile* the filename of a configuration file for this venue server.
 
         """
+        # Pointer to external world
+        self.servicePtr = Service.instance()
+        
         # Initialize the Usage log file.
         userConfig = UserConfig.instance()
-        usage_fname = os.path.join(userConfig.GetConfigDir(), "ServerUsage.csv")
+        usage_fname = os.path.join(userConfig.GetLogDir(), "ServerUsage.csv")
         usage_hdlr = Log.FileHandler(usage_fname)
         usage_hdlr.setFormatter(Log.GetUsageFormatter())
+
         # This handler will only handle the Usage logger.
         Log.HandleLoggers(usage_hdlr, [Log.Usage])
 
@@ -158,9 +162,9 @@ class VenueServer(AuthorizationMixIn):
         self.authManager.AddRoles(rl)
 
         # Get the silly default subject this really should be fixed
-        certMgr = Application.instance().GetCertificateManager()
+        certMgr = self.servicePtr.GetCertificateManager()
         admins = self.authManager.FindRole("Administrators")
-        admins.AddSubject(Application.instance().GetDefaultSubject())
+        admins.AddSubject(self.servicePtr.GetDefaultSubject())
         admins.SetRequireDefault(1)
 
         # In the venueserver we default to admins
@@ -189,7 +193,7 @@ class VenueServer(AuthorizationMixIn):
             self.internalHostingEnvironment = 0 # False
         else:
             defaultPort = 8000
-            if Application.instance().GetOption("insecure"):
+            if self.servicePtr.GetOption("insecure"):
                 self.hostingEnvironment = InsecureServer((self.hostname, defaultPort) )
             else:
                 self.hostingEnvironment = SecureServer((self.hostname, defaultPort) )
@@ -228,7 +232,7 @@ class VenueServer(AuthorizationMixIn):
                 self.dataStorageLocation = None
 
         # Start Venue Server wide services
-        if Application.instance().GetOption("insecure"):
+        if self.servicePtr.GetOption("insecure"):
             self.dataTransferServer = HTTPTransferServer(('',
                                                          int(self.dataPort)) )
         else:
@@ -993,7 +997,7 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         The authorization callback. We should be able to implement this
         just once and remove a bunch of the older code.
         """
-        if Application.instance().GetOption("insecure"):
+        if self.impl.servicePtr.GetOption("insecure"):
             return 1
 
         subject, action = self._GetContext()

@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.53 2004-04-07 23:51:54 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.54 2004-04-13 03:53:58 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.53 2004-04-07 23:51:54 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.54 2004-04-13 03:53:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -28,10 +28,10 @@ import threading
 from optparse import Option
 
 # Our imports
-from AccessGrid.Platform.Config import SystemConfig
-from AccessGrid.Toolkit import CmdlineApplication
+from AccessGrid.Toolkit import Service
 from AccessGrid.VenueServer import VenueServer
 from AccessGrid import Log
+from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.hosting import SecureServer, InsecureServer
 
 # Global defaults
@@ -57,7 +57,7 @@ def main():
     global venueServer, log
 
     # Init toolkit with standard environment.
-    app = CmdlineApplication()
+    app = Service.instance()
 
     # build options for this application
     portOption = Option("-p", "--port", type="int", dest="port",

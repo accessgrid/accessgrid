@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.183 2004-04-12 18:49:20 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.184 2004-04-13 03:53:27 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.183 2004-04-12 18:49:20 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.184 2004-04-13 03:53:27 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -29,7 +29,7 @@ from threading import Condition, Lock
 
 from AccessGrid import Log
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
-from AccessGrid.Toolkit import Application
+from AccessGrid.Toolkit import Service
 
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerI
@@ -309,6 +309,9 @@ class Venue(AuthorizationMixIn):
         """
         Venue constructor.
         """
+        # pointer to outside world
+        self.servicePtr = Service.instance()
+        
         if oid:
             self.uniqueId = oid
         else:
@@ -328,7 +331,7 @@ class Venue(AuthorizationMixIn):
         # Default actions for VenueUsers Roles.
         self.defaultVenueUserActionNames = []
 
-        admin.AddSubject(Application.instance().GetDefaultSubject())
+        admin.AddSubject(self.servicePtr.GetDefaultSubject())
         
         # Set parent auth mgr to server so administrators cascades?
 
@@ -1096,7 +1099,7 @@ class Venue(AuthorizationMixIn):
         log.debug("Enter: Distribute enter event ")
 
         try:
-            if not Application.instance().GetOption("insecure"):
+            if not self.servicePtr.GetOption("insecure"):
                 dn = clientProfile.GetDistinguishedName()
                 self.authManager.FindRole("VenueUsers").AddSubject(X509Subject.CreateSubjectFromString(dn))
         except SubjectAlreadyPresent:
@@ -2001,7 +2004,7 @@ class Venue(AuthorizationMixIn):
         """
         Return a list of roles for the calling subject
         """
-        if Application.instance().GetOption("insecure"):
+        if self.servicePtr.GetOption("insecure"):
             return ['Administrators']
         roleList = self.authManager.GetRolesForSubject(subject)
         roleNameList = map( lambda r: r.GetName(), roleList )
@@ -2021,7 +2024,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         The authorization callback. We should be able to implement this
         just once and remove a bunch of the older code.
         """
-        if Application.instance().GetOption("insecure"):
+        if self.impl.servicePtr.GetOption("insecure"):
             return 1
 
         subject, action = self._GetContext()
@@ -2064,7 +2067,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         # Rebuild the profile
         clientProfile = CreateClientProfile(clientProfileStruct)
 
-        if Application.instance().GetOption("insecure"):
+        if self.impl.servicePtr.GetOption("insecure"):
             subject = Subject.Subject("", auth_type=None)
             clientProfile.distinguishedName = ""
         else:
