@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: icons.py,v 1.16 2003-05-07 18:36:37 lefvert Exp $
+# RCS-ID:      $Id: icons.py,v 1.17 2003-05-07 18:38:52 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -10108,32 +10108,31 @@ catalog['About'].getImage = getAboutImage
 catalog['About'].getBitmap = getAboutBitmap
 catalog['About'].getIcon = getAboutIcon
 
-
 #----------------------------------------------------------------------
-def getHeadingToPythonData():
+def getHeadingLineData():
     return zlib.decompress(
 'x\xda\xeb\x0c\xf0s\xe7\xe5\x92\xe2b``\xe0\xf5\xf4p\t\x02\xd2\xd2@\xcc\xc8\
 \xc1\x06$\xf5g^]\x01\xa4X\x8a\x9d<C8\x80\xa0\x86#\xa5\x03\xc8\x17\xf0tq\x0c\
 \xa9\x98\x93\x9c\x92\x90\xf0\xe3\xbc\x83:\x03Cf!#\xe3T\xf78\x19\xa0\x1c\x83\
 \xa7\xab\x9f\xcb:\xa7\x84&\x00\xe0\x11\x13R' )
 
-def getHeadingToPythonBitmap():
-    return wxBitmapFromImage(getHeadingToPythonImage())
+def getHeadingLineBitmap():
+    return wxBitmapFromImage(getHeadingLineImage())
 
-def getHeadingToPythonImage():
-    stream = cStringIO.StringIO(getHeadingToPythonData())
+def getHeadingLineImage():
+    stream = cStringIO.StringIO(getHeadingLineData())
     return wxImageFromStream(stream)
 
-def getHeadingToPythonIcon():
+def getHeadingLineIcon():
     icon = wxEmptyIcon()
-    icon.CopyFromBitmap(getHeadingToPythonBitmap())
+    icon.CopyFromBitmap(getHeadingLineBitmap())
     return icon
 
-index.append('HeadingToPython')
-catalog['HeadingToPython'] = ImageClass()
-catalog['HeadingToPython'].getData = getHeadingToPythonData
-catalog['HeadingToPython'].getImage = getHeadingToPythonImage
-catalog['HeadingToPython'].getBitmap = getHeadingToPythonBitmap
-catalog['HeadingToPython'].getIcon = getHeadingToPythonIcon
+index.append('HeadingLine')
+catalog['HeadingLine'] = ImageClass()
+catalog['HeadingLine'].getData = getHeadingLineData
+catalog['HeadingLine'].getImage = getHeadingLineImage
+catalog['HeadingLine'].getBitmap = getHeadingLineBitmap
+catalog['HeadingLine'].getIcon = getHeadingLineIcon
 
 
