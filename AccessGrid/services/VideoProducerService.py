@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.12 2003-04-03 21:16:47 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.13 2003-04-10 19:09:12 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -107,7 +107,9 @@ class VideoProducerService( AGService ):
 
    def ConfigureStream( self, streamDescription ):
       """Configure the Service according to the StreamDescription, and stop and start rat"""
-      AGService.ConfigureStream( self, streamDescription )
+      ret = AGService.ConfigureStream( self, streamDescription )
+      if ret:
+         return
 
       # restart rat, since this is the only way to change the 
       # stream location (for now!)

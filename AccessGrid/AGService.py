@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.12 2003-04-09 15:40:14 olson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.13 2003-04-10 19:08:39 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -160,13 +160,28 @@ class AGService( ServiceBase ):
    def ConfigureStream( self, streamDescription ):
       """Configure the Service according to the StreamDescription"""
       try:
+
+         # Detect trivial re-configuration
+         if self.streamDescription.location.host == streamDescription.location.host       \
+            and self.streamDescription.location.port == streamDescription.location.port   \
+            and self.streamDescription.location.ttl == streamDescription.location.ttl:
+                # configuration with identical stream description;
+                # bail out
+            print "ConfigureStream: ignoring trivial re-configuration"
+            return 1
+
+
          m = map( lambda cap:cap.type, self.capabilities )
-         print streamDescription.capability.type
          if streamDescription.capability.type in m:
+            print "ConfigureStream: ", streamDescription.capability.type, \
+                                       streamDescription.location.host,   \
+                                       streamDescription.location.port
             self.streamDescription = streamDescription
       except:
          print "Exception in ConfigureStream ", sys.exc_type, sys.exc_value
          raise faultType("AGService.ConfigureStream failed : " + str(sys.exc_value) )
+
+      return 0
    ConfigureStream.soap_export_as = "ConfigureStream"
 
 
