@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.40 2003-02-20 17:31:42 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.41 2003-02-20 19:11:33 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,136 +29,6 @@ from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import GetHostname
 from AccessGrid.scheduler import Scheduler
 from AccessGrid import DataStore
-
-class StreamDescriptionList:
-    """
-    Class to represent stream descriptions in a venue.  Entries in the
-    list are a tuple of (stream description, producing users).  A stream
-    is added to the list with a producer.  Producing users can be added
-    to and removed from an existing stream.  When the number of users
-    producing a stream becomes zero, the stream is removed from the list.
-
-    Exception:  static streams remain without regard to the number of producers
-
-    """
-
-    def __init__( self ):
-        self.streams = []
-
-    def __getstate__(self):
-        """
-        Remove non-static streams from list for pickling
-        """
-        odict = self.__dict__.copy()
-        odict['streams'] = self.GetStaticStreams()
-        return odict
-
-    def AddStream( self, stream ):
-        """
-        Add a stream to the list
-        """
-        self.streams.append( ( stream, [] ) )
-
-    def RemoveStream( self, stream ):
-        """
-        Remove a stream from the list
-        """
-        try:
-            index = self.index( stream )
-            del self.streams[index]
-        except:
-            pass 
-
-    def AddStreamProducer( self, producingUser, inStream ):
-        """
-        Add a stream to the list, with the given producer
-        """
-        try:
-            index = self.index( inStream )
-            stream, producerList = self.streams[index]
-            producerList.append( producingUser )
-            self.streams[index] = ( stream, producerList )
-            print "* * * Added stream producer ", producingUser
-        except:   
-            self.streams.append( (inStream, [ producingUser ] ) )
-            print "* * * Added new stream with producer ", producingUser
-            
-    def RemoveStreamProducer( self, producingUser, inStream ):
-        """
-        Remove a stream producer from the given stream.  If the last
-        producer is removed, the stream will be removed from the list
-        if it is non-static.
-        """
-        try:
-            self.__RemoveProducer( producingUser, inStream )
-            streamDesc, producerList = self.streams[index]
-            if len(producerList) == 0:  del self.streams[index]
-        except:
-            pass
-
-    def RemoveProducer( self, producingUser ):
-        """
-        Remove producer from all streams
-        """
-        for stream, producerList in self.streams:
-            self.__RemoveProducer( producingUser, stream )
-
-        self.CleanupStreams()
-
-    def __RemoveProducer( self, producingUser, inStream ):
-        """
-        Internal : Remove producer from stream with given index
-        """
-        index = self.index( inStream )
-        stream, producerList = self.streams[index]
-        if producingUser in producerList:
-            producerList.remove( producingUser )
-            self.streams[index] = ( stream, producerList )
-    
-    def CleanupStreams( self ):
-        """
-        Remove streams with empty producer list
-        """
-        streams = []
-        for stream, producerList in self.streams:
-            if len(producerList) > 0 or stream.static == 1:
-                streams.append( ( stream, producerList ) )
-        self.streams = streams
-
-    def GetStreams( self ):
-        """
-        Get the list of streams, without producing user info
-        """
-        return map( lambda streamTuple: streamTuple[0], self.streams )
-
-    def GetStaticStreams(self):
-        """
-        GetStaticStreams returns a list of static stream descriptions to the caller.
-        """
-        staticStreams = []
-        for stream, producerList in self.streams:
-            if stream.static:
-                staticStreams.append( stream )
-        return staticStreams
-
-    def index( self, inStream ):
-        """
-        Retrieve the list index of the given stream description
-        Note:  streams are keyed on address/port
-        """
-        try:
-            index=0
-            for stream, producerList in self.streams:
-                print "-- - -- -  Address ", inStream.location.host, stream.location.host
-                print "- - - -- - Port ", inStream.location.port, stream.location.port
-                if inStream.location.host == stream.location.host and \
-                   inStream.location.port == stream.location.port:
-                    return index
-                index = index + 1
-        except:
-            print "Exception in StreamDescriptionList.index ", sys.exc_type, sys.exc_value
-
-        raise ValueError
 
 
 class VenueException(Exception):
@@ -830,3 +700,148 @@ class Venue(ServiceBase.ServiceBase):
     RemoveService.soap_export_as = "RemoveService"
 
  
+
+
+class StreamDescriptionList:
+    """
+    Class to represent stream descriptions in a venue.  Entries in the
+    list are a tuple of (stream description, producing users).  A stream
+    is added to the list with a producer.  Producing users can be added
+    to and removed from an existing stream.  When the number of users
+    producing a stream becomes zero, the stream is removed from the list.
+
+    Exception:  static streams remain without regard to the number of producers
+
+    """
+
+    def __init__( self ):
+        self.streams = []
+
+    def __getstate__(self):
+        """
+        Prepare stream list for pickling
+        - remove non-static streams
+        - strip the producerList from each item, so only the stream descriptions remain
+        """
+        odict = self.__dict__.copy()
+        odict['streams'] = self.GetStaticStreams()
+        return odict
+
+    def __setstate__(self, dict):
+        """
+        Rebuild list tuples from incoming dictionary
+        """
+        dict['streams'] = map( lambda stream: ( stream, [] ), dict['streams'] )
+        self.__dict__ = dict
+
+    def AddStream( self, stream ):
+        """
+        Add a stream to the list, only if it doesn't already exist
+        """
+        try:
+            self.index( stream ) 
+        except ValueError:
+            self.streams.append( ( stream, [] ) )
+
+    def RemoveStream( self, stream ):
+        """
+        Remove a stream from the list
+        """
+        try:
+            index = self.index( stream )
+            del self.streams[index]
+        except ValueError:
+            pass 
+
+    def AddStreamProducer( self, producingUser, inStream ):
+        """
+        Add a stream to the list, with the given producer
+        """
+        try:
+            index = self.index( inStream )
+            stream, producerList = self.streams[index]
+            producerList.append( producingUser )
+            self.streams[index] = ( stream, producerList )
+            print "* * * Added stream producer ", producingUser
+        except ValueError:   
+            self.streams.append( (inStream, [ producingUser ] ) )
+            print "* * * Added new stream with producer ", producingUser
+            
+    def RemoveStreamProducer( self, producingUser, inStream ):
+        """
+        Remove a stream producer from the given stream.  If the last
+        producer is removed, the stream will be removed from the list
+        if it is non-static.
+        """
+        try:
+            index = self.index( inStream )
+            self.__RemoveProducer( producingUser, inStream )
+            streamDesc, producerList = self.streams[index]
+            if len(producerList) == 0:  del self.streams[index]
+        except ValueError:
+            pass
+
+    def RemoveProducer( self, producingUser ):
+        """
+        Remove producer from all streams
+        """
+        for stream, producerList in self.streams:
+            self.__RemoveProducer( producingUser, stream )
+
+        self.CleanupStreams()
+
+    def __RemoveProducer( self, producingUser, inStream ):
+        """
+        Internal : Remove producer from stream with given index
+        """
+        index = self.index( inStream )
+        stream, producerList = self.streams[index]
+        if producingUser in producerList:
+            producerList.remove( producingUser )
+            self.streams[index] = ( stream, producerList )
+    
+    def CleanupStreams( self ):
+        """
+        Remove streams with empty producer list
+        """
+        streams = []
+        for stream, producerList in self.streams:
+            if len(producerList) > 0 or stream.static == 1:
+                streams.append( ( stream, producerList ) )
+        self.streams = streams
+
+    def GetStreams( self ):
+        """
+        Get the list of streams, without producing user info
+        """
+        return map( lambda streamTuple: streamTuple[0], self.streams )
+
+    def GetStaticStreams(self):
+        """
+        GetStaticStreams returns a list of static stream descriptions to the caller.
+        """
+        staticStreams = []
+        for stream, producerList in self.streams:
+            if stream.static:
+                staticStreams.append( stream )
+        return staticStreams
+
+    def index( self, inStream ):
+        """
+        Retrieve the list index of the given stream description
+        Note:  streams are keyed on address/port
+        """
+        try:
+            index=0
+            for stream, producerList in self.streams:
+                print "-- - -- -  Address ", inStream.location.host, stream.location.host
+                print "- - - -- - Port ", inStream.location.port, stream.location.port
+                if inStream.location.host == stream.location.host and \
+                   inStream.location.port == stream.location.port:
+                    return index
+                index = index + 1
+        except:
+            print "Exception in StreamDescriptionList.index ", sys.exc_type, sys.exc_value
+
+        raise ValueError
+
