@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.13 2004-04-30 21:57:41 lefvert Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.14 2004-05-03 18:12:51 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.13 2004-04-30 21:57:41 lefvert Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.14 2004-05-03 18:12:51 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -79,15 +79,17 @@ class SharedApplication(AuthorizationMixIn):
         # Do not keep track of connected users at this time.
         # self.AddRequiredRole(Role.Role("AppUsers"))
         self.AddRequiredRole(Role.Role("Administrators"))
-
+        self.AddRequiredRole(Role.Everybody)
+        
         self.authManager.AddRoles(self.GetRequiredRoles())
 
         admins = self.authManager.FindRole("Administrators")
-        admins.AddSubject(Service.instance().GetDefaultSubject())
+        self.servicePtr = Service.instance()
+        admins.AddSubject(self.servicePtr.GetDefaultSubject())
                                                                                 
         # Default to admins
         self.authManager.SetDefaultRoles([admins])
-
+        
         self.name = name
         self.description = description
         self.mimeType = mimeType
@@ -103,6 +105,33 @@ class SharedApplication(AuthorizationMixIn):
 
         ai = SharedApplicationI(self)
         self.authManager.AddActions(ai._GetMethodActions())
+
+        # Add roles to actions.
+       
+        # Default to giving administrators access to all app actions.
+        admins = self.authManager.FindRole("Administrators")
+        actions = self.authManager.GetActions()
+        for action in actions:
+            action.AddRole(admins)
+        
+        allowedConnectRole = self.authManager.FindRole("AllowedConnect")
+
+        # For now, default to giving allowedConnect role access to all app actions.
+        self.defaultConnectionActionNames = []
+        for action in self.authManager.GetActions():
+            self.defaultConnectionActionNames.append(action.name)
+        
+        everybodyRole = Role.Everybody
+        
+        for actionName in self.defaultConnectionActionNames:
+            action = self.authManager.FindAction(actionName)
+            if action != None:
+                if not action.HasRole(allowedConnectRole):
+                    action.AddRole(allowedConnectRole)
+                if not action.HasRole(everybodyRole):
+                    action.AddRole(everybodyRole)
+            else:
+                raise "DefaultActionNotFound %s" %actionName
 
         # Create the data channel
         self.__CreateDataChannel()
@@ -438,10 +467,21 @@ class SharedApplicationI(SOAPInterface, AuthorizationIMixIn):
     def _authorize(self, *args, **kw):
         """
         """
+        
+        if self.impl.servicePtr.GetOption("insecure"):
+            return 1
+        
         subject, action = self._GetContext()
+        
+        log.info("Authorizing action: %s for subject %s", action.name,
+                 subject.name)
 
-        return 1
-    
+        authManager = self.impl.authManager
+
+        isAuth = authManager.IsAuthorized(subject, action)
+        
+        return isAuth
+   
     def GetId(self):
         return self.impl.GetId()
         
