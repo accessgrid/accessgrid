@@ -1,0 +1,111 @@
+=====================================
+Test Strategy
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: Eric Olson <eolson@mcs.anl.gov>
+:status: Draft
+
+Abstract
+========
+
+This document specifies the test strategy for the Access Grid Toolkit.  It's purpose is to create reliable, comprehensive, and efficient tests to ensure there are as few bugs as possible in Access Grid releases and development code.
+
+Overview
+========
+
+The automated and interactive tests below are to be used during general development and used as part of release packaging as described in AGEP-Build-Test-Package.txt.  They will also be helpful in isolating issues when porting AGTk to a new platform.
+
+Requirements:
+  Comprehensive
+    Cover as much code as possible
+  Efficient
+    Automated as much as possible
+  Reliable
+    Tests work correctly.
+  Useable results
+    Output will be in a standard format so it can be used in reports. 
+
+Automated Testing
+  Automated tests for AGTk are written in unittest form.  Unittests are designed to function as many simple tests of small objects.  Still, a large automatic test (i.e.  client connecting to a server, etc.) can be still be written as a single unittest.  Also, the unittests can be grouped together and run as one large test.  
+
+Interactive Testing
+  Some tests cannot be automated.  Tests on user interfaces, for example, usually cannot be automated.  The test cases that require a user are listed in documents in the AccessGrid/doc/tests directory.  Currently there are manual test cases for the following components: VenueClient, VenueManagement, NodeManagement, NodeSetupWizard, and CertificateRequestTool.
+
+Extra tests
+  Tests that are useful but are not necessarily performed before releases are located in AccessGrid/AccessGrid/tests.
+
+Maintenance
+  When new code or features are added, corresponding new unittests should be written to test them.  When modifications are made to the code and are ready to be committed, tests should be run again (and possibly modified) to verify both the tests and the new code are working correctly.
+
+Summary of Modifications
+========================
+
+Unittests need to be written for any components of the toolkit that are not yet covered.
+
+Module Organization
+-------------------
+
+--Unittests
+  AccessGrid
+      tests
+
+--Interactive tests
+  AccessGrid
+      AccessGrid
+          tests
+   
+Related AGEPs
+=============
+
+AGEP-Build-Test-Package
+
+Implementation
+==============
+
+Here's a unittest example.  It's a subset of the GUID unittest.
+
+import signal, time, os, unittest
+from AccessGrid import Platform
+from AccessGrid.GUID import GUID
+
+class GUIDTestCase(unittest.TestCase):
+    """A test case for GUID."""
+
+    def testGUIDDefaultConstructor(self):
+       g = GUID()
+
+    def testGUIDConstructor(self):
+       g = GUID("asdadsf")
+
+    def testRepeatGUID(self):
+       g1 = GUID("asdadsf")
+       g2 = GUID("asdadsf")
+       assert g1.guid == g2.guid
+
+def suite():
+    """Returns a suite containing all the test cases in this module."""
+    suite1 = unittest.makeSuite(GUIDTestCase)
+    return unittest.TestSuite([suite1])
+
+if __name__ == '__main__':
+    # When this module is executed from the command-line, run the test suite
+    unittest.main(defaultTest='suite')
+
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
