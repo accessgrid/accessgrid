@@ -64,8 +64,7 @@ print "Building pyOpenSSL_AG"
 SetupModule("pyOpenSSL", SOURCE, DEST)
 
 print "Building pyGlobus"
-if sys.platform ==
- 'win32':
+if sys.platform == 'win32':
     os.environ['GLOBUS_LOCATION']=os.path.join(SOURCE,'WinGlobus')
     flavor = 'win32'
 elif sys.platform == 'linux2':
