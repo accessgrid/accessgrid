@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.55 2004-04-29 21:03:28 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.56 2004-05-09 02:57:45 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.55 2004-04-29 21:03:28 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.56 2004-05-09 02:57:45 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -644,11 +644,16 @@ def CreateAGServiceManagerDescription(svcMgrDescStruct):
     return svcMgrDesc
 
 def CreateAGServiceDescription(svcDescStruct):
+
+    resource = CreateResource(svcDescStruct.resource)
+    capabilities = []
+    for cap in svcDescStruct.capabilities:
+        capabilities.append( CreateCapability(cap))
     svcDesc = AGServiceDescription(svcDescStruct.name, 
                                    svcDescStruct.description, 
                                    svcDescStruct.uri, 
-                                   svcDescStruct.capabilities,
-                                   svcDescStruct.resource, 
+                                   capabilities,
+                                   resource, 
                                    svcDescStruct.executable, 
                                    svcDescStruct.serviceManagerUri,
                                    svcDescStruct.servicePackageUri,
