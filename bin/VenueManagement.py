@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.36 2003-03-05 22:15:43 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.37 2003-03-10 19:53:40 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,7 +24,9 @@ from AccessGrid import icons
 from AccessGrid.Platform import GPI 
 from AccessGrid.UIUtilities import *
 
+import logging
 import string
+import time
 
 from pyGlobus.io import GSITCPSocketException
 
@@ -34,24 +36,33 @@ class VenueManagementClient(wxApp):
     The VenueManagementClient class creates the main frame of the application as well as
     the VenueManagementTabs and statusbar.  
     '''
-    client = None
-    
+    server = None
+    serverUrl = None
+    currentVenueClient = None
+    currentVenue = None
+    encrypt = false
+   
+     
     def OnInit(self):
+        self.log = open("VenueManagement.log", 'a')
+        wxLog_SetActiveTarget(MyLog(self.log))
+        wxLogMessage(" ")
+        wxLogMessage("----- START %s -------------"% time.strftime("%a, %d %b %Y %H:%M:%S"))
+
         self.frame = wxFrame(NULL, -1, "Venue Management" )
-        self.frame.SetIcon(icons.getAGIconIcon())
-	self.address = VenueServerAddress(self.frame, self)
+       	self.address = VenueServerAddress(self.frame, self)
 	self.tabs = VenueManagementTabs(self.frame, -1, self)
-        self.tabs.Enable(false)
-	self.statusbar = self.frame.CreateStatusBar(1)
-        self.frame.SetSize(wxSize(540, 405))   
-	self.SetTopWindow(self.frame)
-        self.url = None
-        client = None
+        self.statusbar = self.frame.CreateStatusBar(1)
         self.__doLayout()
+        self.__setProperties()
+        return true
+
+    def __setProperties(self):
+        self.frame.SetIcon(icons.getAGIconIcon())
+        self.frame.SetSize(wxSize(540, 405))
+        self.SetTopWindow(self.frame)
         self.frame.Show()
         
-        return true
-   
     def __doLayout(self):
         box = wxBoxSizer(wxVERTICAL)
 	box.Add(self.address, 0, wxEXPAND|wxALL)
@@ -59,17 +70,21 @@ class VenueManagementClient(wxApp):
 	self.frame.SetSizer(box)
 
     def ConnectToServer(self, URL):
-     
-        self.clientHandle = Client.Handle(URL)
+        wxLogMessage("Connect to server %s" %URL)
+        
+        handle = Client.Handle(URL)
 
         if not HaveValidProxy():
+            wxLogMessage("You do not have a valid proxy run Platform.GPI()")
             GPI()
             
-        if(self.clientHandle.IsValid()):
+        if(handle.IsValid()):
+            wxLogMessage("You have a valid proxy")
             try:
-                self.client = self.clientHandle.get_proxy()
-                venueList = self.client.GetVenues()
-                self.url = URL
+                self.server = handle.get_proxy()
+                wxLogMessage("Get venues from server")
+                venueList = self.server.GetVenues()
+                self.serverUrl = URL
                 
                 # fill in venues
                 self.tabs.venuesPanel.venuesListPanel.venuesList.Clear()
@@ -77,17 +92,23 @@ class VenueManagementClient(wxApp):
                 self.tabs.Enable(true)
                 if len(venueList) != 0 :
                     for venue in venueList:
+                        wxLogMessage("Add venue: %s" %venue.name)
                         self.tabs.venuesPanel.venuesListPanel.venuesList.Append(venue.name, venue)
                     currentVenue = self.tabs.venuesPanel.venuesListPanel.venuesList.GetClientData(0)
-                    exitsList = Client.Handle(currentVenue.uri).get_proxy().GetConnections()
-                    self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(currentVenue, exitsList)
+                    self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(currentVenue)
                     self.tabs.venuesPanel.venuesListPanel.venuesList.SetSelection(0)
                 
                 else:
+                    wxLogMessage("No venues in server")
                     self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(None)
                                         
                 # fill in administrators
-                administratorList = self.client.GetAdministrators()
+                administratorList = self.server.GetAdministrators()
+                s = ""
+                for admin in administratorList:
+                    s = s+" "+admin
+
+                wxLogMessage("Add administrators %s"  %s)
                 self.tabs.configurationPanel.administratorsListPanel.administratorsList.Clear()
                 if len(administratorList) != 0 :
                     for admin in administratorList:
@@ -95,34 +116,47 @@ class VenueManagementClient(wxApp):
                         self.tabs.configurationPanel.administratorsListPanel.administratorsList.SetSelection(0)
 
                 # fill in multicast address
-                ip = self.client.GetBaseAddress()
-                mask = str(self.client.GetAddressMask())
+                ip = self.server.GetBaseAddress()
+                mask = str(self.server.GetAddressMask())
                 self.tabs.configurationPanel.detailPanel.ipAddress.SetLabel(ip+'/'+mask)
-                method = self.client.GetAddressAllocationMethod()
+                method = self.server.GetAddressAllocationMethod()
                 
                 if method == MulticastAddressAllocator.RANDOM:
+                    wxLogMessage("Set multicast address to: RANDOM")
                     self.tabs.configurationPanel.detailPanel.ipAddress.Enable(false)
                     self.tabs.configurationPanel.detailPanel.changeButton.Enable(false)
                     self.tabs.configurationPanel.detailPanel.randomButton.SetValue(true)
                 else:
+                    wxLogMessage("Set multicast address to: INTERVAL, ip: %s, mask: %s" %(ip, mask))
                     self.tabs.configurationPanel.detailPanel.ipAddress.Enable(true)
                     self.tabs.configurationPanel.detailPanel.changeButton.Enable(true)
                     self.tabs.configurationPanel.detailPanel.intervalButton.SetValue(true)
 
                 # fill in storage location
-                self.tabs.configurationPanel.detailPanel.storageLocation.SetLabel(self.client.GetStorageLocation())
+                storageLocation = self.server.GetStorageLocation()
+                wxLogMessage("Set storage location: %s" %storageLocation)
+                self.tabs.configurationPanel.detailPanel.storageLocation.SetLabel(storageLocation)
 
-                if self.address.addressText.FindString(self.url) == wxNOT_FOUND:
-                    self.address.addressText.Append(self.url)
+                # fill in address
+                if self.address.addressText.FindString(self.serverUrl) == wxNOT_FOUND:
+                    wxLogMessage("Set address: %s" %self.serverUrl)
+                    self.address.addressText.Append(self.serverUrl)
+
+                # fill in encryption
+                key = self.server.GetEncryptAllMedia()
+                wxLogMessage("Set server encryption key: %s" %str(key))
+                self.tabs.configurationPanel.detailPanel.encryptionButton.SetValue(key)
+                self.encrypt = key
                     
             except:
-                ErrorDialog(self.frame, 'An error has occured!', "Error dialog")
-                                
+                wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                                               
         else:
             if not HaveValidProxy():
                 text = 'You do not have a valid proxy.' +\
                        '\nPlease, run "grid-proxy-init" on the command line"'
                 text2 = 'Invalid proxy'
+                wxLogMessage(text)
 
             else:
                 text = 'The venue URL you specified is not valid'
@@ -131,96 +165,140 @@ class VenueManagementClient(wxApp):
             dlg = wxMessageDialog(self.frame, text, text2, style = wxOK|wxICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
+            wxLogMessage(text)
 
-    def AddVenue(self, venue, exitsList):
-        uri = ""
-        uri = self.client.AddVenue(venue)
-        if exitsList != []:
-            Client.Handle(uri).get_proxy().SetConnections(exitsList)
-            return uri
+    def SetCurrentVenue(self, venue = None):
+        # To avoid getting proxy all the time.
+                
+        if venue == None:
+            wxLogMessage("Set current venue to none")
+            self.currentVenue = None
+            self.currentVenueClient = None
         
-        return uri
+        elif self.currentVenue == None or self.currentVenue.uri != venue.uri:
+            wxLogMessage("Set current venue to: %s, %s" %(str(venue.name), str(venue.uri)))
+            self.currentVenue = venue
+            self.currentVenueClient = Client.Handle(venue.uri).get_proxy()
+                        
+    def AddVenue(self, venue, exitsList):
+        venueUri = ""
+        venueUri = self.server.AddVenue(venue)
+        venue.uri = venueUri
+        s = ""
+        for e in exitsList:  # because I have <AccessGrid.hosting.pyGlobus.AGGSISOAP.structType
+            s = s + e.name
+            
+        wxLogMessage("Adding venue %s with exits %s"%(str(venue),s))
+        if exitsList != []:
+            self.SetCurrentVenue(venue)
+            self.currentVenueClient.SetConnections(exitsList)
+                   
+        return venueUri
 
-    def DisableStaticStreams(self, venueUri):
-        client = Client.Handle(venueUri).get_proxy()
-        streamList = client.GetStaticStreams()
+    def DisableStaticStreams(self, venue):
+        self.SetCurrentVenue(venue)
+        streamList = self.currentVenueClient.GetStaticStreams()
+        wxLogMessage("Disable static streams for venue: %s" %str(venue.uri))
         for stream in streamList:
-            client.RemoveStream(stream)
+            wxLogMessage("Remove stream: %s from server %s" %(str(stream),server.uri))
+            server.RemoveStream(stream)
                
-    def EnableStaticVideo(self, venueUri, videoAddress, videoPort, videoTtl):
+    def EnableStaticVideo(self, venue, videoAddress, videoPort, videoTtl):
         location = MulticastNetworkLocation(videoAddress, int(videoPort),
                                             int(videoTtl))
         capability = Capability( Capability.PRODUCER, Capability.VIDEO)
         videoStreamDescription = StreamDescription( "", "", location, capability)  
         videoStreamDescription.static = 1
-        Client.Handle(venueUri).get_proxy().AddStream(videoStreamDescription)
+        self.SetCurrentVenue(venue)
+        wxLogMessage("Enable static video for venue: %s using address: %s, port: %s, ttl %s" \
+                     % (str(venue.uri), str(videoAddress), str(videoPort), str(videoTtl)))
+        self.currentVenueClient.AddStream(videoStreamDescription)
         
-    def EnableStaticAudio(self, venueUri, audioAddress, audioPort, audioTtl):
+    def EnableStaticAudio(self, venue, audioAddress, audioPort, audioTtl):
         location = MulticastNetworkLocation(audioAddress, int(audioPort),
                                             int(audioTtl))
         capability = Capability( Capability.PRODUCER, Capability.AUDIO)
         audioStreamDescription = StreamDescription( "", "", location, capability)  
         audioStreamDescription.static = 1
-        Client.Handle(venueUri).get_proxy().AddStream(audioStreamDescription)
+        wxLogMessage("Enable static audio for venue: %s using address: %s, port: %s, ttl %s" \
+                     % (str(venue.uri), str(audioAddress), str(audioPort), str(audioTtl)))
+        self.SetCurrentVenue(venue)
+        self.currentVenueClient.AddStream(audioStreamDescription)
+
+    def SetVenueEncryption(self, venue, value, key = None):
+        self.SetCurrentVenue(venue)
+        wxLogMessage("Set venue encryption: %s using key: %s for venue: %s" \
+                     %(str(value), str(key), str(venue.uri)))
+        self.currentVenueClient.SetEncryptMedia(value, key)
                            
     def ModifyVenue(self, venue, exitsList):
-        self.client.ModifyVenue(venue.uri, venue)
+        wxLogMessage("Modify venue: %s" %str(venue.uri))
+        self.server.ModifyVenue(venue.uri, venue)
         if exitsList != []:
-            Client.Handle(venue.uri).get_proxy().SetConnections(exitsList)
+            self.SetCurrentVenue(venue)
+            self.currentVenueClient.SetConnections(exitsList)
                        
     def DeleteVenue(self, venue):
-        self.client.RemoveVenue(venue.uri)
+        wxLogMessage("Delete venue: %s" %str(venue.uri))
+        self.server.RemoveVenue(venue.uri)
                     
     def AddAdministrator(self, dnName):
-        self.client.AddAdministrator(dnName)
+        wxLogMessage("Add administrator: %s" %dnName)
+        self.server.AddAdministrator(dnName)
         
     def DeleteAdministrator(self, dnName):
-        self.client.RemoveAdministrator(dnName)
+        wxLogMessage("Delete administrator: %s" %dnName)
+        self.server.RemoveAdministrator(dnName)
         
     def ModifyAdministrator(self, oldName, dnName):
-        self.client.RemoveAdministrator(oldName)
-        self.client.AddAdministrator(dnName)
+        wxLogMessage("Modify administrator: %s with new dnName: %s"%(oldName,dnName))
+        self.server.RemoveAdministrator(oldName)
+        self.server.AddAdministrator(dnName)
                 
     def SetRandom(self):
-        self.client.SetAddressAllocationMethod(MulticastAddressAllocator.RANDOM)
+        wxLogMessage("Set random address allocation method")
+        self.server.SetAddressAllocationMethod(MulticastAddressAllocator.RANDOM)
                 
     def SetInterval(self, address, mask):
-        self.client.SetBaseAddress(address)
-        self.client.SetAddressMask(mask)
-        self.client.SetAddressAllocationMethod(MulticastAddressAllocator.INTERVAL)
+        wxLogMessage("Set interval address allocation method with address: %s, mask: %s" %(str(address), mask))
+        self.server.SetBaseAddress(address)
+        self.server.SetAddressMask(mask)
+        self.server.SetAddressAllocationMethod(MulticastAddressAllocator.INTERVAL)
 
     def SetEncryption(self, value):
-        self.client.SetEncryptAllMedia(value)
+        wxLogMessage("Set encryption: %s" %str(value))
+        self.server.SetEncryptAllMedia(value)
+        self.encrypt = value
     
     def SetStorageLocation(self, location):
-        self.client.SetStorageLocation(location)
+        wxLogMessage("Set storage location: %s" %location)
+        self.server.SetStorageLocation(location)
                               
 class VenueServerAddress(wxPanel):
+     ID_BUTTON = wxNewId()
+    
      def __init__(self, parent, application):     
          wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
 			 wxDefaultSize, wxNO_BORDER)
          self.application = application
 	 self.addressLabel =  wxStaticText(self, -1,'Venue Server Address:')
-         self.defaultServer = 'https://localhost:8000/VenueServer'
-         self.serverList = ['https://localhost:8000/VenueServer']
-         self.addressText = wxComboBox(self, 42, self.defaultServer,\
+         self.defaultServer = 'https://moonbeam:8000/VenueServer'
+         self.serverList = ['https://moonbeam:8000/VenueServer']
+         self.addressText = wxComboBox(self, wxNewId(), self.defaultServer,\
                         choices = self.serverList, style = wxCB_DROPDOWN)
 
-         self.goButton = wxButton(self, 43, "Go", wxDefaultPosition, wxSize(20, 10))
+         self.goButton = wxButton(self, self.ID_BUTTON, "Go", wxDefaultPosition, wxSize(20, 10))
 	 self.line = wxStaticLine(self, -1)
 	 self.__doLayout()
          self.__addEvents()
         
      def __addEvents(self):
-        # EVT_COMBOBOX(self, 42, self.callAddress)
-         EVT_BUTTON(self, 43, self.callAddress)
+         EVT_BUTTON(self, self.ID_BUTTON, self.CallAddress)
 
-     def callAddress(self, event):
+     def CallAddress(self, event):
          URL = self.addressText.GetValue()
          self.application.ConnectToServer(URL)
-           #  if self.addressText.FindString(URL) == wxNOT_FOUND:
-           #      self.addressText.Append(URL)
-
+        
      def __doLayout(self):
          venueServerAddressBox = wxBoxSizer(wxVERTICAL)  
 	
@@ -243,6 +321,8 @@ class VenueManagementTabs(wxNotebook):
     '''
 
     def __init__(self, parent, id, application):
+       
+                      
         wxNotebook.__init__(self, parent, id)
         self.parent = parent
 	self.venuesPanel = VenuesPanel(self, application) 
@@ -251,6 +331,7 @@ class VenueManagementTabs(wxNotebook):
 	self.AddPage(self.venuesPanel, "Venues")   
 	self.AddPage(self.configurationPanel, "Configuration")
         self.AddPage(self.servicesPanel, "Services")
+        self.Enable(false)
               
 # --------------------- TAB 1 -----------------------------------
 
@@ -268,7 +349,7 @@ class VenuesPanel(wxPanel):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D)
         self.parent = parent
-	self.venueProfilePanel = VenueProfilePanel(self)
+	self.venueProfilePanel = VenueProfilePanel(self, application)
 	self.venuesListPanel = VenueListPanel(self, application)
 	self.__doLayout()
 	
@@ -289,34 +370,39 @@ class VenueProfilePanel(wxPanel):
     exits to other venues.
     '''
 
-    def __init__(self, parent):
-        wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
-			 wxDefaultSize, wxNO_BORDER|wxSW_3D, name = "venueProfilePanel")  
+    def __init__(self, parent, application):
+        wxPanel.__init__(self, parent, -1, wxDefaultPosition,
+			 wxDefaultSize, wxNO_BORDER|wxSW_3D, name = "venueProfilePanel")
+        self.application = application
 	self.venueProfileBox = wxStaticBox(self, -1, "")
-        self.description = wxTextCtrl(self, -1,'', style = wxSIMPLE_BORDER | wxNO_3D | wxTE_MULTILINE )
+        self.description = wxTextCtrl(self, -1,'', style = wxSIMPLE_BORDER
+                                      | wxNO_3D | wxTE_MULTILINE )
         self.line = wxStaticLine(self, -1)
-        self.urlLabel = wxStaticText(self, -1, 'URL:', size = wxSize(50, 20), \
-				       name = "urlLabel", style = wxALIGN_RIGHT)
-	self.url = wxTextCtrl(self, -1, '', name = 'url', style = wxALIGN_LEFT | wxTE_READONLY)
-	self.exitsLabel = wxStaticText(self, -1, 'Exits:', size = wxSize(50, 20), \
+        self.urlLabel = wxStaticText(self, -1, 'URL:', size = wxSize(50, 20), 
+                                     name = "urlLabel", style = wxALIGN_RIGHT)
+	self.url = wxTextCtrl(self, -1, '', name = 'url', style = wxALIGN_LEFT
+                              | wxTE_READONLY)
+	self.exitsLabel = wxStaticText(self, -1, 'Exits:', size = wxSize(50, 20), 
 				       name = "exitsLabel", style = wxALIGN_RIGHT |wxLB_SORT)
-	self.exits = wxListBox(self, 10, size = wxSize(250, 100), \
+	self.exits = wxListBox(self, 10, size = wxSize(250, 100), 
                                style = wxTE_READONLY | wxLB_SORT)
         self.description.SetValue("Not connected to server")
         self.description.SetBackgroundColour(wxColour(215, 214, 214))
         self.url.SetBackgroundColour(wxColour(215, 214, 214))
+
         self.__hideFields()
 	self.__doLayout()
 
-    def EvtListBox(self, event):
-        list = event.GetEventObject()
-        data = list.GetClientData(list.GetSelection())
-        if data is not None:
-            try:
-                exits = Client.Handle(data.uri).get_proxy().GetConnections()
-                venueProfilePanel.ChangeCurrentVenue(data, exits)
-            except:
-                ErrorDialog(self, 'An error has occured!', "Error dialog")
+    #def EvtListBox(self, event):
+    #    list = event.GetEventObject()
+    #    data = list.GetClientData(list.GetSelection())
+    #    if data is not None:
+    #        try:
+    #            #CLIENT
+    #            exits = Client.Handle(data.uri).get_proxy().GetConnections()
+    #            venueProfilePanel.ChangeCurrentVenue(data, exits)
+    #        except:
+    #            ErrorDialog(self, 'An error has occured!', "Error dialog")
                 
     def ClearAllFields(self):
         self.venueProfileBox.SetLabel('')
@@ -329,14 +415,17 @@ class VenueProfilePanel(wxPanel):
         self.exits.Hide()
         self.urlLabel.Hide()
         self.url.Hide()
-        self.venueProfileBox.SetLabel("")
-    
-    def ChangeCurrentVenue(self, data = None, exitsList = None):
+          
+    def ChangeCurrentVenue(self, data = None):
         if data == None:
             self.__hideFields
             self.description.SetValue("No venues in server")
-                        
+            self.application.SetCurrentVenue(None)
+                     
         else:
+            self.application.SetCurrentVenue(data)
+            exitsList = self.application.currentVenueClient.GetConnections()
+                               
             self.venueProfileBox.SetLabel(data.name)
             self.url.SetValue(data.uri)
             self.exits.Clear()
@@ -358,10 +447,7 @@ class VenueProfilePanel(wxPanel):
         venueListProfileSizer.Add(5, 10)
 	venueListProfileSizer.Add(self.line, 0, wxEXPAND)
         
-
 	paramGridSizer = wxFlexGridSizer(4, 2, 10, 10)
-        #	paramGridSizer.Add(self.iconLabel, 0, wxEXPAND, 0)
-	#paramGridSizer.Add(self.icon, 0, wxALIGN_LEFT, 0)
         paramGridSizer.Add(self.urlLabel, 0, wxEXPAND, 0)
         paramGridSizer.Add(self.url, 1, wxALIGN_LEFT | wxEXPAND|wxRIGHT, 15)
 	paramGridSizer.Add(self.exitsLabel, 0, wxEXPAND, 0)
@@ -381,29 +467,33 @@ class VenueListPanel(wxPanel):
     Contains the list of venues that are present on the server and buttons
     to execute modifications of the list (add, delete, and modify venue).
     '''
-
+    ID_LIST = wxNewId()
+    ID_ADD = wxNewId()
+    ID_MODIFY = wxNewId()
+    ID_DELETE = wxNewId()
+    
     def __init__(self, parent, application):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D)
         self.parent = parent
         self.application = application
 	self.venuesListBox = wxStaticBox(self, -1, "Venues", name = 'venueListBox')
-	self.venuesList = wxListBox(self, 50, name = 'venueList', style = wxLB_SORT)
-        self.addButton = wxButton(self, 10, 'Add', 
+	self.venuesList = wxListBox(self, self.ID_LIST, name = 'venueList', style = wxLB_SORT)
+        self.addButton = wxButton(self, self.ID_ADD, 'Add', 
                                   size = wxSize(50,20), name = 'addButton')
-	self.modifyButton = wxButton(self, 20, 'Modify',
+	self.modifyButton = wxButton(self, self.ID_MODIFY, 'Modify',
 				     size = wxSize(50, 20), name = 'modifyButton')
-	self.deleteButton = wxButton(self, 30, 'Delete',
+	self.deleteButton = wxButton(self, self.ID_DELETE, 'Delete',
 				     size = wxSize(50, 20), name = 'deleteButton')
 	self.__doLayout()
 	self.__addEvents()
 
     def __addEvents(self):
-        EVT_BUTTON(self, 10, self.OpenAddVenueDialog)  
-	EVT_BUTTON(self, 20, self.OpenModifyVenueDialog)  
-	EVT_BUTTON(self, 30, self.DeleteVenue)
-        EVT_LISTBOX(self, 50, self.EvtListBox)
-        EVT_LISTBOX_DCLICK(self, 50, self.OnDoubleClick)
+        EVT_BUTTON(self, self.ID_ADD, self.OpenAddVenueDialog)  
+	EVT_BUTTON(self, self.ID_MODIFY, self.OpenModifyVenueDialog)  
+	EVT_BUTTON(self, self.ID_DELETE, self.DeleteVenue)
+        EVT_LISTBOX(self, self.ID_LIST, self.EvtListBox)
+        EVT_LISTBOX_DCLICK(self,self.ID_LIST, self.OnDoubleClick)
         EVT_KEY_UP(self.venuesList, self.OnKey)
 
     def OnKey(self, event):
@@ -420,11 +510,12 @@ class VenueListPanel(wxPanel):
         data = list.GetClientData(list.GetSelection())
         if data is not None:
             try:
-                exits = Client.Handle(data.uri).get_proxy().GetConnections()
-                self.parent.venueProfilePanel.ChangeCurrentVenue(data, exits)
-            except:
-                ErrorDialog(self, 'An error has occured!', "Error dialog")
+                self.parent.venueProfilePanel.ChangeCurrentVenue(data)
 
+            except:
+                wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+             
+                
     def OpenAddVenueDialog(self, event):
         addVenueDialog = AddVenueFrame(self, -1, "", \
                                        self.venuesList, self.application)
@@ -433,8 +524,7 @@ class VenueListPanel(wxPanel):
 	if(self.venuesList.GetSelection() != -1):    
             modifyVenueDialog = ModifyVenueFrame(self, -1, "", \
                                                  self.venuesList, self.application)
-            #	modifyVenueDialog.InsertData(self.venuesList)
-	
+           	
     def DeleteVenue(self, event = None):
         if (self.venuesList.GetSelection() != -1):
             index = self.venuesList.GetSelection()
@@ -444,80 +534,63 @@ class VenueListPanel(wxPanel):
                 self.application.DeleteVenue(venueToDelete)
                 
             except:
-                ErrorDialog(self, 'An error has occured!', "Error dialog")
-                               
+                wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                                                         
             else:
                 self.venuesList.Delete(index)
                               
                 if self.venuesList.Number() > 0:
                     self.venuesList.SetSelection(0)
                     venue = self.venuesList.GetClientData(0)
+                    
                     try:
-                        exits = Client.Handle(venue.uri).get_proxy().GetConnections()
-                    except:
-                        ErrorDialog(self, 'An error has occured!', "Error dialog")
+                        self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
 
-                    else:
-                        self.parent.venueProfilePanel.ChangeCurrentVenue(venue, exits)
+                    except:
+                        wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                                        
                 else:
                     self.parent.venueProfilePanel.ChangeCurrentVenue()
   
     def InsertVenue(self, data, exitsList):
-        try:
-            newUri = self.application.AddVenue(data, exitsList)
+        newUri = self.application.AddVenue(data, exitsList)
                         
-            if newUri :
-                data.uri = newUri
-                self.venuesList.Append(data.name, data)
-                self.venuesList.Select(self.venuesList.Number()-1)
-                self.parent.venueProfilePanel.ChangeCurrentVenue(data, exitsList)
-        except:
-            ErrorDialog(self, 'An error has occured!', "Error dialog")
-            
+        if newUri :
+            data.uri = newUri
+            self.venuesList.Append(data.name, data)
+            self.venuesList.Select(self.venuesList.Number()-1)
+            self.parent.venueProfilePanel.ChangeCurrentVenue(data)
+        
+    def SetEncryption(self, value, key):
+        item = self.venuesList.GetSelection()
+        venue =  self.venuesList.GetClientData(item)
+        self.application.SetVenueEncryption(venue, value, key)
                             
     def ModifyCurrentVenue(self, data, exitsList):
         item = self.venuesList.GetSelection()
         clientData =  self.venuesList.GetClientData(item)
         clientData.name = data.name
         clientData.description = data.description
-      
-        try:
-            self.application.ModifyVenue(clientData, exitsList)
-
-        except:
-            ErrorDialog(self, 'An error has occured!', "Error dialog")
-            
-        else:
-            self.venuesList.SetString(item, data.name)
-            self.parent.venueProfilePanel.ChangeCurrentVenue(clientData, exitsList)
+        self.application.ModifyVenue(clientData, exitsList)
+        self.venuesList.SetString(item, data.name)
+        self.parent.venueProfilePanel.ChangeCurrentVenue(clientData)
 
     def SetStaticVideo(self, videoAddress, videoPort, videoTtl):
         item = self.venuesList.GetSelection()
         venue =  self.venuesList.GetClientData(item)
 
-        try:
-            self.application.EnableStaticVideo(venue.uri, videoAddress, videoPort, videoTtl)
-        except:
-            ErrorDialog(self, 'An error has occured!', "Error dialog")
-                        
+        self.application.EnableStaticVideo(venue, videoAddress, videoPort, videoTtl)
+                                
     def SetStaticAudio(self, audioAddress, audioPort, audioTtl):
         item = self.venuesList.GetSelection()
         venue =  self.venuesList.GetClientData(item)
-
-        try:
-            self.application.EnableStaticAudio(venue.uri, audioAddress, audioPort, audioTtl)
-        except:
-            ErrorDialog(self, 'An error has occured!', "Error dialog")
-
+        self.application.EnableStaticAudio(venue, audioAddress, audioPort, audioTtl)
+        
     def DisableStaticStreams(self):
         item = self.venuesList.GetSelection()
         venue =  self.venuesList.GetClientData(item)
-
-        try:
-            self.application.DisableStaticStreams(venue.uri)
-        except:
-            ErrorDialog(self, 'An error has occured!', "Error dialog")
-
+        self.application.DisableStaticStreams(venue)
+        
     def __doLayout(self):
         venueListPanelSizer = wxStaticBoxSizer(self.venuesListBox, wxVERTICAL)
 	venueListPanelSizer.Add(self.venuesList, 8, wxEXPAND|wxALL, 5)
@@ -550,15 +623,13 @@ class ConfigurationPanel(wxPanel):
         self.application = application
 	self.administratorsListPanel = AdministratorsListPanel(self, application)
         self.detailPanel = DetailPanel(self, application)
-	#self.administratorsProfilePanel = AdministratorsProfilePanel(self)
     	self.__doLayout()
 	
     def __doLayout(self):
         configurationPanelSizer = wxBoxSizer(wxHORIZONTAL)
 	configurationPanelSizer.Add(self.administratorsListPanel, 0, wxEXPAND|wxALL, 10)
         configurationPanelSizer.Add(self.detailPanel, 2, wxEXPAND|wxALL, 10)
-	#administratorsPanelSizer.Add(self.administratorsProfilePanel, 2, wxEXPAND|wxALL, 10)
-	     
+		     
         self.SetSizer(configurationPanelSizer)
 	configurationPanelSizer.Fit(self)
 	self.SetAutoLayout(1)  
@@ -571,26 +642,31 @@ has buttons to execute modifications of the list (add, delete, and modify an adm
 
 '''
 class AdministratorsListPanel(wxPanel):
+    ID_ADD = wxNewId()
+    ID_MODIFY = wxNewId()
+    ID_DELETE = wxNewId()
+    ID_LISTBOX = wxNewId()
+
     def __init__(self, parent, application):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D)
         self.application = application
 	self.administratorsListBox = wxStaticBox(self, -1, "Administrators", name = 'venueListBox')
-	self.administratorsList = wxListBox(self, 90, name = 'venueList', style = wxLB_SORT)
-	self.addButton = wxButton(self, 60, 'Add', \
+	self.administratorsList = wxListBox(self, self.ID_LISTBOX, name = 'venueList', style = wxLB_SORT)
+	self.addButton = wxButton(self, self.ID_ADD, 'Add', \
 				  size = wxSize(50, 20), name = 'addButton')
-	self.deleteButton = wxButton(self, 61, 'Delete',\
+	self.deleteButton = wxButton(self, self.ID_DELETE, 'Delete',\
 				     size = wxSize(50, 20), name = 'deleteButton')
-	self.modifyButton = wxButton(self, 62, 'Modify',\
+	self.modifyButton = wxButton(self, self.ID_MODIFY, 'Modify',\
 				     size = wxSize(50, 20), name = 'modifyButton')
         self.__addEvents()
 	self.__doLayout()
 
     def __addEvents(self):
-        EVT_BUTTON(self, 60, self.OpenAddAdministratorDialog)
-        EVT_BUTTON(self, 61, self.DeleteAdministrator)
-        EVT_BUTTON(self, 62, self.OpenModifyAdministratorDialog)
-        EVT_LISTBOX_DCLICK(self, 90, self.OnDoubleClick)
+        EVT_BUTTON(self, self.ID_ADD, self.OpenAddAdministratorDialog)
+        EVT_BUTTON(self, self.ID_DELETE, self.DeleteAdministrator)
+        EVT_BUTTON(self, self.ID_MODIFY, self.OpenModifyAdministratorDialog)
+        EVT_LISTBOX_DCLICK(self, self.ID_LISTBOX, self.OnDoubleClick)
         EVT_KEY_UP(self.administratorsList, self.OnKey)
 
     def OnKey(self, event):
@@ -601,7 +677,6 @@ class AdministratorsListPanel(wxPanel):
     def OnDoubleClick(self, event):
         self.OpenModifyAdministratorDialog()
 
-
     def DeleteAdministrator(self, event = None):
         index = self.administratorsList.GetSelection()
         if (index != -1):
@@ -610,30 +685,31 @@ class AdministratorsListPanel(wxPanel):
                 self.application.DeleteAdministrator(adminToDelete)
 
             except:
-                ErrorDialog(self, 'An error has occured!', "Error dialog")
-                
+                wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                                             
             else:
                 self.administratorsList.Delete(index)
                 if self.administratorsList.Number > 1 :
                     self.administratorsList.SetSelection(0)
                 
     def OpenAddAdministratorDialog(self, title): 
-        addAdministratorDialog = AddAdministratorFrame(self, -1, "Add Venue Server Administrator")
+        addAdministratorDialog = AddAdministratorFrame(self, -1,
+                                                       "Add Venue Server Administrator")
 
     def OpenModifyAdministratorDialog(self, event = None):
         index = self.administratorsList.GetSelection()
 
         if index > -1:
             name = self.administratorsList.GetString(index)
-            modifyAdministratorDialog = ModifyAdministratorFrame(self, -1, \
+            modifyAdministratorDialog = ModifyAdministratorFrame(self, -1,
                                                                  "Modify Venue Server Administrator", name)
                      
     def InsertAdministrator(self, data):
         try:
             self.application.AddAdministrator(data)
         except:
-            ErrorDialog(self, 'An error has occured!', "Error dialog")
-            
+            wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                                
         else:
             self.administratorsList.Append(data, data)
             self.administratorsList.Select(self.administratorsList.Number()-1)
@@ -644,8 +720,8 @@ class AdministratorsListPanel(wxPanel):
             self.application.ModifyAdministrator(oldName, newName)
             
         except:
-            ErrorDialog(self, 'An error has occured!', "Error dialog")
-            
+            wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                                
         else:
             self.administratorsList.Delete(index)
             self.administratorsList.Append(newName, newName)
@@ -658,7 +734,8 @@ class AdministratorsListPanel(wxPanel):
 	administratorsListSizer.Add(buttonSizer, 0)
 	buttonSizer.Add(self.addButton, 1,  wxLEFT| wxBOTTOM | wxALIGN_CENTER, 5)
 	buttonSizer.Add(self.modifyButton, 1, wxLEFT | wxBOTTOM |wxALIGN_CENTER, 5)
-	buttonSizer.Add(self.deleteButton, 1, wxLEFT | wxBOTTOM |wxRIGHT | wxALIGN_CENTER, 5)
+	buttonSizer.Add(self.deleteButton, 1, wxLEFT | wxBOTTOM |wxRIGHT
+                        | wxALIGN_CENTER, 5)
 
       	self.SetSizer(administratorsListSizer)
 	administratorsListSizer.Fit(self)
@@ -666,20 +743,29 @@ class AdministratorsListPanel(wxPanel):
 
 
 class DetailPanel(wxPanel):
+    ID_CHANGE = wxNewId()
+    ID_BROWSE = wxNewId()
+    ID_RANDOM = wxNewId()
+    ID_INTERVAL = wxNewId()
+    ID_ENCRYPT = wxNewId()
+    
     def __init__(self, parent, application):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D)
         self.application = application
-	self.multicastBox = wxStaticBox(self, -1, "Multicast Address",size = wxSize(50, 50), name = 'multicastBox')
-	self.storageBox = wxStaticBox(self, -1, "Storage Location", size = wxSize(500, 50), name = 'storageBox')
-        self.encryptionBox = wxStaticBox(self, -1, "Encryption", size = wxSize(500, 50), name = 'encryptionBox')
-	self.randomButton = wxRadioButton(self, 302, "Standard Range")
-	self.intervalButton = wxRadioButton(self, 303, "Custom Range:")
+	self.multicastBox = wxStaticBox(self, -1, "Multicast Address",
+                                        size = wxSize(50, 50), name = 'multicastBox')
+	self.storageBox = wxStaticBox(self, -1, "Storage Location",
+                                      size = wxSize(500, 50), name = 'storageBox')
+        self.encryptionBox = wxStaticBox(self, -1, "Encryption",
+                                         size = wxSize(500, 50), name = 'encryptionBox')
+	self.randomButton = wxRadioButton(self, self.ID_RANDOM, "Standard Range")
+	self.intervalButton = wxRadioButton(self, self.ID_INTERVAL, "Custom Range:")
         self.ipAddress = wxStaticText(self, -1, "111.111.111.111/24", style = wxALIGN_LEFT)
-        self.changeButton = wxButton(self, 300, "Change")
+        self.changeButton = wxButton(self, self.ID_CHANGE, "Change")
    	self.storageLocation = wxStaticText(self, -1, "/home/lefvert/cool_files/")
-        self.encryptionButton = wxCheckBox(self, 304, " Encrypt media ")
-	self.browseButton = wxButton(self, 301, "Change")
+        self.encryptionButton = wxCheckBox(self, self.ID_ENCRYPT, " Encrypt media ")
+	self.browseButton = wxButton(self, self.ID_BROWSE, "Change")
         self.ipString = "111.111.111.111"
         self.maskString = "24"
         self.__doLayout()
@@ -688,19 +774,19 @@ class DetailPanel(wxPanel):
         self.changeButton.Enable(false)
     
     def __setEvents(self):
-        EVT_BUTTON(self, 300, self.OpenIntervalDialog)
-        EVT_BUTTON(self, 301, self.OpenBrowseDialog)
-        EVT_RADIOBUTTON(self, 302, self.ClickedOnRandom)
-        EVT_RADIOBUTTON(self, 303, self.ClickedOnInterval)
-        EVT_CHECKBOX(self, 304, self.ClickedOnEncrypt)
+        EVT_BUTTON(self, self.ID_CHANGE, self.OpenIntervalDialog)
+        EVT_BUTTON(self, self.ID_BROWSE, self.OpenBrowseDialog)
+        EVT_RADIOBUTTON(self, self.ID_RANDOM, self.ClickedOnRandom)
+        EVT_RADIOBUTTON(self, self.ID_INTERVAL, self.ClickedOnInterval)
+        EVT_CHECKBOX(self, self.ID_ENCRYPT, self.ClickedOnEncrypt)
 
     def ClickedOnEncrypt(self, event):
         try:
             self.application.SetEncryption(event.Checked())
         except:
             self.encryptionButton.SetValue(not event.Checked())
-            ErrorDialog(self, 'An error has occured!', "Error dialog")
-                               
+            wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                                                   
     def ClickedOnRandom(self, event):
         self.ipAddress.Enable(false)
         self.changeButton.Enable(false)
@@ -710,8 +796,8 @@ class DetailPanel(wxPanel):
             self.ipAddress.Enable(true)
             self.changeButton.Enable(true)
             self.intervalButton.SetValue(true)
-            ErrorDialog(self, 'An error has occured!', "Error dialog")
-                    
+            wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                                       
     def ClickedOnInterval(self, event):
         self.ipAddress.Enable(true)
         self.changeButton .Enable(true)
@@ -724,8 +810,8 @@ class DetailPanel(wxPanel):
             self.ipAddress.Enable(false)
             self.changeButton.Enable(false)
             self.randomButton.SetValue(true)
-            ErrorDialog(self, 'An error has occured!', "Error dialog")
-
+            wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                 
     def SetAddress(self, ipAddress, mask):
         oldIpAddress = self.ipAddress.GetLabel()
         
@@ -738,16 +824,16 @@ class DetailPanel(wxPanel):
 
         except:
             self.ipAddress.SetLabel(oldIpAddress)
-            ErrorDialog(self, 'An error has occured!', "Error dialog")
-                  
+            wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                                   
     def OpenBrowseDialog(self, event):
         dlg = wxDirDialog(self, "Choose a directory:")
         if dlg.ShowModal() == wxID_OK:
             try:
                 self.application.SetStorageLocation(dlg.GetPath())
             except:
-                ErrorDialog(self, 'An error has occured!', "Error dialog")
-                           
+                wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                                                   
             else:
                 self.storageLocation.SetLabel(dlg.GetPath())
             
@@ -862,11 +948,15 @@ class MulticastDialog(wxDialog):
 
 
 class VenueParamFrame(wxDialog):
+    venue = None
+    exitsList = []
+    ID_TRANSFER = wxNewId()
+    ID_REMOVE_EXIT = wxNewId()
+    ID_LOAD = wxNewId()
+
     def __init__(self, parent, id, title, application):
         wxDialog.__init__(self, parent, id, title)
         self.Centre()
-        self.venue = None
-        self.exitsList = []
         self.SetSize(wxSize(400, 350))
         self.application = application
   	self.informationBox = wxStaticBox(self, -1, "Information")
@@ -877,80 +967,66 @@ class VenueParamFrame(wxDialog):
 	self.description =  wxTextCtrl(self, -1, "", size = wxSize(200, 100), \
                                        style = wxTE_MULTILINE|wxHSCROLL, validator = TextValidator())
         self.staticAddressingPanel = StaticAddressingPanel(self, -1)
+        self.encryptionPanel = EncryptionPanel(self, -1)
         self.venuesLabel = wxStaticText(self, -1, "Venues on server:")
         self.venues = wxListBox(self, -1, size = wxSize(250, 100), style = wxLB_SORT)
         self.transferVenueLabel = wxStaticText(self, -1, "Add Exit")
-        self.transferVenueButton = wxButton(self, 170, ">>", size = wxSize(30, 20))
-        url = self.application.url
-        choicesList = [url]
-        self.address = wxComboBox(self, 42, url,\
-                                  choices = choicesList, style = wxCB_DROPDOWN)
-        self.goButton = wxButton(self, 200, "Go", size = wxSize(20, 10))
-        #self.thisServerButton = wxButton(self, 190, "This server")
-        #self.remoteServerButton = wxButton(self, 200, "Remote server")
-        self.removeExitButton = wxButton(self, 180, "     Remove Exit     ")
+        self.transferVenueButton = wxButton(self, self.ID_TRANSFER, ">>", size = wxSize(30, 20))
+        self.address = wxComboBox(self, -1, self.application.serverUrl,\
+                                  choices = [self.application.serverUrl], style = wxCB_DROPDOWN)
+        self.goButton = wxButton(self, self.ID_LOAD, "Go", size = wxSize(20, 10))
+        self.removeExitButton = wxButton(self, self.ID_REMOVE_EXIT, "     Remove Exit     ")
 	self.exitsLabel = wxStaticText(self, -1, "Exits for your venue:")
         self.exits = wxListBox(self, -1, size = wxSize(250, 100), style = wxLB_SORT)
 	self.okButton = wxButton(self, wxID_OK, "Ok")
 	self.cancelButton =  wxButton(self, wxID_CANCEL, "Cancel")
-	self.doLayout() 
+
+        self.LoadLocalVenues()
+	self.__doLayout() 
 	self.__addEvents()
-      	#self.Show()
 
     def __addEvents(self):
-     	EVT_BUTTON(self, 160, self.BrowseForImage)
-        EVT_BUTTON(self, 170, self.TransferVenue)
-        EVT_BUTTON(self, 180, self.RemoveExit)
-        EVT_BUTTON(self, 200, self.LoadRemoteVenues) 
-        #EVT_BUTTON(self, 190, self.LoadLocalVenues) 
-        #EVT_BUTTON(self, 200, self.LoadRemoteVenues) 
+     	#EVT_BUTTON(self, 160, self.BrowseForImage)
+        EVT_BUTTON(self, self.ID_TRANSFER, self.TransferVenue)
+        EVT_BUTTON(self, self.ID_REMOVE_EXIT, self.RemoveExit)
+        EVT_BUTTON(self, self.ID_LOAD, self.LoadRemoteVenues) 
 
     def LoadRemoteVenues(self, event = None):
-        # remoteServerUrlDialog = RemoteServerUrlDialog(self, -1, 'Connect to server')
-        #if (remoteServerUrlDialog.ShowModal() == wxID_OK):
-        URL = self.address.GetValue() #remoteServerUrlDialog.address.GetValue()
+        URL = self.address.GetValue()
         self.__loadVenues(URL)
         if self.address.FindString(URL) == wxNOT_FOUND:
             self.address.Append(URL)
                      
-        #remoteServerUrlDialog.Destroy()
-      
     def LoadLocalVenues(self, event = None):
-        self.__loadVenues(self.application.url)
+        self.__loadVenues(self.application.serverUrl)
 
     def __loadVenues(self, URL):
         validVenue = false
         
         try:
-            self.client = Client.Handle(URL).get_proxy()
-            venueList = self.client.GetVenues()
-            validVenue = true
-            self.venues.Clear()
-            for venue in venueList:
-                if(venue.name != self.title.GetValue()):
-                    self.venues.Append(venue.name, venue)
+            server = Client.Handle(URL)
+            if(server.IsValid()):
+                venueList = server.get_proxy().GetVenues()
+                validVenue = true
+                self.venues.Clear()
+                for venue in venueList:
+                    if(venue.name != self.title.GetValue()):
+                        self.venues.Append(venue.name, venue)
                     
         except:
-            ErrorDialog(self, 'An error has occured!', "Error dialog")
-                                       
-    def BrowseForImage(self, event):
-        initial_dir = '/'
-	imageDialog = ImageDialog(self, initial_dir)   
-	imageDialog.Show()
-	if (imageDialog.ShowModal() == wxID_OK):      
-	    file = imageDialog.GetFile() 
-	    self.bitmap =  wxBitmap(file, wxBITMAP_TYPE_GIF)
-	    self.icon.SetBitmap(self.bitmap)
-	    self.Layout()
-     
-        imageDialog.Destroy()
+            wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                                                          
+    #def BrowseForImage(self, event):
+    #    initial_dir = '/'
+    #	imageDialog = ImageDialog(self, initial_dir)   
+    #	imageDialog.Show()
+    #	if (imageDialog.ShowModal() == wxID_OK):      
+    #	    file = imageDialog.GetFile() 
+    #	    self.bitmap =  wxBitmap(file, wxBITMAP_TYPE_GIF)
+    #	    self.icon.SetBitmap(self.bitmap)
+    #	    self.Layout()
+    #   imageDialog.Destroy()
         
-    def InsertExits(self, exits):
-        index = 0
-        while index < len(exits):
-            self.exits.Append(exits[index].name, exits[index])
-            index = index + 1
-
     def TransferVenue(self, event):
         index = self.venues.GetSelection()
         if index != -1:
@@ -970,9 +1046,13 @@ class VenueParamFrame(wxDialog):
         if(index > -1):
             self.exits.Delete(index)
 
-    def ModifyStaticAddressing(self):
-        self.parent.DisableStaticStreams()
-        self.SetStaticAddressing()
+    def SetEncryption(self):
+        toggled = self.encryptionPanel.encryptMediaButton.GetValue()
+        key = None
+        if toggled:
+            key = self.encryptionPanel.keyCtrl.GetValue()
+
+        self.parent.SetEncryption(toggled, key)
         
     def SetStaticAddressing(self):
         if(self.staticAddressingPanel.staticAddressingButton.GetValue()==1):
@@ -984,7 +1064,6 @@ class VenueParamFrame(wxDialog):
                                        self.staticAddressingPanel.GetAudioPort(), \
                                        self.staticAddressingPanel.GetAudioTtl())
 
-
     def Ok(self):
         index = 0
         self.exitsList = []
@@ -995,7 +1074,7 @@ class VenueParamFrame(wxDialog):
         self.venue = VenueDescription(self.title.GetValue(), \
                                 self.description.GetValue(), "", None)
 
-    def doLayout(self):
+    def __doLayout(self):
         boxSizer = wxBoxSizer(wxVERTICAL)
 	
         topSizer =  wxBoxSizer(wxHORIZONTAL)
@@ -1004,24 +1083,20 @@ class VenueParamFrame(wxDialog):
 	paramFrameSizer.Add(self.titleLabel, 0, wxALIGN_RIGHT)
 	paramFrameSizer.Add(self.title, 0, wxEXPAND)
 	paramFrameSizer.AddGrowableCol(1) 
-        # For icon
-        #	box = wxBoxSizer(wxHORIZONTAL)
-        #	box.Add(20, 10, 0, wxEXPAND)
-        #	box.Add(20, 10, 0, wxEXPAND)
-        #	paramFrameSizer.Add(box, 0, wxEXPAND)
 
 	topParamSizer = wxStaticBoxSizer(self.informationBox, wxVERTICAL)
 	topParamSizer.Add(paramFrameSizer, 0, wxEXPAND | wxALL, 10)
+        topParamSizer.Add(10,10)
 	topParamSizer.Add(self.descriptionLabel, 0, wxALIGN_LEFT |wxLEFT, 10)
-	topParamSizer.Add(self.description, 0, wxEXPAND |wxLEFT | wxRIGHT| wxBOTTOM, 10)
+      	topParamSizer.Add(self.description, 1, wxEXPAND |wxLEFT | wxRIGHT| wxBOTTOM, 10)
 
         topSizer.Add(topParamSizer, 1, wxRIGHT | wxEXPAND, 5)
-        topSizer.Add(self.staticAddressingPanel, 1, wxLEFT | wxEXPAND, 5)
-        # boxSizer.Add(topParamSizer, 0, wxALL | wxEXPAND, 10)
 
-        
-        #topSizer.Add(staticAddressingSizer, 1, wxALL | wxEXPAND, 10)
-	#boxSizer.Add(staticAddressingSizer, 0, wxALL | wxEXPAND, 10)
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer.Add(self.encryptionPanel, 0, wxLEFT|wxBOTTOM | wxEXPAND, 5)
+        sizer.Add(self.staticAddressingPanel, 0, wxLEFT|wxTOP| wxEXPAND, 5)
+        topSizer.Add(sizer)
+
         boxSizer.Add(topSizer, 0, wxALL | wxEXPAND, 10)
 	
 	bottomParamSizer = wxStaticBoxSizer(self.exitsBox, wxVERTICAL)
@@ -1029,7 +1104,6 @@ class VenueParamFrame(wxDialog):
 	exitsSizer.Add(self.venuesLabel, 0)
         exitsSizer.Add(10,10, wxEXPAND)
         exitsSizer.Add(self.exitsLabel, 0)
-      	#exitsSizer.Add(self.venues, 0, wxEXPAND)
 
         exitsSizer.Add(self.venues, 0, wxEXPAND)
         
@@ -1038,16 +1112,12 @@ class VenueParamFrame(wxDialog):
         transferbuttonSizer.Add(self.transferVenueButton, 0, wxEXPAND|wxTOP, 2)
         exitsSizer.Add(transferbuttonSizer, 0, wxALL|wxALIGN_CENTER, 5)
 	exitsSizer.Add(self.exits, 0, wxEXPAND)
-
-        #buttonSizer = wxBoxSizer(wxHORIZONTAL)
        
         buttonSizer = wxBoxSizer(wxHORIZONTAL)
         buttonSizer.Add(self.address, 2, wxEXPAND| wxRIGHT, 1)
         buttonSizer.Add(self.goButton, 0, wxEXPAND | wxLEFT, 1)
         exitsSizer.Add(buttonSizer, 1, wxEXPAND)
-        #buttonSizer.Add(self.thisServerButton, 1, wxEXPAND | wxRIGHT, 2)
-        #buttonSizer.Add(self.remoteServerButton, 1, wxEXPAND |wxLEFT, 2)
-        #exitsSizer.Add(buttonSizer, 1, wxEXPAND)
+
         exitsSizer.Add(10,10)
         exitsSizer.Add(self.removeExitButton, 0, wxEXPAND)
         exitsSizer.AddGrowableCol(0)
@@ -1070,6 +1140,46 @@ class VenueParamFrame(wxDialog):
 	boxSizer.Fit(self)
 	self.SetAutoLayout(1)  
 
+class EncryptionPanel(wxPanel):
+    ID_BUTTON = wxNewId()
+    
+    def __init__(self, parent, id):
+        wxPanel.__init__(self, parent, id)
+        self.encryptMediaButton = wxCheckBox(self, self.ID_BUTTON, " Encrypt media ")
+        self.keyText = wxStaticText(self, -1, "Optional key: ", size = wxSize(100,20))
+        self.keyCtrl = wxTextCtrl(self, -1, "", size = wxSize(200,20))
+        self.keyText.Enable(false)
+        self.keyCtrl.Enable(false) 
+        self.__doLayout()
+        self.__setEvents()
+
+    def ClickEncryptionButton(self, event = None, value = None):
+        if event == None:
+            id = value
+            self.encryptMediaButton.SetValue(value)
+        else:
+            id =  event.Checked()
+        message = "Set encrypt media, value is: "+str(id)
+        wxLogMessage(message)
+        self.keyText.Enable(id)
+        self.keyCtrl.Enable(id) 
+        
+    def __setEvents(self):
+        EVT_CHECKBOX(self, self.ID_BUTTON, self.ClickEncryptionButton)
+
+    def __doLayout(self):
+        sizer = wxStaticBoxSizer(wxStaticBox(self, -1, "Encryption"), wxVERTICAL)
+        sizer.Add(self.encryptMediaButton, 0, wxEXPAND|wxALL, 5)
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(25, 10)
+        sizer2.Add(self.keyText , 0, wxEXPAND|wxALL, 5)
+        sizer2.Add(self.keyCtrl, 1, wxEXPAND|wxALL, 5)
+        sizer.Add(sizer2, 1, wxEXPAND)
+        
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+        
 class StaticAddressingPanel(wxPanel):
     def __init__(self, parent, id):
         wxPanel.__init__(self, parent, id)
@@ -1125,14 +1235,12 @@ class StaticAddressingPanel(wxPanel):
         self.audioIp3.SetValue(str(audioList[2]))
         self.audioIp4.SetValue(str(audioList[3]))
         self.audioTtl.SetValue(str(audioTtl))
-
        
     def GetVideoAddress(self):
         return self.ipAddressConverter.IpToString(self.videoIp1.GetValue(), \
                                              self.videoIp2.GetValue(), \
                                              self.videoIp3.GetValue(), \
                                              self.videoIp4.GetValue())
-
     def GetAudioAddress(self):
         return self.ipAddressConverter.IpToString(self.audioIp1.GetValue(), \
                                              self.audioIp2.GetValue(), \
@@ -1231,7 +1339,7 @@ class AddVenueFrame(VenueParamFrame):
         VenueParamFrame.__init__(self, parent, id, title, app)
 	self.parent = parent
         self.SetLabel('Add Venue')
-        self.LoadLocalVenues()
+        self.encryptionPanel.ClickEncryptionButton(None, self.application.encrypt)
         EVT_BUTTON (self.okButton, wxID_OK, self.OnOK)
         self.ShowModal()
                     
@@ -1239,19 +1347,25 @@ class AddVenueFrame(VenueParamFrame):
         if(VenueParamFrame.Validate(self)):
             if(self.staticAddressingPanel.Validate()):
                 self.Ok()
-                self.parent.InsertVenue(self.venue, self.exitsList)
-                self.SetStaticAddressing()
+                try:
+                    self.parent.InsertVenue(self.venue, self.exitsList)
+                    self.SetStaticAddressing() # from super class
+                    self.SetEncryption() # from super class 
+                    
+                except:
+                    wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                                   
                 self.Hide()
-            
-                                    
+
+                
 class ModifyVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title, venueList, application):
         VenueParamFrame.__init__(self, parent, id, title, app)
+     	self.parent = parent
         self.SetLabel('Modify Venue')
-	self.parent = parent
         self.list = venueList
-        self.__setCurrentVenueInfo()
-        self.LoadLocalVenues()
+        self.__loadCurrentVenueInfo()
+     
         EVT_BUTTON (self.okButton, wxID_OK, self.OnOK)
         self.ShowModal()
                     
@@ -1259,55 +1373,80 @@ class ModifyVenueFrame(VenueParamFrame):
         if(VenueParamFrame.Validate(self)):
             if(self.staticAddressingPanel.Validate()):
                 self.Ok()
-                self.parent.ModifyCurrentVenue(self.venue, self.exitsList)
-                self.ModifyStaticAddressing()
+                try:
+                    self.parent.ModifyCurrentVenue(self.venue, self.exitsList)
+                    self.parent.DisableStaticStreams()
+                    self.SetStaticAddressing() # from super class
+                    self.SetEncryption() # from super class
+                    
+                except:
+                    wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                                  
                 self.Hide()
 
-    def __setCurrentVenueInfo(self):
-         item = self.list.GetSelection()
-         data = self.list.GetClientData(item)
-              
-         self.title.AppendText(data.name)
-         self.description.AppendText(data.description)
+    def __loadCurrentVenueInfo(self):
+        item = self.list.GetSelection()
+        data = self.list.GetClientData(item)
+        
+        self.title.AppendText(data.name)
+        self.description.AppendText(data.description)
+        
+        try:
+            self.application.SetCurrentVenue(data)
+            venue = self.application.currentVenueClient
+            exitsList = venue.GetConnections()
+            enctyptionKey = venue.GetEncryptMedia()          
+            streamList = venue.GetStaticStreams()
+                        
+        except:
+            wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                     
+        else:
+            self.__loadExits(exitsList)
+            self.__loadEncryption(enctyptionKey)
+            self.__loadStaticStreams(streamList)
 
-         try:
-             client =  Client.Handle(data.uri).get_proxy()
-             
-             exitsList = client.GetConnections()
-             self.InsertExits(exitsList)
-             
-             streamList = client.GetStaticStreams()
-             videoIp = ""
-             videoPort = ""
-             audioIp = None
-             audioPort = None
+    def __loadEncryption(self, key):
+        if(key is not None):
+            self.encryptionPanel.ClickEncryptionButton(None, true)
+            self.encryptionPanel.keyCtrl.SetValue(key)
+        else:
+            self.encryptionPanel.ClickEncryptionButton(None, false)
+                      
+    def __loadExits(self, exits):
+        index = 0
+        while index < len(exits):
+            self.exits.Append(exits[index].name, exits[index])
+            index = index + 1
+   
+    def __loadStaticStreams(self, streamList):
+        videoIp = ""
+        videoPort = ""
+        audioIp = None
+        audioPort = None
 
-         except:
-             ErrorDialog(self, 'An error has occured!', "Error dialog")
-
-         else:
-             if(len(streamList)==0):
-                 self.staticAddressingPanel.panel.Enable(false)
-                 self.staticAddressingPanel.staticAddressingButton.SetValue(false)
+        if(len(streamList)==0):
+            self.staticAddressingPanel.panel.Enable(false)
+            self.staticAddressingPanel.staticAddressingButton.SetValue(false)
              
-             elif(len(streamList)>2):
-                 print '--------------- I got back more than 2 static streams...that is bad!!!'
-             
-             else:
-                 self.staticAddressingPanel.panel.Enable(true)
-                 self.staticAddressingPanel.staticAddressingButton.SetValue(true)
-                 for stream in streamList:
-                     if(stream.capability.type == Capability.VIDEO):
-                         videoIp = stream.location.host
-                         videoPort = stream.location.port
-                         videoTtl =  stream.location.ttl
-                         self.staticAddressingPanel.SetStaticVideo(videoIp, videoPort, videoTtl)
-                         
-                     elif(stream.capability.type == Capability.AUDIO):
-                         audioIp = stream.location.host
-                         audioPort = stream.location.port
-                         audioTtl =  stream.location.ttl
-                         self.staticAddressingPanel.SetStaticAudio(audioIp, audioPort, audioTtl)
+        elif(len(streamList)>2):
+            wxLogError("Venue returned more than 2 static streams")
+                      
+        else:
+            self.staticAddressingPanel.panel.Enable(true)
+            self.staticAddressingPanel.staticAddressingButton.SetValue(true)
+            for stream in streamList:
+                if(stream.capability.type == Capability.VIDEO):
+                    videoIp = stream.location.host
+                    videoPort = stream.location.port
+                    videoTtl =  stream.location.ttl
+                    self.staticAddressingPanel.SetStaticVideo(videoIp, videoPort, videoTtl)
+                    
+                elif(stream.capability.type == Capability.AUDIO):
+                    audioIp = stream.location.host
+                    audioPort = stream.location.port
+                    audioTtl =  stream.location.ttl
+                    self.staticAddressingPanel.SetStaticAudio(audioIp, audioPort, audioTtl)
    
 class AdministratorParamFrame(wxDialog):
     def __init__(self, *args):
@@ -1516,7 +1655,42 @@ class IpAddressConverter:
         self.ipString = str(ip1)+'.'+str(ip2)+'.'+str(ip3)+'.'+str(ip4)
         return self.ipString
 
+class MyLog(wxPyLog):
+    ERROR = 1
+    MESSAGE = 3
+    
+    def __init__(self, log, logTime=0):
+        wxPyLog.__init__(self)
+        self.log = log
+        self.logTime = logTime
+       
+    def DoLog(self, level, message, timeStamp):
+        thisTime =  time.strftime("%X", time.localtime(timeStamp))
+        
+        if level  == self.ERROR:
+            box = wxMessageDialog(NULL, "UNEXPECTED ERROR\n"+message, "An error occured", wxICON_ERROR | wxOK )
+            box.ShowModal()
+            box.Destroy()
+            (name, args, traceback_string_list) = formatExceptionInfo()
+            traceback = ""
+            for x in traceback_string_list:
+                traceback = traceback+"\n" + x 
+            message =  '[ERROR] '+message + '\n' +traceback
+
+        elif level  == self.MESSAGE:
+            message = '[MESSAGE] '+ message
+
+        message = thisTime +' '+ message
+        self.DoLogString(message, timeStamp)
+
+    def DoLogString(self, message, timeStamp):
+        if self.logTime:
+            message = time.strftime("%X", time.localtime(timeStamp)) + \
+                      ": " + message
+            
+        self.log.write(message + '\n')
+     
 if __name__ == "__main__":
     wxInitAllImageHandlers()
-    app = VenueManagementClient(0)
+    app = VenueManagementClient()
     app.MainLoop()  
