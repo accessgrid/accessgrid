@@ -6,22 +6,20 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.95 2003-05-22 20:15:47 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.96 2003-05-22 20:50:48 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys
 import time
 import string
-import types
 import socket
 import os.path
 import logging
-import ConfigParser
+
 from threading import Condition, Lock
 
 from AccessGrid.hosting.pyGlobus import ServiceBase
-from AccessGrid.GUID import GUID
 
 from AccessGrid.hosting import AccessControl
 
@@ -45,7 +43,6 @@ from AccessGrid.Utilities import GetHostname
 # should be removed
 from AccessGrid.ClientProfile import CreateClientProfile
 from AccessGrid.Descriptions import CreateServiceDescription
-from AccessGrid.Descriptions import CreateDataDescription
 
 log = logging.getLogger("AG.VenueServer")
 
