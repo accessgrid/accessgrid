@@ -129,7 +129,7 @@ class BridgeFactory:
             refcount -= 1
             self.bridges[key] = (bridge,refcount)
 
-            # if the refcount is 1 (the factory holds the only reference),
+            # if the refcount is 0,
             # stop and delete the bridge
             if refcount == 0:
                 self.log.info("- Stopping and deleting bridge")
@@ -589,7 +589,7 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
     else:
         # Init toolkit with standard environment.
         app = Toolkit.CmdlineApplication()
-    app.Initialize()
+    app.InitGlobusEnvironment()
 
 
 

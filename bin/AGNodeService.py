@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.27 2003-08-19 19:19:08 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.28 2003-08-21 21:39:49 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -132,7 +132,7 @@ else:
 
         app = Toolkit.CmdlineApplication()
 
-    app.Initialize()
+    app.InitGlobusEnvironment()
 
 # Create a Node Service
 nodeService = AGNodeService()

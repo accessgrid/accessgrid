@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.6 2003-08-14 16:03:51 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.7 2003-08-21 21:39:49 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -162,7 +162,7 @@ class NodeSetupWizard(wxWizard):
             sys.exit(1)
 
         try:
-            self.app.Initialize()
+            self.app.InitGlobusEnvironment()
             
         except Exception, e:
             text = "Could not start the Node Setup Wizard. \nIs your certificate configured correctly?"

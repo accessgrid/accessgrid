@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.23 2003-08-19 19:19:08 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.24 2003-08-21 21:39:49 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -107,9 +107,6 @@ serviceManager = AGServiceManager(server)
 service = server.CreateServiceObject("ServiceManager")
 serviceManager._bind_to_service( service )
 
-# Tell the world where to find the service manager
-log.info("Starting service; URI: %s", serviceManager.get_handle())
-
 #
 # If we are starting as a part of a personal node,
 # initialize that state.
@@ -145,7 +142,7 @@ else:
 
         app = Toolkit.CmdlineApplication()
 
-    app.Initialize()
+    app.InitGlobusEnvironment()
     
 # Register the signal handler so we can shut down cleanly
 signal.signal(signal.SIGINT, SignalHandler)
@@ -154,6 +151,10 @@ if sys.platform == Platform.LINUX:
 
 # Start the service
 server.run_in_thread()
+
+# Tell the world where to find the service manager
+log.info("Starting service; URI: %s", serviceManager.get_handle())
+print "AGServiceManager URL: ", serviceManager.GetHandle()
 
 # Keep the main thread busy so we can catch signals
 running = 1
