@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.207 2003-05-28 21:10:19 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.208 2003-05-28 21:59:47 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -88,6 +88,8 @@ class VenueClientFrame(wxFrame):
     ID_PROFILE_EDIT = wxNewId()
     ID_CERTIFICATE_MANAGE = wxNewId()
     ID_MYNODE_MANAGE = wxNewId()
+    ID_ENABLE_VIDEO = wxNewId()
+    ID_ENABLE_AUDIO = wxNewId()
     ID_MYNODE_URL = wxNewId()
     ID_MYVENUE_ADD = wxNewId()
     ID_MYVENUE_EDIT = wxNewId()
@@ -236,6 +238,12 @@ class VenueClientFrame(wxFrame):
         self.preferences.AppendSeparator()
         self.preferences.Append(self.ID_MYNODE_MANAGE, "&Manage My Node...",
                                 "Configure your node")
+        self.preferences.AppendCheckItem(self.ID_ENABLE_VIDEO, "Enable video",
+                                "Enable/disable video for your node")
+        self.preferences.Check(self.ID_ENABLE_VIDEO,true)
+        self.preferences.AppendCheckItem(self.ID_ENABLE_AUDIO, "Enable audio",
+                                "Enable/disable audio for your node")
+        self.preferences.Check(self.ID_ENABLE_AUDIO,true)
         self.preferences.Append(self.ID_MYNODE_URL, "&Set Node URL...",
                                 "Specify URL address to node service")
         self.menubar.Append(self.preferences, "&Preferences")
@@ -412,6 +420,8 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.Exit)
         EVT_MENU(self, self.ID_PROFILE, self.OpenMyProfileDialog)
         EVT_MENU(self, self.ID_MYNODE_MANAGE, self.OpenNodeMgmtApp)
+        EVT_MENU(self, self.ID_ENABLE_VIDEO, self.EnableVideo)
+        EVT_MENU(self, self.ID_ENABLE_AUDIO, self.EnableAudio)
         EVT_MENU(self, self.ID_MYNODE_URL, self.OpenSetNodeUrlDialog)
         EVT_MENU(self, self.ID_MYVENUE_ADD, self.AddToMyVenues)
         EVT_MENU(self, self.ID_MYVENUE_EDIT, self.EditMyVenues)
@@ -832,7 +842,21 @@ class VenueClientFrame(wxFrame):
                                   'Node Management Error')
                 
             setNodeUrlDialog.Destroy()
-                 
+
+
+    def EnableVideo(self,event):
+        enableFlag = self.preferences.IsChecked(self.ID_ENABLE_VIDEO)
+        try:
+            self.app.SetVideoEnabled(enableFlag)
+        except:
+            MessageDialog(self,"Error enabling/disabling video")
+
+    def EnableAudio(self,event):
+        enableFlag = self.preferences.IsChecked(self.ID_ENABLE_AUDIO)
+        try:
+            self.app.SetAudioEnabled(enableFlag)
+        except:
+            MessageDialog(self,"Error enabling/disabling audio")
                           
     def OpenDataProfileDialog(self, event):
         profileDialog = ProfileDialog(NULL, -1, 'Profile')
