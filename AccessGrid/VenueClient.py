@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.164 2004-04-27 17:21:55 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.165 2004-04-29 16:33:17 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.164 2004-04-27 17:21:55 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.165 2004-04-29 16:33:17 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -1614,8 +1614,10 @@ class VenueClient:
 
             authClient = AuthorizationManagerIW(authUrl)
             roles = authClient.GetRolesForSubject(Application.instance().GetDefaultSubject())
-            if 'Administrators' in roles:
-                isVenueAdministrator = 1
+
+            for r in roles:            
+                if r.name == "Administrators":
+                    isVenueAdministrator = 1
 
         except Exception, e:
         
