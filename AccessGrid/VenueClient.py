@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.48 2003-04-01 16:40:51 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.49 2003-04-11 17:05:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -235,21 +235,20 @@ class VenueClient( ServiceBase):
         # 
         # Update the node service with stream descriptions
         #
-        #try:
-        if haveValidNodeService:
-            Client.Handle( self.nodeServiceUri ).get_proxy().ConfigureStreams( self.streamDescList )
-        #except:
-        #    log.error("AccessGrid.VenueClient::Exception configuring node service streams")
+        try:
+            if haveValidNodeService:
+                Client.Handle( self.nodeServiceUri ).get_proxy().ConfigureStreams( self.streamDescList )
+        except:
+            log.exception("AccessGrid.VenueClient::Exception configuring node service streams")
 
         #
         # Update venue clients being led with stream descriptions
         #
         for profile in self.followerProfiles.values():
-            #Try:
-            Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue( URL )
-            #except:
-            #print "Exception: ", sys.exc_type, sys.exc_value
-            #print "while leading follower: ", profile.name, profile.venueClientURL
+            try:
+                Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue( URL )
+            except:
+                log.exception("AccessGrid.VenueClient::Exception while leading follower")
             
         # Finally, set the venue uri now that we have successfully
         # entered the venue
