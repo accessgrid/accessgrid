@@ -20,6 +20,7 @@ if sys.platform == 'win32':
     copyExe = 'copy'
 elif sys.platform == 'linux2':
     ratFiles = [ 'rat',
+                 'rat-4.2.22',
                  'rat-4.2.22-media',
                  'rat-4.2.22-ui',
                  'rat-kill' ]
