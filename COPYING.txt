@@ -81,3 +81,12 @@ Copyright (c) 2000-2003 University of Chicago. All Rights Reserved.
  AGREEMENT OR THE USE OF THE SOFTWARE.
 
 END OF LICENSE
+
+Copyrights
+==========
+
+This product includes software developed by the Computer Science
+Department at University College London.
+
+This product includes software developed by the Network Research Group
+at Lawrence Berkeley National Laboratory.
