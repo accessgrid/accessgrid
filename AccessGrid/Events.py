@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.14 2003-07-11 21:12:33 eolson Exp $
+# RCS-ID:      $Id: Events.py,v 1.15 2003-08-04 18:11:38 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,6 +29,7 @@ class Event:
     SET_CONNECTIONS = "Set connections"
     UPDATE_VENUE_STATE = "Update venue state"
     ADD_STREAM = "Add stream"
+    MODIFY_STREAM = "Modify stream"
     REMOVE_STREAM = "Remove stream"
     
     def __init__(self, eventType, venueId, data):
