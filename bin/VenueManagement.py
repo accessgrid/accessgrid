@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.122 2004-03-24 22:26:32 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.123 2004-03-25 15:08:19 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.122 2004-03-24 22:26:32 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.123 2004-03-25 15:08:19 lefvert Exp $"
 
 # Standard imports
 import string
@@ -93,7 +93,7 @@ class VenueManagementClient(wxApp):
         self.menubar = wxMenuBar()
         self.myServersDict = {}
         self.myServersMenuIds = {}
-        self.homeServer = 'https://localhost:8000/VenueServer'
+        #self.homeServer = 'https://localhost:8000/VenueServer'
         self.userConf = UserConfig.instance()
         self.myServersFile = os.path.join(self.userConf.GetConfigDir(), "myServers.txt" )
         
@@ -124,8 +124,8 @@ class VenueManagementClient(wxApp):
                  lambda event, url=self.manual_url: self.OpenHelpURL(url))
 
         # My Servers Menu
-        EVT_MENU(self, self.ID_MYSERVERS_GOTODEFAULT, self.GoToDefaultServerCB)
-        EVT_MENU(self, self.ID_MYSERVERS_SETDEFAULT, self.SetAsDefaultServerCB)
+        #EVT_MENU(self, self.ID_MYSERVERS_GOTODEFAULT, self.GoToDefaultServerCB)
+        #EVT_MENU(self, self.ID_MYSERVERS_SETDEFAULT, self.SetAsDefaultServerCB)
         EVT_MENU(self, self.ID_MYSERVERS_ADD, self.AddToMyServersCB)
         EVT_MENU(self, self.ID_MYSERVERS_EDIT, self.EditMyServersCB)
 
@@ -147,11 +147,11 @@ class VenueManagementClient(wxApp):
 
         self.menubar.Append(self.serverMenu, "&Server")
         self.myServersMenu = wxMenu()
-        self.myServersMenu.Append(self.ID_MYSERVERS_GOTODEFAULT, "Go to Home Server",
-                                  "Go to default venue")
-        self.myServersMenu.Append(self.ID_MYSERVERS_SETDEFAULT, "Set as Home Server",
-                             "Set current server as default")
-        self.myServersMenu.AppendSeparator()
+        #self.myServersMenu.Append(self.ID_MYSERVERS_GOTODEFAULT, "Go to Home Server",
+        #                          "Go to default venue")
+        #self.myServersMenu.Append(self.ID_MYSERVERS_SETDEFAULT, "Set as Home Server",
+        #                     "Set current server as default")
+        #self.myServersMenu.AppendSeparator()
     
         self.myServersMenu.Append(self.ID_MYSERVERS_ADD, "Add &Current Server...",
                              "Add this server to your list of servers")
@@ -249,23 +249,23 @@ class VenueManagementClient(wxApp):
         myServersFileH.close()
 
     def EnableMenu(self, flag):
-        self.myServersMenu.Enable(self.ID_MYSERVERS_SETDEFAULT, flag)
+        #self.myServersMenu.Enable(self.ID_MYSERVERS_SETDEFAULT, flag)
         self.myServersMenu.Enable(self.ID_MYSERVERS_ADD, flag)
         self.serverMenu.Enable(self.ID_SERVER_CHECKPOINT , flag)
         self.serverMenu.Enable(self.ID_SERVER_SHUTDOWN, flag)
         
-    def GoToDefaultServerCB(self,event):
-        '''
-        Connect to default venue server.
-        '''
-        serverUrl = self.homeServer
-        self.ConnectToServer(serverUrl)
+    #def GoToDefaultServerCB(self,event):
+    #    '''
+    #    Connect to default venue server.
+    #    '''
+    #    serverUrl = self.homeServer
+    #    self.ConnectToServer(serverUrl)
 
-    def SetAsDefaultServerCB(self,event):
-        '''
-        Set default venue server.
-        '''
-        self.homeServer = self.serverUrl 
+    #def SetAsDefaultServerCB(self,event):
+    #    '''
+    #    Set default venue server.
+    #    '''
+    #    self.homeServer = self.serverUrl 
         
     def AddToMyServersCB(self, event):
         #url = self.serverClient.GetServer()
