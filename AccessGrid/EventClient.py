@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.30 2003-09-25 20:50:18 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.31 2003-09-29 20:52:12 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.30 2003-09-25 20:50:18 judson Exp $"
+__revision__ = "$Id: EventClient.py,v 1.31 2003-09-29 20:52:12 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
@@ -31,7 +31,7 @@ from AccessGrid.Events import HeartbeatEvent, ConnectEvent, DisconnectEvent
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 
 log = logging.getLogger("AG.VenueClient")
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.WARN)
 
 class EventClientConnectionException(Exception):
     """

@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.24 2003-09-24 03:27:58 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.25 2003-09-29 20:52:12 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.24 2003-09-24 03:27:58 judson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.25 2003-09-29 20:52:12 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -321,7 +321,7 @@ if __name__ == "__main__":
 
     log = logging.getLogger("AG.TextClient")
     log.addHandler(logging.StreamHandler())
-    log.setLevel(logging.DEBUG)
+    log.setLevel(logging.WARN)
 
     if len(sys.argv) > 3:
         host = sys.argv[1]
