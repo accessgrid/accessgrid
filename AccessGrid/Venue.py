@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.140 2003-10-20 18:52:16 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.141 2003-10-20 19:55:17 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.140 2003-10-20 18:52:16 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.141 2003-10-20 19:55:17 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -2242,7 +2242,8 @@ class Venue(ServiceBase.ServiceBase):
         """
 
         # Validate private id before allowing call
-        pass
+        if privateId not in self.netServices.keys():
+            return None
 
         # Add the network location to the specified stream
         streamList = self.streamList.GetStreams()
@@ -2270,7 +2271,8 @@ class Venue(ServiceBase.ServiceBase):
     def RemoveNetworkLocationFromStream(self, privateId, streamId, networkLocationId):
 
         # Validate private id before allowing call
-        pass
+        if privateId not in self.netServices.keys():
+            return None
 
         # Remove the network location from the specified stream
         streamList = self.streamList.GetStreams()
@@ -2296,24 +2298,46 @@ class Venue(ServiceBase.ServiceBase):
         pass
 
         log.info("Removing network locations for private id %s", privateId)
-
+        
+        # Make local copy of net service private id list,
+        # with incoming private id removed
+        netServicePrivateIds = self.netServices.keys()
+        if privateId in netServicePrivateIds:
+            netServicePrivateIds.remove(privateId)
+        
         # Remove network locations tagged with specified private id
         streamList = self.streamList.GetStreams()
         for stream in streamList:
+            streamModified = 0
             for netloc in stream.networkLocations:
-                if netloc.privateId == privateId:
+                # Clean up the network locations generally,
+                # removing any that don't correspond to a 
+                # known net service
+                #
+                # This brute-force cleanup of the network locations list
+                # in a stream is being done to resolve multiple network
+                # locations being registered for a single bridge server.
+                #
+                # This is a bug that should be fixed in the bridge server
+                # or the supporting venueserver-side code.  Once the bug
+                # is fixed, this brute-force code should be removed.
+                # - turam
+                if netloc.privateId and netloc.privateId not in netServicePrivateIds:
+                
                     # Remove network location from stream
-                    log.info("Removing network location %s from stream %s",
-                    netloc.id, stream.id)
+                    log.info("Removing network location %s from stream %s; privateId=%s",
+                              netloc.id, stream.id, netloc.privateId)
                     stream.RemoveNetworkLocation(netloc.id)
-
-                    # Send a ModifyStream event
-                    self.server.eventService.Distribute( self.uniqueId,
-                    Event( Event.MODIFY_STREAM,
-                    self.uniqueId,
-                    stream ) )
-
-
+                    streamModified = 1
+                    
+            if streamModified:
+                # Send a ModifyStream event
+                self.server.eventService.Distribute( self.uniqueId,
+                          Event( Event.MODIFY_STREAM,
+                          self.uniqueId,
+                          stream ) )
+                    
+                    
     def GetEventServiceLocation(self):
         return (self.server.eventService.GetLocation(), self.uniqueId)
     GetEventServiceLocation.soap_export_as = "GetEventServiceLocation"
