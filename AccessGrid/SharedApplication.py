@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.7 2004-03-22 18:35:37 eolson Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.8 2004-03-22 19:04:13 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.7 2004-03-22 18:35:37 eolson Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.8 2004-03-22 19:04:13 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -29,6 +29,7 @@ from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
+from AccessGrid.Security import X509Subject, Role
 
 log = Log.GetLogger(Log.SharedApplication)
 
