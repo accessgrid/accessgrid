@@ -29,7 +29,7 @@ class AuthorizationManager:
       """Check for user in list of authorized users"""
       if user in self.authorizedUsers:
          print "authorized", user
-         return True
+         return 1
       else:
          print "did NOT authorize", user
-         return False
+         return 0

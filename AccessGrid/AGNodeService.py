@@ -207,8 +207,8 @@ class AGNodeService( ServiceBase ):
       if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
 
       print "In load configuration "
-      hadServiceException = False
-      hadServiceManagerException = False
+      hadServiceException = 0
+      hadServiceManagerException = 0
       services = []
       serviceConfigs = []
       try:
@@ -263,7 +263,7 @@ class AGNodeService( ServiceBase ):
             Client.Handle( serviceManager.uri ).get_proxy().Ping(  )
          except:
             print "* * Couldn't contact host ; uri=", serviceManager.uri
-            hadServiceManagerException = True
+            hadServiceManagerException = 1
 #FIXME - # need to handle unreachable service managers ####del self.hosts[ h.id ]
 
       #
@@ -283,7 +283,7 @@ class AGNodeService( ServiceBase ):
             Client.Handle( s.serviceManagerUri ).get_proxy().AddServiceDescription( s )
          except:
             print "Exception adding service", sys.exc_type, sys.exc_value
-            hadServiceException = True
+            hadServiceException = 1
 
          try:
             # - Configure the service
@@ -294,7 +294,7 @@ class AGNodeService( ServiceBase ):
             Client.Handle( s.uri ).get_proxy().SetConfiguration( serviceConfigs[index] )
          except:
             print "Exception setting config", sys.exc_type, sys.exc_value
-            hadServiceException = True
+            hadServiceException = 1
 
       if hadServiceManagerException and hadServiceException:
          raise faultType("AGNodeService.LoadConfiguration failed: service manager and service faults")

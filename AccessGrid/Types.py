@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.8 2003-01-23 14:25:56 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.9 2003-01-23 17:21:05 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -118,7 +118,7 @@ class AGResource:
     def __init__( self, type=None, resource=None ):
         self.type = type
         self.resource = resource
-        self.inUse = False
+        self.inUse = 0
 
     def GetType( self ):
         return self.type
@@ -192,7 +192,7 @@ class AGServiceImplementation:
             else:
                 exefile = file
                 if exefile.endswith(".py"):
-                    self.isPython = True
+                    self.isPython = 1
 
         #
         # extract executable file from zip

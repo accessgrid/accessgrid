@@ -110,16 +110,16 @@ class AGServiceManager( ServiceBase ):
          #
          print "** resourceToAssign = ", resourceToAssign, type(resourceToAssign)
          if resourceToAssign != None and resourceToAssign != "None":
-            foundResource = False
+            foundResource = 0
             for resource in self.resources:
                if resource.resource == resourceToAssign.resource:
-                  if resource.inUse == True:
+                  if resource.inUse == 1:
                      print "** Resource is already in use ! ", resource.resource
                      # should error out here later; for now, services aren't using the resources anyway
-                  foundResource = True
+                  foundResource = 1
                   break
 
-            if foundResource == False:
+            if foundResource == 0:
                print "** Resource does not exist! ", resourceToAssign.resource
 #FIXME - # should error out here later; for now, services aren't using the resources anyway
 
@@ -221,13 +221,13 @@ class AGServiceManager( ServiceBase ):
                # Free the resource
                #
                if service.resource.resource != None and service.resource.resource != "None":
-                  foundResource = False
+                  foundResource = 0
                   for resource in self.resources:
                      if resource.resource == service.resource.resource:
-                        resource.inUse = False
-                        foundResource = True
+                        resource.inUse = 0
+                        foundResource = 1
 
-                  if foundResource == False:
+                  if foundResource == 0:
                      print "** Resource used by service not found !! ", service.resource.resource
 
                break

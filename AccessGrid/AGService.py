@@ -27,7 +27,7 @@ class AGService( ServiceBase ):
       self.outputStreamConfiguration = None
       self.capabilities = []
       self.authManager = AuthorizationManager()
-      self.started = False
+      self.started = 0
       self.childPid = None
 
       self.configuration = dict()
@@ -47,7 +47,7 @@ class AGService( ServiceBase ):
       """
 
       # if started, stop
-      if self.started == True:
+      if self.started == 1:
          self._Stop()
 
       options.insert(0,self.executable)
@@ -55,7 +55,7 @@ class AGService( ServiceBase ):
       print self.__class__, "starting with options = ", options
       self.childPid = os.spawnv( os.P_NOWAIT, self.executable, options )
       print "childPid = ", self.childPid
-      self.started = True
+      self.started = 1
 
 
    def Stop( self, connInfo ):
@@ -76,7 +76,7 @@ class AGService( ServiceBase ):
    def _Stop( self ):
       """Internal : Stop the service"""
 
-      self.started = False
+      self.started = 0
 
       if self.childPid != None:
          if sys.platform == 'win32':
