@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.25 2003-09-11 21:43:05 lefvert Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.26 2003-09-12 20:36:57 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -533,65 +533,89 @@ class PassphraseDialog(wxDialog):
 
         sizer = wxBoxSizer(wxVERTICAL)
 
-        t = wxStaticText(self, -1, "Create a proxy for %s" % cert.GetSubject())
-        sizer.Add(t, 0, wxEXPAND | wxALL, 4)
 
         if msg != "":
             t = wxStaticText(self, -1, msg)
             sizer.Add(t, 0, wxEXPAND | wxALL, 4)
             
+            
+        t = wxStaticText(self, -1, "Create a proxy for %s" % cert.GetSubject())
+        sizer.Add(t, 0, wxEXPAND | wxALL, 10)
 
-        grid = wxFlexGridSizer(cols = 2, hgap = 3, vgap = 3)
-        sizer.Add(grid, 1, wxEXPAND | wxALL, 4)
-
+        self.proxySizer = wxFlexGridSizer(cols = 2, hgap = 10, vgap = 10)
+            
         t = wxStaticText(self, -1, "Pass phrase:")
-        grid.Add(t, 0, wxALL, 4)
+        self.proxySizer.Add(t)
 
         passId = wxNewId()
         self.passphraseText = wxTextCtrl(self, passId,
                                          style = wxTE_PASSWORD | wxTE_PROCESS_ENTER )
-        grid.Add(self.passphraseText, 0, wxEXPAND | wxALL, 4)
+        self.proxySizer.Add(self.passphraseText, 0, wxEXPAND)
+        
+        sizer.Add(self.proxySizer, 0, wxEXPAND | wxALL, 10)
 
-        t = wxStaticText(self, -1, "Key size:")
-        grid.Add(t, 0, wxALL, 4)
+        self.detailsButton = wxButton(self, wxNewId(), "Proxy Details...")
+        sizer.Add(self.detailsButton, 0, wxALL, 10)
+        EVT_BUTTON(self, self.detailsButton.GetId(), self.OnProxyDetails)
 
-        keyId = wxNewId()
-        self.keyList = wxComboBox(self, keyId,
-                                  style = wxCB_READONLY,
-                                  choices = ["512", "1024", "2048", "4096"])
-        self.keyList.SetSelection(1)
-        grid.Add(self.keyList, 1, wxEXPAND | wxALL, 4)
-
-        t = wxStaticText(self, -1, "Proxy lifetime (hours):")
-        grid.Add(t, 0, wxALL, 4)
-
-        lifeTimeId = wxNewId()
-        self.lifetimeText = wxTextCtrl(self, lifeTimeId, "8", style = wxTE_PROCESS_ENTER )
-        grid.Add(self.lifetimeText, 0, wxEXPAND | wxALL, 4)
-
-        grid.AddGrowableCol(1)
 
         h = wxBoxSizer(wxHORIZONTAL)
 
         sizer.Add(h, 0, wxALIGN_CENTER | wxALL, 4)
 
         b = wxButton(self, -1, "OK")
-        h.Add(b, 0, wxALL, 4)
+        h.Add(b, 0, wxALL, 10)
         b.SetDefault()
         EVT_BUTTON(self, b.GetId(), self.OnOK)
 
         b = wxButton(self, -1, "Cancel")
-        h.Add(b, 0, wxALL, 4)
+        h.Add(b, 0, wxALL, 10)
         EVT_BUTTON(self, b.GetId(), self.OnCancel)
 
         EVT_TEXT_ENTER(self, passId, self.KeyDown)
+
+        self.proxySizer.AddGrowableCol(1)
+
+        keyId = wxNewId()
+        self.keyList = wxComboBox(self, keyId,
+                                  style = wxCB_READONLY,
+                                  choices = ["512", "1024", "2048", "4096"])
+        self.keyList.SetSelection(1)
+        self.keyList.Hide()
+
+        lifeTimeId = wxNewId()
+        self.lifetimeText = wxTextCtrl(self, lifeTimeId, "8", style = wxTE_PROCESS_ENTER )
+        self.lifetimeText.Hide()
+
         EVT_TEXT_ENTER(self, keyId, self.KeyDown)
         EVT_TEXT_ENTER(self, lifeTimeId, self.KeyDown)
-       
+              
         self.SetSizer(sizer)
         self.SetAutoLayout(1)
         self.Fit()
 
+    def OnProxyDetails(self, event):
+        self.detailsButton.Destroy()
+
+        t = wxStaticText(self, -1, "Key size:")
+        self.proxySizer.Add(t)
+
+       
+        self.proxySizer.Add(self.keyList, 0, wxEXPAND)
+        self.keyList.Show()
+
+        box = wxBoxSizer(wxHORIZONTAL)
+        t = wxStaticText(self, -1, "Proxy lifetime (hours):")
+        self.proxySizer.Add(t)
+
+        
+        self.proxySizer.Add(self.lifetimeText, 0, wxEXPAND)
+        self.lifetimeText.Show()
+                
+        
+        self.Fit()
+
+        
     def GetInfo(self):
         return (self.passphraseText.GetValue(),
                 self.lifetimeText.GetValue(),
