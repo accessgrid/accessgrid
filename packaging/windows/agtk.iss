@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.83 2004-05-18 18:22:53 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.84 2004-05-18 19:05:16 judson Exp $
 ;
 
 ; Set externally
@@ -154,6 +154,7 @@ Root: HKCR; Subkey: x-ag-venueclient; ValueType: dword; ValueName: BrowserFlags;
 Root: HKCR; Subkey: x-ag-venueclient; ValueType: string; ValueName: ; ValueData: Access Grid Virtual Venue Description
 Root: HKCR; Subkey: x-ag-venueclient\shell; ValueType: string; ValueName: ; ValueData: Open
 Root: HKCR; Subkey: x-ag-venueclient\shell\Open\command; ValueType: string; ValueData: """ ""{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe"" ""{app}\bin\GoToVenue.py --file %1"" """
+
 [Tasks]
 Name: desktopicon; Description: Create &Desktop Icons; GroupDescription: Additional icons:
 Name: quicklaunchicon; Description: Create a &Quick Launch Icon; GroupDescription: Additional icons:; Flags: unchecked
