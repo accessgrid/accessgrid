@@ -6,14 +6,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: RegisterApp.py,v 1.5 2003-09-18 17:50:44 judson Exp $
+# RCS-ID:      $Id: RegisterApp.py,v 1.6 2003-09-18 19:02:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This program is used to register applications with the users AGTk installation.
 """
-__revision__ = "$Id: RegisterApp.py,v 1.5 2003-09-18 17:50:44 judson Exp $"
+__revision__ = "$Id: RegisterApp.py,v 1.6 2003-09-18 19:02:58 judson Exp $"
 
 import os
 import re
@@ -95,13 +95,14 @@ def main():
     then digs the files out of the directory, or archive and installs them.
     It registers the application with the users AG environment.
     """
-    workingDir = "."
+    workingDir = os.getcwd()
     appFile = None
     zipFile = None
     commands = dict()
     files = list()
     origDir = os.getcwd()
     appName = None
+    verbose = 0
     
     # We're going to assume there's a .app file in the current directory,
     # but only after we check for a command line argument that specifies one.
@@ -109,20 +110,22 @@ def main():
     # file and the other parts of the shared application.
     
     try:
-        opts = getopt.getopt(sys.argv[1:], "f:d:z:n:hu", ["file=",
-                                                          "dir=",
-                                                          "zip=",
-                                                          "name=",
-                                                          "unregister",
-                                                          "help"])[0]
+        opts = getopt.getopt(sys.argv[1:], "f:d:z:n:huv", ["file=",
+                                                           "dir=",
+                                                           "zip=",
+                                                           "name=",
+                                                           "unregister",
+                                                           "verbose",
+                                                           "help"])[0]
     except getopt.GetopError:
         Usage()
         sys.exit(2)
 
     for opt, arg in opts:
         if opt in ("-f", "--file"):
-            workingDir = os.path.dirname(appFile)
-            appFile = os.path.basename(appFile)
+            if os.path.isabs(appFile):
+                workingDir = os.path.dirname(appFile)
+                appFile = os.path.basename(appFile)
         elif opt in ("-d", "--dir"):
             workingDir = arg
         elif opt in ("-z", "--zip"):
@@ -131,6 +134,8 @@ def main():
             print "Unregistering applications does not work yet."
         elif opt in ("-n", "--name"):
             appName = arg
+        elif opt in ("-v", "--verbose"):
+            verbose = 1
         elif opt in ("-h", "--help"):
             Usage()
             sys.exit(0)
@@ -161,17 +166,23 @@ def main():
     # Register the App
     app = CmdlineApplication()
     appdb = app.GetAppDatabase()
-    if appName == "":
+    if appName == None:
         appName = appInfo["application.name"]
     files = appInfo["application.files"]
     if type(files) is StringType:
         files = re.split(r',\s*|\s+', files)
+
+    if verbose:
+        print "Name: %s" % appName
+        print "Mime Type: %s" % appInfo["application.mimetype"]
+        print "Extension: %s" % appInfo["application.extension"]
+        print "From: %s" % workingDir
         
     appdb.RegisterApplication(appName,
                               appInfo["application.mimetype"],
                               appInfo["application.extension"],
-                              commands, files, 
-                              os.getcwd())
+                              commands, files,
+                              workingDir)
 
     # Clean up, remove the temporary directory and files from
     # unpacking the zip file
