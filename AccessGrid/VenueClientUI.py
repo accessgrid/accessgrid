@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.57 2004-05-14 20:52:58 judson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.58 2004-05-17 21:33:24 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.57 2004-05-14 20:52:58 judson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.58 2004-05-17 21:33:24 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2971,6 +2971,7 @@ class ContentListPanel(wxPanel):
                         # application
                         self.parent.RemoveAppCB(event)
 
+
     def OnSelect(self, event):
         pass
         #
@@ -3386,17 +3387,8 @@ class ContentListPanel(wxPanel):
                 
     def CleanUp(self):
     
-        for index in self.participantDict.values():
-            self.tree.Delete(index)
-
-        for index in self.serviceDict.values():
-            self.tree.Delete(index)
-        
-        for index in self.dataDict.values():
-            self.tree.Delete(index)
-
-        for index in self.applicationDict.values():
-            self.tree.Delete(index)
+        self.tree.DeleteAllItems()
+        self.__SetTree()
 
         self.participantDict.clear()
         self.dataDict.clear()
