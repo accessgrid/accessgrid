@@ -18,6 +18,8 @@ import getopt
 import shutil
 import win32api
 import _winreg
+import logging
+
 from win32com.shell import shell, shellcon
 
 #
@@ -52,7 +54,7 @@ try:
     ip = os.path.join(innopath, "iscc.exe")
     inno_compiler = win32api.GetShortPathName(ip)
 except WindowsError:
-    print "Couldn't find iscc from registry key." 
+    print "BUILD: Couldn't find iscc from registry key." 
     
     # If still not found, try default path:
     innopath = r"\Program Files\ISTool 4"
@@ -133,12 +135,12 @@ if innopath != "":
     inno_compiler = os.path.join(innopath, "iscc.exe")
     if verbose:
         if os.path.exists(inno_compiler):
-            print "Found ISXTool in default path:", inno_compiler
+            print "BUILD: Found ISXTool in default path:", inno_compiler
         else:
-            print "Couldn't find ISXTool!"
-            print "  Make sure My Inno Setup Extentions are installed."
-            print "  If necessary, specify the location of iscc.exe "
-            print "  with command-line option -i."
+            print "BUILD: Couldn't find ISXTool!"
+            print "BUILD:   Make sure My Inno Setup Extentions are installed."
+            print "BUILD:   If necessary, specify the location of iscc.exe "
+            print "BUILD:   with command-line option -i."
             sys.exit()
 #
 # Grab stuff from cvs
@@ -153,7 +155,7 @@ if checkoutnew:
 
     cvs_cmd = "cvs -z6 -d %s export -d %s -D now AccessGrid" % (cvsroot,
                                                                 BuildDir)
-    print "Checking out code with command: ", cvs_cmd
+    print "BUILD: Checking out code with command: ", cvs_cmd
     os.system(cvs_cmd)
 
 #
@@ -163,7 +165,7 @@ if checkoutnew:
 RunDir = os.path.join(BuildDir, "packaging", "windows")
 
 if verbose:
-    print "Changing to directory: %s" % RunDir
+    print "BUILD: Changing to directory: %s" % RunDir
     
 os.chdir(RunDir)
 
@@ -180,7 +182,7 @@ for cmd in [
     ]:
     cmd = "%s %s %s %s" % (cmd, SourceDir, BuildDir, DestDir)
     if verbose:
-        print "Running: %s" % cmd
+        print "BUILD: Running: %s" % cmd
 
     os.system(cmd)
 
@@ -192,7 +194,7 @@ for cmd in [
 iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" /dSourceDir=%s /dBuildDir=%s" % (inno_compiler, iss_orig, AGTkVersion, metainformation.replace(' ', '_'), SourceDir, DestDir)
 
 if verbose:
-    print "Executing:", iscc_cmd
+    print "BUILD: Executing:", iscc_cmd
 
 os.system(iscc_cmd)
 
