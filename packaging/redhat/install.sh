@@ -37,9 +37,6 @@ export AG="
 AccessGrid 
 AccessGrid-VenueClient
 AccessGrid-VenueServer
-AccessGrid-AudioService 
-AccessGrid-VideoConsumer
-AccessGrid-VideoProducer
 AccessGrid-BridgeServer"
 export AG_VER="2.1.2-5"
 
