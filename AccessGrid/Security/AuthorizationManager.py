@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.28 2004-08-26 15:59:38 turam Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.29 2004-09-09 14:21:00 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.28 2004-08-26 15:59:38 turam Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.29 2004-09-09 14:21:00 turam Exp $"
 
 # External Imports
 import os
@@ -120,9 +120,6 @@ class AuthorizationManager:
                 if sl.count(s) == 0:
                     sl.append(s)
 
-            roleType = None
-            if "TYPE" in node.attributes.keys():    
-                roleType = node.attributes["TYPE"].value
             r = Role(node.attributes["name"].value, sl)
 
             return(r, numSubjs)
@@ -315,7 +312,7 @@ class AuthorizationManager:
             
         if action is None:
             log.error("Coudn't find action: %s", actionName)
-            action = Action.Action(actionName)
+            action = Action(actionName)
         else:
             self.RemoveAction(action)
             
@@ -748,7 +745,7 @@ class AuthorizationManagerI(SOAPInterface):
             roleR = self.impl.FindRole(r.name)
             
             if not roleR :
-                raise RoleNotFound(name)
+                raise RoleNotFound(r.name)
             
             subjs = self.impl.GetSubjects(roleR)
 
@@ -773,7 +770,7 @@ class AuthorizationManagerI(SOAPInterface):
         sl = Reconstitute(subjectList)
 
         if not role:
-            return RoleNotFound(r.name)
+            raise RoleNotFound(r.name)
             
         for s in sl:
             subject = Decorate(s)
@@ -858,12 +855,12 @@ class AuthorizationManagerI(SOAPInterface):
         a = self.impl.FindAction(an.name)
 
         if not a:
-            return ActionNotFound(an.name)
+            raise ActionNotFound(an.name)
         
         r = a.FindRole(rn.name)
 
         if not r:
-            return RoleNotFound(rn.name)
+            raise RoleNotFound(rn.name)
       
         a.RemoveRole(r)
 

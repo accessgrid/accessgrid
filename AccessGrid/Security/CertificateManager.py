@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.36 2004-09-06 05:53:45 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.37 2004-09-09 14:21:00 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.36 2004-09-06 05:53:45 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.37 2004-09-09 14:21:00 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -410,8 +410,8 @@ class CertificateManager(object):
                 log.info("%s might be a cert" % (path))
 
                 # Check for existence of signing policy
-                id = f.split('.')[0]
-                signingPolicyFile = '%s.signing_policy' % (id,)
+                certbasename = f.split('.')[0]
+                signingPolicyFile = '%s.signing_policy' % (certbasename,)
                 signingPath = os.path.join(caDir,signingPolicyFile)
                 if not os.path.isfile(signingPath):
                     log.info("Not importing CA cert %s; couldn't find signing policy file %s",
@@ -487,8 +487,8 @@ class CertificateManager(object):
 
         if self.IsIdentityCert(cert):
 
-            hash = cert.GetModulusHash()
-            pkeyPath = self.GetCertificateRepository().GetPrivateKeyPath(hash)
+            hsh = cert.GetModulusHash()
+            pkeyPath = self.GetCertificateRepository().GetPrivateKeyPath(hsh)
             if not pkeyPath or not os.path.isfile(pkeyPath):
                 return "Missing private key"
 
@@ -574,7 +574,7 @@ class CertificateManager(object):
             #
 
             if subj in checked:
-                return 0
+                return ""
             checked[subj] = 1
             
             issuers = repo.FindCertificatesWithSubject(str(c.GetIssuer()))
@@ -836,8 +836,8 @@ class CertificateManager(object):
         # Clear out the ca dir first.
         #
 
-        for file in os.listdir(self.caDir):
-            path = os.path.join(self.caDir, file)
+        for f in os.listdir(self.caDir):
+            path = os.path.join(self.caDir, f)
             # log.debug("Unlink %s", path)
             os.unlink(path)
             
@@ -1232,7 +1232,6 @@ class CertificateManager(object):
         and msg is an error message.
         """
 
-        success = 0
         client = CRSClient.CRSClient(server, proxyHost, proxyPort)
         try:
             certRet = client.RetrieveCertificate(token)

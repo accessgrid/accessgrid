@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Utilities.py,v 1.4 2004-03-19 22:18:06 olson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.5 2004-09-09 14:21:00 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@
 pyGlobus hosting environment utility classes and functions.
 """
 
-__revision__ = "$Id: Utilities.py,v 1.4 2004-03-19 22:18:06 olson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.5 2004-09-09 14:21:00 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import pyGlobus.io
@@ -86,6 +86,7 @@ def CreateTCPAttrSelfAuth():
     """
 
     attr = CreateTCPAttrDefault()
+    authdata = pyGlobus.io.AuthData()
 
     authmode = pyGlobus.ioc.GLOBUS_IO_SECURE_AUTHORIZATION_MODE_SELF
 
