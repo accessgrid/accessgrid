@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.152 2004-03-02 21:44:21 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.153 2004-03-02 22:43:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.152 2004-03-02 21:44:21 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.153 2004-03-02 22:43:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -30,7 +30,7 @@ from threading import Condition, Lock
 
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.hosting import Decorate, Reconstitute, GetSOAPContext
-from AccessGrid.Security.pyGlobus.Utilities import CreateSubjectFromGSIContext
+from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
@@ -966,13 +966,9 @@ class Venue(AuthorizationMixIn):
         streamDescriptions are the stream descriptions the venue
         has found best match this clients capabilities.
         """
-
         log.debug("Enter called.")
 
         privateId = None
-
-        # First we search for this user
-        # privateId = self.FindUserByProfile(clientProfile)
 
         # If we don't find them, we assign a new id
         if privateId == None:
@@ -980,23 +976,15 @@ class Venue(AuthorizationMixIn):
             log.debug("Enter: Assigning private id: %s", privateId)
         else:
             log.debug("Enter: Client already in venue: %s", privateId)
-        # raise ClientAlreadyPresent
 
-        #
         # Send this before we set up client state, so that
         # we don't end up getting our own enter event enqueued.
-        #
-
         self.DistributeEvent(Event(Event.ENTER, self.uniqueId, clientProfile))
 
-        #
         # Create venue client state object
-        #
-
         vcstate = self.clients[privateId] = VenueClientState(self,
                                                              privateId,
                                                              clientProfile)
-
         vcstate.UpdateAccessTime()
         self._UpdateProfileCache(clientProfile)
 

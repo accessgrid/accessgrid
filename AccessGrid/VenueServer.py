@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.117 2004-03-02 19:27:30 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.118 2004-03-02 22:43:58 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.117 2004-03-02 19:27:30 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.118 2004-03-02 22:43:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -37,7 +37,7 @@ from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 from AccessGrid.Security import X509Subject, Role
-from AccessGrid.Security.pyGlobus.Utilities import CreateSubjectFromGSIContext
+from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
 from AccessGrid.Utilities import PathFromURL

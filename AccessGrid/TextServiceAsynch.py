@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.18 2004-02-24 21:34:51 judson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.19 2004-03-02 22:43:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.18 2004-02-24 21:34:51 judson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.19 2004-03-02 22:43:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client, Server
@@ -32,8 +32,8 @@ from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import HeartbeatEvent, ConnectEvent, TextEvent
 from AccessGrid.Events import DisconnectEvent, MarshalledEvent
 from AccessGrid.Events import TextPayload
-from AccessGrid.Security.pyGlobus.Utilities import CreateSubjectFromGSIContext
-from AccessGrid.Security.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
+from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
+from AccessGrid.Security.Utilities import CreateTCPAttrAlwaysAuth
 from AccessGrid.GUID import GUID
 
 log = logging.getLogger("AG.TextService")

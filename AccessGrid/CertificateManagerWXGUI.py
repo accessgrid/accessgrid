@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.33 2004-02-24 21:44:29 judson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.34 2004-03-02 22:43:58 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.33 2004-02-24 21:44:29 judson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.34 2004-03-02 22:43:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -32,15 +32,13 @@ from OpenSSL_AG import crypto
 
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.UIUtilities import ErrorDialogWithTraceback
-
-from AccessGrid import CertificateManager
-from AccessGrid import CertificateRepository
-
+from AccessGrid.Security import CertificateManager, CertificateRepository
 from AccessGrid.CertificateRequestTool import CertificateRequestTool
 from AccessGrid.CertificateRequestTool import CertificateStatusDialog
 from AccessGrid.Security.CRSClient import CRSClient, CRSClientConnectionFailed
 from AccessGrid.Security.CRSClient import CRSClientInvalidURL
-from AccessGrid.Security.pyGlobus import ProxyGenExceptions
+from AccessGrid.Security.ProxyGen import InvalidPassphraseException
+from AccessGrid.Security.ProxyGen import GridProxyInitError
 
 log = logging.getLogger("AG.CertificateManagerWXGUI")
 #
@@ -420,7 +418,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
                 print "Proxy created"
                 break
-            except ProxyGenExceptions.InvalidPassphraseException:
+            except InvalidPassphraseException:
                 dlg = wxMessageDialog(None, "Invalid passphrase. Try again?",
                                       "Invalid passphrase",
                                       style= wxYES_NO | wxYES_DEFAULT)
@@ -429,7 +427,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
                 if rc != wxID_YES:
                     return 0
-            except ProxyGenExceptions.GridProxyInitError, e:
+            except GridProxyInitError, e:
                 msg = "Error in proxy initialization:\n"
                 msg += e.args[0] 
                 if e.args[1] != "":

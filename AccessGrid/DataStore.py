@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.59 2004-02-24 21:56:52 judson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.60 2004-03-02 22:43:58 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.59 2004-02-24 21:56:52 judson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.60 2004-03-02 22:43:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -32,17 +32,20 @@ import cStringIO
 import Queue
 from time import localtime , strftime
 import logging
+import BaseHTTPServer
 
 from pyGlobus.io import GSITCPSocketException
+from pyGlobus import io
 
 import AccessGrid.GUID
+from AccessGrid import Platform
 from AccessGrid.NetUtilities import GetHostname
 from AccessGrid.Descriptions import DataDescription, CreateDataDescription
-from AccessGrid import Platform
 from AccessGrid.EventServiceAsynch import EventService
 from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent,  AddDataEvent
 from AccessGrid.EventClient import EventClient, EventClientWriteDataException
 from AccessGrid.Events import Event, ConnectEvent, HeartbeatEvent
+from AccessGrid.Security import Utilities
 
 log = logging.getLogger("AG.DataStore")
 
@@ -749,8 +752,6 @@ class DataStore:
             self.dataDescContainer.AddData(description)
 
 
-
-import BaseHTTPServer
 
 class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
@@ -1470,9 +1471,6 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
 
         while not self.done:
             self.handle_request()
-
-from pyGlobus import io
-from AccessGrid.Security.pyGlobus import Utilities
 
 class GSIHTTPTransferServer(io.GSITCPSocketServer, TransferServer):
     """

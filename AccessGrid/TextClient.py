@@ -5,27 +5,27 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.31 2004-02-25 15:49:25 turam Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.32 2004-03-02 22:43:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.31 2004-02-25 15:49:25 turam Exp $"
+__revision__ = "$Id: TextClient.py,v 1.32 2004-03-02 22:43:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
 import logging
 import struct
 
-from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
-from AccessGrid.Events import DisconnectEvent, ClientExitingEvent, TextEvent
-from AccessGrid.Security.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
-from AccessGrid.NetUtilities import GetHostname
-
 from pyGlobus.io import GSITCPSocket, IOBaseException
 from pyGlobus.util import Buffer
 from pyGlobus import ioc
+
+from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
+from AccessGrid.Events import DisconnectEvent, ClientExitingEvent, TextEvent
+from AccessGrid.Security.Utilities import CreateTCPAttrAlwaysAuth
+from AccessGrid.NetUtilities import GetHostname
 
 class SimpleTextProcessor:
     def __init__(self, myProfile=None, textConnection=None,
