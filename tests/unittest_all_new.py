@@ -2,7 +2,7 @@
 # Name:        unittest_all.py
 # Purpose:     Automatic testing with machine readable output
 # Created:     2004/04/014
-# RCS-ID:      $Id: unittest_all_new.py,v 1.4 2004-04-15 17:58:49 judson Exp $
+# RCS-ID:      $Id: unittest_all_new.py,v 1.5 2004-04-16 15:12:22 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -12,54 +12,78 @@ import xml.dom.minidom
 from unittest import TestResult, TestSuite, findTestCases
 from optparse import OptionParser
 
-html_xform = """<?xml version='1.0' encoding='UTF-8'?>
-<xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
-<xsl:output method='html'/>
- <xsl:template match='BeaconReport'>
+html_xform = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">
+<xsl:output method=\"html\"/>
+ <xsl:template match=\"TestResults\">
  <html>
   <head>
-   <title>Multicast Beacon Report</title>
+   <title>AGTk Automatic Test Results</title>
   </head>
-  <body bgcolor='#A0A0A0' text='#000000'>
-   <H2>Multicast Beacon Report for <xsl:value-of select='@time'/></H2>
-     <table border='1' cellpadding='2'>
+  <body bgcolor=\"#ffffff\" text=\"#000000\">
+   <H2>AGTk Automatic Test Results</H2>
+   <H3>Elapsed Time <xsl:value-of select=\"@Elapsed_Time\"/></H3>
+     <table border=\"1\" cellpadding=\"2\">
       <tbody>
-       <xsl:apply-templates select='Beacon'/>
+        <xsl:apply-templates select=\"Test\"/>
       </tbody>
      </table>
   </body>
  </html>
  </xsl:template>
 	
- <xsl:template match='Beacon'>
+ <xsl:template match=\"Test[@Result='passed']\">
   <tr>
    <td>
-    SSRC: <xsl:value-of select='@ssrc'/><br/>	
-    Host: <xsl:value-of select='@name'/><br/>
-    IP: <xsl:value-of select='@ip'/>
+    <xsl:value-of select=\"@Name\"/><br/>
    </td>
-   <xsl:apply-templates select='Data'/>
+   <td bgcolor=\"#00ff00\">
+    <xsl:value-of select=\"@Result\"/><br/>
+   </td>
   </tr>
  </xsl:template>
-	
- <xsl:template match='Data'>
-  <td>
-   SSRC: <xsl:value-of select='@send_ssrc'/><br/>
-   <xsl:apply-templates select='Loss'/>
-  </td>
+
+ <xsl:template match=\"Test[@Result='failed']\">
+  <tr>
+   <td>
+    <xsl:value-of select=\"@Name\"/><br/>	
+   </td>
+   <td bgcolor=\"#ff0000\">
+    <xsl:value-of select=\"@Result\"/><br/>
+   </td>
+   <td>
+    <xsl:value-of select=\"@Detail\"/>
+   </td>
+  </tr>
  </xsl:template>
- 
- <xsl:template match='Loss'>
-  Total Loss: <xsl:value-of select='@total'/><br/>
-  Fractional Loss: <xsl:value-of select='@fractional'/>
- </xsl:template>
- 
 </xsl:stylesheet>
 """
 
 text_xform="""<?xml version='1.0' encoding='UTF-8'?>
-<xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">
+<xsl:output method=\"text\"/>
+ <xsl:template match=\"TestResults\">
+   AGTk Automatic Test Results
+   Elapsed Time: <xsl:value-of select=\"@Elapsed_Time\"/>
+   <xsl:text>&#10;</xsl:text>
+   <xsl:text>&#10;</xsl:text>
 
+   <xsl:apply-templates select=\"Test\"/>
+
+ </xsl:template>
+	
+<xsl:template match=\"Test[@Result='passed']\">
+<xsl:value-of select=\"@Name\"/><xsl:text>...</xsl:text>
+<xsl:value-of select=\"@Result\"/><xsl:text>&#10;</xsl:text>
+</xsl:template>
+
+<xsl:template match=\"Test[@Result='failed']\">
+<xsl:value-of select=\"@Name\"/><xsl:text>...</xsl:text>
+<xsl:value-of select=\"@Result\"/><xsl:text>&#10;</xsl:text>
+     Details:
+     <xsl:value-of select=\"@Detail\"/><xsl:text>&#10;&#10;</xsl:text>
+
+</xsl:template>
 </xsl:stylesheet>
 """
 
@@ -153,10 +177,10 @@ if __name__ == '__main__':
                       default=None,
                       help="specify the output file to store results in.")
     parser.add_option("--html", dest="format", metavar="FORMAT", 
-                      action="store_const", const="html", default="text",
+                      action="store_const", const="html", default=None,
                       help="Output HTML results.")
     parser.add_option("--text", dest="format", metavar="FORMAT", 
-                      action="store_const", const="text", default="text",
+                      action="store_const", const="text", default=None,
                       help="Output TEXT results.")
     
     options, args = parser.parse_args()
@@ -184,7 +208,7 @@ if __name__ == '__main__':
     output, result = XMLTestRunner().run(suite)
 
     ro = output
-    if options.format == 'html':
+    if options.format is not None:
         try:
             from Ft.Lib import Uri
             from Ft.Xml.InputSource import DefaultFactory
@@ -193,13 +217,18 @@ if __name__ == '__main__':
             print "Couldn't import modules to generate HTML."
             
         processor = Processor()
-        xform = DefaultFactory.fromString(html_xform, "")
+
+        if options.format == "html":
+            xform = DefaultFactory.fromString(html_xform, "uri")
+        elif options.format == "text":
+            xform = DefaultFactory.fromString(text_xform, "uri")
+
         processor.appendStylesheet(xform)
         
         try:
-            ro = processor.run(output)
-        except:
-            print "Failed to generate HTML."
+            ro = processor.run(DefaultFactory.fromString(output, "uri"))
+        except Exception, e:
+            print "Failed to generate HTML. (%s)" % e
             ro = None
                 
     if options.outputFile is not None and ro is not None:
@@ -207,4 +236,7 @@ if __name__ == '__main__':
         f.write(ro)
         f.close()
     else:
-        print output
+        if ro is not None:
+            print ro
+        else:
+            print output
