@@ -23,6 +23,7 @@ def suite():
         'unittest_GUID',
         'unittest_MulticastAddressAllocator',
         'unittest_NetworkLocation',
+        'unittest_Node',
         'unittest_Platform',
         'unittest_VenueServer',
         'unittest_version'
