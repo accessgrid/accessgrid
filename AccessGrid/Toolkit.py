@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.73 2004-07-27 19:21:20 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.74 2004-08-02 20:57:54 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.73 2004-07-27 19:21:20 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.74 2004-08-02 20:57:54 turam Exp $"
 
 # Standard imports
 import os
@@ -120,18 +120,19 @@ class AppBase:
 
        self.log.info("Logfile Name: %s", self.name)
        
-       if self.name is not None and not self.name.startswith(os.sep) \
+       if self.name:
+           if not self.name.startswith(os.sep) \
                                      and not self.name.startswith("."):
-           filename = os.path.join(self.userConfig.GetLogDir(), self.name)
-       else:
-           filename = self.name
+               filename = os.path.join(self.userConfig.GetLogDir(), self.name)
+           else:
+               filename = self.name
            
-       fh = Log.FileHandler(filename)
-           
-       fh.setFormatter(Log.GetFormatter())
-       self.fhLoggerLevels = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
-       self.fhLoggerLevels.SetLevel(Log.DEBUG)
-       self.loggerLevels = self.fhLoggerLevels
+           fh = Log.FileHandler(filename)
+
+           fh.setFormatter(Log.GetFormatter())
+           self.fhLoggerLevels = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
+           self.fhLoggerLevels.SetLevel(Log.DEBUG)
+           self.loggerLevels = self.fhLoggerLevels
        
        # Send the log in memory to stream (debug) or file handler.
        if self.options.debug:
