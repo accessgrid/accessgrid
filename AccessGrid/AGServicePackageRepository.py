@@ -3,7 +3,7 @@
 # Purpose:     
 #
 # Created:     2004/03/30
-# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.10 2004-05-06 17:52:12 turam Exp $
+# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.11 2004-05-07 20:14:45 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -59,8 +59,10 @@ class AGServicePackageRepository:
         threading.Thread( target=self.s.run,
                           name="PackageRepo TransferServer" ).start()
         self.running = 1
-        log.debug("Started AGServicePackageRepository Transfer Server at: %s",
-                  self.baseUrl)
+        
+        log.info("Started AGServicePackageRepository Transfer Server")
+        log.info(" url = %s", self.baseUrl)
+        log.info(" dir = %s", self.servicesDir)
 
     def Stop(self):
         if self.running:
