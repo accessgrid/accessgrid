@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.1.1.1 2002-12-16 22:25:37 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.2 2003-01-06 20:49:45 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 class ObjectDescription:
-    __doc__ = """
+    """
     An object description has four parts:
         name : string
         description : string
@@ -71,7 +71,7 @@ class ServiceDescription(ObjectDescription):
     def GetMimeType(self):
         return self.mimeType    
       
-class VenueDescription(ObjectDescription.ObjectDescription):
+class VenueDescription(ObjectDescription):
     __doc__ = """
     This is a Venue Description. The Venue Description is used by Venue Clients
     to present the appearance of a space to the users.
@@ -88,7 +88,7 @@ class VenueDescription(ObjectDescription.ObjectDescription):
     extendedDescription = ""
     
     def __init__(self, name, description, icon, extendeddescription):
-        ObjectDescription.ObjectDescription.__init__(self, name, description, "", icon)
+        ObjectDescription.__init__(self, name, description, "", icon)
         self.extendedDescription = extendeddescription
         
     def SetExtendedDescription(self, extendeddescription):
