@@ -1,6 +1,8 @@
 import sys, os, re
+import string
 import shutil
 import zipfile
+import ConfigParser
 
 """
 Make Access Grid shared application packages
@@ -15,30 +17,31 @@ def usage():
 if len(sys.argv) < 2:
     usage()
 
-inputDir = sys.argv[1]
-outputDir = sys.argv[1]
+inputDir = os.path.abspath(sys.argv[1])
+outputDir = inputDir
 
 if len(sys.argv) == 3:
-    outputDir = sys.argv[2]
+    outputDir = os.path.abspath(sys.argv[2])
 elif len(sys.argv) > 3:
     usage()
 
-absOutputDir = os.path.abspath(outputDir)
-if not os.path.exists(absOutputDir):
-    os.makedirs(absOutputDir)
+if not os.path.exists(outputDir):
+    os.makedirs(outputDir)
     
 if not os.path.isdir(inputDir):
     print "The following directory does not exist: ", inputDir
     sys.exit(-1)
 else:
-    things = os.listdir(inputDir)
-
+    things = [d for d in os.listdir(inputDir) if os.path.isdir(os.path.join(inputDir, d))]
+    print "THINGS: ", things
+    
 for thing in things:
     Desc = None
     adir = os.path.join(inputDir, thing)
     os.chdir(adir)
 
-    files = os.listdir(adir)
+    files = filter(os.path.isfile, os.listdir('.'))
+    print "FILES: ", files
     
     appfilter = re.compile(".*app", re.IGNORECASE)
 
@@ -52,26 +55,29 @@ for thing in things:
         for f in files:
             if f.split('.')[0] == thing:
                 Desc = f
-                ImplPy = thing + ".py"
-
-        if Desc is None:
-            continue
     else:
         Desc = files[0]
-        ImplPy = Desc.split('.')[0] + ".py"
 
     if not os.path.isfile(Desc):
+        print "Got bad description: %s" % Desc
         continue
 
+    # read the .app file and get the file list from it
+    af = ConfigParser.ConfigParser()
+    af.read(Desc)
+    flist = map(string.strip, af.get('application', 'files').split(','))
+    print flist
+    
     # if associated file found, zip em up together in the outputDir
     zipFile = thing + ".zip"
-    long_zipFile = os.path.join(absOutputDir, zipFile)
+    long_zipFile = os.path.join(outputDir, zipFile)
     print "Writing Package File:", long_zipFile
     zf = zipfile.ZipFile( long_zipFile, "w" )
     zf.write( Desc )
     # check for various implementations
-    if os.path.isfile(ImplPy):
-        zf.write(ImplPy)
+    for f in flist:
+        print "Adding file: ", f
+        zf.write(f)
 
     zf.close()
 
