@@ -6,16 +6,16 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.23 2004-04-05 19:03:42 turam Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.24 2004-04-07 23:50:40 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.23 2004-04-05 19:03:42 turam Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.24 2004-04-07 23:50:40 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
-from AccessGrid.hosting import Client, Server
+from AccessGrid.hosting import Client
 import socket
 import sys
 import pickle
