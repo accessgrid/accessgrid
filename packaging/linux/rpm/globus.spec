@@ -1,6 +1,6 @@
 %define	name		globus-accessgrid
 %define	version		2.4
-%define	release		1
+%define	release		3
 %define	prefix		/usr/lib/globus
 %define buildroot	/var/tmp/%{name}-%{version}
 
@@ -32,6 +32,7 @@ export GLOBUS_LOCATION=%{buildroot}%{prefix}
 # Globus Data Management Client
 ${GPT_LOCATION}/sbin/gpt-build ${AGBUILDROOT}/gt3.0.2-source-installer/globus-data-management-client-2.4.3-src_bundle.tar.gz gcc32pthr
 ${GPT_LOCATION}/sbin/gpt-verify
+(cd ${GLOBUS_LOCATION}/setup/globus/ ; ./setup-globus-common )
 
 ##
 # Fix der_chop from openssl from using the not right /usr/local/bin/perl and instead use /usr/bin/perl
@@ -45,6 +46,9 @@ cp -f -p %{buildroot}%{prefix}/bin/der_chop %{buildroot}%{prefix}/bin/gcc32pthr/
 /usr/lib/globus
 
 %post
+GLOBUS_LOCATION=%{prefix}
+/sbin/ldconfig $GLOBUS_LOCATION/lib
+
 cat <<EOF > /etc/profile.d/globus.sh
 #!/bin/sh
 GLOBUS_LOCATION=%{prefix}
@@ -63,6 +67,8 @@ EOF
 chmod 0755 /etc/profile.d/globus.*
 
 %postun
+/sbin/ldconfig
+
 if [ "$1" = "0" ] ; then # last uninstall
     if [ -f /etc/profile.d/globus.sh ]; then
         rm -f /etc/profile.d/globus.sh
