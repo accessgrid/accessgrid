@@ -191,7 +191,7 @@ if sys.platform != 'darwin':
 if sys.platform == 'win32':
     td = os.getcwd()
     os.chdir(os.path.join(BuildDir, "tools"))
-    cmd = "%s %s" % ("MakeVfwScan.bat"), DestDir)
+    cmd = "%s %s" % ("MakeVfwScan.bat", DestDir)
     os.system(cmd)
     os.chdir(td)
      
