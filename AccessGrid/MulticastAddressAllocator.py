@@ -1,17 +1,14 @@
 #-----------------------------------------------------------------------------
 # Name:        MulticastAddressAllocator.py
 # Purpose:     This class manages multicast address allocation.
-#
-# Author:      Robert Olson, Ivan R. Judson
-#
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.18 2004-02-26 14:41:55 judson Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.19 2004-09-07 13:48:59 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: MulticastAddressAllocator.py,v 1.18 2004-02-26 14:41:55 judson Exp $"
+__revision__ = "$Id: MulticastAddressAllocator.py,v 1.19 2004-09-07 13:48:59 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
