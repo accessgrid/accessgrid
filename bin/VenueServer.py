@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.19 2003-04-26 07:00:40 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.20 2003-05-08 22:04:15 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -99,9 +99,6 @@ venueServer = VenueServer(hostingEnvironment, configFile)
 
 # Then we create the VenueServer service
 hostingEnvironment.BindService(venueServer, 'VenueServer')
-
-# Some simple output to advertise the location of the service
-print "Service running at: %s" % venueServer.GetHandle()
 
 # We register signal handlers for the VenueServer. In the event of
 # a signal we just try to shut down cleanly.n
