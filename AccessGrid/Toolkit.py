@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.74 2004-08-02 20:57:54 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.75 2004-08-03 14:41:43 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.74 2004-08-02 20:57:54 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.75 2004-08-03 14:41:43 judson Exp $"
 
 # Standard imports
 import os
@@ -580,6 +580,8 @@ class Service(AppBase):
         if self.GetDefaultSubject() is None:
             self.log.error("Toolkit initialized with no default identity.")
 
+        self.log.info("Service Initialization Complete.")
+        
         return argvResult
 
 
