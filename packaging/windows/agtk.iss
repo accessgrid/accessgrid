@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.78 2004-05-10 13:20:18 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.79 2004-05-11 13:46:30 lefvert Exp $
 ;
 
 ; Set externally
@@ -101,7 +101,6 @@ Source: bin\*.*; DestDir: {app}\bin
 Source: bin\CertificateRequestTool.py; DestDir: {app}\bin; DestName: CertificateRequestTool.pyw
 Source: bin\NodeManagement.py; DestDir: {app}\bin; DestName: NodeManagement.pyw
 Source: bin\NodeSetupWizard.py; DestDir: {app}\bin; DestName: NodeSetupWizard.pyw
-Source: bin\SetupVideo.py; DestDir: {app}\bin; DestName: SetupVideo.pyw
 
 ; Service packages
 Source: NodeServices\*.zip; DestDir: {app}\NodeServices
@@ -121,7 +120,6 @@ Name: {group}\Venue Client (Debug Mode); IconFilename: {app}\install\agicons.exe
 Name: {group}\Venue Management Tool; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\VenueManagement.py"""; WorkingDir: %APPDATA%\AccessGrid; Comment: Manage venue servers.
 Name: {group}\Request a Certificate; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\CertificateRequestTool.pyw"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe
 
-Name: {group}\Configure\Search for Video Devices (No Output Generated); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\SetupVideo.pyw"""; WorkingDir: %APPDATA%\AccessGrid; Comment: Search for video devices for the Video Producer service. There is no output for this program.
 Name: {group}\Configure\Node Setup Wizard; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\NodeSetupWizard.pyw"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe; Comment: Run the AG Node Configuration Wizard
 Name: {group}\Configure\Node Management; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\NodeManagement.pyw"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe; Comment: Configure an AG node
 
