@@ -19,8 +19,8 @@ PYVER=sys.argv[4]
 #
 # Setup the given module in the given dest directory
 #
-def SetupModule(modName, dest):
-    os.chdir(modName)
+def SetupModule(modName, source, dest):
+    os.chdir(os.path.join(source,modName))
     os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","clean","--all")
     os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","build")
     os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","install",
@@ -37,8 +37,6 @@ if os.environ.has_key("PYTHONPATH"):
 else:
    os.environ["PYTHONPATH"] = BuildPath
 
-os.chdir(SOURCE)
-
 
 #
 # Build python modules
@@ -47,31 +45,38 @@ os.chdir(SOURCE)
 if PYVER=="2.2":
 	
     print "Building Logging 0.4.7"
-    SetupModule("logging-0.4.7", DEST)
-    os.chdir(SOURCE)
+    SetupModule("logging-0.4.7", SOURCE, DEST)
 
     print "Building Optik 1.4.1"
-    SetupModule("Optik-1.4.1", DEST)
-    os.chdir(SOURCE)
+    SetupModule("Optik-1.4.1", SOURCE, DEST)
 
 
 print "Building fpconst 0.6.0"
-SetupModule("fpconst-0.6.0", DEST)
-os.chdir(SOURCE)
+SetupModule("fpconst-0.6.0", SOURCE, DEST)
 
 print "Building SOAPpy"
-SetupModule("SOAPpy", DEST)
-os.chdir(SOURCE)
+SetupModule("SOAPpy", SOURCE, DEST)
 
 print "Building pyOpenSSL_AG"
-SetupModule("pyOpenSSL", DEST)
-os.chdir(SOURCE)
+SetupModule("pyOpenSSL", SOURCE, DEST)
 
-# print "Building pyGLobus"
-# cd pyGlobus
-# python setup.py clean --all
-# set GLOBUS_LOCATION=%SOURCE%\WinGlobus
-# python setup.py build --flavor=win32
-# python setup.py install --flavor=win32 --prefix=%DEST%
-# cd %SOURCE% 
-# 
+print "Building pyGlobus"
+if sys.platform == 'win32':
+    os.environ['GLOBUS_LOCATION']=os.path.join(SOURCE,'WinGlobus')
+    flavor = 'win32'
+elif sys.platform == 'linux2':
+    flavor = 'gcc32pthr'
+else:
+    print "Couldn't build pyGlobus; unsupported platform :", sys.platform
+    sys.exit(1)
+    
+os.chdir(os.path.join(SOURCE,'pyGlobus'))
+os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','clean',
+          '--all')
+os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','build',
+          '--flavor=%s' % (flavor,))
+os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','install',
+          '--flavor=%s' % (flavor,),
+          '--prefix=%s' % (DEST,), 
+          '--no-compile')
+
