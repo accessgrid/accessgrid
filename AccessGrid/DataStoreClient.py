@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.20 2004-04-16 22:30:23 eolson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.21 2004-04-19 17:09:47 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.20 2004-04-16 22:30:23 eolson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.21 2004-04-19 17:09:47 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -22,6 +22,7 @@ import fnmatch
 
 from AccessGrid import Log
 from AccessGrid import Platform
+from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.hosting import Client
 from AccessGrid import DataStore
 from pyGlobus import ftpClient
@@ -153,7 +154,7 @@ class DataStoreFileWriter:
         # we can write it with the correct filename.
         #
 
-        self.tempdir = os.path.join(Platform.GetTempDir(),
+        self.tempdir = os.path.join(UserConfig.instance().GetTempDir(),
                                "DSClientTemp-%s" % (os.getpid()))
         os.mkdir(self.tempdir)
         self.localFile = os.path.join(self.tempdir, name)
@@ -245,7 +246,7 @@ class DataStoreClient:
         #
 
         for desc in descList:
-            ddict = desc._asDict
+            ddict = desc._asdict()
             self.dataCache.append(ddict)
             self.dataIndex[str(ddict['name'])] = ddict
 
