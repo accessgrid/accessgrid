@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.29 2004-03-22 22:56:16 olson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.30 2004-03-23 22:14:13 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.29 2004-03-22 22:56:16 olson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.30 2004-03-23 22:14:13 judson Exp $"
 
 # Standard imports
 import os
@@ -24,6 +24,7 @@ from AccessGrid.Security import CertificateRepository
 from AccessGrid.Platform.Config import AGTkConfig, GlobusConfig
 from AccessGrid.Platform.Config import SystemConfig, UserConfig
 from AccessGrid.ServiceProfile import ServiceProfile
+from AccessGrid.Version import GetVersion
 
 class AppBase:
     """
@@ -56,6 +57,9 @@ class AppBase:
        self.parser.add_option("-c", "--configfile", dest="configfilename",
                               metavar="CONFIGFILE", default=None,
                          help="Specify a configuration file for the program.")
+       self.parser.add_option("--version", action="store_true", dest="version",
+                              default=0,
+                         help="Print out what version of the toolkit this is.")
        
        self.certMgrUI = None
        self.userConfig = None
@@ -143,6 +147,10 @@ class AppBase:
        
        (self.options, args) = self.parser.parse_args()
 
+       if self.options.version:
+           print "Access Grid Toolkit Version: ", GetVersion()
+           sys.exit(0)
+           
        if self.options.debug:
            levelHandler = Log.HandleLoggers(self.defLogHandler,
                                            Log.GetDefaultLoggers())
