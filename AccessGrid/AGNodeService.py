@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.73 2004-06-01 21:10:31 lefvert Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.74 2004-07-27 19:58:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.73 2004-06-01 21:10:31 lefvert Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.74 2004-07-27 19:58:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -150,8 +150,10 @@ class AGNodeService:
                 host,port = parts[1].split(':')
                 raise Exception('Connection refused on port %s',
                                 port)
+            else:
+                log.exception("Failed to add service manager %s", serviceManager.uri)
+                raise
         except:
-            
             log.exception("AddServiceManager: Invalid service manager url (%s)"
                           % serviceManager.uri)
             raise Exception("Service Manager is unreachable at "
@@ -491,7 +493,7 @@ class AGNodeService:
                         self.servicePackageRepository.GetServiceDescription( service.packageName ), 
                         service.resource,
                         service.parameters )
-                        
+
                 except:
                     log.exception("Exception adding service %s" % (service.packageName))
                     exceptionText += "Couldn't add service %s" % (service.packageName)
