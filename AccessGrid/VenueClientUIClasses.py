@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.131 2003-04-08 16:26:16 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.132 2003-04-09 19:45:39 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,7 +15,10 @@ import os.path
 import logging, logging.handlers
 import cPickle
 import threading
+import socket
 from wxPython.wx import *
+
+log = logging.getLogger("AG.VenueClientUIClasses")
 
 from AccessGrid import icons
 from AccessGrid.VenueClient import VenueClient, EnterVenueException
@@ -26,10 +29,10 @@ from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import MyLog 
-from AccessGrid.Platform import GetTempDir
+from AccessGrid.Platform import GetTempDir, GetInstallDir
 from AccessGrid.TextClient import SimpleTextProcessor
 from pyGlobus.io import GSITCPSocket
-from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
+from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth, GetHostname
 from AccessGrid.Events import ConnectEvent, TextEvent, DisconnectEvent
 
 try:
@@ -2254,6 +2257,133 @@ The VenueClient class creates the main frame of the application, the
 VenueClientFrame.
 
 '''
+
+def VerifyExecutionEnvironment():
+    """
+    Verify that the current execution environment is sufficient
+    for running the VV software.
+    """
+
+    #
+    # Test for GLOBUS_LOCATION
+    #
+
+    if not os.environ.has_key("GLOBUS_LOCATION"):
+        log.critical("The GLOBUS_LOCATION environment must be set, check your Globus installation")
+        dlg = wxMessageDialog(None, "The GLOBUS_LOCATION environment variable is not set.\n" + 
+                              "Check your Globus installation.",
+                              "Globus configuration problem", wxOK)
+        dlg.ShowModal()
+        dlg.Destroy()
+        sys.exit(1)
+
+    #
+    # Test for valid local hostname.
+    #
+        
+    myhost = Utilities.GetHostname()
+    log.debug("My hostname is %s", myhost)
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.bind((myhost, 0))
+        log.debug("VerifyExecutionEnvironment: bind to local hostname of %s succeeds", myhost)
+    except socket.error:
+        log.critical("VerifyExecutionEnvironment: bind to local hostname of %s fails", myhost)
+
+        #
+        # Test to see if the environment variable GLOBUS_HOSTNAME has a different
+        # value than the registry. If that is the case, then teh user
+        # has manually done something in a cmd window. This is unlikely in
+        # general use, but developers may run into it.
+        #
+
+        from Platform import FindRegistryEnvironmentVariable
+        (global_reg, user_reg) = FindRegistryEnvironmentVariable("GLOBUS_HOSTNAME")
+
+        msg = None
+        msgbase = "If you started this program from a command window you may\n" + \
+                 "have to start a new command window to run with the proper settings.)"
+                 
+        if os.environ.has_key("GLOBUS_HOSTNAME"):
+            if global_reg is None and user_reg is None:
+                msg = "(GLOBUS_HOSTNAME is not configured in the registry, but\n" + \
+                      "is set in the process environment.\n" + msgbase
+
+        else:
+            if global_reg is not None or user_reg is not None:
+                msg = "(GLOBUS_HOSTNAME is configured in the registry, but\n" + \
+                      "is not set in the process environment.\n" + msgbase
+
+        ShowNetworkInit(msg)
+        sys.exit(1)
+
+    #
+    # Test for ability to find the service manager and node service programs.
+    #
+
+    svcMgr = os.path.join(GetInstallDir(), "AGServiceManager.py")
+
+    if not os.access(svcMgr, os.R_OK):
+        log.critical("AGServiceManager.py not found")
+        dlg = wxMessageDialog(None, "The application was unable to determine the location of\n" +
+                              "its AGServiceManager component. If you installed using a Windows\n" +
+                              "installer, this is due to a bug in the installer. If you are running\n" +
+                              "from a CVS checkout, check the value of the AGTK_INSTALL environment variable.",
+                              "Application configuration problem", wxOK)
+        dlg.ShowModal()
+        dlg.Destroy()
+        sys.exit(1)
+        
+        sys.exit(1)
+    
+    
+
+def ShowNetworkInit(msg = None):
+    if sys.platform == "win32":
+        ShowNetworkInitWin32(msg)
+    else:
+        ShowNetworkInitNonWin32(msg)
+
+def ShowNetworkInitNonWin32(msg):
+        dlg = wxMessageDialog(None,
+                              "This computer's network configuration is not correct.\n" +
+                              "Correct the problem (by setting the GLOBUS_HOSTNAME environment" +
+                              "variable) and restart the app. Appliation will exit.",
+                              "Globus network problem", wxOK)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+def ShowNetworkInitWin32(msg):
+    if msg is  None:
+        msg = ""
+    else:
+        msg = "\n" + msg
+        
+    networkInit = os.path.join(os.environ['GLOBUS_LOCATION'], "config", "network_init.py")
+    if (os.access(networkInit, os.R_OK)):
+        dlg = wxMessageDialog(None,
+                              "This computer's network configuration is not correct.\n" \
+                              "We will invoke the network configuration tool, and the \n" \
+                              "Venues client will then exit. Complete the configuration and\n" \
+                              "restart the Venues client." +  msg,
+                              "Globus network problem", wxOK)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+        import win32api
+        shortpath = win32api.GetShortPathName(networkInit)
+        win32api.WinExec("python %s" % (shortpath))
+    else:
+        dlg = wxMessageDialog(None,
+                              "This computer's network configuration is not correct.\n" + 
+                              "Correct the problem (by setting the GLOBUS_HOSTNAME environment\n" + 
+                              "variable) and restart the app. Appliation will exit." + msg,
+                              "Globus network problem", wxOK)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+
 if __name__ == "__main__":
    
     import time
