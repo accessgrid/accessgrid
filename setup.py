@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.7 2003-02-21 15:28:01 leggett Exp $
+# RCS-ID:      $Id: setup.py,v 1.8 2003-02-21 23:54:16 leggett Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -77,12 +77,14 @@ setup(
                     r"kde/VenueManagement.desktop"
                     ]
                    ),
-                  ('doc',
+                  ('share/doc/AccessGrid',
                    ["COPYING.txt",
                     "INSTALL",
                     "README",
                     "TODO",
-                    "VERSION"
+                    "VERSION",
+                    r"etc/AccessGrid/defaultLinux",
+                    r"etc/AccessGrid/defaultWindows"
                     ]
                    )
                   ]
