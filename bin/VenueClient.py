@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.43 2003-02-14 21:14:57 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.44 2003-02-17 20:59:47 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT -----------------------------------------------------------------------------
 import threading
@@ -51,6 +51,7 @@ class VenueClientUI(wxApp, VenueClient):
         self.SetTopWindow(self.frame)
         self.client = None
         self.gotClient = false
+        self.clientHandle = None
         return true
 
     def __createHomePath(self):
@@ -109,26 +110,30 @@ class VenueClientUI(wxApp, VenueClient):
         participant profile, enters the venue, and finally starts the
         wxPython main gui loop.
         """
-        self.gotClient = true
+       
         self.SetProfile(profile)
         
-        if self.GoToNewVenue(self.profile.homeVenue):
-            self.frame.Show(true)
-            self.MainLoop()
+        #if self.GoToNewVenue(self.profile.homeVenue):
+        #    self.frame.Show(true)
+        #    self.MainLoop()
         
-        else:
-            validVenue = false
+        #else:
+        #    validVenue = false
             
-            while not validVenue:
-                connectToVenueDialog = UrlDialogCombo(NULL, -1, "Please, enter venue or venue server URL", list = self.frame.myVenuesList)
-                if(connectToVenueDialog.ShowModal() == wxID_OK):
-                    if self.GoToNewVenue(connectToVenueDialog.address.GetValue()):
-                        self.frame.Show(true)
-                        self.MainLoop()
-                        notValidVenue = true
-                  
-                else:
-                    break
+        #    while not validVenue:
+        #        connectToVenueDialog = UrlDialogCombo(NULL, -1, "Please, enter venue or venue server URL", list = self.frame.myVenuesList)
+        #        if(connectToVenueDialog.ShowModal() == wxID_OK):
+        #            if self.GoToNewVenue(connectToVenueDialog.address.GetValue()):
+        #                self.frame.Show(true)
+        #                self.MainLoop()
+        #                notValidVenue = true
+        #          
+        #        else:
+        #            break
+
+        self.frame.venueAddressBar.SetAddress(self.profile.homeVenue)
+        self.frame.Show(true)
+        self.MainLoop()
               
     def ModifyUserEvent(self, data):
         """
@@ -247,7 +252,6 @@ class VenueClientUI(wxApp, VenueClient):
         textLoc = tuple(self.venueState.GetTextLocation())
         try:
             self.textClient = TextClientUI(self.frame, -1, "", location = textLoc)
-            self.textClient.Show(true)
         except:
             wxCallAfter(ErrorDialog, self.frame, "Trying to open text client!")
 
@@ -283,26 +287,30 @@ class VenueClientUI(wxApp, VenueClient):
         except: # no, it is a venue
             venueUri = uri
 
-        try:
-            self.client = Client.Handle(venueUri).get_proxy()
+        #try:
+        self.clientHandle = Client.Handle(venueUri)
+        if(self.clientHandle.IsValid()):
+            self.client = self.clientHandle.get_proxy()
+            self.gotClient = true
             if oldUri != None:
                 wxCallAfter(self.frame.CleanUp)
                 self.ExitVenue()
-            
-            self.EnterVenue(venueUri)
-            return true
-        
-        except GSITCPSocketException:  # no proxy
-            GPI() # create proxy
 
             try:
-                self.client = Client.Handle(venueUri).get_proxy()
-                if oldUri != None:
-                    wxCallAfter(self.frame.CleanUp)
-                    self.ExitVenue()
                 self.EnterVenue(venueUri)
-                return true
-
+                #   return true
+                
+            except GSITCPSocketException:  # no proxy
+                GPI() # create proxy
+                
+            #try:
+            #   self.client = Client.Handle(venueUri).get_proxy()
+            #   if oldUri != None:
+            #       wxCallAfter(self.frame.CleanUp)
+            #       self.ExitVenue()
+            #   self.EnterVenue(venueUri)
+            #   return true
+            
             except EnterVenueException:
                 if oldUri != None:
                     self.EnterVenue(oldUri) # go back to venue where we came from
@@ -310,12 +318,21 @@ class VenueClientUI(wxApp, VenueClient):
                 else:
                     return false
         
-        except EnterVenueException:
-            if oldUri != None:
-                self.EnterVenue(oldUri) # go back to venue where we came from
-            else:
-                return false
-    
+        #except EnterVenueException:
+        #    if oldUri != None:
+        #        self.EnterVenue(oldUri) # go back to venue where we came from
+        #    else:
+        #        return false
+
+        else:
+            dlg = wxMessageDialog(self.frame, 
+                                      'The venue URL you specified is not valid',
+                                      "Invalid URL",
+                                      style = wxOK|wxICON_INFORMATION)
+                
+            dlg.ShowModal()
+            dlg.Destroy()
+             
     def OnExit(self):
         """
         This method performs all processing which needs to be
@@ -619,7 +636,7 @@ class VenueClientUI(wxApp, VenueClient):
         self.profile.Save(self.profileFile)
         self.SetProfile(self.profile)
 
-        if self.gotClient:
+        if(self.gotClient):
             self.client.UpdateClientProfile(profile)
 
     def SetNodeUrl(self, url):
