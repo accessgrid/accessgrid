@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.78 2003-03-20 15:22:27 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.79 2003-03-20 15:27:37 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -488,7 +488,7 @@ class VenueClientFrame(wxFrame):
 
         if dlg.ShowModal() == wxID_OK:
             files = dlg.GetPaths()
-            wxLogDebug("Got files:%s ", str(files))
+            wxLogDebug("Got files:%s " %str(files))
 
             # upload!
 
