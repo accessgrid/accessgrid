@@ -6,16 +6,18 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: RegisterApp.py,v 1.2 2003-09-16 06:40:38 judson Exp $
+# RCS-ID:      $Id: RegisterApp.py,v 1.3 2003-09-17 14:01:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This program is used to register applications with the users AGTk installation.
 """
-__revision__ = "$Id: RegisterApp.py,v 1.2 2003-09-16 06:40:38 judson Exp $"
+__revision__ = "$Id: RegisterApp.py,v 1.3 2003-09-17 14:01:11 judson Exp $"
 
 import os
+import re
+from types import StringType
 import sys
 import getopt
 import zipfile
@@ -161,11 +163,14 @@ def main():
     appdb = app.GetAppDatabase()
     if appName == "":
         appName = appInfo["application.name"]
+    files = appInfo["application.files"]
+    if type(files) is StringType:
+        files = re.split(r',\s*|\s+', files)
+        
     appdb.RegisterApplication(appName,
                               appInfo["application.mimetype"],
                               appInfo["application.extension"],
-                              commands,
-                              appInfo["application.files"].split(' '),
+                              commands, files, 
                               os.getcwd())
 
     # Clean up, remove the temporary directory and files from
