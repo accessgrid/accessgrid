@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.44 2004-03-04 15:31:14 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.45 2004-03-05 21:40:39 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.44 2004-03-04 15:31:14 judson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.45 2004-03-05 21:40:39 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -31,8 +31,15 @@ class ObjectDescription:
         description : string
         uri : uri (string)
     """
-    def __init__(self, name, description = None, uri = None, id = str(GUID())):
-        self.id = id
+    def __init__(self, name, description = None, uri = None,
+                 oid = str(GUID())):
+
+        # Catch annoying None case
+        if oid != None:
+            self.id = oid
+        else:
+            self.id = str(GUID())
+
         self.name = name
         self.description = description
         self.uri = uri
@@ -52,8 +59,8 @@ class ObjectDescription:
 
         return string
 
-    def SetId(self, id):
-        self.id = id
+    def SetId(self, oid):
+        self.id = oid
         
     def GetId(self):
         return self.id
@@ -177,9 +184,10 @@ class VenueDescription(ObjectDescription):
     A Venue Description is used to represent a Venue.
     """
     def __init__(self, name=None, description=None, encryptionInfo=(0,''),
-                 connectionList=[], staticStreams=[], id = str(GUID())):
-        ObjectDescription.__init__(self, name, description, None, id)
+                 connectionList=[], staticStreams=[], oid = str(GUID()),
+                 uri=None):
 
+        ObjectDescription.__init__(self, name, description, uri, oid)
         self.streams = list()
         self.encryptMedia = 0
         self.encryptionKey = None
@@ -246,10 +254,8 @@ class ApplicationDescription(ObjectDescription):
     the Object Description that adds a mimeType which should be a
     standard mime-type.
     """
-    def __init__(self, id, name, description, uri, mimetype):   
-        ObjectDescription.__init__(self, name, description, uri)
-        # We override the generated id
-        self.id = id
+    def __init__(self, oid, name, description, uri, mimetype):   
+        ObjectDescription.__init__(self, name, description, uri, oid = oid)
         self.mimeType = mimetype   
     
     def SetMimeType(self, mimetype):   
@@ -292,10 +298,9 @@ class StreamDescription( ObjectDescription ):
        Note: This method overwrites the network location id 
              in the incoming network location
        """
-       id = str(GUID())
-       networkLocation.id = id
+       networkLocation.id = str(GUID())
        self.networkLocations.append(networkLocation)
-       return id
+       return networkLocation.id
        
    def RemoveNetworkLocation(self, networkLocationId):
        """
