@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.46 2003-02-25 22:25:34 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.47 2003-02-26 21:25:02 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -39,30 +39,93 @@ class VenueClientFrame(wxFrame):
     venues/exits to current venue.  By clicking on a door icon the user travels to another 
     venue/room, which contents will be shown in the contentListPanel.
     
-    '''	
+    '''
+    ID_WINDOW_TOP    = 5100
+    ID_WINDOW_LEFT1  = 5101
+    ID_WINDOW_LEFT2  = 5102
+    ID_WINDOW_BOTTOM = 5103
+    ID_VENUE_DATA = NewId()
+    ID_VENUE_DATA_ADD = NewId() 
+    ID_VENUE_DATA_SAVE = NewId() 
+    ID_VENUE_DATA_DELETE = NewId() 
+    ID_VENUE_SERVICE = NewId() 
+    ID_VENUE_SERVICE_ADD = NewId()
+    ID_VENUE_SERVICE_DELETE = NewId()
+    ID_VENUE_VIRTUAL = NewId()
+    ID_VENUE_TEXT = NewId()
+    ID_VENUE_CLOSE = NewId()
+    ID_PROFILE = NewId()
+    ID_PROFILE_EDIT = NewId()
+    ID_MYNODE_MANAGE = NewId()
+    ID_MYNODE_URL = NewId()
+    ID_MYVENUE_ADD = NewId()
+    ID_HELP = NewId()
+    ID_HELP_ABOUT = NewId()
+    ID_PARTICIPANT_PROFILE = NewId()
+    ID_PARTICIPANT_FOLLOW = NewId()
+    ID_PARTICIPANT_LEAD = NewId()
+    ID_NODE_PROFILE = NewId()
+    ID_NODE_FOLLOW = NewId()
+    ID_NODE_LEAD = NewId()
+    ID_NODE_MANAGE = NewId()
+    ID_ME_PROFILE = NewId()
+      
     def __init__(self, parent, id, title, app = None):
         wxFrame.__init__(self, parent, id, title)
         self.Centre()
 	self.app = app
         self.parent = parent
         self.textClient = None
-	self.menubar = wxMenuBar()
-	self.statusbar = self.CreateStatusBar(1)
-	self.dock = wxToolBar(self, 600, pos = wxDefaultPosition, \
-                              size = (300, 30), style = wxTB_TEXT| wxTB_HORIZONTAL| wxTB_FLAT)
-        self.venueListPanel = VenueListPanel(self, app) 
-	self.contentListPanel = ContentListPanel(self, app)
         self.myVenuesList = []
         self.myVenuesFile = os.path.join(self.app.accessGridPath, "myVenues.txt" )
-        fileDropTarget = FileDropTarget(self.dock)
-        self.dock.SetDropTarget(fileDropTarget)
+	self.menubar = wxMenuBar()
+	self.statusbar = self.CreateStatusBar(1)
+	#self.dock = wxToolBar(self, 600, pos = wxDefaultPosition, \
+        #                      size = (300, 30), style = wxTB_TEXT| wxTB_HORIZONTAL| wxTB_FLAT)
+
+
+        self.venueAddressBar = VenueAddressBar(self, self.ID_WINDOW_TOP, app, self.myVenuesList, 'default venue')
+        self.venueAddressBar.SetDefaultSize(wxSize(1000, 35))
+        self.venueAddressBar.SetOrientation(wxLAYOUT_HORIZONTAL)
+        self.venueAddressBar.SetAlignment(wxLAYOUT_TOP)
+        
+        self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT1, app)
+        self.venueListPanel.SetDefaultSize(wxSize(120, 1000))
+        self.venueListPanel.SetOrientation(wxLAYOUT_VERTICAL)
+        self.venueListPanel.SetSashVisible(wxSASH_RIGHT, TRUE)
+        self.venueListPanel.SetAlignment(wxLAYOUT_LEFT)
+        
+        self.contentListPanel = ContentListPanel(self, app)
+
+        #fileDropTarget = FileDropTarget(self.dock)
+        #self.dock.SetDropTarget(fileDropTarget)
         self.__setStatusbar()
 	self.__setMenubar()
-        self.venueAddressBar = VenueAddressBar(self, app,self.myVenuesList, 'default venue')
-	self.__setDock()
+        #self.__setDock()
 	self.__setProperties()
         self.__doLayout()
         self.__setEvents()
+        
+    def OnSashDrag(self, event):
+        if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
+            return
+
+        eID = event.GetId()
+
+        if eID == self.ID_WINDOW_LEFT1:
+            self.venueListPanel.Show()
+            width = event.GetDragRect().width
+            if width < 60:
+                width = 22
+                self.venueListPanel.Hide()
+            elif width > (self.GetSize().GetWidth() - 20):
+                width = self.GetSize().GetWidth() - 20
+            self.venueListPanel.SetDefaultSize(wxSize(width, 1000))
+
+        wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
+    
+    def OnSize(self, event = None):
+        wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
 
     def __setStatusbar(self):
         self.statusbar.SetToolTipString("Statusbar")   
@@ -70,32 +133,6 @@ class VenueClientFrame(wxFrame):
     def __setMenubar(self):
         self.SetMenuBar(self.menubar)
 
-        self.ID_VENUE_DATA = NewId() 
-        self.ID_VENUE_DATA_ADD = NewId() 
-        self.ID_VENUE_DATA_SAVE = NewId() 
-        self.ID_VENUE_DATA_DELETE = NewId() 
-        self.ID_VENUE_SERVICE = NewId() 
-        self.ID_VENUE_SERVICE_ADD = NewId()
-        self.ID_VENUE_SERVICE_DELETE = NewId()
-        self.ID_VENUE_VIRTUAL = NewId()
-        self.ID_VENUE_TEXT = NewId()
-        self.ID_VENUE_CLOSE = NewId()
-        self.ID_PROFILE = NewId()
-        self.ID_PROFILE_EDIT = NewId()
-        self.ID_MYNODE_MANAGE = NewId()
-        self.ID_MYNODE_URL = NewId()
-        self.ID_MYVENUE_ADD = NewId()
-        self.ID_HELP = NewId()
-        self.ID_HELP_ABOUT = NewId()
-        self.ID_PARTICIPANT_PROFILE = NewId()
-        self.ID_PARTICIPANT_FOLLOW = NewId()
-        self.ID_PARTICIPANT_LEAD = NewId()
-        self.ID_NODE_PROFILE = NewId()
-        self.ID_NODE_FOLLOW = NewId()
-        self.ID_NODE_LEAD = NewId()
-        self.ID_NODE_MANAGE = NewId()
-        self.ID_ME_PROFILE = NewId()
-      
         self.venue = wxMenu()
 	self.dataMenu = wxMenu()
 	self.dataMenu.Append(self.ID_VENUE_DATA_ADD,"Add...", "Add data to the venue")
@@ -155,8 +192,6 @@ class VenueClientFrame(wxFrame):
                                            "Follow this node", wxITEM_CHECK)
         self.nodeMenu.Append(self.ID_NODE_LEAD,"Lead",\
                                            "Lead this node", wxITEM_CHECK)
-
-
         # until implemented
         self.nodeMenu.Enable(self.ID_NODE_LEAD, false)
         self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
@@ -177,6 +212,10 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, true)
      
     def __setEvents(self):
+        EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_TOP,
+                               self.ID_WINDOW_BOTTOM, self.OnSashDrag)
+        EVT_SIZE(self, self.OnSize)
+                
         EVT_MENU(self, self.ID_VENUE_DATA_ADD, self.OpenAddDataDialog)
         EVT_MENU(self, self.ID_VENUE_DATA_SAVE, self.SaveData)
         EVT_MENU(self, self.ID_VENUE_DATA_DELETE, self.RemoveData)
@@ -189,17 +228,12 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_MYNODE_MANAGE, self.OpenNodeMgmtApp)
         EVT_MENU(self, self.ID_MYNODE_URL, self.OpenSetNodeUrlDialog)
         EVT_MENU(self, self.ID_MYVENUE_ADD, self.AddToMyVenues)
-       
-
         EVT_MENU(self, self.ID_ME_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_PARTICIPANT_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_NODE_PROFILE, self.OpenParticipantProfile)
-
         EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
         
     def __setDock(self):
-        
-
         """
 	self.dock.AddSimpleTool(20, icons.getWordBitmap(), \
                                    "ImportantPaper.doc", "ImportantPaper.doc",)
@@ -218,18 +252,21 @@ class VenueClientFrame(wxFrame):
 	self.venueListPanel.SetSize(wxSize(100, 300))
 		
     def __doLayout(self):
-        self.venueClientSizer = wxBoxSizer(wxVERTICAL)
-        self.venueClientSizer.Add(self.venueAddressBar, 0, wxEXPAND)
-        self.venueContentSizer = wxBoxSizer(wxHORIZONTAL)
-	self.venueContentSizer.Add(self.venueListPanel, 0 , wxEXPAND)
-	self.venueContentSizer.Add(self.contentListPanel, 2, wxEXPAND)
-	self.venueClientSizer.Add(self.venueContentSizer, 1, wxEXPAND)
-	self.venueClientSizer.Add(self.dock)
+        pass
+        #self.venueClientSizer = wxBoxSizer(wxVERTICAL)
+        #self.venueClientSizer.Add(self.venueAddressBar, 0, wxEXPAND)
+        #self.venueContentSizer = wxBoxSizer(wxHORIZONTAL)
         
-	self.SetSizer(self.venueClientSizer)
-        self.venueClientSizer.Fit(self)
-	self.SetAutoLayout(1)
-        self.Layout()
+	#self.venueContentSizer.Add(self.venueListPanel, 0 , wxEXPAND)
+
+	#self.venueContentSizer.Add(self.contentListPanel, 2, wxEXPAND)
+	#self.venueClientSizer.Add(self.venueContentSizer, 1, wxEXPAND)
+	#self.venueClientSizer.Add(self.dock)
+        
+	#self.SetSizer(self.venueClientSizer)
+        #self.venueClientSizer.Fit(self)
+	#self.SetAutoLayout(1)
+        #self.Layout()
 
 
     def Follow(self, event):
@@ -241,6 +278,7 @@ class VenueClientFrame(wxFrame):
 
     def FillInAddress(self, event):
         url = self.menubar.GetLabel(event.GetId())
+        print 'url2',url
         self.venueAddressBar.SetAddress(url)
 
     def OpenChat(self, event = None):
@@ -299,6 +337,7 @@ class VenueClientFrame(wxFrame):
         if setMyVenueUrlDialog.ShowModal() == wxID_OK:
             id = NewId()
             url = setMyVenueUrlDialog.address.GetValue()
+            print '----url1', url
             self.myVenues.Append(id, url)
             self.myVenuesList.append(url)
             EVT_MENU(self, id, self.FillInAddress)
@@ -317,10 +356,11 @@ class VenueClientFrame(wxFrame):
         self.app.OnExit()
                      	      
     def UpdateLayout(self):
-        s1 = self.venueListPanel.GetSize()
-        self.venueContentSizer.SetItemMinSize(self.venueListPanel,s1.GetWidth(),s1.GetHeight())
-        self.Layout()
-                
+        width = self.venueListPanel.GetSize().GetWidth()
+        self.venueListPanel.SetDefaultSize(wxSize(width, 1000))
+        wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
+
+                        
     def OpenSetNodeUrlDialog(self, event = None):
 
         setNodeUrlDialog = UrlDialog(self, -1, "Set node service URL", \
@@ -500,21 +540,21 @@ class VenueClientFrame(wxFrame):
         self.venueListPanel.CleanUp()
         self.contentListPanel.CleanUp()
 
-class VenueAddressBar(wxPanel):
-     def __init__(self, parent, application, venuesList, defaultVenue):     
-         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
-			 wxDefaultSize, wxRAISED_BORDER)
+class VenueAddressBar(wxSashLayoutWindow):
+     def __init__(self, parent, id, application, venuesList, defaultVenue):
+         wxSashLayoutWindow.__init__(self, parent, id, wxDefaultPosition, \
+			 wxDefaultSize, wxRAISED_BORDER|wxSW_3D)
+
          self.application = application
-         # self.addressLabel =  wxStaticText(self, -1,'Address:')
-         self.address = wxComboBox(self, 42, defaultVenue,\
+         self.panel = wxPanel(self, -1)
+         self.address = wxComboBox(self.panel, 42, defaultVenue,\
                         choices = venuesList, style = wxCB_DROPDOWN)
 
-         self.goButton = wxButton(self, 43, "Go", wxDefaultPosition, wxSize(20, 10))
-         #self.description = wxTextCtrl(self, -1, "Please, connect to a venue",\
-         #                              size =  wxSize(40, 40), style = wxTE_MULTILINE)
+         self.goButton = wxButton(self.panel, 43, "Go", wxDefaultPosition, wxSize(20, 21))
          self.__doLayout()
          self.__addEvents()
-        
+         
+
      def __addEvents(self):
          EVT_BUTTON(self, 43, self.callAddress)
 
@@ -522,32 +562,24 @@ class VenueAddressBar(wxPanel):
          self.address.SetValue(url)
 
      def AddChoice(self, url):
-         self.address.Append(url)
-
-     def RemoveChoice(self, url):
-         print 'remove', url
-         #self.address.Remove(url)
-
+         if self.address.FindString(url) == wxNOT_FOUND:
+             self.address.Append(url)
+      
      def callAddress(self, event):
          venueUri = self.address.GetValue()
+         self.AddChoice(venueUri)
          self.application.GoToNewVenue(venueUri)
                          
      def __doLayout(self):
          venueServerAddressBox = wxBoxSizer(wxVERTICAL)  
          box = wxBoxSizer(wxHORIZONTAL)
-         # box.Add(self.addressLabel, 0, wxEXPAND|wxRIGHT|wxLEFT|wxTOP, 5)
-	 box.Add(self.address, 1, wxEXPAND|wxRIGHT|wxTOP, 5)
-         box.Add(self.goButton, 0, wxEXPAND|wxRIGHT|wxTOP, 5)
-	 venueServerAddressBox.Add(box, 0, wxEXPAND|wxBOTTOM, 5)
-         
-         #descriptionBox = wxBoxSizer(wxHORIZONTAL)
-         #descriptionBox.Add(self.description, 1, wxEXPAND|wxBOTTOM, 5)
-         #venueServerAddressBox.Add(descriptionBox, 0, wxEXPAND)
-         self.SetSizer(venueServerAddressBox)
-	 venueServerAddressBox.Fit(self)
-	 self.SetAutoLayout(1)
+         box.Add(self.address, 1, wxRIGHT|wxTOP, 5)
+         box.Add(self.goButton, 0, wxRIGHT|wxTOP, 5)
+         self.panel.SetSizer(box)
+         box.Fit(self.panel)
+         wxLayoutAlgorithm().LayoutWindow(self, self.panel)
        
-class VenueListPanel(wxPanel):
+class VenueListPanel(wxSashLayoutWindow):
     '''VenueListPanel. 
     
     The venueListPanel contains a list of connected venues/exits to current venue.  
@@ -558,27 +590,30 @@ class VenueListPanel(wxPanel):
     the application will extend the contentListPanel.  The panels is separated into a 
     panel containing the close/open buttons and a VenueList object containing the exits.
     '''   
-    def __init__(self, parent, app):
-        wxPanel.__init__(self, parent, -1)
+    def __init__(self, parent,id,  app):
+        wxSashLayoutWindow.__init__(self, parent, id)
 	self.parent = parent
         self.app = app
-           
-	self.list = VenueList(self, app)
-        self.minimizeButton = wxButton(self, 10, "<<", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT )
+
+        self.panel = wxPanel(self, -1)
+	self.list = VenueList(self.panel, app)
+       
+        self.minimizeButton = wxButton(self.panel, 10, "<<", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT )
 	self.minimizeButton.SetFont(wxFont(5, wxSWISS, wxNORMAL, wxNORMAL, 0, "adventure"))
-	self.maximizeButton = wxButton(self, 20, ">>", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT )
+	self.maximizeButton = wxButton(self.panel, 20, ">>", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT )
 	self.maximizeButton.SetFont(wxFont(5, wxSWISS, wxNORMAL, wxNORMAL, 0, "adventure"))
         self.minimizeButton.SetToolTipString("Hide Exits")
 	self.maximizeButton.SetToolTipString("Show Exits")
 	self.maximizeButton.Hide()
-        self.exitsText = wxButton(self, -1, "Exits", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT )
+        self.exitsText = wxButton(self.panel, -1, "Exits", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT )
         self.exitsText.SetFont(wxFont(5, wxSWISS, wxNORMAL, wxNORMAL, 0, "adventure"))
         self.exitsText.SetBackgroundColour("WHITE")
 	self.SetBackgroundColour(self.maximizeButton.GetBackgroundColour())
 	self.imageList = wxImageList(32,32)
         self.SetToolTipString("Connected Venues")
-       
+        
 	self.__doLayout()
+        print 'after layout done'
 	self.__addEvents()
 		
     def __addEvents(self):
@@ -589,33 +624,40 @@ class VenueListPanel(wxPanel):
         panelSizer = wxBoxSizer(wxHORIZONTAL)
         panelSizer.Add(self.exitsText, wxEXPAND, 0)
 	panelSizer.Add(self.minimizeButton, 0)
-	
-	venueListPanelSizer = wxBoxSizer(wxVERTICAL)
+       	
+        venueListPanelSizer = wxBoxSizer(wxVERTICAL)
 	venueListPanelSizer.Add(panelSizer, 0, wxEXPAND)
 	venueListPanelSizer.Add(self.list, 2, wxEXPAND)
 
-	self.SetSizer(venueListPanelSizer)
-        venueListPanelSizer.Fit(self)
-	self.SetAutoLayout(1)  
+	self.panel.SetSizer(venueListPanelSizer)
+        venueListPanelSizer.Fit(self.panel)
+	self.panel.SetAutoLayout(1)
 
-    def OnClick(self, event):
-	currentHeight = self.GetSize().GetHeight()
-	parentSize = self.parent.GetSize()
+        wxLayoutAlgorithm().LayoutWindow(self, self.panel)
+
+    def Hide(self):
+        currentHeight = self.GetSize().GetHeight()
+        self.minimizeButton.Hide()  
+        self.maximizeButton.Show()
+        self.list.HideDoors()
+        self.SetSize(wxSize(22, currentHeight))
+        self.parent.UpdateLayout()
+
+    def Show(self):
+        currentHeight = self.GetSize().GetHeight()
+        self.maximizeButton.Hide()
+        self.minimizeButton.Show()  
+        self.list.ShowDoors()
+        self.SetSize(wxSize(100, currentHeight))
+        self.parent.UpdateLayout()
         
+    def OnClick(self, event):
         if event.GetId() == 10:
-            self.minimizeButton.Hide()  
-            self.maximizeButton.Show()
-            self.list.HideDoors()
-            self.SetSize(wxSize(20, currentHeight))
-            self.parent.UpdateLayout()
-                                   
+            self.Hide()
+                                               
 	if event.GetId() == 20:
-            self.maximizeButton.Hide()
-            self.minimizeButton.Show()  
-            self.list.ShowDoors()
-            self.SetSize(wxSize(100, currentHeight))
-            self.parent.UpdateLayout()
-                           
+            self.Show()
+                                       
     def CleanUp(self):
         self.list.CleanUp()
 
@@ -807,6 +849,7 @@ class ContentListPanel(wxPanel):
     def AddParticipant(self, profile):
         participant = self.tree.AppendItem(self.participants, profile.name, \
                                            self.defaultPersonId, self.defaultPersonId)
+        #self.test = self.tree.AppendItem(participants, "data") # , image)
         self.tree.SetItemData(participant, wxTreeItemData(profile)) 
         self.participantDict[profile.publicId] = participant
         self.tree.Expand(self.participants)
@@ -903,6 +946,7 @@ class ContentListPanel(wxPanel):
         #image = self.emptyImageId
              
 	self.participants = self.tree.AppendItem(self.root, "Participants") # , image)
+       
 	self.tree.SetItemBold(self.participants)
              
 	self.data = self.tree.AppendItem(self.root, "Data") #, image)
@@ -1002,13 +1046,13 @@ class ContentListPanel(wxPanel):
         self.serviceDict.clear()
         self.nodeDict.clear()
                             
-    def __doLayout(self):
-        sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer1.Add(self.text, 0, wxALL, 20)
-        sizer1.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
-        self.SetSizer(sizer1)
-        sizer1.Fit(self)
-        self.SetAutoLayout(1)
+  #  def __doLayout(self):
+  #      sizer1 = wxBoxSizer(wxVERTICAL)
+  #      sizer1.Add(self.text, 0, wxALL, 20)
+  #      sizer1.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
+  #      self.SetSizer(sizer1)
+  #      sizer1.Fit(self)
+  #      self.SetAutoLayout(1)
       
 class SaveFileDialog(wxDialog):
     def __init__(self, parent, id, title, message, doneMessage, fileSize):
@@ -1245,7 +1289,7 @@ class ProfileDialog(wxDialog):
         self.locationCtrl = wxTextCtrl(self, -1, "")
         self.supportText = wxStaticText(self, -1, "Support Information:", style=wxALIGN_LEFT)
         self.supportCtrl = wxTextCtrl(self, -1, "")
-        self.homeVenue = wxStaticText(self, -1, "Home Venue:")
+        self.homeVenue= wxStaticText(self, -1, "Home Venue:")
         self.homeVenueCtrl = wxTextCtrl(self, -1, "")
         self.profileTypeText = wxStaticText(self, -1, "Profile Type:", style=wxALIGN_LEFT)
         self.okButton = wxButton(self, wxID_OK, "Ok")
