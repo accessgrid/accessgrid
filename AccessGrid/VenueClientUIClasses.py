@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.34 2003-02-21 14:53:08 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.35 2003-02-21 17:04:40 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -151,11 +151,17 @@ class VenueClientFrame(wxFrame):
         self.nodeMenu.Append(self.ID_NODE_MANAGE,"Manage...",\
                                            "Manage this node")
         self.nodeMenu.AppendSeparator()
+
         self.nodeMenu.Append(self.ID_NODE_FOLLOW,"Follow",\
                                            "Follow this node", wxITEM_CHECK)
         self.nodeMenu.Append(self.ID_NODE_LEAD,"Lead",\
                                            "Lead this node", wxITEM_CHECK)
-     
+
+
+        # until implemented
+        self.nodeMenu.Enable(self.ID_NODE_LEAD, false)
+        self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
+        
       
     def HideMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
@@ -887,7 +893,8 @@ class ContentListPanel(wxPanel):
         elif text == 'Participants' or text == 'Nodes':
             pass
 
-        elif item != None and self.participantDict.has_key(item.publicId) or self.nodeDict.has_key(item.publicId):
+        elif item != None and self.participantDict.has_key(item.publicId) or \
+                 self.nodeDict.has_key(item.publicId):
 
             if(item.publicId == self.app.profile.publicId):
                 self.PopupMenu(self.parent.meMenu, wxPoint(self.x, self.y))
