@@ -161,7 +161,7 @@ This module provides the components needed to run the Audio service. This servic
 #
 
 %build
-python2.2 packaging/makeServicePackages.py services
+python2.2 packaging/makeServicePackages.py services/node
 python2.2 setup.py build
 
 #
