@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.10 2004-03-17 16:45:46 olson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.11 2004-03-19 22:45:48 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.10 2004-03-17 16:45:46 olson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.11 2004-03-19 22:45:48 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -539,9 +539,13 @@ def IsGlobusProxy_Generic(certObj):
 
 def IsGlobusProxy_GT24(certObj):
 
-    attrs = security.grid_proxy_info2(0, certObj.GetPath())
-
-    return attrs['type'] is not None
+    try:
+        attrs = security.grid_proxy_info2(0, certObj.GetPath())
+        return attrs['type'] is not None
+    
+    except security.GSIException, ex:
+        log.exception("IsGlobusProxy_GT24: grid_proxy_info2 returned exception")
+        return None
 
 if haveOldGlobus:
 
