@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.2 2003-01-06 20:49:45 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.3 2003-01-06 21:29:28 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ class ObjectDescription:
         return self.icon 
     
 class ServiceDescription(ObjectDescription):
-    __doc__ = """
+    """
         The Service Description is the Virtual Venue resident information about
         services users can interact with. This is an extension of the Object
         Description that adds a mimeType which should be a standard mime-type.
@@ -72,7 +72,7 @@ class ServiceDescription(ObjectDescription):
         return self.mimeType    
       
 class VenueDescription(ObjectDescription):
-    __doc__ = """
+    """
     This is a Venue Description. The Venue Description is used by Venue Clients
     to present the appearance of a space to the users.
     """
@@ -88,7 +88,7 @@ class VenueDescription(ObjectDescription):
     extendedDescription = ""
     
     def __init__(self, name, description, icon, extendeddescription):
-        ObjectDescription.__init__(self, name, description, "", icon)
+        ObjectDescription.ObjectDescription.__init__(self, name, description, "", icon)
         self.extendedDescription = extendeddescription
         
     def SetExtendedDescription(self, extendeddescription):
@@ -104,7 +104,7 @@ class VenueDescription(ObjectDescription):
         return self.coherenceLocation        
    
 class DataDescription(ObjectDescription):
-    __doc__ = """A Data Description represents data within a venue."""
+    """A Data Description represents data within a venue."""
     storageType = ''
     
     def __init__(self, name, description, uri, icon, storageType):
@@ -118,8 +118,23 @@ class DataDescription(ObjectDescription):
         return self.storageType
     
 class ConnectionDescription(ObjectDescription):
-    __doc__ = """
+    """
     A Connection Description is used to represent the 
     connection from the current venue to another venue.
     """
     pass    
+
+
+from AccessGrid.NetworkLocation import MulticastNetworkLocation
+from AccessGrid.Types import Capability
+
+class StreamDescription( ObjectDescription ):
+   """A Stream Description represents a stream within a venue"""
+   def __init__( self, name=None, description=None, 
+                 location=MulticastNetworkLocation(), 
+                 capability=Capability(),
+                 encryptionKey=None ):
+      ObjectDescription.__init__( self, name, description, None, None )
+      self.location = location
+      self.capability = capability
+      self.encryptionKey = encryptionKey
