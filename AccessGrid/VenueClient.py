@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.102 2003-08-22 16:32:20 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.103 2003-08-22 19:20:08 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -790,48 +790,6 @@ class VenueClient( ServiceBase):
         # assume that when the node service uri changes, the node service
         # needs identity info
         self.isIdentitySet = 0
-
-    def GetInstalledApps(self):
-        """
-        Return a list of installed applications
-        """
-        applicationList = []
-    
-        # Determine the applications directory
-        installDir = Platform.GetSystemConfigDir()
-        appsDir = os.path.join(installDir,"applications")
-        log.info("Applications dir = %s" % appsDir )
-
-        if os.path.exists(appsDir):
-            # Find directories in the apps directory
-            dirList = []
-            entryList = os.listdir(appsDir)
-            for entry in entryList:
-                dir = os.path.join(appsDir,entry)
-                if os.path.isdir(dir):
-                    dirList.append(dir)
-
-            # Find app files in the app directories
-            for dir in dirList:
-                fileList = os.listdir(dir)
-                for file in fileList:
-                    if file.endswith(".app"):
-                        pathfile = os.path.join(dir,file)
-
-                        # read app file contents
-                        config = LoadConfig(pathfile)
-
-                        # construct application description therefrom
-                        appName = config["application.name"]
-                        appDescription = config["application.description"]
-                        appMimetype = config["application.mimetype"]
-                        app = ApplicationDescription( None, appName,    
-                                                      appDescription,
-                                                      None,
-                                                      appMimetype )
-                        log.info("Found installed application: %s" % appName )
-                        applicationList.append( app )
-        return applicationList
 
     #
     # Method support for personal data
