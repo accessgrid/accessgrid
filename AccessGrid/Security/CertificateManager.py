@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.10 2004-03-22 20:12:04 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.11 2004-03-22 22:55:42 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.10 2004-03-22 20:12:04 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.11 2004-03-22 22:55:42 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -820,7 +820,7 @@ class CertificateManager(object):
 
         for file in os.listdir(self.caDir):
             path = os.path.join(self.caDir, file)
-            log.debug("Unlink %s", path)
+            # log.debug("Unlink %s", path)
             os.unlink(path)
             
         for c in self.GetCACerts():
@@ -1204,8 +1204,8 @@ class CertificateManager(object):
         for which we don't have a certificate, and for which the
         metadata AG.CertificateManager.requestToken is set.
 
-        Return is actually a list of triples
-        (certReqDescriptor, requestToken, serverURL)
+        Return is actually a list of tuples
+        (certReqDescriptor, requestToken, serverURL, creationDate)
 
         """
 
@@ -1220,7 +1220,7 @@ class CertificateManager(object):
             token = req.GetMetadata(tokenKey)
             server = req.GetMetadata("AG.CertificateManager.requestURL")
             created = req.GetMetadata("AG.CertificateManager.creationTime")
-            log.debug("Found request for %s with key %s server=%s", req.GetSubject(), token, server)
+            # log.debug("Found request for %s with key %s server=%s", req.GetSubject(), token, server)
 
             #
             # See if this request has a corresponding certificate.
@@ -1229,9 +1229,9 @@ class CertificateManager(object):
             modhash = req.GetModulusHash()
             mpred = lambda c, modhash = modhash: c.GetModulusHash() == modhash
             certs = list(cr.FindCertificates(mpred))
-            log.debug("Certs matching modulus hash %s:", modhash)
-            for cert in certs:
-                log.debug("    %s", cert.GetSubject())
+            # log.debug("Certs matching modulus hash %s:", modhash)
+            #for cert in certs:
+            #    log.debug("    %s", cert.GetSubject())
 
             if len(certs) > 0:
                 continue
