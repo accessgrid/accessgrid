@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.34 2003-08-20 18:57:17 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.35 2003-08-22 20:09:31 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ if sys.platform == "win32":
 
 from AccessGrid.hosting.pyGlobus import Server, ServiceBase
 from AccessGrid.VenueServer import VenueServer
-from AccessGrid.Platform import GPI, GetUserConfigDir
+from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid import Toolkit
 
 # defaults

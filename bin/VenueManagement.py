@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.82 2003-08-21 19:59:10 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.83 2003-08-22 20:09:31 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ from AccessGrid.CertificateManager import CertificateManager
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid import icons
-from AccessGrid.Platform import GPI, GetUserConfigDir
+from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid import Toolkit
 from AccessGrid.hosting.AccessControl import RoleManager
