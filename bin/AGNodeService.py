@@ -3,37 +3,25 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.49 2004-03-26 03:34:55 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.50 2004-03-26 14:06:33 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.49 2004-03-26 03:34:55 judson Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: AGNodeService.py,v 1.50 2004-03-26 14:06:33 judson Exp $"
 
 # The standard imports
 import sys
 
 if sys.platform=="darwin":
-    # On osx pyGlobus/globus need to be loaded before various modules such as socket.
+    # On osx pyGlobus/globus need to be loaded before various
+    # modules such as socket.
     import pyGlobus.ioc
 
 import signal, time, os
-
-if sys.version.startswith('2.2'):
-    try:
-        from optik import Option
-    except:
-        raise Exception, "Missing module optik necessary for the AG Toolkit."
-
-if sys.version.startswith('2.3'):
-    try:
-        from optparse import Option
-    except:
-        raise Exception, "Missing module optparse, check your python installation."
-
+from optik import Option
 
 # Our imports
 #from AccessGrid.Toolkit import Service
@@ -47,6 +35,7 @@ from AccessGrid.hosting import Server
 log = None
 nodeService = None
 server = None
+running = 0
 
 # Signal handler for clean shutdown
 def SignalHandler(signum, frame):
@@ -81,14 +70,13 @@ def main():
     
     # Initialize the app
     try:
-        args = app.Initialize("NodeService")
+        app.Initialize("NodeService")
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
         sys.exit(-1)
 
     log = app.GetLog()
-    pnode = app.GetOption("pnode")
     port = app.GetOption("port")
         
     # Create a Node Service
