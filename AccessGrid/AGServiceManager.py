@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.27 2003-05-23 20:59:37 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.28 2003-05-27 19:52:04 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -195,16 +195,13 @@ class AGServiceManager( ServiceBase ):
                 print "Trying client handle "
                 try:
                     Client.Handle(serviceUrl).IsValid()
-                except Client.InvalidHandleException:
-                    print "Invalid Service Manager URL (%s)" % serviceUrl
+                    print "* * Service handle is valid ! "
                     break
-
-                print "* * Service handle is valid ! "
-
-                print "Wait another sec for service to boot"
-                print " - elapsedTime = ", elapsedTries
-                time.sleep(1)
-                elapsedTries += 1
+                except Client.InvalidHandleException:
+                    print "Wait another sec for service to boot"
+                    print " - elapsedTries = ", elapsedTries
+                    time.sleep(1)
+                    elapsedTries += 1
 
             # Detect unreachable service
             if elapsedTries >= maxTries:
@@ -360,6 +357,7 @@ class AGServiceManager( ServiceBase ):
         #
         filename = os.path.basename( servicePackageUrl )
         servicePackageFile = self.servicesDir + os.sep + filename
+        isNewServicePackage = not os.path.exists(servicePackageFile)
         GSIHTTPDownloadFile(servicePackageUrl, servicePackageFile, None, None)
 
         #
@@ -368,11 +366,12 @@ class AGServiceManager( ServiceBase ):
         package = AGServicePackage( servicePackageFile )
         package.ExtractExecutable( self.servicesDir )
 
-        #
-        # Open permissions on the service package and executable 
-        #
-        os.chmod( servicePackageFile, 0777 )
-        os.chmod( os.path.join(self.servicesDir, package.exeFile), 0777 )
+        if isNewServicePackage:
+            #
+            # Open permissions on the service package and executable 
+            #
+            os.chmod( servicePackageFile, 0777 )
+            os.chmod( os.path.join(self.servicesDir, package.exeFile), 0777 )
 
         return servicePackageFile
 
