@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.178 2003-07-15 21:36:14 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.179 2003-07-17 17:40:27 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -598,6 +598,12 @@ class VenueClientUI(wxApp):
         log.debug("bin.VenueClient::EnterVenue: Enter venue with url: %s"
                   % URL)
 
+        if not enterSuccess:
+            text = "You have not entered the venue located at %s.\nAn error occured.  Please, try again."%URL
+            ErrorDialog(None, text, "Enter Venue Error",
+                          style = wxOK  | wxICON_ERROR)
+            return
+
         #
         # Check to see if we have a valid grid proxy
         # If not, run grid proxy init
@@ -713,7 +719,7 @@ class VenueClientUI(wxApp):
             log.exception("bin.VenueClient::EnterVenue failed")
             enterUISuccess = AG_FALSE
 
-        if not enterSuccess or not enterUISuccess:
+        if not enterUISuccess:
             text = "You have not entered the venue located at %s.\nAn error occured.  Please, try again."%URL
             ErrorDialog(None, text, "Enter Venue Error",
                           style = wxOK  | wxICON_ERROR)
