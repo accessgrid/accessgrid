@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.13 2003-01-24 04:32:46 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.14 2003-01-24 19:02:52 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -49,7 +49,6 @@ class Venue(ServiceBase.ServiceBase):
 
         self.cleanupTime = 30
         self.nextPrivateId = 1
-        self.defaultTtl = 127
 
         self.venueServer = server
         
@@ -64,7 +63,6 @@ class Venue(ServiceBase.ServiceBase):
                                                self.CoherenceCallback,
                                                self.uniqueId)
         self.coherenceClient.start()
-            
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.CleanupClients, 45)
 
@@ -252,7 +250,7 @@ class Venue(ServiceBase.ServiceBase):
 
                 self.coherenceService.distribute( Event( Event.EXIT, clientProfile ) )
             else:
-                print "* * Invalid private id !! "
+                print "* * Invalid private id !! ", privateId
         except:
             print "Exception in Exit ", sys.exc_type, sys.exc_value
         
@@ -267,6 +265,7 @@ class Venue(ServiceBase.ServiceBase):
 
         try:
            print "Called GetState on ", self.uniqueId
+
            venueState = {
                'description' : self.description,
                'connections' : self.connections.values(),
@@ -471,10 +470,11 @@ class Venue(ServiceBase.ServiceBase):
         """
         This method creates a new Multicast Network Location.
         """
+        defaultTtl = 127
         return MulticastNetworkLocation(
             self.venueServer.multicastAddressAllocator.AllocateAddress(),
             self.venueServer.multicastAddressAllocator.AllocatePort(), 
-            self.defaultTtl )
+            defaultTtl )
        
     def GetNextPrivateId( self ):
         """This method creates the next Private Id."""
