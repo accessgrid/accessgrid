@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.9 2004-01-06 21:37:46 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.10 2004-02-19 18:25:57 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,10 @@ class AudioService( AGService ):
 
       self.capabilities = [ Capability( Capability.CONSUMER, Capability.AUDIO ), 
                             Capability( Capability.PRODUCER, Capability.AUDIO ) ]
-      self.executable = os.path.join(Platform.GetInstallDir(), "rat")
+      if not Platform.isWindows():
+          self.executable = "rat"
+      else:
+          self.executable = os.path.join(Platform.GetInstallDir(), "rat")
 
       #
       # Set configuration parameters
@@ -58,7 +61,7 @@ class AudioService( AGService ):
                  
              _winreg.CloseKey(key)
              
-         elif Platform.isLinux():
+         elif Platform.isLinux() or Platform.isOSX():
          
              ratDefaultsFile = os.path.join(os.environ["HOME"],".RATdefaults")
              ratDefaults = dict()
