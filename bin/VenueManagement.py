@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.120 2004-03-16 18:09:11 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.121 2004-03-17 22:00:51 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.120 2004-03-16 18:09:11 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.121 2004-03-17 22:00:51 lefvert Exp $"
 
 import string
 import time
@@ -140,7 +140,7 @@ class VenueManagementClient(wxApp):
                
     def __setProperties(self):
         self.frame.SetIcon(icons.getAGIconIcon())
-        self.frame.SetSize(wxSize(700, 400))
+        self.frame.SetSize(wxSize(500, 350))
         self.SetTopWindow(self.frame)
         self.frame.Show()
 
@@ -394,8 +394,10 @@ class VenueManagementTabs(wxNotebook):
         self.parent = parent
         self.venuesPanel = VenuesPanel(self, application)
         self.configurationPanel = ConfigurationPanel(self, application)
+        self.securityPanel = SecurityPanel(self, application)
         self.AddPage(self.venuesPanel, "Venues")
         self.AddPage(self.configurationPanel, "Configuration")
+        self.AddPage(self.securityPanel, "Security")
         self.Enable(false)
         
 
@@ -444,8 +446,6 @@ class VenueProfilePanel(wxPanel):
                          wxDefaultSize, wxNO_BORDER|wxSW_3D,
                          name = "venueProfilePanel")
         self.application = application
-        self.venueProfileBox = wxStaticBox(self, -1, "")
-        self.venueProfileBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         self.description = wxTextCtrl(self, -1,'', size = wxSize(20,50),
                                       style = wxSIMPLE_BORDER
                                       | wxNO_3D | wxTE_MULTILINE
@@ -506,6 +506,8 @@ class VenueProfilePanel(wxPanel):
             self.exits.Show()
 
     def __doLayout(self):
+        self.venueProfileBox = wxStaticBox(self, -1, "Profile")
+        self.venueProfileBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         venueListProfileSizer = wxStaticBoxSizer(self.venueProfileBox,
                                                  wxVERTICAL)
         venueListProfileSizer.Add(5, 5)
@@ -822,7 +824,7 @@ class DetailPanel(wxPanel):
     ID_RANDOM = wxNewId()
     ID_INTERVAL = wxNewId()
     ID_ENCRYPT = wxNewId()
-    ID_SECURITY = wxNewId()
+   
 
     def __init__(self, parent, application):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
@@ -845,13 +847,6 @@ class DetailPanel(wxPanel):
         self.changeButton = wxButton(self, self.ID_CHANGE, "Change")
         self.encryptionButton = wxCheckBox(self, self.ID_ENCRYPT,
                                            " Encrypt media ")
-        self.securityBox = wxStaticBox(self, -1, "Security",
-                                         size = wxSize(500, 50),
-                                         name = 'securityBox')
-        self.securityBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-                
-        self.securityText = wxStaticText(self, -1, "Manage access to venue server including which users are allowed to administrate.")
-        self.securityButton = wxButton(self, self.ID_SECURITY, "Manage Security")
         self.ipString = "224.2.128.0"
         self.maskString = "17"
         self.__doLayout()
@@ -864,20 +859,6 @@ class DetailPanel(wxPanel):
         EVT_RADIOBUTTON(self, self.ID_RANDOM, self.ClickedOnRandom)
         EVT_RADIOBUTTON(self, self.ID_INTERVAL, self.ClickedOnInterval)
         EVT_CHECKBOX(self, self.ID_ENCRYPT, self.ClickedOnEncrypt)
-
-        EVT_BUTTON(self, self.ID_SECURITY, self.OpenSecurityDialog)
-
-    def OpenSecurityDialog(self, event):
-        f = AuthorizationUIDialog(self, -1, "Security", log)
-        wxBeginBusyCursor()
-        f.ConnectToAuthManager(self.application.serverUrl)
-        wxEndBusyCursor()
-        
-        if f.ShowModal() == wxID_OK:
-            wxBeginBusyCursor()
-            f.Apply()
-            wxEndBusyCursor()
-        f.Destroy()
                        
     def ClickedOnEncrypt(self, event):
         try:
@@ -1011,19 +992,54 @@ class DetailPanel(wxPanel):
         encryptionBoxSizer.Add(self.encryptionButton, 5, wxALL, 10)
 
         serviceSizer.Add(encryptionBoxSizer, 0, wxEXPAND| wxBOTTOM, 10)
-
-        securityBoxSizer = wxStaticBoxSizer(self.securityBox, wxHORIZONTAL)
-        
-        securityBoxSizer.Add(self.securityText, 1 , wxALL|wxCENTER, 5)
-        securityBoxSizer.Add(1,40)
-        securityBoxSizer.Add(self.securityButton, 0, wxALIGN_RIGHT|wxALL|wxCENTER, 5)
-        serviceSizer.Add(securityBoxSizer, 0, wxEXPAND| wxBOTTOM, 10)
-        
         self.SetSizer(serviceSizer)
         serviceSizer.Fit(self)
         self.SetAutoLayout(1)
 
 
+# --------------------- TAB 3 -----------------------------------
+
+class SecurityPanel(wxPanel):
+    ID_SECURITY = wxNewId()
+     
+    def __init__(self, parent, application):
+        wxPanel.__init__(self, parent, -1, wxDefaultPosition, 
+                         wxDefaultSize, wxNO_BORDER|wxSW_3D)
+        self.application = application
+        self.securityBox = wxStaticBox(self, -1, "Security",
+                                       size = wxSize(500, 50),
+                                       name = 'securityBox')
+        self.securityBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        
+        self.securityText = wxStaticText(self, -1, "Manage access to venue server including which users are \nallowed to administrate.")
+        self.securityButton = wxButton(self, self.ID_SECURITY, "Manage Security")
+        self.__doLayout()
+        EVT_BUTTON(self, self.ID_SECURITY, self.OpenSecurityDialog)
+
+    def OpenSecurityDialog(self, event):
+        f = AuthorizationUIDialog(self, -1, "Security", log)
+        wxBeginBusyCursor()
+        f.ConnectToAuthManager(self.application.serverUrl)
+        wxEndBusyCursor()
+        
+        if f.ShowModal() == wxID_OK:
+            wxBeginBusyCursor()
+            f.Apply()
+            wxEndBusyCursor()
+        f.Destroy()
+
+    def __doLayout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        securityBoxSizer = wxStaticBoxSizer(self.securityBox, wxHORIZONTAL)
+        securityBoxSizer.Add(self.securityText, 1 , wxEXPAND|wxALL|wxCENTER, 5)
+        securityBoxSizer.Add(1,40)
+        securityBoxSizer.Add(self.securityButton, 0, wxALIGN_RIGHT|wxALL|wxCENTER, 5)
+        sizer.Add(securityBoxSizer, 0, wxEXPAND| wxALL, 10)
+
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+        
 #--------------------- DIALOGS -----------------------------------
 IP = 1
 IP_1 = 2
