@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.32 2003-02-14 22:33:32 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.33 2003-02-17 16:19:58 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -619,7 +619,10 @@ class Venue(ServiceBase.ServiceBase):
     RemoveData.soap_export_as = "RemoveData"
 
     def GetUploadDescriptor(self):
-        return self.dataStore.GetUploadDescriptor()
+        if self.dataStore is not None:
+            return self.dataStore.GetUploadDescriptor()
+        else:
+            return None
 
     GetUploadDescriptor.soap_export_as = "GetUploadDescriptor"
 
