@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.214 2003-09-16 22:03:34 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.215 2003-09-17 13:21:17 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -139,9 +139,6 @@ class VenueClientUI(VenueClientEventSubscriber):
         
         # Tell the UI about installed applications
         self.startupDialog.UpdateOneStep()
-#        appdb = self.app.GetAppDatabase()
-#        self.frame.SetInstalledApps( appdb.ListAppsAsAppDescriptions() )
-#        self.frame.SetInstalledApps( self.venueClient.GetInstalledApps() )
         self.frame.EnableAppMenu( false )
        
         # Initialize globus runtime stuff.
