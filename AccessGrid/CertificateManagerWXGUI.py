@@ -198,8 +198,12 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                 self.certificateManager.SetDefaultIdentity(certs[0])
                 # loop back to init env
 
-            except CertificateManager.NoProxyFound, \
-                   CertificateManager.ProxyExpired:
+            except CertificateManager.NoProxyFound:
+                retry = self.CreateProxy()
+                if not retry:
+                    break
+
+            except CertificateManager.ProxyExpired:
                 retry = self.CreateProxy()
                 if not retry:
                     break
