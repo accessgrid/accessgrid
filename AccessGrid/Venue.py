@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.100 2003-05-28 13:25:45 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.101 2003-05-29 19:42:32 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -2094,11 +2094,11 @@ class Venue(ServiceBase.ServiceBase):
             raise ApplicationNotFound
 
         # Stop the web service interface
-        try:
-            self.server.hostingEnvironment.UnbindService(app)
-        except:
-            log.exception("DestroyApp: Unbind failed for application.")
-            raise ApplicationUnbindError
+        #try:
+        #    self.server.hostingEnvironment.UnbindService(app)
+        #except:
+        #    log.exception("DestroyApp: Unbind failed for application.")
+        #    raise ApplicationUnbindError
 
         # Shut down the application
         app.Shutdown()
