@@ -4,11 +4,13 @@ servicemanagers = servicemanager0
 [service1]
 packagename = VideoConsumerService.zip
 resource = None
+executable = vic
 serviceconfig = serviceconfig1
 
 [service0]
 packagename = AudioService.zip
 resource = None
+executable = rat
 serviceconfig = serviceconfig0
 
 [servicemanager0]
