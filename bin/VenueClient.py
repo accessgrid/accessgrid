@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
@@ -6,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.125 2003-04-22 19:33:51 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.126 2003-04-23 09:16:52 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -21,23 +20,25 @@ import sys
 log = logging.getLogger("AG.VenueClient")
 
 from wxPython.wx import *
+from wxPython.wx import wxTheMimeTypesManager as mtm
+
+from AccessGrid.hosting.pyGlobus import Server
 
 import AccessGrid.Types
 import AccessGrid.ClientProfile
-from AccessGrid.Platform import GPI, GetUserConfigDir
-from AccessGrid.VenueClient import VenueClient
-from AccessGrid.DataStore import DataStore, GSIHTTPTransferServer
-from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
-from AccessGrid.VenueClientUIClasses import SaveFileDialog, UploadFilesDialog
-from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
+from AccessGrid import DataStore
+
 from AccessGrid.Descriptions import DataDescription
-from AccessGrid.Utilities import HaveValidProxy
+from AccessGrid.Utilities import HaveValidProxy, GetMimeCommands
 from AccessGrid.UIUtilities import MyLog, MessageDialog
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
-from AccessGrid import DataStore
 from AccessGrid.GUID import GUID
 from AccessGrid.hosting.pyGlobus import Server
-
+from AccessGrid.VenueClient import VenueClient
+from AccessGrid.Platform import GPI, GetUserConfigDir
+from AccessGrid.VenueClientUIClasses import SaveFileDialog, UploadFilesDialog
+from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
+from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
 from AccessGrid.Utilities import formatExceptionInfo
 
 if sys.platform == "win32":
@@ -50,7 +51,6 @@ try:
 except Exception, e:
     HaveCertificateManager = 0
 
-from AccessGrid.hosting.pyGlobus import Server
 
 class VenueClientUI(wxApp, VenueClient):
     """
@@ -95,7 +95,7 @@ class VenueClientUI(wxApp, VenueClient):
         if HaveCertificateManager:
             self.certificateManagerGUI = CertificateManager.CertificateManagerWXGUI()
             self.certificateManager = CertificateManager.CertificateManager(GetUserConfigDir(),
-                                                                            self.certificateManagerGUI)
+            self.certificateManagerGUI)
             self.certificateManager.InitEnvironment()
 
         self.frame = VenueClientFrame(NULL, -1,"", self)
@@ -108,8 +108,10 @@ class VenueClientUI(wxApp, VenueClient):
 
         # Load user mime.types from AG Config Dir
         mimeFilename = os.path.join(GetUserConfigDir(), "mime.types")
+        wxLogDebug("Reading %s" % mimeFilename)
         if os.path.isfile(mimeFilename):
-            wxTheMimeTypesManager.ReadMailcap(mimeFilename)
+            success = mtm.ReadMailcap(mimeFilename, 1)
+            wxLogDebug("Read Mime Types: %d" % success)
 
         if self.isPersonalNode:
             def setSvcCallback(svcUrl, self = self):
@@ -167,10 +169,10 @@ class VenueClientUI(wxApp, VenueClient):
         try:
             if sys.platform == "win32":
                 opts, args = getopt.getopt(sys.argv[1:], "hd",
-                                           ["personalNode", "debug", "help"])
+                ["personalNode", "debug", "help"])
             else:
                 opts, args = getopt.getopt(sys.argv[1:], "hd",
-                                           ["debug", "help"])
+                ["debug", "help"])
         except getopt.GetoptError:
             self.__Usage()
             sys.exit(2)
@@ -197,14 +199,15 @@ class VenueClientUI(wxApp, VenueClient):
                 self.personalDataStorePath = None
 
         self.dataStore = DataStore.DataStore(self, self.personalDataStorePath,
-                                   self.personalDataStorePrefix)
-        self.transferEngine = GSIHTTPTransferServer(('', self.personalDataStorePort))
+        self.personalDataStorePrefix)
+        self.transferEngine = DataStore.GSIHTTPTransferServer(('',
+                                                               self.personalDataStorePort))
         self.transferEngine.run()
         self.transferEngine.RegisterPrefix(self.personalDataStorePrefix, self)
         self.dataStore.SetTransferEngine(self.transferEngine)
 
         wxLogDebug("Creating personal datastore at %s using prefix %s and port %s" %(self.personalDataStorePath,
-                                                                          self.personalDataStorePrefix, self.personalDataStorePort))
+        self.personalDataStorePrefix, self.personalDataStorePort))
         # load personal data
         if os.path.exists(self.personalDataFile):
             file = open(self.personalDataFile, 'r')
@@ -375,6 +378,7 @@ class VenueClientUI(wxApp, VenueClient):
         Appropriate gui updates are made in client.
         """
         wxCallAfter(wxLogDebug, "EVENT - Add application: %s" %(app.name))
+        wxCallAfter(wxLogDebug, "EVENT - Add application: %s" %(app.mimeType))
         wxCallAfter(self.frame.contentListPanel.AddApplication, app)
 
     def RemoveApplicationEvent(self, app):
@@ -467,7 +471,7 @@ class VenueClientUI(wxApp, VenueClient):
                     wxCallAfter(self.frame.contentListPanel.AddParticipant, client)
                     wxCallAfter(wxLogDebug, "   %s" %(client.name))
 
-                # Nodes
+                    # Nodes
                 else:
                     wxCallAfter(self.frame.contentListPanel.AddNode, client)
                     wxCallAfter(wxLogDebug, "   %s" %(client.name))
@@ -545,7 +549,7 @@ class VenueClientUI(wxApp, VenueClient):
                 wxLogDebug("Personal file %s has vanished" %data.name)
                 del self.personalDataDict[data.name]
 
-            # Is there a file in the venue with the same name?
+                # Is there a file in the venue with the same name?
             elif(self.venueState.data.has_key(data.name)):
                 duplicateData.append(data.name)
 
@@ -563,7 +567,7 @@ class VenueClientUI(wxApp, VenueClient):
                 files = files + ' ' +file + ','
 
             wxCallAfter(wxLogMessage, "Personal data, %s \nalready exists in the venue and could not be added"
-                        %files)
+            %files)
             wxCallAfter(wxLog_GetActiveTarget().Flush)
 
     def ExitVenue(self):
@@ -647,10 +651,10 @@ class VenueClientUI(wxApp, VenueClient):
             #except:
             #    wxCallAfter(wxLogError, "Error while trying to enter venue")
             #    wxCallAfter(wxLog_GetActiveTarget().Flush)
-                #if self.oldUri != None:
-                #    wxCallAfter(wxLogDebug,"Go back to old venue")
-                # go back to venue where we came from
-                #    self.EnterVenue(self.oldUri)
+            #if self.oldUri != None:
+            #    wxCallAfter(wxLogDebug,"Go back to old venue")
+            # go back to venue where we came from
+            #    self.EnterVenue(self.oldUri)
         else:
             wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: Handler is not valid")
             if not HaveValidProxy():
@@ -727,16 +731,16 @@ class VenueClientUI(wxApp, VenueClient):
 
             if data_descriptor.status != DataDescription.STATUS_PRESENT:
                 wxCallAfter(wxLogMessage, "File %s is not downloadable - it has status %s"
-                            % (data_descriptor.name, data_descriptor.status))
+                % (data_descriptor.name, data_descriptor.status))
                 wxCallAfter(wxLog_GetActiveTarget().Flush)
 
                 return
 
             # Create the dialog for the download.
             dlg = SaveFileDialog(self.frame, -1, "Saving file",
-                                 "Saving file to %s ...     " % (local_pathname),
-                                 "Saving file to %s ... done" % (local_pathname),
-                                 size)
+            "Saving file to %s ...     " % (local_pathname),
+            "Saving file to %s ... done" % (local_pathname),
+            size)
 
             wxCallAfter(wxLogDebug, "Downloading: size=%s checksum=%s url=%s" % (size, checksum, url))
             dlg.Show(1)
@@ -757,7 +761,7 @@ class VenueClientUI(wxApp, VenueClient):
             dl_args = (url, local_pathname, size, checksum, progressCB)
 
             download_thread = threading.Thread(target = self.get_ident_and_download,
-                                               args = dl_args)
+            args = dl_args)
 
             # Use wxCallAfter so we get the dialog filled in properly.
             wxCallAfter(download_thread.start)
@@ -785,7 +789,7 @@ class VenueClientUI(wxApp, VenueClient):
 
         if failure_reason is not None:
             wxCallAfter(MessageDialog, self.frame, failure_reason, "Download error",
-                                  wxOK  | wxICON_INFORMATION)
+            wxOK  | wxICON_INFORMATION)
 
 
     def get_ident_and_download(self, url, local_pathname, size, checksum, progressCB):
@@ -794,14 +798,14 @@ class VenueClientUI(wxApp, VenueClient):
             if url.startswith("https"):
                 wxLogDebug("url=%s, local path =%s, size = %s, checksum = %s"%(url, local_pathname, size, checksum))
                 DataStore.GSIHTTPDownloadFile(url, local_pathname, size,
-                                              checksum, progressCB)
+                checksum, progressCB)
                 wxLogDebug("finished GSIHTTPDownload")
 
             else:
                 wxLogDebug("url does not start with https")
                 my_identity = GetDefaultIdentityDN()
                 DataStore.HTTPDownloadFile(my_identity, url, local_pathname, size,
-                                           checksum, progressCB)
+                checksum, progressCB)
         except DataStore.DownloadFailed, e:
             wxCallAfter(wxLogError, "Got exception on download")
 
@@ -838,9 +842,9 @@ class VenueClientUI(wxApp, VenueClient):
 
         # Plumbing for getting progress callbacks to the dialog
         def progressCB(filename, sent, total, file_done, xfer_done,
-                       dialog = dlg):
+            dialog = dlg):
             wxCallAfter(dialog.SetProgress, filename, sent, total,
-                        file_done, xfer_done)
+            file_done, xfer_done)
             return dialog.IsCancelled()
 
         # Create the thread to run the upload.
@@ -853,8 +857,8 @@ class VenueClientUI(wxApp, VenueClient):
         ul_args = (url, file_list, progressCB)
 
         wxCallAfter(wxLogDebug,
-                    "Have args, creating thread, url: %s, files: %s" %
-                    (url, file_list))
+        "Have args, creating thread, url: %s, files: %s" %
+        (url, file_list))
 
         upload_thread = threading.Thread(target = method, args = ul_args)
 
@@ -883,7 +887,7 @@ class VenueClientUI(wxApp, VenueClient):
                 my_identity = GetDefaultIdentityDN()
                 wxCallAfter(wxLogDebug, "Got identity %s" % my_identity)
                 DataStore.HTTPUploadFiles(my_identity, upload_url,
-                                          file_list, progressCB)
+                file_list, progressCB)
 
         except DataStore.FileNotFound, e:
             error_msg = "File not found: %s" % (e[0])
@@ -895,7 +899,7 @@ class VenueClientUI(wxApp, VenueClient):
         if error_msg is not None:
             wxCallAfter(wxLogMessage, error_msg)
             wxCallAfter(wxLog_GetActiveTarget().Flush)
-            # wxCallAfter(MessageDialog, NULL, error_msg)
+    # wxCallAfter(MessageDialog, NULL, error_msg)
 
     def UploadFilesNoDialog(self, file_list):
         """
@@ -907,7 +911,7 @@ class VenueClientUI(wxApp, VenueClient):
         wxCallAfter(wxLogDebug, "Upload files - no dialog")
         upload_url = self.upload_url
         wxCallAfter(wxLogDebug, "Have identity=%s upload_url=%s" %
-                    (my_identity, upload_url))
+        (my_identity, upload_url))
 
         error_msg = None
         try:
@@ -1071,16 +1075,19 @@ class VenueClientUI(wxApp, VenueClient):
         """
         Join the specified application
         """
-        fileType = wxTheMimeTypesManager.GetFileTypeFromMimeType(app.mimeType)
-        if fileType != None:
-            wxLogDebug("Joining application: %s" % app.name)
-            openCommand = fileType.GetOpenCommand(app.uri)
-            # print "open command = ", openCommand
-            wxExecute(openCommand)
-        else:
+        wxLogDebug("Joining application: %s / %s" % (app.name, app.mimeType))
+        cdict = GetMimeCommands(filename=app.uri, type=app.mimeType)
+
+        if cdict == None:
             message = "No client registered for the selected application\n(mime type = %s)" % app.mimeType
             dlg = MessageDialog(self.frame, message )
             wxLogDebug(message)
+        else:
+            wxLogDebug("Commands:")
+            for k in cdict.keys():
+                wxLogDebug("Verb: %s Cmd: %s" % (k, cdict[k]))
+                if k == 'open':
+                    wxExecute(cdict[k])
 
     def RemoveApp(self,app):
         """
