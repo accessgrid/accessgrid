@@ -1,4 +1,3 @@
-
 import ServiceObject
 import ServiceBase
 import socket
@@ -18,13 +17,10 @@ class SecureConnectionInfo:
 
     def __repr__(self):
         return "SecureConnectionInfo(initiator=%s, acceptor=%s)"  % (self.initiator.display(), self.acceptor.display())
-        
+
 class Server:
 
-    def __init__(self,
-                 port,
-                 auth_callback = None,
-                 debug = 0):
+    def __init__(self, port, auth_callback = None, debug = 0):
         """
         Create a pyGlobus/GSI server instance.
         """
@@ -45,7 +41,9 @@ class Server:
         self._next_service_id = 100
 
         self._path_map = {}
-        
+
+        self._running = 0
+
     def _create_server(self, port, server_auth_callback, debug = 0):
 
         #
@@ -92,10 +90,15 @@ class Server:
         This method runs the server (that is, causes it to listen for
         and process incoming messages) in the current thread. It does
         not return.
-        
+
         """
-        
-	self._server.serve_forever()
+
+        self._running = 1
+
+        while(self._running):
+            self._server.handle_request()
+
+        self._server.server_close()
         
     def run_in_thread(self):
         """
@@ -109,13 +112,16 @@ class Server:
         server_thread = threading.Thread(target = self.run)
         server_thread.start()
 
+    def stop(self):
+        self._running = 0
+
     def create_service(self, service_class, 
                        pathId = None,
                        *args):
 	"""
         Instantiate a new service.
 
-        
+
 	"""
 
         service_obj = self.create_service_object(pathId = pathId)
@@ -141,16 +147,16 @@ class Server:
 	service object with that ID. We also register that object in
 	the dispatch table.
 
-        
+
 	"""
 
         if pathId is None:
             my_id = self.allocate_id()
         else:
             my_id = pathId
-        
+
 	# Create the service object
-	
+
 	service_obj = ServiceObject.ServiceObject(self, my_id)
 
         #
@@ -171,7 +177,7 @@ class Server:
         # and md5- or sha-digested. We'll leave it like this for
         # now in order to make the URLs simpler to look at.
         #
-	
+
 	next_id = self._next_service_id
 	self._next_service_id = next_id + 1
 
@@ -194,7 +200,6 @@ class Server:
         except Exception, e:
             print "Other exception ", e
 
-
     def get_connection_info(self, connection):
         return SecureConnectionInfo(connection.get_security_context())
 
@@ -209,4 +214,4 @@ class Server:
             host = socket.getfqdn()
         return "https://%s:%s" % (host, self.get_port())
 
-        
+
