@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: SOAPInterface.py,v 1.13 2004-05-06 05:41:27 judson Exp $
+# RCS-ID:      $Id: SOAPInterface.py,v 1.14 2004-05-06 05:44:02 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ primary methods, the constructor and a default authorization for all
 interfaces.
 """
 
-__revision__ = "$Id: SOAPInterface.py,v 1.13 2004-05-06 05:41:27 judson Exp $"
+__revision__ = "$Id: SOAPInterface.py,v 1.14 2004-05-06 05:44:02 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -171,7 +171,6 @@ class SOAPIWrapper:
         self.defaultPort = 8000
         
         urlist = urlparse.urlsplit(url)
-        print "OURL: ", urlist
         nurl = list()
         nurl.append(urlist[0])
         hp = urlist[1]
@@ -183,8 +182,6 @@ class SOAPIWrapper:
         for i in urlist[2:]:
             nurl.append(i)
 
-        print "NURL: ", nurl
-        
         self.url = urlparse.urlunsplit(nurl)
 
         if url != None:
