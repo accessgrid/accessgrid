@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.211 2004-07-21 15:35:53 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.212 2004-07-22 15:05:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.211 2004-07-21 15:35:53 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.212 2004-07-22 15:05:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -674,8 +674,9 @@ class Venue(AuthorizationMixIn):
 
         # Actually remove user
         for privateId in users_to_remove:
-            log.debug("Removing user %s with expired heartbeat time",
-            self.clients[privateId].GetClientProfile().GetName())
+            log.debug("Removing user %s with expired heartbeat time %d seconds", 
+                        self.clients[privateId].GetClientProfile().GetName(), 
+                        self.clients[privateId].GetTimeSinceLastHeartbeat(now_sec))
 
             self.RemoveUser(privateId)
 
@@ -705,7 +706,7 @@ class Venue(AuthorizationMixIn):
         now = time.time()
         privateId = event.data
 
-        # log.debug("Got Client Heartbeat for %s at %s." % (privateId, now))
+        log.debug("Got Client Heartbeat for %s at %s." % (privateId, now))
 
         if str(event.venue) != str(self.uniqueId):
             log.info("ClientHeartbeat: %s received heartbeat for a different venue %s", self.uniqueId, event.venue)
