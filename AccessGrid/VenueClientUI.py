@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.39 2004-04-23 21:04:41 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.40 2004-04-26 16:29:45 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.39 2004-04-23 21:04:41 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.40 2004-04-26 16:29:45 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -4319,7 +4319,7 @@ class ServicePropertiesDialog(wxDialog):
 class VenuePropertiesDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title)
-        self.list = wxListCtrl(self, wxNewId(), size = wxSize(50, 50),style=wxLC_REPORT)
+        self.list = wxListCtrl(self, wxNewId(), size = wxSize(400, 150),style=wxLC_REPORT)
 
         self.list.InsertColumn(0, "Host")
         self.list.InsertColumn(1, "Port")
@@ -4364,7 +4364,7 @@ class VenuePropertiesDialog(wxDialog):
         mainSizer.Add(sizer, 1, wxEXPAND| wxALL, 10)
         
         self.SetSizer(mainSizer)
-        mainSizer.Fit(self.list)
+        mainSizer.Fit(self)
         self.SetAutoLayout(1)
         
 
