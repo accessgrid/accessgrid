@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.80 2003-03-25 17:56:02 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.81 2003-03-25 19:45:19 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ class VenueClientUI(wxApp, VenueClient):
     venueUri = None
 
     def __init__(self):
-        wxApp.__init__(self,False)
+        wxApp.__init__(self)
         VenueClient.__init__(self)
 
     def OnInit(self):
@@ -110,6 +110,26 @@ class VenueClientUI(wxApp, VenueClient):
             self.__openProfileDialog()
         else:
             self.__startMainLoop(self.profile)
+
+    def AuthorizeLead(clientProfile):
+        """
+        Note: Overloaded from VenueClient
+        This method calls the notifies the user that somebody wants to follow him or
+        her and allows the user to approve the request.
+        """
+        text = "Do you want "+clientProfile.name+" to follow you?"
+        title = "Authorize follow"
+        dlg = wxMessageDialog(self.frame, text, title, style = wxOK|wxICON_QUESTION)
+        if(dlg.ShowModal() == wxID_OK):
+            self.SendLeadResponse(clientProfile, True)
+
+        else:
+            self.SendLeadResponse(clientProfile, False)
+
+        dlg.Destroy()
+
+       
+        
 
     def __openProfileDialog(self):
         """
@@ -313,7 +333,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method sets the history list, which stores visited
         venue urls used by the back button.
         """
-        wxLogDebug("Set history url: %s " %uri)
+        wxCallAfter(wxLogDebug, "Set history url: %s " %uri)
         length = len(self.history)
         last = length -1
                    
@@ -331,7 +351,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         GoBack() is called when the user wants to go back to last visited venue
         """
-        wxLogDebug("Go back")
+        wxCallAfter(wxLogDebug,"Go back")
         
         l = len(self.history)
         if(l>0):
@@ -346,11 +366,11 @@ class VenueClientUI(wxApp, VenueClient):
         server.  If the url is invalid, the user re-enters the venue
         he or she just left.
         """
-        wxLogDebug("Go to new venue")
+        wxCallAfter(wxLogDebug, "Go to new venue")
         self.oldUri = None
         
         if not HaveValidProxy():
-            wxLogDebug("You don't have a valid proxy")
+            wxCallAfter(wxLogDebug, "You don't have a valid proxy")
             GPI()
                                
         if self.venueUri != None:
@@ -359,41 +379,39 @@ class VenueClientUI(wxApp, VenueClient):
             self.oldUri = None
             
         try: # is this a server
-            wxLogDebug("Is this a server")
+            wxCallAfter(wxLogDebug, "Is this a server")
             venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
-            wxLogDebug("server url: %s" %venueUri)
+            wxCallAfter(wxLogDebug, "server url: %s" %venueUri)
             
         except: # no, it is a venue
             venueUri = uri
-            wxLogDebug("venue url: %s" %venueUri)
+            wxCallAfter(wxLogDebug, "venue url: %s" %venueUri)
 
         self.clientHandle = Client.Handle(venueUri)
         if(self.clientHandle.IsValid()):
-            wxLogDebug("the handler is valid")
+             wxCallAfter(wxLogDebug, "the handler is valid")
             
-            try:
-                self.client = self.clientHandle.get_proxy()
-                self.gotClient = true
-                if self.oldUri != None:
-                    wxLogDebug("clean up frame and exit")
-                    wxCallAfter(self.frame.CleanUp)
-                    self.ExitVenue()
+             try:
+                 self.client = self.clientHandle.get_proxy()
+                 self.gotClient = true
+                 if self.oldUri != None:
+                     wxCallAfter(wxLogDebug, "clean up frame and exit")
+                     wxCallAfter(self.frame.CleanUp)
+                     #                    self.ExitVenue()
 
-                wxLogDebug("--enter venue %s" %venueUri)
-                wxLogDebug(str(Client.Handle(venueUri).IsValid()))
-                self.EnterVenue(venueUri)
-                wxLogDebug("--after enter venue %s" %venueUri)
-                self.__setHistory(self.oldUri, back)
-                wxCallAfter(self.frame.ShowMenu)
+                 self.EnterVenue(venueUri)
+                 wxCallAfter(wxLogDebug, "--after enter venue %s" %venueUri)
+                 self.__setHistory(self.oldUri, back)
+                 wxCallAfter(self.frame.ShowMenu)
                
-            except:
-                wxLogError("Error while trying to enter venue")
-                if self.oldUri != None:
-                    wxLogDebug("Go back to old venue")
-                    # go back to venue where we came from
-                    self.EnterVenue(self.oldUri) 
+             except:
+                 wxCallAfter(wxLogError, "Error while trying to enter venue")
+                 if self.oldUri != None:
+                     wxCallAfter(wxLogDebug,"Go back to old venue")
+                     # go back to venue where we came from
+                     self.EnterVenue(self.oldUri) 
         else:
-            wxLogDebug("Handler is not valid")
+            wxCallAfter(wxLogDebug, "Handler is not valid")
             if not HaveValidProxy():
                 text = 'You do not have a valid proxy.' +\
                        '\nPlease, run "grid-proxy-init" on the command line"'
@@ -410,20 +428,20 @@ class VenueClientUI(wxApp, VenueClient):
                 text = 'The venue URL you specified is not valid'
                 text2 = 'Invalid URL'
 
-            wxLogMessage(text)
+            wxCallAfter(wxLogMessage, text)
             wxLog_GetActiveTarget().Flush()
 
     def __getFollowers(self, venueUrl):
-        wxLogDebug('Tell followers to go to url:%s ' %venueUrl)
+        wxCallAfter(wxLogDebug, 'Tell followers to go to url:%s ' %venueUrl)
         for person in self.followerProfiles.values():
             url = person.venueClientURL
             followerHandle = Client.Handle(url)
-            wxLogDebug('This person is following me, url:%s ' %url)
+            wxCallAfter(wxLogDebug, 'This person is following me, url:%s ' %url)
             if(followerHandle.IsValid()):
-                wxLogDebug("the follower handler is valid")
+                wxCallAfter(wxLogDebug, "the follower handler is valid")
                 followerProxy = followerHandle.get_proxy()
                 followerProxy.EnterVenue(venueUrl)
-                wxLogDebug("told followers to enter url: %s "%venueUrl)
+                wxCallAfter(wxLogDebug, "told followers to enter url: %s "%venueUrl)
 
     def OnExit(self):
         """
@@ -705,12 +723,12 @@ class VenueClientUI(wxApp, VenueClient):
         try:
             #personToFollowProxy = self.clientHandle.get_proxy()
             #personToFollowProxy.Follow(personToFollow.venueClientURL)
-            wxLogDebug("You are trying to follow %s" %personToFollow.name)
+            wxCallAfter(wxLogDebug, "You are trying to follow %s" %personToFollow.name)
             self.Follow(personToFollow.venueClientURL)
-            wxLogDebug("You are following %s" %personToFollow.name)
+            wxCallAfter(wxLogDebug,"You are following %s" %personToFollow.name)
                 
         except:
-            wxLogError("Can not follow %s" %personToFollow.name)
+            wxCallAfter(wxLogError, "Can not follow %s" %personToFollow.name)
 
     def AddData(self, data):
         """
