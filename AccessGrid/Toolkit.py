@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.57 2004-05-06 19:42:11 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.58 2004-05-07 16:31:36 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.57 2004-05-06 19:42:11 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.58 2004-05-07 16:31:36 eolson Exp $"
 
 # Standard imports
 import os
@@ -131,7 +131,7 @@ class AppBase:
            
            fh.setFormatter(Log.GetFormatter())
            self.fhLoggerLevels = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
-           self.fhLoggerLevels.SetLevel(Log.ERROR)
+           self.fhLoggerLevels.SetLevel(Log.DEBUG)
            self.loggerLevels = self.fhLoggerLevels
        
        # Send the log in memory to stream (debug) or file handler.
