@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.5 2003-08-12 20:56:41 olson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.6 2003-08-12 21:16:01 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ if sys.platform == "win32":
     
 else:
     import ProxyGenGPI
-    ProxyGen = ProxyGenProgrammatic
+    ProxyGen = ProxyGenGPI
     del ProxyGenGPI
 
 
