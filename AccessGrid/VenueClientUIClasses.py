@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.276 2003-09-17 20:57:51 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.277 2003-09-17 21:01:37 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.276 2003-09-17 20:57:51 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.277 2003-09-17 21:01:37 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2242,14 +2242,14 @@ class ContentListPanel(wxPanel):
             # Fix odd commands
             if isWindows():
                 if command.find("%1") != -1:
-                    command = command.replace("%1", "%(localFilePath)s")
-                elif command.find("%(localFilePath)s") == -1:
-                    command += " %(localFilePath)s"
-            else:
-                if command.find("%s") != -1:
-                    command = command.replace("%s", "\"%(localFilePath)s\"")
+                    command = command.replace("%1", "\"%(localFilePath)s\"")
                 elif command.find("%(localFilePath)s") == -1:
                     command += " \"%(localFilePath)s\""
+            else:
+                if command.find("%s") != -1:
+                    command = command.replace("%s", "%(localFilePath)s")
+                elif command.find("%(localFilePath)s") == -1:
+                    command += " %(localFilePath)s"
         else:
             # Get the app dir and run
             if isinstance(item, ApplicationDescription):
@@ -2273,9 +2273,9 @@ class ContentListPanel(wxPanel):
                     command += " \"%(appUrl)s\""
             else:
                 if command.find("%s") != -1:
-                    command = command.replace("%s", "\"%(appUrl)s\"")
+                    command = command.replace("%s", "%(appUrl)s")
                 elif command.find("%(appUrl)s") == -1:
-                    command += " \"%(appUrl)s\""
+                    command += " %(appUrl)s"
 
         namedVars['appName'] = item.name.replace(" ", "_")
         namedVars['appDesc'] = item.description
@@ -2313,6 +2313,7 @@ class ContentListPanel(wxPanel):
             realCommand = command % namedVars
 
         aList = realCommand.split(' ')
+        print "CMD: ", realCommand
         self.app.venueClient.processManager.start_process(aList[0], aList[1:])
         
     def CleanUp(self):
