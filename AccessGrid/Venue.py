@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.124 2003-08-21 20:19:04 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.125 2003-08-21 21:02:53 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ from AccessGrid.Descriptions import CreateDataDescription, DataDescription
 from AccessGrid.Descriptions import BadDataDescription, BadServiceDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
-from AccessGrid import DataService
+from AccessGrid.DataStore import DataService
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.Events import Event, HeartbeatEvent, DisconnectEvent, ClientExitingEvent
 from AccessGrid.Events import MarshalledEvent
