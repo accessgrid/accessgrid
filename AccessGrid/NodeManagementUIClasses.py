@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.22 2003-04-22 21:53:10 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.23 2003-04-29 17:05:33 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1004,12 +1004,12 @@ class NodeManagementClientFrame(wxFrame):
         streamDs = []
         streamDs.append( StreamDescription( "Test Room", 
                              MulticastNetworkLocation( "233.2.171.39", 42000, 127 ),
-                             Capability( Capability.CONSUMER, Capability.AUDIO ) ) ,
-                             0, None, 0 )
+                             Capability( Capability.CONSUMER, Capability.AUDIO ) ,
+                             0, None, 0 )) 
         streamDs.append( StreamDescription( "Test Room", 
                              MulticastNetworkLocation( "233.2.171.38", 42002, 127 ),
-                             Capability( Capability.CONSUMER, Capability.VIDEO ) ),
-                             0, None, 0 )
+                             Capability( Capability.CONSUMER, Capability.VIDEO ),
+                             0, None, 0 ) )
         self.nodeServiceHandle.GetProxy().ConfigureStreams( streamDs )
 
         self.UpdateServiceList()
@@ -1018,12 +1018,12 @@ class NodeManagementClientFrame(wxFrame):
         streamDs = []
         streamDs.append( StreamDescription( "ANL", 
                              MulticastNetworkLocation( "233.2.171.251", 59988, 127 ),
-                             Capability( Capability.CONSUMER, Capability.AUDIO ) ),
-                             0, None, 0 )
+                             Capability( Capability.CONSUMER, Capability.AUDIO ),
+                             0, None, 0 ) )
         streamDs.append( StreamDescription( "ANL", 
                              MulticastNetworkLocation( "233.2.171.251", 59986, 127 ),
-                             Capability( Capability.CONSUMER, Capability.VIDEO ) ),
-                             0, None, 0 )
+                             Capability( Capability.CONSUMER, Capability.VIDEO ),
+                             0, None, 0 ) )
         self.nodeServiceHandle.GetProxy().ConfigureStreams( streamDs )
 
         self.UpdateServiceList()
@@ -1032,12 +1032,12 @@ class NodeManagementClientFrame(wxFrame):
         streamDs = []
         streamDs.append( StreamDescription( "Lobby", 
                              MulticastNetworkLocation( "224.2.177.155", 55524, 127 ),
-                             Capability( Capability.CONSUMER, Capability.VIDEO ) ),
-                             0, None, 0 )
+                             Capability( Capability.CONSUMER, Capability.VIDEO ),
+                             0, None, 0 ) )
         streamDs.append( StreamDescription( "Lobby", 
                              MulticastNetworkLocation( "224.2.211.167", 16964, 127 ),
-                             Capability( Capability.CONSUMER, Capability.AUDIO ) ),
-                             0, None, 0 )
+                             Capability( Capability.CONSUMER, Capability.AUDIO ),
+                             0, None, 0 ) )
         self.nodeServiceHandle.GetProxy().ConfigureStreams( streamDs )
         self.UpdateServiceList()
 
@@ -1045,8 +1045,8 @@ class NodeManagementClientFrame(wxFrame):
         streamDs = []
         streamDs.append( StreamDescription( "", 
                              MulticastNetworkLocation( "localhost", 55524, 127 ),
-                             Capability( Capability.CONSUMER, Capability.VIDEO ) ),
-                             0, None, 0 )
+                             Capability( Capability.CONSUMER, Capability.VIDEO ),
+                             0, None, 0 ) )
         self.nodeServiceHandle.GetProxy().ConfigureStreams( streamDs )
 
         self.UpdateServiceList()
