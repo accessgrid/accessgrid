@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.23 2004-09-07 18:15:57 turam Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.24 2004-09-07 20:15:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.23 2004-09-07 18:15:57 turam Exp $"
+__revision__ = "$Id: AppDb.py,v 1.24 2004-09-07 20:15:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -223,7 +223,7 @@ class AppDb:
             lookupExt = self.defaultSeparator.join(["extension", extension])
             try:
                 mimeType = self.AppDb[lookupExt]
-            except KeyError, k:
+            except KeyError:
                 mimeType = None
 
         return mimeType
@@ -327,7 +327,7 @@ class AppDb:
             nameStr = self.defaultSeparator.join(["name", namekey])
             ext = self.GetExtForMimeType(mimeType)
             extStr = self.defaultSeparator.join(["extension", ext])
-        elif extension != None and None != self.GetNameForMimeType(self.GetMimeType(extenstion=extension)):
+        elif extension != None and None != self.GetNameForMimeType(self.GetMimeType(extension=extension)):
             mimeType = self.GetMimeType(extension = extension)
             mimeStr = self.defaultSeparator.join([mimeType, "None"])
             name = self.GetNameForMimeType(mimeType)

@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.22 2004-09-03 19:45:21 turam Exp $
+# RCS-ID:      $Id: agpm.py,v 1.23 2004-09-07 20:16:35 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,13 +11,12 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.22 2004-09-03 19:45:21 turam Exp $"
+__revision__ = "$Id: agpm.py,v 1.23 2004-09-07 20:16:35 turam Exp $"
 
 import os
 import re
 from types import StringType
 import sys
-import getopt
 import zipfile
 import tempfile
 import shutil
@@ -116,8 +115,7 @@ def UnpackPkg(filename):
     """
     zipArchive = zipfile.ZipFile(filename)
     # We have to unpack things some where we can use them
-    workingDir = tempfile.mktemp()
-    os.mkdir(workingDir)
+    workingDir = tempfile.mkdtemp()
     appFile = None
     for filename in zipArchive.namelist():
         parts = filename.split('.')
@@ -209,7 +207,7 @@ def PrepPackage(package):
         appFile, workingDir = UnpackPkg(package)
         appFile = os.path.join(workingDir, appFile)
         cleanup = 1
-    except Exception, e:
+    except Exception:
         if workingDir is not None:
             shutil.rmtree(workingDir)
         raise
@@ -298,7 +296,6 @@ def main():
     It registers the application with the users AG environment.
     """
     workingDir = os.getcwd()
-    zipFile = None
     commands = dict()
     files = list()
     cleanup = 0
@@ -323,8 +320,8 @@ def main():
         
     if options.listservices:
         files = os.listdir(tkConf.GetNodeServicesDir())
-        for file in files:
-            print file
+        for f in files:
+            print f
         sys.exit(0)
         
         
