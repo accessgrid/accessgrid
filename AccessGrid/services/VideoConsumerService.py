@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.3 2003-02-12 17:11:17 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.4 2003-02-14 20:01:18 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -41,7 +41,7 @@ class VideoConsumerService( AGService ):
          print "Start service"
          print "Location : ", self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl
          options = []
-         if self.streamDescription.encryptionKey != None:
+         if self.streamDescription.encryptionKey != 0:
             options.append( "-K" )
             options.append( self.streamDescription.encryptionKey )
          options.append( '%s/%d/%d' % ( self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl ) )
@@ -55,7 +55,7 @@ class VideoConsumerService( AGService ):
 
    def ConfigureStream( self, connInfo, streamDescription ):
       """Configure the Service according to the StreamDescription, and stop and start app"""
-      print "in AudioService.ConfigureStream"
+      print "in VideoConsumerService.ConfigureStream"
       AGService.ConfigureStream( self, connInfo, streamDescription )
 
       # restart app, since this is the only way to change the 

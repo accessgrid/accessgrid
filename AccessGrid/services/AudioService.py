@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.3 2003-02-12 17:11:17 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.4 2003-02-14 20:01:18 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -51,7 +51,7 @@ class AudioService( AGService ):
          #options.append( '"%s"' % ( self.streamDescription.name ) )
          options.append( "-t" )
          options.append( '%d' % (self.streamDescription.location.ttl ) )
-         if self.streamDescription.encryptionKey != None:
+         if self.streamDescription.encryptionKey != 0:
             options.append( "-crypt" )
             options.append( self.streamDescription.encryptionKey )
          options.append( '%s/%d' % ( self.streamDescription.location.host, self.streamDescription.location.port ) )
