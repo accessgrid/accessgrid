@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.23 2003-02-06 14:44:55 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.24 2003-02-07 22:08:15 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -143,7 +143,7 @@ class Venue(ServiceBase.ServiceBase):
         Virtual Venue. Currently there are a few threads in the Event
         Service.
         """
-        self.eventService.stop()
+        self.eventService.Stop()
 
     def NegotiateCapabilities(self, clientProfile):
         """
