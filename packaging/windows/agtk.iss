@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.99 2004-06-01 23:38:26 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.100 2004-06-02 02:39:41 turam Exp $
 ;
 
 ; Set externally
@@ -161,7 +161,7 @@ Root: HKCR; Subkey: x-ag-pkg; ValueType: dword; ValueName: EditFlags; ValueData:
 Root: HKCR; Subkey: x-ag-pkg; ValueType: dword; ValueName: BrowserFlags; ValueData: 00000008; Flags: uninsdeletekey
 Root: HKCR; Subkey: x-ag-pkg; ValueType: string; ValueData: Access Grid Package; Flags: uninsdeletekey
 Root: HKCR; Subkey: x-ag-pkg\shell; ValueType: string; ValueData: Open; Flags: uninsdeletekey
-Root: HKCR; Subkey: x-ag-pkg\shell\Open\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe"" ""{app}\bin\agpm.py"" --wait-for-input --package ""%1"""; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag-pkg\shell\Open\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe"" ""{app}\bin\agpm.py"" --package ""%1"""; Flags: uninsdeletekey
 
 [Tasks]
 Name: desktopicon; Description: Create &Desktop Icons; GroupDescription: Additional icons:
