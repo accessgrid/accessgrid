@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.19 2003-11-19 06:31:05 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.20 2004-02-19 18:30:29 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -48,7 +48,10 @@ class VideoProducerService( AGService ):
 
       self.capabilities = [ Capability( Capability.PRODUCER, Capability.VIDEO ) ]
 
-      self.executable = os.path.join(Platform.GetInstallDir(), "vic")
+      if not Platform.isWindows():
+          self.executable = "vic"
+      else:
+          self.executable = os.path.join(Platform.GetInstallDir(), "vic")
 
       #
       # Set configuration parameters

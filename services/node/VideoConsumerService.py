@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.8 2003-10-22 20:52:36 judson Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.9 2004-02-19 18:30:29 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,7 +24,10 @@ class VideoConsumerService( AGService ):
       AGService.__init__( self, server )
 
       self.capabilities = [ Capability( Capability.CONSUMER, Capability.VIDEO ) ]
-      self.executable = os.path.join(Platform.GetInstallDir(), "vic")
+      if not Platform.isWindows():
+          self.executable = "vic"
+      else:
+          self.executable = os.path.join(Platform.GetInstallDir(), "vic")
 
       #
       # Set configuration parameters
