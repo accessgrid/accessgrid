@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.27 2003-02-14 20:48:57 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.28 2003-02-14 21:13:52 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -627,6 +627,12 @@ class ContentListPanel(wxPanel):
         self.dataDict[profile.name] = data
         self.tree.Expand(self.data)
        
+    def UpdateData(self, profile):
+        id = self.dataDict[profile.name]
+        
+        if(id != None):
+            self.tree.SetItemData(id, wxTreeItemData(profile))
+                          
     def RemoveData(self, profile):
         id = self.dataDict[profile.name]
         
