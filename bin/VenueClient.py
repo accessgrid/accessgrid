@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.244 2004-02-19 17:59:02 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.245 2004-02-20 20:18:51 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
@@ -1199,6 +1199,7 @@ class VenueClientUI(VenueClientEventSubscriber):
 
             dataDescriptions = self.venueClient.dataStore.GetDataDescriptions()
             for data in dataDescriptions:
+                print 'data ', data.name
                 if data.name == name:
                     title = "Duplicated File"
                     info = "A file named %s is already added, do you want to overwrite?" % name
@@ -1400,8 +1401,19 @@ class VenueClientUI(VenueClientEventSubscriber):
             log.exception("bin.VenueClient::RemoveData: Error occured when trying to remove data")
             ErrorDialog(None, "The file could not be removed", "Remove Personal Files Error", style = wxOK | wxICON_ERROR)
 
-
-          
+    def ModifyData(self, data):
+        log.debug("Modify data: %s from venue" %data.name)
+        
+        try:
+            self.venueClient.ModifyData(data)
+            
+        except NotAuthorizedError:
+            log.info("bin.VenueClient::ModifyData: Not authorized to modify data")
+            MessageDialog(None, "You are not authorized to modify the file", "Modify Personal File")        
+        except:
+            log.exception("bin.VenueClient::ModifyData: Error occured when trying to modify data")
+            ErrorDialog(None, "The file could not be modified", "Modify Personal File Error", style = wxOK | wxICON_ERROR)
+                      
     def AddService(self, service):
         """
         This method adds a service to the venue
