@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.53 2004-04-27 02:21:15 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.54 2004-04-27 17:19:31 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.53 2004-04-27 02:21:15 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.54 2004-04-27 17:19:31 judson Exp $"
 
 # Standard imports
 import os
@@ -84,7 +84,8 @@ class AppBase:
        # This initializes logging
        self.log = Log.GetLogger(Log.Toolkit)
        levelHandler = Log.HandleLoggers(self.mlh, Log.GetDefaultLoggers())
-       self.log.info("Initializing AG Toolkit version %s", GetVersion())
+       levelHandler.SetLevel(Log.ERROR)
+       self.log.debug("Initializing AG Toolkit version %s", GetVersion())
 
     # This method implements the initialization strategy outlined
     # in AGEP-0112
@@ -130,7 +131,8 @@ class AppBase:
            
        fh.setFormatter(Log.GetFormatter())
        levelHandler = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
-
+       levelHandler.SetLevel(Log.ERROR)
+       
        self.mlh.setTarget(fh)
        self.mlh.close()
        del self.mlh
@@ -215,9 +217,9 @@ class AppBase:
 
     def GetHostname(self):
         if self.GetOption("insecure") is not None:
-            return self.globusConfig.Hostname()
+            return self.globusConfig.GetHostname()
         else:
-            return self.systemConfig.Hostname()
+            return self.systemConfig.GetHostname()
         
     def FindConfigFile(self, configFile):
         """
@@ -289,6 +291,8 @@ class Application(AppBase):
        self.certificateManager = \
             CertificateManager.CertificateManager(configDir, self.certMgrUI)
 
+       self.globusConfig = self.certificateManager.GetGlobusConfig()
+
        self.certMgrUI.InitGlobusEnvironment()
 
        # 6. Do one final check, if we don't have a default
@@ -340,6 +344,8 @@ class CmdlineApplication(AppBase):
         configDir = self.userConfig.GetConfigDir()
         self.certificateManager = \
              CertificateManager.CertificateManager(configDir, self.certMgrUI)
+
+        self.globusConfig = self.certificateManager.GetGlobusConfig()
 
         self.certMgrUI.InitGlobusEnvironment()
         
@@ -508,6 +514,8 @@ class Service(AppBase):
                   CertificateManager.CertificateManager(configDir,
                                                         self.certMgrUI)
 
+        self.globusConfig = self.certificateManager.GetGlobusConfig()
+        
         self.log.info("Initialized cert mgmt.")
         
         # If we have a service profile, load and parse, then configure
