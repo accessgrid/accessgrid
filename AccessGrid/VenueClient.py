@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.16 2003-02-10 14:47:37 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.17 2003-02-10 22:03:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -36,7 +36,7 @@ class VenueClient( ServiceBase ):
         This client class is used on shared and personal nodes.
         """
         self.profile = profile
-        self.nodeServiceUri = None
+        self.nodeServiceUri = "https://localhost:11000/NodeService"
         self.workspaceDock = None
         self.homeVenue = None
         self.followerProfiles = dict()
@@ -91,21 +91,32 @@ class VenueClient( ServiceBase ):
 
     def RemoveConnectionEvent(self, data):
         self.venueState.RemoveConnection(data)
+
+    def SetConnectionsEvent(self, data):
+        self.venueState.SetConnections(data)
         
     def EnterVenue(self, URL):
         """
         EnterVenue puts this client into the specified venue.
         """
 
-        try:
+        haveValidNodeService = 0
+        if self.nodeServiceUri != None:
+            try:
+                Client.Handle( self.nodeServiceUri ).get_proxy().Ping()
+                haveValidNodeService = 1    
+            except:
+                pass
 
+        try:
+            
             if self.venueUri != None:
                 self.ExitVenue()
 
             #
             # Retrieve list of node capabilities
             #
-            if self.nodeServiceUri != None:
+            if haveValidNodeService:
                 self.profile.capabilities = Client.Handle( self.nodeServiceUri ).get_proxy().GetCapabilities()
             
             #
@@ -132,6 +143,7 @@ class VenueClient( ServiceBase ):
                Event.REMOVE_SERVICE: self.RemoveServiceEvent,
                Event.ADD_CONNECTION: self.AddConnectionEvent,
                Event.REMOVE_CONNECTION: self.RemoveConnectionEvent,
+               Event.SET_CONNECTIONS: self.SetConnectionsEvent,
             }
 
             self.eventClient = EventClient(self.venueState.eventLocation)
@@ -145,7 +157,7 @@ class VenueClient( ServiceBase ):
             # 
             # Update the node service with stream descriptions
             #
-            if self.nodeServiceUri != None:
+            if haveValidNodeService:
                 Client.Handle( self.nodeServiceUri ).get_proxy().ConfigureStreams( self.streamDescList )
 
             #

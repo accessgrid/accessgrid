@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.7 2003-02-10 14:47:35 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.8 2003-02-10 22:03:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -416,6 +416,16 @@ class AGNodeService( ServiceBase ):
         return capabilities
     GetCapabilities.soap_export_as = "GetCapabilities"
     GetCapabilities.pass_connection_info = 1
+
+
+    def Ping( self ):
+        """
+        Allows clients to determine whether node service is alive
+        """
+        return 1
+    Ping.soap_export_as = "Ping"
+    Ping.pass_connection_info = 0
+
 
     ####################
     ## INTERNAL methods
