@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.44 2004-03-15 20:56:57 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.45 2004-03-15 23:51:04 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.44 2004-03-15 20:56:57 judson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.45 2004-03-15 23:51:04 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -63,7 +63,7 @@ def SignalHandler(signum, frame):
 def main():
     """
     """
-    global nodeService, log
+    global nodeService, log, server
 
     # Instantiate the app
     #app = Service()
