@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.36 2003-08-28 18:45:54 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.37 2003-09-05 15:30:36 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -677,9 +677,11 @@ class AGNodeService( ServiceBase ):
             # Process services dir option
             if AGNodeService.servicesDirOption in self.config.keys():
                 self.servicesDir = self.config[AGNodeService.servicesDirOption]
+             
                 # If relative path in config file, use SystemConfigDir as the base
                 if not os.path.isabs(self.servicesDir):
                     self.servicesDir = GetConfigFilePath(self.servicesDir)
+                
 
 
     def __WriteConfigFile( self ):
@@ -748,6 +750,7 @@ class AGServicePackageRepository:
 
         self.httpd_port = port
         self.servicesDir = servicesDir
+     
         self.serviceDescriptions = []
 
         # 
@@ -814,6 +817,10 @@ class AGServicePackageRepository:
                     serviceDesc.servicePackageUri = self.baseUrl + file
                     self.serviceDescriptions.append( serviceDesc )
 
+        else:
+            log.exception("AGServicePackageRepository.__ReadServicePackages: The service directory does not exist %s"%self.servicesDir)
+
         if invalidServicePackages:
+            log.exception("AGServicePackageRepository.__ReadServicePackages: %i invalid service package found" %invalidServicePackages)
             raise InvalidServicePackage('%d invalid service package(s) found' % invalidServicePackages )
 
