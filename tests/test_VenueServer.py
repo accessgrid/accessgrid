@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/17/12
-# RCS-ID:      $Id: test_VenueServer.py,v 1.3 2003-01-24 04:36:41 judson Exp $
+# RCS-ID:      $Id: test_VenueServer.py,v 1.4 2003-02-06 14:44:57 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ import socket
 import sys
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.Descriptions import *
+from AccessGrid.Descriptions import VenueDescription, DataDescription
 
 #
 # Set up the venue space

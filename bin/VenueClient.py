@@ -1,7 +1,21 @@
+#-----------------------------------------------------------------------------
+# Name:        VenueClient.py
+# Purpose:     This is the client software for the user.
+#
+# Author:      Susanne Lefvert
+#
+# Created:     2003/06/02
+# RCS-ID:      $Id: VenueClient.py,v 1.25 2003-02-06 14:44:55 judson Exp $
+# Copyright:   (c) 2002
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
 import threading
 import os
 
 from wxPython.wx import *
+
+from pyGlobus.io import GSITCPSocketException
+
 import AccessGrid.Types
 import AccessGrid.Utilities
 from AccessGrid.VenueClientUIClasses import VenueClient
@@ -79,7 +93,8 @@ class VenueClientUI(wxApp, VenueClient):
         try:
             self.client = Client.Handle(venueUri).get_proxy()
             self.EnterVenue(venueUri)
-            
+        except GSITCPSocketException:
+            ErrorDialog(self.frame, sys.exc_info()[1][0])    
         except: # the address is incorrect
             # open a dialog and connect that way
             connectToVenueDialog = ConnectToVenueDialog(NULL, -1, 'Connect to server')
@@ -97,14 +112,14 @@ class VenueClientUI(wxApp, VenueClient):
                     connectToVenueDialog.Destroy()
                     self.frame.Show(true)
                     self.MainLoop()
-                    
+                except GSITCPSocketException:
+                    ErrorDialog(self.frame, sys.exc_info()[1][0])                        
                 except:
                     print "Exception in __startMainLoop : ", sys.exc_type, sys.exc_value   
                     text = "Could not establish connection to venue."
                     noConnectionDialog = wxMessageDialog(NULL, text ,'', wxOK | wxICON_INFORMATION)
                     noConnectionDialog.ShowModal()
                     noConnectionDialog.Destroy()
-
             else:
                 connectToVenueDialog.Destroy()
 
@@ -225,7 +240,9 @@ class VenueClientUI(wxApp, VenueClient):
             print '--------got an exit!'
             print exit.name
             self.frame.venueListPanel.list.AddVenueDoor(exit)
-               
+
+        # Start text client
+        self.textClient = 
     def ExitVenue(self ):
         """
         Note: Overloaded from VenueClient
@@ -249,7 +266,7 @@ class VenueClientUI(wxApp, VenueClient):
             self.frame.CleanUp()
             self.OnExit()
             self.EnterVenue(venueUri)
-                    
+                
         except:
             print "Exception in VenueClient::GoToNewVenue : ", sys.exc_type, sys.exc_value   
             text = "Could not establish connection to venue."

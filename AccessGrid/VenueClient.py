@@ -5,12 +5,13 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.13 2003-02-05 21:36:46 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.14 2003-02-06 14:44:55 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import sys
+
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.EventClient import EventClient
@@ -49,7 +50,7 @@ class VenueClient( ServiceBase ):
 
     def Heartbeat(self):
         if self.eventClient != None:
-            print "Sending heartbeat!"
+#            print "Sending heartbeat!"
             self.eventClient.Send(HeartbeatEvent(self.privateId))
             
     def SetProfile(self, profile):
@@ -103,7 +104,7 @@ class VenueClient( ServiceBase ):
             #
             if self.nodeServiceUri != None:
                 self.profile.capabilities = Client.Handle( self.nodeServiceUri ).get_proxy().GetCapabilities()
-
+            
             #
             # Enter the venue
             #
@@ -111,7 +112,7 @@ class VenueClient( ServiceBase ):
             self.venueState = VenueState( venueState.description, venueState.connections, 
                                           venueState.users, venueState.nodes, 
                                           venueState.data, venueState.services, 
-                                          venueState.eventLocation )
+                                          venueState.eventLocation, venueState.textLocation )
             self.venueUri = URL
             self.venueProxy = Client.Handle( self.venueUri ).get_proxy()
 

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.9 2003-02-03 14:34:13 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.10 2003-02-06 14:44:55 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -82,6 +82,7 @@ class VenueDescription(ObjectDescription):
         ObjectDescription.__init__(self, name, description, icon)
         self.extendedDescription = extendeddescription
         self.eventLocation = None
+        self.textLocation = None
         
     def SetExtendedDescription(self, extendeddescription):
         self.extendedDescription = extendeddescription
@@ -94,6 +95,12 @@ class VenueDescription(ObjectDescription):
         
     def GetEventLocation(self):
         return self.eventLocation        
+
+    def SetTextLocation(self, textLocation):
+        self.textLocation = textLocation
+        
+    def GetTextLocation(self):
+        return self.textLocation        
    
 class DataDescription(ObjectDescription):
     """A Data Description represents data within a venue."""

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.2 2003-02-05 21:36:46 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.3 2003-02-06 14:44:55 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -78,7 +78,7 @@ class EventClient(Thread):
                     
                     # Unpack the data
                     event = pickle.loads(pdata)
-                    print "Got Event: %s" % event.eventType
+#                    print "Got Event: %s" % event.eventType
                     if self.running:
                         # Send it on its way
                         calls = []

@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.15 2003-02-03 14:34:13 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.16 2003-02-06 14:44:55 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,9 +22,10 @@ from AccessGrid.AGParameter import *
         
 class VenueState:
     def __init__( self, description, connections, users,
-                  nodes, data, services, eventLocation ):
+                  nodes, data, services, eventLocation, textLocation ):
         self.description = description
         self.eventLocation = eventLocation
+        self.textLocation = textLocation
 
         self.connections = dict()
         self.users = dict()
@@ -93,6 +94,11 @@ class VenueState:
         self.eventLocation = eventLocation
     def GetEventLocation( self ):
         return self.eventLocation
+
+    def SetTextLocation( self, textLocation ):
+        self.textLocation = textLocation
+    def GetTextLocation( self ):
+        return self.textLocation
 
 class AGResource:
     def __init__( self, type=None, resource=None ):

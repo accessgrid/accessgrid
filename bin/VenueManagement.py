@@ -1,10 +1,22 @@
+#-----------------------------------------------------------------------------
+# Name:        VenueManagement.py
+# Purpose:     This is the user interface for Virtual Venues Server Management
+#
+# Author:      Susanne Lefvert
+#
+# Created:     2003/06/02
+# RCS-ID:      $Id: VenueManagement.py,v 1.18 2003-02-06 14:44:55 judson Exp $
+# Copyright:   (c) 2002
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
 from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
+
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.Descriptions import VenueDescription
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.Utilities import formatExceptionInfo 
-from AccessGrid import Utilities  
+from AccessGrid.UIUtilities import *
 
 from pyGlobus.io import GSITCPSocketException
 
@@ -1064,19 +1076,6 @@ class DigitValidator(wxPyValidator):
         # Returning without calling even.Skip eats the event before it
         # gets to the text control
         return
-
-class ErrorDialog:
-    def __init__(self, frame, text):
-        (name, args, traceback_string_list) = Utilities.formatExceptionInfo()
-        for x in traceback_string_list:
-            print(x)       
-        noServerDialog = wxMessageDialog(frame, text, \
-                                         '', wxOK | wxICON_INFORMATION)
-        noServerDialog.ShowModal()
-        noServerDialog.Destroy()
-    
-
-          
 
 app = VenueManagementClient(0)
 app.MainLoop()  

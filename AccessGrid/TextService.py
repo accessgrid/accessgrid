@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextService.py,v 1.3 2003-02-04 18:34:22 judson Exp $
+# RCS-ID:      $Id: TextService.py,v 1.4 2003-02-06 14:44:55 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -48,8 +48,9 @@ class ConnectionHandler(GSIRequestHandler):
         self.running = 1
         while(self.running == 1):
             try:
-                # Get the size of the event data
+                # Get the size of the text message
                 evtSize = int(self.rfile.readline())
+                # Get the real text message
                 pdata = self.rfile.read(evtSize)
                 # Parse the text structure
                 # When this is advanced you can route things, for now
@@ -59,19 +60,13 @@ class ConnectionHandler(GSIRequestHandler):
                 event = pickle.loads(pdata)
                 event['From'] = remote.display()
                 pdata = pickle.dumps(event)
-                lenStr = "%s\n" % len(pdata)
-                for c in self.connections:
-                    try:
-                        c.wfile.write(lenStr)
-                        c.wfile.write(pdata)           
-                    except:
-                        print "Client disconnected!"
-                        self.server.connections.remove(c)
+                # For now we send all messages to everyone
+                self.server.Distribute(pdata)
             except:
                 print "Client disconnected!"
-#                self.server.connections.remove(self)  
-#                self.running = 0
-                                          
+                self.running = 0
+                self.server.connections.remove(self)  
+                                         
 class TextService(ThreadingGSITCPSocketServer, Thread):
     """
     The TextService provides a secure event layer. This might be more 
@@ -81,7 +76,6 @@ class TextService(ThreadingGSITCPSocketServer, Thread):
     def __init__(self, server_address, RequestHandlerClass=ConnectionHandler):
         Thread.__init__(self)
         self.location = server_address
-        self.callbacks = {}
         self.connections = []
         ThreadingGSITCPSocketServer.__init__(self, server_address, 
                                                 RequestHandlerClass)
@@ -108,7 +102,20 @@ class TextService(ThreadingGSITCPSocketServer, Thread):
         GetLocation returns the (host,port) for this service.
         """
         return self.location
-            
+
+    def Distribute(self, data):
+        """
+        Send the data to all the connections in this server.
+        """
+        lenStr = "%s\n" % len(data)
+        for c in self.connections:
+            try:
+                c.wfile.write(lenStr)
+                c.wfile.write(data)           
+            except:
+                print "Client disconnected!"
+                self.server.connections.remove(c)
+        
 if __name__ == "__main__":
   import string
   host = string.lower(socket.getfqdn())

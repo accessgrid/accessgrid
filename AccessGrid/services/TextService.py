@@ -1,3 +1,14 @@
+#-----------------------------------------------------------------------------
+# Name:        TextService.py
+# Purpose:     
+#
+# Author:      Thomas D. uram
+#
+# Created:     2003/06/02
+# RCS-ID:      $Id: TextService.py,v 1.2 2003-02-06 14:44:55 judson Exp $
+# Copyright:   (c) 2002
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
 import sys
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.hosting.pyGlobus import Client

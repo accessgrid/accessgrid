@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.22 2003-02-05 21:36:46 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.23 2003-02-06 14:44:55 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -80,8 +80,8 @@ class Venue(ServiceBase.ServiceBase):
                                     self.ClientHeartbeat)
         self.eventService.start()
         
-#        self.textService = TextService((self.textHost, self.textPort))
-#        self.textService.start()
+        self.textService = TextService((self.textHost, self.textPort))
+        self.textService.start()
         
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.CleanupClients, 45)
@@ -104,7 +104,8 @@ class Venue(ServiceBase.ServiceBase):
                'nodes' : self.nodes.values(),
                'data' : self.data.values(),
                'services' : self.services.values(),
-               'eventLocation' : self.eventService.GetLocation()
+               'eventLocation' : self.eventService.GetLocation(),
+               'textLocation' : self.textService.GetLocation()
                }
         except:
            print "Exception in GetState ", sys.exc_type, sys.exc_value
@@ -134,7 +135,7 @@ class Venue(ServiceBase.ServiceBase):
         privateId = event
         now = time.time()
         self.clients[privateId] = now
-        print "Got Client Heartbeat for %s at %s." % (event, now)
+#        print "Got Client Heartbeat for %s at %s." % (event, now)
     
     def Shutdown(self):
         """

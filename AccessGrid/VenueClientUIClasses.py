@@ -7,6 +7,7 @@ import AccessGrid.ClientProfile
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Descriptions import ServiceDescription
 
+from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 
 class VenueClientFrame(wxFrame):
     
@@ -85,7 +86,7 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, 302, self.OpenAboutDialog)
         EVT_MENU(self, 320, self.OnExit)
         EVT_MENU(self, 342, self.OpenConnectToVenueDialog)
-     
+        EVT_MENU(self, 500, self.OpenNodeMgmtApp)
         
     def __setToolbar(self):
 	self.toolbar.AddSimpleTool(20, icons.getWordBitmap(), \
@@ -155,6 +156,13 @@ class VenueClientFrame(wxFrame):
           
         connectToVenueDialog.Destroy()
 
+    def OpenNodeMgmtApp(self, event):
+        frame = NodeManagementClientFrame(self, -1, "Access Grid Node Management")
+        if frame.Connected():
+            frame.Update()
+        frame.Show(true)
+        self.SetTopWindow(frame)
+                
     def OpenDataProfileDialog(self, event):
         self.contentList.tree.GetSelection()
         profileDialog = ProfileDialog(NULL, -1, 'Profile', self.app.profile)
@@ -386,7 +394,7 @@ class ContentListPanel(wxPanel):
 	self.tree = wxTreeCtrl(self, id, wxDefaultPosition, \
 			       wxDefaultSize,  wxTR_HAS_BUTTONS \
 			       | wxTR_NO_LINES  \
-                              #  | wxTR_TWIST_BUTTONS \
+                              # | wxTR_TWIST_BUTTONS \
 			       | wxTR_HIDE_ROOT)
 	
         self.participantDict = {}
