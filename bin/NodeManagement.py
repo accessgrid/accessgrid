@@ -3,7 +3,7 @@
 # Name:        NodeManagement.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.25 2004-03-22 20:02:27 turam Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.26 2004-08-18 16:46:35 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -19,12 +19,18 @@ log = None
 
 class MyApp(wxApp):
     global log
+    global app
 
     defNSUrl = "https://localhost:11000/NodeService"
 
     def OnInit(self):
         frame = NodeManagementClientFrame(NULL, -1,
                                           "Access Grid Node Management")
+
+        if not app.certificateManager.HaveValidProxy():
+            app.certificateManager.CreateProxy()
+            return false
+        
         try:
             frame.AttachToNode(self.defNSUrl)
             # Avoid UI errors if fail to attach to node.
@@ -42,6 +48,7 @@ class MyApp(wxApp):
 
 def main():
     global log
+    global app
     
     wxInitAllImageHandlers()
 
@@ -54,6 +61,7 @@ def main():
         print " Initialization Error: ", e
         sys.exit(-1)
 
+    
     log = app.GetLog()
     
     nodeMgmtApp = MyApp(0)
