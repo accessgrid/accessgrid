@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.69 2004-05-06 03:46:19 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.70 2004-05-18 16:23:55 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -28,6 +28,7 @@ win32_data = [
     ('', [r'COPYING.txt', r'Install.WINDOWS', r'README', r'README-developers',
           r'TODO', r'VERSION', r'ChangeLog']), 
     ('bin', glob.glob('bin/*.py')),
+    ('bin', glob.glob('tools/GoToVenue.py')),
     ('NodeServices', ''),
     ('SharedApplications', ''),
 #    ('doc/Developer', glob.glob('doc/Developer/*.*')),
@@ -157,7 +158,7 @@ linux_data = [('etc/init.d',
                 "ChangeLog"
                 ]
                ),
-              ('bin', []),
+              ('bin', ['tools/GoToVenue.py']),
               ('share/doc/AccessGrid/Documentation/VenueClientManual',
                [r"doc/VenueClientManual/VenueClientManual.htm",
                 r"doc/VenueClientManual/VenueClientManualHTML.htm",
