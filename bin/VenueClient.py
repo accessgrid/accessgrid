@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.225 2003-09-29 19:23:16 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.226 2003-09-29 19:34:49 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1196,7 +1196,8 @@ class VenueClientUI(VenueClientEventSubscriber):
         #
         def progressCB(filename, sent, total, file_done, xfer_done,
             dialog = dlg):
-            wxCallAfter(dialog.SetProgress, filename, sent, total,
+            if not dialog.IsCancelled():
+                wxCallAfter(dialog.SetProgress, filename, sent, total,
                         file_done, xfer_done)
             return dialog.IsCancelled()
 
@@ -1256,9 +1257,7 @@ class VenueClientUI(VenueClientEventSubscriber):
 
         if error_msg is not None:
             log.exception("bin.VenueClient::get_ident_and_upload: Upload data error")
-            wxCallAfter(ErrorDialog,
-                        None, error_msg,
-                        "Upload Files Error", wxOK | wxICON_ERROR)
+            MessageDialog(None, error_msg, "Upload Files Error", wxOK | wxICON_WARNING)
                
     def UploadFilesNoDialog(self, file_list):
         """
