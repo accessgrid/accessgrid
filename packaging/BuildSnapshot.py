@@ -91,7 +91,7 @@ if not options.nocheckout:
     # cvs (linux) complains about checking out to an absolute path
     os.chdir(SourceDir)
 
-    cvs_base = "cvs -z6 -d %s export -d %s -D now AccessGrid" % (cvsroot,
+    cvs_cmd = "cvs -z6 -d %s export -d %s -D now AccessGrid" % (cvsroot,
                                                               BuildDirName)
     if options.verbose:
         print "BUILD: Checking out code with command: ", cvs_cmd
