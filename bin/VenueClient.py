@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.91 2003-03-27 21:44:14 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.92 2003-03-31 21:53:04 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,13 +14,15 @@
 import threading
 import os
 import logging, logging.handlers
+import cPickle
 
 from wxPython.wx import *
 
 import AccessGrid.Types
 import AccessGrid.ClientProfile
-from AccessGrid.Platform import GPI 
+from AccessGrid.Platform import GPI, GetUserConfigDir
 from AccessGrid.VenueClient import VenueClient
+from AccessGrid.DataStore import DataStore, GSIHTTPTransferServer
 from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
 from AccessGrid.VenueClientUIClasses import SaveFileDialog, UploadFilesDialog
 from AccessGrid.Descriptions import DataDescription
@@ -28,16 +30,9 @@ from AccessGrid.Utilities import HaveValidProxy
 from AccessGrid.UIUtilities import MyLog 
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN 
 from AccessGrid import DataStore
+from AccessGrid.GUID import GUID
 
 from AccessGrid.hosting.pyGlobus import Server
-
-
-
-if sys.platform == "win32":
-    from win32com.shell import shell, shellcon
-
-#https://vv2.mcs.anl.gov:8880/Venues/000000f42b3dd2fc008c00dd000b0037a34
-
     
 class VenueClientUI(wxApp, VenueClient):
     """
@@ -50,6 +45,11 @@ class VenueClientUI(wxApp, VenueClient):
     gotClient = false
     clientHandle = None
     venueUri = None
+    personalDataStorePrefix = "personalDataStore"
+    personalDataStorePort = 9999
+    personalDataStorePath = GetUserConfigDir()
+    personalDataDict = {}
+    personalDataFile = os.path.join(personalDataStorePath, "myData.txt" )
 
     def __init__(self):
         wxApp.__init__(self)
@@ -70,8 +70,30 @@ class VenueClientUI(wxApp, VenueClient):
         return true
 
     def __createPersonalDataStore(self):
-        pass
-    
+        self.dataStore = DataStore.DataStore(self, self.personalDataStorePath,
+                                   self.personalDataStorePrefix)
+        transferEngine = GSIHTTPTransferServer(('', self.personalDataStorePort))
+        self.dataStore.SetTransferEngine(transferEngine)
+        transferEngine.RegisterPrefix(self.personalDataStorePrefix, self)
+        wxLogDebug("Creating personal datastore at %s using port %s" %(self.personalDataStorePath,
+                                                                          self.personalDataStorePrefix))
+        # load personal data
+        if os.path.exists(self.personalDataFile):
+            file = open(self.personalDataFile, 'r')
+            self.personalDataDict = cPickle.load(file)
+            file.close()
+
+        wxLogDebug("check for validity")
+        for file, desc in self.personalDataDict.items():
+            wxLogDebug("Checking file %s for validity"%file)
+            path = os.path.join(self.personalDataStorePrefix, file)
+            url = self.dataStore.GetDownloadDescriptor(path)
+            print '================ this is url: ',url
+                
+            if url is None:
+                wxLogDebug("================File %s has vanished" %file)
+                del self.personalDataDict[file]
+                                          
     def __setLogger(self):
         log = logging.getLogger("AG")
         log.setLevel(logging.DEBUG)
@@ -87,13 +109,7 @@ class VenueClientUI(wxApp, VenueClient):
         wxLogInfo("--------- START VenueClient")
 
     def __createHomePath(self):
-        if sys.platform == "win32":
-            myHomePath = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0) 
-            #myHomePath = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
-        elif sys.platform == "linux2":
-            myHomePath = os.environ['HOME']
-
-        self.accessGridPath = os.path.join(myHomePath, '.AccessGrid')
+        self.accessGridPath = GetUserConfigDir()
         self.profileFile = os.path.join(self.accessGridPath, "profile" )
 
         wxLogDebug("Home path is %s" %self.accessGridPath)
@@ -274,17 +290,11 @@ class VenueClientUI(wxApp, VenueClient):
         if self.oldUri != None:
             wxCallAfter(wxLogDebug, "clean up frame and exit")
             wxCallAfter(self.frame.CleanUp)
-            #self.ExitVenue()
 
         VenueClient.EnterVenue( self, URL )
        
         venueState = self.venueState
         wxCallAfter(self.frame.SetLabel, venueState.name)
-        #name = self.profile.name
-        #title = self.venueState.name
-        #description = self.venueState.description
-        # welcomeDialog = WelcomeDialog(NULL, -1, 'Enter Venue', name,
-        #                               title, description)
 
         # Load users
         users = venueState.users.values()
@@ -327,6 +337,10 @@ class VenueClientUI(wxApp, VenueClient):
         # Data storage location
         self.upload_url = self.client.GetUploadDescriptor()
         wxCallAfter(wxLogDebug, "Get upload url %s" %self.upload_url)
+
+        # Add personal data to venue
+        for data in self.personalDataDict.values():
+            self.client.AddData(data)
         
     EnterVenue.soap_export_as = "EnterVenue"
 
@@ -336,7 +350,8 @@ class VenueClientUI(wxApp, VenueClient):
         This method calls the venue client method and then
         performs its own operations when the client exits a venue.
         """
-        wxCallAfter(wxLogDebug, "Cleanup frame and exit venue")
+        wxCallAfter(wxLogDebug, "Cleanup frame, save data, and exit venue")
+       
         try:
             wxCallAfter(self.frame.CleanUp)
         except:
@@ -434,6 +449,7 @@ class VenueClientUI(wxApp, VenueClient):
                 text2 = 'Invalid proxy'
 
             else:
+                
                 if self.oldUri is None:
                     wxCallAfter(self.frame.FillInAddress, None, self.profile.homeVenue)
 
@@ -445,8 +461,7 @@ class VenueClientUI(wxApp, VenueClient):
                 text2 = 'Invalid URL'
 
             wxCallAfter(wxLogMessage, text)
-            wxLog_GetActiveTarget().Flush()
-
+            wxCallAfter(wxLog_GetActiveTarget().Flush)
    
     def OnExit(self):
         """
@@ -454,11 +469,15 @@ class VenueClientUI(wxApp, VenueClient):
         done as the application is about to exit.
         """
         wxLogInfo("--------- END VenueClient")
+        
+        file = open(self.personalDataFile, 'w')
+        cPickle.dump(self.personalDataDict, file)
+        file.close()
+                
         if self.venueUri != None:
             self.ExitVenue()
 
         os._exit(0)
-
    
     def SaveFile(self, data_descriptor, local_pathname):
         """
@@ -474,7 +493,7 @@ class VenueClientUI(wxApp, VenueClient):
         and to perhaps allow multiple simultaneous transfers.
 
         """
-        wxCallAfter(wxLogDebug, "Save file")
+        wxCallAfter(wxLogDebug, "Save file descriptor: %s, path: %s"%(data_descriptor, local_pathname))
         
         failure_reason = None
         try:
@@ -543,19 +562,25 @@ class VenueClientUI(wxApp, VenueClient):
             failure_reason = "Download error: %s" % (e[0])
         except EnvironmentError, e:
             failure_reason = "Exception: %s" % (str(e))
-
+        except:
+            failure_reason = "Unknown"
+        
         if failure_reason is not None:
             wxCallAfter(MessageDialog, self.frame, failure_reason, "Download error",
                                   wxOK  | wxICON_INFORMATION)
 
 
     def get_ident_and_download(self, url, local_pathname, size, checksum, progressCB):
+        wxLogDebug("Get ident and upload")
         try:
             if url.startswith("https"):
+                wxLogDebug("url starts with https")
                 DataStore.GSIHTTPDownloadFile(url, local_pathname, size,
                                               checksum, progressCB)
+                wxLogDebug("finished GSIHTTPDownload")
                 
             else:
+                wxLogDebug("url does not start with https")
                 my_identity = GetDefaultIdentityDN()
                 DataStore.HTTPDownloadFile(my_identity, url, local_pathname, size,
                                            checksum, progressCB)
@@ -564,8 +589,9 @@ class VenueClientUI(wxApp, VenueClient):
                     
     def UploadPersonalFiles(self, fileList):
         wxLogDebug("Upload personal files")
-        self.uploadPersonalDataUrl = self.dataStore.GetUploadDescriptor()
-        self.UploadFiles(fileList, self.uploadPersonalDataUrl, self.get_ident_and_upload)
+        self.dataStore.AddFile(fileList, self.profile.distinguishedName, self.profile.publicId)
+        #self.uploadPersonalDataUrl = self.dataStore.GetUploadDescriptor()
+        #self.UploadFiles(fileList, self.uploadPersonalDataUrl, self.get_ident_and_upload)
 
     def UploadVenueFiles(self, fileList):
         wxLogDebug("Upload venue files")
@@ -672,52 +698,33 @@ class VenueClientUI(wxApp, VenueClient):
            
     def AddData(self, data):
         """
-        This method adds data to the venue
+        This method adds local data to the venue
         """
-        wxLogDebug("Adding data: %s to venue" %data.name)
+        wxLogDebug("----------------------- Adding data: %s to venue" %data.name)
         try:
             self.client.AddData(data)
+            self.personalDataDict[data.name] = data
             
         except:
             wxLogError("Error  occured when trying to add data")
             wxLog_GetActiveTarget().Flush()
 
-    def AddService(self, service):
-        """
-        This method adds a service to the venue
-        """
-        wxLogDebug("Adding service: %s to venue" %service.name)
-        try:
-            self.client.AddService(service)
-            
-        except:
-            wxLogError("Error occured when trying to add service")
-            wxLog_GetActiveTarget().Flush()
-        
     def RemoveData(self, data):
         """
         This method removes a data from the venue
         """
-        wxLogDebug("Remove data: %s from venue" %data.name)
+        wxLogDebug("------------------------Remove data: %s from venue" %data.name)
         try:
             self.client.RemoveData(data)
-
+            if(data.type == self.profile.publicId and self.personalDataDict.has_key(data.name)):
+                del self.personalDataDict[data.name]
+                fileToDelete = os.path.join(self.dataStore.prefix, data.name)
+                self.dataStore.DeleteFile(fileToDelete)
+                
         except:
             wxLogError("Error occured when trying to remove data")
             wxLog_GetActiveTarget().Flush()
-       
-    def RemoveService(self, service):
-        """
-        This method removes a service from the venue
-        """
-        wxLogDebug("Remove service: %s from venue" %service.name)
-        try:
-            self.client.RemoveService(service)
-
-        except:
-            wxLogError("Error occured when trying to remove service")
-            wxLog_GetActiveTarget().Flush()
-        
+              
     def ChangeProfile(self, profile):
         """
         This method changes this participants profile
@@ -747,6 +754,21 @@ class VenueClientUI(wxApp, VenueClient):
         """
         wxLogDebug("Set node service url:  %s" %url)
         self.SetNodeServiceUri(url)
+
+    # Methods to for personal data storage to call
+    def GetData(self, filename):
+        wxLogDebug("Get private data description: %s" %filename)
+        if self.privateDataDict.has_key(filename):
+            d = self.data[filename]
+        else:
+            wxLogDebug("The private file does not exist")
+            d = None
+        return d
+
+    def UpdateData(self, desc):
+        self.personalDataDict[desc.GetName()] = desc
+        self.client.UpdateData(desc)
+        wxLogDebug("UpdateData: %s", desc)
 
 
 if __name__ == "__main__":
