@@ -28,23 +28,6 @@ parser.add_option("-p", "--pythonversion", dest="pyver",
 
 options, args = parser.parse_args()
 
-
-
-# Run precompile scripts
-for cmd in [
-    "BuildVic.cmd",
-    "BuildRat.cmd",
-    "BuildPythonModules.cmd"
-    ]:
-    cmd = "%s %s %s %s %s" % (cmd, options.sourcedir, options.builddir,
-                              options.destdir, options.version)
-    if options.verbose:
-        print "BUILD: Running: %s" % cmd
-
-    os.system(cmd)
-
-
-
 # Grab innosetup from the environment
 try:
     ipreg = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
