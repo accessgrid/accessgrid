@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.58 2004-05-07 16:31:36 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.59 2004-05-10 21:16:27 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.58 2004-05-07 16:31:36 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.59 2004-05-10 21:16:27 eolson Exp $"
 
 # Standard imports
 import os
@@ -23,6 +23,7 @@ from AccessGrid.Security import CertificateManager
 from AccessGrid.Security import CertificateRepository
 from AccessGrid.Platform.Config import AGTkConfig, MimeConfig
 from AccessGrid.Platform.Config import SystemConfig, UserConfig
+from AccessGrid.Platform import IsWindows
 from AccessGrid.ServiceProfile import ServiceProfile
 from AccessGrid.Version import GetVersion
 from AccessGrid.Security import X509Subject
@@ -403,8 +404,12 @@ class WXGUIApplication(Application):
         self.certMgrUI = CertificateManagerWXGUI.CertificateManagerWXGUI()
 
         # Register .agpkg mime type
-        agpmCmd = os.path.join(AGTkConfig.instance().GetBinDir(), "agpm.py") + " --wait-for-input"
-        MimeConfig.instance().RegisterMimeType("application/x-ag-pkg", ".agpkg", "agpkg file", "Access Grid Package", [ ("agpm.py", agpmCmd, "Access Grid Package Manager") ] )
+        agpmFile = os.path.join(AGTkConfig.instance().GetBinDir(), "agpm.py")
+        if IsWindows():
+            agpmCmd = sys.executable + " \"" + agpmFile + "\" --wait-for-input --package \"%1\""
+        else:
+            agpmCmd = "\"" + agpmFile + "\" --wait-for-input --package %f"
+        MimeConfig.instance().RegisterMimeType("application/x-ag-pkg", ".agpkg", "agpkg file", "Access Grid Package", [ ("agpm.py", agpmCmd, "open") ] )
 
 class Service(AppBase):
     """
