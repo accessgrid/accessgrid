@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.143 2004-05-28 19:42:20 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.144 2004-06-01 20:15:10 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.143 2004-05-28 19:42:20 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.144 2004-06-01 20:15:10 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -548,14 +548,24 @@ class VenueServer(AuthorizationMixIn):
         # This blocks anymore checkpoints from happening
         log.info("Shutting down services...")
         log.info("                         text")
-        self.textService.Stop()
+        try:
+            self.textService.Stop()
+        except IOError, e:
+            log.exception("Exception shutting down text.", e)
         log.info("                         event")
-        self.eventService.Stop()
+        try:
+            self.eventService.Stop()
+        except IOError, e:
+            log.exception("Exception shutting down event.", e)
         log.info("                         data")
-        self.dataTransferServer.stop()
+        try:
+            self.dataTransferServer.stop()
+        except IOError, e:
+            log.exception("Exception shutting down data service.", e)
 
         self.hostingEnvironment.Stop()
         del self.hostingEnvironment
+            
         log.info("                              done.")
 
         log.info("Shutdown Complete.")
