@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.145 2004-06-02 03:27:10 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.146 2004-06-30 07:56:42 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.145 2004-06-02 03:27:10 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.146 2004-06-30 07:56:42 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -117,7 +117,7 @@ class VenueServer(AuthorizationMixIn):
             "VenueServer.dataPort" : 8006,
             "VenueServer.administrators" : '',
             "VenueServer.encryptAllMedia" : 1,
-            "VenueServer.houseKeeperFrequency" : 30,
+            "VenueServer.houseKeeperFrequency" : 90,
             "VenueServer.persistenceFilename" : 'VenueServer.dat',
             "VenueServer.serverPrefix" : 'VenueServer',
             "VenueServer.venuePathPrefix" : 'Venues',
@@ -174,7 +174,7 @@ class VenueServer(AuthorizationMixIn):
         # Initialize our state
         self.checkpointing = 0
         self.persistenceFilename = 'VenueServer.dat'
-        self.houseKeeperFrequency = 30
+        self.houseKeeperFrequency = 90
         self.venuePathPrefix = 'Venues'
         self.defaultVenue = ''
         self.multicastAddressAllocator = MulticastAddressAllocator()
@@ -591,8 +591,8 @@ class VenueServer(AuthorizationMixIn):
         # Don't checkpoint if we are already
         if not self.checkpointing:
             self.checkpointing = 1
+	    log.info("Checkpoint starting at %s.", time.asctime())
         else:
-            self.checkpointing = 0
             return
         
         # Grab a copy of the venues to dump
@@ -644,6 +644,8 @@ class VenueServer(AuthorizationMixIn):
             log.exception("Exception Checkpointing!")
             return 0
 
+	del venuesToDump
+
         log.info("Checkpointing completed at %s.", time.asctime())
 
         # Get authorization policy.
@@ -656,6 +658,8 @@ class VenueServer(AuthorizationMixIn):
 
         # Finally we save the current config
         SaveConfig(self.configFile, self.config)
+
+        self.checkpointing = 0
 
         return 1
 
