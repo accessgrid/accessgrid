@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.22 2004-09-09 05:12:30 judson Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.23 2004-09-09 17:52:11 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -26,7 +26,12 @@ class VideoConsumerService( AGService ):
 
         self.capabilities = [ Capability( Capability.CONSUMER,
                                           Capability.VIDEO ) ]
-        self.executable = os.path.join(os.getcwd(),'vic')
+        if IsWindows():
+            vic = "vic.exe"
+        else:
+            vic = "vic"
+
+        self.executable = os.path.join(os.getcwd(),vic)
         self.sysConf = SystemConfig.instance()
 
         self.profile = None

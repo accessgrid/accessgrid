@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.35 2004-09-09 05:12:30 judson Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.36 2004-09-09 17:52:11 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -73,7 +73,12 @@ class VideoProducerService( AGService ):
 
         self.capabilities = [ Capability( Capability.PRODUCER,
                                           Capability.VIDEO ) ]
-        self.executable = os.path.join(os.getcwd(),'vic')
+        if IsWindows():
+            vic = "vic.exe"
+        else:
+            vic = "vic"
+
+        self.executable = os.path.join(os.getcwd(),vic)
 
         self.sysConf = SystemConfig.instance()
 
