@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.304 2003-11-10 17:18:07 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.305 2003-11-14 18:54:26 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.304 2003-11-10 17:18:07 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.305 2003-11-14 18:54:26 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1306,7 +1306,7 @@ class VenueAddressBar(wxSashLayoutWindow):
         venueUri = self.__fixSpaces(url)
         self.AddChoice(venueUri)
         wxBeginBusyCursor()
-        self.application.venueClient.EnterVenue(venueUri, true)
+        self.application.venueClient.EnterVenue(venueUri, back=false)
         wxEndBusyCursor()
 
     def __fixSpaces(self, url):
