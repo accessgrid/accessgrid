@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Client.py,v 1.9 2003-03-19 16:08:16 judson Exp $
+# RCS-ID:      $Id: Client.py,v 1.10 2003-04-03 20:51:42 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -192,8 +192,7 @@ class HTTPTransport:
 
         # read response line
         code, msg, headers = r.getreply()
-        l = string.split(headers.headers[-1], ":")
-        contentLen = int(l[1].strip())
+        contentLen = int(headers["content-length"])
         if config.dumpHeadersIn:
             s = 'Incoming HTTP headers'
             debugHeader(s)
