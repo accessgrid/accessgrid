@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.97 2003-09-10 23:58:59 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.98 2003-09-11 21:08:25 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -2060,7 +2060,10 @@ class AddAdministratorFrame(AdministratorParamFrame):
         AdministratorParamFrame.__init__(self, parent, id, title)
         self.parent = parent
         if (self.ShowModal() == wxID_OK ):
-            self.parent.InsertAdministrator(self.name.GetValue())
+            if self.name.GetValue() == '':
+                MessageDialog(self, "Enter distinguished name for the administrator you wish to add. The field can not be blank.", "Notification")
+            else:
+                self.parent.InsertAdministrator(self.name.GetValue())
 
         self.Destroy();
 
@@ -2072,7 +2075,12 @@ class ModifyAdministratorFrame(AdministratorParamFrame):
         self.name.Clear()
         self.name.AppendText(oldName)
         if (self.ShowModal() == wxID_OK ):
-            self.parent.ModifyAdministrator(oldName, self.name.GetValue())
+
+            if self.name.GetValue() == '':
+                MessageDialog(self, "Enter distinguished name for the administrator you wish to modify. The field can not be blank.", "Notification")
+            else:
+                self.parent.ModifyAdministrator(oldName, self.name.GetValue())
+
         self.Destroy();
 
 #
