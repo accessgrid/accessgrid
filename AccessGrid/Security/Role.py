@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.8 2004-03-19 16:23:10 lefvert Exp $
+# RCS-ID:      $Id: Role.py,v 1.9 2004-03-23 22:55:38 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ much more dynamic. We programmatically create, destroy and modify
 roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.8 2004-03-19 16:23:10 lefvert Exp $"
+__revision__ = "$Id: Role.py,v 1.9 2004-03-23 22:55:38 lefvert Exp $"
 
 # external imports
 import xml.dom.minidom
@@ -78,6 +78,7 @@ class Role:
             self.subjects = subjects
         
         self.name = role_name
+        self.requireDefaultId = 0
        
     def _repr_(self):
         """
@@ -134,6 +135,25 @@ class Role:
         """
         return self.subjects
 
+    def GetRequireDefault(self):
+        '''
+        An accessor to set if we are allowed to remove default
+        subject from this role.
+
+        @return: 1 if this role requires default subject, otherwise 0.
+        '''
+        return self.requireDefaultId
+
+    def SetRequireDefault(self, flag):
+        '''
+        An accessor to check if we are allowed to remove dafault
+        subject from this role.
+
+        @param flag: 1 if this role requires default subject, otherwise 0.
+        @type flag: int
+        '''
+        self.requireDefaultId = flag
+
     def SetSubjects(self, sl):
         """
         An accessor to set the list of subjects associated with this Role.
@@ -172,7 +192,7 @@ class Role:
                 raise SubjectAlreadyPresent(s.name)
 
         self.subjects.append(subject)
-
+   
     def RemoveSubject(self, subject):
         """
         This method removes the specified subject from the role.
@@ -189,7 +209,7 @@ class Role:
         cm = Application.instance().GetCertificateManager()
         di = cm.GetDefaultIdentity()
         
-        if str(di.GetSubject()) == subject.GetName():
+        if str(di.GetSubject()) == subject.GetName() and self.requireDefaultId:
             raise DefaultIdentityNotRemovable(subject.name)
         
         if subject not in self.subjects:
