@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.38 2004-09-29 21:44:20 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.39 2004-10-11 18:37:57 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -357,4 +357,4 @@ if __name__ == '__main__':
 
     service = VideoProducerService()
     serviceI = AGServiceI(service)
-    RunService(service,serviceI,int(sys.argv[1]))
+    RunService(service,serviceI)

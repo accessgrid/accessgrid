@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.23 2004-09-09 17:52:11 judson Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.24 2004-10-11 18:37:57 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -181,4 +181,4 @@ if __name__ == '__main__':
 
     service = VideoConsumerService()
     serviceI = AGServiceI(service)
-    RunService(service,serviceI,int(sys.argv[1]))
+    RunService(service,serviceI)
