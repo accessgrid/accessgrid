@@ -10,7 +10,7 @@
 # Author:      Ti Leggett
 # Copyright:   (c) 2002-2003
 # License:     See COPYING.txt
-# RCS-ID:      $Id: MailcapSetup.py,v 1.2 2003-05-19 15:41:03 leggett Exp $
+# RCS-ID:      $Id: MailcapSetup.py,v 1.3 2003-05-20 17:57:09 leggett Exp $
 #-----------------------------------------------------------------------------
 
 import os
@@ -159,10 +159,10 @@ class Mailcap:
             print "You must specify an executable"
             return False
         if not self.description:
-            print "You mist specify a description"
+            print "You must specify a description"
             return False
         if not self.nametemplate:
-            print "You mist specify a name template"
+            print "You must specify a name template"
             return False
         if not self.description.startswith("description="):
             self.description = "description=" + self.description
