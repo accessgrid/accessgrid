@@ -7,7 +7,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.4 2003-04-24 18:36:47 judson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.1 2003-05-19 16:29:38 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------

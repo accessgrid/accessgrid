@@ -1,0 +1,29 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\.sharedbrowser]
+@="AG.SharedBrowser"
+"Content Type"="application/x-ag-shared-browser"
+
+[HKEY_CLASSES_ROOT\MIME\Database\Content Type\application/x-ag-shared-browser]
+"Extension"=".sharedbrowser"
+
+[HKEY_CLASSES_ROOT\AG.SharedBrowser]
+@="Access Grid Shared Browser"
+
+[HKEY_CLASSES_ROOT\AG.SharedBrowser]
+
+[HKEY_CLASSES_ROOT\AG.SharedBrowser\DefaultIcon]
+@="\"%1\""
+
+[HKEY_CLASSES_ROOT\AG.SharedBrowser\shell]
+@="Open Shared"
+
+[HKEY_CLASSES_ROOT\AG.SharedBrowser\shell\Open Shared]
+@="Open &Shared"
+
+[HKEY_CLASSES_ROOT\AG.SharedBrowser\shell\Open Shared\command]
+@="\"C:\\Software\\AccessGrid\\sharedapps\\SharedBrowser.py\" %1"
+
+
+}
+ 
