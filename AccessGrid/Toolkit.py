@@ -2,18 +2,20 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.18 2004-03-12 05:23:11 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.19 2004-03-12 20:44:14 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.18 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.19 2004-03-12 20:44:14 judson Exp $"
 
 # Standard imports
 import os
 import sys
 import getopt
+
+from optik import OptionParser
 
 # AGTk imports
 from AccessGrid import Log
@@ -53,10 +55,10 @@ class Application:
        # Create the singleton instance
        Application.theAppInstance = self
 
+       self.parser = None
        self.certMgrUI = None
        self.log = None
        self.debugLevel = 0
-       self.cmdLineArgs = dict()
        self.userConfig = None
        self.agtkConfig = None
        self.globusConfig = None
@@ -84,7 +86,7 @@ class Application:
        levelHandler = Log.HandleLoggers(mlh, Log.GetDefaultLoggers())
        
        # 1. Process Command Line Arguments
-       argvResult = self.ProcessArgs(argv)
+       argvResult = self.ProcessArgs()
 
        # 2. Load the Toolkit wide configuration.
        try:
@@ -146,16 +148,53 @@ class Application:
            
        return argvResult
 
-    def GetCmdlineArg(self, arg):
-        value = None
-       
-        if self.cmdLineArgs.has_key(arg):
-            value = self.cmdLineArgs[arg]
+    def ProcessArgs(self):
+       """
+       Process toolkit wide standard arguments. Then return the modified
+       argv so the app can choose to parse more if it requires that.
+       """
+       if self.parser == None:
+           self.parser = OptionParser()
            
-        return value
+       self.parser.add_option("-d", "--debug", action="store", type="int",
+                              dest="debug", default=0,
+                              help="Set the debug level of this program.")
+       self.parser.add_option("-l", "--logfile", dest="logfilename",
+                              metavar="LOGFILE", default=None,
+                              help="Specify a log file to output logging to.")
+       self.parser.add_option("-c", "--configfile", dest="configfilename",
+                              metavar="CONFIGFILE", default=None,
+                              help="Specify a configuration file for the program.")
+
+
+       (self.options, args) = self.parser.parse_args()
+
+       return args
+
+    def SetOptionParser(self, parser):
+        self.parser = parser
+    
+    def GetOption(self, arg):
+
+        if hasattr(self.options, arg):
+            return getattr(self.options, arg)
+        else:
+            return None
 
     def GetDebugLevel(self):
-        return 0
+        """
+        """
+        return self.GetOption("debug")
+
+    def GetLogFilename(self):
+        """
+        """
+        return self.GetOption("logfilename")
+    
+    def GetLogFilename(self):
+        """
+        """
+        return self.GetOption("configfilename")
     
     def GetLog(self):
         """
@@ -172,64 +211,6 @@ class Application:
     def GetGlobusConfig(self):
         return self.globusConfig
 
-    def ProcessArgs(self, argv):
-       """
-       Process toolkit wide standard arguments. Then return the modified
-       argv so the app can choose to parse more if it requires that.
-       """
-
-       # Pull out toolkit args
-       _knownArgs = ["-l", "-c", "-h", "-d", "--logfile",
-                     "--configfile", "--help", "--debug"]
-
-       argsToProcess = list()
-       argsToPassBack = list()
-       
-       for a in argv:
-           if a in _knownArgs:
-               argsToProcess.append(a)
-           else:
-               argsToPassBack.append(a)
-                   
-       # Parse command line options
-       try:
-           opts, args = getopt.getopt(argsToProcess, "l:c:hd",
-                                      ["logfile=", "configfile=",
-                                       "help", "debug"])
-       except getopt.GetoptError:
-               raise 
-
-       for opt, arg in opts:
-           if opt in ("-d", "--debug"):
-               levelHandler = Log.HandleLoggers(Log.StreamHandler(),
-                                                Log.GetDefaultLoggers())
-               levelHandler.SetLevel(Log.DEBUG)
-               self.debug = 1
-               self.cmdLineArgs['debug'] = 1
-               self.cmdLineArgs['d'] = 1
-           elif opt in ("-l", "--logfile"):
-               self.logFilename = arg
-               self.cmdLineArgs['logfile'] = arg
-               self.cmdLineArgs['l'] = arg
-           elif opt in ("-c", "--configfile"):
-               self.configFile = arg
-               self.cmdLineArgs['configfile'] = arg
-               self.cmdLineArgs['c'] = arg
-           elif opt in ("-h", "--help"):
-               self.cmdLineArgs['help'] = 1
-               self.cmdLineArgs['h'] = 1
-
-       return argsToPassBack
-
-    def Usage(self):
-        """
-        This is the usage method, it prints out how to use this program.
-        """
-        print "%s:" % sys.argv[0]
-        print "\t-h|--help : print usage"
-        print "\t-l|--logFile <filename> : log file name"
-        print "\t-c|--configFile <filename> : config file name"
-        
     def GetCertificateManager(self):
        return self.certificateManager
 
