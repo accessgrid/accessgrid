@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Subject.py,v 1.4 2004-03-02 19:07:12 judson Exp $
+# RCS-ID:      $Id: Subject.py,v 1.5 2004-03-04 15:35:37 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ Subjects are the basic security handle on entities that want to be a
 part of the secure Access Grid Toolkit.
 """
 
-__revision__ = "$Id: Subject.py,v 1.4 2004-03-02 19:07:12 judson Exp $"
+__revision__ = "$Id: Subject.py,v 1.5 2004-03-04 15:35:37 judson Exp $"
 
 # External Imports
 import xml.dom.minidom
@@ -40,19 +40,30 @@ class Subject:
     A Subject can be identified by various authentication
     mechanisms. we currently support X509 certificates (per Globus).
     """
-    def __init__(self, name, auth_type, auth_data = None):
+    def __init__(self, name, auth_type, auth_data = None, id = str(GUID())):
         """
         @param name: the name of the subject
         @param auth_type: the type of authentication used for the subject
         @param auth_data: opaque authentication specific data
+        @param id: a globally unique identifier for this object
         @type name: string
         @type auth_type: string
         @type auth_data: string
+        @type id: a string containing a globally unique identifier
         """
         self.name = name
         self.auth_type = auth_type
         self.auth_data = auth_data
+        self.id = id
 
+    def __hash__(self):
+        """
+        A hash method so subjects can be used as dictionary keys.
+
+        @returns: the id attribute which is a globally unique identifier in a string.
+        """
+        return self.id
+    
     def __cmp__(self, other):
         """
         Comparison operator, so two subjects can be compared.
