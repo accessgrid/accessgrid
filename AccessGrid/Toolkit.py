@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.2 2003-05-20 20:06:01 olson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.3 2003-05-20 21:15:21 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -37,6 +37,13 @@ class Application:
         Application.instance = self
 
         self.userConfigDir = Platform.GetUserConfigDir()
+        if not os.path.exists(self.userConfigDir):
+            try:
+                os.makedirs(self.userConfigDir)
+            except OSError, e:
+                log.exception("Toolkit.Initialize: could not mkdir %s",
+                              self.userConfigDir)
+
         log.debug("userConfigDir: %s", self.userConfigDir)
 
     def Initialize(self):
