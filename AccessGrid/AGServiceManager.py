@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.69 2004-05-14 21:02:48 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.70 2004-05-14 22:27:59 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.69 2004-05-14 21:02:48 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.70 2004-05-14 22:27:59 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -55,7 +55,7 @@ class AGServiceManager:
         self.services = dict()
         self.processManager = ProcessManager()
         userConfig = self.app.GetUserConfig().instance()
-        self.servicesDir = os.path.join(userConfig.GetConfigDir(),
+        self.servicesDir = os.path.join(userConfig.GetBaseDir(),
                                         "local_services")
 
         # Create directory if not exist
@@ -159,6 +159,9 @@ class AGServiceManager:
             log.exception("Error searching for local service package")
             raise Exception("Error searching for local service package")
 
+        # Get the path to which to extract this service
+        servicePath = self.__GetServicePath(serviceDescription)
+
         try:
             # Retrieve the service package if there is no local copy, 
             # or if we're adding a newer copy
@@ -173,37 +176,36 @@ class AGServiceManager:
                 servicePackageToInstall = self.__RetrieveServicePackage( serviceDescription.servicePackageUri )
                 
                 
+                try:
+                    #
+                    # Extract the service package
+                    #
+
+                    log.info("Extracting service package to %s", servicePath)
+
+                    # Create dir for package
+                    if not os.path.exists(servicePath):
+                        log.info("Creating service path %s", servicePath)
+                        os.makedirs(servicePath)
+
+                    # Extract the package
+                    servicePackageToInstall.ExtractPackage(servicePath)
+
+                    # Get the (new) service description and set the resource
+                    serviceDescription = servicePackageToInstall.GetServiceDescription()
+                    serviceDescription.resource = resource
+
+                except:
+                    log.exception("Service Manager failed to extract service implementation")
+                    raise Exception("Service Manager failed to extract service implementation")
+
+
         except:
             log.exception("Service Manager failed to retrieve service implementation for %s", 
                           serviceDescription.servicePackageUri)
             raise Exception("Service Manager couldn't retrieve service package")
 
 
-        try:
-            #
-            # Extract the service package
-            #
-            
-            # Get the path to which to extract this service
-            servicePath = self.__GetServicePath(serviceDescription)
-            
-            log.info("Extracting service package to %s", servicePath)
-            
-            # Create dir for package
-            if not os.path.exists(servicePath):
-                log.info("Creating service path %s", servicePath)
-                os.makedirs(servicePath)
-                
-            # Extract the package
-            servicePackageToInstall.ExtractPackage(servicePath)
-            
-            # Get the (new) service description and set the resource
-            serviceDescription = servicePackageToInstall.GetServiceDescription()
-            serviceDescription.resource = resource
-
-        except:
-            log.exception("Service Manager failed to extract service implementation")
-            raise Exception("Service Manager failed to extract service implementation")
 
         #
         # Start the service process
