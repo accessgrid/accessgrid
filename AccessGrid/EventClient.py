@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.18 2003-05-22 20:15:47 olson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.19 2003-05-22 20:36:35 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -186,47 +186,6 @@ class EventClient:
         h = self.sock.register_read(self.buffer, EventClient.bufsize, 1,
                                     self.readCallbackWrap, None)
         self.cbHandle = h
-
-    def thr_run(self):
-        """
-        The run method starts this thread actively getting and
-        processing event data provided by a EventService.
-        """
-        self.running = 1
-        while self.running:
-            event = None
-            data = None
-            try:
-                data = self.rfile.read(4)
-                log.debug("EventClient: DataSize: %d", len(data))
-            except IOBaseException:
-                data = None
-                self.running = 0
-                log.exception("EventClient: ReadDataException.")
-                raise EventClientReadDataException
-
-            if data != None and len(data) == 4:
-                sizeTupe = struct.unpack('i', data)
-                size = sizeTupe[0]
-                log.debug("EventClient: Read size: %d", size)
-            else:
-                size = 0
-                self.running = 0
-                log.exception("EventClient: Connection Lost.")
-                raise EventClientReadDataException
-            
-            # Read the data
-            try:
-                pdata = self.rfile.read(size)
-                log.debug("EventClient: Read data.")
-            except:
-                self.running = 0
-                log.exception("EventClient: Read data failed.")
-                raise EventClientReadDataException
-
-            self.handleData(pdata)
-
-        self.sock.close()
 
     def handleData(self, pdata):
         try:
