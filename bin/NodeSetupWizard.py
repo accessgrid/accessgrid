@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.31 2004-04-26 20:39:27 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.32 2004-06-01 21:08:35 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -99,7 +99,7 @@ class NodeSetupWizard(wxWizard):
     The node setup wizard guides users through the steps necessary for
     creating and testing a node configuration. 
     '''
-    def __init__(self, parent, debugMode, log, progress):
+    def __init__(self, parent, debugMode, log, progress, app = None):
         wxWizard.__init__(self, parent, 10,"Setup Node", wxNullBitmap)
         '''
         This class creates a wizard for node setup
@@ -110,7 +110,7 @@ class NodeSetupWizard(wxWizard):
 
         self.step = 1
         self.SetPageSize(wxSize(510, 310))
-        self.nodeClient = NodeClient()
+        self.nodeClient = NodeClient(app)
         
         startupDialog.UpdateOneStep("Initializing the Node Setup Wizard.")
         
@@ -930,37 +930,47 @@ class NodeClient:
     separate user interface code from node specific code. This class contains no
     user interface components.
     '''
-    def __init__(self):
+    def __init__(self, app = None):
         self.node = None
-
+        self.app = app
+    
     def StartNodeService(self):
-         app = Service().instance()
-         #Initialize node service
-         try:
-             app.Initialize("NodeService")
-         except Exception, e:
-             log.exception("NodeClient: init failed. Exiting.")
-             sys.exit(-1)
+        if not self.app:
+            self.app = Service().instance()
 
-         self.nodeService = AGNodeService()
-         
-         hostname = SystemConfig.instance().GetHostname()
-         port = 11000
-         self.server = SecureServer((hostname, port), debug = app.GetDebugLevel())
-         
-         nsi = AGNodeServiceI(self.nodeService)
-         self.server.RegisterObject(nsi, path="/NodeService")
-         url = self.server.FindURLForObject(self.nodeService)
-         self.node = AGNodeServiceIW(url)
+        #Initialize node service
+        try:
+            self.app.Initialize("NodeService")
+        except Exception, e:
+            log.exception("NodeClient: init failed. Exiting.")
+            sys.exit(-1)
+        
+        self.nodeService = AGNodeService(self.app)
+        
+        hostname = SystemConfig.instance().GetHostname()
+        port = 11000
+        self.server = SecureServer((hostname, port), debug = self.app.GetDebugLevel())
+        
+        nsi = AGNodeServiceI(self.nodeService)
+        self.server.RegisterObject(nsi, path="/NodeService")
+        url = self.server.FindURLForObject(self.nodeService)
+        self.node = AGNodeServiceIW(url)
+        
+        self.server.RunInThread()
 
-         self.server.RunInThread()
-
-         self.serviceList = self.node.GetAvailableServices()
-       
+        self.serviceList = self.node.GetAvailableServices()
+        
     def Stop(self):
         # Exit cleanly
-        self.nodeService.Stop()
-        self.server.Stop()
+        try:
+            self.nodeService.Stop()
+        except:
+            raise "Can not stop node service"
+        try:
+            self.server.Stop()
+        except:
+            raise 'Can not stop server'
+        
         sys.exit(0)
                        
     def GetNodeService(self):
@@ -993,7 +1003,9 @@ class NodeClient:
                     conf = AGServiceIW(serviceDesc.uri).GetConfiguration()
                                                                                 
                     # Set camera port type
-                    conf.parameters.append(ValueParameter("port", data[captureCard.resource]))
+                    conf.append(ValueParameter("port", data[captureCard.resource]))
+                    
+                    #conf.parameters.append(ValueParameter("port", data[captureCard.resource]))
                     AGServiceIW(serviceDesc.uri).SetConfiguration(conf)
 
             else: # Video consumer or audio
@@ -1048,8 +1060,6 @@ class NodeClient:
         return self.node.GetConfigurations()
 
 def main():
-    log = None
-
     # Create the wxpython app
     wxapp = wxPySimpleApp()
 
@@ -1075,7 +1085,7 @@ def main():
     
     startupDialog.UpdateOneStep("Initializing the Node Setup Wizard.")
 
-    nodeSetupWizard = NodeSetupWizard(None, debug, log, startupDialog)
+    nodeSetupWizard = NodeSetupWizard(None, debug, log, startupDialog, app)
     
     # Startup complete; kill progress dialog
     #startupDialog.Destroy()
