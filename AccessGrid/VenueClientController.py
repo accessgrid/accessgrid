@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.31 2004-06-02 03:06:21 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.32 2004-07-16 16:18:28 eolson Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.31 2004-06-02 03:06:21 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.32 2004-07-16 16:18:28 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # standard imports
@@ -170,7 +170,10 @@ class VenueClientController:
         if self.__venueClient.IsInVenue():
             self.__venueClient.ExitVenue()
 
-        self.__venueClient.Shutdown()
+        try:
+            self.__venueClient.Shutdown()
+        except:
+            log.exception("VenueClient Shutdown() failed")
 
         os._exit(0)  # this should not be necessary, replace if needed.
 
