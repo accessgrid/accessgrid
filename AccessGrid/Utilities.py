@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.6 2003-01-28 04:19:06 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.7 2003-01-28 19:31:03 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,6 +22,7 @@ def LoadConfig(fileName, config={}):
     This is from the python cookbook credit: Dirk Holtwick.
     """
     cp = ConfigParser.ConfigParser()
+    cp.optionxform = str
     cp.read(fileName)
     for sec in cp.sections():
         name = string.lower(sec)
@@ -36,6 +37,7 @@ def SaveConfig(fileName, config):
     This method saves the current configuration out to the specified file.
     """
     cp = ConfigParser.ConfigParser()
+    cp.optionxform = str
     for k in config.keys():
         (section, option) = string.split(k, '.')
         try:
