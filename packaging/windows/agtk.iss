@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.58 2004-04-07 20:21:25 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.59 2004-04-07 20:27:36 judson Exp $
 ;
 
 ; Set externally
@@ -206,6 +206,13 @@ var
   PythonPath : String;
   DefaultVersion : String;
 
+function GetPythonPath(Default: String): String;
+begin
+  MsgBox('Python at: ', PythonPath, MB_OK);
+
+  Result := PythonPath;
+end;
+
 function InitializeSetup(): Boolean;
 begin
   DefaultVersion := ExpandConstant('{#PythonVersion}');
@@ -213,13 +220,6 @@ begin
   if not RegQueryStringValue(HKLM, 'Software\Python\PythonCore\2.2\InstallPath', '', PythonPath) then
 	begin
 		PythonPath := 'C:\Python22';
-    end;
+	end;
 end;
 
-function GetPythonPath(Default: String): String;
-begin
-  Result := PythonPath;
-end;
-[_ISTool]
-LogFile=iss.log
-LogFileAppend=false
