@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.58 2005-01-06 22:51:02 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.59 2005-01-14 02:00:28 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.58 2005-01-06 22:51:02 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.59 2005-01-14 02:00:28 turam Exp $"
 
 import os
 import mimetypes
@@ -21,7 +21,7 @@ import resource
 
 
 from AccessGrid import Log
-import AccessGrid.Config
+from AccessGrid import Config
 
 from AccessGrid.Platform import AGTK_USER, AGTK_LOCATION
 from AccessGrid.Version import GetVersion
@@ -29,7 +29,7 @@ from AccessGrid.Version import GetVersion
 log = Log.GetLogger(Log.Platform)
 Log.SetDefaultLevel(Log.Platform, Log.INFO)
 
-class AGTkConfig(AccessGrid.Config.AGTkConfig):
+class AGTkConfig(Config.AGTkConfig):
     """
     This class encapsulates a system configuration for the Access Grid
     Toolkit. This object provides primarily read-only access to configuration
@@ -45,9 +45,6 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         return AGTkConfig.theAGTkConfigInstance
 
     instance = staticmethod(instance)
-
-    def GetVersion(self):
-        return self.version
 
     def GetBaseDir(self):
         if self.installBase == None:
@@ -66,21 +63,6 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         
         return self.installBase
         
-    def GetConfigDir(self):
-
-        self.configDir = os.path.join(self.GetBaseDir(), "Config")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if self.configDir is not None and \
-                   not os.path.exists(self.configDir):
-                os.mkdir(self.configDir)
-
-        if self.configDir is not None and not os.path.exists(self.configDir):
-            raise IOError("AGTkConfig: config dir %s does not exist." % (self.configDir))
-
-        return self.configDir
-
     def GetInstallDir(self):
         try:
             self.installDir = os.environ[AGTK_LOCATION]
@@ -120,86 +102,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
         return self.docDir
 
-    def GetLogDir(self):
-        if self.logDir == None:
-            ucd = self.GetBaseDir()
-            self.logDir = os.path.join(ucd, "Logs")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if self.logDir is not None and \
-                   not os.path.exists(self.logDir):
-                os.mkdir(self.logDir)
-
-
-        # Check the installation
-        if self.logDir is not None and \
-               not os.path.exists(self.logDir):
-            raise Exception, "AGTkConfig: log dir %s does not exist." % (self.logDir)            
- 
-        return self.logDir
-    
-    def GetSharedAppDir(self):
-        if self.appDir == None:
-            ucd = self.GetBaseDir()
-            self.appDir = os.path.join(ucd, "SharedApplications")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if not os.path.exists(self.appDir):
-                os.mkdir(self.appDir)
-
-        if not os.path.exists(self.appDir):
-            raise Exception, "AGTkConfig: app dir does not exist."
-
-        return self.appDir
-
-    def GetNodeServicesDir(self):
-        if self.nodeServicesDir == None:
-            ucd = self.GetBaseDir()
-            self.nodeServicesDir = os.path.join(ucd, "NodeServices")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if not os.path.exists(self.nodeServicesDir):
-                os.mkdir(self.nodeServicesDir)
-
-        if not os.path.exists(self.nodeServicesDir):
-            raise Exception, "AGTkConfig: node service dir does not exist."
-
-        return self.nodeServicesDir
-
-    def GetNodeConfigDir(self):
-        if self.nodeConfigDir == None:
-            ucd = self.GetConfigDir()
-            self.nodeConfigDir = os.path.join(ucd, "nodeConfig")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if not os.path.exists(self.nodeConfigDir):
-                os.mkdir(self.nodeConfigDir)
-
-        if not os.path.exists(self.nodeConfigDir):
-            raise Exception, "AGTkConfig: node config dir does not exist." + self.nodeConfigDir
-
-        return self.nodeConfigDir
-
-    def GetServicesDir(self):
-        if self.servicesDir == None:
-            ucd = self.GetBaseDir()
-            self.servicesDir = os.path.join(ucd, "Services")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if not os.path.exists(self.servicesDir):
-                os.mkdir(self.servicesDir)
-
-        if not os.path.exists(self.servicesDir):
-            raise Exception, "AGTkConfig: services dir does not exist."
-
-        return self.servicesDir
-
-class UserConfig(AccessGrid.Config.UserConfig):
+class UserConfig(Config.UserConfig):
     """
     A user config object encapsulates all of the configuration data for
     a running instance of the Access Grid Toolkit software.
@@ -208,7 +111,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
     @type profileFilename: the filename of the client profile
     """
 
-    def instance(initIfNeeded=1):
+    def instance(initIfNeeded=0):
         if UserConfig.theUserConfigInstance == None:
             UserConfig(initIfNeeded)
 
@@ -216,18 +119,6 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
     instance = staticmethod(instance)
     
-    def GetProfile(self):
-        if self.profileFilename == None:
-            self.profileFilename = os.path.join(self.GetConfigDir(), "profile")
-            
-        return self.profileFilename
-
-    def GetPreferences(self):
-        if self.preferencesFilename == None:
-            self.preferencesFilename = os.path.join(self.GetConfigDir(), "preferences")
-            
-        return self.preferencesFilename
-        
     def GetBaseDir(self):
         global AGTK_USER
 
@@ -250,20 +141,6 @@ class UserConfig(AccessGrid.Config.UserConfig):
                 
         return self.baseDir
 
-    def GetConfigDir(self):
-
-        baseDir = self.GetBaseDir()
-        self.configDir = os.path.join(baseDir,'Config')
-
-        try:
-            if not os.path.exists(self.configDir):
-                os.mkdir(self.configDir)
-        except:
-            log.exception("Can not create config directory %s", self.configDir)
-            raise
-
-        return self.configDir
-
     def GetTempDir(self):
         if self.tempDir == None:
             self.tempDir = "/tmp"
@@ -273,100 +150,8 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
         return self.tempDir
     
-    def GetLogDir(self):
-        if self.logDir == None:
-            ucd = self.GetBaseDir()
-            self.logDir = os.path.join(ucd, "Logs")
 
-        # check to make it if needed
-        if self.initIfNeeded:
-            if not os.path.exists(self.logDir):
-                os.mkdir(self.logDir)
-
-        if not os.path.exists(self.logDir):
-            raise Exception, "AGTkConfig: log dir does not exist."
-
-        return self.logDir
-
-    def GetSharedAppDir(self):
-        if self.appDir == None:
-            ucd = self.GetBaseDir()
-            self.appDir = os.path.join(ucd, "SharedApplications")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if not os.path.exists(self.appDir):
-                os.mkdir(self.appDir)
-
-        if not os.path.exists(self.appDir):
-            raise Exception, "AGTkConfig: app dir does not exist."
-
-        return self.appDir
-
-    def GetNodeServicesDir(self):
-        if self.nodeServicesDir == None:
-            ucd = self.GetBaseDir()
-            self.nodeServicesDir = os.path.join(ucd, "NodeService")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if not os.path.exists(self.nodeServicesDir):
-                os.mkdir(self.nodeServicesDir)
-
-        if not os.path.exists(self.nodeServicesDir):
-            raise Exception, "AGTkConfig: node service dir does not exist."
-
-        return self.nodeServicesDir
-
-    def GetLocalServicesDir(self):
-        if self.localServicesDir == None:
-            ucd = self.GetBaseDir()
-            self.localServicesDir = os.path.join(ucd, "local_services")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if not os.path.exists(self.localServicesDir):
-                os.mkdir(self.localServicesDir)
-
-        if not os.path.exists(self.localServicesDir):
-            raise Exception, "AGTkConfig: local services dir does not exist."
-
-        return self.localServicesDir
-
-    def GetNodeConfigDir(self):
-        if self.nodeConfigDir == None:
-            ucd = self.GetBaseDir()
-            self.nodeConfigDir = os.path.join(ucd, "nodeConfig")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if not os.path.exists(self.nodeConfigDir):
-                os.mkdir(self.nodeConfigDir)
-
-        if not os.path.exists(self.nodeConfigDir):
-            raise Exception, "AGTkConfig: node service dir does not exist."
-
-        return self.nodeConfigDir
-
-    def GetServicesDir(self):
-        if self.servicesDir == None:
-            ucd = self.GetBaseDir()
-            self.servicesDir = os.path.join(ucd, "Services")
-
-        # Check dir and create it if needed.
-        if self.initIfNeeded:
-            if self.servicesDir is not None and \
-                   not os.path.exists(self.servicesDir):
-                os.mkdir(self.servicesDir)
-
-        # Check the installation
-        if not os.path.exists(self.servicesDir):
-            raise Exception, "AGTkConfig: services dir does not exist."
-
-        return self.servicesDir
-
-
-class SystemConfig(AccessGrid.Config.SystemConfig):
+class SystemConfig(Config.SystemConfig):
     """
     The SystemConfig object encapsulates all system dependent
     configuration data, it should be extended to retrieve and store
@@ -375,7 +160,6 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
     @ivar tempDir: the system temp directory.
     @type tempDir: string
     """
-    theSystemConfigInstance = None
 
     def instance():
         if SystemConfig.theSystemConfigInstance == None:
@@ -385,15 +169,6 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
     
     instance = staticmethod(instance)
     
-    def __init__(self):
-        if SystemConfig.theSystemConfigInstance is not None:
-            raise Exception, "Only one instance of SystemConfig is allowed."
-
-        SystemConfig.theSystemConfigInstance = self
-        
-        self.tempDir = None
-        self.hostname = None
-        
     def GetTempDir(self):
         """
         Get the path to the system temp directory.
@@ -403,19 +178,6 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
             
         return self.tempDir
         
-    def GetHostname(self):
-        """
-        Retrieve the local hostname.
-        """
-        if self.hostname == None:
-            try:
-                self.hostname = socket.getfqdn()
-            except Exception, e:
-                self.hostname = None
-                raise
-        
-        return self.hostname
-
     def GetProxySettings(self):
         """
         If the system has a proxy server defined for use, return its
@@ -457,20 +219,13 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
     
     def EnumerateInterfaces(self):
         """
-        Enumerate the interfaces present on a windows box.
+        Enumerate the interfaces present on the box.
         
         Run ipconfig /all
         """
         adapters = []
         return adapters
 
-    def GetDefaultRouteIP(self):
-        """
-        Retrieve the IP address of the interface that the
-        default route points to.
-        """
-        return None
-        
     def PerformanceSnapshot(self):
         """
         This method grabs a snapshot of relevent system information to report
@@ -520,14 +275,20 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         """
         pass
 
-class MimeConfig(AccessGrid.Config.MimeConfig):
+    def GetDefaultRouteIP(self):
+        """
+        Retrieve the IP address of the interface that the
+        default route points to.
+        """
+        return None
+        
+class MimeConfig(Config.MimeConfig):
     """
     The MimeConfig object encapsulates in single object the management
     of mime types. This provides a cross platform solution so the AGTk
     can leverage legacy configuration and applications for data
     viewing.
     """
-    theMimeConfigInstance = None
 
     def instance():
         if MimeConfig.theMimeConfigInstance == None:
@@ -536,66 +297,6 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
         return MimeConfig.theMimeConfigInstance
 
     instance = staticmethod(instance)
-    
-    def __init__(self):
-        if MimeConfig.theMimeConfigInstance is not None:
-            raise Exception, "Only one instance of MimeConfig is allowed."
-
-        MimeConfig.theMimeConfigInstance = self
-
-    def UnregisterMimeType(self, mimeType):
-
-        # --- Remove, General LINUX/UNIX local user mimetype/mailcap --- #
-
-        mimeFile = os.path.join(os.environ['HOME'], ".mime.types")
-        bakMimeFile = os.path.join(os.environ['HOME'], ".mime.types.bak")
-        tmpMimeFile = os.path.join(os.environ['HOME'], ".mime.types.tmp")
-        mailcapFile = os.path.join(os.environ['HOME'], ".mailcap")
-        bakMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.bak")
-        tmpMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.tmp")
-
-        if os.path.exists(mimeFile):
-            # Backup old file
-            shutil.copyfile(mimeFile, bakMimeFile)
-
-            # MimeType file: read line by line and remove the mimeType
-            fr = open(mimeFile, "r")
-            fw = open(tmpMimeFile, "w")
-            line = fr.readline()
-            while len(line) > 0:
-                if not line.startswith(mimeType):
-                    fw.write(line)
-                line = fr.readline()
-            fr.close()
-            fw.close()
-
-            # Now copy tmp file into place
-            shutil.copyfile(tmpMimeFile, mimeFile)
-
-            # Remove tmp file
-            os.remove(tmpMimeFile)
-
-        if os.path.exists(mailcapFile):
-            # Backup old file
-            shutil.copyfile(mailcapFile, bakMailcapFile)
-
-            # Mailcap file: read line by line and remove mimeType
-            fr = open(mailcapFile, "r")
-            fw = open(tmpMailcapFile, "w")
-            line = fr.readline()
-            while len(line) > 0:
-                if not line.startswith(mimeType):
-                    fw.write(line)
-                line = fr.readline()
-            fr.close()
-            fw.close()
-
-            # Now copy tmp file into place
-            shutil.copyfile(tmpMailcapFile, mailcapFile)
-
-            # Remove tmp file
-            os.remove(tmpMailcapFile)
-        
     
     def RegisterMimeType(self, mimeType, extension, fileType, description,
                          cmds):

@@ -3,22 +3,21 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.58 2005-01-06 22:52:45 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.59 2005-01-14 02:01:16 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.58 2005-01-06 22:52:45 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.59 2005-01-14 02:01:16 turam Exp $"
 
 import os
 import socket
 import re
 
-import win32api
-
-from AccessGrid import Config
 from AccessGrid import Log
+from AccessGrid import Config
+
 from AccessGrid.Platform import AGTK_USER, AGTK_LOCATION
 from AccessGrid.Version import GetVersion
 
@@ -50,25 +49,6 @@ class AGTkConfig(Config.AGTkConfig):
     
     instance = staticmethod(instance)
     
-    def __init__(self, initIfNeeded=0):
-        if AGTkConfig.theAGTkConfigInstance is not None:
-            raise Exception, "Only one instance of AGTkConfig is allowed."
-
-        Config.AGTkConfig.__init__(self, initIfNeeded)
-        AGTkConfig.theAGTkConfigInstance = self
-
-        if initIfNeeded:
-            self._Initialize()
-
-    def GetVersion(self):
-        return self.version
-
-    def GetInstallDir(self):
-        if self.installDir is None:
-            self.installDir = self.GetBaseDir()
-            
-        return self.installDir
-
     def GetBaseDir(self):
         global AGTK_LOCATION
         
@@ -94,40 +74,25 @@ class AGTkConfig(Config.AGTkConfig):
         
         return self.installBase
         
-    def GetConfigDir(self):
-        if self.installBase == None:
-            self.GetBaseDir()
-
-        self.configDir = os.path.join(self.installBase, "Config")
-      
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if self.configDir is not None and \
-                   not os.path.exists(self.configDir):
-                os.mkdir(self.configDir)
-
-        if self.configDir is not None and not os.path.exists(self.configDir):
-            raise IOError("AGTkConfig: config dir does not exist %s." %self.configDir)
-
-        return self.configDir
-
-    def GetBinDir(self):
-        if self.installBase == None:
-            self.GetBaseDir()
-
-        self.installDir = os.path.join(self.installBase, "bin")
-
-        # Check the installation
-        if self.installDir is not None and not os.path.exists(self.installDir):
-            raise IOError("AGTkConfig: install dir does not exist %s."%self.installDir)
-
+    def GetInstallDir(self):
+        if self.installDir is None:
+            self.installDir = self.GetBaseDir()
+            
         return self.installDir
 
-    def GetDocDir(self):
-        if self.installBase == None:
-            self.GetBaseDir()
+    def GetBinDir(self):
 
-        self.docDir = os.path.join(self.installBase, "doc")
+        binDir = os.path.join(self.GetBaseDir(), "bin")
+
+        # Check the installation
+        if binDir is not None and not os.path.exists(binDir):
+            raise IOError("AGTkConfig: bin dir does not exist %s."%binDir)
+
+        return binDir
+
+    def GetDocDir(self):
+
+        self.docDir = os.path.join(self.GetBaseDir(), "doc")
 
         # Check dir and make it if needed.
         if self.initIfNeeded:
@@ -140,108 +105,6 @@ class AGTkConfig(Config.AGTkConfig):
             raise IOError("AGTkConfig: doc dir does not exist %s."%self.docDir)
 
         return self.docDir
-
-    def GetLogDir(self):
-        if self.logDir == None:
-            ucd = self.GetBaseDir()
-            self.logDir = os.path.join(ucd, "Logs")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if self.logDir is not None and \
-                   not os.path.exists(self.logDir):
-                try:
-                    os.mkdir(self.logDir)
-                except:
-                    log.exception("Couldn't make log dir.")
-
-        # Check the installation
-        
-        if self.logDir is not None and \
-               not os.path.exists(self.logDir):
-            raise IOError("AGTkConfig: log dir does not exist %s."%self.logDir)
- 
-        return self.logDir
-      
-    def GetSharedAppDir(self):
-        if self.appDir == None:
-            ucd = self.GetBaseDir()
-            self.appDir = os.path.join(ucd, "SharedApplications")
-
-        # Check dir and create it if needed.
-        if self.initIfNeeded:
-            if self.appDir is not None and not os.path.exists(self.appDir):
-                try:
-                    os.mkdir(self.appDir)
-                except:
-                    log.exception("Couldn't make app dir.")
-
-        # Check the installation
-        if self.appDir is not None and not os.path.exists(self.appDir):
-            raise IOError("AGTkConfig: app dir does not exist %s." %self.appDir)
-
-        return self.appDir
-
-    def GetNodeServicesDir(self):
-        if self.nodeServicesDir == None:
-            ucd = self.GetBaseDir()
-            self.nodeServicesDir = os.path.join(ucd, "NodeServices")
-
-        # Check dir and create it if needed.
-        if self.initIfNeeded:
-            if self.nodeServicesDir is not None and \
-                   not os.path.exists(self.nodeServicesDir):
-                try:
-                    os.mkdir(self.nodeServicesDir)
-                except:
-                    log.exception("Couldn't make node services dir.")
-
-        # Check the installation
-        if self.nodeServicesDir is not None and \
-               not os.path.exists(self.nodeServicesDir):
-            raise IOError("AGTkConfig: node service dir does not exist %s."%self.nodeServicesDir)
-
-        return self.nodeServicesDir
-
-    def GetNodeConfigDir(self):
-        if self.nodeConfigDir == None:
-            ucd = self.GetConfigDir()
-            self.nodeConfigDir = os.path.join(ucd, "nodeConfig")
-
-        # Check dir and create it if needed.
-        if self.initIfNeeded:
-            if self.nodeConfigDir is not None and \
-                   not os.path.exists(self.nodeConfigDir):
-                try:
-                    os.mkdir(self.nodeConfigDir)
-                except:
-                    log.exception("Couldn't make node config dir.")
-
-        if not os.path.exists(self.nodeConfigDir):
-            raise Exception, "AGTkConfig: node config dir does not exist: %s." % self.nodeConfigDir
-
-        return self.nodeConfigDir
-
-    def GetServicesDir(self):
-        if self.servicesDir == None:
-            ucd = self.GetBaseDir()
-            self.servicesDir = os.path.join(ucd, "Services")
-
-        # Check dir and create it if needed.
-        if self.initIfNeeded:
-            if self.servicesDir is not None and \
-                   not os.path.exists(self.servicesDir):
-                try:
-                    os.mkdir(self.servicesDir)
-                except:
-                    log.exception("Couldn't make services dir.")
-
-        # Check the installation
-        if self.servicesDir is not None and \
-               not os.path.exists(self.servicesDir):
-            raise IOError("AGTkConfig: services dir does not exist %s."%self.servicesDir)
-
-        return self.servicesDir
 
 class UserConfig(Config.UserConfig):
     """
@@ -261,16 +124,6 @@ class UserConfig(Config.UserConfig):
     
     instance = staticmethod(instance)
     
-    def __init__(self, initIfNeeded=0):
-        if UserConfig.theUserConfigInstance is not None:
-            raise Exception, "Only one instance of UserConfig is allowed."
-
-        Config.UserConfig.__init__(self, initIfNeeded)
-        UserConfig.theUserConfigInstance = self
-
-        if initIfNeeded:
-            self._Initialize()
-
     def GetBaseDir(self):
         global AGTK_USER
        
@@ -299,37 +152,6 @@ class UserConfig(Config.UserConfig):
                 
         return self.baseDir
 
-    def GetProfile(self):
-        if self.profileFilename == None:
-            self.profileFilename = os.path.join(self.GetConfigDir(), "profile")
-            
-        return self.profileFilename
-
-    def GetPreferences(self):
-        if self.preferencesFilename == None:
-            self.preferencesFilename = os.path.join(self.GetConfigDir(),
-                                                    "preferences")
-
-        return self.preferencesFilename
-
-    def GetConfigDir(self):
-        if self.configDir == None:
-            ucd = self.GetBaseDir()
-            self.configDir = os.path.join(ucd, "Config")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if self.configDir is not None and \
-                   not os.path.exists(self.configDir):
-                os.mkdir(self.configDir)
-
-        # Check the installation
-        if self.configDir is not None and \
-               not os.path.exists(self.configDir):
-            raise Exception, "AGTkConfig: config dir does not exist %s."%self.configDir
-
-        return self.configDir
-        
     def GetTempDir(self):
         if self.tempDir == None:
             self.tempDir = win32api.GetTempPath()
@@ -340,107 +162,6 @@ class UserConfig(Config.UserConfig):
 
         return self.tempDir
     
-    def GetLogDir(self):
-        if self.logDir == None:
-            ucd = self.GetBaseDir()
-            self.logDir = os.path.join(ucd, "Logs")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if self.logDir is not None and \
-                   not os.path.exists(self.logDir):
-                os.mkdir(self.logDir)
-
-
-        # Check the installation
-        if self.logDir is not None and \
-               not os.path.exists(self.logDir):
-            raise Exception, "AGTkConfig: log dir does not exist %s."%self.logDir 
-
-        return self.logDir
-    
-    def GetSharedAppDir(self):
-        if self.appDir == None:
-            ucd = self.GetBaseDir()
-            self.appDir = os.path.join(ucd, "SharedApplications")
-
-        # Check dir and create it if needed.
-        if self.initIfNeeded:
-            if self.appDir is not None and not os.path.exists(self.appDir):
-                os.mkdir(self.appDir)
-
-        # Check the installation
-        if self.appDir is not None and not os.path.exists(self.appDir):
-            raise Exception, "AGTkConfig: app dir does not exist %s."%self.appDir
-
-        return self.appDir
-
-    def GetNodeServicesDir(self):
-        if self.nodeServicesDir == None:
-            ucd = self.GetBaseDir()
-            self.nodeServicesDir = os.path.join(ucd, "NodeServices")
-
-        # Check dir and create it if needed.
-        if self.initIfNeeded:
-            if self.nodeServicesDir is not None and \
-                   not os.path.exists(self.nodeServicesDir):
-                os.mkdir(self.nodeServicesDir)
-
-        # Check the installation
-        if self.nodeServicesDir is not None and \
-               not os.path.exists(self.nodeServicesDir):
-            raise Exception, "AGTkConfig: node service dir does not exist %s."%self.nodeServicesDir
-
-        # check to make it if needed
-        return self.nodeServicesDir
-
-    def GetLocalServicesDir(self):
-        if self.localServicesDir == None:
-            ucd = self.GetBaseDir()
-            self.localServicesDir = os.path.join(ucd, "local_services")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if not os.path.exists(self.localServicesDir):
-                os.mkdir(self.localServicesDir)
-
-        if not os.path.exists(self.localServicesDir):
-            raise Exception, "AGTkConfig: local services dir does not exist."
-
-        return self.localServicesDir
-
-    def GetNodeConfigDir(self):
-        if self.nodeConfigDir == None:
-            ucd = self.GetBaseDir()
-            self.nodeConfigDir = os.path.join(ucd, "nodeConfig")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if not os.path.exists(self.nodeConfigDir):
-                os.mkdir(self.nodeConfigDir)
-
-        if not os.path.exists(self.nodeConfigDir):
-            raise Exception, "AGTkConfig: node service dir does not exist."
-
-        return self.nodeConfigDir
-
-    def GetServicesDir(self):
-        if self.servicesDir == None:
-            ucd = self.GetBaseDir()
-            self.servicesDir = os.path.join(ucd, "Services")
-
-        # Check dir and create it if needed.
-        if self.initIfNeeded:
-            if self.servicesDir is not None and \
-                   not os.path.exists(self.servicesDir):
-                os.mkdir(self.servicesDir)
-
-        # Check the installation
-        if self.servicesDir is not None and \
-               not os.path.exists(self.servicesDir):
-            raise Exception, "AGTkConfig: services dir does not exist %s."%self.servicesDir
-
-        return self.servicesDir
 
 class SystemConfig(Config.SystemConfig):
     """
@@ -461,16 +182,6 @@ class SystemConfig(Config.SystemConfig):
     
     instance = staticmethod(instance)
     
-    def __init__(self):
-        if SystemConfig.theSystemConfigInstance is not None:
-            raise Exception, "Only one instance of SystemConfig is allowed."
-
-        Config.SystemConfig.__init__(self)
-        SystemConfig.theSystemConfigInstance = self
-        
-        self.tempDir = None
-        self.hostname = None
-
     def GetTempDir(self):
         """
         Get the path to the system temp directory.
@@ -595,55 +306,6 @@ class SystemConfig(Config.SystemConfig):
         except:
             raise
         
-    def FindRegistryEnvironmentVariable(self, varname):
-        """
-        Find the definition of varname in the registry.
-        
-        Returns the tuple (global_value, user_value).
-        
-        We can use this to determine if the user has set an environment
-        variable at the commandline if it's causing problems.
-        
-        """
-        env_key = r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
-        global_reg = None
-        user_reg = None
-        
-        k = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, env_key)
-        
-        try:
-            (val, valuetype) = _winreg.QueryValueEx(k, varname)
-            global_reg = val
-        except:
-            pass
-        k.Close()
-        
-        # Read the user registry
-        k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
-        
-        try:
-            (val, valuetype) = _winreg.QueryValueEx(k, varname)
-            user_reg = val
-        except:
-            pass
-        k.Close()
-        
-        
-        return (global_reg, user_reg)
-    
-    def SendSettingChange(self):
-        """
-        This updates all windows with registry changes to the
-        HKCU\Environment key.
-        """
-        import win32gui, win32con
-        
-        ret = win32gui.SendMessageTimeout(win32con.HWND_BROADCAST,
-                                          win32con.WM_SETTINGCHANGE, 0,
-                                          "Environment",
-                                          win32con.SMTO_NORMAL, 1000)
-        return ret
-
     def EnumerateInterfaces(self):
         """
         Enumerate the interfaces present on a windows box.
@@ -684,6 +346,75 @@ class SystemConfig(Config.SystemConfig):
 
         return adapters
 
+    def PerformanceSnapshot(self):
+        """
+        This method grabs a snapshot of relevent system information to report
+        it. This helps track the effect of the AG Toolkit on the system.
+        """
+        import win32pdhutil
+        perfData = dict()
+        counterGroup = "Process(python)"
+        counterNames = [
+            "% Processor Time",
+            "% User Time",
+            "Handle Count",
+            "Private Bytes",
+            "Thread Count",
+            "% Processor Time"
+            ]
+
+        for n in counterNames:
+            key = "%s.%s" % (counterGroup, n)
+            perfData[key] = win32pdhutil.GetPerformanceAttributes(counterGroup,
+                                                                  n)
+        
+        return perfData
+
+    def AppFirewallConfig(self, path, enableFlag):
+        """
+        This method pokes the windows registry to enable or disable an
+        application in the firewall config.
+        """
+        if enableFlag:
+            enStr = "Enabled"
+        else:
+            enStr = "Disabled"
+
+        try:
+            # Get the name of the firewall applications key in the registry
+            key = "SYSTEM\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy\\StandardProfile\\AuthorizedApplications\\List"
+            fwKey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key, 0,
+                                    _winreg.KEY_ALL_ACCESS)
+
+            # Get the number of applications currently configured
+            (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(fwKey)
+
+            
+            # Find the application among the key's values
+            for i in range(0, nValues):
+                (vName, vData, vType) = _winreg.EnumValue(fwKey, i)
+                if path == vName:
+                    # Set the flag to the value passed in
+                    (p, e, d) = vData[len(vName)+1:].split(":")
+                    vData = ":".join([vName, p, enStr, d])
+                    break
+                else:
+                    vName = None
+                    vData = None
+
+            if vName == None:
+                vName = path
+
+            if vData == None:
+                vData = "%s:*:%s:AG Tools" % (path, enStr)
+                
+            # Put the value back in the registry
+            _winreg.SetValueEx(fwKey, vName, 0,_winreg.REG_SZ, vData)
+
+        except Exception:
+            log.exception("Exception configuring firewall for application: %s",
+                          path)
+              
     def GetLocalIPAddress(self):
         """
         Get our IP address. We use the heuristic that the address we
@@ -764,75 +495,55 @@ class SystemConfig(Config.SystemConfig):
         #
         return def_routes[0][1]
         
-    def PerformanceSnapshot(self):
+    def FindRegistryEnvironmentVariable(self, varname):
         """
-        This method grabs a snapshot of relevent system information to report
-        it. This helps track the effect of the AG Toolkit on the system.
-        """
-        import win32pdhutil
-        perfData = dict()
-        counterGroup = "Process(python)"
-        counterNames = [
-            "% Processor Time",
-            "% User Time",
-            "Handle Count",
-            "Private Bytes",
-            "Thread Count",
-            "% Processor Time"
-            ]
-
-        for n in counterNames:
-            key = "%s.%s" % (counterGroup, n)
-            perfData[key] = win32pdhutil.GetPerformanceAttributes(counterGroup,
-                                                                  n)
+        Find the definition of varname in the registry.
         
-        return perfData
-
-    def AppFirewallConfig(self, path, enableFlag):
+        Returns the tuple (global_value, user_value).
+        
+        We can use this to determine if the user has set an environment
+        variable at the commandline if it's causing problems.
+        
         """
-        This method pokes the windows registry to enable or disable an
-        application in the firewall config.
-        """
-        if enableFlag:
-            enStr = "Enabled"
-        else:
-            enStr = "Disabled"
-
+        env_key = r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
+        global_reg = None
+        user_reg = None
+        
+        k = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, env_key)
+        
         try:
-            # Get the name of the firewall applications key in the registry
-            key = "SYSTEM\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy\\StandardProfile\\AuthorizedApplications\\List"
-            fwKey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key, 0,
-                                    _winreg.KEY_ALL_ACCESS)
+            (val, valuetype) = _winreg.QueryValueEx(k, varname)
+            global_reg = val
+        except:
+            pass
+        k.Close()
+        
+        # Read the user registry
+        k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
+        
+        try:
+            (val, valuetype) = _winreg.QueryValueEx(k, varname)
+            user_reg = val
+        except:
+            pass
+        k.Close()
+        
+        
+        return (global_reg, user_reg)
+    
+    def SendSettingChange(self):
+        """
+        This updates all windows with registry changes to the
+        HKCU\Environment key.
+        """
+        import win32gui, win32con
+        
+        ret = win32gui.SendMessageTimeout(win32con.HWND_BROADCAST,
+                                          win32con.WM_SETTINGCHANGE, 0,
+                                          "Environment",
+                                          win32con.SMTO_NORMAL, 1000)
+        return ret
 
-            # Get the number of applications currently configured
-            (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(fwKey)
-
-            
-            # Find the application among the key's values
-            for i in range(0, nValues):
-                (vName, vData, vType) = _winreg.EnumValue(fwKey, i)
-                if path == vName:
-                    # Set the flag to the value passed in
-                    (p, e, d) = vData[len(vName)+1:].split(":")
-                    vData = ":".join([vName, p, enStr, d])
-                    break
-                else:
-                    vName = None
-                    vData = None
-
-            if vName == None:
-                vName = path
-
-            if vData == None:
-                vData = "%s:*:%s:AG Tools" % (path, enStr)
-                
-            # Put the value back in the registry
-            _winreg.SetValueEx(fwKey, vName, 0,_winreg.REG_SZ, vData)
-
-        except Exception:
-            log.exception("Exception configuring firewall for application: %s",
-                          path)
-              
 class MimeConfig(Config.MimeConfig):
     """
     The MimeConfig object encapsulates in single object the management
@@ -849,12 +560,6 @@ class MimeConfig(Config.MimeConfig):
         return MimeConfig.theMimeConfigInstance
 
     instance = staticmethod(instance)
-    
-    def __init__(self):
-        if MimeConfig.theMimeConfigInstance is not None:
-            raise Exception, "Only one instance of MimeConfig is allowed."
-
-        MimeConfig.theMimeConfigInstance = self
     
     def RegisterMimeType(self, mimeType, extension, fileType, description,
                          cmds):
