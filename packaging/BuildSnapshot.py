@@ -138,20 +138,6 @@ po.close()
 version = version[:-1]
 
 #
-# Get the build number via popen
-#
-try:
-    cmd = "%s %s %s" % (sys.executable, os.path.join(BuildDir, "AccessGrid",
-                                                  "Version.py",),
-                                        '--build')
-    po = os.popen(cmd)
-except IOError:
-    print "Error getting AGTk build number."
-
-buildnum = po.read()
-po.close()
-
-#
 # Go to that checkout to build stuff
 #
 
@@ -275,11 +261,10 @@ if bdir is not None:
                                                                  BuildDir,
                                                                  DestDir,
                                                                  options.pyver,
-                                                                 metainfo.replace(' ', '-'),
+                                                                 metainfo.replace(' ', '_'),
                                                                  version)
         if sys.platform == 'linux2':
             cmd += ' --dist %s' % (options.dist,)
-            cmd += ' -n %s' % (buildnum,)
         print "cmd = ", cmd
         os.system(cmd)
     else:
