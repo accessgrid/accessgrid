@@ -50,7 +50,8 @@ class VenueManagementClient(wxApp):
                 self.tabs.venuesPanel.venuesListPanel.venuesList.Append(venue.name, venue)
                 self.tabs.venuesPanel.venuesListPanel.venuesList.SetSelection(0)
                 currentVenue = self.tabs.venuesPanel.venuesListPanel.venuesList.GetClientData(0)
-            self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(currentVenue)
+            exitsList = Client.Handle(currentVenue.uri).get_proxy().GetConnections()    
+            self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(currentVenue, exitsList)
                    
         administratorList = self.client.GetAdminstrators()
         self.tabs.configurationPanel.administratorsListPanel.administratorsList.Clear()
@@ -63,17 +64,18 @@ class VenueManagementClient(wxApp):
        # except:
         #    self.__showNoServerDialog( 'The server you are trying to connect to is not running!')  
         
-    def AddVenue(self, venue):
-        try:
-            uri = self.client.AddVenue(venue)
-            return uri      
-        except:
-            self.__showNoServerDialog('You are not connected to a server')
+    def AddVenue(self, venue, exitsList):
+     #   try:
+         uri = self.client.AddVenue(venue)
+         Client.Handle(uri).get_proxy().SetConnections(exitsList)
+         return uri      
+    # except:
+     #       self.__showNoServerDialog('You are not connected to a server')
             
-    def ModifyVenue(self, venue):
+    def ModifyVenue(self, venue, exitsList):
         #  try:
         self.client.ModifyVenue(venue.uri, venue)
-        
+        Client.Handle(venue.uri).get_proxy().SetConnections(exitsList) 
         #  except:
         #     print 'modify venue didnt work'
         #    self.__showNoServerDialog('You are not connected to a server')
@@ -121,6 +123,7 @@ class VenueServerAddress(wxPanel):
         
      def __addEvents(self):
           EVT_TEXT_ENTER(self, 42, self.evtText)
+          EVT_TEXT_ENTER(self, 43, self.evtText)
           EVT_BUTTON(self, 43, self.evtText)  
 
      def evtText(self, event):
@@ -201,9 +204,6 @@ class VenueProfilePanel(wxPanel):
                                         size = wxSize(10, 30) ,\
                                       style = wxTE_MULTILINE | wxTE_READONLY)
 	self.line = wxStaticLine(self, -1)
-#	self.urlLabel = wxStaticText(self, -1, 'URL:', size = wxSize(35, 20),\
-#				     name = "urlLabel", style = wxALIGN_RIGHT)
-#	self.url =  wxStaticText(self, -1, 'http://www.theurl.com', name = "url")
 	self.iconLabel = wxStaticText(self, -1, 'Icon:', size = wxSize(40, 20),\
 				      name = "icon", style = wxALIGN_RIGHT)
 	wxInitAllImageHandlers()
@@ -213,31 +213,31 @@ class VenueProfilePanel(wxPanel):
 	self.exitsLabel = wxStaticText(self, -1, 'Exits:', size = wxSize(50, 20), \
 				       name = "exitsLabel", style = wxALIGN_RIGHT)
 	self.exits = wxListBox(self, 10, size = wxSize(250, 100), style = wxTE_READONLY)
-	self.__setProperties()
 	self.__doLayout()
-
-    def __setProperties(self):
-        print 'prop'
-        #self.description.SetLabel('This is the library \nfilled with all kinds of books\n')
-        # self.exits.Append('Chemistry')
-        #	self.exits.Append('Physics')
 
     def EvtListBox(self, event):
         list = event.GetEventObject()
         data = list.GetClientData(list.GetSelection())
         if data is not None:
-            venueProfilePanel.ChangeCurrentVenue(data)
+            exits = Client.Handle(data.uri).get_proxy().GetConnections() 
+            venueProfilePanel.ChangeCurrentVenue(data, exits)
        
-    def ChangeCurrentVenue(self, data):
+    def ChangeCurrentVenue(self, data, exitsList):
+        print 'in change current venue before we set the exits'
         if data == None:
             self.venueProfileBox.SetLabel("")
             self.description.SetLabel("No venues in server")
-
+                     
         else:
             self.venueProfileBox.SetLabel(data.name)
             self.description.SetLabel(data.description)
-#	self.url.SetLabel(data.GetUrl())
-#	self.icon.SetBitmap(data.GetBitmap())
+            print 'in change current venue before we set the exits'
+            self.exits.Clear()
+            index = 0
+            while index < len(exitsList):
+                print exitsList[index].name
+                self.exits.Append(exitsList[index].name, exitsList[index])
+                index = index + 1
 
     def __doLayout(self):
         venueListProfileSizer = wxStaticBoxSizer(self.venueProfileBox, wxVERTICAL)
@@ -245,8 +245,6 @@ class VenueProfilePanel(wxPanel):
 	venueListProfileSizer.Add(self.line, 0, wxEXPAND)
 
 	paramGridSizer = wxFlexGridSizer(4, 2, 10, 10)
-#	paramGridSizer.Add(self.urlLabel, 0, wxEXPAND, 0)
-#	paramGridSizer.Add(self.url, 0, wxEXPAND, 0)
 	paramGridSizer.Add(self.iconLabel, 0, wxEXPAND, 0)
 	paramGridSizer.Add(self.icon, 0, wxALIGN_LEFT, 0)
 	paramGridSizer.Add(self.exitsLabel, 0, wxEXPAND, 0)
@@ -292,17 +290,18 @@ class VenueListPanel(wxPanel):
         list = event.GetEventObject()
         data = list.GetClientData(list.GetSelection())
         if data is not None:
-            self.parent.venueProfilePanel.ChangeCurrentVenue(data)
+            exits = Client.Handle(data.uri).get_proxy().GetConnections() 
+            self.parent.venueProfilePanel.ChangeCurrentVenue(data, exits)
 
     def OpenAddVenueDialog(self, event):
         addVenueDialog = AddVenueFrame(self, -1, "")
+        addVenueDialog.InsertData(self.venuesList)
 
     def OpenModifyVenueDialog(self, event):
 	if(self.venuesList.GetSelection() != -1):    
 		modifyVenueDialog = ModifyVenueFrame(self, -1, "")
-		item = self.venuesList.GetSelection()
-		data = self.venuesList.GetClientData(item)
-		modifyVenueDialog.InsertData(data)
+
+		modifyVenueDialog.InsertData(self.venuesList)
 	
     def DeleteVenue(self, event):
         if (self.venuesList.GetSelection() != -1):
@@ -312,30 +311,29 @@ class VenueListPanel(wxPanel):
 		self.venuesList.Delete(index)
 		if self.venuesList.Number > 1 :
 			self.venuesList.SetSelection(0)
-                        self.parent.venueProfilePanel.ChangeCurrentVenue(self.venuesList.GetClientData(0))
+                        venue = self.venuesList.GetClientData(0) 
+                        exits = Client.Handle(venue.uri).get_proxy().GetConnections() 
+                        self.parent.venueProfilePanel.ChangeCurrentVenue(venue, exits)
   
-    def InsertVenue(self, data):
-        newUri = self.application.AddVenue(data)
-        print 'the uri we get after adding data'
-        print newUri
+    def InsertVenue(self, data, exitsList):
+        newUri = self.application.AddVenue(data, exitsList)
         if newUri :
-            print 'we are adding data!'
-            print data.uri
             data.uri = newUri
             self.venuesList.Append(data.name, data)
             self.venuesList.Select(self.venuesList.Number()-1)
-            self.parent.venueProfilePanel.ChangeCurrentVenue(data)
+            self.parent.venueProfilePanel.ChangeCurrentVenue(data, exitsList)
+            
         		
-    def ModifyCurrentVenue(self, data):
+    def ModifyCurrentVenue(self, data, exitsList):
         item = self.venuesList.GetSelection()
         clientData =  self.venuesList.GetClientData(item)
         clientData.name = data.name
         clientData.description = data.description
         print "in modify venue client data!"
         print clientData.uri
-        self.application.ModifyVenue(clientData) # includes uri!!!
+        self.application.ModifyVenue(clientData, exitsList)
         self.venuesList.SetString(item, data.name)
-        self.parent.venueProfilePanel.ChangeCurrentVenue(clientData)
+        self.parent.venueProfilePanel.ChangeCurrentVenue(clientData, exitsList)
                
     def __doLayout(self):
         venueListPanelSizer = wxStaticBoxSizer(self.venuesListBox, wxVERTICAL)
@@ -575,8 +573,6 @@ class VenueParamFrame(wxFrame):
 	self.descriptionLabel = wxStaticText(self, -1, "Description:")
 	self.description =  wxTextCtrl(self, -1, "",\
 				       size = wxSize(200, 100), style = wxTE_MULTILINE|wxHSCROLL)
-#	self.urlLabel = wxStaticText(self, -1, "URL:")
-#	self.url =  wxTextCtrl(self, -1, "", size = wxSize(200, 20))
 	self.iconLabel = wxStaticText(self, -1, "Icon:")
 	
 	self.bitmap =  wxBitmap('IMAGES/icon.gif', wxBITMAP_TYPE_GIF)
@@ -586,8 +582,8 @@ class VenueParamFrame(wxFrame):
         self.venuesLabel = wxStaticText(self, -1, "Venues on this server:")
         self.venues = wxListBox(self, -1, size = wxSize(150, 100))
         self.transferVenueLabel = wxStaticText(self, -1, "Add Exit")
-        self.transferVenueButton = wxButton(self, -1, ">>", size = wxSize(30, 20))
-        self.removeExitButton = wxButton(self, -1, "Remove Exit")
+        self.transferVenueButton = wxButton(self, 170, ">>", size = wxSize(30, 20))
+        self.removeExitButton = wxButton(self, 180, "Remove Exit")
 	self.exitsLabel = wxStaticText(self, -1, "Exits for your venue:")
         self.exits = wxListBox(self, -1, size = wxSize(150, 100))
 	self.okButton = wxButton(self, 140, "Ok")
@@ -598,7 +594,9 @@ class VenueParamFrame(wxFrame):
 
     def __addEvents(self):
         EVT_BUTTON(self, 150, self.Cancel) 
-	EVT_BUTTON(self, 160, self.BrowseForImage) 
+	EVT_BUTTON(self, 160, self.BrowseForImage)
+        EVT_BUTTON(self, 170, self.TransferVenue)
+        EVT_BUTTON(self, 180, self.RemoveExit) 
     
     def BrowseForImage(self, event):
         initial_dir = '/home/lefvert/PROJECTS/P2_AG/VENUE_MANAGEMENT/IMAGES' 
@@ -619,8 +617,6 @@ class VenueParamFrame(wxFrame):
 	paramFrameSizer.Add(self.titleLabel, 0, wxALIGN_RIGHT)
 	paramFrameSizer.Add(self.title, 0, wxEXPAND)
 	
-#	paramFrameSizer.Add(self.urlLabel, 0, wxALIGN_RIGHT)
-#	paramFrameSizer.Add(self.url, 0, wxEXPAND)
 	paramFrameSizer.Add(self.iconLabel, 0, wxALIGN_RIGHT)
 	box = wxBoxSizer(wxHORIZONTAL)
 	box.Add(20, 10, 0, wxEXPAND)
@@ -673,6 +669,36 @@ class VenueParamFrame(wxFrame):
     def Cancel(self,  event):
         self.Destroy()
 
+    def InsertData(self, venues, exits = None):
+        index = 0
+        while index < venues.Number():
+            venue = venues.GetClientData(index)
+            self.venues.Append(venue.name, venue)
+            index = index + 1
+
+        if exits != None:
+            index = 0
+            while index < len(exits):
+                self.exits.Append(exits[0].name, exits[0])
+                index = index + 1
+
+    def TransferVenue(self, event):
+        index = self.venues.GetSelection()
+        venue = self.venues.GetClientData(index)
+
+        if self.exits.FindString(venue.name) == -1:
+            self.exits.Append(venue.name, venue)
+        else:
+            text = ""+venue.name+" is added already"
+            exitExistDialog = wxMessageDialog(self, text, \
+                                         '', wxOK | wxICON_INFORMATION)
+            exitExistDialog.ShowModal()
+            exitExistDialog.Destroy() 
+
+    def RemoveExit(self, event):
+        index = self.exits.GetSelection()
+        self.exits.Delete(index)
+
     def RightValues(self):
         titleTest =  self.__isStringBlank(self.title.GetValue())
    #    urlTest =  self.__isStringBlank(self.url.GetValue())
@@ -699,6 +725,7 @@ class VenueParamFrame(wxFrame):
             else:
                 index = index + 1
         return empty
+
  
 class AddVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title):
@@ -710,17 +737,19 @@ class AddVenueFrame(VenueParamFrame):
         EVT_BUTTON(self, 140, self.Ok)   
     
     def Ok(self, event):
-        exitsCopy = []
-	index = 0
-	while index < self.exits.Number():
-		exitsCopy.append(self.exits.IsChecked(index))
-		index = index + 1
-           
-        data = VenueDescription(self.title.GetValue(), \
-                         self.description.GetValue(), "", None)
         if self.RightValues():
-            self.parent.InsertVenue(data)
+            index = 0
+            exitsList = []
+            while index < self.exits.Number():
+                exitsList.append(self.exits.GetClientData(index))
+                index = index + 1
+                
+            data = VenueDescription(self.title.GetValue(), \
+                         self.description.GetValue(), "", None)
+        
+            self.parent.InsertVenue(data, exitsList)
             self.Destroy()
+
             
 class ModifyVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title):
@@ -732,18 +761,26 @@ class ModifyVenueFrame(VenueParamFrame):
         EVT_BUTTON(self, 140, self.Ok)   
     
     def Ok(self, event):
-        data = VenueDescription(self.title.GetValue(), \
-                         self.description.GetValue(), "", None)
-
         if self.RightValues():
-            print 'we have right data'
-            self.parent.ModifyCurrentVenue(data)
-            print 'we have modified current venue'
-	    self.Destroy()
+            index = 0
+            exitsList = []
+            while index < self.exits.Number():
+                exitsList.append(self.exits.GetClientData(index))
+                index = index + 1
+                
+            data = VenueDescription(self.title.GetValue(), \
+                         self.description.GetValue(), "", None)
+            self.parent.ModifyCurrentVenue(data, exitsList)
+            self.Destroy()
 
-    def InsertData(self, data):
+    def InsertData(self, venuesList):
+        item = venuesList.GetSelection()
+        data = venuesList.GetClientData(item)
         self.title.AppendText(data.name)
         self.description.AppendText(data.description)
+        exitsList = Client.Handle(data.uri).get_proxy().GetConnections()
+        VenueParamFrame.InsertData(self, venuesList, exitsList)
+                           
 #        bitmap =  wxBitmap("IMAGES/icon.gif", wxBITMAP_TYPE_GIF)
 #	self.icon.SetBitmap(bitmap)
 	self.Layout()
