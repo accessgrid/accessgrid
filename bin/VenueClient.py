@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.117 2003-04-17 20:14:08 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.118 2003-04-18 17:38:20 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -293,12 +293,12 @@ class VenueClientUI(wxApp, VenueClient):
         
         if(user.profileType == 'user'):
             wxCallAfter(self.frame.contentListPanel.AddParticipant, user)
-            wxCallAfter(wxLogDebug, "   %s" %(user.name))
-            wxCallAfter(wxLogDebug, "   %s" %(user.distinguishedName))
+            wxCallAfter(wxLogDebug, "  add user: %s" %(user.name))
+            
         else:
             wxCallAfter(self.frame.contentListPanel.AddNode, user)
-            wxCallAfter(wxLogDebug, "   %s" %(user.name))
-
+            wxCallAfter(wxLogDebug, "  add node: %s" %(user.name))
+            
     def RemoveUserEvent(self, user):
         """
         Note: Overloaded from VenueClient
@@ -309,10 +309,10 @@ class VenueClientUI(wxApp, VenueClient):
         
         if(user.profileType == 'user'):
             wxCallAfter(self.frame.contentListPanel.RemoveParticipant, user)
-            wxCallAfter(wxLogDebug,"   %s" %(user.name))
+            wxCallAfter(wxLogDebug,"  remove user: %s" %(user.name))
         else:
             wxCallAfter(self.frame.contentListPanel.RemoveNode, user)
-            wxCallAfter(wxLogDebug,"   %s" %(user.name))
+            wxCallAfter(wxLogDebug,"  remove node: %s" %(user.name))
                         
                         
     def ModifyUserEvent(self, data):
@@ -429,8 +429,8 @@ class VenueClientUI(wxApp, VenueClient):
         # Load clients
         clients = venueState.clients.values()
         wxCallAfter(wxLogDebug, "Add participants")
+      
         for client in clients:
-            
             # Participants
             if(client.profileType == 'user'):
                 wxCallAfter(self.frame.contentListPanel.AddParticipant, client)
@@ -503,8 +503,10 @@ class VenueClientUI(wxApp, VenueClient):
 
             wxCallAfter(wxLogMessage, "Personal data, %s \nalready exists in the venue and could not be added" %files)
             wxCallAfter(wxLog_GetActiveTarget().Flush)
-                
-                
+
+        # This should be done last for UI update reasons
+        self.LeadFollowers()
+        
     EnterVenue.soap_export_as = "EnterVenue"
 
     def ExitVenue(self):
@@ -514,12 +516,6 @@ class VenueClientUI(wxApp, VenueClient):
         performs its own operations when the client exits a venue.
         """
         wxCallAfter(wxLogDebug, "Cleanup frame, save data, and exit venue")
-       
-        try:
-            wxCallAfter(self.frame.CleanUp)
-        except:
-            pass
-        
         VenueClient.ExitVenue(self)
 
     def __setHistory(self, uri, back):
@@ -560,36 +556,34 @@ class VenueClientUI(wxApp, VenueClient):
         server.  If the url is invalid, the user re-enters the venue
         he or she just left.
         """
-        wxCallAfter(wxLogDebug, "Go to new venue")
+        wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: Go to new venue %s" %uri)
         self.oldUri = None
         
         if not HaveValidProxy():
-            wxCallAfter(wxLogDebug, "You don't have a valid proxy")
+            wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: You don't have a valid proxy")
             GPI()
                                
         if self.venueUri != None:
             self.oldUri = self.venueUri
-        #else:
-        #    self.oldUri = None
-            
+                  
         try: # is this a server
-            wxCallAfter(wxLogDebug, "Is this a server")
+            wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: Is this a server")
             venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
-            wxCallAfter(wxLogDebug, "server url: %s" %venueUri)
+            wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: server url: %s" %venueUri)
             
         except: # no, it is a venue
             venueUri = uri
-            wxCallAfter(wxLogDebug, "venue url: %s" %venueUri)
+            wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: venue url: %s" %venueUri)
 
         self.clientHandle = Client.Handle(venueUri)
         if(self.clientHandle.IsValid()):
-             wxCallAfter(wxLogDebug, "the handler is valid")
+             wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: the handler is valid")
             
              #try:
              self.client = self.clientHandle.get_proxy()
              self.gotClient = true
              self.EnterVenue(venueUri)
-             wxCallAfter(wxLogDebug, "after enter venue %s" %venueUri)
+             wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: after enter venue %s" %venueUri)
              self.__setHistory(self.oldUri, back)
              wxCallAfter(self.frame.ShowMenu)
                  
@@ -601,20 +595,17 @@ class VenueClientUI(wxApp, VenueClient):
                  # go back to venue where we came from
                  #    self.EnterVenue(self.oldUri) 
         else:
-            wxCallAfter(wxLogDebug, "Handler is not valid")
+            wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: Handler is not valid")
             if not HaveValidProxy():
                 text = 'You do not have a valid proxy.' +\
                        '\nPlease, run "grid-proxy-init" on the command line"'
                 text2 = 'Invalid proxy'
 
             else:
-                
                 if self.oldUri is None:
                     wxCallAfter(self.frame.FillInAddress, None, self.profile.homeVenue)
-
                 else:
                     wxCallAfter(self.frame.FillInAddress, None, self.oldUri)
-                    
 
                 text = 'The venue URL you specified is not valid'
                 text2 = 'Invalid URL'
