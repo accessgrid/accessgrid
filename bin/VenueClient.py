@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.127 2003-04-23 19:37:16 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.128 2003-04-23 20:53:37 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -303,15 +303,15 @@ class VenueClientUI(wxApp, VenueClient):
         the venue.  Appropriate gui updates are made in client.
         """
 
-        VenueClient.AddUserEvent(self, profile)
+        VenueClient.AddUserEvent(self, user)
 
         if(user.profileType == 'user'):
-            wxCallAfter(self.frame.contentListPanel.AddParticipant, profile)
-            wxCallAfter(wxLogDebug, "  add user: %s" %(profile.name))
+            wxCallAfter(self.frame.contentListPanel.AddParticipant, user)
+            wxCallAfter(wxLogDebug, "  add user: %s" %(user.name))
 
         else:
-            wxCallAfter(self.frame.contentListPanel.AddNode, profile)
-            wxCallAfter(wxLogDebug, "  add node: %s" %(profile.name))
+            wxCallAfter(self.frame.contentListPanel.AddNode, user)
+            wxCallAfter(wxLogDebug, "  add node: %s" %(user.name))
 
     def RemoveUserEvent(self, user):
         """
