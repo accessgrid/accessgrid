@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.55 2004-04-29 13:22:45 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.56 2004-04-29 19:35:13 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.55 2004-04-29 13:22:45 judson Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.56 2004-04-29 19:35:13 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -31,8 +31,6 @@ from AccessGrid.AGService import AGServiceIW
 from AccessGrid.AGServicePackageRepository import AGServicePackageRepository
 
 log = Log.GetLogger(Log.ServiceManager)
-hdlr = Log.StreamHandler()
-Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
 class AGServiceManager:
     """
