@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.45 2005-01-06 23:39:25 eolson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.46 2005-04-06 20:32:44 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.45 2005-01-06 23:39:25 eolson Exp $"
+__revision__ = "$Id: AGService.py,v 1.46 2005-04-06 20:32:44 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -138,7 +138,7 @@ class AGService:
                        found = 1
                 
                 if not found:
-                    log.info("SetConfiguration: Unrecognized parameter ignored: %s", parm.name)
+                    self.log.info("SetConfiguration: Unrecognized parameter ignored: %s", parm.name)
         except:
             self.log.exception("Exception in AGService.SetConfiguration")
             raise Exception("AGService.SetConfiguration failed : " + str(sys.exc_value) )
@@ -162,7 +162,8 @@ class AGService:
                                        streamDescription.location.port) )
 
             # Detect trivial re-configuration
-            if self.streamDescription.location.host == streamDescription.location.host       \
+            if self.streamDescription and \
+                self.streamDescription.location.host == streamDescription.location.host       \
                 and self.streamDescription.location.port == streamDescription.location.port \
                 and self.streamDescription.encryptionKey == streamDescription.encryptionKey:
                 # configuration with identical stream description;
@@ -288,6 +289,7 @@ class AGServiceI(SOAPInterface):
         return self.impl.GetResource()
 
     def SetResource( self, resourceStruct ):
+        resource = CreateResourceDescription(resourceStruct)
         self.impl.SetResource(resource )
 
     def SetConfiguration(self,serviceConfig ):
@@ -406,9 +408,9 @@ class AGServiceIW(SOAPIWrapper):
         return serviceDesc
         
     def GetResources(self):
-        ret = self.proxy.GetResources()
-        retList = map(lambda x: x, ret)
-        return retList
+        resourceStructs = self.proxy.GetResources()
+        resources = map(lambda x: CreateResourceDescription(x), resourceStructs)
+        return resources
 
     def SetPackageFile(self,packageFile):
         self.proxy.SetPackageFile(packageFile)
@@ -463,8 +465,6 @@ def RunService(service,serviceInterface):
     port = svc.GetOption("port")
     serviceManagerUri = svc.GetOption('serviceManagerUri')
     
-    print "SERVICE MANAGER URI = ", serviceManagerUri
-     
     # Create the server
     hostname = Service.instance().GetHostname()
     server = None
