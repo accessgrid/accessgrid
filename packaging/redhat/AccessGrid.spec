@@ -172,8 +172,8 @@ This module provides the components needed to run the Bridge Server.  This serve
 
 %build
 python2.2 packaging/makeServicePackages.py services/node
-python2.2 setup.py build
 (cd services/network/QuickBridge; gcc -o QuickBridge QuickBridge.c)
+python2.2 setup.py build
 
 
 #
