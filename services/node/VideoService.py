@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.8 2004-05-05 16:31:00 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.9 2004-05-06 17:45:57 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -60,6 +60,8 @@ class VideoService( AGService ):
         self.capabilities = [ Capability( Capability.PRODUCER, Capability.VIDEO ),
                               Capability( Capability.CONSUMER, Capability.VIDEO ) ]
         self.executable = os.path.join('.','vic')
+        
+        self.profile = None
 
 
         #
@@ -283,6 +285,7 @@ class VideoService( AGService ):
         """
         Set the identity of the user driving the node
         """
+        self.profile = profile
         self.__SetRTPDefaults(profile)
     SetIdentity.soap_export_as = "SetIdentity"
 
