@@ -1,6 +1,7 @@
 import os.path
 import time
 import md5
+import tempfile
 
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
@@ -79,20 +80,56 @@ class CertRequestWrapper:
         certText = self.fullStatus
 
         hash = md5.new(certText).hexdigest()
-        tempfile = os.path.join(UserConfig.instance().GetTempDir(), "%s.pem" % (hash))
+        temp_path = os.path.join(UserConfig.instance().GetTempDir(), "%s.pem" % (hash))
 
         try:
             try:
-                fh = open(tempfile, "w")
+
+                #
+                # Check to see if there's a lingering copy of the file from before.
+                #
+
+                if os.path.isfile(temp_path):
+                    log.debug("Cert import temporary file %s already exists, deleting", tempfile)
+
+                    try:
+                        os.unlink(temp_path)
+
+                    except:
+                        log.exception("Unlink of tempfile %s failed", temp_path)
+
+                        #
+                        # Hmm, weird. Make up a new filename instead.
+                        #
+
+                        new_path = tempfile.mktemp(".pem")
+
+                        #
+                        # Use just the name part on the user's temp dir.
+                        #
+
+                        new_head, new_tail = os.path.split(new_path)
+
+                        temp_path = os.path.join(UserConfig.instance().GetTempDir(),
+                                                 new_tail)
+
+                #
+                # back to our normal life.
+                #
+                                      
+                fh = open(temp_path, "w")
                 fh.write(certText)
                 fh.close()
-
+                
                 certMgr = self.browser.GetCertificateManager()
-                impCert = certMgr.ImportRequestedCertificate(tempfile)
+                impCert = certMgr.ImportRequestedCertificate(temp_path)
+
+                certName = str(impCert.GetSubject())
+                
+                log.debug("Successfully imported certificate for %s", certName)
 
                 MessageDialog(self.browser,
-                              "Successfully imported certificate for\n" +
-                              str(impCert.GetSubject()),
+                              "Successfully imported certificate for\n" + certName,
                               "Import Successful")
                 self.browser.Load()
 
@@ -104,7 +141,6 @@ class CertRequestWrapper:
                             msg,
                             "Import Failed")
 
-
             except:
                 log.exception("Import of requested cert failed")
                 ErrorDialog(self.browser,
@@ -112,9 +148,7 @@ class CertRequestWrapper:
                             "Import Failed")
 
         finally:
-            os.unlink(tempfile)
-        
-
+            os.unlink(temp_path)
 
     def CheckPrivateKey(self):
         """

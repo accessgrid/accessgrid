@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.1 2004-03-24 21:25:08 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.2 2004-03-29 19:08:42 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.1 2004-03-24 21:25:08 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.2 2004-03-29 19:08:42 olson Exp $"
 
 import os
 import mimetypes
@@ -433,6 +433,9 @@ class UserConfig(AccessGrid.Config.UserConfig):
     def GetTempDir(self):
         if self.tempDir == None:
             self.tempDir = "/tmp"
+
+        if not os.access(self.tempDir, os.W_OK):
+            log.error("UserConfig configuration: TempDir %s is not writable", self.tempDir)
 
         return self.tempDir
     
