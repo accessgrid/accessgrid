@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/18/12
-# RCS-ID:      $Id: VenueServerRegistry.py,v 1.2 2002-12-18 11:54:57 judson Exp $
+# RCS-ID:      $Id: VenueServerRegistry.py,v 1.3 2003-01-21 15:19:01 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -21,43 +21,44 @@ from AccessGrid.hosting.pyGlobus import ServiceBase
 class VenueServerRegistry(ServiceBase.ServiceBase):
     store = None
     scheduler = None
-    configFile = ''
-    config = {
-        "VenueServerRegistry.storage" : 'VenueServerRegistry',
-        "VenueServerRegistry.checkpointPeriod" : 30
-        }  
+    configFile = ''
+    config = {
+        "VenueServerRegistry.storage" : 'VenueServerRegistry',
+        "VenueServerRegistry.checkpointPeriod" : 30,
+        "VenueServerRegistry.log" : 'VenueServerRegistry.log'
+        }  
     def __init__(self, configFile = ''):
         """ """
-        classpath = string.split(str(self.__class__), '.')
-        if configFile == '': 
-            self.configFile = classpath[0]+'.cfg'
-        else:
-            self.configFile = configFile
-        
-        # Instantiate a new config parser
-        self.LoadConfig(configFile, self.config)
+        classpath = string.split(str(self.__class__), '.')
+        if configFile == '': 
+            self.configFile = classpath[0]+'.cfg'
+        else:
+            self.configFile = configFile
+        
+        # Instantiate a new config parser
+        self.LoadConfig(configFile, self.config)
 
-        self.store = shelve.open(self.config['VenueServerRegistry.storage'], 'c')
+        self.store = shelve.open(self.config['VenueServerRegistry.storage'], 'c')
         self.scheduler = scheduler.Scheduler()
         self.scheduler.AddTask(self.Checkpoint, 
                                self.config['VenueServerRegistry.checkpointPeriod'], 0)
         self.scheduler.StartAllTasks()
         
-    def LoadConfig(self, file, config={}):
-        """
-        Returns a dictionary with keys of the form <section>.<option> and 
-        the corresponding values.
-        This is from the python cookbook credit: Dirk Holtwick.
-        """
-        config = config.copy()
-        cp = ConfigParser.ConfigParser()
-        cp.read(file)
-        for sec in cp.sections():
-            name = string.lower(sec)
-            for opt in cp.options(sec):
-                config[name + "." + string.lower(opt)] = string.strip(
-                    cp.get(sec, opt))
-        return config
+    def LoadConfig(self, file, config={}):
+        """
+        Returns a dictionary with keys of the form <section>.<option> and 
+        the corresponding values.
+        This is from the python cookbook credit: Dirk Holtwick.
+        """
+        config = config.copy()
+        cp = ConfigParser.ConfigParser()
+        cp.read(file)
+        for sec in cp.sections():
+            name = string.lower(sec)
+            for opt in cp.options(sec):
+                config[name + "." + string.lower(opt)] = string.strip(
+                    cp.get(sec, opt))
+        return config
 
     def Checkpoint(self):
         # This guarantees a flush of everything to storage
@@ -78,15 +79,14 @@ class VenueServerRegistry(ServiceBase.ServiceBase):
     
     ListServers.pass_connection_info = 1
     ListServers.soap_export_as = "ListServers"
-    
-if __name__ == "__main__":
-    from AccessGrid.hosting.pyGlobus import Server, ServiceBase
-    from AccessGrid.VenueServerRegistry import VenueServerRegistry
-    import ConfigParser
 
-    hostingEnvironment = Server.Server(8800)
-    venueServerRegistryService = hostingEnvironment.create_service(VenueServerRegistry)
+#     def ListCommunities(self, connection_info):
+#         """ This lists all the communities this registry knows about."""
+#         return self.communities.keys()
 
-    print "Service running at: %s" % venueServerRegistryService.get_handle()
+#     ListCommunities.pass_connection_info = 1
+#     ListCommunities.soap_export_as = "ListCommunities"
 
-    hostingEnvironment.run()    
+#     def AddCommunity(self, connection_info, communityDescription):
+#         """Add a new community to this registry service."""
+#         self.communities[communityDescription.key] = communityDescription.value
