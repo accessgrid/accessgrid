@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.177 2004-04-07 18:02:45 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.178 2004-04-07 23:50:11 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.177 2004-04-07 18:02:45 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.178 2004-04-07 23:50:11 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -36,7 +36,7 @@ from AccessGrid.Security.AuthorizationManager import AuthorizationManagerI
 from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
-from AccessGrid.Security import X509Subject, Role
+from AccessGrid.Security import X509Subject, Role, Subject
 from AccessGrid.Security.Subject import SubjectAlreadyPresent
 
 from AccessGrid import DataStore
@@ -65,7 +65,7 @@ from AccessGrid.Events import MarshalledEvent
 from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import ServerLock, PathFromURL
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
-from AccessGrid.ClientProfile import ClientProfileCache
+from AccessGrid.ClientProfile import ClientProfileCache, InvalidProfileException
 
 log = Log.GetLogger(Log.VenueServer)
 
@@ -564,7 +564,6 @@ class Venue(AuthorizationMixIn):
         @type policy: an XML formatted string
         """
         self.authManager.ImportPolicy(policy)
-        print "\nIMPORTED:", self.authManager.ToXML(), "\n"
 
     def AsVenueDescription(self):
         """
@@ -2006,6 +2005,8 @@ class Venue(AuthorizationMixIn):
         """
         Return a list of roles for the calling subject
         """
+        if Application.instance().GetOption("insecure"):
+            return ['Administrators']
         roleList = self.authManager.GetRolesForSubject(subject)
         roleNameList = map( lambda r: r.GetName(), roleList )
         return roleNameList
@@ -2024,6 +2025,9 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         The authorization callback. We should be able to implement this
         just once and remove a bunch of the older code.
         """
+        if Application.instance().GetOption("insecure"):
+            return 1
+
         subject, action = self._GetContext()
         
         log.info("Authorizing action: %s for subject %s", action.name,
@@ -2064,8 +2068,12 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         # Rebuild the profile
         clientProfile = CreateClientProfile(clientProfileStruct)
 
-        subject = self._GetCaller()
-        clientProfile.distinguishedName = subject.name
+        if Application.instance().GetOption("insecure"):
+            subject = Subject.Subject("", auth_type=None)
+            clientProfile.distinguishedName = ""
+        else:
+            subject = self._GetCaller()
+            clientProfile.distinguishedName = subject.name
 
         # Call Enter
         try:

@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.136 2004-04-07 18:02:45 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.137 2004-04-07 23:50:11 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.136 2004-04-07 18:02:45 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.137 2004-04-07 23:50:11 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -27,7 +27,7 @@ import ConfigParser
 
 from AccessGrid.Toolkit import Application, UserConfig
 from AccessGrid import Log
-from AccessGrid.hosting import Server
+from AccessGrid.hosting import SecureServer, InsecureServer
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerI
@@ -46,7 +46,7 @@ from AccessGrid.Utilities import PathFromURL
 from AccessGrid.GUID import GUID
 from AccessGrid.Venue import Venue, VenueI
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-from AccessGrid.DataStore import GSIHTTPTransferServer
+from AccessGrid.DataStore import GSIHTTPTransferServer, HTTPTransferServer
 from AccessGrid.EventServiceAsynch import EventService
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.TextServiceAsynch import TextService
@@ -191,7 +191,10 @@ class VenueServer(AuthorizationMixIn):
             self.internalHostingEnvironment = 0 # False
         else:
             defaultPort = 8000
-            self.hostingEnvironment = Server((self.hostname, defaultPort) )
+            if Application.instance().GetOption("insecure"):
+                self.hostingEnvironment = InsecureServer((self.hostname, defaultPort) )
+            else:
+                self.hostingEnvironment = SecureServer((self.hostname, defaultPort) )
             self.internalHostingEnvironment = 1 # True
 
         # Figure out which configuration file to use for the
@@ -227,7 +230,11 @@ class VenueServer(AuthorizationMixIn):
                 self.dataStorageLocation = None
 
         # Start Venue Server wide services
-        self.dataTransferServer = GSIHTTPTransferServer(('',
+        if Application.instance().GetOption("insecure"):
+            self.dataTransferServer = HTTPTransferServer(('',
+                                                         int(self.dataPort)) )
+        else:
+            self.dataTransferServer = GSIHTTPTransferServer(('',
                                                          int(self.dataPort)),
                                                         numThreads = 4,
                                                         sslCompat = 0)
@@ -765,6 +772,10 @@ class VenueServer(AuthorizationMixIn):
             self.simpleLock.acquire()
             self.hostingEnvironment.UnregisterObject(venue)
             self.simpleLock.release()
+        except Exception, e:
+            self.simpleLock.release()
+            log.exception(e)
+            raise UnbindVenueError
         except:
             self.simpleLock.release()
             log.exception("RemoveVenue: Couldn't unbind venue.")
@@ -991,6 +1002,9 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         The authorization callback. We should be able to implement this
         just once and remove a bunch of the older code.
         """
+        if Application.instance().GetOption("insecure"):
+            return 1
+
         subject, action = self._GetContext()
         
         log.info("Authorizing action: %s for subject %s", action.name,
