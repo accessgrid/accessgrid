@@ -2,7 +2,7 @@
 Venue Client Refactoring
 =====================================
 
-:Version:   $Revision: 1.1 $
+:Version:   $Revision: 1.2 $
 :Code Basis: AG 2.1.2
 :Author: 	Thomas D. Uram
 :Status:    Draft
@@ -63,7 +63,7 @@ The VenueClient is factored as a BaseVenueClient and its derivative, VenueClient
 
 BaseVenueClient
 ```````````````
-The BaseVenueClient class captures the basic functionality of the venue client.
+The BaseVenueClient class captures the basic functionality of the venue client.  It implements accessors to allow callers to query the venue state and manipulate the venue client.
 
 * SOAP Proxy
 
@@ -118,7 +118,7 @@ Class Relationships
 -------------------
 The classes are associated according to the MVC pattern.  The Observer pattern [1] is used to define the relationship between the VenueClient and (its observer) the VenueClientUI.  Multiple observers can be registered with the VenueClient.  Observers must implement the VenueClientObserver interface [2].
 
-Calls made across each of the associations are categorized here.  These associations are explicit references:
+Calls made across each of the associations are categorized here (and pictorially `here <http://www.mcs.anl.gov/~turam/VenueClientRefactor.jpg>`_).  These associations are explicit references:
 
 * VenueClientUI -> VenueClient
 
