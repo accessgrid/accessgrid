@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.81 2003-03-20 15:57:26 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.82 2003-03-20 19:55:45 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -788,8 +788,6 @@ class VenueList(wxScrolledWindow):
         self.parent = parent
         self.EnableScrolling(true, true)
         self.SetScrollRate(1, 1)
-
-
                       
     def Layout(self):
 
@@ -805,17 +803,18 @@ class VenueList(wxScrolledWindow):
                
     def GoToNewVenue(self, event):
         id = event.GetId()
+                       
         if(self.exitsDict.has_key(id)):
             description = self.exitsDict[id]
             wxBeginBusyCursor()
             self.app.GoToNewVenue(description.uri)
             wxEndBusyCursor()
         else:
-            wxMessage("This exit does no longer exist, sorry!")
+            wxLogMessage("This exit does no longer exist, sorry!")
             wxLog_GetActiveTarget().Flush()
                 
     def AddVenueDoor(self, profile):
-        panel = ExitPanel(self, profile)
+        panel = ExitPanel(self, NewId(), profile)
         self.doorsAndLabelsList.append(panel)
         
         self.doorsAndLabelsList.sort(lambda x, y: cmp(x.GetName(), y.GetName()))
@@ -823,7 +822,10 @@ class VenueList(wxScrolledWindow):
                       
         self.column.Insert(index, panel, 1, wxEXPAND)
         id = panel.GetButtonId()
+
         self.exitsDict[id] = profile
+                
+        
         #EVT_BUTTON(self, id, self.GoToNewVenue)
         
         #self.parent.Layout()
@@ -833,7 +835,7 @@ class VenueList(wxScrolledWindow):
         self.parent.Layout()
                       
     def RemoveVenueDoor(self):
-        print 'remove venue door'
+        print '----------------- remove venue door'
 
     def CleanUp(self):
         for item in self.doorsAndLabelsList:
@@ -858,10 +860,11 @@ class VenueList(wxScrolledWindow):
 
          
 class ExitPanel(wxPanel):
-    def __init__(self, parent, profile):
-        wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
+    def __init__(self, parent, id, profile):
+        wxPanel.__init__(self, parent, id, wxDefaultPosition, \
 			 size = wxSize(400,200), style = wxDOUBLE_BORDER)
-        self.id = NewId()
+        #self.id = NewId()
+        self.id = id
         self.parent = parent
         self.SetBackgroundColour(wxColour(190,190,190))
         self.bitmap = icons.getDefaultDoorClosedBitmap()
@@ -872,7 +875,7 @@ class ExitPanel(wxPanel):
 	#self.button.SetToolTipString(profile.description)
         #self.label = wxStaticText(self, -1, profile.name)
         self.SetToolTipString("tool tip")
-        self.label = wxTextCtrl(self, -1, "", size= wxSize(30,10),
+        self.label = wxTextCtrl(self, self.id, "", size= wxSize(30,10),
                                 style = wxNO_BORDER|wxTE_MULTILINE|wxTE_RICH)
         self.label.SetValue(profile.name)
         self.label.SetBackgroundColour(wxColour(190,190,190))
@@ -899,6 +902,7 @@ class ExitPanel(wxPanel):
         return self.label.GetLabel()
 
     def GetButtonId(self):
+        '------------- get button id: ', self.id
         return self.id
 
     def AdjustText(self):
