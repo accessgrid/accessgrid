@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.33 2003-02-14 20:49:35 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.34 2003-02-14 21:19:13 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,6 +23,8 @@ import os.path
 # AG Stuff
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
 from AccessGrid.hosting.pyGlobus import ServiceBase
+from AccessGrid.hosting.access_control import GetSecurityManager
+from AccessGrid.hosting.access_control import SecurityManager
 from AccessGrid.Venue import Venue
 from AccessGrid.GUID import GUID
 from AccessGrid.NetworkLocation import NetworkLocation
@@ -55,7 +57,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
     configDefaults = {
             "VenueServer.houseKeeperFrequency" : 30,
-            "VenueServer.persistenceFilename" : 'VenueData',
+            "VenueServer.persistenceFilename" : 'VenueServer.dat',
             "VenueServer.venuePathPrefix" : 'Venues',
             "VenueServer.dataStorageLocation" : 'Data'
             }
@@ -119,11 +121,12 @@ class VenueServer(ServiceBase.ServiceBase):
         #
         # Reinitialize the default venue
         #
-        if len(self.defaultVenue) == 0:
-            self.defaultVenue = self.AddVenue(None, self.defaultVenueDescription)
-        else:
+        if len(self.defaultVenue) != 0 and self.defaultVenue in self.venues:
             defaultVenue = self.hostingEnvironment.create_service_object(pathId = 'Venues/default')
             self.venues[self.defaultVenue]._bind_to_service(defaultVenue)
+        else:
+            self.defaultVenue = self.AddVenue(self.defaultVenueDescription)
+            
 
         # The houseKeeper is a task that is doing garbage collection and
         # other general housekeeping tasks for the Venue Server.
@@ -142,7 +145,7 @@ class VenueServer(ServiceBase.ServiceBase):
             (section, option) = string.split(k, '.')
             setattr(self, option, config[k])
             
-    def AddVenue(self, connectionInfo, venueDescription):
+    def AddVenue(self, venueDescription):
         """
         The AddVenue method takes a venue description and creates a new
         Venue Object, complete with a event service, then makes it
@@ -164,10 +167,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
             # Create a new Venue object pass it the server's Multicast Address 
             # Allocator, and the server's Data Storage object
-            if connectionInfo == None:
-                administrator = ""
-            else:
-                administrator = connectionInfo.get_remote_name()
+            administrator = ""
                     
             #
             # Create the directory to hold the venue's data.
@@ -201,7 +201,7 @@ class VenueServer(ServiceBase.ServiceBase):
             if(len(self.venues) == 0):
                 defaultVenue = self.hostingEnvironment.create_service_object(pathId = 'Venues/default')
                 venue._bind_to_service(defaultVenue)
-                self.SetDefaultVenue(connectionInfo, venueURL)
+                self.SetDefaultVenue(venueURL)
 
             # Add the venue to the list of venues
             self.venues[venueURL] = venue
@@ -212,10 +212,9 @@ class VenueServer(ServiceBase.ServiceBase):
         # return the URL to the new venue
         return venueURL
 
-    AddVenue.pass_connection_info = 1
     AddVenue.soap_export_as = "AddVenue"
 
-    def ModifyVenue(self, connectionInfo, URL, venueDescription):
+    def ModifyVenue(self, URL, venueDescription):
         """
         ModifyVenue updates a Venue Description.
         """
@@ -225,10 +224,9 @@ class VenueServer(ServiceBase.ServiceBase):
         if(venueDescription.uri == URL):
             self.venues[URL].description = venueDescription
 
-    ModifyVenue.pass_connection_info = 1
     ModifyVenue.soap_export_as = "ModifyVenue"
 
-    def RemoveVenue(self, connectionInfo, URL):
+    def RemoveVenue(self, URL):
         """
         RemoveVenue removes a venue from the VenueServer.
         """
@@ -236,40 +234,36 @@ class VenueServer(ServiceBase.ServiceBase):
         venue.Shutdown()
         del self.venues[URL]
 
-    RemoveVenue.pass_connection_info = 1
     RemoveVenue.soap_export_as = "RemoveVenue"
 
-    def AddAdministrator(self, connectionInfo, string):
+    def AddAdministrator(self, string):
         """
         AddAdminstrator adds an administrator to the list of administrators
         for this VenueServer.
         """
         self.administrators.append(string)
 
-    AddAdministrator.pass_connection_info = 1
     AddAdministrator.soap_export_as = "AddAdministrator"
 
-    def RemoveAdministrator(self, connectionInfo, string):
+    def RemoveAdministrator(self, string):
         """
         RemoveAdministrator removes an administrator from the list of
         administrators for this VenueServer.
         """
         self.administrators.remove(string)
 
-    RemoveAdministrator.pass_connection_info = 1
     RemoveAdministrator.soap_export_as = "RemoveAdministrator"
 
-    def GetAdministrators(self, connectionInfo):
+    def GetAdministrators(self):
         """
         GetAdministrators returns a list of adminsitrators for this
         VenueServer.
         """
         return self.administrators
 
-    GetAdministrators.pass_connection_info = 1
     GetAdministrators.soap_export_as = "GetAdministrators"
 
-    def AddService(self, connectionInfo, serviceDescription):
+    def AddService(self, serviceDescription):
         """
         AddService adds a service description to the list of service
         descriptions that are available to the Virtual Venues hosted by
@@ -277,20 +271,18 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         self.services[serviceDescription.uri] = serviceDescription
 
-    AddService.pass_connection_info = 1
     AddService.soap_export_as = "AddService"
 
-    def RemoveService(self, connectionInfo, URL, serviceDescription):
+    def RemoveService(self, URL, serviceDescription):
         """
         RemoveService removes a service description from the list of
         service descriptions that this VenueServer knows about.
         """
         self.services.remove(serviceDescription)
 
-    RemoveService.pass_connection_info = 1
     RemoveService.soap_export_as = "RemoveService"
 
-    def ModifyService(self, connectionInfo, URL, serviceDescription):
+    def ModifyService(self, URL, serviceDescription):
         """
         ModifyService updates a service description that is in the
         list of services for this VenueServer.
@@ -298,10 +290,9 @@ class VenueServer(ServiceBase.ServiceBase):
         if URL == serviceDescription.uri:
             self.services[URL] = serviceDescription
 
-    ModifyService.pass_connection_info = 1
     ModifyService.soap_export_as = "ModifyService"
 
-    def RegisterServer(self, connectionInfo, URL):
+    def RegisterServer(self, URL):
         """
         This method should register the server with the venues
         registry at the URL passed in. This is by default a
@@ -310,16 +301,16 @@ class VenueServer(ServiceBase.ServiceBase):
         # registryService = SOAP.SOAPProxy(URL)
         # registryService.Register(#data)
 
-    RegisterServer.pass_connection_info = 1
     RegisterServer.soap_export_as = "RegisterServer"
 
-    def GetVenues(self, connectionInfo):
+    def GetVenues(self):
         """
         GetVenues returns a list of Venues Descriptions for the venues hosted by
         this VenueServer.
         """
         try:
-            venueDescriptionList = map( lambda venue: venue.GetDescription( connectionInfo ), self.venues.values() )
+            venueDescriptionList = map( lambda venue: venue.GetDescription(),
+                                        self.venues.values() )
 
 #            for venue in venueDescriptionList:
 #                print "  ---- venue ", venue.name, venue.description, venue.uri
@@ -327,20 +318,18 @@ class VenueServer(ServiceBase.ServiceBase):
             print "Exception in GetVenues ", sys.exc_type, sys.exc_value
         return venueDescriptionList
 
-    GetVenues.pass_connection_info = 1
     GetVenues.soap_export_as = "GetVenues"
 
-    def GetDefaultVenue(self, connectionInfo):
+    def GetDefaultVenue(self):
         """
         GetDefaultVenue returns the URL to the default Venue on the
         VenueServer.
         """
         return self.defaultVenue
 
-    GetDefaultVenue.pass_connection_info = 1
     GetDefaultVenue.soap_export_as = "GetDefaultVenue"
 
-    def SetDefaultVenue(self, connectionInfo, venueURL):
+    def SetDefaultVenue(self,  venueURL):
         """
         SetDefaultVenue sets which Venue is the default venue for the
         VenueServer.
@@ -348,90 +337,82 @@ class VenueServer(ServiceBase.ServiceBase):
         self.defaultVenue = venueURL
         self.config["VenueServer.defaultVenue"] = venueURL
 
-    SetDefaultVenue.pass_connection_info = 1
     SetDefaultVenue.soap_export_as = "SetDefaultVenue"
 
-    def SetStorageLocation( self, connectionInfo, dataStorageLocation ):
+    def SetStorageLocation(self,  dataStorageLocation):
         """
         Set the path for data storage
         """
         self.dataStorageLocation = dataStorageLocation
         self.config["VenueServer.dataStorageLocation"] = dataStorageLocation
         
-    SetStorageLocation.pass_connection_info = 1
     SetStorageLocation.soap_export_as = "SetStorageLocation"
 
 
-    def GetStorageLocation( self, connectionInfo ):
+    def GetStorageLocation(self):
         """
         Get the path for data storage
         """
         return self.dataStorageLocation
-    GetStorageLocation.pass_connection_info = 1
+
     GetStorageLocation.soap_export_as = "GetStorageLocation"
 
 
-    def SetAddressAllocationMethod( self, connectionInfo, addressAllocationMethod ):
+    def SetAddressAllocationMethod(self,  addressAllocationMethod):
         """
         Set the method used for multicast address allocation:
             either RANDOM or INTERVAL (defined in MulticastAddressAllocator)
         """
         self.multicastAddressAllocator.SetAddressAllocationMethod( addressAllocationMethod )
-    SetAddressAllocationMethod.pass_connection_info = 1
+
     SetAddressAllocationMethod.soap_export_as = "SetAddressAllocationMethod"
 
-
-    def GetAddressAllocationMethod( self, connectionInfo ):
+    def GetAddressAllocationMethod(self):
         """
         Get the method used for multicast address allocation:
             either RANDOM or INTERVAL (defined in MulticastAddressAllocator)
         """
         return self.multicastAddressAllocator.GetAddressAllocationMethod()
-    GetAddressAllocationMethod.pass_connection_info = 1
+
     GetAddressAllocationMethod.soap_export_as = "GetAddressAllocationMethod"
 
-
-    def SetBaseAddress( self, connectionInfo, address ):
+    def SetBaseAddress(self, address):
         """
         Set base address used when allocating multicast addresses in
         an interval
         """
         self.multicastAddressAllocator.SetBaseAddress( address )
-    SetBaseAddress.pass_connection_info = 1
+
     SetBaseAddress.soap_export_as = "SetBaseAddress"
 
-
-    def GetBaseAddress( self, connectionInfo ):
+    def GetBaseAddress(self):
         """
         Get base address used when allocating multicast addresses in
         an interval
         """
         return self.multicastAddressAllocator.GetBaseAddress( )
-    GetBaseAddress.pass_connection_info = 1
+
     GetBaseAddress.soap_export_as = "GetBaseAddress"
 
-
-    def SetAddressMask( self, connectionInfo, mask ):
+    def SetAddressMask(self,  mask):
         """
         Set address mask used when allocating multicast addresses in
         an interval
         """
         self.multicastAddressAllocator.SetAddressMask( mask )
-    SetAddressMask.pass_connection_info = 1
+
     SetAddressMask.soap_export_as = "SetAddressMask"
 
-
-    def GetAddressMask( self, connectionInfo ):
+    def GetAddressMask(self):
         """
         Get address mask used when allocating multicast addresses in
         an interval
         """
         return self.multicastAddressAllocator.GetAddressMask( )
-    GetAddressMask.pass_connection_info = 1
+
     GetAddressMask.soap_export_as = "GetAddressMask"
 
-
-    def Shutdown(self, connectionInfo, secondsFromNow):
+    def Shutdown(self, secondsFromNow):
         """
         Shutdown shuts down the server.
         """
@@ -442,7 +423,6 @@ class VenueServer(ServiceBase.ServiceBase):
 
         self.hostingEnvironment.stop()
 
-    Shutdown.pass_connection_info = 1
     Shutdown.soap_export_as = "Shutdown"
 
     def Checkpoint(self):

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.30 2003-02-14 20:45:52 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.31 2003-02-14 21:19:13 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,7 +25,8 @@ from AccessGrid.GUID import GUID
 from AccessGrid.TextService import TextService
 from AccessGrid.EventService import EventService
 from AccessGrid.Events import Event, HeartbeatEvent, TextEvent
-from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey, GetHostname
+from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
+from AccessGrid.Utilities import GetHostname
 from AccessGrid.scheduler import Scheduler
 from AccessGrid import DataStore
 
@@ -52,28 +53,30 @@ class Venue(ServiceBase.ServiceBase):
         """
 
         self.connections = dict()
-        self.users = dict()
-        self.nodes = dict()
-        self.data = dict()
         self.services = dict()
-        self.clients = dict()
-        
         self.networkServices = []
-        self.streams = []
         self.administrators = []
 
         self.uniqueId = uniqueId
+        # This contains a name, description, uri, icon, extended description
+        # eventlocation, and textlocation
         self.description = description
         self.administrators.append(administrator)
+
+        self.data = dict()
+        self.streams = []
+
+        self.users = dict()
+        self.clients = dict()
+        self.nodes = dict()
+
         self.multicastAllocator = multicastAllocator
         self.dataStorePath = dataStorePath
-        self.dataStore = None           # This is the actual data store object
+        # This is the actual data store object
+        self.dataStore = None 
 
         self.textHost = GetHostname()
-        self.textPort = self.multicastAllocator.AllocatePort()
-        
         self.eventHost = GetHostname()
-        self.eventPort = self.multicastAllocator.AllocatePort()
         
         self.producerCapabilities = []
         self.consumerCapabilities = []
@@ -94,15 +97,27 @@ class Venue(ServiceBase.ServiceBase):
         uniqueId and description.
         
         """
-
         odict = self.__dict__.copy()
+        # We don't save things in this list
+        keys = ("users", "clients", "nodes", "multicastAllocator",
+                "producerCapabilities", "consumerCapabilities", "dataStore",
+                "textHost", "testPort", "textService",
+                "eventHost", "eventPort", "eventService",
+                "_service_object", "houseKeeper")
         for k in odict.keys():
-            if type(odict[k]) == types.InstanceType:
-                if k != "uniqueId" and k != "description":
-                    del odict[k]
+            if k in keys:
+                del odict[k]
+
+        #
+        # When streams *can* be persistent we'll do something like this:
+        #
+#         for s in odict["streams"]:
+#             if not s.IsPersistent():
+#                 odict["streams"].remove(s)
+
         return odict
 
-    def __setstate__(self, dict):
+    def __setstate__(self, pickledDict):
         """
         Resurrect the state of this object after unpickling.
 
@@ -110,13 +125,27 @@ class Venue(ServiceBase.ServiceBase):
         services.
 
         """
-        
-        self.__dict__ = dict
-        self.dataStore = None
-        self.multicastAddressAllocator = None
-        self.Start()
+        self.__dict__ = pickledDict
+
+        self.__dict__["users"] = dict()
+        self.__dict__["clients"] = dict()
+        self.__dict__["nodes"] = dict()
+        self.__dict__["dataStore"] = None
+        self.__dict__["multicastAddressAllocator"] = None
+        self.__dict__["cleanupTime"] = 30
+        self.__dict__["nextPrivateId"] = 1
+        self.__dict__["encryptionKey"] = AllocateEncryptionKey()
 
     def Start(self):
+        """ """
+        # We assume the multicast allocator has been set by now
+        # this is an icky assumption and can be fixed when I clean up
+        # other icky things (description, state, venue) issues -- IRJ
+        self.textHost = utilities.GetHostname()
+        self.textPort = self.multicastAllocator.AllocatePort()
+        self.eventHost = utilities.GetHostname()
+        self.eventPort = self.multicastAllocator.AllocatePort()
+        
         self.eventService = EventService((self.eventHost, self.eventPort))
         self.eventService.RegisterCallback(HeartbeatEvent.HEARTBEAT, 
                                     self.ClientHeartbeat)
@@ -170,13 +199,21 @@ class Venue(ServiceBase.ServiceBase):
         transferServer.run()
 
     def SetMulticastAddressAllocator(self, multicastAllocator):
+        """
+        Set the Multicast Address Allocator for the Venue. This is usually
+        set to the allocator the venue server uses.
+        """
         self.multicastAllocator = multicastAllocator
 
     def SetDataStore(self, dataStore):
+        """
+        Set the Data Store for the Venue. This is usually set to the data
+        store the venue server uses.
+        """
         self.dataStore = dataStore
     
    # Internal Methods
-    def GetState(self, connectionInfo):
+    def GetState(self):
         """
         GetState enables a VenueClient to poll the Virtual Venue for the
         current state of the Virtual Venue.
@@ -198,10 +235,8 @@ class Venue(ServiceBase.ServiceBase):
         except:
            print "Exception in GetState ", sys.exc_type, sys.exc_value
 
-#        print "state:", dir(venueState)
         return venueState
     
-    GetState.pass_connection_info = 1
     GetState.soap_export_as = "GetState"
 
     def CleanupClients(self):
@@ -299,7 +334,7 @@ class Venue(ServiceBase.ServiceBase):
         return 0
 
     # Management methods
-    def AddNetworkService(self, connectionInfo, networkServiceDescription):
+    def AddNetworkService(self, networkServiceDescription):
         """
         AddNetworkService allows an administrator to add functionality to
         the Venue. Network services are described in the design documents.
@@ -309,20 +344,18 @@ class Venue(ServiceBase.ServiceBase):
         except:
             print "Network Service already exists ", networkServiceDescription.uri
 
-    AddNetworkService.pass_connection_info = 1
     AddNetworkService.soap_export_as = "AddNetworkService"
     
-    def GetNetworkServices(self, connectionInfo):
+    def GetNetworkServices(self):
         """
         GetNetworkServices retreives the list of network service descriptions
         from the venue.
         """
         return self.networkServices
     
-    GetNetworkServices.pass_connection_info = 1
     GetNetworkServices.soap_export_as = "GetNetworkServices"
     
-    def RemoveNetworkService(self, connectionInfo, networkServiceDescription):
+    def RemoveNetworkService(selfnetworkServiceDescription):
         """
         RemoveNetworkService removes a network service from a venue, making
         it unavailable to users of the venue.
@@ -332,10 +365,9 @@ class Venue(ServiceBase.ServiceBase):
         except:
             print "Exception in RemoveNetworkService", sys.exc_type, sys.exc_value
             print "Network Service does not exist ", networkServiceDescription.uri
-    RemoveNetworkService.pass_connection_info = 1
     RemoveNetworkService.soap_export_as = "RemoveNetworkService"
         
-    def AddConnection(self, connectionInfo, connectionDescription):
+    def AddConnection(self, connectionDescription):
         """
         AddConnection allows an administrator to add a connection to a
         virtual venue to this virtual venue.
@@ -348,10 +380,9 @@ class Venue(ServiceBase.ServiceBase):
         except:
             print "Connection already exists ", connectionDescription.uri
 
-    AddConnection.pass_connection_info = 1
     AddConnection.soap_export_as = "AddConnection"
 
-    def RemoveConnection(self, connectionInfo, connectionDescription):
+    def RemoveConnection(self, connectionDescription):
         """
         RemoveConnection removes a connection to another virtual venue
         from this virtual venue. This is an administrative operation.
@@ -363,20 +394,18 @@ class Venue(ServiceBase.ServiceBase):
             print "Exception in RemoveConnection", sys.exc_type, sys.exc_value
             print "Connection does not exist ", connectionDescription.uri
 
-    RemoveConnection.pass_connection_info = 1
     RemoveConnection.soap_export_as = "RemoveConnection"
 
-    def GetConnections(self, connectionInfo ):
+    def GetConnections(self):
         """
         GetConnections returns a list of all the connections to other venues
         that are found within this venue.
         """
         return self.connections.values()
 
-    GetConnections.pass_connection_info = 1
     GetConnections.soap_export_as = "GetConnections"
 
-    def SetConnections(self, connectionInfo, connectionList ):
+    def SetConnections(self, connectionList):
         """
         SetConnections is a convenient aggregate accessor for the list of
         connections for this venue. Alternatively the user could iterate over
@@ -384,56 +413,52 @@ class Venue(ServiceBase.ServiceBase):
         desirable.
         """
         try:
-
             self.connections = dict()
             for connection in connectionList:
                 self.connections[connection.uri] = connection
-            self.eventService.Distribute( Event( Event.SET_CONNECTIONS, connectionList ) )
+            self.eventService.Distribute( Event( Event.SET_CONNECTIONS,
+                                                 connectionList ) )
 
         except:
             print "Exception in SetConnections", sys.exc_type, sys.exc_value
             print "Connection does not exist ", connectionDescription.uri
 
-    SetConnections.pass_connection_info = 1
     SetConnections.soap_export_as = "SetConnections"
 
-    def SetDescription(self, connectionInfo, description):
+    def SetDescription(self, description):
         """
         SetDescription allows an administrator to set the venues description
         to something new.
         """
         self.description = description
 
-    SetDescription.pass_connection_info = 1
     SetDescription.soap_export_as = "SetDescription"
 
-    def GetDescription(self, connectionInfo):
+    def GetDescription(self):
         """
         GetDescription returns the description for the virtual venue.
         """
         return self.description
 
-    GetDescription.pass_connection_info = 1
     GetDescription.soap_export_as = "GetDescription"
 
-    def GetStreams(self, connectionInfo):
+    def GetStreams(self):
         """
         GetStreams returns a list of stream descriptions to the caller.
         """
         return self.streams
 
-    GetStreams.pass_connection_info = 1
     GetStreams.soap_export_as = "GetStreams"
 
     # Client Methods
-    def Enter(self, connectionInfo, clientProfile):
+    def Enter(self, clientProfile):
         """
         The Enter method is used by a VenueClient to gain access to the
         services, users, and content found within a Virtual Venue.
         """
         privateId = None
         streamDescriptions = []
-        state = self.GetState( connectionInfo )
+        state = self.GetState()
 
         try:
 #            print "Called Venue Enter for: "
@@ -456,41 +481,41 @@ class Venue(ServiceBase.ServiceBase):
                 state['users'] = self.users.values()
 
                 # negotiate to get stream descriptions to return
-                streamDescriptions = self.NegotiateCapabilities( clientProfile )
-                self.eventService.Distribute( Event( Event.ENTER, clientProfile ) )
+                streamDescriptions = self.NegotiateCapabilities(clientProfile)
+                self.eventService.Distribute( Event( Event.ENTER,
+                                                     clientProfile ) )
 
         except:
            print "Exception in Enter ", formatExceptionInfo()
 
         return ( state, privateId, streamDescriptions )
 
-    Enter.pass_connection_info = 1
     Enter.soap_export_as = "Enter"
     
-    def Exit(self, connectionInfo, privateId ):
+    def Exit(self, privateId ):
         """
         The Exit method is used by a VenueClient to cleanly leave a Virtual
         Venue. Cleanly leaving a Virtual Venue allows the Venue to cleanup
         any state associated (or caused by) the VenueClients presence.
         """
         try:
-            print "Called Venue Exit on " + str(connectionInfo)
+            print "Called Venue Exit on ..."
 
             if self.IsValidPrivateId( privateId ):
                 print "Deleting user ", privateId, self.users[privateId].name
                 clientProfile = self.users[privateId]
                 del self.users[privateId]
 
-                self.eventService.Distribute( Event( Event.EXIT, clientProfile ) )
+                self.eventService.Distribute( Event( Event.EXIT,
+                                                     clientProfile ) )
             else:
                 print "* * Invalid private id !! ", privateId
         except:
             print "Exception in Exit ", sys.exc_type, sys.exc_value
         
-    Exit.pass_connection_info = 1
     Exit.soap_export_as = "Exit"
 
-    def UpdateClientProfile(self, connectionInfo, clientProfile):
+    def UpdateClientProfile(self, clientProfile):
         """
         UpdateClientProfile allows a VenueClient to update/modify the client
         profile that is stored by the Virtual Venue that they gave to the Venue
@@ -499,15 +524,14 @@ class Venue(ServiceBase.ServiceBase):
         for user in self.users.values():
             if user.publicId == clientProfile.publicId:
                 self.users[user.privateId] = clientProfile
-            self.eventService.Distribute( Event( Event.MODIFY_USER, clientProfile ) )
+            self.eventService.Distribute( Event( Event.MODIFY_USER,
+                                                 clientProfile ) )
         
-    UpdateClientProfile.pass_connection_info = 1
     UpdateClientProfile.soap_export_as = "UpdateClientProfile"
 
-
-    def wsAddData(self, connectionInfo, dataDescription ):
+    def wsAddData(self, dataDescription ):
         return self.AddData(dataDescription)
-    wsAddData.pass_connection_info = 1
+
     wsAddData.soap_export_as = "AddData"
 
     def AddData(self, dataDescription ):
@@ -531,9 +555,9 @@ class Venue(ServiceBase.ServiceBase):
         self.eventService.Distribute( Event( Event.ADD_DATA,
                                              dataDescription ) )
 
-    def wsUpdateData(self, connectionInfo, dataDescription):
+    def wsUpdateData(self, dataDescription):
         return self.UpdateData(dataDescription)
-    wsAddData.pass_connection_info = 1
+
     wsAddData.soap_export_as = "UpdateData"
         
     def UpdateData(self, dataDescription):
@@ -558,9 +582,9 @@ class Venue(ServiceBase.ServiceBase):
         self.eventService.Distribute( Event( Event.UPDATE_DATA,
                                              dataDescription ) )
 
-    def wsGetData(self, connectionInfo, name):
+    def wsGetData(self, name):
         return self.GetData(name)
-    wsGetData.pass_connection_info = 1
+
     wsGetData.soap_export_as = "GetData"
         
     def GetData(self, name):
@@ -575,7 +599,9 @@ class Venue(ServiceBase.ServiceBase):
         else:
             return None
 
-    def RemoveData(self, connectionInfo, dataDescription):
+    GetData.soap_export_as = "GetData"
+
+    def RemoveData(self, dataDescription):
         """
         RemoveData removes persistent data from the Virtual Venue.
         """
@@ -590,7 +616,6 @@ class Venue(ServiceBase.ServiceBase):
             print "Exception in RemoveData", sys.exc_type, sys.exc_value
             print "Data does not exist", dataDescription.name
 
-    RemoveData.pass_connection_info = 1
     RemoveData.soap_export_as = "RemoveData"
 
     def GetUploadDescriptor(self):
@@ -598,7 +623,7 @@ class Venue(ServiceBase.ServiceBase):
 
     GetUploadDescriptor.soap_export_as = "GetUploadDescriptor"
 
-    def AddService(self, connectionInfo, serviceDescription):
+    def AddService(self, serviceDescription):
         """
         This method adds a service description to the Venue.
         """
@@ -611,10 +636,9 @@ class Venue(ServiceBase.ServiceBase):
             print "Exception in AddService ", sys.exc_type, sys.exc_value
             print "Service already exists ", serviceDescription.name
 
-    AddService.pass_connection_info = 1
     AddService.soap_export_as = "AddService"
 
-    def RemoveService(self, connectionInfo, serviceDescription):
+    def RemoveService(self, serviceDescription):
         """
         This method removes a service description from the list of services
         in the Virtual Venue.
@@ -628,7 +652,6 @@ class Venue(ServiceBase.ServiceBase):
             print "Exception in RemoveService", sys.exc_type, sys.exc_value
             print "Service does not exist ", serviceDescription.name
 
-    RemoveService.pass_connection_info = 1
     RemoveService.soap_export_as = "RemoveService"
 
     def Ping( self ):
@@ -636,7 +659,6 @@ class Venue(ServiceBase.ServiceBase):
         print "Ping!"
         return 1
 
-    Ping.pass_connection_info = 0
     Ping.soap_export_as = "Ping"
 
  
