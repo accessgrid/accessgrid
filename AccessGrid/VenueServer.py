@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.99 2003-09-17 23:11:24 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.100 2003-09-18 16:30:11 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.99 2003-09-17 23:11:24 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.100 2003-09-18 16:30:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -614,7 +614,6 @@ class VenueServer(ServiceBase.ServiceBase):
         log.info("Checkpointing completed at %s.", time.asctime())
 
         # Finally we save the current config
-        config = self.config.copy()
         SaveConfig(self.configFile, self.config)
 
         return 1
@@ -1286,6 +1285,25 @@ class VenueServer(ServiceBase.ServiceBase):
         self.Shutdown()
         
     wsShutdown.soap_export_as = "Shutdown"
+
+    def wsCheckpoint(self):
+        """
+        Interface to checkpoint the Venue Server.
+
+        **Arguments:**
+
+        **Raises:**
+
+        **Returns:**
+        """
+        if not self._IsInRole("VenueServer.Administrators"):
+            raise NotAuthorized
+
+        log.debug("Calling checkpoint")
+
+        self.Checkpoint()
+        
+    wsCheckpoint.soap_export_as = "Checkpoint"
 
     def AddVenue(self, venueDesc):
         """
