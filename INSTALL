@@ -42,8 +42,7 @@ Windows 2000/XP Install
 =======================
 Download and install the following packages in the following order.
 
-python-2.2
-python win32 extensions
+ActiveState Python 2.2 (which includes the Win32 Extensions)
 wxPython-2.4.0
 winglobus
 accessgrid
