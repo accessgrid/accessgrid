@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.24 2003-04-17 23:58:21 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.25 2003-04-28 20:12:26 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
 
 from AccessGrid.Descriptions import AGServiceDescription, AGServiceManagerDescription
-from AccessGrid.Types import ServiceConfiguration
+from AccessGrid.Types import ServiceConfiguration, AGResource
 from AccessGrid.AuthorizationManager import AuthorizationManager
 from AccessGrid.Platform import GetConfigFilePath
 
@@ -38,6 +38,11 @@ class AGNodeService( ServiceBase ):
     and AGServices, for control and configuration of the node.
     """
 
+    defaultNodeConfigurationOption = "Node Configuration.defaultNodeConfiguration"
+    configDirOption = "Node Configuration.configDirectory"
+    servicesDirOption = "Node Configuration.servicesDirectory"
+
+
     def __init__( self ):
         self.name = None
         self.description = None
@@ -45,6 +50,7 @@ class AGNodeService( ServiceBase ):
         self.serviceManagers = []
         self.authManager = AuthorizationManager()
         self.__ReadAuthFile()
+        self.config = None
         self.defaultConfig = None
         self.configDir = "config"
         self.servicesDir = "services"
@@ -52,9 +58,7 @@ class AGNodeService( ServiceBase ):
         #
         # Read the configuration file (directory options and such)
         #
-        configFile = GetConfigFilePath("AGNodeService.cfg")
-        if configFile:
-            self.__ReadConfigFile( configFile )
+        self.__ReadConfigFile()
 
         #
         # Start the service package repository
@@ -389,6 +393,23 @@ class AGNodeService( ServiceBase ):
     StoreConfiguration.soap_export_as = "StoreConfiguration"
 
 
+    def SetDefaultConfiguration( self, configName ):
+        """
+        Set the name of the default configuration
+        """
+        configs = self.GetConfigurations()
+
+        # Trap error cases
+        if configName not in configs:
+            raise ValueError("Attempt to set default config to non-existent configuration")
+
+        self.defaultConfig = configName
+
+        # Write out the node service config file with the new default config name
+        self.__WriteConfigFile()
+
+    SetDefaultConfiguration.soap_export_as = "SetDefaultConfiguration"
+
     def GetConfigurations( self ):
         """Get list of available configurations"""
         files = os.listdir( self.configDir )
@@ -454,32 +475,58 @@ class AGNodeService( ServiceBase ):
         except:
             log.exception("Exception in AGNodeService.RemoveAuthorizedUser.")
 
-    def __ReadConfigFile( self, configFile ):
+    def __ReadConfigFile( self ):
         """
         Read the node service configuration file
         """
-        defaultNodeConfigurationOption = "Node Configuration.defaultNodeConfiguration"
-        configDirOption = "Node Configuration.configDirectory"
-        servicesDirOption = "Node Configuration.servicesDirectory"
 
         from AccessGrid.Utilities import LoadConfig
-        config = LoadConfig( configFile )
-        if defaultNodeConfigurationOption in config.keys():
-            self.defaultConfig = config[defaultNodeConfigurationOption]
-        if configDirOption in config.keys():
-            self.configDir = config[configDirOption]
-            # If relative path in config file, use SystemConfigDir as the base
-            if not os.path.isabs(self.configDir):
-                self.configDir = GetConfigFilePath(self.configDir)
-        if servicesDirOption in config.keys():
-            self.servicesDir = config[servicesDirOption]
-            print "servicesDir: ", self.servicesDir
-            # If relative path in config file, use SystemConfigDir as the base
-            if not os.path.isabs(self.servicesDir):
-                self.servicesDir = GetConfigFilePath(self.servicesDir)
-        print "configDir: ", self.configDir
-        print "servicesDir: ", self.servicesDir
 
+        configFile = GetConfigFilePath("AGNodeService.cfg")
+        if configFile and os.path.exists(configFile):
+
+            log.info("Reading node service config file: %s" % configFile)
+
+            self.config = LoadConfig( configFile )
+
+            # Process default config option
+            if AGNodeService.defaultNodeConfigurationOption in self.config.keys():
+                self.defaultConfig = self.config[AGNodeService.defaultNodeConfigurationOption]
+
+            # Process config dir option
+            if AGNodeService.configDirOption in self.config.keys():
+                self.configDir = self.config[AGNodeService.configDirOption]
+                # If relative path in config file, use SystemConfigDir as the base
+                if not os.path.isabs(self.configDir):
+                    self.configDir = GetConfigFilePath(self.configDir)
+
+            # Process services dir option
+            if AGNodeService.servicesDirOption in self.config.keys():
+                self.servicesDir = self.config[AGNodeService.servicesDirOption]
+                # If relative path in config file, use SystemConfigDir as the base
+                if not os.path.isabs(self.servicesDir):
+                    self.servicesDir = GetConfigFilePath(self.servicesDir)
+
+
+    def __WriteConfigFile( self ):
+        """
+        Write the node service configuration file
+        """
+        from AccessGrid.Utilities import SaveConfig
+
+        configFile = GetConfigFilePath("AGNodeService.cfg")
+        if configFile and os.path.exists(configFile):
+
+            log.info("Writing node service config file: %s" % configFile)
+
+            # Update the config to local values
+            self.config[AGNodeService.configDirOption] = self.configDir
+            self.config[AGNodeService.servicesDirOption] = self.servicesDir
+            self.config[AGNodeService.defaultNodeConfigurationOption] = self.defaultConfig
+
+            # Save the config file
+            SaveConfig( configFile, self.config )
+        
 
 
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
