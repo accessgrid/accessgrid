@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.205 2004-05-28 15:55:38 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.206 2004-06-01 19:30:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.205 2004-05-28 15:55:38 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.206 2004-06-01 19:30:06 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -545,15 +545,14 @@ class Venue(AuthorizationMixIn):
             string += "".join(map(lambda service: service.AsINIBlock(),
                                   self.services.values()))
 
-        if self.authManager:
-            policy = self.authManager.ExportPolicy()
-            # Don't store these control characters, but lets make sure we
-            # bring them back
-            policy = re.sub("\r\n", "<CRLF>", policy)
-            policy = re.sub("\r", "<CR>", policy)
-            policy = re.sub("\n", "<LF>", policy)
-            string += 'authorizationPolicy : %s' %policy
-            
+        policy = self.authManager.ExportPolicy()
+        # Don't store these control characters, but lets make sure we
+        # bring them back
+        policy = re.sub("\r\n", "<CRLF>", policy)
+        policy = re.sub("\r", "<CR>", policy)
+        policy = re.sub("\n", "<LF>", policy)
+        string += 'authorizationPolicy : %s' %policy
+        
         return string
 
     def ImportAuthorizationPolicy(self, policy):
