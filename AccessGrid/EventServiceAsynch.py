@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.17 2003-09-18 16:29:47 judson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.18 2003-09-18 17:31:33 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.17 2003-09-18 16:29:47 judson Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.18 2003-09-18 17:31:33 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -37,7 +37,6 @@ from AccessGrid.Events import AddDataEvent, RemoveDataEvent, UpdateDataEvent
 from AccessGrid.GUID import GUID
 
 log = logging.getLogger("AG.EventService")
-log.setLevel(logging.DEBUG)
 
 
 #
@@ -49,8 +48,10 @@ log.setLevel(logging.DEBUG)
 detailedEventLogging = 0
 if detailedEventLogging:
     logEvent = log.debug
+    log.setLevel(logging.DEBUG)
 else:
     logEvent = lambda *sh: 0
+    log.setLevel(logging.WARN)
 
 class ConnectionHandler:
     """
