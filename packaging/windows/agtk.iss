@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.3 2003-04-23 14:46:28 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.4 2003-04-24 20:45:59 turam Exp $
 ;
 
 #define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
@@ -119,7 +119,7 @@ Source: Scripts\VenueServer.py; DestDir: {app}; Components: Venue_Server
 Source: Scripts\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Server
 
 ; Default node configuration
-Source: share\AccessGrid\nodeConfig\defaultWindows; DestDir: {commonappdata}\AccessGrid; Flags: confirmoverwrite
+Source: share\AccessGrid\nodeConfig\defaultWindows; DestDir: {commonappdata}\AccessGrid\nodeConfig; Flags: confirmoverwrite
 
 ; AG Icon for programs and stuff
 Source: share\AccessGrid\agicons.exe; DestDir: {app}\config
@@ -217,7 +217,7 @@ Filename: {commonappdata}\AccessGrid\defaultWindows; Section: serviceconfig1
 Filename: {commonappdata}\AccessGrid\defaultWindows; Section: serviceconfig0
 
 Filename: {commonappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configuration; Key: servicesDirectory; String: {app}\services
-Filename: {commonappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configuration; Key: configDirectory; String: {commonappdata}\AccessGrid
+Filename: {commonappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configuration; Key: configDirectory; String: {commonappdata}\AccessGrid\nodeConfig
 Filename: {commonappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configuration; Key: defaultNodeConfiguration; String: defaultWindows
 
 Filename: {commonappdata}\AccessGrid\AGServiceManager.cfg; Section: Service Manager; Key: servicesDirectory; String: {app}\local_services
