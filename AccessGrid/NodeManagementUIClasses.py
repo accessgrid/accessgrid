@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.36 2003-08-14 21:44:11 eolson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.37 2003-08-20 17:30:18 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -196,7 +196,7 @@ class ServicePopup(wxPopupTransientWindow):
     """
     Popup for the service menu
     """
-    def __init__(self, parent, style):
+    def __init__(self, parent, style = wxDEFAULT_DIALOG_STYLE):
         wxPopupTransientWindow.__init__(self, parent, style)
         panel = wxPanel(self, -1)
         panel.SetBackgroundColour("#FFB6C1")
