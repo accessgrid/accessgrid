@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: SOAPInterface.py,v 1.9 2004-04-06 18:54:35 eolson Exp $
+# RCS-ID:      $Id: SOAPInterface.py,v 1.10 2004-04-07 23:48:53 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,16 +16,20 @@ primary methods, the constructor and a default authorization for all
 interfaces.
 """
 
-__revision__ = "$Id: SOAPInterface.py,v 1.9 2004-04-06 18:54:35 eolson Exp $"
+__revision__ = "$Id: SOAPInterface.py,v 1.10 2004-04-07 23:48:53 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
 import re
 
 # AGTk imports
+from AccessGrid import Log
 from AccessGrid.hosting import Client, GetSOAPContext
 from AccessGrid.Security.Action import MethodAction
 from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
+from AccessGrid.Toolkit import Application
+
+log = Log.GetLogger(Log.Hosting)
 
 methodPat = re.compile("^<(slot wrapper|bound method|built-in method) .+>$")
 
@@ -162,9 +166,16 @@ class SOAPIWrapper:
         self.url = url
         if url != None:
             try:
-                self.handle = Client.Handle(self.url, faultHandler = faultHandler)
+                if Application.instance().GetOption("insecure"):
+                    self.handle = Client.InsecureHandle(self.url, faultHandler = faultHandler)
+                else:
+                    self.handle = Client.SecureHandle(self.url, faultHandler = faultHandler)
                 self.proxy = self.handle.GetProxy()
                 
+            except Exception, e:
+                log.exception(e)
+                self.proxy = None
+                raise ConnectionFailed
             except:
                 self.proxy = None
                 raise ConnectionFailed
