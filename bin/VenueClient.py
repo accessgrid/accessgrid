@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.182 2003-08-07 16:21:55 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.183 2003-08-07 18:46:54 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -48,9 +48,10 @@ from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
 from AccessGrid.GUID import GUID
 from AccessGrid.VenueClient import VenueClient
+from AccessGrid.VenueClientEventSubscriber import VenueClientEventSubscriber
 from AccessGrid.Platform import GetUserConfigDir
 
-class VenueClientUI(wxApp):
+class VenueClientUI(wxApp, VenueClientEventSubscriber):
     """
     VenueClientUI is a wrapper for the base VenueClient.
     It updates its UI when it enters or exits a venue or
