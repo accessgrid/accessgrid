@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.6 2004-04-21 21:39:08 olson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.7 2004-04-26 15:40:22 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -171,18 +171,16 @@ class CertificateRequestTool(wxWizard):
         '''
         Makes sure right values are entered in following page
         '''
-        
         dir = event.GetDirection()
         page = event.GetPage()
         forward = 1
         backward = 0
         
-
         if dir == forward:
             self.log.debug("ChangingPage: From %s to %s"
                            %(page.__class__, page.GetNext().__class__))
-           
-            if not page.Validate():
+
+            if not page.GetValidity():
                 self.log.debug("ChangingPage:Values are not correct, do not change page")
                 event.Veto()
             else:
@@ -262,7 +260,7 @@ class TitledPage(wxPyWizardPage):
         title.SetFont(wxFont(14, wxNORMAL, wxNORMAL, wxBOLD))
         self.sizer.AddWindow(title, 0, wxALL|wxEXPAND, 5)
         self.sizer.AddWindow(wxStaticLine(self, -1), 0, wxEXPAND|wxALL, 5)
-        self.sizer.Add(10, 10)
+        self.sizer.Add((10, 10))
                        
     def OnPageShow(self):
         """
@@ -306,6 +304,9 @@ class IntroWindow(TitledPage):
         TitledPage.__init__(self, parent, title)
         self.info = wxStaticText(self, -1, "This wizard will help you request a certificate.\n\nCertificates are used to identify everyone connected to the AccessGrid. \nIt is your electronic identity card verifying that you are who you say you are. \n\nClick 'Next' to continue.")
         self.Layout()
+
+    def GetValidity(self):
+        return true
   
     def Layout(self):
         self.sizer.Add(self.info, 0, wxALL, 5)
@@ -333,6 +334,9 @@ class SelectCertWindow(TitledPage):
         self.parent = parent
         self.__setProperties()
         self.Layout()
+
+    def GetValidity(self):
+        return true
 
     def GetNext(self):
         """
@@ -366,7 +370,7 @@ class SelectCertWindow(TitledPage):
         Handles UI layout
         '''
         self.sizer.Add(self.info, 0, wxALL, 5)
-        self.sizer.Add(10, 10)
+        self.sizer.Add((10, 10))
         
         infoSizer = wxFlexGridSizer(3, 2, 6, 6)
         infoSizer.Add(self.info1, 0, wxCENTER)
@@ -376,7 +380,7 @@ class SelectCertWindow(TitledPage):
         infoSizer.Add(self.info5, 0, wxCENTER)
         infoSizer.Add(self.info6, 0, wxEXPAND | wxALIGN_LEFT)    
         self.sizer.Add(infoSizer, 0, wxALL| wxEXPAND, 5)
-        self.sizer.Add(10, 10)
+        self.sizer.Add((10, 10))
         
         gridSizer = wxFlexGridSizer(1, 2, 6,6)
         gridSizer.Add(self.text, 0, wxALIGN_CENTER)
@@ -406,27 +410,22 @@ remember it: it is not possible to determine the passphrase from the certificate
         self.domainId = wxNewId()
         self.passwrdId = wxNewId()
         self.passwrd2Id = wxNewId()
-       
+                
         self.firstNameText = wxStaticText(self, -1, "First name:")
         self.lastNameText = wxStaticText(self, -1, "Last name:")
         self.emailText = wxStaticText(self, -1, "E-mail:")
         self.domainText = wxStaticText(self, -1, "Domain:")
         self.passwordText = wxStaticText(self, -1, "Passphrase:")
         self.passwordVerText = wxStaticText(self, -1, "Retype passphrase:")
-        self.firstNameCtrl = wxTextCtrl(self, self.firstNameId ,
-                                   validator = IdentityCertValidator())
-        self.lastNameCtrl = wxTextCtrl(self, self.lastNameId ,
-                                   validator = IdentityCertValidator())
-        self.emailCtrl = wxTextCtrl(self, self.emailId,
-                                    validator = IdentityCertValidator())
-        self.domainCtrl = wxTextCtrl(self, self.domainId,
-                                    validator = IdentityCertValidator())
+        self.firstNameCtrl = wxTextCtrl(self, self.firstNameId)
+        self.lastNameCtrl = wxTextCtrl(self, self.lastNameId)
+        self.emailCtrl = wxTextCtrl(self, self.emailId)
+        self.domainCtrl = wxTextCtrl(self, self.domainId)
         self.passwordCtrl = wxTextCtrl(self, self.passwrdId,
-                                       style = wxTE_PASSWORD,
-                                       validator = IdentityCertValidator())
+                                       style = wxTE_PASSWORD)
         self.passwordVerCtrl = wxTextCtrl(self, self.passwrd2Id,
-                                          style = wxTE_PASSWORD,
-                                          validator = IdentityCertValidator())
+                                          style = wxTE_PASSWORD)
+        self.SetValidator(IdentityCertValidator())
 
         EVT_TEXT(self, self.firstNameId, self.EnterText)
         EVT_TEXT(self, self.lastNameId, self.EnterText)
@@ -442,6 +441,9 @@ remember it: it is not possible to determine the passphrase from the certificate
         # textbox. If so, don't change it on them.
         #
         self.userEnteredDomain = 0
+   
+    def GetValidity(self):
+        return self.GetValidator().Validate(self)
 
     def EnterDomainChar(self, event):
         self.userEnteredDomain = 1
@@ -485,7 +487,7 @@ remember it: it is not possible to determine the passphrase from the certificate
         Handles UI layout.
         '''
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add(10, 10)
+        self.sizer.Add((10, 10))
         gridSizer = wxFlexGridSizer(4, 2, 6, 6)
         #gridSizer.Add(self.nameText)
         box = wxBoxSizer(wxHORIZONTAL)
@@ -604,14 +606,15 @@ class IdentityCertValidator(wxPyValidator):
         '''
         Checks if win has correct parameters.
         '''
+        # Are we going back or forward?
+        
         firstName = win.firstNameCtrl.GetValue()
         lastName = win.lastNameCtrl.GetValue()
         email = win.emailCtrl.GetValue()
         domain = win.domainCtrl.GetValue()
         password = win.passwordCtrl.GetValue()
         password2 = win.passwordVerCtrl.GetValue()
-       
-        
+               
         if firstName == "":
             MessageDialog(NULL, "Please enter your first name.", style = wxOK | wxICON_INFORMATION)
             self.helpClass.SetColour(win.firstNameCtrl)
@@ -671,6 +674,9 @@ class AnonCertWindow(TitledPage):
                                  "You may not be able to use this certificate to gain entry to some venues.")
         self.Layout()
 
+    def GetValidity(self):
+        return true
+
     def Layout(self):
         '''
         Handles UI layout.
@@ -717,7 +723,7 @@ class HostCertWindow(TitledPage):
         Handles UI layout.
         '''
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add(10, 10) 
+        self.sizer.Add((10, 10)) 
         gridSizer = wxFlexGridSizer(2, 2, 6, 6)
         gridSizer.Add(self.hostText)
         gridSizer.Add(self.hostCtrl, 0, wxEXPAND)
@@ -810,22 +816,21 @@ class ServiceCertWindow(TitledPage):
                                           choices = map(lambda x: x[0], ServiceTypes))
         self.hostText = wxStaticText(self, -1, "Machine Name:")
         self.emailText = wxStaticText(self, -1, "E-mail:")
-        self.serviceCtrl = wxTextCtrl(self, self.serviceId,
-                                      validator = ServiceCertValidator())
+        self.serviceCtrl = wxTextCtrl(self, self.serviceId)
         self.serviceNameText = wxStaticText(self, -1, "Service Name:")
         self.serviceCtrl.Enable(0)
         self.serviceNameText.Enable(0)
-        self.emailCtrl = wxTextCtrl(self, self.emailId,
-                                    validator = ServiceCertValidator())
+        self.emailCtrl = wxTextCtrl(self, self.emailId)
 
         self.serviceName = None
         self.userTyped = 0
         
         self.hostName = SystemConfig.instance().GetHostname();
 
-        self.hostCtrl = wxTextCtrl(self, self.hostId, self.hostName,
-                                   validator = ServiceCertValidator())
+        self.hostCtrl = wxTextCtrl(self, self.hostId, self.hostName)
 
+
+        self.SetValidator(ServiceCertValidator())
 
         EVT_COMBOBOX(self.serviceDropdown, self.serviceDropdown.GetId(),
                      self.OnServiceSelected)
@@ -835,6 +840,9 @@ class ServiceCertWindow(TitledPage):
         EVT_TEXT(self.hostCtrl, self.hostId , self.EnterText)
         EVT_CHAR(self.serviceCtrl, self.OnServiceChar)
         self.Layout()
+
+    def GetValidity(self):
+        return self.GetValidator().Validate(self)
 
     def OnServiceChar(self, event):
         self.userTyped = 1
@@ -877,7 +885,7 @@ class ServiceCertWindow(TitledPage):
         Handles UI layout
         '''
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add(10, 10) 
+        self.sizer.Add((10, 10)) 
         gridSizer = wxFlexGridSizer(2, 2, 6, 6)
         gridSizer.Add(self.serviceText, 0, wxALIGN_CENTER_VERTICAL)
         gridSizer.Add(self.serviceDropdown, 0, wxEXPAND)
@@ -1007,15 +1015,22 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
         emailStart = 127 + len(reqType) + len(reqName)
 
         self.text.SetInsertionPoint(0)
-        self.text.SetStyle(nameStart, nameStart+len(reqName),
-                               wxTextAttr(wxNullColour,
-                                          font = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)))
+        f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
+        textAttr = wxTextAttr(wxNullColour)
+        textAttr.SetFont(f)
+        self.text.SetStyle(nameStart, nameStart+len(reqName), textAttr)
         self.text.SetInsertionPoint(0)
-        self.text.SetStyle(emailStart, emailStart+len(reqEmail),
-                           wxTextAttr(wxNullColour, font = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)))
+
+        f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
+        textAttr = wxTextAttr(wxNullColour)
+        textAttr.SetFont(f)
+        self.text.SetStyle(emailStart, emailStart+len(reqEmail), textAttr)
         self.text.SetInsertionPoint(0)
-        self.text.SetStyle(requestStart, requestStart+len(reqType),
-                           wxTextAttr(wxNullColour, font = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)))
+
+        f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
+        textAttr = wxTextAttr(wxNullColour)
+        textAttr.SetFont(f)
+        self.text.SetStyle(requestStart, requestStart+len(reqType), textAttr)
 
         self.text.Refresh()
         
@@ -1027,15 +1042,12 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
         # We will invoke self.identityCertCreate() callback that
         # was passed to the constructor of the wizard.
         #
-
+        return
         wxBeginBusyCursor()
         self.Refresh()
         self.Update()
 
         success = false
-
-        print "validating, request: ", self.certInfo
-
 
         try:
             proxyInfo = self.proxyPanel.GetInfo()
@@ -1083,7 +1095,6 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
     def ExportServiceProfile(self, event):
 
         dn = "/" + "/".join(map(lambda a: "=".join(a), self.certInfo.GetDN()))
-        print "Export a service profile for ", self.certInfo.GetDN(), dn
         profile = ServiceProfile(self.certInfo.GetName(),
                                  authType = "x509",
                                  subject = dn)
@@ -1100,7 +1111,6 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
             path = dlg.GetPath()
             dlg.Destroy()
             try:
-                print "Exporting to ", path
                 profile.Export(path)
             except:
                 log.exception("Failure exporting profile to %s", path)
