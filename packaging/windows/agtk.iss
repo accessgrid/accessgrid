@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.66 2004-04-07 20:57:20 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.67 2004-04-12 21:42:14 judson Exp $
 ;
 
 ; Set externally
@@ -147,13 +147,7 @@ Name: {commondesktop}\Access Grid Venue Client; Filename: {reg:HKLM\Software\Pyt
 [Registry]
 Root: HKLM; Subkey: SOFTWARE\{#AppName}; ValueType: none; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersion}; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
-Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersion}; ValueType: expandsz; ValueName: ConfigPath; ValueData: {app}\config; Flags: uninsdeletekey
-Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersion}; ValueType: expandsz; ValueName: UserConfigPath; ValueData: {userappdata}\AccessGrid\config; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersion}; ValueType: expandsz; ValueName: VersionInformation; ValueData: {#VersionInformation}
-Root: HKLM; Subkey: SYSTEM\CurrentControlSet\Control\Session Manager\Environment; ValueType: expandsz; ValueName: GLOBUS_LOCATION; ValueData: {app}\config
-Root: HKLM; Subkey: SYSTEM\CurrentControlSet\Control\Session Manager\Environment; ValueType: expandsz; ValueName: GLOBUS_HOSTNAME
-Root: HKLM; Subkey: SOFTWARE\Globus; ValueType: expandsz; ValueName: GLOBUS_LOCATION; ValueData: {app}\config; Flags: uninsdeletekey
-Root: HKLM; Subkey: SOFTWARE\Globus\GSI; ValueType: expandsz; ValueName: x509_cert_dir; ValueData: {app}\config\CAcertificates; Flags: uninsdeletekey
 
 [Tasks]
 Name: desktopicon; Description: Create &Desktop Icons; GroupDescription: Additional icons:
