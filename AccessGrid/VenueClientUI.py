@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.62 2004-07-30 22:21:26 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.63 2004-08-02 19:43:40 binns Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.62 2004-07-30 22:21:26 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.63 2004-08-02 19:43:40 binns Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -199,6 +199,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.manual_url = os.path.join(agtkConfig.GetDocDir(),
                                        "VenueClientManual",
                                        "VenueClientManualHTML.htm")
+        if IsOSX():
+            self.manual_url = "file://" + self.manual_url
         self.agdp_url = "http://www.accessgrid.org/agdp"
         self.ag_url = "http://www.accessgrid.org/"
         self.flag_url = "http://www.mcs.anl.gov/fl/research/accessgrid"

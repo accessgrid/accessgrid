@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement2.py,v 1.3 2004-08-02 14:23:23 binns Exp $
+# RCS-ID:      $Id: VenueManagement2.py,v 1.4 2004-08-02 19:43:40 binns Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement2.py,v 1.3 2004-08-02 14:23:23 binns Exp $"
+__revision__ = "$Id: VenueManagement2.py,v 1.4 2004-08-02 19:43:40 binns Exp $"
 
 # Standard imports
 import sys
@@ -79,9 +79,13 @@ class VenueManagementClient(wxApp):
         sys.stderr = sys.__stderr__
 
         self.agtkConf = AGTkConfig.instance()
+
         self.manual_url = os.path.join(self.agtkConf.GetDocDir(),
                                        "VenueManagementManual",
                                        "VenueManagementManualHTML.htm")
+        if IsOSX():
+            self.manual_url = "file://" + self.manual_url
+
         self.server = None
         self.serverUrl = None
         self.currentVenueClient = None
