@@ -627,7 +627,6 @@ class CertificateManager:
             os.environ['X509_USER_CERT'] = self.forceCertFile
             os.environ['X509_USER_KEY'] = self.forceKeyFile
             os.environ['X509_RUN_AS_SERVER'] = "1"
-            os.system("set")
             return
 
         elif self.inheritIdentity:
