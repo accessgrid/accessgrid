@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.34 2003-02-10 15:22:16 leggett Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.35 2003-02-10 21:23:57 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -60,10 +60,7 @@ class VenueClientUI(wxApp, VenueClient):
         to 'home venue' specified in the user profile, is this fails,  it will ask
         the user for a specific URL to a venue or venue server.
         """
-        # myHomePath = os.environ['HOME']
-        # venueServerUri = "https://localhost:6000/VenueServer"
-        # venueUri = Client.Handle( venueServerUri ).get_proxy().GetDefaultVenue()
-        
+               
         # This will set defaults for either of our platforms, hopefully
         if sys.platform == "win32":
             myHomePath = os.environ['HOMEPATH']
@@ -75,15 +72,19 @@ class VenueClientUI(wxApp, VenueClient):
 
         try:  # do we have a profile file
             os.listdir(myHomePath+'/'+accessGridDir)
+            print '------- we have a profile file'
             
         except:
+            print '------- no, we don"t have a profile file, make dir'
             os.mkdir(myHomePath+'/'+accessGridDir)
 
         self.profile = ClientProfile(self.profilePath)
                   
         if self.profile.IsDefault():  # not your profile
+            print '------- we have to fill in the profile?'
             self.__openProfileDialog()
         else:
+            print '------- start main loop?'
             self.__startMainLoop(self.profile)
 
     def __openProfileDialog(self):
@@ -91,10 +92,15 @@ class VenueClientUI(wxApp, VenueClient):
         This method opens a profile dialog where the user can fill in
         his or her information.  
         """
+        print '------------- open profile dialog'
+         
         profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', self.profile)
 
-        if (profileDialog.ShowModal() == wxID_OK): 
-            self.ChangeProfile(profileDialog.GetNewProfile())
+        if (profileDialog.ShowModal() == wxID_OK):
+            print '------------- profile dialog'
+            self.profile = profileDialog.GetNewProfile()
+            self.ChangeProfile(self.profile)
+          
             profileDialog.Destroy()
             self.__startMainLoop(self.profile)
             
@@ -110,21 +116,34 @@ class VenueClientUI(wxApp, VenueClient):
         self.gotClient = true
         self.SetProfile(profile)
         # This test really wants to be "while the venue url is invalid, loop:
-        while len(self.profile.homeVenue) == 0:
-            connectToVenueDialog = ConnectToVenueDialog(NULL, -1,
-                                                        "Set Home Venue")
-            if connectToVenueDialog.ShowModal() == wxID_OK:
-                self.profile.homeVenue = connectToVenueDialog.address.GetValue()
-        # if the previous test were what it wants to be this would
-        # reduce to simply the enter.
-        while not self.GoToNewVenue(self.profile.homeVenue):
-            connectToVenueDialog = ConnectToVenueDialog(NULL, -1,
-                                                        "Set Home Venue")
-            if connectToVenueDialog.ShowModal() == wxID_OK:
-                self.profile.homeVenue = connectToVenueDialog.address.GetValue()
 
-        self.frame.Show(true)
-        self.MainLoop()
+        print '---------- try if home profile can connect'
+        if self.GoToNewVenue(self.profile.homeVenue):
+            print '---------- home profile is good enter main loop'
+            self.frame.Show(true)
+            self.MainLoop()
+        
+        else:
+            print '---------- home profile is not good'
+            validVenue = false
+            
+            while not validVenue:
+                print '---------- not a valid venue'
+                connectToVenueDialog = ConnectToVenueDialog(NULL, -1,
+                                                            "Please, enter venue or venue server URL")
+                if(connectToVenueDialog.ShowModal() == wxID_OK):
+                    print '---------- get URL from dialog'
+                    if self.GoToNewVenue(connectToVenueDialog.address.GetValue()):
+                        print '---------- the URL is ok - enter main loop'
+                        self.frame.Show(true)
+                        self.MainLoop()
+                        notValidVenue = true
+                  
+                else:
+                    print '---------- cancel dialog'
+                    break
+                #  self.frame.Show(true)
+                #  self.MainLoop()
 
     def ModifyUserEvent(self, data):
         """
@@ -236,35 +255,53 @@ class VenueClientUI(wxApp, VenueClient):
         except:
             (name, args, tb) = formatExceptionInfo()
 
+        print '----------exit venue'
         VenueClient.ExitVenue( self )
-        
+            
                                      
     def GoToNewVenue(self, uri):
+        print '------------ uri: ',uri
+        print '------------ go to new venue'
         if self.venueUri != None:
+            print '------------ we have an old URL'
             oldUri = self.venueUri
         else:
+            print '------------ old URL is none'
             oldUri = None
             
         try: # is this a server
+            print '------------ is this a server'
+            print uri
             venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
+            print '------------ this is a server'
             
         except: # no, it is a venue
+            print '------------ this is a venue'
             venueUri = uri
 
         try:  # temporary solution until we can verify a proxy before hand
             self.client = Client.Handle(venueUri).get_proxy()
+            print '------------ get proxy'
             if oldUri != None:
+                print '------------ clean up frame'
                 self.frame.CleanUp()
                 self.ExitVenue()
+            print '------------ enter venue - true'
             self.EnterVenue(venueUri)
+            print '------------ enter venue - true 2'
             return true
+        
         except GSITCPSocketException:
-            ErrorDialog(self.frame, sys.exc_info()[1][0])
+            print '------------ return false'
+            return false
+        
         except EnterVenueException:
-            ErrorDialog(self.frame, "GoToNewVenue:")
+            print '------------ enter venue exception'
             if oldUri != None:
+                print 'enter venue'
                 self.EnterVenue(oldUri)
             else:
+                print '------------ return false'
                 return false
     
     def OnExit(self):
@@ -272,8 +309,9 @@ class VenueClientUI(wxApp, VenueClient):
         This method performs all processing which needs to be
         done as the application is about to exit.
         """
+        print '-------------on exit'
         self.ExitVenue()
-        os._exit(0)
+        os._exit(1)
                 
     def AddData(self, data):
         """
@@ -303,12 +341,15 @@ class VenueClientUI(wxApp, VenueClient):
         """
         This method changes this participants profile
         """
+        print '---------- change profile'
         self.profile = profile
         self.profile.Save(self.profilePath)
         self.SetProfile(self.profile)
 
         if self.gotClient:
             self.client.UpdateClientProfile(profile)
+
+        print '---------- sat profile'
 
         
 if __name__ == "__main__":
