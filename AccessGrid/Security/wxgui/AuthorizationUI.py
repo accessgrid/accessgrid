@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.3 2004-03-16 18:06:53 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.4 2004-03-17 19:50:48 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.3 2004-03-16 18:06:53 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.4 2004-03-17 19:50:48 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -118,7 +118,7 @@ class AuthorizationUIPanel(wxPanel):
                 actions.append(action.name)
 
             self.actionList.InsertItems(actions, 0)
-            
+                      
         except:
             self.log.exception("AuthorizationUIPanel.ConnectToAuthManager: List actions failed.")
             self.allActions = []
@@ -397,24 +397,26 @@ class AuthorizationUIPanel(wxPanel):
 
             if not self.__participantInRole(roleId, person):
                 self.changed = 1
-                personId = self.tree.AppendItem(roleId, person.name)
+                personId = self.tree.AppendItem(roleId, person.name,
+                                                self.participantId,
+                                                self.participantId)
                 self.tree.SetItemData(personId, wxTreeItemData(person))
                 role.AddSubject(person)
 
             else:
                 MessageDialog(self, "%s is already added to %s"%(person.name, role.name), "Error") 
             
-   
-
+                
     def CheckAction(self, event):
         '''
         Is called when user checks an action.
         '''
-        # wxPython does not distinguish between checklistbox events
+        # wxPython (windows) does not distinguish between checklistbox events
         # that are triggered by a user and check method calls done in
-        # the program code (windows). To avoid reacting to non-user
+        # the program code. To avoid reacting to non-user
         # triggered events; use a flag.
-        if self.checkFlag:
+        
+        if self.checkFlag and isWindows():
             event.Skip()
             self.checkFlag = 0
             return
@@ -532,7 +534,8 @@ class AuthorizationUIPanel(wxPanel):
                 # Update tree
                 self.changed = 1
                 self.tree.Delete(self.dragItem)
-                itemId = self.tree.AppendItem(parent, item.name)
+                itemId = self.tree.AppendItem(parent, item.name, self.participantId,
+                                              self.participantId)
                 self.tree.SetItemData(itemId, wxTreeItemData(item))
                                 
             else:
@@ -560,7 +563,8 @@ class AuthorizationUIPanel(wxPanel):
                         
             self.changed = 1
             newRole = Role(name)
-            roleId = self.tree.AppendItem(self.root, newRole.name, -1, -1)
+            roleId = self.tree.AppendItem(self.root, newRole.name, self.bulletId,
+                                          self.bulletId)
             self.tree.SetItemBold(roleId)
             self.tree.SetItemData(roleId, wxTreeItemData(newRole))
             self.allRoles.append(newRole)
@@ -663,7 +667,8 @@ class AuthorizationUIPanel(wxPanel):
                         
             # Insert subject in tree
             index = self.roleToTreeIdDict[activeRole]
-            subjectId = self.tree.AppendItem(index, subject.name)
+            subjectId = self.tree.AppendItem(index, subject.name,
+                                             self.participantId, self.participantId)
             self.tree.SetItemData(subjectId, wxTreeItemData(subject))
 
         addPersonDialog.Destroy()  
