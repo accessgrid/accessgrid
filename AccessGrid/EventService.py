@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.15 2003-04-19 16:36:22 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.16 2003-04-23 09:15:26 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -51,49 +51,54 @@ class ConnectionHandler(StreamRequestHandler):
         # loop getting data and handing it to the server
         self.running = 1
         while(self.running):
+            event = None
             try:
                 # This is hardwired to 4 byte size for now
                 data = self.rfile.read(4)
+                log.debug("EventConnection: DataSizevenu: %d", len(data))
                 sizeTuple = struct.unpack('i', data)
                 size = sizeTuple[0]
                 log.debug("EventConnection: Read %d", size)
             except IOBaseException:
-                # This is what happens when a connection goes away suddently
-                # We need to handle this gracefully
-                size = 0
                 log.debug("EventConnection: Connection lost.")
-                self.disconnect()
-                continue
-                
-            # Get the pickled event data
-            try:
-                pdata = self.rfile.read(size)
-                log.debug("EventConnection: Read data.")
-            except:
-                log.debug("EventConnection: Read data failed.")
-                self.disconnect()
-                continue
+                size = 0
+                self.running = 0
+                # this is an icky hack :-\
+                event = DisconnectEvent(self.channel, self.privateId)
+
+            if size != 0:
+                # Get the pickled event data
+                try:
+                    pdata = self.rfile.read(size)
+                    log.debug("EventConnection: Read data.")
+                except:
+                    log.debug("EventConnection: Read data failed.")
+                    self.running = 0
+                    # this is an icky hack :-\
+                    event = DisconnectEvent(self.channel, self.privateId)
             
             # Unpickle the event data
-            event = pickle.loads(pdata)
+            if event == None:
+                event = pickle.loads(pdata)
             
             # Pass this event to the callback registered for this
             # event.eventType
             log.debug("EventConnection: Received event %s", event)
             
             if event.eventType == ConnectEvent.CONNECT:
-                log.debug("EventConnection: Adding connection to venue %s",
-                          event.venue)
+                log.debug("EventConnection: Adding client %s to venue %s",
+                          event.data, event.venue)
                 self.channel = event.venue
+                self.privateId = event.data
                 self.server.connections[event.venue].append(self)
-                continue
             
             # Disconnect Event
             if event.eventType == DisconnectEvent.DISCONNECT:
                 log.debug("EventConnection: Removing client connection to %s",
                           event.venue)
-                self.disconnect()
-                continue
+                if self.channel != None:
+                    self.server.connections[self.channel].remove(self)
+                    self.running = 0
             
             # Pass this event to the callback registered for this
             # event.eventType
@@ -112,24 +117,15 @@ class ConnectionHandler(StreamRequestHandler):
                 else:
                     log.info("EventService: No callback for %s, %s events.",
                              event.venue, event.eventType)
-                
+
+        self.disconnect()
+        
     def disconnect(self):
         """
         This is here to encapsulate all the parts of disconnection that matter.
         """
-        # First turn off the loop
-        self.running = 0
-
-        # Second clean me out of all lists, this connection is no longer valid
-        if self.channel != None:
-            self.server.connections[self.channel].remove(self)
-
-            # Third send the server a disconnect event so they know I'm gone
-            if self.server.callbacks.has_key((self.channel,
-                                              DisconnectEvent.DISCONNECT)):
-                cb = self.server.callbacks[(self.channel,
-                                            DisconnectEvent.DISCONNECT)]
-                cb(None)
+        # clean me out of all lists, this connection is no longer valid
+        pass
         
 class EventService(ThreadingGSITCPSocketServer, Thread):
     """

@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.21 2003-03-24 20:26:12 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.22 2003-04-23 09:15:26 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,6 +18,8 @@ import time
 from random import Random
 import sha
 import urllib
+
+from wxPython.wx import wxTheMimeTypesManager as mtm
 
 def LoadConfig(fileName, config={}):
     """
@@ -224,3 +226,44 @@ except ImportError:
     import socket
     GetHostname = socket.getfqdn()
 
+def RegisterMimeType(mimetype, cmdstring):
+    """
+    This function is used to add a mimetype to the users environment.
+    """
+    pass
+
+def InitMimeTypes(file):
+    """
+    This function is used to load in our AG specific mimetypes.
+    """
+    return mtm.ReadMailcap(file)
+    
+def SetMimeTypeAssociation(mimetype, ext=None, desc=None, cmds=None):
+    """
+    This function registers information with the local machines mime types
+    database so it can be retrieved later.
+    """
+    pass
+
+def GetMimeCommands(filename = None, type = None, ext = None):
+    """
+    This function returns anything in the local mime type database for the
+    type or extension specified.
+    """
+    cdict = dict()
+    
+    if type != None:
+        fileType = mtm.GetFileTypeFromMimeType(type)
+    elif ext != None:
+        fileType = mtm.GetFileTypeFromExtension(ext)
+
+    if fileType != None and filename != None:
+        mimeType = fileType.GetMimeType()
+        cmds = fileType.GetAllCommands(filename, mimeType)
+        verbs, cmdlines = cmds
+        for i in range(0, len(verbs)):
+            cdict[verbs[i]] = cmdlines[i]
+    else:
+        cdict = None
+
+    return cdict

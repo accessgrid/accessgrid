@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.76 2003-04-22 21:52:23 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.77 2003-04-23 09:15:26 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -39,7 +39,6 @@ from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import GetHostname
 
 log = logging.getLogger("AG.VenueServer")
-log.setLevel(logging.INFO)
 
 class VenueException(Exception):
     """
@@ -327,9 +326,10 @@ class Venue(ServiceBase.ServiceBase):
         else:
             log.error("Venue::ClientHeartbeat: Trying to set heartbeat time on non existing client")
     
-    def EventServiceDisconnect(self, event):
-        log.debug("Got Client Disconnect")
-        
+    def EventServiceDisconnect(self, privateId):
+        log.debug("VenueServer: Got Client disconnect for %s", privateId)
+        self.RemoveUser(privateId)
+
     def Shutdown(self):
         """
         This method cleanly shuts down all active threads associated with the

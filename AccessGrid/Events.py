@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.8 2003-04-18 22:58:35 judson Exp $
+# RCS-ID:      $Id: Events.py,v 1.9 2003-04-23 09:15:26 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -41,20 +41,20 @@ class Event:
 class ConnectEvent(Event):
     CONNECT = "Connect"
 
-    def __init__(self, venueId):
-        Event.__init__(self, ConnectEvent.CONNECT, venueId, None)
+    def __init__(self, venueId, privateId):
+        Event.__init__(self, ConnectEvent.CONNECT, venueId, privateId)
 
 class DisconnectEvent(Event):
     DISCONNECT = "Disconnect"
 
-    def __init__(self, venueId):
-        Event.__init__(self, DisconnectEvent.DISCONNECT, venueId, None)
+    def __init__(self, venueId, privateId):
+        Event.__init__(self, DisconnectEvent.DISCONNECT, venueId, privateId)
         
 class HeartbeatEvent(Event):
     HEARTBEAT = "Client Heartbeat"
     
-    def __init__(self, venueId, data):
-        Event.__init__(self, HeartbeatEvent.HEARTBEAT, venueId, data)
+    def __init__(self, venueId, privateId):
+        Event.__init__(self, HeartbeatEvent.HEARTBEAT, venueId, privateId)
 
 class TextPayload:
     """ """

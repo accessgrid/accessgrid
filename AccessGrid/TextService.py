@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextService.py,v 1.15 2003-04-21 14:07:26 eolson Exp $
+# RCS-ID:      $Id: TextService.py,v 1.16 2003-04-23 09:15:26 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -60,7 +60,7 @@ class ConnectionHandler(StreamRequestHandler):
                 log.debug("TextConnection: Read %d", size)
             except IOBaseException:
                 size = 0
-                self.disconnect()
+                self.running = 0
                 log.debug("TextConnection: Connection Lost.")
                 continue
             
@@ -70,7 +70,7 @@ class ConnectionHandler(StreamRequestHandler):
                 log.debug("TextConnection: Read data.")
             except:
                 log.debug("TextConnection: Read data failed.")
-                self.disconnect()
+                self.running = 0
                 continue
             
             # Unpickle the data
@@ -83,10 +83,10 @@ class ConnectionHandler(StreamRequestHandler):
                 self.channel = event.venue
                 self.server.connections[self.channel].append(self)
                 continue
-
+            
             if event.eventType == DisconnectEvent.DISCONNECT:
                 # Disconnection Event
-                self.disconnect()
+                self.running = 0
                 continue
             
             # Tag the event with the sender, which is obtained
@@ -102,13 +102,12 @@ class ConnectionHandler(StreamRequestHandler):
             # there is some notion of security :-)
             self.server.Distribute(event)
 
+        self.disconnect()
+        
     def disconnect(self):
         """
         This is the disconnect method that cleans up the connection.
         """
-        # First turn off the connection loop
-        self.running = 0
-
         # Clean up
 #        self.server.connections[self.channel].remove(self)
         

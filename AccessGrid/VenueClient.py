@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.54 2003-04-22 15:57:41 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.55 2003-04-23 09:15:26 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -295,13 +295,15 @@ class VenueClient( ServiceBase):
             }
 
         h, p = self.venueState.eventLocation
-        self.eventClient = EventClient(self.venueState.eventLocation,
+        self.eventClient = EventClient(self.privateId,
+                                       self.venueState.eventLocation,
                                        self.venueState.uniqueId)
         for e in coherenceCallbacks.keys():
             self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
             
         self.eventClient.start()
-        self.eventClient.Send(ConnectEvent(self.venueState.uniqueId))
+        self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
+                                           self.privateId))
             
         self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 5)
         self.heartbeatTask.start()
@@ -346,7 +348,8 @@ class VenueClient( ServiceBase):
         """
         if self.heartbeatTask != None:
             self.heartbeatTask.stop()
-        self.eventClient.Send(DisconnectEvent(self.venueState.uniqueId))
+        self.eventClient.Send(DisconnectEvent(self.venueState.uniqueId,
+                                              self.privateId))
         self.eventClient.Stop()
         self.venueProxy.Exit( self.privateId )
         self.__InitVenueData__()

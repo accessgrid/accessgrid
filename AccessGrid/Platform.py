@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.19 2003-04-09 19:44:38 olson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.20 2003-04-23 09:15:26 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -91,7 +91,10 @@ def GetSystemConfigDir():
     except:
         configDir = ""
 
-    """ If environment variable not set, check for settings from installation. """
+    """
+    If environment variable not set, check for settings from installation.
+    """
+
     if "" == configDir:
 
         if sys.platform == WIN:
@@ -113,9 +116,11 @@ def GetUserConfigDir():
     except:
         configDir = ""
 
-    """ If environment variable not set, check for settings from installation. """
+    """
+    If environment variable not set, check for settings from installation.
+    """
+    
     if "" == configDir:
-
         if sys.platform == WIN:
             base = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
             configDir = os.path.join(base, "AccessGrid")

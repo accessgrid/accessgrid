@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.12 2003-04-19 16:36:22 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.13 2003-04-23 09:15:26 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ import pickle
 import logging
 import struct
 
-from pyGlobus.io import GSITCPSocket,TCPIOAttr,AuthData
+from pyGlobus.io import GSITCPSocket, TCPIOAttr, AuthData, IOBaseException
 from pyGlobus.util import Buffer
 from pyGlobus import ioc
 
@@ -40,11 +40,12 @@ class EventClient(Thread):
     events through the event service.
     """
     bufsize = 128
-    def __init__(self, location, channel):
+    def __init__(self, privateId, location, channel):
         """
         The EventClient constructor takes a host, port.
         """
         # Standard initialization
+        self.privateId = privateId
         self.channel = channel
         self.buffer = Buffer(EventClient.bufsize)
         self.location = location
@@ -68,17 +69,20 @@ class EventClient(Thread):
         """
         self.running = 1
         while self.running:
-            # Read the size
+            event = None
+            data = None
             try:
                 data = self.rfile.read(4)
+                log.debug("EventClient: DataSize: %d", len(data))
+            except IOBaseException:
+                log.debug("EventClient: Connectoin Lost.")
+                self.running = 0
+                continue
+
+            if len(data) > 0:
                 sizeTupe = struct.unpack('i', data)
                 size = sizeTupe[0]
-                log.debug("Read size: %d", size)
-            except IOBaseException:
-                size = 0
-                log.exception("Read size: failed")
-                # Disconnect?
-                continue
+                log.debug("EventClient: Read size: %d", size)
 
             # Read the data
             try:
@@ -86,7 +90,6 @@ class EventClient(Thread):
                 log.debug("EventClient: Read data.")
             except:
                 log.debug("EventClient: Read data failed.")
-                # Disconnect?
                 self.running = 0
                 continue
 
@@ -125,7 +128,7 @@ class EventClient(Thread):
     def Stop(self):
         self.running = 0
 
-        self.Send(DisconnectEvent(self.channel))
+        self.Send(DisconnectEvent(self.channel, self.privateId))
 
     def DefaultCallback(self, event):
         log.info("Got callback for %s event!", event.eventType)
@@ -165,11 +168,11 @@ if __name__ == "__main__":
         port = 6500
         channel = 'Test'
         
-        eventClient = EventClient((host, port), channel)
+        eventClient = EventClient('privId', (host, port), channel)
 
     eventClient.Start()
     
-    eventClient.Send(ConnectEvent(channel))
+    eventClient.Send(ConnectEvent(channel, 'privId'))
         
     for i in range(1,5):
         eventClient.Send(HeartbeatEvent(channel, "foo"))

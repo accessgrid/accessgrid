@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.152 2003-04-22 22:24:27 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.153 2003-04-23 09:15:26 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -405,11 +405,13 @@ class VenueClientFrame(wxFrame):
     def SetTextLocation(self, event = None):
         textLoc = tuple(self.app.venueState.GetTextLocation())
         id = self.app.venueState.uniqueId
-        self.textClientPanel.SetLocation(textLoc, id)
+        self.textClientPanel.SetLocation(self.app.privateId, textLoc, id)
 
+        # I don't know why this is in a try/except block and the previous
+        # line isn't.
         try:
-            self.textClientStandAlone.SetLocation(textLoc, id)
-
+            self.textClientStandAlone.SetLocation(self.app.privateId,
+                                                  textLoc, id)
         except:
             pass
 
@@ -1529,9 +1531,9 @@ class TextClientPanel(wxPanel):
         EVT_BUTTON(self, self.ID_BUTTON, self.LocalInput)
         self.Show(true)
 
-    def SetLocation(self, location, venueId):
+    def SetLocation(self, privateId, location, venueId):
         if self.Processor != None:
-            self.Processor.Input(DisconnectEvent(self.venueId))
+            self.Processor.Input(DisconnectEvent(self.venueId, privateId))
             self.Processor.Stop()
             self.socket.close()
             
@@ -1554,7 +1556,7 @@ class TextClientPanel(wxPanel):
         
         self.Processor = SimpleTextProcessor(self.socket, self.venueId,
                                              self.OutputText)
-        self.Processor.Input(ConnectEvent(self.venueId))
+        self.Processor.Input(ConnectEvent(self.venueId, privateId))
         self.TextOutput.Clear()
         self.TextInput.Clear()
 
