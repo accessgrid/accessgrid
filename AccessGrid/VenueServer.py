@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.114 2004-02-26 16:47:22 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.115 2004-03-01 17:26:38 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.114 2004-02-26 16:47:22 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.115 2004-03-01 17:26:38 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -158,6 +158,7 @@ class VenueServer(AuthorizationMixIn):
         self.authManager.SetDefaultRoles([admins])
         
         # Initialize our state
+        self.checkpointing = 0
         self.persistenceFilename = 'VenueServer.dat'
         self.houseKeeperFrequency = 30
         self.venuePathPrefix = 'Venues'
@@ -515,12 +516,24 @@ class VenueServer(AuthorizationMixIn):
         state that is lost (the longer the time between checkpoints, the more
         that can be lost).
         """
+        # Don't checkpoint if we are already
+        if not self.checkpointing:
+            self.checkpointing = 1
+        else:
+            return
+        
+        # Grab a copy of the venues to dump
+        # This is a critical section so we lock around it
         self.simpleLock.acquire()
+        venuesToDump = self.venues.copy()
+        self.simpleLock.release()
         
         # Before we backup we copy the previous backup to a safe place
+        # We only do this once, ie, if the file exists, we don't copy
+        # over it.
         if os.path.isfile(self.persistenceFilename):
             nfn = self.persistenceFilename + '.bak'
-            if not os.path.isfile(nfn):
+            if not os.path.exists(nfn):
                 try:
                     os.rename(self.persistenceFilename, nfn)
                 except OSError:
@@ -531,29 +544,25 @@ class VenueServer(AuthorizationMixIn):
         store = file(self.persistenceFilename, "w")
 
         try:            
-            for venuePath in self.venues.keys():
-                # Change out the uri for storage, we store the path
-                venueURI = self.venues[venuePath].uri
-                self.venues[venuePath].uri = venuePath
+            for venuePath in venuesToDump.keys():
+                # Change out the uri for storage,
+                # we don't bother to store the path since this is
+                # a copy of the real list we're going to dump anyway
+                venuesToDump[venuePath].uri = venuePath
 
                 try:            
                     # Store the venue.
-                    store.write(self.venues[venuePath].AsINIBlock())
+                    store.write(venuesToDump[venuePath].AsINIBlock())
                 except:
                     self.simpleLock.release()
                     log.exception("Exception Storing Venue!")
                     return 0
 
-                # Change the URI back
-                self.venues[venuePath].uri = venueURI
-
-                self.venues[venuePath].dataStore.StorePersistentData()
+                venuesToDump[venuePath].dataStore.StorePersistentData()
 
             # Close the persistent store
             store.close()
-
         except:
-            self.simpleLock.release()
             store.close()
             log.exception("Exception Checkpointing!")
             return 0
@@ -562,8 +571,6 @@ class VenueServer(AuthorizationMixIn):
 
         # Finally we save the current config
         SaveConfig(self.configFile, self.config)
-
-        self.simpleLock.release()
 
         return 1
 
