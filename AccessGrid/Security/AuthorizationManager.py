@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.6 2004-03-04 20:23:19 judson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.7 2004-03-04 20:24:45 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.6 2004-03-04 20:23:19 judson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.7 2004-03-04 20:24:45 judson Exp $"
 
 # External Imports
 import xml.dom.minidom
@@ -1013,6 +1013,8 @@ class AuthorizationMixIn(AuthorizationManager):
 
        @return: a string containt the url to the authorization service.
        """
+       # This hosting enviroment is assumed to come from the implementation
+       # not the actual authorization manager. This is icky mix-in design.
        return self.hostingEnvironment.GetURLForObject(self.authManager)
 
    def GetRequiredRoles(self):
