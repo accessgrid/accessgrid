@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.57 2004-07-30 20:14:36 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.58 2004-08-18 16:20:42 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.57 2004-07-30 20:14:36 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.58 2004-08-18 16:20:42 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -72,6 +72,10 @@ def main():
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
+        sys.exit(-1)
+        
+    if not app.certificateManager.GetDefaultIdentity():
+        print 'No default identity, check your certificates.'
         sys.exit(-1)
 
     # Get the Log
