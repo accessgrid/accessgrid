@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.11 2004-04-05 18:38:52 judson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.12 2004-04-16 20:31:41 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.11 2004-04-05 18:38:52 judson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.12 2004-04-16 20:31:41 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -512,7 +512,8 @@ class CertificateRepository:
         #
 
         io = cStringIO.StringIO(crypto.dump_certificate(crypto.FILETYPE_PEM, certobj))
-        cert = Certificate(io)
+        cert = Certificate(None, certHandle = io)
+        io.close()
 
         path = self._GetCertDirPath(cert)
         # print "Would put cert in dir ", path
@@ -1175,19 +1176,21 @@ class CertificateRequestDescriptor:
 class Certificate:
     hostCertRE = re.compile(r"^[^\s./]+(\.[^\s./]+)+$")
     serviceCertRE = re.compile(r"^([^/]*)/([^/]*)$")
-    def __init__(self,  path, keyPath = None, repo = None):
+    def __init__(self,  path, keyPath = None, repo = None, certHandle = None, certText = None):
         """
         Create a certificate object.
 
         This wraps an underlying OpenSSL X.509 cert object.
 
-        path - pathname of the stored certificate. If path is a file object,
-        use that to load the certificate instead of opening a file.
-        keyPath - pathname of the private key for the certificate
+        @param path: pathname of the stored certificate.
+        @param keyPath: pathname of the private key for the certificate
+        @param repo: certificate repository to be used as a reference for lookup operations.
+        @param certHandle: a file handle to use for loading the certificate. If this is specified,
+        path must be None.
+        @param certText: Actual text of the certificate. Again, if specified, path must be None.
         """
 
-        if type(path) != file:
-            self.path = path
+        self.path = path
         self.keyPath = keyPath
         self.repo = repo
 
@@ -1198,13 +1201,21 @@ class Certificate:
         self.issuerSerialHash = None
         self.modulusHash = None
 
-        if type(path) != file:
-            fh = open(self.path, "r")
+        if certHandle is not None:
+            if path is not None:
+                log.error("Cannot specify both certHandle and path")
+
+            self.certText = certHandle.read()
+        elif certText is not None:
+            self.certText = certText
+
         else:
-            fh = path
-        self.certText = fh.read()
+            fh = open(self.path, "r")
+            self.certText = fh.read()
+            fh.close()
+
         self.cert = crypto.load_certificate(crypto.FILETYPE_PEM, self.certText)
-        fh.close()
+
 
         #
         # We don't load the privatekey with the load_privatekey method,
