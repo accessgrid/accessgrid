@@ -5,12 +5,13 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.3 2003-05-20 21:15:21 olson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.4 2003-05-20 21:40:08 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import logging
+import os
 
 log = logging.getLogger("AG.toolkit")
 
