@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.18 2004-06-01 23:07:45 judson Exp $
+# RCS-ID:      $Id: Role.py,v 1.19 2004-08-26 17:21:08 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ much more dynamic. We programmatically create, destroy and modify
 roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.18 2004-06-01 23:07:45 judson Exp $"
+__revision__ = "$Id: Role.py,v 1.19 2004-08-26 17:21:08 eolson Exp $"
 
 # external imports
 import xml.dom.minidom
@@ -256,8 +256,8 @@ class Role:
 
 # Some default roles
 Everybody = Role("Everybody")
-Everybody.SetRequireDefault(1)
 Administrators = Role("Administrators")
+Administrators.SetRequireDefault(1)
 
 if __name__ == "__main__":
     
