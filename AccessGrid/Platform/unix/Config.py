@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.28 2004-05-13 20:17:43 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.29 2004-05-13 20:35:15 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.28 2004-05-13 20:17:43 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.29 2004-05-13 20:35:15 eolson Exp $"
 
 import os
 import mimetypes
@@ -828,7 +828,7 @@ Comment=%s
         userAppFile = os.path.join(kdeUserApps, "agpm.desktop")
 
         # Copy KDE files into place
-        if len(userMimeFile) > 0 and os.path.exists(userMimeFile):
+        if len(userMimeFile) > 0 and os.path.exists(kdeUserMime):
             mimeFd = open(userMimeFile, "w")
             mimeFd.write(kdeMimeInfo)
             mimeFd.close()
