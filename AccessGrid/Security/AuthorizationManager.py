@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.15 2004-03-26 17:03:28 lefvert Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.16 2004-04-06 18:44:55 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,18 +19,19 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.15 2004-03-26 17:03:28 lefvert Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.16 2004-04-06 18:44:55 eolson Exp $"
 
 # External Imports
 import os
 import xml.dom.minidom
 
+from AccessGrid import Log
 #AGTk Importsfrom AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.hosting import Decorate, Reconstitute, Client
 from AccessGrid.GUID import GUID
-from AccessGrid.Security.Role import RoleNotFound, RoleAlreadyPresent
-from AccessGrid.Security.Role import Everybody, Role
+from AccessGrid.Security.Role import RoleNotFound, RoleAlreadyPresent, InvalidRole
+from AccessGrid.Security.Role import Everybody, Nobody, AllowRole, DenyRole, Role
 from AccessGrid.Security.Action import Action
 from AccessGrid.Security.Action import ActionNotFound, ActionAlreadyPresent
 from AccessGrid.Security.Action import MethodAction
@@ -38,6 +39,8 @@ from AccessGrid.Security import X509Subject
 
 from AccessGrid.ClientProfile import ClientProfileCache
 from AccessGrid.Platform.Config import UserConfig
+
+log = Log.GetLogger(Log.Security)
 
 class InvalidParent(Exception):
     """
@@ -66,6 +69,7 @@ class AuthorizationManager:
         self.actions = list()
         self.defaultRoles = list()
         self.defaultRoles.append(Everybody)
+        self.defaultRoles.append(Nobody)
         self.parent = None
 
         # Yeah, I know
@@ -115,7 +119,17 @@ class AuthorizationManager:
                                             s.attributes["auth_data"].value)
                 if sl.count(s) == 0:
                     sl.append(s)
-            r = Role(node.attributes["name"].value, sl)
+
+            roleType = None
+            if "TYPE" in node.attributes.keys():    
+                roleType = node.attributes["TYPE"].value
+            if roleType == "Allow":
+                r = AllowRole(node.attributes["name"].value, sl)
+            elif roleType == "Deny":
+                r = DenyRole(node.attributes["name"].value, sl)
+            else:
+                r = Role(node.attributes["name"].value, sl)
+
             if "default" in node.attributes.keys():    
                 return (r, 1)
             else:
@@ -136,7 +150,9 @@ class AuthorizationManager:
         
         domP = xml.dom.minidom.parseString(policy)
         
-        for c in domP.getElementsByTagName("Role"):
+        roleElements = domP.getElementsByTagName("Role") + domP.getElementsByTagName("AllowRole") + domP.getElementsByTagName("DenyRole")
+
+        for c in roleElements:
             (r, default) = unpackRole(c)
             try:
                 self.AddRole(r, default = default)
@@ -203,7 +219,7 @@ class AuthorizationManager:
                     # Deny overrides anything else
                     return 0
                 
-                if role.TYPE == "Accept":
+                if role.TYPE == "Allow":
                     # We only authorize if the subject is explicitly authorized
                     auth = 1
 
@@ -313,6 +329,9 @@ class AuthorizationManager:
         else:
             r = self.roles
 
+        if None == role:
+            raise InvalidRole
+
         if not self.FindRole(role.name):
             r.append(role)
         else:
@@ -358,12 +377,12 @@ class AuthorizationManager:
         if action == None:
             rolelist = self.roles
         else:
-            action = self.FindAction(action.GetName())
+            foundAction = self.FindAction(action.GetName())
 
-            if not action:
+            if not foundAction:
                 raise ActionNotFound(action.GetName())
                 
-            rolelist = action.GetRoles()
+            rolelist = foundAction.GetRoles()
 
         return rolelist
 
@@ -504,6 +523,17 @@ class AuthorizationManagerI(SOAPInterface):
         """
         SOAPInterface.__init__(self, impl)
 
+    def _authorize(self, *args, **kw):
+        """
+        The authorization callback.
+        """
+        subject, action = self._GetContext()
+
+        log.info("Authorizing action: %s for subject %s", action.name,
+                 subject.name)
+
+        return self.impl.IsAuthorized(subject, action)
+
     def TestImportExport(self, policy):
         """
         A test call that verifies the policy can be imported and
@@ -628,7 +658,6 @@ class AuthorizationManagerI(SOAPInterface):
         
         @return: a list of AccessGrid.Security.Action objects.
         """
-
         r = Reconstitute(role)
         s = Reconstitute(subject)
         alist = self.impl.GetActions(s, r)
@@ -1136,7 +1165,7 @@ class AuthorizationMixIn(AuthorizationManager):
        """
        self.authManager = AuthorizationManager()
        self.rolesRequired = list()
-       
+
    def GetAuthorizationManager(self):
        """
        Get the URL for the Authorization Manager.
