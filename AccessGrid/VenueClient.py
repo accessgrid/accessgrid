@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.137 2004-03-04 15:32:49 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.138 2004-03-04 15:57:24 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.137 2004-03-04 15:32:49 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.138 2004-03-04 15:57:24 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -45,7 +45,7 @@ from AccessGrid.Types import *
 from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
 from AccessGrid.Events import DisconnectEvent, ClientExitingEvent
 from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent
-from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache
+from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache, InvalidProfileException
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
 from AccessGrid.Descriptions import DataDescription, ConnectionDescription
 from AccessGrid.Descriptions import CreateDataDescription, CreateVenueState
