@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.3 2003-02-13 20:11:31 turam Exp $
+# RCS-ID:      $Id: Platform.py,v 1.4 2003-02-14 15:23:35 leggett Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -37,12 +37,12 @@ def GetSystemConfigDir():
 
     configDir = ""
     if sys.platform == 'win32':
-        x=_winreg.ConnectRegistry(None,_winreg.HKEY_LOCAL_MACHINE)
-        y=_winreg.OpenKey(x, r"SOFTWARE\AccessGridToolkit\2.0\ConfigPath")
-        configDir = _winreg.QueryValue(y,None)
+        AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Access Grid Toolkit\\2.0")
+        configDir, type = _winreg.QueryValueEx(AG20,"ConfigPath")
 
     elif sys.platform == 'linux2': 
         configDir = "/etc/AccessGrid/config"
+
     return configDir
 
 def GetUserConfigDir():
@@ -52,13 +52,11 @@ def GetUserConfigDir():
 
     configDir = ""
     if sys.platform == 'win32':
-        x=_winreg.ConnectRegistry(None,_winreg.HKEY_LOCAL_MACHINE)
-        y=_winreg.OpenKey(x, r"SOFTWARE\AccessGridToolkit\2.0\UserConfigPath")
-        configDir = _winreg.QueryValue(y,None)
+        AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Access Grid Toolkit\\2.0")
+        configDir, type = _winreg.QueryValueEx(AG20,"UserConfigPath")
 
-    elif sys.platform == 'linux2': 
-        
-        configDir = os.environ["HOME"] + os.sep + ".AccessGrid"
+    elif sys.platform == 'linux-i386': 
+        configDir = os.path.join(os.environ["HOME"],".AccessGrid")
 
     return configDir
 
@@ -70,12 +68,12 @@ def GetConfigFilePath( configFile ):
     """
 
     userConfigPath = GetUserConfigDir()
-    pathToFile = userConfigPath + os.sep + configFile
+    pathToFile = os.path.join(userConfigPath,configFile)
     if os.path.exists( pathToFile ):
         return pathToFile
 
     systemConfigPath = GetSystemConfigDir()
-    pathToFile = systemConfigPath + os.sep + configFile
+    pathToFile = os.path.join(systemConfigPath,configFile)
     if os.path.exists( pathToFile ):
         return pathToFile
 
