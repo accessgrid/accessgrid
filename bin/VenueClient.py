@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.65 2003-03-12 20:04:29 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.66 2003-03-13 23:43:26 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -143,8 +143,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         wxCallAfter(wxLogDebug, "EVENT - Modify participant: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.ModifyParticipant, data)
-        pass
-
+          
     def AddDataEvent(self, data):
         """
         Note: Overloaded from VenueClient
@@ -153,7 +152,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         wxCallAfter(wxLogDebug, "EVENT - Add data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.AddData, data)
-        pass
+        
 
     def UpdateDataEvent(self, data):
         """
@@ -163,8 +162,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         wxCallAfter(wxLogDebug, "EVENT - Update data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.UpdateData, data)
-        pass
-
+        
     def RemoveDataEvent(self, data):
         """
         Note: Overloaded from VenueClient
@@ -173,8 +171,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         wxCallAfter(wxLogDebug, "EVENT - Remove data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.RemoveData, data)
-        pass
-
+        
     def AddServiceEvent(self, data):
         """
         Note: Overloaded from VenueClient
@@ -183,8 +180,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         wxCallAfter(wxLogDebug, "EVENT - Add service: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.AddService,data)
-        pass
-
+      
     def RemoveServiceEvent(self, data):
         """
         Note: Overloaded from VenueClient
@@ -193,8 +189,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         wxCallAfter(wxLogDebug, "EVENT - Remove service: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.RemoveService, data)
-        pass
-
+      
     def AddConnectionEvent(self, data):
         """
         Note: Overloaded from VenueClient
@@ -203,8 +198,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         wxCallAfter(wxLogDebug, "EVENT - Add connection: %s" %(data.name))
         wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, data)
-        pass
-
+      
     def SetConnectionsEvent(self, data):
         """
         Note: Overloaded from VenueClient
@@ -238,8 +232,9 @@ class VenueClientUI(wxApp, VenueClient):
         users = venueState.users.values()
         wxCallAfter(wxLogDebug, "Add participants")
         for user in users:
+            print '--------------------------DDDDDDDDDDNNNNNNNNNN'
+            print user.distinguishedName
             if(user.profileType == 'user'):
-                print user.distinguishedName
                 wxCallAfter(self.frame.contentListPanel.AddParticipant, user)
                 wxCallAfter(wxLogDebug, "   %s" %(user.name))
             else:
