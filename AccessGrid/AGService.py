@@ -5,11 +5,15 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.13 2003-04-10 19:08:39 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.14 2003-04-23 19:29:50 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import sys
+
+import logging
+
+log = logging.getLogger("AG.AGService")
 
 try:     import win32process
 except:  pass
@@ -33,9 +37,11 @@ class AGService( ServiceBase ):
    """
    AGService : Base class for developing services for the AG
    """
-   def __init__( self ):
+   def __init__( self, server ):
       if self.__class__ == AGService:
          raise Exception("Can't instantiate abstract class AGService")
+
+      self.server = server
       
       self.resource = AGResource()
       self.executable = None
@@ -74,6 +80,15 @@ class AGService( ServiceBase ):
    def Stop( self ):
        """Stop the service"""
        try:
+           try:
+               #
+               # Kill off the server. this is a hack for now, tom is
+               # going to make this work right later.
+               #
+               self.server.stop()
+           except:
+               log.exception("Can't do server stop")
+               
            self.started = 0
            self.processManager.terminate_all_processes()
        except Exception, e:

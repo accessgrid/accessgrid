@@ -5,12 +5,17 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.15 2003-04-22 21:54:07 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.16 2003-04-23 19:29:50 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys
 import os
+
+import logging
+log = logging.getLogger("AG.VideoProducerService")
+
+
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
@@ -39,9 +44,9 @@ class VideoProducerService( AGService ):
 
    encodings = [ "h261" ]
 
-   def __init__( self ):
+   def __init__( self, server ):
       print self.__class__, ".init"
-      AGService.__init__( self )
+      AGService.__init__( self, server )
 
       self.capabilities = [ Capability( Capability.PRODUCER, Capability.VIDEO ) ]
       self.executable = "vic"
@@ -138,8 +143,14 @@ if __name__ == '__main__':
    from AccessGrid.hosting.pyGlobus import Client
    import thread
 
-   agService = VideoProducerService()
+   top = logging.getLogger("AG")
+   top.setLevel(logging.DEBUG)
+   top.addHandler(logging.StreamHandler())
+
    server = Server( int(sys.argv[1]), auth_callback=AuthCallback )
+   
+   agService = VideoProducerService(server)
+
    service = server.create_service_object("Service")
    agService._bind_to_service( service )
 

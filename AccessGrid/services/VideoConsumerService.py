@@ -5,11 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.14 2003-04-22 21:54:07 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.15 2003-04-23 19:29:50 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys
+
+import logging
+log = logging.getLogger("AG.VideoConsumerService")
 
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
@@ -19,8 +22,8 @@ from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangePara
 
 class VideoConsumerService( AGService ):
 
-   def __init__( self ):
-      AGService.__init__( self )
+   def __init__( self, server ):
+      AGService.__init__( self, server )
 
       self.capabilities = [ Capability( Capability.CONSUMER, Capability.VIDEO ) ]
       self.executable = "vic"
@@ -79,8 +82,14 @@ if __name__ == '__main__':
    from AccessGrid.hosting.pyGlobus import Client
    import thread
 
-   agService = VideoConsumerService()
+   top = logging.getLogger("AG")
+   top.setLevel(logging.DEBUG)
+   top.addHandler(logging.StreamHandler())
+
    server = Server( int(sys.argv[1]), auth_callback=AuthCallback )
+   
+   agService = VideoConsumerService(server)
+
    service = server.create_service_object("Service")
    agService._bind_to_service( service )
 

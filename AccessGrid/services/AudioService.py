@@ -5,12 +5,15 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.16 2003-04-22 21:54:07 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.17 2003-04-23 19:29:50 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys, os
 import time
+
+import logging
+log = logging.getLogger("AG.AudioService")
 
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
@@ -20,8 +23,8 @@ from AccessGrid import Platform
 
 class AudioService( AGService ):
 
-   def __init__( self ):
-      AGService.__init__( self )
+   def __init__( self, server ):
+      AGService.__init__( self, server )
 
       self.capabilities = [ Capability( Capability.CONSUMER, Capability.AUDIO ), 
                             Capability( Capability.PRODUCER, Capability.AUDIO ) ]
@@ -60,6 +63,8 @@ class AudioService( AGService ):
    def Stop( self ):
       """Stop the service"""
       self.started = 0
+      self.server.stop()
+      print "Stopping audio service"
       try:
 
          #
@@ -83,6 +88,9 @@ class AudioService( AGService ):
       except:
          print "Exception in AGService.Stop ", sys.exc_type, sys.exc_value
          raise Exception("AGService.Stop failed : ", str( sys.exc_value ) )
+
+      print "audio service Stop returning"
+      
    Stop.soap_export_as = "Stop"
 
 
@@ -108,8 +116,14 @@ if __name__ == '__main__':
    from AccessGrid.hosting.pyGlobus import Client
    import thread
 
-   agService = AudioService()
+   top = logging.getLogger("AG")
+   top.setLevel(logging.DEBUG)
+   top.addHandler(logging.StreamHandler())
+
    server = Server( int(sys.argv[1]), auth_callback=AuthCallback )
+
+   agService = AudioService(server)
+
    service = server.create_service_object("Service")
    agService._bind_to_service( service )
 
