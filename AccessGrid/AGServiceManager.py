@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.10 2003-02-18 19:35:57 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.11 2003-02-21 18:05:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 
-from AccessGrid.Types import AGServiceImplementation, AGServiceDescription
+from AccessGrid.Types import AGServiceDescription, AGServicePackage
 from AccessGrid.AuthorizationManager import AuthorizationManager
 
 from AccessGrid import Utilities
@@ -47,6 +47,8 @@ class AGServiceManager( ServiceBase ):
 
         # note: unregisteredServices dict is keyed on token
         self.unregisteredServices = dict()
+
+        self.servicesDir = "local_services"
 
     ####################
     ## AUTHORIZATION methods
@@ -98,7 +100,7 @@ class AGServiceManager( ServiceBase ):
     ## SERVICE methods
     ####################
 
-    def AddService( self, serviceImplementation, resourceToAssign ):
+    def AddService( self, serviceDescription, resourceToAssign ):
         """
         Add a service to the service manager.  The service is an executable
         or python script, which will be started by the ServiceManager
@@ -136,9 +138,7 @@ class AGServiceManager( ServiceBase ):
             #
             # Retrieve service implementation
             #
-            serviceImplFile = self.__RetrieveServiceImplementation( serviceImplementation )
-            svcImpl = AGServiceImplementation()
-            serviceDescription = svcImpl.GetServiceDescription( serviceImplFile )
+            servicePackageFile = self.__RetrieveServicePackage( serviceDescription.uri )
             serviceDescription.resource = resourceToAssign
             print "service description = ", serviceDescription.name, serviceDescription.description, serviceDescription.executable
             self.__AddServiceDescription( serviceDescription )
@@ -321,17 +321,21 @@ class AGServiceManager( ServiceBase ):
             Client.Handle( service.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
 
 
-    def __RetrieveServiceImplementation( self, serviceImplementation ):
+    def __RetrieveServicePackage( self, serviceImplementation ):
         """Internal : Retrieve a service implementation"""
         filecontent = urllib.urlopen( serviceImplementation ).read()
         filename = os.path.basename( serviceImplementation )
         print "Retrieved ",filename
 
-        f = open( "local_services/"+filename, 'wb')
+        servicePackageFile = self.servicesDir + os.sep + filename
+        f = open( servicePackageFile, 'wb')
         f.write(filecontent)
         f.close()
 
-        return "local_services/"+filename
+        servicePackage = AGServicePackage( servicePackageFile )
+        servicePackage.ExtractExecutable( self.servicesDir )
+
+        return self.servicesDir + os.sep + filename
 
 
     def __AddServiceDescription( self, serviceDescription ):
@@ -344,12 +348,11 @@ class AGServiceManager( ServiceBase ):
 
             if serviceDescription.executable.endswith(".py"):
                 executable = sys.executable
-                options.append(executable)
-                options.append( serviceDescription.executable )
+                options.append( sys.executable )
+                options.append( self.servicesDir + os.sep + serviceDescription.executable )
             else:
-                executable = serviceDescription.executable
-                options.append( serviceDescription.executable )
-
+                executable = self.servicesDir + os.sep + serviceDescription.executable
+                options.append( executable )
 
             token = '%d' %(self.nextToken)
 
@@ -357,7 +360,7 @@ class AGServiceManager( ServiceBase ):
             options.append( self.get_handle() )
             self.nextToken = self.nextToken + 1
 
-            print "starting with options ", options
+            print "starting with options ", executable, options
             pid = os.spawnv( os.P_NOWAIT, executable, options )
 
 

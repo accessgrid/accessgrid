@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.11 2003-02-18 19:09:25 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.12 2003-02-21 18:05:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -77,11 +77,11 @@ class TestTransientPopup(wxPopupTransientWindow):
 
 def BuildServiceMenu( ):
     svcmenu = wxMenu()
-    svcmenu.Append(ID_SERVICE_ADD_SERVICE, "Add Service...", "Dum")
+    svcmenu.Append(ID_SERVICE_ADD_SERVICE, "Add Service...", "Add Service")
     svcmenu.Append(ID_SERVICE_START_ONE, "Start Service", "Start Service")
     svcmenu.Append(ID_SERVICE_STOP_ONE, "Stop Service", "Stop Service")
     svcmenu.Append(ID_SERVICE_REMOVE, "Remove Service", "Remove Service")
-    svcmenu.Append(ID_SERVICE_GET_CONFIG, "Get Service Config", "Dum")
+    svcmenu.Append(ID_SERVICE_GET_CONFIG, "Get Service Config", "Get Service Config")
     return svcmenu
 
 class HostListCtrl( wxListCtrl ):
@@ -422,7 +422,7 @@ class NodeManagementClientFrame(wxFrame):
     ############################
     def AddHost( self, event ):
 
-        dlg = wxTextEntryDialog( self, "Enter uri of running host (e.g., https://myhost:8200/ServiceManager )", \
+        dlg = wxTextEntryDialog( self, "Enter uri of running host (e.g., https://myhost:12000/ServiceManager )", \
                  "Add Host Dialog" )
         dlg.ShowModal()
         str = dlg.GetValue()
@@ -494,51 +494,62 @@ class NodeManagementClientFrame(wxFrame):
         index = self.hostList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
         serviceManager = self.serviceManagers[index]
 
-        resources = Client.Handle( serviceManager.uri ).get_proxy().GetResources()
-        for resource in resources:
-            print "resource ", resource.type, resource.resource, resource.inUse
-
-
-        availServices = self.vc.GetAvailableServices().data
-        print availServices
-        dlg = wxSingleChoiceDialog( self, "Select Service to Add", "Add Service: Select Service", availServices )
+        availServices =  self.vc.GetAvailableServices()
+        availServiceNames = map( lambda serviceDesc: serviceDesc.name, availServices )
+        dlg = wxSingleChoiceDialog( self, "Select Service to Add", "Add Service: Select Service", 
+                                    availServiceNames )
 
         ret = dlg.ShowModal()
 
         if ret == wxID_OK:
-            service = dlg.GetStringSelection()
-
-            choices = ["None"]
-            choices = choices + map( lambda res: res.resource, resources )
-            dlg = wxSingleChoiceDialog( self, "Select resource for service", "Add Service: Select Resource",
-                   choices )
-
-            ret = dlg.ShowModal()
-
-            if ret != wxID_OK:
-                return
-
-            res = dlg.GetStringSelection()
-
-            resourceToAssign = None
-            for resource in resources:
-                if res == resource.resource:
-                    resourceToAssign = resource
+            serviceToAdd = None
+            serviceName = dlg.GetStringSelection()
+            for service in availServices:
+                print "availService : ", service.name, service.uri
+                if serviceName == service.name:
+                    serviceUri = service.uri
+                    serviceToAdd = service
                     break
 
-            if resourceToAssign != None:
-                print "assigning resource ", resourceToAssign.resource
-            else:
-                print "assigning NO resource"
-                resourceToAssign = AGResource()
+
+
+            resourceToAssign = AGResource()
+
+            resources = Client.Handle( serviceManager.uri ).get_proxy().GetResources()
+            if len(resources) > 0:
+                for resource in resources:
+                    print "resource ", resource.type, resource.resource, resource.inUse
+
+
+                choices = ["None"]
+                choices = choices + map( lambda res: res.resource, resources )
+                dlg = wxSingleChoiceDialog( self, "Select resource for service", "Add Service: Select Resource",
+                       choices )
+
+                ret = dlg.ShowModal()
+
+                if ret != wxID_OK:
+                    return
+
+                res = dlg.GetStringSelection()
+
+                resourceToAssign = None
+                for resource in resources:
+                    if res == resource.resource:
+                        resourceToAssign = resource
+                        break
+
+                if resourceToAssign != None:
+                    print "assigning resource ", resourceToAssign.resource
 
             try:
-                if len(service) == 0:
+                print "Adding service ", serviceToAdd.name, serviceToAdd.uri
+                if serviceToAdd == None:
                     raise Exception()
-                Client.Handle( serviceManager.uri ).get_proxy().AddService( service, resourceToAssign )
+                Client.Handle( serviceManager.uri ).get_proxy().AddService( serviceToAdd, resourceToAssign )
             except:
                 print "Exception in AddService : ", sys.exc_type, sys.exc_value
-                self.Error( "Add Service failed :" + service )
+                self.Error( "Add Service failed :" + serviceToAdd.name )
 
             self.UpdateServiceList()
 

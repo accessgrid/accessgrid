@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.21 2003-02-21 16:10:29 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.22 2003-02-21 18:05:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,13 +17,14 @@ import time
 import SimpleHTTPServer
 import SocketServer
 import string
+import os
+from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
 
 from AccessGrid.AGParameter import *
         
 class VenueState:
-    def __init__( self, uniqueId, description, connections, users,
+    def __init__( self, description, connections, users,
                   nodes, data, services, eventLocation, textLocation ):
-        self.uniqueId = uniqueId
         self.description = description
         self.eventLocation = eventLocation
         self.textLocation = textLocation
@@ -48,11 +49,6 @@ class VenueState:
         for service in services:
             self.services[service.uri] = service
 
-    def SetUniqueId(self, uniqueId):
-        self.uniqueId = uniqueId
-    def GetUniqueId(self):
-        return self.uniqueId
-    
     def SetDescription( self, description ):
         self.description = description
     def GetDescription( self ):
@@ -178,88 +174,95 @@ class AGServiceDescription:
         self.serviceManagerUri = serviceManagerUri
         self.executable = executable
 
-# consider using this as the description of the service implementation
-# at the NodeService, passing the url of the executable to the ServiceManager.
-# Only the executable would reside on the ServiceManager
-class AGServiceImplementation:
-    def __init__( self, name=None, description=None, uri=None,
-                  capabilities=None, commandLineArgs=None ):
-        self.name = name                 # user
-        self.description = description   # user
-        self.uri = uri                   # for system to retrieve executable
-        self.capabilities = capabilities # user
-        self.executable = None           # system, but can be determined from package content
 
-
-    def GetServiceDescription( self, file ):
-
-        import ConfigParser
-        import string
+class AGServicePackage:
+    def __init__( self, file ):
+        self.file = file
+        self.exeFile = None
+        self.descriptionFile = None
 
         #
         # examine service package content
         #
-        zf = zipfile.ZipFile( file, "r" )
+        zf = zipfile.ZipFile( self.file, "r" )
         files = zf.namelist()
-        descfile = None
-        exefile = None
+        zf.close()
         for file in files:
             if file.endswith(".svc"):
-                descfile = file
+                self.descriptionFile = file
             else:
-                exefile = file
-                if exefile.endswith(".py"):
+                self.exeFile = file
+                if self.exeFile.endswith(".py"):
                     self.isPython = 1
 
+    def GetServiceDescription( self ):
+
+        import ConfigParser
+        import string
+        import StringIO
+
+
+
+        try:
+            #
+            # extract description file content from zip
+            #
+            zf = zipfile.ZipFile( self.file, "r" )
+            descfilecontent = zf.read( self.descriptionFile )
+            zf.close()
+
+            # set up string io from description file content
+            sp = StringIO.StringIO(descfilecontent)
+
+            # read config from string io
+            c = ConfigParser.ConfigParser()
+            c.readfp( sp )
+
+            #
+            # read sections and massage into data structure
+            #
+            capabilities = []
+            capabilitySectionsString = c.get( "ServiceDescription", "capabilities" )
+            capabilitySections = string.split( capabilitySectionsString, ' ' )
+            for section in capabilitySections:
+                cap = Capability( c.get( section, "role" ), c.get( section, "type" ) )
+                capabilities.append( cap )
+            serviceDescription = AGServiceDescription( c.get( "ServiceDescription", "name" ),
+                                                     c.get( "ServiceDescription", "description" ),
+                                                     None,
+                                                     capabilities,
+                                                     None,
+                                                     None,
+                                                     c.get( "ServiceDescription", "executable" ) )
+
+        except:
+            print "Exception in GetServiceDescription ", sys.exc_type, sys.exc_value
+
+        return serviceDescription
+
+    def ExtractExecutable( self, path ):
         #
         # extract executable file from zip
         #
-        exefilecontent = zf.read( exefile )
+        zf = zipfile.ZipFile( self.file, "r" )
+        exefilecontent = zf.read( self.exeFile )
+        zf.close()
+
         if self.isPython:
-            f = open( "local_services/"+exefile, "w" )
+            f = open( path + os.sep + self.exeFile, "w" )
         else:
-            f = open( "local_services/"+exefile, "wb" )
+            f = open( path + os.sep + self.exeFile, "wb" )
         f.write( exefilecontent )
         f.close()
 
-        #
-        # extract description file from zip
-        #
-        descfilecontent = zf.read( descfile )
-        f = open( "local_services/"+descfile, "w" )
-        f.write( descfilecontent )
-        f.close()
 
-        c = ConfigParser.ConfigParser()
-        c.read( "local_services/"+descfile )
 
-        # error checking
-
-        #
-        # read sections and massage into data structure
-        #
-        print "----- sections ", c.sections()
-
-        capabilities = []
-        capabilitySectionsString = c.get( "ServiceDescription", "capabilities" )
-        capabilitySections = string.split( capabilitySectionsString, ' ' )
-        for section in capabilitySections:
-            cap = Capability( c.get( section, "role" ), c.get( section, "type" ) )
-            capabilities.append( cap )
-        serviceDescription = AGServiceDescription( c.get( "ServiceDescription", "name" ),
-                                                 c.get( "ServiceDescription", "description" ),
-                                                 None,
-                                                 capabilities,
-                                                 None,
-                                                 None,
-                                                 "local_services/" + c.get( "ServiceDescription", "executable" ) )
-        return serviceDescription
 
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 
 class AGServiceImplementationRepository:
 
-    def __init__( self, port, servicesDir="services"):
+    def __init__( self, port, servicesDir):
 
         # if port is 0, find a free port
         if port == 0:
@@ -267,23 +270,27 @@ class AGServiceImplementationRepository:
 
         self.httpd_port = port
         self.servicesDir = servicesDir
-        self.__ReadServiceImplementations()
+        self.serviceDescriptions = []
         thread.start_new_thread( self.__StartWebServer, () )
 
-    def __ReadServiceImplementations( self ):
-        self.serviceImplementations = []
+    def __ReadServicePackages( self ):
+        self.serviceDescriptions = []
 
         if os.path.exists(self.servicesDir):
             files = os.listdir(self.servicesDir)
             for file in files:
                 if file.endswith(".zip"):
-                    self.serviceImplementations.append( 'http://%s:%d/%s/%s' %
-                       ( socket.gethostname(), self.httpd_port, self.servicesDir, file ) )
+                    servicePackage = AGServicePackage( self.servicesDir + os.sep + file)
+                    serviceDesc = servicePackage.GetServiceDescription()
+                    serviceDesc.uri = 'http://%s:%d/%s/%s' % ( GetHostname(), self.httpd_port, 
+                                                               self.servicesDir, file )
+                    self.serviceDescriptions.append( serviceDesc )
 
 
     def GetServiceImplementations( self ):
-        __doc__ = """Get list of local service implementations"""
-        return self.serviceImplementations
+        """Get list of local service descriptions"""
+        self.__ReadServicePackages()
+        return self.serviceDescriptions
 
     def __StartWebServer( self ):
         print "Starting web server on port ", self.httpd_port
