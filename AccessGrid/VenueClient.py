@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.163 2004-04-23 18:16:40 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.164 2004-04-27 17:21:55 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.163 2004-04-23 18:16:40 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.164 2004-04-27 17:21:55 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -22,10 +22,8 @@ import time
 from pyGlobus.io import GSITCPSocketException
 
 from AccessGrid import Log
-from AccessGrid import Toolkit
-from AccessGrid.Toolkit import Application, Service
 from AccessGrid import DataStore
-from AccessGrid import Platform
+from AccessGrid.Toolkit import Application, Service
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Venue import VenueIW
@@ -88,7 +86,8 @@ class VenueClient:
     """    
     defaultNodeServiceUri = "https://localhost:11000/NodeService"
     
-    def __init__(self, profile=None, pnode=0, port=0, progressCB=None):
+    def __init__(self, profile=None, pnode=0, port=0, progressCB=None,
+                 app=None):
         """
         This client class is used on shared and personal nodes.
         """
@@ -100,6 +99,11 @@ class VenueClient:
                                             "profile" )
             self.profile = ClientProfile(self.profileFile)
 
+        if app is not None:
+            app = app
+        else:
+            app = Application.instance()
+            
         self.nodeServiceUri = self.defaultNodeServiceUri
         self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
         self.homeVenue = None
@@ -191,7 +195,7 @@ class VenueClient:
                 self.personalDataStorePath = None
                 
         if self.personalDataStorePath:
-            if Toolkit.Application.instance().GetOption("insecure"):
+            if Application.instance().GetOption("insecure"):
                 self.transferEngine = DataStore.HTTPTransferServer(('', self.personalDataStorePort))
             else:
                 self.transferEngine = DataStore.GSIHTTPTransferServer(('',
@@ -268,17 +272,17 @@ class VenueClient:
 
     def __StartWebService(self, pnode, port):
         from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
-        
         if port == 0:
             if pnode:
                 port = 11000
             else:
                 port = NetworkAddressAllocator().AllocatePort()
-
-        if Toolkit.Application.instance().GetOption("insecure"):
-            self.server = InsecureServer((SystemConfig.instance().GetHostname(), port))
+        app = Application.instance()
+        
+        if app.GetOption("insecure"):
+            self.server = InsecureServer((app.GetHostname(), port))
         else:
-            self.server = SecureServer((SystemConfig.instance().GetHostname(), port))
+            self.server = SecureServer((app.GetHostname(), port))
         vci = VenueClientI(self)
         uri = self.server.RegisterObject(vci, path='/VenueClient')
 
@@ -758,7 +762,7 @@ class VenueClient:
         # Initialize a string of warnings that can be displayed to the user.
         self.warningString = ''
        
-        app = Toolkit.Application.instance()
+        app = Application.instance()
 
         #
         # Turn this block off when fatulHandler support gets finished.
@@ -807,7 +811,7 @@ class VenueClient:
             #
 
             if errorInNode:
-                self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences-My Node" from the main menu'
+                self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences->Manage My Node..." from the main menu'
 
         except GSITCPSocketException, e:
             enterSuccess = 0
@@ -1400,7 +1404,10 @@ class VenueClient:
         
     def GetVenueName(self):
         return self.venueState.GetName()
-        
+
+    def GetVenueDescription(self):
+        return self.venueState.GetDescription()
+    
     def GetDataStoreUploadUrl(self):
         return self.dataStoreUploadUrl
         
