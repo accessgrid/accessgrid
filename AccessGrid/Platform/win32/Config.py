@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.44 2004-07-12 15:32:25 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.45 2004-07-30 21:47:12 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.44 2004-07-12 15:32:25 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.45 2004-07-30 21:47:12 lefvert Exp $"
 
 import os
 import sys
@@ -1201,7 +1201,7 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
         extension = ext
 
         log.debug("MimeType: %s", mimeType)
-
+        
         if mimeType != None:
             try:
                 key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
@@ -1218,15 +1218,15 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
         if extension != None:
             if extension[0] != ".":
                 extension = ".%s" % extension
-                try:
-                    key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
-                                          "%s" % extension)
-                    filetype, type = _winreg.QueryValueEx(key, "")
-                    _winreg.CloseKey(key)
-                except WindowsError:
-                    log.warn("Couldn't open registry for file extension: %s.",
-                             extension)
-                    return cdict
+            try:
+                key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
+                                      "%s" % extension)
+                filetype, type = _winreg.QueryValueEx(key, "")
+                _winreg.CloseKey(key)
+            except WindowsError:
+                log.warn("Couldn't open registry for file extension: %s.",
+                         extension)
+                return cdict
 
         log.debug("FileType: %s", filetype)
 
