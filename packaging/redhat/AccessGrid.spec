@@ -4,7 +4,7 @@
 #
 %define	name		AccessGrid
 %define version		2.1.2
-%define release		2
+%define release		3
 %define	prefix		/usr
 %define sysconfdir	/etc/%{name}
 %define sharedir	%{prefix}/share
