@@ -144,10 +144,27 @@ os.system("%s install --prefix=%s --no-compile" % (cmd, DestDir))
 
 os.chdir(s)
 
-#
-# Build packages according to the command line
-#
+# Do automatic testing
+os.chdir(os.path.join(BuildDir, "tests"))
 
+# save the old path
+if os.environ.has_key('PYTHONPATH'):
+    oldpath = os.environ['PYTHONPATH']
+else:
+    oldpath = None
+
+# setup a new python path
+os.environ['PYTHONPATH'] = os.path.join(os.path.abspath(os.path.join(DestDir,
+                                           "Lib", "site-packages")), oldpath)
+
+# run the tests
+os.system("%s test_dist.py --html -o %s" % (sys.executable,
+                                            "%s-test.html" % DestDir))
+
+# put the old python path back
+os.environ['PYTHONPATH'] = oldpath
+
+# Build packages according to the command line
 if sys.platform == 'win32':
     bdir = 'windows'
 elif sys.platform == 'linux2':
