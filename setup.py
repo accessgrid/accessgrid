@@ -1,12 +1,17 @@
 #-----------------------------------------------------------------------------
 # Name:        setup.py
-# Purpose:     This is the setup.py used by distutils to generate the install
-#              files for the Access Grid Software.
+# Purpose:     This is the setup.py for the Access Grid python module.
 #
 # Author:      Ivan R. Judson
 #
-# Created:     2003/01/09
-# RCS-ID:      $Id: setup.py,v 1.1 2003-01-09 19:03:29 judson Exp $
+# Created:     2003/17/01
+# RCS-ID:      $Id: setup.py,v 1.2 2003-01-17 16:41:31 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+from distutils.core import setup
+
+setup(name = 'AccessGrid',
+      version = '2.0',
+      scripts = [],
+)
