@@ -74,8 +74,10 @@ os.chdir(os.path.join(SOURCE,'pyGlobus'))
 os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','clean',
           '--all')
 os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','build',
+          '--with-modules=io,security,util',
           '--flavor=%s' % (flavor,))
 os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','install',
+          '--with-modules=io,security,util',
           '--flavor=%s' % (flavor,),
           '--prefix=%s' % (DEST,), 
           '--no-compile')
