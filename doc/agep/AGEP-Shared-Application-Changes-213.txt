@@ -2,7 +2,7 @@
 Shared Application Changes for 2.1.3 
 ====================================
 
-: version $Revision: 1.1 $
+: version $Revision: 1.2 $
 : author: Susanne Lefvert <lefvert@mcs.anl.gov>
 : status: Draft
 
@@ -144,7 +144,39 @@ Design
 
         [commands]
         Open = %(python)s SharedPresentation.py -v %(venueUrl)s -a %(appUrl)s
- 
+
+
+Implementation
+--------------
+    ** Additions to AppDb.py**
+    ::
+        
+        def AddDescription(self, name, description):
+            namekey = self._GetPrivName(name)
+            descriptionStr = self.defaultSeparator.join(["descriptions", namekey])
+            self.AppDb[descriptionStr] = description
+
+            self._Flush()
+
+        def _GetDescription(self, pName):
+            for key in self.AppDb.keys():
+                 (section, option) = key.split(self.defaultSeparator)
+                 if section == "descriptions":
+                      if option == pName:
+                          return self.AppDb[key]
+
+
+    *In RegisterApplication*
+        self.AddDescription(name, description)
+
+    *Change RegisterApplication interface*
+        def RegisterApplication(self, name, mimeType, extension, commandDict,
+                                fileList, srcPath, dstPath=None, description = None):
+
+    *In ListAppsAsAppDescriptions*
+        description = self._GetDescription(option)
+        apps.append(ApplicationDescription(None, name, description, None, mimetype))
+
 
 Add Application User Scenario
 ==============================
@@ -170,7 +202,8 @@ References
 
 Copyright
 =========
-    This document falls under the AGTkPL.
+    
+    This document is Copyright 2003, The University of Chicago/Argonne National Laboratory.
 
 
 ..
