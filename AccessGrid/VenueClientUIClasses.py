@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.211 2003-05-30 22:06:11 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.212 2003-05-31 02:51:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1740,7 +1740,7 @@ class ContentListPanel(wxPanel):
                 self.parent.OpenService(None)
                 
             elif isinstance(item, ApplicationDescription):
-                self.JoinApp(None)
+                self.parent.JoinApp(None)
                 
     def OnRightClick(self, event):
         self.x = event.GetX()
