@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.5 2004-03-12 22:21:32 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.6 2004-03-16 21:37:40 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.5 2004-03-12 22:21:32 olson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.6 2004-03-16 21:37:40 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -40,7 +40,11 @@ import time
 import string
 import md5
 import struct
-import bsddb
+from AccessGrid.Platform import isOSX
+if isOSX():
+    import bsddb185 as bsddb
+else:
+    import bsddb
 import operator
 import cStringIO
 from AccessGrid import Log
