@@ -180,6 +180,11 @@ else:
     nppath = npath
 os.environ['PYTHONPATH'] = nppath
 
+# Build stuff that needs to be built for modules to work
+
+cmd = "%s %s" % (sys.executable, "BuildOpenSSL.py")
+os.system(cmd)
+
 # Build the other python modules
 cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
                           BuildDir, DestDir)
@@ -205,7 +210,10 @@ cmd = "%s %s --html -o %s -n \"Access Grid Toolkit\" -u \"%s\" AccessGrid" % \
       (sys.executable, ep, os.path.join(DestDir, 'doc','Developer'),
        "http://www.mcs.anl.gov/fl/research/accessgrid")
 
-#os.system(cmd)
+try:
+    os.system(cmd)
+except:
+    print "Failed to generate docs"
 
 # put the old python path back
 if oldpath is not None:
