@@ -29,7 +29,7 @@ import signal, time, os
 import logging, logging.handlers
 from AccessGrid.AGServiceManager import AGServiceManager
 from AccessGrid.AGNodeService import AGNodeService
-from AccessGrid.hosting import Server
+from AccessGrid.hosting import SecureServer as Server
 from AccessGrid.Platform import AGTK_LOCATION 
 
 # AGServiceManager unittests below assume a basic initialization works 

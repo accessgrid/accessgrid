@@ -34,7 +34,7 @@ import logging, logging.handlers
 from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid.AGServiceManager import AGServiceManager
 from AccessGrid.Descriptions import AGServiceManagerDescription
-from AccessGrid.hosting import Server
+from AccessGrid.hosting import SecureServer as Server
 
 global nodeService
 global server

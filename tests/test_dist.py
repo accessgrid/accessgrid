@@ -2,7 +2,7 @@
 # Name:        unittest_all.py
 # Purpose:     Automatic testing with machine readable output
 # Created:     2004/04/014
-# RCS-ID:      $Id: test_dist.py,v 1.5 2004-04-22 18:48:41 judson Exp $
+# RCS-ID:      $Id: test_dist.py,v 1.6 2004-04-23 02:49:04 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -202,10 +202,10 @@ if __name__ == '__main__':
         'unittest_MulticastAddressAllocator',
         'unittest_NetworkLocation',
 #        'unittest_Platform',
-        'unittest_version'
-#        'unittest_AGServiceManager',
-#        'unittest_AGNodeService',
-#        'unittest_VenueServer',
+        'unittest_version',
+        'unittest_AGServiceManager',
+        'unittest_AGNodeService',
+        'unittest_VenueServer',
         ]
 
     suite = TestSuite()
