@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.13 2004-03-18 14:03:54 turam Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.14 2004-03-19 04:19:42 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.13 2004-03-18 14:03:54 turam Exp $"
+__revision__ = "$Id: AppDb.py,v 1.14 2004-03-19 04:19:42 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -73,24 +73,24 @@ class AppDb:
     information on a per user basis about what applications are
     installed and how to run them.
     """
-    defaultName = "ApplicationDatabase"
     defaultSeparator = ":"
 
-    def __init__(self, file=None):
+    def __init__(self, path=None, filename="ApplicationDatabase"):
         """
         The constructor for the AppDb, it uses a file for persistent storage.
         """
         self.AppDb = dict()
 
-        self.userConfig = UserConfig.instance()
-
-        if file is None:
-            self.fileName = os.path.join(self.userConfig.GetConfigDir(), self.defaultName)
+        if path is None:
+            self.path = UserConfig.instance().GetConfigDir()
         else:
-            self.fileName = file
+            self.path = path
+
+        self.fileName = os.path.join(self.path, filename)
 
         try:
-            self.AppDb = LoadConfig(self.fileName, dict(), self.defaultSeparator)
+            self.AppDb = LoadConfig(self.fileName, dict(),
+            self.defaultSeparator)
         except:
             print sys.exc_info()
             print "Couldn't open application database: %s" % self.fileName
