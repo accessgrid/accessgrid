@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.51 2003-09-29 19:57:03 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.52 2003-09-30 21:39:44 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.51 2003-09-29 19:57:03 eolson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.52 2003-09-30 21:39:44 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -804,7 +804,25 @@ class DataStore:
         
         return desc
 
+    def CancelPendingUpload(self, filename):
+        desc = self.GetDescription(filename)
 
+        # Make sure file is still pending upload
+        if desc.GetStatus() != DataDescription.STATUS_PENDING:
+            log.error("CancelPendingUpload: found file description but status was not pending.")
+            return
+
+        # Remove file and its description.
+        if desc:
+            # Remove the file from the datastore
+            self.RemoveFiles([desc])
+            # distribute updated event.
+            self.cbLock.acquire()
+            self.callbackClass.DistributeEvent(Event( Event.REMOVE_DATA, self.callbackClass.uniqueId, desc ))
+            self.cbLock.release()
+        else:
+            log.warn("CancelPendingUpload: didn't find file description that should be pending.")
+            
 
     def GetDescription(self, filename):
         return self.dataDescContainer.GetData(filename)
@@ -1070,7 +1088,6 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             fp.close()
             return None
 
-
         #
         # Transfer done.
         # Compute the checksum and test against what was
@@ -1096,7 +1113,13 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             # and report an error.
             #
             
-            self.send_error(405, "Checksum mismatch on upload")
+            log.warn("HTTPTransferHandler::ProcessFileUpload: Checksum mismatch on upload." )
+            transfer_handler.CancelPendingUpload(filename)
+            try:
+                self.send_error(405, "Checksum mismatch on upload")
+            except:
+                log.warn("connection closed before could send_error for checksum mismatch")
+            return None
             
         #
         # OKAY, we handled the upload properly.
