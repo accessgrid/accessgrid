@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.6 2003-04-29 23:02:40 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.7 2003-04-30 12:11:44 eolson Exp $
 ;
 
 #define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
@@ -201,20 +201,20 @@ Name: {commonappdata}\AccessGrid; Components: Venue_Client
 Name: {app}\include
 
 [INI]
-Filename: {commonappdata}\AccessGrid\defaultWindows; Section: node; Key: servicemanagers; String: servicemanager0
-Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service1; Key: packagename; String: VideoConsumerService.zip
-Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service1; Key: resource; String: None
-Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service1; Key: executable; String: {app}\vic.exe
-Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service1; Key: serviceconfig; String: serviceconfig1
-Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service0; Key: packagename; String: AudioService.zip
-Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service0; Key: resource; String: None
-Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service0; Key: executable; String: {app}\rat.exe
-Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service0; Key: serviceconfig; String: serviceconfig0
-Filename: {commonappdata}\AccessGrid\defaultWindows; Section: servicemanager0; Key: url; String: https://localhost:12000/ServiceManager
-Filename: {commonappdata}\AccessGrid\defaultWindows; Section: servicemanager0; Key: services; String: service0 service1
-Filename: {commonappdata}\AccessGrid\defaultWindows; Section: servicemanager0; Key: name; String: localhost:12000
-Filename: {commonappdata}\AccessGrid\defaultWindows; Section: serviceconfig1
-Filename: {commonappdata}\AccessGrid\defaultWindows; Section: serviceconfig0
+Filename: {commonappdata}\AccessGrid\nodeConfig\defaultWindows; Section: node; Key: servicemanagers; String: servicemanager0
+Filename: {commonappdata}\AccessGrid\nodeConfig\defaultWindows; Section: service1; Key: packagename; String: VideoConsumerService.zip
+Filename: {commonappdata}\AccessGrid\nodeConfig\defaultWindows; Section: service1; Key: resource; String: None
+Filename: {commonappdata}\AccessGrid\nodeConfig\defaultWindows; Section: service1; Key: executable; String: {app}\vic.exe
+Filename: {commonappdata}\AccessGrid\nodeConfig\defaultWindows; Section: service1; Key: serviceconfig; String: serviceconfig1
+Filename: {commonappdata}\AccessGrid\nodeConfig\defaultWindows; Section: service0; Key: packagename; String: AudioService.zip
+Filename: {commonappdata}\AccessGrid\nodeConfig\defaultWindows; Section: service0; Key: resource; String: None
+Filename: {commonappdata}\AccessGrid\nodeConfig\defaultWindows; Section: service0; Key: executable; String: {app}\rat.exe
+Filename: {commonappdata}\AccessGrid\nodeConfig\defaultWindows; Section: service0; Key: serviceconfig; String: serviceconfig0
+Filename: {commonappdata}\AccessGrid\nodeConfig\defaultWindows; Section: servicemanager0; Key: url; String: https://localhost:12000/ServiceManager
+Filename: {commonappdata}\AccessGrid\nodeConfig\defaultWindows; Section: servicemanager0; Key: services; String: service0 service1
+Filename: {commonappdata}\AccessGrid\nodeConfig\defaultWindows; Section: servicemanager0; Key: name; String: localhost:12000
+Filename: {commonappdata}\AccessGrid\nodeConfig\defaultWindows; Section: serviceconfig1
+Filename: {commonappdata}\AccessGrid\nodeConfig\defaultWindows; Section: serviceconfig0
 
 Filename: {commonappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configuration; Key: servicesDirectory; String: {app}\services
 Filename: {commonappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configuration; Key: configDirectory; String: {commonappdata}\AccessGrid\nodeConfig
