@@ -9,35 +9,38 @@ implementation files, and zips them into the specified output
 directory.
 """
 
-if len(sys.argv) < 3:
-    print "Usage : ", sys.argv[0], " <inputDir> <outputDir>"
+if len(sys.argv) < 2:
+    print "Usage : ", sys.argv[0], " <serviceDir>"
 
 inputDir = sys.argv[1]
-outputDir = sys.argv[2]
+outputDir = sys.argv[1]
 
-files = os.listdir( inputDir )
-for file in files:
+services = ["AudioService", "VideoConsumerService", "VideoProducerService"]
 
-    # pull out service description files only
-    if not file.endswith(".svc"):
+for service in services:
+
+    servDesc = os.path.join(inputDir, service) + ".svc"
+    servImplPy = os.path.join(inputDir, service) + ".py"
+    servImplWin = os.path.join(inputDir, service) + ".exe"
+    servImplLin = os.path.join(inputDir, service)
+
+    if not os.path.isfile(servDesc):
         continue
-
-    # look for associated service implementation file
-    basename = file[:-4]
-    fileFound = False
-    implFile = None
-    for f in files:
-        if f == basename + ".py" or f == basename + ".exe" or f == basename:
-            fileFound = True
-            implFile = f
-
+    
     # if associated file found, zip em up together in the outputDir
-    if fileFound:
-        serviceZipFile = outputDir + "/" + basename + ".zip"
-        print "Writing Package File:", serviceZipFile
-        zf = zipfile.ZipFile( serviceZipFile, "w" )
-        zf.write( file )
-        zf.write( implFile )
-        zf.close()
-    else:
-        print "Service file found, but no implementation:", file
+    serviceZipFile = os.path.join(outputDir, service) + ".zip"
+    print "Writing Package File:", serviceZipFile
+    zf = zipfile.ZipFile( serviceZipFile, "w" )
+    zf.write( servDesc )
+    # check for various implementations
+    if os.path.isfile(servImplPy):
+        zf.write(servImplPy)
+
+    if os.path.isfile(servImplWin):
+        zf.write(servImplWin)
+
+    if os.path.isfile(servImplLin):
+        zf.write(servImplLin)
+
+    zf.close()
+
