@@ -45,10 +45,6 @@ class AppMonitor:
       
         # Register callbacks
         self.RegisterCallbacks()
-
-        # Check if server is running software that supports the monitor
-        if not self.CheckServer():
-            return
         
         # Connect to application and get state info
         self.GetApplicationInfo()
@@ -132,21 +128,6 @@ class AppMonitor:
         self.frame.SetName(appState.name)
         self.frame.SetDescription(appState.description)
 
-
-    def CheckServer(self):
-        '''
-        Checks to see if server is running latest code that supports the application monitor.
-        '''
-
-        if not self.sharedAppClient.CheckServer("GetState"):
-            self.frame.ShowMessage("The application monitor does not work for servers running old software.")
-            log.info("AppMonitor.GetApplicationInfo: Connecting to server running old software")
-            self.frame.Close(1)
-
-            return 0
-
-        return 1
-            
         
 class AppMonitorFrame(wxFrame):
     '''
