@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.212 2003-09-15 15:05:07 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.213 2003-09-16 20:01:33 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -748,7 +748,7 @@ class VenueClientUI(VenueClientEventSubscriber):
             #
             log.debug("Set text location and address bar")
             self.venueClient.textClient.RegisterOutputCallback(self.frame.textClientPanel.OutputText)
-            wxCallAfter(self.frame.textClientPanel.OutputText, "-- Entered new venue\n")
+            wxCallAfter(self.frame.textClientPanel.OutputText, "-- Entered venue %s\n" %self.venueClient.venueState.name)
 #            wxCallAfter(self.frame.SetTextLocation)
 
             wxCallAfter(self.frame.FillInAddress, None, URL)
