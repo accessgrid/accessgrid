@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.208 2003-09-11 20:46:07 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.209 2003-09-12 14:27:30 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -78,6 +78,7 @@ class VenueClientUI(VenueClientEventSubscriber):
     fallbackRecoveryUrl = None
     
     def __init__(self, startupDialog):
+        self.frame = None
         self.startupDialog = startupDialog
         self.startupDialog.UpdateOneStep()
         if not os.path.exists(self.accessGridPath):
@@ -115,8 +116,11 @@ class VenueClientUI(VenueClientEventSubscriber):
             log.exception("bin.VenueClient::OnInit: WXGUIApplication creation failed")
 
             text = "Application object creation failed\n%s\nThe venue client cannot continue." % (e,)
+            
+            self.startupDialog.Destroy()
             ErrorDialog(None, text, "Initialization failed",
                           style = wxOK  | wxICON_ERROR)
+            self.OnExit()
             sys.exit(1)
 
         try:
@@ -899,8 +903,9 @@ class VenueClientUI(VenueClientEventSubscriber):
                 self.personalNode.Stop()
 
             self.venueClient.Shutdown()
-            
-            self.frame.Destroy()
+
+            if self.frame:
+                self.frame.Destroy()
             
             #os._exit(0)  # this should not be necessary, replace if needed.
 
