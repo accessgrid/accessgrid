@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.16 2003-09-19 18:54:35 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.17 2003-09-24 15:26:36 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -22,6 +22,7 @@ from AccessGrid import Toolkit
 
 import os
 import logging, logging.handlers
+import string
 
 # Imports for user interface
 from wxPython.wx import *
@@ -140,7 +141,9 @@ class NodeSetupWizard(wxWizard):
         else:
             # Run the wizard
             self.RunWizard(self.page1)
-        
+
+            # Wizard finished
+            
             # Stop node service
             node = self.nodeClient.GetNodeService()
 
@@ -724,31 +727,8 @@ class ConfigWindow(TitledPage):
         self.checkBox.SetValue(true)
         self.configName = wxStaticText(self, -1, "Configuration Name: ")
         self.configNameCtrl = wxTextCtrl(self, -1, "")
-        #self.configNameCtrl.Enable(false)
-        #EVT_CHECKBOX(self, self.CHECK_ID, self.CheckBoxEvent)
-        #self.SetDefaultConfigName()
         self.Layout()
 
-    #def SetDefaultConfigName(self):
-    #    '''Sets the appropriate default configuration name based on platform'''
-    #    self.name = "defaultLinux"
-    #    
-    #    if sys.platform == "win32":
-    #        self.name = "defaultWindows"
-    #
-    #    self.configNameCtrl.SetValue(self.name)
-
-    #def CheckBoxEvent(self, event):
-    #    '''
-    #    Is clicked to show if user wants to save this configuration as default.
-    #    '''
-
-    #    if self.checkBox.GetValue():
-    #         self.configNameCtrl.Enable(false)
-    #         #self.SetDefaultConfigName()
-    #    else:
-    #        self.configNameCtrl.Enable(true)
-            
     def SetAudio(self, host, port, flag):
         '''Enters appropriate text for audio machine'''
         if not flag:
@@ -794,12 +774,23 @@ class ConfigWindow(TitledPage):
         """
         wxBeginBusyCursor()
         errors = ""
+
+        configName = self.configNameCtrl.GetValue()
         
-        if self.configNameCtrl.GetValue()=="":
+        
+        if configName == "":
             MessageDialog(self, "Please enter a name for this configuration.", "Enter Configuration Name")
             wxEndBusyCursor()
             return false
-                       
+
+        if string.find(configName, "/") != -1 or string.find(configName, "\\") != -1:
+            info = "Configuration name %s is invalid." % configName
+            dlg = wxMessageDialog(None, info, "Invalid Configuration Name", style = wxOK | wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            wxEndBusyCursor()
+            return false
+                              
         if self.videoCaptUrl:
             text = self.videoCaptMachine+":"+self.videoCaptPort
             try:
@@ -951,7 +942,7 @@ class NodeClient:
     def StartNodeService(self):
         self.node = AGNodeService()
         self.serviceList = self.node.GetAvailableServices()
-                    
+                       
     def GetNodeService(self):
         return self.node
    
@@ -1038,7 +1029,7 @@ class NodeClient:
                 self.cameraList.append(resource)
 
         return self.cameraList
-     
+
 
 if __name__ == "__main__":
     pp = wxPySimpleApp()
