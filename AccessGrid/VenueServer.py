@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.174 2004-12-08 16:48:07 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.175 2004-12-08 17:56:08 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.174 2004-12-08 16:48:07 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.175 2004-12-08 17:56:08 judson Exp $"
 
 # Standard stuff
 import sys
@@ -283,7 +283,7 @@ class VenueServer(AuthorizationMixIn):
                                  int(self.houseKeeperFrequency), 
                                  0,
                                  1)
-        self.houseKeeper.AddTask(self.CleanupClients, 10, 0, 1)
+        self.houseKeeper.AddTask(self.CleanupClients, 15, 0, 1)
 
         # Create report that tracks performance if the option is in the config
         # This should get cleaned out and made a command line option
@@ -400,7 +400,6 @@ class VenueServer(AuthorizationMixIn):
                     venueEncryptionKey = cp.get(sec, 'encryptionKey')
                 else:
                     venueEncryptionKey = None
-                cleanupTime = cp.getint(sec, 'cleanupTime')
 
                 # Deal with connections if there are any
                 cl = list()
@@ -484,7 +483,6 @@ class VenueServer(AuthorizationMixIn):
                 uri = self.AddVenue(vd, authPolicy)
                 vif = self.hostingEnvironment.FindObjectForURL(uri)
                 v = vif.impl
-                v.cleanupTime = cleanupTime
 
                 # Deal with apps if there are any
                 try:

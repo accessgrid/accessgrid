@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.231 2004-12-08 16:48:06 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.232 2004-12-08 17:56:08 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.231 2004-12-08 16:48:06 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.232 2004-12-08 17:56:08 judson Exp $"
 
 import sys
 import time
@@ -286,12 +286,13 @@ class VenueClientState:
 
 # 	self.textConnObj = None
 
-    def SetTimeout(self, time):
-        self.timeout = time
+    def SetTimeout(self, t_next):
+        log.debug("SET TIMEOUT TO: %d now = %d", t_next, time.time())
+        self.timeout = t_next
 
     def CheckTimeout(self, timeout):
         log.debug("Client Timeout Check: %d vs %d", self.timeout, timeout)
-        if self.timeout > timeout:
+        if self.timeout < timeout:
             return 1
         else:
             return 0
@@ -400,11 +401,8 @@ class Venue(AuthorizationMixIn):
         else:
             self.encryptionKey = None
         self.simpleLock = ServerLock("venue")
-        #self.heartbeatLock = ServerLock("heartbeat")
         self.clientDisconnectOK = {}
-        
-        self.cleanupTime = 300
-        self.maxTimeout = 5
+        self.maxTimeout = 15
         
         self.connections = list()
         self.applications = dict()
@@ -540,7 +538,6 @@ class Venue(AuthorizationMixIn):
 
         string += "description : %s\n" % desc
         string += "encryptMedia : %d\n" % self.encryptMedia
-        string += "cleanupTime : %d\n" % self.cleanupTime
         if self.encryptMedia:
             string += "encryptionKey : %s\n" % self.encryptionKey
 
@@ -887,11 +884,12 @@ class Venue(AuthorizationMixIn):
 
         if conn is not None:
             if requestedTimeout < self.maxTimeout:
-                tout = now_sec + requestedTimeout
+                t_mod = requestedTimeout
             else:
-                tout = now_sec + self.maxTimeout
-            conn.SetTimeout(tout)
-            return tout
+                t_mod = self.maxTimeout
+
+            conn.SetTimeout(now_sec + t_mod)
+            return t_mod
         else:
             return -1
 
@@ -1227,7 +1225,6 @@ class Venue(AuthorizationMixIn):
                                                              clientProfile)
         t = time.time()
         tout = t + self.maxTimeout
-        log.debug("SET TIMEOUT TO: %d (NOW = %d)", tout, t)
         vcstate.SetTimeout(tout)
         
         self._UpdateProfileCache(clientProfile)

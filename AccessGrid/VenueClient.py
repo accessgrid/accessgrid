@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.199 2004-12-08 16:48:06 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.200 2004-12-08 17:56:08 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.199 2004-12-08 16:48:06 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.200 2004-12-08 17:56:08 judson Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -34,7 +34,7 @@ from AccessGrid.scheduler import Scheduler
 #from AccessGrid.EventClient import EventClient
 #from AccessGrid.TextClient import TextClient
 from AccessGrid.Types import *
-from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
+from AccessGrid.Events import Event, ConnectEvent
 from AccessGrid.Events import DisconnectEvent, ClientExitingEvent
 from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent
 from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache, InvalidProfileException
@@ -108,8 +108,9 @@ class VenueClient:
         self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
         self.homeVenue = None
         self.houseKeeper = Scheduler()
-        self.heartbeatTask = None
         self.provider = None
+        self.heartBeatTimer = None
+        self.heartBeatTimeout = 10
 
         if progressCB: 
             if pnode:   progressCB("Starting personal node.")
@@ -338,19 +339,22 @@ class VenueClient:
     def GetWebServiceUrl(self):
         return self.server.FindURLForObject(self)
         
-    def __Heartbeat(self):
-        pass
-#         if self.eventClient != None:
-#             try:
-#                 self.eventClient.Send(HeartbeatEvent(self.venueId,
-#                                                      self.privateId))
-#             except:
-#                 log.exception("Heartbeat: Heartbeat exception is caught.")
-                
-                # If the event client connection has broken,
-                # reconnect the venue client
-#                if not self.eventClient.connected and not self.exiting:
-#                    self.__Reconnect()
+    def Heartbeat(self):
+        try:
+            log.debug("Calling Heartbeat, time now: %d", time.time())
+            if self.heartBeatTimer is not None:
+                self.heartBeatTimer.cancel()
+
+            self.nextTimeout = self.__venueProxy.UpdateLifetime(self.privateId,
+                                                       self.heartBeatTimeout)
+            log.debug("Next Heartbeat needed before: %d", self.nextTimeout)
+            
+            self.heartBeatTimer = threading.Timer(self.nextTimeout - 5.0,
+                                        self.Heartbeat)
+            self.heartBeatTimer.start()
+        except Exception, e:
+            log.exception("Error sending heartbeat, reconnecting.")
+            self.__Reconnect()
                 
     def __Reconnect(self):
     
@@ -747,7 +751,9 @@ class VenueClient:
                 Event.REMOVE_STREAM: self.RemoveStreamEvent,
                 Event.OPEN_APP: self.OpenAppEvent
                 }
-        
+
+            self.Heartbeat()
+            
 #            h, p = self.venueState.eventLocation
 #            self.eventClient = EventClient(self.privateId,
 #                                           self.venueState.eventLocation,
@@ -760,24 +766,18 @@ class VenueClient:
 #            self.eventClient.start()
 #            self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
 #                                               self.privateId))
-                               
-#            self.heartbeatTask = self.houseKeeper.AddTask(self.__Heartbeat, 5)
-#            self.heartbeatTask.start()
 
-            #
             # Get personaldatastore information
-            #
             self.dataStoreUploadUrl = self.__venueProxy.GetUploadDescriptor()
         
-            #
             # Connect the venueclient to the text client
-            #
 #            self.textClient = TextClient(self.profile,
 #                                         self.venueState.textLocation)
 #            self.textClient.Connect(self.venueState.uniqueId, self.privateId)
 #            self.textClient.RegisterOutputCallback(self.AddTextEvent)
-            
+
             log.debug("Setting isInVenue flag.")
+
             # Finally, set the flag that we are in a venue
             self.isInVenue = 1
 
@@ -863,11 +863,6 @@ class VenueClient:
             return
         self.exiting = 1
         self.exitingLock.release()
-
-        # Stop sending heartbeats
-        if self.heartbeatTask != None:
-            log.info("ExitVenue: Stopping heartbeats")
-            self.heartbeatTask.stop()
 
         try:
             self.__venueProxy.Exit( self.privateId )
