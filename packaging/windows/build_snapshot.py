@@ -36,7 +36,8 @@ SourceDir = os.environ['AGBUILDROOT']
 #
 # The openssl in winglobus is critical put it in our path
 #
-os.environ['PATH'] = os.path.join(SourceDir, "WinGlobus", "bin")+";%PATH%"
+oldpath = os.environ['PATH']
+os.environ['PATH'] = os.path.join(SourceDir, "WinGlobus", "bin")+";"+oldpath
 
 # Build Name
 #  This is the default name we use for the installer
