@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.45 2004-03-15 23:51:04 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.46 2004-03-15 23:57:16 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.45 2004-03-15 23:51:04 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.46 2004-03-15 23:57:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -71,7 +71,7 @@ def main():
 
     # build options for this application
     portOption = Option("-p", "--port", type="int", dest="port",
-                        default=12000, metavar="PORT",
+                        default=11000, metavar="PORT",
                         help="Set the port the service manager should run on.")
     app.AddCmdLineOption(portOption)
     
