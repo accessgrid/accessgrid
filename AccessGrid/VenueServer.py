@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.34 2003-02-14 21:19:13 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.35 2003-02-14 22:31:47 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,8 +23,8 @@ import os.path
 # AG Stuff
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
 from AccessGrid.hosting.pyGlobus import ServiceBase
-from AccessGrid.hosting.access_control import GetSecurityManager
-from AccessGrid.hosting.access_control import SecurityManager
+from AccessGrid.hosting.AccessControl import GetSecurityManager
+from AccessGrid.hosting.AccessControl import SecurityManager
 from AccessGrid.Venue import Venue
 from AccessGrid.GUID import GUID
 from AccessGrid.NetworkLocation import NetworkLocation
