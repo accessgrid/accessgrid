@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.11 2003-03-30 13:24:23 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.12 2003-04-19 16:36:22 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,7 @@
 from threading import Thread
 import pickle
 import logging
+import struct
 
 from pyGlobus.io import GSITCPSocket,TCPIOAttr,AuthData
 from pyGlobus.util import Buffer
@@ -24,6 +25,13 @@ from AccessGrid.Events import HeartbeatEvent, ConnectEvent, DisconnectEvent
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 
 log = logging.getLogger("AG.VenueClient")
+
+class EventClientConnectionException(Exception):
+    """
+    This exception is used to indicate a problem connecting to an
+    Event Service.
+    """
+    pass
 
 class EventClient(Thread):
     """
@@ -45,7 +53,12 @@ class EventClient(Thread):
         
         attr = CreateTCPAttrAlwaysAuth()
         self.sock = GSITCPSocket()
-        self.sock.connect(location[0], location[1], attr)
+        try:
+            self.sock.connect(location[0], location[1], attr)
+        except:
+            log.exception("Couldn't connect to event service.")
+            raise EventClientConnectionException
+        
         self.rfile = self.sock.makefile('rb', -1)
 
     def run(self):
@@ -54,46 +67,44 @@ class EventClient(Thread):
         processing event data provided by a EventService.
         """
         self.running = 1
-        while self.rfile != None and self.running:
+        while self.running:
+            # Read the size
             try:
-                str = self.rfile.readline()
-                if str == "":
-                    log.debug("Received eof while reading len")
-                    raise Exception("EOF")
-                try:
-                    size = int(str)
-                except ValueError, e:
-                    log.exception("ValueError on size conversion of '%s'", str)
-                    raise e
-                
-                if size > 0:
-                    # Then read the event
-                    pdata = self.rfile.read(size)
+                data = self.rfile.read(4)
+                sizeTupe = struct.unpack('i', data)
+                size = sizeTupe[0]
+                log.debug("Read size: %d", size)
+            except IOBaseException:
+                size = 0
+                log.exception("Read size: failed")
+                # Disconnect?
+                continue
+
+            # Read the data
+            try:
+                pdata = self.rfile.read(size)
+                log.debug("EventClient: Read data.")
+            except:
+                log.debug("EventClient: Read data failed.")
+                # Disconnect?
+                self.running = 0
+                continue
+
+            # Unpack the data
+            event = pickle.loads(pdata)
+
+            # Invoke registered callbacks
+            calls = []
+            for (evt, callback) in self.callbacks:
+                if evt == event.eventType:
+                    calls.append(callback)
                     
-                    # Unpack the data
-                    event = pickle.loads(pdata)
-                    if self.running:
-                        # Send it on its way
-                        calls = []
-                        for (evt, callback) in self.callbacks:
-                            if evt == event.eventType:
-                                calls.append(callback)
-                        
-                        if len(calls) != 0:
-                            for callback in calls:
-                                callback(event.data)
+                    if len(calls) != 0:
+                        for callback in calls:
+                            callback(event.data)
                         else:
                             log.info("No callback for %s!", event.eventType)
-                            self.DefaultCallback(event)                            
-                    else:
-                        self.running = 0
-                        break
-            except:
-                log.exception("Server closed connection!")
-                try:
-                    self.running = 0
-                except:
-                    log.exception("Couldn't close socket!")
+                            self.DefaultCallback(event)
 
         self.sock.close()
 
@@ -101,15 +112,12 @@ class EventClient(Thread):
         """
         This method sends data to the Event Service.
         """
-        log.info("Sending data: %s", str(data))
+        log.info("Sending data: %s", data)
         
         try:
-            # Pickle the data
             pdata = pickle.dumps(data)
-            size = "%d\n" % len(pdata)
-            # Send the size on it's own line
-            self.sock.write(size, len(size))
-            # Then send the pickled data
+            size = struct.pack("i", len(pdata))
+            self.sock.write(size, 4)
             self.sock.write(pdata, len(pdata))
         except:
             log.exception("EventClient.Send Error.")
@@ -149,21 +157,26 @@ if __name__ == "__main__":
     log.setLevel(logging.DEBUG)
     
     if len(sys.argv) > 1:
-        eventClient = EventClient((sys.argv[1], int(sys.argv[2])),
-                                  sys.argv[3])
+        host = sys.argv[1]
+        port = int(sys.argv[2])
+        channel = sys.argv[3]
     else:
-        eventClient = EventClient(('', 6500))
+        host = ''
+        port = 6500
+        channel = 'Test'
+        
+        eventClient = EventClient((host, port), channel)
 
     eventClient.Start()
     
-    eventClient.Send(ConnectEvent(sys.argv[3]))
+    eventClient.Send(ConnectEvent(channel))
         
     for i in range(1,5):
-        eventClient.Send(HeartbeatEvent(sys.argv[3], "foo"))
+        eventClient.Send(HeartbeatEvent(channel, "foo"))
         time.sleep(1)
 
     time.sleep(1)
     
-    eventClient.Stop()
+#    eventClient.Stop()
 
     os._exit(0)

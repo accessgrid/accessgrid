@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: AppService.py,v 1.5 2003-04-17 21:10:32 turam Exp $
+# RCS-ID:      $Id: AppService.py,v 1.6 2003-04-19 16:36:22 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,6 +23,7 @@ import logging
 from AccessGrid import GUID
 from AccessGrid import Events
 from AccessGrid.hosting.pyGlobus import ServiceBase
+from AccessGrid.Descriptions import ApplicationDescription
 
 log = logging.getLogger("AG.AppService")
 
@@ -186,16 +187,10 @@ class AppObjectImpl:
            data - the application's data storage, itself a dictionary.
 
         """
-        
-        state = {
-            'name': self.name,
-            'description': self.description,
-            'id': self.id,
-            'mimeType': self.mimeType,
-            'handle': self.handle,
-            'data': self.app_data,
-            }
-        return state
+
+        appDesc = ApplicationDescription(self.id, self.name, self.description,
+                                         self.handle, self.mimeType)
+        return appDesc
 
     def GetEventServiceLocation(self):
         return self.eventService.GetLocation()

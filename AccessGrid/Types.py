@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.31 2003-04-17 20:10:55 lefvert Exp $
+# RCS-ID:      $Id: Types.py,v 1.32 2003-04-19 16:36:22 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -96,6 +96,11 @@ class VenueState:
         self.services[serviceDescription.name] = serviceDescription
     def RemoveService( self, serviceDescription ):
         del self.services[serviceDescription.name]  
+
+    def AddApplication( self, applicationDescription ):
+        self.applications[applicationDescription.uri] = applicationDescription
+    def RemoveApplication( self, applicationDescription ):
+        self.applications[applicationDescription.uri] = applicationDescription
 
     def SetEventLocation( self, eventLocation ):
         self.eventLocation = eventLocation

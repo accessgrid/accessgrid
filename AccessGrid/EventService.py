@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.14 2003-04-18 17:18:35 eolson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.15 2003-04-19 16:36:22 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,9 +16,11 @@ import sys
 import pickle
 from threading import Thread
 import logging
+import struct
 
 from SocketServer import ThreadingMixIn, StreamRequestHandler
 from pyGlobus.io import GSITCPSocketServer, GSITCPSocketException
+from pyGlobus.io import IOBaseException
 
 # This really should be defined in pyGlobus.io
 class ThreadingGSITCPSocketServer(ThreadingMixIn, GSITCPSocketServer): pass
@@ -38,65 +40,97 @@ class ConnectionHandler(StreamRequestHandler):
         self.running = 0
          
     def handle(self):
-        log.debug("In request Handler!")
+        # What channel is this connection for
+        self.channel = None
+
+        # Get a handle to the services logger
+        log = self.server.log
+
+        log.debug("EventConnection: New Handler!")
         
         # loop getting data and handing it to the server
         self.running = 1
         while(self.running):
             try:
-                # Get the size of the pickled event data
-                size = int(self.rfile.readline())
-                    
-                # Get the pickled event data
-                pdata = self.rfile.read(size, size)
+                # This is hardwired to 4 byte size for now
+                data = self.rfile.read(4)
+                sizeTuple = struct.unpack('i', data)
+                size = sizeTuple[0]
+                log.debug("EventConnection: Read %d", size)
+            except IOBaseException:
+                # This is what happens when a connection goes away suddently
+                # We need to handle this gracefully
+                size = 0
+                log.debug("EventConnection: Connection lost.")
+                self.disconnect()
+                continue
                 
-                # Unpickle the event data
-                event = pickle.loads(pdata)
-
-                # Pass this event to the callback registered for this
-                # event.eventType
-                log.debug("Received event %s %s", event.eventType, event.venue)
-
-                if event.eventType == ConnectEvent.CONNECT:
-                    log.debug("EventService: Adding connection to venue %s",
-                              event.venue)
-                    self.server.connections[event.venue].append(self)
-                    continue
-                
-                # Disconnect Event
-                if event.eventType == DisconnectEvent.DISCONNECT:
-                    log.debug("EventService: Removing client connection to %s",
-                              event.venue)
-                    self.server.connections[event.venue].remove(self)
-                    continue
-                
-                # Pass this event to the callback registered for this
-                # event.eventType
-                if self.server.callbacks.has_key((event.venue,
-                                                    event.eventType)):
-                    cb = self.server.callbacks[(event.venue, event.eventType)]
-                    if cb != None:
-                        log.debug("invoke callback %s", str(cb))
-                        cb(event.data)
-                elif self.server.callbacks.has_key((event.venue,)):
-                    #
-                    # Default handler for this channel.
-                    cb = self.server.callbacks[(event.venue,)]
-                    if cb != None:
-                        log.debug("invoke channel callback %s", cb)
-                        cb(event.eventType, event.data)
+            # Get the pickled event data
+            try:
+                pdata = self.rfile.read(size)
+                log.debug("EventConnection: Read data.")
+            except:
+                log.debug("EventConnection: Read data failed.")
+                self.disconnect()
+                continue
+            
+            # Unpickle the event data
+            event = pickle.loads(pdata)
+            
+            # Pass this event to the callback registered for this
+            # event.eventType
+            log.debug("EventConnection: Received event %s", event)
+            
+            if event.eventType == ConnectEvent.CONNECT:
+                log.debug("EventConnection: Adding connection to venue %s",
+                          event.venue)
+                self.channel = event.venue
+                self.server.connections[event.venue].append(self)
+                continue
+            
+            # Disconnect Event
+            if event.eventType == DisconnectEvent.DISCONNECT:
+                log.debug("EventConnection: Removing client connection to %s",
+                          event.venue)
+                self.disconnect()
+                continue
+            
+            # Pass this event to the callback registered for this
+            # event.eventType
+            if self.server.callbacks.has_key((event.venue,
+                                              event.eventType)):
+                cb = self.server.callbacks[(event.venue, event.eventType)]
+                if cb != None:
+                    log.debug("invoke callback %s", str(cb))
+                    cb(event.data)
+            elif self.server.callbacks.has_key((event.venue,)):
+                # Default handler for this channel.
+                cb = self.server.callbacks[(event.venue,)]
+                if cb != None:
+                    log.debug("invoke channel callback %s", cb)
+                    cb(event.eventType, event.data)
                 else:
                     log.info("EventService: No callback for %s, %s events.",
                              event.venue, event.eventType)
-            except: 
-                log.debug("ConnectionHandler.handle Client disconnected!")
-                self.running = 0
+                
+    def disconnect(self):
+        """
+        This is here to encapsulate all the parts of disconnection that matter.
+        """
+        # First turn off the loop
+        self.running = 0
 
-        # When we're all done, clean up this connection
-        for v in self.server.connections.keys():
-            if self in self.server.connections[v]:
-                self.server.connections[v].remove(self)
-                    
+        # Second clean me out of all lists, this connection is no longer valid
+        if self.channel != None:
+            self.server.connections[self.channel].remove(self)
+
+            # Third send the server a disconnect event so they know I'm gone
+            if self.server.callbacks.has_key((self.channel,
+                                              DisconnectEvent.DISCONNECT)):
+                cb = self.server.callbacks[(self.channel,
+                                            DisconnectEvent.DISCONNECT)]
+                cb(None)
+        
 class EventService(ThreadingGSITCPSocketServer, Thread):
     """
     The EventService provides a secure event layer. This might be more 
@@ -105,7 +139,9 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
     """
     def __init__(self, server_address, RequestHandlerClass=ConnectionHandler):
         Thread.__init__(self)
-
+        self.log = logging.getLogger("AG.EventService")
+        self.log.debug("Event Service Started")
+        
         self.location = server_address
         self.callbacks = {}
         self.connections = {}
@@ -115,6 +151,8 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         """
         run is defined to override the Thread.run method so Thread.start works.
         """
+        self.log.debug("Event Service: Running")
+        
         self.running = 1
         while(self.running):
             try:
@@ -127,7 +165,8 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         """
         Stop stops this thread, thus shutting down the service.
         """
-
+        self.log.debug("EventService: Stopping")
+        
         for v in self.connections.keys():
             for c in self.connections[v]:
                 c.stop()
@@ -136,7 +175,8 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         self.server_close()
         
     def DefaultCallback(self, event):
-        log.info("EventService: Got callback for %s event!", event.eventType)
+        self.log.info("EventService: Got callback for %s event!",
+                      event.eventType)
         
     def RegisterCallback(self, channel, eventType, callback):
         # Callbacks just take the event data as the argument
@@ -163,32 +203,42 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         """
         Distribute sends the data to all connections.
         """
-        log.debug("EventService: Sending Event %s", data.eventType)
+        self.log.debug("EventService: Sending Event %s", data)
 
         # This should be more generic
         pdata = pickle.dumps(data)
-        lenStr = "%s\n" % len(pdata)
+        size = struct.pack("i", len(pdata))
         if self.connections.has_key(channel):
             for c in self.connections[channel]:
                 try:
-                    log.debug("write length '%s'", lenStr)
-                    c.wfile.write(lenStr)
-                    log.debug("write data")
-                    c.wfile.write(pdata)           
+                    c.wfile.write(size)
+                    c.wfile.write(pdata)
                 except:
-                    log.exception("EventService.Distribute Client disconnected!")
+                    self.log.exception("EventService.Distribute write error!")
                     self.connections[channel].remove(c)
             
     def GetLocation(self):
         """
         GetLocation returns the (host,port) for this service.
         """
+        self.log.debug("EventService: GetLocation")
+        
         return self.location
 
     def AddChannel(self, channelId):
+        """
+        This adds a new channel to the Event Service.
+        """
+        self.log.debug("EventService: AddChannel %s", channelId)
+        
         self.connections[channelId] = []
 
     def RemoveChannel(self, channelId):
+        """
+        This removes a channel from the Event Service.
+        """
+        self.log.debug("EventService: Remove Channel %s", channelId)
+
         del self.connections[channelId]
 
 if __name__ == "__main__":

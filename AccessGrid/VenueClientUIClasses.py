@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.142 2003-04-18 23:01:14 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.143 2003-04-19 16:36:22 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1282,13 +1282,21 @@ class ContentListPanel(wxPanel):
             if(id != None):
                 self.tree.Delete(id)
 
-    def AddApplication(self, profile):
-        application = self.tree.AppendItem(self.applications, profile.name,
-                                           self.applicationId, self.applicationId)
-        self.tree.SetItemData(application, wxTreeItemData(profile)) 
-        self.applicationDict[profile.name] = application
+    def AddApplication(self, appDesc):
+        application = self.tree.AppendItem(self.applications, appDesc.name,
+                                           self.applicationId,
+                                           self.applicationId)
+        self.tree.SetItemData(application, wxTreeItemData(appDesc))
+        self.applicationDict[appDesc.uri] = application
         self.tree.Expand(self.applications)
       
+    def RemoveService(self, appDesc):
+        if(self.applicationDict.has_key(appDesc.uri)):
+            id = self.applicationDict[appDesc.uri]
+            del self.applicationDict[appDesc.uri]
+            if(id != None):
+                self.tree.Delete(id)
+
     def AddNode(self, profile, dataList = []):
         node = self.tree.AppendItem(self.nodes, profile.name, \
                                        self.nodeId, self.nodeId)
@@ -1397,8 +1405,7 @@ class ContentListPanel(wxPanel):
         elif self.personalDataDict.has_key(item.name):
             self.PopupMenu(self.parent.dataMenu, wxPoint(self.x, self.y))
             
-        elif self.participantDict.has_key(item.publicId) or \
-                 self.nodeDict.has_key(item.publicId):
+        elif self.participantDict.has_key(item.publicId) or self.nodeDict.has_key(item.publicId):
 
             wxLogDebug("Is this me? public is = %s, my id = %s "%(item.publicId, self.app.profile.publicId))
             if(item.publicId == self.app.profile.publicId):
@@ -1590,7 +1597,7 @@ class SaveFileDialog(wxDialog):
         if self.transferDone:
             self.EndModal(wxID_OK)
         else:
-            wxLogDebug("Cancelling transfer!")
+            wxLogDebug("SaveFileDialog.OnButton: Cancelling transfer!")
             self.EndModal(wxID_CANCEL)
             self.cancelFlag = 1
 
@@ -1663,7 +1670,7 @@ class UploadFilesDialog(wxDialog):
         if self.transferDone:
             self.EndModal(wxID_OK)
         else:
-            wxLogDebug("Cancelling transfer!")
+            wxLogDebug("UploadFiles.OnButton: Cancelling transfer!")
             self.EndModal(wxID_CANCEL)
             self.cancelFlag = 1
 
