@@ -5,5 +5,4 @@ Name=Venue Server (Debug)
 Type=Application
 Exec=VenueServer.py -d
 Icon=/usr/share/AccessGrid/ag.ico
-GenericName=Run the venue server software in debug mode
 Terminal=1

@@ -5,5 +5,4 @@ Name=Node Setup Wizard
 Type=Application
 Exec=VenueClient.py 
 Icon=/usr/share/AccessGrid/ag.ico
-GenericName=Run the AG Node Configuration Wizard
 Terminal=0

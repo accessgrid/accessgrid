@@ -5,5 +5,4 @@ Name=Service Manager
 Type=Application
 Exec=AGServiceManager.py -d
 Icon=/usr/share/AccessGrid/ag.ico
-GenericName=Run the service manager software in debug mode
 Terminal=1

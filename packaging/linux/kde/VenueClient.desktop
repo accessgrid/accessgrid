@@ -5,5 +5,4 @@ Name=Venue Client
 Type=Application
 Exec=VenueClient.py 
 Icon=/usr/share/AccessGrid/ag.ico
-GenericName=Run the venue client software
 Terminal=0
