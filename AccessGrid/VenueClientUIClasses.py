@@ -1,10 +1,11 @@
 from wxPython.wx import *
-from wxPython.lib.buttons import *
 from AccessGrid import icons
 from AccessGrid.VenueClient import VenueClient
 import threading
 from AccessGrid import Utilities
 import AccessGrid.ClientProfile
+from AccessGrid.Descriptions import DataDescription
+from AccessGrid.Descriptions import ServiceDescription
 
 
 '''VenueClientFrame. 
@@ -46,11 +47,11 @@ class VenueClientFrame(wxFrame):
         self.venue = wxMenu()
 	self.dataSubmenu = wxMenu()
 	self.dataSubmenu.Append(221,"Add")
-	self.dataSubmenu.Append(221,"Delete")
+	self.dataSubmenu.Append(222,"Delete")
 	self.venue.AppendMenu(220,"&Data",self.dataSubmenu)
 	self.serviceSubmenu = wxMenu()
-	self.serviceSubmenu.Append(221,"Add")
-        self.serviceSubmenu.Append(221,"Delete")
+	self.serviceSubmenu.Append(231,"Add")
+        self.serviceSubmenu.Append(232,"Delete")
 	self.venue.AppendMenu(220,"&Services",self.serviceSubmenu)
 	self.menubar.Append(self.venue, "&Venue")
 	
@@ -66,12 +67,17 @@ class VenueClientFrame(wxFrame):
     def __setEvents(self):
         EVT_MENU(self, 200, self.OpenProfileDialog)
         EVT_MENU(self, 221, self.OpenAddDataDialog)
+        EVT_MENU(self, 231, self.OpenAddServiceDialog)
+        EVT_MENU(self, 222, self.RemoveData)
+        EVT_MENU(self, 232, self.RemoveService)   
         EVT_MENU(self, 302, self.OpenAboutDialog)
                 
 	
     def __setToolbar(self):
-	self.toolbar.AddSimpleTool(20, icons.getWordIconBitmap(), "ImportantPaper.doc", "ImportantPaper.doc",)
-	self.toolbar.AddSimpleTool(21, icons.getPptIconBitmap(), "Presentation.ppt", "Presentation.ppt",)
+	self.toolbar.AddSimpleTool(20, icons.getWordIconBitmap(), \
+                                   "ImportantPaper.doc", "ImportantPaper.doc",)
+	self.toolbar.AddSimpleTool(21, icons.getPptIconBitmap(), \
+                                   "Presentation.ppt", "Presentation.ppt",)
 	
     def __setProperties(self):
         self.SetTitle("Access Grid - The Lobby")
@@ -100,24 +106,47 @@ class VenueClientFrame(wxFrame):
         self.__doLayout()
 
     def OpenAddDataDialog(self, event):
-        print 'adding data'
-        self.app.AddData('home')
+        dlg = wxFileDialog(self, "Choose a file:")
+
+        if dlg.ShowModal() == wxID_OK:
+            data = DataDescription(dlg.GetFilename(), dlg.GetPath(), 'uri', 'icon', 'storagetype')
+            self.app.AddData(data)
+
+        dlg.Destroy()
 
     def OpenProfileDialog(self, event):
         print 'profile dialog'
         profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', self.app.profile)
            
-        if (profileDialog.ShowModal() == wxID_OK): # when click ok
+        if (profileDialog.ShowModal() == wxID_OK): 
             self.app.ChangeProfile(profileDialog.GetNewProfile())
-            profileDialog.Destroy()
-            
-        else:  # when click cancel
-            profileDialog.Destroy()
 
+        profileDialog.Destroy()
+
+    def OpenAddServiceDialog(self, event):
+        addServiceDialog = AddServiceDialog(self, -1, 'Please, fill in service details')
+        if (addServiceDialog.ShowModal() == wxID_OK):
+            self.app.AddService(addServiceDialog.GetNewProfile())
+
+        profileDialog.Destroy()
+        
+      
+        self.app.AddService(service)
+        
     def OpenAboutDialog(self, event):
         aboutDialog = AboutDialog(self, -1, "About VenueClient")
-            
 
+    def RemoveData(self, event):
+        id = self.contentListPanel.tree.GetSelection()
+        data =  self.contentListPanel.tree.GetItemData(id).GetData()
+        self.app.RemoveData(data)
+
+    def RemoveService(self, event):
+        id = self.contentListPanel.tree.GetSelection()
+        service =  self.contentListPanel.tree.GetItemData(id).GetData()
+        self.app.RemoveService(service)
+
+   
 '''VenueListPanel. 
 
 The venueListPanel contains a list of connected venues/exits to current venue.  
@@ -285,91 +314,75 @@ class ContentListPanel(wxPanel):
 	EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
 	
     def __setImageList(self):
-#	wxInitAllImageHandlers()
 	imageList = wxImageList(16,16)  
-#	service = wxBitmap('IMAGES/service.bmp', wxBITMAP_TYPE_BMP)
-#	smileyOn = wxBitmap('IMAGES/smileyOn.jpg', wxBITMAP_TYPE_JPEG)
-#	smileySelect = wxBitmap('IMAGES/smileySelect.jpg', wxBITMAP_TYPE_JPEG)
 
 	newImageList = wxImageList(16,16) 
-#	self.arrow = imageList.Add(wxBitmap("IMAGES/rightArrow.gif"))
 	self.defaultPersonId = imageList.Add(icons.getDefaultPersonIconBitmap())
 	self.pptDocId = imageList.Add(icons.getPptIconBitmap())
 	self.importantPaperId = imageList.Add(icons.getWordIconBitmap())
 	self.serviceId = imageList.Add(icons.getVoyagerIconBitmap())
 	self.iconId = imageList.Add(icons.getDefaultPersonIconBitmap())  
-	#self.smileyOnId =  imageList.Add(smileyOn)
-	#self.smileySelectId =  imageList.Add(smileySelect)
 	self.tree.AssignImageList(imageList)
 
     def AddParticipant(self, profile):
-        print "---------------"
-        print "in venue client"
-        print profile.name
         participant = self.tree.AppendItem(self.participants, profile.name, \
                              self.iconId, self.iconId)
-       # self.tree.SetPyData(participant, profile)
         self.participantDict[profile.name] = participant
         self.tree.Expand(self.participants)
     
-    def RemoveParticipant(self):
-        id = self.participantDict['New Person']
+    def RemoveParticipant(self, description):
+        id = self.participantDict[description.name]
         self.tree.Delete(id)
         
     def AddData(self, profile):
-        name = "ImportantPaper.doc"
-        data = self.tree.AppendItem(self.data, name, \
+        print '-----------ADD DATA'
+        data = self.tree.AppendItem(self.data, profile.name, \
                              self.importantPaperId, self.importantPaperId)
-       # self.tree.SetPyData(data, profile)
-        self.dataDict[name] = data
+        print 'profile name: '+ profile.name
+        self.tree.SetItemData(data, wxTreeItemData(profile)) 
+        self.dataDict[profile.name] = data
         self.tree.Expand(self.data)
        
-    def RemoveData(self):
-        id = self.dataDict["ImportantPaper.doc"]
+    def RemoveData(self, profile):
+        print 'remove in VenueClientUI'
+        id = self.dataDict[profile.name]
         self.tree.Delete(id)
-       
+               
     def AddService(self, profile):
-        name = "Voyager"
-        service = self.tree.AppendItem(self.services, name,\
+        service = self.tree.AppendItem(self.services, profile.name,\
                                        self.serviceId, self.serviceId)
-       # self.tree.SetPyData(service, profile)
-        self.serviceDict[name] = service
+        self.tree.SetItemData(service, wxTreeItemData(profile)) 
+        self.serviceDict[profile.name] = service
         self.tree.Expand(self.services)
       
-    def RemoveService(self):
-        id = self.serviceDict["Voyager"]
+    def RemoveService(self, profile):
+        id = self.serviceDict[profile.name]
         self.tree.Delete(id)
 
     def AddNode(self, profile):
         node = self.tree.AppendItem(self.nodes, profile.name)
-      #  self.tree.SetPyData(node, profile)
         self.nodeDict[profile.name] = node
         self.tree.Expand(self.nodes)
 
-    def RemoveNode(self):
-        id = self.nodeDict["Library Node"]
+    def RemoveNode(self, profile):
+        id = self.nodeDict[profile.name]
         self.tree.Delete(id)
 
     def __setTree(self):
         self.root = self.tree.AddRoot("The Lobby")
-       # self.tree.SetPyData(self.root, 1)
-        
+             
 	self.participants = self.tree.AppendItem(self.root, "Participants")
 	self.tree.SetItemBold(self.participants)
-      #  self.tree.SetPyData(self.participants, 1)
-        
+             
 	self.data = self.tree.AppendItem(self.root, "Data")
 	self.tree.SetItemBold(self.data)
-        #self.tree.SetPyData(self.data, 1)
-        
+             
 	self.services = self.tree.AppendItem(self.root, "Services")
 	self.tree.SetItemBold(self.services)
-      #  self.tree.SetPyData(self.services, 1)
-        
+             
 	self.nodes = self.tree.AppendItem(self.root, "Nodes")
 	self.tree.SetItemBold(self.nodes)
-      #  self.tree.SetPyData(self.nodes, 1)
-        
+             
         self.tree.Expand(self.participants)
         self.tree.Expand(self.data)
         self.tree.Expand(self.services)
@@ -509,6 +522,61 @@ class ProfileDialog(wxDialog):
         self.SetSizer(sizer1)
         sizer1.Fit(self)
         self.SetAutoLayout(1)
+
+class AddServiceDialog(wxDialog):
+    def __init__(self, parent, id, title):
+        wxDialog.__init__(self, parent, id, title)
+        self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
+        self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,20))
+        self.descriptionText = wxStaticText(self, -1, "Description:", style=wxALIGN_LEFT)
+        self.descriptionCtrl = wxTextCtrl(self, -1, "")
+        self.uriText = wxStaticText(self, -1, "Location URL:", style=wxALIGN_LEFT | wxTE_MULTILINE )
+        self.uriCtrl = wxTextCtrl(self, -1, "")
+        self.typeText = wxStaticText(self, -1, "Mime Type:")
+        self.typeCtrl = wxTextCtrl(self, -1, "")
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.__setProperties()
+        self.__doLayout()
+
+    def GetNewProfile(self):
+        service = ServiceDescription('service', 'service', 'uri', 'icon', 'storagetype')
+        service.SetName(self.nameCtrl.GetValue())
+        service.SetDescription(self.descriptionCtrl.GetValue())
+        service.SetURI(self.uriCtrl.GetValue())
+        service.SetMimeType(self.typeCtrl.GetValue())
+        return service
+
+    def __setProperties(self):
+        self.SetTitle("Please, fill in service information")
+              
+    def __doLayout(self):
+        sizer1 = wxBoxSizer(wxVERTICAL)
+        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, "Profile"), wxHORIZONTAL)
+        gridSizer = wxFlexGridSizer(9, 2, 5, 5)
+        gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
+        gridSizer.Add(self.uriText, 0, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.uriCtrl, 2, wxEXPAND, 0)
+        gridSizer.Add(self.typeText, 0, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.typeCtrl, 0, wxEXPAND, 0)
+        gridSizer.Add(self.descriptionText, 0, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.descriptionCtrl, 0, wxEXPAND, 0)
+        sizer2.Add(gridSizer, 1, wxALL, 10)
+
+        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
+
+        sizer3 = wxBoxSizer(wxHORIZONTAL)
+        sizer3.Add(self.okButton, 0, wxALL, 10)
+        sizer3.Add(self.cancelButton, 0, wxALL, 10)
+
+        sizer1.Add(sizer3, 0, wxALIGN_CENTER)
+
+        self.SetSizer(sizer1)
+        sizer1.Fit(self)
+        self.SetAutoLayout(1)
+
+
 
 
 '''VenueClient. 
