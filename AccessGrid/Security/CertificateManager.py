@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.31 2004-07-20 20:08:45 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.32 2004-08-02 20:11:07 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.31 2004-07-20 20:08:45 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.32 2004-08-02 20:11:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -1048,7 +1048,7 @@ class CertificateManager(object):
         if s[0] & (S_IXUSR |
                    S_IWGRP | S_IXGRP |
                    S_IWOTH | S_IXOTH):
-            if s[ST_UID] == os.getuid():
+            if Platform.IsWindows() or (s[ST_UID] == os.getuid()) :
                 log.info("Setting permissions on certificate %s to 644", certPath)
                 os.chmod(certPath,0644)
             else:
@@ -1059,7 +1059,7 @@ class CertificateManager(object):
         if s[0] & (S_IXUSR |
                    S_IRGRP | S_IWGRP | S_IXGRP |
                    S_IROTH | S_IWOTH | S_IXOTH):
-            if s[ST_UID] == os.getuid():
+            if Platform.IsWindows() or (s[ST_UID] == os.getuid()) :
                 log.info("Setting permissions on certificate %s to 600", keyPath)
                 os.chmod(keyPath,0600)
             else:
