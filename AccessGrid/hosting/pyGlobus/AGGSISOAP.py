@@ -74,7 +74,7 @@
 """
 """
 
-__revision__ = "$Id: AGGSISOAP.py,v 1.13 2003-10-01 19:20:30 olson Exp $"
+__revision__ = "$Id: AGGSISOAP.py,v 1.14 2003-10-01 20:11:26 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import xml.sax
@@ -103,7 +103,7 @@ log.setLevel(logging.WARN)
 try: from M2Crypto import SSL
 except: pass
 
-ident = '$Id: AGGSISOAP.py,v 1.13 2003-10-01 19:20:30 olson Exp $'
+ident = '$Id: AGGSISOAP.py,v 1.14 2003-10-01 20:11:26 olson Exp $'
 
 __version__ = "0.9.7"
 
@@ -2688,9 +2688,9 @@ class SOAPParser(xml.sax.handler.ContentHandler):
                     # standard.
 
                     if s in ("nan", "inf"):
-                        return 1e300**2
+                        return 1e300000
                     if s == "-inf":
-                        return -1e300**2
+                        return -1e300000
 
                     raise
 
