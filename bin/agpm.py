@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.13 2004-05-05 18:29:33 judson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.14 2004-05-05 18:31:38 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.13 2004-05-05 18:29:33 judson Exp $"
+__revision__ = "$Id: agpm.py,v 1.14 2004-05-05 18:31:38 turam Exp $"
 
 import os
 import re
@@ -168,6 +168,10 @@ def main():
 
     if options.appzip:
         appFile, workingDir = UnpackZip(options.appzip)
+        cleanup = 1
+
+    if options.apppkg:
+        appFile, workingDir = UnpackZip(options.apppkg)
         cleanup = 1
 
     # If no appfile is specified, search the current directory for one
