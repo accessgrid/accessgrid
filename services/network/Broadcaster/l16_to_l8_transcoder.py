@@ -8,24 +8,22 @@ from common import common
 
 
 class L16_to_L8(RTPSensor):
+    '''
+    Class for down-sampling L16-16kHz to L16-8kHz audio. 
+    '''
     def __init__(self, from_address, from_port, to_address, to_port):
         RTPSensor.__init__(self, from_address, from_port)
         self.handlerDict[0] = self.do_RTP
-        self.destination = common.Rtp(to_address, to_port, to_port, 127,
-                                      64000.0, None)
-        dest_ssrc = self.destination.my_ssrc()
-        tool = "audiotest.py"
-        name = "RTP Messer"
-        self.destination.set_sdes(dest_ssrc, common.RTCP_SDES_TOOL,
-                                  tool, len(tool))
-        self.destination.set_sdes(dest_ssrc, common.RTCP_SDES_NAME,
-                                  name, len(name))
-        self.destination.send_ctrl(0, None)
-        self.last_ts = 0
-        self.buffer = ""
-        
-        
+        self.buffers = {} 
+        self.sources = {}
+        self.timeStamps = {}
+        self.to_address = to_address
+        self.to_port = to_port
+                                
     def do_RTP(self, session, event):
+        '''
+        Method called when an rtp data packet arrives.
+        '''
         packet = common.make_rtp_packet(event.data)
         data = common.rtp_packet_getdata(packet)
 
@@ -33,7 +31,8 @@ class L16_to_L8(RTPSensor):
         if packet.pt != 112:
             common.free_rtp_packet(packet)
             return
-        
+
+        # down sample the data
         args = []
         fmt = '%dh' % (len(data)/4)
         s = struct.unpack('%dh' % (len(data)/2) , data)
@@ -43,33 +42,78 @@ class L16_to_L8(RTPSensor):
             
         sdata = apply(struct.pack,args)
 
-        if self.buffer:
-            self.buffer = self.buffer + sdata
-            sdata = self.buffer
-            self.buffer = None
+        # buffer the data
+        if self.buffers.has_key(packet.ssrc) and self.buffers[packet.ssrc]:
+            packets = self.buffers[packet.ssrc]
+            packets = self.buffers[packet.ssrc] + sdata
+            self.buffers[packet.ssrc] = packets
+            
         else:
-            self.buffer = sdata
+            self.buffers[packet.ssrc] = sdata
             common.free_rtp_packet(event.data)
             return
-        
+
+        # L16 - 8kHz
         pt = 122
 
+        destination = None
+
         try:
-            self.destination.send_data(self.last_ts, pt, packet.m,
-                                       packet.cc, packet.csrc,
-                                       sdata, len(sdata),
-                                       packet.extn, packet.extn_len,
-                                       packet.extn_type)
-            self.last_ts = self.last_ts + 160
+            data = self.buffers[packet.ssrc]
+            
+            # Create a new source for each stream to send
+            # to the multicast address. Each new source is
+            # keeping track of its own timestamp.
+            
+            if self.sources.has_key(packet.ssrc):
+                destination = self.sources[packet.ssrc]
+
+            else:
+                destination = common.Rtp(self.to_address, self.to_port,
+                                         self.to_port, 127,
+                                         64000.0, None)
+                dest_ssrc = destination.my_ssrc()
+                tool = "audiotest.py"
+                name = "RTP Messer"
+                destination.set_sdes(dest_ssrc, common.RTCP_SDES_TOOL,
+                                          tool, len(tool))
+                destination.set_sdes(dest_ssrc, common.RTCP_SDES_NAME,
+                                          name, len(name))
+                destination.send_ctrl(0, None)
+                self.sources[packet.ssrc] = destination
+
+
+            # Each source keeps track of its own timestamp.
+            if self.timeStamps.has_key(packet.ssrc):
+                ts = self.timeStamps[packet.ssrc]
+            else:
+                self.timeStamps[packet.ssrc] = 0
+                ts = 0
+
+            # Send data
+            destination.send_data(ts, pt, packet.m,
+                                  packet.cc, packet.csrc,
+                                  data, len(data),
+                                  packet.extn, packet.extn_len,
+                                  packet.extn_type)
+
+            # Increment timestamp
+            self.timeStamps[packet.ssrc] = ts + 160
+
+           
         except Exception, e:
             print "Exception sending data, ", e
 
-        self.destination.send_ctrl(packet.ts, None)
-        self.destination.update()
-      
         common.free_rtp_packet(event.data)
 
-
+        # Clear the buffer
+        self.buffers[packet.ssrc] = None
+      
+        # Send control packets for each source
+        for destination in self.sources.values():
+            destination.send_ctrl(self.timeStamps[packet.ssrc], None)
+            destination.update()
+                   
     def StartSignalLoop(self):
         '''
         Start loop that can get interrupted from signals and
