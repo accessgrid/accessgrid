@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.39 2003-02-11 22:20:24 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.40 2003-02-12 20:49:09 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT -----------------------------------------------------------------------------
 import threading
@@ -62,20 +62,21 @@ class VenueClientUI(wxApp, VenueClient):
                
         # This will set defaults for either of our platforms, hopefully
         if sys.platform == "win32":
-            myHomePath = os.environ['HOMEPATH']
+            myHomePath = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
         elif sys.platform == "linux2":
             myHomePath = os.environ['HOME']
 
         accessGridDir = '.AccessGrid'
-        self.profilePath = myHomePath+'/'+accessGridDir+'/profile'
+        profilePath = os.path.join( myHomePath, accessGridDir )
+        self.profileFile = os.path.join( profilePath, "profile" )
 
-        try:  # do we have a profile file
-            os.listdir(myHomePath+'/'+accessGridDir)
+        try:  # does the profile dir exist?
+            os.listdir(profilePath)
                       
         except:
-            os.mkdir(myHomePath+'/'+accessGridDir)
+            os.mkdir(profilePath)
 
-        self.profile = ClientProfile(self.profilePath)
+        self.profile = ClientProfile(self.profileFile)
                   
         if self.profile.IsDefault():  # not your profile
             self.__openProfileDialog()
@@ -334,7 +335,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method changes this participants profile
         """
         self.profile = profile
-        self.profile.Save(self.profilePath)
+        self.profile.Save(self.profileFile)
         self.SetProfile(self.profile)
 
         if self.gotClient:
