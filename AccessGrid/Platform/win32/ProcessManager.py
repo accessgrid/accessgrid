@@ -1,17 +1,14 @@
 #-----------------------------------------------------------------------------
 # Name:        ProcessManager.py
 # Purpose:     
-#
-# Author:      Robert D. Olson
-#
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.3 2004-03-12 05:23:12 judson Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.4 2004-03-12 21:54:28 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.3 2004-03-12 05:23:12 judson Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.4 2004-03-12 21:54:28 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import win32process
@@ -23,7 +20,7 @@ class ProcessManager:
     def __init__(self):
         self.processes = []
 
-    def StartProcess(self, command, arglist, detached = 1):
+    def StartProcess(self, command, arglist, detached = 1, maxWait = 20):
         """
         Start a new process.
 
@@ -73,14 +70,29 @@ class ProcessManager:
 
             log.debug("Create process returns: %s", info)
 
-            self.processes.append(info[0])
+            pHandle = info[0]
+            
+            self.processes.append(pHandle)
 
-            rc = info[0]
-
+            if not detached:
+                pHandle = info[0]
+                wTime = 0
+                tIncr = 1
+                # We have to wait for it to finish
+                exitCode = win32process.GetExitCodeProcess(pHandle)
+                while exitCode == 259 and wTime < maxWait:
+                    exitCode = win32process.GetExitCodeProcess(pHandle)
+                    time.sleep(tIncr)
+                    wTime = wTime + tIncr
+                else:
+                    # Gotta kill it, sigh
+                    self.TerminateProcess(pHandle)
+                return exitCode
+            else:
+                return pHandle
+                
         except win32process.error, e:
             log.exception("process creation failed: %s", e)
-
-        return rc
 
     def TerminateAllProcesses(self):
         """
@@ -88,10 +100,9 @@ class ProcessManager:
         """
         for phandle in self.processes:
             try:
-                win32process.TerminateProcess(phandle, 0)
-            except win32process.error, e:
+                self.TerminateProcess(phandle)
+            except Exception, e:
                 log.exception("couldn't terminate process %s: %s", phandle, e)
-        self.processes = []
 
     def TerminateProcess(self, pid):
         """
@@ -101,10 +112,10 @@ class ProcessManager:
         @type pid: string? integer?
         """
         try:
-            win32process.TerminateProcess(phandle, 0)
-            self.processes.remove(phandle)
+            win32process.TerminateProcess(pid, 0)
+            self.processes.remove(pid)
         except win32process.error, e:
-            log.exception("couldn't terminate process %s: %s", phandle, e)
+            log.exception("couldn't terminate process %s: %s", pid, e)
 
     def KillAllProcesses(self):
         """
@@ -113,7 +124,7 @@ class ProcessManager:
         @warning: this is not a clean shutdown, but a forced shutdown
         that may result in system cruft.
         """
-        raise "Not implemented Yet."
+        self.TerminateAllProcesses()
 
     def KillProcess(self, pid):
         """
@@ -125,14 +136,14 @@ class ProcessManager:
         @param pid: the id of the process to terminate.
         @type pid: string? integer?
         """
-        raise "Not implemented Yet."
+        self.TerminateProcess(pid)
 
     def ListProcesses(self):
         """
         Return a list of process id's for this process manager.
         @returns: a list of process id's
         """
-        raise "This should not be called directly, but by a subclass."
+        return self.processes
 
 if __name__ == "__main__":
     import time
@@ -155,4 +166,8 @@ if __name__ == "__main__":
     except Exception, e:
         print "Exception terminating processes: ", e
 
+    try:
+        mgr.StartProcess("notepad", [r"\boot.ini"], detached = 0)
+    except Exception, e:
+        print "Exception with non-detached process: ", e
     
