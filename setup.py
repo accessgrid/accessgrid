@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.68 2004-05-06 03:39:46 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.69 2004-05-06 03:46:19 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -113,7 +113,7 @@ linux_data = [('etc/init.d',
                 ]
                ),
                
-              ('share/applnk/apps/AccessGrid',
+              ('share/applnk/AccessGrid',
                [
                 r"packaging/linux/kde/Readme.desktop",
                 r"packaging/linux/kde/VenueClient.desktop",
@@ -122,13 +122,13 @@ linux_data = [('etc/init.d',
                 r"packaging/linux/kde/CertificateRequestTool.desktop",
                 ]
                ),
-              ('share/applnk/apps/AccessGrid/Configure',
+              ('share/applnk/AccessGrid/Configure',
                [
                 r"packaging/linux/kde/NodeSetupWizard.desktop",
                 r"packaging/linux/kde/NodeManagement.desktop",
                 ]
                ),
-              ('share/applnk/apps/AccessGrid/Services',
+              ('share/applnk/AccessGrid/Services',
                [
                 r"packaging/linux/kde/VenueServer.desktop",
                 r"packaging/linux/kde/VenueServer-Debug.desktop",
@@ -138,7 +138,7 @@ linux_data = [('etc/init.d',
                 r"packaging/linux/kde/NodeService-Debug.desktop",
                 ]
                ),
-              ('share/applnk/apps/AccessGrid/Documentation',
+              ('share/applnk/AccessGrid/Documentation',
                [
                 r"packaging/linux/kde/VenueClientManual.desktop",
                 r"packaging/linux/kde/VenueManagementManual.desktop",
