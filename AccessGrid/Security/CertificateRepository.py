@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.20 2004-07-20 20:05:45 turam Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.21 2004-08-25 17:13:59 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.20 2004-07-20 20:05:45 turam Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.21 2004-08-25 17:13:59 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -136,7 +136,7 @@ def ClassifyCertificate(path):
         return None
     
     if validCert:
-        print "Found valid cert, validKey=", validKey
+        log.info("Found valid cert, validKey=%s", validKey)
         c = crypto.load_certificate(crypto.FILETYPE_PEM,
                                     open(path).read())
         return ("PEM", c, not validKey)
@@ -153,7 +153,7 @@ def ClassifyCertificate(path):
     except crypto.Error, e:
         s = str(e)
         if s.find("mac verify failure") >= 0:
-            print "cert is encrypted pkcs12"
+            log.info("cert is encrypted pkcs12")
             return ("PKCS12", None, 0)
         if s.find("expecting an asn1 sequence") >= 0:
             return ("Unknown", None, 1)
@@ -714,7 +714,7 @@ class CertificateRepository:
         # We try to load the key without a passphrase first.
         #
 
-        print "pkey file is ", keyFile
+        #print "pkey file is ", keyFile
         
         pkey = None
         if keyFile is not None:
@@ -779,7 +779,8 @@ class CertificateRepository:
             if pkey.get_modulus() != cert.GetModulus():
                 raise Exception, "Private key does not match certificate"
             else:
-                print "Modulus match: ", pkey.get_modulus()
+                #print "Modulus match: ", pkey.get_modulus()
+                pass
 
         #
         # Preliminary checks successful. We can go ahead and import.
@@ -863,7 +864,8 @@ class CertificateRepository:
             if pkey.get_modulus() != cert.GetModulus():
                 raise Exception, "Private key does not match certificate"
             else:
-                print "Modulus match: ", pkey.get_modulus()
+                #print "Modulus match: ", pkey.get_modulus()
+                pass
 
         #
         # Preliminary checks successful. We can go ahead and import.
@@ -982,7 +984,7 @@ class CertificateRepository:
                             "requests",
                             "%s.pem" % (hash))
 
-        print "Writing to ", path
+        log.info("_ImportCertificateRequest writing to %s", path)
         fh = open(path, 'w')
         fh.write(crypto.dump_certificate_request(crypto.FILETYPE_PEM, req))
         fh.close()
@@ -1016,7 +1018,7 @@ class CertificateRepository:
 
         path = self.GetPrivateKeyPath(hash)
         
-        print "Importing pkey to ", path
+        log.info("_ImportPrivateKey importing pkey to %s", path)
         #
         # If passwdCB is none, don't encrypt.
         #
@@ -1089,10 +1091,10 @@ class CertificateRepository:
             for key in self.db.keys():
                 if key.startswith(metaPrefix):
                     del self.db[key]
-                    print "Delete ", key
+                    log.info("RemoveCertificate deleting key %s", key)
                 if key.startswith(pkeyMetaPrefix):
                     del self.db[key]
-                print "Delete ", key
+                    log.info("RemoveCertificate deleting key %s", key)
         finally:
             self.db.sync()
 
@@ -1223,7 +1225,7 @@ class CertificateRepository:
             for key in self.db.keys():
                 if key.startswith(metaPrefix):
                     del self.db[key]
-                    print "Delete ", key
+                    log.info("RemoveCertificateRequest deleting key %s", key)
         finally:
             self.db.sync()
 
@@ -1626,7 +1628,7 @@ class Certificate:
         if len(cnlist) != 1:
             return None
 
-        print cnlist[0]
+        #print cnlist[0]
         m = self.serviceCertRE.search(cnlist[0])
 
         if m and len(m.groups()) == 2:
