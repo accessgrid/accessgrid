@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.7 2003-01-15 22:46:30 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.8 2003-01-16 20:25:26 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -80,6 +80,7 @@ class Venue(ServiceBase.ServiceBase):
     def AddConnection(self, connectionInfo, connectionDescription):
         """ """
         try:
+
             self.connections[connectionDescription.uri] = connectionDescription
             self.coherenceService.distribute( Event( Event.ADD_CONNECTION, connectionDescription ) )
         except:
@@ -107,10 +108,11 @@ class Venue(ServiceBase.ServiceBase):
     def SetConnections(self, connectionInfo, connectionList ):
         """ """
         try:
+
             self.connections = dict()
             for connection in connectionList:
                 self.connections[connection.uri] = connection
-#FIXME - consider whether to push new venue state to all clients
+#FIXME - how to push new connection list to clients?
         except:
             print "Exception in SetConnections", sys.exc_type, sys.exc_value
             print "Connection does not exist ", connectionDescription.uri
@@ -223,13 +225,10 @@ class Venue(ServiceBase.ServiceBase):
 
     def UpdateClientProfile(self, connectionInfo, clientProfile):
         """ """
-        
-        evt = {
-            'event' : 'UpdateClientProfile',
-            'data' : clientProfile
-            }
-        
-        self.coherenceService.distribute(evt)
+        for user in self.users.values():
+            if user.publicId == clientProfile.publicId:
+                self.users[user.privateId] = clientProfile
+            self.coherenceService.distribute( Event( Event.MODIFY_USER, clientProfile ) )
         
     UpdateClientProfile.pass_connection_info = 1
     UpdateClientProfile.soap_export_as = "UpdateClientProfile"
