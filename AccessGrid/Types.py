@@ -3,13 +3,13 @@
 # Purpose:     
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.47 2004-05-04 05:06:24 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.48 2004-05-04 19:00:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.47 2004-05-04 05:06:24 judson Exp $"
+__revision__ = "$Id: Types.py,v 1.48 2004-05-04 19:00:25 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -96,6 +96,7 @@ class AGServicePackage:
         self.file = file
         self.exeFile = None
         self.descriptionFile = None
+        self.serviceDesc = None
 
         try:
             # examine service package content
@@ -126,6 +127,9 @@ class AGServicePackage:
         import string
         import StringIO
         from AccessGrid.Descriptions import AGServiceDescription
+        
+        if self.serviceDesc:
+            return self.serviceDesc
 
         serviceDescription = None
         
@@ -137,6 +141,7 @@ class AGServicePackage:
             descfilecontent = zf.read( self.descriptionFile )
             zf.close()
         except zipfile.BadZipfile:
+            log.exception("Bad zipfile: %s", self.file)
             raise InvalidServicePackage(sys.exc_value)
 
         # set up string io from description file content
@@ -170,7 +175,10 @@ class AGServicePackage:
                                                      version )
 
         except:
+            log.exception("Invalid service desc: %s", self.file)
             raise InvalidServiceDescription(sys.exc_value)
+            
+        self.serviceDesc = serviceDescription
             
         return serviceDescription
 
@@ -199,9 +207,14 @@ class AGServicePackage:
             filenameList = zf.namelist()
             for filename in filenameList:
                 try:
+                    destfilename = os.path.join(path,filename)
+                
+                    # Skip the file if it already exists
+                    if os.path.exists(destfilename):
+                        continue
+                
                     # Extract the file
                     filecontent = zf.read( filename )
-                    destfilename = os.path.join(path,filename)
                     f = open( destfilename, "wb" )
                     f.write( filecontent )
                     f.close()
