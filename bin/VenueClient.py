@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.192 2003-08-14 13:57:45 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.193 2003-08-14 17:27:35 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -99,6 +99,8 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
         wxApp.__init__(self, false)
         self.onExitCalled = false
         self.startupDialog.UpdateOneStep()
+        # State kept so UI can add venue administration options.
+        self.isVenueAdministrator = false
         
     def OnInit(self):
         """
@@ -790,6 +792,12 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
             # Venue data storage location
             # self.upload_url = self.venueClient.client.GetUploadDescriptor()
             #log.debug("Get upload url %s" %self.dataStoreUploadUrl)
+
+            # Determine if we are an administrator so we can add administrator features to UI.
+            if "Venue.Administrators" in self.venueClient.venueProxy.DetermineSubjectRoles():
+                self.isVenueAdministrator = AG_TRUE
+            else:
+                self.isVenueAdministrator = AG_FALSE
             
             log.debug("Add your personal data descriptions to venue")
             wxCallAfter(self.frame.statusbar.SetStatusText, "Add your personal data to venue")

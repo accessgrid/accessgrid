@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.87 2003-08-12 20:57:08 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.88 2003-08-14 17:27:35 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -467,7 +467,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
         role_manager = self.GetRoleManager()
 
-        return sm.ValidateUserInRole(role_name, role_manager)
+        return sm.ValidateCurrentSubjectInRole(role_name, role_manager)
 
     def InitFromFile(self, config):
         """

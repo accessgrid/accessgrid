@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.14 2003-08-13 19:46:25 eolson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.15 2003-08-14 17:27:35 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -354,12 +354,12 @@ class SecurityManager:
     def GetSubject(self):
         return self.subject
 
-    def ValidateUserInList(self, userList):
+    def ValidateSubjectInList(self, userList):
         """
         Determine if the current subject is in userList
         """
 
-        #print "ValidateUser", userList, self.subject
+        #print "ValidateSubject", userList, self.subject
  
         #
         # Doh! User passed in just a single user, not a list. Wrap it for him.
@@ -398,11 +398,11 @@ class SecurityManager:
                             return 1
         return 0
 
-    def ValidateUserInRole(self, role_name, role_manager, recursed_roles=[]):
+    def ValidateCurrentSubjectInRole(self, role_name, role_manager, recursed_roles=[]):
         subject = self.GetSubject()
-        return self._ValidateUserInRole(subject, role_name, role_manager, recursed_roles)
+        return self.ValidateSubjectInRole(subject, role_name, role_manager, recursed_roles)
 
-    def _ValidateUserInRole(self, user, role_name, role_manager, recursed_roles=[]):
+    def ValidateSubjectInRole(self, user, role_name, role_manager, recursed_roles=[]):
         """
         Verify user is in role, given a user name, role name, and role manager.
         recursed_roles are used to make sure we don't have any circular references
@@ -426,7 +426,7 @@ class SecurityManager:
             erm = role_manager.GetExternalRoleManager(separated_name[1])
             erm_role_name = role_name[len("Role."):] # same as new lstrip, strip "Role." from front.
             erm_role = erm.GetRole(erm_role_name)
-            if self.ValidateUserInList(erm_role.GetSubjectList()):
+            if self.ValidateSubjectInList(erm_role.GetSubjectList()):
                 log.debug("User %s authorized for role %s", user, erm_role.name)
                 #print "User",user,"authorized for role",  erm_role.name
                 return 1
@@ -437,7 +437,7 @@ class SecurityManager:
                         #print "recursing with :", r
                         tmp_recursed_roles = recursed_roles[:]
                         tmp_recursed_roles.append(erm_role_name) # append current role so we don't infinitely recurse.
-                        ret_val = self.ValidateUserInRole(r, role_manager, tmp_recursed_roles)
+                        ret_val = self.ValidateSubjectInRole(r, role_manager, tmp_recursed_roles)
                         if ret_val:
                             log.debug("User %s authorized for role %s", user, r.name)
                             #print "User",user,"authorized for role",  r.name
@@ -452,7 +452,7 @@ class SecurityManager:
 
         if self.ValidateRole([role], role_manager):
         
-            if self.ValidateUserInList(role_manager.GetRole(role_name).GetSubjectList()):
+            if self.ValidateSubjectInList(role_manager.GetRole(role_name).GetSubjectList()):
                 log.debug("User %s authorized for role %s", user, role.name)
                 #print "User",user,"authorized for role",  role.name
                 return 1
@@ -464,7 +464,7 @@ class SecurityManager:
                         #print "recursing with :", r
                         tmp2_recursed_roles = recursed_roles[:]
                         tmp2_recursed_roles.append(role_name) # append current role so we don't infinitely recurse.
-                        ret_val = self.ValidateUserInRole(r, role_manager, tmp2_recursed_roles)
+                        ret_val = self.ValidateSubjectInRole(r, role_manager, tmp2_recursed_roles)
                         if ret_val:
                             log.debug("User %s authorized for role %s", user, role.name)
                             #print "User",user,"authorized for role",  role.name
@@ -481,6 +481,15 @@ class SecurityManager:
             raise "InvalidRole"
         return 0 
 
+    def DetermineSubjectRoles(self, subject, role_manager):
+        """
+        Return a list of roles names that the user is authorized for.
+        """
+        authorized_list = []
+        for role_name in role_manager.GetRoleList():
+            if self.ValidateSubjectInRole(subject, role_name, role_manager):
+                authorized_list.append(role_name)
+        return authorized_list
 
     def __repr__(self):
         return "SecurityManager(rolemgr=%s, soapContext=%s, threadId=%s)" % (

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.119 2003-08-13 23:56:58 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.120 2003-08-14 17:27:35 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -416,7 +416,7 @@ class Venue(ServiceBase.ServiceBase):
 
         role_manager = self.GetRoleManager()
 
-        return sm.ValidateUserInRole(role_name, role_manager)
+        return sm.ValidateCurrentSubjectInRole(role_name, role_manager)
 
     def BindRoleManager(self):
         self._service_object.SetRoleManager(self.roleManager)
@@ -2504,6 +2504,18 @@ class Venue(ServiceBase.ServiceBase):
         return group_roles
 
     wsGetAvailableGroupRoles.soap_export_as = "GetAvailableGroupRoles"
+
+    def wsDetermineSubjectRoles(self):
+        # With the current roles, it is reasonable that a user can 
+        # know the roles he/she is in.
+        sm = AccessControl.GetSecurityManager()
+        if sm == None:
+            return []
+        
+        return sm.DetermineSubjectRoles(sm.GetSubject(), self.GetRoleManager())
+
+    wsDetermineSubjectRoles.soap_export_as = "DetermineSubjectRoles"
+
 
 def RegisterDefaultVenueRoles(role_manager):
     """

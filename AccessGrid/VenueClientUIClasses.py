@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.229 2003-08-13 22:09:23 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.230 2003-08-14 17:27:35 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -39,6 +39,7 @@ from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.Platform import GetTempDir, GetInstallDir, GetSharedDocDir
 from AccessGrid.Platform import isWindows, isLinux, isOSX
 from AccessGrid.TextClient import TextClient
+from AccessGrid.RoleAuthorization import AddPeopleDialog, RoleClient
 
 try:
     import win32api
@@ -67,6 +68,7 @@ class VenueClientFrame(wxFrame):
     ID_VENUE_DATA_OPEN = wxNewId() 
     ID_VENUE_DATA_PROPERTIES = wxNewId() 
     ID_VENUE_DATA_ADD = wxNewId()
+    ID_VENUE_ADMINISTRATE_VENUE_ROLES = wxNewId()
     ID_VENUE_PERSONAL_DATA_ADD = wxNewId()
     ID_VENUE_DATA_SAVE = wxNewId() 
     ID_VENUE_DATA_DELETE = wxNewId() 
@@ -184,6 +186,8 @@ class VenueClientFrame(wxFrame):
                              "Add data to the venue.")
 	self.venue.Append(self.ID_VENUE_SERVICE_ADD,"Add Service...",
                                 "Add a service to the venue.")
+        self.venue.Append(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES,"Administrate Roles...",
+                             "Change venue authorization settings.")
      	self.applicationMenu = wxMenu()
       
         self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"&Applications",
@@ -342,6 +346,7 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
 
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
+        self.menubar.Enable(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES, false)
 
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, false)
 
@@ -358,6 +363,9 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
         self.menubar.Enable(self.ID_MYVENUE_ADD, true)
+        # Only show administrate button when you can administrate a venue.
+        if self.app.isVenueAdministrator:
+            self.menubar.Enable(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES, true)
         
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, true)
 
@@ -375,6 +383,7 @@ class VenueClientFrame(wxFrame):
                 
         EVT_MENU(self, self.ID_VENUE_DATA_OPEN, self.OpenData)
         EVT_MENU(self, self.ID_VENUE_DATA_ADD, self.OpenAddDataDialog)
+        EVT_MENU(self, self.ID_VENUE_ADMINISTRATE_VENUE_ROLES, self.OpenModifyVenueRolesDialog)
         EVT_MENU(self, self.ID_VENUE_PERSONAL_DATA_ADD, self.OpenAddPersonalDataDialog)
         EVT_MENU(self, self.ID_VENUE_DATA_SAVE, self.SaveData)
         EVT_MENU(self, self.ID_VENUE_DATA_DELETE, self.RemoveData)
@@ -1051,7 +1060,20 @@ class VenueClientFrame(wxFrame):
             self.preferences.Check(self.ID_USE_MULTICAST, true)
         elif transport == "unicast":  
             self.preferences.Check(self.ID_USE_UNICAST, true)
-            
+
+    def OpenModifyVenueRolesDialog(self,event):
+        venueUri = self.app.venueClient.venueUri
+
+        # Open the dialog with selected role in the combo box
+        addPeopleDialog = AddPeopleDialog(self, -1, "Modify Roles", venueUri)
+
+        if addPeopleDialog.ShowModal() == wxID_OK:
+            # Get new role configuration
+            rolesDict = addPeopleDialog.GetInfo()
+            # Set new role configuration
+            if rolesDict:
+                RoleClient(venueUri).SetVenueRoles(rolesDict)
+
     def CleanUp(self):
         self.venueListPanel.CleanUp()
         self.contentListPanel.CleanUp()

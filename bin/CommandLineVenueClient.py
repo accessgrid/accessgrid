@@ -42,6 +42,11 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
         except Exception, e:
             log.exception("bin.CommandLineVenueClient__init__ Toolkit.CmdlineApplication creation failed")
 
+        try:
+            self.app.InitGlobusEnvironment()
+        except Exception, e:
+            log.exception("bin.CommandLineVenueClient__init__ app.InitGlobusEnvironment failed.")
+
         if not os.path.exists(self.accessGridPath):
             try:
                 os.mkdir(self.accessGridPath)
@@ -238,6 +243,16 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
         else:
             self.OutputText("You are not in a venue and so are unable to list a venue's roles.")
 
+    def DetermineRoles(self):
+        if self.venueClient.isInVenue:
+            roles = self.venueClient.venueProxy.DetermineSubjectRoles()
+            strng = "User's Roles:\n"
+            for r in roles:
+                strng = strng + r + ", "
+            self.OutputText(strng)
+        else:
+            self.OutputText("You are not in a venue and so are unable to determine the current user's venue roles.")
+
     # Allow output to be channeled to a single place.
     def OutputText(self, strng):
        if self.cmdLineInterface:
@@ -320,6 +335,11 @@ class CmdLineController(cmd.Cmd, Thread):
         self.cmdLineVC.ListRoles()
 
     do_lr = do_listroles
+
+    def do_determineroles(self, argline):
+        self.cmdLineVC.DetermineRoles()
+
+    do_dr = do_determineroles
 
     def do_role_listusers(self, argline):
         if len(argline) == 0:
