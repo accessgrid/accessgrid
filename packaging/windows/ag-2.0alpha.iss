@@ -10,7 +10,7 @@ OutputDir=C:\xfer
 
 SourceDir=C:\Software\AccessGrid
 
-OutputBaseFilename=agtk-2.0a4
+OutputBaseFilename=agtk-2.0b1
 
 Compression=zip/9
 
@@ -48,7 +48,7 @@ AppSupportURL=http://www.mcs.anl.gov/fl/research/accessgrid
 
 AppUpdatesURL=http://www.mcs.anl.gov/fl/research/accessgrid
 
-AppVersion=2.0a4
+AppVersion=2.0b1
 
 AppID=Access Grid Toolkit
 
