@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.77 2004-08-23 18:04:04 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.78 2004-08-25 16:55:55 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.77 2004-08-23 18:04:04 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.78 2004-08-25 16:55:55 turam Exp $"
 
 # Standard imports
 import os
@@ -185,6 +185,7 @@ class AppBase:
                                 (absdiff, direction, timeserver)
 
                self.log.warn("Toolkit.__CheckForValidClock: %s" %warningString)
+               print "Warning: ", warningString, "\n"
                  
     def ProcessArgs(self, args=None):
        """
