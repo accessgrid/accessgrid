@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.50 2004-05-10 15:05:30 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.51 2004-05-10 15:24:23 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.50 2004-05-10 15:05:30 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.51 2004-05-10 15:24:23 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3746,7 +3746,8 @@ class StatusBar(wxStatusBar):
         # Cancel button
         rect = self.GetFieldRect(2)
         self.cancelButton.SetPosition(wxPoint(rect.x+2, rect.y+2))
-        self.cancelButton.SetSize(wxSize(rect.width-4, rect.height-4))
+        #self.cancelButton.SetSize(wxSize(rect.width-2, rect.height-2))
+        self.cancelButton.SetSize(wxSize(50, rect.height-2))
         self.sizeChanged = False
         
         
