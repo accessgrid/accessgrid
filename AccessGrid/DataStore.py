@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.25 2003-05-28 18:24:27 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.26 2003-05-29 21:13:13 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -116,7 +116,7 @@ class DataStore:
                     output.close()
                     
                     # Create DataDescription
-                    size = os.path.getsize(dataStorePath)
+                    size = os.path.getsize(filename)
                     log.debug("DataStore::AddFile: Size of file %s" %size)
                     
                     # This should be done in a loop in case
