@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.46 2003-10-23 20:25:36 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.47 2003-10-23 21:31:03 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.46 2003-10-23 20:25:36 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.47 2003-10-23 21:31:03 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -31,6 +31,7 @@ from AccessGrid import icons
 from AccessGrid import Platform
 from AccessGrid.UIUtilities import AboutDialog
 from AccessGrid import Toolkit
+from AccessGrid.Platform import isWindows
 
 # imports for Debug menu; can be removed if Debug menu is removed
 from AccessGrid.Descriptions import StreamDescription
@@ -39,6 +40,8 @@ from AccessGrid.NetworkLocation import MulticastNetworkLocation
 import logging, logging.handlers
 log = logging.getLogger("AG.NodeManagementUIClasses")
 log.setLevel(logging.WARN)
+
+
 
 ###
 ### MENU DEFS
@@ -123,7 +126,7 @@ class MultiTextFieldDialog(wxDialog):
         self.textCtrlList = []
         for name,value in fieldNames.items():
             labelCtrl = wxStaticText( self, -1, name)
-            textCtrl = wxTextCtrl( self, -1, value)
+            textCtrl = wxTextCtrl( self, -1, value, size = wxSize(200, 20))
             self.textCtrlList.append( textCtrl )
                     
             gridSizer.Add( labelCtrl)
@@ -237,7 +240,9 @@ class ServiceListCtrl( wxListCtrl ):
         imageList.Add( bmap )
         self.AssignImageList( imageList, wxIMAGE_LIST_NORMAL)
 
-        EVT_SIZE(self, self.OnSize)
+        if isWindows():
+            # This breaks on linux
+            EVT_SIZE(self, self.OnSize)
 
         self.Layout()
 
@@ -248,7 +253,7 @@ class ServiceListCtrl( wxListCtrl ):
         w,h = self.GetClientSizeTuple()
         self.SetColumnWidth(0, w*(0.70) )
         self.SetColumnWidth(1, w*(0.30) )
-       
+              
 class ServiceConfigurationPanel( wxPanel ):
     """
     A panel that displays service configuration parameters based on
@@ -312,7 +317,7 @@ class ServiceConfigurationPanel( wxPanel ):
             
             self.guiComponents.append( pComp )
           
-            self.panelSizer.Add( pComp, 10, wxEXPAND )
+            self.panelSizer.Add( pComp, 0, wxEXPAND )
 
         self.boxSizer.Add(self.panelSizer, 1, wxALL | wxEXPAND, 10)
         self.panel.SetSizer( self.boxSizer )
@@ -530,7 +535,7 @@ class NodeManagementClientFrame(wxFrame):
         names = { "Hostname" : "", "Port":"11000" }
         dlg = MultiTextFieldDialog( self, -1, \
             "Node Attach Dialog", names )
-        dlg.SetSize(wxSize(300,200))
+
         ret = dlg.ShowModal()
 
         if ret == wxID_OK:
@@ -670,7 +675,7 @@ class NodeManagementClientFrame(wxFrame):
         names = { "Hostname" : "", "Port":"12000" }
         dlg = MultiTextFieldDialog( self, -1, \
             "Add Service Manager Dialog", names )
-        dlg.SetSize(wxSize(300,200))
+     
         ret = dlg.ShowModal()
         if ret == wxID_OK:
 
@@ -760,7 +765,10 @@ class NodeManagementClientFrame(wxFrame):
 
         if self.hostList.GetSelectedItemCount() == 0:
             # if no host is selected, select the first item
-            self.hostList.SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
+            try:
+                self.hostList.SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
+            except:
+                pass
             
         # Update the service list
         self.UpdateServiceList()
@@ -807,7 +815,6 @@ class NodeManagementClientFrame(wxFrame):
         #
         dlg = wxSingleChoiceDialog( self, "Select Service to Add", "Add Service: Select Service",
                                     availServiceNames )
-        dlg.SetSize(wxSize(300,200))
         ret = dlg.ShowModal()
 
         if ret == wxID_OK:
@@ -845,6 +852,7 @@ class NodeManagementClientFrame(wxFrame):
                     choices = choices + map( lambda res: res.resource, applicableResources )
                     dlg = wxSingleChoiceDialog( self, "Select resource for service", "Add Service: Select Resource",
                            choices )
+
                     dlg.SetSize(wxSize(300,200))
 
                     ret = dlg.ShowModal()
