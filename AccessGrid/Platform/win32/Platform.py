@@ -23,7 +23,7 @@ def GetSystemConfigDir():
     """
     Determine the system configuration directory
     """
-
+    global AGTK_LOCATION
     try:
         configDir = os.environ[AGTK_LOCATION]
     except:
@@ -36,6 +36,7 @@ def GetUserConfigDir():
     """
     Determine the user configuration directory
     """
+    global AGTK_USER
     try:
         configDir = os.environ[AGTK_USER]
     except:
@@ -75,7 +76,7 @@ def GetInstallDir():
     """
     Determine the install directory
     """
-    global AGTkRegBaseKey
+    global AGTkRegBaseKey, AGTK_INSTALL
     try:
         installDir = os.environ[AGTK_INSTALL]
     except:
@@ -92,7 +93,7 @@ def GetSharedDocDir():
     """
     Determine the shared doc directory
     """
-    global AGTkRegBaseKey
+    global AGTkRegBaseKey, AGTK_INSTALL
     
     try:
         sharedDocDir = os.environ[AGTK_INSTALL]
@@ -224,21 +225,30 @@ def RegisterMimeType(mimeType, extension, fileType, description, cmds):
     This function gets the mime type registered with windows via the registry.
     The following documentation is from wxWindows, src/msw/mimetype.cpp:
 
-    1. "HKCR\MIME\Database\Content Type" contains subkeys for all known MIME
-    types, each key has a string value "Extension" which gives (dot preceded)
-    extension for the files of this MIME type.
+        1. "HKCR\MIME\Database\Content Type" contains subkeys for all
+        known MIME types, each key has a string value "Extension"
+        which gives (dot preceded) extension for the files of this
+        MIME type.
 
-    2. "HKCR\.ext" contains
-    a) unnamed value containing the "filetype"
-    b) value "Content Type" containing the MIME type
+        2. "HKCR\.ext" contains
 
-    3. "HKCR\filetype" contains
-    a) unnamed value containing the description
-    b) subkey "DefaultIcon" with single unnamed value giving the icon index in
-    an icon file
-    c) shell\open\command and shell\open\print subkeys containing the commands
-    to open/print the file (the positional parameters are introduced by %1,
-    %2, ... in these strings, we change them to %s ourselves)
+            a) unnamed value containing the "filetype"
+        
+            b) value "Content Type" containing the MIME type
+
+
+        3. "HKCR\filetype" contains
+
+            a) unnamed value containing the description
+
+            b) subkey "DefaultIcon" with single unnamed value giving
+            the icon index in an icon file
+
+            c) shell\open\command and shell\open\print subkeys
+            containing the commands to open/print the file (the
+            positional parameters are introduced by %1, %2, ... in
+            these strings, we change them to %s ourselves)
+
     """
 
     # Do 1. from above
@@ -299,21 +309,23 @@ def GetMimeCommands(mimeType = None, ext = None):
     windows knows about. Depending on which is passed in the following
     trail of information is retrieved:
 
-    1. "HKCR\MIME\Database\Content Type" contains subkeys for all known MIME
-    types, each key has a string value "Extension" which gives (dot preceded)
-    extension for the files of this MIME type.
+        1. "HKCR\MIME\Database\Content Type" contains subkeys for all
+        known MIME types, each key has a string value "Extension"
+        which gives (dot preceded) extension for the files of this
+        MIME type.
 
-    2. "HKCR\.ext" contains
-    a) unnamed value containing the "filetype"
-    b) value "Content Type" containing the MIME type
+        2. "HKCR\.ext" contains
+            a) unnamed value containing the "filetype"
+            b) value "Content Type" containing the MIME type
 
-    3. "HKCR\filetype" contains
-    a) unnamed value containing the description
-    b) subkey "DefaultIcon" with single unnamed value giving the icon index in
-    an icon file
-    c) shell\open\command and shell\open\print subkeys containing the commands
-    to open/print the file (the positional parameters are introduced by %1,
-    %2, ... in these strings, we change them to %s ourselves)
+        3. "HKCR\filetype" contains
+            a) unnamed value containing the description
+            b) subkey "DefaultIcon" with single unnamed value giving
+            the icon index in an icon file
+            c) shell\open\command and shell\open\print subkeys
+            containing the commands to open/print the file (the
+            positional parameters are introduced by %1, %2, ... in
+            these strings, we change them to %s ourselves)
     """
     cdict = dict()
     filetype = None
