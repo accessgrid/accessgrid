@@ -1,8 +1,10 @@
 #!/usr/bin/python
 
 from AccessGrid.Platform import IsOSX, IsWindows
+from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Toolkit import WXGUIApplication
 from wxPython.wx import *
+import webbrowser
 
 class LauncherFrame(wxFrame):
     BUTTON_MAIN_ID = 1000   # Main binaries
@@ -30,6 +32,8 @@ class LauncherFrame(wxFrame):
 	
     def __init__(self, parent=None, id=-1, title="Access Grid Launcher",agtk_location=None):
         wxFrame.__init__(self,parent,id,title,size=wxSize(600,300),style=wxDEFAULT_FRAME_STYLE&(~wxMAXIMIZE_BOX))
+
+	self.processManager=ProcessManager();
         
         if IsOSX():
             self.mainButton=wxRadioButton(self,self.BUTTON_MAIN_ID,"Main",style=wxRB_GROUP);
@@ -69,56 +73,56 @@ class LauncherFrame(wxFrame):
         self.mainButtonList=[];
         self.mainButtonActions=[];
         self.mainButtonList.append(wxButton(self,self.BUTTON_VC_ID,"Venue Client"));
-        self.mainButtonActions.append([self.RunPython,"%s/bin/VenueClient.py"%(agtk_location)]);
+        self.mainButtonActions.append([self.RunPython,"%s/bin/VenueClient.py"%(agtk_location),[]]);
         self.mainButtonList.append(wxButton(self,self.BUTTON_CM_ID,"Certificate Management"));
-        self.mainButtonActions.append([self.RunPython,"%s/bin/CertificateManager.py"%(agtk_location)]);
+        self.mainButtonActions.append([self.RunPython,"%s/bin/CertificateManager.py"%(agtk_location),[]]);
         self.mainButtonList.append(wxButton(self,self.BUTTON_NS_ID,"Node Service"));
-        self.mainButtonActions.append([self.RunPython,"%s/bin/AGNodeService.py"%(agtk_location)]);
+        self.mainButtonActions.append([self.RunPython,"%s/bin/AGNodeService.py"%(agtk_location),[]]);
         self.mainButtonList.append(wxButton(self,self.BUTTON_SM_ID,"Service Manager"));
-        self.mainButtonActions.append([self.RunPython,"%s/bin/AGServiceManager.py"%(agtk_location)]);
+        self.mainButtonActions.append([self.RunPython,"%s/bin/AGServiceManager.py"%(agtk_location),[]]);
         self.mainButtonList.append(wxButton(self,self.BUTTON_VS_ID,"Venue Server"));
-        self.mainButtonActions.append([self.RunPython,"%s/bin/VenueServer.py"%(agtk_location)]);
+        self.mainButtonActions.append([self.RunPython,"%s/bin/VenueServer.py"%(agtk_location),[]]);
         for button in self.mainButtonList:
             button.Show(false);
         
         self.docsButtonList=[];
         self.docsButtonActions=[];
         self.docsButtonList.append(wxButton(self,self.BUTTON_README_ID,"Read Me"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/README.txt"%(agtk_location)]);
+        self.docsButtonActions.append([self.LoadURL,"file://%s/README.txt"%(agtk_location),[]]);
         self.docsButtonList.append(wxButton(self,self.BUTTON_VCM_ID,"Venue Client Manual"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/doc/VenueClientManual/VenueClientManualHTML.htm"%(agtk_location)]);
+        self.docsButtonActions.append([self.LoadURL,"file://%s/doc/VenueClientManual/VenueClientManualHTML.htm"%(agtk_location),[]]);
         self.docsButtonList.append(wxButton(self,self.BUTTON_VMCM_ID,"Venue Management Manual"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/doc/VenueManagementManual/VenueManagementManualHTML.htm"%(agtk_location)]);
+        self.docsButtonActions.append([self.LoadURL,"file://%s/doc/VenueManagementManual/VenueManagementManualHTML.htm"%(agtk_location),[]]);
         self.docsButtonList.append(wxButton(self,self.BUTTON_LIC_ID,"License"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/COPYING.txt"%(agtk_location)]);
+        self.docsButtonActions.append([self.LoadURL,"file://%s/COPYING.txt"%(agtk_location),[]]);
         for button in self.docsButtonList:
             button.Show(false);
         
         self.configButtonList=[];
         self.configButtonActions=[];
         self.configButtonList.append(wxButton(self,self.BUTTON_NM_ID,"Node Management"));
-        self.configButtonActions.append([self.RunPython,"%s/bin/NodeManagement.py"%(agtk_location)]);
+        self.configButtonActions.append([self.RunPython,"%s/bin/NodeManagement.py"%(agtk_location),[]]);
         self.configButtonList.append(wxButton(self,self.BUTTON_VM_ID,"Venue Management"));
-        self.configButtonActions.append([self.RunPython,"%s/bin/VenueManagement.py"%(agtk_location)]);
+        self.configButtonActions.append([self.RunPython,"%s/bin/VenueManagement.py"%(agtk_location),[]]);
         self.configButtonList.append(wxButton(self,self.BUTTON_NSW_ID,"Node Setup Wizard"));
-        self.configButtonActions.append([self.RunPython,"%s/bin/NodeSetupWizard.py"%(agtk_location)]);
+        self.configButtonActions.append([self.RunPython,"%s/bin/NodeSetupWizard.py"%(agtk_location),[]]);
         self.configButtonList.append(wxButton(self,self.BUTTON_CRW_ID,"Certificate Request Wizard"));
-        self.configButtonActions.append([self.RunPython,"%s/bin/CertificateRequestTool.py"%(agtk_location)]);
+        self.configButtonActions.append([self.RunPython,"%s/bin/CertificateRequestTool.py"%(agtk_location),[]]);
         for button in self.configButtonList:
             button.Show(false);
         
         self.debugButtonList=[];
         self.debugButtonActions=[];
         self.debugButtonList.append(wxButton(self,self.BUTTON_VCD_ID,"Venue Client (Debug)"));
-        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/VenueClient.py -d"%(agtk_location)]);
+        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/VenueClient.py"%(agtk_location),["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_CMD_ID,"Certificate Management (Debug)"));
-        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/CertificateManager.py -d"%(agtk_location)]);
+        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/CertificateManager.py"%(agtk_location),["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_NSD_ID,"Node Service (Debug)"));
-        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/AGNodeService.py -d"%(agtk_location)]);
+        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/AGNodeService.py"%(agtk_location),["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_SMD_ID,"Service Manager (Debug)"));
-        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/AGServiceManager.py -d"%(agtk_location)]);
+        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/AGServiceManager.py"%(agtk_location),["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_VSD_ID,"Venue Server (Debug)"));
-        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/VenueServer.py -d"%(agtk_location)]);
+        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/VenueServer.py"%(agtk_location),["-d"]]);
         for button in self.debugButtonList:
             button.Show(false);
         
@@ -183,16 +187,47 @@ class LauncherFrame(wxFrame):
             return;  # Our button isn't one of the active ones!
 
         buttonVal=buttonVal-1; # Adjust to make a proper array index
-        actionSet[buttonVal][0](actionSet[buttonVal][1]); # Call encoded action with encoded argument.
+        actionSet[buttonVal][0](actionSet[buttonVal][1],actionSet[buttonVal][2]); # Call encoded action with encoded argument.
     
-    def RunPython(self,cmd):
+    def RunPython(self,cmd,args):
+        if IsOSX() or IsWindows():
+            command="pythonw";
+        else:
+            command="python";
+        
         print "Run: %s"%(cmd);
+	print "args: ",
+	print args;
+        self.processManager.StartProcess(command,[cmd]+args);
     
-    def RunPythonDebug(self,cmd):
+    def RunPythonDebug(self,cmd,args):
+        if IsOSX():
+            command="/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal";
+        elif IsWindows():
+            command="start";
+        else:
+            command="python";
+        
+        if IsOSX() or IsWindows():
+            command2="pythonw";
+        else:
+            command2="";
+
         print "DEBUG: %s"%(cmd);
+	print "args: ",
+	print args;
+        if command2:
+            self.processManager.StartProcess(command,[command2,cmd]+args);
+        else:
+            self.processManager.StartProcess(command,[cmd]+args);
     
     def LoadURL(self,url):
         print "URL: %s"%(url);
+        needNewWindow = 0
+        if not self.browser:
+            self.browser = webbrowser.get()
+            needNewWindow = 1
+        self.browser.open(url, needNewWindow)
     
     def __doLayout(self):
         for button in self.mainButtonList:
