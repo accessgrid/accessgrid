@@ -35,7 +35,7 @@ Install()
 {
   export package="$1"
   export package_ver="$2"
-  export package_rpm="$package-$package_ver.$arch.rpm"
+  export package_rpm="$package-$package_ver.i386.rpm"
 
   rpm -q --quiet $package
   if [ $? -eq 0 ] ; then
