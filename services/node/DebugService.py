@@ -45,9 +45,6 @@ class DebugService(AGService):
       if self.level > 0:
          print streamDescription
 
-   def SetResource(self, resource):
-      pass
-
    def SetIdentity(self, profile):
       if self.level > 0:
          print profile
@@ -81,11 +78,6 @@ class DebugServiceI(SOAPInterface):
       # lucky we aren't using this yet
       return self.impl.ConfigureStream(streamDescription)
    
-   def SetResource(self, resource):
-      # This needs to unmarshal the data
-      # lucky we aren't using this yet
-      return self.impl.SetResource(resource)
-
    def SetIdentity(self, profile):
       # This needs to unmarshal the data
       # lucky we aren't using this yet
@@ -110,9 +102,6 @@ class DebugServiceIW(SOAPIWrapper):
    def ConfigureStream(self, streamDescription):
       return self.proxy.ConfigureStream(streamDescription)
    
-   def SetResource(self, resource):
-      return self.proxy.SetResource(resource)
-
    def SetIdentity(self, profile):
       return self.proxy.SetIdentity(profile)
 
