@@ -1,19 +1,13 @@
 #-----------------------------------------------------------------------------
 # Name:        SharedPresentation.py
-# Purpose:     This is the Shared Presentation Software. It is currently very
-#              basic, but provides the basis for doing much more advanced
-#              functionality.
+# Purpose:     This is the Shared Presentation Software. 
 #
-# Author:      Ivan R. Judson
+# Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.3 2003-07-16 16:47:37 turam Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.4 2003-08-20 19:54:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
-#-----------------------------------------------------------------------------
-# TO DO
-# - test behavior with bad credentials
-# - handle transitions between slides
 #-----------------------------------------------------------------------------
 # Normal import stuff
 import os
@@ -21,8 +15,7 @@ import sys
 import getopt
 import logging
 from threading import Thread
-from Queue import Queue
-import cmd, string
+import Queue
 
 from wxPython.wx import *
 
@@ -39,49 +32,16 @@ from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.EventClient import EventClient
 from AccessGrid.Events import ConnectEvent, Event
 from AccessGrid import Platform
+from AccessGrid import DataStore
 
 
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# This gets logging started given the log name passed in
-# For more information about the logging module, check out:
-# http://www.red-dove.com/python_logging.html
+# Viewer code
 #
-def InitLogging(appName, debug=0):
-    """
-    This method sets up logging so you can see what's happening.
-    If you want to see more logging information use the appName 'AG',
-    then you'll see logging information from the Access Grid Module.
-    """
-    logFormat = "%(name)-17s %(asctime)s %(levelname)-5s %(message)s"
-    log = logging.getLogger(appName)
-    log.setLevel(logging.DEBUG)
-
-    # Log to file
-    logFile = appName + ".log"
-    fileHandler = logging.FileHandler(logFile)
-    fileHandler.setFormatter(logging.Formatter(logFormat))
-    log.addHandler(fileHandler)
-
-    # If debugging, log to command window too
-    if debug:
-        hdlr = logging.StreamHandler()
-        hdlr.setFormatter(logging.Formatter(logFormat))
-        log.addHandler(hdlr)
-    return log
-
-def Usage():
-    """
-    Standard usage information for users.
-    """
-    print "%s:" % sys.argv[0]
-    print "    -h|--help : print usage"
-    print "    -a|--applicationURL : <url to application in venue>"
-    print "    -i|--information : <print information about this application>"
-    print "    -l|--logging : <log name: defaults to SharedPresentation>"
-
-
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class PowerPointViewer:
     """
@@ -112,11 +72,9 @@ class PowerPointViewer:
         self.presentation = None
         self.win = None
 
-        self.lastSlide = 0
-
         self.pptAlreadyOpen = 0
     
-    def Start(self, file=None):
+    def Start(self):
         """
         This method actually fires up PowerPoint and if specified opens a
         file and starts viewing it.
@@ -129,10 +87,6 @@ class PowerPointViewer:
 
         # Make it active (visible)
         self.ppt.Activate()
-
-        # Call our own openfile method to start stuff going
-        if file != None:
-            self.OpenFile(file)
 
     def Stop(self):
         """
@@ -162,7 +116,7 @@ class PowerPointViewer:
         if self.presentation:
             self.presentation.Close()
 
-        # Open a new presentation and keep a reference to it in self.p
+        # Open a new presentation and keep a reference to it in self.presentation
         self.presentation = self.ppt.Presentations.Open(file)
         self.lastSlide = self.presentation.Slides.Count
 
@@ -170,14 +124,14 @@ class PowerPointViewer:
         self.presentation.SlideShowSettings.ShowType = win32com.client.constants.ppShowTypeWindow
         self.win = self.presentation.SlideShowSettings.Run()
         
-    def NextSlide(self):
+    def Next(self):
         """
         This method moves to the next slide.
         """
         # Move to the next slide
         self.win.View.Next()
 
-    def PreviousSlide(self):
+    def Previous(self):
         """
         This method moves to the previous slide.
         """
@@ -200,7 +154,7 @@ class PowerPointViewer:
 
     def GetLastSlide(self):
         """
-        This method returns the index of the last slides (indexed from 1)
+        This method returns the index of the last slide (indexed from 1)
         """
         return self.lastSlide
 
@@ -211,8 +165,25 @@ class PowerPointViewer:
         return self.win.View.CurrentShowPosition
 
 
+
+# Depending on the platform decide which viewer to use
+if sys.platform == Platform.WIN:
+    # If we're on Windows we try to use the python/COM interface to PowerPoint
+    defaultViewer = PowerPointViewer
+else:
+    # On Linux the best choice is probably Open/Star Office
+    defaultViewer = None
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# GUI code
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class SharedPresentationFrame(wxFrame):
 
+    ID_SYNC = wxNewId()
     ID_CLEAR = wxNewId()
     ID_EXIT = wxNewId()
 
@@ -221,13 +192,17 @@ class SharedPresentationFrame(wxFrame):
                          wxDefaultPosition, wxSize(450, 300))
 
 
-        self.loadCallback = None
-        self.clearSlidesCallback = None
-        self.prevCallback = None
-        self.nextCallback = None
-        self.gotoCallback = None
-        self.masterCallback = None
-        self.exitCallback = None
+        # Initialize callbacks
+        noOp = lambda x=0:0
+        self.loadCallback = noOp
+        self.clearSlidesCallback = noOp
+        self.prevCallback = noOp
+        self.nextCallback = noOp
+        self.gotoCallback = noOp
+        self.masterCallback = noOp
+        self.closeCallback = noOp
+        self.syncCallback = noOp
+        self.exitCallback = noOp
 
         #
         # Create UI controls
@@ -236,6 +211,7 @@ class SharedPresentationFrame(wxFrame):
         # - Create menu bar
         menubar = wxMenuBar()
         fileMenu = wxMenu()
+        fileMenu.Append(self.ID_SYNC,"&Sync", "Sync to app state")
         fileMenu.Append(self.ID_CLEAR,"&Clear slides", "Clear the slides from venue")
         fileMenu.AppendSeparator()
         fileMenu.Append(self.ID_EXIT,"&Exit", "Exit")
@@ -285,10 +261,11 @@ class SharedPresentationFrame(wxFrame):
         EVT_TEXT_ENTER(self, self.slideNumText.GetId(), self.GotoSlideNumCB)
         EVT_BUTTON(self, self.nextButton.GetId(), self.NextSlideCB)
 
+        EVT_MENU(self, self.ID_SYNC, self.SyncCB)
         EVT_MENU(self, self.ID_CLEAR, self.ClearSlidesCB)
         EVT_MENU(self, self.ID_EXIT, self.ExitCB)
 
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~
     #
     # Callback stubs for the UI
     #
@@ -297,33 +274,28 @@ class SharedPresentationFrame(wxFrame):
         """
         Callback for "previous" button
         """
-
-        if self.prevCallback:
-            self.prevCallback()
+        self.prevCallback()
 
     def NextSlideCB(self,event):
         """
         Callback for "next" button
         """
-        if self.nextCallback:
-            self.nextCallback()
+        self.nextCallback()
 
     def GotoSlideNumCB(self,event):
         """
         Callback for "enter" presses in the slide number text field
         """
         if self.masterCheckBox.IsChecked():
-            if self.gotoCallback:
-                slideNum = int(self.slideNumText.GetValue())
-                self.gotoCallback(slideNum)
+            slideNum = int(self.slideNumText.GetValue())
+            self.gotoCallback(slideNum)
 
     def MasterCB(self,event):
         """
         Callback for "master" checkbox
         """
-        if self.masterCallback:
-            flag = self.masterCheckBox.IsChecked()
-            self.masterCallback(flag)
+        flag = self.masterCheckBox.IsChecked()
+        self.masterCallback(flag)
 
     def OpenCB(self,event):
         """
@@ -336,46 +308,51 @@ class SharedPresentationFrame(wxFrame):
             slidesUrl = self.slidesText.GetValue()
 
             # Call the load callback
-            if self.loadCallback:
-                self.loadCallback(slidesUrl)
+            self.loadCallback(slidesUrl)
+
+    def SyncCB(self,event):
+        """
+        Callback for "sync" menu item
+        """
+        self.syncCallback()
 
     def ClearSlidesCB(self,event):
         """
         Callback for "clear slides" menu item
         """
-        if self.clearSlidesCallback:
-            self.clearSlidesCallback()
+        self.clearSlidesCallback()
 
     def ExitCB(self,event):
         """
         Callback for "exit" menu item
         """
-        if self.exitCallback:
-            self.exitCallback()
+        self.exitCallback()
 
 
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #
     # Client methods
     #
 
     def SetCallbacks(self, loadCallback, 
-                           closeCallback,
                            prevCallback, 
                            nextCallback, 
                            gotoCallback,
                            masterCallback,
+                           closeCallback,
+                           syncCallback,
                            exitCallback):
         """
         This method is used to set callbacks for the UI
         """
         
         self.loadCallback = loadCallback
-        self.closeCallback = closeCallback
         self.prevCallback = prevCallback
         self.nextCallback = nextCallback
         self.gotoCallback = gotoCallback
         self.masterCallback = masterCallback
+        self.closeCallback = closeCallback
+        self.syncCallback = syncCallback
         self.exitCallback = exitCallback
 
     def SetSlideNum(self, slideNum):
@@ -421,22 +398,24 @@ class UIController(wxApp):
         self.MainLoop()
 
     def SetCallbacks(self, loadCallback, 
-                           closeCallback,
                            prevCallback, 
                            nextCallback, 
                            gotoCallback,
                            masterCallback,
+                           closeCallback,
+                           syncCallback,
                            exitCallback):
         """
         Pass-through to frame's SetCallbacks method
         """
 
         self.frame.SetCallbacks(loadCallback, 
-                                closeCallback,
                                 prevCallback, 
                                 nextCallback, 
                                 gotoCallback,
                                 masterCallback,
+                                closeCallback,
+                                syncCallback,
                                 exitCallback)
 
     def SetMaster(self,flag):
@@ -458,30 +437,39 @@ class UIController(wxApp):
         self.frame.SetSlideNum(slideNum)
 
 
-
-
-# Depending on the platform decide which viewer to use
-if sys.platform == Platform.WIN:
-    # If we're on Windows we try to use the python/COM interface to PowerPoint
-    defaultViewer = PowerPointViewer
-else:
-    # On Linux the best choice is probably Open/Star Office
-    defaultViewer = None
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# Shared presentation constants classes
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class SharedPresEvent:
     NEXT = "next"
     PREV = "prev"
     MASTER = "master"
     GOTO = "goto"
-    CLOSE = "close"
-    QUIT = "quit"
     LOAD = "load"
+
+    LOCAL_NEXT = "local next"
+    LOCAL_PREV = "local prev"
+    LOCAL_GOTO = "local goto"
+    LOCAL_LOAD = "local load"
+    LOCAL_LOAD_VENUE = "local load venue"
+    LOCAL_CLOSE = "local close"
+    LOCAL_SYNC = "local sync"
+    LOCAL_QUIT = "local quit"
 
 class SharedPresKey:
     SLIDEURL = "slideurl"
     SLIDENUM = "slidenum"
+    STEPNUM = "stepnum"
     MASTER = "master"
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# Shared Presentation class itself
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class SharedPresentation:
     """
     The SharedPresentation is an Access Grid 2 Application. It is
@@ -502,24 +490,31 @@ class SharedPresentation:
         """
         # Initialize state in the shared presentation
         self.url = url
-        self.eventQueue = Queue(5)
+        self.eventQueue = Queue.Queue(5)
         self.log = log
-        self.lastSlide = 0
         self.running = 0
         self.masterId = None
-        
+        self.numSteps = 0
+
         # Set up method dictionary for the queue processor to call
         # callbacks based on the event type
         #
-        # This is an ugly hack, so we can lookup methods by event name
+        # This is an ugly hack, so we can lookup methods by event type
         self.methodDict = dict()
-        self.methodDict[SharedPresEvent.NEXT] = self.NextSlide
-        self.methodDict[SharedPresEvent.PREV] = self.PreviousSlide
+        self.methodDict[SharedPresEvent.NEXT] = self.Next
+        self.methodDict[SharedPresEvent.PREV] = self.Previous
         self.methodDict[SharedPresEvent.GOTO] = self.GoToSlide
         self.methodDict[SharedPresEvent.LOAD] = self.LoadPresentation
-        self.methodDict[SharedPresEvent.QUIT] = self.Quit
         self.methodDict[SharedPresEvent.MASTER] = self.SetMaster
-        self.methodDict[SharedPresEvent.CLOSE] = self.ClosePresentation
+
+        self.methodDict[SharedPresEvent.LOCAL_NEXT] = self.LocalNext
+        self.methodDict[SharedPresEvent.LOCAL_PREV] = self.LocalPrev
+        self.methodDict[SharedPresEvent.LOCAL_GOTO] = self.LocalGoto
+        self.methodDict[SharedPresEvent.LOCAL_LOAD] = self.LocalLoad
+        self.methodDict[SharedPresEvent.LOCAL_LOAD_VENUE] = self.LocalLoadVenue
+        self.methodDict[SharedPresEvent.LOCAL_CLOSE] = self.ClosePresentation
+        self.methodDict[SharedPresEvent.LOCAL_SYNC] = self.Sync
+        self.methodDict[SharedPresEvent.LOCAL_QUIT] = self.Quit
 
         # Get a handle to the application object in the venue
         self.log.debug("Getting application proxy (%s).", url)
@@ -554,42 +549,17 @@ class SharedPresentation:
         self.eventClient.RegisterCallback(SharedPresEvent.MASTER, self.RecvMaster)
 
         # Create the controller
-        # We pass the controller callbacks that send the events to the Data
-        # Channel. 
         self.log.debug("Creating controller.")
         self.controller = UIController(0)
         self.controller.SetCallbacks( self.SendLoad,
-                                      self.SendClearSlides,
                                       self.SendPrev,
                                       self.SendNext,
                                       self.SendGoto,
                                       self.SendMaster,
-                                      self.QuitCB)
+                                      self.ClearSlides,
+                                      self.Sync,
+                                      self.QuitCB )
         
-
-        # Retrieve the current presentation
-        self.presentation = self.appProxy.GetData(self.privateId,
-                                                  SharedPresKey.SLIDEURL)
-
-        # Set the slide URL in the UI
-        if len(self.presentation) != 0:
-            self.log.debug("Got presentation: %s", self.presentation)
-            self.controller.SetSlides(self.presentation)
-
-
-        # Retrieve the current slide
-        self.currentSlide = self.appProxy.GetData(self.privateId,
-                                                  SharedPresKey.SLIDENUM)
-
-        # Set the slide number in the UI
-        if self.currentSlide == '':
-            self.currentSlide = 1
-        else:
-            self.log.debug("Got slide num: %d", self.currentSlide)
-            self.controller.SetSlideNum('%s' % self.currentSlide)
-
-        # Set the master in the UI
-        self.controller.SetMaster(false)
 
         # Start the queue thread
         Thread(target=self.ProcessEventQueue).start()
@@ -597,10 +567,12 @@ class SharedPresentation:
         # Start the controller 
         # (this is the main thread, so we'll block here until
         # the controller is closed)
-        self.controller.Start()
+        #self.controller.Start()
 
+    def Start(self):
+        self.controller.Start()
         # Put a quit event, so the viewer gets shut down correctly
-        self.eventQueue.put([SharedPresEvent.QUIT, None])
+        self.eventQueue.put([SharedPresEvent.LOCAL_QUIT, None])
 
         # When the quit event gets processed, the running flag gets cleared
         self.log.debug("Shutting down...")
@@ -608,6 +580,25 @@ class SharedPresentation:
         while self.running:
             print ".",
             time.sleep(1)
+    
+
+    def OpenVenueData(self,venueDataUrl):
+        """
+        OpenFile opens the specified file in the viewer.
+        Since the caller of this method loads the slide set,
+        he is implicitly the master.
+        """
+
+        # Load the specified file
+        self.eventQueue.put([SharedPresEvent.LOCAL_LOAD,venueDataUrl])
+
+
+    def LoadFromVenue(self):
+        """
+        LoadFromVenue loads the presentation from the venue and
+        moves to the current slide and step
+        """
+        self.eventQueue.put([SharedPresEvent.LOCAL_LOAD_VENUE,None])
 
 
     def ProcessEventQueue(self):
@@ -615,25 +606,12 @@ class SharedPresentation:
         # the viewer; that keeps the requirements on the viewer minimal.
         # This method loops, processing events that it gets from the 
         # eventQueue.
-        # Events are put in this eventQueue by the Recv* methods.
 
         import pythoncom
         pythoncom.CoInitialize()
 
         self.viewer = defaultViewer()
         self.viewer.Start()
-
-        # Load presentation locally, if we got one from the venue app object
-        if len(self.presentation) != 0:
-            try:
-                self.LoadPresentation((self.publicId, self.presentation))
-
-                # Go to current slide, if we got one from the venue app object
-                if self.currentSlide != '':
-                    self.GoToSlide((0,self.currentSlide))
-            except:
-                self.log.exception("EXCEPTION LOADING SLIDES/VIEWING FIRST SLIDE")
-
 
         # Loop, processing events from the event queue
         self.running = 1
@@ -654,76 +632,58 @@ class SharedPresentation:
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #
     # Methods registered as callbacks with the UI
+    # These methods typically put an event in the event queue.
     #
 
     def SendNext(self):
         """
-        This method sends a next slide event over the data channel.
+        This method handles NEXT button presses in the UI.
         The event is only sent if the local user is the "master"
         """
         self.log.debug("Method SendNext called")
 
         if self.masterId == self.publicId:
+            # Put the event on the queue
+            self.eventQueue.put([SharedPresEvent.LOCAL_NEXT,None])
 
-            # Increment the current slide
-            if self.currentSlide < self.viewer.GetLastSlide():
-                self.currentSlide += 1
-                self.SendGoto(self.currentSlide)
 
     def SendPrev(self):
         """
-        This method sends a previous slide event over the data channel.
+        This method handles PREV button presses in the UI.
         The event is only sent if the local user is the "master"
         """
         self.log.debug("Method SendPrev called")
 
         if self.masterId == self.publicId:
-            # Decrement the current slide
-            if self.currentSlide > 1:
-                self.currentSlide -= 1
-                self.SendGoto(self.currentSlide)
+            # Put the event on the queue
+            self.eventQueue.put([SharedPresEvent.LOCAL_PREV,None])
 
 
-    def SendGoto(self, number):
+    def SendGoto(self, slideNum):
         """
-        This method sends a goto slide event over the data channel.
+        This method handles GOTO events from the UI.
         The event is only sent if the local user is the "master"
         """
-        self.log.debug("Method SendGoto called; slidenum=(%d)", number)
+        self.log.debug("Method SendGoto called; slidenum=(%d)", slideNum)
 
         if self.masterId == self.publicId:
-            if number > 0 and number <= self.viewer.GetLastSlide():
-                self.currentSlide = number
-
-                # Store the current slide number in the venue
-                self.appProxy.SetData(self.privateId, SharedPresKey.SLIDENUM, 
-                                      self.currentSlide)
-
-                # We send the event, which is wrapped in an Event instance
-                self.eventClient.Send(Event(SharedPresEvent.GOTO, self.channelId,
-                                            (self.publicId, self.currentSlide)
-                                            ))
+            # Put the event on the queue
+            self.eventQueue.put([SharedPresEvent.LOCAL_GOTO,slideNum])
 
     def SendLoad(self, path):
         """
-        This method sends a load presentation event over the data channel.
+        This method handles LOAD events from the UI.
         The event is only sent if the local user is the "master"
         """
         self.log.debug("Method SendLoad called; path=(%s)", path)
 
         if self.masterId == self.publicId:
-            # Let's set the presentation in the venue
-            self.appProxy.SetData(self.privateId, SharedPresKey.SLIDEURL, path)
-            self.appProxy.SetData(self.privateId, SharedPresKey.SLIDENUM, 1)
-            
-            # We send the event, which is wrapped in an Event instance
-            self.eventClient.Send(Event(SharedPresEvent.LOAD, self.channelId,
-                                        (self.publicId, path)
-                                        ))
+            # Put the event on the queue
+            self.eventQueue.put([SharedPresEvent.LOCAL_LOAD,path])
 
     def SendMaster(self, flag):
         """
-        This method sends a quit event over the data channel.
+        This method handles clicks on the MASTER checkbox
         """
         self.log.debug("Method SendMaster called; flag=(%d)", flag)
 
@@ -749,23 +709,31 @@ class SharedPresentation:
                 
                 # We send the event, which is wrapped in an Event instance
                 self.eventClient.Send(Event(SharedPresEvent.MASTER, self.channelId,
-                                            (self.publicId, "")
-                                            ))
+                                            (self.publicId, "")))
             else:
                 self.log.debug(" User is not master; skipping")
 
 
-    def SendClearSlides(self):
+    def ClearSlides(self):
         """
         This method will clear the slides from the venue app object;
         and close the local presentation
         """
-        self.log.debug("Method SendClearSlides called")
+        self.log.debug("Method ClearSlides called")
 
         # Clear the slides url stored in the venue
         self.appProxy.SetData(self.privateId, SharedPresKey.SLIDEURL, "")
         self.appProxy.SetData(self.privateId, SharedPresKey.SLIDENUM, "")
-        self.eventQueue.put([SharedPresEvent.CLOSE, None])
+        self.appProxy.SetData(self.privateId, SharedPresKey.STEPNUM, "")
+        self.eventQueue.put([SharedPresEvent.LOCAL_CLOSE, None])
+
+    def Sync(self):
+        """
+        This method will sync the viewer with the state in the app object
+        """
+        self.log.debug("Method Sync called")
+
+        self.eventQueue.put([SharedPresEvent.LOCAL_LOAD_VENUE,None])
 
     def QuitCB(self):
         """
@@ -773,13 +741,13 @@ class SharedPresentation:
         viewer to shutdown
         """
         self.log.debug("Method QuitCB called")
-
-        self.eventQueue.put([SharedPresEvent.QUIT, None])
+        self.eventQueue.put([SharedPresEvent.LOCAL_QUIT, None])
 
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #
     # Methods registered as callbacks with EventClient
+    # These methods typically put an event in the event queue.
     #
 
     def RecvNext(self, event):
@@ -789,12 +757,15 @@ class SharedPresentation:
         """
         self.log.debug("Method RecvNext called")
 
-        if self.masterId == event.data[0]:
+        if self.masterId == self.publicId:
+            self.log.debug("got my own event; skip")
+            return
 
+        if self.masterId == event.data[0]:
             # We put the passed in event on the event queue
             try:
                 self.eventQueue.put([SharedPresEvent.NEXT, event.data])
-            except Full:
+            except Queue.Full:
                 self.log.debug("Dropping event, event Queue full!")
 
     def RecvPrev(self, event):
@@ -803,6 +774,10 @@ class SharedPresentation:
         the event queue.
         """
         self.log.debug("Method RecvPrev called")
+
+        if self.masterId == self.publicId:
+            self.log.debug( "got my own event; skip")
+            return
 
         if self.masterId == event.data[0]:
             # We put the passed in event on the event queue
@@ -818,10 +793,14 @@ class SharedPresentation:
         """
         self.log.debug("Method RecvGoto called")
 
+        if self.masterId == self.publicId:
+            self.log.debug( "got my own event; skip")
+            return
+
         if self.masterId == event.data[0]:
             # We put the passed in event on the event queue
             try:
-                self.eventQueue.put([SharedPresEvent.GOTO, event.data])
+                self.eventQueue.put([SharedPresEvent.GOTO, event.data[1]])
             except Full:
                 self.log.debug("Dropping event, event Queue full!")
         
@@ -831,6 +810,10 @@ class SharedPresentation:
         the network on the event queue.
         """
         self.log.debug("Method RecvLoad called")
+
+        if self.masterId == self.publicId:
+            self.log.debug( "got my own event; skip")
+            return
 
         if self.masterId == event.data[0]:
             # We put the passed in event on the event queue
@@ -856,73 +839,79 @@ class SharedPresentation:
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #
-    # Methods called by the queue processor
+    # Methods called by the queue processor for incoming events.
+    # These methods can communicate with the viewer, since they
+    # are called by the queue processing thread, in which the
+    # viewer was created.
     #   
 
-    def NextSlide(self, data):
+    def Next(self, data=None):
         """
         This is the _real_ next slide method that tells the viewer to move
         to the next slide.
         """
-        self.log.debug("Method NextSlide called")
+        self.log.debug("Method Next called")
 
-        # Call the viewers NextSlide method
+        # Call the viewers Next method
         if self.viewer != None:
-            self.viewer.NextSlide()
-            self.currentSlide = self.viewer.GetSlideNum()
-            self.controller.SetSlideNum(self.currentSlide)
+            self.viewer.Next()
         else:
             self.log.debug("No presentation loaded!")
         
-    def PreviousSlide(self, data):
+    def Previous(self, data=None):
         """
         This is the _real_ previous slide method that tells the viewer to move
-        to the next slide.
+        to the previous slide.
         """
-        self.log.debug("Method PreviousSlide called")
+        self.log.debug("Method Previous called")
 
-        # Call the viewers PreviousSlide method
+        # Call the viewers Previous method
         if self.viewer != None:
-            self.viewer.PreviousSlide()
+            self.viewer.Previous()
         else:
             self.log.debug("No presentation loaded!")
         
-    def GoToSlide(self, data):
+    def GoToSlide(self, slideNum):
         """
         This is the _real_ goto slide method that tells the viewer to move
-        to the next slide.
+        to the specified slide.
         """
-        (id, number) = data
-        self.log.debug("Method GoToSlide called; id,slidenum=(%s %d)", id, number)
+        self.log.debug("Method GoToSlide called; slidenum=(%d)", slideNum)
 
         # Call the viewers GotoSlide method
         if self.viewer != None:
-            self.viewer.GoToSlide(number)
-            self.currentSlide = number
+            self.viewer.GoToSlide(slideNum)
         else:
             self.log.debug("No presentation loaded!")
 
-        self.controller.SetSlideNum(number)
+        self.controller.SetSlideNum(slideNum)
                    
     def LoadPresentation(self, data):
         """
         This is the _real_ load presentation method that tells the viewer
-        to move to the next slide.
+        to load the specified presentation.
         """
         self.log.debug("Method LoadPresentation called; url=(%s)", data[1])
 
-        presentationUrl = data[1]
+        slidesUrl = data[1]
 
-        # Call the viewers LoadPresentation method
-        self.viewer.LoadPresentation(presentationUrl)
+        # If the slides URL begins with https, retrieve the slides
+        # from the venue data store
+        if slidesUrl.startswith("https"):
+            tmpFile = "tmp"
+            DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
+            self.viewer.LoadPresentation(tmpFile)
+        else:
+            self.viewer.LoadPresentation(slidesUrl)
 
-        self.controller.SetSlides(presentationUrl)
+        self.controller.SetSlides(slidesUrl)
         self.controller.SetSlideNum(1)
-
+        self.slideNum = 1
+        self.stepNum = 0
 
     def SetMaster(self, data):
         """
-        This method sets the master of the presentation
+        This method sets the master of the presentation.
         """
         self.log.debug("Method SetMaster called")
 
@@ -935,7 +924,7 @@ class SharedPresentation:
         else:
             self.controller.SetMaster(false)
 
-    def ClosePresentation(self,data):
+    def ClosePresentation(self,data=None):
         """
         This method closes the presentation in the viewer
         """
@@ -943,7 +932,7 @@ class SharedPresentation:
 
         self.viewer.EndShow()
 
-    def Quit(self, data):
+    def Quit(self, data=None):
         """
         This is the _real_ Quit method that tells the viewer to quit
         """
@@ -968,18 +957,294 @@ class SharedPresentation:
         self.running = 0
 
 
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #
+    # Methods called by the queue processor for local events.
+    # These methods can communicate with the viewer, since they
+    # are called by the queue processing thread, in which the
+    # viewer was created.
+    # 
+
+    def LocalNext(self, data):
+        """
+        This is the _real_ next slide method that tells the viewer to move
+        to the next slide.
+        """
+        self.log.debug("Method LocalNext called")
+
+        if self.viewer != None:
+
+            # Careful not to slip off the end of the presentation, cause that mean an exception
+            if self.slideNum == self.viewer.GetLastSlide() and self.stepNum >= self.viewer.win.View.Slide.PrintSteps-1:
+                return
+
+            if self.slideNum <= self.viewer.GetLastSlide():
+                
+                # Call the viewers Next method
+                self.viewer.Next()
+
+                # Get the slide number from the viewer
+                slideNum = self.viewer.GetSlideNum()
+                if slideNum != self.slideNum:
+
+                    # Set the slide number in the controller
+                    self.controller.SetSlideNum(slideNum)
+
+                    # Store the slide number in the app object
+                    self.appProxy.SetData(self.privateId, SharedPresKey.SLIDENUM, slideNum)
+                    self.slideNum = slideNum
+                    self.stepNum = 0
+                else:
+                    # The presentation advanced, but the slide number didn't change,
+                    # so it musta been an on-slide transition or some such
+                    self.stepNum += 1
+
+                # Store the step number in the app object
+                self.appProxy.SetData(self.privateId, SharedPresKey.STEPNUM, self.stepNum)
+
+                # Send the next event to other app users
+                self.eventClient.Send(Event(SharedPresEvent.NEXT, self.channelId,
+                                            (self.publicId, None)))
+        else:
+            self.log.debug("No presentation loaded!")
+        
+    def LocalPrev(self, data):
+        """
+        This is the _real_ previous slide method that tells the viewer to move
+        to the next slide.
+        """
+        self.log.debug("Method LocalPrev called")
+
+        if self.viewer != None:
+            if self.slideNum > 0:
+
+                # Call the viewers Previous method
+                self.viewer.Previous()
+
+                # Get the slide number from the viewer
+                slideNum = self.viewer.GetSlideNum()
+                if slideNum != self.slideNum:
+                    # Set the slide number in the controller
+                    self.controller.SetSlideNum(slideNum)
+
+                    self.slideNum = slideNum
+                    self.stepNum = self.viewer.win.View.Slide.PrintSteps - 1
+
+                    # Store the slide number in the app object
+                    self.appProxy.SetData(self.privateId, SharedPresKey.SLIDENUM, slideNum)
+
+                else:
+                    # The presentation retreated, but the slide number didn't change,
+                    # so it musta been an on-slide transition or some such
+                    if self.stepNum > 0: 
+                        self.stepNum -= 1
+
+                # Store the step number in the app object
+                self.appProxy.SetData(self.privateId, SharedPresKey.STEPNUM, self.stepNum)
+
+                # We send the event, which is wrapped in an Event instance
+                self.eventClient.Send(Event(SharedPresEvent.PREV, self.channelId,
+                                            (self.publicId, None)))
+
+                self.log.debug("slide %d step %d", self.slideNum, self.stepNum)
+
+        else:
+            self.log.debug("No presentation loaded!")
+
+        
+    def LocalGoto(self, slideNum):
+        """
+        This is the _real_ goto slide method that tells the viewer to goto
+        the specified slide.
+        """
+        self.log.debug("Method LocalGoto called; slidenum=(%d)", slideNum)
+
+        # Call the viewers GotoSlide method
+        if self.viewer != None:
+            if slideNum > 0 and slideNum <= self.viewer.GetLastSlide():
+                self.viewer.GoToSlide(slideNum)
+                self.appProxy.SetData(self.privateId, SharedPresKey.SLIDENUM, slideNum)
+                self.slideNum = slideNum
+                self.stepNum = 0
+                self.appProxy.SetData(self.privateId, SharedPresKey.STEPNUM, self.stepNum)
+
+                # We send the event, which is wrapped in an Event instance
+                self.eventClient.Send(Event(SharedPresEvent.GOTO, self.channelId,
+                                            (self.publicId, self.slideNum)
+                                            ))
+
+
+        else:
+            self.log.debug("No presentation loaded!")
+
+        self.controller.SetSlideNum(slideNum)
+
+    def LocalLoad(self, slidesUrl):
+        """
+        This is the _real_ goto slide method that tells the viewer to move
+        to the next slide.
+        """
+        self.log.debug("Method LocalLoad called; slidesUrl=(%s)", slidesUrl)
+
+        # If the slides URL begins with https, retrieve the slides
+        # from the venue data store
+        if slidesUrl.startswith("https"):
+            tmpFile = Platform.GetTempDir() + "presentation.ppt"
+            DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
+            self.viewer.LoadPresentation(tmpFile)
+        else:
+            self.viewer.LoadPresentation(slidesUrl)
+
+        self.slideNum = 1
+        self.stepNum = 0
+        self.controller.SetSlides(slidesUrl)
+        self.controller.SetSlideNum(self.slideNum)
+
+        self.appProxy.SetData(self.privateId, SharedPresKey.SLIDEURL, slidesUrl)
+        self.appProxy.SetData(self.privateId, SharedPresKey.SLIDENUM, self.slideNum)
+        self.appProxy.SetData(self.privateId, SharedPresKey.STEPNUM, self.stepNum)
+        
+        # We send the event, which is wrapped in an Event instance
+        self.eventClient.Send(Event(SharedPresEvent.LOAD, self.channelId,
+                                    (self.publicId, slidesUrl)
+                                    ))
+
+        self.SendMaster(true)
+
+
+    def LocalLoadVenue(self, data=None):
+        """
+        This is the _real_ goto slide method that tells the viewer to move
+        to the next slide.
+        """
+        self.log.debug("Method LocalLoadVenue called")
+
+        # Retrieve the current presentation
+        self.presentation = self.appProxy.GetData(self.privateId,
+                                                  SharedPresKey.SLIDEURL)
+
+        # Set the slide URL in the UI
+        if len(self.presentation) != 0:
+            self.log.debug("Got presentation: %s", self.presentation)
+            self.controller.SetSlides(self.presentation)
+
+        # Retrieve the current slide
+        self.slideNum = self.appProxy.GetData(self.privateId,
+                                                  SharedPresKey.SLIDENUM)
+
+        # Retrieve the current step number
+        self.stepNum = self.appProxy.GetData(self.privateId,
+                                             SharedPresKey.STEPNUM)
+
+        # Retrieve the master
+        self.masterId = self.appProxy.GetData(self.privateId,
+                                             SharedPresKey.MASTER)
+
+        # If the slides URL begins with https, retrieve the slides
+        # from the venue data store
+        if self.presentation.startswith("https"):
+            tmpFile = Platform.GetTempDir() + "presentation.ppt"
+            DataStore.GSIHTTPDownloadFile(self.presentation, tmpFile, None, None )
+            self.viewer.LoadPresentation(tmpFile)
+        else:
+            self.viewer.LoadPresentation(self.presentation)
+
+        # Go to the current slide
+        self.GoToSlide(self.slideNum)
+
+        # Go to the current step
+        for i in range(self.stepNum):
+            self.Next()
+        
+        # Set the slide number in the UI
+        if self.slideNum == '':
+            self.slideNum = 1
+        else:
+            self.log.debug("Got slide num: %d", self.slideNum)
+            self.controller.SetSlideNum('%s' % self.slideNum)
+
+        # Set the master in the UI
+        self.controller.SetMaster(false)
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# Utility functions
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#
+# This gets logging started given the log name passed in
+# For more information about the logging module, check out:
+# http://www.red-dove.com/python_logging.html
+#
+def InitLogging(appName, debug=0):
+    """
+    This method sets up logging so you can see what's happening.
+    If you want to see more logging information use the appName 'AG',
+    then you'll see logging information from the Access Grid Module.
+    """
+    logFormat = "%(name)-17s %(asctime)s %(levelname)-5s %(message)s"
+
+
+    # Set up a venue client log, too, since it's used by the event client
+    log = logging.getLogger("AG.VenueClient")
+    log.setLevel(logging.DEBUG)
+    hdlr = logging.StreamHandler()
+    hdlr.setFormatter(logging.Formatter(logFormat))
+    log.addHandler(hdlr)
+
+    log = logging.getLogger(appName)
+    log.setLevel(logging.DEBUG)
+
+
+    # Log to file
+    logFile = appName + ".log"
+    fileHandler = logging.FileHandler(logFile)
+    fileHandler.setFormatter(logging.Formatter(logFormat))
+    log.addHandler(fileHandler)
+
+    # If debugging, log to command window too
+    if debug:
+        hdlr = logging.StreamHandler()
+        hdlr.setFormatter(logging.Formatter(logFormat))
+        log.addHandler(hdlr)
+    return log
+
+def Usage():
+    """
+    Standard usage information for users.
+    """
+    print "%s:" % sys.argv[0]
+    print "    -h|--help : print usage"
+    print "    -d|--debug : print debugging output"
+    print "    -a|--applicationURL : <url to application in venue>"
+    print "    -i|--information : <print information about this application>"
+    print "    -l|--logging : <log name: defaults to SharedPresentation>"
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# MAIN block
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if __name__ == "__main__":
     # Initialization of variables
     venueURL = None
     appURL = None
+    venueDataUrl = None
     logName = "SharedPresentation"
+    debug = 0
 
     # Here we parse command line options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "v:a:l:ih",
+        opts, args = getopt.getopt(sys.argv[1:], "dv:a:l:ih",
                                    ["venueURL=", "applicationURL=",
-                                    "information=", "logging=", "help"])
+                                    "information=", "logging=", 
+                                    "data=", "debug", "help"])
     except getopt.GetoptError:
         Usage()
         sys.exit(2)
@@ -996,12 +1261,16 @@ if __name__ == "__main__":
             print "App Description: %s" % SharedPresentation.appDescription
             print "App Mimetype: %s" % SharedPresentation.appMimetype
             sys.exit(0)
+        elif o in ("-d", "--data"):
+            venueDataUrl = a
+        elif o in ("--debug",):
+            debug = 1
         elif o in ("-h", "--help"):
             Usage()
             sys.exit(0)
 
     # Initialize logging
-    log = InitLogging(logName)
+    log = InitLogging(logName, debug)
 
     # If we're not passed some url that we can use, bail showing usage
     if appURL == None and venueURL == None:
@@ -1021,6 +1290,15 @@ if __name__ == "__main__":
 
     # This is all that really matters!
     presentation = SharedPresentation(appURL, log)
+
+    if venueDataUrl:
+        print "loading venueDataUrl: ", venueDataUrl
+        presentation.OpenVenueData(venueDataUrl)
+    else:
+        print "loading data from venue"
+        presentation.LoadFromVenue()
+
+    presentation.Start()
 
     # This is needed because COM shutdown isn't clean yet.
     # This should be something like:
