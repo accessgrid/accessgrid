@@ -1,0 +1,12 @@
+[ServiceDescription]
+name = VPConsumerService
+description = Vic-based video service to receive multicast video
+capabilities = Capability1
+executable = VPConsumerService.py
+platform = neutral
+version = 2.2
+
+[Capability1]
+role = consumer
+type = video
+
