@@ -1,6 +1,6 @@
 %define	name		AccessGrid
 %define	version		2.0beta
-%define	release		1
+%define	release		2
 %define	prefix		/usr
 %define sysconfdir	/etc/%{name}
 %define sharedir	%{prefix}/share
@@ -105,6 +105,7 @@ python2.2 setup.py build
 python2.2 setup.py install --prefix=%{buildroot}%{prefix} --no-compile
 mv %{buildroot}%{prefix}/etc %{buildroot}
 mv %{buildroot}%{prefix}/var %{buildroot}
+mkdir -p %{buildroot}/tmp/local_services
 
 %files
 %doc %{sharedir}/doc/
@@ -115,6 +116,8 @@ mv %{buildroot}%{prefix}/var %{buildroot}
 /etc/init.d/agsm
 %defattr(0755,ag,ag)
 %dir %{aghome}/local_services
+%defattr(0777,nobody,nobody)
+%dir /tmp/local_services
 %defattr(0644,root,root)
 %config %{sysconfdir}/AGServiceManager.cfg
 
