@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.23 2003-04-29 17:05:33 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.24 2003-05-12 17:06:05 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -51,10 +51,10 @@ ID_HOST_REMOVE = 301
 ID_SERVICE_ADD_SERVICE = 400
 ID_SERVICE_GET_CONFIG = 402
 ID_SERVICE_REMOVE = 403
-ID_SERVICE_START = 404
-ID_SERVICE_START_ONE = 405
-ID_SERVICE_STOP = 406
-ID_SERVICE_STOP_ONE = 407
+ID_SERVICE_ENABLE = 404
+ID_SERVICE_ENABLE_ONE = 405
+ID_SERVICE_DISABLE = 406
+ID_SERVICE_DISABLE_ONE = 407
 
 ID_VENUE_ARGONNE = 500
 ID_VENUE_LOBBY = 501
@@ -88,8 +88,8 @@ def BuildServiceMenu( ):
     """
     svcmenu = wxMenu()
     svcmenu.Append(ID_SERVICE_ADD_SERVICE, "Add...", "Add Service")
-    svcmenu.Append(ID_SERVICE_START_ONE, "Start", "Start Service")
-    svcmenu.Append(ID_SERVICE_STOP_ONE, "Stop", "Stop Service")
+    svcmenu.Append(ID_SERVICE_ENABLE_ONE, "Enable", "Enable Service")
+    svcmenu.Append(ID_SERVICE_DISABLE_ONE, "Disable", "Disable Service")
     svcmenu.Append(ID_SERVICE_REMOVE, "Remove", "Remove Service")
     svcmenu.Append(ID_SERVICE_GET_CONFIG, "Configure", "Configure")
     return svcmenu
@@ -235,7 +235,6 @@ class ServiceListCtrl( wxListCtrl ):
 
         self.InsertColumn( 0, "Service Name", width=wxLIST_AUTOSIZE )
         self.InsertColumn( 1, "Status", width=wxLIST_AUTOSIZE )
-        self.InsertColumn( 2, "URI", width=wxLIST_AUTOSIZE )
 
         bmap = icons.getDefaultServiceBitmap()
         imageList = wxImageList( bmap.GetWidth(), bmap.GetHeight() )
@@ -280,7 +279,6 @@ class ServiceConfigurationPanel( wxPanel ):
         self.panelSizer.Add( psz, -1, wxEXPAND )
         self.guiComponents.append( pComp )
 
-
         for parameter in serviceConfig.parameters:
 
             psz= wxBoxSizer( wxHORIZONTAL )
@@ -307,15 +305,6 @@ class ServiceConfigurationPanel( wxPanel ):
 
             self.panelSizer.Add( psz, -1, wxEXPAND )
 
-        psz = wxBoxSizer( wxVERTICAL )
-        b = wxButton( self.panel, 310, "OK" )
-        psz.Add( b, 0, wxALIGN_CENTER )
-        if self.callback:
-            EVT_BUTTON( self, 310, self.callback )
-
-        self.panelSizer.Add( psz, -1, wxALIGN_CENTER )
-
-
         self.panel.Layout()
 
     def GetConfiguration( self ):
@@ -337,7 +326,42 @@ class ServiceConfigurationPanel( wxPanel ):
         self.callback = callback
 
     def Cancel(self, event):
-        self.Destroy()
+        self.parent.Destroy()
+
+class ServiceConfigurationDialog(wxDialog):
+    """
+    """
+    def __init__(self, parent, id, title, serviceConfig ):
+
+        wxDialog.__init__(self, parent, id, title, style = 
+                          wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+        
+        # Set up sizers
+        sizer1 = wxBoxSizer(wxVERTICAL)
+        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
+        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
+        self.SetSizer( sizer1 )
+        self.SetAutoLayout(1)
+
+        self.serviceConfigPanel = ServiceConfigurationPanel( self, -1 )
+        self.serviceConfigPanel.SetConfiguration( serviceConfig )
+        self.serviceConfigPanel.SetSize( wxSize(200,200) )
+        self.serviceConfigPanel.Layout()
+        sizer2.Add( self.serviceConfigPanel, 1, wxEXPAND )
+    
+        # Create ok/cancel buttons
+        sizer3 = wxBoxSizer(wxHORIZONTAL)
+        okButton = wxButton( self, wxID_OK, "OK" )
+        cancelButton = wxButton( self, wxID_CANCEL, "Cancel" )
+        sizer3.Add(okButton, 0, wxALL, 10)
+        sizer3.Add(cancelButton, 0, wxALL, 10)
+        sizer1.Add(sizer3, 0, wxALIGN_CENTER)
+
+        sizer1.Fit(self)
+
+    def GetConfiguration(self):
+        return self.serviceConfigPanel.GetConfiguration()
+
 
 
 class NodeManagementClientFrame(wxFrame):
@@ -354,7 +378,7 @@ class NodeManagementClientFrame(wxFrame):
         self.SetStatusText("This is the statusbar")
         """
 
-        self.SetTitle( "Access Grid Node Management")
+        self.SetTitle(title)
         self.SetIcon(icons.getAGIconIcon())
         self.serviceManagers = []
         self.services = []
@@ -389,7 +413,6 @@ class NodeManagementClientFrame(wxFrame):
         menuBar.Append(menu, "&Service");
 
         ## DEBUG menu
-        #"""
         debugMenu = wxMenu()
         debugMenu.Append(ID_VENUE_TESTROOM, "Go to Test Room", "Dum")
         debugMenu.Append(ID_VENUE_ARGONNE, "Go to Argonne", "Dum")
@@ -398,7 +421,6 @@ class NodeManagementClientFrame(wxFrame):
         debugMenu.AppendSeparator()
         debugMenu.Append(ID_DUM, "Kill Services", "")
         menuBar.Append(debugMenu, "&Debug");
-        #"""
 
         ## HELP menu
         helpMenu = wxMenu()
@@ -459,10 +481,10 @@ class NodeManagementClientFrame(wxFrame):
         EVT_MENU(self, ID_SERVICE_ADD_SERVICE    ,  self.AddService )
         EVT_MENU(self, ID_SERVICE_GET_CONFIG     ,  self.GetServiceConfiguration )
         EVT_MENU(self, ID_SERVICE_REMOVE         ,  self.RemoveService )
-        EVT_MENU(self, ID_SERVICE_START          ,  self.StartServices )
-        EVT_MENU(self, ID_SERVICE_START_ONE      ,  self.StartService )
-        EVT_MENU(self, ID_SERVICE_STOP           ,  self.StopServices )
-        EVT_MENU(self, ID_SERVICE_STOP_ONE       ,  self.StopService )
+        EVT_MENU(self, ID_SERVICE_ENABLE         ,  self.EnableServices )
+        EVT_MENU(self, ID_SERVICE_ENABLE_ONE     ,  self.EnableService )
+        EVT_MENU(self, ID_SERVICE_DISABLE        ,  self.DisableServices )
+        EVT_MENU(self, ID_SERVICE_DISABLE_ONE    ,  self.DisableService )
         EVT_MENU(self, ID_VENUE_ARGONNE          ,  self.GotoArgonne )
         EVT_MENU(self, ID_VENUE_LOBBY            ,  self.GotoLobby )
         EVT_MENU(self, ID_VENUE_LOCAL            ,  self.GotoLocal )
@@ -559,7 +581,6 @@ class NodeManagementClientFrame(wxFrame):
             ret = d.GetValue()
             if ret:
                 (configName,isDefault) = ret
-                #print "config = ", configName, isDefault
 
                 # Handle error cases
                 if len( configName ) == 0:
@@ -629,7 +650,7 @@ class NodeManagementClientFrame(wxFrame):
                 self.nodeServiceHandle.GetProxy().AddServiceManager( AGServiceManagerDescription( name, uri ) )
             except:
                 print "Exception in AddHost", sys.exc_type, sys.exc_value
-                self.Error( "Add Host failed" )
+                self.Error( "Add Service Manager failed" )
                 return
 
             # Update the service manager list
@@ -746,20 +767,14 @@ class NodeManagementClientFrame(wxFrame):
                 applicableResources1 = []
                 serviceCapabilityTypes = map( lambda cap: cap.type, serviceToAdd.capabilities )
                 for resource in resources:
-                    #print "--- role = ", resource.role, resource.type
                     if resource.type in serviceCapabilityTypes:
                         applicableResources1.append( resource )
-
-                #print "applicableResources1 = ", applicableResources1
 
                 applicableResources = []
                 for resource in applicableResources1:
                     for cap in serviceToAdd.capabilities:
-                        #print "roles = ", resource.role, cap.role
                         if resource.role == cap.role:
                             applicableResources.append( resource )
-
-                #print "applicableResources = ", applicableResources
 
                 if len(applicableResources) > 0:
                     choices = ["None"]
@@ -786,7 +801,8 @@ class NodeManagementClientFrame(wxFrame):
                 #
                 if serviceToAdd == None:
                     raise Exception("Can't add NULL service")
-                Client.Handle( serviceManager.uri ).GetProxy().AddService( serviceToAdd.servicePackageUri, 
+                self.nodeServiceHandle.GetProxy().AddService( serviceToAdd.servicePackageUri, 
+                               serviceManager.uri,
                                resourceToAssign,
                                None )
             except:
@@ -795,9 +811,9 @@ class NodeManagementClientFrame(wxFrame):
 
             self.UpdateServiceList()
 
-    def StartService( self, event=None ):
+    def EnableService( self, event=None ):
         """
-        Start the selected service(s)
+        Enable the selected service(s)
         """
         
         try:
@@ -807,32 +823,32 @@ class NodeManagementClientFrame(wxFrame):
                 self.Error( "No service selected!" )
                 return
 
-            # Start all selected services
+            # Enable all selected services
             index = -1
             for i in range( self.serviceList.GetSelectedItemCount() ):
                 index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-                print "** Starting Service:", index
-                Client.Handle( self.services[index].uri ).GetProxy().Start()
+                print "** Enabling Service:", self.services[index].name
+                self.nodeServiceHandle.GetProxy().SetServiceEnabled(self.services[index].uri, 1)
 
             # Update the services list
             self.UpdateServiceList()
 
         except:
-            print "Exception in StartService ", sys.exc_type, sys.exc_value
+            print "Exception in EnableService ", sys.exc_type, sys.exc_value
 
-    def StartServices( self, event ):
+    def EnableServices( self, event ):
         """ 
-        Start all known services
+        Enable all known services
         """
         services = self.nodeServiceHandle.GetProxy().GetServices()
         for service in services:
-            Client.Handle( service.uri ).GetProxy().Start()
+            self.nodeServiceHandle.GetProxy().SetServiceEnabled(self.services[index].uri,1)
 
         self.UpdateServiceList()
 
-    def StopService( self, event=None ):
+    def DisableService( self, event=None ):
         """
-        Stop the selected service(s)"
+        Disable the selected service(s)"
         """
 
         # Require a service to be selected
@@ -840,22 +856,22 @@ class NodeManagementClientFrame(wxFrame):
             self.Error( "No service selected!" )
             return
 
-        # Stop all selected services
+        # Disable all selected services
         index = -1
         for i in range( self.serviceList.GetSelectedItemCount() ):
             index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-            Client.Handle( self.services[index].uri ).GetProxy().Stop()
+            self.nodeServiceHandle.GetProxy().SetServiceEnabled(self.services[index].uri,0)
 
         # Update the service list
         self.UpdateServiceList()
 
-    def StopServices( self, event ):
+    def DisableServices( self, event ):
         """
-        Stop all known services
+        Disable all known services
         """
         svcs = self.nodeServiceHandle.GetProxy().GetServices()
         for svc in svcs:
-            Client.Handle( svc.uri ).GetProxy().Stop()
+            self.nodeServiceHandle.GetProxy().SetServiceEnabled(self.services[index].uri,0)
 
         self.UpdateServiceList()
 
@@ -914,29 +930,14 @@ class NodeManagementClientFrame(wxFrame):
         """
         Display the service configuration dialog
         """
+        dlg = ServiceConfigurationDialog(self,-1,"Service Config Dialog",self.config)
+        ret = dlg.ShowModal()
+        if ret == wxID_OK:
+            config = dlg.GetConfiguration()
+            self.SetConfiguration( config )
+    
 
-        dlg = wxDialog( self, -1, "Service Configuration Dialog",
-                        style = wxRESIZE_BORDER|wxCAPTION|wxSYSTEM_MENU,
-                        size = (300,300) )
-
-        dlgSizer = wxBoxSizer( wxVERTICAL )
-        dlg.SetSizer( dlgSizer )
-
-        self.serviceConfigPanel = ServiceConfigurationPanel( dlg, -1 )
-        self.serviceConfigPanel.SetCallback( self.SetConfiguration )
-        self.serviceConfigPanel.SetConfiguration( self.config )
-        self.serviceConfigPanel.Layout()
-
-        dlgSizer.Add( self.serviceConfigPanel, -1, wxEXPAND )
-
-        dlg.Layout()
-        dlg.ShowModal()
-        dlg.Destroy()
-
-        self.serviceConfigPanel = None
-
-
-    def SetConfiguration( self, event=None ):
+    def SetConfiguration( self, serviceConfig ):
         """
         Configure the service according to the service configuration panel
         """
@@ -945,9 +946,6 @@ class NodeManagementClientFrame(wxFrame):
         if self.serviceList.GetSelectedItemCount() == 0:
             self.Error( "No service selected!" )
             return
-
-        # Retrieve the configuration from the service config panel
-        serviceConfig = self.serviceConfigPanel.GetConfiguration()
 
         # Determine the selected service
         index = self.serviceList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
@@ -975,13 +973,12 @@ class NodeManagementClientFrame(wxFrame):
                     itemindex = self.serviceList.InsertStringItem( i, svc.name )
                     self.serviceList.SetItemImage( itemindex, 0, 0 )
                     try:
-                        if Client.Handle( svc.uri ).GetProxy().IsStarted() == 1:
-                            self.serviceList.SetStringItem( i,1, "Started" )
+                        if Client.Handle( svc.uri ).GetProxy().GetEnabled() == 1:
+                            self.serviceList.SetStringItem( i,1, "Enabled" )
                         else:
-                            self.serviceList.SetStringItem( i,1, "Stopped" )
+                            self.serviceList.SetStringItem( i,1, "Disabled" )
                     except:
                         print "Exception in UpdateServiceList ", sys.exc_type, sys.exc_value
-                    self.serviceList.SetStringItem( i,2, svc.uri )
                     i = i + 1
 
 
@@ -1010,7 +1007,7 @@ class NodeManagementClientFrame(wxFrame):
                              MulticastNetworkLocation( "233.2.171.38", 42002, 127 ),
                              Capability( Capability.CONSUMER, Capability.VIDEO ),
                              0, None, 0 ) )
-        self.nodeServiceHandle.GetProxy().ConfigureStreams( streamDs )
+        self.nodeServiceHandle.GetProxy().SetStreams( streamDs )
 
         self.UpdateServiceList()
 
@@ -1024,7 +1021,7 @@ class NodeManagementClientFrame(wxFrame):
                              MulticastNetworkLocation( "233.2.171.251", 59986, 127 ),
                              Capability( Capability.CONSUMER, Capability.VIDEO ),
                              0, None, 0 ) )
-        self.nodeServiceHandle.GetProxy().ConfigureStreams( streamDs )
+        self.nodeServiceHandle.GetProxy().SetStreams( streamDs )
 
         self.UpdateServiceList()
 
@@ -1038,7 +1035,7 @@ class NodeManagementClientFrame(wxFrame):
                              MulticastNetworkLocation( "224.2.211.167", 16964, 127 ),
                              Capability( Capability.CONSUMER, Capability.AUDIO ),
                              0, None, 0 ) )
-        self.nodeServiceHandle.GetProxy().ConfigureStreams( streamDs )
+        self.nodeServiceHandle.GetProxy().SetStreams( streamDs )
         self.UpdateServiceList()
 
     def GotoLocal( self, event=None ):
@@ -1047,7 +1044,7 @@ class NodeManagementClientFrame(wxFrame):
                              MulticastNetworkLocation( "localhost", 55524, 127 ),
                              Capability( Capability.CONSUMER, Capability.VIDEO ),
                              0, None, 0 ) )
-        self.nodeServiceHandle.GetProxy().ConfigureStreams( streamDs )
+        self.nodeServiceHandle.GetProxy().SetStreams( streamDs )
 
         self.UpdateServiceList()
 
