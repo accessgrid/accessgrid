@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.28 2004-09-03 18:07:00 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.29 2004-09-03 18:23:33 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.28 2004-09-03 18:07:00 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.29 2004-09-03 18:23:33 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -799,12 +799,18 @@ class AuthorizationUIPanel(wxPanel):
             self.changed = 1
             
             # Save subject
+            if self.__participantInRole(selectedItem, subject):
+                MessageDialog(self, "%s is already added to %s"%(subject.name, activeRole.name), "Error") 
+                return
+            
             try:
                 activeRole.AddSubject(subject)
 
             except:
-                log.exception("Error adding person to role")
+                self.log.exception("Error adding person to role")
                 MessageDialog(self, "Can not add person to this role.", "Notification")
+                
+                
             # Insert subject in tree
             index = self.roleToTreeIdDict[activeRole]
             subjectId = self.tree.AppendItem(index, subject.GetCN(),
