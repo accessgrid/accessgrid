@@ -10,7 +10,7 @@ import glob
 #
 
 def modimport(module):
-    for module_file in glob.glob(module.__path__[0] + "\\*.py"):
+    for module_file in glob.glob(os.path.join(module.__path__[0], "*.py")):
         __import__(module.__name__ + "." + os.path.basename(module_file[:-3]))
 
 modimport(AccessGrid)
