@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.283 2003-09-19 21:59:08 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.284 2003-09-19 22:12:48 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.283 2003-09-19 21:59:08 olson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.284 2003-09-19 22:12:48 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -37,7 +37,6 @@ log = logging.getLogger("AG.VenueClientUIClasses")
 from AccessGrid import icons
 from AccessGrid import Toolkit
 from AccessGrid.VenueClient import VenueClient, EnterVenueException
-from AccessGrid import Utilities
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.Platform import GetMimeCommands, GetMimeType
@@ -50,6 +49,7 @@ from AccessGrid.Platform import isWindows, isLinux, isOSX
 from AccessGrid.TextClient import TextClient
 from AccessGrid.RoleAuthorization import AddPeopleDialog, RoleClient
 from AccessGrid.Utilities import SubmitBug, NO_LOG, VENUE_CLIENT_LOG
+from AccessGrid.Utilities import GetHostname, split_quoted
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 
 
@@ -943,7 +943,7 @@ class VenueClientFrame(wxFrame):
             else:
                 if commands.has_key('Open'):
                     cmd = commands['Open']
-                    self.StartCmd(cmd, data)
+                    self.StartCmd(cmd, data, verb='Open')
         else:
             self.__showNoSelectionDialog("Please, select the data you want to open")     
     
@@ -1046,9 +1046,9 @@ class VenueClientFrame(wxFrame):
     def RunApp(self, appDesc, cmd='Open'):
         appdb = Toolkit.GetApplication().GetAppDatabase()
         
-        cmd = appdb.GetCommandLine(appDesc.mimeType, cmd)
+        cmdline = appdb.GetCommandLine(appDesc.mimeType, cmd)
 
-        self.contentListPanel.StartCmd(cmd, appDesc)
+        self.contentListPanel.StartCmd(cmdline, appDesc, verb=cmd)
         
     def OpenService(self,event):
         id = self.contentListPanel.tree.GetSelection()
@@ -1934,7 +1934,7 @@ class ContentListPanel(wxPanel):
                        not isinstance(item, ApplicationDescription):
                     self.FindUnregistered(item)
                 else:
-                    self.StartCmd(openCmd, item)
+                    self.StartCmd(openCmd, item, verb='Open')
                     
     def OnRightClick(self, event):
         self.x = event.GetX()
@@ -2012,7 +2012,7 @@ class ContentListPanel(wxPanel):
 
         if commands != None and commands.has_key('Open'):
             EVT_MENU(self, id, lambda event,
-                     cmd=commands['Open'], itm=item: self.StartCmd(cmd, item=itm))
+                     cmd=commands['Open'], itm=item: self.StartCmd(cmd, item=itm, verb='Open'))
         else:
             EVT_MENU(self, id, lambda event,
                      itm=item: self.FindUnregistered(itm))
@@ -2034,7 +2034,7 @@ class ContentListPanel(wxPanel):
                     id = wxNewId()
                     menu.Append(id, string.capwords(key))
                     EVT_MENU(self, id, lambda event,
-                             cmd=commands[key], itm=item: self.StartCmd(cmd, item=itm))
+                             cmd=commands[key], itm=item: self.StartCmd(cmd, item=itm, verb=key))
 #                elif key == 'OpenShared':
 #                    useLocal = 1
 
@@ -2082,7 +2082,7 @@ class ContentListPanel(wxPanel):
 
         if commands != None and commands.has_key('Open'):
             EVT_MENU(self, id, lambda event,
-                     cmd=commands['Open'], itm=item: self.StartCmd(cmd, item=itm))
+                     cmd=commands['Open'], itm=item: self.StartCmd(cmd, item=itm, verb='Open'))
         else:
             EVT_MENU(self, id, lambda event,
                      itm=item: self.FindUnregistered(itm))
@@ -2099,7 +2099,7 @@ class ContentListPanel(wxPanel):
                     id = wxNewId()
                     menu.Append(id, string.capwords(key))
                     EVT_MENU(self, id, lambda event,
-                             cmd=commands[key], itm=item: self.StartCmd(cmd, item=itm))
+                             cmd=commands[key], itm=item: self.StartCmd(cmd, item=itm, verb=key))
 
         menu.AppendSeparator()
 
@@ -2141,7 +2141,7 @@ class ContentListPanel(wxPanel):
                 else:
                     cmd = program + " %s"
                     
-                self.StartCmd(cmd, item)
+                self.StartCmd(cmd, item, verb='Open')
                 
     def BuildAppMenu(self, event, item):
         """
@@ -2163,7 +2163,7 @@ class ContentListPanel(wxPanel):
             EVT_MENU(self, id, lambda event, cmd='Open':
                      self.StartCmd(appdb.GetCommandLine(item.mimeType,
                                                         'Open'),
-                                   item=item))
+                                   item=item, verb='Open'))
         else:
             text = "You have nothing configured to open this service."
             title = "Notification"
@@ -2185,7 +2185,7 @@ class ContentListPanel(wxPanel):
                     EVT_MENU(self, id, lambda event, cmd=key, itm=item:
                              self.StartCmd(appdb.GetCommandLine(item.mimeType,
                                                                 cmd),
-                                           item=itm))
+                                           item=itm, verb=cmd))
 
         menu.AppendSeparator()
 
@@ -2216,7 +2216,7 @@ class ContentListPanel(wxPanel):
             serviceView.ShowModal()
             serviceView.Destroy()
                 
-    def StartCmd(self, command, item=None, namedVars=None):
+    def StartCmd(self, command, item=None, namedVars=None, verb=None):
         """
         """
         localFilePath = None
@@ -2237,12 +2237,12 @@ class ContentListPanel(wxPanel):
             if isWindows():
                 if command.find("%1") != -1:
                     command = command.replace("%1", "\"%(localFilePath)s\"")
-                elif command.find("%(localFilePath)s") == -1:
+                elif len(split_quoted(command)) == 1:
                     command += " \"%(localFilePath)s\""
             else:
                 if command.find("%s") != -1:
                     command = command.replace("%s", "%(localFilePath)s")
-                elif command.find("%(localFilePath)s") == -1:
+                elif len(split_quoted(command)) == 1:
                     command += " %(localFilePath)s"
         else:
             # Get the app dir and run
@@ -2263,14 +2263,16 @@ class ContentListPanel(wxPanel):
             if isWindows():
                 if command.find("%1") != -1:
                     command = command.replace("%1", "\"%(appUrl)s\"")
-                elif command.find("%(appUrl)s") == -1:
+                elif len(split_quoted(command)) == 1:
                     command += " \"%(appUrl)s\""
             else:
                 if command.find("%s") != -1:
                     command = command.replace("%s", "%(appUrl)s")
-                elif command.find("%(appUrl)s") == -1:
+                elif len(split_quoted(command)) == 1:
                     command += " %(appUrl)s"
 
+        if verb != None:
+            namedVars['appCmd'] = verb
         namedVars['appName'] = item.name.replace(" ", "_")
         namedVars['appDesc'] = item.description
         # This is NOT on every description type, so we're not using it yet
@@ -3438,7 +3440,7 @@ def VerifyExecutionEnvironment(mainApp = None):
 
         ShowNetworkInit(msg, mainApp)
 
-        myhost = Utilities.GetHostname()
+        myhost = GetHostname()
         log.debug("New notion of globus hostname: %s", myhost)
 
 

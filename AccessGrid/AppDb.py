@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.6 2003-09-16 07:20:17 judson Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.7 2003-09-19 22:12:48 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AppDb.py,v 1.6 2003-09-16 07:20:17 judson Exp $"
+__revision__ = "$Id: AppDb.py,v 1.7 2003-09-19 22:12:48 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -21,6 +21,7 @@ import shutil
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.Platform import GetUserConfigDir, GetUserAppPath
 from AccessGrid.Descriptions import ApplicationDescription
+from AccessGrid.GUID import GUID
 
 """
 Type management for access grid toolkit:
@@ -32,13 +33,19 @@ What we know:
 Storage in Config Parser Format:
 
 [name]
-name = mimeType
+priv_key = mimetype
 
 [extension]
 extension = mimeType
 
 [<mimeType>]
-command name = command
+priv_key = command
+
+[name_map]
+priv_key = name
+
+[cmd_map]
+priv_key = command_name
 
 Functions:
 
@@ -82,12 +89,51 @@ class AppDb:
             print sys.exc_info()
             print "Couldn't open application database: %s" % fileName
             
-    def Flush(self):
+    def _Flush(self):
         try:
             SaveConfig(self.fileName, self.AppDb, self.defaultSeparator)
         except:
             print "Couldn't flush the db to disk."
 
+    def _GetPrivName(self, name):
+        """
+        Look up the private name for the exposed name.
+        """
+        for key in self.AppDb.keys():
+            (section, option) = key.split(self.defaultSeparator)
+            if section == "priv_names":
+                if self.AppDb[key] == name:
+                    return option
+
+    def _GetNiceName(self, pName):
+        """
+        """
+        for key in self.AppDb.keys():
+            (section, option) = key.split(self.defaultSeparator)
+            if section == "priv_names":
+                if option == pName:
+                    return self.AppDb[key]
+                
+    def _GetPrivVerb(self, verb, mimeType):
+        """
+        Look up the private name for the exposed name.
+        """
+        for key in self.AppDb.keys():
+            (section, option) = key.split(self.defaultSeparator)
+            if section == "priv_cmds":
+                mtCheckKey = self.defaultSeparator.join([mimeType, option])
+                if self.AppDb[key] == verb and self.AppDb.has_key(mtCheckKey):
+                    return option
+
+    def _GetNiceVerb(self, pVerb):
+        """
+        """
+        for key in self.AppDb.keys():
+            (section, option) = key.split(self.defaultSeparator)
+            if section == "priv_cmds":
+                if option == pVerb:
+                    return self.AppDb[key]
+                
     def GetMimeType(self, name = None, extension = None):
         """
         returns a mimeType in a string.
@@ -95,7 +141,8 @@ class AppDb:
         mimeType = None
     
         if name != None:
-            lookupName = self.defaultSeparator.join(["name", name])
+            privName = self._GetPrivName(name)
+            lookupName = self.defaultSeparator.join(["name", privName])
             try:
                 mimeType = self.AppDb[lookupName]
             except KeyError:
@@ -117,28 +164,47 @@ class AppDb:
         appName = None
     
         for key in self.AppDb.keys():
-            if self.AppDb[key] == mimeType:
-                (section, option) = key.split(self.defaultSeparator)
-                if section == "name" and self.AppDb[key] == mimeType:
-                    appName = option
-    
+            (section, option) = key.split(self.defaultSeparator)
+            if section == "name":
+                mt = self.AppDb[key]
+                if mt == mimeType:
+                    appName = self._GetNiceName(option)
+                    
         return appName
+    
+    def GetExtForMimeType(self, mimeType):
+        """
+        returns a extension in a string.
+        """
+        ext = None
+    
+        for key in self.AppDb.keys():
+            (section, option) = key.split(self.defaultSeparator)
+            if section == "extension":
+                mt = self.AppDb[key]
+                if mt == mimeType:
+                    ext = option
+                    
+        return ext
     
     def AddMimeType(self, name, extension, mimeType):
         """
         returns a tuple of (int, string). Success is (1, mimeType),
         failure is (0, reason)
         """
-    
-        nameStr = self.defaultSeparator.join(["name", name])
+
+        namekey = str(GUID())
+        privName = self.defaultSeparator.join(["priv_names", namekey])
+        nameStr = self.defaultSeparator.join(["name", namekey])
         extStr = self.defaultSeparator.join(["extension", extension])
         mimeStr = self.defaultSeparator.join([mimeType, "None"])
-        
+
+        self.AppDb[privName] = name
         self.AppDb[nameStr] = mimeType
         self.AppDb[extStr] = mimeType
         self.AppDb[mimeStr] = None
     
-        self.Flush()
+        self._Flush()
 
         return (1, mimeType)
     
@@ -152,31 +218,38 @@ class AppDb:
             return (0, "Not enough information to remove mime type.")
     
         if name != None:
-            nameStr = self.defaultSeparator.join(["name", name])
+            namekey = self._GetPrivName(name)
+            privName = self.defaultSeparator.join(["priv_names", namekey])
+            name = self.AppDb[privName]
+            mt = self.GetMimeType(name = name)
+            mimeStr = self.defaultSeparator.join([mt, "None"])
+            nameStr = self.defaultSeparator.join(["name", namekey])
+            ext = self.GetExtForMimeType(mt)
+            extStr = self.defaultSeparator.join(["extension", ext])
         elif mimeType != None:
-            for key in self.AppDb.keys():
-                if self.AppDb[key] == mimeType:
-                    (section, option) = key.split(self.defaultSeparator)
-                    if section == "name":
-                        nameStr = key
-    
-        if extension != None:
+            mimeStr = self.defaultSeparator.join([mimeType, "None"])
+            name = self.GetNameForMimeType(mimeType)
+            namekey = self._GetPrivName(name)
+            privName = self.defaultSeparator.join(["priv_names", namekey])
+            nameStr = self.defaultSeparator.join(["name", namekey])
+            ext = self.GetExtForMimeType(mimeType)
+            extStr = self.defaultSeparator.join(["extension", ext])
+        elif extension != None:
+            mimeType = self.GetMimeType(extension = extension)
+            mimeStr = self.defaultSeparator.join([mimeType, "None"])
+            name = self.GetNameForMimeType(mimeType)
+            namekey = self._GetPrivName(name)
+            privName = self.defaultSeparator.join(["priv_names", namekey])
+            nameStr = self.defaultSeparator.join(["name", namekey])
+            ext = self.GetExtForMimeType(mimeType)
             extStr = self.defaultSeparator.join(["extension", extension])
-        elif mimeType != None:
-            for key in self.AppDb.keys():
-                if self.AppDb[key] == mimeType:
-                    (section, option) = key.split(self.defaultSeparator)
-                    if section == "extension":
-                        extStr = key
     
-        if mimeType == None:
-            mimeType = GetMimeType(name, extension)
-    
-        if self.AppDb[nameStr] == self.AppDb[extStr] == mimeType:
+        if self.AppDb[privName] == self.AppDb[extStr] == mimeType:
+            del self.AppDb[privName]
             del self.AppDb[nameStr]
             del self.AppDb[extStr]
     
-        self.Flush()
+        self._Flush()
     
         return (1, mimeType)
     
@@ -189,8 +262,8 @@ class AppDb:
         for key in self.AppDb.keys():
             (section, option) = key.split(self.defaultSeparator)
             if section == mimeType:
-                cmds.append(option)
-    
+                cmds.append(self._GetNiceVerb(option))
+        
         return cmds
     
     def GetCommandLine(self, mimeType, cmdName, vars=None):
@@ -203,18 +276,18 @@ class AppDb:
 
         if mimeType == None or cmdName == None:
             return cmdStr
+
+        pCmd = self._GetPrivVerb(cmdName, mimeType)
+        key = self.defaultSeparator.join([mimeType, pCmd])
         
+        try:
+            cmdStr = self.AppDb[key]
+        except KeyError:
+            return cmdStr
+
         if vars != None:
-            try:
-                cmdStr = self.AppDb[self.defaultSeparator.join([mimeType, cmdName])] % vars
-            except KeyError:
-                return cmdStr
-        else:
-            try:
-                cmdStr = self.AppDb[self.defaultSeparator.join([mimeType, cmdName])]
-            except KeyError:
-                return cmdStr
-    
+            cmdStr = self.AppDb[key] % vars
+        
         return cmdStr
     
     def AddCommand(self, mimeType, cmdName, cmdString):
@@ -222,9 +295,14 @@ class AppDb:
         returns a tuple (int, string). Success is (1, cmdName),
         failure is (0, reason).
         """
-        self.AppDb[self.defaultSeparator.join([mimeType, cmdName])] = cmdString
+        pCmd = str(GUID())
+        cmdkey = self.defaultSeparator.join([mimeType, pCmd])
+        pcmdkey = self.defaultSeparator.join(["priv_cmds", pCmd])
+
+        self.AppDb[cmdkey] = cmdString
+        self.AppDb[pcmdkey] = cmdName
     
-        self.Flush()
+        self._Flush()
     
         return (1, cmdName)
     
@@ -233,10 +311,15 @@ class AppDb:
         returns a tuple (int, string). Success is (1, cmdName),
         failure is (0, reason).
         """
+
+        pCmd = self._GetPrivVerb(cmdName, mimeType)
+        cmdkey =self.defaultSeparator.join([mimeType, pcmd])
+        pcmdkey =self.defaultSeparator.join(["priv_cmds", cmdName])
+
+        del self.AppDb[cmdkey]
+        del self.AppDb[pcmdkey]
     
-        del self.AppDb[self.defaultSeparator.join([mimeType, cmdName])]
-    
-        self.Flush()
+        self._Flush()
     
         return (1, cmdName)
 
@@ -245,7 +328,7 @@ class AppDb:
         Encapsulate all the actions required to register a new application.
         returns 0 on failure, 1 on success
         """
-    
+
         (ret, retStr) = self.AddMimeType(name, extension, mimeType)
     
         if ret:
@@ -275,7 +358,7 @@ class AppDb:
         else:
             return 0
 
-        self.Flush()
+        self._Flush()
         
         return 1
 
@@ -287,7 +370,7 @@ class AppDb:
         for key in self.AppDb.keys():
             (section, option) = key.split(self.defaultSeparator)
             if section == 'name':
-                apps.append(option)
+                apps.append(self._GetNiceName(option))
     
         return apps
 
@@ -318,7 +401,7 @@ class AppDb:
             except ValueError:
                 continue
             if section == 'name':
-                name = option
+                name = self._GetNiceName(option)
                 mimetype = self.AppDb[key]
                 apps.append(ApplicationDescription(None, name, None, None, mimetype))
                 

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.115 2003-09-19 02:13:45 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.116 2003-09-19 22:12:48 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.115 2003-09-19 02:13:45 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.116 2003-09-19 22:12:48 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -142,7 +142,6 @@ class VenueClient( ServiceBase):
         self.privateId = None
 
     def Heartbeat(self):
-        print "SENDING HEARTBEAT; ec = ", self.eventClient
         if self.eventClient != None:
             isSuccess = 1
             try:
