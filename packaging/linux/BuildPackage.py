@@ -68,7 +68,7 @@ print "cmd = ", cmd
 # Build the next level package
 # (rpm for now)
 #
-pkg_script = "build_package.py"
+pkg_script = "BuildPackage.py"
 DistDir = "rpm"
 if os.path.exists(DistDir):
     os.chdir(DistDir)
