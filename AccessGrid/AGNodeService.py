@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.11 2003-02-18 19:35:57 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.12 2003-02-21 19:06:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ class AGNodeService( ServiceBase ):
 
         if self.defaultConfig:
             print "loading default config = ", self.defaultConfig
-            self.LoadConfiguration( self.defaultConfig ) # dummy arg for conn_info
+            self.LoadConfiguration( self.defaultConfig ) 
 
         self.serviceImplRepository = AGServiceImplementationRepository( 0, self.servicesDir )
 
@@ -191,9 +191,9 @@ class AGNodeService( ServiceBase ):
         serviceConfigs = []
         try:
 
-                #
-                # Remove all services from service managers
-                #
+            #
+            # Remove all services from service managers
+            #
             for serviceManager in self.serviceManagers:
                 Client.Handle( serviceManager.uri ).get_proxy().RemoveServices()
 
@@ -244,8 +244,15 @@ class AGNodeService( ServiceBase ):
                 hadServiceManagerException = 1
 #FIXME - # need to handle unreachable service managers ####del self.hosts[ h.id ]
 
+
         #
-        # Add services to hosts
+        # Remove all services from service managers
+        #
+        for serviceManager in self.serviceManagers:
+            Client.Handle( serviceManager.uri ).get_proxy().RemoveServices()
+
+        #
+        # Add services to service managers
         #
         print "Add services to hosts"
         serviceIndex = 0
@@ -415,9 +422,9 @@ class AGNodeService( ServiceBase ):
 
     def __ReadConfigFile( self, configFile ):
 
-        defaultNodeConfigurationOption = "NodeConfiguration.defaultNodeConfiguration"
-        configDirOption = "NodeConfiguration.configDirectory"
-        servicesDirOption = "NodeConfiguration.servicesDirectory"
+        defaultNodeConfigurationOption = "Node Configuration.defaultNodeConfiguration"
+        configDirOption = "Node Configuration.configDirectory"
+        servicesDirOption = "Node Configuration.servicesDirectory"
 
         from AccessGrid.Utilities import LoadConfig
         config = LoadConfig( configFile )
