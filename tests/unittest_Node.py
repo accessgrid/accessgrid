@@ -1,3 +1,4 @@
+#!/usr/bin/python2
 #-----------------------------------------------------------------------------
 # Name:        unittest_Node.py
 # Purpose:     
@@ -33,6 +34,7 @@ from AccessGrid.hosting import SecureServer as Server
 from AccessGrid import Toolkit
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig
 from AccessGrid.ClientProfile import ClientProfile
+from AccessGrid.AGService import AGServiceIW
 
 nodeService = None
 serviceManager = None
@@ -99,9 +101,17 @@ class NodeTestCase(unittest.TestCase):
         serviceFileList = os.listdir(servicesDir)
         halfTheServices = len(serviceFileList) / 2
         for i in range(halfTheServices):
-            print "removing file ", serviceFileList[i]
-            f = os.path.join(servicesDir,serviceFileList[i])
-            os.remove(f)
+            print "removing service dir ", serviceFileList[i]
+            
+            dir = os.path.join(servicesDir,serviceFileList[i])
+            
+            if os.path.isdir(dir):
+                dirFiles = os.listdir(dir)
+                # remove files in the dir
+                map( lambda f: os.remove(os.path.join(dir,f)), dirFiles)
+
+                # remove the dir
+                os.rmdir(dir)
         
         
     def test_110_AddServiceManager(self):
@@ -148,7 +158,7 @@ class NodeTestCase(unittest.TestCase):
                                 
         svcList = nodeService.GetAvailableServices()
         for svc in svcList:
-            nodeService.AddService(svc,smurl,None,None)
+            nodeService.AddService(svc,smurl,None,[])
         
         installedSvcList = nodeService.GetServices()
         print "*\n*\n*\n*\n"
@@ -166,6 +176,28 @@ class NodeTestCase(unittest.TestCase):
         profile = ClientProfile(UserConfig.instance().GetProfile())
         
         nodeService.SetIdentity(profile)
+        
+    def test_160_SetServiceConfiguration(self):
+        
+        global nodeService
+        
+        installedSvcList = nodeService.GetServices()
+        
+        problemSvcList = []
+        
+        for svc in installedSvcList:
+            try:
+                svciw = AGServiceIW(svc.uri)
+                
+                config = svciw.GetConfiguration()
+                
+                svciw.SetConfiguration(config)
+            except:
+                traceback.print_exc()
+                problemSvcList.append(svc.name)
+                
+        if problemSvcList:  
+            raise Exception("Set service configuration failed for: %s", problemSvcList)
         
     def test_200_StoreConfiguration(self):
     
