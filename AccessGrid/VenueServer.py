@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.7 2003-01-14 19:39:25 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.8 2003-01-15 18:23:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -171,7 +171,7 @@ class VenueServer(ServiceBase.ServiceBase):
         # 1. That you are allowed to do this
         # 2. That you are setting the right venue description
         if(venueDescription.uri == URL):
-            self.venues[URL] = venueDescription
+            self.venues[URL].description = venueDescription
                 
     ModifyVenue.pass_connection_info = 1
     ModifyVenue.soap_export_as = "ModifyVenue"
