@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.6 2004-03-18 14:03:02 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.7 2004-03-18 20:47:23 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.6 2004-03-18 14:03:02 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.7 2004-03-18 20:47:23 eolson Exp $"
 
 import os
 import mimetypes
@@ -489,6 +489,23 @@ class UserConfig(AccessGrid.Config.UserConfig):
         # check to make it if needed
         return self.servicesDir
 
+    def SetRtpDefaults(self, profile ):
+        """
+        Set registry values used by vic and rat for identification
+        """
+        #
+        # Write the rtp defaults file
+        #
+        rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
+                         %s\n*rtpNote: %s\n"
+        rtpDefaultsFile=open( os.path.join(os.environ["HOME"], ".RTPdefaults"),"w")
+        rtpDefaultsFile.write( rtpDefaultsText % ( profile.name,
+        profile.email,
+        profile.location,
+        profile.phoneNumber,
+        profile.publicId ) )
+        rtpDefaultsFile.close()
+
 class SystemConfig(AccessGrid.Config.SystemConfig):
     """
     The SystemConfig object encapsulates all system dependent
@@ -593,7 +610,7 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         default route points to.
         """
         return None
-    
+
 class MimeConfig(AccessGrid.Config.MimeConfig):
     """
     The MimeConfig object encapsulates in single object the management
