@@ -3,13 +3,13 @@
 # Purpose:     
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.48 2004-05-04 19:00:25 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.49 2004-05-06 17:53:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.48 2004-05-04 19:00:25 turam Exp $"
+__revision__ = "$Id: Types.py,v 1.49 2004-05-06 17:53:10 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -116,6 +116,8 @@ class AGServicePackage:
             if not self.descriptionFile:
                 raise InvalidServicePackage("Service package does not contain a description file")
 
+            self.GetServiceDescription()
+
         except zipfile.BadZipfile:
             raise InvalidServicePackage(sys.exc_value)
 
@@ -181,6 +183,9 @@ class AGServicePackage:
         self.serviceDesc = serviceDescription
             
         return serviceDescription
+        
+    def SetServiceDescription(self,serviceDesc):
+        self.serviceDesc = serviceDesc
 
     def ExtractExecutable( self, path ):
         """
@@ -231,6 +236,9 @@ class AGServicePackage:
             zf.close()
         except zipfile.BadZipfile:
             raise InvalidServicePackage(self.file)
+            
+    def GetName(self):
+        return self.serviceDesc.name
 
 class ServiceConfiguration:
     """
