@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.41 2004-04-26 20:38:20 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.42 2004-04-27 02:20:15 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.41 2004-04-26 20:38:20 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.42 2004-04-27 02:20:15 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3810,9 +3810,6 @@ class ProfileDialog(wxDialog):
         self.phoneNumberCtrl = wxTextCtrl(self, -1, "")
         self.locationText = wxStaticText(self, -1, "Location:")
         self.locationCtrl = wxTextCtrl(self, -1, "")
-        self.supportText = wxStaticText(self, -1, "Support Information:",
-                                        style=wxALIGN_LEFT)
-        self.supportCtrl = wxTextCtrl(self, -1, "")
         self.homeVenue= wxStaticText(self, -1, "Home Venue:")
         self.homeVenueCtrl = wxTextCtrl(self, -1, "")
         self.profileTypeText = wxStaticText(self, -1, "Profile Type:",
@@ -3829,7 +3826,6 @@ class ProfileDialog(wxDialog):
             self.emailCtrl.SetEditable(false)
             self.phoneNumberCtrl.SetEditable(false)
             self.locationCtrl.SetEditable(false)
-            self.supportCtrl.SetEditable(false)
             self.homeVenueCtrl.SetEditable(false)
             self.profileTypeBox.SetEditable(false)
             self.dnTextCtrl.SetEditable(false)
@@ -3838,7 +3834,6 @@ class ProfileDialog(wxDialog):
             self.emailCtrl.SetEditable(true)
             self.phoneNumberCtrl.SetEditable(true)
             self.locationCtrl.SetEditable(true)
-            self.supportCtrl.SetEditable(true)
             self.homeVenueCtrl.SetEditable(true)
             self.profileTypeBox.SetEditable(true)
         log.debug("VenueClientUI.py: Set editable in successfully dialog")
@@ -3855,12 +3850,9 @@ class ProfileDialog(wxDialog):
         self.gridSizer.Add(self.phoneNumberCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.locationText, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.locationCtrl, 0, wxEXPAND, 0)
-        self.gridSizer.Add(self.supportText, 0, wxALIGN_LEFT, 0)
-        self.gridSizer.Add(self.supportCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.homeVenue, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.homeVenueCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.profileTypeText, 0, wxALIGN_LEFT, 0)
-        #self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
         sizer2.Add(self.gridSizer, 1, wxALL, 10)
 
         self.sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
@@ -3880,7 +3872,6 @@ class ProfileDialog(wxDialog):
             self.profile.SetName(self.nameCtrl.GetValue())
             self.profile.SetEmail(self.emailCtrl.GetValue())
             self.profile.SetPhoneNumber(self.phoneNumberCtrl.GetValue())
-            self.profile.SetTechSupportInfo(self.supportCtrl.GetValue())
             self.profile.SetLocation(self.locationCtrl.GetValue())
             self.profile.SetHomeVenue(self.homeVenueCtrl.GetValue())
             self.profile.SetProfileType(self.profileTypeBox.GetValue())
@@ -3903,7 +3894,6 @@ class ProfileDialog(wxDialog):
         self.emailCtrl.SetValue(self.profile.GetEmail())
         self.phoneNumberCtrl.SetValue(self.profile.GetPhoneNumber())
         self.locationCtrl.SetValue(self.profile.GetLocation())
-        self.supportCtrl.SetValue(self.profile.GetTechSupportInfo())
         self.homeVenueCtrl.SetValue(self.profile.GetHomeVenue())
         if(self.profile.GetProfileType() == 'user'):
             self.profileTypeBox.SetSelection(0)
@@ -3913,9 +3903,9 @@ class ProfileDialog(wxDialog):
         log.debug("ProfileDialog.SetProfile: Set profile information successfully in dialog")
 
     def SetDescription(self, item):
-        log.debug("ProfileDialog.SetDescription: Set description in dialog name:%s, email:%s, phone:%s, location:%s support:%s, home:%s, dn:%s"
+        log.debug("ProfileDialog.SetDescription: Set description in dialog name:%s, email:%s, phone:%s, location:%s home:%s, dn:%s"
                    %(item.name, item.email,item.phoneNumber,item.location,
-                     item.techSupportInfo, item.homeVenue, item.distinguishedName))
+                     item.homeVenue, item.distinguishedName))
         self.profileTypeBox = wxTextCtrl(self, -1, item.profileType)
         #self.profileTypeBox.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 
         #                            0, "verdana"))
@@ -3931,7 +3921,6 @@ class ProfileDialog(wxDialog):
         self.emailCtrl.SetValue(item.email)
         self.phoneNumberCtrl.SetValue(item.phoneNumber)
         self.locationCtrl.SetValue(item.location)
-        self.supportCtrl.SetValue(item.techSupportInfo)
         self.homeVenueCtrl.SetValue(item.homeVenue)
         self.dnTextCtrl.SetValue(item.distinguishedName)
 
