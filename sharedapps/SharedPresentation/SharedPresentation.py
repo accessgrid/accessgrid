@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.20 2004-01-26 17:39:06 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.21 2004-01-28 22:41:08 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -268,7 +268,7 @@ class SharedPresentationFrame(wxFrame):
         self.SetMenuBar(menubar)
 
         # - Create main panel
-        self.panel = wxPanel(self, -1, size = wxSize(300, 150))
+        self.panel = wxPanel(self, -1, size = wxSize(320, 260))
         
         # - Create main sizer 
         mainSizer = wxBoxSizer(wxVERTICAL)
@@ -279,6 +279,12 @@ class SharedPresentationFrame(wxFrame):
         # - Create panel sizer
         sizer = wxBoxSizer(wxVERTICAL)
         self.panel.SetSizer(sizer)
+
+        # - Create information text
+        self.info = wxStaticText(self.panel, -1, "If you want to be the leader of this session, select the master check box below. All presentation files located in the data area of this venue are now available here. Choose a file from these available slides or enter the URL address of your presentation. Click the Load button to open the presentation. \n\nNote: Please, only use this controller window to change slides.")
+
+        sizer.Add(self.info, 1, wxEXPAND | wxALL, 5)
+        sizer.Add(wxStaticLine(self.panel, -1), 0, wxEXPAND | wxALL, 5)
               
         # - Create checkbox for master
         self.masterCheckBox = wxCheckBox(self.panel,-1,"Take control as presentation master")
@@ -289,8 +295,8 @@ class SharedPresentationFrame(wxFrame):
         staticBoxSizer = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
         gridSizer = wxFlexGridSizer(2, 3, 5, 5)
         gridSizer.AddGrowableCol(1)
-        staticBoxSizer.Add(gridSizer, 1, wxEXPAND)
-        sizer.Add(staticBoxSizer, 1, wxEXPAND| wxALL, 5)
+        staticBoxSizer.Add(gridSizer, 0, wxEXPAND)
+        sizer.Add(staticBoxSizer, 0, wxEXPAND| wxALL, 5)
 
         # - Create textctrl for slide url
         staticText = wxStaticText(self.panel, -1, "Slides")
@@ -534,7 +540,7 @@ class UIController(wxApp):
         wxApp.__init__(self,arg)
 
     def OnInit(self):
-        self.frame = SharedPresentationFrame(NULL, -1, "Shared Presentation controller", log=self.log)
+        self.frame = SharedPresentationFrame(NULL, -1, "Shared Presentation Controller", log=self.log)
         self.frame.Fit()
         self.frame.Show(true)
         self.SetTopWindow(self.frame)
