@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.126 2003-04-03 23:06:55 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.127 2003-04-07 17:18:32 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -2146,12 +2146,12 @@ class AddServiceDialog(wxDialog):
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
         self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,20))
-        self.descriptionText = wxStaticText(self, -1, "Description:", style=wxALIGN_LEFT)
-        self.descriptionCtrl = wxTextCtrl(self, -1, "")
         self.uriText = wxStaticText(self, -1, "Location URL:", style=wxALIGN_LEFT | wxTE_MULTILINE )
         self.uriCtrl = wxTextCtrl(self, -1, "")
         self.typeText = wxStaticText(self, -1, "Mime Type:")
         self.typeCtrl = wxTextCtrl(self, -1, "")
+        self.descriptionText = wxStaticText(self, -1, "Description:", style=wxALIGN_LEFT)
+        self.descriptionCtrl = wxTextCtrl(self, -1, "")
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.__setProperties()
