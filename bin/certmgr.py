@@ -3,7 +3,7 @@
 # Name:        certmgr.py
 # Purpose:     Command line certificate management tool.
 # Created:     9/10/2003
-# RCS-ID:      $Id: certmgr.py,v 1.7 2004-03-17 21:37:56 judson Exp $
+# RCS-ID:      $Id: certmgr.py,v 1.8 2004-04-05 18:05:51 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This tool is used on the command line to interact with the users certificate
 environment.
 """
-__revision__ = "$Id: certmgr.py,v 1.7 2004-03-17 21:37:56 judson Exp $"
+__revision__ = "$Id: certmgr.py,v 1.8 2004-04-05 18:05:51 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -21,6 +21,8 @@ import os
 import os.path
 import sys
 import cmd
+
+from optparse import Option
 
 from OpenSSL_AG import crypto
 
@@ -40,8 +42,17 @@ class CertMgrCmdProcessor(cmd.Cmd):
         self.log = log
         self.certMgr = certMgr
         self.certRepo = certMgr.GetCertificateRepository()
+        self.interactive = 1
+        self.forceOverwrite = 0
 
         self.setIdentityMode()
+
+    def setInteractive(self, interactive):
+        self.interactive = interactive
+
+    def setForceOverwrite(self, force):
+        self.forceOverwrite = force
+        
 
     def setIdentityMode(self):
         """
@@ -191,11 +202,13 @@ class CertMgrCmdProcessor(cmd.Cmd):
 
         cert = self.certs[num]
 
-        print "Delete certificate %s? (y/n) " % (cert.GetSubject()),
-        line = sys.stdin.readline()
-        line = line.strip().lower()
-        if line[0] != 'y':
-            return 0
+        if self.interactive:
+
+            print "Delete certificate %s? (y/n) " % (cert.GetSubject()),
+            line = sys.stdin.readline()
+            line = line.strip().lower()
+            if line[0] != 'y':
+                return 0
 
         isDefault = self.certMgr.IsDefaultIdentityCert(cert)
 
@@ -256,10 +269,14 @@ class CertMgrCmdProcessor(cmd.Cmd):
             return 0
 
         if os.path.exists(certFile):
-            print "%s already exists, overwrite? " % (certFile),
-            line = sys.stdin.readline()
-            line = line.strip().lower()
-            if line[0] != 'y':
+            if self.interactive:
+                print "%s already exists, overwrite? " % (certFile),
+                line = sys.stdin.readline()
+                line = line.strip().lower()
+                if line[0] != 'y':
+                    return 0
+            elif not self.forceOverwrite:
+                print "Not writing: %s already exists" % (certFile)
                 return 0
 
         if keyFile is not None:
@@ -268,10 +285,14 @@ class CertMgrCmdProcessor(cmd.Cmd):
                 return 0
 
             if os.path.exists(keyFile):
-                print "%s already exists, overwrite? " % (keyFile),
-                line = sys.stdin.readline()
-                line = line.strip().lower()
-                if line[0] != 'y':
+                if self.interactive:
+                    print "%s already exists, overwrite? " % (keyFile),
+                    line = sys.stdin.readline()
+                    line = line.strip().lower()
+                    if line[0] != 'y':
+                        return 0
+                elif not self.forceOverwrite:
+                    print "Not writing: %s already exists" % (keyFile)
                     return 0
 
         #
@@ -589,17 +610,30 @@ the base name of certfile, with a .signing_policy suffix.
         """
         Validate 'a' as a certificate number, and return it if valid.
         Return None if invalid.
+
+        If 'a' is not an integer, attempt to match a certificate's DN with
+        it. If it matches, return the number of the matching cert.
         """
 
-        try:
+
+        if re.search(r"^\d+$", a):
+
             num = int(a)
             num -= 1
 
             if num < 0 or num >= len(self.certs):
                 return None
-        except:
+
+            return num
+        
+        else:
+
+            num = 0;
+            for c in self.certs:
+                if str(c.GetSubject()) == a:
+                    return num
+                num += 1
             return None
-        return num
 
 
 #
@@ -678,15 +712,51 @@ def main():
     # Instantiate the app
     app = CmdlineApplication()
 
+    caOption = Option("-C", "--ca", action = "store_true",
+                      dest = "is_ca_mode", default = 0,
+                      help = "Use CA mode for this invocation of the certificate manager.")
+    idOption = Option("-I", "--id", action = "store_false",
+                      dest = "is_ca_mode", default = 0,
+                      help = "Use ID mode for this invocation of the certificate manager.")
+
+    forceOption = Option("-f", "--force", action = "store_true",
+                         dest = "force_overwrite", default = 0,
+                         help = "Overwrite existing files.")
+    app.AddCmdLineOption(caOption)
+    app.AddCmdLineOption(idOption)
+    app.AddCmdLineOption(forceOption)
+
     try:
         args = app.Initialize("CertificateManager")
     except Exception, e:
-        print "Toolkit initialization failed."
-        print " Initialization Error: ", e
+        sys.exit(0)
 
     cmd = CertMgrCmdProcessor(app.GetCertificateManager(), app.GetLog())
 
-    cmd.cmdloop()
+    #
+    # If no args were passed, start up the command-driver
+    # cert mgr.
+    #
+
+    if app.GetOption("is_ca_mode"):
+        cmd.setCAMode()
+
+    if len(args) == 0:
+        
+        cmd.cmdloop()
+
+    else:
+
+        #
+        # Otherwise, process a single command from teh command line.
+        #
+
+        cmd.setInteractive(0)
+        cmd.setForceOverwrite(app.GetOption("force_overwrite"))
+
+        mycmd = args[0] + " " + " ".join(map(lambda a: '"' + a + '"', args[1:]))
+        print mycmd
+        cmd.onecmd(mycmd)
 
 
 if __name__ == "__main__":
