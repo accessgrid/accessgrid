@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.7 2004-03-12 22:22:07 olson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.8 2004-03-12 22:38:22 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.7 2004-03-12 22:22:07 olson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.8 2004-03-12 22:38:22 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -299,31 +299,31 @@ def CreateGlobusProxyProgrammatic(passphrase, certFile, keyFile, certDir,
             data = arg[4].strip()
             
             if reason == "bad password read" or reason == "wrong pass phrase":
-                raise ProxyGenExceptions.InvalidPassphraseException(reason)
+                raise InvalidPassphraseException(reason)
 
             elif reason == "problems creating proxy file":
-                raise ProxyGenExceptions.GridProxyInitError(reason, data)
+                raise GridProxyInitError(reason, data)
 
             elif reason == "user private key cannot be accessed":
-                raise ProxyGenExceptions.GridProxyInitError(reason, data)
+                raise GridProxyInitError(reason, data)
 
             elif reason == "user certificate not found":
-                raise ProxyGenExceptions.GridProxyInitError(reason, data)
+                raise GridProxyInitError(reason, data)
 
             elif reason == "user key and certificate don't match":
-                raise ProxyGenExceptions.GridProxyInitError(reason, data)
+                raise GridProxyInitError(reason, data)
 
             elif reason == "cannot find CA certificate for local credential":
                 data = findCertInArgs(e.args)
-                raise ProxyGenExceptions.GridProxyInitError(reason, data)
+                raise GridProxyInitError(reason, data)
 
             elif reason == "remote certificate has expired":
                 data = findCertInArgs(e.args)
-                raise ProxyGenExceptions.GridProxyInitError(reason, data)
+                raise GridProxyInitError(reason, data)
 
             elif reason == "could not find CA policy file":
                 data = findCertInArgs(e.args)
-                raise ProxyGenExceptions.GridProxyInitError(reason, data)
+                raise GridProxyInitError(reason, data)
                 
         #
         # We didn't find a reason we knew about in the error queue.
@@ -357,12 +357,12 @@ def CreateGlobusProxyProgrammatic(passphrase, certFile, keyFile, certDir,
                 arg = cert + "\n" + data
             else:
                 arg = cert + data
-            raise ProxyGenExceptions.GridProxyInitError(reason, arg) 
+            raise GridProxyInitError(reason, arg) 
                 
         log.exception("grid_proxy_init raised an unknown exception")
 
         cert = findCertInArgs(e.args)
-        raise ProxyGenExceptions.GridProxyInitUnknownSSLError(e.args, cert)
+        raise GridProxyInitUnknownSSLError(e.args, cert)
     
 
 def findCertInArgs(args):
