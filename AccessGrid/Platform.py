@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.9 2003-03-13 21:37:39 leggett Exp $
+# RCS-ID:      $Id: Platform.py,v 1.10 2003-03-14 16:32:15 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -76,6 +76,21 @@ def GetConfigFilePath( configFile ):
         return pathToFile
 
     return None
+
+def GetInstallDir():
+    """ 
+    Determine the install directory
+    """
+
+    installDir = ""
+    if sys.platform == 'win32':
+        AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Access Grid Toolkit\\2.0")
+        installDir, type = _winreg.QueryValueEx(AG20,"InstallPath")
+
+    elif sys.platform == 'linux-i386': 
+        installDir = "/usr/bin"
+
+    return installDir
 
 def GetFilesystemFreeSpace(path):
     """
