@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.23 2003-08-06 20:18:02 eolson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.24 2003-08-07 16:49:13 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,6 @@ import os
 import ConfigParser
 import string
 import md5
-import base64
 
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.GUID import GUID
@@ -339,7 +338,7 @@ class ClientProfileCache:
         #   a filename collision, it's not the end of the 
         #   world, only the most recent profile gets cached.
         hash = md5.new(profile.GetDistinguishedName())
-        short_filename = base64.encodestring(hash.digest())
+        short_filename = hash.hexdigest()
         filename = os.path.join(self.cachePath, short_filename)
 
         # If profile in cache, load it and see if it's different
@@ -353,7 +352,7 @@ class ClientProfileCache:
 
     def loadProfileFromDN(self, distinguished_name):
         hash = md5.new(distinguished_name)
-        short_filename = base64.encodestring(hash.digest())
+        short_filename = hash.hexdigest()
         filename = os.path.join(self.cachePath, short_filename)
         profile = ClientProfile()
         profile.Load(filename, loadDnDetails=AG_TRUE)
