@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.27 2004-04-05 21:19:33 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.28 2004-04-14 15:30:47 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -275,7 +275,7 @@ class VideoCaptureWindow(TitledPage):
                                                    self.portCtrl.GetValue())
             self.canConnect = true
         except:
-            log.info("VideoCaptureWindow.Validate: Service manager is not started")
+            log.exception("VideoCaptureWindow.Validate: Check service manager failed")
             self.canConnect = false
             
         if self.canConnect:
