@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.10 2004-03-18 19:17:24 judson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.11 2004-03-19 04:20:22 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This program is used to register applications with the users AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.10 2004-03-18 19:17:24 judson Exp $"
+__revision__ = "$Id: agpm.py,v 1.11 2004-03-19 04:20:22 judson Exp $"
 
 import os
 import re
@@ -136,6 +136,8 @@ def main():
     files = list()
     origDir = os.getcwd()
     cleanup = 0
+
+    tkConf = AGTkConfig.instance()
     
     # We're going to assume there's a .app file in the current directory,
     # but only after we check for a command line argument that specifies one.
@@ -143,13 +145,13 @@ def main():
     # file and the other parts of the shared application.
 
     options = ProcessArgs()
-
+    
     if options.sys_install:
-        systemFile = os.path.join(AGTkConfig.instance().GetConfigDir(),
-                                  "ApplicationDatabase")
-        appdb = AppDb(file=systemFile)
+        appdb = AppDb(path=tkConf.GetConfigDir())
+        dest = tkConf.GetSharedAppDir()
     else:
         appdb = AppDb()
+        dest = None
 
     if options.listapps:
         apps = appdb.ListApplications()
@@ -221,7 +223,8 @@ def main():
                               appInfo["application.mimetype"],
                               appInfo["application.extension"],
                               commands, files,
-                              workingDir)
+                              workingDir,
+                              dstPath=dest)
 
     # Clean up, remove the temporary directory and files from
     # unpacking the zip file
