@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.193 2004-05-05 19:09:26 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.194 2004-05-05 22:08:19 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.193 2004-05-05 19:09:26 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.194 2004-05-05 22:08:19 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -327,7 +327,7 @@ class Venue(AuthorizationMixIn):
         self.AddRequiredRole(admin)
         self.AddRequiredRole(Role.Everybody)
         # Default actions for Entry Roles.
-        self.defaultEntryActionNames = ["Enter", "Exit", "GetStreams", "GetUploadDescriptor", "GetRolesForSubject", "CreateApplication"]
+        self.defaultEntryActionNames = ["Enter", "Exit", "GetStreams", "GetUploadDescriptor", "GetRolesForSubject", "CreateApplication", "UpdateClientProfile", "AddService"]
         # Default actions for VenueUsers Roles.
         self.defaultVenueUserActionNames = []
 
