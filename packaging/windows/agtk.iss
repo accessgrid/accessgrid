@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.69 2004-04-14 01:56:27 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.70 2004-04-26 16:17:43 judson Exp $
 ;
 
 ; Set externally
@@ -165,11 +165,12 @@ Name: {app}\bin\*.dat; Type: files
 Name: {app}\bin\*.cfg; Type: files
 
 [Dirs]
-Name: {app}\config
-Name: {userappdata}\AccessGrid\local_services
+Name: {app}\bin
 Name: {app}\config\nodeConfig
-Name: {userappdata}\AccessGrid\certificates
-Name: {userappdata}\globus
+Name: {app}\Logs
+Name: {app}\PackageCache
+Name: {app}\SharedApplications
+Name: {app}\NodeServices
 
 [INI]
 Filename: {app}\config\nodeConfig\defaultWindows; Section: node; Key: servicemanagers; String: servicemanager0
