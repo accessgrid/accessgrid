@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.41 2003-09-17 21:53:39 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.42 2003-10-13 21:31:05 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.41 2003-09-17 21:53:39 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.42 2003-10-13 21:31:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -52,9 +52,6 @@ class AGNodeService( ServiceBase ):
 
 
     def __init__( self ):
-        self.name = None
-        self.description = None
-        self.httpBaseUri = None
         self.serviceManagers = dict()
         self.authManager = AuthorizationManager()
         self.__ReadAuthFile()
