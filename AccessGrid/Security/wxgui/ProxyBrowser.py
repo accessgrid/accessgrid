@@ -151,10 +151,10 @@ class ProxyBrowser(CertificateBrowserBase):
 
             left = cert.GetNotValidAfter() - int(time.time())
 
-            valid = ""
+            validity = ""
             if left > 86400:
                 days = int(left / 86400)
-                valid += "%dd " % (days)
+                validity += "%dd " % (days)
 
                 left = left % 86400
 
@@ -164,7 +164,7 @@ class ProxyBrowser(CertificateBrowserBase):
             min = int(left / 60)
             sec = left % 60
 
-            validity = "%02d:%02d:%02d left" % (hour, min, sec)
+            validity += "%02d:%02d:%02d left" % (hour, min, sec)
 
         return cert, [name, issuer, validity]
 
