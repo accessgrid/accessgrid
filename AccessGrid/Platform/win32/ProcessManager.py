@@ -2,16 +2,17 @@
 # Name:        ProcessManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.7 2004-04-29 20:05:50 turam Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.8 2004-05-09 05:33:16 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.7 2004-04-29 20:05:50 turam Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.8 2004-05-09 05:33:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import win32api
+import win32con
 import win32event
 import win32process
 from AccessGrid import Log
@@ -66,7 +67,7 @@ class ProcessManager:
                 None,                   # Process security
                 None,                   # Thread security
                 0,                      # Inherit handles? 
-                win32process.NORMAL_PRIORITY_CLASS,
+                win32con.NORMAL_PRIORITY_CLASS|win32con.CREATE_NO_WINDOW,
                 None,                   # New environment
                 None,                   # Current directory
                 startup_info)
