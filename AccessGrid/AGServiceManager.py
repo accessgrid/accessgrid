@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.84 2005-01-12 20:26:20 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.85 2005-04-06 20:34:55 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.84 2005-01-12 20:26:20 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.85 2005-04-06 20:34:55 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -75,8 +75,10 @@ class AGServiceManager:
     
     def AddServiceByName(self,name):
     
+        servicePackage = None
         servicePackages =  self.GetServicePackageDescriptions()
         for s in servicePackages:
+            print "name = ", name, "s = ", s.packageFile
             if s.packageFile.endswith(name):
                 servicePackage = s
                 
@@ -101,16 +103,13 @@ class AGServiceManager:
         # Extract the service package
         #
         try:
-            extractPackage = 1
-
             # Create dir for package
             servicePath = self.__GetServicePath(servicePackage)
-
+            
             log.info("Extracting service package to %s", servicePath)
 
             # Extract the package
-            if extractPackage:
-                servicePackage.Extract(servicePath)
+            servicePackage.Extract(servicePath)
                 
         except:
             log.exception("Service Manager failed to extract service implementation %s", 
