@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.21 2004-03-18 19:38:05 eolson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.22 2004-03-19 17:41:05 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.21 2004-03-18 19:38:05 eolson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.22 2004-03-19 17:41:05 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -39,7 +39,7 @@ from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.ClientProfile import *
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription
-from AccessGrid.Security.wxgui.AuthorizationUI import AddPeopleDialog
+from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIDialog
 from AccessGrid.Utilities import SubmitBug
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.AppMonitor import AppMonitor
@@ -797,24 +797,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def ModifyVenueRolesCB(self,event):
         venueUri = self.venueClient.GetVenue()
         
-        # Open the dialog with selected role in the combo box
-        addPeopleDialog = AddPeopleDialog(self, -1, "Modify Roles", venueUri)
-        if addPeopleDialog.ShowModal() == wxID_OK:
-            # Get new role configuration
-            rolesDict = addPeopleDialog.GetInfo()
-
-            if rolesDict:
-                try:
-                    self.controller.ModifyVenueRolesCB(rolesDict)
-                except NotAuthorizedError:
-                    text = "You are not authorized to administrate this venue.\n"
-                    self.Warn(text, "Not Authorized")
-                    log.info("VenueClientFrame.OpenModifyVenueRolesDialog: Not authorized to administrate roles in this venue %s." % str(venueUri))
-                except:
-                    log.exception("VenueClientFrame.OpenModifyVenueRolesDialog: Error administrating roles in this venue %s." % str(venueUri))
-                    text = "Error administrating roles in this venue " + str(venueUri) + "."
-                    self.Error(text, "Venue Role Administration Error")
-
+        # Open the dialog
+        f = AuthorizationUIDialog(None, -1, "Manage Roles", log)
+        authUrl = venueUri +"Authorization"
+        f.ConnectToAuthManager(authUrl)
+        if f.ShowModal() == wxID_OK:
+            f.panel.Apply()
+        f.Destroy()
+       
     def ExitCB(self, event):
         """
         Called when the window is closed using the built in close button
@@ -2085,9 +2075,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             wxCallAfter(self.SetVenueUrl, URL)
             
             # Get the user's administrative status
-            #self.isVenueAdministrator = self.venueClient.IsVenueAdministrator()
-            self.isVenueAdministrator = 0
-            
+            self.isVenueAdministrator = self.venueClient.IsVenueAdministrator()
+                        
             # log.debug("Add your personal data descriptions to venue")
             wxCallAfter(self.statusbar.SetStatusText, "Add your personal data to venue")
 
