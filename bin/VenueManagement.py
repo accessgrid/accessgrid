@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.45 2003-03-12 23:13:10 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.46 2003-03-13 12:06:19 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -301,6 +301,7 @@ class VenueManagementClient(wxApp):
 
 class VenueServerAddress(wxPanel):
     ID_BUTTON = wxNewId()
+    ID_ADDRESS = wxNewId()
 
     def __init__(self, parent, application):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
@@ -309,8 +310,10 @@ class VenueServerAddress(wxPanel):
         self.addressLabel =  wxStaticText(self, -1,'Venue Server Address:')
         self.defaultServer = 'https://localhost:8000/VenueServer'
         self.serverList = ['https://localhost:8000/VenueServer']
-        self.addressText = wxComboBox(self, wxNewId(), self.defaultServer,\
-                       choices = self.serverList, style = wxCB_DROPDOWN)
+        self.addressText = wxComboBox(self, self.ID_ADDRESS,
+                                      self.defaultServer,
+                                      choices = self.serverList,
+                                      style = wxCB_DROPDOWN)
 
         self.goButton = wxButton(self, self.ID_BUTTON, "Go", wxDefaultPosition, wxSize(20, 10))
         self.line = wxStaticLine(self, -1)
@@ -319,6 +322,7 @@ class VenueServerAddress(wxPanel):
 
     def __addEvents(self):
         EVT_BUTTON(self, self.ID_BUTTON, self.CallAddress)
+        EVT_TEXT_ENTER(self, self.ID_ADDRESS, self.CallAddress)
 
     def CallAddress(self, event):
         URL = self.addressText.GetValue()
