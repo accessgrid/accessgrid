@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.26 2003-05-19 22:42:11 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.27 2003-05-23 20:59:37 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -193,10 +193,16 @@ class AGServiceManager( ServiceBase ):
             maxTries = 10
             while elapsedTries < maxTries:
                 print "Trying client handle "
-                if Client.Handle(serviceUrl).IsValid():
-                    print "* * Service handle is valid ! "
+                try:
+                    Client.Handle(serviceUrl).IsValid()
+                except Client.InvalidHandleException:
+                    print "Invalid Service Manager URL (%s)" % serviceUrl
                     break
-                print "Wait another sec for service to boot; elapsedTime = ", elapsedTries
+
+                print "* * Service handle is valid ! "
+
+                print "Wait another sec for service to boot"
+                print " - elapsedTime = ", elapsedTries
                 time.sleep(1)
                 elapsedTries += 1
 

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.65 2003-05-23 16:39:58 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.66 2003-05-23 20:59:37 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -217,7 +217,12 @@ class VenueClient( ServiceBase):
         haveValidNodeService = 0
         try:
             if self.nodeServiceUri != None:
-                haveValidNodeService = Client.Handle( self.nodeServiceUri ).IsValid()
+                try:
+                    Client.Handle( self.nodeServiceUri ).IsValid()
+                    haveValidNodeService = 1
+                except Client.InvalidHandleException:
+                    log.exception("Invalid Node Service URI (%s)"
+                                  % self.nodeServiceUri)
                 
                 #
                 # Retrieve list of node capabilities
@@ -431,13 +436,15 @@ class VenueClient( ServiceBase):
             pass
             
         # Stop the node services
-        try:
-            if self.nodeServiceUri != None and Client.Handle(self.nodeServiceUri).IsValid():
-                log.info(" Stopping node services")
-                Client.Handle(self.nodeServiceUri).GetProxy().StopServices()
-                Client.Handle(self.nodeServiceUri).GetProxy().SetStreams([])
-        except:
-            log.exception("Exception stopping node services")
+        if self.nodeServiceUri != None:
+            try:
+                Client.Handle(self.nodeServiceUri).IsValid()
+            except Client.InvalidHandleException:
+                log.exception("Invalid Node Service URL (%s)"
+                              % self.nodeServiceUri)
+            log.info(" Stopping node services")
+            Client.Handle(self.nodeServiceUri).GetProxy().StopServices()
+            Client.Handle(self.nodeServiceUri).GetProxy().SetStreams([])
 
         self.__InitVenueData__()
         self.isInVenue = 0

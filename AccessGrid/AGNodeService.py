@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.27 2003-05-15 03:08:50 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.28 2003-05-23 20:59:37 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -115,10 +115,12 @@ class AGNodeService( ServiceBase ):
         """Add a service manager"""
 
         # Try to reach the service manager
-        if not Client.Handle( serviceManager.uri ).IsValid():
-            log.exception("Exception in AddServiceManager.")
-            raise Exception("Service Manager is unreachable: "
-                            + serviceManager.uri )
+        try:
+            Client.Handle( serviceManager.uri ).IsValid()
+        except Client.InvalidHandleException:
+            log.exception("AddServiceManager: Invalid service manager url (%s)"
+                          % serviceManager.uri)
+            raise
 
         #
         # Add service manager to list
@@ -354,9 +356,11 @@ class AGNodeService( ServiceBase ):
             #
             # Skip unreachable service managers
             #
-            if not Client.Handle( serviceManager.uri ).IsValid():
-                log.info("Couldn't reach service manager: %s", serviceManager.uri)
-                continue
+            try:
+                Client.Handle( serviceManager.uri ).IsValid()
+            except Client.InvalidHandleException:
+                log.info("AddServiceManager: Invalid service manager url (%s)"
+                         % serviceManager.uri)
 
             # Add service manager to list
             self.serviceManagers.append( serviceManager )
@@ -370,7 +374,9 @@ class AGNodeService( ServiceBase ):
             # Add Service to Service Manager
             #
             for service in serviceList:
-                serviceConfig = ServiceConfiguration( service.resource, service.executable, service.parameters)
+                serviceConfig = ServiceConfiguration( service.resource,
+                                                      service.executable,
+                                                      service.parameters)
                 Client.Handle( serviceManager.uri ).get_proxy().AddService( self.servicePackageRepository.GetPackageUrl( service.packageName ), 
                                                                             service.resource,
                                                                             serviceConfig )
