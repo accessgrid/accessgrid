@@ -14,15 +14,6 @@ def Which( file ):
 
    return None
 
-
-if __name__ == "__main__":
-   file = sys.argv[1]
-   print Which( file )
-
-
-
-
-
 from AccessGrid.Types import Capability, AGResource
 
 def GetResourceList():
