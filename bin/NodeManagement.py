@@ -3,7 +3,7 @@
 # Name:        NodeManagement.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.26 2004-08-18 16:46:35 lefvert Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.27 2004-09-07 19:49:17 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,6 +16,7 @@ from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.Toolkit import WXGUIApplication
 
 log = None
+app = None
 
 class MyApp(wxApp):
     global log
