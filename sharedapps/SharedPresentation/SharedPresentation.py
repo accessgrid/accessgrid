@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.21 2004-01-28 22:41:08 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.22 2004-01-29 16:50:02 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -654,9 +654,13 @@ class SharedPresentation:
         """
         This is the contructor for the Shared Presentation.
         """
+        
+        
         # Create shared application client. 
         self.sharedAppClient = SharedAppClient(appName)
         self.log = self.sharedAppClient.InitLogging(debug, log)
+
+        self.controller = UIController(0, self.log)
         
         # Initialize state in the shared presentation
         self.url = url
@@ -709,7 +713,7 @@ class SharedPresentation:
 
         # Create the controller
         self.log.debug("Creating controller.")
-        self.controller = UIController(0, self.log)
+        
         self.controller.SetCallbacks( self.SendLoad,
                                       self.SendPrev,
                                       self.SendNext,
@@ -721,7 +725,6 @@ class SharedPresentation:
                                       self.LocalUpload,
                                       self.QueryVenueFiles )
         
-
         # Start the queue thread
         Thread(target=self.ProcessEventQueue).start()
 
