@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.31 2005-01-14 01:47:03 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.32 2005-02-22 16:16:34 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.31 2005-01-14 01:47:03 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.32 2005-02-22 16:16:34 turam Exp $"
 
 import os
 import sys
@@ -487,7 +487,7 @@ class UserConfig:
 
     def GetNodeConfigDir(self):
         if self.nodeConfigDir == None:
-            ucd = self.GetBaseDir()
+            ucd = self.GetConfigDir()
             self.nodeConfigDir = os.path.join(ucd, "nodeConfig")
 
         # Check dir and make it if needed.
