@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.199 2003-08-18 20:36:30 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.200 2003-08-19 14:22:42 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -672,7 +672,7 @@ class VenueClientUI(VenueClientEventSubscriber):
         if not enterSuccess:
             # Currently receives type of error in warningString.  This will go back
             #   catching an exception with vc redesign.
-            if warningString.startswith("NotAuthorized"):
+            if warningString == "NotAuthorized":
                 text = "You are not authorized to enter the venue located at %s.\n." % URL
                 MessageDialog(None, text, "Notification")
             else:
@@ -767,10 +767,17 @@ class VenueClientUI(VenueClientEventSubscriber):
             #log.debug("Get upload url %s" %self.dataStoreUploadUrl)
 
             # Determine if we are an administrator so we can add administrator features to UI.
-            if "Venue.Administrators" in self.venueClient.venueProxy.DetermineSubjectRoles():
-                self.isVenueAdministrator = AG_TRUE
-            else:
+            try:
+                if "Venue.Administrators" in self.venueClient.venueProxy.DetermineSubjectRoles():
+                    self.isVenueAdministrator = AG_TRUE
+                else:
+                    self.isVenueAdministrator = AG_FALSE
+            except Exception, e:
                 self.isVenueAdministrator = AG_FALSE
+                if e.faultstring == "No method DetermineSubjectRoles found":
+                    log.info("Server has no method DetermineSubjectRoles.  Probably 2.0 server.")
+                else:
+                    log.exception(e)
             
             log.debug("Add your personal data descriptions to venue")
             wxCallAfter(self.frame.statusbar.SetStatusText, "Add your personal data to venue")
