@@ -5,11 +5,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.26 2003-02-14 20:44:02 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.27 2003-02-14 20:48:57 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+
 import os
+import os.path
 
 from wxPython.wx import *
 from AccessGrid import icons
@@ -54,7 +56,7 @@ class VenueClientFrame(wxFrame):
 	self.__setProperties()
         self.__doLayout()
         self.__setEvents()
-          	
+
     def __setStatusbar(self):
         self.statusbar.SetToolTipString("Statusbar")   
     
@@ -64,6 +66,7 @@ class VenueClientFrame(wxFrame):
        # self.ID_VENUE = NewId() 
         self.ID_VENUE_DATA = NewId() 
         self.ID_VENUE_DATA_ADD = NewId() 
+        self.ID_VENUE_DATA_SAVE = NewId() 
         self.ID_VENUE_DATA_DELETE = NewId() 
         self.ID_VENUE_SERVICE = NewId() 
         self.ID_VENUE_SERVICE_ADD = NewId()
@@ -82,6 +85,7 @@ class VenueClientFrame(wxFrame):
         self.venue = wxMenu()
 	self.dataMenu = wxMenu()
 	self.dataMenu.Append(self.ID_VENUE_DATA_ADD,"Add...", "Add data to the venue")
+	self.dataMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...", "Save data to local disk")
 	self.dataMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove data")
         #self.dataMenu.Append(223,"Profile")
 	self.venue.AppendMenu(self.ID_VENUE_DATA,"&Data", self.dataMenu)
@@ -119,6 +123,7 @@ class VenueClientFrame(wxFrame):
      
     def __setEvents(self):
         EVT_MENU(self, self.ID_VENUE_DATA_ADD, self.OpenAddDataDialog)
+        EVT_MENU(self, self.ID_VENUE_DATA_SAVE, self.SaveData)
         EVT_MENU(self, self.ID_VENUE_DATA_DELETE, self.RemoveData)
         EVT_MENU(self, self.ID_VENUE_SERVICE_ADD, self.OpenAddServiceDialog)
         #EVT_MENU(self, 223, self.OpenDataProfileDialog)
@@ -225,11 +230,19 @@ class VenueClientFrame(wxFrame):
         setNodeUrlDialog.Destroy()
                 
     def OpenAddDataDialog(self, event = None):
-        dlg = wxFileDialog(self, "Choose a file:")
+        dlg = wxFileDialog(self, "Choose a file:", style = wxOPEN | wxMULTIPLE)
 
         if dlg.ShowModal() == wxID_OK:
-            data = DataDescription(dlg.GetFilename(), dlg.GetPath(), 'uri', 'icon', 'storagetype')
-            self.app.AddData(data)
+            files = dlg.GetPaths()
+            print "Got files: ", files
+
+            # upload!
+
+            self.app.UploadFiles(files)
+
+                
+            # data = DataDescription(dlg.GetFilename(), dlg.GetPath(), 'uri', 'icon', 'storagetype')
+            # self.app.AddData(data)
 
         dlg.Destroy()
 
@@ -279,9 +292,37 @@ class VenueClientFrame(wxFrame):
         aboutDialog = AboutDialog(self, wxSIMPLE_BORDER)
         aboutDialog.Popup()
         
+    def SaveData(self, event):
+        id = self.contentListPanel.tree.GetSelection()
+        data =  self.contentListPanel.tree.GetItemData(id).GetData()
+
+        
+        if(data != None):
+            name = data.name
+            dlg = wxFileDialog(self, "Save file as",
+                               defaultFile = name,
+                               style = wxSAVE | wxOVERWRITE_PROMPT)
+            if dlg.ShowModal() == wxID_OK:
+                path = dlg.GetPath()
+                print "Saving file as ", path
+
+                dlg.Destroy()
+
+                self.app.SaveFile(data, path)
+                
+            else:
+                dlg.Destroy()
+            
+
+        else:
+            self.__showNoSelectionDialog("Please, select the data you want to delete")
+
     def RemoveData(self, event):
         id = self.contentListPanel.tree.GetSelection()
         data =  self.contentListPanel.tree.GetItemData(id).GetData()
+
+        print "Removing data ", data
+        
         if(data != None):
             self.app.RemoveData(data)
 
@@ -437,7 +478,7 @@ class VenueList(wxScrolledWindow):
         #id = wxNewId()
         #exit = wxListItem()
         #self.list.InsertImageStringItem(0,"LABEL",self.doorOpenId)
-                        
+
         bitmap = icons.getDoorClosedBitmap()
         bitmapSelect = icons.getDoorOpenBitmap()
 
@@ -695,10 +736,10 @@ class ContentListPanel(wxPanel):
 
         for index in self.nodeDict.values():
             self.tree.Delete(index)
-
+        
         for index in self.serviceDict.values():
             self.tree.Delete(index)
-
+        
         for index in self.dataDict.values():
             self.tree.Delete(index)                                   
         
@@ -706,7 +747,7 @@ class ContentListPanel(wxPanel):
         self.dataDict.clear()
         self.serviceDict.clear()
         self.nodeDict.clear()
-                                    
+                            
     def __doLayout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
         sizer1.Add(self.text, 0, wxALL, 20)
@@ -715,6 +756,152 @@ class ContentListPanel(wxPanel):
         sizer1.Fit(self)
         self.SetAutoLayout(1)
       
+class SaveFileDialog(wxDialog):
+    def __init__(self, parent, id, title, message, doneMessage, fileSize):
+        wxDialog.__init__(self, parent, id, title,
+                          size = wxSize(300, 200))
+
+        self.doneMessage = doneMessage
+
+        try:
+            self.fileSize = int(fileSize)
+        except TypeError:
+            print "Received invalid fileSize: '%s'" % (fileSize)
+            fileSize = 1
+            
+        print "created, size=", fileSize
+        self.button = wxButton(self, wxNewId(), "Cancel")
+        self.text = wxStaticText(self, -1, message)
+
+        self.cancelFlag = 0
+
+        self.progress = wxGauge(self, wxNewId(), 100,
+                                style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
+
+        EVT_BUTTON(self, self.button.GetId(), self.OnButton)
+
+        self.transferDone = 0
+
+        self.__doLayout()
+
+    def __doLayout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer.Add(self.text, 1, wxEXPAND)
+        sizer.Add(self.progress, 0, wxEXPAND)
+        sizer.Add(self.button, 0, wxCENTER)
+
+        self.SetSizer(sizer)
+        self.SetAutoLayout(1)
+
+    def OnButton(self, event):
+        """
+        Button press handler.
+
+        If we're still transferring, this is a cancel. Return wxID_CANCEL and
+        do an endModal.
+
+        If we're done transferring, this is an OK , so return wxID_OK.
+        """
+
+        if self.transferDone:
+            self.EndModal(wxID_OK)
+        else:
+            print "Cancellign transfer!"
+            self.EndModal(wxID_CANCEL)
+            self.cancelFlag = 1
+
+    def SetMessage(self, value):
+        self.text.SetLabel(value)
+
+    def IsCancelled(self):
+        return self.cancelFlag
+
+    def SetProgress(self, value, doneFlag):
+        #
+        # for some reason, the range acts goofy with the actual file
+        # sizes. Rescale to 0-100.
+        #
+
+        value = int(100 * int(value) / self.fileSize)
+        self.progress.SetValue(value)
+        if doneFlag:
+            self.transferDone = 1
+            self.button.SetLabel("OK")
+            self.SetMessage(self.doneMessage)
+        
+        return self.cancelFlag
+
+class UploadFilesDialog(wxDialog):
+    def __init__(self, parent, id, title):
+        wxDialog.__init__(self, parent, id, title,
+                          size = wxSize(300, 200))
+
+        self.button = wxButton(self, wxNewId(), "Cancel")
+        self.text = wxStaticText(self, -1, "")
+
+        self.cancelFlag = 0
+
+        self.progress = wxGauge(self, wxNewId(), 100,
+                                style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
+
+        EVT_BUTTON(self, self.button.GetId(), self.OnButton)
+
+        self.transferDone = 0
+        self.currentFile = None
+
+        self.__doLayout()
+
+    def __doLayout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer.Add(self.text, 1, wxEXPAND)
+        sizer.Add(self.progress, 0, wxEXPAND)
+        sizer.Add(self.button, 0, wxCENTER)
+
+        self.SetSizer(sizer)
+        self.SetAutoLayout(1)
+      
+    def OnButton(self, event):
+        """
+        Button press handler.
+
+        If we're still transferring, this is a cancel. Return wxID_CANCEL and
+        do an endModal.
+
+        If we're done transferring, this is an OK , so return wxID_OK.
+        """
+
+        if self.transferDone:
+            self.EndModal(wxID_OK)
+        else:
+            print "Cancellign transfer!"
+            self.EndModal(wxID_CANCEL)
+            self.cancelFlag = 1
+
+    def SetMessage(self, value):
+        self.text.SetLabel(value)
+
+    def IsCancelled(self):
+        return self.cancelFlag
+
+    def SetProgress(self, filename, bytes_sent, bytes_total, file_done, transfer_done):
+        #
+        # for some reason, the range acts goofy with the actual file
+        # sizes. Rescale to 0-100.
+        #
+
+        if transfer_done:
+            self.progress.SetValue(100)
+            self.button.SetLabel("OK")
+            self.SetMessage("Transfer complete")
+            return 
+
+        if self.currentFile != filename:
+            self.SetMessage("Uploading %s" % (filename))
+            self.currentFile = filename
+
+        value = int(100 * int(bytes_sent) / int(bytes_total))
+        self.progress.SetValue(value)
+
 #class ConnectToServerDialog(wxDialog):
 #   def __init__(self, parent, id, title):
  #       wxDialog.__init__(self, parent, id, title)
