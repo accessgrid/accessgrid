@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.24 2003-08-15 21:14:23 lefvert Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.25 2003-08-18 15:21:06 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -182,6 +182,7 @@ class CertificateManager(object):
         'caDir',
         'proxyPath',
         'defaultIdentity',
+        'issuedGlobusWarning',
         ]
 
     def __init__(self, userProfileDir, userInterface):
@@ -202,6 +203,7 @@ class CertificateManager(object):
         self.certRepoPath = os.path.join(userProfileDir, "certRepo")
         self.caDir = os.path.join(userProfileDir, "trustedCACerts")
         self.defaultIdentity = None
+        self.issuedGlobusWarning = 0
 
         #
         # Tie the user interface to the cert mgr.
@@ -297,7 +299,30 @@ class CertificateManager(object):
         
         """
 
-        certLocations = pyGlobus.sslutilsc.get_certificate_locations()
+        try:
+            
+            certLocations = pyGlobus.sslutilsc.get_certificate_locations()
+
+            if certLocations is None:
+                self.GetUserInterface().ReportError("We were not able to determine some Globus configuration\n" +
+                                                    "information required for the importation of an existing\n" +
+                                                    "Globus environment. We will proceed without doing that importation;\n" +
+                                                    "you may have to manually import your identity and trusted CA\n" +
+                                                    "certificates via the certificate managment interface.")
+                return
+            
+        except AttributeError:
+            if sys.platform == "win32":
+                sw = "WinGlobus"
+            else:
+                sw = "pyGlobus"
+                
+            self.GetUserInterface().ReportError(("It appears that your system has an out-of-date version of \n" +
+                                                "%(sw)s installed. You should check your configuration.\n" +
+                                                "We will attempt to work around the problem, but you may see\n" +
+                                                "other errors in the execution of your software.") %
+                                                {"sw": sw})
+            return
 
         userCert = certLocations['user_cert']
         userKey = certLocations['user_key']
@@ -677,18 +702,88 @@ class CertificateManager(object):
             if envar in os.environ:
                 del os.environ[envar]
 
+    def _FindProxyCertificatePath(self, identity = None):
+        """
+        Determine the path into which the proxy should be installed.
+
+        If identity is not None, it should be a CertificateDescriptor
+        for the identity we're creating a proxy (future support for
+        multiple active identities).
+        """
+
+        #
+        # For now, ignore the value of identity.
+        #
+        # Look up in Globus for its idea of where a proxy cert
+        # should be located.
+        #
+        # 
+        
+        try:
+            certLocations = pyGlobus.sslutilsc.get_certificate_locations()
+
+            if certLocations is None:
+                log.error("pyGlobus.sslutilsc.get_certificate_locations() returns None")
+                if not self.issuedGlobusWarning:
+                    self.GetUserInterface().ReportError("We were not able to determine some Globus configuration\n" +
+                                                        "information required for creating a proxy. We will work\n" +
+                                                        "around the problem, but it may be a symptom of other \n" +
+                                                        "configuration problems with the AGTk software.")
+                    self.issuedGlobusWarning = 1
+
+        except AttributeError:
+            #
+            # Hsm. We probably have a bad pyGlobus.
+            # Report an error to the user and work around it.
+            # 
+
+            log.exception("pyGlobus.sslutilsc.get_certificate_locations() not found")
+
+            if not self.issuedGlobusWarning:
+                if sys.platform == "win32":
+                    self.GetUserInterface().ReportError("It appears that your system has an out-of-date version of \n" +
+                                                        "WinGlobus installed. You should check your configuration.\n" +
+                                                        "We will attempt to work around the problem, but you may see\n" +
+                                                        "other errors in the execution of your software.")
+                    self.issuedGlobusWarning = 1
+                else:
+                    self.GetUserInterface().ReportError("It appears that your system has an out-of-date version of \n" +
+                                                        "pyGlobus installed. You should check your configuration.\n" +
+                                                        "We will attempt to work around the problem, but you may see\n" +
+                                                        "other errors in the execution of your software.")
+                    self.issuedGlobusWarning = 1
+
+            certLocations = None
+
+        #
+        # If we received None here, we may have a Globus instllation
+        # problem. Assign the proxy to be in the user temp directory.
+        #
+
+        if certLocations is None:
+
+            if hasattr(os, 'getuid'):
+                uid = os.getuid()
+                userProxy = os.path.join(Platform.GetTempDir(), "x509up_u%s" % (uid,))
+            else:
+                user = Platform.GetUsername()
+                userProxy = os.path.join(Platform.GetTempDir(), "x509_up_" + user)
+
+            log.error("Working around certLocations = None; assigned userProxy=%s", userProxy)
+
+        else:
+            
+            userProxy = certLocations['user_proxy']
+
+        return userProxy
+
     def _VerifyGlobusProxy(self):
         """
         Perform some exhaustive checks to see if there
         is a valid globus proxy in place.
         """
 
-        #
-        # Ask globus where it wants the proxy put.
-        #
-
-        certLocations = pyGlobus.sslutilsc.get_certificate_locations()
-        userProxy = certLocations['user_proxy']
+        userProxy = self._FindProxyCertificatePath()
         self.proxyPath = userProxy
 
         #
