@@ -3,7 +3,7 @@
 # Name:        BridgeServer.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2003/08/02
-# RCS-ID:      $Id: BridgeServer.py,v 1.26 2004-09-03 02:57:03 judson Exp $
+# RCS-ID:      $Id: BridgeServer.py,v 1.27 2004-09-07 20:36:25 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -46,7 +46,6 @@ type = VenueServer
 import os
 import Queue
 import threading
-import getopt
 import ConfigParser
 
 from pyGlobus.io import IOBaseException
