@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.217 2003-09-18 16:20:46 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.218 2003-09-18 19:05:54 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -80,6 +80,7 @@ class VenueClientUI(VenueClientEventSubscriber):
     
     def __init__(self, startupDialog):
         self.__processArgs()
+        self.__setLogger()
         self.frame = None
         self.startupDialog = startupDialog
         self.startupDialog.UpdateOneStep()
@@ -101,9 +102,6 @@ class VenueClientUI(VenueClientEventSubscriber):
         
         self.startupDialog.UpdateOneStep()
          
-        
-        self.__setLogger()
-
         # We verify first because the Toolkit code assumes a valid
         # globus environment.
         self.startupDialog.UpdateOneStep()
