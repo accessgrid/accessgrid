@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.31 2004-03-26 19:30:13 olson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.32 2004-03-30 17:19:18 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.31 2004-03-26 19:30:13 olson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.32 2004-03-30 17:19:18 olson Exp $"
 
 # Standard imports
 import os
@@ -283,11 +283,13 @@ class Application(AppBase):
 
        # 7. Do one final check, if we don't have a default
        #    Identity we bail, there's nothing useful to do.
+       #
+       # RDO - no need to exit, we want people to be able to request certs.
 
-       if self.GetDefaultIdentityDN() is None:
-           self.log.error("Toolkit initialized with no default identity.")
-           self.log.error("Exiting because there's no default identity.")
-           sys.exit(-1)
+#         if self.GetDefaultIdentityDN() is None:
+#             self.log.error("Toolkit initialized with no default identity.")
+#             self.log.error("Exiting because there's no default identity.")
+#             sys.exit(-1)
            
        return argvResult
 

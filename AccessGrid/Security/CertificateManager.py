@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.12 2004-03-25 19:00:44 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.13 2004-03-30 17:19:18 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.12 2004-03-25 19:00:44 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.13 2004-03-30 17:19:18 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -804,7 +804,10 @@ class CertificateManager(object):
         
         idCerts, defaultIdCerts, defaultIdentity = self.CheckConfiguration()
 
-        log.debug("Using default identity %s", defaultIdentity.GetSubject())
+        if defaultIdentity:
+            log.debug("Using default identity %s", defaultIdentity.GetSubject())
+        else:
+            log.debug("No default identity found")
 
         self.defaultIdentity = defaultIdentity
 
@@ -812,10 +815,12 @@ class CertificateManager(object):
         # Now to see if we need a proxy.
         #
 
-        if defaultIdentity.HasEncryptedPrivateKey():
-            self._InitEnvWithProxy()
-        else:
-            self._InitEnvWithCert()
+        if defaultIdentity:
+
+            if defaultIdentity.HasEncryptedPrivateKey():
+                self._InitEnvWithProxy()
+            else:
+                self._InitEnvWithCert()
 
 
     def _InitializeCADir(self):
@@ -965,14 +970,15 @@ class CertificateManager(object):
         # problem. Assign the proxy to be in the user temp directory.
         #
 
-        if certLocations is None:
+        if certLocations is None or certLocations['user_proxy'] is None:
 
             if hasattr(os, 'getuid'):
                 uid = os.getuid()
                 userProxy = os.path.join(Platform.GetTempDir(), "x509up_u%s" % (uid,))
             else:
-                user = Platform.GetUsername()
-                userProxy = os.path.join(Platform.GetTempDir(), "x509_up_" + user)
+                user = Platform.Config.SystemConfig.instance().GetUsername()
+                temp = Platform.Config.UserConfig.instance().GetTempDir()
+                userProxy = os.path.join(temp, "x509_up_" + user)
 
             log.error("Working around certLocations = None; assigned userProxy=%s", userProxy)
 
@@ -1255,7 +1261,8 @@ class CertificateManager(object):
         defaultIdCerts = self.GetDefaultIdentityCerts()
         
         if len(defaultIdCerts) == 0:
-            raise NoDefaultIdentity
+            log.warn("No default identity certificate found")
+            defaultId = None
         elif len(defaultIdCerts) > 1:
             log.warn("Found multiple (%s) default identities, using the first",
                      len(defaultIdCerts))
@@ -1263,6 +1270,8 @@ class CertificateManager(object):
             defaultId = defaultIdCerts[0]
 
         return (identityCerts, defaultIdCerts, defaultId)
+
+
     #
     # Certificate request stuff
     #
