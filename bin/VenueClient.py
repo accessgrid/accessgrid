@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.242 2004-02-10 22:38:28 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.243 2004-02-13 22:01:21 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
@@ -569,9 +569,7 @@ class VenueClientUI(VenueClientEventSubscriber):
 
         transport = self.GetTransport()
         self.frame.SetTransport(transport)
-        
-
-
+      
     def AddApplicationEvent(self, event):
         """
         Note: Overridden from VenueClient
@@ -588,6 +586,23 @@ class VenueClientUI(VenueClientEventSubscriber):
         log.debug("EVENT - Add application: %s, Mime Type: %s"
                   % (app.name, app.mimeType))
         wxCallAfter(self.frame.contentListPanel.AddApplication, app)
+
+    def UpdateApplicationEvent(self, event):
+        """
+        Note: Overridden from VenueClient
+        This method is called when an application is updated in the venue.
+        Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *app* The ApplicationDescription representing the application that should be updated.
+        """
+        app = event.data
+        wxCallAfter(self.frame.statusbar.SetStatusText,
+                    "Application '%s' just got updated." %app.name)
+        log.debug("EVENT - Update application: %s, Mime Type: %s"
+                  % (app.name, app.mimeType))
+        wxCallAfter(self.frame.contentListPanel.UpdateApplication, app)
 
     def RemoveApplicationEvent(self, event):
         """
@@ -618,6 +633,22 @@ class VenueClientUI(VenueClientEventSubscriber):
         wxCallAfter(self.frame.statusbar.SetStatusText, "Service '%s' just got added to the venue" %service.name)
         log.debug("EVENT - Add service: %s" %(service.name))
         wxCallAfter(self.frame.contentListPanel.AddService, service)
+
+    def UpdateServiceEvent(self, event):
+        """
+        Note: Overridden from VenueClient
+        This method is called when a service is updated in the venue.
+        Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *service* The ServiceDescription representing the service that got updated.
+        """
+        service = event.data
+        wxCallAfter(self.frame.statusbar.SetStatusText, "Service '%s' just got updated." %service.name)
+        log.debug("EVENT - Update service: %s" %(service.name))
+        wxCallAfter(self.frame.contentListPanel.UpdateService, service)
+
 
     def RemoveServiceEvent(self, event):
         """
