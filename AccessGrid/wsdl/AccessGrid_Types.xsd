@@ -71,6 +71,13 @@
       </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="StringList">
+      <xs:sequence>
+        <xs:element name="strngs" minOccurs="0" maxOccurs="unbounded" 
+                 type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="StreamList">
       <xs:sequence>
         <xs:element name="streams" minOccurs="0" maxOccurs="unbounded" 
@@ -99,6 +106,20 @@
     </xs:complexType>
 	
     <xs:complexType name="ClientProfile">
+      <xs:sequence>
+	<xs:element name="profileType" type="xs:string"/>
+	<xs:element name="name" type="xs:string"/>
+	<xs:element name="email" type="xs:string"/>
+	<xs:element name="phoneNumber" type="xs:string"/>
+	<xs:element name="publicId" type="xs:string"/>
+	<xs:element name="location" type="xs:string"/>
+	<xs:element name="venueClientURL" type="xs:string"/>
+	<xs:element name="homeVenue" type="xs:string"/>
+	<xs:element name="privateId" type="xs:string"/>
+	<xs:element name="distinguishedName" type="xs:string"/>
+	<xs:element name="techSupportInfo" type="xs:string"/>
+	<xs:element name="connectionId" type="xs:string"/>
+      </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="Capability">
