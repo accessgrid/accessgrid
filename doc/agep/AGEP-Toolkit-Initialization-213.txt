@@ -1,0 +1,95 @@
+==========================================
+Toolkit Initialization Factoring for 2.1.3
+==========================================
+ 
+:version: $Revision: 1.1 $
+:author: Ivan R. Judson <judson@mcs.anl.gov>
+:status: Draft
+
+Abstract
+========
+
+This AGEP describes a proposed factoring of the initialization code
+for the AGTk. The goal is to unify and clarify the process of
+initialization for anything that is developed using the AGTk.
+
+Overview
+========
+
+In order to unify and clarify the initialization process there are a
+few activities that need to be done by every piece of Access Grid
+related software. These activities are enumerated, described, and a
+factoring is presented that encapsulates them into a well defined set
+of interfaces.
+
+The basic activities that are done during initialization are:
+
+- Command Line Parsing
+- Logging/Debugging Setup
+- Toolkit Environment Verification
+- Security Environment Verification
+  - Globus Initialization
+- Configuration Processing      
+  - Looking for system wide configs and either referencing or copying them
+
+Summary of Modifications
+========================
+
+FILL IN SUMMARY OF MODIFICATIONS
+
+Module Organization
+-------------------
+
+FILL IN MODULE ORGANIZATION
+   
+Deprecated Packages
+-------------------
+
+FILL IN DEPRECATED PACKAGES
+
+Specifications
+==============
+
+FILL IN SPECIFICATIONS
+
+Security Issues
+===============
+
+FILL IN SECURITY ISSUES
+
+Interoperability Issues
+=======================
+
+FILL IN INTEROPERABILITY ISSUES
+
+Related AGEPs
+=============
+
+FILL IN RELATED AGEPS
+
+Implementation
+==============
+
+FILL IN IMPLEMENTATION
+
+References
+==========
+
+FILL IN REFERENCES
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+

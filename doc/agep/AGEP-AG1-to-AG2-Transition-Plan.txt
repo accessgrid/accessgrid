@@ -1,21 +1,23 @@
-=====================================
-TITLE
-=====================================
+==============================
+AG1.X to AG2.X Transition Plan
+==============================
  
-:version: $Revision: 1.3 $
-:author: NAME <EMAIL>
+:version: $Revision: 1.1 $
+:author: Ivan R. Judson <judson@mcs.anl.gov>
 :status: Draft
 :contact: ag-tech@mcs.anl.gov
 
 Abstract
 ========
 
-FILL IN ABSTRACT
+The process of transitioning the supported community infrastructure
+from AG1.X to AG2.X is described. The timeline is defined, however it
+is defined in terms of an unspecified start date.
 
 Overview
 ========
 
-FILL IN OVERVIEW
+
 
 Summary of Modifications
 ========================
