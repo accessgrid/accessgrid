@@ -5,13 +5,13 @@
 # Author:      Eric Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Version.py,v 1.5 2004-03-25 21:48:26 eolson Exp $
+# RCS-ID:      $Id: Version.py,v 1.6 2004-04-06 02:24:27 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Version.py,v 1.5 2004-03-25 21:48:26 eolson Exp $"
+__revision__ = "$Id: Version.py,v 1.6 2004-04-06 02:24:27 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Call GetVersion() to get AGTK version information.
@@ -114,7 +114,12 @@ def GetVersion():
     
     return ver
 
+#
+# yes, this is a hack, but it works :-)
+#
 
+if __name__ == "__main__":
+    print GetVersion()
 
 
 
