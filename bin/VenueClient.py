@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.41 2003-02-13 22:13:17 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.42 2003-02-14 20:54:02 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT -----------------------------------------------------------------------------
 import threading
@@ -23,11 +23,14 @@ from AccessGrid.VenueClient import VenueClient, EnterVenueException
 from AccessGrid.VenueClientUIClasses import WelcomeDialog
 from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
 from AccessGrid.VenueClientUIClasses import UrlDialog, UrlDialogCombo
+from AccessGrid.VenueClientUIClasses import SaveFileDialog, UploadFilesDialog
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.UIUtilities import ErrorDialog
 
 from AccessGrid.TextClientUI import TextClientUI
+from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
+from AccessGrid import DataStore
 
 class VenueClientUI(wxApp, VenueClient):
     """
@@ -239,6 +242,13 @@ class VenueClientUI(wxApp, VenueClient):
         except:
             wxCallAfter(ErrorDialog, self.frame, "Trying to open text client!")
 
+
+        #
+        # Find the upload location. HACK for now, this should come in
+        # thru the venue description.
+        #
+        self.upload_url = self.client.GetUploadDescriptor()
+
     def ExitVenue(self):
         """
         Note: Overloaded from VenueClient
@@ -304,7 +314,270 @@ class VenueClientUI(wxApp, VenueClient):
         """
         self.ExitVenue()
         os._exit(1)
-                       
+                
+    def SaveFile(self, data_descriptor, local_pathname):
+        """
+        Save a file from the datastore into a local file.
+
+        We assume that the caller has assured the user that if the
+        user has picked a file that already exists, that it will be
+        overwritten.
+
+        This implementation fires up a separate thread for the actual
+        transfer. We want to do this to keep the application live for possible
+        long-term transfers, to allow for live updates of a download status,
+        and to perhaps allow multiple simultaneous transfers.
+
+        """
+        
+        failure_reason = None
+        try:
+            #
+            # Retrieve details from the descriptor
+            #
+            size = data_descriptor.size
+            checksum = data_descriptor.checksum
+            url = data_descriptor.uri
+
+            #
+            # Make sure this data item is valid
+            #
+
+            print "descriptor is ", data_descriptor.__class__
+            if data_descriptor.status != DataDescription.STATUS_PRESENT:
+                dlg = wxMessageDialog(self.frame, 
+                                      'File %s is not downloadable - it has status "%s"'
+                                      % (data_descriptor.name, data_descriptor.status),
+                                      "Invalid file",
+                                      style = wxOK)
+                
+                dlg.ShowModal()
+                dlg.Destroy()
+                return
+
+            #
+            # Create the dialog for the download.
+            #
+
+            dlg = SaveFileDialog(self.frame, -1, "Saving file",
+                                 "Saving file to %s ...     " % (local_pathname),
+                                 "Saving file to %s ... done" % (local_pathname),
+                                 size)
+
+            print "Downloading: size=%s checksum=%s url=%s" % (size, checksum, url)
+            dlg.Show(1)
+
+            # 
+            # Plumbing for getting progress callbacks to the dialog
+            #
+
+            def progressCB(progress, done, dialog = dlg):
+                wxCallAfter(dialog.SetProgress, progress, done)
+                return dialog.IsCancelled()
+
+            #
+            # Create the thread to run the download.
+            #
+            # Some more plumbing with the locla function to get the identity
+            # retrieval in the thread, as it can take a bit the first time.
+            #
+            # We use get_ident_and_download as the body of the thread.
+            #
+
+            def get_ident_and_download(url, local_pathname, size, checksum, progressCB):
+                my_identity = GetDefaultIdentityDN()
+                try:
+                    DataStore.HTTPDownloadFile(my_identity, url, local_pathname, size,
+                                               checksum, progressCB)
+                except DataStore.DownloadFailed, e:
+                    print "Got exception on download: ", e
+
+            #
+            # Arguments to pass to get_ident_and_download
+            #
+
+            dl_args = (url, local_pathname, size, checksum, progressCB)
+
+            download_thread = threading.Thread(target = get_ident_and_download,
+                                               args = dl_args)
+
+            #
+            # Use wxCallAfter so we get the dialog filled in properly.
+            #
+            wxCallAfter(download_thread.start)
+
+            #
+            # Fire up dialog as a modal.
+            #
+
+            dlg.ShowModal()
+
+            #
+            # The dialog has returned. This is either because the download
+            # finished and the user clicked OK, or because the user clicked
+            # Cancel to abort the download. In either event the
+            # call to HTTPDownloadFile should return, and the thread quit.
+            #
+            # Wait for the thread to finish (if it doesn't it's a bug).
+            #
+            #
+
+            download_thread.join()
+
+            #
+            # Clean up.
+            #
+            dlg.Destroy()
+            
+        except DataStore.DownloadFailed, e:
+            failure_reason = "Download error: %s" % (e[0])
+        except EnvironmentError, e:
+            failure_reason = "Exception: %s" % (str(e))
+
+        if failure_reason is not None:
+            dlg = wxMessageDialog(self.frame, failure_reason, "Download error",
+                                  wxOK  | wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            
+
+
+    def UploadFiles(self, file_list):
+        """
+        Upload the given files to the venue.
+
+        This implementation fires up a separate thread for the actual
+        transfer. We want to do this to keep the application live for possible
+        long-term transfers and to allow for live updates of a download status.
+
+
+        """
+        
+        #
+        # Create the dialog for the download.
+        #
+
+        dlg = UploadFilesDialog(self.frame, -1, "Uploading files")
+        
+        dlg.Show(1)
+
+        # 
+        # Plumbing for getting progress callbacks to the dialog
+        #
+
+        def progressCB(filename, sent, total, file_done, xfer_done, dialog = dlg):
+            wxCallAfter(dialog.SetProgress, filename, sent, total, file_done, xfer_done)
+            return dialog.IsCancelled()
+
+        #
+        # Create the thread to run the upload.
+        #
+        # Some more plumbing with the local function to get the identity
+        # retrieval in the thread, as it can take a bit the first time.
+        #
+        # We use get_ident_and_upload as the body of the thread.
+        #
+
+        def get_ident_and_upload(upload_url, file_list, progressCB):
+            print "Upload: getting identity"
+            
+            my_identity = GetDefaultIdentityDN()
+
+            print "Got identity ", my_identity
+
+            error_msg = None
+            try:
+                DataStore.HTTPUploadFiles(my_identity, upload_url, file_list, progressCB)
+            except DataStore.FileNotFound, e:
+                error_msg = "File not found: %s" % (e[0])
+            except DataStore.NotAPlainFile, e:
+                error_msg = "Not a plain file: %s" % (e[0])
+            except DataStore.UploadFailed, e:
+                error_msg = "Upload failed: %s" % (e)
+
+            if error_msg is not None:
+                print "Upload error ", error_msg
+                #
+                # TODO : put this stuff in a routine to wxCallAfter since
+                # we can't do this here
+                #dlg = wxMessageDialog(self.frame, error_msg, "Upload error",
+                #                      wxOK  | wxICON_INFORMATION)
+                #dlg.ShowModal()
+                #dlg.Destroy()
+                    
+        #
+        # Arguments to pass to get_ident_and_upload
+        #
+
+        ul_args = (self.upload_url, file_list, progressCB)
+
+        print "Have args, creating thread ", ul_args
+
+        upload_thread = threading.Thread(target = get_ident_and_upload,
+                                           args = ul_args)
+
+        #
+        # Use wxCallAfter so we get the dialog filled in properly.
+        #
+        wxCallAfter(upload_thread.start)
+
+        print "started thread"
+
+        #
+        # Fire up dialog as a modal.
+        #
+
+        dlg.ShowModal()
+
+        #
+        # The dialog has returned. This is either because the upload
+        # finished and the user clicked OK, or because the user clicked
+        # Cancel to abort the upload. In either event the
+        # call to HTTPUploadFiles should return, and the thread quit.
+        #
+        # Wait for the thread to finish (if it doesn't it's a bug).
+        #
+        #
+
+        upload_thread.join()
+
+        #
+        # Clean up.
+        #
+        dlg.Destroy()
+
+
+    def UploadFilesNoDialog(self, file_list):
+        """
+        Upload the given files to the venue.
+
+        This uses the DataStore HTTP upload engine code.
+        """
+
+        print "getting identity"
+        my_identity = GetDefaultIdentityDN()
+        upload_url = self.upload_url
+        print "Have identity=%s upload_url=%s" % (my_identity, upload_url)
+
+        error_msg = None
+        try:
+            DataStore.HTTPUploadFiles(my_identity, upload_url, file_list)
+        except DataStore.FileNotFound, e:
+            error_msg = "File not found: %s" % (e[0])
+        except DataStore.NotAPlainFile, e:
+            error_msg = "Not a plain file: %s" % (e[0])
+        except DataStore.UploadFailed, e:
+            error_msg = "Upload failed: %s" % (e)
+
+        if error_msg is not None:
+            print "Showing ", error_msg
+            dlg = wxMessageDialog(self.frame, error_msg, "Upload error",
+                                  wxOK  | wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            
+        print "Upload done"
+
     def AddData(self, data):
         """
         This method adds data to the venue
