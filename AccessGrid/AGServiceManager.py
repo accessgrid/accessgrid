@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.62 2004-05-06 05:09:38 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.63 2004-05-07 20:15:33 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.62 2004-05-06 05:09:38 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.63 2004-05-07 20:15:33 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -32,6 +32,9 @@ from AccessGrid.AGServicePackageRepository import AGServicePackageRepository
 
 log = Log.GetLogger(Log.ServiceManager)
 
+class ResourceNotFoundError(Exception):
+    pass
+
 class AGServiceManager:
     """
     AGServiceManager :
@@ -52,8 +55,6 @@ class AGServiceManager:
         self.services = dict()
         self.processManager = ProcessManager()
         userConfig = self.app.GetUserConfig().instance()
-        self.resourcesFile = os.path.join(userConfig.GetConfigDir(),
-            "videoresources")
         self.servicesDir = os.path.join(userConfig.GetConfigDir(),
                                         "local_services")
 
@@ -65,6 +66,8 @@ class AGServiceManager:
             except:
                 log.exception("Couldn't create user services directory %s", 
                               self.servicesDir)
+        else:   
+            log.info("Using services dir: %s", self.servicesDir)
                 
         self.packageRepo = AGServicePackageRepository(self.servicesDir)
 
@@ -73,6 +76,7 @@ class AGServiceManager:
         self.url = None
 
     def Shutdown(self):
+        log.info("AGServiceManager.Shutdown")
         log.info("Remove services")
         self.RemoveServices()
         log.info("Stop network interface")
@@ -86,6 +90,7 @@ class AGServiceManager:
         """
         Return a list of resident resources
         """
+        log.info("AGServiceManager.GetResources")
         self.__DiscoverResources()
         return self.resources
 
@@ -98,7 +103,8 @@ class AGServiceManager:
         """
         Add a service package to the service manager.  
         """
-        log.debug("AddService: %s v %f u %s", serviceDescription.name, 
+        log.info("AGServiceManager.AddService")
+        log.info("AddService: %s v %f u %s", serviceDescription.name, 
                   serviceDescription.version,
                   serviceDescription.servicePackageUri)
         
@@ -106,7 +112,9 @@ class AGServiceManager:
         if not self.url:
             self.url = self.server.FindURLForObject(self)
 
+        #
         # Determine resource to assign to service
+        #
         resource = None
         if resourceToAssign != None and resourceToAssign != "None":
             foundResource = 0
@@ -124,29 +132,40 @@ class AGServiceManager:
             if foundResource == 0:
                 log.debug("** Resource does not exist! : %s ",
                           resourceToAssign.resource)
-#FIXME - # should error out here later
+                raise ResourceNotFoundError(resourceToAssign.resource)
 
+
+        #
+        # Retrieve the service package
+        #
         try:
             servicePackageToInstall = None
             
             #
             # Check for local copy of service package
             #
+            log.info("Searching for local service package")
             servicePkgList = self.packageRepo.GetServicePackages()
             for servicePkg in servicePkgList:
                 serviceDesc = servicePkg.GetServiceDescription()
                 if serviceDesc.name == serviceDescription.name:
                     servicePackageToInstall = servicePkg
-                    log.debug("Found local service %s, v%d", 
+                    log.info("Found local service %s, v%d", 
                               serviceDesc.name,
                               serviceDesc.version)
                     break     
 
+        except:
+            log.exception("Error searching for local service package")
+            raise Exception("Error searching for local service package")
+
+        try:
             # Retrieve the service package if there is no local copy, 
             # or if we're adding a newer copy
             if(not servicePackageToInstall or 
                servicePackageToInstall.GetServiceDescription().version < serviceDescription.version):
-                log.debug("Retrieving service package %s", 
+                log.info("Service package not found") 
+                log.info("Retrieving service package %s", 
                           serviceDescription.servicePackageUri)
                 #
                 # Retrieve service implementation
@@ -154,6 +173,14 @@ class AGServiceManager:
                 servicePackageToInstall = self.__RetrieveServicePackage( serviceDescription.servicePackageUri )
                 
                 
+        except:
+            log.exception("Service Manager failed to retrieve service implementation for %s", 
+                          serviceDescription.servicePackageUri)
+            raise Exception("Service Manager couldn't retrieve service package")
+
+
+        try:
+            log.debug("Extracting service package")
             # Extract the service package
             servicePackageToInstall.ExtractPackage(self.servicesDir)
             
@@ -162,13 +189,11 @@ class AGServiceManager:
             serviceDescription.resource = resource
 
         except:
-            log.exception("Service Manager failed to retrieve service implementation for %s", 
-                          serviceDescription.servicePackageUri)
-            raise Exception("AGServiceManager.AddService failed: " + 
-                            str( sys.exc_value ) )
+            log.exception("Service Manager failed to extract service implementation")
+            raise Exception("Service Manager failed to extract service implementation")
 
         #
-        # Execute service implementation
+        # Start the service process
         #
         try:
             options = []
@@ -188,7 +213,7 @@ class AGServiceManager:
             # Designate port for service
             port = NetworkAddressAllocator().AllocatePort()
             options.append( port )
-            log.debug("Running Service; options: %s %s", executable, str(options))
+            log.info("Running Service; options: %s %s", executable, str(options))
             
             # 
             # Change to the services directory to start the process
@@ -222,8 +247,8 @@ class AGServiceManager:
                           serviceDescription.name)
 
         except:
-            log.exception("Failed to add service")
-            raise 
+            log.exception("Error starting service")
+            raise Exception("Error starting service")
 
         #
         # Add and configure the service
@@ -240,7 +265,7 @@ class AGServiceManager:
             # Configure the service
             #
             if serviceConfig and serviceConfig != "None":
-                log.debug("Setting service configuration")
+                log.info("Setting service configuration")
                 AGServiceIW( serviceDescription.uri ).SetConfiguration( serviceConfig )
             else:
                 log.debug("Not setting service configuration; none given")
@@ -249,7 +274,7 @@ class AGServiceManager:
             # Assign resource to the service
             #
             if serviceDescription.resource and serviceDescription.resource != "None":
-                log.debug("Assigning resource to service: %s", serviceDescription.resource.resource)
+                log.info("Assigning resource to service: %s", serviceDescription.resource.resource)
                 AGServiceIW( serviceDescription.uri ).SetResource( serviceDescription.resource )
             else:
                 log.debug("Not assigning resource; none given")
@@ -263,8 +288,8 @@ class AGServiceManager:
                 AGServiceIW( serviceDescription.uri ).GetCapabilities()
             
         except:
-            log.exception("Exception in AddService, adding service to service list.")
-            raise sys.exc_value
+            log.exception("Error configuring service")
+            raise Exception("Error configuring service")
 
         return serviceDescription
 
@@ -273,6 +298,8 @@ class AGServiceManager:
     def RemoveService( self, serviceToRemove ):
         """Remove a service
         """
+        log.info("AGServiceManager.RemoveService")
+
         exc = None
         pid = None
 
@@ -327,6 +354,7 @@ class AGServiceManager:
     def RemoveServices( self ):
         """Remove all services
         """
+        log.info("AGServiceManager.RemoveServices")
         for service in self.services.values():
             try:
                 self.RemoveService( service )
@@ -338,6 +366,7 @@ class AGServiceManager:
     def GetServices( self ):
         """Return list of services
         """
+        log.info("AGServiceManager.GetServices")
         return self.services.values()
 
 
@@ -345,6 +374,7 @@ class AGServiceManager:
         """
         Stop all services on service manager
         """
+        log.info("AGServiceManager.StopServices")
         for service in self.services.values():
             AGServiceIW( service.uri ).Stop()
 
@@ -354,6 +384,7 @@ class AGServiceManager:
         """
         Returns the install directory path where services are expected to be found.
         """
+        log.info("AGServiceManager.GetInstallDir")
 
         return GetInstallDir()
     
@@ -364,7 +395,7 @@ class AGServiceManager:
 
     def __RetrieveServicePackage( self, servicePackageUrl ):
         """Internal : Retrieve a service implementation"""
-        log.info("Retrieving Service Package: %s", servicePackageUrl)
+        log.info("__RetrieveServicePackage: %s", servicePackageUrl)
 
         #
         # Retrieve the service package
@@ -387,12 +418,14 @@ class AGServiceManager:
         """
         This method retrieves the list of resources from the machine
         """
+        log.info("__DiscoverResources")
         self.resources = SystemConfig.instance().GetResources()
 
     def __ReadConfigFile( self, configFile ):
         """
         Read the node service configuration file
         """
+        log.info("__ReadConfigFile")
         servicesDirOption = "Service Manager.servicesDirectory"
 
         from AccessGrid.Utilities import LoadConfig

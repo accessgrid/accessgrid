@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.67 2004-05-06 17:51:50 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.68 2004-05-07 20:15:13 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.67 2004-05-06 17:51:50 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.68 2004-05-07 20:15:13 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -40,6 +40,8 @@ from AccessGrid.Descriptions import CreateStreamDescription
 from AccessGrid.AGServicePackageRepository import AGServicePackageRepository
 
 from SOAPpy.Types import SOAPException
+
+from pyGlobus.io import GSITCPSocketException
 
 log = Log.GetLogger(Log.NodeService)
 
@@ -81,16 +83,16 @@ class AGNodeService:
 
         if not os.path.exists(self.configDir): 
             try:
-                log.info("Creating user node config directory %s",
-                         self.configDir)
                 os.mkdir(self.configDir)
 
                 # Copy node configurations from system node config directory
                 # to user node config directory
-                log.info("Copying system node configs to user node config dir")
                 self.agtkConfigDir = self.app.GetToolkitConfig().GetConfigDir()
                 systemNodeConfigDir = os.path.join(self.agtkConfigDir,
                                                    "nodeConfig")
+                log.info("Copying system node configs to user node config dir")
+                log.info("  system node config = %s", systemNodeConfigDir) 
+                log.info("  user node config = %s", self.configDir)
                 configFiles = os.listdir(systemNodeConfigDir)
                 for configFile in configFiles:
                     log.info("  node config: %s", configFile)
@@ -114,43 +116,46 @@ class AGNodeService:
             self.servicesDir, prefix="packages" )
         self.servicePackageRepository.Start()
 
-    def LoadDefaultConfig(self):
-        """
-        Load default node configuration (service managers and services)
-        """
-        if self.defaultConfig:
-            try:
-                self.LoadConfiguration( self.defaultConfig ) 
-            except:
-                log.exception("Exception loading default configuration.")
-                raise Exception("Failed to load default configuration <%s>",
-                                self.defaultConfig)
-        else:
-            log.warn("There is no default configuration.")
-            
     def Stop(self):
+        log.info("NodeService.Stop")
         self.servicePackageRepository.Stop()
 
     ####################
     ## SERVICE MANAGER methods
     ####################
-    
+   
     def AddServiceManager( self, serviceManager ):
         """
         Add a service manager
         """
-        # Try to reach the service manager
-        try:
-            AGServiceManagerIW( serviceManager.uri ).IsValid()
-        except:
-            log.exception("AddServiceManager: Invalid service manager url (%s)"
-                          % serviceManager.uri)
-            raise Exception("Service Manager is unreachable: "
-                            + serviceManager.uri)
+        log.info("NodeService.AddServiceManager")
 
+        # Check whether the service manager has already been added
         if self.serviceManagers.has_key( serviceManager.uri ):
             raise Exception("Service Manager already present:" + 
                             serviceManager.uri)
+                            
+        # Try to reach the service manager
+        try:
+            log.info(" service manager uri = %s", serviceManager.uri)
+            AGServiceManagerIW( serviceManager.uri ).IsValid()
+        except GSITCPSocketException, e:
+            if e.args[0].endswith('could not be resolved'):
+                parts = urlparse.urlparse(serviceManager.uri)
+                host,port = parts[1].split(':')
+                raise Exception('Host name %s could not be resolved',
+                                host)
+            elif e.args[0].endswith('(Connection refused)'):
+                parts = urlparse.urlparse(serviceManager.uri)
+                host,port = parts[1].split(':')
+                raise Exception('Connection refused on port %s',
+                                port)
+        except:
+            
+            log.exception("AddServiceManager: Invalid service manager url (%s)"
+                          % serviceManager.uri)
+            raise Exception("Service Manager is unreachable at "
+                            + serviceManager.uri)
 
         # Add service manager to list
         self.serviceManagers[serviceManager.uri] = serviceManager
@@ -159,6 +164,8 @@ class AGNodeService:
         """
         Remove a service manager
         """
+        log.info("NodeService.RemoveServiceManager")
+
         try:
             if self.serviceManagers.has_key(serviceManagerToRemove.uri):
                 del self.serviceManagers[serviceManagerToRemove.uri]
@@ -171,6 +178,7 @@ class AGNodeService:
         """
         Get list of service managers 
         """
+        log.info("NodeService.GetServiceManagers")
         return self.serviceManagers.values()
 
     ####################
@@ -182,8 +190,8 @@ class AGNodeService:
         Add a service package to the service manager.  
         """
         
-        log.debug("AddService %s", serviceDesc.name)
-        
+        log.info("NodeService.AddService")
+
         serviceDescription = None
         
         # Add the service to the service manager
@@ -217,10 +225,13 @@ class AGNodeService:
 
     def GetAvailableServices( self ):
         """Get list of available services """
+        log.info("NodeService.GetAvailableServices")
+
         return self.servicePackageRepository.GetServiceDescriptions()
 
     def GetServices( self ):
         """Get list of installed services """
+        log.info("NodeService.GetServices")
         services = []
         try:
             for serviceManager in self.serviceManagers.values():
@@ -239,6 +250,7 @@ class AGNodeService:
         """
         Enable the service, and send it a stream configuration if we have one
         """
+        log.info("NodeService.SetServiceEnabled")
         try:
             AGServiceIW( serviceUri ).SetEnabled(enabled)
 
@@ -252,6 +264,7 @@ class AGNodeService:
         """
         Enable/disable services that handle the given media type
         """
+        log.info("NodeService.SetServiceEnabledByMediaType")
         serviceList = self.GetServices()
         for service in serviceList:
             serviceMediaTypes = map( lambda cap: cap.type,
@@ -263,6 +276,7 @@ class AGNodeService:
         """
         Stop all services
         """
+        log.info("NodeService.StopServices")
         exceptionText = ""
 
         for serviceManager in self.serviceManagers.values():
@@ -286,6 +300,7 @@ class AGNodeService:
         according to matching capabilities
         """
 
+        log.info("NodeService.SetStreams")
         exceptionText = ""
 
         # Save the stream descriptions
@@ -307,6 +322,7 @@ class AGNodeService:
                     
     
     def AddStream( self, streamDescription ):
+        log.info("NodeService.AddStream")
         self.streamDescriptionList[streamDescription.capability.type] = \
                                                   streamDescription
 
@@ -318,6 +334,7 @@ class AGNodeService:
 
     def RemoveStream( self, streamDescription ):
 
+        log.info("NodeService.RemoveStream")
         # Remove the stream from the list
         if self.streamDescriptionList.has_key(
             streamDescription.capability.type ):
@@ -328,11 +345,29 @@ class AGNodeService:
 
 
 
+    def LoadDefaultConfig(self):
+        """
+        Load default node configuration (service managers and services)
+        """
+        log.info("NodeService.LoadDefaultConfig")
+        if self.defaultConfig:
+            try:
+                log.info("Loading default node configuration: %s", 
+                         self.defaultConfig)
+                self.LoadConfiguration( self.defaultConfig ) 
+            except:
+                log.exception("Exception loading default configuration.")
+                raise Exception("Failed to load default configuration <%s>",
+                                self.defaultConfig)
+        else:
+            log.warn("There is no default configuration.")
+            
     def LoadConfiguration( self, configName ):
         """
         Load named node configuration
         """
 
+        log.info("NodeService.LoadConfiguration")
         exceptionText = ""
 
         class IncomingService:
@@ -464,6 +499,7 @@ class AGNodeService:
       """
       Store node configuration with specified name
       """
+      log.info("NodeService.StoreConfiguration")
       try:
                 
         fileName = os.path.join(self.configDir, configName)
@@ -556,6 +592,7 @@ class AGNodeService:
         """
         Set the name of the default configuration
         """
+        log.info("NodeService.SetDefaultConfiguration")
         configs = self.GetConfigurations()
 
         # Trap error cases
@@ -570,6 +607,7 @@ class AGNodeService:
 
     def GetConfigurations( self ):
         """Get list of available configurations"""
+        log.info("NodeService.GetConfigurations")
         files = os.listdir( self.configDir )
         return files
 
@@ -580,6 +618,7 @@ class AGNodeService:
 
     def GetCapabilities( self ):
         """Get list of capabilities"""
+        log.info("NodeService.GetCapabilities")
         capabilities = []
         try:
             services = self.GetServices()
@@ -598,6 +637,7 @@ class AGNodeService:
         the user running the node (e.g., rat)
         """
 
+        log.info("NodeService.SetIdentity")
         self.profile = profile
 
         services = self.GetServices()
@@ -619,6 +659,7 @@ class AGNodeService:
         Note:  it is read from the user config dir if it exists, 
                then from the system config dir
         """
+        log.info("NodeService.__ReadConfigFile")
         try:
             configFile = self.app.FindConfigFile(AGNodeService.NodeConfigFile)
         except:
@@ -649,6 +690,7 @@ class AGNodeService:
 
         It is always written to the user's config directory
         """
+        log.info("NodeService.__WriteConfigFile")
         configFile = os.path.join(self.app.GetUserConfig().GetConfigDir(),
                                   AGNodeService.NodeConfigFile)
 
@@ -665,6 +707,7 @@ class AGNodeService:
         """
         Send stream description(s) to service
         """
+        log.info("NodeService.__SendStreamsToService")
         failedSends = ""
 
         serviceCapabilities = map(lambda cap: cap.type, 
