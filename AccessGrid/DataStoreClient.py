@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.9 2003-09-17 20:04:34 olson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.10 2003-09-17 20:08:01 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.9 2003-09-17 20:04:34 olson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.10 2003-09-17 20:08:01 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -615,8 +615,12 @@ if __name__ == "__main__":
         # dsc.Upload("\\temp\\foo.ppt")
 
     logging.root.addHandler(logging.StreamHandler())
-    logging.root.setLevel(logging.DEBUG)
+    logging.root.setLevel(logging.ERROR)
 
+    if len(sys.argv) > 1 and sys.argv[1] == "-d":
+        logging.root.setLevel(logging.DEBUG)
+        del sys.argv[1]
+        
 
     if len(sys.argv) < 2:
         url = "https://localhost:8000/Venues/default"
