@@ -111,7 +111,7 @@ class vncServer:
         
         self.password = ''
         for i in range(8):
-            self.password += '%x' % random.randint(0,256)
+            self.password += chr(random.randint(0,255))
 
         f = file(self.passwdFilename,'wb')
         f.write(self.password)
@@ -138,8 +138,11 @@ class vncServer:
             raise VNCServerException("Start attempted while already running")
         try:
             if IsWindows():
+                password = ''
+                for ch in self.password:
+                    password += '%x' % (ord(ch),)
                 args = [
-                        'Password='+self.password,
+                        'Password='+password,
                         'AlwaysShared=1',
                         ]
 
