@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.139 2004-03-04 22:41:19 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.140 2004-03-05 02:29:01 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.139 2004-03-04 22:41:19 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.140 2004-03-05 02:29:01 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -1218,13 +1218,16 @@ class VenueClient:
     #
         
     def SendText(self,text):
-        self.textClient.Input(text)
+        if self.textClient != None:
+            self.textClient.Input(text)
+        else:
+            raise "Text Client Not Connected"
         
     # end Basic Implementation
     #
-    ###########################################################################################
+    ########################################################################
 
-    ###########################################################################################
+    ########################################################################
     #
     # Accessors
     
