@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.62 2004-05-21 22:34:29 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.63 2004-05-25 12:03:37 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.62 2004-05-21 22:34:29 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.63 2004-05-25 12:03:37 eolson Exp $"
 
 # Standard imports
 import os
@@ -592,4 +592,17 @@ class Service(AppBase):
 
         return argvResult
 
-            
+
+def GetDefaultSubject():
+    try:
+        defaultSubj = Service.instance().GetDefaultSubject()
+    except:
+        try:
+            defaultSubj = Application.instance().GetDefaultSubject()
+        except:
+            # If these calls all fail, things that need the default
+            #   subject will fail.
+            defaultSubj = CmdlineApplication.instance().GetDefaultSubject()
+
+    return defaultSubj
+
