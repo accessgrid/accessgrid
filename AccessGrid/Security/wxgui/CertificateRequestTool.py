@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.3 2004-03-22 17:36:40 olson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.4 2004-03-25 19:45:39 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -152,11 +152,12 @@ class CertificateRequestTool(wxWizard):
                          
     def CancelPage(self, event):
         self.log.debug(" CancelPage:Cancel wizard")
-        dlg = wxMessageDialog(self,"Your certificate request is not complete. If you quit now, the request will not be submitted. \nCancel request?.", "", style = wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION)
-        if(dlg.ShowModal() == wxID_NO):
-            event.Veto()
+        
+        #dlg = wxMessageDialog(self,"Your certificate request is not complete. If you quit now, the request will not be submitted. \nCancel request?.", "", style = wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION)
+        #if(dlg.ShowModal() == wxID_NO):
+        #    event.Veto()
             
-        dlg.Destroy()
+        #dlg.Destroy()
                      
     def ChangingPage(self, event):
         '''
@@ -376,8 +377,14 @@ class IdentityCertWindow(TitledPage):
     '''
     def __init__(self, parent, title):
         TitledPage.__init__(self, parent, title)
-        self.text = wxStaticText(self, -1,"""The name fields should contain your first and last name; requests with incomplete \nnames may be rejected. The e-mail address will be used for verification; \nplease make sure it is valid. Remember your password.
-            """)
+        self.text = wxStaticText(self, -1,"""The name fields should contain your first and last name; requests with incomplete
+names may be rejected. The e-mail address will be used for verification; please make sure it is valid.
+
+The domain represents the institution you belong to; it will default to the hostname part
+of your email address;
+
+The passphrase will be used to access your generated certificate after it is created.You will need to
+remember it: it is not possible to determine the passphrase from the certificate, and it cannot be reset.""")
 
         self.firstNameId = wxNewId()
         self.lastNameId = wxNewId()
@@ -390,8 +397,8 @@ class IdentityCertWindow(TitledPage):
         self.lastNameText = wxStaticText(self, -1, "Last name:")
         self.emailText = wxStaticText(self, -1, "E-mail:")
         self.domainText = wxStaticText(self, -1, "Domain:")
-        self.passwordText = wxStaticText(self, -1, "Password:")
-        self.passwordVerText = wxStaticText(self, -1, "Retype password:")
+        self.passwordText = wxStaticText(self, -1, "Passphrase:")
+        self.passwordVerText = wxStaticText(self, -1, "Retype passphrase:")
         self.firstNameCtrl = wxTextCtrl(self, self.firstNameId ,
                                    validator = IdentityCertValidator())
         self.lastNameCtrl = wxTextCtrl(self, self.lastNameId ,
@@ -613,12 +620,12 @@ class IdentityCertValidator(wxPyValidator):
             return false
         
         elif password == "":
-            MessageDialog(NULL, "Please enter your password.", style = wxOK | wxICON_INFORMATION)
+            MessageDialog(NULL, "Please enter your passphrase.", style = wxOK | wxICON_INFORMATION)
             self.helpClass.SetColour(win.passwordCtrl)
             return false
             
         elif password != password2:
-            MessageDialog(NULL, "Your password entries do not match. Please retype them.", style = wxOK | wxICON_INFORMATION)
+            MessageDialog(NULL, "Your passphrase entries do not match. Please retype them.", style = wxOK | wxICON_INFORMATION)
             self.helpClass.SetColour(win.passwordCtrl)
             self.helpClass.SetColour(win.passwordVerCtrl)
             return false
