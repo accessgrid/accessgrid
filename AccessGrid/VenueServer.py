@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.111 2004-02-24 21:34:51 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.112 2004-02-25 19:06:00 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.111 2004-02-24 21:34:51 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.112 2004-02-25 19:06:00 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -144,6 +144,9 @@ class VenueServer(AuthorizationMixIn):
         # Initialize Auth stuff
         AuthorizationMixIn.__init__(self)
         self.AddRole(Role.Role("Administrators"))
+        
+        rl = self.GetRoles()
+        self.authManager.AddRoles(rl)
 
         # Initialize our state
         self.persistenceFilename = 'VenueServer.dat'
@@ -258,8 +261,8 @@ class VenueServer(AuthorizationMixIn):
         ma = vsi._GetMethodActions()
         self.authManager.AddActions(ma)
         
-        rl = self.GetRoles()
-        self.authManager.AddRoles(rl)
+#         rl = self.GetRoles()
+#         self.authManager.AddRoles(rl)
         
         # Get the silly default subject this really should be fixed
         certMgr = Toolkit.GetApplication().GetCertificateManager()
