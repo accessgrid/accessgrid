@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.21 2003-04-18 17:18:35 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.22 2003-05-16 04:17:26 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1125,8 +1125,9 @@ n
 
     def stop(self):
         self.done = 1
-        for workerNum in range(self.numThreads):
-            self.requestQueue.put("quit",)
+        map(self.requestQueue.put("quit",), range(self.numThreads))
+#        for workerNum in range(self.numThreads):
+#            self.requestQueue.put("quit",)
         self.server_close()
 
     def thread_run(self):

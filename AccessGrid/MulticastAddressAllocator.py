@@ -5,7 +5,7 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.12 2003-04-08 19:24:55 olson Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.13 2003-05-16 04:17:27 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -89,8 +89,6 @@ class MulticastAddressAllocator:
         We allocate only even numbered ports since that is the requirement
         for rtp encapsulated streams.
         """
-        inUse = 0
-
         # Check to see if port is used
         while 1:
             port = self.random.randrange(self.portBase, 65535, 2)

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.19 2003-04-28 19:19:40 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.20 2003-05-16 04:17:26 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,6 +29,7 @@ from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import ConnectEvent, DisconnectEvent
 
 log = logging.getLogger("AG.VenueServer")
+log.setLevel(logging.INFO)
 
 class ConnectionHandler(StreamRequestHandler):
     """
