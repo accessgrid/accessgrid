@@ -1,6 +1,7 @@
 #!/usr/bin/python2
 
 import sys, os, time, string
+import tempfile
 from optparse import OptionParser
 
 from Dependency import *
@@ -8,7 +9,7 @@ from Dependency import *
 parser = OptionParser()
 parser.add_option("-s", dest="sourcedir", metavar="SOURCEDIR",
                   default=None,
-                  help="The source directory for the AGTk build.")
+                  help="The directory the AG source code is in.")
 parser.add_option("-b", dest="builddir", metavar="BUILDDIR",
                   default=None,
                   help="The working directory the AGTk build.")
@@ -36,55 +37,73 @@ DestDir = options.destdir
 metainfo = options.metainfo
 version = options.version
 
-
-print "In gentoo/build_package.py"
-print "SourceDir = ", SourceDir
-print "BuildDir = ", BuildDir
-print "DestDir = ", DestDir
-print "metainfo = ", metainfo
-print "version = ", version
-
-TmpDir = os.tmpnam()
-if not os.path.exists(TmpDir):
-    os.mkdir(TmpDir)
-RpmDir = os.path.join(TmpDir,"AccessGrid-%s-%s" % (version,metainfo))
-if not os.path.exists(RpmDir):
-    os.mkdir(RpmDir)
+TmpDir = tempfile.mkdtemp()
 StartDir = os.getcwd()
 
 
+#
+# Print calling state
+#
+print "\n\n---- Build portage tree\n"
+if options.verbose:
+    print "SourceDir = ", SourceDir
+    print "BuildDir = ", BuildDir
+    print "DestDir = ", DestDir
+    print "metainfo = ", metainfo
+    print "version = ", version
 
 #
 # Create source tarballs
 #
-
-os.chdir(SourceDir)
+print "\n\n---- Create source tarballs\n"
+os.chdir(DestDir)
 
 # - Create dependency source tarballs
 pyglobusTar = '%s-%s.tar.gz' % (PYGLOBUS,PYGLOBUS_VER)
-cmd = 'tar czf %s pyGlobus' % (pyglobusTar)
+cmd = 'tar czf %s -C %s pyGlobus' % (pyglobusTar,SourceDir)
 if options.verbose:
+    print "creating", pyglobusTar
     print 'cmd = ', cmd
-os.system(cmd)
+ret = os.system(cmd)
+if ret != 0:
+    print "error in build (%s); exiting" % (ret)
+    sys.exit(1)
 
 pyopensslTar = '%s-%s.tar.gz' % (PYOPENSSL,PYOPENSSL_VER)
-cmd = 'tar czf %s pyOpenSSL' % (pyopensslTar)
+cmd = 'tar czf %s -C %s pyOpenSSL' % (pyopensslTar,SourceDir)
 if options.verbose:
+    print "creating", pyopensslTar
     print 'cmd = ', cmd
-os.system(cmd)
+ret = os.system(cmd)
+if ret != 0:
+    print "error in build (%s); exiting" % (ret)
+    sys.exit(1)
 
 agmediaTar = '%s-%s.tar.gz' % (AGMEDIA,AGMEDIA_VER)
-cmd = 'tar czf %s ag-media' % (agmediaTar)
+cmd = 'tar czf %s -C %s ag-media' % (agmediaTar,SourceDir)
 if options.verbose:
+    print "creating", agmediaTar
     print 'cmd = ', cmd
-os.system(cmd)
+ret = os.system(cmd)
+if ret != 0:
+    print "error in build (%s); exiting" % (ret)
+    sys.exit(1)
 
 # - Create accessgrid source tarball
-agTar = 'agtk-%s.tar.gz' % (options.version)
-cmd = 'tar czf %s %s' % (agTar,options.builddir)
+os.chdir(TmpDir)
+ag = 'agtk-%s' % (options.version,)
+if os.path.exists(ag):
+    os.remove(ag)
+os.symlink(options.builddir,ag)
+agTar = '%s.tar.gz' % (ag,)
+cmd = 'tar czhf %s/%s %s' % (DestDir,agTar,ag)
 if options.verbose:
+    print "creating", agTar
     print 'cmd = ', cmd
-os.system(cmd)
+ret = os.system(cmd)
+if ret != 0:
+    print "error in build (%s); exiting" % (ret)
+    sys.exit(1)
 
 # - Build list of tars created, for printing only
 tars = [ pyglobusTar, pyopensslTar, agmediaTar ]
@@ -92,30 +111,62 @@ tars = [ pyglobusTar, pyopensslTar, agmediaTar ]
 
 
 #
-# Create ebuild package
+# Build portage tree
 #
+print "\n\n---- Build portage tree\n"
 
-# - Create tarball of custom ebuild tree
-os.chdir(StartDir)
+os.chdir(TmpDir)
+os.mkdir('portage')
+
+portDirs = []
+portDirs.append( '%s/packaging/linux/gentoo' % (BuildDir,))
+portDirs.append( '%s/pyOpenSSL' % (SourceDir,))
+portDirs.append( '%s/ag-media' % (SourceDir,))
+for d in portDirs:
+    cmd = 'cp -r %s/portage %s' % (d,TmpDir)
+    print 'cmd = ', cmd
+    ret = os.system(cmd)
+    if ret != 0:
+        print "error in build (%s); exiting" % (ret)
+        sys.exit(1)
 
 # - Move agtk.ebuild to properly versioned name
 ag_ebuild = 'agtk-%s.ebuild' % (options.version,)
-if not os.access(os.path.join('portage','ag-libs','agtk',ag_ebuild), os.F_OK):
-    cmd = 'cd portage/ag-libs/agtk ; mv agtk.ebuild %s' % (ag_ebuild,)
-    os.system(cmd)
+cmd = 'cd portage/ag-libs/agtk ; mv agtk.ebuild %s' % (ag_ebuild,)
+ret = os.system(cmd)
+if ret != 0:
+    print "error in build (%s); exiting" % (ret)
+    sys.exit(1)
+
+
+#
+# Generate digests for ebuilds
+#
+print "\n\n---- Generate ebuild digests\n"
+os.chdir(TmpDir)
+os.chdir('portage')
 
 # - Create digests for ebuilds
-os.chdir('portage')
 os.environ["ROOT"] = os.getcwd()
 f = os.popen('find . -name "*.ebuild"')
 ebuilds = map( lambda x: x.strip(), f.readlines() )
 f.close()
 for ebuild in ebuilds:
-    cmd = 'DISTDIR=%s ebuild %s digest' % (SourceDir,ebuild,)
+    cmd = 'DISTDIR=%s ebuild %s digest' % (DestDir,ebuild,)
     if options.verbose:
         print "cmd = ", cmd
-    os.system(cmd)
+    ret = os.system(cmd)
+    if ret != 0:
+        print "error in build (%s); exiting" % (ret)
+        sys.exit(1)
     
+    
+#
+# Create ebuild package
+#
+
+print "\n\n---- Create ebuild package\n"
+
 # - Generate list of ebuild dirs for package
 ebuildDirs = []
 for ebuild in ebuilds:
@@ -126,29 +177,33 @@ for ebuild in ebuilds:
 ebuildDirs = " ".join(ebuildDirs)
 
 ebuildPackageFile = 'AccessGrid-%s.tar.gz' % (options.version)
-ebuildPackagePath = os.path.join(BuildDir,ebuildPackageFile)
+ebuildPackagePath = os.path.join(DestDir,ebuildPackageFile)
 cmd = "tar czf %s %s" % (ebuildPackagePath, ebuildDirs)
 if options.verbose:
     print "cmd = ", cmd
-os.system(cmd)
+ret = os.system(cmd)
+if ret != 0:
+    print "error in build (%s); exiting" % (ret)
+    sys.exit(1)
 
-# - Move dependency tarballs to dest dir
-for tar in tars + [agTar]:
-    cmd = 'mv %s/%s %s' % (SourceDir,tar,DestDir)
-    if options.verbose:
-        print "cmd = ", cmd
-    os.system(cmd)
+#
+# Cleanup
+#
+# - Remove temp directory
+#os.removedirs(TmpDir)
 
 
 # 
 # Output build results
 #
-print '\n', '-'*50
-print 'Build results:'
-print 'ebuild file: ', ebuildPackagePath
+print "\n\n---- Build results\n"
+print 'ebuild file:', ebuildPackagePath
 print 'agtk source tarball:', os.path.join(DestDir,agTar)
 print 'tar files in %s:' % (BuildDir)
 for tar in tars:
     print "  ", tar
+    
+    
+
 
 
