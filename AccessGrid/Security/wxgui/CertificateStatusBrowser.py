@@ -427,7 +427,8 @@ class CertificateStatusBrowser(CertificateBrowserBase):
                                   "The selected certificate is not ready for installation.", "Not ready.", style = wxICON_INFORMATION | wxOK )
             ret = dlg.ShowModal()
             dlg.Destroy()
-          
+        self.Load()
+        
     def OnDeleteRequest(self, event):
         req = self.GetSelectedCertificate()
 
