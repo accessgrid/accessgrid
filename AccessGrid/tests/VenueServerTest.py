@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueServerTest.py,v 1.12 2003-04-22 22:00:46 turam Exp $
+# RCS-ID:      $Id: VenueServerTest.py,v 1.13 2003-05-23 21:00:36 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -70,9 +70,12 @@ class VenueServerTest:
         print "\n------------------ CONNECTING TO SERVER"
         
         serverHandle = Client.Handle(url)
-        if not serverHandle.IsValid():
+        try:
+            serverHandle.IsValid()
+        except:
             print "Invalid server handle; exiting"
             sys.exit(1)
+
         self.venueServerProxy = serverHandle.get_proxy()
         print "------------------ CONNECT OK"
         

@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.66 2003-05-20 19:51:05 olson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.67 2003-05-23 21:01:58 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -135,7 +135,17 @@ class VenueManagementClient(wxApp):
             app = Toolkit.GetApplication()
             app.GetCertificateManager().ConfigureProxy()
 
-        if(handle.IsValid()):
+        log.debug("check client for validity")
+        try:
+            Client.Handle(URL).IsValid()
+        except Client.InvalidHandleException:
+            log.exception("ConnectToServer: handle.IsValid Failed.")
+            MessageDialog("Client.Handle(%s).IsValid() failed." % URL)
+            return
+
+        handle = Client.Handle(URL)
+
+        if(1):
             log.debug("You have a valid proxy")
             try:
                 wxBeginBusyCursor()
@@ -1331,8 +1341,17 @@ class VenueParamFrame(wxDialog):
         try:
             wxBeginBusyCursor()
             log.debug("Load venues from: %s " % URL)
+
+            try:
+                Client.Handle(URL).IsValid()
+            except Client.InvalidHandleException:
+                log.exception("_loadVenues handle.IsValid Failed.")
+                MessageDialog("Client.Handle(%s).IsValid() failed." % URL)
+                return
+
             server = Client.Handle(URL)
-            if(server.IsValid()):
+            
+            if(1):
                 venueList = []
                 vl = server.get_proxy().GetVenues()
                 for v in vl:

@@ -43,8 +43,9 @@ appUrl = venueProxy.CreateApplication(
             "test app description",
             "test app mimeType" )
 print "-- Test service reachability"
-appUrlValid = Client.Handle( appUrl ).IsValid()
-if not appUrlValid:
+try:
+    Client.Handle( appUrl ).IsValid()
+except:
     print "Application service unreachable; exiting"
     os._exit(1)
 
