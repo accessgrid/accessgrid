@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.154 2003-05-20 19:18:59 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.155 2003-05-20 19:36:23 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -599,7 +599,7 @@ class VenueClientUI(wxApp, VenueClient):
         # else assume the url is a venue address.
         #
 
-            self.venueUri = URL
+        self.venueUri = URL
         self.clientHandle = Client.Handle(self.venueUri)
 
         #
