@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.319 2004-02-13 21:52:38 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.320 2004-02-13 22:07:45 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.319 2004-02-13 21:52:38 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.320 2004-02-13 22:07:45 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1878,8 +1878,12 @@ class ContentListPanel(wxPanel):
         self.serviceDict[profile.id] = service
         self.tree.SortChildren(self.services)
         self.tree.Refresh()
-        #self.tree.Expand(self.services)
-        
+
+    def UpdateService(self, profile):
+        if(self.serviceDict.has_key(profile.id)):
+            self.RemoveService(profile)
+            self.AddService(profile)
+                                           
     def RemoveService(self, profile):
         if(self.serviceDict.has_key(profile.id)):
             id = self.serviceDict[profile.id]
@@ -1894,9 +1898,13 @@ class ContentListPanel(wxPanel):
         self.tree.SetItemData(application, wxTreeItemData(appDesc))
         self.applicationDict[appDesc.uri] = application
         self.tree.SortChildren(self.applications)
-        #self.tree.Expand(self.applications)
         self.tree.Refresh()
-      
+
+    def UpdateApplication(self, appDesc):
+        if(self.applicationDict.has_key(appDesc.uri)):
+            self.RemoveApplication(appDesc)
+            self.AddApplication(appDesc)
+            
     def RemoveApplication(self, appDesc):
         if(self.applicationDict.has_key(appDesc.uri)):
             id = self.applicationDict[appDesc.uri]

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.125 2003-10-29 20:31:03 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.126 2004-02-13 22:07:45 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.125 2003-10-29 20:31:03 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.126 2004-02-13 22:07:45 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -339,6 +339,14 @@ class VenueClient( ServiceBase):
         for s in self.eventSubscribers:
             s.AddServiceEvent(event)
 
+    def UpdateServiceEvent(self, event):
+        log.debug("UpdateServiceEvent: Got Update Service Event")
+
+        data = event.data
+        self.venueState.UpdateService(data)
+        for s in self.eventSubscribers:
+            s.UpdateServiceEvent(event)
+
     def RemoveServiceEvent(self, event):
         log.debug("RemoveServiceEvent: Got Remove Service Event")
 
@@ -354,6 +362,13 @@ class VenueClient( ServiceBase):
         self.venueState.AddApplication(data)
         for s in self.eventSubscribers:
             s.AddApplicationEvent(event)
+
+    def UpdateApplicationEvent(self, event):
+        log.debug("UpdateApplicationEvent: Got Update Application Event")
+        data = event.data
+        self.venueState.UpdateApplication(data)
+        for s in self.eventSubscribers:
+            s.UpdateApplicationEvent(event)
 
     def RemoveApplicationEvent(self, event):
         log.debug("RemoveApplicationEvent: Got Remove Application Event")
@@ -579,8 +594,10 @@ class VenueClient( ServiceBase):
                 Event.UPDATE_DATA: self.UpdateDataEvent,
                 Event.REMOVE_DATA: self.RemoveDataEvent,
                 Event.ADD_SERVICE: self.AddServiceEvent,
+                Event.UPDATE_SERVICE: self.UpdateServiceEvent,
                 Event.REMOVE_SERVICE: self.RemoveServiceEvent,
                 Event.ADD_APPLICATION: self.AddApplicationEvent,
+                Event.UPDATE_APPLICATION: self.UpdateApplicationEvent,
                 Event.REMOVE_APPLICATION: self.RemoveApplicationEvent,
                 Event.ADD_CONNECTION: self.AddConnectionEvent,
                 Event.REMOVE_CONNECTION: self.RemoveConnectionEvent,
