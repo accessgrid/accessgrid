@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.15 2004-12-16 21:45:28 leggett Exp $
+ * $Id: QuickBridge.c,v 1.16 2004-12-17 15:12:23 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -700,11 +700,13 @@ void process_session( Session *head, fd_set *readfds, u_long myip )
       
       if ( s->use_multicast )
 	{
+	  debug( 4, "About to use_multicast\n" );
 	  /*3:receive from multicast, send on unicast to all unicast participants */ 
 	  for ( i = 0; i < nchan; i++ )
 	    {
 	      if ( FD_ISSET( s->mcfd[i], readfds ) )
 		{
+		  debug( 4, "Multicast socket ready to recvfrom( )\n" );
 		  //printf("ready to receive data on mcfd[%d]!\n",i);
 		  sourceaddrlen = sizeof( sourceaddr );
 		  memset( (char *)&sourceaddr, 0, sourceaddrlen );
