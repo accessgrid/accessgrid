@@ -31,6 +31,7 @@ import time
 import logging
 import ConfigParser
 import getpass
+import string
 
 from AccessGrid import Platform
 
