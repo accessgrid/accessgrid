@@ -32,26 +32,19 @@ use with AccessGrid applications.
 Here is a linux example of how to setup and run from a fresh cvs 
 checkout.  There is very little difference on windows.
 
-Before starting, you'll want to have the rat and vic packages installed.
-You can download them from the accessgrid.org website -- on windows
-they come with a standard AG2 installation.
-
 To get the code, we'll checkout the files from cvs.  Instructions are here:
 http://www-unix.mcs.anl.gov/fl/research/accessgrid/software/cvs/index.html
 If you have already checked out a copy of the code, you can use that instead.
   > cvs co AccessGrid
 
-Create a directory to hold the configuration files
-  > mkdir cfg
-
 Run the CvsSetup tool and specify the source and destination directories.
 The checked out AccessGrid source is located in the "AccessGrid" directory.
-  > python AccessGrid/tools/CvsSetup.py --agdir AccessGrid --dst cfg
+  > python AccessGrid/tools/CvsSetup.py --agdir AccessGrid
 
-Configuration files have now been created in the "cfg" directory.  Instructions
-for setting your paths to use the new configuration are displayed.  You
-can set AGTK_LOCATION, PYTHONPATH, and AGTK_INSTALL, or simply execute 
-the appropriate script that was created:
+Configuration files have now been created in the "AccessGrid/Config" directory.
+Instructions for setting your paths to use the new configuration are displayed.  You 
+can set PYTHONPATH and AGTK_LOCATION or simply execute the appropriate script that was
+created:
 
   With bash or similar shell:
       >  . env-init.sh
@@ -67,19 +60,7 @@ Do the final configuration step and configure video sources.
 Now you should be able to run the VenueClient (personalNode mode shown).
   > python VenueClient.py --personalNode
 
-
-. Notes on using Vic and Rat with AccessGrid source.
-
-The vic and rat executables should be in the path if you want the AG 
-software to use them.
-  On Linux: If vic and rat packages are installed, they should already be in 
-    your path, since they are placed in /usr/bin.
-  On Windows: You can modify your PATH variable to find rat.exe, vic.exe, and
-    related exe files, but it may be easier just to copy the rat and vic
-    related executables into your AccessGrid/bin directory or another directory
-    that is in your path.
-    If modifying your path, make sure to copy the vic and rat executables away
-    from a standard AG installation to refrain from putting other AccessGrid
-    source files in your path.
-
+. Note that to use node services (VideoConsumerService, AudioSrevice etc.), you need to install
+ones from a released distribution or build their dependencies (such as vic and rat) and package
+them (packaging/makeServicePackages).
 
