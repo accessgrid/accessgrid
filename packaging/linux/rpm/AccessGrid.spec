@@ -6,7 +6,7 @@
 %define version		2.2
 %define release		1
 %define	prefix		/usr
-%define sysconfdir	/etc/%{name}
+%define sysconfdir	/etc/%{name}/Config
 %define sharedir	%{prefix}/share
 %define gnomedir	%{sharedir}/gnome/apps
 %define kdedir		%{sharedir}/applnk
@@ -30,7 +30,7 @@ URL:		http://www.accessgrid.org
 Vendor:		Argonne National Laboratory
 Source:		%{name}-%{version}.tar.gz
 BuildRoot:	%{buildroot}
-Requires:	/usr/bin/python2.2
+Requires:	/usr/bin/python2.3
 Requires:	wxGTK
 Requires:	wxPythonGTK-py2.2
 Requires:	globus-accessgrid
@@ -45,66 +45,8 @@ The Access Grid Toolkit provides the necessary components for users to participa
 
 This module provides the core components to start participating in the Access Grid.
 
-#
-# The following defines the AccessGrid-VenueClient rpm
-# Requires: AccessGrid
-#
-%package VenueClient
-Summary:	The Access Grid Toolkit Venue Client
-Version:	%{version}
-Release:	%{release}
-Group:		Utilities/System
-Requires:	AccessGrid = %{version}-%{release}
-Obsoletes:	AccessGrid-VenueClient-2.0alpha
-Obsoletes:	AccessGrid-VenueClient-2.0beta
-Obsoletes:	AccessGrid-VideoProducer
-
-%description VenueClient
-The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
-
-This module provides the components needed to connect to an Access Grid Venue.
-
-#
-# The following defines the AccessGrid-VenueServer rpm
-# Requires: AccessGrid
-#
-%package VenueServer
-Summary:	The Access Grid Toolkit Venue Server
-Version:	%{version}
-Release:	%{release}
-Group:		Utilities/System
-Requires:	AccessGrid = %{version}-%{release}
-Obsoletes:	AccessGrid-VenueServer-2.0alpha
-Obsoletes:	AccessGrid-VenueServer-2.0beta
-
-%description VenueServer
-The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
-
-This module provides the components needed to create an Access Grid Venue and an Access Grid Venue Server.
-
-#
-# The following defines the AccessGrid-BridgeServer rpm
-# Requires: AccessGrid
-#
-%package BridgeServer
-Summary:	The Access Grid Toolkit Bridge Server
-Version:	%{version}
-Release:	%{release}
-Group:		Utilities/System
-Requires:	AccessGrid = %{version}-%{release}
-
-%description BridgeServer
-The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
-
-This module provides the components needed to run the Bridge Server.  This server is responsible for providing unicast connectivity to venue participants.
-
-#
-# The following untars the source tarball and removes any previous build
-# attempts
-#
-
 %prep
-%setup -n AccessGrid-2.2 -c
+%setup -n AccessGrid-%{version} -c
 
 #
 # The following builds the package using setup.py
@@ -122,8 +64,12 @@ This module provides the components needed to run the Bridge Server.  This serve
 
 %install
 # Move node services and shared apps into etc 
-mv NodeServices etc/AccessGrid
-mv SharedApplications etc/AccessGrid
+mkdir etc/AccessGrid/Config
+mv NodeServices etc/AccessGrid/Config
+mv SharedApplications etc/AccessGrid/Config
+mkdir etc/AccessGrid/Config/Services
+mkdir etc/AccessGrid/Config/PackageCache
+mkdir etc/AccessGrid/Config/Logs
 
 # Create a usr dir, and move dirs thereunder
 mkdir usr
@@ -138,17 +84,13 @@ mv bin usr/bin
 # - Install python modules with default permissions
 # - Install AGServiceManager.py and agsm service with executable permissions
 #
-
 %files
 %defattr(-,root,root)
-%{prefix}/lib
+%{prefix}/lib/python2.3/site-packages/AccessGrid
 /etc
 %{sharedir}/%{name}/ag.ico
 %defattr(0755,root,root)
 %{prefix}/bin/AGServiceManager.py
-
-#
-# Define the files that are to go into the AccessGrid-VenueClient package
 # - Install AGNodeService.py, VenueClient.py, and NodeManagement.py with
 #   executable permissions
 # - Install the AGNodeService config file and tag it as a config file
@@ -156,9 +98,6 @@ mv bin usr/bin
 # - Install the default node configuration, make it owned by ag, and tag it
 #   as a config file for rpm
 # - Install the GNOME and KDE menu items
-#
-
-%files VenueClient
 %defattr(0755,root,root)
 %{prefix}/bin/AGNodeService.py
 %{prefix}/bin/VenueClient.py
@@ -181,31 +120,20 @@ mv bin usr/bin
 %{kdedir}/%{name}/VenueClient.desktop
 %{kdedir}/%{name}/VenueClient-PersonalNode.desktop
 %{kdedir}/%{name}/NodeManagement.desktop
-
 #
-# Define the files that are to go into the AccessGrid-VenueServer package
-# - Install VenueManagement.py, VenueServer.py, and VenueServerRegistry.py
+# - Install VenueManagement.py and VenueServer.py
 #   with executable permissions
-# - Install the GNOME and KDE menu items
 #
-
-%files VenueServer
 %defattr(0755,root,root)
 %{prefix}/bin/VenueManagement.py
 %{prefix}/bin/VenueServer.py
 %defattr(-,root,root)
-%{gnomedir}/%{name}/.desktop
 %{gnomedir}/%{name}/VenueManagement.desktop
-%{kdedir}/%{name}/.desktop
 %{kdedir}/%{name}/VenueManagement.desktop
-
 #
-# Define the files that are to go into the AccessGrid-BridgeServer package
 # - Install the python BridgeServer implementation
 # - Install the QuickBridge executable
 #
-
-%files BridgeServer
 %defattr(0755,root,root)
 %{prefix}/bin/BridgeServer.py
 %{prefix}/bin/QuickBridge
@@ -219,7 +147,7 @@ mv bin usr/bin
 
 %post
 cat <<EOF > /tmp/AccessGrid-Postinstall.py
-#!/usr/bin/python2.2
+#!/usr/bin/python2.3
 import AccessGrid
 import AccessGrid.hosting
 import AccessGrid.hosting.pyGlobus
@@ -244,6 +172,21 @@ EOF
 chmod +x /tmp/AccessGrid-Postinstall.py
 /tmp/AccessGrid-Postinstall.py
 rm -f /tmp/AccessGrid-Postinstall.py
+#
+# AccessGrid-VenueClient post-install
+# - Run SetupVideo to detect video devices
+#
+#%post VenueClient
+xdpyinfo >/dev/null 2>/dev/null
+if [ "$?" == 0 ]
+then
+    echo "Detecting video capture devices..."
+    /usr/bin/SetupVideo.py
+else
+    echo "Can't open X display; run SetupVideo.py as root to"
+    echo "detect video capture devices."
+fi
+
 
 #
 # AccessGrid package pre-uninstall
@@ -252,7 +195,7 @@ rm -f /tmp/AccessGrid-Postinstall.py
 
 %preun
 cat <<EOF > /tmp/AccessGrid-Preuninstall.py
-#!/usr/bin/python2.2
+#!/usr/bin/python2.3
 import AccessGrid
 import AccessGrid.hosting
 import AccessGrid.hosting.pyGlobus
@@ -274,21 +217,6 @@ EOF
 chmod +x /tmp/AccessGrid-Preuninstall.py
 /tmp/AccessGrid-Preuninstall.py
 rm -f /tmp/AccessGrid-Preuninstall.py
-
-#
-# AccessGrid-VenueClient post-install
-# - Run SetupVideo to detect video devices
-#
-%post VenueClient
-xdpyinfo >/dev/null 2>/dev/null
-if [ "$?" == 0 ]
-then
-    echo "Detecting video capture devices..."
-    /usr/bin/SetupVideo.py
-else
-    echo "Can't open X display; run SetupVideo.py as root to"
-    echo "detect video capture devices."
-fi
 
 #
 # After the RPMs have been successfully built remove the temporary build
