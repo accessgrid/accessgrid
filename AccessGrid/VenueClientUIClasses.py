@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.67 2003-03-14 19:23:14 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.68 2003-03-14 21:22:23 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1559,7 +1559,6 @@ class WelcomeDialog(wxDialog):
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(1)
-
     
 class ProfileDialog(wxDialog):
     def __init__(self, parent, id, title):
@@ -1695,9 +1694,10 @@ class TextValidator(wxPyValidator):
     def Validate(self, win):
         tc = self.GetWindow()
         val = tc.GetValue()
-              
-        if len(val) < 1:
-            wxMessageBox("Please, fill in the name field", "Error")
+        profile = win.GetNewProfile()
+                                 
+        if len(val) < 1 or profile.IsDefault() or profile.name == '<Insert Name Here>':
+            MessageDialog(NULL, "Please, fill in the name field")
             return false
         return true
 
