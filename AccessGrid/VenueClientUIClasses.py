@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.48 2003-02-26 22:12:33 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.49 2003-02-27 21:09:49 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -96,7 +96,8 @@ class VenueClientFrame(wxFrame):
         self.venueListPanel.SetAlignment(wxLAYOUT_LEFT)
         
         self.contentListPanel = ContentListPanel(self, app)
-
+        wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
+        
         #fileDropTarget = FileDropTarget(self.dock)
         #self.dock.SetDropTarget(fileDropTarget)
         self.__setStatusbar()
@@ -281,12 +282,17 @@ class VenueClientFrame(wxFrame):
             x = '/'
         return x
         
-    def FillInAddress(self, event):
-        url = self.menubar.GetLabel(event.GetId())
-        fixedUrlList = map(self.__fillTempHelp, url)
-        fixedUrl = ""
-        for x in fixedUrlList:
-            fixedUrl = fixedUrl + x
+    def FillInAddress(self, event = None, url = None):
+        if(url == None):
+            url = self.menubar.GetLabel(event.GetId())
+            fixedUrlList = map(self.__fillTempHelp, url)
+            fixedUrl = ""
+            for x in fixedUrlList:
+                fixedUrl = fixedUrl + x
+
+        else:
+            fixedUrl = url
+        
         self.venueAddressBar.SetAddress(fixedUrl)
 
     def OpenChat(self, event = None):
@@ -620,8 +626,7 @@ class VenueListPanel(wxSashLayoutWindow):
         self.SetToolTipString("Connected Venues")
         
 	self.__doLayout()
-        print 'after layout done'
-	self.__addEvents()
+        self.__addEvents()
 		
     def __addEvents(self):
         EVT_BUTTON(self, 10, self.OnClick) 
