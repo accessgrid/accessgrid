@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.9 2003-02-21 17:39:29 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.10 2003-02-27 20:13:54 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,6 +13,7 @@ import os
 import sys
 import signal
 import time
+import logging, logging.handlers
 
 from AccessGrid.hosting.pyGlobus import Server, ServiceBase
 from AccessGrid.VenueServer import VenueServer
@@ -29,20 +30,17 @@ def SignalHandler(signum, frame):
     running = 0
 
 def AuthCallback(server, g_handle, remote_user, context):
-    print "Server gets identity ", remote_user
+    log.debug("Server gets identity ", remote_user)
     return 1
 
-
-try:
-    import logging
-    logger = logging.getLogger("AG")
-    logger.addHandler(logging.StreamHandler())
-    logger.setLevel(logging.DEBUG)
-except:
-    pass
-
-
 port = 8000
+
+# Once we have optik command line parsing we can make this more
+# elegant and have perhaps
+# -p port
+# -l logfile
+# -f configfile
+
 if len(sys.argv) > 1:
     port = int(sys.argv[1])
 
@@ -50,6 +48,14 @@ configFile = None
 if len(sys.argv) > 2:
     configFile = sys.argv[2]
     
+logger = logging.getLogger("AG.VenueServer")
+logger.setLevel(logging.DEBUG)
+logname = "VenueServer.log"
+hdlr = logging.handlers.RotatingFileHandler(logname, "a", 10000000, 0)
+fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
+hdlr.setFormatter(fmt)
+logger.addHandler(hdlr)
+
 # First thing we do is create a hosting environment
 hostingEnvironment = Server.Server(port, auth_callback=AuthCallback)
 
