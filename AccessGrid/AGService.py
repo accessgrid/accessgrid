@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.34 2004-05-03 17:40:44 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.35 2004-05-10 19:43:00 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.34 2004-05-03 17:40:44 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.35 2004-05-10 19:43:00 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -214,7 +214,10 @@ class AGService:
 
     def SetIdentity(self, profile):
         self.profile = profile
-
+        
+    def GetName(self):
+        className = str(self.__class__).split('.')[-1]
+        return className
 
 
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
@@ -375,11 +378,14 @@ def RunService(service,serviceInterface,port):
     from AccessGrid.hosting import SecureServer as Server
     from AccessGrid.Platform.Config import SystemConfig
     
+    
+    serviceName = service.GetName()
+    
     # Initialize the service
     svc = Service.instance()
-    svc.Initialize(Log.AGService)
+    svc.Initialize(serviceName)
     log = svc.GetLog()
-    Log.SetDefaultLevel(Log.AGService, Log.DEBUG)   
+    Log.SetDefaultLevel(serviceName, Log.DEBUG)   
      
     # Create the server
     hostname = Service.instance().GetHostname()
