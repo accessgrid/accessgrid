@@ -1,4 +1,19 @@
 #!/usr/bin/python2
+#-----------------------------------------------------------------------------
+# Name:        CreateVenues.py
+# Purpose:     This creates venues from a file.
+#
+# Author:      Ivan R. Judson
+#
+# Created:     2002/12/12
+# RCS-ID:      $Id: CreateVenues.py,v 1.12 2003-09-22 14:12:08 judson Exp $
+# Copyright:   (c) 2003
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
+"""
+This program is used to create venues for the venue server.
+"""
+__revision__ = "$Id: CreateVenues.py,v 1.12 2003-09-22 14:12:08 judson Exp $"
 
 import ConfigParser
 import sys
@@ -10,7 +25,10 @@ from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.Descriptions import Capability, StreamDescription 
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
-def run():
+def main():
+    """
+    This is the function that does all the real work.
+    """
     venueServerUri = "https://localhost:8000/VenueServer"
 
     if len(sys.argv) > 2:
@@ -21,8 +39,8 @@ def run():
     venueServer = Client.Handle(venueServerUri).GetProxy()
     venueServer.SetEncryptAllMedia(0)
 
-    cp = ConfigParser.ConfigParser()
-    cp.read(configFile)
+    config = ConfigParser.ConfigParser()
+    config.read(configFile)
     venues = {}
 
     # Start up the logging
@@ -31,58 +49,60 @@ def run():
     log.addHandler(logging.StreamHandler())
 
     # We do this in two iterations because we need valid URLs for connections
-    for sec in cp.sections():
+    for sec in config.sections():
         # Build Venue Descriptions
-        vd = VenueDescription(cp.get(sec, 'name'), cp.get(sec, 'description'))
-        vd.streams = []
+        vdesc = VenueDescription(config.get(sec, 'name'),
+                              config.get(sec, 'description'))
+        vdesc.streams = []
     
         # Static Video
-        if cp.has_option(sec, 'video'):
-            (host, port) = string.split(cp.get(sec, 'video'), ':')
+        if config.has_option(sec, 'video'):
+            (host, port) = string.split(config.get(sec, 'video'), ':')
             vcap = Capability(Capability.PRODUCER, Capability.VIDEO)
-            vsd = StreamDescription(vd.name, 
+            vsd = StreamDescription(vdesc.name, 
                                     MulticastNetworkLocation(host.strip(),
                                                              int(port), 
                                                              127),
                                     vcap, 0, None, 1)
-            vd.streams.append(vsd)
+            vdesc.streams.append(vsd)
         
         # Static Audio
-        if cp.has_option(sec, 'audio'):
-            (host, port) = string.split(cp.get(sec, 'audio'), ':')
+        if config.has_option(sec, 'audio'):
+            (host, port) = string.split(config.get(sec, 'audio'), ':')
             acap = Capability(Capability.PRODUCER, Capability.AUDIO)
-            asd = StreamDescription(vd.name, 
+            asd = StreamDescription(vdesc.name, 
                                     MulticastNetworkLocation(host.strip(),
                                                              int(port), 
                                                              127),
                                 acap, 0, None, 1)
-            vd.streams.append(asd)
+            vdesc.streams.append(asd)
 
         # Make the venue, then store the resulting URL
-        print "VD #%s : %s" % (sec, vd.name)
-        vd.uri = venueServer.AddVenue(vd)
-        cp.set(sec, 'uri', vd.uri)
+        print "VD #%s : %s" % (sec, vdesc.name)
+        vdesc.uri = venueServer.AddVenue(vdesc)
+        config.set(sec, 'uri', vdesc.uri)
 
-        if cp.has_option(sec, 'default'):
-            venueServer.SetDefaultVenue(vd.uri)
+        if config.has_option(sec, 'default'):
+            venueServer.SetDefaultVenue(vdesc.uri)
         
-        venues[sec] = vd
+        venues[sec] = vdesc
 
-    for sec in cp.sections():
+    for sec in config.sections():
         # Build up connections
-        exits = string.split(cp.get(sec, 'exits'), ', ')
-        for x in exits:
-            if venues.has_key(x):
-                toVenue = venues[x]
+        exits = string.split(config.get(sec, 'exits'), ', ')
+        for vexit in exits:
+            if venues.has_key(vexit):
+                toVenue = venues[vexit]
                 uri = toVenue.uri
-                cd = ConnectionDescription(toVenue.name, toVenue.description,
+                conn = ConnectionDescription(toVenue.name, toVenue.description,
                                            toVenue.uri)
-                venues[sec].connections[uri] = cd
+                venues[sec].connections[uri] = conn
             else:
-                print "Error making connection to venue: ", x
+                print "Error making connection to venue: ", vexit
 
         # Set the connections on the given venue
-        print "CD #%s/%s: %s" % (sec, venues[sec].name, cp.get(sec, 'exits'))
+        print "CD #%s/%s: %s" % (sec, venues[sec].name,
+                                 config.get(sec, 'exits'))
 	
         # venue = Client.Handle(venues[sec].uri).GetProxy()
         print "URL: %s" % venues[sec].uri
@@ -93,5 +113,5 @@ if __name__ == "__main__":
     # to profile this:
     # import profile
     # profile.run('run()', 'CreateVenues.prof')
-    run()
+    main()
     

@@ -6,19 +6,23 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.31 2003-09-10 20:36:54 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.32 2003-09-22 14:12:08 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+"""
+This is the Node Service for an AG Node.
+"""
+__revision__ = "$Id: AGNodeService.py,v 1.32 2003-09-22 14:12:08 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 import sys
 import signal, time, os
 import logging, logging.handlers
 import getopt
 
-from AccessGrid.icons import getAGIconIcon
 from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid.hosting.pyGlobus.Server import Server
-from AccessGrid.Descriptions import AGServiceManagerDescription
 
 from AccessGrid import PersonalNode
 from AccessGrid.Platform import GetUserConfigDir
@@ -31,6 +35,9 @@ identityCert = None
 identityKey = None
 
 def Shutdown():
+    """
+    This is used by the signal handler to shut down the node service.
+    """
     global running
     global server
     server.stop()
@@ -43,23 +50,30 @@ def SignalHandler(signum, frame):
     SignalHandler catches signals and shuts down the VenueServer (and
     all of it's Venues. Then it stops the hostingEnvironment.
     """
-
     Shutdown()
 
 # Authorization callback for globus
 def AuthCallback(server, g_handle, remote_user, context):
+    """
+    The Authorization callback implements null auth, none.
+    """
     return 1
 
 # Print usage
 def Usage():
+    """
+    Print out how to run this program.
+    """
     print "%s:" % sys.argv[0]
-    print "    -h|--help : print usage"
-    print "    -d|--debug <filename> : debug mode  - log to console as well as logfile"
-    print "    -p|--port <int> : <port number to listen on>"
-    print "    -l|--logFile <filename> : log file name"
-    print "    --pnode <arg> : initialize as part of a Personal Node configuration"
-    print "    --cert <filename>: identity certificate"
-    print "    --key <filename>: identity certificate's private key"
+    print """
+    -h|--help : print usage
+    -d|--debug <filename> : debug mode  - log to console as well as logfile
+    -p|--port <int> : <port number to listen on>
+    -l|--logFile <filename> : log file name
+    --pnode <arg> : initialize as part of a Personal Node configuration
+    --cert <filename>: identity certificate
+    --key <filename>: identity certificate's private key
+    """
 
 # Parse command line options
 try:

@@ -6,11 +6,16 @@
 # Author:      Robert Olson
 #
 # Created:     9/10/2003
-# RCS-ID:      $Id: certmgr.py,v 1.3 2003-09-11 14:44:18 olson Exp $
+# RCS-ID:      $Id: certmgr.py,v 1.4 2003-09-22 14:12:08 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
-
+"""
+This tool is used on the command line to interact with the users certificate
+environment.
+"""
+__revision__ = "$Id: certmgr.py,v 1.4 2003-09-22 14:12:08 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import string
 import re
@@ -26,9 +31,14 @@ import logging
 log = logging.getLogger("AG.certmgr")
 
 class CertMgrCmdProcessor(cmd.Cmd):
-
+    """
+    The certificate manager is a command processor based application; this is
+    the cmd derived class for processing input.
+    """
     def __init__(self, certMgr):
-
+        """
+        The constructor for the cert mgr command processor.
+        """
         cmd.Cmd.__init__(self)
 
         self.certMgr = certMgr
@@ -37,11 +47,17 @@ class CertMgrCmdProcessor(cmd.Cmd):
         self.setIdentityMode()
 
     def setIdentityMode(self):
+        """
+        Method to set the tool into Identity mode.
+        """
         self.mode = "identity"
         self.loadCerts()
         self.setPrompt()
 
     def setCAMode(self):
+        """
+        Method to set the tool into CA mode.
+        """
         self.mode = "trustedCA"
         self.loadCerts()
         self.setPrompt()
@@ -58,20 +74,30 @@ class CertMgrCmdProcessor(cmd.Cmd):
 
 
     def inIdentityMode(self):
+        """
+        Method to check if the processor is in identity mode.
+        """
         return self.mode == "identity"
 
     def loadCerts(self):
-        pred = lambda c: c.GetMetadata("AG.CertificateManager.certType") == self.mode
+        """
+        Method to load certificates from the specified location.
+        """
+        pred = lambda c: \
+            c.GetMetadata("AG.CertificateManager.certType") == self.mode
         self.certs = list(self.certRepo.FindCertificates(pred))
 
     def emptyline(self):
+        """
+        Method to process empty lines.
+        """
         pass
 
     def do_id(self, arg):
         """
 Usage:
 
-	id
+        id
 
 Change to identity certificate manipulation mode.
 """
@@ -81,20 +107,23 @@ Change to identity certificate manipulation mode.
         """
 Usage:
 
-	ca
+        ca
 
 Change to CA certificate manipulation mode.
 """
         self.setCAMode()
 
     def do_EOF(self, arg):
+        """
+        EOF processor.
+        """
         return 1
 
     def do_quit(self, arg):
         """
 Usage:
 
-	quit
+        quit
 
 Quit the certificate manager.
 """
@@ -104,7 +133,7 @@ Quit the certificate manager.
         """
 Usage:
 
-	list
+        list
 
 List the available certificates.
 """
@@ -117,14 +146,14 @@ List the available certificates.
                 dstr = "(Default) "
             else:
                 dstr = ""
-                
+
             print "%d. %s%s" % (i + 1, dstr, str(cert.GetSubject()))
 
     def do_show(self, line):
         """
 Usage:
 
-	show <certnum>
+        show <certnum>
 
 Show detailed information about certificate <certnum>.
 """
@@ -137,11 +166,11 @@ Show detailed information about certificate <certnum>.
         if num is None:
             print "Invalid certificate number %s" % (args[0])
             return 0
-            
-        c = self.certs[num]
 
-        print "Subject: ", c.GetSubject()
-        print "Issuer: ", c.GetIssuer()
+        cert = self.certs[num]
+
+        print "Subject: ", cert.GetSubject()
+        print "Issuer: ", cert.GetIssuer()
 
         print self.certs[num].GetVerboseText()
 
@@ -149,7 +178,7 @@ Show detailed information about certificate <certnum>.
         """
 Usage:
 
-	delete <certnum>
+        delete <certnum>
 
 Delete certificate <certnum>.
 """
@@ -162,17 +191,17 @@ Delete certificate <certnum>.
         if num is None:
             print "Invalid certificate number %s" % (args[0])
             return 0
-            
+
         cert = self.certs[num]
 
         print "Delete certificate %s? (y/n) " % (cert.GetSubject()),
-        x = sys.stdin.readline()
-        x = x.strip().lower()
-        if x[0] != 'y':
+        line = sys.stdin.readline()
+        line = line.strip().lower()
+        if line[0] != 'y':
             return 0
 
         isDefault = self.certMgr.IsDefaultIdentityCert(cert)
-        
+
         self.certMgr.GetCertificateRepository().RemoveCertificate(cert)
 
         #
@@ -190,7 +219,7 @@ Delete certificate <certnum>.
     def do_globus_init(self, line):
         """
 Usage:
-	globus_init
+        globus_init
 
 Initialize certificates from the default Globus locations,
 if possible.
@@ -204,9 +233,9 @@ Usage: export <num> <certfile> [<keyfile>]
 
 If <keyfile> is not specified, and the certificate has
 a private key, it will be included in <certfile>
-        
+
         """
-        
+
         args = split_quoted(line)
         if len(args) != 2 and len(args) != 3:
             print "Usage: export <num> <certfile> [<keyfile>]"
@@ -232,9 +261,9 @@ a private key, it will be included in <certfile>
 
         if os.path.exists(certFile):
             print "%s already exists, overwrite? " % (certFile),
-            x = sys.stdin.readline()
-            x = x.strip().lower()
-            if x[0] != 'y':
+            line = sys.stdin.readline()
+            line = line.strip().lower()
+            if line[0] != 'y':
                 return 0
 
         if keyFile is not None:
@@ -244,9 +273,9 @@ a private key, it will be included in <certfile>
 
             if os.path.exists(keyFile):
                 print "%s already exists, overwrite? " % (keyFile),
-                x = sys.stdin.readline()
-                x = x.strip().lower()
-                if x[0] != 'y':
+                line = sys.stdin.readline()
+                line = line.strip().lower()
+                if line[0] != 'y':
                     return 0
 
         #
@@ -264,6 +293,9 @@ a private key, it will be included in <certfile>
             self.exportCACert(cert, certFile)
 
     def exportIdentityCert(self, cert, certFile, keyFile):
+        """
+        This method exports an identity certificate.
+        """
         try:
             fh = open(certFile, "w")
             fh.write(crypto.dump_certificate(crypto.FILETYPE_PEM,
@@ -290,6 +322,9 @@ a private key, it will be included in <certfile>
             print "Export failed: ", e
 
     def exportCACert(self, cert, certFile):
+        """
+        This method exports a CA certificate from the users environment.
+        """
         try:
             fh = open(certFile, "w")
             fh.write(crypto.dump_certificate(crypto.FILETYPE_PEM,
@@ -302,7 +337,7 @@ a private key, it will be included in <certfile>
         """
 Usage:
 
-	default <certnum>
+        default <certnum>
 
 Set certificate <certnum> to be the default identity certificate.
 """
@@ -310,7 +345,7 @@ Set certificate <certnum> to be the default identity certificate.
         if not self.inIdentityMode():
             print "Must be in identity mode to set default certficate."
             return 0
-        
+
         args = line.split()
         if len(args) != 1:
             print "Usage: default <certnum>"
@@ -320,22 +355,24 @@ Set certificate <certnum> to be the default identity certificate.
         if num is None:
             print "Invalid certificate number %s" % (args[0])
             return 0
-            
-        c = self.certs[num]
 
-        self.certMgr.SetDefaultIdentity(c)
+        cert = self.certs[num]
 
-        print "Set %s to default" % (c.GetSubject())
+        self.certMgr.SetDefaultIdentity(cert)
+
+        print "Set %s to default" % (cert.GetSubject())
 
         self.loadCerts()
 
     def help_import(self):
-
+        """
+        Help message for the import command.
+        """
         if self.inIdentityMode():
             print """
 Usage:
 
-	import <certfile> [<keyfile>]
+        import <certfile> [<keyfile>]
 
 If <keyfile> is not specified, and an identity
 cert is being imported, the key must be included
@@ -345,17 +382,18 @@ in <certfile>.
             print """
 Usage:
 
-	import <certfile> [<signing_policy_file>]
+        import <certfile> [<signing_policy_file>]
 
 If <signing_policy_file> is not present, it is assumed to be
 the base name of certfile, with a .signing_policy suffix.
-"""        
+"""
 
     def do_import(self, line):
         """
-
+        This is a wrapper method for the command processor. Depending
+        on what mode we are in (identity or ca) we'll import a certificate
+        of that type into the users  environment.
         """
-        
         if self.inIdentityMode():
             self.importIdentityCert(line)
         else:
@@ -364,7 +402,9 @@ the base name of certfile, with a .signing_policy suffix.
         self.loadCerts()
 
     def importIdentityCert(self, line):
-
+        """
+        This method imports an identity certificate into the users environment.
+        """
         args = split_quoted(line)
         if len(args) != 1 and len(args) != 2:
             print "Usage: import <certfile> [<keyfile>]"
@@ -383,7 +423,7 @@ the base name of certfile, with a .signing_policy suffix.
         if keyFile is not None and not os.path.isfile(keyFile):
             print "Key file %s does not exist" % (certFile)
             return 0
-        
+
         certRE = re.compile("-----BEGIN CERTIFICATE-----")
         keyRE = re.compile("-----BEGIN RSA PRIVATE KEY-----")
 
@@ -391,23 +431,24 @@ the base name of certfile, with a .signing_policy suffix.
             fh = open(certFile)
 
             validCert = validKey = 0
-            
-            for l in fh:
-                if not validCert and certRE.search(l):
+
+            for line in fh:
+                if not validCert and certRE.search(line):
                     validCert = 1
                     if validKey:
                         break
-                if not validKey and keyRE.search(l):
+                if not validKey and keyRE.search(line):
                     validKey = 1
                     if validCert:
                         break
             fh.close()
-            log.debug("scan complete, validKey=%s validCert=%s", validKey, validCert)
+            log.debug("scan complete, validKey=%s validCert=%s", validKey,
+                                                                 validCert)
 
         except IOError:
             print "Could not open certificate file %s", (certFile)
             return None
-            
+
         except:
             print "Unexpected error opening certificate file %s" % (certFile)
             return None
@@ -417,7 +458,8 @@ the base name of certfile, with a .signing_policy suffix.
         #
 
         if not validCert:
-            print "Certificate file %s doesn't appear to contain a PEM-encode certificate" % (certFile)
+            print "Certificate file %s doesn't appear to contain a PEM-encode \
+            certificate" % (certFile)
             return 0
 
         #
@@ -430,16 +472,19 @@ the base name of certfile, with a .signing_policy suffix.
             #
 
             if keyFile is not None:
-                print "Private key found in certificate file %s; ignoring key file %s" %(certFile, keyFile)
+                print "Private key found in certificate file %s; ignoring key \
+                file %s" %(certFile, keyFile)
                 keyFile = certFile
 
         elif keyFile is None:
-            print "Private key not found in certificate file %s and no key file specified; cannot import" %(certFile)
+            print "Private key not found in certificate file %s and no key \
+            file specified; cannot import" %(certFile)
             return None
 
         try:
-            cb = self.certMgr.GetUserInterface().GetPassphraseCallback("Private key passphrase",
-                                                                     "Enter the passphrase to your private key.")
+            ui = self.certMgr.GetUserInterface()
+            cb = ui.GetPassphraseCallback("Private key passphrase",
+                                "Enter the passphrase to your private key.")
             impCert = self.certMgr.ImportIdentityCertificatePEM(self.certMgr.GetCertificateRepository(),
                                                                 certFile, keyFile, cb)
             print "Imported identity %s" % ( str(impCert.GetSubject()))
@@ -448,7 +493,7 @@ the base name of certfile, with a .signing_policy suffix.
         except Exception, e:
             print "Error importing certificate from %s keyfile %s: %s" % (certFile, keyFile, e)
             return 0
-                      
+
         #
         # Check to see if we have the CA cert for the issuer of this cert.
         #
@@ -478,7 +523,9 @@ the base name of certfile, with a .signing_policy suffix.
 
 
     def importCACert(self, line):
-        
+        """
+        This method imports a CA cert into the users environment.
+        """
         args = split_quoted(line)
         if len(args) != 1 and len(args) != 2:
             print "Usage: import <certfile> [<signing_policy>]"
@@ -505,9 +552,9 @@ the base name of certfile, with a .signing_policy suffix.
             fh = open(certFile)
 
             validCert = 0
-            
-            for l in fh:
-                if certRE.search(l):
+
+            for line in fh:
+                if certRE.search(line):
                     validCert = 1
                     break
             fh.close()
@@ -516,7 +563,7 @@ the base name of certfile, with a .signing_policy suffix.
         except IOError:
             print "Could not open certificate file %s", (certFile)
             return None
-            
+
         except:
             print "Unexpected error opening certificate file %s" % (certFile)
             return None
@@ -537,7 +584,7 @@ the base name of certfile, with a .signing_policy suffix.
             shutil.copyfile(spFile, impCert.GetFilePath("signing_policy"))
 
         except Exception, e:
-            print "Error importing certificate from %s keyfile %s: %s" % (certFile, keyFile, e)
+            print "Error importing certificate from %s: %s" % (certFile, e)
             return 0
 
         return impCert
@@ -547,7 +594,7 @@ the base name of certfile, with a .signing_policy suffix.
         Validate 'a' as a certificate number, and return it if valid.
         Return None if invalid.
         """
-        
+
         try:
             num = int(a)
             num -= 1
@@ -582,7 +629,7 @@ def split_quoted (s):
     characters are stripped from any quoted string.  Returns a list of
     words.
     """
-    
+
     # This is a nice algorithm for splitting up a single string, since it
     # doesn't require character-by-character examination.  It was a little
     # bit of a brain-bender to get it working right, though...
@@ -629,7 +676,9 @@ def split_quoted (s):
 # split_quoted ()
 
 def main():
-
+    """
+    The main routine.
+    """
     app = Toolkit.CmdlineApplication()
     app.Initialize()
 
@@ -637,6 +686,6 @@ def main():
 
     cmd.cmdloop()
 
-        
+
 if __name__ == "__main__":
     main()

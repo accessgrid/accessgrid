@@ -6,10 +6,18 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: SetupVideo.py,v 1.6 2003-08-04 22:19:17 turam Exp $
+# RCS-ID:      $Id: SetupVideo.py,v 1.7 2003-09-22 14:12:08 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+"""
+This is the script that searches for video devices and gets them ready for
+the node to use.
+"""
+
+__revision__ = "$Id: SetupVideo.py,v 1.7 2003-09-22 14:12:08 judson Exp $"
+__docformat__ = "restructuredtext en"
+
 import os
 from AccessGrid import Platform
 
@@ -42,10 +50,10 @@ os.environ["PATH"] = installDir + os.pathsep + os.environ["PATH"]
 os.chdir( Platform.GetSystemConfigDir() )
 
 # write tcl script
-tclScriptFile="tclScript"
-f = open( tclScriptFile, "w" )
-f.write(tclScript)
-f.close()
+tclScriptFile = "tclScript"
+tfptr = open( tclScriptFile, "w" )
+tfptr.write(tclScript)
+tfptr.close()
 
 # run vic to generate video device file
 os.system('vic -u %s 224.2.2.2/2000' % (tclScriptFile) )

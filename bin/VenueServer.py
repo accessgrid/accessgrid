@@ -4,10 +4,15 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.36 2003-09-10 20:36:54 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.37 2003-09-22 14:12:08 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+This is the venue server program. This will run a venue server.
+"""
+__revision__ = "$Id: VenueServer.py,v 1.37 2003-09-22 14:12:08 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 import os
 import sys
@@ -35,7 +40,7 @@ if sys.platform == "win32":
 # Back to your normal imports.
 #
 
-from AccessGrid.hosting.pyGlobus import Server, ServiceBase
+from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.VenueServer import VenueServer
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid import Toolkit
@@ -59,11 +64,18 @@ def SignalHandler(signum, frame):
 
 # Authorization callback for the server
 def AuthCallback(server, g_handle, remote_user, context):
+    """
+    This is the authorization callback for globus. It's effectively
+    allowing all calls.
+    """
     global log
     log.debug("Server gets identity %s", remote_user)
     return 1
 
 def Usage():
+    """
+    This is the usage method, it prints out how to use this program.
+    """
     print "%s:" % sys.argv[0]
     print "    -h|--help : print usage"
     print "    -p|--port <int> : <port number to listen on>"
@@ -71,8 +83,10 @@ def Usage():
     print "    -c|--configFile <filename> : config file name"
 
 def main():
-
-    global venueServer, log
+    """
+    The main routine of this program.
+    """
+    global venueServer, log, hostingEnvironment, log
 
     # defaults
     port = 8000
@@ -83,9 +97,9 @@ def main():
 
     # Parse command line options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "p:l:c:hd",
-                                   ["port=", "logfile=", "configfile=",
-                                    "help", "debug", "key=", "cert="])
+        opts = getopt.getopt(sys.argv[1:], "p:l:c:hd",
+                                ["port=", "logfile=", "configfile=",
+                                "help", "debug", "key=", "cert="])[0]
     except getopt.GetoptError:
         Usage()
         sys.exit(2)
@@ -93,20 +107,20 @@ def main():
     debugMode = 0
     certWarn = 0
 
-    for o, a in opts:
-        if o in ("-p", "--port"):
-            port = int(a)
-        elif o in ("-d", "--debug"):
+    for opt, arg in opts:
+        if opt in ("-p", "--port"):
+            port = int(arg)
+        elif opt in ("-d", "--debug"):
             debugMode = 1
-        elif o in ("-l", "--logfile"):
-            logFile = a
-        elif o in ("-c", "--configFile"):
-            configFile = a
-        elif o == "--key":
+        elif opt in ("-l", "--logfile"):
+            logFile = arg
+        elif opt in ("-c", "--configFile"):
+            configFile = arg
+        elif opt == "--key":
             certWarn = 1
-        elif o == "--cert":
+        elif opt == "--cert":
             certWarn = 1
-        elif o in ("-h", "--help"):
+        elif opt in ("-h", "--help"):
             Usage()
             sys.exit(0)
 
@@ -140,7 +154,8 @@ def main():
     log = logging.getLogger("AG")
     log.setLevel(logging.DEBUG)
     hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
-    extfmt = logging.Formatter("%(asctime)s %(thread)s %(name)s %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
+    extfmt = logging.Formatter("%(asctime)s %(thread)s %(name)s \
+    %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
     fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
     hdlr.setFormatter(extfmt)
     log.addHandler(hdlr)
@@ -182,8 +197,8 @@ def main():
 
     log.debug("Stopped Hosting Environment, exiting.")
 
-    for t in threading.enumerate():
-        print "Thread ", t
+    for thrd in threading.enumerate():
+        print "Thread ", thrd
 
     # Exit cleanly
 
