@@ -1,0 +1,7 @@
+PYGLOBUS = 'pyGlobus'
+PYGLOBUS_VER = '0.9.7'
+PYOPENSSL = 'pyOpenSSL_AG'
+PYOPENSSL_VER= '0.5.1.1'
+AGMEDIA = 'ag-media'
+AGMEDIA_VER  = '2.2'
+
