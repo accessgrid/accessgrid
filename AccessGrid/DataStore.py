@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.17 2003-04-03 20:17:11 olson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.18 2003-04-08 21:04:20 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1667,7 +1667,7 @@ if __name__ == "__main__":
             log.debug("AddData: %s", desc)
 
     v = TestCallbackClass()
-    ds = DataStore(v, "/temp")
+    ds = DataStore(v, "/temp", "snap")
     s = GSIHTTPTransferServer(('', 9011))
 
     class Handler:
