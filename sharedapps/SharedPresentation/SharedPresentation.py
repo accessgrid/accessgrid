@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.29 2004-07-27 21:26:47 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.30 2004-08-17 17:00:31 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -894,27 +894,34 @@ class SharedPresentation:
         publicId = self.sharedAppClient.GetPublicId()
 
         if flag:
-
             # Local user wants to become master
             # Set the master in the venue
             self.sharedAppClient.SetData(SharedPresKey.MASTER, publicId)
-            self.sharedAppClient.SetParticipantStatus("master")
-            
             # Send event
             self.sharedAppClient.SendEvent(SharedPresEvent.MASTER, (publicId, publicId))
+            
+            try:
+                self.sharedAppClient.SetParticipantStatus("master")
+            except:
+                self.log.exception("SharedPresentation:__init__: Failed to set participant status, old server?")
+           
         else:
-
             # Local user has chosen to stop being master
             if self.masterId == publicId:
-
                 self.log.debug(" Set master to empty")
 
                 # Let's set the master in the venue
                 self.sharedAppClient.SetData(SharedPresKey.MASTER, "")
-                self.sharedAppClient.SetParticipantStatus("connected")
-                
+
                 # Send event
                 self.sharedAppClient.SendEvent(SharedPresEvent.MASTER, (publicId, ""))
+
+                try:
+                    self.sharedAppClient.SetParticipantStatus("connected")
+                except:
+                    self.log.exception("SharedPresentation:__init__: Failed to set participant status, old server?")
+                    
+               
             else:
                 self.log.debug(" User is not master; skipping")
 
@@ -1169,7 +1176,10 @@ class SharedPresentation:
 
         # If I was master, change status in application service.
         if self.masterId == self.sharedAppClient.GetPublicId():
-            self.sharedAppClient.SetParticipantStatus("connected")
+            try:
+                self.sharedAppClient.SetParticipantStatus("connected")
+            except:
+                self.log.exception("SharedPresentation:__init__: Failed to set participant status, old server?")
 
         # Store the master's public id locally
         self.masterId = data[1]
@@ -1555,6 +1565,7 @@ if __name__ == "__main__":
     init_args = []
     if "--debug" in sys.argv or "-d" in sys.argv:
         init_args.append("--debug")
+       
     app.Initialize(name,args=init_args)
     
     wxInitAllImageHandlers()
