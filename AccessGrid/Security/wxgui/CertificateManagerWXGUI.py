@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.6 2004-03-22 16:37:41 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.7 2004-03-22 20:11:38 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.6 2004-03-22 16:37:41 olson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.7 2004-03-22 20:11:38 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -282,7 +282,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
         This method invokes certmgr.InitEnvironment().
 
-        If the InitEnvrironment call succeeds, we are done.
+        If the InitEnvironment call succeeds, we are done.
 
         If it does not succeed, it may raise a number of different exceptions
         based on what in particular the error was. These must be handled
