@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.307 2004-01-06 17:55:05 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.308 2004-01-09 23:17:22 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.307 2004-01-06 17:55:05 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.308 2004-01-09 23:17:22 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2628,8 +2628,9 @@ class TextClientPanel(wxPanel):
         '''
         # Added due to wxPython bug. The wxTextCtrl doesn't
         # scroll properly when the wxTE_AUTO_URL flag is set. 
-        pos = self.TextOutput.GetInsertionPoint()
-        self.TextOutput.ShowPosition(pos - 1)
+        #pos = self.TextOutput.GetInsertionPoint()
+        #self.TextOutput.ShowPosition(pos - 1)
+        self.TextOutput.ScrollLines(-1)
                                             
     def ClearTextWidgets(self):
         '''
@@ -2695,6 +2696,7 @@ class TextClientPanel(wxPanel):
         if isWindows():
             # Scrolling is not correct on windows when I use
             # wxTE_RICH flag in text output window.
+           
             self.SetRightScroll()
                
           
