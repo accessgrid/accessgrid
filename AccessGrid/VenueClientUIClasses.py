@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.111 2003-03-26 18:35:16 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.112 2003-03-26 20:25:19 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -416,16 +416,29 @@ class VenueClientFrame(wxFrame):
             pass
 
     def AuthorizeLeadDialog(self, clientProfile):
-        text = "Do you want "+clientProfile.name+" to follow you?"
-        title = "Authorize follow"
-        dlg = wxMessageDialog(self, text, title, style = wxYES_NO| wxYES_DEFAULT|wxICON_QUESTION)
-        if(dlg.ShowModal() == wxID_YES):
-            self.app.SendLeadResponse(clientProfile, true)
+        idPending = None
+        idLeading = None
+
+        if(self.app.pendingLeader!=None):
+            idPending = self.app.pendingLeader.publicId
+
+        if(self.app.leaderProfile!=None):
+            idLeading = self.app.leaderProfile.publicId
+               
+        if(clientProfile.publicId != idPending and clientProfile.publicId != idLeading):
+            text = "Do you want "+clientProfile.name+" to follow you?"
+            title = "Authorize follow"
+            dlg = wxMessageDialog(self, text, title, style = wxYES_NO| wxYES_DEFAULT|wxICON_QUESTION)
+            if(dlg.ShowModal() == wxID_YES):
+                self.app.SendLeadResponse(clientProfile, true)
+
+            else:
+                self.app.SendLeadResponse(clientProfile, false)
+
+            dlg.Destroy()
 
         else:
             self.app.SendLeadResponse(clientProfile, false)
-
-        dlg.Destroy()
 
     def NotifyUnLeadDialog(self, clientProfile):
         text = clientProfile.name+" has stopped following you"
