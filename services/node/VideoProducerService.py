@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.18 2003-10-22 20:52:36 judson Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.19 2003-11-19 06:31:05 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -81,6 +81,8 @@ class VideoProducerService( AGService ):
             vicDevice = "None"
          else:
             vicDevice = self.resource.resource
+            vicDevice = vicDevice.replace("[","\[")
+            vicDevice = vicDevice.replace("]","\]")
 
          #
          # Write vic startup file
