@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 import sys
 from AccessGrid.cache.VenueServer_services import *
-from AccessGrid.cache.AccessGrid_types import www_accessgrid_org_v3_0 as AGTk_types
+from AccessGrid.cache.AccessGrid_Types import www_accessgrid_org_v3_0 as AGTk_types
 
 
 if __name__ == '__main__':
-    loc = VenueServerLocator()
-    VenueServer = loc.getVenueServer(
-        portAddress="http://localhost:7000/VenueServer",
-        tracefile=sys.stdout)
+#    loc = VenueServerLocator()
+#    VenueServer = loc.getVenueServer(
+#        portAddress="http://localhost:7000/VenueServer",
+#        tracefile=sys.stdout)
 
+    VenueServer = VenueServerSOAP("http://localhost:7000/VenueServer",
+                                  tracefile=sys.stdout)
     # Go through each interface and see what we can do
     sr = CheckpointRequest()
     sr.secondsFromNow = 10
