@@ -11,10 +11,6 @@ from AGParameter import *
 
 
 class Event:
-    def __init__( self, eventType, data ):
-        self.eventType = eventType
-        self.data = data
-
     ENTER = "Enter"
     EXIT = "Exit"
     ADD_DATA = "Add data"
@@ -23,6 +19,65 @@ class Event:
     REMOVE_SERVICE = "Remove service"
     ADD_CONNECTION = "Add connection"
     REMOVE_CONNECTION = "Remove connection"
+    UPDATE_VENUE_STATE = "Update venue state"
+
+    def __init__( self, eventType, data ):
+        self.eventType = eventType
+        self.data = data
+
+class VenueState:
+    def __init__( self ):
+        self.description = None
+        self.connections = dict()
+        self.users = dict()
+        self.nodes = []
+        self.data = dict()
+        self.services = dict()
+        self.coherenceLocation = None
+
+    def SetDescription( self, description ):
+        self.description = description
+    def GetDescription( self ):
+        return self.description
+
+    def AddUser( self, userProfile ):
+        self.users[userProfile.publicId] = userProfile
+    def RemoveUser( self, userProfile ):
+        del self.users[userProfile.publicId]
+
+    def AddNode( self, nodeProfile ):
+        self.nodes[nodeProfile.publicId] = nodeProfile
+    def RemoveNode( self, nodeProfile ):
+        del self.nodes[nodeProfile.publicId]
+
+    def AddConnection( self, connectionDescription ):
+        self.connections[connectionDescription.uri] = connectionDescription
+    def RemoveConnection( self, connectionDescription ):
+        del self.connections[connectionDescription.uri]
+    def SetConnections( self, connectionList ):
+        for connection in connectionList:
+            self.connections[connection.uri] = connection
+
+    def AddData( self, dataDescription ):
+        self.data[dataDescription.name] = dataDescription
+    def RemoveData( self, dataDescription ):
+        del self.data[dataDescription.name]
+
+    def AddService( self, serviceDescription ):
+        self.services[serviceDescription.uri] = serviceDescription
+    def RemoveService( self, serviceDescription ):
+        del self.services[serviceDescription.uri]
+
+    def AddConnection( self, connectionDescription ):
+        self.connections[connectionDescription.uri] = connectionDescription
+    def RemoveConnection( self, connectionDescription ):
+        del self.connections[connectionDescription.uri]
+
+    def SetCoherenceLocation( self, coherenceLocation ):
+        self.coherenceLocation = coherenceLocation
+    def GetCoherenceLocation( self ):
+        return self.coherenceLocation
+
 
 
 
