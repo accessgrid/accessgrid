@@ -5,15 +5,13 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.14 2003-04-23 19:29:50 olson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.15 2003-04-24 16:59:02 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import sys
-
 import logging
-
-log = logging.getLogger("AG.AGService")
+import logging.handlers
 
 try:     import win32process
 except:  pass
@@ -26,11 +24,24 @@ from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.AuthorizationManager import AuthorizationManager
 
-
 if sys.platform == 'win32':
     from AccessGrid.ProcessManagerWin32 import ProcessManagerWin32 as ProcessManager
 else:
     from AccessGrid.ProcessManagerUnix import ProcessManagerUnix as ProcessManager
+
+def GetLog():
+    """
+    Create a log with our standard format and return it
+    """
+    log = logging.getLogger("AG.AGService")
+    log.setLevel(logging.DEBUG)
+    logFile="AGService.log"
+    hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
+    logFormat = "%(asctime)s %(levelname)-5s %(message)s (%(filename)s)"
+    hdlr.setFormatter(logging.Formatter(logFormat))
+    log.addHandler(hdlr)
+
+    return log
 
 
 class AGService( ServiceBase ):
@@ -56,6 +67,7 @@ class AGService( ServiceBase ):
       self.streamDescription = StreamDescription()
       self.processManager = ProcessManager()
 
+      self.log = GetLog()
 
 
    def Start( self ):
@@ -80,20 +92,10 @@ class AGService( ServiceBase ):
    def Stop( self ):
        """Stop the service"""
        try:
-           try:
-               #
-               # Kill off the server. this is a hack for now, tom is
-               # going to make this work right later.
-               #
-               self.server.stop()
-           except:
-               log.exception("Can't do server stop")
-               
            self.started = 0
            self.processManager.terminate_all_processes()
        except Exception, e:
-           log.exception("Exception in AGService.Stop")
-           print "Exception in AGService.Stop ", sys.exc_type, sys.exc_value
+           self.log.exception("Exception in AGService.Stop")
            raise e
            # raise faultType("AGService.Stop failed : ", str( sys.exc_value ) )
            
@@ -108,9 +110,8 @@ class AGService( ServiceBase ):
 
       try:
          self.authManager.SetAuthorizedUsers( authorizedUsers )
-         print "got authorized user list", authorizedUsers
       except:
-         print "Exception in AGService.SetAuthorizedUsers : ", sys.exc_type, sys.exc_value
+         self.log.exception("Exception in AGService.SetAuthorizedUsers")
          raise faultType("AGService.SetAuthorizedUsers failed : " + str(sys.exc_value) )
    SetAuthorizedUsers.soap_export_as = "SetAuthorizedUsers"
 
@@ -155,7 +156,7 @@ class AGService( ServiceBase ):
             if parm.name in self.configuration.keys():
                 self.configuration[parm.name].SetValue( parm.value )
       except:
-         print "Exception in AGService.SetConfiguration : ", sys.exc_type, sys.exc_value
+         self.log.exception("Exception in AGService.SetConfiguration")
          raise faultType("AGService.SetConfiguration failed : " + str(sys.exc_value) )
    SetConfiguration.soap_export_as = "SetConfiguration"
 
@@ -165,7 +166,7 @@ class AGService( ServiceBase ):
       try:
          serviceConfig = ServiceConfiguration( self.resource, self.executable, self.configuration.values() )
       except:
-         print "Exception in GetConfiguration ", sys.exc_type, sys.exc_value
+         self.log.exception("Exception in GetConfiguration ")
          raise faultType("AGService.GetConfiguration failed : " + str(sys.exc_value) )
 
       return serviceConfig
@@ -176,24 +177,25 @@ class AGService( ServiceBase ):
       """Configure the Service according to the StreamDescription"""
       try:
 
+         self.log.info("ConfigureStream: %s %s %s" % (streamDescription.capability.type, 
+                                    streamDescription.location.host,   
+                                    streamDescription.location.port) )
+
          # Detect trivial re-configuration
          if self.streamDescription.location.host == streamDescription.location.host       \
             and self.streamDescription.location.port == streamDescription.location.port   \
             and self.streamDescription.location.ttl == streamDescription.location.ttl:
                 # configuration with identical stream description;
                 # bail out
-            print "ConfigureStream: ignoring trivial re-configuration"
+            self.log.info("ConfigureStream: ignoring trivial re-configuration")
             return 1
 
 
          m = map( lambda cap:cap.type, self.capabilities )
          if streamDescription.capability.type in m:
-            print "ConfigureStream: ", streamDescription.capability.type, \
-                                       streamDescription.location.host,   \
-                                       streamDescription.location.port
             self.streamDescription = streamDescription
       except:
-         print "Exception in ConfigureStream ", sys.exc_type, sys.exc_value
+         self.log.exception("Exception in ConfigureStream ")
          raise faultType("AGService.ConfigureStream failed : " + str(sys.exc_value) )
 
       return 0
@@ -206,3 +208,10 @@ class AGService( ServiceBase ):
    IsStarted.soap_export_as = "IsStarted"
 
 
+   def Shutdown(self):
+      """
+      Shut down the service
+      """
+      self.log.info("Shut service down")
+      self.server.stop()
+   Shutdown.soap_export_as = "Shutdown"
