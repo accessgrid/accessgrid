@@ -10,14 +10,14 @@ Windows 2000/XP Install
 =======================
 Download and install the following packages in the following order.
 
-ActiveState Python 2.2 (which includes the Win32 Extensions)
-wxPython-2.4.0
+ActiveState Python 2.2.3 (which includes the Win32 Extensions)
+wxPython-2.4.0+
 
 or
 
 Python (2.2.3)
-win32all (ver 154)
-wxPython (2.4.1.2)
+win32all (ver 154+)
+wxPython (2.4.1.2+)
 
 Reporting Bugs and Feature Requests
 ===================================
