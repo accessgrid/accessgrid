@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.15 2004-04-09 18:41:00 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.16 2004-04-09 18:44:37 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.15 2004-04-09 18:41:00 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.16 2004-04-09 18:44:37 judson Exp $"
 
 import os
 import sys
@@ -472,6 +472,9 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             self.SetHostname()
 
         return self.hostname
+
+    def RemoveHostname(self):
+        pass
     
     def GetLocation(self):
         if self.location is not None and not os.path.exists(self.location):
@@ -494,7 +497,9 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
 
         # This propogates the change to all running apps
         self.system.SendSettingChange()
-        
+
+    def RemoveLocation(self):
+        pass
 
     def GetCACertDir(self):
         if self.caCertDir is not None and not os.path.exists(self.caCertDir):
