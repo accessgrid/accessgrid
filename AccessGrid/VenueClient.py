@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.95 2003-08-14 19:22:01 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.96 2003-08-15 13:39:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -327,7 +327,7 @@ class VenueClient( ServiceBase):
         data = event.data
         self.venueState.SetConnections(data)
         for s in self.eventSubscribers:
-            s.SetConnectionEvent(event)
+            s.SetConnectionsEvent(event)
 
     def AddStreamEvent(self, event):
         log.debug("Got Add Stream Event")
