@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.86 2003-09-04 20:53:32 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.87 2003-09-04 21:52:39 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,6 +24,7 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid import icons
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
+from AccessGrid.Utilities import VENUE_MANAGEMENT_LOG
 from AccessGrid import Toolkit
 from AccessGrid.hosting.AccessControl import RoleManager
 from AccessGrid.Venue import RegisterDefaultVenueRoles
@@ -260,7 +261,8 @@ class VenueManagementClient(wxApp):
                 wxEndBusyCursor() 
                 log.exception("VenueManagementClient.ConnectToServer: Can not connect")
                 text = "You have not connected to the venue server located at\n%s.  Error occured." % URL
-                ErrorDialog(None, text, "Venue Server Error", style = wxOK  | wxICON_ERROR)
+                ErrorDialog(None, text, "Venue Server Error",
+                            style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
                 
         #else:
         #    certMgt = Toolkit.GetApplication().GetCertifiateManager()
@@ -507,7 +509,7 @@ class VenueProfilePanel(wxPanel):
     #            exits = Client.Handle(data.uri).get_proxy().GetConnections()
     #            venueProfilePanel.ChangeCurrentVenue(data, exits)
     #        except:
-    #            ErrorDialog(self, 'An error has occured!', "Error dialog")
+    #            ErrorDialog(self, 'An error has occured!', "Error dialog", logFile = VENUE_MANAGEMENT_LOG)
 
     def ClearAllFields(self):
         self.venueProfileBox.SetLabel('')
@@ -680,7 +682,7 @@ class VenueListPanel(wxPanel):
                     log.exception("VenueListPanel.DeleteVenue: Could not delete venue %s" %venueToDelete.name)
                     text = "The venue could not be deleted" + venueToDelete.name
                     ErrorDialog(None, text, "Delete Venue Error",
-                                style = wxOK  | wxICON_ERROR)
+                                style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
                  
                 else:
                     self.venuesList.Delete(index)
@@ -905,7 +907,7 @@ class AdministratorsListPanel(wxPanel):
                     log.exception("AdministratorsListPanel.DeleteAdministrator: Could not delete administrator")
                     text = "The administrator %s could not be deleted" %adminToDelete
                     ErrorDialog(None, text, "Delete Administrator Error",
-                                style = wxOK  | wxICON_ERROR)
+                                style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
                   
                 else:
                     self.administratorsList.Delete(index)
@@ -932,7 +934,7 @@ class AdministratorsListPanel(wxPanel):
             log.exception("AdministratorsListPanel.InsertAdministrator: Can not insert administrator")
             text = "The administrator %s could not be added" %data
             ErrorDialog(None, text, "Add Administrator Error",
-                        style = wxOK  | wxICON_ERROR)
+                        style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
            
         else:
             self.administratorsList.Append(self.application.GetCName(data),
@@ -949,7 +951,7 @@ class AdministratorsListPanel(wxPanel):
             log.exception("AdministratorsListPanel.Modify administrator: Could not modify administrator")
             text = "The administrator %s could not be modified" %oldName
             ErrorDialog(None, text, "Modify Administrator Error",
-                        style = wxOK  | wxICON_ERROR)
+                        style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
          
         else:
             self.administratorsList.Delete(index)
@@ -1031,7 +1033,7 @@ class DetailPanel(wxPanel):
             log.exception("DetailPanel.ClickedOnEncrypt: Set encryption failed")
             text = "The encryption option could not be set"
             ErrorDialog(None, text, "Set Encryption Error",
-                        style = wxOK  | wxICON_ERROR)
+                        style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
           
     def ClickedOnRandom(self, event):
         self.ipAddress.Enable(false)
@@ -1046,7 +1048,7 @@ class DetailPanel(wxPanel):
             log.exception("DetailPanel.ClickedOnEncrypt: Set multicast address to random failed")
             text = "The multicast option could not be set."
             ErrorDialog(None, text, "Set Multicast Error",
-                        style = wxOK  | wxICON_ERROR)
+                        style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
          
     def ClickedOnInterval(self, event):
         self.ipAddress.Enable(true)
@@ -1064,7 +1066,7 @@ class DetailPanel(wxPanel):
             log.exception("DetailPanel.ClickedOnInterval: Set multicast address to interval failed")
             text = "The multicast option could not be set."
             ErrorDialog(None, text, "Set Multicast Error",
-                        style = wxOK  | wxICON_ERROR)
+                        style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
         
     def SetAddress(self, ipAddress, mask):
         oldIpAddress = self.ipAddress.GetLabel()
@@ -1082,7 +1084,7 @@ class DetailPanel(wxPanel):
             log.exception("DetailPanel.SetAddress: Set ip and mask failed")
             text = "The multicast option could not be set."
             ErrorDialog(None, text, "Set Multicast Error",
-                        style = wxOK  | wxICON_ERROR)
+                        style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
          
     def OpenEditPathDialog(self, event):
         dlg = EditPathDialog(self, -1, "Edit path")
@@ -1094,7 +1096,7 @@ class DetailPanel(wxPanel):
                 log.exception("DetailPanel.OpenEditPathDialog: Set storage location failed")
                 text = "The path could not be set."
                 ErrorDialog(None, text, "Set Path Error",
-                            style = wxOK  | wxICON_ERROR)
+                            style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
             else:
                 self.storageLocation.SetLabel(dlg.GetPath())
 
@@ -1111,7 +1113,7 @@ class DetailPanel(wxPanel):
             
                 text = "The path could not be set."
                 ErrorDialog(None, text, "Set Path Error",
-                            style = wxOK  | wxICON_ERROR)
+                            style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
             else:
                 self.storageLocation.SetLabel(dlg.GetPath())
 
@@ -1446,7 +1448,7 @@ class VenueParamFrame(wxDialog):
             #    log.exception("VenueParamFrame.__LoadVenues: could not load venues from %s"%URL)
             #    text = "Could not load exits from server at %s" %URL
             #    ErrorDialog(None, text, "Exits Error",
-            #                style = wxOK  | wxICON_ERROR)
+            #                style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
 
             wxEndBusyCursor()
 
@@ -1455,7 +1457,7 @@ class VenueParamFrame(wxDialog):
             self.address.SetValue(self.currentVenueUrl)
             log.exception("VenueParamFrame.__LoadVenues: Could not load exits from server at %s" %URL)
             ErrorDialog(None, text, "Exits Error",
-                        style = wxOK  | wxICON_ERROR)
+                        style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
             
     
     def AddExit(self, event):
@@ -1781,7 +1783,7 @@ class AddVenueFrame(VenueParamFrame):
                     log.exception("AddVenueFrame.OnOk: Could not add venue")
                     text = "Could not add venue %s" %self.venue.name
                     ErrorDialog(None, text, "Add Venue Error",
-                                style = wxOK  | wxICON_ERROR)
+                                style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
 
                 if self.defaultVenue.IsChecked():
                     try:
@@ -1833,7 +1835,7 @@ class ModifyVenueFrame(VenueParamFrame):
                     log.exception("ModifyVenueFrame.OnOk: Modify venue failed")
                     text = "Could not modify venue %s" %self.venue.name
                     ErrorDialog(None, text, "Modify Venue Error",
-                                style = wxOK  | wxICON_ERROR)
+                                style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
 
                 if self.defaultVenue.IsChecked():
                     try:
