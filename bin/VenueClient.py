@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.152 2003-05-19 21:43:26 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.153 2003-05-20 15:03:06 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -598,14 +598,8 @@ class VenueClientUI(wxApp, VenueClient):
         # If the url parameter is a server address, get default venue
         # else assume the url is a venue address.
         #
-        try: 
-            self.venueUri = Client.Handle(URL).get_proxy().GetDefaultVenue()
-            log.debug("bin.VenueClient::EnterVenue: server url: %s" %self.venueUri)
-
-        except:
-            self.venueUri = URL
-            log.exception("bin.VenueClient::EnterVenue: venue url: %s" %self.venueUri)
         
+        self.venueUri = URL
         self.clientHandle = Client.Handle(self.venueUri)
 
         #
