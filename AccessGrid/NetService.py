@@ -10,6 +10,10 @@ class NetService:
         self.venue = venue
         self.privateId = privateId
         self.type = self.TYPE
+        self.connObj = None
+
+    def SetConnection(self, connObj):
+        self.connObj = connObj
 
     def Stop(self):
         pass
