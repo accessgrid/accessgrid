@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.130 2003-04-08 14:44:44 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.131 2003-04-08 16:26:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -673,7 +673,7 @@ class VenueClientFrame(wxFrame):
         wxLogDebug("open node management")
         frame.AttachToNode( self.app.nodeServiceUri )
         if frame.Connected(): # Right node service uri
-            frame.Update()
+            frame.UpdateUI()
             frame.Show(true)
 
         else: # Not right node service uri
