@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.32 2003-02-11 22:53:09 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.33 2003-02-14 20:49:35 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,6 +18,7 @@ from threading import Thread
 import shelve
 import signal
 import traceback
+import os.path
 
 # AG Stuff
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
@@ -71,7 +72,6 @@ class VenueServer(ServiceBase.ServiceBase):
         # Initialize our state
         # We need to get the first administrator from somewhere
         self.administrators = []
-        self.dataStorage = ''
         self.defaultVenue = ''
         self.hostingEnvironment = hostEnvironment
         self.multicastAddressAllocator = MulticastAddressAllocator()
@@ -103,7 +103,6 @@ class VenueServer(ServiceBase.ServiceBase):
                 print "Loading Venue: %s" % vURL
                 self.venues[vURL] = store[vURL]
                 self.venues[vURL].SetMulticastAddressAllocator(self.multicastAddressAllocator)
-                self.venues[vURL].SetDataStore(self.dataStorage)
                 venuePath = "%s/%s" % (self.venuePathPrefix,
                                        self.venues[vURL].uniqueId)
                 # Somehow we have to register this venue as a new service
@@ -170,9 +169,24 @@ class VenueServer(ServiceBase.ServiceBase):
             else:
                 administrator = connectionInfo.get_remote_name()
                     
+            #
+            # Create the directory to hold the venue's data.
+            #
+
+            if self.dataStorageLocation is None or not os.path.exists(self.dataStorageLocation):
+                print "Creating venue: Data storage location %s not valid" % (self.dataStorageLocation)
+                venueStoragePath = None
+            else:
+                venueStoragePath = os.path.join(self.dataStorageLocation, str(venueID))
+                try:
+                    os.mkdir(venueStoragePath)
+                except os.OSError, e:
+                    print "Could not create venueStoragePath: ", e
+                    venueStoragePath = None
+            
             venue = Venue(venueID, venueDescription,
                           administrator, self.multicastAddressAllocator, 
-                          self.dataStorage)
+                          venueStoragePath)
 
             venue.Start()
             
@@ -342,7 +356,8 @@ class VenueServer(ServiceBase.ServiceBase):
         Set the path for data storage
         """
         self.dataStorageLocation = dataStorageLocation
-        self.cofnig["VenueServer.dataStorageLocation"] = dataStorageLocation
+        self.config["VenueServer.dataStorageLocation"] = dataStorageLocation
+        
     SetStorageLocation.pass_connection_info = 1
     SetStorageLocation.soap_export_as = "SetStorageLocation"
 
@@ -444,8 +459,9 @@ class VenueServer(ServiceBase.ServiceBase):
         
         try:
             store = shelve.open(self.persistenceFilename)
-
+            
             for vURL in self.venues.keys():
+
                 venue = self.venues[vURL]
                 store[vURL] = venue
 
