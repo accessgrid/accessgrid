@@ -895,9 +895,9 @@ class HTTPProxyConfigPanel(wxPanel):
         self.sizer.Add(self.proxyEnabled, 0, wxEXPAND | wxALL, 5)
         hsizer = wxBoxSizer(wxHORIZONTAL)
         hsizer.Add(wxStaticText(self, -1, "Address: "), 0, wxALIGN_CENTER_VERTICAL | wxALL, 2)
-        hsizer.Add(self.proxyText, 1, wxEXPAND)
+        hsizer.Add(self.proxyText, 1, wxEXPAND|wxRIGHT, 5)
         hsizer.Add(wxStaticText(self, -1, "Port: "), 0, wxALIGN_CENTER_VERTICAL | wxALL, 2)
-        hsizer.Add(self.proxyPort, 0, wxEXPAND)
+        hsizer.Add(self.proxyPort, 0, wxEXPAND|wxRIGHT, 5)
         
         self.sizer.Add(hsizer, 0, wxEXPAND |wxBOTTOM, 5)
 
