@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.1 2003-02-03 17:30:17 judson Exp $
+# RCS-ID:      $Id: Events.py,v 1.2 2003-02-10 15:30:14 leggett Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -42,3 +42,4 @@ class TextEvent(Event):
     
     def __init__(self, data):
         Event.__init__(self, TextEvent.TEXT, data)
+

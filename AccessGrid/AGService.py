@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.6 2003-02-10 14:47:35 judson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.7 2003-02-10 15:30:14 leggett Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
