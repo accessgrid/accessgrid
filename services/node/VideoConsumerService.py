@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.18 2004-07-27 16:08:49 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.19 2004-09-03 21:49:49 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -150,6 +150,8 @@ class VideoConsumerService( AGService ):
         """
         Set the identity of the user driving the node
         """
+        log.info("SetIdentity: %s %s", profile.name, profile.email)
+        self.profile = profile
         self.__SetRTPDefaults(profile)
     SetIdentity.soap_export_as = "SetIdentity"
 

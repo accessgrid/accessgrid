@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.24 2004-08-02 21:37:23 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.25 2004-09-03 21:49:49 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -244,6 +244,7 @@ class AudioService( AGService ):
         """
         Set the identity of the user driving the node
         """
+        log.info("SetIdentity: %s %s", profile.name, profile.email)
         self.__SetRTPDefaults( profile )
     SetIdentity.soap_export_as = "SetIdentity"
     
