@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.50 2003-03-24 20:26:13 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.51 2003-03-25 15:32:01 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -234,11 +234,11 @@ class VenueManagementClient(wxApp):
     def DisableStaticStreams(self, venue):
         self.SetCurrentVenue(venue)
         streamList = self.currentVenueClient.GetStaticStreams()
-        wxLogDebug("Disable static streams for venue: %s" %str(venue.uri))
+        wxLogDebug("Disable static streams for venue: %s" %str(venue['uri']))
         for stream in streamList:
             l = stream.location
             wxLogDebug("Remove stream - type:%s host:%s port:%s ttl:%s"
-                       %(stream.capability.type, l.host, l.port, l.ttl))
+                       % (stream.capability.type, l.host, l.port, l.ttl))
             self.currentVenueClient.RemoveStream(stream)
                
     def EnableStaticVideo(self, venue, videoAddress, videoPort, videoTtl):
@@ -249,7 +249,7 @@ class VenueManagementClient(wxApp):
         videoStreamDescription.static = 1
         self.SetCurrentVenue(venue)
         wxLogDebug("Enable static video for venue: %s using address: %s, port: %s, ttl %s" \
-                     % (str(venue.uri), str(videoAddress), str(videoPort), str(videoTtl)))
+                     % (str(venue['uri']), str(videoAddress), str(videoPort), str(videoTtl)))
         self.currentVenueClient.AddStream(videoStreamDescription)
 
     def EnableStaticAudio(self, venue, audioAddress, audioPort, audioTtl):
@@ -259,26 +259,26 @@ class VenueManagementClient(wxApp):
         audioStreamDescription = StreamDescription( "", "", location, capability)
         audioStreamDescription.static = 1
         wxLogDebug("Enable static audio for venue: %s using address: %s, port: %s, ttl %s" \
-                     % (str(venue.uri), str(audioAddress), str(audioPort), str(audioTtl)))
+                     % (str(venue['uri']), str(audioAddress), str(audioPort), str(audioTtl)))
         self.SetCurrentVenue(venue)
         self.currentVenueClient.AddStream(audioStreamDescription)
 
     def SetVenueEncryption(self, venue, value, key = None):
         self.SetCurrentVenue(venue)
         wxLogDebug("Set venue encryption: %s using key: %s for venue: %s" \
-                     %(str(value), str(key), str(venue.uri)))
+                     %(str(value), str(key), str(venue['uri'])))
         self.currentVenueClient.SetEncryptMedia(int(value), str(key))
                            
     def ModifyVenue(self, venue, exitsList):
-#        wxLogDebug("Modify venue: %s" %str(venue.uri))
-#        self.server.ModifyVenue(venue.uri, venue)
+        wxLogDebug("Modify venue: %s" %str(venue['uri']))
+        self.server.ModifyVenue(venue['uri'], venue)
         wxLogDebug("Set connections: %s" % str(exitsList))
         self.SetCurrentVenue(venue)
         self.currentVenueClient.SetConnections(exitsList)
                                
     def DeleteVenue(self, venue):
-        wxLogDebug("Delete venue: %s" %str(venue.uri))
-        self.server.RemoveVenue(venue.uri)
+        wxLogDebug("Delete venue: %s" %str(venue['uri']))
+        self.server.RemoveVenue(venue['uri'])
 
     def AddAdministrator(self, dnName):
         wxLogDebug("Add administrator: %s" %dnName)
@@ -579,7 +579,7 @@ class VenueListPanel(wxPanel):
             index = self.venuesList.GetSelection()
             venueToDelete = self.venuesList.GetClientData(index)
 
-            text =  "Are you sure you want to delete " +venueToDelete.name
+            text =  "Are you sure you want to delete " + venueToDelete['name']
             text2 = "Delete venue"
             message = wxMessageDialog(self, text, text2, style = wxOK|wxCANCEL|wxICON_INFORMATION)
             
@@ -627,8 +627,8 @@ class VenueListPanel(wxPanel):
     def ModifyCurrentVenue(self, data, exitsList):
         item = self.venuesList.GetSelection()
         clientData =  self.venuesList.GetClientData(item)
-        clientData.name = data['name']
-        clientData.description = data['description']
+        clientData['name'] = data['name']
+        clientData['description'] = data['description']
         self.application.ModifyVenue(clientData, exitsList)
         self.venuesList.SetString(item, data['name'])
         self.parent.venueProfilePanel.ChangeCurrentVenue(clientData)
