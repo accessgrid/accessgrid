@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.18 2003-02-12 20:08:23 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.19 2003-02-14 22:24:45 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -76,6 +76,8 @@ class VenueState:
             self.connections[connection.uri] = connection
 
     def AddData( self, dataDescription ):
+        self.data[dataDescription.name] = dataDescription
+    def UpdateData( self, dataDescription ):
         self.data[dataDescription.name] = dataDescription
     def RemoveData( self, dataDescription ):
         del self.data[dataDescription.name]
