@@ -1,0 +1,3 @@
+application/x-ag-shared-browser; \Software\AccessGrid\sharedapps\SharedBrowser.py %s; description=This is the shared browser application; nametemplate=%s.sharedbrowser
+application/x-ag-shared-presentation; \Software\AccessGrid\sharedapps\SharedPresentation.py -a %s; description=This is the shared presentation viewer; nametemplate=%s.sharedpresentation
+application/x-ag-shared-betty; \Software\AccessGrid\serviceclients\serviceclient.py %s; description=This is the shared betty xmlrpc client; nametemplate=%s.sharedbetty
