@@ -5,11 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.4 2003-02-05 16:44:45 judson Exp $
+# RCS-ID:      $Id: setup.py,v 1.5 2003-02-10 14:43:20 leggett Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 from distutils.core import setup
+import os
+import sys
 
 """
     Setup script for the Access Grid Toolkit. The module is described by the set
@@ -20,22 +22,75 @@ setup(
 # Distribution Meta-Data
     name = 'AGTk',
     fullname = 'AccessGrid Toolkit',
-    version = '2.0',
-    description="The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.",
-    author_email="ag-info@mcs.anl.gov",
-    url="http://www.accessgrid.org",
+    version = '2.0alpha',
+    description = "The Access Grid Toolkit",
+    long_description = "The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.",
+    author = "Argonne National Laboratory",
+    author_email = "ag-info@mcs.anl.gov",
+    url = "http://www.accessgrid.org",
+    license = "AGTPL",
 
 # Package list -- There's only one
-    packages = ['AccessGrid'],
+    packages = ['AccessGrid',
+                r"AccessGrid/hosting",
+                r"AccessGrid/hosting/pyGlobus"
+                ],
 
 # Script list -- these are command line tools and programs    
-    scripts = ['bin/VenueServer.py', 
-               'bin/VenueClient.py', 
-               'bin/VenueManagement.py',
-               'bin/SetupVideo.py',
-               'bin/AGNodeService.py',
-               'bin/AGServiceManager.py',
-               'bin/NodeManagement.py',
-               'bin/VenueServerRegistry.py'
-              ]
+    scripts = [r"bin/VenueServer.py", 
+               r"bin/VenueClient.py", 
+               r"bin/VenueManagement.py",
+               r"bin/SetupVideo.py",
+               r"bin/AGNodeService.py",
+               r"bin/AGServiceManager.py",
+               r"bin/NodeManagement.py",
+               r"bin/VenuesServerRegistry.py"
+              ],
+
+# Data Files list -- these are things like the services, etc.
+    data_files = [('share/AccessGrid/local_services',
+                   [r"AccessGrid/services/AudioService.py",
+                    r"AccessGrid/services/AudioService.svc",
+                    r"AccessGrid/services/PyTextService.py",
+                    r"AccessGrid/services/PyTextService.svc",
+                    r"AccessGrid/services/TextService.py",
+                    r"AccessGrid/services/TextService.svc",
+                    r"AccessGrid/services/VideoConsumerService.py",
+                    r"AccessGrid/services/VideoConsumerService.svc",
+                    r"AccessGrid/services/VideoProducerService.py",
+                    r"AccessGrid/services/VideoProducerService.svc"
+                    ]
+                   ),
+                  ('share/AccessGrid/services',
+                   [r"AccessGrid/services/AudioService.zip",
+#                    r"AccessGrid/services/PyTextService.zip",
+#                    r"AccessGrid/services/TextService.zip",
+                    r"AccessGrid/services/VideoConsumerService.zip",
+                    r"AccessGrid/services/VideoProducerService.zip"
+                    ]
+                   ),
+                  ('share/gnome/apps/AccessGrid',
+                   [r"gnome/.desktop",
+                    r"gnome/NodeManagement.desktop",
+                    r"gnome/VenueClient.desktop",
+                    r"gnome/VenueManagement.desktop"
+                    ]
+                   ),
+                  ('share/applnk/AccessGrid',
+                   [r"kde/.desktop",
+                    r"kde/NodeManagement.desktop",
+                    r"kde/VenueClient.desktop",
+                    r"kde/VenueManagement.desktop"
+                    ]
+                   ),
+                  ('doc',
+                   ["COPYING.txt",
+                    "INSTALL",
+                    "README",
+                    "TODO",
+                    "VERSION"
+                    ]
+                   )
+                  ]
+                  
 )
