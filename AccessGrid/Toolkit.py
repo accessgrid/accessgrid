@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.70 2004-07-17 02:23:05 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.71 2004-07-21 03:07:16 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.70 2004-07-17 02:23:05 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.71 2004-07-21 03:07:16 judson Exp $"
 
 # Standard imports
 import os
@@ -112,18 +112,26 @@ class AppBase:
        if self.options.logfilename is not None:
            if not self.options.logfilename.endswith(".log"):
                self.name = self.options.logfilename + ".log"
+           else:
+               self.name = self.options.logfilename
        elif self.name is not None:
            if not self.name.endswith(".log"):
                self.name = self.name + ".log"
 
-       if self.name is not None:
+       self.log.info("Logfile Name: %s", self.name)
+       
+       if self.name is not None and not self.name.startswith(os.path.sep) \
+                                     and not self.name.startswith("."):
            filename = os.path.join(self.userConfig.GetLogDir(), self.name)
-           fh = Log.FileHandler(filename)
+       else:
+           filename = self.name
            
-           fh.setFormatter(Log.GetFormatter())
-           self.fhLoggerLevels = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
-           self.fhLoggerLevels.SetLevel(Log.DEBUG)
-           self.loggerLevels = self.fhLoggerLevels
+       fh = Log.FileHandler(filename)
+           
+       fh.setFormatter(Log.GetFormatter())
+       self.fhLoggerLevels = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
+       self.fhLoggerLevels.SetLevel(Log.DEBUG)
+       self.loggerLevels = self.fhLoggerLevels
        
        # Send the log in memory to stream (debug) or file handler.
        if self.options.debug:
