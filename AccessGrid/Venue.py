@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.160 2004-03-12 23:45:10 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.161 2004-03-18 14:09:41 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.160 2004-03-12 23:45:10 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.161 2004-03-18 14:09:41 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -654,7 +654,7 @@ class Venue(AuthorizationMixIn):
         privateId = event.data
         log.debug("VenueServer: Got Client disconnect for %s venue=%s", privateId, event.venue)
         if event.venue != self.uniqueId:
-            log.info("ClientHeartbeat: Received client disconnect for a different venue %s", event.venue)
+            log.info("EventServiceDisconnect: Received client disconnect for a different venue %s", event.venue)
 
         #
         # We don't lock here; RemoveUser handles the locking.
@@ -676,7 +676,7 @@ class Venue(AuthorizationMixIn):
         """
         privateId = event.data
         if event.venue != self.uniqueId:
-            log.info("ClientHeartbeat: Received client exits for a different venue %s", event.venue)
+            log.info("EventServiceClientExits: Received client exits for a different venue %s", event.venue)
         log.debug("VenueServer: Got Client exiting for %s", privateId)
 
         self.clientDisconnectOK[privateId] = 1
@@ -2859,8 +2859,8 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
             al.append(CreateAppDescription(a))
         return al
         
-    def CreateApplication(self, appDescription):
-        return self.proxy.CreateApplication(appDescription)
+    def CreateApplication(self, name, description, mimeType):
+        return self.proxy.CreateApplication(name, description, mimeType)
 
     def DestroyApplication(self, aid):
         return self.proxy.DestroyApplication(aid)
