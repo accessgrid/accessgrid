@@ -40,7 +40,7 @@ Requires:	wxPython
 Requires:	globus-accessgrid
 Requires:	alsa-lib >= 1.0
 %if %{require_optik}
-Requires:	python-optik
+Requires:	python-optik >= 1.4.1
 %endif
 %if %{has_fc1_appmenu_file}
 Requires:	patch
