@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.265 2003-09-16 21:53:19 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.266 2003-09-16 22:11:57 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.265 2003-09-16 21:53:19 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.266 2003-09-16 22:11:57 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -468,7 +468,7 @@ class VenueClientFrame(wxFrame):
             profile = bugReportCommentDialog.GetProfile()
             email = bugReportCommentDialog.GetEmail()
             
-            SubmitBug(comment, profile, email, logFile = NO_LOG)
+            SubmitBug(comment, profile, email)
             bugFeedbackDialog = wxMessageDialog(self, "Your error report has been sent, thank you.",
                                                 "Error Reported", style = wxOK|wxICON_INFORMATION)
             bugFeedbackDialog.ShowModal()
@@ -1676,7 +1676,7 @@ class ContentListPanel(wxPanel):
               
                 if participantId:
                     ownerProfile = self.tree.GetItemData(participantId).GetData()
-
+                    
                     #
                     # Test if personal data is already added
                     #
@@ -1704,7 +1704,10 @@ class ContentListPanel(wxPanel):
                             self.tree.Unselect()
                             
                         self.tree.SelectItem(participantId)
-                                                    
+
+                    else:
+                        log.info("ContentListPanel.AddData: Personal data dict already has this data.")
+                                            
             else:
                 log.info("ContentListPanel.AddData: Owner of data does not exist")
 
@@ -1892,6 +1895,7 @@ class ContentListPanel(wxPanel):
         if item:
             try:
                 dataDescriptionList = self.app.venueClient.GetPersonalData(item)
+                          
                 if dataDescriptionList:
                     for data in dataDescriptionList:
                         self.AddData(data)
@@ -2387,7 +2391,7 @@ class ContentListPanel(wxPanel):
         self.dataDict.clear()
         self.serviceDict.clear()
         self.applicationDict.clear()
-                            
+        self.personalDataDict.clear()
  
 class TextClientPanel(wxPanel):
     aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
