@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueServerTest.py,v 1.11 2003-04-07 21:50:59 turam Exp $
+# RCS-ID:      $Id: VenueServerTest.py,v 1.12 2003-04-22 22:00:46 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -97,16 +97,14 @@ class VenueServerTest:
         svml = MulticastNetworkLocation("224.2.2.2", 24000, 127)
         staticVideoCap = Capability(Capability.PRODUCER, Capability.VIDEO)
         venue.streams.append(StreamDescription("Static Video",
-                                               "Static Video",
                                                svml, staticVideoCap,
-                                               None, 1))
+                                               0, None, 1))
         # Set Static Audio
         saml = MulticastNetworkLocation("224.2.2.2", 24002, 127)
         staticAudioCap = Capability(Capability.PRODUCER, Capability.AUDIO)
         venue.streams.append(StreamDescription("Static Audio",
-                                               "Static Audio",
                                                saml, staticAudioCap,
-                                               None, 1))
+                                               0, None, 1))
 
         # Set Encryption
         venue.encryptMedia = 1
@@ -237,7 +235,7 @@ class VenueServerTest:
         
         location = MulticastNetworkLocation(videoAddress, videoPort, videoTtl)
         capability = Capability( Capability.PRODUCER, Capability.VIDEO)
-        videoStreamDescription = StreamDescription( "", "", location, capability)  
+        videoStreamDescription = StreamDescription( "", location, capability)  
         videoStreamDescription.static = 1
         venue.AddStream(videoStreamDescription)
 
@@ -251,7 +249,7 @@ class VenueServerTest:
         print "time to live: ", audioTtl
         location = MulticastNetworkLocation(audioAddress, audioPort, audioTtl)
         capability = Capability( Capability.PRODUCER, Capability.AUDIO)
-        audioStreamDescription = StreamDescription( "", "", location, capability)  
+        audioStreamDescription = StreamDescription( "", location, capability)  
         audioStreamDescription.static = 1
         venue.AddStream(audioStreamDescription)
 
