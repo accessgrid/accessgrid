@@ -277,7 +277,7 @@ rm -f /tmp/AccessGrid-Preuninstall.py
 # - Run SetupVideo to detect video devices
 #
 %post VenueClient
-/usr/bin/SetupVideo
+/usr/bin/SetupVideo.py
 
 #
 # After the RPMs have been successfully built remove the temporary build
