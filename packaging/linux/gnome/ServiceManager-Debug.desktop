@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Service Manager
+Name=Service Manager (Debug)
 Comment=Run the service manager software in debug mode
 TryExec=AGServiceManager.py
 Exec=AGServiceManager.py -d
