@@ -1,9 +1,17 @@
 from wxPython.wx import *
 
-from AccessGrid import Toolkit
-import CertificateRequestTool
 import time
 import md5
+import os
+
+from AccessGrid import Toolkit
+from AccessGrid import Log
+from AccessGrid.Platform.Config import UserConfig
+from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
+from AccessGrid.Security.CertificateRepository import RepoInvalidCertificate
+import CertificateRequestTool
+
+log = Log.GetLogger('CertificateStatusDialog')
 
 class CertificateStatusDialog(wxDialog):
     '''
@@ -147,7 +155,7 @@ class CertificateStatusDialog(wxDialog):
         #
 
         hash = md5.new(cert).hexdigest()
-        tempfile = os.path.join(Platform.GetTempDir(), "%s.pem" % (hash))
+        tempfile = os.path.join(UserConfig.instance().GetTempDir(), "%s.pem" % (hash))
 
         try:
             try:
