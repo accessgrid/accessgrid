@@ -28,6 +28,9 @@ parser.add_option("-p", "--pythonversion", dest="pyver",
 parser.add_option("--dist", dest="dist",
                   metavar="DISTRIBUTION", default="rpm",
                   help="Which distribution to build")
+parser.add_option("-n", dest="buildnum",
+                  metavar="BUILDNUMBER", default=None,
+                  help="Build (or release) number")
 options, args = parser.parse_args()
 
 SourceDir = options.sourcedir
@@ -35,13 +38,15 @@ BuildDir = options.builddir
 DestDir = options.destdir
 metainfo = options.metainfo
 version = options.version
+buildnum = options.buildnum
 
 StartDir = os.getcwd()
 
 #
 # Define packages to include in src distribution
 #
-distDirs = ["AccessGrid",
+d,agsourcedir = os.path.split(BuildDir)
+distDirs = [agsourcedir,
             "ag-media",
             "SOAPpy-0.11.4",
             "fpconst-0.6.0",
@@ -55,13 +60,12 @@ if float(options.pyver) < 2.3:
     distDirs.append("Optik-1.4.1")
 distDirStr = " ".join(distDirs)
 
-
 #
 # Create the targz from the source dir
 #
-
-targz = os.path.join(SourceDir,"AccessGrid-%s.src.tar.gz" % (version,))
-cmd = "tar cvzf %s --directory %s %s" % (targz,SourceDir,distDirStr)
+os.chdir(StartDir)
+targz = os.path.join(SourceDir,"AccessGrid-%s-%s.src.tar.gz" % (version,buildnum))
+cmd = "tar cvzhf %s --directory %s %s" % (targz,SourceDir,distDirStr)
 print "cmd = ", cmd
 os.system(cmd)
 
@@ -74,14 +78,15 @@ pkg_script = "BuildPackage.py"
 DistDir = os.path.join(StartDir,options.dist)
 if os.path.exists(DistDir):
     os.chdir(DistDir)
-    cmd = "%s %s --verbose -s %s -b %s -d %s -p %s -m %s -v %s" % (sys.executable,
+    cmd = "%s %s --verbose -s %s -b %s -d %s -p %s -m %s -v %s -n %s" % (sys.executable,
                                                              pkg_script,
                                                              SourceDir,
                                                              BuildDir,
                                                              DestDir,
                                                              options.pyver,
                                                              metainfo.replace(' ', '_'),
-                                                             version)
+                                                             version,
+                                                             buildnum)
     print "cmd = ", cmd
     os.system(cmd)
 else:
