@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.262 2003-09-16 21:03:24 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.263 2003-09-16 21:09:51 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.262 2003-09-16 21:03:24 turam Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.263 2003-09-16 21:09:51 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -268,7 +268,7 @@ class VenueClientFrame(wxFrame):
                          "AG &Documentation Project Web Site",
                          "")
         self.help.AppendSeparator()
-        self.help.Append(self.ID_HELP_AGORG, "Access &Grid (ag.org) Web Site",
+        self.help.Append(self.ID_HELP_AGORG, "Access &Grid (accessgrid.org) Web Site",
                          "")
         self.help.Append(self.ID_HELP_FLAG, "Access Grid &Toolkit Web Site",
                          "")
