@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.76 2003-03-19 23:32:02 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.77 2003-03-20 15:13:28 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -365,9 +365,10 @@ class VenueClientFrame(wxFrame):
     def OpenParticipantProfile(self, event):
         id = self.contentListPanel.tree.GetSelection()
         participant =  self.contentListPanel.tree.GetItemData(id).GetData()
+        wxLogDebug("Open profile view")
         profileView = ProfileDialog(self, -1, "Profile")
         profileView.SetDescription(participant)
-
+        wxLogDebug("Show profile view")
         profileView.ShowModal()
         profileView.Destroy()
         
@@ -1711,6 +1712,7 @@ class WelcomeDialog(wxDialog):
 class ProfileDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title)
+        wxLogDebug("VenueClientUIClasses.py: Create profile dialog")
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
         self.nameCtrl = wxTextCtrl(self, -1, "", size = (400,20), validator = TextValidator())
@@ -1729,9 +1731,11 @@ class ProfileDialog(wxDialog):
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.profile = None
         #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
-        self.Layout()
+        self.__doLayout()
+        wxLogDebug("VenueClientUIClasses.py: Created profile dialog")
 
     def GetNewProfile(self):
+        wxLogDebug("VenueClientUIClasses.py: Get profile information from dialog")
         if(self.profile != None):
             self.profile.SetName(self.nameCtrl.GetValue())
             self.profile.SetEmail(self.emailCtrl.GetValue())
@@ -1740,9 +1744,11 @@ class ProfileDialog(wxDialog):
             self.profile.SetLocation(self.locationCtrl.GetValue())
             self.profile.SetHomeVenue(self.homeVenueCtrl.GetValue())
             self.profile.SetProfileType(self.profileTypeBox.GetValue())
+        wxLogDebug("VenueClientUIClasses.py: Got profile information from dialog")
         return self.profile
 
     def SetProfile(self, profile):
+        wxLogDebug("VenueClientUIClasses.py: Set profile information in dialog")
         self.profile = profile
         self.profileTypeBox = wxComboBox(self, -1, choices =['user', 'node'], style = wxCB_DROPDOWN)
         #self.profileTypeBox.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
@@ -1759,8 +1765,11 @@ class ProfileDialog(wxDialog):
         else:
             self.profileTypeBox.SetSelection(1)
         self.__setEditable(true)
+        wxLogDebug("VenueClientUIClasses.py: Set profile information successfully in dialog")
 
     def SetDescription(self, item):
+        wxLogDebug("VenueClientUIClasses.py: Set description in dialog name:%s, email:%s, phone:%s, location:%s support:%s, home:%s, dn:%s"
+                   %(item.name, item.email,item.phoneNumber,item.location,item.techSupportInfo, item.homeVenue, item.distinguishedName))
         self.profileTypeBox = wxTextCtrl(self, -1, item.profileType)
         #self.profileTypeBox.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
         self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
@@ -1780,9 +1789,10 @@ class ProfileDialog(wxDialog):
         self.dnTextCtrl.SetValue(item.distinguishedName)
         self.__setEditable(false)
         self.cancelButton.Destroy()
-    
+        wxLogDebug("VenueClientUIClasses.py: Set description successfully in dialog")
 
     def __setEditable(self, editable):
+        wxLogDebug("VenueClientUIClasses.py: Set editable in dialog")
         if not editable:
             self.nameCtrl.SetEditable(false)
             self.emailCtrl.SetEditable(false)
@@ -1800,8 +1810,10 @@ class ProfileDialog(wxDialog):
             self.supportCtrl.SetEditable(true)
             self.homeVenueCtrl.SetEditable(true)
             self.profileTypeBox.SetEditable(true)
+        wxLogDebug("VenueClientUIClasses.py: Set editable in successfully dialog")
            
-    def Layout(self):
+    def __doLayout(self):
+        wxLogDebug("VenueClientUIClasses.py: Do layout")
         self.sizer1 = wxBoxSizer(wxVERTICAL)
         sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, "Profile"), wxHORIZONTAL)
         self.gridSizer = wxFlexGridSizer(9, 2, 5, 5)
@@ -1832,6 +1844,7 @@ class ProfileDialog(wxDialog):
         self.SetSizer(self.sizer1)
         self.sizer1.Fit(self)
         self.SetAutoLayout(1)
+        wxLogDebug("VenueClientUIClasses.py: Did layout")
                 
 class TextValidator(wxPyValidator):
     def __init__(self):
