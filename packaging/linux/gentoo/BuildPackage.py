@@ -95,10 +95,11 @@ ag = 'agtk-%s' % (options.version,)
 if os.path.exists(ag):
     os.remove(ag)
 os.symlink(options.builddir,ag)
-agTar = '%s.tar.gz' % (ag,)
-cmd = 'tar czhf %s/%s %s' % (SourceDir,agTar,ag)
+agTarFile = '%s.tar.gz' % (ag,)
+agTarPath = '%s/%s' % (SourceDir,agTarFile)
+cmd = 'tar czhf %s/%s %s' % (agTarPath,ag)
 if options.verbose:
-    print "creating", agTar
+    print "creating", agTarFile
     print 'cmd = ', cmd
 ret = os.system(cmd)
 if ret != 0:
@@ -198,7 +199,7 @@ if ret != 0:
 #
 print "\n\n---- Build results\n"
 print 'ebuild file:', ebuildPackagePath
-print 'agtk source tarball:', os.path.join(DestDir,agTar)
+print 'agtk source tarball:', agTarPath
 print 'tar files in %s:' % (BuildDir)
 for tar in tars:
     print "  ", tar
