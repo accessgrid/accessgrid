@@ -46,18 +46,15 @@ class VenueClientUI(wxApp, VenueClient):
             self.profile = ClientProfile(self.profilePath)
                   
         if self.profile.IsDefault():  # not your profile
-            print 'ConnectToServer'
             self.profile.Dump()
             profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', self.profile)
 
-            if (profileDialog.ShowModal() == wxID_OK): # when click ok
+            if (profileDialog.ShowModal() == wxID_OK): 
                 self.ChangeProfile(profileDialog.GetNewProfile())
-                
                 profileDialog.Destroy()
-               # profile.Save(self.profilePath)
                 self.__startMainLoop(venueUri, self.profile)
             
-            else:  # when click cancel
+            else:
                 profileDialog.Destroy()
 
         else:
@@ -68,7 +65,6 @@ class VenueClientUI(wxApp, VenueClient):
         if uri:
             self.gotClient = true
             self.client = Client.Handle(uri).get_proxy()
-           # self.SetProfile(profile)
             self.EnterVenue(uri)
             self.frame.Show(true)
             self.MainLoop()
@@ -84,36 +80,34 @@ class VenueClientUI(wxApp, VenueClient):
         """
         VenueClient.CoherenceCallback(self, event)
         if event.eventType == Event.ENTER :
-            print 'somebody enters'
             self.frame.contentListPanel.AddParticipant(event.data)
 
         elif event.eventType == Event.EXIT:
-            print 'exit'
             self.frame.contentListPanel.RemoveParticipant(event.data)
             
         elif event.eventType == Event.ADD_DATA:
-            print '------------------add data'
             self.frame.contentListPanel.AddData(event.data)
 
         elif event.eventType == Event.REMOVE_DATA:
-            print '------------------remove data'
             self.frame.contentListPanel.RemoveData(event.data)
             
         elif event.eventType == Event.ADD_SERVICE:
-            print '------------------add service'
             self.frame.contentListPanel.AddService(event.data)
 
         elif event.eventType == Event.REMOVE_SERVICE:
-            print '------------------add service'
             self.frame.contentListPanel.RemoveService(event.data)
-            
-            
+                        
         elif event.eventType == Event.ADD_CONNECTION:
-            print 'add connection'
             self.frame.venueListPanel.list.AddVenueDoor(event.data)
 
         elif event.eventType == Event.REMOVE_CONNECTION:
             print 'remove connection'
+
+        elif event.eventType == Event.MODIFY_USER:
+            print 'IN MODIFY USER EVENT'
+            print event.data.profileType
+            print event.data.name
+            self.frame.contentListPanel.ModifyParticipant(event.data)
 
         elif event.eventType == Event.UPDATE_VENUE_STATE:
             print 'update venue state'
@@ -127,7 +121,6 @@ class VenueClientUI(wxApp, VenueClient):
         This method calls the venue client method and then
         performs its own operations when the client enters a venue.
         """
-        print '-------------------------enter venue'
         VenueClient.EnterVenue( self, URL )
         
         venueState = self.venueState
@@ -168,10 +161,8 @@ class VenueClientUI(wxApp, VenueClient):
         performs its own operations when the client exits a venue.
         """
         VenueClient.ExitVenue( self )
-        print "Exited venue ! "
-
+        
     def GoToVenue(self, URL):
-        print 'go to other venue'
         self.ExitVenue()
         self.EnterVenue(URL)
         
@@ -190,13 +181,9 @@ class VenueClientUI(wxApp, VenueClient):
         self.client.AddService(service)
         
     def RemoveData(self, data):
-        print "-----------REMOVE DATA"
-        print data.name
         self.client.RemoveData(data)
 
     def RemoveService(self, service):
-        print "----------- REMOVE SERVICE"
-        print service.name
         self.client.RemoveService(service)
         
     def ChangeProfile(self, profile):
@@ -205,8 +192,8 @@ class VenueClientUI(wxApp, VenueClient):
         self.profile.Save(self.profilePath)
         self.SetProfile(self.profile)
 
-     #   if self.gotClient:
-     #       self.client.UpdateClientProfile(profile)
+        if self.gotClient:
+            self.client.UpdateClientProfile(profile)
 
         
 if __name__ == "__main__":
@@ -224,20 +211,8 @@ if __name__ == "__main__":
         profile = sys.argv[1]
         
     vc = VenueClientUI()
-    print '------------ before save config ------------ '
-    # SaveConfig(testFile, profile)
-    
-    # try:
     vc.ConnectToServer(profile)
-    
-    
-    # except:
-    #     text1 = 'Problems getting default venue from server.  '
-    #text2 = 'Is the server running?'
-    #     ErrorDialog(NULL, text1+text2)
-    
-    # else:
-   
+       
 
     
   
