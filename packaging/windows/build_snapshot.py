@@ -41,6 +41,8 @@ except IOError:
 version = po.read()
 po.close()
 
+version = version[:-1]
+
 #
 # Parse command line options
 #
@@ -189,7 +191,7 @@ for cmd in [
 # Add quotes around command.
 iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" \
             /dSourceDir=\"%s\" /dBuildDir=\"%s\" /dPythonVersion=\"%s\"" % \
-            (inno_compiler,iss_orig, version, metainfo.replace(' ', '_'),
+            (inno_compiler, iss_orig, version, metainfo.replace(' ', '_'), \
              SourceDir, DestDir, options.pyver)
 
 if options.verbose:
