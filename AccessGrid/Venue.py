@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.118 2003-08-12 20:57:08 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.119 2003-08-13 23:56:58 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -2387,7 +2387,6 @@ class Venue(ServiceBase.ServiceBase):
         Sets the users in a role.  Be extra careful so we don't
           wipe out all the subjects in this role if there's an error.
         """
-
         if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
 
@@ -2404,6 +2403,7 @@ class Venue(ServiceBase.ServiceBase):
                         role.RemoveSubject(subject)
                     for subject in subject_list:
                         role.AddSubject(subject)
+                    log.info("Venue.SetSubjectsInRole, To role: %s, Setting users: %s", role_string, role.GetSubjectListAsStrings())
                 except:
                     log.exception("wsSetSubjectsInRole: exception, re-adding old roles")
                     # An error occurred, include original subjects.
