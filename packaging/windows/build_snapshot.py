@@ -22,35 +22,20 @@ import os.path
 import time
 import re
 import win32api
-import win32con
 import getopt
 import _winreg
 from win32com.shell import shell, shellcon
 import shutil
 
-def usage():
-    print "%s:" % sys.argv[0]
-    print "    -h|--help : print usage"
-    print "    -s|--sourcedir <directory> : source directory"
-    print "    -d|--destdir <directory> : destination directory"
-    print "    -t|--tempdir <directory> : temporary directory"
-    print "    -i|--innopath <directory> : path to isxtool"
-    print "    -l|--longname <name> : long name of the release"
-    print "    -n|--shortname <name> : short name of the release"
-    print "    -c|--checkoutcvs : get a fresh copy from cvs"
-    print "    -v|--verbose : be noisy"
-
 
 # Source Directory
 #  We assume the following software is in this directory:
 #    ag-rat, ag-vic, and AccessGrid
-SourceDir = r"\Software"
+SourceDir = r"\Software\AccessGrid"
 
 # Temporary Directory
 #  This is where interim cruft is kept, it should be cleaned out every time
 TempDir = win32api.GetTempPath()
-
-#print "TempDir is: ", TempDir
 
 # Destination Directory
 #  This is where the installer is left at the end
@@ -64,6 +49,45 @@ BuildName = BuildTime
 # Names for the software
 long_version_name = "Access Grid Toolkit 2.0 Snapshot %s" % BuildTime
 short_version_name = "agtk-%s" % BuildTime
+
+def usage():
+    print """
+%s: 
+    -h|--help : print usage
+    
+    -s|--sourcedir <directory>
+       The directory the AG source code is in. If the code is in
+       The default is: %s
+       
+    -d|--destdir <directory>
+       The directory the resulting installer will be placed in.
+       The default is: %s
+    
+    -l|--longname <name>
+       The complete name of this snapshot.
+       The default is: %s
+    
+    -n|--shortname <name>
+       The abbreviated name of this snapshot.
+       The default is: %s
+    
+    -c|--checkoutcvs
+       A flag that indicates the snapshot should be built from an
+       exported cvs checkout. This is cleaner.
+    
+    -t|--tempdir <directory>
+       The path for temporary build junk, it is cleaned up afterwards.
+       The default is: %s
+       
+    -i|--innopath <directory>
+       The path to the isxtool.
+       If this is not specified on the command line, the value is retrieved
+       from the system registry.
+    
+    -v|--verbose
+       The option to be very very spammy when run.
+       """ % (sys.argv[0], SourceDir, DestDir, long_version_name,
+              short_version_name, TempDir)
 
 # Innosoft config file names
 iss_orig = "agtk.iss"
@@ -131,6 +155,7 @@ if not os.path.exists(DestDir):
 
 
 build_dir = os.path.join(TempDir, BuildTime)
+print "Build Dir: ", build_dir
 
 #
 # We keep a rat and vic directory around as these don't change much
@@ -149,7 +174,6 @@ if "" != innopath:
     if not os.path.exists(inno_compiler):
         print "command-line innopath not found: ", inno_compiler
         sys.exit()
-
 # If no command-line specified, look in the registry
 else:
     try:
@@ -181,18 +205,18 @@ if not os.path.exists(inno_compiler):
 if verbose:
     print "ISXTool is: ", inno_compiler
 
+bd = build_dir
+#build_dir = win32api.GetShortPathName(bd)
+
 os.mkdir(build_dir)
 os.chdir(build_dir)
-
-bd = build_dir
-build_dir = win32api.GetShortPathName(bd)
 
 if verbose:
     print "builddir ", build_dir
 
 if checkoutnew:
     # Either we check out a copy
-    cvsroot = ":pserver:anonymous@fl-cvs.mcs.anl.gov:/cvsroot"
+    cvsroot = ":pserver:anonymous@fl-cvs.mcs.anl.gov:/cvs/fl"
 
     os.environ['CVSROOT'] = cvsroot
 
@@ -213,6 +237,8 @@ if checkoutnew:
     rd.close()
 
     os.system("cvs -z6 export -D now AccessGrid")
+    os.system("cvs -z6 export -D now ag-rat")
+    os.system("cvs -z6 export -D now ag-vic")
     
 # Okay, we've got our code. Go to the packaging
 # directory and fix up the paths in the iss file
