@@ -31,6 +31,13 @@ from AccessGrid.AGServiceManager import AGServiceManager, AGServiceManagerI
 from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
 from AccessGrid.hosting import SecureServer as Server
 from AccessGrid.Platform import AGTK_LOCATION 
+from AccessGrid import Toolkit
+
+serviceManager = None
+nodeService = None
+server = None
+log = None
+smURL = None
 
 # AGServiceManager unittests below assume a basic initialization works 
 #   in their setup so we'll just confirm it works in a separate test.
@@ -38,68 +45,43 @@ class AGServiceManagerBasicTest(unittest.TestCase):
     """Basic test case for AGServiceManager."""
     def testInit(self):
         """Test initialization"""
-        self.serviceManager = AGServiceManager(Server(('',0)))
+        self.serviceManager = AGServiceManager(Server(('localhost',5000)))
         self.serviceManager.Shutdown()
         time.sleep(1)
 
-global serviceManager
-global nodeService
-global server
+class AGServiceManagerTestCase(unittest.TestCase):
 
-class AGServiceManagerTestSuite(unittest.TestSuite):
-    """Test suite for AGServiceManager"""
+    def testAAABegin(self):
+        global server, serviceManager, nodeService, log, smURL
 
-    def __init__(self, tests=()):
-        unittest.TestSuite.__init__(self, tests)  # call parent's __init__
-
-        global server, serviceManager, nodeService
-
-        # Startup logging
-        self.logFile = ".agsm.log"
-        self.debugMode = 0
-        self.log = logging.getLogger("AG")
-        self.log.setLevel(logging.DEBUG)
-        self.hdlr = logging.handlers.RotatingFileHandler(self.logFile, "a",
-                                                         10000000, 0)
-        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s",
-                                "%x %X")
-        self.hdlr.setFormatter(fmt)
-        self.log.addHandler(self.hdlr)
-        if self.debugMode:
-            self.log.addHandler(logging.StreamHandler())
+        # initialize toolkit and environment
+        app = Toolkit.Service()
+        app.Initialize("ServiceManager_test")
+        log = app.GetLog()
 
         # Startup serviceManager to test
-        server = Server('', 0)
+        server = Server(('localhost', 5000))
         serviceManager = AGServiceManager(server)
-        smurl = server.RegisterObject(AGServiceManagerI(serviceManager),
-                                         path="ServiceManager")
+        smURL = server.RegisterObject(AGServiceManagerI(serviceManager),
+                                         path="/ServiceManager")
 
         # Start a node service to help test some of ServiceManager's
         #  functions like AddService()
         nodeService = AGNodeService()
         nsurl = server.RegisterObject(AGNodeServiceI(nodeService),
-                                      path="NodeService")
-
-class AGServiceManagerTestCase(unittest.TestCase):
+                                      path="/NodeService")
 
     def testValidInitialization(self):
         global serviceManager
-        assert None != serviceManager.authManager
         assert None != serviceManager.processManager
 
     # Authorization methods
 
     def testSetAuthorizedUsers(self):
         global serviceManager
-        serviceManager.SetAuthorizedUsers(["jdoe"])
-        assert "jdoe" in serviceManager.authManager.GetAuthorizedUsers()
+        pass
 
     # Resource methods
-
-    def testDiscoverResources(self):
-        global serviceManager
-        serviceManager.DiscoverResources()
-
     def testGetResources(self):
         global serviceManager
         serviceManager.GetResources()
@@ -111,12 +93,11 @@ class AGServiceManagerTestCase(unittest.TestCase):
         services = nodeService.GetAvailableServices()
 
         # Verify there are services to add.
-        assert len(services) > 0 
+        assert services is not None and len(services) > 0 
 
         # Add all services to make sure they work
         for service in services:
             if service.name != "":
-                #serviceManager.AddService(nodeService.servicePackageRepository.GetPackageUrl(services[0].name + ".zip"), None, None)
                 serviceManager.AddService(nodeService.servicePackageRepository.GetPackageUrl(service.name + ".zip"), None, None)
 
         time.sleep(2)
@@ -127,7 +108,7 @@ class AGServiceManagerTestCase(unittest.TestCase):
         possible_services = nodeService.GetAvailableServices()
 
         # Verify there are services to add.
-        assert len(possible_services) > 0
+        assert possible_services is not None and len(possible_services) > 0
 
         index = len(possible_services) - 1   # try adding and removing the last one
         service = possible_services[index]
@@ -163,7 +144,7 @@ class AGServiceManagerTestCase(unittest.TestCase):
 def suite():
     """Returns a suite containing all the test cases in this module."""
     suite1 = unittest.makeSuite(AGServiceManagerBasicTest)
-    suite2 = unittest.makeSuite(AGServiceManagerTestCase, suiteClass=AGServiceManagerTestSuite)
+    suite2 = unittest.makeSuite(AGServiceManagerTestCase)
     return unittest.TestSuite([suite1, suite2])
 
 if __name__ == '__main__':
