@@ -159,7 +159,8 @@ class vncServer:
             elif IsOSX():
                 self.writePasswordFile()
                 args = [
-                        '-rfbauth='+self.passwdFilename,
+                        '-rfbauth',
+                        self.passwdFilename,
                         '-alwaysshared',
                         ]
                 log.info("starting vnc server: %s %s" % (self.vncserverexe,args))
