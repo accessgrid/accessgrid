@@ -6,34 +6,27 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.121 2004-03-17 22:00:51 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.122 2004-03-24 22:26:32 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.121 2004-03-17 22:00:51 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.122 2004-03-24 22:26:32 lefvert Exp $"
 
+# Standard imports
 import string
 import time
 import re
 import getopt
 import webbrowser
+import cPickle
 
+# UI imports
 from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
 
-from pyGlobus.io import GSITCPSocketException
-
-from AccessGrid import Log
-from AccessGrid.hosting import Client
-
-from AccessGrid.VenueServer import VenueServerIW
-from AccessGrid.Venue import VenueIW
-
-from AccessGrid import Toolkit
-from AccessGrid.Platform.Config import UserConfig, AGTkConfig
-
+# Access Grid imports
 from AccessGrid.Descriptions import StreamDescription, ConnectionDescription
 from AccessGrid.Descriptions import VenueDescription, CreateVenueDescription
 from AccessGrid.Descriptions import Capability
@@ -45,8 +38,18 @@ from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
 from AccessGrid.Utilities import VENUE_MANAGEMENT_LOG
 from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIPanel, AuthorizationUIDialog
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
+from AccessGrid import Log
+from AccessGrid.hosting import Client
+from AccessGrid.VenueServer import VenueServerIW
+from AccessGrid.Venue import VenueIW
+from AccessGrid import Toolkit
+from AccessGrid.Platform.Config import UserConfig, AGTkConfig
+
+#
+from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
 
 log = Log.GetLogger(Log.VenueManagement)
+
 
 class VenueManagementClient(wxApp):
     """
@@ -60,6 +63,11 @@ class VenueManagementClient(wxApp):
     ID_SERVER_SHUTDOWN = wxNewId()
     ID_HELP_ABOUT = wxNewId()
     ID_HELP_MANUAL =  wxNewId()
+
+    ID_MYSERVERS_GOTODEFAULT = wxNewId()
+    ID_MYSERVERS_SETDEFAULT = wxNewId()
+    ID_MYSERVERS_ADD = wxNewId()
+    ID_MYSERVERS_EDIT = wxNewId()
         
     def OnInit(self):
         sys.stdout = sys.__stdout__
@@ -81,11 +89,21 @@ class VenueManagementClient(wxApp):
         self.address = VenueServerAddress(self.frame, self)
         self.tabs = VenueManagementTabs(self.frame, -1, self)
         self.statusbar = self.frame.CreateStatusBar(1)
+
         self.menubar = wxMenuBar()
+        self.myServersDict = {}
+        self.myServersMenuIds = {}
+        self.homeServer = 'https://localhost:8000/VenueServer'
+        self.userConf = UserConfig.instance()
+        self.myServersFile = os.path.join(self.userConf.GetConfigDir(), "myServers.txt" )
+        
+
         self.__doLayout()
         self.__setMenuBar()
         self.__setProperties()
         self.__setEvents()
+        self.__loadMyServers()
+        self.EnableMenu(0)
 
         self.app = Toolkit.WXGUIApplication()
         self.app.Initialize()
@@ -93,13 +111,25 @@ class VenueManagementClient(wxApp):
         return true
 
     def __setEvents(self):
+        # File menu
         EVT_MENU(self, self.ID_FILE_EXIT, self.Exit)
+
+        # Server menu
         EVT_MENU(self, self.ID_SERVER_CHECKPOINT, self.Checkpoint)
         EVT_MENU(self, self.ID_SERVER_SHUTDOWN, self.Shutdown)
-        EVT_CLOSE(self, self.OnCloseWindow)
+
+        # Help menu
         EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
         EVT_MENU(self, self.ID_HELP_MANUAL,
                  lambda event, url=self.manual_url: self.OpenHelpURL(url))
+
+        # My Servers Menu
+        EVT_MENU(self, self.ID_MYSERVERS_GOTODEFAULT, self.GoToDefaultServerCB)
+        EVT_MENU(self, self.ID_MYSERVERS_SETDEFAULT, self.SetAsDefaultServerCB)
+        EVT_MENU(self, self.ID_MYSERVERS_ADD, self.AddToMyServersCB)
+        EVT_MENU(self, self.ID_MYSERVERS_EDIT, self.EditMyServersCB)
+
+        EVT_CLOSE(self, self.OnCloseWindow)
         
     def __setMenuBar(self):
         self.frame.SetMenuBar(self.menubar)
@@ -116,6 +146,21 @@ class VenueManagementClient(wxApp):
                                "Shutdown the server")
 
         self.menubar.Append(self.serverMenu, "&Server")
+        self.myServersMenu = wxMenu()
+        self.myServersMenu.Append(self.ID_MYSERVERS_GOTODEFAULT, "Go to Home Server",
+                                  "Go to default venue")
+        self.myServersMenu.Append(self.ID_MYSERVERS_SETDEFAULT, "Set as Home Server",
+                             "Set current server as default")
+        self.myServersMenu.AppendSeparator()
+    
+        self.myServersMenu.Append(self.ID_MYSERVERS_ADD, "Add &Current Server...",
+                             "Add this server to your list of servers")
+        self.myServersMenu.Append(self.ID_MYSERVERS_EDIT, "Edit My &Servers...",
+                             "Edit your servers")
+        self.myServersMenu.AppendSeparator()
+
+        self.menubar.Append(self.myServersMenu, '&My Servers')
+        
         
         self.helpMenu = wxMenu()
         self.helpMenu.Append(self.ID_HELP_MANUAL, "Venue Management &Help",
@@ -150,6 +195,199 @@ class VenueManagementClient(wxApp):
         box.Add(self.tabs, 1, wxEXPAND)
         self.frame.SetSizer(box)
 
+    def __fixName(self, name):
+        list = name.split('/')
+        return list[2]
+
+    def __loadMyServers(self):
+        
+        # Delete existing menu items
+        for ID in self.myServersMenuIds.values():
+            self.myServersMenu.Delete(ID)
+            
+        self.myServersMenuIds = {}
+
+        # Get this info from file
+        if os.path.exists(self.myServersFile):
+            try:
+                myServersFileH = open(self.myServersFile, 'r')
+            except:
+                myServersFileH = None
+                log.exception("Failed to load MyServers file")
+        
+            try:
+                self.myServersDict = cPickle.load(myServersFileH)
+              
+            except:
+                self.myServersDict = []
+                log.exception("Failed to pickle MyServers file")
+
+            myServersFileH.close()
+
+        else:
+            log.debug("There is no my servers file to load.")
+                   
+        # Create menu items
+        for name in self.myServersDict.keys():
+            ID = wxNewId()
+            self.myServersMenuIds[name] = ID
+            url = self.myServersDict[name]
+            text = "Go to: " + url
+            self.myServersMenu.Append(ID, name, text)
+            EVT_MENU(self, ID, self.GoToMenuAddressCB)
+
+    def __saveMyServersToFile(self):
+        """
+        This method synchs the saved servers list to disk
+        """
+        if os.path.exists(self.myServersFile):
+            myServersFileH = open(self.myServersFile, 'w')
+        else:
+            myServersFileH = open(self.myServersFile, 'aw')
+            
+        cPickle.dump(self.myServersDict, myServersFileH)
+        myServersFileH.close()
+
+    def EnableMenu(self, flag):
+        self.myServersMenu.Enable(self.ID_MYSERVERS_SETDEFAULT, flag)
+        self.myServersMenu.Enable(self.ID_MYSERVERS_ADD, flag)
+        self.serverMenu.Enable(self.ID_SERVER_CHECKPOINT , flag)
+        self.serverMenu.Enable(self.ID_SERVER_SHUTDOWN, flag)
+        
+    def GoToDefaultServerCB(self,event):
+        '''
+        Connect to default venue server.
+        '''
+        serverUrl = self.homeServer
+        self.ConnectToServer(serverUrl)
+
+    def SetAsDefaultServerCB(self,event):
+        '''
+        Set default venue server.
+        '''
+        self.homeServer = self.serverUrl 
+        
+    def AddToMyServersCB(self, event):
+        #url = self.serverClient.GetServer()
+        #name = self.serverClient.GetServerName()
+
+        url =  self.serverUrl
+        name = self.serverUrl
+        # myServersDict = self.controller.GetMyServers()
+
+        myServersDict = self.myServersDict
+              
+        if not url:
+            log.info("Invalid server url %s", url)
+            #MessageDialog(None,"Error adding server to server list", "Add Server Error",
+            #              style=wxOK|wxICON_INFORMATION)
+            
+            
+        if url in myServersDict.values():
+            #
+            # Server URL already in list
+            #
+            for n in myServersDict.keys():
+                if myServersDict[n] == url:
+                    name = n
+            text = "This server is already added to your servers as "+"'"+name+"'"
+            MessageDialog(self.frame,text, "Add Server Error",
+                          style=wxOK|wxICON_INFORMATION)
+           
+        else:
+            #
+            # Server url not in list
+            # - Prompt for name and validate
+            #
+            serverName = None
+            dialog = AddURLBaseDialog(self.frame, -1, self.__fixName(name), type = 'server')
+            if (dialog.ShowModal() == wxID_OK):
+                serverName = dialog.GetValue()
+            dialog.Destroy()
+
+            if serverName:
+                addServer = 1
+                if myServersDict.has_key(serverName):
+                    #
+                    # Server name already in list
+                    #
+                                       
+                    info = "A server with the same name is already added, do you want to overwrite it?"
+
+                    dlg = wxMessageDialog(self.frame, info, "Duplicated Server",
+                                          style = wxICON_INFORMATION | wxOK | wxCANCEL)
+                                        
+                    if dlg.ShowModal() == wxID_OK:
+                        # 
+                        # User chose to replace the file 
+                        #
+                        self.RemoveFromMyServers(serverName)
+                                                
+                        addServer = 1
+                    else:
+                        # 
+                        # User chose to not replace the file
+                        #
+                        addServer = 0
+                else:
+                    #
+                    # Server name not in list
+                    #
+                    addServer = 1
+                    
+                if addServer:
+                    try:
+                        self.AddToMyServers(serverName,url)
+                        self.__saveMyServersToFile()
+                                               
+                    except:
+                        log.exception("Error adding server")
+                        MessageDialog(self.frame,"Error adding server to server list", "Add Server Error",
+                                      style=wxOK|wxICON_WARNING)
+        
+    def EditMyServersCB(self, event):
+        myServersMenu = None
+        #serversDict = self.controller.GetMyServers()
+        
+        editMyServersDialog = EditURLBaseDialog(self.frame, -1, "Edit your servers", 
+                                                self.myServersDict, type = 'server')
+        if (editMyServersDialog.ShowModal() == wxID_OK):
+            self.myServersDict = editMyServersDialog.GetValue()
+            
+            try:
+                self.__saveMyServersToFile()
+                self.__loadMyServers()
+            
+            except:
+                log.exception('Error saving changes to my servers","Edit Servers Error')
+                MessageDialog(self.frame,"Error saving changes to my servers", "Add Server Error",
+                              style=wxOK|wxICON_WARNING)
+        
+
+        editMyServersDialog.Destroy()
+
+    def GoToMenuAddressCB(self, event):
+        name = self.menubar.GetLabel(event.GetId())
+        serverUrl = self.myServersDict[name]
+        self.ConnectToServer(serverUrl)
+    
+    def AddToMyServers(self,name,url):
+        ID = wxNewId()
+        text = "Go to: " + url
+        self.myServersMenu.Append(ID, name, text)
+        self.myServersMenuIds[name] = ID
+        self.myServersDict[name] = url
+        EVT_MENU(self, ID, self.GoToMenuAddressCB)
+    
+    def RemoveFromMyServers(self,serverName):
+        # Remove the server from my servers menu list
+        menuId = self.myServersMenuIds[serverName]
+        self.myServersMenu.Remove(menuId)
+    
+        # Remove it from the dictionary
+        del self.myServersMenuIds[serverName]
+        del self.myServersDict[name]
+
     def OpenHelpURL(self, url):
         """
         """
@@ -180,7 +418,7 @@ class VenueManagementClient(wxApp):
      
     def ConnectToServer(self, URL):
         log.debug("VenueManagementClient.ConnectToServer: Connect to server %s" %URL)
-
+        
         certMgt = Toolkit.Application.instance().GetCertificateManager()
         if not certMgt.HaveValidProxy():
             log.debug("VenueManagementClient.ConnectToServer:: no valid proxy")
@@ -256,6 +494,7 @@ class VenueManagementClient(wxApp):
             self.encrypt = key
 
             self.tabs.Enable(true)
+            self.EnableMenu(1)
             
             wxEndBusyCursor()
             
