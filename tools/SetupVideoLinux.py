@@ -12,6 +12,7 @@ cmd = "ls /proc/video/dev | grep video"
 print cmd
 
 # get output of v4l-ctl -c <dev>
+deviceList = list()
 
 for d in deviceList:
     cmd = "v4lctl list -c /dev/%s" % d
