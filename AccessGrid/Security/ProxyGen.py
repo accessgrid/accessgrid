@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.11 2004-03-19 22:45:48 olson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.12 2004-04-05 18:38:52 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.11 2004-03-19 22:45:48 olson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.12 2004-04-05 18:38:52 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -147,7 +147,7 @@ def CreateGlobusProxyGPI(passphrase, certFile, keyFile, certDir, outFile,
     # Windows pipe code needs to have the whole thing quoted. Linux doesn't.
     #
 
-    if Platform.isWindows():
+    if Platform.IsWindows():
         cmd = '"%s"' % (cmd)
 
     log.debug("Running command: '%s'", cmd)
@@ -175,7 +175,7 @@ def CreateGlobusProxyGPI(passphrase, certFile, keyFile, certDir, outFile,
 
         wr.write(passphrase + "\n")
 
-        if not Platform.isWindows():
+        if not Platform.IsWindows():
             wr.close()
 
         while 1:
@@ -210,7 +210,7 @@ def CreateGlobusProxyGPI(passphrase, certFile, keyFile, certDir, outFile,
 
         rd.close()
 
-        if Platform.isWindows():
+        if Platform.IsWindows():
             wr.close()
 
     except IOError:
@@ -549,7 +549,7 @@ def IsGlobusProxy_GT24(certObj):
 
 if haveOldGlobus:
 
-    if Platform.isWindows():
+    if Platform.IsWindows():
         CreateGlobusProxy = CreateGlobusProxyProgrammatic
     else:
         CreateGlobusProxy = CreateGlobusProxyGPI

@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.10 2004-03-29 20:55:43 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.11 2004-04-05 18:38:52 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.10 2004-03-29 20:55:43 olson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.11 2004-04-05 18:38:52 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -126,7 +126,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         # Globus behaves badly when run as root.
         #
 
-        if not Platform.isWindows():
+        if not Platform.IsWindows():
             if Platform.Config.SystemConfig.instance().GetUsername() == "root":
                 dlg = wxMessageDialog(None,
                                       "You may have problems running the Access Grid Venue Client\n" +

@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.15 2004-04-05 18:37:45 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.16 2004-04-05 18:38:52 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.15 2004-04-05 18:37:45 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.16 2004-04-05 18:38:52 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -325,7 +325,7 @@ class CertificateManager(object):
                 return
             
         except AttributeError:
-            if Platform.isWindows():
+            if Platform.IsWindows():
                 sw = "WinGlobus"
             else:
                 sw = "pyGlobus"
@@ -950,7 +950,7 @@ class CertificateManager(object):
             log.exception("get_certificate_locations() not found")
 
             if not self.issuedGlobusWarning:
-                if Platform.isWindows():
+                if Platform.IsWindows():
                     self.GetUserInterface().ReportError("It appears that your system has an out-of-date version of \n" +
                                                         "WinGlobus installed. You should check your configuration.\n" +
                                                         "We will attempt to work around the problem, but you may see\n" +
@@ -1164,7 +1164,7 @@ class CertificateManager(object):
         # Ugh. If x509_user_proxy is set in the registry, X509_RUN_AS_SERVER is ignored.
         #
 
-        if Platform.isWindows():
+        if Platform.IsWindows():
             self.RemoveUserProxyFromRegistry()
          
         Utilities.unsetenv('X509_USER_PROXY')

@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.8 2004-03-26 20:04:54 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.9 2004-04-05 18:38:52 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.8 2004-03-26 20:04:54 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.9 2004-04-05 18:38:52 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -24,7 +24,7 @@ from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from wxPython.wizard import *
 
 from AccessGrid import Toolkit
-from AccessGrid.Platform import isWindows, isLinux
+from AccessGrid.Platform import IsWindows
 from AccessGrid.ClientProfile import ClientProfileCache
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 from AccessGrid.Security.X509Subject import X509Subject    
@@ -502,7 +502,7 @@ class AuthorizationUIPanel(wxPanel):
         # the program code. To avoid reacting to non-user
         # triggered events; use a flag.
 
-        if self.checkFlag and isWindows():
+        if self.checkFlag and IsWindows():
             event.Skip()
             self.checkFlag = 0
             return
