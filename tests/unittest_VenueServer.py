@@ -33,6 +33,7 @@ import unittest
 import threading
 from AccessGrid.Descriptions import VenueDescription
 from AccessGrid.VenueServer import VenueServer
+from AccessGrid.hosting import IdFromURL
 from AccessGrid.Venue import Venue
 from AccessGrid import Toolkit
 from AccessGrid.Security import X509Subject
@@ -55,21 +56,17 @@ class VenueServerTestCase(unittest.TestCase):
     def testAddVenue(self):
         venueServer.AddVenue(VenueDescription("unittestVenue2", "venue for unittest"));
 
-#     def testRemoveVenue(self):
-#         rvenue = VenueDescription("unittestVenue3", "venue for unittest")
-#         rvenue.uri = "LocalVenueServer/default2"
-
-#         venueServer.AddVenue(rvenue)
-
-#         venueRemoved = 0
-#         venueDescList = venueServer.GetVenues()
-#         for v in venueDescList:
-#             print "venue:", v.name, ", ", v.uri
-#             if v.name == "unittestVenue3":
-#                 id = venueServer.IdFromURL(v.uri)
-#                 venueServer.RemoveVenue(id)
-#                 venueRemoved = 1
-#         assert venueRemoved
+    def testRemoveVenue(self):
+        rvenue = VenueDescription("unittestVenue3", "venue for unittest")
+        rvenue.uri = venueServer.AddVenue(rvenue)
+        venueRemoved = 0
+        venueDescList = venueServer.GetVenues()
+        for v in venueDescList:
+            print "venue:", v.name, ", ", v.uri
+            if v.name == rvenue.name:
+                venueServer.RemoveVenue(v.uri)
+                venueRemoved = 1
+        assert venueRemoved
 
     def testGetSetStorageLocation(self):
         venueServer.SetStorageLocation("testData")
@@ -97,7 +94,7 @@ class VenueServerTestCase(unittest.TestCase):
         global venueServer  # so TestCases can access it
         global venue1       # so TestCases can access it
         # initialize toolkit and environment
-        app = Toolkit.CmdlineApplication()
+        app = Toolkit.Service()
         app.Initialize("VenueServer_test")
         # server
         venueServer = VenueServer()
@@ -126,6 +123,7 @@ class VenueServerTestCase(unittest.TestCase):
     # But we don't want to shutdown and restart the server for each test.
     #   This should be the last test case in the default function list 
     #   and also last when the list is sorted alphabetically.
+
     def testZZZEnd(self):
         venueServer.Shutdown()
         # In case tests leave threads open, print them out so we
