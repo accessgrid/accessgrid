@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.140 2003-04-18 21:00:18 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.141 2003-04-18 21:26:36 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1450,7 +1450,7 @@ class TextClientPanel(wxPanel):
         wxPanel.__init__(self, *args, **kwds)
         self.TextOutput = wxTextCtrl(self, wxNewId(), "",
                                      style= wxTE_MULTILINE|wxTE_READONLY)
-        self.label = wxStaticText(self, -1, "Your message:", size = wxSize(95,20))
+        self.label = wxStaticText(self, -1, "Your message:")
         self.display = wxButton(self, self.ID_BUTTON, "Display", style = wxBU_EXACTFIT)
         self.textInputId = wxNewId()
         self.TextInput = wxTextCtrl(self, self.textInputId, "",
@@ -1496,7 +1496,7 @@ class TextClientPanel(wxPanel):
         TextSizer = wxBoxSizer(wxVERTICAL)
         TextSizer.Add(self.TextOutput, 2, wxEXPAND|wxALIGN_CENTER_HORIZONTAL, 0)
         box = wxBoxSizer(wxHORIZONTAL)
-        box.Add(self.label, 0, wxALIGN_CENTER |wxLEFT, 5)
+        box.Add(self.label, 0, wxALIGN_CENTER |wxLEFT|wxRIGHT, 5)
         box.Add(self.TextInput, 1, wxALIGN_CENTER )
         box.Add(self.display, 0, wxALIGN_CENTER |wxLEFT|wxRIGHT, 5)
         
