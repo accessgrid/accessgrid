@@ -9,7 +9,7 @@ def BuildDarwin():
 def BuildWindows():
     wdir = "WinProjects/SourceSolution"
     os.system("devenv %s/DebugLib/All_Libs.sln /rebuild Debug" % wdir)
-    os.system("devenv %s/DebugTreadedLib/All_Libs.sln /build Debug" % wdir)
+    os.system("devenv %s/DebugThreadedLib/All_Libs.sln /build Debug" % wdir)
     os.system("devenv %s/DebugLib/All_Libs.sln /project gss_assist /rebuild Debug" % wdir)
     os.system("devenv %s/DebugLib/All_Libs.sln /project gssapi /rebuild Debug" % wdir)
 
