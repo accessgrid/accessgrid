@@ -5,23 +5,24 @@
 # Author:      From the Python Cookbook
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: scheduler.py,v 1.9 2004-06-01 20:02:35 judson Exp $
+# RCS-ID:      $Id: scheduler.py,v 1.10 2004-06-30 07:57:46 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: scheduler.py,v 1.9 2004-06-01 20:02:35 judson Exp $"
+__revision__ = "$Id: scheduler.py,v 1.10 2004-06-30 07:57:46 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
 from threading import Thread, Event, currentThread
 
 class Task( Thread ):
-    def __init__( self, action, loopdelay, initdelay ):
+    def __init__( self, action, loopdelay, initdelay, includeRuntime = 1 ):
         self._action = action
         self._loopdelay = loopdelay
         self._initdelay = initdelay
+	self._includeRuntime = includeRuntime
         self._running = 1
         self._quitEvent = Event()
         Thread.__init__( self )
@@ -43,8 +44,11 @@ class Task( Thread ):
         while self._running:
             start = time.time()
             self._action()
-            self._runtime += self._loopdelay
-            delay = self._runtime - start
+            self._runtime = self._runtime + self._loopdelay
+	    if self._includeRuntime:
+	        delay = self._runtime - start
+	    else:
+		delay = self._loopdelay
             q.wait(delay)
             if q.isSet():
                 return
@@ -63,11 +67,11 @@ class Scheduler:
     def __repr__( self ):
         rep = ''
         for task in self._tasks:
-            rep += '%s\n' % `task`
+            rep = rep + '%s\n' % `task`
         return rep
 
-    def AddTask( self, action, loopdelay, initdelay = 0 ):
-        task = Task( action, loopdelay, initdelay )
+    def AddTask( self, action, loopdelay, initdelay = 0, includeRuntime = 1):
+        task = Task( action, loopdelay, initdelay, includeRuntime )
         self._tasks.append( task )
         return task
 
