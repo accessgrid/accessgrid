@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.168 2004-04-30 20:34:54 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.169 2004-05-04 04:51:14 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.168 2004-04-30 20:34:54 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.169 2004-05-04 04:51:14 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -454,7 +454,7 @@ class VenueClient:
         # Remove client from the list of clients who have
         # been requested for personal data
         if profile.publicId in self.requests:
-            del self.requests[index]
+            self.requests.remove(profile.publicId)
         
     def ModifyUserEvent(self, event):
         log.debug("ModifyUserEvent: Got Modify User Event")
