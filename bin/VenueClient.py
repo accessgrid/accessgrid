@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.169 2003-06-17 21:53:44 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.170 2003-06-26 20:06:17 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -59,13 +59,9 @@ class VenueClientUI(wxApp, VenueClient):
     client = None
     clientHandle = None
     venueUri = None
-    personalDataStorePrefix = "personalDataStore"
-    personalDataStorePort = 0
-    personalDataDict = {}
     accessGridPath = GetUserConfigDir()
     profileFile = os.path.join(accessGridPath, "profile" )
-    personalDataStorePath = os.path.join(accessGridPath, personalDataStorePrefix)
-    personalDataFile = os.path.join(personalDataStorePath, "myData.txt" )
+  
     isPersonalNode = 0
     debugMode = 0
     transferEngine = None
@@ -122,11 +118,6 @@ class VenueClientUI(wxApp, VenueClient):
             ErrorDialog(None, "Application initialization failed. Attempting to continue",
                         "Initialization failed")
         
-        #
-        # Create and load personal files
-        #
-        self.__createPersonalDataStore()
-
         #
         # Initiate user interface components
         #
@@ -237,49 +228,7 @@ class VenueClientUI(wxApp, VenueClient):
             elif opt in ('--logfile', '-l'):
                 self.logFile = arg
 
-    def __createPersonalDataStore(self):
-        """
-        Creates the personal data storage and loads personal data
-        from file to a dictionary of DataDescriptions. If the file is removed
-        from local path, the description is not added to the list.
-        """
-
-        log.debug("bin.VenueClient::__createPersonalDataStore: Creating personal datastore at %s using prefix %s and port %s" %(self.personalDataStorePath, self.personalDataStorePrefix,self.personalDataStorePort))
-
-        if not os.path.exists(self.personalDataStorePath):
-            try:
-                os.mkdir(self.personalDataStorePath)
-            except OSError, e:
-                log.exception("bin.VenueClient::__createPersonalDataStore: Could not create personal data storage path")
-                self.personalDataStorePath = None
-               
-        if self.personalDataStorePath:
-                self.dataStore = DataStore.DataStore(self, self.personalDataStorePath,
-                                                     self.personalDataStorePrefix)
-                self.transferEngine = DataStore.GSIHTTPTransferServer(('',
-                                                                       self.personalDataStorePort))
-                self.transferEngine.run()
-                self.transferEngine.RegisterPrefix(self.personalDataStorePrefix, self)
-                self.dataStore.SetTransferEngine(self.transferEngine)
-
-                #
-                # load personal data from file
-                #
-                
-                log.debug("bin.VenueClient::__createPersonalDataStore: Load personal data from file")
-                if os.path.exists(self.personalDataFile):
-                    file = open(self.personalDataFile, 'r')
-                    self.personalDataDict = cPickle.load(file)
-                    log.debug("bin.VenueClient::__createPersonalDataStore: Personal data dict: %s" %self.personalDataDict)
-                    file.close()
-                    
-                    for file, desc in self.personalDataDict.items():
-                        url = self.transferEngine.GetDownloadDescriptor(self.personalDataStorePrefix, file)
-                        
-                        if url is None:
-                            log.debug("bin.VenueClient::__createPersonalDataStore: Personal file %s is not valid, remove it"%file)
-                            del self.personalDataDict[file]
-
+  
     def __setLogger(self):
         """
         Sets the logging mechanism.
@@ -431,15 +380,11 @@ class VenueClientUI(wxApp, VenueClient):
             wxCallAfter(self.HandleServerConnectionFailure)
                                         
     def HandleServerConnectionFailure(self):
-        if self.venueUri != None:
-            log.debug("call exit venue")
-            self.frame.CleanUp()
-            self.frame.venueAddressBar.SetTitle("You are not in a venue",
-                                                'Click "Go" to connect to the venue, which address is displayed in the address bar') 
-            self.ExitVenue()
-        else:
-            log.debug("the venue uri is not set, we do not call exit")
-
+        log.debug("bin::VenueClient::HandleServerConnectionFailure: call exit venue")
+        self.frame.CleanUp()
+        self.frame.venueAddressBar.SetTitle("You are not in a venue",
+                                            'Click "Go" to connect to the venue, which address is displayed in the address bar') 
+        self.ExitVenue()
         MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", "Lost Connection")
 
     def RemoveUserEvent(self, event):
@@ -489,13 +434,18 @@ class VenueClientUI(wxApp, VenueClient):
         """
 
         data = event.data
+
+        "this is the data uri received", data.id
+        
         if data.type == "None" or data.type == None:
             wxCallAfter(self.frame.statusbar.SetStatusText, "file '%s' just got added to venue" %data.name)
+            
+            # Just change venuestate for venue data.
+            VenueClient.AddDataEvent(self, event)
         else:
             # Personal data is handled in VenueClientUIClasses to find out who the data belongs to
             pass
-            
-        VenueClient.AddDataEvent(self, event)
+
         log.debug("EVENT - Add data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.AddData, data)
 
@@ -510,7 +460,11 @@ class VenueClientUI(wxApp, VenueClient):
         *data* The DataDescription representing data that just got updated in the venue
         """
         data = event.data
-        VenueClient.UpdateDataEvent(self, event)
+        
+        if data.type == "None" or data.type == None:
+            # Just change venuestate for venue data.
+            VenueClient.UpdateDataEvent(self, event)
+
         log.debug("EVENT - Update data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.UpdateData, data)
 
@@ -528,12 +482,13 @@ class VenueClientUI(wxApp, VenueClient):
         data = event.data
         if data.type == "None" or data.type == None:
             wxCallAfter(self.frame.statusbar.SetStatusText, "file '%s' just got added to venue" %data.name)
+            # Just change venuestate for venue data.
+            VenueClient.RemoveDataEvent(self, event)
         else:
             # Personal data is handled in VenueClientUIClasses to find out who the data belongs to
             pass
         
         wxCallAfter(self.frame.statusbar.SetStatusText, "File '%s' just got removed from the venue" %data.name)
-        VenueClient.RemoveDataEvent(self, event)
         log.debug("EVENT - Remove data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.RemoveData, data)
 
@@ -677,7 +632,9 @@ class VenueClientUI(wxApp, VenueClient):
             # Tell super class to enter venue
             warningString = VenueClient.EnterVenue( self, URL )
             wxCallAfter(self.frame.statusbar.SetStatusText, "Entered venue %s successfully" %self.venueState.name)
-            
+
+            self.dataStore.SetEventDistributor(self.eventClient, self.venueState.uniqueId)
+                      
             # clean up ui from current venue before entering a new venue
             if self.venueUri != None:
                 log.debug("clean up frame")
@@ -739,14 +696,12 @@ class VenueClientUI(wxApp, VenueClient):
             self.venueUri = URL
             
             # Venue data storage location
-            self.upload_url = self.client.GetUploadDescriptor()
-            log.debug("Get upload url %s" %self.upload_url)
+            # self.upload_url = self.client.GetUploadDescriptor()
+            #log.debug("Get upload url %s" %self.dataStoreUploadUrl)
             
-            # Add your personal data descriptions to venue
             log.debug("Add your personal data descriptions to venue")
             wxCallAfter(self.frame.statusbar.SetStatusText, "Add your personal data to venue")
-            personalDataWarning = self.__addPersonalDataToVenue()
-            warningString = warningString + personalDataWarning
+            warningString = warningString 
 
             # Enable menus
             wxCallAfter(self.frame.ShowMenu)
@@ -781,54 +736,6 @@ class VenueClientUI(wxApp, VenueClient):
              
     EnterVenue.soap_export_as = "EnterVenue"
 
-    def __addPersonalDataToVenue(self):
-        '''
-        Adds all personal data, stored in local file directory as a dictionary, to the venue.
-       
-        **Returns:**
-        
-        *String* A warning string including information about data that could not be added to the venue
-        '''
-        #
-        # Add personal data to venue
-        #
-        duplicateData = []
-        for data in self.personalDataDict.values():
-            log.debug("Add personal file %s to venue" %data.name)
-
-            url = self.dataStore.GetDownloadDescriptor(data.name)
-
-            #
-            # Is the file still present?
-            #
-            if url is None:
-                log.debug("Personal file %s has vanished" %data.name)
-                del self.personalDataDict[data.name]
-
-            #
-            # Is there a file in the venue with the same name?
-            #
-            elif(self.venueState.data.has_key(data.name)):
-                duplicateData.append(data.name)
-
-            else:
-                try:
-                    self.client.AddData(data)
-                except Exception, e:
-                    duplicateData.append(data.name)
-        #
-        # Notify user of what files already exist in the venue
-        #
-        if(len(duplicateData)>0):
-            files = ''
-            for file in duplicateData:
-                files = files + ' ' +file + ','
-
-            return "\n\nPersonal data, %s \nalready exists in the venue and could not be added" %files
-
-        else:
-            return ''
-                
     def ExitVenue(self):
         """
         Note: Overridden from VenueClient
@@ -918,14 +825,7 @@ class VenueClientUI(wxApp, VenueClient):
             log.debug("Terminating services")
             self.personalNode.Stop()
 
-        #
-        # save personal data
-        #
-        
-        file = open(self.personalDataFile, 'w')
-        cPickle.dump(self.personalDataDict, file)
-        file.close()
-
+      
         #
         # stop personal data server
         #  
@@ -950,6 +850,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         log.debug("Save file descriptor: %s, path: %s"
                   % (data_descriptor, local_pathname))
+
 
         failure_reason = None
         try:
@@ -1129,11 +1030,11 @@ class VenueClientUI(wxApp, VenueClient):
         log.debug("Upload personal files")
         try:
             my_identity = GetDefaultIdentityDN()
-            self.dataStore.AddFile(fileList, my_identity, self.profile.publicId)
+            self.dataStore.UploadLocalFiles(fileList, my_identity, self.profile.publicId)
 
         except DataStore.DuplicateFile, e:
             title = "Add Personal Data Error"
-            MessageDialog(self.frame, e, title, style = wxOK|wxICON_ERROR)
+            ErrorDialog(self.frame, e, title, style = wxOK|wxICON_ERROR)
 
         except Exception, e:
             log.exception("bin.VenueClient:UploadPersonalFiles failed")
@@ -1150,7 +1051,7 @@ class VenueClientUI(wxApp, VenueClient):
         long-term transfers and to allow for live updates of a download status.
         
         """
-        url = self.upload_url
+        url = self.dataStoreUploadUrl
         method = self.get_ident_and_upload
 
         #
@@ -1185,10 +1086,7 @@ class VenueClientUI(wxApp, VenueClient):
 
         upload_thread = threading.Thread(target = method, args = ul_args)
 
-        #
-        # XXX is the wxCallAfter really needed here?
-        #
-        wxCallAfter(upload_thread.start)
+        upload_thread.start()
         log.debug("Started thread")
         dlg.ShowModal()
 
@@ -1239,8 +1137,8 @@ class VenueClientUI(wxApp, VenueClient):
         This uses the DataStore HTTP upload engine code.
         """
 
-        log.debug("Upload files - no dialog. upload_url=%s", self.upload_url)
-        upload_url = self.upload_url
+        log.debug("Upload files - no dialog. upload_url=%s", self.dataStoreUploadUrl)
+        upload_url = self.dataStoreUploadUrl
 
         error_msg = None
         try:
@@ -1262,24 +1160,6 @@ class VenueClientUI(wxApp, VenueClient):
             log.exception("bin.VenueClient::UploadFilesNoDialog: Upload files failed")
             ErrorDialog(None, error_msg, "Upload Files Error", style = wxOK|wxICON_ERROR)
            
-    def AddData(self, data):
-        """
-        This method adds local personal data to the venue
-
-        **Arguments:**
-        
-        *data* The DataDescription we want to add to personal data
-        """
-        log.debug("Adding data: %s to venue" %data.name)
-        
-        try:
-            self.client.AddData(data)
-            self.personalDataDict[data.name] = data
-            
-        except:
-            log.exception("bin.VenueClient::AddData: Error occured when trying to add data")
-            ErrorDialog(None, "The files could not be added", "Add Personal Files Error")
-           
     def RemoveData(self, data):
         """
         This method removes a data from the venue. If the data is personal, this method
@@ -1291,10 +1171,17 @@ class VenueClientUI(wxApp, VenueClient):
         """
         log.debug("Remove data: %s from venue" %data.name)
         try:
-            self.client.RemoveData(data)
-            if(data.type == self.profile.publicId and self.personalDataDict.has_key(data.name)):
-                del self.personalDataDict[data.name]
-                self.dataStore.DeleteFile(data.name)
+            # Call datastore soap object
+            #
+            dataList = []
+            dataList.append(data)
+          
+            if(data.type == self.profile.publicId):
+                # Personal data
+                self.dataStore.RemoveFiles(dataList)
+            else:
+                # Venue data
+                Client.Handle(self.dataStoreLocation).GetProxy().RemoveFiles(dataList)
 
         except:
             log.exception("bin.VenueClient::RemoveData: Error occured when trying to remove data")
@@ -1399,69 +1286,6 @@ class VenueClientUI(wxApp, VenueClient):
         """
         log.debug("Set node service url:  %s" %url)
         self.nodeServiceUri = url
-
-    #
-    # Methods for personal data storage to call
-    #
-    def GetData(self, filename):
-        '''
-        This method is called by the personal DataStore to get a
-        DataDescription from the VenueClient.
-
-        **Arguments:**
-        
-        *filename* The name of the file we want to locate
-
-        **Returns:** 
-
-        *DataDescription* The DataDescription representing the data named filename.
-        If the file is not present among personal data, None is returned
-        '''
-        log.debug("Get private data description: %s" %filename)
-        if self.personalDataDict.has_key(filename):
-            d = self.personalDataDict[filename]
-
-        else:
-            log.debug("The private file does not exist")
-            d = None
-        return d
-
-    def GetVenueData(self, filename):
-        '''
-        This method is called by the personal DataStore to get a
-        DataDescription present in the venue.
-
-        **Arguments:**
-        
-        *filename* The name of the file we want to locate
-
-        **Returns:**
-        
-        *DataDescription* The DataDescription representing the data named filename.
-        If the file is not present in the venue, None is returned.
-
-        '''
-        log.debug("Get venue data description: %s" %filename)
-        log.debug("Venue state: %s" %str(self.venueState.data))
-        if self.venueState.data.has_key(filename):
-            d = self.venueState.data[filename]
-        else:
-            log.debug("The venue file does not exist")
-            d = None
-        return d
-
-    def UpdateData(self, data):
-        '''
-        This method is called by the personal DataStore to update a
-        DataDescription.
-        
-        **Arguments:**
-        
-        *data* The DataDescription of the data we want to update
-        '''
-        self.personalDataDict[data.GetName()] = data
-        self.client.UpdateData(data)
-        log.debug("UpdateData: %s" %data)
 
     #
     # Application Integration code
