@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.26 2003-03-19 23:11:44 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.27 2003-03-20 21:19:22 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,9 @@ import sys
 import urlparse
 import string
 
+import logging, logging.handlers
+
+from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.EventClient import EventClient
@@ -25,7 +28,7 @@ from AccessGrid.scheduler import Scheduler
 class EnterVenueException(Exception):
     pass
         
-class VenueClient( ServiceBase ):
+class VenueClient( ServiceBase):
     """
     This is the client side object that maintains a stateful
     relationship with a Virtual Venue. This object provides the
@@ -37,6 +40,7 @@ class VenueClient( ServiceBase ):
         """
         This client class is used on shared and personal nodes.
         """
+        print '-----------********** start venue client'
         self.profile = profile
         self.nodeServiceUri = "https://localhost:11000/NodeService"
         self.workspaceDock = None
@@ -44,7 +48,8 @@ class VenueClient( ServiceBase ):
         self.followerProfiles = dict()
         self.__InitVenueData__()
         self.houseKeeper = Scheduler()
-        
+        self.CreateFollowLeadServer()
+                          
     def __InitVenueData__( self ):
         self.eventClient = None
         self.venueState = None
@@ -55,15 +60,26 @@ class VenueClient( ServiceBase ):
 
     def Heartbeat(self):
         if self.eventClient != None:
-#            print "Sending heartbeat!"
+            #            print "Sending heartbeat!"
             self.eventClient.Send(HeartbeatEvent(self.venueId, self.privateId))
             
     def SetProfile(self, profile):
         self.profile = profile
+        if(self.profile != None):
+            self.profile.venueClientURL = self.service.get_handle()
         
     def DoNothing(self, data):
         pass
+    
+    def CreateFollowLeadServer(self):
+        server = Server.Server(10000)
+        self.service = server.CreateServiceObject("VenueClient")
+        self._bind_to_service( self.service )
+        server.run_in_thread()
 
+        if(self.profile != None):
+            self.profile.venueClientURL = self.service.get_handle()
+      
     #
     # Event Handlers
     #
@@ -239,7 +255,7 @@ class VenueClient( ServiceBase ):
         node with it.
         """
         self.followerProfiles[clientProfile.publicId] = clientProfile
-    Lead.soap_export_as = "Lead"
+        Lead.soap_export_as = "Lead"
 
     def Unlead( self, clientProfile):
         """
@@ -249,7 +265,7 @@ class VenueClient( ServiceBase ):
         for profile in self.followerProfiles.values():
             if profile.publicId == clientProfile.publicId:
                 del self.followerProfiles[clientProfile.publicId]
-    Unlead.soap_export_as = "Unlead"
+        Unlead.soap_export_as = "Unlead"
 
     def SetNodeServiceUri( self, nodeServiceUri ):
         """
