@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.288 2003-09-24 18:22:02 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.289 2003-09-24 18:31:00 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.288 2003-09-24 18:22:02 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.289 2003-09-24 18:31:00 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2374,7 +2374,7 @@ class TextClientPanel(wxPanel):
         self.display = wxButton(self, self.ID_BUTTON, "Display", style = wxBU_EXACTFIT)
         self.textInputId = wxNewId()
         self.TextInput = wxTextCtrl(self, self.textInputId, "", size = wxSize(1000, 40),
-                                    style= wxTE_PROCESS_ENTER|wxTE_MULTILINE)
+                                    style= wxTE_MULTILINE)
         self.TextInput.SetToolTipString("Write your message here")
         self.__set_properties()
         self.__do_layout()
