@@ -417,7 +417,6 @@ class Venue:
                 if not self.eventClient.connected:
                   self.log.debug("Connection lost; shutting down venue")
                   self.RemoveBridges()
-                continue
             except:
                 self.log.exception("BridgeServer:Heartbeat: Heartbeat exception is caught.")
                 self.RemoveBridges()
