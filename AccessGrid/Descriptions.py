@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.31 2003-05-17 18:01:55 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.32 2003-05-20 21:57:33 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import string
 from AccessGrid.GUID import GUID
-from AccessGrid.NetworkLocation import MulticastNetworkLocation
+from AccessGrid.NetworkLocation import MulticastNetworkLocation, UnicastNetworkLocation
 from AccessGrid.Types import Capability
 from AccessGrid.Utilities import PathFromURL
 
@@ -323,9 +323,13 @@ class AGServiceDescription:
         self.servicePackageUri = servicePackageUri
     
 def CreateStreamDescription( streamDescStruct ):
-    networkLocation = MulticastNetworkLocation( streamDescStruct.location.host,
-                                                streamDescStruct.location.port,
-                                                streamDescStruct.location.ttl )
+    if streamDescStruct.location.type == MulticastNetworkLocation.TYPE:
+        networkLocation = MulticastNetworkLocation( streamDescStruct.location.host,
+                                                    streamDescStruct.location.port,
+                                                    streamDescStruct.location.ttl )
+    else:
+        networkLocation = UnicastNetworkLocation( streamDescStruct.location.host,
+                                                    streamDescStruct.location.port)
     cap = Capability( streamDescStruct.capability.role, 
                       streamDescStruct.capability.type )
     streamDescription = StreamDescription( streamDescStruct.name, 
