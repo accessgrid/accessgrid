@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.163 2003-04-28 21:51:33 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.164 2003-05-02 15:12:48 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -186,10 +186,10 @@ class VenueClientFrame(wxFrame):
 	self.serviceMenu = wxMenu()
 	self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
                                 "Add service to the venue")
-        self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete",
-                                "Remove selected service")
         self.serviceMenu.Append(self.ID_VENUE_SERVICE_OPEN,
                                      "Open",  "Launch service client")
+        self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete",
+                                "Remove selected service")
         self.serviceMenu.AppendSeparator()
         self.serviceMenu.Append(self.ID_VENUE_SERVICE_PROPERTIES,"Properties...",
                                      "View information about the selected service")
@@ -1223,7 +1223,7 @@ class ContentListPanel(wxPanel):
         EVT_SIZE(self, self.OnSize)
         EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
         EVT_TREE_KEY_DOWN(self.tree, id, self.OnKeyDown) 
-#	EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
+        # EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
 	
     def __setImageList(self):
 	imageList = wxImageList(32,19)
@@ -1243,13 +1243,16 @@ class ContentListPanel(wxPanel):
                                            self.participantId, self.participantId)
         self.tree.SetItemData(participant, wxTreeItemData(profile)) 
         self.participantDict[profile.publicId] = participant
+        self.tree.SortChildren(self.participants)
         self.tree.Expand(self.participants)
 
         for data in dataList:
             participantData = self.tree.AppendItem(participant, data.name, \
                                                    self.defaultDataId, self.defaultDataId)
             self.personalDataDict[data.name] = participantData 
-            self.tree.SetItemData(participantData, wxTreeItemData(data)) 
+            self.tree.SetItemData(participantData, wxTreeItemData(data))
+
+        self.tree.SortChildren(participant)
             
     def RemoveParticipantData(self, dataTreeId):
         del self.personalDataDict[id]
@@ -1268,17 +1271,7 @@ class ContentListPanel(wxPanel):
 
                 wxLogDebug("Delete participant from dictionary")
                 del self.participantDict[description.publicId]
-               
-    def RemoveNode(self, profile):
-        if(profile!=None):
-            if(self.nodeDict.has_key(profile.publicId)):
-                id = self.nodeDict[profile.publicId]
-
-                if(id != None):
-                    self.tree.Delete(id)
-
-                del self.nodeDict[profile.publicId]
-                
+                          
     def ModifyParticipant(self, description):
         wxLogDebug('Modify participant')
         type =  description.profileType
@@ -1300,6 +1293,7 @@ class ContentListPanel(wxPanel):
                 wxLogDebug('this is the name we are changing to %s'%description.name)
                 profile = description
                 self.tree.SetItemData(treeId, wxTreeItemData(description))
+                self.tree.SortChildren(self.participants)
                
             else:
                 treeId = self.nodeDict[description.publicId]
@@ -1307,6 +1301,7 @@ class ContentListPanel(wxPanel):
                 self.tree.SetItemText(treeId, description.name)
                 profile = description
                 self.tree.SetItemData(treeId, wxTreeItemData(description))
+                self.tree.SortChildren(self.nodes)
 
         elif(oldType != None): # move to new category type
 
@@ -1355,8 +1350,9 @@ class ContentListPanel(wxPanel):
                                         self.defaultDataId, self.defaultDataId)
             self.tree.SetItemData(dataId, wxTreeItemData(profile)) 
             self.dataDict[profile.name] = dataId
+            self.tree.SortChildren(self.data)
             self.tree.Expand(self.data)
-
+            
         #if personal data
         else:
             wxLogDebug("This is personal data")
@@ -1368,6 +1364,7 @@ class ContentListPanel(wxPanel):
                                      self.defaultDataId, self.defaultDataId)
                 self.tree.SetItemData(dataId, wxTreeItemData(profile))
                 self.personalDataDict[profile.name] = dataId
+                self.tree.SortChildren(participantId)
 
             elif (self.nodeDict.has_key(id)):
                 wxLogDebug("Data belongs to a node")
@@ -1376,6 +1373,7 @@ class ContentListPanel(wxPanel):
                                      self.defaultDataId, self.defaultDataId)
                 self.tree.SetItemData(dataId, wxTreeItemData(profile))
                 self.personalDataDict[profile.name] = dataId
+                self.tree.SortChildren(nodeId)
 
             elif (self.nodeDict.has_key(id)):
                 wxLogInfo("Owner of data does not exist")
@@ -1424,8 +1422,9 @@ class ContentListPanel(wxPanel):
  
         self.tree.SetItemData(service, wxTreeItemData(profile)) 
         self.serviceDict[profile.name] = service
+        self.tree.SortChildren(self.services)
         self.tree.Expand(self.services)
-
+        
     def RemoveService(self, profile):
         if(self.serviceDict.has_key(profile.name)):
             id = self.serviceDict[profile.name]
@@ -1439,6 +1438,7 @@ class ContentListPanel(wxPanel):
                                            self.applicationId)
         self.tree.SetItemData(application, wxTreeItemData(appDesc))
         self.applicationDict[appDesc.uri] = application
+        self.tree.SortChildren(self.applications)
         self.tree.Expand(self.applications)
       
     def RemoveApplication(self, appDesc):
@@ -1453,6 +1453,7 @@ class ContentListPanel(wxPanel):
                                        self.nodeId, self.nodeId)
         self.tree.SetItemData(node, wxTreeItemData(profile)) 
         self.nodeDict[profile.publicId] = node
+        self.tree.SortChildren(self.nodes)
         self.tree.Expand(self.nodes)
         
         for data in dataList:
@@ -1460,6 +1461,18 @@ class ContentListPanel(wxPanel):
                                             self.defaultDataId, self.defaultDataId)
             self.tree.SetItemData(nodeData, wxTreeItemData(data))
             self.personalDataDict[data.name] = nodeData   # data gets new tree id
+
+        self.tree.SortChildren(node)
+
+    def RemoveNode(self, profile):
+        if(profile!=None):
+            if(self.nodeDict.has_key(profile.publicId)):
+                id = self.nodeDict[profile.publicId]
+
+                if(id != None):
+                    self.tree.Delete(id)
+                    
+                del self.nodeDict[profile.publicId]
 
     def __setTree(self):
         #temporary fix for wxPython bug
@@ -1471,25 +1484,26 @@ class ContentListPanel(wxPanel):
         
         self.root = self.tree.AddRoot("The Lobby", index, index)
                     
-	self.participants = self.tree.AppendItem(self.root, "Participants",
-                                                 index, index)
-       
-	self.tree.SetItemBold(self.participants)
-             
-	self.data = self.tree.AppendItem(self.root, "Data", index, index) 
-	self.tree.SetItemBold(self.data)
-             
-	self.services = self.tree.AppendItem(self.root, "Services", index,
-                                             index)
-	self.tree.SetItemBold(self.services)
-             
-	self.applications = self.tree.AppendItem(self.root, "Applications",
-                                             index, index)
+	self.participants = self.tree.AppendItem(self.root, "Participants", index, index)
+        self.nodes = self.tree.AppendItem(self.root, "Nodes", index, index)
+        self.data = self.tree.AppendItem(self.root, "Data", index, index) 
+        self.services = self.tree.AppendItem(self.root, "Services", index, index)
+        self.applications = self.tree.AppendItem(self.root, "Applications", index, index)
+
+        self.tree.SetItemBold(self.participants)
+        self.tree.SetItemBold(self.nodes)
+        self.tree.SetItemBold(self.data)
+        self.tree.SetItemBold(self.services)
 	self.tree.SetItemBold(self.applications)
-             
-	self.nodes = self.tree.AppendItem(self.root, "Nodes", index, index)
-	self.tree.SetItemBold(self.nodes)
-             
+      
+        colour = wxTheColourDatabase.FindColour("NAVY")
+                
+        self.tree.SetItemTextColour(self.participants, colour)
+        self.tree.SetItemTextColour(self.nodes, colour)
+        self.tree.SetItemTextColour(self.data, colour)
+        self.tree.SetItemTextColour(self.services, colour)
+	self.tree.SetItemTextColour(self.applications, colour)
+               
         self.tree.Expand(self.participants)
         self.tree.Expand(self.data)
         self.tree.Expand(self.services)
