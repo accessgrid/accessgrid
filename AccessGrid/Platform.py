@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.27 2003-05-30 22:26:03 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.28 2003-08-07 12:35:04 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -29,14 +29,34 @@ WIN = 'win32'
 WinGPI = "wgpi.exe"
 AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\2.0"
 
+def isWindows:
+    if sys.platform == WIN:
+	return 1
+    else:
+	return 0
+
 # Linux Defaults
 LINUX = 'linux2'
 LinuxGPI = "grid-proxy-init"
 AGTkBasePath = "/etc/AccessGrid"
 
+def isLinux:
+    if sys.platform == LINUX:
+	return 1
+    else:
+	return 0
+
 # Mac OS X Defaults
-# They will go here :-)
+OSX='darwin'
+DarwinGPI="grid-proxy-init"
+AGTkBasePath="/etc/AccessGrid"
         
+def isOSX:
+    if sys.platform == OSX:
+	return 1
+    else:
+	return 0
+
 
 def GPICmdline():
     """
@@ -69,6 +89,8 @@ def GPIWin32():
 
 if sys.platform == WIN:
     GPI = GPIWin32
+elif sys.platform == OSX:
+    GPI = GPICmdline
 else:
     GPI = GPICmdline
     
@@ -100,7 +122,7 @@ def GetSystemConfigDir():
             base = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0, 0)
             configDir = os.path.join(base, "AccessGrid")
 
-        elif sys.platform == LINUX:
+        elif sys.platform == LINUX or sys.platform == OSX:
             configDir = AGTkBasePath
 
     return configDir
@@ -123,7 +145,7 @@ def GetUserConfigDir():
         if sys.platform == WIN:
             base = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
             configDir = os.path.join(base, "AccessGrid")
-        elif sys.platform == LINUX:
+        elif sys.platform == LINUX or sys.platform == OSX:
             configDir = os.path.join(os.environ["HOME"],".AccessGrid")
 
     return configDir
@@ -162,8 +184,7 @@ def GetInstallDir():
         except WindowsError:
             log.exception("Cannot open install directory reg key")
             installDir = ""
-
-    elif sys.platform == LINUX:
+    elif sys.platform == LINUX or sys.platform == OSX:
         installDir = "/usr/bin"
 
     return installDir
@@ -190,7 +211,7 @@ def GetSharedDocDir():
             log.exception("Cannot open InstallPath directory reg key")
             sharedDocDir = ""
 
-    elif sys.platform == LINUX:
+    elif sys.platform == LINUX or sys.platform == OSX:
         sharedDocDir = "/usr/share/doc/AccessGrid/Documentation"
 
     return sharedDocDir
