@@ -800,8 +800,20 @@ class CertificateManager:
             #
             # Otherwise, use the system temp dir.
             #
-            user = Platform.GetUsername()
-            self.proxyCertPath = os.path.join(Platform.GetTempDir(), "x509_up_" + user)
+
+            #
+            # We do an explicit check for the existence of
+            # os.getuid() so that we can align our proxy with the defualt
+            # globus proxy location on unixlike platforms.
+            #
+
+            if hasattr(os, 'getuid'):
+                uid = os.getuid()
+                self.proxyCertPath = os.path.join(Platform.GetTempDir(),
+                                                  "x509up_u%s" + uid)
+            else:
+                user = Platform.GetUsername()
+                self.proxyCertPath = os.path.join(Platform.GetTempDir(), "x509_up_" + user)
 
 
         if 'x509_cert_dir' in gcerts:
