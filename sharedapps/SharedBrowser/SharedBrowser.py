@@ -2,74 +2,21 @@ import os
 import sys
 import logging
 import sys
+import getopt
 
 from wxPython.wx import *
 from wxPython.iewin import *
 
-from AccessGrid.hosting.pyGlobus import Client
-
-from AccessGrid import Events
-from AccessGrid import EventClient
-from AccessGrid.Platform import GetUserConfigDir
-from AccessGrid.ClientProfile import ClientProfile
-
-
-log = logging.getLogger("SharedBrowser")
-def init_logging(appName):
-    logger = logging.getLogger("AG")
-    logger.setLevel(logging.DEBUG)
-    hdlr = logging.StreamHandler()
-    fmt = logging.Formatter("%(name)-17s %(asctime)s %(levelname)-5s %(message)s")
-    hdlr.setFormatter(fmt)
-    logger.addHandler(hdlr)
-
-    appLogger = logging.getLogger(appName)
-    appLogger.setLevel(logging.DEBUG)
-    appLogger.addHandler(hdlr)
-
-def registerApp(fileName):
-    import AccessGrid.Toolkit as Toolkit
-    app = Toolkit.CmdlineApplication()
-    appdb = app.GetAppDatabase()
-
-    # Get just the filename
-    fn = os.path.split(fileName)[1]
-
-    # Find the app dir
-    uad = Platform.GetUserAppPath()
-
-    # Get the absolute path for copying the file
-    src = os.path.abspath(fn)
-
-    # Get the destination filename
-    dest = os.path.join(uad, fn)
-
-    exeCmd = sys.executable + " \"" + dest + "\" %(appUrl)s"
-
-    print "SRC: %s DST: %s CMD: %s" % (src, dest, exeCmd)
-    
-    # Copy the file
-    try:
-        shutil.copyfile(src, dest)
-    except IOError:
-        print "Couldn't copy app into place, bailing."
-        sys.exit(1)
-
-    # Call the registration method on the applications database
-    appdb.RegisterApplication("Shared Browser",
-                              "application/x-ag-shared-browser",
-                              "sharedbrowser",
-                              {"Open" : exeCmd })
-
+from AccessGrid.SharedAppClient import SharedAppClient
     
 class WebBrowser(wxPanel):
     """
     WebBrowser is a basic ie-based web browser class
     """
-    def __init__(self, parent, id, frame = None):
-
+    def __init__(self, parent, id, log, frame = None):
         wxPanel.__init__(self, parent, id)
 
+        self.log = log
         self.current = None
         self.populate()
 
@@ -151,7 +98,8 @@ class WebBrowser(wxPanel):
 
         if self.just_received_navigate:
             if url != self.docLoading:
-                print "OnBeforeNav Skipping", url,", already loading", self.docLoading
+                message = "OnBeforeNav Skipping "+url+"already loading"+self.docLoading 
+                self.log.debug(message)
                 # If we get a navigation event while loading, we will ignore
                 #   the completion since it is from a popup or sub-page.
                 self.ignoreComplete.append(url)
@@ -164,17 +112,20 @@ class WebBrowser(wxPanel):
         else:
             # Go to a new url and also send it to the other Shared
             #   Browser clients.  The Send is done in IBrowseCallback.
-            print "Before navigate ", url
+            message = "Before navigate "+url
+            self.log.debug(message)
             self.just_received_navigate = 1
             self.docLoading = url
             map(lambda a: a(url), self.navigation_callbacks)
 
     def OnNewWindow2(self, event):
-        print "On new window: ", event.GetText1()
+        message = "On new window: " +event.GetText1()
+        self.log.debug(message)
         event.Veto() # don't allow it
 
     def OnDocumentComplete(self, event):
-        print "OnDocumentComplete: ", event.GetText1()
+        message = "OnDocumentComplete: " + event.GetText1()
+        self.log.debug(message)
         self.current = event.GetText1()
 
         # Check if we are finishing the main document or not.
@@ -182,28 +133,28 @@ class WebBrowser(wxPanel):
             
             if event.GetText1() == "about:blank" and self.docLoading != "about:blank":
                 # This case happens at startup.
-                print "Ignoring DocComplete for first about:blank"
+                self.log.debug("Ignoring DocComplete for first about:blank")
             else:
                 # Finished loading, allow user to click links again now.
                 #  Needed since there is not enough information in the
                 #   events to tell if they refer to a popup (and other sub-
                 #   pages) or a user clicking on a url.
-                print "Finished loading."
+                self.log.debug("Finished loading.")
                 self.just_received_navigate = 0
                 self.current = event.GetText1()
                 self.location.SetValue(self.current)
                 while len(self.ignoreComplete) > 0:
                     self.ignoreComplete.pop()
         else:
-            print "Ignoring DocComplete for ", event.GetText1()
-
+            message = "Ignoring DocComplete for ", event.GetText1()
+            self.log.debug(message)
+           
     def OnTitleChange(self, event):
-        print "titlechange: ", event.GetText1()
+        self.log.debug("titlechange: " + event.GetText1())
         if self.frame:
             self.frame.SetTitle(self.title_base + ' -- ' + event.GetText1())
 
     def OnStatusTextChange(self, event):
-        #print "status: ", event.GetText1()
         if self.frame:
             self.frame.SetStatusText(event.GetText1())
 
@@ -224,14 +175,13 @@ class WebBrowser(wxPanel):
 
     def navigate(self, url):
         if self.just_received_navigate:
-            print "___cancelled NAVIGATE to ", url
+            self.log.debug("___cancelled NAVIGATE to "+url)
         else:
-            print "NAVIGATE to ", url
+            self.log.debug("NAVIGATE to "+url)
             self.just_received_navigate = 1
             self.docLoading = url
             self.ie.Navigate(url)
-           
-
+    
     def OnLocationSelect(self, event):
         url = self.location.GetStringSelection()
         self.ie.Navigate(url)
@@ -258,61 +208,42 @@ class SharedBrowser( wxApp ):
         return 1
 
     def OnExit(self):
-        self.appProxy.Leave(self.privateId)
-        self.eventClient.Stop()
+        self.sharedAppClient.Shutdown()
         os._exit(1)
 
-    def __init__( self, appUrl ):
-
+    def __init__( self, appUrl, debugMode = 0, logFile = None):
         wxApp.__init__(self, False)
         
-        self.appUrl = appUrl
-        self.appProxy = Client.Handle(appUrl).GetProxy()
+        # Create shared application client        
+        self.sharedAppClient = SharedAppClient("SharedBrowser")
+        self.log = self.sharedAppClient.InitLogging(debugMode, logFile)
 
-        clientProfileFile = os.path.join(GetUserConfigDir(), 'profile')
-        clientProfile = ClientProfile(clientProfileFile)
-
-        #
-        # Join the application
-        #
-        (self.publicId, self.privateId) = self.appProxy.Join(clientProfile)
-
-       
-        #
-        # Retrieve the channel id
-        #
-        (self.channelId, eventServiceLocation ) = self.appProxy.GetDataChannel(self.privateId)
-
-        # 
-        # Subscribe to the event channel
-        #
-        self.eventClient = EventClient.EventClient(self.privateId,
-                                                   eventServiceLocation,
-                                                   self.channelId)
-        self.eventClient.start()
-        self.eventClient.Send(Events.ConnectEvent(self.channelId,
-                                                  self.privateId))
+        # Connect to shared application service. 
+        self.sharedAppClient.Join(appUrl)
 
         #
         # Register browse event callback
         #
-        # The callback function is invoked with one argument, the data from the call.
-        self.eventClient.RegisterCallback("browse", self.BrowseCallback )
+        # The callback function is invoked with one argument,
+        # the data from the call.
+        #
+        self.sharedAppClient.RegisterEventCallback("browse", self.BrowseCallback )
 
         #
         # Create Browser Window
         #
         self.frame = wxFrame(None, -1, "Browser")
-        self.browser = WebBrowser(self.frame, -1, self.frame)
+        self.browser = WebBrowser(self.frame, -1, self.log, self.frame)
 
         # Add callback for local browsing
         self.browser.add_navigation_callback( self.IBrowsedCallback )
 
         # Browse to the current url, if exists
-        currentUrl = self.appProxy.GetData(self.privateId, "url")
+        currentUrl = self.sharedAppClient.GetData("url")
+        
         if len(currentUrl) > 0:
             self.browser.navigate(currentUrl)
-            self.appProxy.SetParticipantStatus(self.privateId, currentUrl)
+            self.sharedAppClient.SetParticipantStatus(currentUrl)
 
         self.frame.Show(1)
         self.SetTopWindow(self.frame)
@@ -321,12 +252,12 @@ class SharedBrowser( wxApp ):
         #
         # Send out the event, including our public ID in the message.
         #
-        print "IBrowse --> ", data
-        self.eventClient.Send(Events.Event("browse", self.channelId, ( self.publicId, data ) ))
-
+        publicId = self.sharedAppClient.GetPublicId()
+        self.sharedAppClient.SendEvent("browse", ( publicId, data ) )
+       
         # Store the URL in the app object in the venue
-        self.appProxy.SetData(self.privateId, "url", data)
-
+        self.sharedAppClient.SetData("url", data)
+        
     def BrowseCallback(self, event):
         """
         Callback invoked when incoming browse events arrive.  Events
@@ -336,23 +267,78 @@ class SharedBrowser( wxApp ):
 
         # Determine if the sender of the event is this component or not.
         (senderId, url) = event.data
-        if senderId == self.publicId:
-            print "Ignoring %s from myself" % (url)
+        if senderId == self.sharedAppClient.GetPublicId():
+            self.log.debug("Ignoring"+url+"from myself ")
         else:
-            print "Browse to ", url
+            self.log.debug("Browse to "+ url)
             self.browser.navigate(url)
 
-        self.appProxy.SetParticipantStatus(self.privateId, url)
-            
+        self.sharedAppClient.SetParticipantStatus(url)
 
+            
+class ArgumentManager:
+    def __init__(self):
+        self.arguments = {}
+        self.arguments['venueUrl'] = None
+        self.arguments['applicationUrl'] = None
+        self.arguments['logging'] = None
+        self.arguments['debug'] = 0
+        
+    def GetArguments(self):
+        return self.arguments
+        
+    def Usage(self):
+        """
+        How to use the program.
+        """
+        print "%s:" % sys.argv[0]
+        print "    -a|--applicationURL : <url to application in venue>"
+        print "    -v|--venueURL : <url to venue>"
+        print "    -h|--help : print usage"
+        print "    -l|--logging : <log name: defaults to SharedBrowser>"
+        print "    -d|--debug : print debugging output"
+               
+    def ProcessArgs(self):
+        """
+        Handle any arguments we're interested in.
+        """
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], "v:a:l:h",
+                                       ["venueURL=", "applicationURL=",
+                                        "logging=", "debug", "help"])
+        except getopt.GetoptError:
+            self.Usage()
+            sys.exit(2)
+            
+        for o, a in opts:
+            if o in ("-v", "--venueURL"):
+                self.arguments["venueUrl"] = a
+            elif o in ("-a", "--applicationURL"):
+                self.arguments["applicationUrl"] = a
+            elif o in ("-l", "--logging"):
+                self.arguments["logging"] = a
+            elif o in ("--debug",):
+                self.arguments["debug"] = 1
+            elif o in ("-h", "--help"):
+                self.Usage()
+                sys.exit(0)
+    
         
 if __name__ == "__main__":
-    init_logging("watcher")
-
-    if len(sys.argv) < 2:
-        print "Usage: %s <appUrl>" % sys.argv[0]
-        sys.exit(1)
-
-    appUrl = sys.argv[1]
-    sb = SharedBrowser( appUrl )
-    sb.MainLoop()
+    # Parse command line options
+    am = ArgumentManager()
+    am.ProcessArgs()
+    aDict = am.GetArguments()
+    
+    venueUrl = aDict['venueUrl']
+    appUrl = aDict['applicationUrl']
+    logging = aDict['logging']
+    debugMode = aDict['debug']
+    
+    if not appUrl:
+        am.Usage()
+    else:
+        sb = SharedBrowser( appUrl, debugMode, logging)
+        sb.MainLoop()
+        
+   
