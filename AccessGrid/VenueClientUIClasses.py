@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.324 2004-02-20 20:11:00 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.325 2004-02-23 16:56:44 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.324 2004-02-20 20:11:00 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.325 2004-02-23 16:56:44 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -4074,14 +4074,12 @@ def ShowNetworkInitWin32(msg, mainApp = None):
     if changed:
         if new_name is None:
             try:
-                del os.environ['GLOBUS_HOSTNAME']
-                pyGlobus.utilc.unsetenv("GLOBUS_HOSTNAME")
+                Utilities.unsetenv("GLOBUS_HOSTNAME")
             except KeyError:
                 pass
 
         else:
-            os.environ['GLOBUS_HOSTNAME'] = new_name
-            pyGlobus.utilc.setenv("GLOBUS_HOSTNAME", new_name)
+            Utilities.setenv("GLOBUS_HOSTNAME", new_name)
 
     #
     # Retry test.
@@ -4099,8 +4097,7 @@ def ShowNetworkInitWin32(msg, mainApp = None):
     # We failed again, sigh. Try localhost.
     #
 
-    os.environ['GLOBUS_HOSTNAME'] = 'localhost'
-    pyGlobus.utilc.setenv("GLOBUS_HOSTNAME", 'localhost')
+    Utilities.setenv("GLOBUS_HOSTNAME", "localhost")
 
     myhost = GetLocalHostname()
     validNow = LocalHostnameValid(myhost)
