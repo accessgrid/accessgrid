@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.35 2004-04-09 14:05:13 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.36 2004-04-09 18:38:35 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.35 2004-04-09 14:05:13 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.36 2004-04-09 18:38:35 judson Exp $"
 
 # Standard imports
 import os
@@ -21,7 +21,7 @@ from optparse import OptionParser, Option
 from AccessGrid import Log
 from AccessGrid.Security import CertificateManager
 from AccessGrid.Security import CertificateRepository
-from AccessGrid.Platform.Config import AGTkConfig, GlobusConfig
+from AccessGrid.Platform.Config import AGTkConfig
 from AccessGrid.Platform.Config import SystemConfig, UserConfig
 from AccessGrid.ServiceProfile import ServiceProfile
 from AccessGrid.Version import GetVersion
@@ -131,16 +131,6 @@ class AppBase:
        mlh.setTarget(fh)
        mlh.close()
        
-       # 5. Retrieve the Globus Configuration from the system.
-       #     (this will implicitly initialize globus if it's not
-       #       already initialized)
-       #     (including the GLOBUS_HOSTNAME)
-       try:
-           self.globusConfig = GlobusConfig.instance(initIfNeeded=0)
-       except Exception, e:
-           self.log.exception("Globus Initialization failed.")
-           sys.exit(-1)
-       
        return argvResult
 
     def ProcessArgs(self):
@@ -199,9 +189,6 @@ class AppBase:
     def GetUserConfig(self):
         return self.userConfig
 
-    def GetGlobusConfig(self):
-        return self.globusConfig
-
     def GetDefaultSubject(self):
         ident = self.certificateManager.GetDefaultIdentity()
         subject = X509Subject.CreateSubjectFromString(str(ident.GetSubject()))
@@ -209,6 +196,9 @@ class AppBase:
 
     def GetCertificateManager(self):
        return self.certificateManager
+
+    def GetGlobusConfig(self):
+        return self.certificateManager.GetGlobusConfig()
 
     def GetCertMgrUI(self):
        return self.certMgrUI
@@ -275,7 +265,7 @@ class Application(AppBase):
        """
        argvResult = AppBase.Initialize(self, name)
        
-       # 6. Initialize Certificate Management
+       # 5. Initialize Certificate Management
        # This has to be done by sub-classes
        configDir = self.userConfig.GetConfigDir()
        self.certificateManager = \
@@ -283,15 +273,12 @@ class Application(AppBase):
 
        self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
 
-       # 7. Do one final check, if we don't have a default
-       #    Identity we bail, there's nothing useful to do.
+       # 6. Do one final check, if we don't have a default
+       #    Identity we warn them, but they can still request certs.
        #
-       # RDO - no need to exit, we want people to be able to request certs.
-
-#         if self.GetDefaultIdentityDN() is None:
-#             self.log.error("Toolkit initialized with no default identity.")
-#             self.log.error("Exiting because there's no default identity.")
-#             sys.exit(-1)
+       if self.GetDefaultSubject() is None:
+           self.log.warn("Toolkit initialized with no default identity.")
+           self.log.warn("Exiting because there's no default identity.")
            
        return argvResult
 
@@ -349,57 +336,6 @@ class Service(AppBase):
         profileOption = Option("--profile", dest="profile", metavar="PROFILE",
                            help="Specify a service profile.")
         self.AddCmdLineOption(profileOption)
-
-    # This method implements the initialization strategy outlined
-    # in AGEP-0112
-    def Initialize(self, name=None):
-        """
-        This method sets up everything for reasonable execution.
-        At the first sign of any problems it raises exceptions and exits.
-        """
-        argvResult = AppBase.Initialize(self, name)
-
-        print "Service init: have profile ", self.options.profile
-
-        # Deal with the profile if it was passed instead of cert/key pair
-        if self.options.profile is not None:
-           self.profile = ServiceProfile()
-           self.profile.Import(self.options.profile)
-           print self.profile.AsINIBlock()
-
-        # 6. Initialize Certificate Management
-        # This has to be done by sub-classes
-        configDir = self.userConfig.GetConfigDir()
-        self.certMgrUI = CertificateManager.CertificateManagerUserInterface()
-        certMgr = self.certificateManager = \
-            CertificateManager.CertificateManager(configDir, self.certMgrUI)
-
-        #
-        # If we have a service profile, load and parse, then configure
-        # certificate manager appropriately.
-        #
-
-        if self.profile:
-           if self.profile.subject is not None:
-
-               self._CheckRequestedCert(self.profile.subject)
-
-               certMgr.SetTemporaryDefaultIdentity(useDefaultDN = self.profile.subject)
-           elif self.profile.certfile is not None:
-               certMgr.SetTemporaryDefaultIdentity(useCertFile = self.profile.certfile,
-                                                   useKeyFile = self.profile.keyfile)
-
-        self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
-
-        # 7. Do one final check, if we don't have a default
-        #    Identity we bail, there's nothing useful to do.
-
-        if self.GetDefaultSubject() is None:
-           log.error("Toolkit initialized with no default identity.")
-           log.error("Exiting because there's no default identity.")
-           sys.exit(-1)
-
-        return argvResult
 
     def _CheckRequestedCert(self, dn):
         """
@@ -480,4 +416,51 @@ class Service(AppBase):
 
         finally:
             os.unlink(tempfile)
+
+    # This method implements the initialization strategy outlined
+    # in AGEP-0112
+    def Initialize(self, name=None):
+        """
+        This method sets up everything for reasonable execution.
+        At the first sign of any problems it raises exceptions and exits.
+        """
+        argvResult = AppBase.Initialize(self, name)
+
+        print "Service init: have profile ", self.options.profile
+
+        # Deal with the profile if it was passed instead of cert/key pair
+        if self.options.profile is not None:
+           self.profile = ServiceProfile()
+           self.profile.Import(self.options.profile)
+           print self.profile.AsINIBlock()
+
+        # 5. Initialize Certificate Management
+        # This has to be done by sub-classes
+        configDir = self.userConfig.GetConfigDir()
+        self.certMgrUI = CertificateManager.CertificateManagerUserInterface()
+        certMgr = self.certificateManager = \
+            CertificateManager.CertificateManager(configDir, self.certMgrUI)
+
+        # If we have a service profile, load and parse, then configure
+        # certificate manager appropriately.
+        if self.profile:
+           if self.profile.subject is not None:
+               self._CheckRequestedCert(self.profile.subject)
+               certMgr.SetTemporaryDefaultIdentity(useDefaultDN = self.profile.subject)
+           elif self.profile.certfile is not None:
+               certMgr.SetTemporaryDefaultIdentity(useCertFile = self.profile.certfile,
+                                                   useKeyFile = self.profile.keyfile)
+
+        self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
+
+        # 6. Do one final check, if we don't have a default
+        #    Identity we bail, there's nothing useful to do.
+
+        if self.GetDefaultSubject() is None:
+           log.error("Toolkit initialized with no default identity.")
+           log.error("Exiting because there's no default identity.")
+           sys.exit(-1)
+
+        return argvResult
+
             
