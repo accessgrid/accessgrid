@@ -12,6 +12,12 @@ from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.AuthorizationManager import AuthorizationManager
 
 
+if sys.platform == 'win32':
+    from AccessGrid.ProcessManagerWin32 import ProcessManagerWin32 as ProcessManager
+else:
+    from AccessGrid.ProcessManagerUnix import ProcessManagerUnix as ProcessManager
+
+
 class AGService( ServiceBase ):
    """
    AGService : Base class for developing services for the AG
@@ -34,6 +40,11 @@ class AGService( ServiceBase ):
 
       self.streamDescription = StreamDescription()
 
+
+      self.processManager = ProcessManager()
+
+
+
    def Start( self, connInfo ):
       """Start the service"""
       raise Exception("AGService.Start is abstract!")
@@ -50,11 +61,16 @@ class AGService( ServiceBase ):
       if self.started == 1:
          self._Stop()
 
+
+      self.processManager.start_process( self.executable, options )
+
+      """
       options.insert(0,self.executable)
       print self
       print self.__class__, "starting with options = ", options
       self.childPid = os.spawnv( os.P_NOWAIT, self.executable, options )
       print "childPid = ", self.childPid
+      """
       self.started = 1
 
 
@@ -78,12 +94,16 @@ class AGService( ServiceBase ):
 
       self.started = 0
 
+      self.processManager.terminate_all_processes()
+
+      """
       if self.childPid != None:
          if sys.platform == 'win32':
             win32process.TerminateProcess( self.childPid, 0 )
          else:
             os.kill( self.childPid, 9 )
             os.waitpid( self.childPid, 1 )
+      """
 
 
    def SetAuthorizedUsers( self, connInfo, authorizedUsers ):
