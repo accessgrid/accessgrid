@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.153 2003-04-23 09:15:26 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.154 2003-04-23 10:00:15 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -25,6 +25,7 @@ log = logging.getLogger("AG.VenueClientUIClasses")
 from AccessGrid import icons
 from AccessGrid.VenueClient import VenueClient, EnterVenueException
 from AccessGrid import Utilities
+from AccessGrid.Utilities import GetMimeCommands
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.ClientProfile import *
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
@@ -39,6 +40,10 @@ from pyGlobus.io import GSITCPSocket
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth, GetHostname
 from AccessGrid.Events import ConnectEvent, TextEvent, DisconnectEvent
 
+try:
+    import win32api
+except:
+    pass
 try:
     from AccessGrid import CertificateManager
     CertificateManager.CertificateManagerWXGUI
@@ -702,14 +707,18 @@ class VenueClientFrame(wxFrame):
         data = self.contentListPanel.tree.GetItemData(id).GetData()
         if(data != None):
             name = data.name
-            ext = name.split('.')[-1]
-            if data != None:
-                tfilepath = os.path.join(GetTempDir(), name)
-                
-                self.app.SaveFile(data, tfilepath)
-                fileType = wxTheMimeTypesManager.GetFileTypeFromExtension(ext)
-                mimetype = fileType.GetMimeType()
-                wxExecute(fileType.GetOpenCommand(tfilepath, mimetype))
+            tfilepath = os.path.join(GetTempDir(), name)
+
+            self.app.SaveFile(data, tfilepath)
+
+            if sys.platform == 'win32':
+                tfilepath = win32api.GetShortPathName(tfilepath)
+
+            commands = GetMimeCommands(filename = tfilepath,
+                                       ext = name.split('.')[-1])
+            if commands.has_key('open'):
+                wxLogDebug("executing cmd: %s" % commands['open'])
+                wxExecute(commands['open'])
         else:
             self.__showNoSelectionDialog("Please, select the data you want to open")     
     

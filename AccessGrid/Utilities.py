@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.22 2003-04-23 09:15:26 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.23 2003-04-23 10:00:15 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -262,7 +262,7 @@ def GetMimeCommands(filename = None, type = None, ext = None):
         cmds = fileType.GetAllCommands(filename, mimeType)
         verbs, cmdlines = cmds
         for i in range(0, len(verbs)):
-            cdict[verbs[i]] = cmdlines[i]
+            cdict[string.lower(verbs[i])] = cmdlines[i]
     else:
         cdict = None
 
