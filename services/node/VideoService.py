@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.9 2004-05-06 17:45:57 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.10 2004-05-07 21:35:31 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -94,7 +94,7 @@ class VideoService( AGService ):
         Set values used by rat for identification
         """
         if profile == None:
-            log.exception("Invalid profile (None)")
+            self.log.exception("Invalid profile (None)")
             raise Exception, "Can't set RTP Defaults without a valid profile."
 
         if sys.platform == 'linux2':
@@ -110,7 +110,7 @@ class VideoService( AGService ):
                                        profile.publicId ) )
                 rtpDefaultsFH.close()
             except:
-                log.exception("Error writing RTP defaults file: %s", rtpDefaultsFile)
+                self.log.exception("Error writing RTP defaults file: %s", rtpDefaultsFile)
 
         elif sys.platform == 'win32':
             try:
@@ -135,7 +135,7 @@ class VideoService( AGService ):
                                    _winreg.REG_SZ, str(self.profile.publicId) )
                 _winreg.CloseKey(k)
             except:
-                log.exception("Error writing RTP defaults to registry")
+                self.log.exception("Error writing RTP defaults to registry")
         
 
     def Start( self ):
