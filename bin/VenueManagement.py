@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.99 2003-09-17 13:57:55 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.100 2003-09-17 18:22:24 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.99 2003-09-17 13:57:55 judson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.100 2003-09-17 18:22:24 eolson Exp $"
 
 import webbrowser
 import string
@@ -1500,11 +1500,21 @@ class VenueParamFrame(wxDialog):
 
     def OpenRoleAuthorizationDialog(self, event = None):
         self.rolesDict = None
-        addPeopleDialog = AddPeopleDialog(self, -1, "Modify Roles", self.venue.uri)
-        if addPeopleDialog.ShowModal() == wxID_OK:
-            # Get new role configuration
-            self.rolesDict = addPeopleDialog.GetInfo()
-        addPeopleDialog.Destroy()
+        try:
+            addPeopleDialog = AddPeopleDialog(self, -1, "Modify Roles", self.venue.uri)
+            if addPeopleDialog.ShowModal() == wxID_OK:
+                # Get new role configuration
+                self.rolesDict = addPeopleDialog.GetInfo()
+            addPeopleDialog.Destroy()
+        except Exception, e:
+            if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+                    text = "You are not authorized to modify roles for this venue.\n"
+                    MessageDialog(None, text, "Not Authorized", style=wxOK|wxICON_WARNING)
+                    log.info("OpenModifyVenueRolesDialog: Not authorized to administrate roles in this venue %s." % self.venue.uri)
+            else:
+                log.exception("OpenModifyVenueRolesDialog: Error administrating roles in this venue %s." % self.venue.uri)
+                text = "Error administrating roles in this venue " + self.venue.uri + "."
+                ErrorDialog(None, text, "Venue Role Administration Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
 
     def __loadVenues(self, URL):
         validVenue = false
