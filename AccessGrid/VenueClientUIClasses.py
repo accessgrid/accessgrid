@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.248 2003-09-09 22:05:55 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.249 2003-09-10 15:07:06 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -99,6 +99,7 @@ class VenueClientFrame(wxFrame):
     ID_MYNODE_URL = wxNewId()
     ID_MYVENUE_ADD = wxNewId()
     ID_MYVENUE_EDIT = wxNewId()
+    ID_MYVENUE_SETDEFAULT = wxNewId()
     ID_HELP = wxNewId()
     ID_HELP_ABOUT = wxNewId()
     ID_HELP_MANUAL = wxNewId()
@@ -246,6 +247,8 @@ class VenueClientFrame(wxFrame):
                              "Add this venue to your list of venues")
         self.myVenues.Append(self.ID_MYVENUE_EDIT, "Edit My &Venues...",
                              "Edit your venues")
+        self.myVenues.Append(self.ID_MYVENUE_SETDEFAULT, "Set as default venue",
+                             "Set current venue as default")
         self.myVenues.AppendSeparator()
 
         self.menubar.Append(self.myVenues, "My Ven&ues")
@@ -383,6 +386,7 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_MYNODE_URL, self.OpenSetNodeUrlDialog)
         EVT_MENU(self, self.ID_MYVENUE_ADD, self.AddToMyVenues)
         EVT_MENU(self, self.ID_MYVENUE_EDIT, self.EditMyVenues)
+        EVT_MENU(self, self.ID_MYVENUE_SETDEFAULT, self.SetAsDefaultVenue)
         EVT_MENU(self, self.ID_ME_PROFILE, self.OpenMyProfileDialog)
         EVT_MENU(self, self.ID_ME_UNFOLLOW, self.UnFollow)
         EVT_MENU(self, self.ID_ME_DATA, self.OpenAddPersonalDataDialog)
@@ -700,6 +704,16 @@ class VenueClientFrame(wxFrame):
             self.__loadMyVenues()
 
         editMyVenuesDialog.Destroy()
+
+    def SetAsDefaultVenue(self,event):
+        # Get the current profile
+        profile = self.app.venueClient.profile
+
+        # Update the home venue to the current venue url
+        profile.homeVenue = self.app.venueClient.venueUri
+
+        # Store the changes
+        self.app.ChangeProfile(profile)
 
     def SaveMyVenuesToFile(self):
         myVenuesFile = open(self.myVenuesFile, 'w')
