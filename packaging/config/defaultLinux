@@ -4,19 +4,17 @@ servicemanagers = servicemanager0
 [service1]
 packagename = VideoConsumerService.zip
 resource = None
-executable = vic
 serviceconfig = serviceconfig1
 
 [service0]
 packagename = AudioService.zip
 resource = None
-executable = rat
 serviceconfig = serviceconfig0
 
 [servicemanager0]
-url = https://localhost:12000/ServiceManager
+url = https://localhost:11000/ServiceManager
 services = service0 service1 
-name = localhost:12000
+name = localhost:11000
 
 [serviceconfig1]
 
