@@ -233,7 +233,12 @@ class CertificateManager:
             log.error(err)
             raise Exception, err
 
-        (passphrase, hours, bits) = self.GetUserInterface().GetProxyInfo(cert)
+        ret = self.GetUserInterface().GetProxyInfo(cert)
+
+        if ret is None:
+            return
+
+        (passphrase, hours, bits) = ret
 
         #
         # We are going to assume Globus here. In particular, we are going
@@ -274,31 +279,55 @@ class CertificateManager:
         caPath = self.systemCACertDir
         outPath = self.proxyCertPath
 
+        isWindows = sys.platform == "win32"
+        
         #
         # turn on gpi debugging
         #
         debugFlag = "-debug"
         #debugFlag = ""
 
-        cmd = '""%s" %s -pwstdin -bits %s -hours %s -cert "%s" -key "%s" -certdir "%s" -out "%s""'
+        cmd = '"%s" %s -pwstdin -bits %s -hours %s -cert "%s" -key "%s" -certdir "%s" -out "%s"'
         cmd = cmd % (gpiPath, debugFlag, bits, hours, certPath, keyPath, caPath, outPath)
-        f = open("try.bat", "w")
-        f.write(cmd + "\n")
-        f.close()
+
+        #
+        # Windows pipe code needs to have the whole thing quoted. Linux doesn't.
+        #
+        
+        if isWindows:
+            cmd = '"%s"' % (cmd)
+            
         log.debug("Running command: '%s'", cmd)
 
-        (rd, wr) = popen2.popen4(cmd)
+        try:
+            (rd, wr) = popen2.popen4(cmd)
 
-        wr.write(passphrase + "\n")
 
-        while 1:
-            l = rd.readline()
-            if l == '':
-                break
-            log.debug("Proxy returns: %s", l.rstrip())
+            #
+            # There is ugliness here where on Linux, we need to close the
+            # write pipe before we try to read. On Windows, we need
+            # to leave it open.
+            #
 
-        rd.close()
-        wr.close()
+            wr.write(passphrase + "\n")
+
+            if not isWindows:
+                wr.close()
+
+            while 1:
+                l = rd.readline()
+                if l == '':
+                    break
+                log.debug("Proxy returns: %s", l.rstrip())
+
+            rd.close()
+
+            if isWindows:
+                wr.close()
+
+        except IOError:
+            log.exception("Got an IO error in proxy code, ignoring")
+            pass
 
         #
         # TODO: doublecheck that the newly-generated proxy is indeed
@@ -349,6 +378,8 @@ class CertificateManager:
             proxyPath = self.proxyCertPath
             caPath = self.systemCACertDir
 
+        log.debug("Set X509_USER_PROXY to %s", proxyPath)
+        log.debug("Set X509_CERT_DIR to %s", caPath)
         os.environ['X509_USER_PROXY'] = proxyPath
         os.environ['X509_CERT_DIR'] = caPath
 
