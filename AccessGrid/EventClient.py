@@ -6,14 +6,12 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.9 2003-03-25 21:38:06 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.10 2003-03-30 02:46:44 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 from threading import Thread
-import socket
-import string
 import pickle
 import logging
 
@@ -88,12 +86,12 @@ class EventClient(Thread):
                             log.info("No callback for %s!", event.eventType)
                             self.DefaultCallback(event)                            
                     else:
-                        running = 0
+                        self.running = 0
                         break
             except:
                 log.exception("Server closed connection!")
                 try:
-                    running = 0
+                    self.running = 0
                 except:
                     log.exception("Couldn't close socket!")
 

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/13/12
-# RCS-ID:      $Id: NetworkLocation.py,v 1.7 2003-03-24 20:26:12 judson Exp $
+# RCS-ID:      $Id: NetworkLocation.py,v 1.8 2003-03-30 02:47:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -81,4 +81,4 @@ class MulticastNetworkLocation(NetworkLocation):
             self.ttl = ttl
 
     def GetTTL(self):
-        return ttl
+        return self.ttl

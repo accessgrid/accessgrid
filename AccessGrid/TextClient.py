@@ -5,15 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.5 2003-03-27 21:44:40 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.6 2003-03-30 02:48:55 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-import os
 import sys
 import pickle
-import string
 import logging
 
 from threading import Thread

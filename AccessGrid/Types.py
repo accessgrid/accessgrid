@@ -5,17 +5,13 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.29 2003-03-25 17:34:16 lefvert Exp $
+# RCS-ID:      $Id: Types.py,v 1.30 2003-03-30 02:47:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import os
-import thread
 import zipfile
-import socket
 import time
-import string
-import os
 import sys
 
 from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter, CreateParameter
@@ -60,7 +56,7 @@ class VenueState:
     def GetDescription( self ):
         return self.description
 
-    def SetName( self, description ):
+    def SetName( self, name ):
         self.name = name
     def GetName( self ):
         return self.name
@@ -101,11 +97,6 @@ class VenueState:
         self.data[dataDescription.name] = dataDescription
     def RemoveData( self, dataDescription ):
         del self.data[dataDescription.name]
-
-    def AddConnection( self, connectionDescription ):
-        self.connections[connectionDescription.uri] = connectionDescription
-    def RemoveConnection( self, connectionDescription ):
-        del self.connections[connectionDescription.uri]
 
     def SetEventLocation( self, eventLocation ):
         self.eventLocation = eventLocation
@@ -213,7 +204,7 @@ class AGServicePackage:
             if not self.descriptionFile:
                 raise InvalidServicePackage("Service package does not contain a description file")
 
-        except zipfile.BadZipFile:
+        except zipfile.BadZipfile:
             raise InvalidServicePackage(sys.exc_value)
 
     def GetServiceDescription( self ):
@@ -234,7 +225,7 @@ class AGServicePackage:
             zf = zipfile.ZipFile( self.file, "r" )
             descfilecontent = zf.read( self.descriptionFile )
             zf.close()
-        except zipfile.BadZipFile:
+        except zipfile.BadZipfile:
             raise InvalidServicePackage(sys.exc_value)
 
         # set up string io from description file content
@@ -276,7 +267,7 @@ class AGServicePackage:
             zf = zipfile.ZipFile( self.file, "r" )
             exefilecontent = zf.read( self.exeFile )
             zf.close()
-        except zipfile.BadZipFile:
+        except zipfile.BadZipfile:
             raise InvalidServicePackage(sys.exc_value)
 
         if self.isPython:

@@ -5,7 +5,7 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.10 2003-02-22 15:15:24 judson Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.11 2003-03-30 02:48:11 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -125,7 +125,7 @@ class MulticastAddressAllocator:
         return addressString
 
     def RecycleAddress(self, address):
-        self.addressesInUse.remove(address)
+        self.allocatedAddresses.remove(address)
         return address
     
 if __name__ == "__main__":

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.63 2003-03-27 21:34:06 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.64 2003-03-30 02:49:26 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -511,7 +511,7 @@ class Venue(ServiceBase.ServiceBase):
 
     GetNetworkServices.soap_export_as = "GetNetworkServices"
 
-    def RemoveNetworkService(selfnetworkServiceDescription):
+    def RemoveNetworkService(self, networkServiceDescription):
         """
         RemoveNetworkService removes a network service from a venue, making
         it unavailable to users of the venue.
@@ -558,7 +558,7 @@ class Venue(ServiceBase.ServiceBase):
             raise NotAuthorized
         try:
             del self.connections[ connectionDescription.uri ]
-            self.eventService.Distribute( self.uniqueId,
+            self.server.eventService.Distribute( self.uniqueId,
                                           Event( Event.REMOVE_CONNECTION,
                                                  self.uniqueId,
                                                  connectionDescription ) )
@@ -976,9 +976,9 @@ class Venue(ServiceBase.ServiceBase):
         """
 
         for appImpl in self.applications.values():
-            appImpl.Awaken(self.eventService)
+            appImpl.Awaken(self.server.eventService)
             app = AppService.AppObject(appImpl)
-            hostObj = self.hostingEnvironment.create_service_object()
+            hostObj = self.server.hostingEnvironment.create_service_object()
             app._bind_to_service(hostObj)
             appHandle = hostObj.GetHandle()
             appImpl.SetHandle(appHandle)
