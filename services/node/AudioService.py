@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.27 2004-09-09 05:04:12 judson Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.28 2004-09-09 05:12:30 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ class AudioService( AGService ):
         self.executable = os.path.join(os.getcwd(),'rat')
 
         # Turn off firewall for this app
-        self.systemConf = SystemConfig.instance()
+        self.sysConf = SystemConfig.instance()
 
         # Set configuration parameters
         self.talk = OptionSetParameter( "talk", "Off", ["On", "Off"] )
@@ -157,7 +157,7 @@ class AudioService( AGService ):
             self.WriteRatDefaults()
 
             # Enable firewall
-            self.systemConf.AppFirewallConfig(self.executable, 1)
+            self.sysConf.AppFirewallConfig(self.executable, 1)
             
             # Start the service;
             # in this case, store command line args in a list and let
@@ -226,7 +226,7 @@ class AudioService( AGService ):
 
 
             # Disable firewall
-            self.systemConf.AppFirewallConfig(self.executable, 0)
+            self.sysConf.AppFirewallConfig(self.executable, 0)
         except:
             self.log.exception("Exception in AGService.Stop ")
             raise Exception("AGService.Stop failed : ", str( sys.exc_value ) )

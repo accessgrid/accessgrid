@@ -1,11 +1,8 @@
 #-----------------------------------------------------------------------------
 # Name:        VideoProducerService.py
 # Purpose:
-#
-# Author:      Thomas D. Uram
-#
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.34 2004-09-07 22:16:48 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.35 2004-09-09 05:12:30 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +16,7 @@ from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
 from AccessGrid.Platform import IsWindows, IsLinux
-from AccessGrid.Platform.Config import AGTkConfig, UserConfig
+from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
 vicstartup="""option add Vic.disable_autoplace true startupFile
@@ -66,8 +63,6 @@ proc user_hook {} {
 }
 """
 
-
-
 class VideoProducerService( AGService ):
 
     encodings = [ "h261" ]
@@ -76,12 +71,13 @@ class VideoProducerService( AGService ):
     def __init__( self ):
         AGService.__init__( self )
 
-        self.capabilities = [ Capability( Capability.PRODUCER, Capability.VIDEO ) ]
-        self.executable = os.path.join('.','vic')
+        self.capabilities = [ Capability( Capability.PRODUCER,
+                                          Capability.VIDEO ) ]
+        self.executable = os.path.join(os.getcwd(),'vic')
 
-        #
+        self.sysConf = SystemConfig.instance()
+
         # Set configuration parameters
-        #
 
         # note: the datatype of the port parameter changes when a resource is set!
         self.streamname = TextParameter( "streamname", "Video" )
@@ -153,10 +149,10 @@ class VideoProducerService( AGService ):
     def Start( self ):
         """Start service"""
         try:
+            # Enable firewall
+            self.sysConf.AppFirewallConfig(self.executable, 1)
 
-            #
             # Resolve assigned resource to a device understood by vic
-            #
             print "self.resource = ", type(self.resource), self.resource
             print "res = ", self.resource.resource
             if self.resource == "None":
@@ -242,7 +238,6 @@ class VideoProducerService( AGService ):
         except:
             self.log.exception("Exception in VideoProducerService.Start")
             raise Exception("Failed to start service")
-    Start.soap_export_as = "Start"
 
     def Stop( self ):
         """Stop the service"""
@@ -250,8 +245,8 @@ class VideoProducerService( AGService ):
         # vic doesn't die easily (on linux at least), so force it to stop
         AGService.ForceStop(self)
 
-    Stop.soap_export_as = "Stop"
-
+        # Disable firewall
+        self.sysConf.AppFirewallConfig(self.executable, 0)
 
     def ConfigureStream( self, streamDescription ):
         """Configure the Service according to the StreamDescription"""
@@ -268,7 +263,6 @@ class VideoProducerService( AGService ):
         # if enabled, start
         if self.enabled:
             self.Start()
-    ConfigureStream.soap_export_as = "ConfigureStream"
 
     def SetResource( self, resource ):
         """Set the resource used by this service"""
@@ -299,8 +293,6 @@ class VideoProducerService( AGService ):
             else:
                 self.configuration.append(self.port)
 
-    SetResource.soap_export_as = "SetResource"
-
     def SetIdentity(self, profile):
         """
         Set the identity of the user driving the node
@@ -308,7 +300,6 @@ class VideoProducerService( AGService ):
         self.log.info("SetIdentity: %s %s", profile.name, profile.email)
         self.profile = profile
         self.__SetRTPDefaults(profile)
-    SetIdentity.soap_export_as = "SetIdentity"
 
 if __name__ == '__main__':
 
