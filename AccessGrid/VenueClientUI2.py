@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI2.py,v 1.2 2004-07-16 20:53:48 binns Exp $
+# RCS-ID:      $Id: VenueClientUI2.py,v 1.3 2004-07-16 21:02:51 binns Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI2.py,v 1.2 2004-07-16 20:53:48 binns Exp $"
+__revision__ = "$Id: VenueClientUI2.py,v 1.3 2004-07-16 21:02:51 binns Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2460,7 +2460,7 @@ class VenueList(wxScrolledWindow):
             item.Destroy()
 
         self.__Layout()
-        self.parent.__Layout()  
+        #self.parent.__Layout()  
 
         self.exitsDict.clear()
         del self.doorsAndLabelsList[0:]
