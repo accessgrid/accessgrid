@@ -5,11 +5,12 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Client.py,v 1.12 2003-05-28 16:50:32 judson Exp $
+# RCS-ID:      $Id: Client.py,v 1.13 2003-08-27 20:28:55 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
-"""GSI/SOAP client library
+"""
+GSI/SOAP client library
 
 This module provides a helper class Client that wraps
 the creation of the SOAP server proxy.
