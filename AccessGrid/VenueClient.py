@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.37 2003-03-24 20:26:12 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.38 2003-03-25 17:01:47 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -111,6 +111,12 @@ class VenueClient( ServiceBase):
     def RemoveServiceEvent(self, data):
         self.venueState.RemoveService(data)
 
+    def AddApplicationEvent(self, data):
+        self.venueState.AddApplication(data)
+
+    def RemoveApplicationEvent(self, data):
+        self.venueState.RemoveApplication(data)
+
     def AddConnectionEvent(self, data):
         self.venueState.AddConnection(data)
 
@@ -148,17 +154,22 @@ class VenueClient( ServiceBase):
                 applications = venueState.applications
             else:
                 applications = {}
-            
-            self.venueState = VenueState( venueState.uniqueId,
-                                          venueState.name,
-                                          venueState.description,
-                                          venueState.uri,
-                                          venueState.connections, 
-                                          venueState.users, venueState.nodes, 
-                                          venueState.data,
-                                          venueState.eventLocation,
-                                          venueState.textLocation,
-                                          applications)
+
+            try:
+                self.venueState = VenueState( venueState.uniqueId,
+                                              venueState.name,
+                                              venueState.description,
+                                              venueState.uri,
+                                              venueState.connections, 
+                                              venueState.users,
+                                              venueState.nodes, 
+                                              venueState.data,
+                                              venueState.eventLocation,
+                                              venueState.textLocation,
+                                              applications)
+            except:
+                log.exception("Failed to convert venuestate to object")
+                
             self.venueUri = URL
             self.venueId = self.venueState.GetUniqueId()
             self.venueProxy = Client.Handle( URL ).get_proxy()
@@ -175,6 +186,8 @@ class VenueClient( ServiceBase):
                Event.REMOVE_DATA: self.RemoveDataEvent,
                Event.ADD_SERVICE: self.AddServiceEvent,
                Event.REMOVE_SERVICE: self.RemoveServiceEvent,
+               Event.ADD_APPLICATION: self.AddApplicationEvent,
+               Event.REMOVE_APPLICATION: self.RemoveApplicationEvent,
                Event.ADD_CONNECTION: self.AddConnectionEvent,
                Event.REMOVE_CONNECTION: self.RemoveConnectionEvent,
                Event.SET_CONNECTIONS: self.SetConnectionsEvent,
