@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.11 2003-01-29 22:13:26 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.12 2003-01-29 22:50:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -75,6 +75,9 @@ class VenueState:
         self.users[userProfile.publicId] = userProfile
     def RemoveUser( self, userProfile ):
         del self.users[userProfile.publicId]
+    def ModifyUser( self, userProfile ):
+        if userProfile.publicId in self.users.keys():
+            self.users[userProfile.publicId] = userProfile
     def GetUsers( self ):
         return self.users.values()
 

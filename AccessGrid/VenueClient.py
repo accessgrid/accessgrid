@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.10 2003-01-28 17:05:07 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.11 2003-01-29 22:50:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -60,6 +60,7 @@ class VenueClient( ServiceBase ):
         coherenceCallbacks = {
            Event.ENTER: self.venueState.AddUser ,
            Event.EXIT: self.venueState.RemoveUser ,
+           Event.MODIFY_USER: self.venueState.ModifyUser,
            Event.ADD_DATA: self.venueState.AddData ,
            Event.REMOVE_DATA: self.venueState.RemoveData ,
            Event.ADD_SERVICE: self.venueState.AddService ,
