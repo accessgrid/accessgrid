@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement2.py,v 1.2 2004-07-30 17:00:23 binns Exp $
+# RCS-ID:      $Id: VenueManagement2.py,v 1.3 2004-08-02 14:23:23 binns Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement2.py,v 1.2 2004-07-30 17:00:23 binns Exp $"
+__revision__ = "$Id: VenueManagement2.py,v 1.3 2004-08-02 14:23:23 binns Exp $"
 
 # Standard imports
 import sys
@@ -1448,7 +1448,7 @@ class VenueParamFrame(wxDialog):
         encryptTuple = (0, '')
         
         # Get Exits
-        for index in range(0, self.generalPanel.exits.Number()):
+        for index in range(0, self.generalPanel.exits.GetCount()):
             exit = self.generalPanel.exits.GetClientData(index)
             exitsList.append(exit)
 
