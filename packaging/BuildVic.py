@@ -32,15 +32,14 @@ elif sys.platform == 'linux2':
 else:
     raise Exception, 'Unsupported platform: ' + sys.platform
     
-    
 # Build if necessary
 if not os.path.exists(VIC_EXE):
     build(VICDIR)
 
-    if os.path.exists(VIC_EXE):
-        copyCmd = "%s %s %s" % (copyExe, VIC_EXE, DEST)
-        os.system(copyCmd)
-    else:
-        print '** Error : %s does not exist; not copying' % (VIC_EXE,)
+if os.path.exists(VIC_EXE):
+    copyCmd = "%s %s %s" % (copyExe, VIC_EXE, DEST)
+    os.system(copyCmd)
+else:
+    print '** Error : %s does not exist; not copying' % (VIC_EXE,)
 
 

@@ -51,12 +51,10 @@ for f in ratFiles:
 if needBuild:
     build(RATDIR)
 
-    if os.path.exists(ratFiles[0]):
-        for f in ratFiles:
-            copyCmd = '%s %s %s' % (copyExe,f,DEST)
-            os.system(copyCmd)
-    else:
-        print '** Error : rat files do not exist; not copying'
+if os.path.exists(ratFiles[0]):
+    for f in ratFiles:
+        copyCmd = '%s %s %s' % (copyExe,f,DEST)
+        os.system(copyCmd)
 else:
-    print 'Rat files exist; not copying'
+    print '** Error : rat files do not exist; not copying'
 
