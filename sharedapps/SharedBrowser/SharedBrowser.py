@@ -11,6 +11,7 @@ from AccessGrid.SharedAppClient import SharedAppClient
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid import icons
+from AccessGrid.Toolkit import WXGUIApplication
     
 class WebBrowser(wxPanel):
     """
@@ -227,7 +228,7 @@ class SharedBrowser( wxApp ):
         self.sharedAppClient.Shutdown()
         os._exit(1)
 
-    def __init__( self, appUrl, debugMode = 0, logFile = None):
+    def __init__( self, appUrl, name):
         '''
         Creates the shared application client, used for 
         application service interaction, and opens a web browser 
@@ -236,8 +237,8 @@ class SharedBrowser( wxApp ):
         wxApp.__init__(self, False)
         
         # Create shared application client        
-        self.sharedAppClient = SharedAppClient("SharedBrowser")
-        self.log = self.sharedAppClient.InitLogging(debugMode, logFile)
+        self.sharedAppClient = SharedAppClient(name)
+        self.log = self.sharedAppClient.InitLogging()
 
         # Get client profile
         try:
@@ -309,9 +310,7 @@ class SharedBrowser( wxApp ):
 class ArgumentManager:
     def __init__(self):
         self.arguments = {}
-        self.arguments['venueUrl'] = None
         self.arguments['applicationUrl'] = None
-        self.arguments['logging'] = None
         self.arguments['debug'] = 0
         
     def GetArguments(self):
@@ -323,30 +322,23 @@ class ArgumentManager:
         """
         print "%s:" % sys.argv[0]
         print "    -a|--applicationURL : <url to application in venue>"
-        print "    -v|--venueURL : <url to venue>"
-        print "    -h|--help : print usage"
-        print "    -l|--logging : <log name: defaults to SharedBrowser>"
-        print "    -d|--debug : print debugging output"
-               
+        print "    -d|--debug : <enables debug output>"
+        print "    -h|--help : <print usage>"
+        
     def ProcessArgs(self):
         """
         Handle any arguments we're interested in.
         """
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "v:a:l:dh",
-                                       ["venueURL=", "applicationURL=",
-                                        "logging=", "debug", "help"])
+            opts, args = getopt.getopt(sys.argv[1:], "a:d:h",
+                                       ["applicationURL=", "debug", "help"])
         except getopt.GetoptError:
             self.Usage()
             sys.exit(2)
             
         for o, a in opts:
-            if o in ("-v", "--venueURL"):
-                self.arguments["venueUrl"] = a
-            elif o in ("-a", "--applicationURL"):
+            if o in ("-a", "--applicationURL"):
                 self.arguments["applicationUrl"] = a
-            elif o in ("-l", "--logging"):
-                self.arguments["logging"] = a
             elif o in ("-d", "--debug"):
                 self.arguments["debug"] = 1
             elif o in ("-h", "--help"):
@@ -355,21 +347,29 @@ class ArgumentManager:
     
         
 if __name__ == "__main__":
+    app = WXGUIApplication()
+    name = "SharedBrowser"
+    
     # Parse command line options
     am = ArgumentManager()
     am.ProcessArgs()
     aDict = am.GetArguments()
     
-    venueUrl = aDict['venueUrl']
     appUrl = aDict['applicationUrl']
-    logging = aDict['logging']
     debugMode = aDict['debug']
-      
+
+    init_args = []
+
+    if "--debug" in sys.argv or "-d" in sys.argv:
+        init_args.append("--debug")
+
+    app.Initialize(name, args=init_args)
+          
     if not appUrl:
         am.Usage()
     else:
         wxInitAllImageHandlers()
-        sb = SharedBrowser( appUrl, debugMode, logging)
+        sb = SharedBrowser( appUrl, name)
         sb.MainLoop()
         
     #
