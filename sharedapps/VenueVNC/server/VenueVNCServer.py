@@ -95,7 +95,7 @@ class vncServer:
 
         # Initialize other random bits, mostly path/file names
         self.guid=str(GUID())
-        self.passwdFilename=os.path.join(UserConfig.instance().GetTempDir(),"passwd-%s.vnc"%(self.guid))
+        self.passwdFilename = None
         
         # Initialize the password file.
         self.genPassword()
@@ -113,12 +113,18 @@ class vncServer:
         for i in range(8):
             self.password += chr(random.randint(0,255))
 
+    def writePasswordFile(self):
+    
+        # Create the password filename
+        self.passwdFilename=os.path.join(UserConfig.instance().GetTempDir(),"passwd-%s.vnc"%(self.guid))
+        
+        # Write password file
         f = file(self.passwdFilename,'wb')
         f.write(self.password)
         f.close()
 
-    def getAuthFile(self):
-        return self.passwdFilename
+    def getPassword(self):
+        return self.password
 
     def getContactString(self):
         return self.contactString
@@ -138,6 +144,7 @@ class vncServer:
             raise VNCServerException("Start attempted while already running")
         try:
             if IsWindows():
+                # Convert the password to hex for windows command line
                 password = ''
                 for ch in self.password:
                     password += '%x' % (ord(ch),)
@@ -150,6 +157,7 @@ class vncServer:
                 p = self.processManager.StartProcess(self.vncserverexe,args)
                 log.debug("  pid = %s" % (p,))
             elif IsOSX():
+                self.writePasswordFile()
                 args = [
                         '-rfbauth='+self.passwdFilename,
                         '-alwaysshared',
@@ -159,6 +167,7 @@ class vncServer:
                 log.debug("  pid = %s" % (p,))
 
             elif IsLinux():
+                self.writePasswordFile()
                 args = [
                         self.displayID,
                         '-geometry', '%dx%d' % (self.geometry['Width'],self.geometry['Height']),
@@ -224,7 +233,8 @@ class vncServer:
         log.debug('vncServer.destroy')
         self.stop()
         try:
-            os.unlink(self.passwdFilename)
+            if self.passwdFilename:
+                os.unlink(self.passwdFilename)
         except:
             log.exception("Failed to unlink password file")
 
@@ -257,13 +267,8 @@ class VNCServerAppObject:
             # Join the App Object
             (self.publicID,self.privateID)=self.appProxy.Join()
 
-            # Load the password so it can be uploaded to the app object.
-            pwd_file = file(self.vncServer.getAuthFile(), 'rb')
-            pwd = pwd_file.read()
-            pwd_file.close()
-            
             # Upload the auth file to the app object
-            self.appProxy.SetData(self.privateID,"VNC_Pwd",base64.encodestring(pwd))
+            self.appProxy.SetData(self.privateID,"VNC_Pwd",base64.encodestring(self.vncServer.getPassword()))
 
             # Set the contact string
             self.appProxy.SetData(self.privateID,"VNC_Contact",self.vncServer.getContactString())
