@@ -93,7 +93,7 @@ This module provides the components needed to run the Audio service. This servic
 python2.2 setup.py build
 
 %install
-python2.2 setup.py install --prefix=%{buildroot}%{prefix}
+python2.2 setup.py install --prefix=%{buildroot}%{prefix} --no-compile
 
 %files
 %doc %{prefix}/doc/
@@ -137,6 +137,20 @@ python2.2 setup.py install --prefix=%{buildroot}%{prefix}
 %files AudioService
 %defattr(-,root,root)
 %{prefix}/share/AccessGrid/local_services/AudioService.*
+
+#%post
+#import AccessGrid
+#import AccessGrid.hosting
+#import os
+#import os.path
+#import glob
+#
+#def modimport(module):
+#    for module_file in glob.glob(module.__path__[0] + "\\*.py"):
+#        __import__(module.__name__ + "." + os.path.basename(module_file[:-3]))
+#
+#modimport(AccessGrid)
+#modimport(AccessGrid.hosting)
 
 %clean
 [ -n "%{buildroot}" -a "%{buildroot}" != / ] && rm -rf %{buildroot}
