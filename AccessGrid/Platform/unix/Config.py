@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.23 2004-05-06 04:48:51 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.24 2004-05-06 20:26:30 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.23 2004-05-06 04:48:51 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.24 2004-05-06 20:26:30 eolson Exp $"
 
 import os
 import mimetypes
@@ -709,6 +709,9 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
         
         ----
         """
+        # Temporarily handle one command until code is added for multiple commands.
+        cmd = cmds[0]
+
         short_extension = ""
         if len(extension) > 0:
             # remove the "." from the front
@@ -741,13 +744,13 @@ Type=Application
 MimeType=%s
 Name=%s
 Comment=%s
-        """ % (str(GetVersion()), cmds[1], mimeType, cmds[0], cmds[2])
+        """ % (str(GetVersion()), cmd[1], mimeType, cmd[0], cmd[2])
         #    ("2.2", "/usr/bin/agpm.py", "application/x-ag-pkg", "Access Grid Package Manager" or "agpm.py", comment)
 
 
         # --- GNOME BASE INFORMATION ---
 
-        defAppId = cmds[0] # use verb for the defaultAppId
+        defAppId = cmd[0] # use verb for the defaultAppId
 
         gnomeAppInfo="""
 %s
@@ -756,7 +759,7 @@ Comment=%s
         can_open_multiple_files=false
         name=%s
         mime_types=%s
-        """ % (defAppId, cmds[1], defAppId, mimeType)
+        """ % (defAppId, cmd[1], defAppId, mimeType)
         #  %("agpm.py", "/usr/bin/agpm.py", "agpm.py", application/x-ag-pkg")
 
         gnomeKeyInfo = """
@@ -835,15 +838,15 @@ Comment=%s
         if os.path.exists(gnomeAppDir):
             log.info("registering file type " + extension + " with gnome")
 
-            f = open(gnomeAppFile, "a")
+            f = open(gnomeAppFile, "w")
             f.write(gnomeAppInfo)
             f.close()
 
-            f = open(gnomeKeysFile, "a")
+            f = open(gnomeKeysFile, "w")
             f.write(gnomeKeyInfo)
             f.close()
 
-            f = open(gnomeMimeFile, "a")
+            f = open(gnomeMimeFile, "w")
             f.write(gnomeMimeInfo)
             f.close()
 
@@ -882,11 +885,11 @@ Comment=%s
             gnomeSystemAppFile = os.path.join(gnomeSystemAppDir, "accessgrid.applications")
             if os.path.exists(gnomeSystemMimeDir):
                 # Keys
-                f = open(gnomeSystemKeysFile, "a")
+                f = open(gnomeSystemKeysFile, "w")
                 f.write(gnomeKeyInfo)
                 f.close()
                 # Mime
-                f = open(gnomeSystemMimeFile, "a")
+                f = open(gnomeSystemMimeFile, "w")
                 f.write(gnomeMimeInfo)
                 f.close()
             else:
@@ -894,7 +897,7 @@ Comment=%s
                 print "ARG"
             if os.path.exists(gnomeSystemAppDir):
                 # Application
-                f = open(gnomeSystemAppFile, "a")
+                f = open(gnomeSystemAppFile, "w")
                 f.write(gnomeAppInfo)
                 f.close()
             else:
