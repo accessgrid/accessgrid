@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.256 2004-03-19 04:58:25 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.257 2004-03-19 05:01:53 judson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.256 2004-03-19 04:58:25 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.257 2004-03-19 05:01:53 judson Exp $"
 
 # Standard Imports
 import os
@@ -86,6 +86,7 @@ def main():
     log = app.GetLog()
     pnode = app.GetOption("pnode")
     url = app.GetOption("url")
+    port = app.GetOption("port")
     
     startupDialog.UpdateOneStep("Initializing the VenueClient.")
 
