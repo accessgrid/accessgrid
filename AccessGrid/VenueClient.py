@@ -2,17 +2,18 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.202 2005-01-06 21:17:10 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.203 2005-01-06 23:39:25 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.202 2005-01-06 21:17:10 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.203 2005-01-06 23:39:25 eolson Exp $"
 
 from AccessGrid.hosting import Client
 import sys
+import os
 import string
 import threading
 import cPickle
@@ -33,7 +34,6 @@ from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.scheduler import Scheduler
 #from AccessGrid.EventClient import EventClient
 #from AccessGrid.TextClient import TextClient
-from AccessGrid.Types import *
 from AccessGrid.Events import Event, ConnectEvent
 from AccessGrid.Events import DisconnectEvent, ClientExitingEvent
 from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent
