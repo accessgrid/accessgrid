@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.81 2003-08-04 22:30:26 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.82 2003-08-07 21:03:09 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -110,7 +110,8 @@ class VenueServer(ServiceBase.ServiceBase):
             "VenueServer.serverPrefix" : 'VenueServer',
             "VenueServer.venuePathPrefix" : 'Venues',
             "VenueServer.dataStorageLocation" : 'Data',
-            "VenueServer.dataSize" : '10M'
+            "VenueServer.dataSize" : '10M',
+            "VenueServer.backupServer" : None
             }
 
     defaultVenueDesc = VenueDescription("Venue Server Lobby", """ This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid.""")
@@ -203,7 +204,7 @@ class VenueServer(ServiceBase.ServiceBase):
             except VenueServerException, ve:
                 log.exception(ve)
                 self.venues = {}
-                self.defaultVenues = ''
+                self.defaultVenue = ''
 
         #
         # Reinitialize the default venue
@@ -1020,6 +1021,67 @@ class VenueServer(ServiceBase.ServiceBase):
         
     wsGetEncryptAllMedia.soap_export_as = "GetEncryptAllMedia"
 
+    def wsSetBackupServer(self, server):
+        """
+        Interface for setting a fallback venue server.
+
+        **Arguments:**
+
+            *server* The string hostname of the server.
+
+        **Raises:**
+
+            *NotAuthorized* This is raised when the method is called
+            by a non-administrator.
+
+        **Returns:**
+
+            *server* the return value from SetBackupServer
+        """
+        if not self._IsInRole("VenueServer.Administrators"):
+            raise NotAuthorized
+
+        try:
+            self.simpleLock.acquire()
+            
+            returnValue = self.SetBackupServer(server)
+            
+            self.simpleLock.release()
+            
+            return returnValue
+        except:
+            self.simpleLock.release()
+            log.exception("wsSetBackupServer: exception")
+            raise
+
+    wsSetBackupServer.soap_export_as = "SetBackupServer"
+
+    def wsGetBackupServer(self):
+        """
+        Interface to retrieve the value of the backup server name.
+
+        **Arguments:**
+
+        **Raises:**
+
+        **Returns:**
+            the string hostname of the back up server or "".
+        """
+        try:
+            self.simpleLock.acquire()
+
+            returnValue = self.GetBackupServer()
+            
+            self.simpleLock.release()
+            
+            return returnValue
+        except:
+            self.simpleLock.release()
+            log.exception("wsGetBackupServer: exception")
+            raise
+        
+    wsGetBackupServer.soap_export_as = "GetBackupServer"
+
     def wsSetBaseAddress(self, address):
         """
         Interface for setting the base address for the allocation pool.
@@ -1444,6 +1506,20 @@ class VenueServer(ServiceBase.ServiceBase):
         Get the server wide default for venue media encryption.
         """
         return int(self.encryptAllMedia)
+
+    def SetBackupServer(self, server):
+        """
+        Turn on or off server wide default for venue media encryption.
+        """
+        self.backupServer = server
+
+        return self.backupServer
+
+    def GetBackupServer(self):
+        """
+        Get the server wide default for venue media encryption.
+        """
+        return self.backupServer
 
     def SetBaseAddress(self, address):
         """
