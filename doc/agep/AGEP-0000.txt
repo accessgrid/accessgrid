@@ -1,0 +1,130 @@
+AGEP: 0
+Title: Index of Access Grid Enhancement Proposals (AGEPs)
+Version: $Revision: 1.1 $
+Last-Modified: $Date: 2003-12-18 14:50:47 $
+Author: Ivan R. Judson <judson@mcs.anl.gov>
+Status: Active
+Type: Informational
+Created: 18-Dec-2003
+Post-History:
+
+
+Introduction
+
+    The AGEP contains the index of all Access Grid Enhancement Proposals,
+    known as AGEPs.  AGEP numbers are assigned by the AGEP Editor, and
+    once assigned are never changed.  The CVS history[1] of the PEP
+    texts represent their historical record.
+
+
+Index by Category
+
+     num  title                                        owner
+     ---  -----                                        -----
+
+ Meta-AGEPs (AGEPs about AGEPs or Process)
+
+ I     0  Index of Access Grid Enhancement Proposals   IRJ
+ I     1  AGEP Guidelines                              TBD
+ I     2  Procedure for Adding New Modules             TBD
+ I     3  Guidelines for Handling Bug Reports          TBD
+ I     4  Bug Fix Releases                             TBD
+ I     5  Style Guide for C Code                       TBD
+ I     6  Style Guide for Access Grid Code             TBD
+ I     7  Sample Plaintext AGEP Template               TBD
+ I     8  Voting Guidelines                            TBD
+ I     9  Removing support for little used platforms   TBD
+ I    10  Sample reStructuredText AGEP Template        TBD
+
+ Other Informational AGEPs
+
+ I    42  Feature Requests                             TBD
+ I   101  Doing Access Grid Releases 101               EO, TDU, IRJ, RDO
+ I   102  Doing Access Grid Micro Releases             RDO
+ I   103  Access Grid 2.1.3 Release Schedule           IRJ
+ I   109  Firewall Configuration for AGTk 2.X          IRJ
+ I   113  Access Grid Code Testing Strategy	       EO
+ I   117  Transition from AG1 to AG2		       IRJ
+ I   119  Access Grid Distribution Plan		       EO
+
+ Accepted AGEPs (accepted; may not be implemented yet)
+
+ Open AGEPs (under consideration)
+
+ S   104  Persistence Refactoring		       IRJ
+ S   105  Authorization Refactoring		       IRJ
+ S   106  Client Profile Cache for Servers	       EO
+ S   107  Hosting Refactoring			       IRJ
+ S   108  Platform Refactoring			       IRJ
+ S   110  Finishing Shared Applications		       SL
+ S   111  Shared Application Client		       SL
+ S   112  Toolkit Initialization Modifications	       IRJ, RDO
+ S   114  Usage Logging Extensions		       EO
+ S   115  Client SDK Refactoring		       TDU
+ S   116  Venue Client SOAP Interface		       TDU
+ S   118  Access Grid Logging			       IRJ
+ S   120  Shared App/Node Service Packaging	       EO
+   
+ Finished AGEPs (done, implemented in CVS)
+
+Numerical Index
+
+     num  title                                        owner
+     ---  -----                                        -----
+ I     0  Index of Access Grid Enhancement Proposals   IRJ
+ I     1  AGEP Guidelines                              TBD
+ I     2  Procedure for Adding New Modules             TBD
+ I     3  Guidelines for Handling Bug Reports          TBD
+ I     4  Bug Fix Releases                             TBD
+ I     5  Style Guide for C Code                       TBD
+ I     6  Style Guide for Access Grid Code             TBD
+ I     7  Sample Plaintext AGEP Template               TBD
+ I     8  Voting Guidelines                            TBD
+ I     9  Removing support for little used platforms   TBD
+ I    10  Sample reStructuredText AGEP Template        TBD
+ I    42  Feature Requests                             TBD
+ I   101  Doing Access Grid Releases 101               EO, TDU, IRJ, RDO
+ I   102  Doing Access Grid Micro Releases             RDO
+ I   103  Access Grid 2.1.3 Release Schedule           IRJ
+ S   104  Persistence Refactoring		       IRJ
+ S   105  Authorization Refactoring		       IRJ
+ S   106  Client Profile Cache for Servers	       EO
+ S   107  Hosting Refactoring			       IRJ
+ S   108  Platform Refactoring			       IRJ
+ I   109  Firewall Configuration for AGTk 2.X          IRJ
+ S   110  Finishing Shared Applications		       SL
+ S   111  Shared Application Client		       SL
+ S   112  Toolkit Initialization Modifications	       IRJ, RDO
+ I   113  Access Grid Code Testing Strategy	       EO
+ S   114  Usage Logging Extensions		       EO
+ S   115  Client SDK Refactoring		       TDU
+ S   116  Venue Client SOAP Interface		       TDU
+ I   117  Transition from AG1 to AG2		       IRJ
+
+Key
+
+    I - Informational AGEP
+    S - Standards Track AGEP
+    A - Accepted proposal
+    R - Rejected proposal
+    D - Deferred proposal
+    F - Final proposal
+
+Owners
+
+    name                     email address
+    ----------------         -------------
+    IRJ			     judson@mcs.anl.gov
+    RDO			     olson@mcs.anl.gov	
+    EO			     eolson@mcs.anl.gov	
+    SL			     lefvert@mcs.anl.gov
+    TDU			     turam@mcs.anl.gov
+
+
+Local Variables:
+mode: indented-text
+indent-tabs-mode: nil
+sentence-end-double-space: t
+fill-column: 70
+End:
+

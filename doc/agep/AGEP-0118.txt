@@ -1,0 +1,102 @@
+===========================
+Logging Enhancement for 213
+===========================
+ 
+:version: $Revision: 1.1 $
+:author: Ivan R. Judson <judson@mcs.anl.gov>
+:status: Draft
+:contact: ag-tech@mcs.anl.gov
+
+Abstract
+========
+
+This enhancement provides a logging functionality that is abstracted
+from the actual implementation. This means we can avoid requiring the
+python logging module that is included in python 2.3 when we run on
+python 2.2, and we can extend the logging factory to know about other
+logging solutions like netLogger.
+
+Overview
+========
+
+This enhancement creates a LogFactory class, and two logging classes,
+PseudoLogger and the native python logger. The PseudoLogger is used
+when running in the absence of the logginer module. By defining these
+three classes we can hide the details of logging from the developers
+and users.
+
+- Module level logging
+- Class level logging
+- Usage level logging
+
+Summary of Modifications
+========================
+
+Create two new classes:
+
+LogFactory
+
+PsuedoLog
+
+Module Organization
+-------------------
+
+- AccessGrid
+
+  - Logging
+  
+    - LogFactory
+
+    - PsuedoLog
+
+Deprecated Packages
+-------------------
+
+FILL IN DEPRECATED PACKAGES
+
+Specifications
+==============
+
+FILL IN SPECIFICATIONS
+
+Security Issues
+===============
+
+FILL IN SECURITY ISSUES
+
+Interoperability Issues
+=======================
+
+FILL IN INTEROPERABILITY ISSUES
+
+Related AGEPs
+=============
+
+FILL IN RELATED AGEPS
+
+Implementation
+==============
+
+FILL IN IMPLEMENTATION
+
+References
+==========
+
+FILL IN REFERENCES
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+

@@ -1,0 +1,98 @@
+=====================================
+TITLE
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: NAME <EMAIL>
+:status: Draft
+:contact: ag-tech@mcs.anl.gov
+
+Abstract
+========
+
+FILL IN ABSTRACT
+
+Overview
+========
+
+FILL IN OVERVIEW
+
+Summary of Modifications
+========================
+
+1. Implement the memento pattern for venues
+
+  - create s Persistor.py with a Persistor base class, from which
+    both the ConfigINIPersistor and XMLPersistor can be derived.
+
+    - this object wants to be able to persist things to a directory (each
+      item in it's own file) or to a single large file.
+
+  - create a ConfigINIPersistor, which can persist items to either a
+    single large file or to separate files in the specified directory.
+  - sort out constructor issues
+
+    - current constructor : __init__(self, server, name, description,
+                                     roleManager, dataStoreLocation, id=None)
+    - proposed constructor : __init__(self, server, id=None, memento=None)
+
+  - create Venue.GetMemento(self) => Memento
+  - create Venue.SetMemento(self, memento)
+
+Module Organization
+-------------------
+
+FILL IN MODULE ORGANIZATION
+   
+Deprecated Packages
+-------------------
+
+FILL IN DEPRECATED PACKAGES
+
+Specifications
+==============
+
+FILL IN SPECIFICATIONS
+
+Security Issues
+===============
+
+FILL IN SECURITY ISSUES
+
+Interoperability Issues
+=======================
+
+FILL IN INTEROPERABILITY ISSUES
+
+Related AGEPs
+=============
+
+FILL IN RELATED AGEPS
+
+Implementation
+==============
+
+FILL IN IMPLEMENTATION
+
+References
+==========
+
+FILL IN REFERENCES
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
+

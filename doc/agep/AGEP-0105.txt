@@ -2,7 +2,7 @@
 Authorization Refactoring for 213
 =================================
  
-:version: $Revision: 1.2 $
+:version: $Revision: 1.1 $
 :author: Ivan R. Judson <judson@mcs.anl.gov>, Thomas D. Uram <turam@mcs.anl.gov>, Eric Olson <eolson@mcs.anl.gov>
 :status: Draft
 

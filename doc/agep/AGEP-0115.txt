@@ -2,7 +2,7 @@
 Venue Client Refactoring
 =====================================
 
-:Version:   $Revision: 1.2 $
+:Version:   $Revision: 1.1 $
 :Code Basis: AG 2.1.2
 :Author: 	Thomas D. Uram
 :Status:    Draft
