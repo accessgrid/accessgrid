@@ -23,8 +23,14 @@ class L16_to_L8(RTPSensor):
         self.buffer = ""
         
     def do_RTP(self, session, event):
+    
         packet = common.make_rtp_packet(event.data)
         data = common.rtp_packet_getdata(packet)
+        
+        # require l16-16k mono as input
+        if packet.pt != 112:
+            common.free_rtp_packet(packet)
+            return
         
         args = []
         fmt = '%dh' % (len(data)/4)
