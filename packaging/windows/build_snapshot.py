@@ -18,8 +18,8 @@
 #
 # Arguments:
 #   -o outputdir
-#   --short short version name
-#   --long  long version name
+#   --shortname <short version name>
+#   --longname  <long version name>
 #
 
 import sys
@@ -30,8 +30,33 @@ import re
 import win32api
 import getopt
 
-#try:
-#    opts, args = getopt.getopt(sys.argv[1], "o:,
+def usage():
+    print """
+
+ build_snapshot [-l] <longname> [-s] <shortname>
+
+ -l        set the long name of the package, i.e. "2.0 Beta 3" 
+ -s        set the short name of the package, i.e. "2.0b3" 
+
+"""
+
+long_version_name = ""
+short_version_name = ""
+
+try:
+    opts, args = getopt.getopt(sys.argv[1:], "l:s:" )
+except:
+    # print help information and exit
+    usage()
+    sys.exit(2)
+
+for o, a in opts:
+    if o in ("-l", "--longname"):
+        long_version_name = a
+        print "Long Name set to: ",long_version_name
+    if o in ("-s", "--shortname"):
+        short_version_name = a
+        print "Short name set to: ",short_version_name
 
 # Obvious variables we can use are SYSTEMDRIVE and HOMEDRIVE.
 INSTDRIVE = os.getenv("HOMEDRIVE")
@@ -124,9 +149,15 @@ for l in fp:
     l = re.sub(fix_dir_src, fix_dir_dst, l)
 
     if l.startswith("#define AppVersionLong"):
-        l = '#define AppVersionLong "2.0 Snapshot %s"\n' % (build_tag)
+        if long_version_name != "":
+            l = '#define AppVersionLong "%s"\n' % (long_version_name)
+        else:
+            l = '#define AppVersionLong "2.0 Snapshot %s"\n' % (build_tag)
     elif l.startswith("#define AppVersionShort"):
-        l = '#define AppVersionShort "2.0-%s"\n' % (build_tag)
+        if short_version_name != "":
+            l = '#define AppVersionShort "%s"\n' % (short_version_name)
+        else:
+            l = '#define AppVersionShort "2.0-%s"\n' % (build_tag)
 
     # Replace a few specific occurences of C: with INSTDRIVE
     if l.startswith("#define SourceDir") or l.startswith("#define OutputDir") or l.startswith("LogFile"):
