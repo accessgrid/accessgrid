@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.23 2003-03-13 23:53:33 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.24 2003-03-14 22:48:29 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -165,7 +165,7 @@ class VenueClient( ServiceBase ):
             self.eventClient.start()
             self.eventClient.Send(ConnectEvent(self.venueState.uniqueId))
             
-            self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 15)
+            self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 5)
             self.heartbeatTask.start()
  
             # 

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.57 2003-03-14 20:57:16 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.58 2003-03-14 22:48:29 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -166,7 +166,7 @@ class Venue(ServiceBase.ServiceBase):
         log.info("URI %s", self.description.uri)
         
         self.houseKeeper = Scheduler()
-        self.houseKeeper.AddTask(self.CleanupClients, 45)
+        self.houseKeeper.AddTask(self.CleanupClients, 10)
         self.houseKeeper.StartAllTasks()
 
         self.startDataStore()
@@ -705,9 +705,9 @@ class Venue(ServiceBase.ServiceBase):
         # Distribute event
         clientProfile = self.users[privateId]
         self.server.eventService.Distribute( self.uniqueId,
-                                      Event( Event.EXIT,
-                                             self.uniqueId,
-                                             clientProfile ) )
+                                             Event( Event.EXIT,
+                                                    self.uniqueId,
+                                                    clientProfile ) )
 
         # Remove user from venue
         del self.users[privateId]
