@@ -1,6 +1,361 @@
+2004-03-26	judson
+	* packaging/linux/kde/.desktop 1.1:
+	* packaging/linux/kde/NodeManagement.desktop 1.1:
+	* packaging/linux/kde/VenueClient-PersonalNode.desktop 1.1:
+	* packaging/linux/kde/VenueClient.desktop 1.1:
+	* packaging/linux/kde/VenueManagement.desktop 1.1:
+		Moved files around to make packaging directory more clear.
+
+	* packaging/linux/redhat/AccessGrid-vic.spec 1.1:
+	* packaging/linux/redhat/AccessGrid.spec 1.1:
+	* packaging/linux/redhat/build_snapshot.py 1.1:
+	* packaging/linux/redhat/install.sh 1.1:
+	* packaging/linux/redhat/logging.spec 1.1:
+	* packaging/linux/redhat/pyOpenSSL.spec 1.1:
+		Moved files around for better organization.
+
+	* packaging/linux/gnome/.desktop 1.1:
+	* packaging/linux/gnome/NodeManagement.desktop 1.1:
+	* packaging/linux/gnome/VenueClient-PersonalNode.desktop 1.1:
+	* packaging/linux/gnome/VenueClient.desktop 1.1:
+	* packaging/linux/gnome/VenueManagement.desktop 1.1:
+		Moved files around in packaging to make it a bit more sane. Now 
+		it should be more clear where the fedora directory lives.
+
+	* doc/VenueClientManual/1.htm 1.1:
+	* doc/VenueClientManual/VenueClientManual.htm 1.1:
+	* doc/VenueClientManual/VenueClientManualHTML.htm 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/filelist.xml 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/header.htm 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image001.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image002.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image003.gif 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image004.png 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image005.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image006.png 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image007.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image008.png 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image009.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image010.png 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image011.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image012.png 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image013.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image014.png 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image015.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image016.png 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image017.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image018.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image019.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image020.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image021.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image022.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image023.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image024.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image025.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image026.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image027.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image028.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image029.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image030.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image031.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image032.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image033.emz 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image034.gif 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image035.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image036.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image037.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image038.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image039.png 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/image040.jpg 1.1:
+	* doc/VenueClientManual/VenueClientManual_files/oledata.mso 1.1:
+	* doc/VenueManagementManual/11.htm 1.1:
+	* doc/VenueManagementManual/VenueManagementManual.htm 1.1:
+	* doc/VenueManagementManual/VenueManagementManualHTML.htm 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/filelist.xml 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image001.jpg 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image002.jpg 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image003.jpg 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image004.jpg 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image005.png 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image006.jpg 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image007.png 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image008.jpg 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image009.png 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image010.jpg 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image011.png 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image012.jpg 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image013.png 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image014.jpg 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image015.jpg 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image016.jpg 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image017.jpg 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image018.jpg 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image019.jpg 1.1:
+	* doc/VenueManagementManual/VenueManagementManual_files/image020.jpg 1.1:
+		Moved to new name, no caps.
+
+	* AccessGrid/Platform/PersonalNode.py 1.3:
+	* AccessGrid/Platform/unix/PersonalNode.py 1.2:
+	* AccessGrid/Platform/win32/PersonalNode.py 1.6:
+	* bin/AGNodeService.py 1.49:
+	* bin/AGServiceManager.py 1.39:
+	* bin/VenueClient.py 1.258:
+		taking personalnode files out now that this stuff is started as 
+		part of the venueclient process.
+
+	* packaging/cvs2cl.pl 1.2:
+		There are plenty of tools for this we don't need to keep this 
+		hanging around.
+
+2004-03-25	judson
+	* AccessGrid/Version.py 1.4:
+		Updated version number.
+
+	* packaging/windows/build_snapshot.py 1.23:
+		Fixed version metainfo and the right dir for iscc to work.
+
+	* setup.py 1.45:
+		Updated so windows works and we conditionallly install platform 
+		code.
+
+	* packaging/windows/BuildAccessGrid.cmd 1.5:
+		Renamed
+
+	* doc/AGTk.prj 1.2:
+		Can't use this from the command line, this is now done in the 
+		prebuild scripts.
+
+	* packaging/config/CAcertificates/1c3f2ca8.0 1.1:
+	* packaging/config/CAcertificates/1c3f2ca8.signing_policy 1.1:
+	* packaging/config/CAcertificates/45cc9e80.0 1.1:
+	* packaging/config/CAcertificates/45cc9e80.signing_policy 1.1:
+	* packaging/config/CAcertificates/d1b603c3.0 1.1:
+	* packaging/config/CAcertificates/d1b603c3.signing_policy 1.1:
+		Adding ES.net and DOE Science Grid certs to our repo. moving 
+		them all out of the winglobus module and into the ag module.
+
+	* packaging/windows/BuildGlobus.cmd 1.1:
+	* packaging/windows/BuildPythonModules.cmd 1.3:
+	* packaging/windows/BuildRat.cmd 1.7:
+	* packaging/windows/BuildVic.cmd 1.6:
+	* packaging/windows/agtk.iss 1.36:
+	* packaging/windows/build_snapshot.py 1.21:
+		Updated for automated builds, partially done(75%)
+
+	* packaging/windows/BuildAccessGridDist.cmd 1.1:
+		Important packaging script sets up the environment for 
+		packaging.
+
+	* packaging/windows/BuildPutty.cmd 1.3:
+		No more putty.
+
+	* packaging/windows/build_snapshot.py 1.22:
+		Fixed stupid bugs.
+
+2004-03-25	olson
+	* AccessGrid/Utilities.py 1.59:
+		Changes to properly categorize bugs (into node setup, venue mgmt,
+		and a heuristic to attempt to catch GSI bugs and file as certificate mgmt).
+		
+		Needs a fix in UIUtilities to the SubmitBug calls:
+		
+		
+		
+		  File "C:\home\olson\ag\dev\March10\AccessGrid\AccessGrid\UIUtilities.py", line
+		 59, in __init__
+		    SubmitBug(comment,  email, logFile)
+		TypeError: SubmitBug() takes at least 4 arguments (3 given)
+
+	* AccessGrid/Security/wxgui/CertificateRequestTool.py 1.4:
+		Firm up the wording on the create-identity-cert panel.
+		
+		Make use of "passphrase" consistent.
+
+	* AccessGrid/Security/wxgui/CertificateManagerWXGUI.py 1.9:
+		Remove old certificate management menu items.
+
+	* AccessGrid/Security/wxgui/ImportExportUtils.py 1.4:
+		Make use of "passphrase" consistent.
+
+	* AccessGrid/Security/CertificateRepository.py 1.9:
+		Make GetPrivateKey() a non-private method.
+
+	* AccessGrid/Security/wxgui/CertificateRequestViewer.py 1.3:
+		Move insertion poitn back to start of text so it's all visible.
+
+	* AccessGrid/Security/CertificateManager.py 1.12:
+		Add check for missing private keys on identity certs.
+		
+		Add IsIdentityCert().
+		
+		Add code on Windows to remove the x509_user_proxy key in the
+		registry if the app is trying to run with a cert with no passphrase -
+		such a cert requires the X509_RUN_AS_SERVER logic to work, and the
+		registry key disables this.
+
+	* AccessGrid/Security/wxgui/CertificateStatusBrowser.py 1.3:
+		Add private key checks.
+
+	* AccessGrid/Security/wxgui/CertificateManagerDialog.py 1.5:
+		Set default pane to be the certificate pane.
+
+	* AccessGrid/Security/wxgui/CertificateViewer.py 1.3:
+		Move insertion point back to beginning of text after filling it 
+		in.
+
+	* AccessGrid/Security/wxgui/CertificateManagerWXGUI.py 1.8:
+		Add check for the existence of a private key before generatign 
+		proxy.
+
+2004-03-25	lefvert
+	* bin/VenueManagement.py 1.123:
+		Commented out 'home server' menu options.
+
+2004-03-25	eolson
+	* AccessGrid/Version.py 1.5:
+		Don't include point version in string if it's value is 0.
+
+	* AccessGrid/Utilities.py 1.60:
+		Add mac support to SubmitBug. (bug #889)
+		Also fixed the default test when running Utilities.py standalone.
+		Added some support for bugzilla's "platform" value.
+
+2004-03-25	turam
+	* AccessGrid/Platform/unix/__init__.py 1.1:
+		unix module init
+
+	* AccessGrid/Venue.py 1.168:
+		Call CreateNetworkLocation in AddNetworkLocationToStream, and 
+		clean up NetService references
+
+	* AccessGrid/Descriptions.py 1.49:
+		Add CreateNetworkLocation
+
+2004-03-24	lefvert
+	* AccessGrid/UIUtilities.py 1.51:
+	* AccessGrid/VenueClientUI.py 1.26:
+		Moved my venues dialogs to UIUtilities so they can be reused for 
+		venue server as well.
+
+	* bin/VenueManagement.py 1.122:
+		Added My Servers menu.
+		Only show certain menu options when connected to a server.
+
+	* AccessGrid/VenueClientController.py 1.12:
+		Use 'w' when saving my venues, otherwise edited venues just gets 
+		added to the file without removing the venues.
+
+2004-03-24	eolson
+	* AccessGrid/Platform/Config.py 1.2:
+	* AccessGrid/Platform/PersonalNode.py 1.2:
+	* AccessGrid/Platform/ProcessManager.py 1.2:
+	* AccessGrid/Platform/__init__.py 1.5:
+	* AccessGrid/Platform/unix/Config.py 1.1:
+	* AccessGrid/Platform/unix/NetUtilities.py 1.1:
+	* AccessGrid/Platform/unix/PersonalNode.py 1.1:
+	* AccessGrid/Platform/unix/Platform.py 1.1:
+	* AccessGrid/Platform/unix/ProcessManager.py 1.1:
+		Use a single "unix" platform directory for unix variants.  This eliminates
+		duplicate copies of the same code from the linux2 and darwin directories.
+
+	* AccessGrid/Security/Role.py 1.11:
+		Fix HasSubject().
+
+	* AccessGrid/VenueServer.py 1.128:
+		Update parameters in Server() call to use new api.
+
+	* tests/unittest_VenueServer.py 1.6:
+		Remove unnecessary custom suite class.
+		Update code for checking whether subjects are in roles.
+
+	* tests/unittest_VenueServer.py 1.5:
+	* tests/unittest_all.py 1.4:
+		Update unittest_all.
+		Update VenueServer unittest.
+
+	* AccessGrid/Security/Role.py 1.12:
+		Fix GetSubjectListAsStrings()
+
+	* AccessGrid/Security/Role.py 1.10:
+	* AccessGrid/Security/Subject.py 1.11:
+		Xml fix for the error of "two document elements disallowed".
+
+	* doc/agep/AGEP-0113.txt 1.2:
+		Update with how to setup environment for multiple tests if it's 
+		necessary.
+
+2004-03-24	turam
+	* AccessGrid/AppDb.py 1.19:
+		Test readability of appdb file before trying to synch or update 
+		mod time
+
+2004-03-23	judson
+	* AccessGrid/Toolkit.py 1.30:
+		Added version command line option, exits after printer toolkit 
+		version.
+
+2004-03-23	lefvert
+	* AccessGrid/VenueClient.py 1.153:
+		Retreive streams from venue when entering. Otherwise, properties 
+		dialog won't show any streams for participants already in the 
+		venue.
+
+	* AccessGrid/Venue.py 1.167:
+	* AccessGrid/VenueServer.py 1.127:
+		Set require default on administrator roles
+
+	* AccessGrid/Security/Role.py 1.9:
+		Added Get/SetRequireDefault method.
+		Check in RemoveSubject if this role requires default subject.
+
+	* AccessGrid/VenueClientUI.py 1.25:
+		add venue properties dialog. For now, just containing stream 
+		locations.
+
+	* AccessGrid/VenueServer.py 1.126:
+		Make sure default venue is set properly
+
+2004-03-23	olson
+	* AccessGrid/Utilities.py 1.58:
+		python setenv and friends are in utilc, not util.
+
+2004-03-23	eolson
+	* AccessGrid/AppDb.py 1.17:
+		Add more checks for None when removing a mimetype.
+
+	* tests/unittest_VenueServer.py 1.4:
+		Minor updates.
+
+	* sharedapps/VenueVNC/ChangeLog 1.1:
+	* sharedapps/VenueVNC/README 1.1:
+	* sharedapps/VenueVNC/VenueVNC.iss 1.1:
+	* sharedapps/VenueVNC/VenueVNC.spec 1.1:
+	* sharedapps/VenueVNC/VenueVNCClient.app 1.1:
+	* sharedapps/VenueVNC/VenueVNCClient.py 1.1:
+	* sharedapps/VenueVNC/VenueVNCPostinstall.py 1.1:
+	* sharedapps/VenueVNC/server/VenueVNCServer.py 1.1:
+	* sharedapps/VenueVNC/server/Xvnc 1.1:
+	* sharedapps/VenueVNC/server/vncrandpwd 1.1:
+	* sharedapps/VenueVNC/vncviewer 1.1:
+	* sharedapps/VenueVNC/vncviewer.exe 1.1:
+		Initial VenueVNC checkin.
+
+	* AccessGrid/DataStore.py 1.63:
+		Fix exception if path is none.
+
+	* AccessGrid/AppDb.py 1.18:
+		
+		Use shutil.copy() instead of shutil.copyfile() in order to preserve
+		 permission bits.  The executable bit is the needed to fix bug #846.
+
 2004-03-22	judson
 	* VERSION 1.6:
 		Updated version, date left empy :-)
+
+	* bin/AG1toAG2Venues.py 1.5:
+	* bin/CreateVenues.py 1.15:
+	* bin/CvsSetup.py 1.18:
+		Moved these to tools dir
 
 	* setup.py 1.44:
 		Updated version, fixed comment block.
@@ -16,8 +371,16 @@
 	* AccessGrid/Toolkit.py 1.28:
 		Fixed double logging problem and cleaned optik imports.
 
+	* bin/DataService.py 1.8:
+		Removed
+
 	* COPYING.txt 1.5:
 		Extended to 2004
+
+	* tools/AG1toAG2Venues.py 1.1:
+	* tools/CreateVenues.py 1.1:
+	* tools/CvsSetup.py 1.1:
+		Moved here from bin dir
 
 	* AccessGrid/Toolkit.py 1.26:
 		Fixed service profile class, removed cert/key options, not doing 
@@ -27,23 +390,12 @@
 	* AccessGrid/Security/wxgui/CertificateManagerWXGUI.py 1.7:
 		Fix typo in comment.
 
-	* AccessGrid/Venue.py 1.164:
-	* AccessGrid/VenueClient.py 1.151:
-		Begin support for faultHandler for venue.
+	* AccessGrid/Security/wxgui/CertificateViewer.py 1.2:
+		Add modulus to cert view
 
 	* AccessGrid/hosting/SOAPInterface.py 1.8:
 	* AccessGrid/hosting/SOAPpy/Client.py 1.7:
 		Add support for passing in fault handler
-
-	* AccessGrid/Security/wxgui/CertificateRequestViewer.py 1.2:
-		Add modulus to request view
-
-	* AccessGrid/Security/wxgui/CertificateViewer.py 1.2:
-		Add modulus to cert view
-
-	* AccessGrid/Toolkit.py 1.27:
-		Mods for usign profile passed to service to change the default
-		identity used by the cert mgr.
 
 	* AccessGrid/Security/wxgui/CertificateManagerWXGUI.py 1.6:
 		change dialog name
@@ -52,31 +404,35 @@
 	* AccessGrid/Security/CertificateRepository.py 1.8:
 		Modifications for setting per-instance identity in certmgr
 
-	* AccessGrid/Security/wxgui/CertificateStatusBrowser.py 1.2:
-		add install support
+	* AccessGrid/Toolkit.py 1.29:
+		Add support for services autoloading requested certs if 
+		available.
 
 	* AccessGrid/Security/wxgui/CertificateRequestTool.py 1.3:
 	* AccessGrid/Security/wxgui/IdentityBrowser.py 1.5:
 		Add service profile export functionality
 
+	* AccessGrid/Venue.py 1.164:
+	* AccessGrid/VenueClient.py 1.151:
+		Begin support for faultHandler for venue.
+
+	* AccessGrid/Security/CertificateManager.py 1.11:
+		Remove a logging message.
+		Fix doc.
+
+	* AccessGrid/Security/wxgui/CertificateRequestViewer.py 1.2:
+		Add modulus to request view
+
+	* AccessGrid/Toolkit.py 1.27:
+		Mods for usign profile passed to service to change the default
+		identity used by the cert mgr.
+
+	* AccessGrid/Security/wxgui/CertificateStatusBrowser.py 1.2:
+		add install support
+
 2004-03-22	lefvert
 	* AccessGrid/VenueClientUI.py 1.24:
 		added manage roles option to app menu
-
-2004-03-22	turam
-	* bin/NodeManagement.py 1.25:
-		Fix reference to default node service url
-
-	* AccessGrid/VenueClient.py 1.152:
-		Add code to write the venue client url to a user-local file, for
-		soap clients to discover it
-
-	* AccessGrid/Venue.py 1.166:
-		Log attempts to add user to venueuser's list twice, rather than 
-		raising
-
-	* AccessGrid/EventClient.py 1.36:
-		Remove call to app.InitGlobusEnvironment
 
 2004-03-22	eolson
 	* AccessGrid/AppDb.py 1.15:
@@ -94,6 +450,28 @@
 
 	* AccessGrid/SharedApplication.py 1.7:
 		Add basic required roles for shared applications.
+
+2004-03-22	turam
+	* AccessGrid/VenueClient.py 1.152:
+		Add code to write the venue client url to a user-local file, for
+		soap clients to discover it
+
+	* bin/NodeManagement.py 1.25:
+		Fix reference to default node service url
+
+	* tools/GoToVenue.py 1.1:
+		Open a venue client with the specified venue; attempts to use a running
+		venue client and, if that fails, starts a new venue client
+
+	* AccessGrid/EventClient.py 1.36:
+		Remove call to app.InitGlobusEnvironment
+
+	* AccessGrid/AppDb.py 1.16:
+		Force the app db to stay in synch with the on-disk appdb file
+
+	* AccessGrid/Venue.py 1.166:
+		Log attempts to add user to venueuser's list twice, rather than 
+		raising
 
 2004-03-19	judson
 	* packaging/windows/agtk.iss 1.35:
