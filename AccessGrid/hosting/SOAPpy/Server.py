@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.6 2004-03-02 19:12:47 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.7 2004-03-04 22:35:29 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ SOAPpy server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.6 2004-03-02 19:12:47 judson Exp $"
+__revision__ = "$Id: Server.py,v 1.7 2004-03-04 22:35:29 judson Exp $"
 
 # External imports
 from threading import Thread, Event
@@ -109,7 +109,7 @@ class Server:
         return "https://%s:%s" % self._server.server_address
 
     # Convenient encapsulations
-    def RegisterObject(self, object, namespace = '', path = ''):
+    def RegisterObject(self, obj, namespace = '', path = ''):
         """
         This method is used to register an object with the server.
 
@@ -122,12 +122,12 @@ class Server:
             print "Warning! Registering two objects at the same endpoint!"
             print "Endpoint: ", uri
             print "Object 1: ", self._serving[uri]
-            print "Object 2: ", object
+            print "Object 2: ", obj
 
-        self._serving[uri] = object
-        self._server.registerObject(object, namespace=namespace, path = path)
+        self._serving[uri] = obj
+        self._server.registerObject(obj, namespace=namespace, path = path)
 
-    def UnregisterObject(self, object):
+    def UnregisterObject(self, obj):
         """
         This method removes a object from the server, making it unavailable.
 
@@ -135,9 +135,9 @@ class Server:
         SOAPpy directly underneath.
         """
         for u,o in self._serving.items():
-            if object == o:
+            if obj == o:
                 del self._serving[u]
-        self._server.unregisterObject(object)
+        self._server.unregisterObject(obj)
 
     # Don't forget we expose interfaces, so
     # interfaces.impl == passed in object
