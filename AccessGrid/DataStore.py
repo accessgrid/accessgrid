@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.47 2003-09-18 16:35:35 judson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.48 2003-09-23 17:55:32 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.47 2003-09-18 16:35:35 judson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.48 2003-09-23 17:55:32 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -67,7 +67,7 @@ class UploadFailed(Exception):
 class DownloadFailed(Exception):
     pass
 
-class DatDAlreadyPresent(Exception):
+class DataAlreadyPresent(Exception):
     pass
 
 class DataNotFound(Exception):
