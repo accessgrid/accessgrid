@@ -3,13 +3,13 @@
 # Purpose:     
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.52 2004-07-26 16:50:38 lefvert Exp $
+# RCS-ID:      $Id: Types.py,v 1.53 2004-07-28 22:41:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.52 2004-07-26 16:50:38 lefvert Exp $"
+__revision__ = "$Id: Types.py,v 1.53 2004-07-28 22:41:23 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -242,3 +242,8 @@ class AGServicePackage:
     def GetName(self):
         return self.serviceDesc.name
 
+    def GetVersion(self):
+        return self.serviceDesc.version
+
+    def GetDescriptionFilename(self):
+        return self.descriptionFile
