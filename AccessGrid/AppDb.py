@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.14 2004-03-19 04:19:42 judson Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.15 2004-03-22 19:42:43 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.14 2004-03-19 04:19:42 judson Exp $"
+__revision__ = "$Id: AppDb.py,v 1.15 2004-03-22 19:42:43 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -415,7 +415,7 @@ class AppDb:
 
             if dstPath == None:
                 noSpaceName = '_'.join(name.split(' '))
-                dstPath = os.path.join(self.userConfig.GetSharedAppDir(),
+                dstPath = os.path.join(UserConfig.instance().GetSharedAppDir(),
                                        noSpaceName)
 
             if not os.path.exists(dstPath):
