@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.90 2003-08-11 04:22:18 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.91 2003-08-12 01:49:14 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -500,7 +500,13 @@ class VenueClient( ServiceBase):
             for service in venueState.services:
                 serviceList.append( ServiceDescription( service.name, service.description,
                                                         service.uri, service.mimeType ) )
-        
+
+            # I hate retrofitted code.
+            if hasattr(venueState, backupServer):
+                bs = venueState.backupServer
+            else:
+                bs = None
+                
             self.venueState = VenueState( venueState.uniqueId,
                                           venueState.name,
                                           venueState.description,
@@ -512,7 +518,7 @@ class VenueClient( ServiceBase):
                                           venueState.textLocation,
                                           applicationList,
                                           serviceList,
-                                          venueState.backupServer)
+                                          bs)
             self.venueUri = URL
             self.venueId = self.venueState.GetUniqueId()
             self.venueProxy = Client.Handle( URL ).get_proxy()
