@@ -56,7 +56,7 @@ Summary:	The Access Grid Toolkit Venue Client
 Version:	%{version}
 Release:	%{release}
 Group:		Utilities/System
-Requires:	AccessGrid
+Requires:	AccessGrid = %{version}-%{release}
 Obsoletes:	AccessGrid-VenueClient-2.0alpha
 #Obsoletes:	AccessGrid-VenueClient-2.0beta
 
@@ -75,7 +75,7 @@ Summary:	The Access Grid Toolkit Venue Server
 Version:	%{version}
 Release:	%{release}
 Group:		Utilities/System
-Requires:	AccessGrid
+Requires:	AccessGrid = %{version}-%{release}
 Obsoletes:	AccessGrid-VenueServer-2.0alpha
 #Obsoletes:	AccessGrid-VenueServer-2.0beta
 
@@ -95,7 +95,8 @@ Summary:	The Access Grid Toolkit Video Producer Service
 Version:	%{version}
 Release:	%{release}
 Group:		Utilities/System
-Requires:	AccessGrid AccessGrid-vic
+Requires:	AccessGrid = %{version}-%{release}
+Requires:	AccessGrid-vic
 Obsoletes:	AccessGrid-VideoProducer-2.0alpha
 #Obsoletes:	AccessGrid-VideoProducer-2.0beta
 
@@ -114,7 +115,7 @@ Summary:	The Access Grid Toolkit Video Consumer Service
 Version:	%{version}
 Release:	%{release}
 Group:		Utilities/System
-Requires:	AccessGrid
+Requires:	AccessGrid = %{version}-%{release}
 Obsoletes:	AccessGrid-VideoConsumer-2.0alpha
 #Obsoletes:	AccessGrid-VideoConsumer-2.0beta
 
@@ -134,7 +135,8 @@ Summary:	The Access Grid Toolkit Audio Service
 Version:	%{version}
 Release:	%{release}
 Group:		Utilities/System
-Requires:	AccessGrid AccessGrid-rat
+Requires:	AccessGrid = %{version}-%{release}
+Requires:	AccessGrid-rat
 Obsoletes:	AccessGrid-AudioService-2.0alpha
 #Obsoletes:	AccessGrid-AudioService-2.0beta
 
