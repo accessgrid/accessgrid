@@ -4,8 +4,8 @@
 # 
 # Author:      Susanne Lefvert 
 # 
-# Created:     $Date: 2005-02-25 22:24:53 $ 
-# RCS-ID:      $Id: VenueRecorder.py,v 1.1 2005-02-25 22:24:53 lefvert Exp $ 
+# Created:     $Date: 2005-02-25 22:29:34 $ 
+# RCS-ID:      $Id: VenueRecorder.py,v 1.2 2005-02-25 22:29:34 lefvert Exp $ 
 # Copyright:   (c) 2002 
 # Licence:     See COPYING.TXT 
 #----------------------------------------------------------------------------- 
@@ -169,11 +169,11 @@ class Recording:
  
 class VenueRecorderModel(Model): 
     """ 
-    The voyager model class includes all logic for the program. There
+    The venue recorder model class includes all logic for the program. There
     is no user interface code in this class. The ui and the model is
     separated using the observer pattern for easy separation. When
     state gets updated in the model, all obervers are notified and
-    updates the view/ui.  The voyager model includes methods for recording
+    updates the view/ui.  The venue recorder model includes methods for recording
     and playback of venue media streams, as well as organization 
     and persistence of recordings. 
     """ 
@@ -184,7 +184,7 @@ class VenueRecorderModel(Model):
          
     def __init__(self, log): 
         ''' 
-        Initialize voyager model including all logic of the program.  
+        Initialize venue recorder model including all logic of the program.  
  
         ** Arguments ** 
         *log* log file 
@@ -232,7 +232,7 @@ class VenueRecorderModel(Model):
         ''' 
         Load recordings from file. 
         '''
-        # For each directory in the voyager path
+        # For each directory in the venue recorder path
         # load description config file and create a
         # recording.
 
@@ -337,7 +337,7 @@ class VenueRecorderModel(Model):
                 audioFile = file.read(name)
                                     
             else:
-                self.__log.error("VenueRecorderModel.ImportFromZipFile: Wrong file format for voyager %s"%name)
+                self.__log.error("VenueRecorderModel.ImportFromZipFile: Wrong file format for venue recorder %s"%name)
                 
         file.close()
 
@@ -345,7 +345,7 @@ class VenueRecorderModel(Model):
             self.__log("there is no description file %s present in this zip file, import failed."%(dirName))
             return
 
-        # Save files in voyager directory named after
+        # Save files in venue recorder directory named after
         # unique id of recording.
         newDir = os.path.join(self.__path, dirName)
         self.__log.debug("VenueRecorderModel.ImportFromZipFile: Import files to %s"%self.__path)
@@ -643,18 +643,18 @@ class VenueRecorderModel(Model):
 
     def GetPath(self):
         '''
-        Returns base path for voyager.
+        Returns base path for venue recorder.
 
         **Returns**
         
-        *path* voyager base path (string)
+        *path* venue recorder base path (string)
         '''
         return self.__path
                               
 class VenueRecorderUI(wxApp): 
     ''' 
     The main class for user interface control. This class 
-    creates a voyager model and view instance. 
+    creates a venue recorder model and view instance. 
     ''' 
  
     def OnInit(self): 
@@ -663,30 +663,30 @@ class VenueRecorderUI(wxApp):
         ''' 
         return 1 
  
-    def __init__(self, voyagerModel, log): 
+    def __init__(self, venueRecorderModel, log): 
         ''' 
         Create ui components and register them as observers to the 
-        voyager model. 
+        venue recorder model. 
         ''' 
         wxApp.__init__(self, False) 
         wxInitAllImageHandlers() 
         self.log = log 
          
         # Create model 
-        self.voyagerModel = voyagerModel 
+        self.venueRecorderModel = venueRecorderModel 
  
         # Create view. The view will use the model interface to 
         # access state.
-        self.voyagerView = VenueRecorderView(self, voyagerModel, self.log) 
-        self.voyagerModel.RegisterObserver(self.voyagerView) 
+        self.venueRecorderView = VenueRecorderView(self, venueRecorderModel, self.log) 
+        self.venueRecorderModel.RegisterObserver(self.venueRecorderView) 
          
         # Init UI
-        self.SetTopWindow(self.voyagerView) 
-        self.voyagerView.Show(1) 
+        self.SetTopWindow(self.venueRecorderView) 
+        self.venueRecorderView.Show(1) 
                  
 class VenueRecorderView(wxFrame, Observer): 
     ''' 
-    View for voyager containing ui components.
+    View for venue recorder containing ui components.
     '''
     RECORDING_MENU_REMOVE = wxNewId()
     RECORDING_MENU_EXPORT = wxNewId()
@@ -694,7 +694,7 @@ class VenueRecorderView(wxFrame, Observer):
     RECORDING_MENU_IMPORT = wxNewId()
     RECORDING_MENU_PROPERTIES = wxNewId()
     
-    def __init__(self, parent, voyagerModel, log): 
+    def __init__(self, parent, venueRecorderModel, log): 
         ''' 
         Create ui components. 
         ''' 
@@ -702,7 +702,7 @@ class VenueRecorderView(wxFrame, Observer):
         Observer.__init__(self) 
  
         self.log = log 
-        self.voyagerModel = voyagerModel 
+        self.venueRecorderModel = venueRecorderModel 
         self.intToGuid = {}
         
         self.SetIcon(icons.getAGIconIcon()) 
@@ -794,17 +794,17 @@ class VenueRecorderView(wxFrame, Observer):
             return
 
         uniqueId = self.intToGuid[id]
-        recording = self.voyagerModel.GetRecordings()[uniqueId]
+        recording = self.venueRecorderModel.GetRecordings()[uniqueId]
 
         # Open a UI to display properties 
         dlg = PropertiesDialog(self, -1,
                                recording,
-                               self.voyagerModel)
+                               self.venueRecorderModel)
         if dlg.ShowModal() == wxID_OK:
             r = dlg.GetRecording()
             # Only update if recording properties changed
             if r:
-                self.voyagerModel.UpdateRecording(r)
+                self.venueRecorderModel.UpdateRecording(r)
               
     def ImportRecordingCB(self, event):
         '''
@@ -827,7 +827,7 @@ class VenueRecorderView(wxFrame, Observer):
 
         recording = None
         try:
-            recording = self.voyagerModel.GetRecordingFromZipFile(fileName)
+            recording = self.venueRecorderModel.GetRecordingFromZipFile(fileName)
         except:
             self.log.exception("VenueRecorderView.ImportRecordingCB: Get recording from zip file failed %s "%(fileName))
 
@@ -845,7 +845,7 @@ class VenueRecorderView(wxFrame, Observer):
             if not val == wxID_YES:
                 return
         try:
-            self.voyagerModel.ImportFromZipFile(fileName)
+            self.venueRecorderModel.ImportFromZipFile(fileName)
         except:
             val = self.ShowMessage(self.panel,
                                    "Failed to import %s."
@@ -867,7 +867,7 @@ class VenueRecorderView(wxFrame, Observer):
             return
         
         uniqueId = self.intToGuid[id]
-        recording = self.voyagerModel.GetRecordings()[uniqueId]
+        recording = self.venueRecorderModel.GetRecordings()[uniqueId]
 
         # Set default name
         noSpacesName = string.replace(recording.GetName(), " ", "_")
@@ -907,7 +907,7 @@ class VenueRecorderView(wxFrame, Observer):
                 if val == wxID_YES:
                     notOverwrite = 0
                     try:
-                        self.voyagerModel.ExportToZipFile([recording], fileName)
+                        self.venueRecorderModel.ExportToZipFile([recording], fileName)
                     except:
                         self.log.exception("VenueRecorderModel.ExportRecordingCB: Export to zip file failed. %s"%(fileName))
 
@@ -917,7 +917,7 @@ class VenueRecorderView(wxFrame, Observer):
                                                style = wxICON_ERROR)               
             else:
                 notOverwrite = 0
-                self.voyagerModel.ExportToZipFile([recording], fileName)
+                self.venueRecorderModel.ExportToZipFile([recording], fileName)
                
     def ExportRecordingAllCB(self, event):
         defaultName = os.path.join(os.getcwd(), "RecordingList.agrcd)") 
@@ -932,7 +932,7 @@ class VenueRecorderView(wxFrame, Observer):
         else:
             return
 
-        self.voyagerModel.ExportAllToZipFile(fileName)
+        self.venueRecorderModel.ExportAllToZipFile(fileName)
       
     def RemoveRecordingCB(self, event):
         '''
@@ -946,10 +946,10 @@ class VenueRecorderView(wxFrame, Observer):
                                    style = wxICON_INFORMATION) 
             return
 
-        status = self.voyagerModel.GetStatus()
-        currentRecording = self.voyagerModel.GetCurrentRecording()
+        status = self.venueRecorderModel.GetStatus()
+        currentRecording = self.venueRecorderModel.GetCurrentRecording()
         selectedRecordingId = self.intToGuid[id]
-        selectedRecording = self.voyagerModel.GetRecordings()[selectedRecordingId]
+        selectedRecording = self.venueRecorderModel.GetRecordings()[selectedRecordingId]
         val = None
 
         # Maker sure user really wants to remove the recording.
@@ -958,12 +958,12 @@ class VenueRecorderView(wxFrame, Observer):
                                style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
         # Make sure we are not currently playing or recording to this
         # recording.
-        if (status == self.voyagerModel.RECORDING and
+        if (status == self.venueRecorderModel.RECORDING and
             currentRecording == selectedRecording):
             val = self.ShowMessage(self.panel, "Stop recording %s ?."
                              %(selectedRecording.GetName()), "Remove", 
                              style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT)                                   
-        elif (status == self.voyagerModel.PLAYING and
+        elif (status == self.venueRecorderModel.PLAYING and
               currentRecording == selectedRecording):
             val = self.ShowMessage(self.panel, "Stop playing %s ?."
                                    %(selectedRecording.GetName()), "Remove", 
@@ -973,11 +973,11 @@ class VenueRecorderView(wxFrame, Observer):
             return
         elif val == wxID_YES:
             try:
-                self.voyagerModel.Stop()
+                self.venueRecorderModel.Stop()
             except:
                 self.log.exception("VenueRecorderView.RemoveRecordingCB: failed to stop player.")
         try:
-            self.voyagerModel.Remove(selectedRecording)
+            self.venueRecorderModel.Remove(selectedRecording)
         except:
             val = self.ShowMessage(self.panel, "Error when removing.",
                                    "Error", 
@@ -1005,7 +1005,7 @@ class VenueRecorderView(wxFrame, Observer):
         id = self.intToGuid[selectedItem]
         name = self.recordingList.GetItemText(selectedItem)
                
-        recordings = self.voyagerModel.GetRecordings() 
+        recordings = self.venueRecorderModel.GetRecordings() 
  
         # Check if recording exists. 
         if recordings.has_key(id): 
@@ -1013,7 +1013,7 @@ class VenueRecorderView(wxFrame, Observer):
         else:
             val = self.ShowMessage(self.panel, 
                                    "Error when playing; %s was not found"
-                                   %(self.voyagerModel.GetSelectedRecording().GetName()), 
+                                   %(self.venueRecorderModel.GetSelectedRecording().GetName()), 
                                    "Play", style = wxICON_ERROR) 
             return 
                      
@@ -1032,7 +1032,7 @@ class VenueRecorderView(wxFrame, Observer):
  
         try: 
             # Start to play the recording in venue entered by user. 
-            self.voyagerModel.PlayInVenue(r, venueUrl) 
+            self.venueRecorderModel.PlayInVenue(r, venueUrl) 
         except:
             val = self.ShowMessage(self.panel, 
                                    "Error when playing", 
@@ -1046,16 +1046,16 @@ class VenueRecorderView(wxFrame, Observer):
         ''' 
         Check to see if we need/want to stop an ongoing recording/playback 
         ''' 
-        status =  self.voyagerModel.GetStatus() 
-        current = self.voyagerModel.GetCurrentRecording() 
+        status =  self.venueRecorderModel.GetStatus() 
+        current = self.venueRecorderModel.GetCurrentRecording() 
         dlg = None
 
-        if status == self.voyagerModel.PLAYING and current:
+        if status == self.venueRecorderModel.PLAYING and current:
             dlg = wxMessageDialog(self.panel, "Stop playing %s?"
                                   %(current.GetName()), "Record", 
                                   style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
  
-        if status == self.voyagerModel.RECORDING and current: 
+        if status == self.venueRecorderModel.RECORDING and current: 
             dlg =  wxMessageDialog(self.panel, "Stop recording %s ?"
                                    %(current.GetName()), "Record", 
                                    style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
@@ -1068,7 +1068,7 @@ class VenueRecorderView(wxFrame, Observer):
                 return 0 
  
             else: 
-                self.voyagerModel.Stop() 
+                self.venueRecorderModel.Stop() 
              
         return 1 
  
@@ -1090,7 +1090,7 @@ class VenueRecorderView(wxFrame, Observer):
          
         venueUrl = dlg.GetVenueUrl() 
          
-        nr = len(self.voyagerModel.GetRecordings()) 
+        nr = len(self.venueRecorderModel.GetRecordings()) 
         name = "Session %i"%(nr) 
          
         # Create a Recording object
@@ -1099,7 +1099,7 @@ class VenueRecorderView(wxFrame, Observer):
  
         try: 
             # Start recording 
-            self.voyagerModel.Record(r) 
+            self.venueRecorderModel.Record(r) 
         except: 
             self.log.exception("VenueRecorderView.RecordCB: Failed to record %s from %s" 
                           %(r.GetName(), r.GetVenueUrl())) 
@@ -1115,7 +1115,7 @@ class VenueRecorderView(wxFrame, Observer):
         Invoked when the stop button is clicked. 
         ''' 
         try: 
-            self.voyagerModel.Stop() 
+            self.venueRecorderModel.Stop() 
         except: 
             self.log.exception("VenueRecorderView.StopCB: Failed to stop")
             val = self.ShowMessage(self.panel, 
@@ -1124,7 +1124,7 @@ class VenueRecorderView(wxFrame, Observer):
                     
     def Update(self): 
         ''' 
-        Invoked when the voyager model changes state. This
+        Invoked when the venueRecorder model changes state. This
         methods updates the ui based on current state of the model
         based on the Model-View-Controller pattern.
         ''' 
@@ -1132,18 +1132,18 @@ class VenueRecorderView(wxFrame, Observer):
         # only integers are allowed as data in wxListCtrl.
         self.intToGuidDict = {}
 
-        status = self.voyagerModel.GetStatus() 
-        currentRecording = self.voyagerModel.GetCurrentRecording() 
-        recordings = self.voyagerModel.GetRecordings() 
+        status = self.venueRecorderModel.GetStatus() 
+        currentRecording = self.venueRecorderModel.GetCurrentRecording() 
+        recordings = self.venueRecorderModel.GetRecordings() 
          
-        if  status == self.voyagerModel.RECORDING: 
+        if  status == self.venueRecorderModel.RECORDING: 
             tooltip = "Stop recording" 
  
             statusText = "Recording from venue %s"%(currentRecording.GetVenueUrl()) 
-        elif status == self.voyagerModel.PLAYING: 
+        elif status == self.venueRecorderModel.PLAYING: 
             tooltip = "Stop playing" 
-            statusText = "Playing %s in venue %s"%(currentRecording.GetName(), self.voyagerModel.GetPlaybackVenueUrl()) 
-        elif status == self.voyagerModel.STOPPED: 
+            statusText = "Playing %s in venue %s"%(currentRecording.GetName(), self.venueRecorderModel.GetPlaybackVenueUrl()) 
+        elif status == self.venueRecorderModel.STOPPED: 
             tooltip = "Stop" 
             statusText = "Stopped" 
          
@@ -1267,10 +1267,10 @@ class PropertiesDialog(wxDialog):
     ''' 
     Dialog for displaying recording properties. 
     ''' 
-    def __init__(self, parent, id, recording, voyagerModel): 
+    def __init__(self, parent, id, recording, venueRecorderModel): 
         wxDialog.__init__(self, parent, id, "Recording Properties")
         self.recording = recording
-        self.voyagerModel = voyagerModel
+        self.venueRecorderModel = venueRecorderModel
         
         start = time.strftime("%I:%M:%S %p, %b-%d-%Y",
                               time.localtime(recording.GetStartTime())) 
@@ -1280,9 +1280,9 @@ class PropertiesDialog(wxDialog):
         duration = recording.GetStopTime()-recording.GetStartTime()# Seconds
 
         # Calculate audio and video file sizes in bytes
-        video = os.path.join(self.voyagerModel.GetPath(),
+        video = os.path.join(self.venueRecorderModel.GetPath(),
                              str(recording.GetId()), "video.rtp")
-        audio = os.path.join(self.voyagerModel.GetPath(),
+        audio = os.path.join(self.venueRecorderModel.GetPath(),
                              str(recording.GetId()), "audio.rtp")
         videoSize = str(os.path.getsize(video))
         audioSize = str(os.path.getsize(audio))
