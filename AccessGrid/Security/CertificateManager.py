@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.29 2004-06-14 17:10:39 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.30 2004-07-17 02:37:54 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.29 2004-06-14 17:10:39 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.30 2004-07-17 02:37:54 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -715,14 +715,14 @@ class CertificateManager(object):
 
         self._InitializeCADir()
 
-
         if self.useDefaultDN is not None:
             log.debug("Configuring env with default DN %s", self.useDefaultDN)
             return self.InitEnvironmentWithDN(self.useDefaultDN)
-        elif self.useCertFile is not None:
+        elif self.useCertFile is not None and self.useKeyFile is not None:
             log.debug("Configuring env with cert file %s key %s",
                       self.useCertFile, self.useKeyFile)
-            return self.InitEnvironmentWithCert(self.useCertFile, self.useKeyFile)
+            return self.InitEnvironmentWithCert(self.useCertFile,
+                                                self.useKeyFile)
         else:
             log.debug("Configuring standard environment")
             return self.InitEnvironmentStandard()
@@ -770,9 +770,11 @@ class CertificateManager(object):
         self.defaultIdentity = CertificateRepository.Certificate(certFile,
                                                                  keyFile,
                                                                  self.certRepo)
+        dI = CertificateRepository.CertificateDescriptor(self.defaultIdentity,
+                                                         self.certRepo)
 
         log.debug("Cert: %s, Key: %s", certFile, keyFile)
-        log.debug("Loaded identity %s", self.defaultIdentity.GetVerboseText())
+        log.debug("Loaded identity ---\n%s\n---", self.defaultIdentity.GetVerboseText())
 
         #
         # Lock down the repository so it doesn't get modified.
@@ -780,7 +782,7 @@ class CertificateManager(object):
 
         self.certRepo.LockMetadata()
 
-        if defaultIdentity.HasEncryptedPrivateKey():
+        if dI.HasEncryptedPrivateKey():
             self._InitEnvWithProxy()
         else:
             self._InitEnvWithCert()
@@ -1434,7 +1436,7 @@ class CertificateManagerUserInterface:
                     break
 
             except Exception, e:
-                print "Uncaught exception ", e.__class__
+                log.exception("Error Initializing environment.")
                 break
                 
 
