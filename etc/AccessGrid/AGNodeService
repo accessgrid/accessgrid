@@ -1,4 +1,0 @@
-[Node Configuration]
-servicesDirectory = /usr/share/AccessGrid/services
-configDirectory = /usr/share/AccessGrid
-defaultNodeConfiguration = defaultLinux
