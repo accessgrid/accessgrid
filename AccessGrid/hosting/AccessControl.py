@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.17 2003-08-19 13:45:07 judson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.18 2003-08-27 20:30:38 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -513,7 +513,8 @@ def GetSecurityManager():
 
 class InvocationWrapper(MethodSig):
     """
-    An InvocationWrapper provides the security manager context setup for a method call.
+    An InvocationWrapper provides the security manager context setup
+    for a method call.
 
     It derives from SOAP.MethodSig so that the SOAP engine will
     automatically invoke the method through this wrapper.
