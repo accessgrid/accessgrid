@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.139 2003-05-09 20:44:56 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.140 2003-05-13 16:42:12 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -58,7 +58,7 @@ class VenueClientUI(wxApp, VenueClient):
     clientHandle = None
     venueUri = None
     personalDataStorePrefix = "personalDataStore"
-    personalDataStorePort = 9999
+    personalDataStorePort = 9998
     personalDataDict = {}
     accessGridPath = GetUserConfigDir()
     profileFile = os.path.join(accessGridPath, "profile" )
@@ -478,79 +478,86 @@ class VenueClientUI(wxApp, VenueClient):
             self.client = self.clientHandle.get_proxy()
 
             # Tell super class to enter venue
-            VenueClient.EnterVenue( self, URL )
+            try:
+                VenueClient.EnterVenue( self, URL )
+            except:
+                text = "You have not entered the venue, an error occured"
+                wxCallAfter(MessageDialog, self.frame, text, "Enter Venue Error",
+                            wxOK  | wxICON_ERROR)
+                
+            else:
+                venueState = self.venueState
+                #wxCallAfter(self.frame.SetLabel, venueState.name)
+                wxCallAfter(self.frame.venueAddressBar.SetTitle, venueState.name, venueState.description) 
+                
+                # --- Load clients
+                clients = venueState.clients.values()
+                wxCallAfter(wxLogDebug, "Add participants")
 
-            venueState = self.venueState
-            wxCallAfter(self.frame.SetLabel, venueState.name)
-
-            # --- Load clients
-            clients = venueState.clients.values()
-            wxCallAfter(wxLogDebug, "Add participants")
-
-            for client in clients:
-                # Participants
-                #if(client.profileType == 'user'):
+                for client in clients:
+                    # Participants
+                    #if(client.profileType == 'user'):
                     wxCallAfter(self.frame.contentListPanel.AddParticipant, client)
                     wxCallAfter(wxLogDebug, "   %s" %(client.name))
-
+                    
                     # Nodes
-                #else:
-                #    wxCallAfter(self.frame.contentListPanel.AddNode, client)
-                #    wxCallAfter(wxLogDebug, "   %s" %(client.name))
+                    #else:
+                    #    wxCallAfter(self.frame.contentListPanel.AddNode, client)
+                    #    wxCallAfter(wxLogDebug, "   %s" %(client.name))
 
-            # --- Load data
-            data = venueState.data.values()
-            wxCallAfter(wxLogDebug, "Add data")
-            for d in data:
-                wxCallAfter(self.frame.contentListPanel.AddData, d)
-                wxCallAfter(wxLogDebug, "   %s" %(d.name))
-                wxCallAfter(wxLogDebug, "   ------------- data type %s" %(d.type))
-                wxCallAfter(wxLogDebug, "   ------------- my public id %s" %(self.profile.publicId))
+                # --- Load data
+                data = venueState.data.values()
+                wxCallAfter(wxLogDebug, "Add data")
+                for d in data:
+                    wxCallAfter(self.frame.contentListPanel.AddData, d)
+                    wxCallAfter(wxLogDebug, "   %s" %(d.name))
+                    wxCallAfter(wxLogDebug, "   ------------- data type %s" %(d.type))
+                    wxCallAfter(wxLogDebug, "   ------------- my public id %s" %(self.profile.publicId))
 
-            # --- Load services
-            services = venueState.services.values()
-            wxCallAfter(wxLogDebug, "Add service")
-            for s in services:
-                wxCallAfter(self.frame.contentListPanel.AddService, s)
-                wxCallAfter(wxLogDebug, "   %s" %(s.name))
+                # --- Load services
+                services = venueState.services.values()
+                wxCallAfter(wxLogDebug, "Add service")
+                for s in services:
+                    wxCallAfter(self.frame.contentListPanel.AddService, s)
+                    wxCallAfter(wxLogDebug, "   %s" %(s.name))
+                    
+                # --- Load applications
+                applications = venueState.applications.values()
+                wxCallAfter(wxLogDebug, "Add application")
+                for a in applications:
+                    wxCallAfter(self.frame.contentListPanel.AddApplication, a)
+                    wxCallAfter(wxLogDebug, "   %s" %(a.name))
 
-            # --- Load applications
-            applications = venueState.applications.values()
-            wxCallAfter(wxLogDebug, "Add application")
-            for a in applications:
-                wxCallAfter(self.frame.contentListPanel.AddApplication, a)
-                wxCallAfter(wxLogDebug, "   %s" %(a.name))
+                # Enable the application menu that is displayed over
+                # the Applications items in the list (this is not the app menu above)
+                self.frame.EnableAppMenu(true)
 
-            # Enable the application menu that is displayed over
-            # the Applications items in the list (this is not the app menu above)
-            self.frame.EnableAppMenu(true)
+                # --- Load exits
+                wxCallAfter(wxLogDebug, "Add exits")
+                exits = venueState.connections.values()
+                for exit in exits:
+                    wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, exit)
+                    wxCallAfter(wxLogDebug, "   %s" %(exit.name))
 
-            # --- Load exits
-            wxCallAfter(wxLogDebug, "Add exits")
-            exits = venueState.connections.values()
-            for exit in exits:
-                wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, exit)
-                wxCallAfter(wxLogDebug, "   %s" %(exit.name))
+                # Start text location
+                wxCallAfter(wxLogDebug, "Set text location and address bar")
+                wxCallAfter(self.frame.SetTextLocation)
+                wxCallAfter(self.frame.FillInAddress, None, URL)
+                self.venueUri = URL
 
-            # Start text location
-            wxCallAfter(wxLogDebug, "Set text location and address bar")
-            wxCallAfter(self.frame.SetTextLocation)
-            wxCallAfter(self.frame.FillInAddress, None, URL)
-            self.venueUri = URL
+                # Venue data storage location
+                self.upload_url = self.client.GetUploadDescriptor()
+                wxCallAfter(wxLogDebug, "Get upload url %s" %self.upload_url)
 
-            # Venue data storage location
-            self.upload_url = self.client.GetUploadDescriptor()
-            wxCallAfter(wxLogDebug, "Get upload url %s" %self.upload_url)
-
-            # Add your personal data descriptions to venue
-            wxCallAfter(wxLogDebug, "Add your personal data descriptions to venue")
-            self.__AddPersonalDataToVenue()
-
-            # This should be done last for UI update reasons
-            wxCallAfter(wxLogDebug, "Lead followers")
-            self.LeadFollowers()
-
-            wxCallAfter(wxLogDebug, "Entered venue")
+                # Add your personal data descriptions to venue
+                wxCallAfter(wxLogDebug, "Add your personal data descriptions to venue")
+                self.__AddPersonalDataToVenue()
+                
+                # This should be done last for UI update reasons
+                wxCallAfter(wxLogDebug, "Lead followers")
+                self.LeadFollowers()
+                
+                wxCallAfter(wxLogDebug, "Entered venue")
 
     EnterVenue.soap_export_as = "EnterVenue"
 
@@ -663,7 +670,7 @@ class VenueClientUI(wxApp, VenueClient):
             wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: the handler is valid")
 
             #try:
-            self.client = self.clientHandle.get_proxy()
+            #self.client = self.clientHandle.get_proxy()
             #self.gotClient = true
             self.EnterVenue(venueUri)
             wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: after enter venue %s" %venueUri)
@@ -963,8 +970,8 @@ class VenueClientUI(wxApp, VenueClient):
             self.client.AddData(data)
             self.personalDataDict[data.name] = data
 
-        except Exception, e:
-            wxLogError("Error occured when trying to add data %s" %e[0])
+        except:
+            wxLogError("Error occured when trying to add data")
             wxLog_GetActiveTarget().Flush()
 
     def RemoveData(self, data):
@@ -981,6 +988,7 @@ class VenueClientUI(wxApp, VenueClient):
         except:
             wxLogError("Error occured when trying to remove data")
             wxLog_GetActiveTarget().Flush()
+
 
     def AddService(self, service):
         """
