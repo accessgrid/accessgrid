@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.15 2004-04-23 17:07:47 olson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.16 2004-05-18 15:22:02 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.15 2004-04-23 17:07:47 olson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.16 2004-05-18 15:22:02 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -468,7 +468,8 @@ def CreateGlobusProxyProgrammatic_GT24(passphrase, certFile, keyFile, certDir,
                                  bits = bits,
                                  lifetime = hours * 60,
                                  passphrase = passphrase,
-                                 debugCB = cb)
+                                 debugCB = cb,
+                                 proxyType = gssc.GLOBUS_GSI_CERT_UTILS_TYPE_GSI_2_PROXY)
         print "gpi returns"
 
     except security.GSIException, e:
@@ -559,6 +560,7 @@ else:
 	from pyGlobus import gsic
 	if hasattr(gsic, "grid_proxy_init2"):
 	    print 'use new globus'
+            from pyGlobus import gssc
 	    CreateGlobusProxy = CreateGlobusProxyProgrammatic_GT24
 	    IsGlobusProxy = IsGlobusProxy_GT24
 	else:
@@ -567,6 +569,7 @@ else:
 	    IsGlobusProxy = IsGlobusProxy_Generic
     else:
 	print 'use new globus'
+        from pyGlobus import gssc
 	CreateGlobusProxy = CreateGlobusProxyProgrammatic_GT24
 	IsGlobusProxy = IsGlobusProxy_GT24
 		
