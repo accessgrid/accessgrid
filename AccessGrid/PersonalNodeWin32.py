@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: PersonalNodeWin32.py,v 1.1 2003-04-23 19:26:23 olson Exp $
+# RCS-ID:      $Id: PersonalNodeWin32.py,v 1.2 2003-08-28 18:03:11 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,6 @@ of a Personal Node.
 
 """
 
-import sys
 import os
 import win32api
 import win32event
