@@ -5,12 +5,11 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.160 2003-04-28 18:40:42 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.161 2003-04-28 20:46:22 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 
-# Test
 
 import os
 import os.path
@@ -913,7 +912,8 @@ class VenueAddressBar(wxSashLayoutWindow):
     def AddChoice(self, url):
         if self.address.FindString(url) == wxNOT_FOUND:
             self.address.Append(url)
-
+        self.SetAddress(url)
+            
     def GoBack(self, event):
         wxBeginBusyCursor()
         self.application.GoBack()
@@ -1215,7 +1215,7 @@ class ContentListPanel(wxPanel):
         EVT_SIZE(self, self.OnSize)
         EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
         EVT_TREE_KEY_DOWN(self.tree, id, self.OnKeyDown) 
-	EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
+#	EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
 	
     def __setImageList(self):
 	imageList = wxImageList(32,19)
@@ -1497,11 +1497,11 @@ class ContentListPanel(wxPanel):
         w,h = self.GetClientSizeTuple()
         self.tree.SetDimensions(0, 0, w, h)
 	
-    def OnLeftDown(self, event):
-        self.x = event.GetX()
-        self.y = event.GetY()
-	self.tree.Unselect() 
-	event.Skip()
+    #def OnLeftDown(self, event):
+    #    self.x = event.GetX()
+    #    self.y = event.GetY()
+    #	self.tree.Unselect() 
+    #	event.Skip()
 
     def OnKeyDown(self, event):
         key = event.GetKeyCode()
