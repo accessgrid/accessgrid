@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.98 2003-08-21 20:32:05 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.99 2003-08-21 23:27:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -38,6 +38,11 @@ from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 
+if Platform.isWindows():
+    from AccessGrid.ProcessManagerWin32 import ProcessManagerWin32 as ProcessManager
+else:
+    from AccessGrid.ProcessManagerUnix import ProcessManagerUnix as ProcessManager
+    
 class EnterVenueException(Exception):
     pass
    
@@ -50,8 +55,6 @@ class GetDataStoreInfoError(Exception):
 class GetDataDescriptionsError(Exception):
     pass
 
-
-        
 log = logging.getLogger("AG.VenueClient")
 
 class VenueClient( ServiceBase):
@@ -95,9 +98,13 @@ class VenueClient( ServiceBase):
         # attributes for personal data store
         self.personalDataStorePrefix = "personalDataStore"
         self.personalDataStorePort = 0
-        self.personalDataStorePath = os.path.join(GetUserConfigDir(), self.personalDataStorePrefix)
-        self.personalDataFile = os.path.join(self.personalDataStorePath, "myData.txt" )
-        self.requests = [] # If already requested personal data, clients public id is saved in requests.
+        self.personalDataStorePath = os.path.join(GetUserConfigDir(),
+                                                  self.personalDataStorePrefix)
+        self.personalDataFile = os.path.join(self.personalDataStorePath,
+                                             "myData.txt" )
+        # If already requested personal data, clients public id is saved
+        # in requests.        
+        self.requests = [] 
 
         # Create personal data store
         self.__createPersonalDataStore()
@@ -111,11 +118,15 @@ class VenueClient( ServiceBase):
         self.venueUri = None
 
         # Cache profiles in case we need to look at them later.
-        # specifically, the cache makes it easier to add roles when managing venues.
+        # specifically, the cache makes it easier to add roles when
+        # managing venues.
         self.profileCachePrefix = "profileCache"
-        self.profileCachePath = os.path.join(GetUserConfigDir(), self.profileCachePrefix)
+        self.profileCachePath = os.path.join(GetUserConfigDir(),
+                                             self.profileCachePrefix)
         self.cache = ClientProfileCache(self.profileCachePath)
-                          
+
+        self.processManager = ProcessManager()
+        
     def __InitVenueData__( self ):
         self.eventClient = None
         self.textClient = None
@@ -128,7 +139,8 @@ class VenueClient( ServiceBase):
         if self.eventClient != None:
             isSuccess = AG_TRUE
             try:
-                self.eventClient.Send(HeartbeatEvent(self.venueId, self.privateId))
+                self.eventClient.Send(HeartbeatEvent(self.venueId,
+                                                     self.privateId))
                 isSuccess = AG_TRUE
             except:
                 log.exception("AccessGrid::VenueClient:Heartbeat: Heartbeat exception is caught, exit venue.")
@@ -160,7 +172,8 @@ class VenueClient( ServiceBase):
         
         if(self.profile != None):
             self.profile.venueClientURL = self.service.get_handle()
-            log.debug("AccessGrid.VenueClient::venue client serving : %s" %self.profile.venueClientURL)
+            log.debug("AccessGrid.VenueClient::venue client serving : %s"
+                      % self.profile.venueClientURL)
 
     def __createPersonalDataStore(self):
         """
@@ -392,20 +405,15 @@ class VenueClient( ServiceBase):
         """
         EnterVenue puts this client into the specified venue.
         """
-
         # Initialize a string of warnings that can be displayed to the user.
         self.warningString = ''
-
        
         for s in self.eventSubscribers:
             s.PreEnterVenue(URL, back)
 
         enterSuccess = AG_TRUE
         try:
-            #
             # if this venue url has a valid web service then enter venue
-            #
-
             self.venueUri = URL
             
             self.clientHandle = Client.Handle(self.venueUri)
@@ -418,37 +426,20 @@ class VenueClient( ServiceBase):
                 if callerDN != None and callerDN != self.leaderProfile.distinguishedName:
                     raise AuthorizationFailedError("Unauthorized leader tried to lead venue client")
 
-            #
             # Exit the venue you are currently in before entering a new venue
-            #
             if self.isInVenue:
                 self.ExitVenue()
 
-            #
             # Get capabilities from your node
-            #
-
             errorInNode = 0
             #haveValidNodeService = 0
+
             try:
-                #if self.nodeServiceUri != None:
-                #    try:
-                #        Client.Handle( self.nodeServiceUri ).IsValid()
-                #        haveValidNodeService = 1
-                #    except Client.InvalidHandleException:
-                #        log.exception("Invalid Node Service URI (%s)"
-                #                      % self.nodeServiceUri)
-                
-                    #
-                    # Retrieve list of node capabilities
-                    #
-                #if haveValidNodeService:
                 self.profile.capabilities = Client.Handle( self.nodeServiceUri ).get_proxy().GetCapabilities()
                 
             except Exception, e:
-                #
-                # This is a non fatal error, users should be notified but still enter the venue
-                #
+                # This is a non fatal error, users should be notified
+                # but still enter the venue
                 log.info("AccessGrid.VenueClient::Get node capabilities failed")
                 errorInNode = 1
                         

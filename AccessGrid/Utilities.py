@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.38 2003-08-15 21:19:13 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.39 2003-08-21 23:27:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -26,7 +26,7 @@ log = logging.getLogger("AG.Utilities")
 
 from AccessGrid.Platform import GetUserConfigDir
 
-def LoadConfig(fileName, config={}):
+def LoadConfig(fileName, config=dict(), separator="."):
     """
     Returns a dictionary with keys of the form <section>.<option>
     and the corresponding values.
@@ -38,25 +38,43 @@ def LoadConfig(fileName, config={}):
     cp.read(fileName)
     for sec in cp.sections():
         for opt in cp.options(sec):
-            rconfig[sec + "."+ opt] = string.strip(cp.get(sec, opt))
+            print "K: %s V: %s" %(sec + separator + opt, cp.get(sec, opt, 1))
+            rconfig[sec + separator + opt] = string.strip(cp.get(sec, opt, 1))
     return rconfig
 
-def SaveConfig(fileName, config):
+def SaveConfig(fileName, config, separator="."):
     """
     This method saves the current configuration out to the specified file.
     """
     cp = ConfigParser.ConfigParser()
     cp.optionxform = str
+    section = ""
+    option = ""
+    value = ""
     for k in config.keys():
-        (section, option) = string.split(k, '.')
+        if k.find(separator) != -1:
+            (section, option) = k.split(separator)
+        value = config[k]
+        if not cp.has_section(section):
+            try:
+                cp.add_section(section)
+            except:
+                print "Couldn't add section."
         try:
-            cp.set(section, option, config[k])
+            if option != "None":
+                cp.set(section, option, value)
         except:
-            cp.add_section(section)
-            cp.set(section, option, config[k])
+            print "Couldn't set option."
 
-    cp.write(file(fileName, 'w+'))
+    try:
+        outFile = file(fileName, 'w+')
+    except IOError, e:
+        print "Couldn't open file for writing, database mods lost."
+        return
 
+    cp.write(outFile)
+    outFile.close()
+    
 def formatExceptionInfo(maxTBlevel=5):
     cla, exc, trbk = sys.exc_info()
     excName = cla.__name__
@@ -302,55 +320,22 @@ except ImportError:
     import socket
     GetHostname = socket.getfqdn()
 
-def SetMimeTypeAssociation(mimetype, ext=None, desc=None, cmds=None):
-    """
-    This function registers information with the local machines mime types
-    database so it can be retrieved later.
-    """
-    defaultFile = os.path.join(GetUserConfigDir(), "mailcap")
-    file = open(defaultFile, 'a')
+# def StartDetachedProcess(cmd):
+#     """
+#     Start cmd as a detached process.
 
-    if cmds.has_key('print'):
-        printcmd = cmds['print']
-    else:
-        printcmd = ""
-    if cmds.has_key('open'):
-        opencmd = cmds['open']
-    else:
-        opencmd = ""
-    
-    line = "%s; " % mimetype
+#     We start the process using a command processor (cmd on windows,
+#     sh on linux).
+#     """
 
-    # if there's not even an open command, bail
-    if opencmd == "":
-        return
-    else:
-        line += "%s; " % opencmd
-    if printcmd != "":
-        line += "%s; " % printcmd
-    if desc != None:
-        line += "description=%s; " % desc
-    if ext != None:
-        line += "nametemplate=%%s%s" % ext
-
-    file.write(line)
-    
-def StartDetachedProcess(cmd):
-    """
-    Start cmd as a detached process.
-
-    We start the process using a command processor (cmd on windows,
-    sh on linux).
-    """
-
-    if sys.platform == "win32":
-        shell = os.environ['ComSpec']
-        shcmd = [shell, "/c", cmd]
-        os.spawnv(os.P_NOWAIT, shell, shcmd)
-    else:
-        shell = "sh"
-        shcmd = [shell, "-c", cmd]
-        os.spawnvp(os.P_NOWAIT, shell, shcmd)
+#     if AccessGrid.Platform.isWindows():
+#         shell = os.environ['ComSpec']
+#         shcmd = [shell, "/c", cmd]
+#         os.spawnv(os.P_NOWAIT, shell, shcmd)
+#     else:
+#         shell = "sh"
+#         shcmd = [shell, "-c", cmd]
+#         os.spawnvp(os.P_NOWAIT, shell, shcmd)
 
 def PathFromURL(URL):
     """

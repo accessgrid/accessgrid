@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.30 2003-08-15 21:18:47 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.31 2003-08-21 23:27:11 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,6 +15,9 @@ import sys
 import getpass
 
 import logging
+
+# Version independence, via new interface
+#from Toolkit import Version
 
 log = logging.getLogger("AG.Platform")
 
@@ -27,7 +30,9 @@ AGTK_INSTALL = 'AGTK_INSTALL'
 # Windows Defaults
 WIN = 'win32'
 WinGPI = "wgpi.exe"
-AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\2.1"
+# This gets updated with a call to get the version
+# AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\%s" % Version.AsString()
+AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\2.1.1"
 
 def isWindows():
     if sys.platform == WIN:
@@ -87,10 +92,8 @@ def GPIWin32():
 # Determine which grid-proxy-init we should use.
 #
 
-if sys.platform == WIN:
+if isWindows():
     GPI = GPIWin32
-elif sys.platform == OSX:
-    GPI = GPICmdline
 else:
     GPI = GPICmdline
     
@@ -118,11 +121,11 @@ def GetSystemConfigDir():
 
     if "" == configDir:
 
-        if sys.platform == WIN:
+        if isWindows():
             base = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
             configDir = os.path.join(base, "AccessGrid")
 
-        elif sys.platform == LINUX or sys.platform == OSX:
+        elif isLinux() or isOSX():
             configDir = AGTkBasePath
 
     return configDir
@@ -142,10 +145,10 @@ def GetUserConfigDir():
     """
     
     if "" == configDir:
-        if sys.platform == WIN:
+        if isWindows():
             base = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
             configDir = os.path.join(base, "AccessGrid")
-        elif sys.platform == LINUX or sys.platform == OSX:
+        elif isLinux() or isOSX():
             configDir = os.path.join(os.environ["HOME"],".AccessGrid")
 
     return configDir
@@ -177,14 +180,14 @@ def GetInstallDir():
     if installDir != "":
         return installDir;
 
-    if sys.platform == WIN:
+    if isWindows():
         try:
             AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
             installDir, type = _winreg.QueryValueEx(AG20,"InstallPath")
         except WindowsError:
             log.exception("Cannot open install directory reg key")
             installDir = ""
-    elif sys.platform == LINUX or sys.platform == OSX:
+    elif isLinux() or isOSX():
         installDir = "/usr/bin"
 
     return installDir
@@ -202,7 +205,7 @@ def GetSharedDocDir():
     if sharedDocDir != "":
         return sharedDocDir;
 
-    if sys.platform == WIN:
+    if isWindows():
         try:
             AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
             sharedDocDir, type = _winreg.QueryValueEx(AG20,"InstallPath")
@@ -211,7 +214,7 @@ def GetSharedDocDir():
             log.exception("Cannot open InstallPath directory reg key")
             sharedDocDir = ""
 
-    elif sys.platform == LINUX or sys.platform == OSX:
+    elif isLinux() or isOSX():
         sharedDocDir = "/usr/share/doc/AccessGrid/Documentation"
 
     return sharedDocDir
@@ -221,7 +224,7 @@ def GetTempDir():
     Return a directory in which temporary files may be written.
     """
 
-    if sys.platform == WIN:
+    if isWindows():
         return win32api.GetTempPath()
     else:
         return "/tmp"
@@ -233,7 +236,7 @@ def GetSystemTempDir():
     The system temp dir is guaranteed to not be tied to any particular user.
     """
 
-    if sys.platform == WIN:
+    if isWindows():
         winPath = win32api.GetWindowsDirectory()
         return os.path.join(winPath, "TEMP")
     else:
@@ -241,7 +244,7 @@ def GetSystemTempDir():
 
 def GetUsername():
 
-    if sys.platform == WIN:
+    if isWindows():
         try:
             user = win32api.GetUserName()
             user.replace(" ", "")
@@ -281,7 +284,7 @@ def GetFilesystemFreeSpace(path):
 
         freeBytes = blockSize * x.f_bavail
 
-    elif sys.platform == WIN:
+    elif isWindows():
 
         #
         # Otherwise use win32api.GetDiskFreeSpace.
@@ -302,7 +305,7 @@ def GetFilesystemFreeSpace(path):
 
     return freeBytes
         
-if sys.platform == WIN:
+if isWindows():
 
     def FindRegistryEnvironmentVariable(varname):
         """
@@ -437,6 +440,105 @@ def Win32RegisterMimeType(mimeType, extension, fileType, description, cmds):
     except EnvironmentError, e:
         log.debug("Couldn't open registry for mime registration!")
 
+def Win32GetMimeCommands(filename = None, mimeType = None, ext = None):
+    """
+    This gets the mime commands from one of the three types of specifiers
+    windows knows about. Depending on which is passed in the following
+    trail of information is retrieved:
+
+    1. "HKCR\MIME\Database\Content Type" contains subkeys for all known MIME
+    types, each key has a string value "Extension" which gives (dot preceded)
+    extension for the files of this MIME type.
+    
+    2. "HKCR\.ext" contains
+    a) unnamed value containing the "filetype"
+    b) value "Content Type" containing the MIME type
+    
+    3. "HKCR\filetype" contains
+    a) unnamed value containing the description
+    b) subkey "DefaultIcon" with single unnamed value giving the icon index in
+    an icon file
+    c) shell\open\command and shell\open\print subkeys containing the commands
+    to open/print the file (the positional parameters are introduced by %1,
+    %2, ... in these strings, we change them to %s ourselves)
+    """
+    cdict = dict()
+    filetype = None
+    extension = ext
+    if mimeType != None:
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
+                                  "MIME\Database\Content Type\%s" % mimeType)
+            extension, type = _winreg.QueryValueEx(key, "Extension")
+            _winreg.CloseKey(key)
+        except WindowsError:
+            log.exception("Couldn't open registry for mime types: %s",
+                          mimeType)
+            return cdict
+
+    if extension != None:
+        if extension[0] != ".":
+            extension = ".%s" % extension
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, "%s" % extension)
+            filetype, type = _winreg.QueryValueEx(key, "")
+            _winreg.CloseKey(key)
+        except WindowsError:
+            log.exception("Couldn't open registry for file extension: %s.",
+                          extension)
+            return cdict
+
+    if filetype != None:
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
+                                  "%s\shell" % filetype)
+            nCommands = _winreg.QueryInfoKey(key)[0]
+            defaultCommand = _winreg.QueryValue(key, "")
+            
+            for i in range(0,nCommands-1):
+                commandName = _winreg.EnumKey(key, i)
+                command = None
+                # Always use caps for names to make life easier
+                try:
+                    ckey = _winreg.OpenKey(key, "%s\command" % commandName)
+                    command, type = _winreg.QueryValueEx(ckey,"")
+                    _winreg.CloseKey(ckey)
+                except:
+                    log.exception("Couldn't get command for name: <%s>",
+                                  commandName)
+                commandName = commandName.capitalize()
+                cdict[commandName] = command
+
+            _winreg.CloseKey(key)
+            
+        except EnvironmentError:
+            log.exception("Couldn't retrieve list of commands: (mimeType: %s) (fileType: %s)", mimeType, filetype)
+            return cdict
+
+    return cdict
+
+def Win32GetMimeType(extension = None):
+    mimeType = None
+    if extension != None:
+        if extension[0] != ".":
+            extension = ".%s" % extension
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, "%s" % extension)
+            mimeType, type = _winreg.QueryValueEx(key, "Content Type")
+            _winreg.CloseKey(key)
+        except WindowsError:
+            log.exception("Couldn't open registry for file extension: %s.",
+                          extension)
+            return mimeType
+        
+    return mimeType
+    
+if isWindows():
+    GetMimeCommands = Win32GetMimeCommands
+    GetMimeType = Win32GetMimeType
+else:
+    GetMimeCommands = lambda : None
+    GetMimeType = lambda : None
 
 #
 # Unix Daemonize, this is not appropriate for Win32
@@ -464,7 +566,7 @@ def DaemonizeUnix(self):
 # Determine which daemonize we should use
 #
 
-if sys.platform == WIN:
+if isWindows():
     Daemonize = lambda : None
 else:
     Daemonize = DaemonizeUnix
@@ -514,7 +616,7 @@ def SetRtpDefaultsUnix( profile ):
 # Determine which SetRtpInfo we should use
 #
 
-if sys.platform == WIN:
+if isWindows():
     SetRtpDefaults = SetRtpDefaultsWin
 else:
     SetRtpDefaults = SetRtpDefaultsUnix

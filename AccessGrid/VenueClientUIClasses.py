@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.233 2003-08-21 20:36:43 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.234 2003-08-21 23:27:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -17,12 +17,12 @@ import cPickle
 import threading
 import socket
 from wxPython.wx import *
-from wxPython.wx import wxTheMimeTypesManager as mtm
 from wxPython.wx import wxFileTypeInfo
 import string
 import webbrowser
 import traceback
 import cPickle
+import re
 
 log = logging.getLogger("AG.VenueClientUIClasses")
 
@@ -30,11 +30,11 @@ from AccessGrid import icons
 from AccessGrid import Toolkit
 from AccessGrid.VenueClient import VenueClient, EnterVenueException
 from AccessGrid import Utilities
-from AccessGrid.UIUtilities import AboutDialog, MessageDialog, GetMimeCommands, ErrorDialog
+from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
+from AccessGrid.Platform import GetMimeCommands, GetMimeType
 from AccessGrid.ClientProfile import *
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription
-from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.Platform import GetTempDir, GetInstallDir, GetSharedDocDir
 from AccessGrid.Platform import isWindows, isLinux, isOSX
@@ -305,25 +305,6 @@ class VenueClientFrame(wxFrame):
 	self.personalDataEntryMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties...",
                              "View information about the selected data")
 
-
-        self.serviceEntryMenu = wxMenu()
-        self.serviceEntryMenu.Append(self.ID_VENUE_SERVICE_OPEN,
-                                     "Open",  "Launch service client")
-        self.serviceEntryMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete",
-                                "Remove selected service")
-        self.serviceEntryMenu.AppendSeparator()
-        self.serviceEntryMenu.Append(self.ID_VENUE_SERVICE_PROPERTIES,"Properties...",
-                                     "View information about the selected service")
-
-        self.applicationEntryMenu = wxMenu()
-        self.applicationEntryMenu.Append(self.ID_VENUE_APPLICATION_JOIN,"Join",
-                                    "Join application")
-        self.applicationEntryMenu.Append(self.ID_VENUE_APPLICATION_DELETE, "Delete",
-                                    "Delete application")
-        self.applicationEntryMenu.AppendSeparator()
-        self.applicationEntryMenu.Append(self.ID_VENUE_APPLICATION_PROPERTIES,"Properties...",
-                              "View information about the selected application")
-
         # ---- Menus for headings
         self.dataHeadingMenu = wxMenu()
         self.dataHeadingMenu.Append(self.ID_VENUE_DATA_ADD,"Add...",
@@ -350,13 +331,6 @@ class VenueClientFrame(wxFrame):
 
       	self.serviceHeadingMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
         
-        self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_JOIN,
-                                         false)
-        self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_DELETE,
-                                         false)
-        self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_PROPERTIES,
-                                         false)
-                 
     def ShowMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
@@ -369,11 +343,6 @@ class VenueClientFrame(wxFrame):
 
       	self.serviceHeadingMenu.Enable(self.ID_VENUE_SERVICE_ADD, true)
 
-        self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_JOIN, true)
-        self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_DELETE,
-                                         true)
-        self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_PROPERTIES, true)
-         
     def __setEvents(self):
         EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_TOP,
                                self.ID_WINDOW_BOTTOM, self.OnSashDrag)
@@ -419,7 +388,7 @@ class VenueClientFrame(wxFrame):
                  lambda event, url=self.manual_url: self.OpenHelpURL(url))
 
         EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
-        EVT_MENU(self, self.ID_VENUE_APPLICATION_JOIN, self.JoinApp)
+        EVT_MENU(self, self.ID_VENUE_APPLICATION_JOIN, self.OpenApp)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_DELETE, self.RemoveApp)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_PROPERTIES, self.OpenApplicationProfile)
 
@@ -886,26 +855,16 @@ class VenueClientFrame(wxFrame):
         data = self.contentListPanel.tree.GetItemData(id).GetData()
         if(data != None and isinstance(data, DataDescription)):
             name = data.name
-            tfilepath = os.path.join(GetTempDir(), name)
-
-            self.app.SaveFile(data, tfilepath)
-
-            commands = GetMimeCommands(filename = tfilepath,
+            commands = GetMimeCommands(filename = data.name,
                                        ext = name.split('.')[-1])
             if commands == None:
                 message = ("No client registered for the selected data")
                 dlg = MessageDialog(self, message)
                 log.debug("VenueClientFrame.OpenData: %s"%message)
             else:
-                try:
-                    if commands.has_key('open'):
-                        log.debug("VenueClientFrame.OpenData: executing cmd: %s" % commands['open'])
-                        if commands['open'][0:6] == "WX_DDE":
-                            pid = wxExecute(commands['open'])
-                        else:
-                            pid = wxShell(commands['open'])
-                except Exception, e:
-                    MessageDialog(None, "Could not open file", "Open Error", style = wxOK|wxICON_ERROR)
+                if commands.has_key('Open'):
+                    cmd = commands['Open']
+                    self.StartCmd(cmd, data)
         else:
             self.__showNoSelectionDialog("Please, select the data you want to open")     
     
@@ -970,27 +929,45 @@ class VenueClientFrame(wxFrame):
             menuEntryLabel = "Start " + app.name
             appId = wxNewId()
             self.applicationMenu.Append(appId,menuEntryLabel,menuEntryLabel)
-            callback = lambda event,theApp=app: self.StartApp(event,theApp)
+            callback = lambda event,theApp=app: self.StartApp(theApp, event)
             EVT_MENU(self, appId, callback)
 
     def EnableAppMenu(self, flag):
         for entry in self.applicationMenu.GetMenuItems():
             self.applicationMenu.Enable( entry.GetId(), flag )
 
-    def StartApp(self,event,app):
-        self.app.StartApp( app )
+    def StartApp(self, app, event=None):
+        """
+        Start the specified application.  This method creates the application
+        in the venue, and then joins it by starting the appropriate client
 
-    def JoinApp(self,event):
+        **Arguments:**
+        
+        *app* The ApplicationDescription of the application we want to start
+        """
+        log.debug("Creating application: %s" % app.name)
+        appDesc = self.app.venueClient.client.CreateApplication( app.name,
+                                                                 app.description,
+                                                                 app.mimeType )
+        self.RunApp(appDesc)
+        
+    def OpenApp(self, event):
+        """
+        """
         id = self.contentListPanel.tree.GetSelection()
-        app =  self.contentListPanel.tree.GetItemData(id).GetData()
-        if(app != None and isinstance(app, ApplicationDescription)):
-            try:
-                self.app.JoinApp( app )
-            except Exception, e:
-                MessageDialog(None, "Could not join application", "Join Application Error", style = wxOK|wxICON_ERROR)
+        data = self.contentListPanel.tree.GetItemData(id).GetData()
+        if data != None and isinstance(data, ApplicationDescription):
+            self.RunApp(data)
         else:
-            self.__showNoSelectionDialog("Please, select the application you want to join")     
+            self.__showNoSelectionDialog("Please, select the data you want to open")     
     
+    def RunApp(self, appDesc, cmd='Open'):
+        appdb = Toolkit.GetApplication().GetAppDatabase()
+        
+        cmd = appdb.GetCommandLine(appDesc.mimeType, cmd)
+
+        self.contentListPanel.StartCmd(cmd, appDesc)
+        
     def OpenService(self,event):
         id = self.contentListPanel.tree.GetSelection()
         service =  self.contentListPanel.tree.GetItemData(id).GetData()
@@ -1311,8 +1288,8 @@ class VenueList(wxScrolledWindow):
         self.EnableScrolling(true, true)
                             
     def RemoveVenueDoor(self):
-        print '----------------- remove venue door'
-
+        pass
+    
     def CleanUp(self):
         for item in self.doorsAndLabelsList:
             self.box.Remove(item)
@@ -1838,16 +1815,19 @@ class ContentListPanel(wxPanel):
                     self.parent.OpenMyProfileDialog(None)
                 else:
                     self.parent.OpenParticipantProfile(None)
+
+            else:
+                openCmd = None
+                if isinstance(item, DataDescription):
+                    ext = item.name.split('.')[-1]
+                    commands = GetMimeCommands(filename = item.name, ext = ext)
+                    openCmd = commands['Open']
+                else:
+                    appdb = Toolkit.GetApplication().GetAppDatabase()
+                    openCmd = appdb.GetCommandLine(item.mimeType, 'Open')
                 
-            elif isinstance(item, DataDescription):
-                self.parent.OpenData(None)
-                
-            elif isinstance(item, ServiceDescription):
-                self.parent.OpenService(None)
-                
-            elif isinstance(item, ApplicationDescription):
-                self.parent.JoinApp(None)
-                
+                self.StartCmd(openCmd, item)
+               
     def OnRightClick(self, event):
         self.x = event.GetX()
         self.y = event.GetY()
@@ -1877,8 +1857,8 @@ class ContentListPanel(wxPanel):
                 self.PopupMenu(menu, wxPoint(self.x,self.y))
 
             elif isinstance(item, ApplicationDescription):
-                self.PopupMenu(self.parent.applicationEntryMenu,
-                               wxPoint(self.x, self.y))
+                menu = self.BuildAppMenu(event, item)
+                self.PopupMenu(menu, wxPoint(self.x, self.y))
 
             elif isinstance(item, DataDescription):
                 menu = self.BuildDataMenu(event, item)
@@ -1902,21 +1882,25 @@ class ContentListPanel(wxPanel):
         Programmatically build a menu based on the mime based verb
         list passed in.
         """
-       
+        # This is to flag between using the system OpenShared command
+        # and the AG defined one (in case of collision we use the system)
+        # useLocal = 0
+        
         # Path where temporary file will exist if opened/used.
         a_file = os.path.join(GetTempDir(), item.name)
-
-        commands = GetMimeCommands(filename = a_file,
-                                   ext = item.name.split('.')[-1])
+        ext = item.name.split('.')[-1]
+        
+        commands = GetMimeCommands(filename = a_file, ext = ext)
 
         menu = wxMenu()
 
         # We always have open
         id = wxNewId()
         menu.Append(id, "Open", "Open this data.")
-        if commands != None and commands.has_key('open'):
+
+        if commands != None and commands.has_key('Open'):
             EVT_MENU(self, id, lambda event,
-                     cmd=commands['open'], itm=item: self.StartCmd(cmd, item=itm))
+                     cmd=commands['Open'], itm=item: self.StartCmd(cmd, item=itm))
         else:
             text = "You have nothing configured to open this data."
             title = "Notification"
@@ -1924,7 +1908,6 @@ class ContentListPanel(wxPanel):
                      MessageDialog(self, text, title,
                                    style = wxOK|wxICON_INFORMATION))
 #            EVT_MENU(self, id, lambda event, item=item:
-#                     self.MakeAssociation(event, item))
 
         # We always have save for data
         id = wxNewId()
@@ -1939,11 +1922,28 @@ class ContentListPanel(wxPanel):
         # Do the rest
         if commands != None:
             for key in commands.keys():
-                if key != 'open':
+                if key != 'Open':
                     id = wxNewId()
                     menu.Append(id, string.capwords(key))
                     EVT_MENU(self, id, lambda event,
                              cmd=commands[key], itm=item: self.StartCmd(cmd, item=itm))
+#                elif key == 'OpenShared':
+#                    useLocal = 1
+
+#         appdb = Toolkit.GetApplication().GetAppDatabase()
+#         mimeType = GetMimeType(ext)
+#         mt2 = appdb.GetMimeType(extension = ext)
+#         print "MIMETYPE: <%s> <%s>" % (mimeType, mt2)
+#         cmdLine = appdb.GetCommandLine(mimeType, 'OpenShared')
+#         print "MTL: ", appdb.ListMimeTypes()
+#         print "CMDLINE: %s" % cmdLine
+
+#         if not useLocal:
+#             id = wxNewId()
+#             menu.Append(id, string.capwords('Open Shared'))
+#             EVT_MENU(self, id, lambda event,
+#                      cmd=cmdLine, itm=item: self.StartCmd(cmd, item=item,
+#                                                           name='OpenShared'))
 
         menu.AppendSeparator()
 
@@ -1960,16 +1960,74 @@ class ContentListPanel(wxPanel):
         Programmatically build a menu based on the mime based verb
         list passed in.
         """
-        commands = GetMimeCommands(filename = item.uri, type = item.mimeType)
+       
+        # Path where temporary file will exist if opened/used.
+        a_file = os.path.join(GetTempDir(), item.name)
+        ext = item.name.split('.')[-1]
+        
+        commands = GetMimeCommands(filename = a_file,
+                                   mimeType = item.mimeType, ext = ext)
+
+        menu = wxMenu()
+
+        id = wxNewId()
+        menu.Append(id, "Open", "Open this data.")
+
+        if commands != None and commands.has_key('Open'):
+            EVT_MENU(self, id, lambda event,
+                     cmd=commands['Open'], itm=item: self.StartCmd(cmd, item=itm))
+        else:
+            text = "You have nothing configured to open this data."
+            title = "Notification"
+            EVT_MENU(self, id, lambda event, text=text, title=title:
+                     MessageDialog(self, text, title,
+                                   style = wxOK|wxICON_INFORMATION))
+#            EVT_MENU(self, id, lambda event, item=item:
+
+        # We always have Remove
+        id = wxNewId()
+        menu.Append(id, "Delete", "Delete this data from the venue.")
+        EVT_MENU(self, id, lambda event: self.parent.RemoveService(event))
             
+        # Do the rest
+        if commands != None:
+            for key in commands.keys():
+                if key != 'Open':
+                    id = wxNewId()
+                    menu.Append(id, string.capwords(key))
+                    EVT_MENU(self, id, lambda event,
+                             cmd=commands[key], itm=item: self.StartCmd(cmd, item=itm))
+
+        menu.AppendSeparator()
+
+        # We always have properties
+        id = wxNewId()
+        menu.Append(id, "Properties", "View the details of this data.")
+        EVT_MENU(self, id, lambda event, item=item:
+                 self.LookAtProperties(item))
+
+        return menu
+    def BuildAppMenu(self, event, item):
+        """
+        Programmatically build a menu based on the mime based verb
+        list passed in.
+        """
+
+        appdb = Toolkit.GetApplication().GetAppDatabase()
+        commands = appdb.GetCommandNames(mimeType = item.mimeType)
+
+        log.info("Got commands: (%s) %s" % (item.mimeType, str(commands)))
+        
         menu = wxMenu()
 
         # We always have open
         id = wxNewId()
         menu.Append(id, "Open", "Open this service.")
-        if commands != None and commands.has_key('open'):
-            EVT_MENU(self, id, lambda event, cmd=commands['open']:
-                     self.StartCmd(cmd))
+        if commands != None and 'Open' in commands:
+            EVT_MENU(self, id, lambda event, cmd='Open':
+                     self.StartCmd(appdb.GetCommandLine(item.mimeType,
+                                                        'Open'),
+                                   item=item))
         else:
             text = "You have nothing configured to open this service."
             title = "Notification"
@@ -1982,15 +2040,15 @@ class ContentListPanel(wxPanel):
         # We always have Remove
         id = wxNewId()
         menu.Append(id, "Delete", "Delete this service.")
-        EVT_MENU(self, id, lambda event: self.parent.RemoveService(event))
+        EVT_MENU(self, id, lambda event: self.parent.RemoveApp(event))
             
         # Do the rest
         if commands != None:
-            for key in commands.keys():
-                if key != 'open':
+            for key in commands:
+                if key != 'Open':
                     id = wxNewId()
                     menu.Append(id, string.capwords(key))
-                    EVT_MENU(self, id, lambda event, cmd=commands[key]:
+                    EVT_MENU(self, id, lambda event, cmd=key:
                              self.StartCmd(cmd))
 
         menu.AppendSeparator()
@@ -2016,33 +2074,76 @@ class ContentListPanel(wxPanel):
             serviceView.SetDescription(desc)
             serviceView.ShowModal()
             serviceView.Destroy()
+        elif isinstance(desc, ApplicationDescription):
+            serviceView = ServiceDialog(self, -1, "Application Properties")
+            serviceView.SetDescription(desc)
+            serviceView.ShowModal()
+            serviceView.Destroy()
                 
-    def StartCmd(self, command, item=None):
+    def StartCmd(self, command, item=None, namedVars=None):
         """
         """
+        localFilePath = None
+
+        if namedVars == None:
+            namedVars = dict()
+
+        if item != None:
+            ext = item.name.split('.')[-1]
+            appdb = Toolkit.GetApplication().GetAppDatabase()
+            mimeType = appdb.GetMimeType(extension = ext)
 
         # If item is passed in, download the filename specified in it.
-        if(item != None):
-            a_file = os.path.join(GetTempDir(), item.name)
-            self.app.SaveFileNoProgress(item, a_file)
+        if item != None and isinstance(item, DataDescription):
+            localFilePath = os.path.join(GetTempDir(), item.name)
+            self.app.SaveFileNoProgress(item, localFilePath)
 
-        print "Command: %s" % command
-        wxExecute(command)
-        
-    def MakeAssociation(self, event, item):
-        """
-        """
-        fileType = mtm.GetFileTypeFromExtension(item.name.split('.')[-1])
-        if fileType == None:
-            app = SelectAppDialog(self, -1, "Select an Application...",
-                                  item.name)
+            # Fix odd commands
+            if command.find("%1") == -1:
+                command = command.replace("%1", "%(localFilePath)s")
+            elif command.find("%(localFilePath)s") == -1:
+                command += " \"%(localFilePath)s\""
         else:
-            app = SelectAppDialog(self, -1, "Select an Application...",
-                                  fileType.GetMimeType())
+            if command.find("%1") != -1:
+                command = command.replace("%1", "%(appUrl)s")
+            elif command.find("%(appUrl)s") == -1:
+                command += " \"%(appUrl)s\""
+            
+        namedVars['appName'] = item.name
+        namedVars['appDesc'] = item.description
+        namedVars['appMimeType'] = mimeType
+        namedVars['venueDataUrl'] = item.uri
+        namedVars['localFilePath'] = localFilePath
+        namedVars['appUrl'] = item.uri
 
-        app.ShowModal()
-        app.Destroy()
-    
+        # Gross KLUDGE for open shared
+#         if name == 'OpenShared':
+#             appName = appdb.GetNameForMimeType(mimeType)
+#             appDesc = self.app.venueClient.client.CreateApplication(
+#                 appName, None, mimeType )
+#             namedVars['appUrl'] = appDesc.uri
+#         else:
+#             namedVars['appUrl'] = item.uri
+
+        # We're doing some icky munging to make our lives easier
+        # We're only doing this for a single occurance of a windows
+        # environment variable
+        prog = re.compile("\%[a-zA-Z0-9\_]*\%")
+        result = prog.match(command)
+        if result != None:
+            subStr = result.group()
+
+            realCommand = command.replace(subStr,
+                                          "DORKYREPLACEMENT") % namedVars
+            realCommand = realCommand.replace("DORKYREPLACEMENT", subStr)
+            if isWindows():
+                shell = os.environ['ComSpec']
+                realCommand = "%s %s %s" % (shell, "/c", realCommand)
+        else:
+            realCommand = command % namedVars
+            
+        self.app.venueClient.processManager.start_process(realCommand, [])
+        
     def CleanUp(self):
         for index in self.participantDict.values():
             self.tree.Delete(index)

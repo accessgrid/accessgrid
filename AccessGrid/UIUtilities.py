@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.26 2003-08-20 14:53:42 eolson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.27 2003-08-21 23:27:11 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ try:
 except:
     pass
 
-from wxPython.wx import wxTheMimeTypesManager as mtm
+#from wxPython.wx import wxTheMimeTypesManager as mtm
 from wxPython.wx import wxFileTypeInfo
 from wxPython.lib.throbber import Throbber
 from wxPython.wx import *
@@ -160,82 +160,36 @@ class AppSplash(wxSplashScreen):
                 
     def OnClose(self, evt):
         evt.Skip()
-
-def InitMimeTypes(file):
-    """
-    This function is used to load in our AG specific mimetypes.
-    """
-    success = 0
-
-    # This only works for augmenting the mailcap entries on Linux
-    if os.path.isfile(file):
-        success = mtm.ReadMailcap(file, 1)
-    else:
-        return 0
     
-    # For windows we have cope with the fact that it's the registry
-    # that's dealt with during the "creating new associations" sequence
-    # for now we load the mailcap file and stuff things in the registry
-    if sys.platform == 'win32':
-        fp = open(file)
-        caps = mailcap.readmailcapfile(fp)
-        fp.close()
-
-        ftl = []
-        for k in caps.keys():
-            opencmd = u""
-            printcmd = u""
-            desc = u""
-            ext = None
-            cmds = []
-            stuff = caps[k][0]
-            for k2 in stuff.keys():
-                if k2 == 'view':
-                    cmds.append(('open', stuff[k2].replace('%s', '%1'), ''))
-                elif k2 == 'description':
-                    desc = stuff[k2]
-                elif k2 == 'nametemplate':
-                    parts = stuff[k2].split('.')
-                    if len(parts) > 1:
-                        ext = "." + parts[1]
-                elif k2 == 'print':
-                    cmds.append((k2, stuff[k2].replace('%s', '%1'), ''))
-
-            fileType = k.split('/')[1]
-            fileType.replace('-', '.')
-            Win32RegisterMimeType(k, ext, fileType, desc, cmds)
-                    
-    return success
+# def GetMimeCommands(filename = None, type = None, ext = None):
+#      """
+#      This function returns anything in the local mime type database for the
+#      type or extension specified.
+#      """
+#      cdict = dict()
     
-def GetMimeCommands(filename = None, type = None, ext = None):
-    """
-    This function returns anything in the local mime type database for the
-    type or extension specified.
-    """
-    cdict = dict()
-    
-    if type != None:
-        fileType = mtm.GetFileTypeFromMimeType(type)
-    elif ext != None:
-        fileType = mtm.GetFileTypeFromExtension(ext)
+#      if type != None:
+#          fileType = mtm.GetFileTypeFromMimeType(type)
+#      elif ext != None:
+#          fileType = mtm.GetFileTypeFromExtension(ext)
 
-    if fileType != None and filename != None:
-        mimeType = fileType.GetMimeType()
-        if mimeType != None:
-            cmds = fileType.GetAllCommands(filename, mimeType)
-            if None == cmds:
-                verbs = []
-                cmdlines = []
-            else:
-                verbs, cmdlines = cmds
-            for i in range(0, len(verbs)):
-                cdict[string.lower(verbs[i])] = cmdlines[i]
-        else:
-            cdict = None
-    else:
-        cdict = None
+#      if fileType != None and filename != None:
+#          mimeType = fileType.GetMimeType()
+#          if mimeType != None:
+#              cmds = fileType.GetAllCommands(filename, mimeType)
+#              if None == cmds:
+#                  verbs = []
+#                  cmdlines = []
+#              else:
+#                  verbs, cmdlines = cmds
+#              for i in range(0, len(verbs)):
+#                  cdict[string.lower(verbs[i])] = cmdlines[i]
+#          else:
+#              cdict = None
+#      else:
+#          cdict = None
 
-    return cdict
+#      return cdict
 
 def ProgressDialogTest():
     max = 100

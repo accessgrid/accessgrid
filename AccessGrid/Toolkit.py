@@ -5,13 +5,15 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.8 2003-08-20 14:54:16 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.9 2003-08-21 23:27:11 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import logging
 import os
+
+from AppDb import AppDb
 
 log = logging.getLogger("AG.toolkit")
 
@@ -147,6 +149,7 @@ class Application:
         Application.instance = self
 
         self.userConfigDir = Platform.GetUserConfigDir()
+        
         if not os.path.exists(self.userConfigDir):
             try:
                 os.makedirs(self.userConfigDir)
@@ -155,6 +158,8 @@ class Application:
                               self.userConfigDir)
 
         log.debug("userConfigDir: %s", self.userConfigDir)
+
+        self.AppDb = AppDb()
 
     def Initialize(self):
         """
@@ -179,6 +184,9 @@ class Application:
         else:
             return str(ident.GetSubject())
 
+    def GetAppDatabase(self):
+        return self.AppDb
+    
 class CmdlineApplication(Application):
     """
     An application that's going to run without a gui.
