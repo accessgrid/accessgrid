@@ -3,12 +3,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.12 2004-03-24 22:36:32 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.13 2004-03-30 17:11:54 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.12 2004-03-24 22:36:32 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.13 2004-03-30 17:11:54 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -38,6 +38,7 @@ log = Log.GetLogger(Log.VenueClientController)
 
 class NotAuthorizedError(Exception):
     pass
+    
 
 
 class VenueClientController:
@@ -54,53 +55,6 @@ class VenueClientController:
         self.processManager = ProcessManager()
         
 
-
-    ##########################################################################
-    #
-    # Private Methods
-
-    def __SetHistory(self, uri, back):
-        """
-        This method sets the history list, which stores visited
-        venue urls used by the back button.  A venue URL does not get
-        saved if the back (<<) button is clicked.
-
-        **Arguments:**
-        
-        *uri* A string containing the venue address we want to add to the history list
-        *back* Boolean value, true if the back button was pressed, else false.
-        """
-        log.debug("Set history url: %s " %uri)
-        length = len(self.history)
-        last = length -1
-
-        if(length>0):
-            
-            #
-            # Clicked the "Go" button
-            #
-            if not back:
-                #
-                # Just add the url once even if we press "Go" several times
-                #
-                if(self.history[last] != uri):
-                    self.history.append(uri)
-            #
-            # Clicked the "<<" button
-            #
-            else:
-                del self.history[last] # clicked back button
-
-        elif(uri is not None):
-            #
-            # If this is the first time connecting to a venue, just add the url
-            #
-            self.history.append(uri)
-            
-            
-    # end Private Methods
-    #
-    ##########################################################################
 
     ##########################################################################
     #
