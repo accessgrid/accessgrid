@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.21 2003-09-10 22:02:53 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.22 2003-09-10 22:11:47 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -28,7 +28,7 @@ log = logging.getLogger("AG.CertificateManagerWXGUI")
 from OpenSSL_AG import crypto
 from wxPython.wx import *
 from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
-from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
+from AccessGrid.UIUtilities import MessageDialog, ErrorDialog, ErrorDialogWithTraceback
 
 from AccessGrid import CertificateManager
 from AccessGrid import CertificateRepository
@@ -183,6 +183,11 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         certMenu.AppendSeparator()
 
         i = wxNewId()
+        certMenu.Append(i, "Import Default Globus Certificates")
+        EVT_MENU(win, i,
+                 lambda event, win=win, self=self: self.ImportGlobusDefaultEnv(event, win))
+
+        i = wxNewId()
         certMenu.Append(i, "Request a certificate")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OpenCertRequestDialog(event, win))
@@ -217,6 +222,24 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                                 self.certificateManager)
         dlg.ShowModal()
         dlg.Destroy()
+
+    def ImportGlobusDefaultEnv(self, event, win):
+        certRepo = self.certificateManager.GetCertificateRepository()
+        try:
+            self.certificateManager.InitRepoFromGlobus(certRepo)
+            self.certificateManager.GetUserInterface().InitGlobusEnvironment()
+
+            dlg = wxMessageDialog(None, "Globus environment imported successfully.",
+                                  "Import successful",
+                                  style = wxOK | wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+        except:
+            ErrorDialogWithTraceback(None,
+                                     "Error importing Globus environment",
+                                     "Error importing Globus environment")
+                                     
+            
 
     def OpenCertRequestDialog(self, event, win):
         self.RunCertificateRequestTool(win)
