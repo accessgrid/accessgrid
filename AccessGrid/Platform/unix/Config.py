@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.42 2004-07-12 15:32:41 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.43 2004-07-12 18:47:59 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.42 2004-07-12 15:32:41 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.43 2004-07-12 18:47:59 judson Exp $"
 
 import os
 import mimetypes
@@ -17,6 +17,7 @@ import mailcap
 import socket
 import getpass
 import shutil
+import resource
 
 from pyGlobus import security
 
@@ -688,7 +689,41 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         it. This helps track the effect of the AG Toolkit on the system.
         """
         perfData = dict()
-        
+
+        names = [
+            "User Time",
+            "System Time",
+            "Max Memory Size",
+            "Shared Memory Size",
+            "Unshared Memory Size",
+            "Unshared Stack Size",
+            "Page Faults (No I/O)",
+            "Page Faults (I/O)",
+            "Swap Outs",
+            "Block Input Ops",
+            "Block Output Ops",
+            "Messages Sent",
+            "Messages Received",
+            "Signals Received",
+            "Voluntary Context Switches",
+            "Involuntary Context Switches"
+            ]
+
+        try:
+            ru = resource.getrusage(resource.RUSAGE_BOTH)
+            perfData["Stats"] = "Both"
+        except ValueError, e:
+            try:
+                ru = resource.getrusage(resource.RUSAGE_SELF)
+                perfData["Stats"] = "Self"
+            except error, e:
+                log.exception("Error getting performance data")
+                ru = None
+
+        if ru is not None:
+            for i in range(0, 16):
+                perfData[names[i]] = ru[i]
+                
         return perfData
 
 class MimeConfig(AccessGrid.Config.MimeConfig):
