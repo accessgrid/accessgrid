@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.23 2003-02-11 22:21:29 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.24 2003-02-12 21:47:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -158,7 +158,8 @@ class VenueClientFrame(wxFrame):
         self.__doLayout()
 
     def OpenSetNodeUrlDialog(self, event = None):
-        setNodeUrlDialog = UrlDialog(self, -1, "Please, specify node service URL")
+
+        setNodeUrlDialog = UrlDialog(self, -1, "Please, specify node service URL", self.app.nodeServiceUri)
 
         if setNodeUrlDialog.ShowModal() == wxID_OK:
             self.app.SetNodeUrl(setNodeUrlDialog.address.GetValue())
@@ -199,9 +200,10 @@ class VenueClientFrame(wxFrame):
 
     def OpenNodeMgmtApp(self, event):
         frame = NodeManagementClientFrame(self, -1, "Access Grid Node Management")
+        frame.AttachToNode( self.app.nodeServiceUri )
         if frame.Connected():
             frame.Update()
-        frame.Show(true)
+            frame.Show(true)
                 
     def OpenDataProfileDialog(self, event):
         self.contentList.tree.GetSelection()
@@ -688,14 +690,14 @@ class ConnectToServerDialog(wxDialog):
         self.SetAutoLayout(1)
 
 class UrlDialog(wxDialog):
-    def __init__(self, parent, id, title):
+    def __init__(self, parent, id, title, address=""):
         wxDialog.__init__(self, parent, id, title)
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         info = "Please, enter venue URL address"
         self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
         self.addressText = wxStaticText(self, -1, "Address: ", style=wxALIGN_LEFT)
-        self.address = wxTextCtrl(self, -1, "", size = wxSize(300,20))
+        self.address = wxTextCtrl(self, -1, address, size = wxSize(300,20))
         self.__doLayout()
 
     def __doLayout(self):
