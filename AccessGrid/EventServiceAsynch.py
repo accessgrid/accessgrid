@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.1 2003-05-20 19:40:55 olson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.2 2003-05-20 20:09:22 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,7 +29,7 @@ from AccessGrid.Events import ConnectEvent, DisconnectEvent
 from AccessGrid.GUID import GUID
 
 log = logging.getLogger("AG.VenueServer")
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 
 class ConnectionHandler:
     """
