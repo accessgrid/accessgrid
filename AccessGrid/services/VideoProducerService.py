@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.3 2003-02-12 17:11:17 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.4 2003-02-14 20:06:15 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -37,6 +37,8 @@ proc user_hook {} {
 
 class VideoProducerService( AGService ):
 
+   encodings = [ "h261" ]
+
    def __init__( self ):
       print self.__class__, ".init"
       AGService.__init__( self )
@@ -50,6 +52,7 @@ class VideoProducerService( AGService ):
 
       # note: the datatype of the port parameter changes when a resource is set!
       self.configuration["Port"] = ValueParameter( "Port", None ) 
+      self.configuration["Encoding"] = OptionSetParameter( "Encoding", "h261", VideoProducerService.encodings )
       self.configuration["Bandwidth"] = RangeParameter( "Bandwidth", 800, 0, 3072 ) 
       self.configuration["Frame Rate"] = RangeParameter( "Frame Rate", 25, 1, 30 ) 
       self.configuration["Stream Name"] = ValueParameter( "Stream Name", "Video" )
@@ -71,8 +74,7 @@ class VideoProducerService( AGService ):
          f = open(startupfile,"w")
          f.write( vicstartup % (self.configuration["Bandwidth"].value, 
                                     self.configuration["Frame Rate"].value, 
-#FIXME - encoding is hard-coded
-                                    "h261", 
+                                    self.configuration["Encoding"].value, 
                                     vicDevice,
                                     self.configuration["Port"].value  ) )
          f.close()
@@ -88,10 +90,13 @@ class VideoProducerService( AGService ):
          options.append( startupfile ) 
          options.append( "-C" )
          options.append( self.configuration["Stream Name"].value )
-         if self.streamDescription.encryptionKey != None:
+         if self.streamDescription.encryptionKey != 0:
             options.append( "-K" )
             options.append( self.streamDescription.encryptionKey )
-         options.append( '%s/%d/%d' % ( self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl ) )
+         options.append( "-t" )
+         options.append( '%d' % (self.streamDescription.location.ttl) )
+         options.append( '%s/%d' % ( self.streamDescription.location.host, 
+                                        self.streamDescription.location.port) )
          self._Start( options )
          print "pid = ", self.childPid
       except:
