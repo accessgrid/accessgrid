@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.63 2004-08-02 19:43:40 binns Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.64 2004-08-02 20:20:31 binns Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.63 2004-08-02 19:43:40 binns Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.64 2004-08-02 20:20:31 binns Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -66,8 +66,8 @@ Main window components
 
 class VenueClientUI(VenueClientObserver):
 class VenueClientFrame(wxFrame):
-class VenueAddressBar(wxSashLayoutWindow):
-class VenueListPanel(wxSashLayoutWindow):
+class VenueAddressBar(wxSashWindow):
+class VenueListPanel(wxSashWindow):
 class VenueList(wxScrolledWindow):
 class ContentListPanel(wxPanel):                   
 class TextClientPanel(wxPanel):
@@ -3868,6 +3868,14 @@ class ProfileDialog(wxDialog):
         self.profileTypeBox = None
         self.dnText = None
         self.dnTextCtrl = None
+        
+        self.titleText = wxStaticText(self,-1,"Profile")
+        if IsOSX():
+            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+        else:
+            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+        self.titleLine = wxStaticLine(self,-1)
+        self.buttonLine = wxStaticLine(self,-1)
         #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
         self.__Layout()
         
@@ -3891,9 +3899,9 @@ class ProfileDialog(wxDialog):
            
     def __Layout(self):
         self.sizer1 = wxBoxSizer(wxVERTICAL)
-        box = wxStaticBox(self, -1, "Profile")
-        box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
+        #box = wxStaticBox(self, -1, "Profile")
+        #box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        #sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
         self.gridSizer = wxFlexGridSizer(0, 2, 5, 5)
         self.gridSizer.Add(self.nameText, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.nameCtrl, 0, wxEXPAND, 0)
@@ -3911,15 +3919,19 @@ class ProfileDialog(wxDialog):
         if self.dnText:
             self.gridSizer.Add(self.dnText, 0, wxALIGN_LEFT, 0)
             self.gridSizer.Add(self.dnTextCtrl, 0, wxEXPAND, 0)
-        sizer2.Add(self.gridSizer, 1, wxALL|wxEXPAND, 1)
+            
+        self.sizer1.Add(self.titleText,0,wxEXPAND|wxALL,10)
+        self.sizer1.Add(self.titleLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
+        self.sizer1.Add(self.gridSizer, 1, wxALL|wxEXPAND, 10)
+        self.sizer1.Add(self.buttonLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
 
-        self.sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
+        #self.sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
 
         sizer3 = wxBoxSizer(wxHORIZONTAL)
         sizer3.Add(self.okButton, 0, wxEAST, 10)
         sizer3.Add(self.cancelButton, 0)
 
-        self.sizer1.Add(sizer3, 0, wxALIGN_CENTER|wxSOUTH, 10)
+        self.sizer1.Add(sizer3, 0, wxALIGN_CENTER|wxALL, 10)
 
         self.SetSizer(self.sizer1)
         #print str(self.GetSize())
@@ -4150,6 +4162,15 @@ class ExitPropertiesDialog(wxDialog):
         self.urlText = wxStaticText(self, -1, "URL:", style=wxALIGN_LEFT)
         self.urlCtrl = wxTextCtrl(self, -1, profile.GetURI(),  size = (500,-1))
         self.okButton = wxButton(self, wxID_OK, "Ok")
+        
+        self.titleText = wxStaticText(self,-1,"Exit Properties")
+        if IsOSX():
+            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+        else:
+            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+        self.titleLine = wxStaticLine(self,-1)
+        self.buttonLine = wxStaticLine(self,-1)
+        
         self.__SetProperties()
         self.__Layout()
                               
@@ -4160,9 +4181,9 @@ class ExitPropertiesDialog(wxDialog):
                                                
     def __Layout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
-        box = wxStaticBox(self, -1, "Properties")
-        box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
+        #box = wxStaticBox(self, -1, "Properties")
+        #box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        #sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
         gridSizer = wxFlexGridSizer(9, 2, 5, 5)
         gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
         gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
@@ -4170,9 +4191,13 @@ class ExitPropertiesDialog(wxDialog):
         gridSizer.Add(self.descriptionCtrl, 2, wxEXPAND, 0)
         gridSizer.Add(self.urlText, 0, wxALIGN_LEFT, 0)
         gridSizer.Add(self.urlCtrl, 0, wxEXPAND, 0)
-        sizer2.Add(gridSizer, 1, wxALL, 10)
+        
+        sizer1.Add(self.titleText,0,wxEXPAND|wxALL,10)
+        sizer1.Add(self.titleLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
+        sizer1.Add(gridSizer, 1, wxALL, 10)
+        sizer1.Add(self.buttonLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
 
-        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
+        #sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
 
         sizer3 = wxBoxSizer(wxHORIZONTAL)
         sizer3.Add(self.okButton, 0, wxALL, 10)
@@ -4201,6 +4226,15 @@ class DataPropertiesDialog(wxDialog):
         self.lastModCtrl = wxTextCtrl(self, -1, "")
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+
+        self.titleText = wxStaticText(self,-1,"Data Properties")
+        if IsOSX():
+            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+        else:
+            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+        self.titleLine = wxStaticLine(self,-1)
+        self.buttonLine = wxStaticLine(self,-1)
+        
         self.__SetProperties()
         self.__SetEditable(true)
         self.__Layout()
@@ -4225,9 +4259,9 @@ class DataPropertiesDialog(wxDialog):
                                        
     def __Layout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
-        box = wxStaticBox(self, -1, "Properties")
-        box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
+        #box = wxStaticBox(self, -1, "Properties")
+        #box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        #sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
         gridSizer = wxFlexGridSizer(9, 2, 5, 5)
         gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
         gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
@@ -4237,9 +4271,14 @@ class DataPropertiesDialog(wxDialog):
         gridSizer.Add(self.sizeCtrl, 0, wxEXPAND, 0)
         gridSizer.Add(self.lastModText, 0, wxALIGN_LEFT, 0)
         gridSizer.Add(self.lastModCtrl, 0, wxEXPAND, 0)
-        sizer2.Add(gridSizer, 1, wxALL, 10)
+        #sizer2.Add(gridSizer, 1, wxALL, 10)
 
-        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
+        sizer1.Add(self.titleText,0,wxEXPAND|wxALL,10)
+        sizer1.Add(self.titleLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
+        sizer1.Add(gridSizer, 1, wxALL, 10)
+        sizer1.Add(self.buttonLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
+
+        #sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
 
         sizer3 = wxBoxSizer(wxHORIZONTAL)
         sizer3.Add(self.okButton, 0, wxALL, 10)
@@ -4299,6 +4338,15 @@ class ServicePropertiesDialog(wxDialog):
                                           size = wxSize(200, 50))
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+
+        self.titleText = wxStaticText(self,-1,"Service Properties")
+        if IsOSX():
+            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+        else:
+            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+        self.titleLine = wxStaticLine(self,-1)
+        self.buttonLine = wxStaticLine(self,-1)
+        
         self.__Layout()
         
         self.description = None
@@ -4320,9 +4368,9 @@ class ServicePropertiesDialog(wxDialog):
                   
     def __Layout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
-        box = wxStaticBox(self, -1, "Properties")
-        box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
+        #box = wxStaticBox(self, -1, "Properties")
+        #box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        #sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
         gridSizer = wxFlexGridSizer(9, 2, 5, 5)
         gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
         gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
@@ -4332,9 +4380,14 @@ class ServicePropertiesDialog(wxDialog):
         gridSizer.Add(self.typeCtrl, 0, wxEXPAND, 0)
         gridSizer.Add(self.descriptionText, 0, wxALIGN_LEFT, 0)
         gridSizer.Add(self.descriptionCtrl, 0, wxEXPAND, 0)
-        sizer2.Add(gridSizer, 1, wxALL, 10)
+        #sizer2.Add(gridSizer, 1, wxALL, 10)
 
-        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
+        sizer1.Add(self.titleText,0,wxEXPAND|wxALL,10)
+        sizer1.Add(self.titleLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
+        sizer1.Add(gridSizer, 1, wxALL, 10)
+        sizer1.Add(self.buttonLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
+
+        #sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
 
         sizer3 = wxBoxSizer(wxHORIZONTAL)
         sizer3.Add(self.okButton, 0, wxALL, 10)
@@ -4390,6 +4443,15 @@ class ApplicationPropertiesDialog(wxDialog):
                                           size = wxSize(200, 50))
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+
+        self.titleText = wxStaticText(self,-1,"Application Properties")
+        if IsOSX():
+            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+        else:
+            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+        self.titleLine = wxStaticLine(self,-1)
+        self.buttonLine = wxStaticLine(self,-1)
+        
         self.__Layout()
         
         self.description = None
@@ -4411,7 +4473,7 @@ class ApplicationPropertiesDialog(wxDialog):
                   
     def __Layout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, "Profile"), wxHORIZONTAL)
+        #sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, "Profile"), wxHORIZONTAL)
         gridSizer = wxFlexGridSizer(9, 2, 5, 5)
         gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
         gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
@@ -4421,9 +4483,14 @@ class ApplicationPropertiesDialog(wxDialog):
         gridSizer.Add(self.typeCtrl, 0, wxEXPAND, 0)
         gridSizer.Add(self.descriptionText, 0, wxALIGN_LEFT, 0)
         gridSizer.Add(self.descriptionCtrl, 0, wxEXPAND, 0)
-        sizer2.Add(gridSizer, 1, wxALL, 10)
+        #sizer2.Add(gridSizer, 1, wxALL, 10)
 
-        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
+        sizer1.Add(self.titleText,0,wxEXPAND|wxALL,10)
+        sizer1.Add(self.titleLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
+        sizer1.Add(gridSizer, 1, wxALL, 10)
+        sizer1.Add(self.buttonLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
+
+        #sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
 
         sizer3 = wxBoxSizer(wxHORIZONTAL)
         sizer3.Add(self.okButton, 0, wxALL, 10)
@@ -4479,7 +4546,15 @@ class VenuePropertiesDialog(wxDialog):
         self.list.SetColumnWidth(3, 100)
 
         self.okButton = wxButton(self, wxID_OK, "Ok")
-               
+        
+        self.titleText = wxStaticText(self,-1,"Venue Properties")
+        if IsOSX():
+            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+        else:
+            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+        self.titleLine = wxStaticLine(self,-1)
+        self.buttonLine = wxStaticLine(self,-1)
+                       
         self.__Layout()
 
     def PopulateList(self, streamList):
@@ -4512,12 +4587,15 @@ class VenuePropertiesDialog(wxDialog):
         Handle UI layout.
         '''
         mainSizer = wxBoxSizer(wxVERTICAL)
-        box = wxStaticBox(self, -1, "Multicast Addresses")
-        box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        sizer = wxStaticBoxSizer(box, wxVERTICAL)
-        sizer.Add(self.list, 1, wxEXPAND| wxALL, 10)
+        #box = wxStaticBox(self, -1, "Multicast Addresses")
+        #box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        #sizer = wxStaticBoxSizer(box, wxVERTICAL)
+        mainSizer.Add(self.titleText,0,wxEXPAND|wxALL,10)
+        mainSizer.Add(self.titleLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
+        mainSizer.Add(self.list, 1, wxEXPAND| wxALL, 10)
+        mainSizer.Add(self.buttonLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
         
-        mainSizer.Add(sizer, 1, wxEXPAND| wxALL, 10)
+        #mainSizer.Add(sizer, 1, wxEXPAND| wxALL, 10)
         mainSizer.Add(self.okButton, 0, wxCENTER | wxALL, 10)
         self.SetSizer(mainSizer)
         mainSizer.Fit(self)
