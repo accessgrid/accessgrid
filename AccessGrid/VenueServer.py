@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.83 2003-08-08 21:36:44 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.84 2003-08-11 19:46:18 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1288,7 +1288,10 @@ class VenueServer(ServiceBase.ServiceBase):
             
         self.venues[id].SetConnections(venueDesc.connections)
         
-        current_streams = self.venues[id].GetStreams()    
+        # Modify streams by removing old and adding new
+        current_streams = self.venues[id].GetStaticStreams()    
+        for sd in current_streams:
+            self.venues[id].RemoveStream(sd)
         for sd in venueDesc.streams:
             self.venues[id].AddStream(sd)
         
