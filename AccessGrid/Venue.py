@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.27 2003-02-10 22:07:55 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.28 2003-02-12 16:51:40 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ from AccessGrid.GUID import GUID
 from AccessGrid.TextService import TextService
 from AccessGrid.EventService import EventService
 from AccessGrid.Events import Event, HeartbeatEvent, TextEvent
-from AccessGrid.Utilities import formatExceptionInfo
+from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.scheduler import Scheduler
 
 class Venue(ServiceBase.ServiceBase):
@@ -177,7 +177,7 @@ class Venue(ServiceBase.ServiceBase):
                     # add new stream description
 
                     print "* * Adding new producer of type ", capability.type
-                    encryptionKey = "venue didn't assign an encryption key"
+                    encryptionKey = AllocateEncryptionKey()
                     streamDesc = StreamDescription( "noName", "noDesc",
                                              self.AllocateMulticastLocation(), 
                                              capability, encryptionKey )
@@ -353,7 +353,7 @@ class Venue(ServiceBase.ServiceBase):
         services, users, and content found within a Virtual Venue.
         """
         privateId = None
-        streamDescriptions = None
+        streamDescriptions = []
         state = self.GetState( connectionInfo )
 
         try:
