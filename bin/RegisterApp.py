@@ -6,14 +6,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: RegisterApp.py,v 1.6 2003-09-18 19:02:58 judson Exp $
+# RCS-ID:      $Id: RegisterApp.py,v 1.7 2003-09-18 19:30:33 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This program is used to register applications with the users AGTk installation.
 """
-__revision__ = "$Id: RegisterApp.py,v 1.6 2003-09-18 19:02:58 judson Exp $"
+__revision__ = "$Id: RegisterApp.py,v 1.7 2003-09-18 19:30:33 judson Exp $"
 
 import os
 import re
@@ -123,9 +123,11 @@ def main():
 
     for opt, arg in opts:
         if opt in ("-f", "--file"):
-            if os.path.isabs(appFile):
-                workingDir = os.path.dirname(appFile)
-                appFile = os.path.basename(appFile)
+            if os.path.isabs(arg):
+                workingDir = os.path.dirname(arg)
+                appFile = os.path.basename(arg)
+            else:
+                appfile = arg
         elif opt in ("-d", "--dir"):
             workingDir = arg
         elif opt in ("-z", "--zip"):
