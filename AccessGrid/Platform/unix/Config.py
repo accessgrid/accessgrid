@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.7 2004-04-12 20:49:09 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.8 2004-04-12 20:50:06 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.7 2004-04-12 20:49:09 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.8 2004-04-12 20:50:06 judson Exp $"
 
 import os
 import mimetypes
@@ -257,7 +257,8 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         self.initIfNeeded = initIfNeeded
         self.hostname = None
         self.location = None
-
+        self.serverFlag = None
+        
         # First, get the paths to stuff we need
         uappdata = os.environ['HOME']
         agtkdata = AGTkConfig.instance().GetConfigDir()
