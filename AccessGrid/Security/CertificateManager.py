@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.13 2004-03-30 17:19:18 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.14 2004-03-30 18:39:35 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.13 2004-03-30 17:19:18 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.14 2004-03-30 18:39:35 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -1105,7 +1105,8 @@ class CertificateManager(object):
         #
         
         try:
-            proxyCert = CertificateRepository.Certificate(userProxy)
+            proxyCert = CertificateRepository.Certificate(userProxy,
+                                                          repo = self.GetCertificateRepository())
 
         except crypto.Error:
             raise NoProxyFound
