@@ -5,8 +5,8 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.16 2003-02-06 14:44:55 judson Exp $
-# Copyright:   (c) 2002
+# RCS-ID:      $Id: Types.py,v 1.17 2003-02-10 14:47:37 judson Exp $
+# Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import os

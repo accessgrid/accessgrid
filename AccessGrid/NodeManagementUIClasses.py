@@ -5,8 +5,8 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.4 2003-02-08 20:10:28 judson Exp $
-# Copyright:   (c) 2002
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.5 2003-02-10 14:47:37 judson Exp $
+# Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys

@@ -1,3 +1,14 @@
+#-----------------------------------------------------------------------------
+# Name:        VenueClientUIClasses.py
+# Purpose:     
+#
+# Author:      Susanne Lefvert
+#
+# Created:     2003/08/02
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.19 2003-02-10 14:47:37 judson Exp $
+# Copyright:   (c) 2003
+# Licence:     See COPYING.txt
+#-----------------------------------------------------------------------------
 from wxPython.wx import *
 from AccessGrid import icons
 from AccessGrid.VenueClient import VenueClient, EnterVenueException

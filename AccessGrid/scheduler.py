@@ -1,3 +1,14 @@
+#-----------------------------------------------------------------------------
+# Name:        scheduler.py
+# Purpose:     
+#
+# Author:      From the Python Cookbook
+#
+# Created:     2003/08/02
+# RCS-ID:      $Id: scheduler.py,v 1.3 2003-02-10 14:47:37 judson Exp $
+# Copyright:   (c) 2002
+# Licence:     
+#-----------------------------------------------------------------------------
 import time
 from threading import Thread
 

@@ -1,3 +1,14 @@
+#-----------------------------------------------------------------------------
+# Name:        ProcessManagerWin32.py
+# Purpose:     
+#
+# Author:      Robert D. Olson
+#
+# Created:     2003/08/02
+# RCS-ID:      $Id: ProcessManagerWin32.py,v 1.2 2003-02-10 14:47:37 judson Exp $
+# Copyright:   (c) 2002-2003
+# Licence:     See COPYING.txt
+#-----------------------------------------------------------------------------
 import string
 import win32process
 import win32api

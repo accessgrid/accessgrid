@@ -5,8 +5,8 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.32 2003-02-08 20:07:23 judson Exp $
-# Copyright:   (c) 2002
+# RCS-ID:      $Id: VenueClient.py,v 1.33 2003-02-10 14:49:02 judson Exp $
+# Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import threading

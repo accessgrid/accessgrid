@@ -5,8 +5,8 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.21 2003-02-07 20:09:39 lefvert Exp $
-# Copyright:   (c) 2002
+# RCS-ID:      $Id: VenueManagement.py,v 1.22 2003-02-10 14:49:02 judson Exp $
+# Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 from wxPython.wx import *
@@ -18,6 +18,7 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.Utilities import formatExceptionInfo 
 from AccessGrid.UIUtilities import *
 from AccessGrid import icons
+from AccessGrid.Platform import GPI
 
 from pyGlobus.io import GSITCPSocketException
 
@@ -54,14 +55,13 @@ class VenueManagementClient(wxApp):
         try:
             self.client = Client.Handle(URL).get_proxy()
             venueList = self.client.GetVenues()
-
         except GSITCPSocketException:
-            ErrorDialog(self.frame, sys.exc_info()[1][0])
-
+            GPI()
+##            ErrorDialog(self.frame, sys.exc_info()[1][0])
+            venueList = self.client.GetVenues()
         except:
             print "Can't connect to server!", formatExceptionInfo()
             ErrorDialog(self.frame, 'The server you are trying to connect to is not running!')
-                 
         else:
             self.url = URL
            

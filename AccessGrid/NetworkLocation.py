@@ -5,8 +5,8 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/13/12
-# RCS-ID:      $Id: NetworkLocation.py,v 1.4 2003-01-24 04:29:10 judson Exp $
-# Copyright:   (c) 2002
+# RCS-ID:      $Id: NetworkLocation.py,v 1.5 2003-02-10 14:47:37 judson Exp $
+# Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 

@@ -5,8 +5,8 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.7 2003-01-31 20:17:07 olson Exp $
-# Copyright:   (c) 2002
+# RCS-ID:      $Id: Server.py,v 1.8 2003-02-10 14:48:06 judson Exp $
+# Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 

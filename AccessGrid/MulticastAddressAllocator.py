@@ -5,8 +5,8 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.8 2003-01-24 21:20:18 turam Exp $
-# Copyright:   (c) 2002
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.9 2003-02-10 14:47:35 judson Exp $
+# Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 

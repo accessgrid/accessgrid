@@ -6,8 +6,8 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextService.py,v 1.4 2003-02-06 14:44:55 judson Exp $
-# Copyright:   (c) 2002
+# RCS-ID:      $Id: TextService.py,v 1.5 2003-02-10 14:47:37 judson Exp $
+# Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 

@@ -1,3 +1,14 @@
+#-----------------------------------------------------------------------------
+# Name:        AGNodeService.py
+# Purpose:     
+#
+# Author:      Thomas D. Uram
+#
+# Created:     2003/08/02
+# RCS-ID:      $Id: AGNodeService.py,v 1.5 2003-02-10 14:49:02 judson Exp $
+# Copyright:   (c) 2002-2003
+# Licence:     See COPYING.txt
+#-----------------------------------------------------------------------------
 import sys
 from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid.hosting.pyGlobus.Server import Server

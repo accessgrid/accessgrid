@@ -1,3 +1,14 @@
+#-----------------------------------------------------------------------------
+# Name:        ServiceBase.py
+# Purpose:     
+#
+# Author:      Robert D. Olson
+#
+# Created:     2003/08/02
+# RCS-ID:      $Id: ServiceBase.py,v 1.5 2003-02-10 14:48:06 judson Exp $
+# Copyright:   (c) 2002-2003
+# Licence:     See COPYING.txt
+#-----------------------------------------------------------------------------
 import re
 
 class ServiceBase:

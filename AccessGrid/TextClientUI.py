@@ -5,8 +5,8 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClientUI.py,v 1.1 2003-02-06 21:15:04 judson Exp $
-# Copyright:   (c) 2002
+# RCS-ID:      $Id: TextClientUI.py,v 1.2 2003-02-10 14:47:37 judson Exp $
+# Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 

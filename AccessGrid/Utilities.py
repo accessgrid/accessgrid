@@ -5,8 +5,8 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.10 2003-02-05 21:36:46 judson Exp $
-# Copyright:   (c) 2002
+# RCS-ID:      $Id: Utilities.py,v 1.11 2003-02-10 14:47:37 judson Exp $
+# Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import os

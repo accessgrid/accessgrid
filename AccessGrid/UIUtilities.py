@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.3 2003-02-06 20:47:04 judson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.4 2003-02-10 14:47:37 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,8 +18,8 @@ from AccessGrid.Utilities import formatExceptionInfo
 class ErrorDialog:
     def __init__(self, frame, text):
         (name, args, traceback_string_list) = formatExceptionInfo()
-        for x in traceback_string_list:
-            print(x)       
+##        for x in traceback_string_list:
+##            print(x)       
         errorDialog = wxMessageDialog(frame, text, '', wxOK)
         errorDialog.ShowModal()
         errorDialog.Destroy()

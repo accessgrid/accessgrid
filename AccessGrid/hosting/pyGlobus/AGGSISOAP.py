@@ -1,4 +1,3 @@
-#!/usr/bin/python
 ################################################################################
 #
 # SOAP.py 0.9.7 - Cayce Ullman    (cayce@actzero.com)
@@ -92,7 +91,7 @@ import time
 try: from M2Crypto import SSL
 except: pass
 
-ident = '$Id: AGGSISOAP.py,v 1.6 2003-01-31 21:09:12 turam Exp $'
+ident = '$Id: AGGSISOAP.py,v 1.7 2003-02-10 14:48:06 judson Exp $'
 
 __version__ = "0.9.7"
 

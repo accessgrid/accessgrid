@@ -1,3 +1,14 @@
+#-----------------------------------------------------------------------------
+# Name:        SetupVideo.py
+# Purpose:     
+#
+# Author:      Thomas D. Uram
+#
+# Created:     2003/08/02
+# RCS-ID:      $Id: SetupVideo.py,v 1.2 2003-02-10 14:49:02 judson Exp $
+# Copyright:   (c) 2002-2003
+# Licence:     See COPYING.txt
+#-----------------------------------------------------------------------------
 import os
 
 tclScript = """set id [ open "videoresources" "w" ]

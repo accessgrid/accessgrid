@@ -5,8 +5,8 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: PyText.py,v 1.2 2003-02-06 20:45:47 judson Exp $
-# Copyright:   (c) 2002
+# RCS-ID:      $Id: PyText.py,v 1.3 2003-02-10 14:49:02 judson Exp $
+# Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 

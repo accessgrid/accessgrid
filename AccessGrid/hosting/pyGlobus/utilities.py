@@ -1,4 +1,14 @@
-
+#-----------------------------------------------------------------------------
+# Name:        utilities.py
+# Purpose:     
+#
+# Author:      Robert D. Olson
+#
+# Created:     2003/08/02
+# RCS-ID:      $Id: utilities.py,v 1.2 2003-02-10 14:48:06 judson Exp $
+# Copyright:   (c) 2002-2003
+# Licence:     See COPYING.txt
+#-----------------------------------------------------------------------------
 
 """
 pyGlobus hosting environment utility classes and functions.

@@ -1,3 +1,14 @@
+#-----------------------------------------------------------------------------
+# Name:        VenueServerTest.py
+# Purpose:     
+#
+# Author:      Susanne Lefvert
+#
+# Created:     2003/08/02
+# RCS-ID:      $Id: VenueServerTest.py,v 1.5 2003-02-10 14:48:39 judson Exp $
+# Copyright:   (c) 2002-2003
+# Licence:     See COPYING.txt
+#-----------------------------------------------------------------------------
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.Descriptions import VenueDescription
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator

@@ -1,3 +1,14 @@
+#-----------------------------------------------------------------------------
+# Name:        AGServiceManager.py
+# Purpose:     
+#
+# Author:      Thomas D. Uram
+#
+# Created:     2003/08/02
+# RCS-ID:      $Id: AGServiceManager.py,v 1.7 2003-02-10 14:47:35 judson Exp $
+# Copyright:   (c) 2003
+# Licence:     See COPYING.txt
+#-----------------------------------------------------------------------------
 import sys
 import urllib
 import os

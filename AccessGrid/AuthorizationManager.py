@@ -1,3 +1,14 @@
+#-----------------------------------------------------------------------------
+# Name:        AuthorizationManager.py
+# Purpose:     
+#
+# Author:      Thomas D. Uram
+#
+# Created:     2003/08/02
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.5 2003-02-10 14:47:35 judson Exp $
+# Copyright:   (c) 2003
+# Licence:     See COPYING.txt
+#-----------------------------------------------------------------------------
 
 class AuthorizationManager:
    """
