@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.27 2004-03-28 05:21:49 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.28 2004-04-01 23:37:38 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.27 2004-03-28 05:21:49 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.28 2004-04-01 23:37:38 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1200,6 +1200,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.meMenu.Remove(self.ID_ME_UNFOLLOW)
         except:
             self.Error("Error occurred trying to stop following","UnFollow Error") 
+            
 
     #
     # Data Actions
@@ -1714,6 +1715,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 EVT_MENU(self, appId, callback)
 
         return menu
+        
+    def GetPersonalData(self,clientProfile):
+        return self.venueClient.GetPersonalData(clientProfile)
 
 
     # end General Implementation
