@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.80 2003-04-28 00:44:58 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.81 2003-04-28 02:23:54 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -546,7 +546,7 @@ class Venue(ServiceBase.ServiceBase):
         if not self.encryptMedia:
             self.encryptionKey = None
         else:
-            if key == None:
+            if key == None or len(key.strip()) == 0:
                 key = AllocateEncryptionKey()
             self.encryptionKey = key
 
