@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.35 2004-08-03 17:18:20 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.36 2004-08-05 16:51:59 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -99,20 +99,17 @@ class NodeSetupWizard(wxWizard):
     The node setup wizard guides users through the steps necessary for
     creating and testing a node configuration. 
     '''
-    def __init__(self, parent, debugMode, log, progress, app = None):
+    def __init__(self, parent, debugMode, log, app = None):
         wxWizard.__init__(self, parent, 10,"Setup Node", wxNullBitmap)
         '''
         This class creates a wizard for node setup
         '''
-        startupDialog = progress
         self.debugMode = debugMode
         self.log = log
 
         self.step = 1
         self.SetPageSize(wxSize(510, 310))
         self.nodeClient = NodeClient(app)
-        
-        startupDialog.UpdateOneStep("Initializing the Node Setup Wizard.")
         
         self.page1 = WelcomeWindow(self, "Welcome to the Node Setup Wizard")
         self.page2 = VideoCaptureWindow(self, self.nodeClient,
@@ -143,7 +140,6 @@ class NodeSetupWizard(wxWizard):
 
         # Start the node service which will store the configuration
         try:
-            startupDialog.UpdateOneStep("Start the node service.")
             self.nodeClient.StartNodeService()
         except:
             log.exception("NodeSetupWizard.__init__: Can not start node service")
@@ -152,11 +148,6 @@ class NodeSetupWizard(wxWizard):
 
         else:
             # Run the wizard
-            startupDialog.UpdateOneStep("Open wizard.")
-
-            # Startup complete; kill progress dialog
-            startupDialog.Destroy()
-
             self.RunWizard(self.page1)
 
             # Wizard finished; stop node service
@@ -775,6 +766,7 @@ class ConfigWindow(TitledPage):
                 self.nodeClient.AddService( self.videoCaptUrl, "VideoProducerService", self.cameraPorts)
                 
             except ServiceUnavailableException:
+                
                 log.exception("ConfigWindow.Validate: Could not add service to video capture machine.")
                 errors = errors + "No services supporting video capture are installed.\nThe video capture machine is not added to the configuration.\n\n"
                 
@@ -837,7 +829,7 @@ class ConfigWindow(TitledPage):
             configs = self.nodeClient.GetConfigurations()
         except:
             log.exception("ConfigWindow.Validate: Could not retrieve configurations.")
-                       
+      
         # Confirm overwrite
         if configName in configs:
             text ="The configuration %s already exists. Do you want to overwrite?" % (configName,)
@@ -870,6 +862,7 @@ class ConfigWindow(TitledPage):
     
         if errors != "":
             ErrorDialog(self, errors, "Error", logFile = NODE_SETUP_WIZARD_LOG)
+
      
         wxEndBusyCursor()
         return true
@@ -968,9 +961,7 @@ class NodeClient:
             self.server.Stop()
         except:
             raise Exception, 'Can not stop server'
-        
-        sys.exit(0)
-                       
+                               
     def GetNodeService(self):
         return self.node
    
@@ -1062,13 +1053,9 @@ def main():
     # Create the wxpython app
     wxapp = wxPySimpleApp()
 
-    # Create a progress dialog
-    startupDialog = ProgressDialog("Starting Node Setup Wizard...",
-                                   "Initializing AccessGrid Toolkit", 5)
-    startupDialog.Show()
-
     # Init the toolkit with the standard environment.
     app = WXGUIApplication()
+    app.Initialize("NodeSetupWizard")
 
     # Try to initialize
     try:
@@ -1081,20 +1068,8 @@ def main():
     # Get the log
     log = app.GetLog()
     debug = app.GetDebugLevel()
-    
-    startupDialog.UpdateOneStep("Initializing the Node Setup Wizard.")
-
-    nodeSetupWizard = NodeSetupWizard(None, debug, log, startupDialog, app)
-    
-    # Startup complete; kill progress dialog
-    #startupDialog.Destroy()
-
-    # Spin
-    wxapp.SetTopWindow(nodeSetupWizard)
-    wxapp.MainLoop()
-
-    wxapp.Destroy()
-    
+    nodeSetupWizard = NodeSetupWizard(None, debug, log, app)
+       
 # The main block
 if __name__ == "__main__":
     main()
