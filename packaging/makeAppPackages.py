@@ -58,11 +58,11 @@ for thing in things:
             continue
     else:
         Desc = files[0]
-        ImplPy = Desc.split('.')[-1] + ".py"
+        ImplPy = Desc.split('.')[0] + ".py"
 
     if not os.path.isfile(Desc):
         continue
-    
+
     # if associated file found, zip em up together in the outputDir
     zipFile = thing + ".zip"
     long_zipFile = os.path.join(absOutputDir, zipFile)
