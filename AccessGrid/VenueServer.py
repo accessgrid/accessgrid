@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.64 2003-04-09 20:31:04 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.65 2003-04-21 20:37:32 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -381,6 +381,7 @@ class VenueServer(ServiceBase.ServiceBase):
         id = self.IdFromURL(URL)
         
         venue = self.venues[id]
+        self.venues[id].Shutdown()
         del self.venues[id]
         
     RemoveVenue.soap_export_as = "RemoveVenue"
