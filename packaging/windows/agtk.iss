@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.91 2004-06-01 16:21:40 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.92 2004-06-01 16:37:48 judson Exp $
 ;
 
 ; Set externally
@@ -79,11 +79,7 @@ ShowLanguageDialog=yes
 
 [Files]
 ; The Python Modules
-Source: Lib\site-packages\AccessGrid\*.py; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\AccessGrid; Flags: recursesubdirs overwritereadonly restartreplace
-Source: Lib\site-packages\OpenSSL_AG\*.py; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\OpenSSL_AG; Flags: recursesubdirs overwritereadonly restartreplace
-Source: Lib\site-packages\pyGlobus\*.py; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\pyGlobus; Flags: recursesubdirs overwritereadonly restartreplace
-Source: Lib\site-packages\SOAPpy\*.py; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\SOAPpy; Flags: recursesubdirs overwritereadonly restartreplace
-Source: Lib\site-packages\fpconst.py; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\fpconst.py; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\AccessGrid\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages; Flags: recursesubdirs overwritereadonly restartreplace
 
 ; Documentation
 Source: doc\Developer\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
@@ -205,4 +201,3 @@ Filename: {app}\config\nodeConfig\defaultWindows; Section: serviceconfig1; Key: 
 Filename: {app}\config\nodeConfig\defaultWindows; Section: serviceconfig0; Key: ";key"; String: value
 
 Filename: {app}\config\AGNodeService.cfg; Section: Node Configuration; Key: defaultNodeConfiguration; String: defaultWindows
-
