@@ -152,11 +152,14 @@ os.chdir(os.path.join(BuildDir, "tests"))
 if os.environ.has_key('PYTHONPATH'):
     oldpath = os.environ['PYTHONPATH']
 else:
-    oldpath = None
+    oldpath = ''
 
 # setup a new python path
-npath = os.path.join(DestDir, "Lib", "site-packages")
-if oldpath is not None:
+if sys.platform == 'win32':
+    npath = os.path.join(DestDir, "Lib", "site-packages")
+else:
+    npath = os.path.join(DestDir, "lib", "python2.2", "site-packages")
+if not oldpath:
     nppath = os.pathsep.join([npath, oldpath])
 else:
     nppath = npath
@@ -182,6 +185,19 @@ elif sys.platform == 'darwin':
     bdir = 'darwin'
 else:
     bdir = None
+
+# Build the QuickBridge executable
+if sys.platform == 'linux2':
+    print "Building QuickBridge"
+    os.chdir(os.path.join(BuildDir,'services','network','QuickBridge'))
+    cmd = "gcc -O -o QuickBridge QuickBridge.c"
+    print "cmd = ", cmd
+    os.system(cmd)
+
+    cmd = "cp QuickBridge %s" % (os.path.join(DestDir,'bin'))
+    print "cmd = ", cmd
+    os.system(cmd)
+
     
 # Change to packaging dir to build packages
 os.chdir(os.path.join(BuildDir,'packaging'))
@@ -236,13 +252,16 @@ if len(nfl) == 1:
 else:
     pkg_file = None
 
-hfi = file(os.path.join(testfile), "r")
-lines = hfi.readlines()
-hfi.close()
-
-hfo = file(os.path.join(testfile), "w+")
-for line in lines:
-    hfo.write(line.replace("PACKAGEFILE", "%s" % str(pkg_file)))
-hfo.close()
+if os.path.exists(testfile):
+    hfi = file(testfile, "r")
+    lines = hfi.readlines()
+    hfi.close()
+        
+    hfo = file(testfile, "w+")
+    for line in lines:
+        hfo.write(line.replace("PACKAGEFILE", "%s" % str(pkg_file)))
+    hfo.close()
+else:
+    print "Test results not found !"
 
     
