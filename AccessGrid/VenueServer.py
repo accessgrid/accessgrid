@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.152 2004-07-20 19:12:54 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.153 2004-07-22 15:36:31 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.152 2004-07-20 19:12:54 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.153 2004-07-22 15:36:31 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -1059,6 +1059,15 @@ class VenueServer(AuthorizationMixIn):
         """
         return self.multicastAddressAllocator.GetAddressMask( )
 
+    def DumpDebugInfo(self,flag=None):
+        """
+        Dump debug info.  The 'flag' argument is not used now,
+        but could be used later to control the dump
+        """
+        for thrd in threading.enumerate():
+            log.debug("Thread %s", thrd)
+
+
 class VenueServerI(SOAPInterface, AuthorizationIMixIn):
     """
     This is the SOAP interface to the venue server.
@@ -1527,6 +1536,14 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         except:
             log.exception("GetAddressMask: exception")
             raise
+
+    def DumpDebugInfo(self,flag=None):
+        """
+        Dump debug info.  The 'flag' argument is not used now,
+        but could be used later to control the dump
+        """
+        self.impl.DumpDebugInfo(flag)
+
 
 class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
     """
