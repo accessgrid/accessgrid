@@ -25,14 +25,12 @@
 # that matches your system/shell.
 #
 
-
 import os
 import sys
 import shutil
 import getopt
 import re
 from optparse import OptionParser
-
 
 # Borrowed from Platform.py
 WIN = 'win32'
@@ -94,10 +92,9 @@ ABS_AG_BASE_DIR = os.path.abspath(options.srcdir)
 # create empty file videoresources
 # cp packaging/config/defaultWindows DST_CONFIG_DIR/nodeConfig
 # cp packaging/config/defaultLinux DST_CONFIG_DIR/nodeConfig
-# 
+# cp packaging/config/CACertificates DST_CONFIG_DIR/CACertificates
 
 print ""
-
 
 # New config using AGTkConfig
 os.environ['AGTK_INSTALL'] = os.path.join( os.path.abspath(options.srcdir), "bin" )
@@ -109,9 +106,7 @@ from AccessGrid.Platform.Config import AGTkConfig
 # Create directory structure
 agtkConfig = AGTkConfig.instance(initIfNeeded=1)
 
-
 # Make directories
-
 dir = os.path.join(options.destdir,"services")
 if not os.path.exists(dir):
     os.mkdir (dir)
@@ -143,10 +138,10 @@ if options.verbose:
     print "   ",mk_command
 os.system(mk_command)
 
-
+# copy certificates
+shutil.copytree( os.path.join(ABS_AG_BASE_DIR, "packaging", "config", "CACertificates"), os.path.join(agtkConfig.GetConfigDir(), "CACertificates"))
 
 # Copy default configuration files
-
 if sys.platform == WIN:
     win_config_src = os.path.join( options.srcdir, "packaging", "config", "defaultWindows")
     win_config_dst = os.path.join( options.destdir, "nodeConfig", "defaultWindows")
@@ -201,7 +196,6 @@ def BackupFile(filename, backup_filename):
 
 
 # Create empty "videoresources" file
-
 config_file = os.path.join(options.destdir, "videoresources")
 bak_file = os.path.join(options.destdir, "videoresources.bak")
 
@@ -213,9 +207,10 @@ vsfile.close()
 
 
 # Create AGNodeService.cfg
-
-config_file = os.path.join(AGTkConfig.instance().GetConfigDir(), "AGNodeService.cfg")
-bak_file = os.path.join(AGTkConfig.instance().GetConfigDir(), "AGNodeService.cfg.bak")
+config_file = os.path.join(AGTkConfig.instance().GetConfigDir(),
+                           "AGNodeService.cfg")
+bak_file = os.path.join(AGTkConfig.instance().GetConfigDir(),
+                        "AGNodeService.cfg.bak")
 
 BackupFile(config_file, bak_file)
 
@@ -231,7 +226,6 @@ nsfile.close()
 
 
 # Create AGServiceManager.cfg
-
 config_file = os.path.join(AGTkConfig.instance().GetConfigDir(), "AGServiceManager.cfg")
 bak_file = os.path.join(AGTkConfig.instance().GetConfigDir(), "AGServiceManager.cfg.bak")
 
@@ -243,23 +237,18 @@ smfile.write("servicesDirectory = local_services\n\n")
 smfile.close()
 
 # Tell users how to use the new configuration files.
-
-
 print "\n    --------------------------------------------------------------"
 print ""
 print "    If you want to setup video resources for this configuration,"
 print "       set the environment as instructed below, "
 print "       and run: \"python SetupVideo.py\" \n"
-
 print "    To use this configuration:\n"
-
 print "       Make sure media-related programs (vic, rat, etc.) are in your path."
 if sys.platform == WIN:
     print "          On Windows: copying the vic and rat related binaries (if needed, "
     print "          from a real install) into their own directory before adding them "
     print "          to your path is recommended.  If you don't want to bother modifying "
     print "          your path, copying them into AccessGrid/bin is a quick fix.\n"
-
 elif sys.platform == LINUX:
     print "          On linux: if you've installed the vic and rat rpm packages,"
     print "          they should already be in your path.\n"
@@ -269,23 +258,23 @@ print "       set PYTHONPATH to", os.path.abspath(options.srcdir)
 print "       set AGTK_LOCATION to", os.path.abspath(options.destdir)
 print ""
 
-fh = open("env-init.sh", "w")
-fh.write("export AGTK_INSTALL=%s\n" % (os.path.join( os.path.abspath(options.srcdir), "bin")))
-fh.write("export PYTHONPATH=%s\n" % os.path.abspath(options.srcdir))
-fh.write("export AGTK_LOCATION=%s\n" % os.path.abspath(options.destdir))
-fh.close()
+if sys.platform == LINUX:
+    fh = open("env-init.sh", "w")
+    fh.write("export AGTK_INSTALL=%s\n" % (os.path.join(os.path.abspath(options.srcdir), "bin")))
+    fh.write("export PYTHONPATH=%s\n" % os.path.abspath(options.srcdir))
+    fh.write("export AGTK_LOCATION=%s\n" % os.path.abspath(options.destdir))
+    fh.close()
 
-fh = open("env-init.csh", "w")
-fh.write("setenv AGTK_INSTALL %s\n" % (os.path.join( os.path.abspath(options.srcdir), "bin")))
-fh.write("setenv PYTHONPATH %s\n" % os.path.abspath(options.srcdir))
-fh.write("setenv AGTK_LOCATION %s\n" % os.path.abspath(options.destdir))
-fh.close()
-
-fh = open("env-init.bat", "w")
-fh.write("set AGTK_INSTALL=%s\n" % (os.path.join( os.path.abspath(options.srcdir), "bin")))
-fh.write("set PYTHONPATH=%s\n" % os.path.abspath(options.srcdir))
-fh.write("set AGTK_LOCATION=%s\n" % os.path.abspath(options.destdir))
-fh.close()
-
-print "Wrote csh config to env-init.csh, bash config to env-init.sh"
-print "Wrote win32 batchfile init to env-init.bat"
+    fh = open("env-init.csh", "w")
+    fh.write("setenv AGTK_INSTALL %s\n" % (os.path.join( os.path.abspath(options.srcdir), "bin")))
+    fh.write("setenv PYTHONPATH %s\n" % os.path.abspath(options.srcdir))
+    fh.write("setenv AGTK_LOCATION %s\n" % os.path.abspath(options.destdir))
+    fh.close()
+    print "Wrote csh config to env-init.csh, bash config to env-init.sh"
+elif sys.platform == WIN:
+    fh = open("env-init.bat", "w")
+    fh.write("set AGTK_INSTALL=%s\n" % (os.path.join( os.path.abspath(options.srcdir), "bin")))
+    fh.write("set PYTHONPATH=%s\n" % os.path.abspath(options.srcdir))
+    fh.write("set AGTK_LOCATION=%s\n" % os.path.abspath(options.destdir))
+    fh.close()
+    print "Wrote win32 batchfile init to env-init.bat"
