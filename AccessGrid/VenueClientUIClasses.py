@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.59 2003-03-13 15:01:13 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.60 2003-03-13 16:06:52 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -499,29 +499,35 @@ class VenueClientFrame(wxFrame):
         connectToVenueDialog.Destroy()
 
     def OpenNodeMgmtApp(self, event):
+        wxBeginBusyCursor()
         frame = NodeManagementClientFrame(self, -1, "Access Grid Node Management")
         frame.AttachToNode( self.app.nodeServiceUri )
         if frame.Connected(): # Right node service uri
             frame.Update()
+            wxEndBusyCursor()
             frame.Show(true)
 
         else: # Not right node service uri
+            wxEndBusyCursor()
             setNodeUrlDialog = UrlDialog(self, -1, "Set node service URL", \
                                          self.app.nodeServiceUri, "Please, specify node service URL")
             
             if setNodeUrlDialog.ShowModal() == wxID_OK:
+                wxBeginBusyCursor()
                 self.app.SetNodeUrl(setNodeUrlDialog.address.GetValue())
                 frame.AttachToNode( self.app.nodeServiceUri )
                 
                 if frame.Connected(): # try again
                     frame.Update()
+                    wxEndBusyCursor()
                     frame.Show(true)
 
                 else: # wrong url
+                    wxEndBusyCursor()
                     MessageDialog(self, \
                                   'Can not open node service management\nbased on the URL you specified', \
                                   'Node Management Error')
-                
+                                   
             setNodeUrlDialog.Destroy()
                  
                           
