@@ -11,10 +11,26 @@ DEST=sys.argv[2]
 RATDIR=os.path.join(SOURCE,'ag-media')
 
 def build_win(dir):
-    os.system("devenv %s /rebuild Release" % os.path.join(dir, "rat",
-                                                          "rat.sln"))
-    os.system("devenv %s /project rat-kill /rebuild \"Release\"" \
-              % os.path.join(dir, "rat", "rat.sln"))
+    # Find the version of visual studio by peering at cl
+    (input, outerr) = os.popen4("cl.exe")
+    usageStr = outerr.readlines()
+    version = map(int, usageStr[0].split()[7].split('.')[:2])
+
+    proj = None
+    
+    if version[0] == 12:
+        proj = "rat.dsw"
+    elif version[0] == 13:
+        if version[1] == 0:
+            proj = "rat.sln"
+        elif version[1] == 10:
+            proj = "rat.2003.sln"
+
+    if proj is not None:
+        os.system("devenv %s /rebuild Release" % os.path.join(dir, "rat",
+                                                              proj))
+        os.system("devenv %s /project rat-kill /rebuild \"Release\"" \
+                  % os.path.join(dir, "rat", proj))
     
 def build_linux(dir):
     os.chdir(dir)
