@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.26 2004-05-04 20:03:20 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.27 2004-05-05 16:31:00 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -165,7 +165,7 @@ class VideoProducerService( AGService ):
             #  forward slashes (vic will crash otherwise)
             if sys.platform == Platform.WIN:
                 startupfile = startupfile.replace("\\","/")
-
+            
             #
             # Start the service; in this case, store command line args in a list and let
             # the superclass _Start the service
@@ -177,6 +177,7 @@ class VideoProducerService( AGService ):
             if self.streamDescription.encryptionFlag != 0:
                 options.append( "-K" )
                 options.append( self.streamDescription.encryptionKey )
+                
             # Check whether the network location has a "type" attribute
             # Note: this condition is only to maintain compatibility between
             # older venue servers creating network locations without this attribute
@@ -189,6 +190,10 @@ class VideoProducerService( AGService ):
                     options.append( '%d' % (self.streamDescription.location.ttl) )
             options.append( '%s/%d' % ( self.streamDescription.location.host,
                                            self.streamDescription.location.port) )
+                                           
+            # Set the device for vic to use
+            os.environ["VIC_DEVICE"] = vicDevice
+                                           
             self.log.info("Starting VideoProducerService")
             self.log.info(" executable = %s" % self.executable)
             self.log.info(" options = %s" % options)
