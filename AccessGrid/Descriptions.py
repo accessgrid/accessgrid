@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.69 2004-12-08 16:48:06 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.70 2004-12-15 17:52:46 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.69 2004-12-08 16:48:06 judson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.70 2004-12-15 17:52:46 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -26,6 +26,7 @@ from AccessGrid.Types import AGResource, AGVideoResource
 from AccessGrid.ServiceCapability import ServiceCapability
 
 from AccessGrid.ClientProfile import ClientProfile
+
 class ObjectDescription:
     """
     An object description has four parts:
@@ -230,9 +231,11 @@ class BadServiceDescription(Exception):
 class ServiceDescription(ObjectDescription):
     """
     The Service Description is the Virtual Venue resident information
-    about services users can interact with. This is an extension of
-    the Object Description that adds a mimeType which should be a
-    standard mime-type.
+    about services users can interact with.
+
+    Extends ObjectDescription with one more attribute:
+
+        mimetype : string
     """
     def __init__(self, name, description, uri, mimetype):   
         ObjectDescription.__init__(self, name, description, uri)   
