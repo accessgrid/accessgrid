@@ -196,16 +196,19 @@ class PersonalNodeManager:
         self.serviceManagerArg = "AG_svc_mgr_init:AG_svc_mgr_node_svc_synch:AG_svc_mgr_term:%s" % (myid)
 
 class PN_NodeService:
-    def __init__(self, setSvcMgrCallback, getMyURLCallback, terminateCallback):
-        self.setSvcMgrCallback = setSvcMgrCallback
-        self.getMyURLCallback = getMyURLCallback
+    def __init__(self, terminateCallback):
         self.terminateCallback = terminateCallback
 
 
-    def Run(self, initArg):
+    def RunPhase1(self, initArg):
+        """
+        First part of initialization.
+
+        Returns the URL to the service manager.
+        """
 
         try:
-            (init, synch, term, parentPID) = initArg.split(":")
+            (init, synch, term, self.parentPID) = initArg.split(":")
         except ValueError, e:
             log.error("Invalid argument to PN_NodeService: %s", initArg)
             log.exception("Invalid argument to PN_NodeService: %s", initArg)
@@ -223,8 +226,16 @@ class PN_NodeService:
         url = readServiceManagerURL()
         log.debug("Node service: synch wait completes with url %s", url)
 
-        self.setSvcMgrCallback(url)
-        myURL = self.getMyURLCallback()
+        return url
+
+    def RunPhase2(self, myURL):
+        """
+        Second part of initialization.
+
+        myURL is the handle for our node service.
+
+        """
+
         writeNodeServiceURL(myURL)
 
         log.debug("signalling node svc event")
@@ -234,7 +245,7 @@ class PN_NodeService:
         # Get the process handle for the parent
         #
 
-        self.hParent = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, 0, int(parentPID))
+        self.hParent = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, 0, int(self.parentPID))
         log.debug("got parent handle %s", self.hParent)
         #
         # Create a thread to wait for termination
