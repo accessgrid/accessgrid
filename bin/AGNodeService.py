@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.24 2003-08-04 22:19:17 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.25 2003-08-12 17:30:04 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -163,10 +163,12 @@ if pnode is not None:
 log.info("Starting service; URI: %s", nodeService.get_handle())
 
 # Register a signal handler so we can shut down cleanly
-signal.signal(signal.SIGINT, SignalHandler)
+#signal.signal(signal.SIGINT, SignalHandler)
 
 # Run the service
 server.run_in_thread()
+
+print "AGNodeService URL: ", nodeService.GetHandle()
 
 # Keep the main thread busy so we can catch signals
 running = 1
