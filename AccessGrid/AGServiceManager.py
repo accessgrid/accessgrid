@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.76 2004-08-02 21:56:03 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.77 2004-08-06 17:22:30 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.76 2004-08-02 21:56:03 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.77 2004-08-06 17:22:30 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -106,7 +106,7 @@ class AGServiceManager:
 
     def AddServicePackage( self, serviceFile, resourceToAssign, serviceConfig ):
         serviceDescription = self.packageRepo.GetServiceDescription(serviceFile)
-        self.AddService(serviceDescription,resourceToAssign,serviceConfig)
+        return self.AddService(serviceDescription,resourceToAssign,serviceConfig)
 
     def AddService( self, serviceDescription, resourceToAssign, serviceConfig ):
         """
@@ -197,7 +197,7 @@ class AGServiceManager:
                 serviceDescription = servicePackageToInstall.GetServiceDescription()
 
         except:
-            log.exception("Service Manager failed to extract service implementation")
+            log.exception("Service Manager failed to extract service implementation %s", serviceDescription.servicePackageFile)
             raise Exception("Service Manager failed to extract service implementation")
 
         # Set the resource in the service description
