@@ -61,7 +61,7 @@ distDirStr = " ".join(distDirs)
 targz = os.path.join(SourceDir,"AccessGrid-%s.src.tar.gz" % (version,))
 cmd = "tar cvzf %s --directory %s %s" % (targz,SourceDir,distDirStr)
 print "cmd = ", cmd
-#os.system(cmd)
+os.system(cmd)
 
 
 #
