@@ -3,13 +3,13 @@
 # Purpose:     
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: AGServicePackage.py,v 1.1 2005-01-06 22:47:07 turam Exp $
+# RCS-ID:      $Id: AGServicePackage.py,v 1.2 2005-02-07 21:52:12 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AGServicePackage.py,v 1.1 2005-01-06 22:47:07 turam Exp $"
+__revision__ = "$Id: AGServicePackage.py,v 1.2 2005-02-07 21:52:12 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -97,11 +97,13 @@ class AGServicePackage:
             self.name = c.get( "ServiceDescription", "name" )
             self.description = c.get( "ServiceDescription", "description" )
             self.executable = c.get( "ServiceDescription", "executable" )
-            self.resourceType = c.get( "ServiceDescription", "resourceType" )
+            if c.has_option("ServiceDescription","resourceType"):
+                self.resourceType = c.get( "ServiceDescription", "resourceType" )
             self.version = c.get("ServiceDescription","version")
             if c.has_option("ServiceDescription","inlineClass"):
                 self.inlineClass = c.get("ServiceDescription","inlineClass")
         except Exception, e:
+            log.exception("AGServicePackage.__ReadPackageFile: failed")
             raise InvalidServiceDescription(str(e))
             
                 
