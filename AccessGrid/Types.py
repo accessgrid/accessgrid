@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.33 2003-05-22 04:47:07 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.34 2003-05-22 20:18:37 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,6 +13,9 @@ import os
 import zipfile
 import time
 import sys
+
+import logging
+log = logging.getLogger("AG.Types")
 
 from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter, CreateParameter
 
@@ -68,9 +71,10 @@ class VenueState:
     def AddUser( self, userProfile ):
         self.clients[userProfile.publicId] = userProfile
     def RemoveUser( self, userProfile ):
-#        print "removing user", userProfile.name, userProfile.publicId
-#        print "clients = ", self.clients.items()
+        log.debug("removing user name=%s publicId=%s", userProfile.name, userProfile.publicId)
+        log.debug("clients = %s", self.clients.items())
         del self.clients[userProfile.publicId]
+        log.debug("RemoveUser complete")
     def ModifyUser( self, userProfile ):
         if userProfile.publicId in self.clients.keys():
             self.clients[userProfile.publicId] = userProfile
