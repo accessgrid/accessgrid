@@ -87,28 +87,32 @@ wxFrame<br>
             <table border="0" cellspacing="2" cellpadding="2" width="100%">
               <tr>
             <td align="LEFT" valign="TOP">
+<a href="#AddToMyVenues">AddToMyVenues</a><br>
 <a href="#CleanUp">CleanUp</a><br>
-<a href="#OnExit">OnExit</a><br>
+<a href="#ConnectToMyVenue">ConnectToMyVenue</a><br>
+<a href="#Exit">Exit</a><br>
 <a href="#OpenAboutDialog">OpenAboutDialog</a><br>
 <a href="#OpenAddDataDialog">OpenAddDataDialog</a><br>
 <a href="#OpenAddServiceDialog">OpenAddServiceDialog</a><br>
 <a href="#OpenConnectToVenueDialog">OpenConnectToVenueDialog</a><br>
 <a href="#OpenDataProfileDialog">OpenDataProfileDialog</a><br>
-<a href="#OpenNodeMgmtApp">OpenNodeMgmtApp</a><br>
-<a href="#OpenParticipantProfileDialog">OpenParticipantProfileDialog</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#OpenNodeMgmtApp">OpenNodeMgmtApp</a><br>
+<a href="#OpenParticipantProfileDialog">OpenParticipantProfileDialog</a><br>
 <a href="#OpenProfileDialog">OpenProfileDialog</a><br>
 <a href="#OpenServiceProfileDialog">OpenServiceProfileDialog</a><br>
 <a href="#OpenSetNodeUrlDialog">OpenSetNodeUrlDialog</a><br>
 <a href="#RemoveData">RemoveData</a><br>
 <a href="#RemoveService">RemoveService</a><br>
+<a href="#SaveData">SaveData</a><br>
 <a href="#UpdateLayout">UpdateLayout</a><br>
-<a href="#__doLayout">__doLayout</a><br>
-<a href="#__init__">__init__</a><br>
-<a href="#__setEvents">__setEvents</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#__doLayout">__doLayout</a><br>
+<a href="#__init__">__init__</a><br>
+<a href="#__loadMyVenues">__loadMyVenues</a><br>
+<a href="#__setEvents">__setEvents</a><br>
 <a href="#__setMenubar">__setMenubar</a><br>
 <a href="#__setProperties">__setProperties</a><br>
 <a href="#__setStatusbar">__setStatusbar</a><br>
@@ -118,6 +122,33 @@ wxFrame<br>
 </tr>
             </table>
             
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AddToMyVenues"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AddToMyVenues&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AddToMyVenues ( self,  event )
+
+</pre></font>
+
 
         <tr>
             <th bgcolor="#99ccff"
@@ -154,7 +185,7 @@ CleanUp ( self )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="OnExit"></a>&nbsp;
+                  <a name="ConnectToMyVenue"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -162,13 +193,40 @@ CleanUp ( self )
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">OnExit&nbsp;</font>
+                <font color="#000000">ConnectToMyVenue&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-OnExit ( self,  event )
+ConnectToMyVenue ( self,  event )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exit"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">Exit&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+Exit ( self,  event )
 
 </pre></font>
 
@@ -277,7 +335,7 @@ OpenAddServiceDialog ( self,  event )
         <tr>
         <td>
         <font color="#000088"><pre>
-OpenConnectToVenueDialog ( self,  event )
+OpenConnectToVenueDialog ( self,  event=None )
 
 </pre></font>
 
@@ -506,6 +564,33 @@ RemoveService ( self,  event )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="SaveData"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SaveData&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SaveData ( self,  event )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="UpdateLayout"></a>&nbsp;
                 </font>
             </th>
@@ -581,6 +666,33 @@ __init__ (
         title,
         app=None,
         )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="__loadMyVenues"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">__loadMyVenues&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+__loadMyVenues ( self,  venueURL=None )
 
 </pre></font>
 
@@ -719,6 +831,8 @@ __setToolbar ( self )
 
 </pre></font>
 
+<p>self.toolbar.AddSimpleTool(20, icons.getWordBitmap(),                                    &quot;ImportantPaper.doc&quot;, &quot;ImportantPaper.doc&quot;,)
+        self.toolbar.AddSimpleTool(21, icons.getPowerPointBitmap(),                                    &quot;Presentation.ppt&quot;, &quot;Presentation.ppt&quot;,)</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -759,7 +873,7 @@ __showNoSelectionDialog ( self,  text )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:18:05 2003 by
+        on Fri Feb 14 09:21:11 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -23,7 +23,9 @@
         <tr>
         <td>
         
-<p>A Data Description represents data within a venue.</p>
+<h3>A Data Description represents data within a venue.</h3>
+<p>    Each description object represents a single file. (We assume that
+    the venue-resident data server does not support directory hierarchies).</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -76,8 +78,14 @@
         <tr>
         <td>
         
-<a href="#GetStorageType">GetStorageType</a><br>
-<a href="#SetStorageType">SetStorageType</a><br>
+<a href="#GetChecksum">GetChecksum</a><br>
+<a href="#GetOwner">GetOwner</a><br>
+<a href="#GetSize">GetSize</a><br>
+<a href="#GetStatus">GetStatus</a><br>
+<a href="#SetChecksum">SetChecksum</a><br>
+<a href="#SetOwner">SetOwner</a><br>
+<a href="#SetSize">SetSize</a><br>
+<a href="#SetStatus">SetStatus</a><br>
 <a href="#__init__">__init__</a><br>
 
 
@@ -89,7 +97,7 @@
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="GetStorageType"></a>&nbsp;
+                  <a name="GetChecksum"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -97,13 +105,13 @@
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">GetStorageType&nbsp;</font>
+                <font color="#000000">GetChecksum&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-GetStorageType ( self )
+GetChecksum ( self )
 
 </pre></font>
 
@@ -116,7 +124,7 @@ GetStorageType ( self )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="SetStorageType"></a>&nbsp;
+                  <a name="GetOwner"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -124,16 +132,206 @@ GetStorageType ( self )
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">SetStorageType&nbsp;</font>
+                <font color="#000000">GetOwner&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-SetStorageType ( self,  storage_type )
+GetOwner ( self )
 
 </pre></font>
 
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetSize"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetSize&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetSize ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetStatus"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetStatus&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetStatus ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetChecksum"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetChecksum&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetChecksum ( self,  checksum )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetOwner"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetOwner&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetOwner ( self,  owner )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetSize"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetSize&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetSize ( self,  size )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetStatus"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetStatus&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetStatus ( self,  status )
+
+</pre></font>
+
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+self.InvalidStatus( status )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -157,14 +355,7 @@ SetStorageType ( self,  storage_type )
         <tr>
         <td>
         <font color="#000088"><pre>
-__init__ (
-        self,
-        name,
-        description,
-        uri,
-        icon,
-        storageType,
-        )
+__init__ ( self,  name )
 
 </pre></font>
 
@@ -181,7 +372,7 @@ __init__ (
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:18:05 2003 by
+        on Fri Feb 14 09:21:11 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

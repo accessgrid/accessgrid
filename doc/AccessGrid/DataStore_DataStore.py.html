@@ -23,6 +23,7 @@
         <tr>
         <td>
         
+<p>A DataStore implements a per-venue data storage server.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -47,37 +48,26 @@
         <tr>
         <td>
         
-<a href="#Retrieve">Retrieve</a><br>
-<a href="#Store">Store</a><br>
+
+            <table border="0" cellspacing="2" cellpadding="2" width="100%">
+              <tr>
+            <td align="LEFT" valign="TOP">
+<a href="#AddPendingFile">AddPendingFile</a><br>
+<a href="#CanUploadFile">CanUploadFile</a><br>
+<a href="#CompleteUpload">CompleteUpload</a><br>
+<a href="#DeleteFile">DeleteFile</a><br>
+<a href="#GetDownloadDescriptor">GetDownloadDescriptor</a><br>
+</td>
+<td align="LEFT" valign="TOP">
+<a href="#GetFilePath">GetFilePath</a><br>
+<a href="#GetUploadDescriptor">GetUploadDescriptor</a><br>
+<a href="#GetUploadFileHandle">GetUploadFileHandle</a><br>
+<a href="#SetTransferEngine">SetTransferEngine</a><br>
 <a href="#__init__">__init__</a><br>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Retrieve"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">Retrieve&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-Retrieve ( self,  URLToData )
-
-</pre></font>
-
+</td>
+</tr>
+            </table>
+            
 
         <tr>
             <th bgcolor="#99ccff"
@@ -87,7 +77,7 @@ Retrieve ( self,  URLToData )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="Store"></a>&nbsp;
+                  <a name="AddPendingFile"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -95,16 +85,337 @@ Retrieve ( self,  URLToData )
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">Store&nbsp;</font>
+                <font color="#000000">AddPendingFile&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-Store ( self,  data )
+AddPendingFile (
+        self,
+        dn,
+        filename,
+        )
 
 </pre></font>
 
+<p>Create a data description for filename with a state of &quot;pending&quot; and
+        add to the venue.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="CanUploadFile"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">CanUploadFile&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+CanUploadFile (
+        self,
+        dn,
+        filename,
+        )
+
+</pre></font>
+
+<p>Used by the transfer engine to determine if a client is able to
+        upload a new file.<p>        Arguments:
+         - dn is the distinguished name of the client
+         - filename is the file name client is attempting to upload</p>
+<p>        Current test is just to see if the file exists.
+        Need to test to see if the client is currently logged into the venue.</p>
+</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="CompleteUpload"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">CompleteUpload&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+CompleteUpload (
+        self,
+        dn,
+        file_info,
+        )
+
+</pre></font>
+
+<p>The upload is done. Get the data description, update with the
+        information from the file_info dict (which contains the information
+        from the manifest).</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="DeleteFile"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">DeleteFile&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+DeleteFile ( self,  filename )
+
+</pre></font>
+
+<p>Delete filename from the datastore.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+FileNotFound( filename )<br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetDownloadDescriptor"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetDownloadDescriptor&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetDownloadDescriptor ( self,  filename )
+
+</pre></font>
+
+<h3>Return the download descriptor for filename.</h3>
+<p>        If filename is not present in the datastore, return None.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetFilePath"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetFilePath&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetFilePath (
+        self,
+        dn,
+        filename,
+        )
+
+</pre></font>
+
+<h3>Return the full path of the given filename in this datastore.</h3>
+<p>        Used by the transfer engine to find a requested file.
+        This method must perform an authorization check on dn, the
+        distinguished name of the client requesting the file. If this fails,
+        raise a NotAuthorized exception. If the file does not exist,
+        raise a FileNotFound exception.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="DataStore_FileNotFound.py.html">FileNotFound</a><br>
+<a href="DataStore_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetUploadDescriptor"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetUploadDescriptor&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetUploadDescriptor ( self )
+
+</pre></font>
+
+<p>Return the upload descriptor for this datastore.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetUploadFileHandle"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetUploadFileHandle&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetUploadFileHandle (
+        self,
+        dn,
+        filename,
+        )
+
+</pre></font>
+
+<p>Return a filehandle appropriate for writing into a
+        new upload of filename.<p>        The client is running with identity &quot;dn&quot;.</p>
+<p>        This is used by the transfer engine to provide a
+        destination for a file upload.</p>
+</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetTransferEngine"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetTransferEngine&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetTransferEngine ( self,  engine )
+
+</pre></font>
+
+<p>Set the datastore's default transfer engine.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -130,12 +441,42 @@ Store ( self,  data )
         <font color="#000088"><pre>
 __init__ (
         self,
-        size,
-        port,
+        venue,
+        pathname,
         )
 
 </pre></font>
 
+<h3>Create the datastore.</h3>
+<p>        Files will be stored in the directory named by pathname.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+Exception("Datastore path %s does not exist" %( pathname ) )<br>
+
+</td></tr>
+</table>
 </td></tr>
 </td></tr>
 </table>
@@ -149,7 +490,7 @@ __init__ (
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:18:05 2003 by
+        on Fri Feb 14 09:21:11 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

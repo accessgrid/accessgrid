@@ -91,32 +91,39 @@ ServiceBase.ServiceBase<br>
 <a href="#Exit">Exit</a><br>
 <a href="#GetConnections">GetConnections</a><br>
 <a href="#GetData">GetData</a><br>
-</td>
-<td align="LEFT" valign="TOP">
 <a href="#GetDescription">GetDescription</a><br>
 <a href="#GetNetworkServices">GetNetworkServices</a><br>
 <a href="#GetNextPrivateId">GetNextPrivateId</a><br>
+</td>
+<td align="LEFT" valign="TOP">
 <a href="#GetState">GetState</a><br>
 <a href="#GetStreams">GetStreams</a><br>
+<a href="#GetUploadDescriptor">GetUploadDescriptor</a><br>
 <a href="#IsValidPrivateId">IsValidPrivateId</a><br>
 <a href="#NegotiateCapabilities">NegotiateCapabilities</a><br>
 <a href="#Ping">Ping</a><br>
 <a href="#RemoveConnection">RemoveConnection</a><br>
 <a href="#RemoveData">RemoveData</a><br>
 <a href="#RemoveNetworkService">RemoveNetworkService</a><br>
-</td>
-<td align="LEFT" valign="TOP">
 <a href="#RemoveService">RemoveService</a><br>
 <a href="#SetConnections">SetConnections</a><br>
 <a href="#SetDataStore">SetDataStore</a><br>
 <a href="#SetDescription">SetDescription</a><br>
 <a href="#SetMulticastAddressAllocator">SetMulticastAddressAllocator</a><br>
+</td>
+<td align="LEFT" valign="TOP">
 <a href="#Shutdown">Shutdown</a><br>
 <a href="#Start">Start</a><br>
 <a href="#UpdateClientProfile">UpdateClientProfile</a><br>
+<a href="#UpdateData">UpdateData</a><br>
 <a href="#__getstate__">__getstate__</a><br>
 <a href="#__init__">__init__</a><br>
+<a href="#__repr__">__repr__</a><br>
 <a href="#__setstate__">__setstate__</a><br>
+<a href="#startDataStore">startDataStore</a><br>
+<a href="#wsAddData">wsAddData</a><br>
+<a href="#wsGetData">wsGetData</a><br>
+<a href="#wsUpdateData">wsUpdateData</a><br>
 </td>
 </tr>
             </table>
@@ -144,11 +151,7 @@ ServiceBase.ServiceBase<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-AddConnection (
-        self,
-        connectionInfo,
-        connectionDescription,
-        )
+AddConnection ( self,  connectionDescription )
 
 </pre></font>
 
@@ -177,17 +180,41 @@ AddConnection (
         <tr>
         <td>
         <font color="#000088"><pre>
-AddData (
-        self,
-        connectionInfo,
-        dataDescription,
-        )
+AddData ( self,  dataDescription )
 
 </pre></font>
 
 <p>The AddData method enables VenuesClients to put data in the Virtual
         Venue. Data put in the Virtual Venue through AddData is persistently
         stored.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException("AddData: data %s already present" %( name ) )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -211,11 +238,7 @@ AddData (
         <tr>
         <td>
         <font color="#000088"><pre>
-AddNetworkService (
-        self,
-        connectionInfo,
-        networkServiceDescription,
-        )
+AddNetworkService ( self,  networkServiceDescription )
 
 </pre></font>
 
@@ -245,11 +268,7 @@ AddNetworkService (
         <tr>
         <td>
         <font color="#000088"><pre>
-AddService (
-        self,
-        connectionInfo,
-        serviceDescription,
-        )
+AddService ( self,  serviceDescription )
 
 </pre></font>
 
@@ -359,11 +378,7 @@ ClientHeartbeat ( self,  event )
         <tr>
         <td>
         <font color="#000088"><pre>
-Enter (
-        self,
-        connectionInfo,
-        clientProfile,
-        )
+Enter ( self,  clientProfile )
 
 </pre></font>
 
@@ -393,11 +408,7 @@ Enter (
         <tr>
         <td>
         <font color="#000088"><pre>
-Exit (
-        self,
-        connectionInfo,
-        privateId,
-        )
+Exit ( self,  privateId )
 
 </pre></font>
 
@@ -427,7 +438,7 @@ Exit (
         <tr>
         <td>
         <font color="#000088"><pre>
-GetConnections ( self,  connectionInfo )
+GetConnections ( self )
 
 </pre></font>
 
@@ -456,11 +467,7 @@ GetConnections ( self,  connectionInfo )
         <tr>
         <td>
         <font color="#000088"><pre>
-GetData (
-        self,
-        connectionInfo,
-        dataDescription,
-        )
+GetData ( self,  name )
 
 </pre></font>
 
@@ -490,7 +497,7 @@ GetData (
         <tr>
         <td>
         <font color="#000088"><pre>
-GetDescription ( self,  connectionInfo )
+GetDescription ( self )
 
 </pre></font>
 
@@ -518,7 +525,7 @@ GetDescription ( self,  connectionInfo )
         <tr>
         <td>
         <font color="#000088"><pre>
-GetNetworkServices ( self,  connectionInfo )
+GetNetworkServices ( self )
 
 </pre></font>
 
@@ -575,7 +582,7 @@ GetNextPrivateId ( self )
         <tr>
         <td>
         <font color="#000088"><pre>
-GetState ( self,  connectionInfo )
+GetState ( self )
 
 </pre></font>
 
@@ -605,11 +612,38 @@ GetState ( self,  connectionInfo )
         <tr>
         <td>
         <font color="#000088"><pre>
-GetStreams ( self,  connectionInfo )
+GetStreams ( self )
 
 </pre></font>
 
 <p>GetStreams returns a list of stream descriptions to the caller.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetUploadDescriptor"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetUploadDescriptor&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetUploadDescriptor ( self )
+
+</pre></font>
+
 
         <tr>
             <th bgcolor="#99ccff"
@@ -720,11 +754,7 @@ Ping ( self )
         <tr>
         <td>
         <font color="#000088"><pre>
-RemoveConnection (
-        self,
-        connectionInfo,
-        connectionDescription,
-        )
+RemoveConnection ( self,  connectionDescription )
 
 </pre></font>
 
@@ -753,11 +783,7 @@ RemoveConnection (
         <tr>
         <td>
         <font color="#000088"><pre>
-RemoveData (
-        self,
-        connectionInfo,
-        dataDescription,
-        )
+RemoveData ( self,  dataDescription )
 
 </pre></font>
 
@@ -785,11 +811,7 @@ RemoveData (
         <tr>
         <td>
         <font color="#000088"><pre>
-RemoveNetworkService (
-        self,
-        connectionInfo,
-        networkServiceDescription,
-        )
+RemoveNetworkService ( selfnetworkServiceDescription )
 
 </pre></font>
 
@@ -818,11 +840,7 @@ RemoveNetworkService (
         <tr>
         <td>
         <font color="#000088"><pre>
-RemoveService (
-        self,
-        connectionInfo,
-        serviceDescription,
-        )
+RemoveService ( self,  serviceDescription )
 
 </pre></font>
 
@@ -851,11 +869,7 @@ RemoveService (
         <tr>
         <td>
         <font color="#000088"><pre>
-SetConnections (
-        self,
-        connectionInfo,
-        connectionList,
-        )
+SetConnections ( self,  connectionList )
 
 </pre></font>
 
@@ -890,6 +904,8 @@ SetDataStore ( self,  dataStore )
 
 </pre></font>
 
+<p>Set the Data Store for the Venue. This is usually set to the data
+        store the venue server uses.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -913,11 +929,7 @@ SetDataStore ( self,  dataStore )
         <tr>
         <td>
         <font color="#000088"><pre>
-SetDescription (
-        self,
-        connectionInfo,
-        description,
-        )
+SetDescription ( self,  description )
 
 </pre></font>
 
@@ -950,6 +962,8 @@ SetMulticastAddressAllocator ( self,  multicastAllocator )
 
 </pre></font>
 
+<p>Set the Multicast Address Allocator for the Venue. This is usually
+        set to the allocator the venue server uses.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1030,17 +1044,71 @@ Start ( self )
         <tr>
         <td>
         <font color="#000088"><pre>
-UpdateClientProfile (
-        self,
-        connectionInfo,
-        clientProfile,
-        )
+UpdateClientProfile ( self,  clientProfile )
 
 </pre></font>
 
 <p>UpdateClientProfile allows a VenueClient to update/modify the client
         profile that is stored by the Virtual Venue that they gave to the Venue
         when they called the Enter method.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="UpdateData"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">UpdateData&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+UpdateData ( self,  dataDescription )
+
+</pre></font>
+
+<p>Replace the current description for dataDescription.name with
+        this one.<p>        Send out an update event.</p>
+</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException("UpdateData: data %s not already present" %( name ) )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1068,6 +1136,9 @@ __getstate__ ( self )
 
 </pre></font>
 
+<h3>Retrieve the state of object attributes for pickling.</h3>
+<p>        We don't pickle any object instances, except for the
+        uniqueId and description.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1097,8 +1168,38 @@ __init__ (
         description,
         administrator,
         multicastAllocator,
-        dataStore,
+        dataStorePath,
         )
+
+</pre></font>
+
+<h3>Venue constructor.</h3>
+<p>        dataStorePath is the directory which the Venue's data storage object
+        should use for storing its files.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="__repr__"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">__repr__&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+__repr__ ( self )
 
 </pre></font>
 
@@ -1125,7 +1226,126 @@ __init__ (
         <tr>
         <td>
         <font color="#000088"><pre>
-__setstate__ ( self,  dict )
+__setstate__ ( self,  pickledDict )
+
+</pre></font>
+
+<h3>Resurrect the state of this object after unpickling.</h3>
+<p>        Restore  the attribute dictionary and start up the
+        services.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="startDataStore"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">startDataStore&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+startDataStore ( self )
+
+</pre></font>
+
+<h3>Start the local datastore server.</h3>
+<p>        We create a DataStore and a HTTPTransportServer for the actual service.
+        The DataStore is given the Venue's dataStorePath as its working directory.
+        We then loop through the data descriptions in the venue, both checking
+        to see that the file still exists for each piece of data, and updating the
+        uri field in the description with the new download URL.</p>
+<p>        Actually, we get to do both steps at once, as GetDownloadDescriptor will
+        return None if the file doesn't exist in the local data store.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsAddData"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsAddData&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsAddData ( self,  dataDescription )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsGetData"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsGetData&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsGetData ( self,  name )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsUpdateData"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsUpdateData&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsUpdateData ( self,  dataDescription )
 
 </pre></font>
 
@@ -1142,7 +1362,7 @@ __setstate__ ( self,  dict )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:18:05 2003 by
+        on Fri Feb 14 09:21:11 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

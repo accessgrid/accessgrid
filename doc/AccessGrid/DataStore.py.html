@@ -33,6 +33,190 @@
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="Imported modules">Imported modules</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<b>from</b> AccessGrid.Descriptions <b>import</b> DataDescription<br>
+<b>import</b> AccessGrid.GUID<br>
+<b>from</b> AccessGrid.Utilities <b>import</b> GetHostname<br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-BaseHTTPServer.html">BaseHTTPServer</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-ConfigParser.html">ConfigParser</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-cStringIO.html">cStringIO</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-httplib.html">httplib</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-md5.html">md5</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-os.html">os</a><br>
+<b>import</b> os.path<br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-re.html">re</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-shutil.html">shutil</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-socket.html">socket</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-string.html">string</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-sys.html">sys</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-threading.html">threading</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-urllib.html">urllib</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-urlparse.html">urlparse</a><br>
+
+</td></tr>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Functions">Functions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="#HTTPDownloadFile">HTTPDownloadFile</a><br>
+<a href="#HTTPUploadFiles">HTTPUploadFiles</a><br>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="HTTPDownloadFile"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">HTTPDownloadFile&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+HTTPDownloadFile (
+        identity,
+        download_url,
+        destination,
+        size,
+        checksum,
+        progressCB=None,
+        )
+
+</pre></font>
+
+<p>Download the given url, as user identified by identity,
+    and place the new file in destination. <p>    We assume the caller has determined that overwriting destination
+    is valid, so we do not check for its existence.</p>
+<p>    progressCB is a callable that will be invoked with two arguments: the number
+    of bytes transferred so far, and a flag that is passed as 1 if the transfer
+    is completed. If the call to progressCB returns true, the user has cancelled
+    the transfer.</p>
+</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+DownloadFailed( "Cancelled by user" )<br>
+DownloadFailed("Checksum mismatch on download: download was %s, metadata was %s" %( download_digest, checksum ) )<br>
+DownloadFailed("End of file before %d bytes read" %( size ) )<br>
+DownloadFailed("Size mismatch: server says %d, metadata says %d" %( hdr_size, size ) )<br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="HTTPUploadFiles"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">HTTPUploadFiles&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+HTTPUploadFiles (
+        identity,
+        upload_url,
+        file_list,
+        progressCB,
+        )
+
+</pre></font>
+
+<h3>Upload the given list of files to the server using HTTP.</h3>
+<p>    Identity is the DN of the client submitting the files.</p>
+<h4>    progressCB is a callback that will be invoked this way:</h4>
+<p>       progressCB(filename, bytes_sent, total_bytes, file_done, transfer_done)</p>
+<p>    filename is the file to which the progress update applies
+    bytes_sent and total_bytes denote the file's progress
+    file_done is set when the given file upload is complete
+    transfer_done is set when the entire transfer is complete</p>
+<p>    If progressCB returns true, the transfer is to be cancelled.</p>
+</td></tr>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="Classes">Classes</a>&nbsp;
                 </font>
             </th>
@@ -48,7 +232,22 @@
         <td>
         
 <table border="0" cellpadding="3" cellspacing="0">
-<tr><td valign="top" align="left"><a href="DataStore_DataStore.py.html">DataStore</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_DataStore.py.html">DataStore</a></td><td valign="top" align="left">
+<p>A DataStore implements a per-venue data storage server.</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_DownloadFailed.py.html">DownloadFailed</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_DuplicateFile.py.html">DuplicateFile</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_FileNotFound.py.html">FileNotFound</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_HTTPTransferHandler.py.html">HTTPTransferHandler</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_HTTPTransferServer.py.html">HTTPTransferServer</a></td><td valign="top" align="left">
+<p>An HTTPTransferServer provides upload and download services via HTTP.</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_HTTPUploadEngine.py.html">HTTPUploadEngine</a></td><td valign="top" align="left">
+<p>An HTTPUploadEngine bundles up the functionality need to implement</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_NotAPlainFile.py.html">NotAPlainFile</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_NotAuthorized.py.html">NotAuthorized</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_UploadFailed.py.html">UploadFailed</a></td><td valign="top" align="left"></td></tr>
 </table>
 </td></tr>
 </td></tr>
@@ -63,7 +262,7 @@
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:18:05 2003 by
+        on Fri Feb 14 09:21:11 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

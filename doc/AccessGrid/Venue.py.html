@@ -47,6 +47,7 @@
         <tr>
         <td>
         
+<b>from</b> AccessGrid <b>import</b> DataStore<br>
 <b>from</b> AccessGrid.Descriptions <b>import</b> StreamDescription<br>
 <b>from</b> AccessGrid.EventService <b>import</b> EventService<br>
 <b>from</b> AccessGrid.Events <b>import</b> Event, HeartbeatEvent, TextEvent<br>
@@ -54,9 +55,10 @@
 <b>from</b> AccessGrid.NetworkLocation <b>import</b> MulticastNetworkLocation<br>
 <b>from</b> AccessGrid.TextService <b>import</b> TextService<br>
 <b>from</b> AccessGrid.Types <b>import</b> Capability<br>
-<b>from</b> AccessGrid.Utilities <b>import</b> formatExceptionInfo, AllocateEncryptionKey<br>
+<b>from</b> AccessGrid.Utilities <b>import</b> formatExceptionInfo, AllocateEncryptionKey, GetHostname<br>
 <b>from</b> AccessGrid.hosting.pyGlobus <b>import</b> ServiceBase<br>
 <b>from</b> AccessGrid.scheduler <b>import</b> Scheduler<br>
+<b>import</b> os.path<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-socket.html">socket</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-string.html">string</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-sys.html">sys</a><br>
@@ -91,6 +93,9 @@
 <tr><td valign="top" align="left"><a href="Venue_Venue.py.html">Venue</a></td><td valign="top" align="left">
 <p>A Virtual Venue is a virtual space for collaboration on the Access Grid.</p>
 </td></tr>
+<tr><td valign="top" align="left"><a href="Venue_VenueException.py.html">VenueException</a></td><td valign="top" align="left">
+<p>A generic exception type to be raised by the Venue code.</p>
+</td></tr>
 </table>
 </td></tr>
 </td></tr>
@@ -105,7 +110,7 @@
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:18:05 2003 by
+        on Fri Feb 14 09:21:11 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

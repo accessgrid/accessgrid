@@ -151,11 +151,7 @@ ServiceBase.ServiceBase<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-AddAdministrator (
-        self,
-        connectionInfo,
-        string,
-        )
+AddAdministrator ( self,  string )
 
 </pre></font>
 
@@ -184,11 +180,7 @@ AddAdministrator (
         <tr>
         <td>
         <font color="#000088"><pre>
-AddService (
-        self,
-        connectionInfo,
-        serviceDescription,
-        )
+AddService ( self,  serviceDescription )
 
 </pre></font>
 
@@ -218,11 +210,7 @@ AddService (
         <tr>
         <td>
         <font color="#000088"><pre>
-AddVenue (
-        self,
-        connectionInfo,
-        venueDescription,
-        )
+AddVenue ( self,  venueDescription )
 
 </pre></font>
 
@@ -285,7 +273,7 @@ Checkpoint ( self )
         <tr>
         <td>
         <font color="#000088"><pre>
-GetAddressAllocationMethod ( self,  connectionInfo )
+GetAddressAllocationMethod ( self )
 
 </pre></font>
 
@@ -314,7 +302,7 @@ GetAddressAllocationMethod ( self,  connectionInfo )
         <tr>
         <td>
         <font color="#000088"><pre>
-GetAddressMask ( self,  connectionInfo )
+GetAddressMask ( self )
 
 </pre></font>
 
@@ -343,7 +331,7 @@ GetAddressMask ( self,  connectionInfo )
         <tr>
         <td>
         <font color="#000088"><pre>
-GetAdministrators ( self,  connectionInfo )
+GetAdministrators ( self )
 
 </pre></font>
 
@@ -372,7 +360,7 @@ GetAdministrators ( self,  connectionInfo )
         <tr>
         <td>
         <font color="#000088"><pre>
-GetBaseAddress ( self,  connectionInfo )
+GetBaseAddress ( self )
 
 </pre></font>
 
@@ -401,7 +389,7 @@ GetBaseAddress ( self,  connectionInfo )
         <tr>
         <td>
         <font color="#000088"><pre>
-GetDefaultVenue ( self,  connectionInfo )
+GetDefaultVenue ( self )
 
 </pre></font>
 
@@ -430,7 +418,7 @@ GetDefaultVenue ( self,  connectionInfo )
         <tr>
         <td>
         <font color="#000088"><pre>
-GetStorageLocation ( self,  connectionInfo )
+GetStorageLocation ( self )
 
 </pre></font>
 
@@ -458,7 +446,7 @@ GetStorageLocation ( self,  connectionInfo )
         <tr>
         <td>
         <font color="#000088"><pre>
-GetVenues ( self,  connectionInfo )
+GetVenues ( self )
 
 </pre></font>
 
@@ -516,7 +504,6 @@ InitFromFile ( self,  config )
         <font color="#000088"><pre>
 ModifyService (
         self,
-        connectionInfo,
         URL,
         serviceDescription,
         )
@@ -550,7 +537,6 @@ ModifyService (
         <font color="#000088"><pre>
 ModifyVenue (
         self,
-        connectionInfo,
         URL,
         venueDescription,
         )
@@ -581,11 +567,7 @@ ModifyVenue (
         <tr>
         <td>
         <font color="#000088"><pre>
-RegisterServer (
-        self,
-        connectionInfo,
-        URL,
-        )
+RegisterServer ( self,  URL )
 
 </pre></font>
 
@@ -615,11 +597,7 @@ RegisterServer (
         <tr>
         <td>
         <font color="#000088"><pre>
-RemoveAdministrator (
-        self,
-        connectionInfo,
-        string,
-        )
+RemoveAdministrator ( self,  string )
 
 </pre></font>
 
@@ -650,7 +628,6 @@ RemoveAdministrator (
         <font color="#000088"><pre>
 RemoveService (
         self,
-        connectionInfo,
         URL,
         serviceDescription,
         )
@@ -682,11 +659,7 @@ RemoveService (
         <tr>
         <td>
         <font color="#000088"><pre>
-RemoveVenue (
-        self,
-        connectionInfo,
-        URL,
-        )
+RemoveVenue ( self,  URL )
 
 </pre></font>
 
@@ -714,11 +687,7 @@ RemoveVenue (
         <tr>
         <td>
         <font color="#000088"><pre>
-SetAddressAllocationMethod (
-        self,
-        connectionInfo,
-        addressAllocationMethod,
-        )
+SetAddressAllocationMethod ( self,  addressAllocationMethod )
 
 </pre></font>
 
@@ -747,11 +716,7 @@ SetAddressAllocationMethod (
         <tr>
         <td>
         <font color="#000088"><pre>
-SetAddressMask (
-        self,
-        connectionInfo,
-        mask,
-        )
+SetAddressMask ( self,  mask )
 
 </pre></font>
 
@@ -780,11 +745,7 @@ SetAddressMask (
         <tr>
         <td>
         <font color="#000088"><pre>
-SetBaseAddress (
-        self,
-        connectionInfo,
-        address,
-        )
+SetBaseAddress ( self,  address )
 
 </pre></font>
 
@@ -813,11 +774,7 @@ SetBaseAddress (
         <tr>
         <td>
         <font color="#000088"><pre>
-SetDefaultVenue (
-        self,
-        connectionInfo,
-        venueURL,
-        )
+SetDefaultVenue ( self,  venueURL )
 
 </pre></font>
 
@@ -846,11 +803,7 @@ SetDefaultVenue (
         <tr>
         <td>
         <font color="#000088"><pre>
-SetStorageLocation (
-        self,
-        connectionInfo,
-        dataStorageLocation,
-        )
+SetStorageLocation ( self,  dataStorageLocation )
 
 </pre></font>
 
@@ -878,11 +831,7 @@ SetStorageLocation (
         <tr>
         <td>
         <font color="#000088"><pre>
-Shutdown (
-        self,
-        connectionInfo,
-        secondsFromNow,
-        )
+Shutdown ( self,  secondsFromNow )
 
 </pre></font>
 
@@ -934,7 +883,7 @@ __init__ (
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:18:05 2003 by
+        on Fri Feb 14 09:21:11 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         
