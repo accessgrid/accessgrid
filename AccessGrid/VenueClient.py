@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.113 2003-09-17 21:07:09 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.114 2003-09-18 21:12:15 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.113 2003-09-17 21:07:09 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.114 2003-09-18 21:12:15 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -744,7 +744,6 @@ class VenueClient( ServiceBase):
             log.exception("on text client exiting")
         
         try:        
-          if self.venueProxy:
             self.venueProxy.Exit( self.privateId )
         except Exception, e:
             log.exception("AccessGrid.VenueClient::ExitVenue exception")
