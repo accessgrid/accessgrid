@@ -6,8 +6,11 @@ import string
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
+
 from AccessGrid.Types import AGServiceImplementationRepository, AGServiceDescription, ServiceConfiguration
 from AccessGrid.AuthorizationManager import AuthorizationManager
+from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
+
 
 
 class AGNodeService( ServiceBase ):
@@ -26,80 +29,77 @@ class AGNodeService( ServiceBase ):
       self.configDir = "config/"
       self.authManager = AuthorizationManager()
       self.__ReadAuthFile()
-      #self.authManager.AddAuthorizedUser( "/O=Grid/O=Globus/OU=mcs.anl.gov/CN=Thomas Uram" )
 
 
-   def __ReadAuthFile( self ):
-      # if config file exists
-      nodeAuthFile = "nodeauth.cfg"
-      if os.path.exists( nodeAuthFile ):
-         # read it
-         f = open( nodeAuthFile )
-         lines = f.readlines()
-         f.close()
-
-         # add users therein to authorization manager
-         for line in lines:
-            line = string.strip(line)
-            self.authManager.AddAuthorizedUser( line )
-            print "added user ", line
-         
-         # push authorization to service managers
-         self.__PushAuthorizedUserList()
+   ####################
+   ## AUTHORIZATION methods
+   ####################
 
    def AddAuthorizedUser( self, connInfo, authorizedUser ):
       """Add user to list of authorized users"""
+
+      # Check authorization
+      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
+
       try:
          self.authManager.AddAuthorizedUser( authorizedUser )
          self.__PushAuthorizedUserList()
       except:
          print "Exception in AGNodeService.AddAuthorizedUser ", sys.exc_type, sys.exc_value
+         raise faultType("Failed to add user authorization: " + authorizedUser )
    AddAuthorizedUser.soap_export_as = "AddAuthorizedUser"
    AddAuthorizedUser.pass_connection_info = 1
 
 
    def RemoveAuthorizedUser( self, connInfo, authorizedUser ):
       """Remove user from list of authorized users"""
+
+      # Check authorization
+      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
+
       try:
          self.authManager.RemoveAuthorizedUser( authorizedUser )
          self.__PushAuthorizedUserList()
       except:
          print "Exception in AGNodeService.RemoveAuthorizedUser ", sys.exc_type, sys.exc_value
+         raise faultType("Failed to remove user authorization: " + authorizedUser )
    RemoveAuthorizedUser.soap_export_as = "RemoveAuthorizedUser"
    RemoveAuthorizedUser.pass_connection_info = 1
 
 
-   def __PushAuthorizedUserList( self ):
-      """Push the list of authorized users to service managers"""
-      try:
-         for serviceManager in self.serviceManagers:
-            Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( self.authorizedUsers )   
-      except:
-         print "Exception in AGNodeService.RemoveAuthorizedUser ", sys.exc_type, sys.exc_value
+   ####################
+   ## SERVICE MANAGER methods
+   ####################
 
    def AddServiceManager( self, connInfo, serviceManager ):
       """Add a service manager"""
 
-      #if not self.authManager.Authorize( connInfo.get_remote_name() ): return
+      # Check authorization
+      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
 
       try:
          Client.Handle( serviceManager.uri ).get_proxy().Ping()
       except:
          print "Exception in AddServiceManager ", sys.exc_type, sys.exc_value
-         return
+         raise faultType("Service Manager is unreachable: " + serviceManager.uri )
+
 
       try:
          self.serviceManagers.append( serviceManager )
-         self.__PushAuthorizedUserList()
+         Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
       except:
          print "Exception in AGNodeService.RemoveAuthorizedUser ", sys.exc_type, sys.exc_value
-
+         raise faultType("Failed to set Service Manager user authorization: " + serviceManager.uri )
    AddServiceManager.soap_export_as = "AddServiceManager"
    AddServiceManager.pass_connection_info = 1
 
 
    def RemoveServiceManager( self, connInfo, serviceManagerToRemove ):
       """Remove a service manager"""
+
+      # Check authorization
+      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
+
       try:
          for i in range( len(self.serviceManagers) ):
             serviceManager = self.serviceManagers[i]
@@ -109,19 +109,33 @@ class AGNodeService( ServiceBase ):
                break
       except:
          print "Exception in AGNodeService.RemoveServiceManager ", sys.exc_type, sys.exc_value
+         raise faultType("AGNodeService.RemoveServiceManager failed: " + serviceManagerToRemove.uri )
    RemoveServiceManager.soap_export_as = "RemoveServiceManager"
    RemoveServiceManager.pass_connection_info = 1
 
 
    def GetServiceManagers( self, connInfo ):
       """Get list of service managers """
+
+      # Check authorization
+      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
+
       return self.serviceManagers
    GetServiceManagers.soap_export_as = "GetServiceManagers"
    GetServiceManagers.pass_connection_info = 1
 
 
+   ####################
+   ## SERVICE methods
+   ####################
+
+
    def GetAvailableServices( self, connInfo ):
       """Get list of available services """
+
+      # Check authorization
+      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
+
       return self.serviceImplRepository.GetServiceImplementations()
    GetAvailableServices.soap_export_as = "GetAvailableServices"
    GetAvailableServices.pass_connection_info = 1
@@ -129,8 +143,13 @@ class AGNodeService( ServiceBase ):
 
    def GetServices( self, connInfo ):
       """Get list of installed services """
+
+      # Check authorization
+      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
+
+
+      services = []
       try:
-         services = []
          for serviceManager in self.serviceManagers:
             print "-- ", serviceManager.uri
             serviceSubset = Client.Handle( serviceManager.uri ).get_proxy().GetServices().data
@@ -144,32 +163,25 @@ class AGNodeService( ServiceBase ):
 
       except:
          print "Exception in AGNodeService.GetServices ", sys.exc_type, sys.exc_value
-
+         raise faultType("AGNodeService.GetServices failed: " + str( sys.exc_value ) )
       return services
    GetServices.soap_export_as = "GetServices"
    GetServices.pass_connection_info = 1
 
 
-   def GetCapabilities( self, connInfo ):
-      """Get list of capabilities """
-      capabilities = []
-      """
-      for serviceManager in self.serviceManagers:
-         for service in Client.Handle( serviceManager.uri ).get_proxy().GetServices():
-            capabilities = capabilities + Client.Handle( service.uri ).get_proxy().GetCapabilities()
-         pass
-      """
-      return capabilities
-
-   GetCapabilities.soap_export_as = "GetCapabilities"
-   GetCapabilities.pass_connection_info = 1
-
+   ####################
+   ## CONFIGURATION methods
+   ####################
+   
    def ConfigureStreams( self, connInfo, streamDescriptions ):
       """
       Configure streams according to stream descriptions.
       The stream descriptions are applied to the installed services
       according to matching capabilities
       """
+
+      # Check authorization
+      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
 
       services = self.GetServices( connInfo )
       for service in services:
@@ -182,6 +194,7 @@ class AGNodeService( ServiceBase ):
                Client.Handle( service.uri ).get_proxy().ConfigureStream( streamDescription )
        except:
          print "Exception in AGNodeService.ConfigureStreams ", sys.exc_type, sys.exc_value
+         raise faultType("AGNodeService.ConfigureStreams failed: " + str( sys.exc_value ) )
    ConfigureStreams.soap_export_as = "ConfigureStreams"
    ConfigureStreams.pass_connection_info = 1
 
@@ -190,7 +203,12 @@ class AGNodeService( ServiceBase ):
    def LoadConfiguration( self, connInfo, configName ):
       """Load named node configuration"""
 
+      # Check authorization
+      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
+
       print "In load configuration "
+      hadServiceException = False
+      hadServiceManagerException = False
       services = []
       serviceConfigs = []
       try:
@@ -209,6 +227,7 @@ class AGNodeService( ServiceBase ):
 
       except:
          print "Exception in AGNodeService.LoadConfiguration ", sys.exc_type, sys.exc_value
+         raise faultType("AGNodeService.LoadConfiguration failed: " + str( sys.exc_value ) )
 
       #
       # Load configuration file
@@ -233,17 +252,19 @@ class AGNodeService( ServiceBase ):
             inp = None
          except:
             print "Exception in LoadConfiguration ", sys.exc_type, sys.exc_value
+            raise faultType("AGNodeService.LoadConfiguration failed: " + str( sys.exc_value ) )
 
       #
-      # Test host presence
+      # Test service manager presence
       #
-      print "Test host presence"
+      print "Test service manager presence"
       for serviceManager in self.serviceManagers:
          try:
             Client.Handle( serviceManager.uri ).get_proxy().Ping(  )
          except:
             print "* * Couldn't contact host ; uri=", serviceManager.uri
-            # need to handle unreachable service managers ####del self.hosts[ h.id ]
+            hadServiceManagerException = True
+#FIXME - # need to handle unreachable service managers ####del self.hosts[ h.id ]
 
       #
       # Add services to hosts
@@ -262,6 +283,7 @@ class AGNodeService( ServiceBase ):
             Client.Handle( s.serviceManagerUri ).get_proxy().AddServiceDescription( s )
          except:
             print "Exception adding service", sys.exc_type, sys.exc_value
+            hadServiceException = True
 
          try:
             # - Configure the service
@@ -272,12 +294,24 @@ class AGNodeService( ServiceBase ):
             Client.Handle( s.uri ).get_proxy().SetConfiguration( serviceConfigs[index] )
          except:
             print "Exception setting config", sys.exc_type, sys.exc_value
+            hadServiceException = True
+
+      if hadServiceManagerException and hadServiceException:
+         raise faultType("AGNodeService.LoadConfiguration failed: service manager and service faults")
+      elif hadServiceManagerException:
+         raise faultType("AGNodeService.LoadConfiguration failed: service manager fault")
+      elif hadServiceException:
+         raise faultType("AGNodeService.LoadConfiguration failed: service fault")
    LoadConfiguration.soap_export_as = "LoadConfiguration"
    LoadConfiguration.pass_connection_info = 1
       
 
    def StoreConfiguration( self, connInfo, configName ):
       """Store current configuration using specified name"""
+
+      # Check authorization
+      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
+
       print "in StoreConfiguration"
       try:
          out = open( self.configDir+configName, "w")
@@ -319,16 +353,79 @@ class AGNodeService( ServiceBase ):
       except:
          out.close()
          print "Exception in StoreConfiguration ", sys.exc_type, sys.exc_value
+         raise faultType("AGNodeService.StoreConfiguration failed: " + str( sys.exc_value ))
    StoreConfiguration.soap_export_as = "StoreConfiguration"
    StoreConfiguration.pass_connection_info = 1
 
 
    def GetConfigurations( self, connInfo ):
       """Get list of available configurations"""
+
+      # Check authorization
+      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
+
       files = os.listdir( self.configDir )
       return files
    GetConfigurations.soap_export_as = "GetConfigurations"
    GetConfigurations.pass_connection_info = 1
+
+
+   ####################
+   ## OTHER methods
+   ####################
+
+   def GetCapabilities( self, connInfo ):
+      # Check authorization
+      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
+
+      capabilities = []
+      try:
+         services = self.GetServices( connInfo )
+         for service in services:
+            print "-- ", service.uri
+            capabilitySubset = Client.Handle( service.uri ).get_proxy().GetCapabilities().data
+            capabilities = capabilities + capabilitySubset
+
+      except:
+         print "Exception in AGNodeService.GetCapabilities ", sys.exc_type, sys.exc_value
+         raise faultType("AGNodeService.GetCapabilities failed: " + str( sys.exc_value ) )
+      return capabilities
+   GetCapabilities.soap_export_as = "GetCapabilities"
+   GetCapabilities.pass_connection_info = 1
+
+   ####################
+   ## INTERNAL methods
+   ####################
+
+   def __ReadAuthFile( self ):
+      # if config file exists
+      nodeAuthFile = "nodeauth.cfg"
+      if os.path.exists( nodeAuthFile ):
+         # read it
+         f = open( nodeAuthFile )
+         lines = f.readlines()
+         f.close()
+
+         # add users therein to authorization manager
+         for line in lines:
+            line = string.strip(line)
+            self.authManager.AddAuthorizedUser( line )
+            print "added user ", line
+         
+         # push authorization to service managers
+         self.__PushAuthorizedUserList()
+
+
+   def __PushAuthorizedUserList( self ):
+      """Push the list of authorized users to service managers"""
+      try:
+         for serviceManager in self.serviceManagers:
+            Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )   
+      except:
+         print "Exception in AGNodeService.RemoveAuthorizedUser ", sys.exc_type, sys.exc_value
+
+
+
 
 
 if __name__ == '__main__':
