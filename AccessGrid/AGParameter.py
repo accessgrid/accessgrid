@@ -1,57 +1,55 @@
 class ValueParameter:
 
-   TYPE = "ValueParameter"
+    TYPE = "ValueParameter"
 
-   def __init__( self, name, value=None ):
-      self.name = name
-      self.value = value
-      self.type = self.TYPE
+    def __init__( self, name, value=None ):
+        self.name = name
+        self.value = value
 
-   def SetValue( self, value ):
-      self.value = value
+    def SetValue( self, value ):
+        self.value = value
 
 class RangeParameter( ValueParameter ):
 
-   TYPE = "RangeParameter"
+    TYPE = "RangeParameter"
 
-   def __init__( self, name, value, low, high ):
-      ValueParameter.__init__( self, name, value )
-      self.low = low
-      self.high = high
+    def __init__( self, name, value, low, high ):
+        ValueParameter.__init__( self, name, value )
+        self.low = low
+        self.high = high
 
-   def SetValue( self, value ):
-      
-      if self.low > value or self.high < value:
-         raise ValueError("RangeParameter.SetValue")
+    def SetValue( self, value ):
 
-      self.value = value
+        if self.low > value or self.high < value:
+            raise ValueError("RangeParameter.SetValue")
 
-class OptionSetParameter( ValueParameter ): 
+        self.value = value
 
-   TYPE = "OptionSetParameter"
+class OptionSetParameter( ValueParameter ):
 
-   def __init__( self, name, value, options ):
-      ValueParameter.__init__( self, name, value )
-      self.options = options
+    TYPE = "OptionSetParameter"
 
-   def SetValue( self, value ):
-      
-      if value not in self.options:
-         raise ValueError("OptionSetParameter.SetValue")
+    def __init__( self, name, value, options ):
+        ValueParameter.__init__( self, name, value )
+        self.options = options
 
-      self.value = value
+    def SetValue( self, value ):
+
+        if value not in self.options:
+            raise ValueError("OptionSetParameter.SetValue")
+
+        self.value = value
 
 def CreateParameter( parmstruct ):
-   """
-   Object factory to create parameter instances from those moronic SOAPStructs, 
-   emphasizing that we should be using WSDL
-   """
+    """
+    Object factory to create parameter instances from those moronic SOAPStructs,
+    emphasizing that we should be using WSDL
+    """
+    if parmstruct.TYPE == OptionSetParameter.TYPE:
+        parameter = OptionSetParameter( parmstruct.name, parmstruct.value, parmstruct.options )
+    elif parmstruct.TYPE == RangeParameter.TYPE:
+        parameter = RangeParameter( parmstruct.name, parmstruct.value, parmstruct.low, parmstruct.high )
+    elif parmstruct.TYPE == ValueParameter.TYPE:
+        parameter = ValueParameter( parmstruct.name, parmstruct.value )
 
-   if parmstruct.type == OptionSetParameter.TYPE:
-      parameter = OptionSetParameter( parmstruct.name, parmstruct.value, parmstruct.options )
-   elif parmstruct.type == RangeParameter.TYPE:
-      parameter = RangeParameter( parmstruct.name, parmstruct.value, parmstruct.low, parmstruct.high )
-   elif parmstruct.type == ValueParameter.TYPE:
-      parameter = ValueParameter( parmstruct.name, parmstruct.value )
-
-   return parameter
+    return parameter
