@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: CertificateRequestTool.py,v 1.1 2003-08-13 19:05:44 lefvert Exp $ 
+# RCS_ID:      $Id: CertificateRequestTool.py,v 1.2 2003-08-14 16:03:51 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
