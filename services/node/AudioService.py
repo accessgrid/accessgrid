@@ -1,11 +1,8 @@
 #-----------------------------------------------------------------------------
 # Name:        AudioService.py
 # Purpose:
-#
-# Author:      Thomas D. Uram
-#
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.26 2004-09-07 21:37:23 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.27 2004-09-09 05:04:12 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,9 +14,11 @@ except: pass
 
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
-from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
+from AccessGrid.AGParameter import ValueParameter, OptionSetParameter
+from AccessGrid.AGParameter import RangeParameter
+
 from AccessGrid import Platform
-from AccessGrid.Platform.Config import AGTkConfig, UserConfig
+from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
 class AudioService( AGService ):
@@ -27,13 +26,17 @@ class AudioService( AGService ):
     def __init__( self ):
         AGService.__init__( self )
 
-        self.capabilities = [ Capability( Capability.CONSUMER, Capability.AUDIO ),
-                              Capability( Capability.PRODUCER, Capability.AUDIO ) ]
-        self.executable = os.path.join('.','rat')
+        self.capabilities = [ Capability( Capability.CONSUMER,
+                                          Capability.AUDIO ),
+                              Capability( Capability.PRODUCER,
+                                          Capability.AUDIO ) ]
 
-        #
+        self.executable = os.path.join(os.getcwd(),'rat')
+
+        # Turn off firewall for this app
+        self.systemConf = SystemConfig.instance()
+
         # Set configuration parameters
-        #
         self.talk = OptionSetParameter( "talk", "Off", ["On", "Off"] )
         self.inputGain = RangeParameter( "inputgain", 50, 0, 100 )
         self.outputGain = RangeParameter( "outputgain", 50, 0, 100 )
@@ -67,9 +70,7 @@ class AudioService( AGService ):
 
         elif sys.platform == 'win32':
             try:
-                #
                 # Set RTP defaults according to the profile
-                #
                 k = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
                                     r"Software\Mbone Applications\common")
 
@@ -93,20 +94,25 @@ class AudioService( AGService ):
         
     def WriteRatDefaults(self):
         if Platform.isWindows():
-            import _winreg
-
             # Write defaults into registry
-            key = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, "Software\\Mbone Applications\\rat")
-            if self.talk.value == "On":    mute = 0
-            else:                          mute = 1
-            _winreg.SetValueEx(key, "audioInputMute", 0, _winreg.REG_DWORD,
-                mute)
-            _winreg.SetValueEx(key, "audioInputGain", 0, _winreg.REG_DWORD,
-                self.inputGain.value )
-            _winreg.SetValueEx(key, "audioOutputGain", 0, _winreg.REG_DWORD,
-                self.outputGain.value )
+            try:
+                key = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
+                                        "Software\\Mbone Applications\\rat")
+                if self.talk.value == "On":
+                    mute = 0
+                else:
+                    mute = 1
+                    
+                _winreg.SetValueEx(key, "audioInputMute", 0, _winreg.REG_DWORD,
+                                   mute)
+                _winreg.SetValueEx(key, "audioInputGain", 0, _winreg.REG_DWORD,
+                                   self.inputGain.value )
+                _winreg.SetValueEx(key, "audioOutputGain", 0,
+                                   _winreg.REG_DWORD, self.outputGain.value )
 
-            _winreg.CloseKey(key)
+                _winreg.CloseKey(key)
+            except:
+                self.log.exception("Couldn't put rat defaults in registry.")
 
         elif Platform.isLinux() or Platform.isOSX():
 
@@ -125,8 +131,11 @@ class AudioService( AGService ):
                 f.close()
 
             # Update settings
-            if self.talk.value == "On":    mute = 0
-            else:                          mute = 1
+            if self.talk.value == "On":
+                mute = 0
+            else:
+                mute = 1
+
             ratDefaults["*audioInputMute"] = str(mute)
             ratDefaults["*audioInputGain"] = str(self.inputGain.value )
             ratDefaults["*audioOutputGain"] = str(self.outputGain.value )
@@ -137,8 +146,6 @@ class AudioService( AGService ):
                 f.write("%s: %s\n" % (k,v) )
             f.close()
 
-
-
         else:
             raise Exception("Unknown platform: %s" % sys.platform)
 
@@ -146,27 +153,33 @@ class AudioService( AGService ):
     def Start( self ):
         """Start service"""
         try:
-
+            # Initialize environment for rat
             self.WriteRatDefaults()
 
-            #
-            # Start the service; in this case, store command line args in a list and let
+            # Enable firewall
+            self.systemConf.AppFirewallConfig(self.executable, 1)
+            
+            # Start the service;
+            # in this case, store command line args in a list and let
             # the superclass _Start the service
             options = []
-            if self.streamDescription.name and len(self.streamDescription.name.strip()) > 0:
+            if self.streamDescription.name and \
+                   len(self.streamDescription.name.strip()) > 0:
                 options.append( "-C" )
                 if sys.platform == 'linux2':
-                # Rat doesn't like spaces in linux command line arguments.
-                    stream_description_no_spaces = string.replace(self.streamDescription.name, " ", "_")
+                    # Rat doesn't like spaces in linux command line arguments.
+                    stream_description_no_spaces = string.replace(
+                        self.streamDescription.name, " ", "_")
                     options.append( stream_description_no_spaces )
                 else:
                     options.append(self.streamDescription.name)
             options.append( "-f" )
             options.append( "L16-16K-Mono" )
-            # Check whether the network location has a "type" attribute
-            # Note: this condition is only to maintain compatibility between
-            # older venue servers creating network locations without this attribute
-            # and newer services relying on the attribute; it should be removed
+            # Check whether the network location has a "type"
+            # attribute Note: this condition is only to maintain
+            # compatibility between older venue servers creating
+            # network locations without this #attribute and newer
+            # services relying on the attribute; it should be removed
             # when the incompatibility is gone
             if self.streamDescription.location.__dict__.has_key("type"):
                 if self.streamDescription.location.type == MulticastNetworkLocation.TYPE:
@@ -175,7 +188,8 @@ class AudioService( AGService ):
             if self.streamDescription.encryptionFlag != 0:
                 options.append( "-crypt" )
                 options.append( self.streamDescription.encryptionKey )
-            options.append( '%s/%d' % ( self.streamDescription.location.host, self.streamDescription.location.port ) )
+            options.append( '%s/%d' % (self.streamDescription.location.host,
+                                       self.streamDescription.location.port))
             self.log.info("Starting AudioService")
             self.log.info(" executable = %s" % self.executable)
 
@@ -185,7 +199,6 @@ class AudioService( AGService ):
         except:
             self.log.exception("Exception in AudioService.Start")
             raise Exception("Failed to start service")
-    Start.soap_export_as = "Start"
 
 
     def Stop( self ):
@@ -194,10 +207,7 @@ class AudioService( AGService ):
         try:
             self.log.info("Stop service")
 
-            #
             # See if we have rat-kill.
-            #
-
             if sys.platform == Platform.WIN:
                 rk = "rat-kill.exe"
             else:
@@ -214,15 +224,18 @@ class AudioService( AGService ):
 
             self.processManager.TerminateAllProcesses()
 
+
+            # Disable firewall
+            self.systemConf.AppFirewallConfig(self.executable, 0)
         except:
             self.log.exception("Exception in AGService.Stop ")
             raise Exception("AGService.Stop failed : ", str( sys.exc_value ) )
 
-    Stop.soap_export_as = "Stop"
-
-
     def ConfigureStream( self, streamDescription ):
-        """Configure the Service according to the StreamDescription, and stop and start rat"""
+        """
+        Configure the Service according to the StreamDescription, and
+        stop and start rat
+        """
 
         # Configure the stream
         ret = AGService.ConfigureStream( self, streamDescription )
@@ -237,7 +250,6 @@ class AudioService( AGService ):
         # If enabled, start
         if self.enabled:
             self.Start()
-    ConfigureStream.soap_export_as = "ConfigureStream"
 
     def SetIdentity(self, profile):
         """
@@ -245,10 +257,6 @@ class AudioService( AGService ):
         """
         self.log.info("SetIdentity: %s %s", profile.name, profile.email)
         self.__SetRTPDefaults( profile )
-    SetIdentity.soap_export_as = "SetIdentity"
-    
-
-
 
 if __name__ == '__main__':
 
