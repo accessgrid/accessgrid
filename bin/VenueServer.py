@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.12 2003-03-13 12:11:05 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.13 2003-03-14 14:52:29 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -44,9 +44,10 @@ def AuthCallback(server, g_handle, remote_user, context):
 
 def Usage():
     print "%s:" % sys.argv[0]
-    print "    -p|--port <int>"
-    print "    -l|--logFile <log file name>"
-    print "    -c|--configFile <config file name>"
+    print "    -h|--help : print usage"
+    print "    -p|--port <int> : <port number to listen on>"
+    print "    -l|--logFile <filename> : log file name"
+    print "    -c|--configFile <filename> : config file name"
     
 # Parse command line options
 try:
