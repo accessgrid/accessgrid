@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.45 2003-10-23 20:16:50 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.46 2003-10-23 20:25:36 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.45 2003-10-23 20:16:50 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.46 2003-10-23 20:25:36 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -788,7 +788,7 @@ class NodeManagementClientFrame(wxFrame):
 
         # Require a single host to be selected
         if self.hostList.GetSelectedItemCount() == 0:
-            self.Error( "No host selected for service!")
+            self.Error( "No Service Manager selected for service!")
             return
         if self.hostList.GetSelectedItemCount() > 1:
             self.Error("Multiple hosts selected")
