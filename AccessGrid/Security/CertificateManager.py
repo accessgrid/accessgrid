@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.27 2004-05-19 02:36:10 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.28 2004-05-27 22:40:46 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.27 2004-05-19 02:36:10 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.28 2004-05-27 22:40:46 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -328,7 +328,7 @@ class CertificateManager(object):
             try:
                 certObj = CertificateRepository.Certificate(userCert)
             except IOError:
-                self.GetUserInterface().ReportError("Globus identity certificate does not exist at\n" +
+                self.GetUserInterface().ReportError("Identity certificate does not exist at\n" +
                                                     userCert + "\n" +
                                                     "You will have to import a valid identity certificate later.")
                 certObj = None
@@ -337,7 +337,7 @@ class CertificateManager(object):
 
             if certObj is not None:
 
-                caption = "Initial import of Globus identity certificate"
+                caption = "Initial import of identity certificate"
                 message = "Import certificate for %s. \nPlease enter the passphrase for the private key of this certificate." % (certObj.GetSubject())
 
                 #
@@ -358,7 +358,7 @@ class CertificateManager(object):
 
                     except CertificateRepository.RepoInvalidCertificate:
                         log.exception("invalid cert on import")
-                        self.GetUserInterface().ReportError("Your globus certificate is invalid or already present; not importing.")
+                        self.GetUserInterface().ReportError("Your identity certificate is invalid or already present; not importing.")
                         break
 
                     except CertificateRepository.RepoBadPassphrase:
@@ -369,7 +369,7 @@ class CertificateManager(object):
 
                     except:
                         log.exception("Unknown error on import")
-                        self.GetUserInterface().ReportError("Unknown error on Globus import; ignoring your globus identity certificate")
+                        self.GetUserInterface().ReportError("Unknown error on initial certificate import; ignoring your identity certificate")
                         break
 
 
