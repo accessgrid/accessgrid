@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.31 2004-04-07 16:29:57 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.32 2004-04-09 19:16:03 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.31 2004-04-07 16:29:57 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.32 2004-04-09 19:16:03 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3781,9 +3781,10 @@ class ProfileDialog(wxDialog):
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
         self.nameCtrl = wxTextCtrl(self, -1, "", size = (400,20),
-                                   validator = TextValidator())
+                                   validator = TextValidator("Name"))
         self.emailText = wxStaticText(self, -1, "Email:", style=wxALIGN_LEFT)
-        self.emailCtrl = wxTextCtrl(self, -1, "")
+        self.emailCtrl = wxTextCtrl(self, -1, "",
+                                   validator = TextValidator("Email"))
         self.phoneNumberText = wxStaticText(self, -1, "Phone Number:",
                                             style=wxALIGN_LEFT)
         self.phoneNumberCtrl = wxTextCtrl(self, -1, "")
@@ -3923,11 +3924,12 @@ class ProfileDialog(wxDialog):
         self.cancelButton.Destroy()
 
 class TextValidator(wxPyValidator):
-    def __init__(self):
+    def __init__(self, fieldName):
         wxPyValidator.__init__(self)
+        self.fieldName = fieldName
             
     def Clone(self):
-        return TextValidator()
+        return TextValidator(self.fieldName)
 
     def Validate(self, win):
         tc = self.GetWindow()
@@ -3937,12 +3939,18 @@ class TextValidator(wxPyValidator):
         #for view
         if profile == None:
             if val ==  '<Insert Name Here>':
-                MessageDialog(NULL, "Please, fill in the name field")
+                MessageDialog(NULL, "Please, fill in the %s field" % (self.fieldName,))
+                return false
+
+            if val ==  '<Insert Email Address Here>':
+                MessageDialog(NULL, "Please, fill in the %s field" % (self.fieldName,))
                 return false
 
         #for real profile dialog
-        elif len(val) < 1 or profile.IsDefault() or profile.name == '<Insert Name Here>':
-            MessageDialog(NULL, "Please, fill in the name field")
+        elif(len(val) < 1 or profile.IsDefault() 
+             or profile.name == '<Insert Name Here>'
+             or profile.email == '<Insert Email Address Here>'):
+            MessageDialog(NULL, "Please, fill in the %s field" %(self.fieldName,))
             return false
         return true
 
