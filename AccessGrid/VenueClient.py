@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.40 2003-03-25 17:59:37 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.41 2003-03-25 21:08:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -61,7 +61,7 @@ class VenueClient( ServiceBase):
 
         self.leaderProfile = None
         self.pendingFollowers = dict()
-        self.pendingLeaderId = None
+        self.pendingLeader = None
                           
     def __InitVenueData__( self ):
         self.eventClient = None
