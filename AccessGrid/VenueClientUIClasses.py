@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.93 2003-03-21 17:24:20 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.94 2003-03-21 17:55:19 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -374,6 +374,7 @@ class VenueClientFrame(wxFrame):
         participant =  self.contentListPanel.tree.GetItemData(id).GetData()
         wxLogDebug("Open profile view")
         profileView = ProfileDialog(self, -1, "Profile")
+        wxLogDebug("open profile view with this participant: %s" %participant.name)
         profileView.SetDescription(participant)
         wxLogDebug("Show profile view")
         profileView.ShowModal()
@@ -458,6 +459,7 @@ class VenueClientFrame(wxFrame):
         '''
         Called when the window is closed using the built in close button
         '''
+        print '------------------ exit'
         self.app.OnExit()
                      	      
     def UpdateLayout(self):
@@ -511,6 +513,7 @@ class VenueClientFrame(wxFrame):
         if (profileDialog.ShowModal() == wxID_OK):
             profile = profileDialog.GetNewProfile()
             self.app.ChangeProfile(profile)
+            wxLogDebug("------------change profile: %s" %profile.name)
          #   if(profile.type != lastType):
          #       if profile.type == 'Node':#
          #
@@ -1040,13 +1043,17 @@ class ContentListPanel(wxPanel):
                 treeId = self.participantDict[description.publicId]
                 profile = self.tree.GetItemData(treeId).GetData()
                 self.tree.SetItemText(treeId, description.name)
+                wxLogDebug('------------ this is the name we are changing to %s'%description.name)
                 profile = description
+                self.tree.SetItemData(treeId, wxTreeItemData(description))
+               
 
             else:
                 treeId = self.nodeDict[description.publicId]
                 profile = self.tree.GetItemData(treeId).GetData()
                 self.tree.SetItemText(treeId, description.name)
                 profile = description
+                self.tree.SetItemData(treeId, wxTreeItemData(description))
 
         elif(oldType != None): # move to new category type
             
@@ -1774,6 +1781,8 @@ class ProfileDialog(wxDialog):
         wxLogDebug("VenueClientUIClasses.py: Get profile information from dialog")
         if(self.profile != None):
             self.profile.SetName(self.nameCtrl.GetValue())
+            wxLogDebug("--------in dialog set name:%s "%self.nameCtrl.GetValue())
+            wxLogDebug("--------in dialog set name:%s "%self.profile.name)
             self.profile.SetEmail(self.emailCtrl.GetValue())
             self.profile.SetPhoneNumber(self.phoneNumberCtrl.GetValue())
             self.profile.SetTechSupportInfo(self.supportCtrl.GetValue())
