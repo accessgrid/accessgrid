@@ -1,7 +1,7 @@
 
 		    The Access Grid Toolkit (AGTk)
 			
-			       2003-10-17
+			       2004-06-01
 				
 	    http://www.mcs.anl.gov/fl/research/accessgrid
 	    
@@ -47,14 +47,14 @@ run a Virtual Venue Server can be found in the INSTALL file.
 OBTAINING THE TOOLKIT
 
 Downloading the latest snapshot of the toolkit from
-http://www.mcs.anl.gov/fl/research/accessgrid/developers/downloads.html
+http://www.mcs.anl.gov/fl/research/accessgrid/software/releases/index.html
 
 CVS Access is available, information can be found at
 http://www.mcs.anl.gov/fl/research/accessgrid/developers/cvs/index.html
 
 INSTALLATION
 
-Please see the INSTALL file.
+Please see the INSTALL file for the appropriate platform and OS.
 
 BUG REPORTING
 
