@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.1 2003-04-24 22:10:15 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.2 2003-04-29 19:02:15 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -57,6 +57,14 @@ class VideoConsumerService( AGService ):
          self.log.exception("Exception in VideoConsumerService.Start")
          raise Exception("Failed to start service")
    Start.soap_export_as = "Start"
+
+   def Stop( self ):
+       """Stop the service"""
+
+       # vic doesn't die easily (on linux at least), so force it to stop
+       AGService.ForceStop(self)         
+
+   Stop.soap_export_as = "Stop"
 
 
    def ConfigureStream( self, streamDescription ):
