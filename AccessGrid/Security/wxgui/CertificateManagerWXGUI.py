@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.5 2004-03-19 22:19:21 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.6 2004-03-22 16:37:41 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.5 2004-03-19 22:19:21 olson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.6 2004-03-22 16:37:41 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -223,7 +223,8 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
     def OnShowNew(self, event, win):
 
-        d = CertificateManagerDialog.CertificateManagerDialog(None, -1, "CMGR", self.certificateManager)
+        d = CertificateManagerDialog.CertificateManagerDialog(None, -1, "Certificate Manager",
+                                                              self.certificateManager)
         d.Show(1)
 
 
