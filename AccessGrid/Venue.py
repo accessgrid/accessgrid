@@ -6,14 +6,14 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.133 2003-09-17 23:08:46 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.134 2003-09-17 23:46:08 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Venue.py,v 1.133 2003-09-17 23:08:46 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.134 2003-09-17 23:46:08 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1442,122 +1442,6 @@ class Venue(ServiceBase.ServiceBase):
     # Need to make these interface methods, for mgmt
     #
     
-    def AddAdministrator(self, string):
-        """
-        Interface to add an administrator to this venue.
-        
-        **Arguments:**
-
-            *string* The Distinguished Name (DN) of the new administrator.
-            
-        **Raises:**
-
-            *NotAuthorized* This is raised when the caller is not an
-            administrator.
-
-            *AdministratorAlreadyPresent* This is raised when an
-            administrator is added a second time.
-            
-        **Returns:**
-
-            *string* the Distinguished Name (DN) of the administrator added.
-
-        """
-        if not self._IsInRole("Venue.Administrators"):
-            raise NotAuthorized
-        
-        if string not in self.administrators:
-            self.simpleLock.acquire()
-            
-            self.administrators.append(string)
-
-            self.simpleLock.release()
-            
-            return string
-        else:
-            log.exception("AddAdministrator: Administrator already present")
-            raise AdministratorAlreadyPresent
-
-    AddAdministrator.soap_export_as = "AddAdministrator"
-
-    def RemoveAdministrator(self, string):
-        """
-        Interface for removing an administrator from the venue.
-        
-        **Arguments:**
-
-            *string* The Dinstinguished Name (DN) of the administrator
-            to be removed.
-
-        **Raises:**
-
-            *NotAuthorized* This is raised when the caller is not an
-            administrator.
-
-            *AdministratorNotFound* This is raised when the
-            administrator specified is not an administrator on this
-            venue.
-
-        **Returns:**
-
-            *string* The Distinguished Name (DN) of the administrator removed.
-
-        """
-        if not self._IsInRole("Venue.Administrators"):
-            raise NotAuthorized
-
-        if not string in self.administrators:
-            log.exception("RemoveAdministrator: Administrator not found")
-            raise AdministratorNotFound
-
-        self.simpleLock.acquire()
-            
-        self.administrators.remove(string)
-
-        self.simpleLock.release()
-            
-        return string
-
-    RemoveAdministrator.soap_export_as = "RemoveAdministrator"
-
-    def SetAdministrators(self, administratorList):
-        """
-        Interface to add a list of administrators.
-
-        **Arguments:**
-
-            *administratorList* This is a list of Distinguished Names (DNs).
-            
-        **Raises:**
-
-            *NotAuthorized* This is raised if the caller is not an
-            administrator.
-        """
-        if not self._IsInRole("Venue.Administrators"):
-            raise NotAuthorized
-
-        self.simpleLock.acquire()
-        
-        self.administrators = self.administrators + administratorList
-
-        self.simpleLock.release()
-
-    SetAdministrators.soap_export_as = "SetAdministrators"
-
-    def GetAdministrators(self):
-        """
-        Interface to get the list of administrators for the venue.
-        """
-        self.simpleLock.acquire()
-        
-        returnValue = self.administrators
-
-        self.simpleLock.release()
-
-        return returnValue
-
-    GetAdministrators.soap_export_as = "GetAdministrators"
-
     def SetEncryptMedia(self, value, key=None):
         """
         Turn media encryption on or off.
