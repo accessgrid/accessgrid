@@ -38,7 +38,7 @@ AccessGrid
 AccessGrid-VenueClient
 AccessGrid-VenueServer
 AccessGrid-BridgeServer"
-export AG_VER="2.1.2-5"
+export AG_VER="2.1.2-8"
 
 
 #################################################################
