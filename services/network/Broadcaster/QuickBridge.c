@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.21 2004-12-17 15:54:01 leggett Exp $
+ * $Id: QuickBridge.c,v 1.22 2004-12-17 19:57:46 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -659,6 +659,7 @@ void process_session( Session *head, fd_set *readfds, u_long myip )
 		    } //end of updating ucmemarray values 
 		  
 		  /*now step thru array and send to all unicast members, except current source*/
+		  do_send = 0;
 		  if ( do_send )
 		    {
 		      for ( stopcond = 0; stopcond < s->numunicastmem; stopcond ++ )
