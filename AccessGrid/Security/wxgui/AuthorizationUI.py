@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.17 2004-06-01 23:07:18 judson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.18 2004-06-02 00:18:51 eolson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.17 2004-06-01 23:07:18 judson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.18 2004-06-02 00:18:51 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -56,7 +56,8 @@ class AuthorizationUIPanel(wxPanel):
     def __init__(self, parent, id, log):
         wxPanel.__init__(self, parent, id, wxDefaultPosition)
         self.log = log
-        self.cacheRole = 'Registered People'
+        self.cacheRoleName = 'Registered People'
+        self.cacheRole = None
         self.roleToTreeIdDict = dict()
         self.x = -1
         self.y = -1
@@ -175,14 +176,14 @@ class AuthorizationUIPanel(wxPanel):
         roleExists = 0
         
         for role in self.allRoles:
-            if self.cacheRole == role.name:
+            if self.cacheRoleName == role.name:
                 roleExists = 1
                 self.cacheRole = role
                 
         # If role is not already added; Create role.
         if not roleExists:
             try:
-                self.cacheRole = Role(self.cacheRole)
+                self.cacheRole = Role(self.cacheRoleName)
                 self.allRoles.append(self.cacheRole)
                 self.changed = 1   
             except:
@@ -194,17 +195,18 @@ class AuthorizationUIPanel(wxPanel):
             cachedSubjects.append(subject)
        
         # Only add subjects that are new in the cache.
-        subjects = self.cacheRole.subjects
+        if self.cacheRole != None:
+            subjects = self.cacheRole.subjects
                 
-        sList = []
+            sList = []
                 
-        for subject in cachedSubjects:
-            if not subject in subjects:
-                try:
-                    self.cacheRole.AddSubject(subject)
-                    self.changed = 1
-                except:
-                    self.log.exception("AuthorizationUIPanel.__AddCachedSubjects: AddSubjectToRole failed")
+            for subject in cachedSubjects:
+                if not subject in subjects:
+                    try:
+                        self.cacheRole.AddSubject(subject)
+                        self.changed = 1
+                    except:
+                        self.log.exception("AuthorizationUIPanel.__AddCachedSubjects: AddSubjectToRole failed")
                      
     def __initTree(self):
         '''
@@ -721,7 +723,7 @@ class AuthorizationUIPanel(wxPanel):
         authP = authDoc.documentElement
 
         for r in self.allRoles:
-            if r.name is not self.cacheRole:
+            if r.name is not self.cacheRoleName:
                 authP.appendChild(r.ToXML(authDoc))
         
         for a in self.allActions:
