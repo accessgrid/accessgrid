@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.6 2004-12-16 18:33:09 leggett Exp $
+ * $Id: QuickBridge.c,v 1.7 2004-12-16 19:31:59 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -452,8 +452,6 @@ void session_set( Session *head, fd_set *readfds )
     }
 }
 
-int debugon = 0;
-
 
 
 void process_session(Session *head, fd_set *readfds, u_long myip){
@@ -479,10 +477,8 @@ void process_session(Session *head, fd_set *readfds, u_long myip){
 	memset((char *) &sourceaddr,0, sourceaddrlen);
 	nr = recvfrom(s->ucfd[i], recvbuf, MSGBUFSIZE, 0, (struct sockaddr *) \
 		      &sourceaddr, &sourceaddrlen);
-	if (debugon >= 2) {
-	  printf("\nreading from ucfd[%d], got data from %s:%d\n", i,inet_ntoa(sourceaddr.sin_addr),ntohs(sourceaddr.sin_port));
-	}
-	if( debugon > 0 ){
+	debug( 2, "\nreading from ucfd[%d], got data from %s:%d\n", i,inet_ntoa(sourceaddr.sin_addr),ntohs(sourceaddr.sin_port));
+	if( debugFlag > 0 ){
 	  ucrecvfromcalls[i] = ucrecvfromcalls[i] + 1;
 	  uctotalbytesrecv[i] = uctotalbytesrecv[i] + nr;
 	}
@@ -503,7 +499,7 @@ void process_session(Session *head, fd_set *readfds, u_long myip){
 	      /*update activity flag*/ 
 	      s->ucmemarray[foundindex].active = 1; 
 	    } else {
-	      if (debugon >= 2) printf("did not find address in ucmemarray\n");
+	      debug(2, "did not find address in ucmemarray\n");
 	      /*add entry to array*/
 	      if ((s->numunicastmem < max_unicast_mem) && 
 		  is_auth(sourceaddr.sin_addr.s_addr)) {
@@ -515,16 +511,14 @@ void process_session(Session *head, fd_set *readfds, u_long myip){
 		printmembers(s);
 		join_group(s);
 	      } else {
-		if(debugon >= 1 ){
+		if(debugFlag >= 1 ){
 		  printf("Not auth or too many unicast members, can't add another!\n");
 		}
 		do_send=0;
 	      }
 	    }//end of else 
 	  }else{
-	    if(debugon >= 1 ){
-	      printf("Discarding packet from local host\n");
-	    }
+	    debug(2, "Discarding packet from local host\n");
 	  } //end of updating ucmemarray values 
 
 	  /*now step thru array and send to all unicast members, except current source*/
@@ -533,21 +527,21 @@ void process_session(Session *head, fd_set *readfds, u_long myip){
 	      remoteunicastaddress = s->ucmemarray[stopcond].addr.s_addr;
 	      if (remoteunicastaddress != sourceaddr.sin_addr.s_addr ) {
 		s->ucaddr[i].sin_addr.s_addr = remoteunicastaddress;
-		if (debugon >= 2) printf("sending to %s\n", inet_ntoa(s->ucmemarray[stopcond].addr));
+		debug(2,"sending to %s\n", inet_ntoa(s->ucmemarray[stopcond].addr));
 		ns = sendto(s->ucfd[i], recvbuf, nr, 0, (struct sockaddr *)&s->ucaddr[i], \
 			    sizeof(s->ucaddr[i]));
 	      } else {
-		if (debugon >= 4) printf("not resending to ORIGINATOR! or array entry = 0\n"); 
+		debug(4, "not resending to ORIGINATOR! or array entry = 0\n"); 
 	      }
 	    }//end of for (stopcond=0;....
 
 
 	    if( s->use_multicast && s->forward_unicast){
 	      /*sent to the multicast group*/
-	      if (debugon >= 2) printf("sending to %s\n", inet_ntoa(s->mcaddr[i].sin_addr));
+	      debug(2, "sending to %s\n", inet_ntoa(s->mcaddr[i].sin_addr));
 	      ns = sendto(s->mcfd[i], recvbuf, nr, 0, (struct sockaddr *)&s->mcaddr[i], \
 			  sizeof(s->mcaddr[i]));
-	      if( debugon > 0 ){
+	      if( debugFlag > 0 ){
 		mcsendtocalls[i] = mcsendtocalls[i] + 1;
 		mctotalbytessent[i] = mctotalbytessent[i] + ns;
 	      }
@@ -573,14 +567,11 @@ void process_session(Session *head, fd_set *readfds, u_long myip){
 	    printf ("mcfd[%d]:recvfrom over multicast error!(5) %s\n",i,strerror(errno));
 
 	  }else{
-	    if (debugon >= 2)  {
-	      printf("\nreading from mcfd[%d], got data from=%s\n",i,inet_ntoa(sourceaddr.sin_addr));
-	    }
-	    if (debugon >= 2) 
-	      printf("retransmit to unicast addresses\n");
+	    debug(2,"\nreading from mcfd[%d], got data from=%s\n",i,inet_ntoa(sourceaddr.sin_addr));
+	    debug(2,"retransmit to unicast addresses\n");
 	    //printf("chksrc=%d\n", chksrc);
 
-	    if( debugon > 0 ){
+	    if( debugFlag > 0 ){
 	      mcrecvfromcalls[i] = mcrecvfromcalls[i] + 1;
 	      mctotalbytesrecv[i] = mctotalbytesrecv[i] + nr;
 	    }
@@ -596,10 +587,10 @@ void process_session(Session *head, fd_set *readfds, u_long myip){
 #endif
 	      remoteunicastaddress = s->ucmemarray[stopcond].addr.s_addr;
 	      s->ucaddr[i].sin_addr.s_addr = remoteunicastaddress;
-	      if (debugon >= 2) printf("sending to %s\n", inet_ntoa(s->ucmemarray[stopcond].addr));
+	      debug(2,"sending to %s\n", inet_ntoa(s->ucmemarray[stopcond].addr));
 	      ns = sendto(s->ucfd[i], recvbuf, nr, 0, (struct sockaddr *)&s->ucaddr[i], \
 			  sizeof(s->ucaddr[i]));
-	      if( debugon > 0 ) {
+	      if( debugFlag > 0 ) {
 		ucsendtocalls[i] = ucsendtocalls[i] + 1;
 		uctotalbytessent[i] = uctotalbytessent[i] + 1;
 	      }
@@ -795,8 +786,8 @@ int main (int argc, char *argv[])
   int forward=1;
 
   int i;
-  fd_set readfds, web_readfds;
-  int maxfds;
+  fd_set readfds, web_masterfds, web_readfds;
+  int maxfds, web_maxfds;
   int nfds;
   int n2;
   int timeoutsecs = TIMEOUTSECS;
@@ -905,7 +896,6 @@ int main (int argc, char *argv[])
 	ttl = atoi(optarg);
 	break;
       case 'd':
-	debugon = atoi( optarg );
 	debugFlag = atoi( optarg );
 	break;
       case 'n':
@@ -1010,52 +1000,70 @@ int main (int argc, char *argv[])
   maxfds = set_maxfds(s,maxfds);
   maxfds++;
 
+  FD_ZERO( &web_masterfds );
+  FD_ZERO( &web_readfds );
+  web_maxfds = sock;
+  FD_SET( sock, &web_masterfds );
+  
   while ( 1 )
     { 
-      length = sizeof( client );
+      web_readfds = web_masterfds;
       tv.tv_sec = 2;
       tv.tv_usec = 0;
-      FD_ZERO( &web_readfds );
-      FD_SET( sock, &web_readfds );
       debug( 9, "About to select( ) web socket.\n" );
-      msgsock = select( sock + 1, &web_readfds, NULL, NULL, &tv );
-      if ( ( msgsock == -1 ) && ( errno == EINTR ) )
+      if ( select( web_maxfds + 1, &web_readfds, NULL, NULL, &tv ) == -1 )
 	{
+	  perror( "select" );
 	  signal( SIGCHLD, sigChldHndlr );
 	}
-      debug( 2, "Connection accepted.\n" );
-      debug( 4, "File descriptor for accepted socket: %d\n", msgsock );
-      debug( 6, "Client IP: %s\n", inet_ntoa( client.sin_addr ) );
-      if ( msgsock == -1 )
+      for ( i = 0; i <= web_maxfds; i++ )
 	{
-	  perror( "accept" );
-	}
-      else
-	{
-	  chid = fork( );
-	  if ( chid == 0 )
+	  debug( 9, "Going through FDs: %d\n", i );
+	  if ( FD_ISSET( i, &web_readfds ) )
 	    {
-	      signal( SIGALRM, sigAlrmHndlr );
-	      signal( SIGPIPE, sigPipeHndlr );
-	      debug( 4, "Child startring.\n" );
-	      alarm( timeOutVal );
-	      debug( 8, "Alarm set: Time out at %d sec.\n", timeOutVal );
-	      stat = handleTransaction( msgsock );
-	      alarm( 0 );
-	      debug( 8, "Alarm cancelled.\n" );
-	      debug( 3, "Child exiting. Exit code: %d.\n", stat );
-	      exit( stat );
-	    }
-	  else
-	    {
-	      debug( 4, "Closing msgsock (%d) in parent.\n", msgsock );
-	      close( msgsock );
+	      debug( 4, "socket( ) ready\n" );
+	      length = sizeof( server );
+	      if ( ( msgsock = accept( i, (struct sockaddr *)&server, &length ) ) == -1 )
+		{
+		  perror( "accept" );
+		}
+	      else
+		{
+		  FD_SET( msgsock, &web_masterfds );
+		  if ( msgsock > web_maxfds )
+		    {
+		      web_maxfds = msgsock;
+		    }
+		  debug( 2, "Connection accepted.\n" );
+		  debug( 4, "File descriptor for accepted socket: %d\n", msgsock );
+		  debug( 6, "Client IP: %s\n", inet_ntoa( client.sin_addr ) );
+		  chid = fork( );
+		  if ( chid == 0 )
+		    {
+		      signal( SIGALRM, sigAlrmHndlr );
+		      signal( SIGPIPE, sigPipeHndlr );
+		      debug( 4, "Child startring.\n" );
+		      alarm( timeOutVal );
+		      debug( 8, "Alarm set: Time out at %d sec.\n", timeOutVal );
+		      stat = handleTransaction( msgsock );
+		      alarm( 0 );
+		      debug( 8, "Alarm cancelled.\n" );
+		      debug( 3, "Child exiting. Exit code: %d.\n", stat );
+		      exit( stat );
+		    }
+		  else
+		    {
+		      debug( 4, "Closing msgsock (%d) in parent.\n", msgsock );
+		      close( msgsock );
+		    }
+		}
 	    }
 	}
     
+      debug( 4, "After select( )\n" );
       FD_ZERO( &readfds );
       session_set( s, &readfds );
-      if ( debugon >= 1 )
+      if ( debugFlag >= 1 )
 	{
 	  FD_SET( 0, &readfds );
 	}
@@ -1070,19 +1078,21 @@ int main (int argc, char *argv[])
        * time.  If we have fixed sessions the list will never
        * be empty so block.
        */
-      if ( num_unicast(s) > 0 && ! all_fixed( s ) )
-	{
-	  tv.tv_sec = timeoutsecs; 
+      debug( 4, "About to select unicast clients\n" );
+      //if ( num_unicast(s) > 0 && ! all_fixed( s ) )
+      //{
+	  tv.tv_sec = 2; 
 	  tv.tv_usec = 0; 
 	  nfds = select( maxfds, &readfds, NULL, NULL, &tv );
-	}
-      else
-	{
-	  nfds = select( maxfds, &readfds, NULL, NULL, NULL );
-	}
-
+	  //}
+	  //else
+	  //{
+	  //debug( 9, "We have no unicast clients. Waiting indefinitely\n" );
+	  //nfds = select( maxfds, &readfds, NULL, NULL, NULL );
+	  //}
+      debug( 4, "Unicast clients selected\n" );
       /*if specified on the command line, check for input on stdin*/
-      if (debugon >= 1) {
+      if (debugFlag >= 1) {
 	if (FD_ISSET(0, &readfds)) {
 	  n2 = read(0,inputbuf, sizeof(inputbuf));
 	  //printf("inputbuf=%s\n",inputbuf);
