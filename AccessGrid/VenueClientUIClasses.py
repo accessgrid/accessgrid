@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.292 2003-09-26 14:06:51 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.293 2003-09-26 15:20:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.292 2003-09-26 14:06:51 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.293 2003-09-26 15:20:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -979,7 +979,7 @@ class VenueClientFrame(wxFrame):
             ownerProfile = None
         
         if(data != None and isinstance(data, DataDescription)):
-            text ="Are you sure you want to delete "+ data.name
+            text ="Are you sure you want to delete "+ data.name + "?"
             areYouSureDialog = wxMessageDialog(self, text, 
                                                '', wxOK |
                                                wxCANCEL |wxICON_INFORMATION)
@@ -996,7 +996,7 @@ class VenueClientFrame(wxFrame):
         service =  self.contentListPanel.tree.GetItemData(id).GetData()
         
         if(service != None and isinstance(service, ServiceDescription)):
-            text ="Are you sure you want to delete "+ service.name
+            text ="Are you sure you want to delete "+ service.name + "?"
             areYouSureDialog = wxMessageDialog(self, text, \
                                                '', wxOK |  wxCANCEL
                                                |wxICON_INFORMATION)
@@ -1082,7 +1082,7 @@ class VenueClientFrame(wxFrame):
         app =  self.contentListPanel.tree.GetItemData(id).GetData()
 
         if(app != None and isinstance(app, ApplicationDescription)):
-            text ="Are you sure you want to delete "+ app.name
+            text ="Are you sure you want to delete "+ app.name + "?"
             areYouSureDialog = wxMessageDialog(self, text, \
                                                '', wxOK |  wxCANCEL |wxICON_INFORMATION)
             if(areYouSureDialog.ShowModal() == wxID_OK):
