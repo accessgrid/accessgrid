@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.170 2004-03-26 20:42:05 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.171 2004-03-30 16:57:45 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.170 2004-03-26 20:42:05 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.171 2004-03-30 16:57:45 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1433,13 +1433,13 @@ class Venue(AuthorizationMixIn):
                   inStreamDescription.location.port,
                   inStreamDescription.location.ttl )
 
-        self.streamList.RemoveStream(streamDescription)
+        self.streamList.RemoveStream(inStreamDescription)
         
         # Distribute event announcing removal of stream
         self.server.eventService.Distribute(self.uniqueId,
                                              Event(Event.REMOVE_STREAM,
                                                     self.uniqueId,
-                                                    streamDescription))
+                                                    inStreamDescription))
 
     def GetStreams(self):
         """
