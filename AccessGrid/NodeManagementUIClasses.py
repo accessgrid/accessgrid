@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.65 2004-05-21 05:39:15 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.66 2004-07-27 18:29:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.65 2004-05-21 05:39:15 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.66 2004-07-27 18:29:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -774,6 +774,9 @@ class NodeManagementClientFrame(wxFrame):
 
         # Update the service manager list
         self.UpdateHostList()
+
+        # Update the service list
+        self.UpdateServiceList()
 
     def UpdateHostList( self, event=None ):
         """
