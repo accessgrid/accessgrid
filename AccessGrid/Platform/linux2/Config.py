@@ -3,30 +3,29 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.2 2004-03-12 17:50:17 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.3 2004-03-12 19:59:24 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.2 2004-03-12 17:50:17 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.3 2004-03-12 19:59:24 eolson Exp $"
 
 import os
 import mimetypes
 import mailcap
 import socket
 
-import logging
-
 from pyGlobus import utilc
 
+from AccessGrid import Log
 import AccessGrid.Config
 
 from AccessGrid.Platform import AGTK_USER, AGTK_INSTALL, AGTK_LOCATION
 from AccessGrid.Version import GetVersion
 
-log = logging.getLogger("AG.Platform")
-log.setLevel(logging.INFO)
+log = Log.GetLogger(Log.Platform)
+Log.SetDefaultLevel(Log.Platform, Log.INFO)
 
 class AGTkConfig(AccessGrid.Config.AGTkConfig):
     """
