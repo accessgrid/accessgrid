@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClientUI.py,v 1.8 2003-02-23 14:22:24 judson Exp $
+# RCS-ID:      $Id: TextClientUI.py,v 1.9 2003-02-28 16:54:36 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -44,6 +44,7 @@ class SimpleTextProcessor:
         
     def Stop(self):
         self.running = 0
+        self.outputThread = 0
         
     def Input(self, event):
         """ """
@@ -97,93 +98,51 @@ class SimpleTextProcessor:
             event = pickle.loads(pdata)
             self.Output(event.data)
 
-class TextClientUI(wxFrame):
+class TextClientUIStandAlone(wxFrame):
     aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
-        This has been developed as part of the Access Grid project."""
+    This has been developed as part of the Access Grid project."""
     bufferSize = 128
-
-    def __init__(self, *args, **kwds):
-        self.location = kwds["location"]
-        del kwds["location"]
-        self.host = self.location[0]
-        self.port = self.location[1]
-
-        self.venueId = kwds["venueId"]
-        del kwds["venueId"]
+    venueId = None
+    location = None
+    localEchoId = wxNewId()
+    fileCloseId = wxNewId()
+    helpAboutId = wxNewId()
         
-        # begin wxGlade: TextClientUI.__init__
-        kwds["style"] = wxDEFAULT_FRAME_STYLE
+    def __init__(self, *args, **kwds):
         wxFrame.__init__(self, *args, **kwds)
-        self.TextFrame_statusbar = self.CreateStatusBar(1)
-
         # Menu Bar
         self.TextFrame_menubar = wxMenuBar()
         self.SetMenuBar(self.TextFrame_menubar)
         self.File = wxMenu()
-        self.fileCloseId = wxNewId()
         self.File.Append(self.fileCloseId, "Close", "Quit the application.")
         self.TextFrame_menubar.Append(self.File, "File")
         self.Options = wxMenu()
-        self.localEchoId = wxNewId()
         self.Options.Append(self.localEchoId, "Local Echo",
-                            "Echo input locally?", wxITEM_CHECK)
+                           "Echo input locally?", wxITEM_CHECK)
         self.TextFrame_menubar.Append(self.Options, "Options")
         self.Help = wxMenu()
-        self.helpAboutId = wxNewId()
         self.Help.Append(self.helpAboutId, "About",
                         "Open the about dialog box.")
         self.TextFrame_menubar.Append(self.Help, "Help")
         # Menu Bar end
-        self.textOutId = wxNewId()
-        self.TextOutput = wxTextCtrl(self, self.textOutId, "", style=wxTE_MULTILINE|wxTE_READONLY|wxHSCROLL)
-        self.textInId = wxNewId()
-        self.TextInput = wxTextCtrl(self, self.textInId, "", style=wxTE_PROCESS_ENTER|wxHSCROLL)
 
-        self.__set_properties()
-        self.__do_layout()
-        # end wxGlade
-
-        # We get a host/port tuple from the constructor
-        self.attr = CreateTCPAttrAlwaysAuth()
-        self.socket = GSITCPSocket()
-        self.socket.connect(self.host, self.port, self.attr)
-        self.Processor = SimpleTextProcessor(self.socket, self.venueId,
-                                             self.TextOutput)
-
-
-        self.Processor.Input(ConnectEvent(self.venueId))
+        self.textClient = TextClientUI(self, -1)
 
         EVT_MENU(self, self.fileCloseId, self.FileClose)
         EVT_MENU(self, self.helpAboutId, self.HelpAbout)
         EVT_MENU(self, self.localEchoId, self.SetLocalEcho)
-        EVT_TEXT_ENTER(self, self.textInId, self.LocalInput)
 
-    def __set_properties(self):
-        # begin wxGlade: TextClientUI.__set_properties
-        self.SetTitle("PyText 1.0")
-        self.SetSize((375, 225))
-        self.TextFrame_statusbar.SetStatusWidths([-1])
-        # statusbar fields
-        TextFrame_statusbar_fields = ['Status Goes Here...']
-        for i in range(len(TextFrame_statusbar_fields)):
-            self.TextFrame_statusbar.SetStatusText(TextFrame_statusbar_fields[i], i)
-        # end wxGlade
+        self.Show()
 
-    def __do_layout(self):
-        # begin wxGlade: TextClientUI.__do_layout
-        TextSizer = wxBoxSizer(wxVERTICAL)
-        TextSizer.Add(self.TextOutput, 2, wxEXPAND|wxALIGN_CENTER_HORIZONTAL, 0)
-        TextSizer.Add(self.TextInput, 0, wxEXPAND|wxALIGN_BOTTOM, 0)
-        self.SetAutoLayout(1)
-        self.SetSizer(TextSizer)
-        self.Layout()
-        # end wxGlade
+    def SetLocation(self, location, id):
+        self.textClient.SetLocation(location, id)
 
     def SetLocalEcho(self, event):
-        self.Processor.LocalEcho()
+        self.textClient.Processor.LocalEcho()
         
     def FileClose(self, event):
-        self.Stop()
+        self.textClient.Stop()
+        self.Close()
 
     def HelpAbout(self, event):
         """ About dialog!"""
@@ -191,16 +150,74 @@ class TextClientUI(wxFrame):
         dlg.ShowModal()
         dlg.Destroy()
 
+
+class TextClientUI(wxPanel):
+    aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
+        This has been developed as part of the Access Grid project."""
+    bufferSize = 128
+    venueId = None
+    location = None
+    Processor = None
+    
+    def __init__(self, *args, **kwds):
+        wxPanel.__init__(self, *args, **kwds)
+        self.TextOutput = wxTextCtrl(self, wxNewId(), "", style=wxTE_MULTILINE|wxTE_READONLY|wxHSCROLL)
+        self.TextOutput.SetToolTipString("Text chat for this venue")
+        self.textInputId = wxNewId()
+        self.TextInput = wxTextCtrl(self, self.textInputId, "", style=wxTE_PROCESS_ENTER|wxHSCROLL)
+        self.TextInput.SetToolTipString("Write your message here")
+
+        self.__set_properties()
+        self.__do_layout()
+
+        EVT_TEXT_ENTER(self, self.textInputId, self.LocalInput)
+
+        self.Show(true)
+
+    def SetLocation(self, location, venueId):
+        if self.Processor != None:
+            self.Processor.Stop()
+                  
+        self.host = location[0]
+        self.port = location[1]
+        self.venueId = venueId
+        self.attr = CreateTCPAttrAlwaysAuth()
+        self.socket = GSITCPSocket()
+        self.socket.connect(self.host, self.port, self.attr)
+
+        self.Processor = SimpleTextProcessor(self.socket, self.venueId,
+                                             self.TextOutput)
+        
+        self.Processor.Input(ConnectEvent(self.venueId))
+        self.TextOutput.Clear()
+        self.TextInput.Clear() 
+
+    def __set_properties(self):
+        self.SetSize((375, 225))
+        
+    def __do_layout(self):
+        TextSizer = wxBoxSizer(wxVERTICAL)
+        TextSizer.Add(self.TextOutput, 2, wxEXPAND|wxALIGN_CENTER_HORIZONTAL, 0)
+        TextSizer.Add(self.TextInput, 0, wxEXPAND|wxALIGN_BOTTOM, 0)
+        self.SetAutoLayout(1)
+        self.SetSizer(TextSizer)
+        self.Layout()
+        
     def LocalInput(self, event):
         """ User input """
-        textEvent = TextEvent(self.venueId, None, 0, event.GetString())
-        self.Processor.Input(textEvent)
-        self.TextInput.Clear()
+        if(self.venueId != None):
+            textEvent = TextEvent(self.venueId, None, 0, event.GetString())
+            self.Processor.Input(textEvent)
+            self.TextInput.Clear()
+        else:
+            text = "Please, go to a venue before using the chat"
+            dlg = wxMessageDialog(self, text , 'Not connected to venue', wxOK | wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
 
     def Stop(self):
         self.Processor.Stop()
-        self.Close()
-
+        
     def OnCloseWindow(self):
         self.Destroy()
         

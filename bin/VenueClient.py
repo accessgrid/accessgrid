@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.56 2003-02-28 15:06:49 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.57 2003-02-28 16:54:55 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -28,7 +28,7 @@ from AccessGrid.VenueClientUIClasses import UrlDialog, UrlDialogCombo
 from AccessGrid.VenueClientUIClasses import SaveFileDialog, UploadFilesDialog
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Utilities import formatExceptionInfo, HaveValidProxy 
-from AccessGrid.UIUtilities import ErrorDialog
+from AccessGrid.UIUtilities import MessageDialog
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN 
 
 #from AccessGrid.TextClientUI import TextClientUI
@@ -41,8 +41,6 @@ class VenueClientUI(wxApp, VenueClient):
     It updates its UI when it enters or exits a venue or
     receives a coherence event. 
     """
-    upload_url = None
-    
     def OnInit(self):
         """
         This method initiates all gui related classes.
@@ -57,7 +55,7 @@ class VenueClientUI(wxApp, VenueClient):
         self.client = None
         self.gotClient = false
         self.clientHandle = None
-        # self.textClient = None
+    #    self.textClient = None
         self.venueUri = None
         return true
 
@@ -238,10 +236,9 @@ class VenueClientUI(wxApp, VenueClient):
             wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, exit)
 
         # Start text client
-        wxCallAfter(self.frame.OpenChat)
+        wxCallAfter(self.frame.SetTextLocation)
         wxCallAfter(self.frame.FillInAddress, None, URL)
         self.venueUri = URL
-        
         self.upload_url = self.client.GetUploadDescriptor()
 
     def ExitVenue(self):
@@ -257,7 +254,7 @@ class VenueClientUI(wxApp, VenueClient):
         
         if not HaveValidProxy():
             GPI()
-            
+                               
         if self.venueUri != None:
             oldUri = self.venueUri
         else:
@@ -284,27 +281,27 @@ class VenueClientUI(wxApp, VenueClient):
             except EnterVenueException:
                 if oldUri != None:
                     self.EnterVenue(oldUri) # go back to venue where we came from
+                    print 'go to old venue ', oldUri
+                    
                          
         else:
-            if(oldUri is not None):
-                wxCallAfter(self.frame.FillInAddress, None, oldUri)
-            else:
-                wxCallAfter(self.frame.FillInAddress, None, self.profile.homeVenue)
-            
             if not HaveValidProxy():
-                
                 text = 'You do not have a valid proxy.' +\
                        '\nPlease, run "grid-proxy-init" on the command line"'
                 text2 = 'Invalid proxy'
 
             else:
-                text = 'The venue URL you specified is not valid'
-                text2 = 'Invalid URL'
-                
-            dlg = wxMessageDialog(self.frame, text, text2, style = wxOK|wxICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
+                if oldUri is None:
+                    wxCallAfter(self.frame.FillInAddress, None, self.profile.homeVenue)
 
+                else:
+                    wxCallAfter(self.frame.FillInAddress, None, oldUri)
+                    
+
+            text = 'The venue URL you specified is not valid'
+            text2 = 'Invalid URL'
+            MessageDialog(self.frame, text, text2, style = wxOK|wxICON_INFORMATION)
+            
     def OnCloseWindow(self):
         self.Destroy()
         
@@ -352,14 +349,12 @@ class VenueClientUI(wxApp, VenueClient):
 
             print "descriptor is ", data_descriptor.__class__
             if data_descriptor.status != DataDescription.STATUS_PRESENT:
-                dlg = wxMessageDialog(self.frame, 
-                                      'File %s is not downloadable - it has status "%s"'
-                                      % (data_descriptor.name, data_descriptor.status),
-                                      "Invalid file",
-                                      style = wxOK)
+                MessageDialog(self.frame, 
+                              'File %s is not downloadable - it has status "%s"'
+                              % (data_descriptor.name, data_descriptor.status),
+                              "Invalid file",
+                              style = wxOK)
                 
-                dlg.ShowModal()
-                dlg.Destroy()
                 return
 
             #
@@ -447,11 +442,8 @@ class VenueClientUI(wxApp, VenueClient):
             failure_reason = "Exception: %s" % (str(e))
 
         if failure_reason is not None:
-            dlg = wxMessageDialog(self.frame, failure_reason, "Download error",
+            MessageDialog(self.frame, failure_reason, "Download error",
                                   wxOK  | wxICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
-
     def UploadFiles(self, file_list):
         """
         Upload the given files to the venue.
@@ -462,7 +454,6 @@ class VenueClientUI(wxApp, VenueClient):
 
 
         """
-        
         #
         # Create the dialog for the download.
         #
@@ -484,8 +475,7 @@ class VenueClientUI(wxApp, VenueClient):
         #
         # Some more plumbing with the local function to get the identity
         # retrieval in the thread, as it can take a bit the first time.
-        #
-        # We use get_ident_and_upload as the body of the thread.
+        #        # We use get_ident_and_upload as the body of the thread.
         #
 
         def get_ident_and_upload(upload_url, file_list, progressCB):
@@ -508,37 +498,30 @@ class VenueClientUI(wxApp, VenueClient):
                 error_msg = "Upload failed: %s" % (e)
 
             if error_msg is not None:
-                print "Upload error ", error_msg
-                #
-                # TODO : put this stuff in a routine to wxCallAfter since
-                # we can't do this here
-                #dlg = wxMessageDialog(self.frame, error_msg, "Upload error",
-                #                      wxOK  | wxICON_INFORMATION)
-                #dlg.ShowModal()
-                #dlg.Destroy()
-                    
+                wxCallAfter(MessageDialog, NULL, error_msg)
+
         #
         # Arguments to pass to get_ident_and_upload
         #
-
+        
         ul_args = (self.upload_url, file_list, progressCB)
-
+        
         print "Have args, creating thread ", ul_args
-
+        
         upload_thread = threading.Thread(target = get_ident_and_upload,
-                                           args = ul_args)
-
+                                         args = ul_args)
+        
         #
         # Use wxCallAfter so we get the dialog filled in properly.
         #
         wxCallAfter(upload_thread.start)
-
+        
         print "started thread"
-
+        
         #
         # Fire up dialog as a modal.
         #
-
+        
         dlg.ShowModal()
 
         #
@@ -550,14 +533,14 @@ class VenueClientUI(wxApp, VenueClient):
         # Wait for the thread to finish (if it doesn't it's a bug).
         #
         #
-
+        
         upload_thread.join()
-
+        
         #
         # Clean up.
         #
         dlg.Destroy()
-
+        
 
     def UploadFilesNoDialog(self, file_list):
         """
@@ -586,11 +569,9 @@ class VenueClientUI(wxApp, VenueClient):
 
         if error_msg is not None:
             print "Showing ", error_msg
-            dlg = wxMessageDialog(self.frame, error_msg, "Upload error",
+            MessageDialog(self.frame, error_msg, "Upload error",
                                   wxOK  | wxICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
-            
+                      
         print "Upload done"
 
     def AddData(self, data):

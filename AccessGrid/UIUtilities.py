@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.5 2003-02-10 22:12:45 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.6 2003-02-28 16:54:36 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,12 +15,12 @@ from AccessGrid import icons
 
 from AccessGrid.Utilities import formatExceptionInfo
 
-class ErrorDialog:
-    def __init__(self, frame, text):
-        (name, args, traceback_string_list) = formatExceptionInfo()
+class MessageDialog:
+    def __init__(self, frame, text, text2 = "", style = wxOK|wxICON_INFORMATION):
+##        (name, args, traceback_string_list) = formatExceptionInfo()
 ##        for x in traceback_string_list:
 ##            print(x)       
-        errorDialog = wxMessageDialog(frame, text, '', wxOK)
+        errorDialog = wxMessageDialog(frame, text, text2, style)
         errorDialog.ShowModal()
         errorDialog.Destroy()
         
