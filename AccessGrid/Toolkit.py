@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.36 2004-04-09 18:38:35 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.37 2004-04-09 19:57:05 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.36 2004-04-09 18:38:35 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.37 2004-04-09 19:57:05 turam Exp $"
 
 # Standard imports
 import os
@@ -91,6 +91,7 @@ class AppBase:
        # This initializes logging
        self.log = Log.GetLogger(Log.Toolkit)
        levelHandler = Log.HandleLoggers(mlh, Log.GetDefaultLoggers())
+       self.log.info("Initializing AG Toolkit version %s", GetVersion())
        
        # 1. Process Command Line Arguments
        argvResult = self.ProcessArgs()
