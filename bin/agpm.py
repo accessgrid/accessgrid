@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.6 2004-03-02 22:30:01 judson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.7 2004-03-15 21:44:59 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This program is used to register applications with the users AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.6 2004-03-02 22:30:01 judson Exp $"
+__revision__ = "$Id: agpm.py,v 1.7 2004-03-15 21:44:59 judson Exp $"
 
 import os
 import re
@@ -110,10 +110,11 @@ def main():
     appName = None
     verbose = 0
     unregister = 0
-    app = CmdlineApplication()
-    appdb = app.GetAppDatabase()
     cleanup = 0
     
+    app = CmdlineApplication()
+    appdb = app.GetAppDatabase()
+
     # We're going to assume there's a .app file in the current directory,
     # but only after we check for a command line argument that specifies one.
     # We also have the ability to pass in a zip file that contains a .app
