@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.7 2004-03-15 21:44:59 judson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.8 2004-03-16 03:09:51 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This program is used to register applications with the users AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.7 2004-03-15 21:44:59 judson Exp $"
+__revision__ = "$Id: agpm.py,v 1.8 2004-03-16 03:09:51 judson Exp $"
 
 import os
 import re
@@ -24,31 +24,55 @@ import getopt
 import zipfile
 import tempfile
 
-from AccessGrid.Toolkit import CmdlineApplication
+if sys.version.startswith('2.2'):
+    try:
+        from optik import OptionParser
+    except:
+        raise Exception, "Missing module optik necessary for the AG Toolkit."
+
+if sys.version.startswith('2.3'):
+    try:
+        from optparse import OptionParser
+    except:
+        raise Exception, "Missing module optparse, check your python installation."
+
+from AccessGrid.AppDb import AppDb
 from AccessGrid.Utilities import LoadConfig
-from AccessGrid.Platform import GetTempDir
+from AccessGrid.Platform.Config import SystemConfig
 
-tempfile.tmpdir = GetTempDir()
+tempfile.tmpdir = SystemConfig.instance().GetTempDir()
 
-def Usage():
+def ProcessArgs():
     """
-    This 'splains how to use this program. You can get help with -h.
     """
-    
-    print "%s:" % sys.argv[0]
-    print "     -n|--name : specify a name other than the default one "
-    print "                 (from the .app file for this shared application"
-    print "     -u|--unregister : unregister the application"
-    print "     -f|--file : <.app file>"
-    print "     -d|--dir : <directory containing a .app file>"
-    print "     -z|--zip : <zip archive containing a .app file>"
-    print "     -p|--package : <package archive containing a .app file>"
-    print "     -h|--help : This help."
-    print """
+    doc = """
     By default this program registers/installs a shared application
     with the users environment. Using the -u argument applications can
     be unregistered/uninstalled.
     """
+
+    parser = OptionParser(doc)
+    parser.add_option("-u", "--unregister", action="store_true",
+                      dest="unregister", default=0,
+          help="Unregister the application, instead of registering it.")
+    parser.add_option("-n", "--name", dest="appname",
+          help="specify a name other than the default on from the .app file.")
+    parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
+                      default=0, help="Be verbose during app processing.")
+    parser.add_option("-f", "--file", dest="appfile",
+          help="The name of a .app file to install.")
+    parser.add_option("-d", "--dir", dest="appdir",
+                      help="The name of a directory containing a .app file.")
+    parser.add_option("-z", "--zip", dest="appzip",
+                      help="The name of a .zip file containing a .app file.")
+    parser.add_option("-p", "--package", dest="apppkg",
+                    help="The name of an app package containing a .app file.")
+    parser.add_option("-l", "--list-apps", action="store_true",
+                      dest="listapps", help="List installed shared apps.")
+    
+    (options, args) = parser.parse_args()
+
+    return options
 
 def UnpackZip(filename):
     """
@@ -107,65 +131,43 @@ def main():
     commands = dict()
     files = list()
     origDir = os.getcwd()
-    appName = None
-    verbose = 0
-    unregister = 0
     cleanup = 0
     
-    app = CmdlineApplication()
-    appdb = app.GetAppDatabase()
+    appdb = AppDb()
 
     # We're going to assume there's a .app file in the current directory,
     # but only after we check for a command line argument that specifies one.
     # We also have the ability to pass in a zip file that contains a .app
     # file and the other parts of the shared application.
-    
-    try:
-        opts = getopt.getopt(sys.argv[1:], "f:d:z:n:p:huv", ["file=",
-                                                             "dir=",
-                                                             "zip=",
-                                                             "name=",
-                                                             "package=",
-                                                             "unregister",
-                                                             "verbose",
-                                                             "help"])[0]
-    except getopt.GetoptError:
-        Usage()
-        sys.exit(2)
 
-    if len(opts) == 0:
-        Usage()
-        sys.exit(2)
+    options = ProcessArgs()
+
+    if options.listapps:
+        apps = appdb.ListApplications()
+        import pprint
+        pprint.pprint(apps)
+        sys.exit(0)
         
-    for opt, arg in opts:
-        if opt in ("-f", "--file"):
-            if os.path.isabs(arg):
-                workingDir = os.path.dirname(arg)
-                appFile = os.path.basename(arg)
-            else:
-                appFile = arg
-        elif opt in ("-d", "--dir"):
-            workingDir = os.path.abspath(arg)
-        elif opt in ("-z", "--zip", "-p", "--package"):
-            # Unpack the zip archive
-            # We get back the appfile and directory
-            appFile, workingDir = UnpackZip(arg)
-            cleanup = 1
-        elif opt in ("-u", "--unregister"):
-            unregister = 1
-        elif opt in ("-n", "--name"):
-            appName = arg
-        elif opt in ("-v", "--verbose"):
-            verbose = 1
-        elif opt in ("-h", "--help"):
-            Usage()
-            sys.exit(0)
+    if options.appfile:
+        if os.path.isabs(options.appfile):
+            workingDir = os.path.dirname(options.appfile)
+            appFile = os.path.basename(options.appfile)
+        else:
+            appFile = options.appfile
+
+    if options.appdir:
+        workingDir = os.path.abspath(options.appdir)
+
+    if options.appzip:
+        appFile, workingDir = UnpackZip(options.appzip)
+        cleanup = 1
 
     # If no appfile is specified, search the current directory for one
     if appFile == None:
         files = os.listdir(os.getcwd())
         for filename in files:
             spList = filename.split('.')
+
             if len(spList) == 2:
                 (name, ext) = spList
                 if ext == "app":
@@ -183,30 +185,30 @@ def main():
         appInfo, commands = ProcessAppFile(appFile)
                 
     # If we unregister, we do that then exit
-    if unregister:
-        if appInfo != None and appName == None:
-            appName = appInfo["application.name"]
-        if appName != None:
-            appdb.UnregisterApplication(name=appName)
+    if options.unregister:
+        if appInfo != None and options.appname == None:
+            options.appname = appInfo["application.name"]
+        if options.appname != None:
+            appdb.UnregisterApplication(name=options.appname)
         else:
             print "No application name discovered, exiting without doing \
                    unregister."
         sys.exit(0)
 
-    if verbose:
-        print "Name: %s" % appName
+    if options.verbose:
+        print "Name: %s" % options.appname
         print "Mime Type: %s" % appInfo["application.mimetype"]
         print "Extension: %s" % appInfo["application.extension"]
         print "From: %s" % workingDir
 
     # Register the App
-    if appName == None:
-        appName = appInfo["application.name"]
+    if options.appname == None:
+        options.appname = appInfo["application.name"]
     files = appInfo["application.files"]
     if type(files) is StringType:
         files = re.split(r',\s*|\s+', files)
 
-    appdb.RegisterApplication(appName,
+    appdb.RegisterApplication(options.appname,
                               appInfo["application.mimetype"],
                               appInfo["application.extension"],
                               commands, files,
