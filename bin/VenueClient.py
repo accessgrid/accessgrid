@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.90 2003-03-27 20:28:09 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.91 2003-03-27 21:44:14 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -73,14 +73,13 @@ class VenueClientUI(wxApp, VenueClient):
         pass
     
     def __setLogger(self):
-        logger = logging.getLogger("AGVenueClient")
-        logger.setLevel(logging.DEBUG)
+        log = logging.getLogger("AG")
+        log.setLevel(logging.DEBUG)
         logname = "VenueClient.log"
-        hdlr = logging.handlers.RotatingFileHandler(logname, "a", 10000000, 0)
+        hdlr = logging.FileHandler(logname)
         fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
         hdlr.setFormatter(fmt)
-        logger.addHandler(hdlr)
-        log = logging.getLogger("AGVenueClient")
+        log.addHandler(hdlr)
 
         wxLog_SetActiveTarget(wxLogGui())  
         wxLog_SetActiveTarget(wxLogChain(MyLog(log)))
