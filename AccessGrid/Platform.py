@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.17 2003-04-03 21:30:03 olson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.18 2003-04-07 22:13:12 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -22,6 +22,7 @@ log = logging.getLogger("AG.Platform")
 AGTK = 'AGTK'
 AGTK_LOCATION = 'AGTK_LOCATION'
 AGTK_USER = 'AGTK_USER'
+AGTK_INSTALL = 'AGTK_INSTALL'
 
 # Windows Defaults
 WIN = 'win32'
@@ -140,7 +141,14 @@ def GetInstallDir():
     Determine the install directory
     """
 
-    installDir = ""
+    try:
+        installDir = os.environ[AGTK_INSTALL]
+    except:
+        installDir = ""
+
+    if installDir != "":
+        return installDir;
+
     if sys.platform == WIN:
         AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
         installDir, type = _winreg.QueryValueEx(AG20,"InstallPath")
@@ -168,7 +176,7 @@ def GetSystemTempDir():
     """
 
     if sys.platform == WIN:
-        winPath = os.getenv("SystemRoot")
+        winPath = win32api.GetWindowsDirectory()
         return os.path.join(winPath, "TEMP")
     else:
         return "/tmp"
