@@ -35,6 +35,7 @@ from optparse import OptionParser
 # Borrowed from Platform.py
 WIN = 'win32'
 LINUX = 'linux2'
+OSX = 'darwin'
 
 parser = OptionParser()
 parser.add_option("-a", "--agdir", dest="agsrcdir", metavar="AGSRCDIR",
@@ -149,7 +150,7 @@ if sys.platform == WIN:
     new_file.close()
 
 # copy defaultLinux file if we are using linux
-if sys.platform == LINUX:
+if sys.platform == LINUX or sys.platform == OSX:
     unix_config_src = os.path.join( options.agsrcdir, "packaging", "config", "defaultLinux")
     unix_config_dst = os.path.join( nodeConfigPath, "defaultLinux")
     if options.verbose:
@@ -186,24 +187,18 @@ BackupFile(config_file, bak_file)
 
 nsfile = open(config_file, 'w', )
 nsfile.write("[Node Configuration]\n")
-nsfile.write("servicesDirectory = " + os.path.join("Config", "NodeServices") + "\n")
-from AccessGrid import Toolkit
 nsfile.write("configDirectory = " + os.path.join("Config", "nodeConfig") + "\n")
 if sys.platform == WIN:
     nsfile.write("defaultNodeConfiguration = defaultWindows\n\n")
-elif sys.platform == LINUX:
+elif sys.platform == LINUX or sys.platform == OSX:
     nsfile.write("defaultNodeConfiguration = defaultLinux\n\n")
-nsfile.close()
 
 agtk_location = os.path.join(os.path.abspath(options.agsrcdir))
 python_path = os.path.abspath(options.agsrcdir)
 
-BackupFile(config_file, bak_file)
-
-smfile = open(config_file, 'w', )
-smfile.write("[Service Manager]\n")
-smfile.write("servicesDirectory = " + localServicePath + "\n\n")
-smfile.close()
+nsfile.write("[Service Manager]\n")
+nsfile.write("servicesDirectory = " + localServicePath + "\n\n")
+nsfile.close()
 
 # Tell users how to use the new configuration files.
 print "\n    --------------------------------------------------------------"
