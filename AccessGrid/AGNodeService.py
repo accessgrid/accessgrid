@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.81 2004-09-08 19:08:21 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.82 2004-09-08 20:56:42 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.81 2004-09-08 19:08:21 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.82 2004-09-08 20:56:42 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -356,7 +356,7 @@ class AGNodeService:
                 self.LoadConfiguration( self.defaultConfig ) 
             except:
                 log.exception("Exception loading default configuration.")
-                raise Exception("Failed to load default configuration <%s>",
+                raise Exception("Failed to load default configuration <%s>" %
                                 self.defaultConfig)
         else:
             log.warn("There is no default configuration.")
@@ -489,7 +489,7 @@ class AGNodeService:
                             self.profile )
                     else:
                         log.info("Not setting identity for service %s; no profile",
-                                 serviceDescription.name)
+                                 serviceDesc.name)
                         
                         
                 except:
@@ -499,7 +499,70 @@ class AGNodeService:
         if len(exceptionText):
             raise Exception(exceptionText)
 
+    def NeedMigrateNodeConfig(self,configName):
+        configFile = os.path.join(self.configDir, configName)
 
+        ret = 0
+
+        cp = ConfigParser.ConfigParser()
+        cp.read(configFile)
+        for section in cp.sections():
+            if section.startswith('servicemanager'):
+                url = cp.get(section,'url')
+                name = cp.get(section,'name')
+                
+                if url.find('12000') >= 0:
+                    ret = 1
+                    break
+                if name.find('12000') >= 0:
+                    ret = 1
+                    break
+        return ret
+                
+    def MigrateNodeConfig(self,configName):
+
+        configFile = os.path.join(self.configDir, configName)
+
+        # read file
+        f = file(configFile,'r')
+        lines = f.readlines()
+        f.close()
+        
+        # do migration
+        wasMigrated = 0
+        
+        cp = ConfigParser.ConfigParser()
+        cp.read(configFile)
+        for section in cp.sections():
+            if section.startswith('servicemanager'):
+                url = cp.get(section,'url')
+                name = cp.get(section,'name')
+                
+                if url.find('12000') >= 0:
+                    url = url.replace('12000','11000')
+                    cp.set(section,'url',url)
+                    wasMigrated = 1
+                if name.find('12000') >= 0:
+                    name = name.replace('12000','11000')
+                    cp.set(section,'name',name)
+                    wasMigrated = 1
+
+        if wasMigrated:
+            log.info("Migrating node config %s", configName)
+            
+            orgConfigFile = configFile + ".org"
+            log.info("Original node config moved to %s", orgConfigFile)
+            os.rename(configFile,orgConfigFile)
+            
+            # write file
+            f = file(configFile,'w')
+            f.write("# AGTk %s node configuration\n" % (Version.GetVersion()))
+            cp.write(f)
+            f.close()
+        else:
+            log.info("Migration unnecessary")
+            
+                    
 
     def StoreConfiguration( self, configName ):
       """
@@ -609,6 +672,13 @@ class AGNodeService:
 
         # Write out the node service config file with the new default config name
         self.__WriteConfigFile()
+
+    def GetDefaultConfiguration( self ):
+        """
+        Get the name of the default configuration
+        """
+        log.info("NodeService.GetDefaultConfiguration")
+        return self.defaultConfig
 
 
     def GetConfigurations( self ):
@@ -950,6 +1020,12 @@ class AGNodeServiceI(SOAPInterface):
 
         self.impl.LoadConfiguration(configName)
 
+    def NeedMigrateNodeConfig(self,configFile):
+        return self.impl.NeedMigrateNodeConfig(configFile)
+                
+    def MigrateNodeConfig(self,configFile):
+        self.impl.MigrateNodeConfig(configFile)
+
     def StoreConfiguration( self, configName ):
         """
         Interface to store a node configuration
@@ -975,6 +1051,19 @@ class AGNodeServiceI(SOAPInterface):
         """
 
         self.impl.SetDefaultConfiguration(configName)
+
+    def GetDefaultConfiguration( self ):
+        """
+        Interface to set the default node configuration
+
+        **Arguments:**
+            *configName* Name of config file to use as default for the node
+            
+        **Raises:**
+        **Returns:**
+        """
+
+        return self.impl.GetDefaultConfiguration()
 
     def GetConfigurations(self):
         """
@@ -1088,11 +1177,20 @@ class AGNodeServiceIW(SOAPIWrapper):
     def LoadConfiguration( self, configName ):
         self.proxy.LoadConfiguration(configName)
 
+    def NeedMigrateNodeConfig(self,configFile):
+        return self.proxy.NeedMigrateNodeConfig(configFile)
+                
+    def MigrateNodeConfig(self,configFile):
+        self.proxy.MigrateNodeConfig(configFile)
+
     def StoreConfiguration( self, configName ):
         self.proxy.StoreConfiguration(configName)
 
     def SetDefaultConfiguration( self, configName ):
         self.proxy.SetDefaultConfiguration(configName)
+
+    def GetDefaultConfiguration( self ):
+        return self.proxy.GetDefaultConfiguration()
 
     def GetConfigurations(self):
         return self.proxy.GetConfigurations()
