@@ -1,0 +1,53 @@
+--- /etc/X11/desktop-menus/applications.menu.orig	2003-10-04 02:46:16.000000000 +1000
++++ /etc/X11/desktop-menus/applications.menu	2004-07-09 11:00:35.000000000 +1000
+@@ -30,6 +30,50 @@
+       </And>
+     </Query>
+ 
++    <!-- Access Grid -->
++    <Folder>
++      <Name>Access Grid</Name>
++      <Desktop>AccessGrid-Base.directory</Desktop>
++      <Query>
++        <Keyword>X-Access-Grid-Base</Keyword>
++      </Query>
++
++      <!-- Access Grid Configure -->
++      <Folder>
++        <Name>Configure</Name>
++        <Desktop>AccessGrid-Configure.directory</Desktop>
++        <Query>
++          <Keyword>X-Access-Grid-Configure</Keyword>
++        </Query>
++
++        <DontShowIfEmpty/>
++      </Folder>
++
++      <!-- Access Grid Documentation -->
++      <Folder>
++        <Name>Documentation</Name>
++        <Desktop>AccessGrid-Documentation.directory</Desktop>
++        <Query>
++          <Keyword>X-Access-Grid-Documentation</Keyword>
++        </Query>
++        
++        <DontShowIfEmpty/>
++      </Folder>
++
++      <!-- Access Grid Services -->
++      <Folder>
++        <Name>Services</Name>
++        <Desktop>AccessGrid-Services.directory</Desktop>
++        <Query>
++          <Keyword>X-Access-Grid-Services</Keyword>
++        </Query>
++        
++        <DontShowIfEmpty/>
++      </Folder>
++
++      <DontShowIfEmpty/>
++    </Folder>
++
+     <!-- Accessories -->
+     <Folder>
+       <Name>Accessories</Name>
