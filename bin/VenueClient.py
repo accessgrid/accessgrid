@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.107 2003-04-07 22:17:35 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.108 2003-04-08 14:15:30 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -36,7 +36,8 @@ from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 from AccessGrid import DataStore
 from AccessGrid.GUID import GUID
 
-from AccessGrid import PersonalNode
+if sys.platform == "win32":
+    from AccessGrid import PersonalNode
 
 try:
     from AccessGrid import CertificateManager

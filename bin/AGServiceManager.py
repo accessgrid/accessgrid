@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.14 2003-04-07 22:14:32 olson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.15 2003-04-08 14:15:30 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,8 +16,10 @@ import logging, logging.handlers
 import getopt
 
 from AccessGrid.AGServiceManager import AGServiceManager
-from AccessGrid import PersonalNode
 from AccessGrid.hosting.pyGlobus.Server import Server
+
+if sys.platform == "win32":
+    from AccessGrid import PersonalNode
 
 # default arguments
 port = 12000
