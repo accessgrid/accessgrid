@@ -6,13 +6,14 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.15 2003-01-24 20:21:28 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.16 2003-01-28 04:16:49 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys
 import time
 import string
+import types
 import socket
 
 from AccessGrid.hosting.pyGlobus import ServiceBase
@@ -60,14 +61,37 @@ class Venue(ServiceBase.ServiceBase):
         
         cl = self.coherenceService.GetLocation()
         
-        print cl.GetHost(), cl.GetPort(), "*********************************************"
-        self.coherenceClient = CoherenceClient(cl.GetHost(), cl.GetPort(), 
+        self.coherenceHost = cl.GetHost()
+        self.coherencePort = cl.GetPort()
+        
+        self.coherenceClient = CoherenceClient(self.coherenceHost, 
+                                               self.coherencePort, 
                                                self.CoherenceCallback,
                                                self.uniqueId)
         self.coherenceClient.start()
         self.houseKeeper = Scheduler()
+#        self.tasks[self.CleanupClients] = 45
         self.houseKeeper.AddTask(self.CleanupClients, 45)
 
+#     def __getstate__(self):
+#         print "in get state"
+#         for x in self.__dict__.keys():
+#             if type(self.__dict__[x] == types.InstanceType):
+#                 print self.__dict__[x].__class__
+            
+#     def __setstate__(self, state):
+#         print "in set state"
+        
+#     def __getattr__(self, name):
+#         print "__getattr__ for %s" % name
+#         if self.__dict__[name] != None:
+#             return self.__dict__[name]
+#         else:
+#             raise AttributeError, name
+    
+#     def __setattr__(self, key, value):
+#         self.__dict__[key] = value
+        
     # Management methods
     def AddNetworkService(self, connectionInfo, networkServiceDescription):
         """
