@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.70 2003-04-04 19:34:29 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.71 2003-04-07 17:25:36 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -68,6 +68,7 @@ class Venue(ServiceBase.ServiceBase):
         self.description = description
         self.administrators = administrators
         self.encryptMedia = server.GetEncryptAllMedia()
+        self.encryptionKey = None
 
         self.uniqueId = str(GUID())
         self.uri = self.server.MakeVenueURL(self.uniqueId)
