@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.104 2003-09-18 16:29:20 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.105 2003-09-18 18:01:14 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.104 2003-09-18 16:29:20 judson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.105 2003-09-18 18:01:14 eolson Exp $"
 
 import webbrowser
 import string
@@ -1440,7 +1440,6 @@ class VenueParamFrame(wxDialog):
 
     def __loadVenues(self, URL):
         validVenue = false
-
         try:
             wxBeginBusyCursor()
             log.debug("VenueParamFrame.__LoadVenues: Load venues from: %s " % URL)
@@ -1473,9 +1472,7 @@ class VenueParamFrame(wxDialog):
             wxEndBusyCursor()
             self.address.SetValue(self.currentVenueUrl)
             log.exception("VenueParamFrame.__LoadVenues: Could not load exits from server at %s" %URL)
-            ErrorDialog(None, text, "Exits Error",
-                        style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
-            
+            MessageDialog(None, "Could not load exits from server at " + str(URL), "Load Exits Error", wxOK|wxICON_INFORMATION)
     
     def AddExit(self, event):
         index = self.venues.GetSelection()
