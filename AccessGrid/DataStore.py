@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.71 2004-07-26 22:07:58 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.72 2004-08-04 18:21:21 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.71 2004-07-26 22:07:58 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.72 2004-08-04 18:21:21 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -40,9 +40,7 @@ from AccessGrid import Log
 import AccessGrid.GUID
 from AccessGrid.Platform.Config import SystemConfig, GlobusConfig
 from AccessGrid.Descriptions import DataDescription, CreateDataDescription
-from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent,  AddDataEvent
-from AccessGrid.EventClient import EventClient, EventClientWriteDataException
-from AccessGrid.Events import Event, ConnectEvent, HeartbeatEvent
+from AccessGrid.Events import Event
 from AccessGrid.Security import Utilities
 
 log = Log.GetLogger(Log.DataStore)
@@ -1601,6 +1599,8 @@ class GSIHTTPTransferServer(io.GSITCPSocketServer, TransferServer):
                 self.handle_request()
             except GSITCPSocketException:
                 log.info("GSIHTTPTransferServer: GSITCPSocket, interrupted I/O operation, most likely shutting down. ")
+            except:
+                log.exception("Exception handling request")
                 
 
 def HTTPDownloadFile(identity, download_url, destination, size, checksum,
