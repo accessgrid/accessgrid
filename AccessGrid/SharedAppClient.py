@@ -101,7 +101,9 @@ class SharedAppClient:
         try:
             # Join the application object with your client profile
             (self.__publicId, self.__privateId) = self.__appProxy.Join(clientProfile)
-        except Client.MethodFailed, e:
+        except Exception, e:
+#        except Client.MethodFailed, e:
+
             self.log.excpetion("SharedAppClient.Join failed: %s",
                                self.__appUrl)
             try:
