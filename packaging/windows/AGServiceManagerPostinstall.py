@@ -2,6 +2,7 @@ import os
 import sys
 import _winreg
 
+sys.stdout.write("Generating AGServiceManager config file.... ")
 if sys.platform == 'win32':
     AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Access Grid Toolkit\\2.0")
     ConfigDir, Type = _winreg.QueryValueEx(AG20, "ConfigPath")
@@ -10,3 +11,5 @@ if sys.platform == 'win32':
     AGServiceManagerFD.write("[Service Manager]\n")
     AGServiceManagerFD.write("servicesDirectory = " + os.path.join(InstallDir, "local_services\n"))
     AGServiceManagerFD.close()
+
+sys.stdout.write("Done\n")

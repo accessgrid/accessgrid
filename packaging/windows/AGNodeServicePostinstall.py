@@ -2,6 +2,7 @@ import os
 import sys
 import _winreg
 
+sys.stdout.write("Generating AGNodeService config file.... ")
 if sys.platform == 'win32':
     AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Access Grid Toolkit\\2.0")
     ConfigDir, Type = _winreg.QueryValueEx(AG20, "ConfigPath")
@@ -12,3 +13,5 @@ if sys.platform == 'win32':
     AGNodeServiceFD.write("configDirectory = " + ConfigDir + "\n")
     AGNodeServiceFD.write("defaultNodeConfiguration = defaultWindows\n")
     AGNodeServiceFD.close()
+
+sys.stdout.write("Done\n")
