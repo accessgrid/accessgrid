@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.55 2004-04-07 16:31:02 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.56 2004-04-07 16:37:37 judson Exp $
 ;
 
 ; Set externally
@@ -218,3 +218,6 @@ function GetPythonPath(Default: String): String;
 begin
   Result := PythonPath;
 end;
+[_ISTool]
+LogFile=iss.log
+LogFileAppend=false
