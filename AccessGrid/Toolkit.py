@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.66 2004-06-02 02:46:33 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.67 2004-06-25 19:52:20 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.66 2004-06-02 02:46:33 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.67 2004-06-25 19:52:20 judson Exp $"
 
 # Standard imports
 import os
@@ -558,6 +558,9 @@ class Service(AppBase):
                 # There is no directory
                 profPath = os.path.join(self.userConfig.GetServicesDir(),
                                        profile)
+            else:
+                profPath = profile
+
             self.profile.Import(profPath)
 
         # 5. Initialize Certificate Management
