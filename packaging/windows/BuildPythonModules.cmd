@@ -10,7 +10,7 @@ set PYVER=%4
 
 cd %SOURCE%
 
-if %PYVER%=="2.2" (
+if "%PYVER%"=="2.2" (
 	
     echo "Building Logging 0.4.7"
 
@@ -61,5 +61,7 @@ set GLOBUS_LOCATION=%SOURCE%\WinGlobus
 python setup.py build --flavor=win32
 python setup.py install --flavor=win32 --prefix=%DEST%
 cd %SOURCE% 
+
+:end
 
 @cd %AGDIR%\packaging\windows
