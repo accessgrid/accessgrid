@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.99 2003-03-25 17:57:55 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.100 2003-03-25 17:59:37 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -229,7 +229,7 @@ class VenueClientFrame(wxFrame):
         self.nodeMenu.Enable(self.ID_NODE_FOLLOW, false)
         #self.nodeMenu.Enable(self.ID_NODE_MANAGE, false)
         self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
-        self.participantMenu.Enable(self.ID_PARTICIPANT_FOLLOW, false)
+        self.participantMenu.Enable(self.ID_PARTICIPANT_FOLLOW, true)
         self.serviceMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
         self.serviceMenu.Enable(self.ID_VENUE_SERVICE_DELETE, false)
         self.applicationMenu.Enable(self.ID_VENUE_APPLICATION_ADD, false)
@@ -339,9 +339,11 @@ class VenueClientFrame(wxFrame):
         wxLogDebug("VenueClientUIClasses: Follow name:%s url:%s " %(personToFollow.name, url))
 
         try:
-            self.app.Follow(url)
+            self.app.Follow(personToFollow)
             
         except:
+                wxLogDebug("Exception in bin/VenueClient.py : %s %s" % 
+                           ( sys.exc_type, str(sys.exc_value) ) )
                 wxLogError("VenueClientUIClasses: Can not follow %s" %personToFollow.name)
 
         

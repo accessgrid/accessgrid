@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.39 2003-03-25 17:34:16 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.40 2003-03-25 17:59:37 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,6 +13,7 @@
 import sys
 import urlparse
 import string
+import threading
 
 import logging, logging.handlers
 
@@ -25,8 +26,12 @@ from AccessGrid.Types import *
 from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
 from AccessGrid.Events import DisconnectEvent
 from AccessGrid.scheduler import Scheduler
+from AccessGrid.hosting import AccessControl
 
 class EnterVenueException(Exception):
+    pass
+   
+class AuthorizationFailedError(Exception):
     pass
         
 log = logging.getLogger("AG.VenueClient")
@@ -52,7 +57,11 @@ class VenueClient( ServiceBase):
         self.followerProfiles = dict()
         self.__InitVenueData__()
         self.houseKeeper = Scheduler()
-        #self.CreateFollowLeadServer()
+        self.CreateVenueClientWebService()
+
+        self.leaderProfile = None
+        self.pendingFollowers = dict()
+        self.pendingLeaderId = None
                           
     def __InitVenueData__( self ):
         self.eventClient = None
@@ -68,23 +77,24 @@ class VenueClient( ServiceBase):
             
     def SetProfile(self, profile):
         self.profile = profile
-        #if(self.profile != None):
-        #   self.profile.venueClientURL = self.service.get_handle()
-            #self.followLeadClient = Client.Handle(self.profile.venueClientURL).get_proxy()
+        if(self.profile != None):
+           self.profile.venueClientURL = self.service.get_handle()
+           #self.followLeadClient = Client.Handle(self.profile.venueClientURL).get_proxy()
         
-    def DoNothing(self, data):
-        pass
-    
-    def CreateFollowLeadServer(self):
-        server = Server.Server(10000)
+    def CreateVenueClientWebService(self):
+
+        from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
+        port = MulticastAddressAllocator().AllocatePort()
+
+        server = Server.Server(port)
         self.service = server.CreateServiceObject("VenueClient")
         self._bind_to_service( self.service )
         server.run_in_thread()
         
-        
         if(self.profile != None):
             self.profile.venueClientURL = self.service.get_handle()
-            self.followLeadClient = Client.Handle(self.profile.venueClientURL).get_proxy()
+            print "venue client serving :", self.profile.venueClientURL
+            #self.followLeadClient = Client.Handle(self.profile.venueClientURL).get_proxy()
       
     #
     # Event Handlers
@@ -132,10 +142,21 @@ class VenueClient( ServiceBase):
         """
         EnterVenue puts this client into the specified venue.
         """
+
+        # catch unauthorized SOAP calls to EnterVenue
+        securityManager = AccessControl.GetSecurityManager()
+        if securityManager != None:
+            callerDN = securityManager.GetSubject().GetName()
+            if callerDN != None and callerDN != self.leaderProfile.distinguishedName:
+                raise AuthorizationFailedError("Unauthorized leader tried to lead venue client")
+        
         haveValidNodeService = 0
         if self.nodeServiceUri != None:
             haveValidNodeService = Client.Handle( self.nodeServiceUri ).IsValid()
 
+        #
+        # Enter the venue and configure the client
+        #
         try:
             
             if self.venueUri != None:
@@ -156,7 +177,6 @@ class VenueClient( ServiceBase):
                 applications = venueState.applications
             else:
                 applications = {}
-
             try:
                 self.venueState = VenueState( venueState.uniqueId,
                                               venueState.name,
@@ -206,30 +226,34 @@ class VenueClient( ServiceBase):
             self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 5)
             self.heartbeatTask.start()
  
-            # 
-            # Update the node service with stream descriptions
-            #
+        except:
+            print "Exception in EnterVenue : ", sys.exc_type, sys.exc_value
+            raise EnterVenueException("Enter Failed!")
+
+        # 
+        # Update the node service with stream descriptions
+        #
+        try:
             if haveValidNodeService:
                 Client.Handle( self.nodeServiceUri ).get_proxy().ConfigureStreams( self.streamDescList )
-
-            #
-            # Update venue clients being led with stream descriptions
-            #
-
-            #------------ SHOULD THIS BE HERE???
-            #for profile in self.followerProfiles.values():
-            #    Client.Handle( profile.venueClientUri ).get_proxy().wsEnterVenue( URL )
-
-            # Finally, set the venue uri now that we have successfully
-            # entered the venue
-            self.venueUri = URL
-
         except:
-	    log.exception("Enter Failed!")
-            raise EnterVenueException("Enter Failed!")
-    
+            print "Exception configuring node service streams", sys.exc_type, sys.exc_value
+
+        #
+        # Update venue clients being led with stream descriptions
+        #
+        for profile in self.followerProfiles.values():
+            try:
+                Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue( URL )
+            except:
+                print "Exception: ", sys.exc_type, sys.exc_value
+                print "while leading follower: ", profile.name, profile.venueClientURL
+
+        # Finally, set the venue uri now that we have successfully
+        # entered the venue
+        self.venueUri = URL
+
     EnterVenue.soap_export_as = "EnterVenue"
-    
 
     def ExitVenue( self ):
         """
@@ -261,43 +285,76 @@ class VenueClient( ServiceBase):
         """
         self.homeVenue = venueURL
         
-    def Follow( self, venueClientUrl):
+    def Follow( self, leaderProfile ):
         """
-        Follow tells this venue client to follow the node
-        specified.
+        Follow tells this venue client to follow the specified client
         """
-        # first unfollow the person you followed last...
-        if(self.urlToFollow!=None):
-            self.Unfollow(self.urlToFollow)
-       
-        Client.Handle( venueClientUrl ).get_proxy().Lead( self.profile )
-        self.urlToFollow = venueClientUrl
-        
-    def Unfollow( self, venueClientUri ):
-        """
-        Unfollow tells this venue client to stop following
-        the node specified.
-        """
-        Client.Handle( venueClientUri ).get_proxy().Unlead( self.profile )
+        # store public id of leader to whom request is being sent
+        self.pendingLeader = leaderProfile
+
+        # request permission to follow the leader
+        # (response will come in via the LeadResponse method)
+        print 'Requesting permission to follow this leader: ', leaderProfile.name
+        Client.Handle( leaderProfile.venueClientURL ).get_proxy().Lead( self.profile )
 
     def Lead( self, clientProfile):
         """
-        Lead tells this venue client to drag the specified
-        node with it.
+        Lead tells this venue client to drag the specified client with it.
         """
-        self.followerProfiles[clientProfile.publicId] = clientProfile
+
+        print "Received request to lead ", clientProfile.name, clientProfile.venueClientURL
+
+        # Add profile to list of followers awaiting authorization
+        self.pendingFollowers[clientProfile.publicId] = clientProfile
+
+        # Authorize the lead request (asynchronously)
+        threading.Thread(target = self.AuthorizeLead, args = (clientProfile,) ).start()
+
     Lead.soap_export_as = "Lead"
 
-    def Unlead( self, clientProfile):
+    def AuthorizeLead(self, clientProfile):
         """
-        Unlead tells this venue client to stop dragging the specified
-        node with it.
+        Authorize requests to lead this client.  
+        
+        Subclasses should override this method to perform their specific 
+        authorization, calling SendLeadResponse thereafter.
         """
-      
-        for profile in self.followerProfiles.values():
-            if profile.publicId == clientProfile.publicId:
-                del self.followerProfiles[clientProfile.publicId]
-    Unlead.soap_export_as = "Unlead"
+
+        # For now, the base VenueClient authorizes every Lead request
+        self.SendLeadResponse(clientProfile,True)
+
+    def SendLeadResponse(self, clientProfile, response):
+        """
+        This method responds to requests to lead other venue clients.
+        """
+        
+        # remove profile from list of pending followers
+        del self.pendingFollowers[clientProfile.publicId]
+
+        if response == True:
+            # add profile to list of followers
+            print "Authorizing lead request for ", clientProfile.name
+            self.followerProfiles[clientProfile.publicId] = clientProfile
+
+            # send the response
+            Client.Handle( clientProfile.venueClientURL ).get_proxy().LeadResponse(self.profile,True)
+        else:
+            print "Rejecting lead request for ", clientProfile.name
+
+    def LeadResponse(self, leaderProfile, isAuthorized):
+        """
+        LeadResponse is called by other venue clients to respond to 
+        lead requests sent by this client.  A UI client would override
+        this method to give the user visual feedback to the Lead request.
+        """
+        if leaderProfile.publicId == self.pendingLeader.publicId and isAuthorized:
+            print "Leader has agreed to lead you: ", self.pendingLeader.name, self.pendingLeader.distinguishedName
+            self.leaderProfile = self.pendingLeader
+        else:
+            print "Leader has rejected request to lead you: ", leaderProfile.name
+        self.pendingLeader = None
+
+    LeadResponse.soap_export_as = "LeadResponse"
 
     def SetNodeServiceUri( self, nodeServiceUri ):
         """
