@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ServiceBase.py,v 1.9 2003-09-02 18:42:39 eolson Exp $
+# RCS-ID:      $Id: ServiceBase.py,v 1.10 2003-09-11 20:43:42 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import re
 
-from AccessGrid.Toolkit import GetVersion
+from AccessGrid.Version import GetVersion
 
 class ServiceBase:
 
@@ -120,7 +120,7 @@ class ServiceBase:
 
     def GetAGTkVersion(self):
         "Returns the AGTk version of this service."
-        return GetVersion().AsString()
+        return str(GetVersion())
     GetAGTkVersion.soap_export_as = "GetAGTkVersion"
 
     #

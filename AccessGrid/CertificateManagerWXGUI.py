@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.22 2003-09-10 22:11:47 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.23 2003-09-11 20:43:41 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,6 @@ log = logging.getLogger("AG.CertificateManagerWXGUI")
 
 from OpenSSL_AG import crypto
 from wxPython.wx import *
-from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog, ErrorDialogWithTraceback
 
 from AccessGrid import CertificateManager
@@ -557,7 +556,7 @@ class PassphraseDialog(wxDialog):
         EVT_TEXT_ENTER(self, lifeTimeId, self.KeyDown)
        
         self.SetSizer(sizer)
-        self.SetAutoLayout(AG_TRUE)
+        self.SetAutoLayout(1)
         self.Fit()
 
     def GetInfo(self):

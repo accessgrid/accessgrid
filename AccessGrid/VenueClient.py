@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.107 2003-09-10 21:41:10 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.108 2003-09-11 20:43:41 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -35,7 +35,6 @@ from AccessGrid.Descriptions import DataDescription, ConnectionDescription
 from AccessGrid.Utilities import LoadConfig
 from AccessGrid import DataStore
 from AccessGrid.Platform import GetUserConfigDir
-from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.ProcessManager import ProcessManager
 
@@ -134,14 +133,14 @@ class VenueClient( ServiceBase):
 
     def Heartbeat(self):
         if self.eventClient != None:
-            isSuccess = AG_TRUE
+            isSuccess = 1
             try:
                 self.eventClient.Send(HeartbeatEvent(self.venueId,
                                                      self.privateId))
-                isSuccess = AG_TRUE
+                isSuccess = 1
             except:
                 log.exception("VenueClient.Heartbeat: Heartbeat exception is caught, exit venue.")
-                isSuccess = AG_FALSE
+                isSuccess = 0
 
             # Send whether Heartbeat succeeded or failed to UI.
             for s in self.eventSubscribers:
@@ -421,7 +420,7 @@ class VenueClient( ServiceBase):
             s.RemoveStreamEvent(event)
         
     # Back argument is true if going to a previous venue (used in UI).
-    def EnterVenue(self, URL, back=AG_FALSE):
+    def EnterVenue(self, URL, back=0):
         """
         EnterVenue puts this client into the specified venue.
         """
@@ -431,7 +430,7 @@ class VenueClient( ServiceBase):
         for s in self.eventSubscribers:
             s.PreEnterVenue(URL, back)
 
-        enterSuccess = AG_TRUE
+        enterSuccess = 1
         try:
             # if this venue url has a valid web service then enter venue
             self.venueUri = URL
@@ -633,7 +632,7 @@ class VenueClient( ServiceBase):
         except Exception, e:
             log.exception("AccessGrid.VenueClient::EnterVenue failed")
             # pass a flag to UI if we fail to enter.
-            enterSuccess = AG_FALSE
+            enterSuccess = 0
             # put error in warningString, in redesign will be raised to UI as exception.
             if isinstance(e, faultType):
                 self.warningString = str(e.faultstring)

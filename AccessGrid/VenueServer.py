@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.92 2003-09-03 20:38:10 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.93 2003-09-11 20:43:41 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -50,7 +50,6 @@ from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.Types import Capability
 from AccessGrid.Utilities import ServerLock
 from AccessGrid.hosting.AccessControl import RoleManager, Subject
-from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
 
 log = logging.getLogger("AG.VenueServer")
 

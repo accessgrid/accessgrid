@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.31 2003-09-05 22:29:25 eolson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.32 2003-09-11 20:43:41 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ from AccessGrid import icons
 
 from AccessGrid.Utilities import SubmitBug, VENUE_CLIENT_LOG
 from AccessGrid.Utilities import formatExceptionInfo
-from Toolkit import GetVersion
+from AccessGrid.Version import GetVersion
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.ClientProfile import ClientProfile
 
@@ -158,7 +158,7 @@ class ProgressDialog(wxProgressDialog):
         self.count = self.count + 1
 
 class AboutDialog(wxDialog):
-    version = GetVersion().AsString()
+    version = str(GetVersion())
         
     def __init__(self, parent):
         wxDialog.__init__(self, parent, -1, self.version)

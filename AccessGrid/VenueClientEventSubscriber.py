@@ -15,8 +15,6 @@
 import logging, logging.handlers
 log = logging.getLogger("AG.VenueClient")
 
-from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
-
 class VenueClientEventSubscriber:
     """
     An interface to receive AccessGrid.VenueClient events.
@@ -30,10 +28,10 @@ class VenueClientEventSubscriber:
     #     the local machine/client and are simple called from AccessGrid.VenueClient.
     #     That is why they often don't have a full "event" object as an argument.
 
-    def PreEnterVenue(self, URL, back=AG_FALSE):
+    def PreEnterVenue(self, URL, back=0):
         pass
 
-    def EnterVenue(self, URL, back=AG_FALSE, warningString="", enterSuccess=AG_TRUE):
+    def EnterVenue(self, URL, back=0, warningString="", enterSuccess=1):
         pass
 
     def ExitVenue(self):

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.27 2003-09-03 19:10:08 lefvert Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.28 2003-09-11 20:43:41 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,6 @@ import md5
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.GUID import GUID
 from AccessGrid.Platform import GetUserConfigDir
-from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
 
 class InvalidProfileException(Exception):
     """
@@ -88,7 +87,7 @@ class ClientProfile:
             self.profile = ClientProfile.defaultProfile.copy()
             self.profile['ClientProfile.id'] = GUID()
 
-    def Load(self, fileName, loadDnDetails=AG_FALSE):
+    def Load(self, fileName, loadDnDetails=0):
 	"""
         loadDnDetails is used by the cache to include the reading
           of a DN when reading from the stored profile.
@@ -143,7 +142,7 @@ class ClientProfile:
 
         return returnVal
         
-    def Save(self, fileName, saveDnDetails=AG_FALSE):
+    def Save(self, fileName, saveDnDetails=0):
         """
         saveDnDetails is used by the cache to include the DN
           in the stored profile.
@@ -359,16 +358,16 @@ class ClientProfileCache:
             old_profile = ClientProfile(filename)
             if not profile.InformationMatches(old_profile):
                 # Save profile if it is different than cached profile.
-                profile.Save(filename, saveDnDetails=AG_TRUE)
+                profile.Save(filename, saveDnDetails=1)
         else:
-            profile.Save(filename, saveDnDetails=AG_TRUE)
+            profile.Save(filename, saveDnDetails=1)
 
     def loadProfileFromDN(self, distinguished_name):
         hash = md5.new(distinguished_name)
         short_filename = hash.hexdigest()
         filename = os.path.join(self.cachePath, short_filename)
         profile = ClientProfile()
-        profile.Load(filename, loadDnDetails=AG_TRUE)
+        profile.Load(filename, loadDnDetails=1)
         return profile
 
     def loadAllProfiles(self):
@@ -377,7 +376,7 @@ class ClientProfileCache:
         for file in files:
             long_filename = os.path.join(self.cachePath, file)
             profile = ClientProfile()
-            profile.Load(long_filename, loadDnDetails=AG_TRUE)
+            profile.Load(long_filename, loadDnDetails=1)
             if profile:
                 profiles.append(profile)
         return profiles
