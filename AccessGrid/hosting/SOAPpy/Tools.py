@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Tools.py,v 1.4 2004-02-27 19:16:58 judson Exp $
+# RCS-ID:      $Id: Tools.py,v 1.5 2004-02-27 22:38:21 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ This module defines methods for making serialization and other things simpler
 when using the SOAPpy module.
 """
 
-__revision__ = "$Id: Tools.py,v 1.4 2004-02-27 19:16:58 judson Exp $"
+__revision__ = "$Id: Tools.py,v 1.5 2004-02-27 22:38:21 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -73,16 +73,23 @@ def Decorate(obj):
     else:
         retval = obj
 
-    print "TOM LOVES THIS"
-    print retval
-    print "IVAN DOESN'T"
-    
     return retval
     
 from SOAPpy.Types import structType, typedArrayType, arrayType
-    
+from types import DictType
+
 def Reconstitute(obj):
     """
+    """
+    """
+    f = obj
+    if isinstance(obj, DictType) and hasattr(obj, "ag_class"):
+        k = obj.ag_class
+        delattr(obj, "ag_class")
+        f = CreateBlank(k)
+        for ok in obj._keys():
+            setattr(f, ok, Reconstitute(obj[ok]))
+
     """
     if isinstance(obj, structType):
         if hasattr(obj, "ag_class"):
@@ -90,6 +97,15 @@ def Reconstitute(obj):
             delattr(obj, "ag_class")
             f = CreateBlank(k)
             for ok in obj._keys():
+                setattr(f, ok, Reconstitute(obj[ok]))
+        else:
+            f = obj
+    elif isinstance(obj, DictType):
+        if obj.has_key("ag_class"):
+            k = obj["ag_class"]
+            del obj["ag_class"]
+            f = CreateBlank(k)
+            for ok in obj.keys():
                 setattr(f, ok, Reconstitute(obj[ok]))
         else:
             f = obj
