@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.23 2004-06-30 07:58:17 judson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.24 2004-08-23 18:21:07 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.23 2004-06-30 07:58:17 judson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.24 2004-08-23 18:21:07 judson Exp $"
 
 # External Imports
 import os
@@ -299,6 +299,37 @@ class AuthorizationManager:
                 return a
         return None
     
+    def AddRoleToAction(self, actionName, roleName):
+        """
+        Encapsulation method, outside callers should not have to interact
+        with anything but an authorization manager. This method hides the
+        details of adding roles to actions.
+        """
+        role = self.FindRole(roleName)
+
+        if role is None:
+            log.error("Couldn't find role: %s", roleName)
+            raise Role.RoleNotFound(roleName)
+
+        action = self.FindAction(actionName)
+            
+        if action is None:
+            log.error("Coudn't find action: %s", actionName)
+            action = Action.Action(actionName)
+        else:
+            self.RemoveAction(action)
+            
+        if not action.HasRole(role):
+            action.AddRole(role)
+        else:
+            log.warn("Not adding role %s to action %s, it's already there.",
+                     roleName, actionName)
+            
+        try:
+            self.AddAction(action)
+        except:
+            log.exception("Couldn't add action: %s", action.GetName())
+
     def AddRole(self, role, default = 0):
         """
         Add a role to this authorization manager.
@@ -397,6 +428,35 @@ class AuthorizationManager:
                 return r
         return None
     
+    def AddSubjectToRole(self, subjectName, roleName):
+        """
+        Encapsulation method, outside callers should not have to interact
+        with anything but an authorization manager. This method hides the
+        details of adding subjects to roles.
+        """
+        log.debug("Adding Subject: %s to Role: %s", subjectName, roleName)
+
+        xs = X509Subject.CreateSubjectFromString(subjectName)
+        
+        role = self.FindRole(roleName)
+
+        if role is None:
+            log.error("Couldn't find role: %s", roleName)
+            raise Role.RoleNotFound(roleName)
+        else:
+            self.RemoveRole(role)
+            
+        if not role.HasSubject(xs):
+            role.AddSubject(xs)
+        else:
+            log.warn("Not adding subject %s to role %s, it's already there.",
+                     subjectName, roleName)
+
+        try:
+            self.AddRole(role)
+        except:
+            log.exception("Couldn't re-add role to policy.")
+
     def GetRolesForSubject(self, subject):
         """
         Get all the roles the specified subject is part of.
@@ -728,15 +788,14 @@ class AuthorizationManagerI(SOAPInterface):
         @type action: AccessGrid.Security.Action object
         """
         an = Reconstitute(action)
-        a = self.impl.FindAction(an.name)
+        a = self.impl.FindAction(an.GetName())
 
         if not a:
-            raise ActionNotFound(an.name)
+            raise ActionNotFound(an.GetName())
         
         r = Reconstitute(role)
-        
-        a.AddRole(r)
 
+        self.impl.AddRoleToAction(an.GetName(), r.GetName()
 
     def AddRolesToAction(self, action, roleList):
         """
