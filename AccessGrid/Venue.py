@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.222 2004-08-16 16:57:52 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.223 2004-08-20 22:30:52 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.222 2004-08-16 16:57:52 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.223 2004-08-20 22:30:52 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -2754,9 +2754,9 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         **Arguments:**
         """
         try:
-            retval = self.impl.GetName()
+            retval = self.impl.GetDescription()
         except:
-            log.exception("VenueI.GetName.")
+            log.exception("VenueI.GetDescription.")
             raise
 
         return retval
