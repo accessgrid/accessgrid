@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.73 2004-09-09 22:12:12 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.74 2004-10-22 21:05:19 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.73 2004-09-09 22:12:12 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.74 2004-10-22 21:05:19 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -427,7 +427,7 @@ class NodeManagementClientFrame(wxFrame):
         ## FILE menu
 
         self.fileMenu = wxMenu()
-        self.fileMenu.Append(ID_FILE_ATTACH, "Attach to Node...", 
+        self.fileMenu.Append(ID_FILE_ATTACH, "Connect to Node...", 
                              "Connect to a NodeService")
         self.fileMenu.AppendSeparator()
         self.fileMenu.Append(ID_FILE_LOAD_CONFIG, "Load Configuration...", 
@@ -563,30 +563,18 @@ class NodeManagementClientFrame(wxFrame):
         """
 
         # Prompt for node service location
-        names = { "Hostname" : "", "Port":"11000" }
-        dlg = MultiTextFieldDialog( self, -1, \
-            "Node Attach Dialog", names )
+        dlg = wxTextEntryDialog(self,"Node Service URL", "Node Connect Dialog", 
+                                defaultValue = 'https://localhost:11000/NodeService')
 
         ret = dlg.ShowModal()
 
         if ret == wxID_OK:
-            host, port = dlg.GetData()
-
-            # Detect bad host/port
-            host = host.strip()
-            port = port.strip()
-            if len(host) == 0 or len(port) == 0:
-                self.Error( "Host and Port are required" )
-                return
-
-            if host == "localhost":
-                host = self.app.GetHostname()
-
+            url = dlg.GetValue()
+            
             # Attach (or fail)
-            uri = 'https://%s:%s/NodeService' % (host,port)
-            self.AttachToNode( uri )
+            self.AttachToNode( url )
             if not self.Connected():
-                self.Error( "Could not attach to AGNodeService at " + uri  )
+                self.Error( "Could not attach to AGNodeService at " + url  )
                 return
 
             # Update the servicemanager and service lists
@@ -729,30 +717,15 @@ class NodeManagementClientFrame(wxFrame):
         """
 
         # Prompt for service manager location
-        names = { "Hostname" : "", "Port":"11000" }
-        dlg = MultiTextFieldDialog( self, -1, \
-            "Add Service Manager Dialog", names )
+        dlg = wxTextEntryDialog(self,"Service Manager URL", "Add Service Manager Dialog",
+                                defaultValue = 'https://localhost:11000/ServiceManager')
      
         ret = dlg.ShowModal()
         if ret == wxID_OK:
 
-            host,port = dlg.GetData()
-
-            # Detect bad host/port
-            host = host.strip()
-            port = port.strip()
-            if len(host) == 0 or len(port) == 0:
-                self.Error( "Host and Port are required" )
-                return
-
-            if host == "localhost":
-                host = self.app.GetHostname()
-
-            # Add the service manager to the node service
-            uri = 'https://%s:%s/ServiceManager' % (host,port)
-            name = '%s:%s' % (host,port)
+            url = dlg.GetValue()
             try:
-                serviceManagerDesc = AGServiceManagerDescription( name, uri )
+                serviceManagerDesc = AGServiceManagerDescription( url, url )
                 self.nodeServiceHandle.AddServiceManager( serviceManagerDesc )
             except:
                 log.exception("Exception in AddHost")
@@ -1098,7 +1071,7 @@ class NodeManagementClientFrame(wxFrame):
         for i in range( self.hostList.GetSelectedItemCount() ):
             index = self.hostList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
             indices.append( index )
-
+            
         if len(self.serviceManagers) > 0 and index >= 0:
             for index in indices:
                 self.services = AGServiceManagerIW( self.serviceManagers[index].uri ).GetServices()
