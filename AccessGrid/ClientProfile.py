@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.11 2003-01-28 17:20:31 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.12 2003-01-28 17:34:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -146,6 +146,7 @@ class ClientProfile:
     def SetProfileType(self, profileType):
         """ """
         self.profileType = profileType
+        self.profile[ClientProfile.configSection + '.type'] = profileType
         
     def GetProfileType(self):
         """ """
@@ -154,6 +155,7 @@ class ClientProfile:
     def SetLocation(self, location):
         """ """
         self.location = location
+        self.profile[ClientProfile.configSection + '.location'] = location
     
     def GetLocation(self):
         """ """
@@ -162,6 +164,7 @@ class ClientProfile:
     def SetEmail(self, email):
         """ """
         self.email = email
+        self.profile[ClientProfile.configSection + '.email'] = email
     
     def GetEmail(self):
         """ """
@@ -170,6 +173,7 @@ class ClientProfile:
     def SetName(self, name):
         """ """
         self.name = name
+        self.profile[ClientProfile.configSection + '.name'] = name
         
     def GetName(self):
         """ """
@@ -178,6 +182,7 @@ class ClientProfile:
     def SetPhoneNumber(self, phoneNumber):
         """ """
         self.phoneNumber = phoneNumber
+        self.profile[ClientProfile.configSection + '.phone'] = phoneNumber
         
     def GetPhoneNumber(self):
         """ """
@@ -186,6 +191,7 @@ class ClientProfile:
     def SetIcon(self, icon):
         """ """
         self.icon = icon
+        self.profile[ClientProfile.configSection + '.icon'] = icon
         
     def GetIcon(self):
         """ """
@@ -194,6 +200,7 @@ class ClientProfile:
     def SetVenuClientURL(self, venueClientURL):
         """ """
         self.venueClientURL = venueClientURL
+        self.profile[ClientProfile.configSection + '.venueclienturl'] = venueclienturl
     
     def GetVenueClientURL(self):
         """ """
@@ -202,6 +209,7 @@ class ClientProfile:
     def SetTechSupportInfo(self, techSupportInfo):
         """ """
         self.techSupportInfo = techSupportInfo
+        self.profile[ClientProfile.configSection + '.techsupportinfo'] = techsupportinfo
         
     def GetTechSupportInfo(self):
         """ """
@@ -210,13 +218,16 @@ class ClientProfile:
     def SetPublicId(self, publicId):
         """ """
         self.publicId = publicId
+        self.profile[ClientProfile.configSection + '.id'] = publicId
         
     def GetPublicId(self):
         """ """
         return self.publicId
 
+    def SetHomeVenue(self, venue):
+        self.homeVenue = venue
+        self.profile[ClientProfile.configSection + '.home'] = venue
+
     def GetHomeVenue(self):
         return self.homeVenue
 
-    def SetHomeVenue(self, venue):
-        self.homeVenue = venue
