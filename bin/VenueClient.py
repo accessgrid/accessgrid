@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.223 2003-09-26 18:17:37 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.224 2003-09-26 21:24:23 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1302,9 +1302,7 @@ class VenueClientUI(VenueClientEventSubscriber):
         
         try:
             self.venueClient.RemoveData(data, ownerProfile)
-            self.venueClient.SendEvent(Events.RemoveDataEvent(self.venueClient.GetEventChannelId(), 
-                                                       data))
-
+            
         except NotAuthorizedError:
             log.info("bin.VenueClient::RemoveData: Not authorized to  remove data")
             MessageDialog(None, "You are not authorized to remove the file", "Remove Personal Files")        
