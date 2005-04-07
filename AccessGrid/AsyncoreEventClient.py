@@ -261,9 +261,9 @@ if __name__=='__main__':
             EVT_CHAR(self.log, self.OnChar)
             
             # start the event server thread
-            eventHost = "zuz.mcs.anl.gov"
+            eventHost = ""
             eventPort = 8002
-            self.eventClient = EventClient(("zuz.mcs.anl.gov", eventPort), 1, 1)
+            self.eventClient = EventClient((eventHost, eventPort), 1, 1)
             self.eventClient.RegisterCallback("test", self.OnTest)
             self.eventClient.Start()
             self.eventClient.Send("connect", "")    
