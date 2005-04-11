@@ -173,6 +173,7 @@ class AsyncoreEventClient(threading.Thread):
         
     def send_a_line(self, event):
         self.client.out_buffer = self.client.out_buffer + event.GetString()
+        self.client.handle_write()
 
     def run(self):
         self.running = true
