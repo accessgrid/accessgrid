@@ -4,8 +4,8 @@
 #
 # Author:      Susanne Lefvert
 #
-# Created:     $Date: 2005-04-06 20:50:38 $
-# RCS-ID:      $Id: SharedPDF.py,v 1.2 2005-04-06 20:50:38 lefvert Exp $
+# Created:     $Date: 2005-04-12 20:45:58 $
+# RCS-ID:      $Id: SharedPDF.py,v 1.3 2005-04-12 20:45:58 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -56,7 +56,6 @@ class PdfViewer(wxPanel):
         # Create shared application client        
         self.sharedAppClient = SharedAppClient(name)
         self.log = self.sharedAppClient.InitLogging()
-        self.id = self.sharedAppClient.GetPublicId()
         self.log.debug("PdfViewer.__init__: Start pdf viewer, venueUrl: %s, appUrl: %s"%(venueUrl, appUrl))
 
         # Get client profile
@@ -65,21 +64,22 @@ class PdfViewer(wxPanel):
 
         # Join the application session.
         self.sharedAppClient.Join(appUrl, clientProfile)
-        
+        self.id = self.sharedAppClient.GetPublicId()
+                
         # Register callbacks for external events
-        self.sharedAppClient.RegisterEventCallback("open", self.OpenCallback)
-        self.sharedAppClient.RegisterEventCallback("position", self.ChangePositionCallback)
+        self.sharedAppClient.RegisterEventCallback("openFile", self.OpenCallback)
+        self.sharedAppClient.RegisterEventCallback("changePage", self.ChangePageCallback)
 
         # Create data store interface
         self.dataStoreClient = GetVenueDataStore(venueUrl)
-        
-        # Get current state
-        ret = self.sharedAppClient.GetData("position")
+
         self.file = None
         self.pageNr = 1
-      
-        if ret:
-            self.file, self.pageNr = ret
+        # Get current state
+        self.file = self.sharedAppClient.GetData("file")
+        self.pageNr = self.sharedAppClient.GetData("page")
+        
+        if self.file:
             try:
                 self.dataStoreClient.Download(self.file, "tmp")
                 self.pdf.LoadFile("tmp")
@@ -109,23 +109,25 @@ class PdfViewer(wxPanel):
                 try:
                     self.dataStoreClient.Download(selectedFile, "tmp")
                     self.pdf.LoadFile("tmp")
+                    self.pdf.setCurrentPage(1)
                     self.pageNr = 1
                     self.file = selectedFile
 
                 except:
                     self.log.exception("PdfViewer.OnOpenButton: Failed to download %s"%(selectedFile))
-                    dlg = wxMessageDialog(frame, 'Failed to download %s.'%(selectedFile),
+                    dlg = wxMessageDialog(self, 'Failed to download %s.'%(selectedFile),
                                           'Download Failed', wxOK | wxICON_ERROR)
                     dlg.ShowModal()
                     dlg.Destroy()
 
                 else:
                     # Update shared app status
-                    self.sharedAppClient.SetData("position", (self.file, self.pageNr))
+                    self.sharedAppClient.SetData("file", self.file)
+                    self.sharedAppClient.SetData("page", self.pageNr)
                     
                     # Send event
-                    self.sharedAppClient.SendEvent("load", (self.file, self.pageNr))
-                    
+                    self.sharedAppClient.SendEvent("openFile", (self.id, self.file, self.pageNr))
+                                       
                 wxEndBusyCursor()
           
     def OnPrevPageButton(self, event):
@@ -134,8 +136,8 @@ class PdfViewer(wxPanel):
         '''
         self.pageNr = self.pageNr - 1
         self.pdf.setCurrentPage(self.pageNr)
-        self.sharedAppClient.SendEvent("position", (self.id, self.pageNr))
-        self.sharedAppClient.SetData("position", (self.file, self.pageNr))
+        self.sharedAppClient.SendEvent("changePage", (self.id, self.pageNr))
+        self.sharedAppClient.SetData("page", self.pageNr)
 
     def OnNextPageButton(self, event):
         '''
@@ -143,8 +145,8 @@ class PdfViewer(wxPanel):
         '''
         self.pageNr = self.pageNr + 1
         self.pdf.setCurrentPage(self.pageNr)
-        self.sharedAppClient.SendEvent("position", (self.id, self.pageNr))
-        self.sharedAppClient.SetData("position", (self.file, self.pageNr))
+        self.sharedAppClient.SendEvent("changePage", (self.id, self.pageNr))
+        self.sharedAppClient.SetData("page", self.pageNr)
 
     def OnExit(self, event):
         '''
@@ -161,23 +163,29 @@ class PdfViewer(wxPanel):
         Invoked when a open event is received.
         '''
         id, self.file, self.pageNr = event.data
-        
+
         # Ignore my own events
         if self.id != id:
-            wxBeginBusyCursor()
-            wxCallAfter(self.pdf.LoadFile, self.file)
+	    try:
+                self.dataStoreClient.Download(self.file, "tmp")
+            except:
+                self.log.exception("PdfViewer.__OpenCallback: Download failed %s"%(self.file))
+    	
+	    wxBeginBusyCursor()
+            wxCallAfter(self.pdf.LoadFile, "tmp")
             wxCallAfter(self.pdf.setCurrentPage, self.pageNr)
             wxEndBusyCursor()
-        
-    def ChangePositionCallback(self, event):
+	              
+    def ChangePageCallback(self, event):
         '''
-        Invoked when a next event is received.
+        Invoked when a page event is received.
         '''
         id, self.pageNr = event.data
       
         # Ignore my own events
         if self.id != id:
             wxCallAfter(self.pdf.setCurrentPage, self.pageNr)        
+            wxCallAfter(self.Layout)
                
     def __Layout(self):
         '''
