@@ -4,8 +4,8 @@
 #
 # Author:      Susanne Lefvert
 #
-# Created:     $Date: 2005-04-12 20:45:58 $
-# RCS-ID:      $Id: SharedPDF.py,v 1.3 2005-04-12 20:45:58 lefvert Exp $
+# Created:     $Date: 2005-04-13 17:39:56 $
+# RCS-ID:      $Id: SharedPDF.py,v 1.4 2005-04-13 17:39:56 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ from AccessGrid.DataStoreClient import GetVenueDataStore
 
 # Standard imports
 import os
-import getopt
+from optparse import Option
 import sys
 
 class PdfViewer(wxPanel):
@@ -75,9 +75,10 @@ class PdfViewer(wxPanel):
 
         self.file = None
         self.pageNr = 1
+        
         # Get current state
         self.file = self.sharedAppClient.GetData("file")
-        self.pageNr = self.sharedAppClient.GetData("page")
+        self.pageNr = int(self.sharedAppClient.GetData("page"))
         
         if self.file:
             try:
@@ -86,9 +87,6 @@ class PdfViewer(wxPanel):
                 self.pdf.setCurrentPage(self.pageNr)
             except:
                 self.log.exception("PdfViewer.__init__: Download failed %s"%(self.file))
-
-        self.Layout()
-        self.Show()
 
     #
     # Callbacks for local UI events.
@@ -174,18 +172,19 @@ class PdfViewer(wxPanel):
 	    wxBeginBusyCursor()
             wxCallAfter(self.pdf.LoadFile, "tmp")
             wxCallAfter(self.pdf.setCurrentPage, self.pageNr)
+            wxCallAfter(self.Refresh)
             wxEndBusyCursor()
 	              
     def ChangePageCallback(self, event):
         '''
-        Invoked when a page event is received.
+        Invoked when a changePage event is received.
         '''
         id, self.pageNr = event.data
       
         # Ignore my own events
         if self.id != id:
             wxCallAfter(self.pdf.setCurrentPage, self.pageNr)        
-            wxCallAfter(self.Layout)
+            wxCallAfter(self.Refresh)
                
     def __Layout(self):
         '''
@@ -323,46 +322,33 @@ def Usage():
     print "    -d|--debug : print debugging output"
     
 if __name__ == '__main__':
-    # Get command line options
-    initArgs = []
-    appUrl = None
-    venueUrl = None
-    
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "a:d:v:h",
-                                   ["applicationURL=","venueURL=",
-                                    "debug", "help"])
-    except getopt.GetoptError:
-        Usage()
-        sys.exit(2)
-        
-    for o, a in opts:
-        if o in ("-a", "--applicationURL"):
-            appUrl = a
-        elif o in ("-v", "--venueURL"):
-            venueUrl = a
-        elif o in ("-d", "--debug"):
-            initArgs = ['--debug']
-        elif o in ("-h", "--help"):
-            Usage()
-            sys.exit(0)
-
-    if not appUrl:
-        Usage()
-        sys.exit(0)
-                
+      
     # Create the wx python application
     wxapp = wxPySimpleApp()
     wxBeginBusyCursor()
        
     # Inizialize AG application
     app = WXGUIApplication()
+    appurlOption = Option("-a", "--applicationURL", dest="appUrl", default=None,
+                       help="Specify an application url on the command line")
+    venueurlOption = Option("-v", "--venueURL", dest="venueUrl", default=None,
+                       help="Specify a venue url on the command line")
+    app.AddCmdLineOption(appurlOption)
+    app.AddCmdLineOption(venueurlOption)
     name = "SharedPDF"
-    app.Initialize(name, initArgs)
+    app.Initialize(name)
+
+    appUrl = app.GetOption("appUrl")
+    venueUrl = app.GetOption("venueUrl")
+        
+    if not appUrl or not venueUrl:
+        Usage()
+        sys.exit(0)
 
     if wxPlatform == '__WXMSW__':
         # Create the UI
         mainFrame = wxFrame(None, -1, name, size = wxSize(600, 600))
+        mainFrame.SetIcon(icons.getAGIconIcon())
         viewer = PdfViewer(mainFrame, name, appUrl, venueUrl)
 
         # Start the UI main loop
