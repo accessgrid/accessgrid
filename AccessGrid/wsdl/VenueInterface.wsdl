@@ -6,159 +6,356 @@
   xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   xmlns:agtk="http://www.accessgrid.org/v3.0"
-  targetNamespace="http://www.accessgrid.org/v3.0">
+  xmlns:agtkv="http://www.accessgrid.org/v3.0/venue"
+  targetNamespace="http://www.accessgrid.org/v3.0/venue">
 
     <types>
-      <schema targetNamespace="http://www.accessgrid.org/v3.0" 
+      <schema targetNamespace="http://www.accessgrid.org/v3.0/venue" 
               elementFormDefault="qualified" 
 	      attributeFormDefault="unqualified" 
               xmlns="http://www.w3.org/2001/XMLSchema">
 
-	  <include schemaLocation="AccessGrid_Types.xsd"/>
+          <xsd:element name="EnterRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="clientProfile" type="agtk:ClientProfile" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="EnterResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="connectionId" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="ExitRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="connectionId" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetStateRequest">
+          </xsd:element>
+
+          <xsd:element name="GetStateResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="isStateValid" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="NegotiateCapabilitiesRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="capabilities" type="agtk:Capability" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="preferences" type="agtk:Preferences" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="NegotiateCapabilitiesResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="streams" type="agtk:StreamDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="CreateApplicationRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="appDescription" type="agtk:ApplicationDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="CreateApplicationResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="appDescription" type="agtk:ApplicationDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="DestroyApplicationRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="appId" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AllocateMulticastLocationRequest">
+          </xsd:element>
+
+          <xsd:element name="AllocateMulticastLocationResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="multicastLocation" type="agtk:MulticastNetworkLocation" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RecycleMulticastLocationRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="multicastLocation" type="agtk:MulticastNetworkLocation" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddNetworkLocationToStreamRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="streamId" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="location" type="agtk:NetworkLocation" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddNetworkLocationToStreamResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="id" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ShutdownRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="secondsFromNow" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RegenerateEncryptionKeysRequest">
+          </xsd:element>
+
+          <xsd:element name="RegenerateEncryptionKeysResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="key" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ImportPolicyRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="policy" type="agtk:AuthorizationPolicy" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ExportPolicyRequest">
+          </xsd:element>
+
+          <xsd:element name="ExportPolicyResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="policy" type="agtk:AuthorizationPolicy" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="UpdateLifetimeRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="connectionId" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="requestedTimeout" type="xsd:float" default="0"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="UpdateLifetimeResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="timeout" type="xsd:float" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetPropertyRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="propertyNameList" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetPropertyResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="propertyDict" type="agtk:Dictionary" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetPropertyRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="propertyDict" type="agtk:Dictionary" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetPropertyResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="propertyDict" type="agtk:Dictionary" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
 
       </schema>
     </types>
 
     <message name="EnterRequest">
-	<part name="clientProfile" type="agtk:ClientProfile"/>
+	<part name="parameters" element="agtkv:EnterRequest"/>
     </message>
     <message name="EnterResponse">
-	<part name="connectionId" type="xsd:string"/>
+	<part name="parameters" element="agtkv:EnterResponse"/>
     </message>
     <message name="ExitRequest">
-	<part name="connectionId" type="xsd:string"/>
+	<part name="parameters" element="agtkv:ExitRequest"/>
     </message>
     <message name="GetStateRequest">
+	<part name="parameters" element="agtkv:GetStateRequest"/>
     </message>
     <message name="GetStateResponse">
-	<part name="isStateValid" type="xsd:integer"/>
+	<part name="parameters" element="agtkv:GetStateResponse"/>
     </message>
     <message name="NegotiateCapabilitiesRequest">
-	<part name="capabilities" type="agtk:CapabilityList"/>
-	<part name="preferences" type="agtk:Preferences"/>
+	<part name="parameters" element="agtkv:NegotiateCapabilitiesRequest"/>
     </message>
     <message name="NegotiateCapabilitiesResponse">
-	<part name="streams" type="agtk:StreamList"/>
+	<part name="parameters" element="agtkv:NegotiateCapabilitiesResponse"/>
     </message>
     <message name="CreateApplicationRequest">
-	<part name="appDescription" type="agtk:ApplicationDescription"/>
+	<part name="parameters" element="agtkv:CreateApplicationRequest"/>
     </message>
     <message name="CreateApplicationResponse">
-	<part name="appDescription" type="agtk:ApplicationDescription"/>
+	<part name="parameters" element="agtkv:CreateApplicationResponse"/>
     </message>
     <message name="DestroyApplicationRequest">
-	<part name="appId" type="xsd:string"/>
+	<part name="parameters" element="agtkv:DestroyApplicationRequest"/>
     </message>
     <message name="AllocateMulticastLocationRequest">
+	<part name="parameters" element="agtkv:AllocateMulticastLocationRequest"/>
     </message>
     <message name="AllocateMulticastLocationResponse">
-	<part name="multicastLocation" type="agtk:MulticastNetworkLocation"/>
+	<part name="parameters" element="agtkv:AllocateMulticastLocationResponse"/>
     </message>
     <message name="RecycleMulticastLocationRequest">
-	<part name="multicastLocation" type="agtk:MulticastNetworkLocation"/>
+	<part name="parameters" element="agtkv:RecycleMulticastLocationRequest"/>
     </message>
     <message name="AddNetworkLocationToStreamRequest">
-	<part name="streamId" type="xsd:string"/>
-	<part name="location" type="agtk:NetworkLocation"/>
+	<part name="parameters" element="agtkv:AddNetworkLocationToStreamRequest"/>
     </message>
     <message name="AddNetworkLocationToStreamResponse">
-	<part name="id" type="xsd:string"/>
+	<part name="parameters" element="agtkv:AddNetworkLocationToStreamResponse"/>
     </message>
     <message name="ShutdownRequest">
-	<part name="secondsFromNow" type="xsd:integer"/>
+	<part name="parameters" element="agtkv:ShutdownRequest"/>
     </message>
     <message name="RegenerateEncryptionKeysRequest">
+	<part name="parameters" element="agtkv:RegenerateEncryptionKeysRequest"/>
     </message>
     <message name="RegenerateEncryptionKeysResponse">
-	<part name="key" type="xsd:string"/>
+	<part name="parameters" element="agtkv:RegenerateEncryptionKeysResponse"/>
     </message>
     <message name="ImportPolicyRequest">
-	<part name="policy" type="agtk:AuthorizationPolicy"/>
+	<part name="parameters" element="agtkv:ImportPolicyRequest"/>
     </message>
     <message name="ExportPolicyRequest">
+	<part name="parameters" element="agtkv:ExportPolicyRequest"/>
     </message>
     <message name="ExportPolicyResponse">
-	<part name="policy" type="agtk:AuthorizationPolicy"/>
+	<part name="parameters" element="agtkv:ExportPolicyResponse"/>
     </message>
     <message name="UpdateLifetimeRequest">
-	<part name="connectionId" type="xsd:string"/>
-	<part name="requestedTimeout" type="xsd:float" default="0"/>
+	<part name="parameters" element="agtkv:UpdateLifetimeRequest"/>
     </message>
     <message name="UpdateLifetimeResponse">
-	<part name="timeout" type="xsd:float"/>
+	<part name="parameters" element="agtkv:UpdateLifetimeResponse"/>
     </message>
     <message name="GetPropertyRequest">
-	<part name="propertyNameList" type="agtk:StringList"/>
+	<part name="parameters" element="agtkv:GetPropertyRequest"/>
     </message>
     <message name="GetPropertyResponse">
-        <part name="propertyDict" type="agtk:Dictionary"/>
+	<part name="parameters" element="agtkv:GetPropertyResponse"/>
     </message>
     <message name="SetPropertyRequest">
-	<part name="propertyDict" type="agtk:Dictionary"/>
+	<part name="parameters" element="agtkv:SetPropertyResponse"/>
     </message>
     <message name="SetPropertyResponse">
-	<part name="result" type="agtk:Dictionary"/>
+	<part name="parameters" element="agtkv:SetPropertyResponse"/>
     </message>
 
     <portType name="Venue">
 	<operation name="Enter">
-	    <input message="agtk:EnterRequest"/>
-	    <output message="agtk:EnterResponse"/>
+	    <input message="agtkv:EnterRequest"/>
+	    <output message="agtkv:EnterResponse"/>
 	</operation>
 	<operation name="Exit">
-	    <input message="agtk:ExitRequest"/>
+	    <input message="agtkv:ExitRequest"/>
 	</operation>
 	<operation name="GetState">
-	    <input message="agtk:GetStateRequest"/>
-	    <output message="agtk:GetStateResponse"/>
+	    <input message="agtkv:GetStateRequest"/>
+	    <output message="agtkv:GetStateResponse"/>
 	</operation>
 	<operation name="NegotiateCapabilities">
-	    <input message="agtk:NegotiateCapabilitiesRequest"/>
-	    <output message="agtk:NegotiateCapabilitiesResponse"/>
+	    <input message="agtkv:NegotiateCapabilitiesRequest"/>
+	    <output message="agtkv:NegotiateCapabilitiesResponse"/>
 	</operation>
 	<operation name="CreateApplication">
-	    <input message="agtk:CreateApplicationRequest"/>
-	    <output message="agtk:CreateApplicationResponse"/>
+	    <input message="agtkv:CreateApplicationRequest"/>
+	    <output message="agtkv:CreateApplicationResponse"/>
 	</operation>
 	<operation name="DestroyApplication">
-	    <input message="agtk:DestroyApplicationRequest"/>
+	    <input message="agtkv:DestroyApplicationRequest"/>
 	</operation>
 	<operation name="AllocateMulticastLocation">
-	    <input message="agtk:AllocateMulticastLocationRequest"/>
-	    <output message="agtk:AllocateMulticastLocationResponse"/>
+	    <input message="agtkv:AllocateMulticastLocationRequest"/>
+	    <output message="agtkv:AllocateMulticastLocationResponse"/>
 	</operation>
 	<operation name="RecycleMulticastLocation">
-	    <input message="agtk:RecycleMulticastLocationRequest"/>
+	    <input message="agtkv:RecycleMulticastLocationRequest"/>
 	</operation>
 	<operation name="AddNetworkLocationToStream">
-	    <input message="agtk:AddNetworkLocationToStreamRequest"/>
-	    <output message="agtk:AddNetworkLocationToStreamResponse"/>
+	    <input message="agtkv:AddNetworkLocationToStreamRequest"/>
+	    <output message="agtkv:AddNetworkLocationToStreamResponse"/>
 	</operation>
 	<operation name="Shutdown">
-	    <input message="agtk:ShutdownRequest"/>
+	    <input message="agtkv:ShutdownRequest"/>
 	</operation>
 	<operation name="RegenerateEncryptionKeys">
-	    <input message="agtk:RegenerateEncryptionKeysRequest"/>
-	    <output message="agtk:RegenerateEncryptionKeysResponse"/>
+	    <input message="agtkv:RegenerateEncryptionKeysRequest"/>
+	    <output message="agtkv:RegenerateEncryptionKeysResponse"/>
 	</operation>
 	<operation name="ImportPolicy">
-	    <input message="agtk:ImportPolicyRequest"/>
+	    <input message="agtkv:ImportPolicyRequest"/>
 	</operation>
 	<operation name="ExportPolicy">
-	    <input message="agtk:ExportPolicyRequest"/>
-	    <output message="agtk:ExportPolicyResponse"/>
+	    <input message="agtkv:ExportPolicyRequest"/>
+	    <output message="agtkv:ExportPolicyResponse"/>
 	</operation>
 	<operation name="UpdateLifetime">
-	    <input message="agtk:UpdateLifetimeRequest"/>
-	    <output message="agtk:UpdateLifetimeResponse"/>
+	    <input message="agtkv:UpdateLifetimeRequest"/>
+	    <output message="agtkv:UpdateLifetimeResponse"/>
 	</operation>
 	<operation name="GetProperty">
-	    <input message="agtk:GetPropertyRequest"/>
-	    <output message="agtk:GetPropertyResponse"/>
+	    <input message="agtkv:GetPropertyRequest"/>
+	    <output message="agtkv:GetPropertyResponse"/>
 	</operation>
 	<operation name="SetProperty">
-	    <input message="agtk:SetPropertyRequest"/>
-            <output message="agtk:SetPropertyResponse"/>
+	    <input message="agtkv:SetPropertyRequest"/>
+            <output message="agtkv:SetPropertyResponse"/>
 	</operation>
     </portType>
 

@@ -6,12 +6,16 @@
   xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   xmlns:agtk="http://www.accessgrid.org/v3.0"
-  targetNamespace="http://www.accessgrid.org/v3.0">
+  xmlns:agtkv="http://www.accessgrid.org/v3.0/venue"
+  targetNamespace="http://www.accessgrid.org/v3.0/venue">
 
-  <import namespace="http://www.accessgrid.org/v3.0" 
+  <import namespace="http://www.accessgrid.org/v3.0/venue" 
           location="VenueInterface.wsdl"/>
 
-  <binding name="Venue" type="agtk:Venue">
+  <import namespace="http://www.accessgrid.org/v3.0" 
+          location="AccessGrid_Types.xsd"/>
+
+  <binding name="Venue" type="agtkv:Venue">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="Enter">
 	    <soap:operation soapAction="urn:#Enter"/>
@@ -24,9 +28,6 @@
 	</operation>
 	<operation name="Exit">
 	    <soap:operation soapAction="urn:#Exit"/>
-            <output>
-		<soap:body use="literal"/> 
-	    </output>
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>
@@ -36,9 +37,6 @@
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>
-	    <output>
-		<soap:body use="literal"/> 
-	    </output>
 	</operation>
 	<operation name="GetState">
 	    <soap:operation soapAction="urn:#GetState"/>
@@ -72,12 +70,18 @@
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
 	</operation>
 	<operation name="CreateApplication">
 	    <soap:operation soapAction="urn:#CreateApplication"/>
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
 	</operation>
 	<operation name="DestroyApplication">
 	    <soap:operation soapAction="urn:#DestroyApplication"/>
@@ -90,6 +94,9 @@
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
 	</operation>
 	<operation name="RecycleMulticastLocation">
 	    <soap:operation soapAction="urn:#RecycleMulticastLocation"/>
@@ -102,12 +109,18 @@
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
 	</operation>
 	<operation name="RegenerateEncryptionKeys">
 	    <soap:operation soapAction="urn:#RegenerateEncryptionKeys"/>
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
 	</operation>
 	<operation name="ImportPolicy">
 	    <soap:operation soapAction="urn:#ImportPolicy"/>
@@ -120,17 +133,23 @@
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
 	</operation>
 	<operation name="UpdateLifetime">
 	    <soap:operation soapAction="urn:#UpdateLifetime"/>
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
 	</operation>
     </binding>
 
     <service name="Venue">
-        <port name="Venue" binding="agtk:Venue">
+        <port name="Venue" binding="agtkv:Venue">
 	    <soap:address location="http://localhost:7000"/>
 	</port>
     </service>

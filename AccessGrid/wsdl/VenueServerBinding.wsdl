@@ -6,12 +6,16 @@
   xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   xmlns:agtk="http://www.accessgrid.org/v3.0"
-  targetNamespace="http://www.accessgrid.org/v3.0">
+  xmlns:agtkvs="http://www.accessgrid.org/v3.0/venueserver"
+  targetNamespace="http://www.accessgrid.org/v3.0/venueserver">
 
-  <import namespace="http://www.accessgrid.org/v3.0" 
+  <import namespace="http://www.accessgrid.org/v3.0/venueserver" 
           location="VenueServerInterface.wsdl"/>
 
-  <binding name="VenueServer" type="agtk:VenueServer">
+  <import namespace="http://www.accessgrid.org/v3.0" 
+          location="AccessGrid_Types.xsd"/>
+
+  <binding name="VenueServer" type="agtkvs:VenueServer">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="Checkpoint">
 	    <soap:operation soapAction="urn:#Checkpoint"/>
@@ -72,11 +76,14 @@
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
 	</operation>
     </binding>
 
     <service name="VenueServer">
-        <port name="VenueServer" binding="agtk:VenueServer">
+        <port name="VenueServer" binding="agtkvs:VenueServer">
 	    <soap:address location="http://localhost:7000"/>
 	</port>
     </service>
