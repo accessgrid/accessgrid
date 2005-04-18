@@ -12,7 +12,7 @@ if not os.path.exists(initFile):
     open(initFile, "w").close()
 
 # FIXME: this call shouldn't need the server wsdl to create the AccessGrid_Types.py
-command = "wsdl2py -f %s -e -o %s -t _AccessGrid_Types --simple-naming" % ( os.path.join(srcPath, "VenueServerBinding.wsdl"), dstPath)
+command = "wsdl2py -f %s -e -o %s -t AccessGrid_Types --simple-naming" % ( os.path.join(srcPath, "VenueServerBinding.wsdl"), dstPath)
 print "* ", command
 os.system(command)
 
