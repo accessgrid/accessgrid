@@ -6,85 +6,197 @@
   xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   xmlns:agtk="http://www.accessgrid.org/v3.0"
-  targetNamespace="http://www.accessgrid.org/v3.0">
+  xmlns:agtkvs="http://www.accessgrid.org/v3.0/venueserver"
+  targetNamespace="http://www.accessgrid.org/v3.0/venueserver">
 
     <types>
-      <schema targetNamespace="http://www.accessgrid.org/v3.0" 
+      <schema targetNamespace="http://www.accessgrid.org/v3.0/venueserver" 
               elementFormDefault="qualified" 
 	      attributeFormDefault="unqualified" 
               xmlns="http://www.w3.org/2001/XMLSchema">
 
-	  <include schemaLocation="AccessGrid_Types.xsd"/>
+          <xsd:element name="CheckpointRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="secondsFromNow" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="CheckpointResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="result" type="xsd:boolean" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ShutdownRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="secondsFromNow" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ShutdownResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="result" type="xsd:boolean" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveVenueRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="venueId" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="RemoveVenueResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="result" type="xsd:boolean" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddVenueRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="venueDescription" type="agtk:VenueDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="AddVenueResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="venueURL" type="xsd:anyURI" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetVenuesRequest">
+          </xsd:element>
+
+          <xsd:element name="GetVenuesResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="venueDescriptionList" type="agtk:VenueDescription" />
+
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetPropertyRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="propertyList" type="xsd:string" />
+
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="GetPropertyResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="propertyDict" type="agtk:Dictionary" />
+
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetPropertyRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="propertyDict" type="agtk:Dictionary" />
+
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="SetPropertyResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="propertyDict" type="agtk:Dictionary" />
+
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
 
       </schema>
     </types>
 
     <message name="CheckpointRequest">
-	<part name="secondsFromNow" type="xsd:integer"/>
+	<part name="parameters" element="agtkvs:CheckpointRequest"/>
     </message>
     <message name="CheckpointResponse">
-	<part name="result" type="xsd:boolean"/>
+	<part name="parameters" element="agtkvs:CheckpointResponse"/>
     </message>
     <message name="ShutdownRequest">
-	<part name="secondsFromNow" type="xsd:integer"/>
+	<part name="parameters" element="agtkvs:ShutdownRequest"/>
+    </message>
+    <message name="ShutdownResponse">
+	<part name="parameters" element="agtkvs:ShutdownResponse"/>
     </message>
     <message name="RemoveVenueRequest">
-	<part name="venueId" type="xsd:string"/>
+	<part name="parameters" element="agtkvs:RemoveVenueRequest"/>
     </message>
     <message name="RemoveVenueResponse">
-	<part name="result" type="xsd:boolean"/>
+	<part name="parameters" element="agtkvs:RemoveVenueResponse"/>
     </message>
     <message name="AddVenueRequest">
-	<part name="venueDescription" type="agtk:VenueDescription"/>
+	<part name="parameters" element="agtkvs:AddVenueRequest"/>
     </message>
     <message name="AddVenueResponse">
-	<part name="venueURL" type="xsd:anyURI"/>
+	<part name="parameters" element="agtkvs:AddVenueResponse"/>
     </message>
     <message name="GetVenuesRequest">
+	<part name="parameters" element="agtkvs:GetVenuesRequest"/>
     </message>
     <message name="GetVenuesResponse">
-	<part name="venueDescriptionList" type="agtk:VenueDescription"/>
+	<part name="parameters" element="agtkvs:GetVenuesResponse"/>
     </message>
     <message name="GetPropertyRequest">
-	<part name="propertyDictionary" type="agtk:Dictionary"/>
+	<part name="parameters" element="agtkvs:GetPropertyRequest"/>
     </message>
     <message name="GetPropertyResponse">
-        <part name="result" type="agtk:Dictionary"/>
+	<part name="parameters" element="agtkvs:GetPropertyResponse"/>
     </message>
     <message name="SetPropertyRequest">
-	<part name="propertyDictionary" type="agtk:Dictionary"/>
+	<part name="parameters" element="agtkvs:SetPropertyRequest"/>
     </message>
     <message name="SetPropertyResponse">
-	<part name="result" type="agtk:Dictionary"/>
+	<part name="parameters" element="agtkvs:SetPropertyResponse"/>
     </message>
 
     <portType name="VenueServer">
 	<operation name="Checkpoint">
-	    <input message="agtk:CheckpointRequest"/>
-	    <output message="agtk:CheckpointResponse"/>
+	    <input message="agtkvs:CheckpointRequest"/>
+	    <output message="agtkvs:CheckpointResponse"/>
 	</operation>
 	<operation name="Shutdown">
-	    <input message="agtk:ShutdownRequest"/>
+	    <input message="agtkvs:ShutdownRequest"/>
+	    <output message="agtkvs:ShutdownResponse"/>
 	</operation>
 	<operation name="GetVenues">
-	    <output message="agtk:GetVenuesResponse"/>
-	    <input message="agtk:GetVenuesRequest"/>
+	    <input message="agtkvs:GetVenuesRequest"/>
+	    <output message="agtkvs:GetVenuesResponse"/>
 	</operation>
 	<operation name="AddVenue">
-	    <input message="agtk:AddVenueRequest"/>
-	    <output message="agtk:AddVenueResponse"/>
+	    <input message="agtkvs:AddVenueRequest"/>
+	    <output message="agtkvs:AddVenueResponse"/>
 	</operation>
 	<operation name="RemoveVenue">
-	    <input message="agtk:RemoveVenueRequest"/>
-	    <output message="agtk:RemoveVenueResponse"/>
+	    <input message="agtkvs:RemoveVenueRequest"/>
+	    <output message="agtkvs:RemoveVenueResponse"/>
 	</operation>
 	<operation name="GetProperty">
-	    <input message="agtk:GetPropertyRequest"/>
-	    <output message="agtk:GetPropertyResponse"/>
+	    <input message="agtkvs:GetPropertyRequest"/>
+	    <output message="agtkvs:GetPropertyResponse"/>
 	</operation>
 	<operation name="SetProperty">
-	    <input message="agtk:SetPropertyRequest"/>
-            <output message="agtk:SetPropertyResponse"/>
+	    <input message="agtkvs:SetPropertyRequest"/>
+            <output message="agtkvs:SetPropertyResponse"/>
 	</operation>
     </portType>
 
