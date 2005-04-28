@@ -191,7 +191,7 @@
           <xsd:element name="GetPropertyResponse">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="propertyDict" type="agtk:Dictionary" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="propertyDict" type="agtk:Dictionary" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -199,7 +199,7 @@
           <xsd:element name="SetPropertyRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="propertyDict" type="agtk:Dictionary" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="propertyDict" type="agtk:Dictionary" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -207,7 +207,7 @@
           <xsd:element name="SetPropertyResponse">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="propertyDict" type="agtk:Dictionary" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="propertyDict" type="agtk:Dictionary" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
