@@ -16,13 +16,13 @@ command = "wsdl2py -f %s -e -o %s -t AccessGrid_Types --simple-naming" % ( os.pa
 print "* ", command
 os.system(command)
 
-command = "wsdl2py -f %s -e -o %s -t AG_VenueServer_Types --simple-naming" % ( os.path.join(srcPath, "VenueServerBinding.wsdl"),dstPath)
+command = "wsdl2py -f %s -e -o %s -t AG_VenueServer_Types --simple-naming --clientClassSuffix=IW" % ( os.path.join(srcPath, "VenueServerBinding.wsdl"),dstPath)
 print "* ", command
 os.system(command)
 command = "wsdl2dispatch -f %s -e -o %s -t AG_VenueServer_Types --simple-naming" %  ( os.path.join(srcPath, "VenueServerBinding.wsdl"), dstPath)
 print "* ", command
 os.system(command)
-command = "wsdl2py -f %s -e -o %s -t AG_Venue_Types --simple-naming" %  ( os.path.join(srcPath, "VenueBinding.wsdl"), dstPath )
+command = "wsdl2py -f %s -e -o %s -t AG_Venue_Types --simple-naming --clientClassSuffix=IW" %  ( os.path.join(srcPath, "VenueBinding.wsdl"), dstPath )
 print "* ", command
 os.system(command)
 command = "wsdl2dispatch -f %s -e -o %s -t AG_Venue_Types --simple-naming" %   ( os.path.join(srcPath, "VenueBinding.wsdl"), dstPath )
