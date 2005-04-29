@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.13 2004-09-10 03:58:54 judson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.14 2005-04-29 19:34:19 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 AG Hosting environment tools.
 """
-__revision__ = "$Id: __init__.py,v 1.13 2004-09-10 03:58:54 judson Exp $"
+__revision__ = "$Id: __init__.py,v 1.14 2005-04-29 19:34:19 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -20,7 +20,7 @@ import os
 import urlparse
 
 # mechanisms to support multiple hosting environments and to set defaults
-__hostingImpl = "SOAPpy"
+__hostingImpl = "ZSI"
 
 # pointers to methods and objects, helpful magic
 SecureServer = lambda x: None
