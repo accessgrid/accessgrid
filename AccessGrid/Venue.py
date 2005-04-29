@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.237 2005-03-31 18:01:15 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.238 2005-04-29 19:33:23 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.237 2005-03-31 18:01:15 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.238 2005-04-29 19:33:23 eolson Exp $"
 
 import sys
 import time
@@ -63,7 +63,9 @@ from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.ClientProfile import ClientProfileCache, InvalidProfileException
 from AccessGrid.ServiceCapability import ServiceCapability
 from AccessGrid.NetworkServicesManager import NetworkServicesManager
-
+from AccessGrid.interfaces.AccessGrid_Types import www_accessgrid_org_v3_0 as AGTypes
+from AccessGrid.interfaces.Venue_interface import Venue as VenueI
+from AccessGrid.interfaces.Venue_client import VenueIW
 from AccessGrid.AsyncoreEventClient import EventClient
 
 log = Log.GetLogger(Log.VenueServer)
@@ -217,17 +219,16 @@ class VenueClientState:
     where a method call can be used to change the status of client connections.
 
     """
-    def __init__(self, venue, timeout, privateId, connectionId, profile):
+    def __init__(self, venue, timeout, connectionId, profile):
         self.profile = profile
         self.venue = venue
-        self.privateId = privateId
         self.connectionId = connectionId
         self.timeout = time.time() + timeout
         self.status = None
         
     def __repr__(self):
-        s = "VenueClientState(name=%s privateID=%s)" % (
-            self.profile.name, self.privateId)
+        s = "VenueClientState(name=%s connectionId=%s)" % (
+            self.profile.name, self.connectionId)
         return s
 
     def GetClientProfile(self):
@@ -250,9 +251,6 @@ class VenueClientState:
         else:
             return 0
         
-    def GetPrivateId(self):
-        return self.privateId
-
     def GetConnectionId(self):
         return self.profile.GetConnectionId()
     
@@ -506,8 +504,10 @@ class Venue(AuthorizationMixIn):
        
         # List of services
 
-        servlist = ":".join(map(lambda service: service.GetId(),
-                                self.server.services.values()))
+        log.warning("services not being persisted yet")
+        #servlist = ":".join(map(lambda service: service.GetId(),
+        #                        self.server.services.values()))
+        servlist = []
 
         if len(servlist):
             string += "services: %s\n" % servlist
@@ -812,7 +812,7 @@ class Venue(AuthorizationMixIn):
         if self.clients.has_key(cid):
             return self.clients[cid]
         
-        if self.netServcies.has_key(cid):
+        if self.netServices.has_key(cid):
             return self.netServices[cid]
 
         return None
@@ -824,7 +824,9 @@ class Venue(AuthorizationMixIn):
         conn = self.FindConnection(cid)
 
         if conn is not None:
-            if requestedTimeout < self.maxTimeout:
+            if requestedTimeout == 0:
+                t_mod = self.maxTimeout
+            elif requestedTimeout < self.maxTimeout:
                 t_mod = requestedTimeout
             else:
                 t_mod = self.maxTimeout
@@ -954,6 +956,7 @@ class Venue(AuthorizationMixIn):
             try:
                 # Remove the user from the venue users role
                 # - get the subject of the user to remove
+                cp =self.clients[privateId].GetClientProfile()
                 dn = self.clients[privateId].GetClientProfile().GetDistinguishedName()
                 subject = X509Subject.CreateSubjectFromString(dn)
             
@@ -1043,8 +1046,7 @@ class Venue(AuthorizationMixIn):
         # this is passed back to 2.3+ clients in the private id, 
         # which unfortunately lengthens the private id generally
         clientProfile.connectionId = str(GUID())
-        privateId = self.GetNextPrivateId() + '_' + clientProfile.connectionId
-        log.debug("Enter: Assigning private id: %s", privateId)
+        log.debug("Enter: Assigning connection id: %s", clientProfile.connectionId)
 
         # Send this before we set up client state, so that
         # we don't end up getting our own enter event enqueued.
@@ -1052,9 +1054,8 @@ class Venue(AuthorizationMixIn):
         self.eventClient.Send(Event.ENTER, clientProfile)
 
         # Create venue client state object
-        vcstate = self.clients[privateId] = VenueClientState(self,
+        vcstate = self.clients[clientProfile.connectionId] = VenueClientState(self,
                                                              self.maxTimeout,
-                                                             privateId,
                                                    clientProfile.connectionId,
                                                              clientProfile)
         self._UpdateProfileCache(clientProfile)
@@ -1081,7 +1082,7 @@ class Venue(AuthorizationMixIn):
             log.exception("Enter: Can't get state.")
             raise InvalidVenueState
 
-        return ( state, privateId )
+        return clientProfile.connectionId
 
     def RegisterNetworkService(self, networkServiceDescription):
         """
@@ -1958,1130 +1959,61 @@ class Venue(AuthorizationMixIn):
 
         return location
 
-class VenueI(SOAPInterface, AuthorizationIMixIn):
-    """
-    A Virtual Venue is a virtual space for collaboration on the Access Grid.
-    """
-    def __init__(self, impl):
-        SOAPInterface.__init__(self, impl)
-
-    def _authorize(self, *args, **kw):
-        """
-        The authorization callback. We should be able to implement this
-        just once and remove a bunch of the older code.
-        """
-        log.debug("Authorizing %s %s", args, *kw)
-        
-        if not self.impl.servicePtr.GetOption("secure"):
-           return 1
-     
-        subject, action = self._GetContext()
-        
-        log.info("Authorizing action: %s for subject %s", action.GetName(),
-                 subject.GetName())
-
-        authManager = self.impl.authManager
-        
-        return authManager.IsAuthorized(subject, action)
-
-    def UpdateLifetime(self, cid, requestedTimeout=0):
-        """
-        """
-        return self.impl.UpdateLifetime(cid, requestedTimeout)
-    
-    def Enter(self, clientProfileStruct):
-        """
-        Interface used to enter a Virtual Venue.
-
-        **Arguments:**
-
-        *clientProfileStruct* An anonymous struct containing a
-        client profile.
-
-        **Raises:**
-
-        *InvalidClientProfileException* This is raised when the client
-        profile is not successfully converted to a real client
-        profile.
-
-        **Returns:**
-
-        *(state, privateId)* This tuple is
-        returned to the client on success. The state is the
-        current state of the Virtual Venue and includes locations
-        for the text and event services. The private Id is a venue
-        assigned private id for the lifetime of this client
-        session.
-        """        
-        log.debug("Interface Enter: Called.")
-
-        # Rebuild the profile
-        clientProfile = CreateClientProfile(clientProfileStruct)
-
-        if self.impl.servicePtr.GetOption("secure"):
-            subject = self._GetCaller()
-            clientProfile.distinguishedName = subject.GetName()
-        else:
-            subject = Subject.Subject("", auth_type=None)
-            clientProfile.distinguishedName = ""
-
-        # Call Enter
-        try:
-            r = self.impl.Enter(clientProfile)
-        except:
-            log.exception("VenueI.Enter: exception")
-            raise
-
-        return r
-
-    def GetClients(self):
-        """
-        retrieve the list of clients in the venue.
-        """
-        try:
-            retval = self.impl.GetClients()
-            return retval
-        except:
-            log.exception("VenueI.GetClients: exception")
-            raise
-        
-    def RegisterNetworkService(self, networkServiceDescription):
-        """
-        Register a network service with the venue.
-        """
-        
-        # Lock and do the call
-
-        nsd = CreateAGNetworkServiceDescription(networkServiceDescription)
-        try:
-            retval = self.impl.RegisterNetworkService(nsd)
-            return retval
-        except:
-            log.exception("VenueI.RegisterNetworkService: exception")
-            raise
-               
-
-    def UnRegisterNetworkService(self, networkServiceDescription):
-        """
-        UnregisterNetworkService removes a netservice from those in the venue
-        """
-
-        # Lock and do the call
-        nsd = CreateAGNetworkServiceDescription(networkServiceDescription)
-        
-        try:
-            self.impl.UnRegisterNetworkService(nsd)
-        except:
-            log.exception("VenueI.RemoveNetworkService: exception")
-            raise
-
-    def AddNetworkService(self, clientType, privateId=None):
-        """
-        AddNetworkService adds a net service to those in the venue
-        """
-        if privateId == None:
-            privateId = str(GUID())
-
-        # Lock and do the call
-        try:
-            retval = self.impl.AddNetworkService(clientType, privateId)
-            return retval
-        except:
-            log.exception("VenueI.AddNetworkService: exception")
-            raise
-            
-    AddNetService = AddNetworkService
-
-    def RemoveNetworkService(self, privateId):
-        """
-        RemoveNetworkService removes a netservice from those in the venue
-        """
-
-        # Lock and do the call
-        try:
-            self.impl.RemoveNetworkService(privateId)
-        except:
-            log.exception("VenueI.RemoveNetworkService: exception")
-            raise
-    
-    RemoveNetService = RemoveNetworkService
-    
-    def GetNetworkServices(self):
-        """
-        Return data on the existing network services.
-        """
-        # This can't do anything until we have something to return
-        return self.impl.GetNetworkServices()
-
-    def GetCachedProfiles(self):
-        """
-        This method returns a list of client profiles that have been registered
-        for this venue.
-        
-        **Returns:**
-        
-        *cachedProfiles* A list of ClientProfiles.
-        """
-
-        try:
-            return self.impl.GetCachedProfiles()
-
-        except:
-            log.exception("VenueI.GetCachedProfiles: exception")
-            raise
-            
-    def Shutdown(self):
-        """
-        This method cleanly shuts down all active threads associated with the
-        Virtual Venue. Currently there are a few threads in the Event
-        Service.
-        """
-
-        # Lock and do the call
-        try:
-            self.impl.Shutdown()
-        except:
-            log.exception("VenueI.Shutdown: exception")
-            raise
-
-    def AddService(self, servDescStruct ):
-        """
-        Interface to add a service to the venue.
-
-        **Arguments:**
-
-        *servDescStruct* an anonymous struct that contains a
-        service description.
-
-        **Raises:**
-
-        *BadServiceDescription* This is raised if the anonymous
-        struct can't be converted to a real service description.
-
-        **Returns:**
-
-        *serviceDescription* A service description is returned on success.
-
-        """
-        log.debug("VenueI.AddService")            
-
-
-        serviceDescription = CreateServiceDescription(servDescStruct)
-
-        try:
-            returnValue = self.impl.AddService(serviceDescription)
-        except:
-            log.exception("VenueI.AddService: exception")
-            raise
-
-        return returnValue
-
-    def RemoveService(self, servDescStruct ):
-        """
-        Interface to remove a service from the venue.
-
-        **Arguments:**
-
-        *servDescStruct* an anonymous struct that contains a
-        service description.
-
-        **Raises:**
-
-        *BadServiceDescription* This is raised if the anonymous
-        struct can't be converted to a real service description.
-
-        **Returns:**
-
-        *serviceDescription* A service description is returned on success.
-
-        """
-        log.debug("VenueI.RemoveService")
-
-        serviceDescription = CreateServiceDescription(servDescStruct)
-
-        try:
-            returnValue = self.impl.RemoveService(serviceDescription)
-        except:
-            log.exception("VenueI.RemoveService: exception")
-            raise
-
-        return returnValue
-
-    def UpdateService(self, servDescStruct ):
-        """
-        Interface to update a service from the venue.
-
-        **Arguments:**
-
-        *servDescStruct* an anonymous struct that contains a
-        service description.
-
-        **Raises:**
-
-        *BadServiceDescription* This is raised if the anonymous
-        struct can't be converted to a real service description.
-
-        **Returns:**
-
-        *serviceDescription* A service description is returned on success.
-
-        """
-        log.debug("VenueI.UpdateService")
-
-        serviceDescription = CreateServiceDescription(servDescStruct)
-
-        try:
-            returnValue = self.impl.UpdateService(serviceDescription)
-        except:
-            log.exception("VenueI.UpdateService: exception")
-            raise
-
-        return returnValue
-
-    def GetServices(self):
-        """
-        Interface to remove a service from the venue.
-
-        **Arguments:**
-
-        **Raises:**
-
-        **Returns:**
-
-        *serviceDescriptionList* A service description is returned on success.
-
-        """
-        log.debug("VenueI.GetServices")
-
-        try:
-            returnValue = self.impl.GetServices()
-            return returnValue
-        except:
-            log.exception("VenueI.GetServices: exception")
-            raise
-
-    def SetConnections(self, connDescStructList):
-        """
-        Interface for setting all the connections in a venue in a single call.
-
-        **Arguments:**
-
-        *connDescStructList* a list of connection descriptions that
-        have been converted to anonymous structs by the SOAP
-        module.
-
-        **Raises:**
-
-        *BadConnectionDescription* This is raised when an
-        anonymous struct is not converted to a real connection
-        description.
-        """
-        try:
-            connectionList = []
-            for c in connDescStructList:
-                connectionList.append(CreateConnectionDescription(c))
-            self.impl.SetConnections(connectionList)
-        except:
-            log.exception("VenueI.SetConnections: exception")
-            raise
-
-    def AddConnection(self, connectionDescStruct):
-        """
-        AddConnection allows an administrator to add a connection to a
-        virtual venue to this virtual venue.
-
-        **Arguments:**
-
-        *ConnectionDescriptionStruct* An anonymous struct
-        containing a connection description.
-
-        **Raises:**
-
-        *NotAuthorized* Raised when the caller is not an administrator.
-
-        *BadConnectionDescription* Raised when the connection
-        description struct is not successfully converted to a
-        connection description.
-        """
-        c = CreateConnectionDescription(connectionDescStruct)
-
-        try:
-            self.impl.AddConnection(c)
-        except:
-            log.exception("AddConnection: exception")
-            raise
-
-    def RemoveConnection(self, connectionDescription):
-        """
-        RemoveConnection removes a connection to another virtual venue
-        from this virtual venue. This is an administrative operation.
-
-        **Arguments:**
-
-        *connectionDescriptionStruct* An anonymous struct
-        containing a connection description.
-
-        **Raises:**
-
-        *NotAuthorized* Raised when the caller is not an administrator.
-
-        *ConnectionNotFound* Raised when a connection isn't found
-        to be rmeoved.
-
-        *BadConnectionDescription* Raised when the connection
-        description struct is not successfully converted to a
-        connection description.
-        """
-        c = CreateConnectionDescription(connectionDescription)
-        try:
-            self.impl.RemoveConnection(c)
-        except:
-            log.exception("VenueI.RemoveConnection.")
-            raise
-        
-    def GetConnections(self):
-        """
-        GetConnections returns a list of all the connections to other venues
-        that are found within this venue.
-
-        **Returns:**
-
-        *ConnectionList* A list of connection descriptions.
-        """
-        log.debug("Calling GetConnections.")
-
-        try:
-            cls = self.impl.GetConnections()
-            return cls
-        except:
-            log.exception("VenueI.GetConnections.")
-            raise
-        
-    def SetEncryptMedia(self, value, key=None):
-        """
-        Turn media encryption on or off.
-
-        **Arguments:**
-
-        *value* Flag indicating whether encryption should be on or off.
-
-        *key=None* An optional key for encryption, if not
-        provided, and the value is 1, then one is created.
-
-        **Raises:**
-
-        *NotAuthorized* Raised when the caller is not an administrator.
-
-        **Returns:**
-
-        *value* The value of the EncryptMedia flag.
-        """
-
-        try:
-            retval = self.impl.SetEncryptMedia(value, key)
-        except:
-            log.exception("VenueI.SetEncryptMedia.")
-            raise
-
-        return retval
-    
-    def GetEncryptMedia(self):
-        """
-        Return whether we are encrypting streams or not.
-        """
-        try:
-            returnValue = self.impl.GetEncryptMedia()
-        except:
-            log.exception("VenueI.GetEncryptMedia.")
-            raise
-        
-        return returnValue
-
-    def RegenerateEncryptionKeys(self):
-        """
-        RegenerateKeys allows one to regenerate the encryption keys on
-        the venue. THis should only be done with extreme care, as the
-        regeneration of encryption keys will interrupt existing
-        collaborations by restarting simple media tools.
-        """
-        try:
-            return self.impl.RegenerateEncryptionKeys()
-        except:
-            log.exception("Failed to regenerate encryption keys.")
-            raise
-        
-    def SetDescription(self, description):
-        """
-        SetDescription allows an administrator to set the venues description
-        to something new.
-
-        **Arguments:**
-
-        *description* New description for this venue.
-        """
-        try:
-            self.impl.SetDescription(description)
-        except:
-            log.exception("VenueI.SetDescription.")
-            raise
-
-    def GetDescription(self):
-        """
-        GetDescription returns the description for the virtual venue.
-        **Arguments:**
-        """
-        try:
-            retval = self.impl.GetDescription()
-        except:
-            log.exception("VenueI.GetDescription.")
-            raise
-
-        return retval
-    
-    def SetName(self, name):
-        """
-        SetName allows an administrator to set the venues name
-        to something new.
-
-        **Arguments:**
-
-        *name* New name for this venue.
-        """
-        try:
-            self.impl.SetName(name)
-        except:
-            log.exception("VenueI.SetName.")
-            raise
-
-    def GetName(self):
-        """
-        GetName returns the name for the virtual venue.
-        """
-        try:
-            retval = self.impl.GetName()
-        except:
-            log.exception("VenueI.GetName.")
-            raise
-
-        return retval
-
-    def AddStream(self, inStreamDescription ):
-        """
-        Add a stream to the list of streams for this venue.
-
-        **Arguments:**
-
-        *inStreamDescription* An anonymous struct containing a
-        stream description.
-
-        **Raises:**
-
-        *NotAuthorized* This is raised when the caller is not an
-        administrator.
-
-        *BadStreamDescription* This is raised when the struct
-        passed in cannot be successfully converted to a real
-        Stream Description.
-        """
-        streamDescription = CreateStreamDescription(inStreamDescription)
-        
-        try:
-            self.impl.AddStream(streamDescription)
-        except:
-            log.exception("VenueI.AddStream.")
-            raise
-
-    def RemoveStream(self, inStreamDescription):
-        """
-        Remove the given stream from the venue
-
-        **Arguments:**
-
-        *inStreamDescription* An anonymous struct containing a
-        stream description to be removed.
-
-        **Raises:**
-
-        *NotAuthorized* This is raised when the caller is not an
-        administrator.
-
-        *BadStreamDescription* This is raised when the struct
-        passed in cannot be successfully converted to a real
-        Stream Description.
-        """
-        streamDescription = CreateStreamDescription(inStreamDescription)
-        try:
-            self.impl.RemoveStream(streamDescription)
-        except:
-            log.exception("VenueI.RemoveStream.")
-            raise
-
-    def GetStreams(self):
-        """
-        GetStreams returns a list of stream descriptions to the caller.
-        """
-        try:
-            sl = self.impl.GetStreams()
-            return sl
-        except:
-            log.exception("VenueI.GetStreams")
-            raise
-
-    def GetStaticStreams(self):
-        """
-        GetStaticStreams returns a list of static stream descriptions
-        to the caller.
-        """
-        try:
-            sl = self.impl.GetStaticStreams()
-            return sl
-        except:
-            log.exception("VenueI.GetStaticStreams")
-            raise
-
-    def NegotiateCapabilities(self, privateId, capabilities):
-        sl = self.impl.NegotiateCapabilities(privateId, capabilities)
-        return sl
-
-    def Exit(self, privateId):
-        """
-        The Exit method is used by a VenueClient to cleanly leave a Virtual
-        Venue. Cleanly leaving a Virtual Venue allows the Venue to cleanup
-        any state associated (or caused by) the VenueClients presence.
-
-        **Arguments:**
-
-        *privateId* The privateId of the client to be removed from
-        the venue.
-
-        **Raises:**
-
-        *ClientNotFound* Raised when a privateId is not found in
-        the venues list of clients.
-        """
-        try:
-            self.impl.Exit(privateId)
-        except:
-            log.exception("VenueI.Exit.")
-            raise
-        
-    def UpdateClientProfile(self, clientProfileStruct):
-        """
-        UpdateClientProfile allows a VenueClient to update/modify the client
-        profile that is stored by the Virtual Venue that they gave to the Venue
-        when they called the Enter method.
-
-        **Arguments:**
-
-        *clientProfileStruct* An anonymous struct containing a
-        client profile.
-
-        **Raises:**
-
-        *InvalidClientProfileException* Raised when the client
-        profile struct cannot be converted to a real client
-        profile.
-        """
-        
-        clientProfile = CreateClientProfile(clientProfileStruct)
-
-        # Rebuild the profile
-        #if self.impl.servicePtr.GetOption("insecure"):
-       
-        # Always run insecure for now..
-        subject = Subject.Subject("", auth_type=None)
-        clientProfile.distinguishedName = ""
-
-        #else:
-        #    subject = self._GetCaller()
-        #    clientProfile.distinguishedName = subject.GetName()
-        
-        try:
-            self.impl.UpdateClientProfile(clientProfile)
-        except:
-            log.exception("VenueI.UpdateClientProfile.")
-            raise
-
-    def RemoveData(self, dataDescriptionStruct):
-        """
-        Interface for removing data.
-
-        **Arguments:**
-
-        *dataDescriptionStruct* The Data Description that's now an
-        anonymous struct that is being added to the venue.
-
-        **Raises:**
-
-        *BadDataDescription* This is raised if the data
-        description struct cannot be converted to a real data
-        description.
-
-        **Returns:**
-
-        *dataDescription* A data description is returned on success.
-        """
-        dataDescription = CreateDataDescription(dataDescriptionStruct)
-        
-        try:
-            returnValue = self.impl.RemoveData(dataDescription)
-        except:
-            log.exception("VenueI.RemoveData: exception")
-            raise
-
-        return returnValue
-
-    def UpdateData(self, dataDescriptionStruct):
-        """
-        Replace the current description for dataDescription.name with
-        this one.
-        """
-        dataDescription = CreateDataDescription(dataDescriptionStruct)
-
-        try:
-            returnValue = self.impl.UpdateData(dataDescription)
-            return returnValue
-        except:
-            log.exception("VenueI.UpdateData: exception")
-            raise
-
-    def GetDataStoreInformation(self):
-        """
-        Retrieve an upload descriptor and a URL to the Venue's DataStore 
-
-        **Arguments:**
-
-        **Raises:**
-
-        **Returns:**
-
-            *(upload description, url)* the upload descriptor to the Venue's DataStore
-            and the url to the DataStore SOAP service.
-
-        """
-
-        try:
-            return self.impl.GetDataStoreInformation()
-        except:
-            log.exception("VenueI.GetDataStoreInformation.")
-            raise
-
-
-    def GetDataDescriptions(self):
-        """
-        """
-        try:
-            ddl = self.impl.GetDataDescriptions()
-            return ddl
-        except:
-            log.exception("VenueI.GetDataDescriptions.")
-            raise
-
-    def GetUploadDescriptor(self):
-        """
-        Retrieve the upload descriptor from the Venue's datastore.
-
-        **Arguments:**
-
-        **Raises:**
-
-        **Returns:**
-
-        *upload description* the upload descriptor for the data store.
-
-        *''* If there is not data store we return an empty string,
-        because None doesn't serialize right with our SOAP
-        implementation.
-        """
-        try:
-            retval = self.impl.GetUploadDescriptor()
-            return retval
-        except:
-            log.exception("VenueI.GetUploadDescriptor.")
-            raise
-
-    def GetApplication(self, aid):
-        """
-        Return the application state for the given application object.
-
-        **Arguments:**
-
-        *id* The id of the application being retrieved.
-
-        **Raises:**
-
-        *ApplicationNotFound* Raised when the application is not
-        found in the venue.
-
-        **Returns:**
-
-        *appState* The state of the application object.
-        """
-        try:
-            as = self.impl.GetApplication(aid)
-            return as
-        except:
-            log.exception("VenueI.GetApplication.")
-            raise
-
-    def GetApplications(self):
-        """
-        return the list of application descriptions for this venue.
-        """
-        try:
-            adl = self.impl.GetApplications()
-            return adl
-        except:
-            log.exception("VenueI.GetApplications.")
-            raise
-        
-    def CreateApplication(self, name, description, mimeType, aid = None ):
-        """
-        Create a new application object.  Initialize the
-        implementation, and create a web service interface for it.
-
-        **Arguments:**
-
-        *name* A name for the application instance.
-
-        *description* A description for the new application instance.
-
-        *mimeType* A mime-type for the new application, used to
-        match applications with clients.
-
-        **Returns:**
-
-        *appHandle* A url to the new application object/service.
-        """
-        try:
-            retval = self.impl.CreateApplication(name, description, mimeType,
-                                                 aid)
-            return retval
-        except:
-            log.exception("VenueI.CreateApplication.")
-            raise
-
-    def DestroyApplication(self, appId):
-        """
-        Destroy an application object.
-
-        **Arguments:**
-
-        *appId* The id of the application object to be destroyed.
-
-        **Raises:**
-
-        *ApplicationNotFound* Raised when an application is not
-        found for the application id specified.
-
-        *ApplicationUnbindError* Raised when the hosting
-        environment can't unbind the application from the web
-        service layer.
-        """
-        try:
-            self.impl.DestroyApplication(appId)
-        except:
-            log.exception("VenueI.DestroyApplication.")
-            raise
-
-    def UpdateApplication(self, appDescStruct ):
-        """
-        Interface to update a service from the venue.
-
-        **Arguments:**
-
-        *appDescStruct* an anonymous struct that contains an
-        application description.
-
-        **Raises:**
-
-        *BadApplicationDescription* This is raised if the anonymous
-        struct can't be converted to a real application description.
-
-        **Returns:**
-
-        *applicationDescription* An app description is returned on success.
-
-        """
-        log.debug("VenueI.UpdateApplication")
-
-        applicationDescription = CreateApplicationDescription(appDescStruct)
-
-        try:
-            returnValue = self.impl.UpdateApplication(applicationDescription)
-        except:
-            log.exception("VenueI.UpdateApplication: exception")
-            raise
-
-        return returnValue
-        
-    def AddNetworkLocationToStream(self, privateId, streamId, networkLocationStruct):
-        """
-        Add a transport to an existing stream
-
-        **Arguments:**
-
-        *streamId* The id of the stream to which to add the transport
-        *networkLocation* The network location (transport) to add
-
-        **Raises:**
-
-
-        Note:  This method overwrites the private id in the incoming
-        network location
-
-        """
-        try:
-            # Create a NetworkLocation object from the
-            # network location struct
-            networkLocation = CreateNetworkLocation(networkLocationStruct)
-                
-            retval = self.impl.AddNetworkLocationToStream(privateId, streamId,
-                                                          networkLocation)
-            return retval
-        except:
-            log.exception("VenueI.AddNetworkLocationToStream.")
-            raise
-
-    def RemoveNetworkLocationFromStream(self, privateId, streamId,
-                                        networkLocationId):
-
-        try:
-            self.impl.RemoveNetworkLocationFromStream(privateId,
-                                                      streamId,
-                                                      networkLocationId)
-        except:
-            log.exception("VenueI.RemoveNetworkLocationFromStream.")
-            raise
-
-    def GetEventServiceLocation(self):
-        try:
-            esl = self.impl.GetEventServiceLocation()
-            return esl
-        except:
-            log.exception("VenueI.GetEventServiceLocation.")
-            raise
-
-    def ImportAuthorizationPolicy(self, policy):
-        """
-        This method takes a string that is an XML representation of an
-        authorization policy. This policy is parsed and this object is
-        configured to enforce the specified policy.
-
-        @param policy: the policy as a string
-        @type policy: an XML formatted string
-        """
-        self.impl.ImportAuthorizationPolicy(policy)
-
-    def AllocateMulticastLocation(self):
-        try:
-            return self.impl.AllocateMulticastLocation()
-        except:
-            log.exception("AllocateMulticastLocation: exception")
-            raise
-
-    def RecycleMulticastLocation(self, location):
-        return self.impl.RecycleMulticastLocation(location)
-
-
-class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
-    def __init__(self, url, faultHandler = None):
-        SOAPIWrapper.__init__(self, url, faultHandler)
-
-    def UpdateLifetime(self, cid, requestedTimeout=0):
-        return self.proxy.UpdateLifetime(cid, requestedTimeout)
-    
-    def SetEncryptMedia(self, value, key):
-        return self.proxy.SetEncryptMedia(value, key)
-
-    def GetEncryptMedia(self):
-        return self.proxy.GetEncryptMedia()
-
-    def RegenerateEncryptionKeys(self):
-        return self.proxy.RegenerateEncryptionKeys()
-    
-    def SetDescription(self, description):
-        return self.proxy.SetDescription(description)
-
-    def GetDescription(self):
-        return self.proxy.GetDescription()
-
-    def SetName(self, name):
-        return self.proxy.SetName(name)
-
-    def GetName(self):
-        return self.proxy.GetName()
-
-    def SetConnections(self, connectionList):
-        return self.proxy.SetConnections(connectionList)
-
-    def AddConnection(self, connection):
-        return self.proxy.AddConnection(connection)
-
-    def RemoveConnection(self, cid):
-        return self.proxy.RemoveConnection(cid)
-
-    def GetConnections(self):
-        cDescList = []
-        cList = self.proxy.GetConnections()
-        
-        for struct in cList:
-            cDescList.append(CreateConnectionDescription(struct))
-                
-        return cDescList
-
-    def AddStream(self, streamDesc):
-        return self.proxy.AddStream(streamDesc)
-
-    def RemoveStream(self, stream):
-        return self.proxy.RemoveStream(stream)
-
-    def GetStreams(self):
-        streamDescList = []
-        streamDescStructList = self.proxy.GetStreams()
-        for streamDescStruct in streamDescStructList:
-            streamDescList.append( CreateStreamDescription(streamDescStruct) )
-        return streamDescList
-
-    def GetStaticStreams(self):
-        streamDescList = []
-        streamDescStructList = self.proxy.GetStaticStreams()
-        for streamDescStruct in streamDescStructList:
-            streamDescList.append( CreateStreamDescription(streamDescStruct) )
-        return streamDescList
-
-    def Shutdown(self):
-        return self.proxy.Shutdown()
-
-    def Enter(self, profile):
-        (r1, r2) = self.proxy.Enter(profile)
-        return (r1, r2)
-
-    def Exit(self, pid):
-        return self.proxy.Exit(pid)
-
-    def NegotiateCapabilities(self, privateId, capabilities):
-        streamDescList = []
-        streamDescStructList = self.proxy.NegotiateCapabilities(privateId, capabilities)
-        for streamDescStruct in streamDescStructList:
-            streamDescList.append( CreateStreamDescription(streamDescStruct) )
-        
-        return streamDescList
-    
-    def GetClients(self):
-        cl = self.proxy.GetClients()
-        rcl = list()
-        for c in cl:
-            rcl.append(CreateClientProfile(c))
-
-        return rcl
-    
-    def UpdateClientProfile(self, profile):
-        return self.proxy.UpdateClientProfile(profile)
-
-    def RegisterNetworkService(self, networkServiceDescription):
-        return self.proxy.RegisterNetworkService(networkServiceDescription)
-
-    def UnRegisterNetworkService(self, networkServiceDescription):
-        return self.proxy.UnRegisterNetworkService(networkServiceDescription)
-
-    def AddNetworkService(self, type, privateID):
-        return self.proxy.AddNetworkService(type, privateID)
-
-    def RemoveNetworkService(self, nid):
-        return self.proxy.RemoveNetworkService(nid)
-
-    def GetNetworkServices(self):
-        services = []
-        for s in self.proxy.GetNetworkServices():
-            services.append(CreateAGNetworkServiceDescription(s))
-        return services
-    
-    def AddService(self, serviceDesc):
-        return self.proxy.AddService(serviceDesc)
-
-    def RemoveService(self, sid):
-        return self.proxy.RemoveService(sid)
-
-    def UpdateService(self, serviceDesc):
-        return self.proxy.UpdateService(serviceDesc)
-
-    def GetServices(self):
-        sl = self.proxy.GetServices()
-        rsl = list()
-        for s in sl:
-            rsl.append(CreateServiceDescription(s))
-        return rsl
-
-    def AddData(self, dataDescription):
-        return self.proxy.AddData(dataDescription)
-
-    def RemoveData(self, did):
-        return self.proxy.RemoveData(did)
-
-    def UpdateData(self, dataDescription):
-        return self.proxy.UpdateData(dataDescription)
-
-    def GetDataDescriptions(self):
-        return self.proxy.GetDataDescriptions()
-
-    def GetDataStoreInformation(self):
-        return self.proxy.GetDataStoreInformation()
-    
-    def GetUploadDescriptor(self):
-        return self.proxy.GetUploadDescriptor()
-
-    def GetApplication(self, aid):
-        return self.proxy.GetApplication(aid)
-
-    def GetApplications(self):
-        adl = self.proxy.GetApplications()
-        al = list()
-        for a in adl:
-            al.append(CreateApplicationDescription(a))
-        return al
-        
-    def CreateApplication(self, name, description, mimeType):
-        return self.proxy.CreateApplication(name, description, mimeType)
-
-    def DestroyApplication(self, aid):
-        return self.proxy.DestroyApplication(aid)
-        
-    def UpdateApplication(self, applicationDesc):
-        return self.proxy.UpdateApplication(applicationDesc)
-
-    def AddNetworkLocationToStream(self, privId, streamId, networkLocation):
-        return self.proxy.AddNetworkLocationToStream(privId, streamId,
-                                                     networkLocation)
-
-    def RemoveNetworkLocationFromStream(self, privId, streamId, networkId):
-        return self.proxy.RemoveNetworkLocationFromStream(privId, streamId,
-                                                            networkId)
-
-    def GetEventServiceLocation(self):
-        location= self.proxy.GetEventServiceLocation()
-        host, port = location
-        return (host, port)
-    
-    def AllocateMulticastLocation(self):
-        locationStruct = self.proxy.AllocateMulticastLocation()
-        location = CreateNetworkLocation(locationStruct)
-        return location
-
-    def RecycleMulticastLocation(self,location):
-        return self.proxy.RecycleMulticastLocation(location)
-
-    def GetCachedProfiles(self):
-        return self.proxy.GetCachedProfiles()
-    
-    # -----------------------------------------------------
-    # This allows old clients to connect to new servers.
-    #
-    def IsValid(self):
-        return 1
-    
-    # -----------------------------------------------------
-
+    def GetProperty(self, propertyList):
+        pname = (AGTypes, "Dictionary")
+        ret_dict = AGTypes.Dictionary_(pname=pname).pyclass ; ret_dict.entries = []
+        for prop in propertyList:
+            if prop == "state" or prop == "venueid": 
+                pname = (AGTypes, "DictionaryEntry")
+                entry = AGTypes.DictionaryEntry_(pname=pname).pyclass
+                entry.key = "venueid"          # entry.SetKey("venueid")
+                entry.value = self.uniqueId    # entry.SetValue(self.uniqueId)
+                ret_dict.entries.append(entry) # ret_dict.GetEntries().append(entry)
+            if prop == "state" or prop == "name": 
+                pname = (AGTypes, "DictionaryEntry")
+                entry = AGTypes.DictionaryEntry_(pname=pname)
+                entry.key = "name"              # entry.SetKey("name")
+                entry.value = self.name         # entry.SetValue(self.name)
+                ret_dict.entries.append(entry)  # ret_dict.GetEntries().append(entry)
+            if prop == "state" or prop == "description": 
+                pname = (AGTypes, "DictionaryEntry")
+                entry = AGTypes.DictionaryEntry_(pname=pname)
+                entry.key = "description"       # entry.SetKey("description")
+                entry.value = self.description  # entry.SetValue(self.description)
+                ret_dict.entries.append(entry)  # ret_dict.GetEntries().append(entry)
+            if prop == "state" or prop == "eventLocationStr": 
+                pname = (AGTypes, "DictionaryEntry")
+                entry = AGTypes.DictionaryEntry_(pname=pname).pyclass
+                entry.key = "eventLocationStr"         
+                location = self.GetEventServiceLocation()
+                # since lists won't work here yet, convert to a string
+                entry.value =  ":".join(map(lambda x : str(x), location))
+                ret_dict.entries.append(entry)
+            if prop == "state" or prop == "connections": 
+                pass
+            if prop == "state" or prop == "data": 
+                pass
+            if prop == "state" or prop == "clients": 
+                pass
+                """
+                try:
+                    clientlist = map(lambda c: c.GetClientProfile(),
+                                             self.clients.values())
+                except:
+                    log.exception("Venue::AsVenueState: Failed to get profiles.")
+                    clientlist = []
+                pname = (AGTypes, "DictionaryEntry")
+                entry = AGTypes.DictionaryEntry_(pname=pname)
+                entry.key = "clients"
+                entry.value = clientlist
+                ret_dict.entries.append(entry)
+                """
+            if prop == "state" or prop == "applications": 
+                pass
+            if prop == "state" or prop == "services": 
+                pass
+
+        return ret_dict
 
 class StreamDescriptionList:
     """
