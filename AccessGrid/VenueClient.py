@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.206 2005-03-31 18:14:12 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.207 2005-04-29 19:33:48 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.206 2005-03-31 18:14:12 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.207 2005-04-29 19:33:48 eolson Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -21,11 +21,13 @@ import time
 
 from AccessGrid import Log
 from AccessGrid import DataStore
+from AccessGrid import hosting
 from AccessGrid.Toolkit import Application, Service
 from AccessGrid.Preferences import Preferences
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
-from AccessGrid.Venue import VenueIW, ServiceAlreadyPresent
+from AccessGrid.Venue import ServiceAlreadyPresent
+from AccessGrid.interfaces.Venue_client import VenueIW
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.hosting import InsecureServer, SecureServer
 from AccessGrid.Utilities import LoadConfig
@@ -49,7 +51,7 @@ from AccessGrid.Descriptions import CreateApplicationDescription
 from AccessGrid.Descriptions import CreateStreamDescription
 from AccessGrid.AGNodeService import AGNodeServiceIW
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
-
+from AccessGrid.Descriptions import VenueState
 
 class EnterVenueException(Exception):
     pass
@@ -107,7 +109,8 @@ class VenueClient:
 
         self.capabilities = []
         self.nodeServiceUri = self.defaultNodeServiceUri
-        self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
+        if hosting.GetHostingImpl() == "SOAPpy":
+            self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
         self.homeVenue = None
         self.houseKeeper = Scheduler()
         self.provider = None
@@ -171,7 +174,7 @@ class VenueClient:
         self.venueState = None
         self.venueUri = None
         self.__venueProxy = None
-        self.privateId = None
+        #self.privateId = None
 
     def __CreatePersonalDataStore(self):
         """
@@ -277,7 +280,10 @@ class VenueClient:
         else:
             self.server = InsecureServer((self.app.GetHostname(), port))
 
-        vci = VenueClientI(self)
+        # VenueClient interface not fully defined yet.
+        #from AccessGrid.interfaces.VenueClient_interface import VenueClient as VenueClientI
+        #vci = VenueClientI(impl=self)
+        """
         uri = self.server.RegisterObject(vci, path='/VenueClient')
 
         if(self.profile != None):
@@ -304,6 +310,7 @@ class VenueClient:
             self.SetNodeUrl(self.server.FindURLForObject(self.ns))
             
         self.server.RunInThread()
+        """
 
 #FIXME: default node configuration needs to be stored in preferences,
 #       and retrieved from preferences here
@@ -350,7 +357,7 @@ class VenueClient:
                 self.heartBeatTimer.cancel()
 
             self.nextTimeout = self.__venueProxy.UpdateLifetime(
-                self.privateId,self.heartBeatTimeout)
+                self.profile.connectionId,self.heartBeatTimeout)
             log.debug("Next Heartbeat needed before: %d", self.nextTimeout)
             
             self.heartBeatTimer = threading.Timer(self.nextTimeout - 5.0,
@@ -359,7 +366,7 @@ class VenueClient:
                 
         except Exception, e:
             log.exception("Error sending heartbeat, reconnecting.")
-            self.__Reconnect()
+            #self.__Reconnect()
                 
     def __Reconnect(self):
     
@@ -705,31 +712,44 @@ class VenueClient:
             # Enter the venue
             #
             self.venueUri = URL
-            self.__venueProxy = VenueIW(URL, self.SOAPFaultHandler)
+            self.__venueProxy = VenueIW(URL, tracefile=sys.stdout)
 
             log.debug("EnterVenue: Invoke venue enter")
-            (venueState, self.privateId) = self.__venueProxy.Enter( self.profile )
+            self.profile.connectionId = self.__venueProxy.Enter( self.profile )
+            evtLocation = ('',-1)
+
+            a = ["state"]
+            venueStateDict = self.__venueProxy.GetProperty(a)
+            uniqueId = "" ; vname = "" ; description=""; uri = ""
+            for entry in venueStateDict.entries:
+                if entry.key == "venueid":
+                    uniqueId = entry.value
+                elif entry.key == "name":
+                    vname = entry.value
+                elif entry.key == "description":
+                    description = entry.value
+                elif entry.key == "uri":
+                    uri = entry.value
+                elif entry.key == "eventLocationStr":
+                    # convert back from string to tuple until we can
+                    #   pass tuples here
+                    evtLocation = entry.value.split(":")
+                    if len(evtLocation) > 1:
+                        evtLocation = (str(evtLocation[0]), int(evtLocation[1]))
+                    else:
+                        evtLocation = ('',-1)
+                elif entry.key == "clients":
+                    clients = entry.value
+                    for c in clients:
+                        print type(c), c
+            self.venueState = VenueState(uniqueId=uniqueId, name=vname, description=description, uri=uri, connections="", clients=[], data=[], eventLocation=evtLocation, textLocation="", applications=[], services=[])
 
             # Retreive stream descriptions
             if len(self.capabilities) > 0:
-                self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.privateId,
+                self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.profile.connectionId,
                                                                               self.capabilities)
 
-            # Retrieve the connection id from within the private id
-            # (when we break compatability, the server will likely pass
-            #  back the private id and connection id separately)
-            parts = self.privateId.split('_')
-            if len(parts) > 1:
-                # 2.3+ server, get connection id from private id
-                self.profile.connectionId = parts[1]
-            else:
-                # Older server, set the connection id to the venueclienturl
-                # (it's the only unique client identifier in the profile)
-                self.profile.connectionId = self.profile.venueClientURL
-
-            self.venueState = CreateVenueState(venueState)
             self.venueUri = URL
-            self.venueId = self.venueState.GetUniqueId()
                         
             #
             # Create the event client
@@ -759,18 +779,18 @@ class VenueClient:
 
             self.Heartbeat()
 
-            evtLocation = self.__venueProxy.GetEventServiceLocation()
+            #evtLocation = self.__venueProxy.GetEventServiceLocation()
                       
             # Create event client
             self.eventClient = EventClient(evtLocation, 
-                                           self.privateId,
+                                           self.profile.connectionId,
                                            self.venueState.GetUniqueId())
                                            
             for e in coherenceCallbacks.keys():
                 self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
                 
             self.eventClient.Start()
-            self.eventClient.Send("connect", self.privateId)                               
+            self.eventClient.Send("connect", self.profile.connectionId)                               
 
             # Create text client
             #  textLocation = self.__venueProxy.GetTextServiceLocation()
@@ -788,7 +808,9 @@ class VenueClient:
             #                                               self.privateId))
 
             # Get personaldatastore information
-            self.dataStoreUploadUrl = self.__venueProxy.GetUploadDescriptor()
+            #self.dataStoreUploadUrl = self.__venueProxy.GetUploadDescriptor()
+            # FIXME, ECO
+            self.dataStoreUploadUrl = None
         
             # Connect the venueclient to the text client
             #            self.textClient = TextClient(self.profile,
@@ -848,9 +870,13 @@ class VenueClient:
             self.__EnterVenue(URL)
             
             # Cache profiles from venue.
-            log.debug("Updating client profile cache.")
-            for client in self.venueState.clients.values():
-                self.UpdateProfileCache(client)
+            try:
+                log.debug("Updating client profile cache.")
+                clients = self.venueState.clients
+                for client in clients.values():
+                    self.UpdateProfileCache(client)
+            except Exception, e:
+                log.exception("Unable to update client profile cache.")
                 
             # Return a string of warnings that can be displayed to the user 
             if errorInNode:
@@ -889,7 +915,7 @@ class VenueClient:
         self.exitingLock.release()
 
         try:
-            self.__venueProxy.Exit( self.privateId )
+            self.__venueProxy.Exit( self.profile.connectionId )
             
         except Exception:
             log.exception("ExitVenue: ExitVenue exception")
