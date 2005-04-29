@@ -2,13 +2,14 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.180 2005-03-31 17:54:33 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.181 2005-04-29 19:32:18 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.180 2005-03-31 17:54:33 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.181 2005-04-29 19:32:18 eolson Exp $"
+
 
 # Standard stuff
 import sys
@@ -24,8 +25,11 @@ import csv
 from AccessGrid.Toolkit import Service
 from AccessGrid import Log
 from AccessGrid import Version
+from AccessGrid import hosting
 from AccessGrid.hosting import InsecureServer, SecureServer
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
+from AccessGrid.interfaces.VenueServer_interface import VenueServer as VenueServerI
+from AccessGrid.interfaces.Venue_interface import Venue as VenueI
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerI
 from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
@@ -240,7 +244,7 @@ class VenueServer(AuthorizationMixIn):
         # Add the event service
         self.eventService = EventService("Event Service",
                                          "asyncore based service for distributing events",
-                                         str(GUID()), "AsyncoreEvent", ('zuz.mcs.anl.gov', 8002))
+                                         str(GUID()), "AsyncoreEvent", ('', 8002))
         self.RegisterService(self.eventService.GetDescription())
         self.eventService.start()
                 
@@ -310,17 +314,19 @@ class VenueServer(AuthorizationMixIn):
         self.houseKeeper.StartAllTasks()
 
         # Create the Web Service interface
-        vsi = VenueServerI(self)
+        vsi = VenueServerI(impl=self, auth_method_name="authorize")
 
         if self.authorizationPolicy is None:
            log.info("Creating new authorization policy, non in config.")
            
-           self.authManager.AddActions(vsi._GetMethodActions())
+           if hosting.GetHostingImpl() == "SOAPpy":
+               self.authManager.AddActions(vsi._GetMethodActions())
            self.authManager.AddRoles(self.GetRequiredRoles())
-           # Default to giving administrators access to all actions.
-           # This is implicitly adding the action too
-           for action in vsi._GetMethodActions():
-              self.authManager.AddRoleToAction(action.GetName(),
+           if hosting.GetHostingImpl() == "SOAPpy":
+               # Default to giving administrators access to all actions.
+               # This is implicitly adding the action too
+               for action in vsi._GetMethodActions():
+                  self.authManager.AddRoleToAction(action.GetName(),
                                                Role.Administrators.GetName())
             
            # Get authorization policy.
@@ -350,8 +356,9 @@ class VenueServer(AuthorizationMixIn):
         # Then we create the VenueServer service
         venueServerUri = self.hostingEnvironment.RegisterObject(vsi, path='/VenueServer')
 
-        # Then we create an authorization interface and serve it
-        self.hostingEnvironment.RegisterObject(
+        if hosting.GetHostingImpl() == "SOAPpy":
+            # Then we create an authorization interface and serve it
+            self.hostingEnvironment.RegisterObject(
                                   AuthorizationManagerI(self.authManager),
                                   path='/VenueServer/Authorization')
 
@@ -403,7 +410,6 @@ class VenueServer(AuthorizationMixIn):
             *filename* The filename for the persistent store. It is
             currently a INI formatted file.
         """
-        return
     
         cp = ConfigParser.ConfigParser()
         cp.read(filename)
@@ -511,7 +517,7 @@ class VenueServer(AuthorizationMixIn):
                                       cl, sl, oid)
                 uri = self.AddVenue(vd, authPolicy)
                 vif = self.hostingEnvironment.FindObjectForURL(uri)
-                v = vif.impl
+                v = vif
 
                 # Deal with apps if there are any
                 try:
@@ -715,7 +721,7 @@ class VenueServer(AuthorizationMixIn):
         self.venues[oid] = venue
 
         # Create an interface
-        vi = VenueI(venue)
+        vi = VenueI(impl=venue, auth_method_name="authorize")
 
         if authPolicy is not None:
             venue.ImportAuthorizationPolicy(authPolicy)
@@ -725,7 +731,8 @@ class VenueServer(AuthorizationMixIn):
             log.info("Creating new auth policy for the venue.")
             
             # Get method actions
-            venue.authManager.AddActions(vi._GetMethodActions())
+            if hosting.GetHostingImpl() == "SOAPpy":
+                venue.authManager.AddActions(vi._GetMethodActions())
             venue.authManager.AddRoles(venue.GetRequiredRoles())
             venue.authManager.AddRoles(venue.authManager.GetDefaultRoles())
             venue._AddDefaultRolesToActions()
@@ -752,7 +759,8 @@ class VenueServer(AuthorizationMixIn):
         if(self.hostingEnvironment != None):
             self.hostingEnvironment.RegisterObject(vi,
                                                    path=PathFromURL(venue.uri))
-            self.hostingEnvironment.RegisterObject(AuthorizationManagerI(venue.authManager),
+            if hosting.GetHostingImpl() == "SOAPpy":
+                self.hostingEnvironment.RegisterObject(AuthorizationManagerI(venue.authManager),
                                                    path=PathFromURL(venue.uri)+"/Authorization")
 
         # END Critical Section
@@ -917,7 +925,8 @@ class VenueServer(AuthorizationMixIn):
         vaurl = self.MakeVenueURL(oid)+"/Authorization"
         vai = self.hostingEnvironment.FindObjectForURL(vaurl)
         self.hostingEnvironment.RegisterObject(vi, path=defaultPath)
-        self.hostingEnvironment.RegisterObject(vai, path=defaultAuthPath)
+        if vai != None:
+            self.hostingEnvironment.RegisterObject(vai, path=defaultAuthPath)
 
         # END Critical Section
         self.simpleLock.release()
@@ -1105,560 +1114,4 @@ class VenueServer(AuthorizationMixIn):
                             
     def GetServices(self):
         return self.services.values()
-        
-    
-class VenueServerI(SOAPInterface, AuthorizationIMixIn):
-    """
-    This is the SOAP interface to the venue server.
-    """
-    def __init__(self, impl):
-        SOAPInterface.__init__(self, impl)
-
-    def _authorize(self, *args, **kw):
-        """
-        The authorization callback. We should be able to implement this
-        just once and remove a bunch of the older code.
-        """
-        log.debug("Authorizing with %s, %s", args, *kw)
-
-        if not self.impl.servicePtr.GetOption("secure"):
-           return 1
-     
-        subject, action = self._GetContext()
-        
-        log.info("Authorizing action: %s for subject %s", action.GetName(),
-                 subject.GetName())
-
-        return self.impl.authManager.IsAuthorized(subject, action)
-
-    def Shutdown(self, secondsFromNow):
-        """
-        Interface to shutdown the Venue Server.
-
-        **Arguments:**
-            *secondsFromNow* How long from the time the call is
-            received until the server starts to shutdown.
-        **Raises:**
-        **Returns:**
-        """
-        log.debug("Calling Shutdown with seconds %d" % secondsFromNow)
-
-        self.impl.Shutdown()
-
-        log.debug("Shutdown complete.")
-
-    def Checkpoint(self):
-        """
-        Interface to checkpoint the Venue Server.
-
-        **Arguments:**
-        **Raises:**
-        **Returns:**
-        """
-        log.debug("Calling checkpoint")
-
-        val = self.impl.Checkpoint()
-
-        log.debug("Checkpoint complete.")
-        return val
-        
-    def AddVenue(self, venueDescStruct):
-        """
-        Inteface call for Adding a venue.
-
-        **Arguments:**
-
-            *Venue Description Struct* A description of the new
-            venue, currently an anonymous struct.
-
-        **Raises:**
-            *VenueServerException* When the venue description struct
-            isn't successfully converted to a real venue description
-            object and the venue isn't added.
-
-        **Returns:**
-            *Venue URI* Upon success a uri to the new venue is returned.
-        """
-        # Deserialize
-        venueDesc = CreateVenueDescription(venueDescStruct)
-
-        # The id should be server assigned.
-        venueDesc.id = None
-
-        # do the call
-        try:
-            venueUri = self.impl.AddVenue(venueDesc)
-            return venueUri
-        except:
-            log.exception("AddVenue: exception")
-            raise
-
-    def ModifyVenue(self, URL, venueDescStruct):
-        """
-        Interface for modifying an existing Venue.
-
-        **Arguments:**
-            *URL* The URL to the venue.
-
-            *Venue Description Struct* An anonymous struct that is the
-            new venue description.
-
-        **Raises:**
-            *InvalideVenueURL* When the URL isn't a valid venue.
-
-            *InvalidVenueDescription* If the Venue Description has a
-            different URL than the URL argument passed in.
-
-        """
-        # Check for argument
-        if URL == None:
-            raise InvalidVenueURL
-
-        # pull info out of the url
-        oid = IdFromURL(URL)
-
-        # Create a venue description
-        vd = CreateVenueDescription(venueDescStruct)
-        
-        # Make sure it's valid
-        if vd.uri != URL:
-            raise InvalidVenueDescription
-
-        # Lock and do the call
-        try:
-            self.impl.ModifyVenue(oid, vd)
-        except:
-            log.exception("ModifyVenue: exception")
-            raise
-
-    def RemoveVenue(self, URL):
-        """
-        Interface for removing a Venue.
-
-        **Arguments:**
-            *URL* The url to the venue to be removed.
-        """
-        oid = IdFromURL(URL)
-
-        try:
-            self.impl.RemoveVenue(oid)
-        except:
-            log.exception("RemoveVenue: exception")
-            raise
-
-    def GetVenues(self):
-        """
-        This is the interface to get a list of Venues from the Venue Server.
-
-        **Returns:**
-            *venue description list* A list of venues descriptions.
-        """
-        try:
-            vdl = self.impl.GetVenues()
-            return vdl
-        except:
-            log.exception("GetVenues: exception")
-            raise
-
-    def GetDefaultVenue(self):
-        """
-        Interface for getting the URL to the default venue.
-        """
-        try:
-            returnURL = self.impl.GetDefaultVenue()
-            return returnURL
-        except:
-            log.exception("GetDefaultVenues: exception")
-            raise
-
-    def SetDefaultVenue(self, URL):
-        """
-        Interface to set default venue.
-
-        **Arguments:**
-            *URL* The URL to the default venue.
-
-        **Raises:**
-
-        **Returns:**
-            *URL* the url of the default venue upon success.
-        """
-        try:
-            oid = IdFromURL(URL)
-            self.impl.SetDefaultVenue(oid)
-
-            return URL
-        except:
-            log.exception("SetDefaultVenue: exception")
-            raise
-
-    def AddAdministrator(self, subjStr):
-        """
-        LEGACY CALL: This is replace by GetAuthorizationManager.
-
-        Interface to add an administrator to the Venue Server.
-        
-        **Arguments:**
-        
-        *subjStr* The DN of the new administrator.
-        
-        **Raises:**
-        
-        **Returns:**
-        
-        *subjStr* The DN of the administrator added.
-        """
-        try:
-            xs = self.impl.authManager.AddSubjectToRole(subjStr,
-                                               Role.Administrators.GetName())
-            return xs
-        except:
-            log.exception("AddAdministrator: exception")
-            raise
-        
-    def RemoveAdministrator(self, string):
-        """
-        LEGACY CALL: This is replace by GetAuthorizationManager.
-
-        **Arguments:**
-        
-        *string* The Distinguished Name (DN) of the administrator
-        being removed.
-        
-        **Raises:**
-        
-        **Returns:**
-        
-        *string* The Distinguished Name (DN) of the administrator removed.
-        """
-        try:
-            xs = X509Subject.CreateSubjectFromString(string)
-            admins = self.impl.authManager.FindRole(
-               Role.Administrators.GetName())
-            admins.RemoveSubject(xs)
-        except:
-            log.exception("RemoveAdministrator: exception")
-            raise
-        
-    def GetAdministrators(self):
-        """
-        LEGACY CALL: This is replace by GetAuthorizationManager.
-
-        GetAdministrators returns a list of adminisitrators for this
-        VenueServer.
-        """
-        try:
-            adminRole = self.impl.authManager.FindRole(
-               Role.Administrators.GetName())
-            subjs = self.impl.authManager.GetSubjects(role=adminRole)
-            return subjs
-        except:
-            log.exception("GetAdministrators: exception")
-            raise
-
-    def SetStorageLocation(self, location):
-        """
-        Interface for setting the location of the data store.
-
-        **Arguments:**
-
-
-            *location* This is a path for the data store.
-
-        **Raises:**
-        **Returns:**
-            *location* The new location on success.
-        """
-        try:
-            self.impl.SetStorageLocation(location)
-        except:
-            log.exception("SetStorageLocation: exception")
-            raise
-
-    def GetStorageLocation(self):
-        """
-        Inteface for getting the current data store path.
-
-        **Arguments:**
-        **Raises:**
-        **Returns:**
-            *location* The path to the data store location.
-        """
-        try:
-            returnString = self.impl.GetStorageLocation()
-            return returnString
-        except:
-            log.exception("GetStorageLocation: exception")
-            raise
-
-    def SetAddressAllocationMethod(self, method):
-        """
-        Interface for setting the address allocation method for
-        multicast addresses (for now).
-
-        **Arguments:**
-
-            *method* An argument specifying either RANDOM or INTERVAL
-            allocation. RANDOM is a random address from the standard
-            random range. INTERVAL means a random address from a
-            specified range.
-
-        **Raises:**
-
-        **Returns:**
-        """
-        try:
-            self.impl.SetAddressAllocationMethod(method)
-        except:
-            log.exception("SetAddressAllocationMethod: exception")
-            raise
-
-    def GetAddressAllocationMethod(self):
-        """
-        Interface for getting the Address Allocation Method.
-
-        **Arguments:**
-        **Raises:**
-        **Returns:**
-            *method* The address allocation method configured, either
-            RANDOM or INTERVAL.
-        """
-        try:
-            returnValue = self.impl.GetAddressAllocationMethod()
-
-            return returnValue
-        except:
-            log.exception("GetAddressAllocationMethod: exception")
-            raise
-    
-    def SetEncryptAllMedia(self, value):
-        """
-        Interface for setting the flag to encrypt all media or turn it off.
-
-        **Arguments:**
-            *value* The flag, 1 turns encryption on, 0 turns encryption off.
-        **Raises:**
-        **Returns:**
-            *flag* the return value from SetEncryptAllMedia.
-        """
-        try:
-            returnValue = self.impl.SetEncryptAllMedia(value)
-
-            return returnValue
-        except:
-            log.exception("SetEncryptAllMedia: exception")
-            raise
-    
-    def GetEncryptAllMedia(self):
-        """
-        Interface to retrieve the value of the media encryption flag.
-
-        **Arguments:**
-        **Raises:**
-        **Returns:**
-        """
-        try:
-            returnValue = self.impl.GetEncryptAllMedia()
-
-            return returnValue
-        except:
-            log.exception("GetEncryptAllMedia: exception")
-            raise
-
-    def RegenerateEcryptionKeys(self):
-        """
-        Interface method to regenerate all encryption keys for all
-        venues on this server.
-        """
-        try:
-            self.impl.RegenerateEncryptionKeys()
-        except Exception:
-            log.exception("Failed to regenerate all encryption keys.")
-            raise
-            
-    def SetBaseAddress(self, address):
-        """
-        Interface for setting the base address for the allocation pool.
-
-        **Arguments:**
-            *address* The base address of the address pool to allocate from.
-        **Raises:**
-        **Returns:**
-        """
-        try:
-            self.impl.SetBaseAddress(address)
-        except:
-            log.exception("SetBaseAddress: exception")
-            raise
-
-    def GetBaseAddress(self):
-        """
-        Interface to retrieve the base address for the address allocation pool.
-
-        **Arguments:**
-        **Raises:**
-        **Returns:**
-            *base address* the base address of the address allocation pool.
-        """
-        try:
-            returnValue = self.impl.GetBaseAddress()
-
-            return returnValue
-        except:
-            log.exception("GetBaseAddress: exception")
-            raise
-
-    def SetAddressMask(self, mask):
-        """
-        Interface to set the network mask of the address allocation pool.
-
-        **Arguments:**
-            *mask*  The network mask for the address allocation pool.
-        **Raises:**
-        **Returns:**
-        """
-        try:
-            self.impl.SetAddressMask(mask)
-
-            return mask
-        except:
-            log.exception("SetAddressMask: exception")
-            raise
-
-    def GetAddressMask(self):
-        """
-        Interface to retrieve the address mask of the address allocation pool.
-
-        **Arguments:**
-        **Raises:**
-        **Returns:**
-            *mask* the network mask of the address allocation pool.
-        """
-
-        try:
-            returnValue = self.impl.GetAddressMask()
-
-            return returnValue
-        except:
-            log.exception("GetAddressMask: exception")
-            raise
-
-    def DumpDebugInfo(self,flag=None):
-        """
-        Dump debug info.  The 'flag' argument is not used now,
-        but could be used later to control the dump
-        """
-        self.impl.DumpDebugInfo(flag)
-
-    def RegisterService(self, serviceDescription):
-        """
-        Register a service with the venue server, this provides server wide
-        functionality. The two we're considering atm are event and text.
-        """
-        sd = CreateServiceDescription(serviceDescription)
-        return self.impl.RegisterService(sd)
-       
-    def UnregisterService(self, serviceDescription):
-        """
-        Unregister a service with the venue server, this provides server wide
-        functionality. The two we're considering atm are event and text.
-        """
-        sd = CreateServiceDescription(serviceDescription)
-        return self.impl.UnregisterService(sd)
-
-    def Subscribe(self, privId, event):
-       evt = CreateEvent(event)
-       return self.impl.Subscribe(privId, evt)
-    
-    def Unsubscribe(self, privId, event):
-       evt = CreateEvent(event)
-       return self.impl.Unsubscribe(privId, evt)
-        
-class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
-    """
-    """
-    def __init__(self, url=None):
-        SOAPIWrapper.__init__(self, url)
-
-    def Shutdown(self, secondsFromNow):
-        return self.proxy.Shutdown(secondsFromNow)
-
-    def Checkpoint(self):
-        return self.proxy.Checkpoint()
-
-    def AddVenue(self, venueDescription):
-        return self.proxy.AddVenue(venueDescription)
-
-    def ModifyVenue(self, url, venueDescription):
-        if url == None:
-            raise InvalidVenueURL
-
-        if venueDescription == None:
-            raise InvalidVenueDescription
-
-        return self.proxy.ModifyVenue(url, venueDescription)
-
-    def RemoveVenue(self, url):
-        return self.proxy.RemoveVenue(url)
-
-    def GetVenues(self):
-        vl = self.proxy.GetVenues()
-        rl = list()
-        for v in vl:
-            vd = CreateVenueDescription(v)
-            vd.SetURI(v.uri)
-            rl.append(vd)
-        return rl
-
-    def GetDefaultVenue(self):
-        return self.proxy.GetDefaultVenue()
-
-    def SetDefaultVenue(self, url):
-        return self.proxy.SetDefaultVenue(url)
-
-    def SetStorageLocation(self, location):
-        return self.proxy.SetStorageLocation(location)
-
-    def GetStorageLocation(self):
-        return self.proxy.GetStorageLocation()
-
-    def SetAddressAllocationMethod(self, method):
-        return self.proxy.SetAddressAllocationMethod(method)
-
-    def GetAddressAllocationMethod(self):
-        return self.proxy.GetAddressAllocationMethod()
-
-    def SetEncryptAllMedia(self, value):
-        return self.proxy.SetEncryptAllMedia(value)
-
-    def GetEncryptAllMedia(self):
-        return self.proxy.GetEncryptAllMedia()
-
-    def RegenerateEncryptionKeys(self):
-        return self.proxy.RegenerateEncryptionKeys()
-    
-    def SetBaseAddress(self, address):
-        return self.proxy.SetBaseAddress(address)
-
-    def GetBaseAddress(self):
-        return self.proxy.GetBaseAddress()
-
-    def SetAddressMask(self, mask):
-        return self.proxy.SetAddressMask(mask)
-
-    def GetAddressMask(self):
-        return self.proxy.GetAddressMask()
-    
-    def RegisterService(self, serviceDescription):
-       return self.proxy.RegisterService(serviceDescription)
-       
-    def UnregisterService(self, serviceDescription):
-       return self.proxy.UnregisterService(serviceDescription)
-    
-    def Subscribe(self, privId, event):
-       return self.proxy.Subscribe(privId, evt)
-    
-    def Unsubscribe(self, privId, event):
-       evt = CreateEvent(event)
-       return self.proxy.Unsubscribe(privId, evt)
 
