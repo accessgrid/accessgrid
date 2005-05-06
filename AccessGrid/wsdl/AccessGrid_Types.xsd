@@ -88,11 +88,11 @@
     <xs:complexType name="VenueDescription">
       <xs:sequence>
 	<xs:element name="id" type="xs:string"/>
-	<xs:element name="uri" type="xs:string"/>
+	<xs:element name="uri" type="xs:string" nillable="true"/>
 	<xs:element name="name" type="xs:string"/>
 	<xs:element name="description" type="xs:string"/>
 	<xs:element name="encryptMedia" type="xs:integer"/>
-	<xs:element name="encryptionKey" type="xs:string"/>
+	<xs:element name="encryptionKey" type="xs:string" nillable="true"/>
 	<xs:element name="connections" type="tns:ConnectionList"/>
         <xs:element name="streams" type="tns:StreamList"/>
       </xs:sequence>
@@ -122,11 +122,60 @@
       </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="VenueState">
+      <xs:sequence>
+        <xs:element name="uniqueId" type="xs:string"/>
+        <xs:element name="name" type="xs:string"/>
+        <xs:element name="description" type="xs:string"/>
+        <xs:element name="uri" type="xs:string"/>
+        <xs:element name="eventLocation" nillable="true" type="xs:string"/>
+        <xs:element name="textLocation" nillable="true" type="xs:string"/>
+        <xs:element name="services" minOccurs="0" maxOccurs="unbounded" type="tns:ServiceDescription"/>
+        <xs:element name="connections" minOccurs="0" maxOccurs="unbounded" type="tns:ConnectionDescription"/>
+        <xs:element name="clients" minOccurs="0" maxOccurs="unbounded" type="tns:ClientProfile"/>
+        <xs:element name="data" minOccurs="0" maxOccurs="unbounded" type="tns:DataDescription"/>
+        <xs:element name="applications" minOccurs="0" maxOccurs="unbounded" type="tns:ApplicationDescription"/>
+      </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="Capability">
     </xs:complexType>
 
     <xs:complexType name="ApplicationDescription">
+      <xs:sequence>
+        <xs:element name="id" type="xs:string"/>
+        <xs:element name="name" type="xs:string"/>
+        <xs:element name="description" type="xs:string"/>
+        <xs:element name="uri" type="xs:string"/>
+        <xs:element name="mimeType" type="xs:string"/>
+      </xs:sequence>
     </xs:complexType>
+
+    <xs:complexType name="ServiceDescription">
+      <xs:sequence>
+        <xs:element name="id" type="xs:string"/>
+        <xs:element name="name" type="xs:string"/>
+        <xs:element name="description" type="xs:string"/>
+        <xs:element name="uri" type="xs:string"/>
+        <xs:element name="mimeType" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DataDescription">
+      <xs:sequence>
+        <xs:element name="id" type="xs:string"/>
+        <xs:element name="name" type="xs:string"/>
+        <xs:element name="description" type="xs:string"/>
+        <xs:element name="uri" type="xs:string"/>
+        <xs:element name="status" type="xs:string"/>
+        <xs:element name="size" type="xs:integer"/>
+        <xs:element name="checksum" type="xs:string"/>
+        <xs:element name="owner" type="xs:string"/>
+        <xs:element name="type" type="xs:string"/>
+        <xs:element name="lastModified" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+
 
     <xs:complexType name="AuthorizationPolicy">
     </xs:complexType>
