@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.207 2005-04-29 19:33:48 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.208 2005-05-06 15:58:11 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.207 2005-04-29 19:33:48 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.208 2005-05-06 15:58:11 eolson Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -716,6 +716,7 @@ class VenueClient:
 
             log.debug("EnterVenue: Invoke venue enter")
             self.profile.connectionId = self.__venueProxy.Enter( self.profile )
+            """
             evtLocation = ('',-1)
 
             a = ["state"]
@@ -743,6 +744,14 @@ class VenueClient:
                     for c in clients:
                         print type(c), c
             self.venueState = VenueState(uniqueId=uniqueId, name=vname, description=description, uri=uri, connections="", clients=[], data=[], eventLocation=evtLocation, textLocation="", applications=[], services=[])
+            """
+            state = self.__venueProxy.GetState()
+            # tuple of two different types doesn't serialize easily.
+            evtLocation = state.eventLocation.split(":")
+            if len(evtLocation) > 1:
+                evtLocation = (str(evtLocation[0]), int(evtLocation[1]))
+            # next line needed needed until zsi can handle dictionaries.
+            self.venueState = VenueState(uniqueId=state.uniqueId, name=state.name, description=state.description, uri=state.uri, connections=state.connections, clients=state.clients, data=state.data, eventLocation=evtLocation, textLocation=state.textLocation, applications=state.applications, services=state.services)
 
             # Retreive stream descriptions
             if len(self.capabilities) > 0:
