@@ -16,16 +16,25 @@ command = "wsdl2py -f %s -e -o %s -t AccessGrid_Types --simple-naming -m AccessG
 print "* ", command
 os.system(command)
 
-command = "wsdl2py -f %s -e -o %s -t AG_VenueServer_Types --simple-naming --clientClassSuffix=IW -m AccessGrid.wsdl.SchemaToPyTypeMap" % ( os.path.join(srcPath, "VenueServerBinding.wsdl"),dstPath)
-print "* ", command
-os.system(command)
-command = "wsdl2dispatch -f %s -e -o %s -t AG_VenueServer_Types --simple-naming" %  ( os.path.join(srcPath, "VenueServerBinding.wsdl"), dstPath)
-print "* ", command
-os.system(command)
-command = "wsdl2py -f %s -e -o %s -t AG_Venue_Types --simple-naming --clientClassSuffix=IW -m AccessGrid.wsdl.SchemaToPyTypeMap" %  ( os.path.join(srcPath, "VenueBinding.wsdl"), dstPath )
-print "* ", command
-os.system(command)
-command = "wsdl2dispatch -f %s -e -o %s -t AG_Venue_Types --simple-naming" %   ( os.path.join(srcPath, "VenueBinding.wsdl"), dstPath )
-print "* ", command
-os.system(command)
+wsdlList =  [
+            [ 'AG_VenueServer_Types' , 'VenueServerBinding.wsdl' ],
+            [ 'AG_Venue_Types', 'VenueBinding.wsdl' ],
+            [ 'AG_ServiceManager_Types', 'ServiceManagerBinding.wsdl' ],
+            ]
 
+
+
+def Generate(typesModule,wsdlFile,dstPath):
+    command = "wsdl2py -f %s -e -o %s -t %s --simple-naming --clientClassSuffix=IW -m AccessGrid.wsdl.SchemaToPyTypeMap" % ( wsdlFile,
+                    dstPath,
+                    typesMod)
+    print "* ", command
+    os.system(command)
+    
+    command = "wsdl2dispatch -f %s -e -o %s -t %s --simple-naming -m AccessGrid.wsdl.SchemaToPyTypeMap" %  ( wsdlFile, dstPath,typesMod)
+    print "* ", command
+    os.system(command)
+
+
+for typesMod,wsdlFile in wsdlList:
+    Generate(typesMod,os.path.join(srcPath,wsdlFile),dstPath)
