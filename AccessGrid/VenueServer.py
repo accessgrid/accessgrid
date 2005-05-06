@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.181 2005-04-29 19:32:18 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.182 2005-05-06 15:52:19 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.181 2005-04-29 19:32:18 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.182 2005-05-06 15:52:19 eolson Exp $"
 
 
 # Standard stuff
@@ -244,7 +244,7 @@ class VenueServer(AuthorizationMixIn):
         # Add the event service
         self.eventService = EventService("Event Service",
                                          "asyncore based service for distributing events",
-                                         str(GUID()), "AsyncoreEvent", ('', 8002))
+                                         str(GUID()), "AsyncoreEvent", (self.hostname, 8002))
         self.RegisterService(self.eventService.GetDescription())
         self.eventService.start()
                 
