@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.73 2005-01-12 20:41:59 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.74 2005-05-06 15:55:21 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.73 2005-01-12 20:41:59 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.74 2005-05-06 15:55:21 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -437,9 +437,9 @@ class AppDataDescription:
         self.value = value
     
 class VenueState:
-    def __init__( self, uniqueId, name, description, uri, connections,
-                  clients, data, eventLocation, textLocation, applications,
-                  services):
+    def __init__( self, uniqueId=None, name=None, description=None, uri=None, connections=[],
+                  clients=[], data=[], eventLocation=None, textLocation=None, applications=[],
+                  services=[]):
         self.uniqueId = uniqueId
         self.name = name
         self.description = description
@@ -454,20 +454,25 @@ class VenueState:
         self.applications = dict()
         self.services = dict()
         
-        for connection in connections:
-            self.connections[connection.uri] = connection
-        for client in clients:
-            # Pre-2.3 server compatability code
-            if not client.connectionId:
-                client.connectionId = client.venueClientURL
+        if connections != None:
+            for connection in connections:
+                self.connections[connection.uri] = connection
+        if clients != None:
+            for client in clients:
+                # Pre-2.3 server compatability code
+                if not client.connectionId:
+                    client.connectionId = client.venueClientURL
 
-            self.clients[client.connectionId] = client
-        for datum in data:
-            self.data[datum.id] = datum
-        for app in applications:
-            self.applications[app.uri] = app
-        for service in services:
-            self.services[service.id] = service
+                self.clients[client.connectionId] = client
+        if data != None:
+            for datum in data:
+                self.data[datum.id] = datum
+        if applications != None:
+            for app in applications:
+                self.applications[app.uri] = app
+        if services != None:
+            for service in services:
+                self.services[service.id] = service
     def SetUniqueId(self, uniqueId):
         self.uniqueId = uniqueId
     def GetUniqueId(self):
