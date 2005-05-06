@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.208 2005-05-06 15:58:11 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.209 2005-05-06 19:43:29 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.208 2005-05-06 15:58:11 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.209 2005-05-06 19:43:29 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -52,6 +52,9 @@ from AccessGrid.Descriptions import CreateStreamDescription
 from AccessGrid.AGNodeService import AGNodeServiceIW
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 from AccessGrid.Descriptions import VenueState
+
+from AccessGrid.Jabber.JabberClient import JabberClient
+
 
 class EnterVenueException(Exception):
     pass
@@ -163,6 +166,10 @@ class VenueClient:
         self.profileCachePath = os.path.join(self.userConf.GetConfigDir(),
                                              self.profileCachePrefix)
         self.cache = ClientProfileCache(self.profileCachePath)
+        
+        # Jabber chat client
+        self.jabber = JabberClient("jabber.dsd.lbl.gov", 5223)
+
 
     ##########################################################################
     #
@@ -716,6 +723,7 @@ class VenueClient:
 
             log.debug("EnterVenue: Invoke venue enter")
             self.profile.connectionId = self.__venueProxy.Enter( self.profile )
+
             """
             evtLocation = ('',-1)
 
@@ -800,6 +808,14 @@ class VenueClient:
                 
             self.eventClient.Start()
             self.eventClient.Send("connect", self.profile.connectionId)                               
+
+            # Create the jabber text client
+            currentRoom = venueState.name.replace(" ", "-")
+            self.jabber.SetChatRoom(currentRoom)
+            log.info("Entering %s(%s) ..." %
+                     (venueState.name, self.jabber.GetChatRoom()))
+            self.jabber.sendPresence('available')
+            
 
             # Create text client
             #  textLocation = self.__venueProxy.GetTextServiceLocation()
@@ -951,6 +967,10 @@ class VenueClient:
         #         except:
         #             log.exception("ExitVenue: On text client exiting")
 
+        if self.jabber.GetChatRoom():
+            self.jabber.sendPresence('unavailable')
+        self.jabber.SetChatRoom("")
+        
         self.__InitVenueData()
         self.isInVenue = 0
         self.exitingLock.acquire()
@@ -1096,6 +1116,11 @@ class VenueClient:
              
         if self.dataStore:
             self.dataStore.Shutdown()
+
+        # Close the jabber connection properly
+        log.debug("------->Closing the jabber server...")
+        if self.jabber:
+            self.jabber.disconnect()
 
     def UpdateProfileCache(self, profile):
         try:

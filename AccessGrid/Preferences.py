@@ -586,6 +586,17 @@ class ProfilePanel(wxPanel):
         self.emailText = wxStaticText(self, -1, "Email:")
         self.emailCtrl = wxTextCtrl(self, -1, "",
                                     validator = TextValidator("Email"))
+
+        self.jabberDummyText = wxStaticText(self, -1, "")
+        self.jabberCheck = wxCheckBox(self, -1, "Create a new Jabber account",
+                                      style=wxALIGN_LEFT)
+        self.jabberIdText = wxStaticText(self, -1, "Jabber Nickname:", style=wxALIGN_LEFT)
+        self.jabberIdCtrl = wxTextCtrl(self, -1, "",
+                                   validator = TextValidator("JabberId"))
+        self.jabberPwdText = wxStaticText(self, -1, "Jabber Password:", style=wxALIGN_LEFT)
+        self.jabberPwdCtrl = wxTextCtrl(self, -1, style = wxTE_PASSWORD,
+                                   validator = TextValidator("Password"))
+        
         self.phoneNumberText = wxStaticText(self, -1, "Phone Number:")
         self.phoneNumberCtrl = wxTextCtrl(self, -1, "")
         self.locationText = wxStaticText(self, -1, "Location:")
@@ -609,6 +620,9 @@ class ProfilePanel(wxPanel):
             self.nameCtrl.SetEditable(false)
             self.emailCtrl.SetEditable(false)
             self.phoneNumberCtrl.SetEditable(false)
+            self.jabberCheck.Disable()
+            self.jabberIdCtrl.SetEditable(false)
+            self.jabberPwdCtrl.SetEditable(false)
             self.locationCtrl.SetEditable(false)
             self.homeVenueCtrl.SetEditable(false)
             self.profileTypeBox.SetEditable(false)
@@ -617,6 +631,9 @@ class ProfilePanel(wxPanel):
             self.nameCtrl.SetEditable(true)
             self.emailCtrl.SetEditable(true)
             self.phoneNumberCtrl.SetEditable(true)
+            self.jabberCheck.Enable(true)
+            self.jabberIdCtrl.SetEditable(true)
+            self.jabberPwdCtrl.SetEditable(true)
             self.locationCtrl.SetEditable(true)
             self.homeVenueCtrl.SetEditable(true)
             self.profileTypeBox.SetEditable(true)
@@ -629,6 +646,12 @@ class ProfilePanel(wxPanel):
         self.gridSizer.Add(self.nameCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.emailText, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.emailCtrl, 0, wxEXPAND, 0)
+        self.gridSizer.Add(self.jabberDummyText, 0)
+        self.gridSizer.Add(self.jabberCheck, 0, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.jabberIdText, 0, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.jabberIdCtrl, 2, wxEXPAND, 0)
+        self.gridSizer.Add(self.jabberPwdText, 0, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.jabberPwdCtrl, 2, wxEXPAND, 0)
         self.gridSizer.Add(self.phoneNumberText, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.phoneNumberCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.locationText, 0, wxALIGN_LEFT, 0)
@@ -653,6 +676,8 @@ class ProfilePanel(wxPanel):
             self.profile.SetName(self.nameCtrl.GetValue())
             self.profile.SetEmail(self.emailCtrl.GetValue())
             self.profile.SetPhoneNumber(self.phoneNumberCtrl.GetValue())
+            self.profile.SetJabberId(self.jabberIdCtrl.GetValue())
+            self.profile.SetJabberPassword(self.jabberPwdCtrl.GetValue())
             self.profile.SetLocation(self.locationCtrl.GetValue())
             self.profile.SetHomeVenue(self.homeVenueCtrl.GetValue())
             self.profile.SetProfileType(self.profileTypeBox.GetValue())
@@ -682,8 +707,21 @@ class ProfilePanel(wxPanel):
             self.profileTypeBox.SetSelection(0)
         else:
             self.profileTypeBox.SetSelection(1)
+
+        self.jabberIdCtrl.SetValue(self.profile.GetJabberId())
+        self.jabberPwdCtrl.SetValue(self.profile.GetJabberPassword())
+
         self.__SetEditable(true)
         log.debug("ProfileDialog.SetProfile: Set profile information successfully in dialog")
+
+        new = 1
+        
+        if not new:
+            self.jabberCheck.Disable()
+            self.jabberIdText.Disable()
+            self.jabberIdCtrl.Disable()
+            self.jabberPwdText.Disable()
+            self.jabberPwdCtrl.Disable()
 
 class LoggingPanel(wxPanel):
     def __init__(self, parent, id, preferences):

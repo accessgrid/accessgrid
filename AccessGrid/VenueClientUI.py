@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.81 2005-02-23 19:32:39 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.82 2005-05-06 19:43:29 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.81 2005-02-23 19:32:39 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.82 2005-05-06 19:43:29 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -33,6 +33,7 @@ from AccessGrid import Log
 log = Log.GetLogger(Log.VenueClientUI)
 Log.SetDefaultLevel(Log.VenueClientUI, Log.WARN)
 
+
 from AccessGrid import icons
 from AccessGrid import Toolkit
 from AccessGrid.Platform import IsWindows, IsOSX, Config
@@ -51,7 +52,8 @@ from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError
 from AccessGrid.VenueClient import DisconnectError
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
-#from AccessGrid.Security.wxgui.CertificateManagerWXGUI import CertificateManagerWXGUI
+
+from AccessGrid.Jabber.JabberClient import JabberClient
 
 try:
     import win32api
@@ -184,12 +186,38 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # Check if profile is created then open venue client
         #
         profile = self.venueClient.GetPreferences().GetProfile()
+
+        self.newJabberID = False
         if profile.IsDefault():  # not your profile
             log.debug("the profile is the default profile - open profile dialog")
             self.__OpenProfileDialog()
         else:
             self.__OpenVenueClient()
-            
+        
+        jabber = self.venueClient.jabber
+
+        while True:
+            if self.newJabberID:
+                ## Set the user information
+                jabber.setUserInfo(profile.name, profile.email,
+                                   profile.jabberId, profile.jabberPwd, 'AG')
+                ## Register the user in the jabber server
+                jabber.register()
+                if jabber.errorCode:
+                    self.__ShowErrorMessage(jabber, 'register')
+                    self.__OpenProfileDialog()
+                else:
+                    jabber.login()
+            else:
+                jabber.setUserInfo(profile.name, profile.email, profile.jabberId,
+                                   profile.jabberPwd, 'AG')
+                jabber.login()
+                if jabber.errorCode:
+                    self.__ShowErrorMessage(jabber, 'login')
+                    self.__OpenProfileDialog()
+                else:
+                    break
+        
         self.nodeManagementFrame = None
 
         # Help Doc locations
@@ -225,6 +253,21 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     #
     # Private Methods
 
+    def __ShowErrorMessage(self, jabber, type):
+        if type == 'login':
+            title = 'Login Error'
+        elif type == 'register':
+            title = 'Registration Error'
+        else:
+            title = 'Error'
+
+        if jabber.errors.has_key(jabber.errorCode):
+            msg = jabber.errors[jabber.errorCode]
+        else:
+            msg = jabber.errorCode + ": "+ jabber.errorMsg
+
+        MessageDialog(self, msg, title, style = wxOK|wxICON_ERROR)
+
     def __OpenProfileDialog(self):
         """
         This method opens a profile dialog, in which the user can fill in
@@ -235,6 +278,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         profileDialog.SetProfile(p.GetProfile())
         
         if (profileDialog.ShowModal() == wxID_OK):
+            self.newJabberID = profileDialog.jabberCheck.GetValue()
             profile = profileDialog.GetNewProfile()
             
             # Change profile based on values filled in to the profile dialog
@@ -504,8 +548,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.textOutput = wxTextCtrl(self.textOutputWindow, wxNewId(), "",
                                      style= wxTE_MULTILINE | wxTE_READONLY |
                                      wxTE_RICH|wxTE_AUTO_URL)
-        self.textClientPanel = TextClientPanel(self.textInputWindow, -1,
-                                               self.textOutput, self)
+      
+        self.textClientPanel = JabberClientPanel(self.textInputWindow, -1,
+                                                 self.textOutput, self)
+        #self.textClientPanel = TextClientPanel(self.textInputWindow, -1,
+        #                                       self.textOutput, self)
                
         self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT)
         self.contentListPanel = ContentListPanel(self)
@@ -3430,7 +3477,7 @@ class ContentListPanel(wxPanel):
 
     def SetDropTarget(self,dropTarget):
         self.tree.SetDropTarget(dropTarget)
- 
+
 #########################################################################
 #
 # Text Client Panel
@@ -3653,6 +3700,253 @@ class TextClientPanel(wxPanel):
 
     def GetText(self):
         return self.textOutput.GetValue()
+
+
+################################################################################
+
+class JabberClientPanel(wxPanel):
+    
+    ID_BUTTON = wxNewId()
+    client =''
+
+    def __init__(self, parent, id, textOutputCtrl, app):
+        wxPanel.__init__(self, parent, id)
+
+        self.parent = parent
+        self.textOutput = textOutputCtrl
+        self.app = app
+  
+        self.display = wxButton(self, self.ID_BUTTON, "Display",
+                                style = wxBU_EXACTFIT)
+        self.textInputId = wxNewId()
+        self.textInput = wxTextCtrl(self, self.textInputId, "",
+                                    size = wxSize(1000, 25),
+                                    style= wxTE_MULTILINE)
+
+        self.__SetProperties()
+        self.__DoLayout()
+
+        EVT_TEXT_URL(self.textOutput, self.textOutput.GetId(), self.OnUrl)
+        EVT_CHAR(self.textOutput, self.ChangeTextWindow)
+        EVT_CHAR(self.textInput, self.TestEnter) 
+        EVT_BUTTON(self, self.ID_BUTTON, self.LocalInput)
+      
+        self.Show(true)
+
+        self.app.venueClient.jabber.SetPanel(self)
+        
+        ## Connecting to LBL Jabber Server
+        ##print "Connecting to LBL Jabber Server ..."
+        # @dkg: uinfo = agclient.UserInfo('maddytest','enter123')
+        # @dkg: self.client = agclient.AGClient('jabber.dsd.lbl.gov', uinfo)
+        # @dkg: self.__currentRoom = "lobby@conference.localhost"
+        #self.client = AGClient()
+        #self.client.agPanel = self
+        #self.client.connect('maddytest', 'enter123', 'AG')
+        
+        ## Set the current room as Venue Server Lobby
+        #self.currentRoom = 'VenueServerLobby@conference.localhost'
+        #self.user = 'LBNL'
+
+        ## Log into AG Venue Server Lobby chat room by default
+        ##self.client.doCmd("/presence %s/%s" % (self.currentRoom, self.user))
+
+    def __SetProperties(self):
+        '''
+        Sets UI properties.
+        '''
+        self.SetSize((375, 225))
+        
+    def __DoLayout(self):
+        '''
+        Handles UI layout.
+        '''
+        TextSizer = wxBoxSizer(wxVERTICAL)
+        box = wxBoxSizer(wxHORIZONTAL)
+        box.Add(self.textInput, 1, wxALIGN_CENTER | wxEXPAND | wxALL, 2)
+        box.Add(self.display, 0, wxALIGN_CENTER |wxALL, 2)
+        
+        TextSizer.Add(box, 1, wxEXPAND|wxALIGN_CENTER)
+        self.SetAutoLayout(1)
+        self.SetSizer(TextSizer)
+        self.Layout()
+
+    def __OutputText(self, name, message):
+        '''
+        Prints received text in the text chat.
+        **Arguments**
+        *name* Statement to put in front of message (for example; "You say,").
+        *message* The actual message.
+        '''
+        
+        # Event message
+        if name == None:
+            # Add time to event message
+            dateAndTime = strftime("%a, %d %b %Y, %H:%M:%S", localtime() )
+            message = message + " ("+dateAndTime+")" 
+
+            # Events are coloured blue
+            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLUE))
+            self.textOutput.AppendText(message+'\n')
+            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
+
+        elif name == "enter":
+            # Descriptions are coloured black
+            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
+            self.textOutput.AppendText(message+'\n')
+        # Someone is writing a message
+        else:
+            # Set names bold
+            pointSize = wxDEFAULT
+
+            # Fix for osx
+            #if IsOSX():
+            #    pointSize = 12
+                
+            f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD)
+            textAttr = wxTextAttr(wxBLACK)
+            textAttr.SetFont(f)
+            self.textOutput.SetDefaultStyle(textAttr)
+            self.textOutput.AppendText(name)
+          
+            # Set text normal
+            f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxNORMAL)
+            textAttr = wxTextAttr(wxBLACK)
+            textAttr.SetFont(f)
+            self.textOutput.SetDefaultStyle(textAttr)
+            self.textOutput.AppendText('\"' + message+'\"\n')
+
+        #if IsWindows():
+            # Scrolling is not correct on windows when I use
+            # wxTE_RICH flag in text output window.
+            self.SetRightScroll()
+
+    def OutputText(self, name, message):
+        '''
+        Print received text in text chat.
+        
+        **Arguments**
+        *name* Statement to put in front of message (for example; "You say,").
+        *message* The actual message.
+        '''
+        wxCallAfter(self.__OutputText, name, message)
+        
+    def LocalInput(self, event):
+        '''
+        User input
+        '''
+        try:
+            text = self.textInput.GetValue()
+            sent = self.app.venueClient.jabber.sendMessage(text)
+            self.textInput.Clear()
+            self.textInput.SetFocus()
+            if not sent:
+                text = "You are not in a venue"
+                title = "Error"
+                MessageDialog(self, text, title, style = wxOK|wxICON_ERROR)
+        except Exception, e:
+            self.textInput.Clear()
+            log.exception(e)
+            text = "Could not send text message successfully"
+            title = "Notification"
+            log.error(text)
+            MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
+     
+    def OnCloseWindow(self):
+        '''
+        Perform necessary cleanup before shutting down the window.
+        '''
+        log.debug("JabberClientPanel.LocalInput:: Destroy chat client")
+        AGClient.disconnect()
+        self.Destroy()
+
+    def TestEnter(self, event):
+        '''
+        Check to see what keys are pressed down when enter button is pressed.
+        If cltl or shift are held down, ignore the event; the enter will then just
+        switch rows in the text input field instead of sending the event.
+        '''
+        key = event.GetKeyCode()
+        shiftKey = event.ShiftDown()
+        ctrlKey = event.ControlDown()
+
+        # If enter key is pressed, send message to
+        # text output field
+        if key == WXK_RETURN:
+            # If shift or ctrl key is pressed, ignore
+            # the event and switch line in the text input
+            # field.
+            if shiftKey or ctrlKey:
+                event.Skip()
+            else:
+                self.LocalInput(None)
+        else:
+            event.Skip()
+            return
+
+    def OnUrl(self, event):
+        '''
+        If a url is pressed in the text chat, this method is called to
+        bring up correct web site.
+        '''
+        start = event.GetURLStart()
+        end = event.GetURLEnd()
+        url = self.textOutput.GetRange(start, end)
+        
+        self.app.OpenURL(url)
+      
+    def ChangeTextWindow(self, event):
+        '''
+        If user tries to print in text output field, this method
+        changes focus to text input field to make it clear for
+        users where to write messages.
+        '''
+        key = event.GetKeyCode()
+        ctrlKey = event.ControlDown()
+       
+        # If ctrl key is pressed, do not enter text
+        # automatically into the text output field.
+        if ctrlKey:
+            event.Skip()
+            return
+        
+        self.textInput.SetFocus()
+        if(44 < key < 255) and not ctrlKey:
+            self.textInput.AppendText(chr(key))
+
+    def SetRightScroll(self):
+        '''
+        Scrolls to right position in text output field 
+        '''
+        # Added due to wxPython bug. The wxTextCtrl doesn't
+        # scroll properly when the wxTE_AUTO_URL flag is set. 
+        #pos = self.textOutput.GetInsertionPoint()
+        #self.textOutput.ShowPosition(pos - 1)
+        self.textOutput.ScrollLines(-1)
+                                            
+    def ClearTextWidgets(self):
+        '''
+        Clears text widgets.
+        '''
+        self.textOutput.Clear()
+        self.textInput.Clear()
+
+    def GetText(self):
+        return self.textOutput.GetValue()
+
+    def messageCB(self, msg):
+        """Called when a message is recieved"""
+        if msg.getBody(): ## Dont show blank messages ##
+#            print '<--' + str(msg.getFrom()) + '> ' + msg.getBody()
+            OutputText("i said:", msg.getBody())
+
+
+        self.client.send("/presence %s/%s unavailable" % (self.currentRoom, self.user))
+        self.currentRoom = venue + "@conference.localhost"
+        self.client.send("/presence %s/%s" % (self.currentRoom, self.user))
+        
+               
+
                
 ################################################################################
 #
@@ -3855,6 +4149,16 @@ class ProfileDialog(wxDialog):
         else:
             # Don't use a validator
             self.emailCtrl = wxTextCtrl(self, -1, "")
+
+        self.jabberDummyText = wxStaticText(self, -1, "")
+        self.jabberCheck = wxCheckBox(self, -1, "Create a new Jabber account",
+                                      style=wxALIGN_LEFT)
+        self.jabberIdText = wxStaticText(self, -1, "Jabber Nickname:", style=wxALIGN_LEFT)
+        self.jabberIdCtrl = wxTextCtrl(self, -1, "",
+                                   validator = TextValidator("JabberId"))
+        self.jabberPwdText = wxStaticText(self, -1, "Jabber Password:", style=wxALIGN_LEFT)
+        self.jabberPwdCtrl = wxTextCtrl(self, -1, style = wxTE_PASSWORD,
+                                   validator = TextValidator("Password"))
         self.phoneNumberText = wxStaticText(self, -1, "Phone Number:",
                                             style=wxALIGN_LEFT)
         self.phoneNumberCtrl = wxTextCtrl(self, -1, "")
@@ -3886,6 +4190,9 @@ class ProfileDialog(wxDialog):
             self.nameCtrl.SetEditable(false)
             self.emailCtrl.SetEditable(false)
             self.phoneNumberCtrl.SetEditable(false)
+            self.jabberCheck.Disable()
+            self.jabberIdCtrl.SetEditable(false)
+            self.jabberPwdCtrl.SetEditable(false)
             self.locationCtrl.SetEditable(false)
             self.homeVenueCtrl.SetEditable(false)
             self.profileTypeBox.SetEditable(false)
@@ -3894,6 +4201,9 @@ class ProfileDialog(wxDialog):
             self.nameCtrl.SetEditable(true)
             self.emailCtrl.SetEditable(true)
             self.phoneNumberCtrl.SetEditable(true)
+            self.jabberCheck.Enable(true)
+            self.jabberIdCtrl.SetEditable(true)
+            self.jabberPwdCtrl.SetEditable(true)
             self.locationCtrl.SetEditable(true)
             self.homeVenueCtrl.SetEditable(true)
             self.profileTypeBox.SetEditable(true)
@@ -3909,6 +4219,14 @@ class ProfileDialog(wxDialog):
         self.gridSizer.Add(self.nameCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.emailText, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.emailCtrl, 0, wxEXPAND, 0)
+
+        self.gridSizer.Add(self.jabberDummyText, 0)
+        self.gridSizer.Add(self.jabberCheck, 0, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.jabberIdText, 0, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.jabberIdCtrl, 2, wxEXPAND, 0)
+        self.gridSizer.Add(self.jabberPwdText, 0, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.jabberPwdCtrl, 2, wxEXPAND, 0)
+        
         self.gridSizer.Add(self.phoneNumberText, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.phoneNumberCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.locationText, 0, wxALIGN_LEFT, 0)
@@ -3946,6 +4264,10 @@ class ProfileDialog(wxDialog):
         if(self.profile != None):
             self.profile.SetName(self.nameCtrl.GetValue())
             self.profile.SetEmail(self.emailCtrl.GetValue())
+
+            self.profile.SetJabberId(self.jabberIdCtrl.GetValue())
+            self.profile.SetJabberPassword(self.jabberPwdCtrl.GetValue())
+            
             self.profile.SetPhoneNumber(self.phoneNumberCtrl.GetValue())
             self.profile.SetLocation(self.locationCtrl.GetValue())
             self.profile.SetHomeVenue(self.homeVenueCtrl.GetValue())
@@ -3974,9 +4296,22 @@ class ProfileDialog(wxDialog):
             self.profileTypeBox.SetSelection(0)
         else:
             self.profileTypeBox.SetSelection(1)
+
+        self.jabberIdCtrl.SetValue(self.profile.GetJabberId())
+        self.jabberPwdCtrl.SetValue(self.profile.GetJabberPassword())
+
         self.__SetEditable(true)
         log.debug("ProfileDialog.SetProfile: Set profile information successfully in dialog")
 
+        new = 1
+        
+        if not new:
+            self.jabberCheck.Disable()
+            self.jabberIdText.Disable()
+            self.jabberIdCtrl.Disable()
+            self.jabberPwdText.Disable()
+            self.jabberPwdCtrl.Disable()
+        
     def SetDescription(self, item):
         log.debug("ProfileDialog.SetDescription: Set description in dialog name:%s, email:%s, phone:%s, location:%s home:%s, dn:%s"
                    %(item.name, item.email,item.phoneNumber,item.location,
@@ -3998,7 +4333,8 @@ class ProfileDialog(wxDialog):
         self.locationCtrl.SetValue(item.location)
         self.homeVenueCtrl.SetValue(item.homeVenue)
         self.dnTextCtrl.SetValue(item.distinguishedName)
-
+        self.jabberIdCtrl.SetValue(item.jabberId)
+               
         if(item.GetProfileType() == 'user'):
             self.profileTypeBox.SetValue('user')
         else:
@@ -4032,16 +4368,23 @@ class TextValidator(wxPyValidator):
                 MessageDialog(NULL, "Please, fill in the %s field" % (self.fieldName,))
                 return false
 
+            if val == '<Insert Jabber ID here>':
+                MessageDialog(NULL, "Please, fill in the %s field" % (self.fieldName,))
+                return false
+          
         #for real profile dialog
         elif(len(val) < 1 or profile.IsDefault() 
              or profile.name == '<Insert Name Here>'
-             or profile.email == '<Insert Email Address Here>'):
-            
+             or profile.email == '<Insert Email Address Here>'
+             or profile.jabberId == '<Insert Jabber ID Here>'):
+             
             if profile.name == '<Insert Name Here>':
                 self.fieldName == 'Name'
             elif profile.email ==  '<Insert Email Address Here>':
                 self.fieldName = 'Email'
-                
+            elif profile.jabberId == '<Insert Jabber ID Here>':
+                self.fieldName = 'Jabber ID'
+                                          
             MessageDialog(NULL, "Please, fill in the %s field" %(self.fieldName,))
             return false
         return true

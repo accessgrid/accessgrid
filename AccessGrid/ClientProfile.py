@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.43 2005-04-28 17:12:07 eolson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.44 2005-05-06 19:43:29 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.43 2005-04-28 17:12:07 eolson Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.44 2005-05-06 19:43:29 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -47,6 +47,8 @@ class ClientProfile:
         'name',
         'email',
         'phone',
+        'jabberid',
+        'jabberpwd',
         'icon',
         'id',
         'location',
@@ -60,6 +62,8 @@ class ClientProfile:
         'ClientProfile.name' : '<Insert Name Here>',
         'ClientProfile.email' : '<Insert Email Address Here>',
         'ClientProfile.phone' : '<Insert Phone Number Here>',
+        'ClientProfile.jabberid' : '<Insert Jabber ID Here>',
+        'ClientProfile.jabberpwd' : '<Inser Jabber Password Here>',
         'ClientProfile.icon' : '<Leave blank for now>',
         'ClientProfile.id' : '',
         'ClientProfile.location' : '<Insert Postal Address Here>',
@@ -78,6 +82,8 @@ class ClientProfile:
         self.name = ''
         self.email = ''
         self.phoneNumber = ''
+        self.jabberId = ''
+        self.jabberPwd = ''
         self.icon = None
         self.publicId = str(GUID())
         self.location = ''
@@ -121,6 +127,8 @@ class ClientProfile:
             self.venueClientURL = self.profile['ClientProfile.venueclienturl']
             self.homeVenue = self.profile['ClientProfile.home']
             self.techSupportInfo = self.profile['ClientProfile.techsupportinfo']
+            self.jabberId = self.profile['ClientProfile.jabberid']
+            self.jabberPwd = self.profile['ClientProfile.jabberpwd']
         else:
             raise InvalidProfileException
 
@@ -134,6 +142,8 @@ class ClientProfile:
         print "Name: " + self.name
         print "Email: " + self.email
         print "Phone Number: " + self.phoneNumber
+        print "Jabber ID: " + self.jabberId
+        print "Jabber Password: " + self.jabberPwd
         print "Location: " + self.location
         print "Venue Client URL: " + self.venueClientURL
         print "Public ID: " + str(self.publicId)
@@ -144,6 +154,7 @@ class ClientProfile:
                     + "\n Name: " + self.name \
                     + "\n Email: " + self.email\
                     + "\n Phone Number: " + self.phoneNumber\
+                    + "\n Jabber ID: " + self.jabberId\
                     + "\n Location: " + self.location\
                     + "\n Venue Client URL: " + self.venueClientURL\
                     + "\n Public ID: " + str(self.publicId)\
@@ -165,6 +176,8 @@ class ClientProfile:
         config['ClientProfile.venueclienturl'] = self.GetVenueClientURL()
         config['ClientProfile.id'] = self.GetPublicId()
         config['ClientProfile.home'] = self.GetHomeVenue()
+        config['ClientProfile.jabberid'] = self.GetJabberId()
+        config['ClientProfile.jabberpwd'] = self.GetJabberPassword()
         if saveDnDetails:
             config['ClientProfile.distinguishedname'] = self.GetDistinguishedName()
         
@@ -224,6 +237,22 @@ class ClientProfile:
     def GetName(self):
         """ """
         return self.name
+
+    def GetJabberId(self):
+        """ """
+        return self.jabberId
+
+    def SetJabberId(self, jid,):
+        self.jabberId = jid
+        self.profile[ClientProfile.configSection + '.jabberid'] = jid
+
+    def GetJabberPassword(self):
+        """ """
+        return self.jabberPwd
+
+    def SetJabberPassword(self, jpwd):
+        self.jabberPwd = jpwd
+        self.profile[ClientProfile.configSection + '.jabberpwd'] = jpwd
     
     def GetDistinguishedName(self):
         """ """
