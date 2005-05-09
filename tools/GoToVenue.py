@@ -87,8 +87,12 @@ if not enteredVenue:
     # Communicating with running venue client failed; 
     # launch the venue client, pointed at the specified venue
     print "Launching the venue client..."
-    prog = "\"%s\"" % os.path.join(app.GetToolkitConfig().GetBinDir(),
-                               "VenueClient.py")
+    if isWindows():
+        prog = "\"%s\"" % os.path.join(app.GetToolkitConfig().GetBinDir(),
+	                       "VenueClient.py")
+    else:
+        prog = "%s" % os.path.join(app.GetToolkitConfig().GetBinDir(),
+	                       "VenueClient.py")
     os.spawnv(os.P_NOWAIT, sys.executable, (sys.executable, prog,
                                              "--personalNode", "--url",
                                              venueUrl)) 
