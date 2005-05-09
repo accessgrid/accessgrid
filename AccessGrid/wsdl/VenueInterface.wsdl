@@ -212,6 +212,17 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="SetConnectionsRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="connections" type="agtk:ConnectionDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetConnectionsResponse">
+          </xsd:element>
+
       </schema>
     </types>
 
@@ -296,6 +307,12 @@
     <message name="SetPropertyResponse">
 	<part name="parameters" element="agtkv:SetPropertyResponse"/>
     </message>
+    <message name="SetConnectionsRequest">
+	<part name="parameters" element="agtkv:SetConnectionsRequest"/>
+    </message>
+    <message name="SetConnectionsResponse">
+	<part name="parameters" element="agtkv:SetConnectionsResponse"/>
+    </message>
 
     <portType name="Venue">
 	<operation name="Enter">
@@ -356,6 +373,10 @@
 	<operation name="SetProperty">
 	    <input message="agtkv:SetPropertyRequest"/>
             <output message="agtkv:SetPropertyResponse"/>
+	</operation>
+	<operation name="SetConnections">
+	    <input message="agtkv:SetConnectionsRequest"/>
+            <output message="agtkv:SetConnectionsResponse"/>
 	</operation>
     </portType>
 
