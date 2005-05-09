@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.74 2005-05-06 15:55:21 eolson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.75 2005-05-09 21:57:26 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.74 2005-05-06 15:55:21 eolson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.75 2005-05-09 21:57:26 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -34,7 +34,7 @@ class ObjectDescription:
         description : string
         uri : uri (string)
     """
-    def __init__(self, name, description = None, uri = None,
+    def __init__(self, name=None, description = None, uri = None,
                  oid = None):
 
         # Catch annoying None case
@@ -187,7 +187,7 @@ class VenueDescription(ObjectDescription):
     A Venue Description is used to represent a Venue.
     """
     def __init__(self, name=None, description=None, encryptionInfo=(0,''),
-                 connectionList=[], staticStreams=[], oid = None,
+                 connectionList=None, staticStreams=None, oid = None,
                  uri=None):
 
         ObjectDescription.__init__(self, name, description, uri, oid)
@@ -201,8 +201,14 @@ class VenueDescription(ObjectDescription):
         else:
             self.encryptionKey = None
            
-        self.connections = connectionList
-        self.streams = staticStreams
+        if connectionList == None:
+            self.connections = []
+        else:
+            self.connections = connectionList
+        if staticStreams == None:
+            self.streams = []
+        else:
+            self.streams = staticStreams
     
     def AsINIBlock(self):
         string = ObjectDescription.AsINIBlock(self)
