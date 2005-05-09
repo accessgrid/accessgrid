@@ -6,14 +6,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CreateVenues.py,v 1.2 2004-05-27 21:31:27 eolson Exp $
+# RCS-ID:      $Id: CreateVenues.py,v 1.3 2005-05-09 22:19:12 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This program is used to create venues for the venue server.
 """
-__revision__ = "$Id: CreateVenues.py,v 1.2 2004-05-27 21:31:27 eolson Exp $"
+__revision__ = "$Id: CreateVenues.py,v 1.3 2005-05-09 22:19:12 eolson Exp $"
 
 import ConfigParser
 import sys
@@ -25,6 +25,8 @@ from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.Descriptions import Capability, StreamDescription 
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.Toolkit import CmdlineApplication
+from AccessGrid.interfaces.VenueServer_client import VenueServerIW
+from AccessGrid.interfaces.Venue_client import VenueIW
 
 def main():
     """
@@ -40,8 +42,8 @@ def main():
 
     configFile = sys.argv[1]
 
-    venueServer = Client.SecureHandle(venueServerUri).GetProxy()
-    venueServer.SetEncryptAllMedia(0)
+    venueServer = VenueServerIW(venueServerUri, tracefile=sys.stdout)
+    #venueServer.SetEncryptAllMedia(0)
 
     config = ConfigParser.ConfigParser()
     config.read(configFile)
@@ -88,7 +90,7 @@ def main():
         config.set(sec, 'uri', vdesc.uri)
 
         if config.has_option(sec, 'default'):
-            venueServer.SetDefaultVenue(vdesc.uri)
+            venueServer.SetDefaultVenue(vdesc.id)
         
         venues[sec] = vdesc
 
@@ -111,7 +113,7 @@ def main():
 	
         # venue = Client.Handle(venues[sec].uri).GetProxy()
         print "URL: %s" % venues[sec].uri
-        venue = Client.SecureHandle(venues[sec].uri).GetProxy()
+        venue = VenueIW(venues[sec].uri, tracefile=sys.stdout)
         venue.SetConnections(venues[sec].connections)
 
 if __name__ == "__main__":
