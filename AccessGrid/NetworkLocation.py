@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/13/12
-# RCS-ID:      $Id: NetworkLocation.py,v 1.14 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: NetworkLocation.py,v 1.15 2005-05-09 21:54:15 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetworkLocation.py,v 1.14 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: NetworkLocation.py,v 1.15 2005-05-09 21:54:15 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 class ProviderProfile:
@@ -19,7 +19,7 @@ class ProviderProfile:
     ProviderProfile contains information to identify the provider
     of a network location. 
     """
-    def __init__(self,name,location):
+    def __init__(self,name="",location=""):
         self.name = name
         self.location = location
 
@@ -34,7 +34,7 @@ class NetworkLocation:
     host = ''
     port = 0
 
-    def __init__(self, host, port):
+    def __init__(self, host=None, port=-1):
         self.host = host
         if type(port) != int:
             raise TypeError("Network Location Port must be an int.")
