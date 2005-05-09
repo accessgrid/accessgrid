@@ -121,6 +121,15 @@
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
+          <xsd:element name="SetDefaultVenueRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="venueId" type="xsd:string"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="SetDefaultVenueResponse">
+          </xsd:element>
 
 
       </schema>
@@ -168,6 +177,12 @@
     <message name="SetPropertyResponse">
 	<part name="parameters" element="agtkvs:SetPropertyResponse"/>
     </message>
+    <message name="SetDefaultVenueRequest">
+	<part name="parameters" element="agtkvs:SetDefaultVenueRequest"/>
+    </message>
+    <message name="SetDefaultVenueResponse">
+	<part name="parameters" element="agtkvs:SetDefaultVenueResponse"/>
+    </message>
 
     <portType name="VenueServer">
 	<operation name="Checkpoint">
@@ -197,6 +212,10 @@
 	<operation name="SetProperty">
 	    <input message="agtkvs:SetPropertyRequest"/>
             <output message="agtkvs:SetPropertyResponse"/>
+	</operation>
+	<operation name="SetDefaultVenue">
+	    <input message="agtkvs:SetDefaultVenueRequest"/>
+	    <output message="agtkvs:SetDefaultVenueResponse"/>
 	</operation>
     </portType>
 
