@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.22 2004-12-08 16:48:06 judson Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.23 2005-05-12 21:32:31 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.22 2004-12-08 16:48:06 judson Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.23 2005-05-12 21:32:31 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -85,7 +85,7 @@ class SharedApplication(AuthorizationMixIn):
 
         admins = self.authManager.FindRole("Administrators")
         self.servicePtr = Service.instance()
-        admins.AddSubject(self.servicePtr.GetDefaultSubject())
+        #admins.AddSubject(self.servicePtr.GetDefaultSubject())
                                                                                 
         # Default to admins
         self.authManager.SetDefaultRoles([admins])
