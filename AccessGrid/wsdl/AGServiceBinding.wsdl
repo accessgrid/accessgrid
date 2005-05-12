@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  xmlns:agsvc="http://www.accessgrid.org/v3.0/agservice"
+  targetNamespace="http://www.accessgrid.org/v3.0/agservice">
+
+  <import namespace="http://www.accessgrid.org/v3.0/agservice" 
+          location="AGServiceInterface.wsdl"/>
+
+  <import namespace="http://www.accessgrid.org/v3.0" 
+          location="AccessGrid_Types.xsd"/>
+
+  <binding name="AGService" type="agsvc:AGService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <operation name="GetCapabilities">
+	    <soap:operation soapAction="urn:#GetCapabilities"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetConfiguration">
+	    <soap:operation soapAction="urn:#GetConfiguration"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetDescription">
+	    <soap:operation soapAction="urn:#GetDescription"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetEnabled">
+	    <soap:operation soapAction="urn:#GetEnabled"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetPackageFile">
+	    <soap:operation soapAction="urn:#GetPackageFile"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetResource">
+	    <soap:operation soapAction="urn:#GetResource"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetResources">
+	    <soap:operation soapAction="urn:#GetResources"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetServiceManagerUrl">
+	    <soap:operation soapAction="urn:#GetServiceManagerUrl"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="IsStarted">
+	    <soap:operation soapAction="urn:#IsStarted"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="IsValid">
+	    <soap:operation soapAction="urn:#IsValid"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="SetConfiguration">
+	    <soap:operation soapAction="urn:#SetConfiguration"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="SetEnabled">
+	    <soap:operation soapAction="urn:#SetEnabled"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="SetIdentity">
+	    <soap:operation soapAction="urn:#SetIdentity"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="SetPackageFile">
+	    <soap:operation soapAction="urn:#SetPackageFile"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="SetResource">
+	    <soap:operation soapAction="urn:#SetResource"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="SetServiceManagerUrl">
+	    <soap:operation soapAction="urn:#SetServiceManagerUrl"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="SetStream">
+	    <soap:operation soapAction="urn:#SetStream"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="Shutdown">
+	    <soap:operation soapAction="urn:#Shutdown"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="Start">
+	    <soap:operation soapAction="urn:#Start"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="Stop">
+	    <soap:operation soapAction="urn:#Stop"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    </binding>
+    <service name="AGService">
+        <port name="AGService" binding="agsvc:AGService">
+	    <soap:address location="http://localhost:7000"/>
+	</port>
+    </service>
+
+
+</definitions>
+

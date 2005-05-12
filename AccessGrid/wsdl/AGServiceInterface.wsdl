@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  xmlns:agsvc="http://www.accessgrid.org/v3.0/agservice"
+  targetNamespace="http://www.accessgrid.org/v3.0/agservice">
+
+      <types>
+      <schema targetNamespace="http://www.accessgrid.org/v3.0/agservice" 
+              elementFormDefault="qualified" 
+	      attributeFormDefault="unqualified" 
+              xmlns="http://www.w3.org/2001/XMLSchema">
+
+          <xsd:element name="GetCapabilitiesRequest">
+          </xsd:element>
+
+          <xsd:element name="GetCapabilitiesResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="capabilities" type="agtk:Capability" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetConfigurationRequest">
+          </xsd:element>
+
+          <xsd:element name="GetConfigurationResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="configuration" type="agtk:AGParameter" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetDescriptionRequest">
+          </xsd:element>
+
+          <xsd:element name="GetDescriptionResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="description" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetEnabledRequest">
+          </xsd:element>
+
+          <xsd:element name="GetEnabledResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="enabledFlag" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetPackageFileRequest">
+          </xsd:element>
+
+          <xsd:element name="GetPackageFileResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="packageFile" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetResourceRequest">
+          </xsd:element>
+
+          <xsd:element name="GetResourceResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="resource" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetResourcesRequest">
+          </xsd:element>
+
+          <xsd:element name="GetResourcesResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="resources" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetServiceManagerUrlRequest">
+          </xsd:element>
+
+          <xsd:element name="GetServiceManagerUrlResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="serviceManagerUrl" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="IsStartedRequest">
+          </xsd:element>
+
+          <xsd:element name="IsStartedResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="startedFlag" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="IsValidRequest">
+          </xsd:element>
+
+          <xsd:element name="IsValidResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="startedFlag" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetConfigurationRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="configuration" type="agtk:AGParameter" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetConfigurationResponse">
+          </xsd:element>
+
+          <xsd:element name="SetEnabledRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="enabledFlag" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetEnabledResponse">
+          </xsd:element>
+
+          <xsd:element name="SetIdentityRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="profile" type="agtk:ClientProfile" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetIdentityResponse">
+          </xsd:element>
+
+          <xsd:element name="SetPackageFileRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="packageFile" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetPackageFileResponse">
+          </xsd:element>
+
+          <xsd:element name="SetResourceRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="resource" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetResourceResponse">
+          </xsd:element>
+
+          <xsd:element name="SetServiceManagerUrlRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="serviceManagerUrl" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetServiceManagerUrlResponse">
+          </xsd:element>
+
+          <xsd:element name="SetStreamRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="streamDescription" type="agtk:StreamDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetStreamResponse">
+          </xsd:element>
+
+          <xsd:element name="ShutdownRequest">
+          </xsd:element>
+
+          <xsd:element name="ShutdownResponse">
+          </xsd:element>
+
+          <xsd:element name="StartRequest">
+          </xsd:element>
+
+          <xsd:element name="StartResponse">
+          </xsd:element>
+
+          <xsd:element name="StopRequest">
+          </xsd:element>
+
+          <xsd:element name="StopResponse">
+          </xsd:element>
+
+
+      </schema>
+      </types>
+
+
+
+    <message name="GetCapabilitiesRequest">
+	<part name="parameters" element="agsvc:GetCapabilitiesRequest"/>
+    </message>
+    <message name="GetCapabilitiesResponse">
+	<part name="parameters" element="agsvc:GetCapabilitiesResponse"/>
+    </message>
+    <message name="GetConfigurationRequest">
+	<part name="parameters" element="agsvc:GetConfigurationRequest"/>
+    </message>
+    <message name="GetConfigurationResponse">
+	<part name="parameters" element="agsvc:GetConfigurationResponse"/>
+    </message>
+    <message name="GetDescriptionRequest">
+	<part name="parameters" element="agsvc:GetDescriptionRequest"/>
+    </message>
+    <message name="GetDescriptionResponse">
+	<part name="parameters" element="agsvc:GetDescriptionResponse"/>
+    </message>
+    <message name="GetEnabledRequest">
+	<part name="parameters" element="agsvc:GetEnabledRequest"/>
+    </message>
+    <message name="GetEnabledResponse">
+	<part name="parameters" element="agsvc:GetEnabledResponse"/>
+    </message>
+    <message name="GetPackageFileRequest">
+	<part name="parameters" element="agsvc:GetPackageFileRequest"/>
+    </message>
+    <message name="GetPackageFileResponse">
+	<part name="parameters" element="agsvc:GetPackageFileResponse"/>
+    </message>
+    <message name="GetResourceRequest">
+	<part name="parameters" element="agsvc:GetResourceRequest"/>
+    </message>
+    <message name="GetResourceResponse">
+	<part name="parameters" element="agsvc:GetResourceResponse"/>
+    </message>
+    <message name="GetResourcesRequest">
+	<part name="parameters" element="agsvc:GetResourcesRequest"/>
+    </message>
+    <message name="GetResourcesResponse">
+	<part name="parameters" element="agsvc:GetResourcesResponse"/>
+    </message>
+    <message name="GetServiceManagerUrlRequest">
+	<part name="parameters" element="agsvc:GetServiceManagerUrlRequest"/>
+    </message>
+    <message name="GetServiceManagerUrlResponse">
+	<part name="parameters" element="agsvc:GetServiceManagerUrlResponse"/>
+    </message>
+    <message name="IsStartedRequest">
+	<part name="parameters" element="agsvc:IsStartedRequest"/>
+    </message>
+    <message name="IsStartedResponse">
+	<part name="parameters" element="agsvc:IsStartedResponse"/>
+    </message>
+    <message name="IsValidRequest">
+	<part name="parameters" element="agsvc:IsValidRequest"/>
+    </message>
+    <message name="IsValidResponse">
+	<part name="parameters" element="agsvc:IsValidResponse"/>
+    </message>
+    <message name="SetConfigurationRequest">
+	<part name="parameters" element="agsvc:SetConfigurationRequest"/>
+    </message>
+    <message name="SetConfigurationResponse">
+	<part name="parameters" element="agsvc:SetConfigurationResponse"/>
+    </message>
+    <message name="SetEnabledRequest">
+	<part name="parameters" element="agsvc:SetEnabledRequest"/>
+    </message>
+    <message name="SetEnabledResponse">
+	<part name="parameters" element="agsvc:SetEnabledResponse"/>
+    </message>
+    <message name="SetIdentityRequest">
+	<part name="parameters" element="agsvc:SetIdentityRequest"/>
+    </message>
+    <message name="SetIdentityResponse">
+	<part name="parameters" element="agsvc:SetIdentityResponse"/>
+    </message>
+    <message name="SetPackageFileRequest">
+	<part name="parameters" element="agsvc:SetPackageFileRequest"/>
+    </message>
+    <message name="SetPackageFileResponse">
+	<part name="parameters" element="agsvc:SetPackageFileResponse"/>
+    </message>
+    <message name="SetResourceRequest">
+	<part name="parameters" element="agsvc:SetResourceRequest"/>
+    </message>
+    <message name="SetResourceResponse">
+	<part name="parameters" element="agsvc:SetResourceResponse"/>
+    </message>
+    <message name="SetServiceManagerUrlRequest">
+	<part name="parameters" element="agsvc:SetServiceManagerUrlRequest"/>
+    </message>
+    <message name="SetServiceManagerUrlResponse">
+	<part name="parameters" element="agsvc:SetServiceManagerUrlResponse"/>
+    </message>
+    <message name="SetStreamRequest">
+	<part name="parameters" element="agsvc:SetStreamRequest"/>
+    </message>
+    <message name="SetStreamResponse">
+	<part name="parameters" element="agsvc:SetStreamResponse"/>
+    </message>
+    <message name="ShutdownRequest">
+	<part name="parameters" element="agsvc:ShutdownRequest"/>
+    </message>
+    <message name="ShutdownResponse">
+	<part name="parameters" element="agsvc:ShutdownResponse"/>
+    </message>
+    <message name="StartRequest">
+	<part name="parameters" element="agsvc:StartRequest"/>
+    </message>
+    <message name="StartResponse">
+	<part name="parameters" element="agsvc:StartResponse"/>
+    </message>
+    <message name="StopRequest">
+	<part name="parameters" element="agsvc:StopRequest"/>
+    </message>
+    <message name="StopResponse">
+	<part name="parameters" element="agsvc:StopResponse"/>
+    </message>
+
+
+
+    <portType name="AGService">
+    <operation name="GetCapabilities">
+        <input message="agsvc:GetCapabilitiesRequest"/>
+        <output message="agsvc:GetCapabilitiesResponse"/>
+    </operation>
+    <operation name="GetConfiguration">
+        <input message="agsvc:GetConfigurationRequest"/>
+        <output message="agsvc:GetConfigurationResponse"/>
+    </operation>
+    <operation name="GetDescription">
+        <input message="agsvc:GetDescriptionRequest"/>
+        <output message="agsvc:GetDescriptionResponse"/>
+    </operation>
+    <operation name="GetEnabled">
+        <input message="agsvc:GetEnabledRequest"/>
+        <output message="agsvc:GetEnabledResponse"/>
+    </operation>
+    <operation name="GetPackageFile">
+        <input message="agsvc:GetPackageFileRequest"/>
+        <output message="agsvc:GetPackageFileResponse"/>
+    </operation>
+    <operation name="GetResource">
+        <input message="agsvc:GetResourceRequest"/>
+        <output message="agsvc:GetResourceResponse"/>
+    </operation>
+    <operation name="GetResources">
+        <input message="agsvc:GetResourcesRequest"/>
+        <output message="agsvc:GetResourcesResponse"/>
+    </operation>
+    <operation name="GetServiceManagerUrl">
+        <input message="agsvc:GetServiceManagerUrlRequest"/>
+        <output message="agsvc:GetServiceManagerUrlResponse"/>
+    </operation>
+    <operation name="IsStarted">
+        <input message="agsvc:IsStartedRequest"/>
+        <output message="agsvc:IsStartedResponse"/>
+    </operation>
+    <operation name="IsValid">
+        <input message="agsvc:IsValidRequest"/>
+        <output message="agsvc:IsValidResponse"/>
+    </operation>
+    <operation name="SetConfiguration">
+        <input message="agsvc:SetConfigurationRequest"/>
+        <output message="agsvc:SetConfigurationResponse"/>
+    </operation>
+    <operation name="SetEnabled">
+        <input message="agsvc:SetEnabledRequest"/>
+        <output message="agsvc:SetEnabledResponse"/>
+    </operation>
+    <operation name="SetIdentity">
+        <input message="agsvc:SetIdentityRequest"/>
+        <output message="agsvc:SetIdentityResponse"/>
+    </operation>
+    <operation name="SetPackageFile">
+        <input message="agsvc:SetPackageFileRequest"/>
+        <output message="agsvc:SetPackageFileResponse"/>
+    </operation>
+    <operation name="SetResource">
+        <input message="agsvc:SetResourceRequest"/>
+        <output message="agsvc:SetResourceResponse"/>
+    </operation>
+    <operation name="SetServiceManagerUrl">
+        <input message="agsvc:SetServiceManagerUrlRequest"/>
+        <output message="agsvc:SetServiceManagerUrlResponse"/>
+    </operation>
+    <operation name="SetStream">
+        <input message="agsvc:SetStreamRequest"/>
+        <output message="agsvc:SetStreamResponse"/>
+    </operation>
+    <operation name="Shutdown">
+        <input message="agsvc:ShutdownRequest"/>
+        <output message="agsvc:ShutdownResponse"/>
+    </operation>
+    <operation name="Start">
+        <input message="agsvc:StartRequest"/>
+        <output message="agsvc:StartResponse"/>
+    </operation>
+    <operation name="Stop">
+        <input message="agsvc:StopRequest"/>
+        <output message="agsvc:StopResponse"/>
+    </operation>
+    </portType>
+
+</definitions>
+

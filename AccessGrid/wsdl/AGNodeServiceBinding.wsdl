@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  xmlns:agns="http://www.accessgrid.org/v3.0/nodeservice"
+  targetNamespace="http://www.accessgrid.org/v3.0/nodeservice">
+
+  <import namespace="http://www.accessgrid.org/v3.0/nodeservice" 
+          location="AGNodeServiceInterface.wsdl"/>
+
+  <import namespace="http://www.accessgrid.org/v3.0" 
+          location="AccessGrid_Types.xsd"/>
+
+  <binding name="AGNodeService" type="agns:AGNodeService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <operation name="AddServiceManager">
+	    <soap:operation soapAction="urn:#AddServiceManager"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="AddStream">
+	    <soap:operation soapAction="urn:#AddStream"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetCapabilities">
+	    <soap:operation soapAction="urn:#GetCapabilities"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetConfigurations">
+	    <soap:operation soapAction="urn:#GetConfigurations"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetServiceManagers">
+	    <soap:operation soapAction="urn:#GetServiceManagers"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetServices">
+	    <soap:operation soapAction="urn:#GetServices"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="IsValid">
+	    <soap:operation soapAction="urn:#IsValid"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="LoadConfiguration">
+	    <soap:operation soapAction="urn:#LoadConfiguration"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="MigrateNodeConfig">
+	    <soap:operation soapAction="urn:#MigrateNodeConfig"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="NeedMigrateNodeConfig">
+	    <soap:operation soapAction="urn:#NeedMigrateNodeConfig"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="RemoveServiceManager">
+	    <soap:operation soapAction="urn:#RemoveServiceManager"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="RemoveStream">
+	    <soap:operation soapAction="urn:#RemoveStream"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="SetServiceEnabled">
+	    <soap:operation soapAction="urn:#SetServiceEnabled"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="SetServiceEnabledByMediaType">
+	    <soap:operation soapAction="urn:#SetServiceEnabledByMediaType"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="SetStreams">
+	    <soap:operation soapAction="urn:#SetStreams"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="StopServices">
+	    <soap:operation soapAction="urn:#StopServices"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="StoreConfiguration">
+	    <soap:operation soapAction="urn:#StoreConfiguration"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    </binding>
+    <service name="AGNodeService">
+        <port name="AGNodeService" binding="agns:AGNodeService">
+	    <soap:address location="http://localhost:7000"/>
+	</port>
+    </service>
+
+
+</definitions>
+

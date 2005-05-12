@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  xmlns:agns="http://www.accessgrid.org/v3.0/nodeservice"
+  targetNamespace="http://www.accessgrid.org/v3.0/nodeservice">
+
+      <types>
+      <schema targetNamespace="http://www.accessgrid.org/v3.0/nodeservice" 
+              elementFormDefault="qualified" 
+	      attributeFormDefault="unqualified" 
+              xmlns="http://www.w3.org/2001/XMLSchema">
+
+          <xsd:element name="AddServiceManagerRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="serviceManagerUrl" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddServiceManagerResponse">
+          </xsd:element>
+
+          <xsd:element name="AddStreamRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="agtk:StreamDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddStreamResponse">
+          </xsd:element>
+
+          <xsd:element name="GetCapabilitiesRequest">
+          </xsd:element>
+
+          <xsd:element name="GetCapabilitiesResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="capabilities" type="agtk:Capability" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetConfigurationsRequest">
+          </xsd:element>
+
+          <xsd:element name="GetConfigurationsResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="argname" type="agtk:NodeConfigDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetServiceManagersRequest">
+          </xsd:element>
+
+          <xsd:element name="GetServiceManagersResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="argname" type="agtk:AGServiceManagerDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetServicesRequest">
+          </xsd:element>
+
+          <xsd:element name="GetServicesResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="argname" type="agtk:AGServiceDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="IsValidRequest">
+          </xsd:element>
+
+          <xsd:element name="IsValidResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="isvalid" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="LoadConfigurationRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="nodeConfig" type="agtk:NodeConfigDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="LoadConfigurationResponse">
+          </xsd:element>
+
+          <xsd:element name="MigrateNodeConfigRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="nodeConfig" type="agtk:NodeConfigDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="MigrateNodeConfigResponse">
+          </xsd:element>
+
+          <xsd:element name="NeedMigrateNodeConfigRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="agtk:NodeConfigDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="NeedMigrateNodeConfigResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="needMigrate" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveServiceManagerRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="serviceManagerUrl" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveServiceManagerResponse">
+          </xsd:element>
+
+          <xsd:element name="RemoveStreamRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="agtk:StreamDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveStreamResponse">
+          </xsd:element>
+
+          <xsd:element name="SetServiceEnabledRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="enabledFlag" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetServiceEnabledResponse">
+          </xsd:element>
+
+          <xsd:element name="SetServiceEnabledByMediaTypeRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetServiceEnabledByMediaTypeResponse">
+          </xsd:element>
+
+          <xsd:element name="SetStreamsRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="streamDescriptionList" type="agtk:StreamDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetStreamsResponse">
+          </xsd:element>
+
+          <xsd:element name="StopServicesRequest">
+          </xsd:element>
+
+          <xsd:element name="StopServicesResponse">
+          </xsd:element>
+
+          <xsd:element name="StoreConfigurationRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="nodeConfig" type="agtk:NodeConfigDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="StoreConfigurationResponse">
+          </xsd:element>
+
+
+      </schema>
+      </types>
+
+
+
+    <message name="AddServiceManagerRequest">
+	<part name="parameters" element="agns:AddServiceManagerRequest"/>
+    </message>
+    <message name="AddServiceManagerResponse">
+	<part name="parameters" element="agns:AddServiceManagerResponse"/>
+    </message>
+    <message name="AddStreamRequest">
+	<part name="parameters" element="agns:AddStreamRequest"/>
+    </message>
+    <message name="AddStreamResponse">
+	<part name="parameters" element="agns:AddStreamResponse"/>
+    </message>
+    <message name="GetCapabilitiesRequest">
+	<part name="parameters" element="agns:GetCapabilitiesRequest"/>
+    </message>
+    <message name="GetCapabilitiesResponse">
+	<part name="parameters" element="agns:GetCapabilitiesResponse"/>
+    </message>
+    <message name="GetConfigurationsRequest">
+	<part name="parameters" element="agns:GetConfigurationsRequest"/>
+    </message>
+    <message name="GetConfigurationsResponse">
+	<part name="parameters" element="agns:GetConfigurationsResponse"/>
+    </message>
+    <message name="GetServiceManagersRequest">
+	<part name="parameters" element="agns:GetServiceManagersRequest"/>
+    </message>
+    <message name="GetServiceManagersResponse">
+	<part name="parameters" element="agns:GetServiceManagersResponse"/>
+    </message>
+    <message name="GetServicesRequest">
+	<part name="parameters" element="agns:GetServicesRequest"/>
+    </message>
+    <message name="GetServicesResponse">
+	<part name="parameters" element="agns:GetServicesResponse"/>
+    </message>
+    <message name="IsValidRequest">
+	<part name="parameters" element="agns:IsValidRequest"/>
+    </message>
+    <message name="IsValidResponse">
+	<part name="parameters" element="agns:IsValidResponse"/>
+    </message>
+    <message name="LoadConfigurationRequest">
+	<part name="parameters" element="agns:LoadConfigurationRequest"/>
+    </message>
+    <message name="LoadConfigurationResponse">
+	<part name="parameters" element="agns:LoadConfigurationResponse"/>
+    </message>
+    <message name="MigrateNodeConfigRequest">
+	<part name="parameters" element="agns:MigrateNodeConfigRequest"/>
+    </message>
+    <message name="MigrateNodeConfigResponse">
+	<part name="parameters" element="agns:MigrateNodeConfigResponse"/>
+    </message>
+    <message name="NeedMigrateNodeConfigRequest">
+	<part name="parameters" element="agns:NeedMigrateNodeConfigRequest"/>
+    </message>
+    <message name="NeedMigrateNodeConfigResponse">
+	<part name="parameters" element="agns:NeedMigrateNodeConfigResponse"/>
+    </message>
+    <message name="RemoveServiceManagerRequest">
+	<part name="parameters" element="agns:RemoveServiceManagerRequest"/>
+    </message>
+    <message name="RemoveServiceManagerResponse">
+	<part name="parameters" element="agns:RemoveServiceManagerResponse"/>
+    </message>
+    <message name="RemoveStreamRequest">
+	<part name="parameters" element="agns:RemoveStreamRequest"/>
+    </message>
+    <message name="RemoveStreamResponse">
+	<part name="parameters" element="agns:RemoveStreamResponse"/>
+    </message>
+    <message name="SetServiceEnabledRequest">
+	<part name="parameters" element="agns:SetServiceEnabledRequest"/>
+    </message>
+    <message name="SetServiceEnabledResponse">
+	<part name="parameters" element="agns:SetServiceEnabledResponse"/>
+    </message>
+    <message name="SetServiceEnabledByMediaTypeRequest">
+	<part name="parameters" element="agns:SetServiceEnabledByMediaTypeRequest"/>
+    </message>
+    <message name="SetServiceEnabledByMediaTypeResponse">
+	<part name="parameters" element="agns:SetServiceEnabledByMediaTypeResponse"/>
+    </message>
+    <message name="SetStreamsRequest">
+	<part name="parameters" element="agns:SetStreamsRequest"/>
+    </message>
+    <message name="SetStreamsResponse">
+	<part name="parameters" element="agns:SetStreamsResponse"/>
+    </message>
+    <message name="StopServicesRequest">
+	<part name="parameters" element="agns:StopServicesRequest"/>
+    </message>
+    <message name="StopServicesResponse">
+	<part name="parameters" element="agns:StopServicesResponse"/>
+    </message>
+    <message name="StoreConfigurationRequest">
+	<part name="parameters" element="agns:StoreConfigurationRequest"/>
+    </message>
+    <message name="StoreConfigurationResponse">
+	<part name="parameters" element="agns:StoreConfigurationResponse"/>
+    </message>
+
+
+
+    <portType name="AGNodeService">
+    <operation name="AddServiceManager">
+        <input message="agns:AddServiceManagerRequest"/>
+        <output message="agns:AddServiceManagerResponse"/>
+    </operation>
+    <operation name="AddStream">
+        <input message="agns:AddStreamRequest"/>
+        <output message="agns:AddStreamResponse"/>
+    </operation>
+    <operation name="GetCapabilities">
+        <input message="agns:GetCapabilitiesRequest"/>
+        <output message="agns:GetCapabilitiesResponse"/>
+    </operation>
+    <operation name="GetConfigurations">
+        <input message="agns:GetConfigurationsRequest"/>
+        <output message="agns:GetConfigurationsResponse"/>
+    </operation>
+    <operation name="GetServiceManagers">
+        <input message="agns:GetServiceManagersRequest"/>
+        <output message="agns:GetServiceManagersResponse"/>
+    </operation>
+    <operation name="GetServices">
+        <input message="agns:GetServicesRequest"/>
+        <output message="agns:GetServicesResponse"/>
+    </operation>
+    <operation name="IsValid">
+        <input message="agns:IsValidRequest"/>
+        <output message="agns:IsValidResponse"/>
+    </operation>
+    <operation name="LoadConfiguration">
+        <input message="agns:LoadConfigurationRequest"/>
+        <output message="agns:LoadConfigurationResponse"/>
+    </operation>
+    <operation name="MigrateNodeConfig">
+        <input message="agns:MigrateNodeConfigRequest"/>
+        <output message="agns:MigrateNodeConfigResponse"/>
+    </operation>
+    <operation name="NeedMigrateNodeConfig">
+        <input message="agns:NeedMigrateNodeConfigRequest"/>
+        <output message="agns:NeedMigrateNodeConfigResponse"/>
+    </operation>
+    <operation name="RemoveServiceManager">
+        <input message="agns:RemoveServiceManagerRequest"/>
+        <output message="agns:RemoveServiceManagerResponse"/>
+    </operation>
+    <operation name="RemoveStream">
+        <input message="agns:RemoveStreamRequest"/>
+        <output message="agns:RemoveStreamResponse"/>
+    </operation>
+    <operation name="SetServiceEnabled">
+        <input message="agns:SetServiceEnabledRequest"/>
+        <output message="agns:SetServiceEnabledResponse"/>
+    </operation>
+    <operation name="SetServiceEnabledByMediaType">
+        <input message="agns:SetServiceEnabledByMediaTypeRequest"/>
+        <output message="agns:SetServiceEnabledByMediaTypeResponse"/>
+    </operation>
+    <operation name="SetStreams">
+        <input message="agns:SetStreamsRequest"/>
+        <output message="agns:SetStreamsResponse"/>
+    </operation>
+    <operation name="StopServices">
+        <input message="agns:StopServicesRequest"/>
+        <output message="agns:StopServicesResponse"/>
+    </operation>
+    <operation name="StoreConfiguration">
+        <input message="agns:StoreConfigurationRequest"/>
+        <output message="agns:StoreConfigurationResponse"/>
+    </operation>
+    </portType>
+
+</definitions>
+
