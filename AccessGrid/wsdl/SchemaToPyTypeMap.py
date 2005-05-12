@@ -10,5 +10,7 @@ mapping = {
     "StreamDescription" : ("AccessGrid.Descriptions", "StreamDescription"),
     "NetworkLocation" : ("AccessGrid.NetworkLocation", "NetworkLocation"),
     "ProviderProfile" : ("AccessGrid.NetworkLocation", "ProviderProfile")
+    "AGServiceManagerDescription" : ("AccessGrid.Descriptions", "AGServiceManagerDescription"),
+    "NodeConfigDescription" : ("AccessGrid.Descriptions", "NodeConfigDescription"),
 }
 
