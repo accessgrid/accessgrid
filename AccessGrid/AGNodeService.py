@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.87 2005-01-06 22:24:50 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.88 2005-05-12 21:13:44 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.87 2005-01-06 22:24:50 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.88 2005-05-12 21:13:44 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -25,11 +25,12 @@ from AccessGrid.Toolkit import Service
 from AccessGrid.hosting import Client
 from AccessGrid.Descriptions import AGServiceDescription
 from AccessGrid.Descriptions import AGServiceManagerDescription
-from AccessGrid.AGServiceManager import AGServiceManagerI, AGServiceManagerIW
+from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
 from AccessGrid.AGService import AGServiceIW
 from AccessGrid.Descriptions import ResourceDescription
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.AGParameter import ValueParameter
+from AccessGrid.Descriptions import NodeConfigDescription
 from AccessGrid.Descriptions import CreateAGServiceManagerDescription
 from AccessGrid.Descriptions import CreateAGServiceDescription
 from AccessGrid.Descriptions import CreateCapability
@@ -37,6 +38,9 @@ from AccessGrid.Descriptions import CreateResourceDescription
 from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Descriptions import CreateStreamDescription
 from AccessGrid.Descriptions import CreateParameter
+from AccessGrid.Descriptions import CreateNodeConfigDescription
+from AccessGrid import ServiceDiscovery
+from AccessGrid.AGServiceManager import AGServiceManager
 
 from SOAPpy.Types import SOAPException
 
@@ -66,9 +70,12 @@ class AGNodeService:
         self.sysNodeConfigDir = self.app.GetToolkitConfig().GetNodeConfigDir()
         self.userNodeConfigDir = self.app.GetUserConfig().GetNodeConfigDir()
         self.servicesDir = self.app.GetToolkitConfig().GetNodeServicesDir()
+        
+        self.serviceBrowser = ServiceDiscovery.Browser(AGServiceManager.ServiceType,
+                                                       self.__BrowseCB)
+        self.serviceBrowser.Start()
 
         self.streamDescriptionList = dict()
-        self.profile = None
         
         self.uri = 0
 
@@ -87,29 +94,25 @@ class AGNodeService:
         if self.serviceManagers.has_key( serviceManagerUrl ):
             raise ServiceManagerAlreadyExists(serviceManagerUrl)
                             
+                            
+        log.info("try to reach service amnager")
         # Try to reach the service manager
         try:
+            log.info("get sm description")
             serviceManagerDescription = AGServiceManagerIW( serviceManagerUrl ).GetDescription()
+            log.info("set ns url")
             AGServiceManagerIW( serviceManagerUrl ).SetNodeServiceUrl(self.uri)
+            log.info("done setting ns url")
         except Exception, e:
-            if e.args[0].endswith('could not be resolved'):
-                parts = urlparse.urlparse(serviceManager.uri)
-                host,port = parts[1].split(':')
-                raise Exception('Host name %s could not be resolved'%
-                                host)
-            elif e.args[0].endswith('(Connection refused)'):
-                parts = urlparse.urlparse(serviceManager.uri)
-                host,port = parts[1].split(':')
-                raise Exception('Connection refused on port %s' %
-                                port)
-            else:
-                log.exception("Failed to add service manager %s", serviceManager.uri)
+                log.exception("Failed to add service manager %s", serviceManagerUrl)
                 raise
         except:
             log.exception("AddServiceManager: Invalid service manager url (%s)"
                           % serviceManagerUrl)
             raise Exception("Service Manager is unreachable at "
                             + serviceManagerUrl)
+
+        log.info("add sm to list")
 
         # Add service manager to list
         self.serviceManagers[serviceManagerUrl] = serviceManagerDescription
@@ -256,7 +259,7 @@ class AGNodeService:
         # Stop services using that stream's media type
         # (er, not yet)
 
-    def LoadConfiguration( self, configName ):
+    def LoadConfiguration( self, config ):
         """
         Load named node configuration
         """
@@ -271,7 +274,10 @@ class AGNodeService:
                 self.parameters = None
 
         # Read config file
-        configFile = os.path.join(self.userNodeConfigDir, configName)
+        if config.type == NodeConfigDescription.SYSTEM:
+            configFile = os.path.join(self.sysNodeConfigDir, config.name)
+        else:
+            configFile = os.path.join(self.userNodeConfigDir, config.name)
 
         if not os.path.exists(configFile):
             raise Exception("Configuration file does not exist (%s)" % configFile)
@@ -279,34 +285,42 @@ class AGNodeService:
             log.info("Trying to load node configuration from: %s", configFile)
 
         try:
-            config = ConfigParser.ConfigParser()
-            config.optionxform = str
-            config.read( configFile )
+            configParser = ConfigParser.ConfigParser()
+            configParser.optionxform = str
+            configParser.read( configFile )
+            
+            for s in configParser.sections():
+                log.debug("section: %s", s)
+                for o in configParser.options(s):
+                    log.debug("  %s : %s", o, configParser.get(s,o))
 
             #
             # Parse config file into usable structures
             #
             serviceManagerList = []
-            serviceManagerSections = string.split( config.get("node", "servicemanagers") )
+            serviceManagerSections = string.split( configParser.get("node", "servicemanagers") )
             for serviceManagerSection in serviceManagerSections:
                 #
                 # Create Service Manager
                 #
-                serviceManager = AGServiceManagerDescription( config.get( serviceManagerSection, "name" ), 
-                                                              config.get( serviceManagerSection, "url" ) )
+                serviceManager = AGServiceManagerDescription( configParser.get( serviceManagerSection, "name" ), 
+                                                              configParser.get( serviceManagerSection, "url" ) )
 
                 #
                 # Extract Service List
                 #
                 serviceList = [] 
-                serviceSections = string.split( config.get( serviceManagerSection, "services" ) )
+                serviceSections = string.split( configParser.get( serviceManagerSection, "services" ) )
                 for serviceSection in serviceSections:
                     #
                     # Read the resource
                     #
-                    if config.has_option(serviceSection,'resource'):
-                        resourceSection = config.get( serviceSection, "resource" )
-                        resource = ResourceDescription( config.get( resourceSection, "resource" ) )
+                    if configParser.has_option(serviceSection,'resource'):
+                        resourceSection = configParser.get( serviceSection, "resource" )
+                        if resourceSection == "None":
+                            resource = 0
+                        else:
+                            resource = ResourceDescription( configParser.get( resourceSection, "name" ) )
                     else:
                         resource = 0
 
@@ -314,18 +328,18 @@ class AGNodeService:
                     # Read the service config
                     #
                     parameters = []
-                    if config.has_option(serviceSection,'serviceConfig'):
-                        serviceConfigSection = config.get( serviceSection, "serviceConfig" )
-                        for parameter in config.options( serviceConfigSection ):
+                    if configParser.has_option(serviceSection,'serviceConfig'):
+                        serviceConfigSection = configParser.get( serviceSection, "serviceConfig" )
+                        for parameter in configParser.options( serviceConfigSection ):
                             parameters.append( ValueParameter( parameter, 
-                                                               config.get( serviceConfigSection,
+                                                               configParser.get( serviceConfigSection,
                                                                            parameter ) ) )
 
                     #
                     # Add Service to List
                     #
                     incomingService = IncomingService()
-                    incomingService.packageName = config.get( serviceSection, "packageName" )
+                    incomingService.packageName = configParser.get( serviceSection, "packageName" )
                     incomingService.resource = resource
                     incomingService.parameters = parameters
                     serviceList.append( incomingService )
@@ -352,6 +366,7 @@ class AGNodeService:
             try:
                 serviceManagerProxy.IsValid()
             except:
+                self.serviceManagers[serviceManager.uri] = None
                 log.info("AddServiceManager: Invalid service manager url (%s)"
                          % serviceManager.uri)
                 exceptionText += "Couldn't reach service manager: %s" % serviceManager.name
@@ -391,11 +406,8 @@ class AGNodeService:
                         serviceProxy.SetConfiguration(service.parameters)
                     
                     # Set the identity to be used by the service
-                    if self.profile:
-                        serviceProxy.SetIdentity(self.profile )
-                    else:
-                        log.info("Not setting identity for service %s; no profile",
-                                 serviceDesc.name)
+                    prefs = self.app.GetPreferences()
+                    serviceProxy.SetIdentity(prefs.GetProfile() )
                         
                         
                 except:
@@ -405,9 +417,12 @@ class AGNodeService:
         if len(exceptionText):
             raise Exception(exceptionText)
 
-    def NeedMigrateNodeConfig(self,configName):
+    def NeedMigrateNodeConfig(self,config):
         log.info("NodeService.StoreConfiguration")
-        configFile = os.path.join(self.userNodeConfigDir, configName)
+        if config.type == NodeConfigDescription.SYSTEM:
+            configFile = os.path.join(self.sysNodeConfigDir, config.name)
+        else:
+            configFile = os.path.join(self.userNodeConfigDir, config.name)
 
         ret = 0
         
@@ -415,7 +430,7 @@ class AGNodeService:
         firstLine = f.readline()
         f.close()
         if firstLine.startswith('# AGTk 2.3'):
-            log.debug("Node config %s already migrated; not migrating", configName)
+            log.debug("Node config %s already migrated; not migrating", config.name)
             return 0
 
         cp = ConfigParser.ConfigParser()
@@ -433,10 +448,13 @@ class AGNodeService:
                     break
         return ret
                 
-    def MigrateNodeConfig(self,configName):
+    def MigrateNodeConfig(self,config):
         log.info("NodeService.StoreConfiguration")
 
-        configFile = os.path.join(self.userNodeConfigDir, configName)
+        if config.type == NodeConfigDescription.SYSTEM:
+            configFile = os.path.join(self.sysNodeConfigDir, config.name)
+        else:
+            configFile = os.path.join(self.userNodeConfigDir, config.name)
 
         # do migration
         wasMigrated = 0
@@ -458,7 +476,7 @@ class AGNodeService:
                     wasMigrated = 1
 
         if wasMigrated:
-            log.info("Migrating node config %s", configName)
+            log.info("Migrating node config %s", config.name)
             
             orgConfigFile = configFile + ".org"
             log.info("Original node config moved to %s", orgConfigFile)
@@ -474,14 +492,17 @@ class AGNodeService:
             
                     
 
-    def StoreConfiguration( self, configName ):
+    def StoreConfiguration( self, config ):
         """
         Store node configuration with specified name
         """
         log.info("NodeService.StoreConfiguration")
         try:
 
-            fileName = os.path.join(self.userNodeConfigDir, configName)
+            if config.type == NodeConfigDescription.SYSTEM:
+                fileName = os.path.join(self.sysNodeConfigDir, config.name)
+            else:
+                fileName = os.path.join(self.userNodeConfigDir, config.name)
 
             # Catch inability to write config file
             if((not os.path.exists(self.userNodeConfigDir)) or
@@ -493,11 +514,11 @@ class AGNodeService:
             numServiceManagers = 0
             numServices = 0
 
-            config = ConfigParser.ConfigParser()
-            config.optionxform = str
+            configParser = ConfigParser.ConfigParser()
+            configParser.optionxform = str
 
             nodeSection = "node"
-            config.add_section(nodeSection)
+            configParser.add_section(nodeSection)
 
             node_servicemanagers = ""
 
@@ -509,26 +530,25 @@ class AGNodeService:
                 # Create Service Manager section
                 #
                 serviceManagerSection = 'servicemanager%d' % numServiceManagers
-                config.add_section( serviceManagerSection )
+                configParser.add_section( serviceManagerSection )
                 node_servicemanagers += serviceManagerSection + " "
-                config.set( serviceManagerSection, "name", serviceManager.name )
-                config.set( serviceManagerSection, "url", serviceManager.uri )
+                configParser.set( serviceManagerSection, "name", serviceManager.name )
+                configParser.set( serviceManagerSection, "url", serviceManager.uri )
 
                 services = AGServiceManagerIW( serviceManager.uri ).GetServices()
                 for service in services:
                 
                     serviceSection = 'service%d' % numServices
-                    config.add_section( serviceSection )
+                    configParser.add_section( serviceSection )
 
                     # 
                     # Create Resource section
                     #
                     if service.resource:
                         resourceSection = 'resource%d' % numServices
-                        config.add_section( resourceSection )
-                        config.set( resourceSection, "type", service.resource.type )
-                        config.set( resourceSection, "resource", service.resource.resource )
-                        config.set( serviceSection, "resource", resourceSection )
+                        configParser.add_section( resourceSection )
+                        configParser.set( resourceSection, "resource", service.resource.name )
+                        configParser.set( serviceSection, "resource", resourceSection )
 
                     # 
                     # Create Service Config section
@@ -536,31 +556,31 @@ class AGNodeService:
                     serviceConfig = AGServiceIW( service.uri ).GetConfiguration()
                     if serviceConfig:
                         serviceConfigSection = 'serviceconfig%d' % numServices
-                        config.set( serviceSection, "serviceConfig", serviceConfigSection )
-                        config.add_section( serviceConfigSection )
+                        configParser.set( serviceSection, "serviceConfig", serviceConfigSection )
+                        configParser.add_section( serviceConfigSection )
                         for parameter in serviceConfig:
-                            config.set( serviceConfigSection, parameter.name, parameter.value )
+                            configParser.set( serviceConfigSection, parameter.name, parameter.value )
 
 
                     #
                     # Create Service section
                     #
                     servicemanager_services += serviceSection + " "
-                    config.set( serviceSection, "packageName", os.path.basename( service.packageFile ) )
+                    configParser.set( serviceSection, "packageName", os.path.basename( service.packageFile ) )
 
                     numServices += 1
 
-                config.set( serviceManagerSection, "services", servicemanager_services )
+                configParser.set( serviceManagerSection, "services", servicemanager_services )
                 numServiceManagers += 1
 
-            config.set(nodeSection, "servicemanagers", node_servicemanagers )
+            configParser.set(nodeSection, "servicemanagers", node_servicemanagers )
 
             #
             # Write config file
             #
             fp = open( fileName, "w" )
             fp.write("# AGTk %s node configuration\n" % (Version.GetVersion()))
-            config.write(fp)
+            configParser.write(fp)
             fp.close()
 
         except:
@@ -570,8 +590,20 @@ class AGNodeService:
     def GetConfigurations( self ):
         """Get list of available configurations"""
         log.info("NodeService.GetConfigurations")
+        
+        configs = []
+        
+        # Get system node configs
+        files = os.listdir( self.sysNodeConfigDir )
+        for f in files:
+            configs.append(NodeConfigDescription(f,NodeConfigDescription.SYSTEM))
+            
+        # Get user node configs
         files = os.listdir( self.userNodeConfigDir )
-        return files
+        for f in files:
+            configs.append(NodeConfigDescription(f,NodeConfigDescription.USER))
+            
+        return configs
 
 
     ####################
@@ -586,6 +618,7 @@ class AGNodeService:
             services = self.GetServices()
             for service in services:
                 capabilitySubset = AGServiceIW( service.uri ).GetCapabilities()
+                print "got capabilities", service.name, capabilitySubset
                 capabilities = capabilities + capabilitySubset
 
         except:
@@ -618,8 +651,10 @@ class AGNodeService:
         
         serviceCapabilities = map(lambda cap: cap.type, 
             AGServiceIW( serviceUri ).GetCapabilities() )
+        log.debug("service capabilities: %s", str(serviceCapabilities))
         for streamDescription in self.streamDescriptionList.values():
-            try:
+            try:    
+                log.debug("capability type: %s", streamDescription.capability.type)
                 if streamDescription.capability.type in serviceCapabilities:
                     log.info("Sending stream (type=%s) to service: %s", 
                                 streamDescription.capability.type,
@@ -635,10 +670,13 @@ class AGNodeService:
 
 
 
-
-
-
-
+    def __BrowseCB(self,type,name,uri=None):
+        print "Found service manager at uri ", uri
+        if uri in self.serviceManagers.keys() and self.serviceManagers[uri] == None:
+            smDesc = AGServiceManagerIW(uri).GetDescription()
+            print "   adding service"
+            AGServiceManagerIW(uri).AddServiceByName('AudioService.zip')
+            
 
 
 
@@ -801,37 +839,40 @@ class AGNodeServiceI(SOAPInterface):
 
         self.impl.RemoveStream(streamDescription)
 
-    def LoadConfiguration( self, configName ):
+    def LoadConfiguration( self, configStruct ):
         """
         Interface to load a node configuration
 
         **Arguments:**
-            *configName* Name under which to store the current configuration
+            *configStruct* Name under which to store the current configuration
             
         **Raises:**
         **Returns:**
         """
 
-        self.impl.LoadConfiguration(configName)
+        config = CreateNodeConfigDescription(configStruct)
+        self.impl.LoadConfiguration(config)
 
-    def NeedMigrateNodeConfig(self,configFile):
-        return self.impl.NeedMigrateNodeConfig(configFile)
+    def NeedMigrateNodeConfig(self,configStruct):
+        config = CreateNodeConfigDescription(configStruct)
+        return self.impl.NeedMigrateNodeConfig(config)
                 
-    def MigrateNodeConfig(self,configFile):
-        self.impl.MigrateNodeConfig(configFile)
+    def MigrateNodeConfig(self,configStruct):
+        config = CreateNodeConfigDescription(configStruct)
+        self.impl.MigrateNodeConfig(config)
 
-    def StoreConfiguration( self, configName ):
+    def StoreConfiguration( self, config ):
         """
         Interface to store a node configuration
 
         **Arguments:**
-            *configName* Name of config file to load
+            *configStruct* Name of config file to load
             
         **Raises:**
         **Returns:**
         """
 
-        self.impl.StoreConfiguration(configName)
+        self.impl.StoreConfiguration(config)
 
     def GetConfigurations(self):
         """
@@ -911,20 +952,24 @@ class AGNodeServiceIW(SOAPIWrapper):
     def RemoveStream( self, streamDescription ):
         self.proxy.RemoveStream(streamDescription)
 
-    def LoadConfiguration( self, configName ):
-        self.proxy.LoadConfiguration(configName)
+    def LoadConfiguration( self, config ):
+        self.proxy.LoadConfiguration(config)
 
-    def NeedMigrateNodeConfig(self,configFile):
-        return self.proxy.NeedMigrateNodeConfig(configFile)
+    def NeedMigrateNodeConfig(self,config):
+        return self.proxy.NeedMigrateNodeConfig(config)
                 
-    def MigrateNodeConfig(self,configFile):
-        self.proxy.MigrateNodeConfig(configFile)
+    def MigrateNodeConfig(self,config):
+        self.proxy.MigrateNodeConfig(config)
 
-    def StoreConfiguration( self, configName ):
-        self.proxy.StoreConfiguration(configName)
+    def StoreConfiguration( self, config ):
+        self.proxy.StoreConfiguration(config)
 
     def GetConfigurations(self):
-        return self.proxy.GetConfigurations()
+        configStructs = self.proxy.GetConfigurations()
+        configs=[]
+        for c in configStructs:
+            configs.append(CreateNodeConfigDescription(c))
+        return configs
 
     def GetCapabilities(self):
         capList = list()
