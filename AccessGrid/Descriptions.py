@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.75 2005-05-09 21:57:26 eolson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.76 2005-05-12 21:05:42 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.75 2005-05-09 21:57:26 eolson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.76 2005-05-12 21:05:42 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -114,7 +114,7 @@ class DataDescription(ObjectDescription):
     class InvalidStatus(Exception):
         pass
     
-    def __init__(self, name):
+    def __init__(self, name=None):
         ObjectDescription.__init__(self, name)
 
         self.status = self.STATUS_INVALID
@@ -242,7 +242,7 @@ class ServiceDescription(ObjectDescription):
 
         mimetype : string
     """
-    def __init__(self, name, description, uri, mimetype):   
+    def __init__(self, name=None, description="", uri=None, mimetype=""):   
         ObjectDescription.__init__(self, name, description, uri)   
         self.mimeType = mimetype   
           
@@ -272,7 +272,7 @@ class ApplicationDescription(ObjectDescription):
     the Object Description that adds a mimeType which should be a
     standard mime-type.
     """
-    def __init__(self, oid, name, description, uri, mimetype, startable=1):   
+    def __init__(self, oid=None, name=None, description="", uri="", mimetype="", startable=1):   
         ObjectDescription.__init__(self, name, description, uri, oid = oid)
         self.mimeType = mimetype   
         self.startable = startable
