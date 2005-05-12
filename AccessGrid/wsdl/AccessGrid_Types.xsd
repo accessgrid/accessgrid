@@ -153,13 +153,13 @@
       <xs:sequence>
         <xs:element name="id" type="xs:string"/>
         <xs:element name="name" type="xs:string"/>
-        <xs:element name="description" type="xs:string"/>
+        <xs:element name="description" nillable="true" type="xs:string"/>
         <xs:element name="uri" type="xs:string"/>
         <xs:element name="status" type="xs:string"/>
         <xs:element name="size" type="xs:integer"/>
         <xs:element name="checksum" type="xs:string"/>
         <xs:element name="owner" type="xs:string"/>
-        <xs:element name="type" type="xs:string"/>
+        <xs:element name="type" nillable="true" type="xs:string"/>
         <xs:element name="lastModified" type="xs:string"/>
       </xs:sequence>
     </xs:complexType>
