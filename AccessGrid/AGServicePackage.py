@@ -3,13 +3,13 @@
 # Purpose:     
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: AGServicePackage.py,v 1.2 2005-02-07 21:52:12 lefvert Exp $
+# RCS-ID:      $Id: AGServicePackage.py,v 1.3 2005-05-12 21:14:42 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AGServicePackage.py,v 1.2 2005-02-07 21:52:12 lefvert Exp $"
+__revision__ = "$Id: AGServicePackage.py,v 1.3 2005-05-12 21:14:42 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -43,7 +43,7 @@ class AGServicePackage:
         self.packageFile = None
         self.name = None
         self.description = None
-        self.resourceType = None
+        self.resourceNeeded = 0
         self.version = None
         self.inlineClass = 0
         
@@ -92,7 +92,7 @@ class AGServicePackage:
         c.optionxform = str
         c.readfp( sp )
         
-        # read required parameters
+        # read parameters
         try:
             self.name = c.get( "ServiceDescription", "name" )
             self.description = c.get( "ServiceDescription", "description" )
@@ -100,6 +100,8 @@ class AGServicePackage:
             if c.has_option("ServiceDescription","resourceType"):
                 self.resourceType = c.get( "ServiceDescription", "resourceType" )
             self.version = c.get("ServiceDescription","version")
+            if c.has_option("ServiceDescription","resourceNeeded"):
+                self.resourceNeeded = c.get( "ServiceDescription", "resourceNeeded" )
             if c.has_option("ServiceDescription","inlineClass"):
                 self.inlineClass = c.get("ServiceDescription","inlineClass")
         except Exception, e:
@@ -168,14 +170,14 @@ class AGServicePackage:
     def GetDescriptionFilename(self):
         return self.svcFile
         
-    def GetResourceType(self):
-        return self.resourceType
+    def GetResourceNeeded(self):
+        return self.resourceNeeded
         
     def GetDescription(self):
         return AGServicePackageDescription(self.name,
                                            self.description,
                                            self.packageFile,
-                                           self.resourceType)
+                                           self.resourceNeeded)
                                            
         
 if __name__ == "__main__":
@@ -186,7 +188,7 @@ if __name__ == "__main__":
     print "  name: ", servicePackageDesc.name
     print "  description: ", servicePackageDesc.description
     print "  packageFile: ", servicePackageDesc.packageFile
-    print "  resourceType: ", servicePackageDesc.resourceType
+    print "  resourceNeeded: ", servicePackageDesc.resourceNeeded
     
     path = '/tmp/b'
     print "Extracting package to", path
