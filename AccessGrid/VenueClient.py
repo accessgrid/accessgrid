@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.211 2005-05-12 21:07:31 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.212 2005-05-12 21:18:47 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.211 2005-05-12 21:07:31 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.212 2005-05-12 21:18:47 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -51,6 +51,7 @@ from AccessGrid.Descriptions import CreateApplicationDescription
 from AccessGrid.Descriptions import CreateStreamDescription
 from AccessGrid.AGNodeService import AGNodeServiceIW
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
+from AccessGrid import ServiceDiscovery
 from AccessGrid.Descriptions import VenueState
 
 from AccessGrid.Jabber.JabberClient import JabberClient
@@ -86,7 +87,7 @@ class VenueClient:
     programmatic interface to the Access Grid for a Venues User
     Interface.  The VenueClient can only be in one venue at a    time.
     """    
-    
+    ServiceType = '_venueclient._tcp'
     
     def __init__(self, profile=None, pnode=0, port=0, progressCB=None,
                  app=None):
@@ -279,19 +280,26 @@ class VenueClient:
                 port = NetworkAddressAllocator().AllocatePort()
                         
         # First, check cmd line option
+        hostname = self.app.GetHostname()
         if self.app.GetOption("secure"):
-            self.server = SecureServer((self.app.GetHostname(), int(port)))
+            self.server = SecureServer((hostname, int(port)))
         # Second, check preferences
         elif int(self.preferences.GetPreference(Preferences.SECURE_CLIENT_CONNECTION)):
-            self.server = SecureServer((self.app.GetHostname(), int(port)))
+            self.server = SecureServer((hostname, int(port)))
         else:
-            self.server = InsecureServer((self.app.GetHostname(), port))
+            self.server = InsecureServer((hostname, port))
 
         # VenueClient interface not fully defined yet.
         #from AccessGrid.interfaces.VenueClient_interface import VenueClient as VenueClientI
         #vci = VenueClientI(impl=self)
         """
         uri = self.server.RegisterObject(vci, path='/VenueClient')
+        try:
+            ServiceDiscovery.Publisher(hostname,VenueClient.ServiceType,
+                                        uri,port=port)
+        except:
+            log.exception("Couldn't publish node service advertisement")
+
 
         if(self.profile != None):
             self.profile.venueClientURL = uri
@@ -306,6 +314,11 @@ class VenueClient:
             self.sm.SetUri(uri)
             log.debug("__StartWebService: service manager: %s",
                       uri)
+            try:
+                ServiceDiscovery.Publisher(hostname,AGServiceManager.ServiceType,
+                                            uri,port=port)
+            except:
+                log.exception("Couldn't publish node service advertisement")
 
             from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
             self.ns = AGNodeService(self.app)
@@ -316,16 +329,22 @@ class VenueClient:
                       uri)
             self.SetNodeUrl(self.server.FindURLForObject(self.ns))
             
+            try:
+                ServiceDiscovery.Publisher(hostname,AGNodeService.ServiceType,
+                                            uri,port=port)
+            except:
+                log.exception("Couldn't publish node service advertisement")
+                
         self.server.RunInThread()
         """
 
-#FIXME: default node configuration needs to be stored in preferences,
-#       and retrieved from preferences here
-#         if pnode:
-#             try:
-#                 defaultConfig = self.ns.GetDefaultConfiguration()
-#             except:
-#                 log.exception("Error loading default configuration")
+        if pnode:
+            try:
+                prefs = self.app.GetPreferences()
+                defaultConfig = prefs.GetPreference(Preferences.NODE_CONFIG)
+                self.ns.LoadConfiguration(defaultConfig)
+            except:
+                log.exception("Error loading default configuration")
             
         # Save the location of the venue client url
         # for other apps to communicate with the venue client
@@ -873,7 +892,7 @@ class VenueClient:
         
         try:
             self.profile.capabilities = self.nodeService.GetCapabilities()
-
+            self.capabilities = self.profile.capabilities
         except:
             # This is a non fatal error, users should be notified
             # but still enter the venue
