@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.76 2005-05-12 21:05:42 eolson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.77 2005-05-12 21:09:18 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.76 2005-05-12 21:05:42 eolson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.77 2005-05-12 21:09:18 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -370,12 +370,12 @@ class StreamDescription( ObjectDescription ):
        return string
    
 class AGServiceManagerDescription:
-    def __init__( self, name, uri ):
+    def __init__( self, name="", uri="" ):
         self.name = name
         self.uri = uri
 
 class AGServiceDescription:
-    def __init__( self, name, uri, capabilities, resource, packageFile):
+    def __init__( self, name="", uri="", capabilities=[], resource="", packageFile=""):
         self.name = name
         self.uri = uri
         self.capabilities = capabilities
@@ -383,11 +383,11 @@ class AGServiceDescription:
         self.packageFile = packageFile
 
 class AGServicePackageDescription:
-    def __init__(self,name,description,packageFile,resourceType):
+    def __init__(self,name="",description="",packageFile="",resourceNeeded=0):
         self.name = name
         self.description = description
         self.packageFile = packageFile
-        self.resourceType = resourceType
+        self.resourceNeeded = resourceNeeded
         
     def GetName(self):
         return self.name
@@ -398,8 +398,8 @@ class AGServicePackageDescription:
     def GetPackageFile(self):
         return self.packageFile
         
-    def GetResourceType(self):
-        return self.resourceType
+    def GetResourceNeeded(self):
+        return self.resourceNeeded
 
 class AGNetworkServiceDescription(ObjectDescription):
     def __init__(self, name, description, uri, mimeType, extension,
@@ -555,10 +555,16 @@ class VenueState:
     def GetTextLocation( self ):
         return self.textLocation
 
-class ResourceDescription(ObjectDescription): 
+class ResourceDescription: 
     def __init__(self,name):
-        ObjectDescription.__init__(self,name)
-    
+        self.name = name
+
+class NodeConfigDescription:
+    SYSTEM = 'system'
+    USER = 'user'
+    def __init__(self,name="",type=""):
+        self.name = name
+        self.type = type
 
 #
 #
@@ -756,7 +762,7 @@ def CreateAGServicePackageDescription(svcPkgDescStruct):
                         svcPkgDescStruct.name,
                         svcPkgDescStruct.description,
                         svcPkgDescStruct.packageFile,
-                        svcPkgDescStruct.resourceType)
+                        svcPkgDescStruct.resourceNeeded)
     return svcPkgDesc
 
 def CreateAGServiceDescription(svcDescStruct):
@@ -828,3 +834,7 @@ def CreateParameter( parmstruct ):
         raise TypeError("Unknown parameter type:", parmstruct.type )
 
     return parameter
+
+def CreateNodeConfigDescription( nodeConfigStruct ):
+    return NodeConfigDescription(nodeConfigStruct.name,
+                                 nodeConfigStruct.type)
