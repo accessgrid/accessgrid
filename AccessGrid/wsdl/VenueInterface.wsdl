@@ -68,7 +68,9 @@
           <xsd:element name="CreateApplicationRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="appDescription" type="agtk:ApplicationDescription" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="appName" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="appDescription" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="appMimeType" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -223,6 +225,97 @@
           <xsd:element name="SetConnectionsResponse">
           </xsd:element>
 
+          <xsd:element name="GetUploadDescriptorRequest">
+          </xsd:element>
+
+          <xsd:element name="GetUploadDescriptorResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="uploadUrl" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="UpdateDataRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="dataDesc" type="agtk:DataDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="UpdateDataResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="dataDesc" type="agtk:DataDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveDataRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="dataDesc" type="agtk:DataDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveDataResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="dataDesc" type="agtk:DataDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddServiceRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="serviceDesc" type="agtk:ServiceDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddServiceResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="serviceDesc" type="agtk:ServiceDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveServiceRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="serviceDesc" type="agtk:ServiceDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveServiceResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="serviceDesc" type="agtk:ServiceDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="UpdateServiceRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="serviceDesc" type="agtk:ServiceDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="UpdateServiceResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="serviceDesc" type="agtk:ServiceDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
       </schema>
     </types>
 
@@ -313,6 +406,42 @@
     <message name="SetConnectionsResponse">
 	<part name="parameters" element="agtkv:SetConnectionsResponse"/>
     </message>
+    <message name="GetUploadDescriptorRequest">
+	<part name="parameters" element="agtkv:GetUploadDescriptorRequest"/>
+    </message>
+    <message name="GetUploadDescriptorResponse">
+	<part name="parameters" element="agtkv:GetUploadDescriptorResponse"/>
+    </message>
+    <message name="UpdateDataRequest">
+	<part name="parameters" element="agtkv:UpdateDataRequest"/>
+    </message>
+    <message name="UpdateDataResponse">
+	<part name="parameters" element="agtkv:UpdateDataResponse"/>
+    </message>
+    <message name="RemoveDataRequest">
+	<part name="parameters" element="agtkv:RemoveDataRequest"/>
+    </message>
+    <message name="RemoveDataResponse">
+	<part name="parameters" element="agtkv:RemoveDataResponse"/>
+    </message>
+    <message name="AddServiceRequest">
+	<part name="parameters" element="agtkv:AddServiceRequest"/>
+    </message>
+    <message name="AddServiceResponse">
+	<part name="parameters" element="agtkv:AddServiceResponse"/>
+    </message>
+    <message name="RemoveServiceRequest">
+	<part name="parameters" element="agtkv:RemoveServiceRequest"/>
+    </message>
+    <message name="RemoveServiceResponse">
+	<part name="parameters" element="agtkv:RemoveServiceResponse"/>
+    </message>
+    <message name="UpdateServiceRequest">
+	<part name="parameters" element="agtkv:UpdateServiceRequest"/>
+    </message>
+    <message name="UpdateServiceResponse">
+	<part name="parameters" element="agtkv:UpdateServiceResponse"/>
+    </message>
 
     <portType name="Venue">
 	<operation name="Enter">
@@ -377,6 +506,30 @@
 	<operation name="SetConnections">
 	    <input message="agtkv:SetConnectionsRequest"/>
             <output message="agtkv:SetConnectionsResponse"/>
+	</operation>
+	<operation name="GetUploadDescriptor">
+	    <input message="agtkv:GetUploadDescriptorRequest"/>
+            <output message="agtkv:GetUploadDescriptorResponse"/>
+	</operation>
+	<operation name="UpdateData">
+	    <input message="agtkv:UpdateDataRequest"/>
+            <output message="agtkv:UpdateDataResponse"/>
+	</operation>
+	<operation name="RemoveData">
+	    <input message="agtkv:RemoveDataRequest"/>
+            <output message="agtkv:RemoveDataResponse"/>
+	</operation>
+	<operation name="AddService">
+	    <input message="agtkv:AddServiceRequest"/>
+            <output message="agtkv:AddServiceResponse"/>
+	</operation>
+	<operation name="RemoveService">
+	    <input message="agtkv:RemoveServiceRequest"/>
+            <output message="agtkv:RemoveServiceResponse"/>
+	</operation>
+	<operation name="UpdateService">
+	    <input message="agtkv:UpdateServiceRequest"/>
+            <output message="agtkv:UpdateServiceResponse"/>
 	</operation>
     </portType>
 
