@@ -171,5 +171,38 @@
     <xs:complexType name="Preferences">
     </xs:complexType>
 
+    <xs:complexType name="AGServiceDescription">
+      <xs:sequence>
+        <xs:element name = "name" type = "xs:string"/>
+        <xs:element name = "url" type = "xs:string"/>
+        <xs:element name = "capabilities" type = "xs:string"/>
+        <xs:element name = "resource" type = "xs:string"/>
+        <xs:element name = "packageFile" type = "xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="AGServicePackageDescription">
+      <xs:sequence>
+        <xs:element name = "name" type = "xs:string"/>
+        <xs:element name = "description" type = "xs:string"/>
+        <xs:element name = "packageFile" type = "xs:string"/>
+        <xs:element name = "resourceNeeded" type = "xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="AGServiceManagerDescription">
+      <xs:sequence>
+        <xs:element name = "name" type = "xs:string"/>
+        <xs:element name = "uri" type = "xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="NodeConfigDescription">
+      <xs:sequence>
+        <xs:element name = "name" type = "xs:string"/>
+        <xs:element name = "type" type = "xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+
  </xs:schema>
 
