@@ -160,11 +160,10 @@ try:
 			    
             # Get service info and add to list
             serviceName = userdata
-	    sys.stderr.write( "txt = %d %s\n" % (txtLen,txtRecord))
-	    parts = struct.unpack('%ds' % (txtLen,),txtRecord)
-	    txtlen = ord(parts[0][0])
-	    txt = parts[0][1:txtlen+1]
-	    url = txt
+            parts = struct.unpack('%ds' % (txtLen,),txtRecord[0:txtLen])
+            txtlen = ord(parts[0][0])
+            txt = parts[0][1:txtlen+1]
+            url = txt
 
             self.lock.acquire()
             self.serviceUrls[serviceName] = url
