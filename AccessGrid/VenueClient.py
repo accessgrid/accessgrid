@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.210 2005-05-09 18:02:33 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.211 2005-05-12 21:07:31 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.210 2005-05-09 18:02:33 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.211 2005-05-12 21:07:31 eolson Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -833,9 +833,7 @@ class VenueClient:
             #                                               self.privateId))
 
             # Get personaldatastore information
-            #self.dataStoreUploadUrl = self.__venueProxy.GetUploadDescriptor()
-            # FIXME, ECO
-            self.dataStoreUploadUrl = None
+            self.dataStoreUploadUrl = self.__venueProxy.GetUploadDescriptor()
         
             # Connect the venueclient to the text client
             #            self.textClient = TextClient(self.profile,
@@ -1146,12 +1144,12 @@ class VenueClient:
         self.__venueProxy.UpdateApplication(appDescription)
         
     def AddService(self,serviceDescription):
-        try:
-            self.__venueProxy.AddService(serviceDescription)
-        except Exception,e:
-            if e.faultstring == "ServiceAlreadyPresent":
-                raise ServiceAlreadyPresent
-            raise
+        #try:
+        self.__venueProxy.AddService(serviceDescription)
+        #except Exception,e:
+            #if e.faultstring == "ServiceAlreadyPresent":
+            #    raise ServiceAlreadyPresent
+            #raise
 
     def UpdateService(self,serviceDescription):
         self.__venueProxy.UpdateService(serviceDescription)
