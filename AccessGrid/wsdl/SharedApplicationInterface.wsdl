@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  xmlns:agsa="http://www.accessgrid.org/v3.0/sharedapplication"
+  targetNamespace="http://www.accessgrid.org/v3.0/sharedapplication">
+
+      <types>
+      <schema targetNamespace="http://www.accessgrid.org/v3.0/sharedapplication" 
+              elementFormDefault="qualified" 
+	      attributeFormDefault="unqualified" 
+              xmlns="http://www.w3.org/2001/XMLSchema">
+
+          <xsd:element name="GetComponentsRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetComponentsResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="components" type="agsa:AppParticipantDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetDataRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="key" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetDataResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="data" type="xsd:any" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetDataChannelRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetDataChannelResponse">
+            <xsd:complexType><xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="channelId" type="xsd:string" />
+                <xsd:complexType><xsd:sequence>
+                  <xsd:sequence>
+                    <xsd:element minOccurs="0" maxOccurs="1" name="address" type="xsd:string" />
+                    <xsd:element minOccurs="0" maxOccurs="1" name="port" type="xsd:integer" />
+                  </xsd:sequence>
+                  <xsd:element minOccurs="0" maxOccurs="1" name="eventchannelid" type="xsd:string" />
+                </xsd:sequence></xsd:complexType>
+              
+            </xsd:sequence></xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetDataKeysRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetDataKeysResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="keys" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetIdRequest">
+          </xsd:element>
+
+          <xsd:element name="GetIdResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="id" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetParticipantsRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetParticipantsResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="participants" type="agtk:ClientProfile" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetStateRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetStateResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="name" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="description" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="id" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="mimeType" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="uri" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="appData" type="agtk:Dictionary" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetVenueURLRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetVenueURLResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="venueUrl" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="JoinRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="clientProfile" type="agtk:ClientProfile" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="JoinResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="publicId" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="privateId" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="LeaveRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="LeaveResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="retval" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetDataRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="key" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="value" type="xsd:any" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetDataResponse">
+          </xsd:element>
+
+          <xsd:element name="SetParticipantProfileRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="profile" type="agtk:ClientProfile" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetParticipantProfileResponse">
+          </xsd:element>
+
+          <xsd:element name="SetParticipantStatusRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="status" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetParticipantStatusResponse">
+          </xsd:element>
+
+      </schema>
+      </types>
+
+
+
+    <message name="GetComponentsRequest">
+	<part name="parameters" element="agsa:GetComponentsRequest"/>
+    </message>
+    <message name="GetComponentsResponse">
+	<part name="parameters" element="agsa:GetComponentsResponse"/>
+    </message>
+    <message name="GetDataRequest">
+	<part name="parameters" element="agsa:GetDataRequest"/>
+    </message>
+    <message name="GetDataResponse">
+	<part name="parameters" element="agsa:GetDataResponse"/>
+    </message>
+    <message name="GetDataChannelRequest">
+	<part name="parameters" element="agsa:GetDataChannelRequest"/>
+    </message>
+    <message name="GetDataChannelResponse">
+	<part name="parameters" element="agsa:GetDataChannelResponse"/>
+    </message>
+    <message name="GetDataKeysRequest">
+	<part name="parameters" element="agsa:GetDataKeysRequest"/>
+    </message>
+    <message name="GetDataKeysResponse">
+	<part name="parameters" element="agsa:GetDataKeysResponse"/>
+    </message>
+    <message name="GetIdRequest">
+	<part name="parameters" element="agsa:GetIdRequest"/>
+    </message>
+    <message name="GetIdResponse">
+	<part name="parameters" element="agsa:GetIdResponse"/>
+    </message>
+    <message name="GetParticipantsRequest">
+	<part name="parameters" element="agsa:GetParticipantsRequest"/>
+    </message>
+    <message name="GetParticipantsResponse">
+	<part name="parameters" element="agsa:GetParticipantsResponse"/>
+    </message>
+    <message name="GetStateRequest">
+	<part name="parameters" element="agsa:GetStateRequest"/>
+    </message>
+    <message name="GetStateResponse">
+	<part name="parameters" element="agsa:GetStateResponse"/>
+    </message>
+    <message name="GetVenueURLRequest">
+	<part name="parameters" element="agsa:GetVenueURLRequest"/>
+    </message>
+    <message name="GetVenueURLResponse">
+	<part name="parameters" element="agsa:GetVenueURLResponse"/>
+    </message>
+    <message name="JoinRequest">
+	<part name="parameters" element="agsa:JoinRequest"/>
+    </message>
+    <message name="JoinResponse">
+	<part name="parameters" element="agsa:JoinResponse"/>
+    </message>
+    <message name="LeaveRequest">
+	<part name="parameters" element="agsa:LeaveRequest"/>
+    </message>
+    <message name="LeaveResponse">
+	<part name="parameters" element="agsa:LeaveResponse"/>
+    </message>
+    <message name="SetDataRequest">
+	<part name="parameters" element="agsa:SetDataRequest"/>
+    </message>
+    <message name="SetDataResponse">
+	<part name="parameters" element="agsa:SetDataResponse"/>
+    </message>
+    <message name="SetParticipantProfileRequest">
+	<part name="parameters" element="agsa:SetParticipantProfileRequest"/>
+    </message>
+    <message name="SetParticipantProfileResponse">
+	<part name="parameters" element="agsa:SetParticipantProfileResponse"/>
+    </message>
+    <message name="SetParticipantStatusRequest">
+	<part name="parameters" element="agsa:SetParticipantStatusRequest"/>
+    </message>
+    <message name="SetParticipantStatusResponse">
+	<part name="parameters" element="agsa:SetParticipantStatusResponse"/>
+    </message>
+    <message name="__init__Request">
+	<part name="parameters" element="agsa:__init__Request"/>
+    </message>
+    <message name="__init__Response">
+	<part name="parameters" element="agsa:__init__Response"/>
+    </message>
+
+
+
+    <portType name="SharedApplication">
+    <operation name="GetComponents">
+        <input message="agsa:GetComponentsRequest"/>
+        <output message="agsa:GetComponentsResponse"/>
+    </operation>
+    <operation name="GetData">
+        <input message="agsa:GetDataRequest"/>
+        <output message="agsa:GetDataResponse"/>
+    </operation>
+    <operation name="GetDataChannel">
+        <input message="agsa:GetDataChannelRequest"/>
+        <output message="agsa:GetDataChannelResponse"/>
+    </operation>
+    <operation name="GetDataKeys">
+        <input message="agsa:GetDataKeysRequest"/>
+        <output message="agsa:GetDataKeysResponse"/>
+    </operation>
+    <operation name="GetId">
+        <input message="agsa:GetIdRequest"/>
+        <output message="agsa:GetIdResponse"/>
+    </operation>
+    <operation name="GetParticipants">
+        <input message="agsa:GetParticipantsRequest"/>
+        <output message="agsa:GetParticipantsResponse"/>
+    </operation>
+    <operation name="GetState">
+        <input message="agsa:GetStateRequest"/>
+        <output message="agsa:GetStateResponse"/>
+    </operation>
+    <operation name="GetVenueURL">
+        <input message="agsa:GetVenueURLRequest"/>
+        <output message="agsa:GetVenueURLResponse"/>
+    </operation>
+    <operation name="Join">
+        <input message="agsa:JoinRequest"/>
+        <output message="agsa:JoinResponse"/>
+    </operation>
+    <operation name="Leave">
+        <input message="agsa:LeaveRequest"/>
+        <output message="agsa:LeaveResponse"/>
+    </operation>
+    <operation name="SetData">
+        <input message="agsa:SetDataRequest"/>
+        <output message="agsa:SetDataResponse"/>
+    </operation>
+    <operation name="SetParticipantProfile">
+        <input message="agsa:SetParticipantProfileRequest"/>
+        <output message="agsa:SetParticipantProfileResponse"/>
+    </operation>
+    <operation name="SetParticipantStatus">
+        <input message="agsa:SetParticipantStatusRequest"/>
+        <output message="agsa:SetParticipantStatusResponse"/>
+    </operation>
+    <operation name="__init__">
+        <input message="agsa:__init__Request"/>
+        <output message="agsa:__init__Response"/>
+    </operation>
+    </portType>
+
+</definitions>
+

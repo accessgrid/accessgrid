@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  xmlns:agsa="http://www.accessgrid.org/v3.0/sharedapplication"
+  targetNamespace="http://www.accessgrid.org/v3.0/sharedapplication">
+
+  <import namespace="http://www.accessgrid.org/v3.0/sharedapplication" 
+          location="SharedApplicationInterface.wsdl"/>
+
+  <import namespace="http://www.accessgrid.org/v3.0" 
+          location="AccessGrid_Types.xsd"/>
+
+  <binding name="SharedApplication" type="agsa:SharedApplication">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <operation name="GetComponents">
+	    <soap:operation soapAction="urn:#GetComponents"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetData">
+	    <soap:operation soapAction="urn:#GetData"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetDataChannel">
+	    <soap:operation soapAction="urn:#GetDataChannel"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetDataKeys">
+	    <soap:operation soapAction="urn:#GetDataKeys"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetId">
+	    <soap:operation soapAction="urn:#GetId"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetParticipants">
+	    <soap:operation soapAction="urn:#GetParticipants"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetState">
+	    <soap:operation soapAction="urn:#GetState"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetVenueURL">
+	    <soap:operation soapAction="urn:#GetVenueURL"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="Join">
+	    <soap:operation soapAction="urn:#Join"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="Leave">
+	    <soap:operation soapAction="urn:#Leave"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="SetData">
+	    <soap:operation soapAction="urn:#SetData"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="SetParticipantProfile">
+	    <soap:operation soapAction="urn:#SetParticipantProfile"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="SetParticipantStatus">
+	    <soap:operation soapAction="urn:#SetParticipantStatus"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="__init__">
+	    <soap:operation soapAction="urn:#__init__"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    </binding>
+    <service name="SharedApplication">
+        <port name="SharedApplication" binding="agsa:SharedApplication">
+	    <soap:address location="http://localhost:7000"/>
+	</port>
+    </service>
+
+
+</definitions>
+
