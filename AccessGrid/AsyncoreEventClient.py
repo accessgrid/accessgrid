@@ -72,13 +72,13 @@ class NetworkClient (asyncore.dispatcher):
         handler - callback for handling read and writes
         '''
         asyncore.dispatcher.__init__ (self)
+        self.out_buffer = ""
+        self.in_buffer = ""
         log.debug('NetworkClient.__init__: Connect to %s %s'%location)
         self.create_socket (socket.AF_INET, socket.SOCK_STREAM)
         self.connect(location)
         self.handler = handler
-        self.out_buffer = ""
-        self.in_buffer = ""
-            
+                  
     def handle_connect(self):
         pass
 
@@ -92,12 +92,12 @@ class NetworkClient (asyncore.dispatcher):
     def handle_write(self):
         sent = self.send(self.out_buffer)
         self.out_buffer = self.out_buffer[sent:]
-        
+                
     def writable(self):
         if self.out_buffer:
             return len(self.out_buffer) > 0
         return 0
-     
+        
 # Adapted from class event_loop in Sam Rushing's async package
 class EventLoop:
 
@@ -262,7 +262,7 @@ if __name__=='__main__':
             EVT_CHAR(self.log, self.OnChar)
             
             # start the event server thread
-            eventHost = ""
+            eventHost = "localhost"
             eventPort = 8002
             self.eventClient = EventClient((eventHost, eventPort), 1, 1)
             self.eventClient.RegisterCallback("test", self.OnTest)
@@ -283,11 +283,10 @@ if __name__=='__main__':
             key = event.KeyCode()
             if key == 27:
                 self.Close(true)
-            elif key == ord('c'):
-                wxLog_FlushActive()
+          
             else:
                 self.eventClient.Send("test", chr(key))
-                event.Skip()
+                #event.Skip()
                 return
 
         def TimeToQuit(self, event):

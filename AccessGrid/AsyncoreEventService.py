@@ -15,7 +15,6 @@ from AccessGrid import Log
 log = Log.GetLogger(Log.EventService)
 Log.SetDefaultLevel(Log.EventService, Log.DEBUG)
 
-
 class PickledEvent:
     '''
     Event class. This will eventually be built using xml.
@@ -165,7 +164,7 @@ class VenueServerService:
     def CreateChannel(self, channelId):
         channel = Channel(channelId)
         self.channels[channelId] = channel
-               
+                       
     def DestroyChannel(self, channelId):
         del self.channels[channelId]
 
@@ -208,13 +207,17 @@ class NetworkService (asyncore.dispatcher):
         '''
         Accept incoming connections. 
         '''
-        conn, addr = self.accept()
+        try:
+            conn, addr = self.accept()
+        
 
-        log.debug('NetworkService: Incoming connection from %s:%d'
-                  %(addr[0], addr[1]))
-        # create a connection
-        NetworkConnection(conn, addr, self.handler)
-
+            log.debug('NetworkService: Incoming connection from %s:%d'
+                      %(addr[0], addr[1]))
+            # create a connection
+            NetworkConnection(conn, addr, self.handler)
+        except:
+            print '---------------- accept error -----why?'
+            
 
 class NetworkConnection (asyncore.dispatcher):
     '''
@@ -423,10 +426,10 @@ if __name__=='__main__':
 
     network = EventService("Event Service",
                            "asyncore based service for distributing events",
-                           1, "AsyncoreEvent", ('', 8002))
+                           1, "AsyncoreEvent", ('localhost', 8002))
     network.CreateChannel(1)
     network.start()
-
+    
     print "started event service on host: localhost port: 8002"
 
     #Loop main thread to catch signals

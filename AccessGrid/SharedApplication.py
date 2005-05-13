@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.23 2005-05-12 21:32:31 eolson Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.24 2005-05-13 19:37:03 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,13 +14,14 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.23 2005-05-12 21:32:31 eolson Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.24 2005-05-13 19:37:03 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
 from AccessGrid.GUID import GUID
 from AccessGrid import Events
 from AccessGrid.Events import Event
+from AccessGrid.AsyncoreEventClient import EventClient
 from AccessGrid.Descriptions import ApplicationDescription, AppParticipantDescription, AppDataDescription
 from AccessGrid.Descriptions import CreateClientProfile
 
@@ -168,7 +169,7 @@ class SharedApplication(AuthorizationMixIn):
         """
 
         for channel in self.channels:
-            self.eventService.RemoveChannel(channel)
+            self.eventService.DestroyChannel(channel)
 
     def GetState(self, private_token):
         """
@@ -236,7 +237,8 @@ class SharedApplication(AuthorizationMixIn):
         # Distribute event
         for channelId in self.channels:
             evt = Event(Event.APP_PARTICIPANT_JOIN, channelId, participant)
-            self.eventService.Distribute(channelId, evt)
+            #self.eventService.Distribute(channelId, evt)
+            self.eventClient.Send(Event.APP_PARTICIPANT_JOIN, participant)     
 
         return (public_id, private_id)
 
@@ -249,7 +251,9 @@ class SharedApplication(AuthorizationMixIn):
             for channelId in self.channels:
                 evt = Event(Event.APP_PARTICIPANT_LEAVE, channelId,
                             participant)
-                self.eventService.Distribute(channelId, evt)
+                #self.eventService.Distribute(channelId, evt)
+                self.eventClient.Send(Event.APP_PARTICIPANT_LEAVE, participant)     
+
 
             del self.components[private_token]
                 
@@ -329,7 +333,8 @@ class SharedApplication(AuthorizationMixIn):
         # Distribute event
         for channelId in self.channels:
             evt = Event(Event.APP_SET_DATA, channelId, data)
-            self.eventService.Distribute(channelId, evt)
+            #self.eventService.Distribute(channelId, evt)
+            self.eventClient.Send(Event.APP_SET_DATA, data)     
 
     def GetData(self, private_token, key):
         key = key.lower() # Our .dat files use all lowercase keys
@@ -380,7 +385,8 @@ class SharedApplication(AuthorizationMixIn):
         # Distribute event
         for channelId in self.channels:
             evt = Event(Event.APP_UPDATE_PARTICIPANT, channelId, participant)
-            self.eventService.Distribute(channelId, evt)
+            #self.eventService.Distribute(channelId, evt)
+            self.eventClient.Send(Event.APP_UPDATE_PARTICIPANT, participant)     
                           
     def SetParticipantStatus(self, private_token, status):
         '''
@@ -401,7 +407,9 @@ class SharedApplication(AuthorizationMixIn):
         # Distribute event
         for channelId in self.channels:
             evt = Event(Event.APP_UPDATE_PARTICIPANT, channelId, participant)
-            self.eventService.Distribute(channelId, evt)
+            #self.eventService.Distribute(channelId, evt)
+            self.eventClient.Send(Event.APP_UPDATE_PARTICIPANT, participant)     
+                        
 
     def __CreateDataChannel(self):
         """
@@ -409,25 +417,25 @@ class SharedApplication(AuthorizationMixIn):
 
         Returns the channel ID and the location of its event service.
         """
-        
         channel_id = str(GUID())
-
         self.channels.append(channel_id)
-
         self.__InitializeDataChannel(channel_id)
-
         loc = self.eventService.GetLocation()
         log.debug("Returning channel_id='%s' loc='%s'", channel_id, loc)
         return (channel_id, loc)
 
     def __InitializeDataChannel(self, channel_id):
-
         handler = ChannelHandler(channel_id, self.eventService)
-
-        self.eventService.AddChannel(channel_id)
-
-        self.eventService.RegisterChannelCallback(channel_id,
-                                                  handler.handleEvent)
+        self.eventService.CreateChannel(channel_id)
+        evtLocation = self.eventService.GetLocation()
+        evtLocation = ("localhost", 8002)
+        self.eventClient = EventClient(evtLocation, 
+                                       1,
+                                       channel_id)
+        self.eventClient.Start()
+                    
+        #self.eventService.RegisterChannelCallback(channel_id,
+        #                                          handler.handleEvent)
 
     def __AwakenChannels(self):
         """
@@ -447,8 +455,9 @@ class ChannelHandler:
             eventType = event.eventType
             eventData = event.data
             log.debug("handling event type='%s' data='%s'", eventType, eventData)
-            self.eventService.Distribute(self.channelId,
-                                         Events.Event(eventType, self.channelId, eventData))
+            #self.eventService.Distribute(self.channelId,
+            #                             Events.Event(eventType, self.channelId, eventData))
+            self.eventClient.Send(eventType, eventData)         
         except:
             log.exception("handleEvent threw exception")
 

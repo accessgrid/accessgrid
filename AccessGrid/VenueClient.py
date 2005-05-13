@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.212 2005-05-12 21:18:47 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.213 2005-05-13 19:37:02 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.212 2005-05-12 21:18:47 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.213 2005-05-13 19:37:02 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -738,7 +738,7 @@ class VenueClient:
             # Enter the venue
             #
             self.venueUri = URL
-            self.__venueProxy = VenueIW(URL, tracefile=sys.stdout)
+            self.__venueProxy = VenueIW(URL) #, tracefile=sys.stdout)
 
             log.debug("EnterVenue: Invoke venue enter")
             self.profile.connectionId = self.__venueProxy.Enter( self.profile )
@@ -818,6 +818,7 @@ class VenueClient:
             #evtLocation = self.__venueProxy.GetEventServiceLocation()
                       
             # Create event client
+            evtLocation = ("localhost", 8002)
             self.eventClient = EventClient(evtLocation, 
                                            self.profile.connectionId,
                                            self.venueState.GetUniqueId())

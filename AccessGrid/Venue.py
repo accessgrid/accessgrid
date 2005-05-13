@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.240 2005-05-12 21:06:52 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.241 2005-05-13 19:37:02 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.240 2005-05-12 21:06:52 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.241 2005-05-13 19:37:02 lefvert Exp $"
 
 import sys
 import time
@@ -272,6 +272,7 @@ class Venue(AuthorizationMixIn):
         """
         Venue constructor.
         """
+              
         # pointer to outside world
         self.servicePtr = Service.instance()
         
@@ -423,7 +424,7 @@ class Venue(AuthorizationMixIn):
                                        self.GetId(),
                                        self.GetId())
         self.eventClient.Start()
-
+       
     #self.StartApplications()
 
     def __repr__(self):
@@ -1561,7 +1562,6 @@ class Venue(AuthorizationMixIn):
 
         **Raises:**
         """
-               
         log.debug("Called UpdateClientProfile on %s " %clientProfile.name)
 
         for privateId in self.clients.keys():
@@ -1571,7 +1571,7 @@ class Venue(AuthorizationMixIn):
                 #vclient.UpdateAccessTime()
 
         self.eventClient.Send(Event.MODIFY_USER, clientProfile)
-      
+              
     def RemoveData(self, dataDescription):
         """
         RemoveData removes persistent data from the Virtual Venue.
@@ -1709,72 +1709,7 @@ class Venue(AuthorizationMixIn):
         returnValue = app.GetState()
 
         return returnValue
-
-    def GetApplications(self):
-        """
-        return a list of the applications in this venue.
-        """
         
-        # Create a list of application descriptions to return
-        adl = map( lambda a: a.AsApplicationDescription(), self.applications.values() )
-        return adl
-        
-    def CreateApplication(self, name, description, mimeType, aid = None ):
-        """
-        Create a new application object.  Initialize the
-        implementation, and create a web service interface for it.
-
-        **Arguments:**
-
-        *name* A name for the application instance.
-
-        *description* A description for the new application instance.
-
-        *mimeType* A mime-type for the new application, used to
-        match applications with clients.
-
-        **Returns:**
-
-        *appHandle* A url to the new application object/service.
-        """
-
-        log.debug("CreateApplication: name=%s description=%s",
-                  name, description)
-
-        # Create the shared application object
-        app = SharedApplication(name, description, mimeType,  None, aid)
-        app.SetVenueURL(self.uri)
-        appId = app.GetId()
-        self.applications[appId] = app
-
-        # Create the interface object
-        appI = SharedApplicationI(app)
-
-        # pull out the venue path, so these can be a subspace
-        path = self.server.hostingEnvironment.FindPathForObject(self)
-        path = path + "/apps/%s" % appId
-
-        # register the app with the hosting environment
-        self.server.hostingEnvironment.RegisterObject(appI, path=path)
-
-        # register the authorization interface and serve it.
-        self.server.hostingEnvironment.RegisterObject(
-                                  AuthorizationManagerI(app.authManager),
-                                  path=path+'/Authorization')
-        
-        # pull the url back out and put it in the app object
-        appURL = self.server.hostingEnvironment.FindURLForObject(app)
-        app.SetHandle(appURL)
-
-        # grab the description, and update the universe with it
-        appDesc = app.AsApplicationDescription()
-
-        self.eventClient.Send(Event.ADD_APPLICATION, appDesc)
-        log.debug("CreateApplication: Created id=%s handle=%s",
-                  appDesc.id, appDesc.uri)
-
-        return appDesc
-
     def UpdateApplication(self, appDescStruct):
         """
         Update application.
@@ -1957,6 +1892,7 @@ class Venue(AuthorizationMixIn):
             if streamModified:
                 # Send a ModifyStream event
                 self.eventClient.Send(Event.MODIFY_STREAM, stream)
+                pass
              
     def GetEventServiceLocation(self):
         # return (self.server.GetEventServiceLocation(), self.uniqueId)
@@ -2134,7 +2070,8 @@ class Venue(AuthorizationMixIn):
         # Create a list of application descriptions to return
         adl = map( lambda a: a.AsApplicationDescription(), self.applications.values() )
         return adl
-        
+
+    
     def CreateApplication(self, name, description, mimeType, aid = None ):
         """
         Create a new application object.  Initialize the
@@ -2160,37 +2097,38 @@ class Venue(AuthorizationMixIn):
         # Create the shared application object
         app = SharedApplication(name, description, mimeType, 
                                   self.server.eventService, aid)
+        
         app.SetVenueURL(self.uri)
         appId = app.GetId()
         self.applications[appId] = app
-
         # Create the interface object
         appI = SharedApplicationI(app)
-
         # pull out the venue path, so these can be a subspace
         path = self.server.hostingEnvironment.FindPathForObject(self)
         path = path + "/apps/%s" % appId
-
         # register the app with the hosting environment
-        self.server.hostingEnvironment.RegisterObject(appI, path=path)
-
+       
+        #self.server.hostingEnvironment.RegisterObject(appI, path=path)
         # register the authorization interface and serve it.
-        self.server.hostingEnvironment.RegisterObject(
-                                  AuthorizationManagerI(app.authManager),
-                                  path=path+'/Authorization')
-        
+        #self.server.hostingEnvironment.RegisterObject(
+        #                          AuthorizationManagerI(app.authManager),
+        #                          path=path+'/Authorization')
         # pull the url back out and put it in the app object
-        appURL = self.server.hostingEnvironment.FindURLForObject(app)
-        app.SetHandle(appURL)
+        #appURL = self.server.hostingEnvironment.FindURLForObject(app)
+        #app.SetHandle(appURL)
 
         # grab the description, and update the universe with it
-        appDesc = app.AsApplicationDescription()
+        #appDesc = app.AsApplicationDescription()
 
+        appDesc = ApplicationDescription(1, "zuz's FAKE application",
+                                         "FAKE APP",
+                                         None,
+                                         "fake-mime")
+        appDesc = None
         self.eventClient.Send( Event.ADD_APPLICATION, appDesc)
-
-        log.debug("CreateApplication: Created id=%s handle=%s",
-                  appDesc.id, appDesc.uri)
-
+        #log.debug("CreateApplication: Created id=%s handle=%s",
+        #          appDesc.id, appDesc.uri)
+              
         return appDesc
 
     def UpdateApplication(self, appDescStruct):

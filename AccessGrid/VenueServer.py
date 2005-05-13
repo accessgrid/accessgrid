@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.182 2005-05-06 15:52:19 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.183 2005-05-13 19:37:02 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.182 2005-05-06 15:52:19 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.183 2005-05-13 19:37:02 lefvert Exp $"
 
 
 # Standard stuff
@@ -108,22 +108,25 @@ class VenueServer(AuthorizationMixIn):
     """
 
     configDefaults = {
-            "VenueServer.dataPort" : 8006,
-            "VenueServer.encryptAllMedia" : 1,
-            "VenueServer.houseKeeperFrequency" : 300,
-            "VenueServer.persistenceFilename" : 'VenueServer.dat',
-            "VenueServer.serverPrefix" : 'VenueServer',
-            "VenueServer.venuePathPrefix" : 'Venues',
-            "VenueServer.dataStorageLocation" : 'Data',
-            "VenueServer.backupServer" : '',
-            "VenueServer.addressAllocationMethod" : MulticastAddressAllocator.RANDOM,
-            "VenueServer.baseAddress" : MulticastAddressAllocator.SDR_BASE_ADDRESS,
-            "VenueServer.addressMask" : MulticastAddressAllocator.SDR_MASK_SIZE,
-            "VenueServer.authorizationPolicy" : None,
-            "VenueServer.performanceReportFile" : '',
-            "VenueServer.performanceReportFrequency" : 0
-            }
-
+        "VenueServer.dataPort" : 8006,
+        "VenueServer.eventPort" : 8002,
+        "VenueServer.textHost" : 'localhost',
+        "VenueServer.textPort" : 8004,
+        "VenueServer.encryptAllMedia" : 1,
+        "VenueServer.houseKeeperFrequency" : 300,
+        "VenueServer.persistenceFilename" : 'VenueServer.dat',
+        "VenueServer.serverPrefix" : 'VenueServer',
+        "VenueServer.venuePathPrefix" : 'Venues',
+        "VenueServer.dataStorageLocation" : 'Data',
+        "VenueServer.backupServer" : '',
+        "VenueServer.addressAllocationMethod" : MulticastAddressAllocator.RANDOM,
+        "VenueServer.baseAddress" : MulticastAddressAllocator.SDR_BASE_ADDRESS,
+        "VenueServer.addressMask" : MulticastAddressAllocator.SDR_MASK_SIZE,
+        "VenueServer.authorizationPolicy" : None,
+        "VenueServer.performanceReportFile" : '',
+        "VenueServer.performanceReportFrequency" : 0
+        }
+        
     defaultVenueDesc = VenueDescription("Venue Server Lobby", """This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid.""")
 
     def __init__(self, hostEnvironment = None, configFile=None):
@@ -244,10 +247,11 @@ class VenueServer(AuthorizationMixIn):
         # Add the event service
         self.eventService = EventService("Event Service",
                                          "asyncore based service for distributing events",
-                                         str(GUID()), "AsyncoreEvent", (self.hostname, 8002))
+                                         str(GUID()), "AsyncoreEvent",
+                                         (self.hostname, int(self.eventPort)))
         self.RegisterService(self.eventService.GetDescription())
         self.eventService.start()
-                
+                        
         # End of server wide services initialization
 
         # Try to open the persistent store for Venues. If we fail, we
@@ -560,7 +564,10 @@ class VenueServer(AuthorizationMixIn):
                                                         mimeType))
 
     def GetEventServiceLocation(self):
-        return self.eventService.GetLocation()
+        return (self.hostname, int(self.eventPort))
+
+    def GetTextServiceLocation(self):
+        return (self.textHost, int(self.textPort))
 
     def MakeVenueURL(self, uniqueId):
         """
@@ -701,6 +708,11 @@ class VenueServer(AuthorizationMixIn):
         venue = Venue(self, venueDesc.name, venueDesc.description,
                       self.dataStorageLocation, venueDesc.id )
 
+        # create an event channel for this venue.
+        # channel id is the same as venue id.
+        self.eventService.CreateChannel(venue.GetId())
+        self.UpdateService(self.eventService.GetDescription())
+
         # Make sure new venue knows about server's external role manager.
         venue.SetEncryptMedia(venueDesc.encryptMedia, venueDesc.encryptionKey)
 
@@ -772,10 +784,7 @@ class VenueServer(AuthorizationMixIn):
 
         venue.authManager.GetActions()
 
-        # create an event channel for this venue.
-        # channel id is the same as venue id.
-        self.eventService.CreateChannel(venue.GetId())
-        self.UpdateService(self.eventService.GetDescription())
+        
         
         # return the URL to the new venue
         return venue.uri
