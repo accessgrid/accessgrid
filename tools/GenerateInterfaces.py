@@ -1,5 +1,11 @@
 #!/usr/bin/python2
 import os, sys
+from optparse import OptionParser
+
+parser = OptionParser()
+parser.add_option("-q", "--quiet", dest="quiet", action="store_true",
+                  default=False, help="Run with minimal output.")
+options, args = parser.parse_args()
 
 if sys.platform == "win32":
     w2pyExec = "python %s " % os.path.join(sys.prefix, "Scripts", "wsdl2py")
@@ -22,7 +28,8 @@ if not os.path.exists(initFile):
 
 # FIXME: this call shouldn't need the server wsdl to create the AccessGrid_Types.py
 command = w2pyExec + " -f %s -e -o %s -t AccessGrid_Types --simple-naming -m AccessGrid.wsdl.SchemaToPyTypeMap" % ( os.path.join(srcPath, "VenueServerBinding.wsdl"), dstPath)
-print "* ", command
+if not options.quiet:
+    print "* ", command
 os.system(command)
 
 wsdlList =  [
@@ -39,11 +46,13 @@ def Generate(typesModule,wsdlFile,dstPath):
     command = w2pyExec + " -f %s -e -o %s -t %s --simple-naming --clientClassSuffix=IW -m AccessGrid.wsdl.SchemaToPyTypeMap" % ( wsdlFile,
                     dstPath,
                     typesMod)
-    print "* ", command
+    if not options.quiet:
+        print "* ", command
     os.system(command)
     
     command = w2dExec + " -f %s -e -o %s -t %s --simple-naming " %  ( wsdlFile, dstPath,typesMod)
-    print "* ", command
+    if not options.quiet:
+        print "* ", command
     os.system(command)
 
 
