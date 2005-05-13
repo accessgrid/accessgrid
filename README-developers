@@ -1,7 +1,7 @@
 
 		    The Access Grid Toolkit (AGTk)
 			
-			       2003-10-17
+			       2005-05-13
 				
 	    http://www.mcs.anl.gov/fl/research/accessgrid
 	    
@@ -52,10 +52,6 @@ created:
       >  source env-init.csh
   On Windows:
       >  env-init.bat
-
-Do the final configuration step and configure video sources.
-  > cd AccessGrid/tools
-  > python SetupVideo.py
 
 Now you should be able to run the VenueClient (personalNode mode shown).
   > python VenueClient.py --personalNode
