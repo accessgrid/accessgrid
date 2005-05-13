@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.25 2004-12-23 02:54:23 willing Exp $
+# RCS-ID:      $Id: agpm.py,v 1.26 2005-05-13 00:40:34 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.25 2004-12-23 02:54:23 willing Exp $"
+__revision__ = "$Id: agpm.py,v 1.26 2005-05-13 00:40:34 willing Exp $"
 
 import os
 import re
@@ -126,7 +126,8 @@ def UnpackPkg(filename):
         if len(parts) == 2 and parts[1] == 'app':
             appFile = filename
         bytes = zipArchive.read(filename)
-        out = file(os.path.join(workingDir, filename), "wb")
+	outpath = os.path.join(workingDir, filename)
+        out = file(outpath, "wb")
         out.write(bytes)
         out.close()
         zinfo = zipArchive.getinfo(filename)
