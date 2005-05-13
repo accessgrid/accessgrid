@@ -206,6 +206,13 @@ nsfile.close()
 agtk_location = os.path.join(os.path.abspath(options.agsrcdir))
 python_path = os.path.abspath(options.agsrcdir)
 
+# Generate Interfaces
+print "Generating Interfaces"
+origDir = os.getcwd()
+os.chdir(os.path.join(agtk_location, "tools"))
+os.system( "export PYTHONPATH=%s; " % python_path + os.path.join(".", "GenerateInterfaces.py") + " --quiet" )
+os.chdir(origDir)
+
 # Tell users how to use the new configuration files.
 from AccessGrid.Platform import isOSX, isLinux, isWindows
 if not options.quiet:
