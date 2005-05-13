@@ -316,6 +316,17 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="UpdateClientProfileRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="clientProfile" type="agtk:ClientProfile" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="UpdateClientProfileResponse">
+          </xsd:element>
+
       </schema>
     </types>
 
@@ -442,6 +453,12 @@
     <message name="UpdateServiceResponse">
 	<part name="parameters" element="agtkv:UpdateServiceResponse"/>
     </message>
+    <message name="UpdateClientProfileRequest">
+	<part name="parameters" element="agtkv:UpdateClientProfileRequest"/>
+    </message>
+    <message name="UpdateClientProfileResponse">
+	<part name="parameters" element="agtkv:UpdateClientProfileResponse"/>
+    </message>
 
     <portType name="Venue">
 	<operation name="Enter">
@@ -530,6 +547,10 @@
 	<operation name="UpdateService">
 	    <input message="agtkv:UpdateServiceRequest"/>
             <output message="agtkv:UpdateServiceResponse"/>
+	</operation>
+	<operation name="UpdateClientProfile">
+	    <input message="agtkv:UpdateClientProfileRequest"/>
+            <output message="agtkv:UpdateClientProfileResponse"/>
 	</operation>
     </portType>
 
