@@ -2,7 +2,7 @@
 # Name:        Server.py
 # Purpose:     
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.2 2005-01-31 19:02:27 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.3 2005-05-17 22:04:26 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@ ZSI server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.2 2005-01-31 19:02:27 judson Exp $"
+__revision__ = "$Id: Server.py,v 1.3 2005-05-17 22:04:26 eolson Exp $"
 
 # External imports
 import urlparse
@@ -20,6 +20,7 @@ from ZSI.ServiceContainer import ServiceContainer
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.Hosting)
+import select
 
 def GetSOAPContext():
     return None
@@ -58,9 +59,12 @@ class _Server:
         """
         self._running.set()
 
+        pause = 1 # second
         while(self._running.isSet()):
             try:
-                self._server.handle_request()
+                r,w,e = select.select([self._server.socket], [], [], pause)
+                if r:
+                    self._server.handle_request()
             except:
                 log.exception("Exception in SOAP server main loop")
                 
@@ -94,7 +98,6 @@ class _Server:
 
         # Close the socket even if the thread wasn't started (isn't running).
         try:
-            self._server.socket.shutdown(2)
             self._server.server_close()
         except:
             log.exception("server_close() failed")

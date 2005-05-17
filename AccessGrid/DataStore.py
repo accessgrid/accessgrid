@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.75 2004-12-08 16:48:06 judson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.76 2005-05-17 22:04:26 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.75 2004-12-08 16:48:06 judson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.76 2005-05-17 22:04:26 eolson Exp $"
 
 import os
 import time
@@ -27,6 +27,7 @@ import ConfigParser
 import cStringIO
 import Queue
 import BaseHTTPServer
+import select
 
 from AccessGrid import Log
 import AccessGrid.GUID
@@ -1449,8 +1450,11 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
         thread_run is the server thread's main function.
         """
 
+        pause = 1 # second
         while not self.done:
-            self.handle_request()
+            r,w,e = select.select([self.socket], [], [], pause)
+            if r:
+                self.handle_request()
 
 def HTTPDownloadFile(identity, download_url, destination, size, checksum,
                      progressCB = None):
