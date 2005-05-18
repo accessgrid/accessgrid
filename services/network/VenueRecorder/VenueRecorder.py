@@ -4,8 +4,8 @@
 # 
 # Author:      Susanne Lefvert 
 # 
-# Created:     $Date: 2005-03-09 18:03:49 $ 
-# RCS-ID:      $Id: VenueRecorder.py,v 1.6 2005-03-09 18:03:49 lefvert Exp $ 
+# Created:     $Date: 2005-05-18 22:29:38 $ 
+# RCS-ID:      $Id: VenueRecorder.py,v 1.7 2005-05-18 22:29:38 lefvert Exp $ 
 # Copyright:   (c) 2002 
 # Licence:     See COPYING.TXT 
 #----------------------------------------------------------------------------- 
@@ -16,6 +16,7 @@ import time
 import os
 import string
 import zipfile
+from threading import *
  
 from wxPython.wx import * 
 from ObserverPattern import Observer, Model 
@@ -41,10 +42,11 @@ class Recording:
         self.__name = name 
         self.__description = description
         self.__id = str(GUID()) # unique key for a recording
-        self.__startTime = time.mktime(time.localtime())
+        self.__startTime = None
         self.__stopTime = None 
         self.__venueUrl = venueUrl
-       
+        self.__duration = None # Seconds
+              
     def Save(self, path):
         '''
         Write the recording config to file.
@@ -133,7 +135,7 @@ class Recording:
    
     def SetStartTime(self, startTime = None):
         if startTime != None:
-            self.__startTime = float(startTime)
+            self.__startTime = float(startTime) 
         else:
             self.__startTime = time.mktime(time.localtime())
                      
@@ -143,10 +145,15 @@ class Recording:
         else:
             self.__stopTime = time.mktime(time.localtime())
 
+        self.__duration = self.__stopTime - self.__startTime
+
     def SetId(self, id):
         self.__id = id
  
-    # Get methods 
+    # Get methods
+
+    def GetDuration(self):
+        return self.__duration 
  
     def GetVenueUrl(self): 
         return self.__venueUrl 
@@ -155,10 +162,13 @@ class Recording:
         return self.__id
          
     def GetStartTime(self):
-        return self.__startTime 
+        return self.__startTime
              
     def GetStopTime(self): 
         return self.__stopTime 
+
+    def GetDuration(self):
+        return self.__stopTime - self.__startTime
  
     def GetName(self): 
         return self.__name 
@@ -402,7 +412,7 @@ class VenueRecorderModel(Model):
         descFile = os.path.join(recordingPath, name)
         recording.Save(descFile)
  
-    def PlayInVenue(self, recording, venueUrl): 
+    def PlayInVenue(self, recording, venueUrl, startTime = 0): 
         ''' 
         Method for playing a recording in a venue.  This method connects 
         to a venue at venueUrl and retreives multicast information.
@@ -426,13 +436,14 @@ class VenueRecorderModel(Model):
             c = s.capability 
             if c.role == "producer": 
                 if c.type == "audio": 
-                    audioStream = s 
+                    audioStream = s  
                 elif c.type == "video": 
                     videoStream = s 
  
         # Use rtpplay to transmit video and audio 
         recordingPath = os.path.join(self.__path,
                                      str(recording.GetId())) 
+
         
         #Usage:  rtpplay -T -f file host/port 
         rtpplay =  os.path.join(os.getcwd(),"rtpplay") 
@@ -445,7 +456,8 @@ class VenueRecorderModel(Model):
             # Make sure rtp address is even.
             port = l.port - (l.port%2)
             args = [ 
-                "-T", 
+                "-T",
+                "-b", startTime,
                 "-f", aFile, 
                 l.host+"/"+str(port)+"/127", 
             ]
@@ -463,7 +475,8 @@ class VenueRecorderModel(Model):
             # Make sure rtp address is even.
             port = l.port - (l.port%2)
             args = [ 
-                "-T", 
+                "-T",
+                "-b", startTime,
                 "-f", vFile, 
                 l.host+"/"+str(port)+"/127", 
             ]
@@ -516,8 +529,8 @@ class VenueRecorderModel(Model):
         if not os.path.exists(recordingPath): 
             os.mkdir(recordingPath) 
 
-        rtpdump = os.path.join(os.getcwd(),"rtpdump") 
-
+        rtpdump = os.path.join(os.getcwd(),"rtpdump")
+        
         # Record video. 
         if videoStream: 
             l = videoStream.location 
@@ -561,6 +574,7 @@ class VenueRecorderModel(Model):
         # Set state 
         recording.SetName(venueName)
         recording.SetDescription("Recording from %s"%(venueName))
+        recording.SetStartTime() 
         self.__status = self.RECORDING 
         self.__currentRecording = recording
         self.__recordings[recording.GetId()] = recording 
@@ -597,7 +611,7 @@ class VenueRecorderModel(Model):
         # Stop rtp dump or play 
         self.__log.debug("VenueRecorderModel.Stop: Terminate all processes.") 
         self.__processManager.TerminateAllProcesses() 
- 
+
         # Set state 
         self.__currentRecording = None 
         self.__status = self.STOPPED 
@@ -611,7 +625,7 @@ class VenueRecorderModel(Model):
         *recording* current recording (Recording) 
         '''
         return self.__currentRecording 
-          
+    
     def GetRecordings(self): 
         ''' 
         Get all recordings. 
@@ -712,10 +726,13 @@ class VenueRecorderView(wxFrame, Observer):
                                    size = wxSize(50, 40)) 
         self.recordButton = wxButton(self.panel, wxNewId(), "Record",
                                      size = wxSize(50, 40)) 
+
+        self.slider = wxSlider(self.panel, wxNewId(), 0, 0, 100, style = wxSL_LABELS)
         self.statusField = wxTextCtrl(self.panel, wxNewId(), "Use the buttons to record from a venue or play a recording from the list below.", 
                                       style= wxTE_MULTILINE | wxTE_READONLY | 
-                                      wxTE_RICH, size = wxSize(-1, 32)) 
- 
+                                      wxTE_RICH, size = wxSize(-1, 70)) 
+
+         
         # Recordings are displayed in a list. They are keyed on the
         # unique id returned from recording.GetId()
         self.recordingList = wxListCtrl(self.panel, wxNewId(),
@@ -740,6 +757,8 @@ class VenueRecorderView(wxFrame, Observer):
         self.recordingMenu.AppendSeparator()
         self.recordingMenu.Append(self.RECORDING_MENU_PROPERTIES, "Properties", "View recording details.")
 
+        self.sliderThread = None
+        
         self.__Layout() 
         self.__SetEvents() 
         self.Update()
@@ -751,14 +770,15 @@ class VenueRecorderView(wxFrame, Observer):
         EVT_BUTTON(self, self.playButton.GetId(), self.PlayCB) 
         EVT_BUTTON(self, self.recordButton.GetId(), self.RecordCB) 
         EVT_BUTTON(self, self.stopButton.GetId(), self.StopCB) 
-        EVT_RIGHT_DOWN(self.recordingList, self.OnRightClickCB) 
+        EVT_RIGHT_DOWN(self.recordingList, self.OnRightClickCB)
+        EVT_LIST_ITEM_SELECTED(self, self.recordingList.GetId(), self.OnRecordingSelectedCB)
         EVT_MENU(self, self.RECORDING_MENU_REMOVE, self.RemoveRecordingCB)
         EVT_MENU(self, self.RECORDING_MENU_EXPORT, self.ExportRecordingCB)
         EVT_MENU(self, self.RECORDING_MENU_EXPORT_ALL,
                  self.ExportRecordingAllCB)
         EVT_MENU(self, self.RECORDING_MENU_IMPORT, self.ImportRecordingCB)
         EVT_MENU(self, self.RECORDING_MENU_PROPERTIES, self.PropertiesCB)
-
+                
     def ShowMessage(self, parent, text, title, style):
         '''
         Show a message dialog.
@@ -778,6 +798,15 @@ class VenueRecorderView(wxFrame, Observer):
         self.y = event.GetY() + self.recordingList.GetPosition().y
         self.PopupMenu(self.recordingMenu, wxPoint(self.x, self.y))
 
+    def OnRecordingSelectedCB(self, event):
+        id = self.recordingList.GetFirstSelected()
+        uniqueId = self.intToGuid[id]
+        recording = self.venueRecorderModel.GetRecordings()[uniqueId]
+        
+        if self.venueRecorderModel.GetStatus() != self.venueRecorderModel.PLAYING:
+            self.slider.SetRange(0, int(recording.GetDuration()))
+            self.slider.SetValue(0)
+               
     def PropertiesCB(self, event):
         '''
         Invoked when a user selects the properties menu item for
@@ -1000,10 +1029,10 @@ class VenueRecorderView(wxFrame, Observer):
                                    style = wxICON_INFORMATION) 
             return 
  
-        # Get recording instance from model. Unique id is start time. 
+        # Get recording instance from model. 
         id = self.intToGuid[selectedItem]
         name = self.recordingList.GetItemText(selectedItem)
-               
+        startTime = int(self.slider.GetValue())
         recordings = self.venueRecorderModel.GetRecordings() 
  
         # Check if recording exists. 
@@ -1031,7 +1060,7 @@ class VenueRecorderView(wxFrame, Observer):
  
         try: 
             # Start to play the recording in venue entered by user. 
-            self.venueRecorderModel.PlayInVenue(r, venueUrl) 
+            self.venueRecorderModel.PlayInVenue(r, venueUrl, startTime) 
         except:
             val = self.ShowMessage(self.panel, 
                                    "Error when playing", 
@@ -1120,6 +1149,8 @@ class VenueRecorderView(wxFrame, Observer):
             val = self.ShowMessage(self.panel, 
                                    "Error when stopping", 
                                    "Stop", style = wxICON_ERROR) 
+
+     
                     
     def Update(self): 
         ''' 
@@ -1141,11 +1172,19 @@ class VenueRecorderView(wxFrame, Observer):
             statusText = "Recording from venue %s"%(currentRecording.GetVenueUrl()) 
         elif status == self.venueRecorderModel.PLAYING: 
             tooltip = "Stop playing" 
-            statusText = "Playing %s in venue %s"%(currentRecording.GetName(), self.venueRecorderModel.GetPlaybackVenueUrl()) 
+            statusText = "Playing %s in venue %s"%(currentRecording.GetName(), self.venueRecorderModel.GetPlaybackVenueUrl())
+
+            # Start thread for moving the slider.
+            self.sliderThread = SliderThread(self, int(self.slider.GetValue()), int(currentRecording.GetDuration()+1))
+                       
+            
         elif status == self.venueRecorderModel.STOPPED: 
             tooltip = "Stop" 
-            statusText = "Stopped" 
-         
+            statusText = "Stopped"
+            if self.sliderThread:
+                self.sliderThread.abort()
+                self.sliderThread = None
+               
         self.stopButton.SetToolTipString(tooltip) 
         self.statusField.SetValue(statusText) 
         j = 0 
@@ -1169,8 +1208,8 @@ class VenueRecorderView(wxFrame, Observer):
             self.recordingList.SetStringItem(j, 1, desc) 
             j = j + 1 
  
-        self.recordingList.SortItems(self.SortCB) 
- 
+        self.recordingList.SortItems(self.SortCB)
+                                            
     def SortCB(self, item1, item2): 
         ''' 
         return 0 if the items are equal, positive value if first 
@@ -1197,7 +1236,9 @@ class VenueRecorderView(wxFrame, Observer):
         sizer.Add(self.stopButton, 1, wxALL, 10) 
         sizer.Add(self.playButton, 1, wxALL, 10) 
         sizer.Add(self.recordButton, 1, wxALL, 10) 
-        mainSizer.Add(sizer, 0, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 20) 
+        mainSizer.Add(sizer, 0, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 20)
+        mainSizer.Add(self.slider, 0, wxEXPAND | wxLEFT | wxRIGHT, 30)
+        mainSizer.Add(wxSize(10,10)) 
         mainSizer.Add(self.statusField, 0, wxEXPAND| wxLEFT | wxRIGHT, 30) 
         mainSizer.Add(wxSize(10,10)) 
         mainSizer.Add(wxStaticLine(self.panel, -1), 0,
@@ -1262,6 +1303,37 @@ class VenueUrlDialog(wxDialog):
         sizer.Fit(self) 
         self.SetAutoLayout(1)
 
+
+class SliderThread(Thread):
+    def __init__(self, app, startTime, endTime):
+        Thread.__init__(self)
+        self.terminate = 0
+        self.app = app
+        self.startTime = startTime
+        self.endTime = endTime
+        self.start()
+
+    def run(self):
+        
+        for i in range(self.startTime, self.endTime):
+            time.sleep(1)
+            if self.terminate:
+                wxCallAfter(self.app.slider.SetValue, 0)
+                return
+       
+            wxCallAfter(self.app.slider.SetValue, i)
+            wxCallAfter(self.app.slider.Refresh)
+
+        time.sleep(1)
+
+        # When this is finished, we should automatically stop
+        wxCallAfter(self.app.StopCB, None)
+        
+    def abort(self):
+        # If user stops, the thread should abort
+        self.terminate = 1
+        
+
 class PropertiesDialog(wxDialog): 
     ''' 
     Dialog for displaying recording properties. 
@@ -1276,7 +1348,7 @@ class PropertiesDialog(wxDialog):
         stop = time.strftime("%I:%M:%S %p, %b-%d-%Y",
                              time.localtime(recording.GetStopTime()))
 
-        duration = recording.GetStopTime()-recording.GetStartTime()# Seconds
+        duration = recording.GetDuration()
 
         # Calculate audio and video file sizes in bytes
         video = os.path.join(self.venueRecorderModel.GetPath(),
@@ -1316,7 +1388,7 @@ class PropertiesDialog(wxDialog):
                                    size = wxSize(300, 50))
         self.startText = wxStaticText(self, -1, "Start Time:  ") 
         self.startCtrl = wxTextCtrl(self, -1, 
-                                    start,
+                                    start, size = wxSize(200, 20),
                                     style = wxTE_READONLY)
         self.stopText = wxStaticText(self, -1, "Stop Time: ") 
         self.stopCtrl = wxTextCtrl(self, -1, 
@@ -1330,12 +1402,12 @@ class PropertiesDialog(wxDialog):
         self.audioSizeCtrl = wxTextCtrl(self, -1, 
                                         audioSize+" bytes",
                                         style = wxTE_READONLY,
-                                        size = wxSize(70, -1))
+                                        size = wxSize(120, -1))
         self.videoSizeText = wxStaticText(self, -1, "Video Size: ") 
         self.videoSizeCtrl = wxTextCtrl(self, -1, 
                                         videoSize+" bytes",
                                         style = wxTE_READONLY,
-                                        size = wxSize(70, -1)) 
+                                        size = wxSize(120, -1)) 
         self.okButton = wxButton(self, wxID_OK, "Ok") 
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel") 
         
