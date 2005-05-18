@@ -38,6 +38,7 @@ wsdlList =  [
             [ 'AG_ServiceManager_Types', 'AGServiceManagerBinding.wsdl' ],
             [ 'AG_NodeService_Types', 'AGNodeServiceBinding.wsdl' ],
             [ 'AG_Service_Types', 'AGServiceBinding.wsdl' ],
+            [ 'AG_SharedApplication_Types', 'SharedApplicationBinding.wsdl' ],
             ]
 
 
