@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.183 2005-05-13 19:37:02 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.184 2005-05-18 16:07:01 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.183 2005-05-13 19:37:02 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.184 2005-05-18 16:07:01 eolson Exp $"
 
 
 # Standard stuff
@@ -521,7 +521,7 @@ class VenueServer(AuthorizationMixIn):
                                       cl, sl, oid)
                 uri = self.AddVenue(vd, authPolicy)
                 vif = self.hostingEnvironment.FindObjectForURL(uri)
-                v = vif
+                v = vif.impl
 
                 # Deal with apps if there are any
                 try:
@@ -624,6 +624,11 @@ class VenueServer(AuthorizationMixIn):
             self.dataTransferServer.stop()
         except IOError, e:
             log.exception("Exception shutting down data service.", e)
+
+        try:
+            self.eventService.shutdown()
+        except IOError, e:
+            log.exception("Exception shutting down event client.", e)
 
         self.hostingEnvironment.Stop()
         del self.hostingEnvironment
