@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.241 2005-05-13 19:37:02 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.242 2005-05-18 16:07:20 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.241 2005-05-13 19:37:02 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.242 2005-05-18 16:07:20 eolson Exp $"
 
 import sys
 import time
@@ -1208,6 +1208,12 @@ class Venue(AuthorizationMixIn):
             self.dataStore.Shutdown()
         except:
             log.exception("Venue.ShutDown Could not shut down data store")
+
+        try:
+            # Shut down event client
+            self.eventClient.Stop()
+        except:
+            log.exception("Venue.ShutDown could not stop event client")
 
     def AddService(self, serviceDescription):
         """
