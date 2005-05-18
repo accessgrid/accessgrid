@@ -26,7 +26,7 @@
           <xsd:element name="GetComponentsResponse">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="components" type="agsa:AppParticipantDescription" />
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="components" type="agtk:AppParticipantDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -303,12 +303,6 @@
     <message name="SetParticipantStatusResponse">
 	<part name="parameters" element="agsa:SetParticipantStatusResponse"/>
     </message>
-    <message name="__init__Request">
-	<part name="parameters" element="agsa:__init__Request"/>
-    </message>
-    <message name="__init__Response">
-	<part name="parameters" element="agsa:__init__Response"/>
-    </message>
 
 
 
@@ -364,10 +358,6 @@
     <operation name="SetParticipantStatus">
         <input message="agsa:SetParticipantStatusRequest"/>
         <output message="agsa:SetParticipantStatusResponse"/>
-    </operation>
-    <operation name="__init__">
-        <input message="agsa:__init__Request"/>
-        <output message="agsa:__init__Response"/>
     </operation>
     </portType>
 
