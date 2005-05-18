@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.242 2005-05-18 16:07:20 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.243 2005-05-18 16:39:58 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.242 2005-05-18 16:07:20 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.243 2005-05-18 16:39:58 eolson Exp $"
 
 import sys
 import time
@@ -36,7 +36,7 @@ from AccessGrid.Security.Subject import SubjectAlreadyPresent
 from AccessGrid import DataStore
 from AccessGrid import NetService
 from AccessGrid.Descriptions import Capability
-from AccessGrid.SharedApplication import SharedApplication, SharedApplicationI
+from AccessGrid.SharedApplication import SharedApplication
 from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Descriptions import CreateStreamDescription
 from AccessGrid.Descriptions import CreateConnectionDescription
@@ -66,6 +66,7 @@ from AccessGrid.NetworkServicesManager import NetworkServicesManager
 from AccessGrid.interfaces.AccessGrid_Types import www_accessgrid_org_v3_0 as AGTypes
 from AccessGrid.interfaces.Venue_interface import Venue as VenueI
 from AccessGrid.interfaces.Venue_client import VenueIW
+from AccessGrid.interfaces.SharedApplication_interface import SharedApplication as SharedApplicationI
 from AccessGrid.AsyncoreEventClient import EventClient
 
 log = Log.GetLogger(Log.VenueServer)
@@ -630,7 +631,7 @@ class Venue(AuthorizationMixIn):
 
         for appImpl in self.applications.values():
 #            appImpl.Awaken(self.server.eventService)
-            app = SharedApplicationI(appImpl)
+            app = SharedApplicationI(impl=appImpl, auth_method_name="authorize")
             hostObj = self.server.hostingEnvironment.BindService(app)
             appHandle = hostObj.GetHandle()
             appImpl.SetHandle(appHandle)
@@ -2108,32 +2109,31 @@ class Venue(AuthorizationMixIn):
         appId = app.GetId()
         self.applications[appId] = app
         # Create the interface object
-        appI = SharedApplicationI(app)
+        appI = SharedApplicationI(impl=app, auth_method_name="authorize")
         # pull out the venue path, so these can be a subspace
         path = self.server.hostingEnvironment.FindPathForObject(self)
         path = path + "/apps/%s" % appId
         # register the app with the hosting environment
        
-        #self.server.hostingEnvironment.RegisterObject(appI, path=path)
+        try:
+            self.server.hostingEnvironment.RegisterObject(appI, path=path)
+        except Exception, e:
+            import traceback
+            traceback.print_exc()
         # register the authorization interface and serve it.
         #self.server.hostingEnvironment.RegisterObject(
         #                          AuthorizationManagerI(app.authManager),
         #                          path=path+'/Authorization')
         # pull the url back out and put it in the app object
-        #appURL = self.server.hostingEnvironment.FindURLForObject(app)
-        #app.SetHandle(appURL)
+        appURL = self.server.hostingEnvironment.FindURLForObject(app)
+        app.SetHandle(appURL)
 
         # grab the description, and update the universe with it
-        #appDesc = app.AsApplicationDescription()
+        appDesc = app.AsApplicationDescription()
 
-        appDesc = ApplicationDescription(1, "zuz's FAKE application",
-                                         "FAKE APP",
-                                         None,
-                                         "fake-mime")
-        appDesc = None
         self.eventClient.Send( Event.ADD_APPLICATION, appDesc)
-        #log.debug("CreateApplication: Created id=%s handle=%s",
-        #          appDesc.id, appDesc.uri)
+        log.debug("CreateApplication: Created id=%s handle=%s",
+                  appDesc.id, appDesc.uri)
               
         return appDesc
 
