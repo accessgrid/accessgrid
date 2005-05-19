@@ -71,9 +71,9 @@ class NetworkClient (asyncore.dispatcher):
         location - (host, port) location
         handler - callback for handling read and writes
         '''
-        asyncore.dispatcher.__init__ (self)
         self.out_buffer = ""
         self.in_buffer = ""
+        asyncore.dispatcher.__init__ (self)
         log.debug('NetworkClient.__init__: Connect to %s %s'%location)
         self.create_socket (socket.AF_INET, socket.SOCK_STREAM)
         self.connect(location)
@@ -83,15 +83,21 @@ class NetworkClient (asyncore.dispatcher):
         pass
 
     def handle_read(self):
-        self.in_buffer = self.recv(8192)
-        if self.handler:
-            self.handler(self.in_buffer)
-        else:
-            log.warn('NetworkClient.handle_read:  Unhandled message %s' %self.out_buffer)
+        try:
+            self.in_buffer = self.recv(8192)
+            if self.handler:
+                self.handler(self.in_buffer)
+            else:
+                log.warn('NetworkClient.handle_read:  Unhandled message %s' %self.out_buffer)
+        except:
+            log.exception('NetworkClient.handle_read error')
             
     def handle_write(self):
-        sent = self.send(self.out_buffer)
-        self.out_buffer = self.out_buffer[sent:]
+        try:
+            sent = self.send(self.out_buffer)
+            self.out_buffer = self.out_buffer[sent:]
+        except:
+            log.exception('NetworkClient.handle_write error')
                 
     def writable(self):
         if self.out_buffer:
