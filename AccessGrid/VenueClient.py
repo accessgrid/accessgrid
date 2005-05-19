@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.214 2005-05-19 18:38:57 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.215 2005-05-19 20:04:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.214 2005-05-19 18:38:57 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.215 2005-05-19 20:04:07 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -862,19 +862,19 @@ class VenueClient:
         #self.jabber.setUserInfo(self.profile.name,
         #                        jabberId, jabberPwd, 'AG')
         self.jabber.setUserInfo(self.profile.name,
-                                "jabberuser229@phosphorus.mcs.anl.gov/default", "secret", 'AG')
+                                jabberId, jabberPwd, 'AG')
         
         ## Register the user in the jabber server
-        #try:
-        #self.jabber.register()
-        #except:
-        #    print "register failed..."
-        
+        try:
+            self.jabber.register()
+        except:
+            print "register failed..."
+                      
         self.jabber.login()
-        
+
         # Create the jabber text client
         currentRoom = self.venueState.name.replace(" ", "-")
-        currentRoom = currentRoom.lower()+"2"
+        currentRoom = currentRoom.lower()
         self.jabber.SetChatRoom(currentRoom)
         self.jabber.sendPresence('available')
                                         
