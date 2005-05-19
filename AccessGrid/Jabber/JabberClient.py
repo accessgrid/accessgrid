@@ -85,12 +85,13 @@ class JabberClient:
                     iq = stanza.Iq()
                     iq.to_ = sender
                     iq.type_ = 'set' 
-                    iq.id_ = self.__nextRand() 
-                    iq.query_e = stanza.Query(util.Namespaces.Muc.owner)  
+                    iq.id_ = self.__nextRand()
+                    iq.query_e = (stanza.External(),)
+                    #iq.query_e = stanza.Query(util.Namespaces.Muc.owner)  
                     iq.query_e.x_e = stanza.External(util.Namespaces.x_form)
                     iq.query_e.x_e.type_= 'submit' 
                     self._stream.write(iq)
-                elif find(message, 'Configuration confirmed') > -1:
+                elif string.find(message, 'Configuration confirmed') > -1:
                     log.debug("Unlocked the chat room successfully.")
                     self.roomLocked = 0
                     pass
