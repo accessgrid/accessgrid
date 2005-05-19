@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.213 2005-05-13 19:37:02 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.214 2005-05-19 18:38:57 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.213 2005-05-13 19:37:02 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.214 2005-05-19 18:38:57 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -169,9 +169,9 @@ class VenueClient:
         self.cache = ClientProfileCache(self.profileCachePath)
         
         # Jabber chat client
-        self.jabber = JabberClient("jabber.dsd.lbl.gov", 5223)
-
-
+        self.jabber = JabberClient("phosphorus.mcs.anl.gov", 5223)
+        
+        
     ##########################################################################
     #
     # Private Methods
@@ -742,7 +742,7 @@ class VenueClient:
 
             log.debug("EnterVenue: Invoke venue enter")
             self.profile.connectionId = self.__venueProxy.Enter( self.profile )
-
+            
             """
             evtLocation = ('',-1)
 
@@ -827,40 +827,16 @@ class VenueClient:
                 self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
                 
             self.eventClient.Start()
-            self.eventClient.Send("connect", self.profile.connectionId)                               
-
-            # Create the jabber text client
-            currentRoom = self.venueState.name.replace(" ", "-")
-            self.jabber.SetChatRoom(currentRoom)
-            log.info("Entering %s(%s) ..." %
-                     (self.venueState.name, self.jabber.GetChatRoom()))
-            self.jabber.sendPresence('available')
-            
+            self.eventClient.Send("connect", self.profile.connectionId)
 
             # Create text client
-            #  textLocation = self.__venueProxy.GetTextServiceLocation()
-            #self.textClient = TextClient(evtLocation, #self.venueState.eventLocation,
-            #                              self.privateId,
-            #                              self.venue.GetUniqueId())
-            #print 'register callback'
-            # for e in coherenceCallbacks.keys():
-            #    self.textClient.RegisterCallback("Event.Text", self.ReceiveText)
-            #
-            #print 'start'
-            #self.eventClient.Start()
-           
-            #            self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
-            #                                               self.privateId))
-
+            #textLocation = self.__venueProxy.GetTextServiceLocation()
+            textLocation = ("phosphorus.mcs.anl.gov", 5223)
+            self.__StartJabber(textLocation)
+            
             # Get personaldatastore information
             self.dataStoreUploadUrl = self.__venueProxy.GetUploadDescriptor()
         
-            # Connect the venueclient to the text client
-            #            self.textClient = TextClient(self.profile,
-            #                                         self.venueState.textLocation)
-            #            self.textClient.Connect(self.venueState.uniqueId, self.privateId)
-            #            self.textClient.RegisterOutputCallback(self.AddTextEvent)
-
             log.debug("Setting isInVenue flag.")
 
             # Finally, set the flag that we are in a venue
@@ -877,7 +853,31 @@ class VenueClient:
                 # This is a non fatal error, users should be notified
                 # but still enter the venue
                 log.warn("EnterVenue: Error updating node service")
-                    
+
+    def __StartJabber(self, textLocation):
+        jabberId = str(self.profile.connectionId)+"@phosphorus.mcs.anl.gov/default"
+        jabberPwd = str(self.profile.connectionId)
+            
+        # Set the user information
+        #self.jabber.setUserInfo(self.profile.name,
+        #                        jabberId, jabberPwd, 'AG')
+        self.jabber.setUserInfo(self.profile.name,
+                                "jabberuser229@phosphorus.mcs.anl.gov/default", "secret", 'AG')
+        
+        ## Register the user in the jabber server
+        #try:
+        #self.jabber.register()
+        #except:
+        #    print "register failed..."
+        
+        self.jabber.login()
+        
+        # Create the jabber text client
+        currentRoom = self.venueState.name.replace(" ", "-")
+        currentRoom = currentRoom.lower()+"2"
+        self.jabber.SetChatRoom(currentRoom)
+        self.jabber.sendPresence('available')
+                                        
     def EnterVenue(self, URL):
         """
         EnterVenue puts this client into the specified venue.
@@ -973,20 +973,8 @@ class VenueClient:
             log.exception("ExitVenue: Can not stop event client")
             
         log.info("ExitVenue: Stopping text client")
-        #         try:
-        #           if self.textClient:
-        #             # Stop the text client
-        #             log.debug("ExitVenue: Sending client disconnect event.")
-        #             self.textClient.Disconnect(self.venueState.uniqueId,
-        #                                        self.privateId)
-        #             log.debug("ExitVenue: Remove text client reference")
-        #             self.textClient = None
-        
-        #         except:
-        #             log.exception("ExitVenue: On text client exiting")
-
-        if self.jabber.GetChatRoom():
-            self.jabber.sendPresence('unavailable')
+       
+        self.jabber.sendPresence('unavailable')
         self.jabber.SetChatRoom("")
         
         self.__InitVenueData()
@@ -1128,25 +1116,18 @@ class VenueClient:
         if self.server:
             try:
                 self.server.Stop()
-            # FIXME THIS IS SO WRONG XXXX
             except:
-                pass
-             
+                log.exception("Failed to stop server")
+                          
         if self.dataStore:
             self.dataStore.Shutdown()
-
-        # Close the jabber connection properly
-        log.debug("------->Closing the jabber server...")
-        if self.jabber:
-            self.jabber.disconnect()
-
+       
     def UpdateProfileCache(self, profile):
         try:
             self.cache.updateProfile(profile)
         except InvalidProfileException:
             log.info("UpdateProfileCache: InvalidProfile when storing a venue user's profile in the cache.")
             
-
     #
     # Venue calls
     #
@@ -1228,18 +1209,6 @@ class VenueClient:
         else:
             # Ignore this until we have authorization in place.
             raise NotAuthorizedError
-                        
-            
-    #
-    # TextClient wrapping
-    #
-        
-    def SendText(self,text):
-        pass
-#         if self.textClient != None:
-#             self.textClient.Input(text)
-#         else:
-#             raise Exception, "Text Client Not Connected"
         
     # end Basic Implementation
     #
