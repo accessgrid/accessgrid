@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.82 2005-05-06 19:43:29 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.83 2005-05-19 18:36:57 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.82 2005-05-06 19:43:29 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.83 2005-05-19 18:36:57 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -52,8 +52,6 @@ from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError
 from AccessGrid.VenueClient import DisconnectError
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
-
-from AccessGrid.Jabber.JabberClient import JabberClient
 
 try:
     import win32api
@@ -187,37 +185,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         #
         profile = self.venueClient.GetPreferences().GetProfile()
 
-        self.newJabberID = False
         if profile.IsDefault():  # not your profile
             log.debug("the profile is the default profile - open profile dialog")
             self.__OpenProfileDialog()
         else:
             self.__OpenVenueClient()
-        
-        jabber = self.venueClient.jabber
-
-        while True:
-            if self.newJabberID:
-                ## Set the user information
-                jabber.setUserInfo(profile.name, profile.email,
-                                   profile.jabberId, profile.jabberPwd, 'AG')
-                ## Register the user in the jabber server
-                jabber.register()
-                if jabber.errorCode:
-                    self.__ShowErrorMessage(jabber, 'register')
-                    self.__OpenProfileDialog()
-                else:
-                    jabber.login()
-            else:
-                jabber.setUserInfo(profile.name, profile.email, profile.jabberId,
-                                   profile.jabberPwd, 'AG')
-                jabber.login()
-                if jabber.errorCode:
-                    self.__ShowErrorMessage(jabber, 'login')
-                    self.__OpenProfileDialog()
-                else:
-                    break
-        
+                        
         self.nodeManagementFrame = None
 
         # Help Doc locations
@@ -278,7 +251,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         profileDialog.SetProfile(p.GetProfile())
         
         if (profileDialog.ShowModal() == wxID_OK):
-            self.newJabberID = profileDialog.jabberCheck.GetValue()
             profile = profileDialog.GetNewProfile()
             
             # Change profile based on values filled in to the profile dialog
@@ -3735,22 +3707,6 @@ class JabberClientPanel(wxPanel):
 
         self.app.venueClient.jabber.SetPanel(self)
         
-        ## Connecting to LBL Jabber Server
-        ##print "Connecting to LBL Jabber Server ..."
-        # @dkg: uinfo = agclient.UserInfo('maddytest','enter123')
-        # @dkg: self.client = agclient.AGClient('jabber.dsd.lbl.gov', uinfo)
-        # @dkg: self.__currentRoom = "lobby@conference.localhost"
-        #self.client = AGClient()
-        #self.client.agPanel = self
-        #self.client.connect('maddytest', 'enter123', 'AG')
-        
-        ## Set the current room as Venue Server Lobby
-        #self.currentRoom = 'VenueServerLobby@conference.localhost'
-        #self.user = 'LBNL'
-
-        ## Log into AG Venue Server Lobby chat room by default
-        ##self.client.doCmd("/presence %s/%s" % (self.currentRoom, self.user))
-
     def __SetProperties(self):
         '''
         Sets UI properties.
@@ -4149,16 +4105,6 @@ class ProfileDialog(wxDialog):
         else:
             # Don't use a validator
             self.emailCtrl = wxTextCtrl(self, -1, "")
-
-        self.jabberDummyText = wxStaticText(self, -1, "")
-        self.jabberCheck = wxCheckBox(self, -1, "Create a new Jabber account",
-                                      style=wxALIGN_LEFT)
-        self.jabberIdText = wxStaticText(self, -1, "Jabber Nickname:", style=wxALIGN_LEFT)
-        self.jabberIdCtrl = wxTextCtrl(self, -1, "",
-                                   validator = TextValidator("JabberId"))
-        self.jabberPwdText = wxStaticText(self, -1, "Jabber Password:", style=wxALIGN_LEFT)
-        self.jabberPwdCtrl = wxTextCtrl(self, -1, style = wxTE_PASSWORD,
-                                   validator = TextValidator("Password"))
         self.phoneNumberText = wxStaticText(self, -1, "Phone Number:",
                                             style=wxALIGN_LEFT)
         self.phoneNumberCtrl = wxTextCtrl(self, -1, "")
@@ -4190,9 +4136,6 @@ class ProfileDialog(wxDialog):
             self.nameCtrl.SetEditable(false)
             self.emailCtrl.SetEditable(false)
             self.phoneNumberCtrl.SetEditable(false)
-            self.jabberCheck.Disable()
-            self.jabberIdCtrl.SetEditable(false)
-            self.jabberPwdCtrl.SetEditable(false)
             self.locationCtrl.SetEditable(false)
             self.homeVenueCtrl.SetEditable(false)
             self.profileTypeBox.SetEditable(false)
@@ -4201,9 +4144,6 @@ class ProfileDialog(wxDialog):
             self.nameCtrl.SetEditable(true)
             self.emailCtrl.SetEditable(true)
             self.phoneNumberCtrl.SetEditable(true)
-            self.jabberCheck.Enable(true)
-            self.jabberIdCtrl.SetEditable(true)
-            self.jabberPwdCtrl.SetEditable(true)
             self.locationCtrl.SetEditable(true)
             self.homeVenueCtrl.SetEditable(true)
             self.profileTypeBox.SetEditable(true)
@@ -4219,13 +4159,6 @@ class ProfileDialog(wxDialog):
         self.gridSizer.Add(self.nameCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.emailText, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.emailCtrl, 0, wxEXPAND, 0)
-
-        self.gridSizer.Add(self.jabberDummyText, 0)
-        self.gridSizer.Add(self.jabberCheck, 0, wxALIGN_LEFT, 0)
-        self.gridSizer.Add(self.jabberIdText, 0, wxALIGN_LEFT, 0)
-        self.gridSizer.Add(self.jabberIdCtrl, 2, wxEXPAND, 0)
-        self.gridSizer.Add(self.jabberPwdText, 0, wxALIGN_LEFT, 0)
-        self.gridSizer.Add(self.jabberPwdCtrl, 2, wxEXPAND, 0)
         
         self.gridSizer.Add(self.phoneNumberText, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.phoneNumberCtrl, 0, wxEXPAND, 0)
@@ -4264,10 +4197,6 @@ class ProfileDialog(wxDialog):
         if(self.profile != None):
             self.profile.SetName(self.nameCtrl.GetValue())
             self.profile.SetEmail(self.emailCtrl.GetValue())
-
-            self.profile.SetJabberId(self.jabberIdCtrl.GetValue())
-            self.profile.SetJabberPassword(self.jabberPwdCtrl.GetValue())
-            
             self.profile.SetPhoneNumber(self.phoneNumberCtrl.GetValue())
             self.profile.SetLocation(self.locationCtrl.GetValue())
             self.profile.SetHomeVenue(self.homeVenueCtrl.GetValue())
@@ -4297,20 +4226,8 @@ class ProfileDialog(wxDialog):
         else:
             self.profileTypeBox.SetSelection(1)
 
-        self.jabberIdCtrl.SetValue(self.profile.GetJabberId())
-        self.jabberPwdCtrl.SetValue(self.profile.GetJabberPassword())
-
         self.__SetEditable(true)
         log.debug("ProfileDialog.SetProfile: Set profile information successfully in dialog")
-
-        new = 1
-        
-        if not new:
-            self.jabberCheck.Disable()
-            self.jabberIdText.Disable()
-            self.jabberIdCtrl.Disable()
-            self.jabberPwdText.Disable()
-            self.jabberPwdCtrl.Disable()
         
     def SetDescription(self, item):
         log.debug("ProfileDialog.SetDescription: Set description in dialog name:%s, email:%s, phone:%s, location:%s home:%s, dn:%s"
@@ -4333,8 +4250,7 @@ class ProfileDialog(wxDialog):
         self.locationCtrl.SetValue(item.location)
         self.homeVenueCtrl.SetValue(item.homeVenue)
         self.dnTextCtrl.SetValue(item.distinguishedName)
-        self.jabberIdCtrl.SetValue(item.jabberId)
-               
+                     
         if(item.GetProfileType() == 'user'):
             self.profileTypeBox.SetValue('user')
         else:
@@ -4363,28 +4279,21 @@ class TextValidator(wxPyValidator):
             if val ==  '<Insert Name Here>':
                 MessageDialog(NULL, "Please, fill in the %s field" % (self.fieldName,))
                 return false
-
+            
             if val ==  '<Insert Email Address Here>':
                 MessageDialog(NULL, "Please, fill in the %s field" % (self.fieldName,))
                 return false
-
-            if val == '<Insert Jabber ID here>':
-                MessageDialog(NULL, "Please, fill in the %s field" % (self.fieldName,))
-                return false
-          
+            
         #for real profile dialog
         elif(len(val) < 1 or profile.IsDefault() 
              or profile.name == '<Insert Name Here>'
-             or profile.email == '<Insert Email Address Here>'
-             or profile.jabberId == '<Insert Jabber ID Here>'):
+             or profile.email == '<Insert Email Address Here>'):
              
             if profile.name == '<Insert Name Here>':
                 self.fieldName == 'Name'
             elif profile.email ==  '<Insert Email Address Here>':
                 self.fieldName = 'Email'
-            elif profile.jabberId == '<Insert Jabber ID Here>':
-                self.fieldName = 'Jabber ID'
-                                          
+                                                   
             MessageDialog(NULL, "Please, fill in the %s field" %(self.fieldName,))
             return false
         return true
