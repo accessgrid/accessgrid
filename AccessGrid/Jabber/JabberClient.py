@@ -16,7 +16,7 @@ end   = 999999999
 class JabberClient:
 
     def __init__(self, host, port):
-        log.info("Connecting to Jabber Server '%s' ..." % host) 
+        log.info("Connecting to Jabber Server '%s' ..." % host)
         self._stream = stream.JabberClientStream(host, port=port, use_ssl=True)
         self.currentRoom = ''
         self.currentRoomId = ''
@@ -66,8 +66,9 @@ class JabberClient:
         req = stanza.Presence()
         if type == 'available': 
             req.to_ = self.to
-            req.type_ = type 
-            req.x_ = (stanza.External(util.Namespaces.Muc.muc),)
+            req.type_ = type
+            req.x_ = (stanza.External(),)
+            #req.x_ = (stanza.External(util.Namespaces.Muc.muc),)
 
         self._stream.write(req)
 
@@ -138,6 +139,7 @@ class JabberClient:
         log.info("Registering the user '%s' in jabber server ..." % self.jid) 
         if self.auth_info is None:
             raise RuntimeError("setUserInfo must be called before register")
+
         self._stream.register(self.auth_info)
         #msg = self._stream.read(expected=stanza.Message)
         time.sleep(1)
@@ -145,11 +147,14 @@ class JabberClient:
     def login(self):
         log.info("Attempting to log in as %s ..." % self.jid)
         self.errorCode = ''
+
         if self._stream.authorize(self.auth_info):
             log.info("Successfully logged in")
         self._stream.setMessageHandler(self.messageCB)
         self._stream.setPresenceHandler(self.presenceCB)
         self._stream.setIqHandler(self.iqCB)
+
+       
 
     def __nextRand(self):
         return random.randint(start, end)
