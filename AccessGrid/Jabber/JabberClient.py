@@ -15,9 +15,9 @@ end   = 999999999
 
 class JabberClient:
 
-    def __init__(self, host, port):
-        log.info("Connecting to Jabber Server '%s' ..." % host)
-        self._stream = stream.JabberClientStream(host, port=port, use_ssl=True)
+    def __init__(self):
+        #log.info("Connecting to Jabber Server '%s' ..." % host)
+        #self._stream = stream.JabberClientStream(host, port=port, use_ssl=True)
         self.currentRoom = ''
         self.currentRoomId = ''
         self._auth_info = None
@@ -26,10 +26,15 @@ class JabberClient:
         self.name = None
         self.resource = None
         self.roomLocked = 0
-
-    def setUserInfo(self, name, id, pwd, res):
+       
+    def Connect(self, host, port):
+        log.info("Connecting to Jabber Server '%s' ..." % host)
+        self._stream = stream.JabberClientStream(host, port=port, use_ssl=True)
+        self.host = host
+              
+    def SetUserInfo(self, name, id, pwd, res):
         self.name = name
-        self.jid = auth.Jid(id) 
+        self.jid = auth.Jid(id+"@"+self.host+"/default") 
         self.auth_info = auth.AuthInfo(self.jid) 
         self.auth_info.password = pwd
         self.resource = res
@@ -44,7 +49,7 @@ class JabberClient:
     def SetPanel(self, panel):
         self.jabberPanel = panel
 
-    def sendMessage(self, text):
+    def SendMessage(self, text):
         log.debug("currentRoom inside sendMessage(): '%s'" %self.currentRoomId)
         sent = 0
         if self.currentRoomId == '':
@@ -61,7 +66,7 @@ class JabberClient:
             sent = 0
         return sent
 
-    def sendPresence(self, type='available'):
+    def SendPresence(self, type='available'):
         log.debug("Sending the presence to '%s' of type '%s'..." % (self.to, type))
         req = stanza.Presence()
         if type == 'available': 
@@ -72,7 +77,7 @@ class JabberClient:
 
         self._stream.write(req)
 
-    def messageCB(self, msg_stanza):
+    def MessageCB(self, msg_stanza):
         message = msg_stanza.body_
         sender  = msg_stanza.from_ 
    
@@ -85,7 +90,7 @@ class JabberClient:
                     iq = stanza.Iq()
                     iq.to_ = sender
                     iq.type_ = 'set' 
-                    iq.id_ = self.__nextRand()
+                    iq.id_ = self.__NextRand()
                     iq.query_e = (stanza.External(),)
                     #iq.query_e = stanza.Query(util.Namespaces.Muc.owner)  
                     iq.query_e.x_e = stanza.External(util.Namespaces.x_form)
@@ -112,7 +117,7 @@ class JabberClient:
                 else:
                     self.jabberPanel.OutputText(speaker[1] + ": ", message)
 
-    def presenceCB(self, prs_stanza):
+    def PresenceCB(self, prs_stanza):
         """Called when a presence is recieved"""
         who = prs_stanza.from_
         prs_type = prs_stanza.type_
@@ -126,36 +131,34 @@ class JabberClient:
             log.debug("%s is unavailable (%s / %s)" %
                       (who, prs_stanza.show_ , prs_stanza.status_ ))
     
-    def iqCB(self, iq_stanza):
+    def IqCB(self, iq_stanza):
         self.errorCode = ''
         if (iq_stanza.type_ == 'error'):
             self.errorCode = iq_stanza.error_e.code_ 
             self.errorMsg  = iq_stanza.error_e.getText()
             log.error(self.errorCode + ": " + self.errorMsg)
 
-    def register(self):
+    def Register(self):
         """
         TODO: user name and email, when registering a user
         """
         log.info("Registering the user '%s' in jabber server ..." % self.jid) 
         if self.auth_info is None:
-            raise RuntimeError("setUserInfo must be called before register")
+            raise RuntimeError("SetUserInfo must be called before register")
 
         self._stream.register(self.auth_info)
         #msg = self._stream.read(expected=stanza.Message)
         time.sleep(1)
 
-    def login(self):
+    def Login(self):
         log.info("Attempting to log in as %s ..." % self.jid)
         self.errorCode = ''
 
         if self._stream.authorize(self.auth_info):
             log.info("Successfully logged in")
-        self._stream.setMessageHandler(self.messageCB)
-        self._stream.setPresenceHandler(self.presenceCB)
-        self._stream.setIqHandler(self.iqCB)
+        self._stream.setMessageHandler(self.MessageCB)
+        self._stream.setPresenceHandler(self.PresenceCB)
+        self._stream.setIqHandler(self.IqCB)
 
-       
-
-    def __nextRand(self):
+    def __NextRand(self):
         return random.randint(start, end)
