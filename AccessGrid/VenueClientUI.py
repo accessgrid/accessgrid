@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.83 2005-05-19 18:36:57 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.84 2005-05-20 16:00:25 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.83 2005-05-19 18:36:57 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.84 2005-05-20 16:00:25 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3793,7 +3793,7 @@ class JabberClientPanel(wxPanel):
         '''
         try:
             text = self.textInput.GetValue()
-            sent = self.app.venueClient.jabber.sendMessage(text)
+            sent = self.app.venueClient.jabber.SendMessage(text)
             self.textInput.Clear()
             self.textInput.SetFocus()
             if not sent:

@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.215 2005-05-19 20:04:07 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.216 2005-05-20 16:00:25 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.215 2005-05-19 20:04:07 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.216 2005-05-20 16:00:25 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -94,6 +94,7 @@ class VenueClient:
         """
         This client class is used on shared and personal nodes.
         """
+        self.jabberHost = None
         self.userConf = UserConfig.instance()
         self.isPersonalNode = pnode
 
@@ -168,9 +169,7 @@ class VenueClient:
                                              self.profileCachePrefix)
         self.cache = ClientProfileCache(self.profileCachePath)
         
-        # Jabber chat client
-        self.jabber = JabberClient("phosphorus.mcs.anl.gov", 5223)
-        
+        self.jabber = JabberClient()
         
     ##########################################################################
     #
@@ -855,28 +854,31 @@ class VenueClient:
                 log.warn("EnterVenue: Error updating node service")
 
     def __StartJabber(self, textLocation):
-        jabberId = str(self.profile.connectionId)+"@phosphorus.mcs.anl.gov/default"
+        jabberHost = textLocation[0]
+        jabberPort = textLocation[1]
+
+        if self.jabberHost != jabberHost:
+            # Create jabber chat client if necessary
+            self.jabber.Connect(jabberHost, jabberPort) 
+        
+        self.jabberHost = jabberHost
+                
+        jabberId = str(self.profile.connectionId)
         jabberPwd = str(self.profile.connectionId)
             
         # Set the user information
-        #self.jabber.setUserInfo(self.profile.name,
-        #                        jabberId, jabberPwd, 'AG')
-        self.jabber.setUserInfo(self.profile.name,
+        self.jabber.SetUserInfo(self.profile.name,
                                 jabberId, jabberPwd, 'AG')
         
         ## Register the user in the jabber server
-        try:
-            self.jabber.register()
-        except:
-            print "register failed..."
-                      
-        self.jabber.login()
+        self.jabber.Register()
+        self.jabber.Login()
 
         # Create the jabber text client
         currentRoom = self.venueState.name.replace(" ", "-")
         currentRoom = currentRoom.lower()
         self.jabber.SetChatRoom(currentRoom)
-        self.jabber.sendPresence('available')
+        self.jabber.SendPresence('available')
                                         
     def EnterVenue(self, URL):
         """
@@ -973,9 +975,12 @@ class VenueClient:
             log.exception("ExitVenue: Can not stop event client")
             
         log.info("ExitVenue: Stopping text client")
-       
-        self.jabber.sendPresence('unavailable')
-        self.jabber.SetChatRoom("")
+
+        try:
+            self.jabber.SendPresence('unavailable')
+            self.jabber.SetChatRoom("")
+        except:
+            log.exception("ExitVenue: Exit jabber failed")
         
         self.__InitVenueData()
         self.isInVenue = 0
