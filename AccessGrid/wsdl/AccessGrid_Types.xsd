@@ -207,7 +207,7 @@
     <xs:complexType name="AppParticipantDescription">
       <xs:sequence>
         <xs:element name = "appId" type = "xs:string"/>
-        <xs:element name = "clientProfile" type = "agtk:ClientProfile"/>
+        <xs:element name = "clientProfile" type = "tns:ClientProfile"/>
         <xs:element name = "status" type = "xs:string"/>
       </xs:sequence>
     </xs:complexType>
