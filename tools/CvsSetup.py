@@ -210,7 +210,10 @@ python_path = os.path.abspath(options.agsrcdir)
 print "Generating Interfaces"
 origDir = os.getcwd()
 os.chdir(os.path.join(agtk_location, "tools"))
-os.system( "export PYTHONPATH=%s; " % python_path + os.path.join(".", "GenerateInterfaces.py") + " --quiet" )
+if sys.platform == WIN:
+    os.system( "set PYTHONPATH=%s && " % python_path + os.path.join(".", "GenerateInterfaces.py") + " --quiet" )
+else:
+    os.system( "export PYTHONPATH=%s; " % python_path + os.path.join(".", "GenerateInterfaces.py") + " --quiet" )
 os.chdir(origDir)
 
 # Tell users how to use the new configuration files.
