@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.243 2005-05-18 16:39:58 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.244 2005-05-26 16:46:39 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.243 2005-05-18 16:39:58 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.244 2005-05-26 16:46:39 turam Exp $"
 
 import sys
 import time
@@ -1311,9 +1311,6 @@ class Venue(AuthorizationMixIn):
 
         *self.services* A list of connection descriptions.
         """
-        venueServices = self.services.values()
-        serverServices = self.server.GetServices()
-        
         return self.services.values() 
 
     def AddConnection(self, connectionDesc):
@@ -1579,222 +1576,6 @@ class Venue(AuthorizationMixIn):
 
         self.eventClient.Send(Event.MODIFY_USER, clientProfile)
               
-    def RemoveData(self, dataDescription):
-        """
-        RemoveData removes persistent data from the Virtual Venue.
-        **Arguments:**
-
-        *dataDescription* A real data description.
-
-        **Raises:**
-
-        *DataNotFound* Raised when the data is not found in the Venue.
-
-        **Returns:**
-
-        *dataDescription* Upon successfully removing the data.
-        """
-        # This is venue resident so delete the file
-        if(dataDescription.type is None or dataDescription.type == "None"):
-            datalist = []
-            datalist.append(dataDescription)
-            self.dataStore.RemoveFiles(datalist)
-            self.eventClient.Send(Event.REMOVE_DATA, dataDescription)
-       
-        else:
-            log.info("Venue.RemoveData tried to remove non venue data.")
-
-        return dataDescription
-
-    def UpdateData(self, dataDescription, dataStoreCall = 0):
-        """
-        Replace the current description for dataDescription.name with
-        this one.
-        """
-        # This method is called both from the data store and from clients.
-        # The data store only wants to distribute an event, while clients
-        # need to modify the actual data store.
-        
-        if dataStoreCall:
-            self.eventClient.Send(Event.UPDATE_DATA, dataDescription)
-            return
-
-        # This is venue resident so modify the file
-        if(dataDescription.type is None or dataDescription.type == "None"):
-            self.dataStore.ModifyData(dataDescription)
-            self.eventClient.Send(Event.UPDATE_DATA, dataDescription)
-        else:
-            log.info("Venue.UpdateData tried to modify non venue data. That should not happen")
-            
-        return dataDescription
-            
-    def GetDataStoreInformation(self):
-        """
-        Retrieve an upload descriptor and a URL to the Venue's DataStore 
-
-        **Arguments:**
-
-        **Raises:**
-
-        **Returns:**
-
-        *(upload description, url)* the upload descriptor to the
-        Venue's DataStore and the url to the DataStore SOAP service.
-
-        """
-
-        descriptor = ""
-        location = ""
-
-        if self.dataStore is not None:
-            try:
-                descriptor = self.dataStore.GetUploadDescriptor()
-                location = str(self.uri)
-                return descriptor, location
-            except:
-                log.exception("Venue.GetDataStoreInformation.")
-                raise
-
-    def GetDataDescriptions(self):
-        """
-        """
-        try:
-            dList = self.dataStore.GetDataDescriptions()
-            return dList
-        except:
-            log.exception("Venue.GetDataDescriptions.")
-            dList = []
-            raise
-
-    def GetUploadDescriptor(self):
-        """
-        Retrieve the upload descriptor from the Venue's datastore.
-
-        **Arguments:**
-
-        **Raises:**
-
-        **Returns:**
-
-        *upload description* the upload descriptor for the data store.
-
-        *''* If there is not data store we return an empty string,
-        because None doesn't serialize right with our SOAP
-        implementation.
-        """
-        returnValue = ''
-
-        if self.dataStore is not None:
-            try:
-                returnValue = self.dataStore.GetUploadDescriptor()
-                return returnValue
-            except:
-                log.exception("Venue.GetUploadDescriptor.")
-                raise
-
-    def GetApplication(self, aid):
-        """
-        Return the application state for the given application object.
-
-        **Arguments:**
-
-        *aid* The id of the application being retrieved.
-
-        **Raises:**
-        *ApplicationNotFound* Raised when the application is not
-        found in the venue.
-
-        **Returns:**
-
-        *appState* The state of the application object.
-        """
-        if not self.applications.has_key(aid):
-            log.exception("GetApplication: Application not found.")
-            raise ApplicationNotFound
-
-        app = self.applications[aid]
-        returnValue = app.GetState()
-
-        return returnValue
-        
-    def UpdateApplication(self, appDescStruct):
-        """
-        Update application.
-
-        **Arguments:**
-
-        *applicationDesc* Object describing the application.
-
-        **Raises:**
-
-        *ApplicationNotFound* Raised when an application is not
-        found for the application id specified.
-        """
-        if not self.applications.has_key(appDescStruct.id):
-            raise ApplicationNotFound
-
-        try:
-            applicationDesc = CreateApplicationDescription(appDescStruct)
-        except:
-            log.exception("UpdateApplication: Bad application description.")
-            raise BadApplicationDescription
-
-        appImpl = self.applications[applicationDesc.id]
-        appImpl.name = applicationDesc.name
-        appImpl.description = applicationDesc.description
-        
-        self.applications[applicationDesc.id] = appImpl
-
-        self.eventClient.Send(Event.UPDATE_APPLICATION, applicationDesc)
-        log.debug("Update Application: id=%s handle=%s",
-                  applicationDesc.id, applicationDesc.uri)
-
-        return applicationDesc
-
-    def DestroyApplication(self, appId):
-        """
-        Destroy an application object.
-
-        **Arguments:**
-
-        *appId* The id of the application object to be destroyed.
-
-        **Raises:**
-
-        *ApplicationNotFound* Raised when an application is not
-        found for the application id specified.
-
-        *ApplicationUnbindError* Raised when the hosting
-        environment can't unbind the application from the web
-        service layer.
-        """
-                
-        # Get the application object
-        try:
-            app = self.applications[appId]
-        except KeyError:
-            log.exception("DestroyApp: Application not found.")
-            raise ApplicationNotFound
-
-        # Shut down the application
-        
-        app.Shutdown()
-
-        # Remove the interface
-        try:
-            self.server.hostingEnvironment.UnregisterObject(app)
-        except KeyError:
-            log.exception ("DestroyApp: SOAPpy.UnregisterObject returned a key error.")
-                
-        # Create the application description
-        appDesc = app.AsApplicationDescription()
-
-        # Send the remove application event
-        self.eventClient.Send(Event.REMOVE_APPLICATION, appDesc)
-       
-        # Get rid of it for good
-        del self.applications[appId]
-
     def AddNetworkLocationToStream(self, privateId, streamId, networkLocation):
         """
         Add a transport to an existing stream
@@ -1905,7 +1686,6 @@ class Venue(AuthorizationMixIn):
         # return (self.server.GetEventServiceLocation(), self.uniqueId)
 
         serverServices = self.server.GetServices()
-        service = None
         location = None
         
         for s in serverServices:
@@ -1941,11 +1721,8 @@ class Venue(AuthorizationMixIn):
 
         # This is venue resident so delete the file
         if(dataDescription.type is None or dataDescription.type == "None"):
-            list = []
-            list.append(dataDescription)
-            self.dataStore.RemoveFiles(list)
+            self.dataStore.RemoveFiles([dataDescription])
             self.eventClient.Send( Event.REMOVE_DATA, dataDescription)
-            
         else:
             log.info("Venue.RemoveData tried to remove non venue data.")
 
@@ -1966,9 +1743,6 @@ class Venue(AuthorizationMixIn):
             self.eventClient.Send( Event.UPDATE_DATA, dataDescription)
             return
 
-
-        name = dataDescription.name
-        
         # This is venue resident so modify the file
         if(dataDescription.type is None or dataDescription.type == "None"):
             self.dataStore.ModifyData(dataDescription)
