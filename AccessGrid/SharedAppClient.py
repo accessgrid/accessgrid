@@ -6,7 +6,7 @@ from AccessGrid import Log
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.hosting import Client
-from AccessGrid.SharedApplication import SharedApplicationIW
+from AccessGrid.interfaces.SharedApplication_client import SharedApplicationIW
 
 import SOAPpy
 
@@ -100,21 +100,15 @@ class SharedAppClient:
 
             self.log.exception("SharedAppClient.Join failed: %s",
                                self.__appUrl)
-            try:
-                # Legacy call for servers running 2.1.2 software.
-                oldAppProxy = Client.SecureHandle(self.__appUrl).GetProxy()
-                (self.__publicId, self.__privateId) = oldAppProxy.Join()
-                self.log.info("SharedAppClient.Join: %s using old software",
-                              self.__appUrl)
-            except:
-                self.log.exception("SharedAppClient.Join failed: %s",
-                                   self.__appUrl)
-                raise Exception, "Failed to join application service at %s." %self.__appUrl                
         try:
             # Retrieve data/event channel id
-            (self.__channelId, esl) = self.__appProxy.GetDataChannel(self.__privateId)
+            dataChannel = self.__appProxy.GetDataChannel(self.__privateId)
+            (self.__channelId, eventhost,eventport) = dataChannel
             
         except:
+            import traceback
+            traceback.print_stack()
+            traceback.print_exc()
             self.log.exception("SharedAppClient.Connect: Failed to get data channel")
                     
         # Subscribe to the data/event channel
@@ -324,13 +318,6 @@ class SharedAppClient:
             id = self.__appProxy.GetId(self.__privateId)
         except Client.MethodNotFound, e:
             self.log.exception("SharedAppClient.GetApplicationID: Failed to get application ID")
-            try:
-                # Legacy call for servers running 2.1.2 software.
-                oldAppProxy = Client.SecureHandle(self.__appUrl).GetProxy()
-                id = oldAppProxy.GetId()
-            except:
-                self.log.exception("SharedAppClient.GetApplicationId: Failed to get application ID")
-                raise Exception, "Failed to get application ID"
            
         except:
             self.log.exception("SharedAppClient.GetApplicationId: Failed to get application ID")
