@@ -3,10 +3,10 @@
 # Service Advertisement and Discovery module
 #
 # This module provides a mechanism for advertising services
-# and discovering them.  At present, it uses rendezvous to 
+# and discovering them.  At present, it uses bonjour to 
 # do this.  An alternative model could use local network
 # broadcast; in fact, it'd be a good idea to implement this
-# alternative to fall back to when rendezvous is not available.
+# alternative to fall back to when bonjour is not available.
 #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 import threading
@@ -21,7 +21,7 @@ from AccessGrid import Log
 class PublisherError(Exception):  pass
 class BrowserError(Exception):    pass
 
-# No-op classes to use in absence of rendezvous
+# No-op classes to use in absence of bonjour
 class _Publisher:
     def __init__(self,serviceName,regtype,url,port=9999):   
         pass
@@ -46,9 +46,9 @@ class _Browser:
 log = Log.GetLogger('ServiceDiscovery')
 
 try:
-    import rendezvous
+    import bonjour
 
-    class RendezvousPublisher:
+    class BonjourPublisher:
 
         def __init__(self,serviceName,regtype,url,port=9999):
 
@@ -64,8 +64,8 @@ try:
             txtRecordLen = len(txtRecord)
 
             # Allocate a service discovery reference and register the specified service
-            self.serviceRef = rendezvous.AllocateDNSServiceRef()
-            ret = rendezvous.pyDNSServiceRegister(self.serviceRef, 
+            self.serviceRef = bonjour.AllocateDNSServiceRef()
+            ret = bonjour.pyDNSServiceRegister(self.serviceRef, 
                                           0,                  
                                           0,                  
                                           serviceName,        
@@ -78,14 +78,14 @@ try:
                                           self.__RegisterCallback,   
                                           None)
 
-            if ret != rendezvous.kDNSServiceErr_NoError:
+            if ret != bonjour.kDNSServiceErr_NoError:
                 raise PublisherError(ret)
                 
             # Get the socket and loop
-            fd = rendezvous.DNSServiceRefSockFD(self.serviceRef)
+            fd = bonjour.DNSServiceRefSockFD(self.serviceRef)
             ret = select.select([fd],[],[])
             if ret[0]:
-                ret = rendezvous.DNSServiceProcessResult(self.serviceRef)
+                ret = bonjour.DNSServiceProcessResult(self.serviceRef)
 
         def __RegisterCallback(self,sdRef,flags,errorCode,name,regtype,domain,userdata):
             self.registerFlag.set()
@@ -93,7 +93,7 @@ try:
         def Stop(self):
             # Deallocate the service discovery ref
             if self.serviceRef:
-                rendezvous.DNSServiceRefDeallocate(self.serviceRef)
+                bonjour.DNSServiceRefDeallocate(self.serviceRef)
 
         def IsRegistered(self):
             return self.registerFlag.isSet()
@@ -101,7 +101,7 @@ try:
 
 
 
-    class RendezvousBrowser:
+    class BonjourBrowser:
 
         ADD = 1
         DELETE = 2
@@ -125,15 +125,15 @@ try:
         def __del__(self):
             # Deallocate the service discovery ref
             if self.serviceRef:
-                rendezvous.DNSServiceRefDeallocate(self.serviceRef)
+                bonjour.DNSServiceRefDeallocate(self.serviceRef)
 
         def __BrowseCallback(self,sdRef,flags,interfaceIndex,
                            errorCode,serviceName,regtype,
                            replyDomain,userdata):
 
-            if flags & rendezvous.kDNSServiceFlagsAdd:
-                sdRef2 = rendezvous.AllocateDNSServiceRef()
-                ret = rendezvous.pyDNSServiceResolve(sdRef2,
+            if flags & bonjour.kDNSServiceFlagsAdd:
+                sdRef2 = bonjour.AllocateDNSServiceRef()
+                ret = bonjour.pyDNSServiceResolve(sdRef2,
                                                   0,
                                                   0,
                                                   serviceName,
@@ -142,8 +142,8 @@ try:
                                                   self.__ResolveCallback,
                                                   serviceName );
 
-                rendezvous.DNSServiceProcessResult(sdRef2)
-                rendezvous.DNSServiceRefDeallocate(sdRef2)
+                bonjour.DNSServiceProcessResult(sdRef2)
+                bonjour.DNSServiceRefDeallocate(sdRef2)
 
             elif flags == 0:
                 self.lock.acquire()
@@ -163,7 +163,10 @@ try:
             parts = struct.unpack('%ds' % (txtLen,),txtRecord[0:txtLen])
             txtlen = ord(parts[0][0])
             txt = parts[0][1:txtlen+1]
-            url = txt
+            txtparts = txt.split('=')
+            url = ''
+            if txtparts and len(txtparts) > 1 and txtparts[0] == 'url':
+                url = txtparts[1]
 
             self.lock.acquire()
             self.serviceUrls[serviceName] = url
@@ -183,20 +186,20 @@ try:
             self.running = 1
 
             # Allocate a service discovery ref and browse for the specified service type
-            self.serviceRef = rendezvous.AllocateDNSServiceRef()
-            ret = rendezvous.pyDNSServiceBrowse(self.serviceRef,  
+            self.serviceRef = bonjour.AllocateDNSServiceRef()
+            ret = bonjour.pyDNSServiceBrowse(self.serviceRef,  
                                           0,                   
                                           0,                   
                                           self.serviceType,                
                                           'local.',            
                                           self.__BrowseCallback,      
                                           None)
-            if ret != rendezvous.kDNSServiceErr_NoError:
+            if ret != bonjour.kDNSServiceErr_NoError:
                 print "ret = %d; exiting" % ret
                 raise BrowserError('browse',ret)
 
             # Get socket descriptor                      
-            fd = rendezvous.DNSServiceRefSockFD(self.serviceRef)
+            fd = bonjour.DNSServiceRefSockFD(self.serviceRef)
 
             if fd <= 0:
                 raise BrowserError('fd',fd)
@@ -207,8 +210,8 @@ try:
                 ret = select.select([fd],[],[],self.timeout)
                 if ret[0]:  
                     #print "do process result"
-                    ret = rendezvous.DNSServiceProcessResult(self.serviceRef)
-                    if ret != rendezvous.kDNSServiceErr_NoError:
+                    ret = bonjour.DNSServiceProcessResult(self.serviceRef)
+                    if ret != bonjour.kDNSServiceErr_NoError:
                         raise BrowserError('processresult',ret)
 
         def Stop(self):
@@ -224,10 +227,10 @@ try:
             return urls
             
             
-    Publisher = RendezvousPublisher
-    Browser = RendezvousBrowser
+    Publisher = BonjourPublisher
+    Browser = BonjourBrowser
 except ImportError,e:
-    log.info("Failed to import rendezvous; service discovery disabled")
+    log.info("Failed to import bonjour; service discovery disabled")
     Publisher = _Publisher
     Browser = _Browser
 
