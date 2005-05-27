@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.77 2005-05-12 21:09:18 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.78 2005-05-27 14:04:00 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.77 2005-05-12 21:09:18 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.78 2005-05-27 14:04:00 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -431,7 +431,7 @@ class AGNetworkServiceDescription(ObjectDescription):
         return s
        
 class AppParticipantDescription:
-    def __init__(self, appId, clientProfile, status):
+    def __init__(self, appId='', clientProfile=None, status=''):
         self.appId = appId
         self.clientProfile = clientProfile
         self.status = status
