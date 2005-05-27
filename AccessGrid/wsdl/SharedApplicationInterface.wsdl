@@ -57,17 +57,13 @@
           </xsd:element>
 
           <xsd:element name="GetDataChannelResponse">
-            <xsd:complexType><xsd:sequence>
+            <xsd:complexType>
+              <xsd:sequence>
                 <xsd:element minOccurs="0" maxOccurs="1" name="channelId" type="xsd:string" />
-                <xsd:complexType><xsd:sequence>
-                  <xsd:sequence>
-                    <xsd:element minOccurs="0" maxOccurs="1" name="address" type="xsd:string" />
-                    <xsd:element minOccurs="0" maxOccurs="1" name="port" type="xsd:integer" />
-                  </xsd:sequence>
-                  <xsd:element minOccurs="0" maxOccurs="1" name="eventchannelid" type="xsd:string" />
-                </xsd:sequence></xsd:complexType>
-              
-            </xsd:sequence></xsd:complexType>
+                <xsd:element minOccurs="0" maxOccurs="1" name="address" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="port" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetDataKeysRequest">
@@ -108,7 +104,7 @@
           <xsd:element name="GetParticipantsResponse">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="participants" type="agtk:ClientProfile" />
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="participants" type="agtk:AppParticipantDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
