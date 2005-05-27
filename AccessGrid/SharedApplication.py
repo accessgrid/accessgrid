@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.24 2005-05-13 19:37:03 lefvert Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.25 2005-05-27 13:57:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.24 2005-05-13 19:37:03 lefvert Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.25 2005-05-27 13:57:52 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -33,6 +33,7 @@ from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 from AccessGrid.Security import X509Subject, Role
+from AccessGrid.interfaces.SharedApplication_interface import SharedApplication as SharedApplicationI
 
 log = Log.GetLogger(Log.SharedApplication)
 
@@ -103,9 +104,11 @@ class SharedApplication(AuthorizationMixIn):
             self.id = str(GUID())
         else:
             self.id = id
+            
+        self.venueURL = ""
 
-        ai = SharedApplicationI(self)
-        self.authManager.AddActions(ai._GetMethodActions())
+        #ai = SharedApplicationI(self)
+        #self.authManager.AddActions(ai._GetMethodActions())
 
         # Add roles to actions.
        
@@ -277,7 +280,7 @@ class SharedApplication(AuthorizationMixIn):
         log.info( "channel = " + self.channels[0] )
         log.info( "location = " +  location[0] + ":" + str(location[1]) )
         
-        return (channelId, location)
+        return (channelId, location[0], location[1])
 
     def GetVenueURL(self, private_token):
         """
@@ -471,123 +474,44 @@ def CreateApplication(name, description, mimeType, eventService, id=None ):
     """
     return SharedApplication(name, description, mimeType, eventService, id)
 
-class SharedApplicationI(SOAPInterface, AuthorizationIMixIn):
-    """
-    SharedApplication is the interface class for an application
-    """
 
-    def __init__(self, impl):
-        """
-        """
-        SOAPInterface.__init__(self, impl)
+if __name__ == "__main__":
 
-    def _authorize(self, *args, **kw):
-        """
-        """
+    import time
 
-        log.debug("Authorizing %s %s", args, *kw)
-        
-        subject, action = self._GetContext()
-        
-        log.info("Authorizing action: %s for subject %s", action.name,
-                 subject.name)
+    from AccessGrid.Toolkit import Service
+    from AccessGrid.hosting import SecureServer, InsecureServer
+    from AccessGrid.SharedApplication import SharedApplication
+    from AccessGrid.interfaces.SharedApplication_interface import SharedApplication as SharedApplicationI
+    
 
-        authManager = self.impl.authManager
+    app = Service.instance()
+    args = app.Initialize('SharedApplication')
+    log = app.GetLog()
+    hostname = app.GetHostname()
+    port = 4000
+    if app.GetOption("secure"):
+        server = SecureServer((hostname, port))
+    else:
+        server = InsecureServer((hostname, port))
+    
+    # __init__(self, name, description, mimeType, eventService, id = None):
+    sa = SharedApplication('name','description','application/x-sharedapp',None)
+    sai = SharedApplicationI(impl=sa,auth_method_name=None)
+    server.RegisterObject(sai,path="/SharedApplication")
 
-        isAuth = authManager.IsAuthorized(subject, action)
-        
-        return isAuth
-   
-    def GetId(self):
-        return self.impl.GetId()
-        
-    def Join(self, clientProfile=None):
-        if clientProfile is not None:
-            cProfile = CreateClientProfile(clientProfile)
-        else:
-            cProfile = None
-        return self.impl.Join(cProfile)
+    url = server.FindURLForObject(sa)    
+    print "Starting Service Manager URL:", url
 
-    def GetComponents(self, private_token):
-        return self.impl.GetComponents(private_token)
-
-    def GetParticipants(self, private_token):
-        return self.impl.GetParticipants(private_token)
-
-    def Leave(self, private_token):
-        return self.impl.Leave(private_token)
-
-    def SetData(self, private_token, key, value):
-        return self.impl.SetData(private_token, key, value)
-
-    def GetData(self, private_token, key):
-        return self.impl.GetData(private_token, key)
-
-    def GetDataKeys(self, private_token):
-        return self.impl.GetDataKeys(private_token)
-
-    def GetDataChannel(self, private_token):
-        return self.impl.GetDataChannel(private_token)
-
-    def GetVenueURL(self, private_token):
-        return self.impl.GetVenueURL(private_token)
-
-    def SetParticipantStatus(self, private_token, status):
-        return self.impl.SetParticipantStatus(private_token, status)
-
-    def SetParticipantProfile(self, private_token, profile):
-        if profile is not None:
-            cProfile = CreateClientProfile(profile)
-        else:
-            cProfile = None
-        return self.impl.SetParticipantProfile(private_token, cProfile)
-
-    def GetState(self, private_token):
-        return self.impl.GetState(private_token)
-
-
-class SharedApplicationIW(SOAPIWrapper, AuthorizationIWMixIn):
-    """
-    """
-    def __init__(self, url):
-        SOAPIWrapper.__init__(self, url)
-
-    def GetId(self):
-        return self.proxy.GetId()
-
-    def Join(self, clientProfile=None):
-        return self.proxy.Join(clientProfile)
-
-    def GetComponents(self, private_token):
-        return self.proxy.GetComponents(private_token)
-
-    def GetParticipants(self, private_token):
-        return self.proxy.GetParticipants(private_token)
-
-    def Leave(self, private_token):
-        return self.proxy.Leave(private_token)
-
-    def SetData(self, private_token, key, value):
-        return self.proxy.SetData(private_token, key, value)
-
-    def GetData(self, private_token, key):
-        return self.proxy.GetData(private_token, key)
-
-    def GetDataKeys(self, private_token):
-        return self.proxy.GetDataKeys(private_token)
-
-    def GetDataChannel(self, private_token):
-        return self.proxy.GetDataChannel(private_token)
-
-    def GetVenueURL(self, private_token):
-        return self.proxy.GetVenueURL(private_token)
-
-    def SetParticipantStatus(self, private_token, status):
-        return self.proxy.SetParticipantStatus(private_token, status)
-
-    def SetParticipantProfile(self, private_token, profile):
-        return self.proxy.SetParticipantProfile(private_token, profile)
-
-    def GetState(self, private_token):
-        return self.proxy.GetState(private_token)
+    # Start the service
+    server.RunInThread()
+    
+    running = 1
+    while running:
+        try:
+            time.sleep(1)
+        except IOError, e:
+            log.info("Sleep interrupted, exiting.")
+    
+    
 
