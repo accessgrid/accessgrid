@@ -227,7 +227,7 @@ class NetworkConnection (asyncore.dispatcher):
     def __init__ (self, conn, addr,handler=None):
         asyncore.dispatcher.__init__(self, conn)
         self.__handler = handler
-        self.__buffer = ''
+        self.__buffer = []
         self.__data = ''
 
         # the connection object is the unique id for this class.
@@ -241,7 +241,7 @@ class NetworkConnection (asyncore.dispatcher):
         Add data to submit.
         """
         try:
-            self.__buffer = self.__buffer + data
+            self.__buffer.append(data)
         except:
             log.exception("NetworkConnection.add_to_buffer: Failed %s"%(data))
                        
@@ -274,8 +274,9 @@ class NetworkConnection (asyncore.dispatcher):
         socket can be written. Implements buffering.
         """
         try:
-            sent = self.send(self.__buffer)
-            self.__buffer = self.__buffer[sent:]
+            sent = self.send(self.__buffer[0])
+            self.__buffer = self.__buffer[1:]
+            
         except:
             log.exception("NetworkConnection.handle_write: Failed %s"
                           %(self.__buffer))

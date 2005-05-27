@@ -20,7 +20,7 @@ class EventClient:
     def __init__(self, location, id, channelId):
         log.debug('EventClient.__init__: Create event client, location: %s id %s' %(location, channelId))
         self.client = AsyncoreEventClient(location, id, channelId)
-        
+                
     def RegisterCallback(self, eventType, callback):
         '''
         Associates a method with an event type. You can register several
@@ -71,8 +71,9 @@ class NetworkClient (asyncore.dispatcher):
         location - (host, port) location
         handler - callback for handling read and writes
         '''
-        self.out_buffer = ""
-        self.in_buffer = ""
+        self.out_buffer = []
+        self.in_buffer = []
+               
         asyncore.dispatcher.__init__ (self)
         log.debug('NetworkClient.__init__: Connect to %s %s'%location)
         self.create_socket (socket.AF_INET, socket.SOCK_STREAM)
@@ -83,27 +84,29 @@ class NetworkClient (asyncore.dispatcher):
         pass
 
     def handle_read(self):
-        try:
-            self.in_buffer = self.recv(8192)
-            if self.handler:
-                self.handler(self.in_buffer)
-            else:
-                log.warn('NetworkClient.handle_read:  Unhandled message %s' %self.out_buffer)
-        except:
-            log.exception('NetworkClient.handle_read error')
+       try:
+           self.in_buffer.append(self.recv(8192))
+            
+           if self.handler:
+               self.handler(self.in_buffer[0])
+               self.in_buffer = self.in_buffer[1:]
+           else:
+               log.warn('NetworkClient.handle_read:  Unhandled message %s' %self.out_buffer)
+               
+       except:
+            log.exception('NetworkClient.handle_read: handle_read failed')
             
     def handle_write(self):
         try:
-            sent = self.send(self.out_buffer)
-            self.out_buffer = self.out_buffer[sent:]
+            sent = self.send(self.out_buffer[0])
+            self.out_buffer = self.out_buffer[1:]
+            
         except:
             log.exception('NetworkClient.handle_write error')
                 
     def writable(self):
-        if self.out_buffer:
-            return len(self.out_buffer) > 0
         return 0
-        
+             
 # Adapted from class event_loop in Sam Rushing's async package
 class EventLoop:
 
@@ -173,12 +176,12 @@ class AsyncoreEventClient(threading.Thread):
         
     def received_a_line(self, event):
         e = PickledEvent.CreateEvent(event)
-
+              
         # Notify ui of the event
         self.send_event(event)
         
     def send_a_line(self, event):
-        self.client.out_buffer = self.client.out_buffer + event.GetString()
+        self.client.out_buffer.append(event.GetString())
         self.client.handle_write()
 
     def run(self):
@@ -287,12 +290,12 @@ if __name__=='__main__':
 
         def OnChar(self, event):
             key = event.KeyCode()
+            
             if key == 27:
                 self.Close(true)
           
             else:
                 self.eventClient.Send("test", chr(key))
-                #event.Skip()
                 return
 
         def TimeToQuit(self, event):
