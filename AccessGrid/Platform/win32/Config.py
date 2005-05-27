@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.60 2005-01-14 19:43:21 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.61 2005-05-27 15:59:38 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.60 2005-01-14 19:43:21 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.61 2005-05-27 15:59:38 lefvert Exp $"
 
 import os
 import socket
@@ -119,7 +119,7 @@ class UserConfig(Config.UserConfig):
     def instance(initIfNeeded=0):
         if UserConfig.theUserConfigInstance == None:
             UserConfig(initIfNeeded)
-
+            
         return UserConfig.theUserConfigInstance
     
     instance = staticmethod(instance)
@@ -549,16 +549,16 @@ class MimeConfig(Config.MimeConfig):
     can leverage legacy configuration and applications for data
     viewing.
     """
-    theMimeConfigInstance = None
-
+   
     def instance():
+       
         if MimeConfig.theMimeConfigInstance == None:
             MimeConfig()
-
+                             
         return MimeConfig.theMimeConfigInstance
 
     instance = staticmethod(instance)
-    
+        
     def RegisterMimeType(self, mimeType, extension, fileType, description,
                          cmds):
         """
