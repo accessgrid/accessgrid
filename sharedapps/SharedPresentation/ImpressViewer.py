@@ -10,6 +10,7 @@
 #-----------------------------------------------------------------------------    
 import sys, os
 import time
+
 # bootstrap uno component context       
 import uno
 import unohelper
@@ -78,7 +79,9 @@ class ImpressViewer:
         except:
             print "Starting listening OpenOffice"
 
-            if iscommand("ooffice"):
+            if iscommand("ooimpress"):
+                oo_bin = "ooimpress"
+            elif iscommand("ooffice"):
                 oo_bin = "ooffice"
             elif iscommand("soffice"):
                 oo_bin = "soffice"
@@ -130,7 +133,10 @@ class ImpressViewer:
         This method quits the openoffice application.
         """
         if self.doc:
-            self.doc.close(1)
+            if not hasattr(self.doc, "close") :
+                self.doc.dispose()
+            else:
+                self.doc.close(1)
 
     def LoadPresentation(self, file):
         """
@@ -140,7 +146,10 @@ class ImpressViewer:
 
         # Close existing presentation
         if self.doc:
-            self.doc.close(1)
+            if not hasattr(self.doc, "close") :
+                self.doc.dispose()
+            else:
+                self.doc.close(1)
 
         if not file:
             print "Blank presentation"
