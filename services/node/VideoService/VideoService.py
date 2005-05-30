@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.2 2005-01-14 23:52:46 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.3 2005-05-30 13:55:26 douglask Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -444,7 +444,10 @@ class VideoService( AGService ):
         #     int minheight;  # and height
         #   };
         VIDIOCGCAP_FMT = "32siiiiiii"   # video_capability struct format string
-        VIDIOCGCAP     = -2143521279    # 0x803C7601
+        if sys.byteorder == "little":
+            VIDIOCGCAP     = -2143521279    # 0x803C7601
+        else: 
+            VIDIOCGCAP     = 0x403c7601
 
         # V4L video_channel struct defined in linux/videodev.h :
         #   struct video_channel {
