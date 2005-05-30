@@ -209,9 +209,9 @@ class vncServer:
                         windowmanager = "/usr/X11R6/bin/mwm" 
                     defaultStartup= "#!/bin/sh\n\n" +     \
                         "#xrdb $HOME/.Xresources\n" +     \
-                        "xsetroot -solid grey\n" +        \
                         "xterm -geometry 80x24+10+10 -ls -title \"VenueVNC Desktop\" &\n" +    \
-                        windowmanager + " &\n"
+                        windowmanager + " &\n" +          \
+                        "xsetroot -grey\n"
                     f.write(defaultStartup)
                     f.close()
                     os.chmod(xstartup,0755)
