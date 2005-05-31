@@ -2,13 +2,13 @@
 # Name:        DataStoreClient.py
 # Purpose:     
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.24 2004-12-08 16:48:06 judson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.25 2005-05-31 22:03:01 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.24 2004-12-08 16:48:06 judson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.25 2005-05-31 22:03:01 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -20,8 +20,9 @@ import fnmatch
 from AccessGrid import Log
 from AccessGrid import Platform
 from AccessGrid.Platform.Config import UserConfig
-from AccessGrid.hosting import Client
 from AccessGrid import DataStore
+from AccessGrid.interfaces.Venue_client import VenueIW
+from AccessGrid.Toolkit import Application
 
 log = Log.GetLogger(Log.DataStoreClient)
 
@@ -33,8 +34,9 @@ def GetVenueDataStore(venueURL):
     Return the default venue datastore for the given venue URL.
     """
 
-    vproxy = Client.SecureHandle(venueURL).GetProxy()
-    log.info("Connecting to venue %s, to get datastore information.", venueURL)
+    vproxy = VenueIW(venueURL)
+    #vproxy = Client.SecureHandle(venueURL).GetProxy()
+    #log.info("Connecting to venue %s, to get datastore information.", venueURL)
     
     try:
         ds = vproxy.GetDataStoreInformation()
@@ -49,7 +51,7 @@ def GetVenueDataStore(venueURL):
     upload = ds[0]
     store = ds[1]
 
-    dsc = DataStoreClient(upload, store)
+    dsc = DataStoreClient(upload, venueURL)
 
     return dsc
 
@@ -223,11 +225,10 @@ class DataStoreClient:
     file listing methods.
     """
 
-    def __init__(self, uploadURL, datastoreURL):
-        self.datastoreURL = datastoreURL
+    def __init__(self, uploadURL, venueUrl):
+        self.venueUrl = venueUrl
         self.uploadURL = uploadURL
-        self.datastoreProxy = Client.SecureHandle(datastoreURL).GetProxy()
-
+        self.venueProxy = VenueIW(venueUrl) #Client.SecureHandle(venueUrl).GetProxy()
         self.LoadData()
 
     def LoadData(self):
@@ -235,7 +236,7 @@ class DataStoreClient:
         Load the local data descriptor cache from the datastore.
         """
 
-        descList = self.datastoreProxy.GetDataDescriptions()
+        descList = self.venueProxy.GetDataDescriptions()
 
         self.dataCache = []
         self.dataIndex = {}
@@ -247,9 +248,8 @@ class DataStoreClient:
         #
 
         for desc in descList:
-            ddict = desc._asdict()
-            self.dataCache.append(ddict)
-            self.dataIndex[str(ddict['name'])] = ddict
+            self.dataCache.append(desc)
+            self.dataIndex[desc.name] = desc
 
     def QueryMatchingFilesMultiple(self, patternList):
 
@@ -267,10 +267,9 @@ class DataStoreClient:
         Return a list of filenames that match the given pattern.
         Pattern is a unix-style filename wildcard.
         """
-
         ret = []
         for data in self.dataCache:
-            fname = data['name']
+            fname = data.name
             if fnmatch.fnmatchcase(fname, pattern):
                 ret.append(str(fname))
 
@@ -289,9 +288,9 @@ class DataStoreClient:
 
         if filename in self.dataIndex:
             data = self.dataIndex[filename]
-            url = data['uri']
-            print "Downloading ", url
-            DataStore.HTTPDownloadFile(url, localFile, data['size'], data['checksum'])
+            url = data.uri
+            my_identity = str(Application.instance().GetDefaultSubject())
+            DataStore.HTTPDownloadFile(my_identity, url, localFile, data.size, data.checksum)
         else:
             raise FileNotFound
 
@@ -301,8 +300,9 @@ class DataStoreClient:
         """
 
         try:
-            log.debug("Upload %s to %s", localFile, self.uploadURL)
-            DataStore.HTTPUploadFiles(self.uploadURL, [localFile], None)
+            #log.debug("Upload %s to %s", localFile, self.uploadURL)
+            my_identity = str(Application.instance().GetDefaultSubject())
+            DataStore.HTTPUploadFiles(my_identity, self.uploadURL, [localFile], None)
         except DataStore.UploadFailed, e:
             #rc, errlist = e.args[0]
             #for err in errlist:
@@ -314,9 +314,9 @@ class DataStoreClient:
             data = self.dataIndex[file]
             print "File=%s data=%s" % (file, data)
             # If the proxy is a data store, then this is fine, but right now
-            # self.datastoreProxy.RemoveFiles([data])
+            # self.venueProxy.RemoveFiles([data])
             # the proxy is the venue, so this needs to be:
-            self.datastoreProxy.RemoveData(data)
+            self.venueProxy.RemoveData(data)
         except Exception, e:
             #print "Error removing data ", e
             raise e
@@ -525,13 +525,13 @@ class DataStoreShell(cmd.Cmd):
         for f in files:
             if verb and url:
                 data = self.dsc.GetFileData(f)
-                print "%-20s %10s %-12s %s" % (f, data['size'], data['type'], data['uri'])
+                print "%-20s %10s %-12s %s" % (f, data.size, data.type, data.uri)
             elif verb:
                 data = self.dsc.GetFileData(f)
-                print "%-20s %10s %s " % (f, data['size'], data['type'])
+                print "%-20s %10s %s " % (f, data.size, data.type)
             elif url:
                 data = self.dsc.GetFileData(f)
-                print "%-20s %s" % (f, data['uri'])
+                print "%-20s %s" % (f, data.uri)
             else:
                 print f
 
