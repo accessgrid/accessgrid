@@ -9,9 +9,16 @@ mapping = {
     "VenueDescription" : ("AccessGrid.Descriptions", "VenueDescription"),
     "StreamDescription" : ("AccessGrid.Descriptions", "StreamDescription"),
     "NetworkLocation" : ("AccessGrid.NetworkLocation", "NetworkLocation"),
+    "MulticastNetworkLocation" : ("AccessGrid.NetworkLocation", "MulticastNetworkLocation"),
+    "UnicastNetworkLocation" : ("AccessGrid.NetworkLocation", "UnicastNetworkLocation"),
     "ProviderProfile" : ("AccessGrid.NetworkLocation", "ProviderProfile"),
-    "AGServiceManagerDescription" : ("AccessGrid.Descriptions", "AGServiceManagerDescription"),
     "AppParticipantDescription" : ("AccessGrid.Descriptions", "AppParticipantDescription"),
+    
+    # Node management
     "NodeConfigDescription" : ("AccessGrid.Descriptions", "NodeConfigDescription"),
+    "AGServiceManagerDescription" : ("AccessGrid.Descriptions", "AGServiceManagerDescription"),
+    "AGServicePackageDescription" : ("AccessGrid.Descriptions", "AGServicePackageDescription"),
+    "AGServiceDescription" : ("AccessGrid.Descriptions", "AGServiceDescription"),
+    "Capability" : ("AccessGrid.Descriptions", "Capability"),
 }
 
