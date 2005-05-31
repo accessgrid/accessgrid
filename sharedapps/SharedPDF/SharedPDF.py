@@ -4,8 +4,8 @@
 #
 # Author:      Susanne Lefvert
 #
-# Created:     $Date: 2005-04-13 17:39:56 $
-# RCS-ID:      $Id: SharedPDF.py,v 1.4 2005-04-13 17:39:56 lefvert Exp $
+# Created:     $Date: 2005-05-31 21:59:59 $
+# RCS-ID:      $Id: SharedPDF.py,v 1.5 2005-05-31 21:59:59 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -59,9 +59,8 @@ class PdfViewer(wxPanel):
         self.log.debug("PdfViewer.__init__: Start pdf viewer, venueUrl: %s, appUrl: %s"%(venueUrl, appUrl))
 
         # Get client profile
-        clientProfileFile = os.path.join(UserConfig.instance().GetConfigDir(), "profile")
-        clientProfile = ClientProfile(clientProfileFile)
-
+        clientProfile = ClientProfile(UserConfig.instance().GetProfile())
+       
         # Join the application session.
         self.sharedAppClient.Join(appUrl, clientProfile)
         self.id = self.sharedAppClient.GetPublicId()
@@ -78,10 +77,11 @@ class PdfViewer(wxPanel):
         
         # Get current state
         self.file = self.sharedAppClient.GetData("file")
-        self.pageNr = int(self.sharedAppClient.GetData("page"))
-        
+        self.pageNr = self.sharedAppClient.GetData("page")
+
         if self.file:
             try:
+                self.pageNr = int(self.pageNr)
                 self.dataStoreClient.Download(self.file, "tmp")
                 self.pdf.LoadFile("tmp")
                 self.pdf.setCurrentPage(self.pageNr)
@@ -132,6 +132,8 @@ class PdfViewer(wxPanel):
         '''
         Invoked when user clicks the previous button.
         '''
+
+        
         self.pageNr = self.pageNr - 1
         self.pdf.setCurrentPage(self.pageNr)
         self.sharedAppClient.SendEvent("changePage", (self.id, self.pageNr))
@@ -160,7 +162,7 @@ class PdfViewer(wxPanel):
         '''
         Invoked when a open event is received.
         '''
-        id, self.file, self.pageNr = event.data
+        id, self.file, self.pageNr = event.GetData()
 
         # Ignore my own events
         if self.id != id:
@@ -179,7 +181,7 @@ class PdfViewer(wxPanel):
         '''
         Invoked when a changePage event is received.
         '''
-        id, self.pageNr = event.data
+        id, self.pageNr = event.GetData()
       
         # Ignore my own events
         if self.id != id:
@@ -333,13 +335,34 @@ if __name__ == '__main__':
                        help="Specify an application url on the command line")
     venueurlOption = Option("-v", "--venueURL", dest="venueUrl", default=None,
                        help="Specify a venue url on the command line")
+    testOption = Option("-t", "--testMode", dest="test", action="store_true",
+                        default=None, help="Automatically create application session in venue")
+
     app.AddCmdLineOption(appurlOption)
     app.AddCmdLineOption(venueurlOption)
+    app.AddCmdLineOption(testOption)
     name = "SharedPDF"
     app.Initialize(name)
 
     appUrl = app.GetOption("appUrl")
     venueUrl = app.GetOption("venueUrl")
+    test = app.GetOption("test")
+
+    if test:
+        from AccessGrid.Venue import VenueIW
+        # Create an application session in the venue
+        # for testing. This should normally be done via
+        # the Venue Client menu.
+        venue = VenueIW("https://localhost:8000/Venues/default")
+        appDesc = venue.CreateApplication("Shared PDF",
+                                          "Shared PDF",
+                                          "application/x-ag-shared-pdf")
+        
+        appUrl = appDesc.uri
+
+    if not appUrl:
+        Usage()
+        sys.exit(0)
         
     if not appUrl or not venueUrl:
         Usage()
