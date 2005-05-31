@@ -2,7 +2,8 @@ import os
 
 from AccessGrid import Log
 #from AccessGrid.EventClient import EventClient
-#from AccessGrid.Events import ConnectEvent, Event
+from AccessGrid.Events import Event
+from AccessGrid.AsyncoreEventClient import EventClient
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.hosting import Client
@@ -87,22 +88,20 @@ class SharedAppClient:
         self.__appUrl = appServiceUrl
         
         # Get a handle to the application service in the venue
+
         self.__appProxy = SharedApplicationIW(appServiceUrl)
-                
 
         try:
             # Join the application object with your client profile
             (self.__publicId, self.__privateId) = self.__appProxy.Join(clientProfile)
         except:
-#        except Client.MethodFailed, e:
-
             self.log.exception("SharedAppClient.Join failed: %s",
                                self.__appUrl)
         try:
             # Retrieve data/event channel id
             dataChannel = self.__appProxy.GetDataChannel(self.__privateId)
             (self.__channelId, eventhost,eventport) = dataChannel
-            
+                        
         except:
             import traceback
             traceback.print_stack()
@@ -110,20 +109,21 @@ class SharedAppClient:
             self.log.exception("SharedAppClient.Connect: Failed to get data channel")
                     
         # Subscribe to the data/event channel
-#        self.eventClient = EventClient(self.__privateId, esl, self.__channelId)
-#        self.RegisterEventCallback(Event.APP_SET_DATA, self.__ReceiveDataUpdate)
-#        self.eventClient.start()
-#        self.eventClient.Send(ConnectEvent(self.__channelId, self.__privateId))
+        self.eventClient = EventClient((eventhost, eventport), 
+                                       self.__privateId,
+                                       self.__channelId)
+        self.RegisterEventCallback(Event.APP_SET_DATA, self.__ReceiveDataUpdate)
+        self.eventClient.Start()
 
     def Shutdown(self):
         '''
         Exit from application service and shut down event client.
         '''
-#        try:
-#            if self.eventClient:
-#                self.eventClient.Stop()
-#        except:
-#            self.log.exception("SharedAppClient.Shutdown: Could not stop event client")
+        try:
+            if self.eventClient:
+                self.eventClient.Stop()
+        except:
+            self.log.exception("SharedAppClient.Shutdown: Could not stop event client")
 
         try:
             if self.__appProxy:
@@ -141,9 +141,9 @@ class SharedAppClient:
 
         *callback* Method called when receiving event of type eventType.
         '''
-#        if not self.__EventIsRegistered(eventType):
+        if not self.__EventIsRegistered(eventType):
             # Only register the event once since the same callback method is used.
-#            self.eventClient.RegisterCallback(eventType, self.HandleEvent)
+            self.eventClient.RegisterCallback(eventType, self.HandleEvent)
 
         # Insert unique callback in table.
         self.__callbackTable.append((eventType, callback))
@@ -153,21 +153,21 @@ class SharedAppClient:
         This method is called when an event is distributed in the application service.
         NOTE: Used internally.
         '''
-       
-        if self.__EventIsRegistered(event.eventType):
+           
+        if self.__EventIsRegistered(event.GetEventType()):
             # Execute the callbacks.
             for e, callback in self.__callbackTable:
-                if e == event.eventType:
+                if e == event.GetEventType():
                     try:
                         callback(event)
                         
                     except:
-                        self.log.exception("SharedAppClient.HandleEvent: Callback failed for event %s" %(event.eventType))
-                        raise Exception, "Callback failed for event '%s'" %event.eventType
+                        self.log.exception("SharedAppClient.HandleEvent: Callback failed for event %s" %(event.GetEventType()))
+                        raise Exception, "Callback failed for event '%s'" %event.GetEventType()
 
         else:
-            self.log.exception("SharedAppClient.HandleEvent: Callback has not been registered for this event %s" %(event.eventType))
-            raise Exception, "Callback has not been registered for this event '%s'" %(event.eventType)
+            self.log.exception("SharedAppClient.HandleEvent: Callback has not been registered for this event %s" %(event.GetEventType()))
+            raise Exception, "Callback has not been registered for this event '%s'" %(event.GetEventType())
       
     def SendEvent(self, eventType, data):
         '''
@@ -183,7 +183,7 @@ class SharedAppClient:
         '''
         pass
 #        evt = Event(eventType, self.__channelId, data)
-#        self.eventClient.Send(evt)
+        self.eventClient.Send(eventType, data)
         
     def SetData(self, dataKey, dataValue):
         '''
@@ -199,7 +199,7 @@ class SharedAppClient:
         *dataValue* The actual data
         '''
         try:
-            self.__appProxy.SetData(self.__privateId, dataKey, dataValue)
+            self.__appProxy.SetData(self.__privateId, str(dataKey), str(dataValue))
             self.__dataCache[dataKey] = dataValue
         except:
             self.log.exception("SharedAppClient.SetData: Failed to set data, key: %s, value: %s" %(dataKey, dataValue))
@@ -374,13 +374,8 @@ class SharedAppClient:
         
         *keys* List of data keys.
         '''
-
         try:
             keys = self.__appProxy.GetDataKeys(self.__privateId)
-        except Client.MethodNotFound:
-            self.log.exception("SharedAppClient.GetDataKeys: Failed to get data keys")
-            raise Exception, "The server you are connecting to is running old software. This method is not implemented in that version." 
-
         except:
             self.log.exception("SharedAppClient.GetDataKeys: Failed to get data keys")
             raise Exception, "Failed to get application data keys" 
@@ -435,7 +430,7 @@ class SharedAppClient:
         *event* Received event.
         '''
         # Update data cache.
-        self.__dataCache[event.data.key] = event.data.value
+        self.__dataCache[event.GetData().key] = event.GetData().value
 
     def __EventIsRegistered(self, eventType):
         '''
@@ -452,10 +447,10 @@ if __name__ == "__main__":
     appUrl = "https://zuz-10:8000/102"
   
     def Callback(event):
-        print '**** Received event (first)', event.data
+        print '**** Received event (first)', event.GetData()
 
     def Callback2(event):
-        print '**** Received event (second)', event.data
+        print '**** Received event (second)', event.GetData()
     
     # Create shared application c  print "get data keys ", self.sharedAppClient.GetDataKeys()lient
     sharedAppClient = SharedAppClient("Test Client")
