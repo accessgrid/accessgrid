@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.244 2005-05-26 16:46:39 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.245 2005-05-31 22:51:39 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.244 2005-05-26 16:46:39 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.245 2005-05-31 22:51:39 lefvert Exp $"
 
 import sys
 import time
@@ -613,6 +613,7 @@ class Venue(AuthorizationMixIn):
         venueState.connections = venueState.connections.values()
         # tuple of different types can't be serialized
         venueState.eventLocation=  ":".join(map(lambda x : str(x), self.GetEventServiceLocation() ))
+        venueState.textLocation = ":".join(map(lambda x : str(x), self.GetTextServiceLocation() ))
         return venueState
 
     def GetId(self):
@@ -1055,18 +1056,15 @@ class Venue(AuthorizationMixIn):
         assigned by the venue for this client session.
         """
         log.debug("Enter called.")
-
         # allocate connection-specific id;
         # this is passed back to 2.3+ clients in the private id, 
         # which unfortunately lengthens the private id generally
         clientProfile.connectionId = str(GUID())
         log.debug("Enter: Assigning connection id: %s", clientProfile.connectionId)
-
         # Send this before we set up client state, so that
         # we don't end up getting our own enter event enqueued.
 
         self.eventClient.Send(Event.ENTER, clientProfile)
-
         # Create venue client state object
         vcstate = self.clients[clientProfile.connectionId] = VenueClientState(self,
                                                              self.maxTimeout,
@@ -1076,12 +1074,12 @@ class Venue(AuthorizationMixIn):
         usage_log.info("\"Enter\",\"%s\",\"%s\",\"%s\"",
                        clientProfile.GetDistinguishedName(),
                        self.name, self.uniqueId)
-
         log.debug("Current users:")
         for c in self.clients.values():
             log.debug("   " + str(c))
         log.debug("Enter: Distribute enter event ")
 
+        
         try:
             if self.servicePtr.GetOption("secure"):
                 dn = clientProfile.GetDistinguishedName()
@@ -1089,6 +1087,7 @@ class Venue(AuthorizationMixIn):
         except SubjectAlreadyPresent:
             log.info("User already in venue users list: %s", dn)
 
+        
         try:
             state = self.AsVenueState()
             log.debug("state: %s", state)
@@ -1694,6 +1693,11 @@ class Venue(AuthorizationMixIn):
 
         return location
 
+    def GetTextServiceLocation(self):
+        #host = Service.instance().GetHostname()
+        host = "phosphorus.mcs.anl.gov"
+        return (host, 5223)
+    
     def AddData(self, dataDescription ):
         """
         LEGACY: This is just left here not to change the interface for
@@ -1964,7 +1968,7 @@ class Venue(AuthorizationMixIn):
         environment can't unbind the application from the web
         service layer.
         """
-                
+
         # Get the application object
         try:
             app = self.applications[appId]
@@ -2021,6 +2025,15 @@ class Venue(AuthorizationMixIn):
                 # since lists won't work here yet, convert to a string
                 entry.value =  ":".join(map(lambda x : str(x), location))
                 ret_dict.entries.append(entry)
+            if prop == "state" or prop == "textLocationStr": 
+                pname = (AGTypes, "DictionaryEntry")
+                entry = AGTypes.DictionaryEntry_(pname=pname).pyclass
+                entry.key = "textLocationStr"         
+                location = self.GetTextServiceLocation()
+                # since lists won't work here yet, convert to a string
+                entry.value =  ":".join(map(lambda x : str(x), location))
+                ret_dict.entries.append(entry)
+                     
             if prop == "state" or prop == "connections": 
                 pass
             if prop == "state" or prop == "data": 
