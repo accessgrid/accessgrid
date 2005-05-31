@@ -264,7 +264,7 @@ class SharedBrowser( wxApp ):
         # Browse to the current url, if exists
         currentUrl = self.sharedAppClient.GetData("url")
         
-        if len(currentUrl) > 0:
+        if currentUrl and len(currentUrl) > 0:
             self.browser.navigate(currentUrl)
             try:
                 self.sharedAppClient.SetParticipantStatus(currentUrl)
