@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.88 2005-05-12 21:13:44 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.89 2005-05-31 15:26:49 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.88 2005-05-12 21:13:44 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.89 2005-05-31 15:26:49 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -41,8 +41,6 @@ from AccessGrid.Descriptions import CreateParameter
 from AccessGrid.Descriptions import CreateNodeConfigDescription
 from AccessGrid import ServiceDiscovery
 from AccessGrid.AGServiceManager import AGServiceManager
-
-from SOAPpy.Types import SOAPException
 
 log = Log.GetLogger(Log.NodeService)
 
@@ -678,7 +676,12 @@ class AGNodeService:
             AGServiceManagerIW(uri).AddServiceByName('AudioService.zip')
             
 
-
+    def IsValid(self):
+        f = file('/tmp/asdasd','a')
+        f.write('in isvalid\n')
+        f.close()
+        
+        return 1
 
 
 
