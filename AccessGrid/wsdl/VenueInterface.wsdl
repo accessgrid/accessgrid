@@ -268,6 +268,17 @@
             </xsd:complexType>
           </xsd:element>
 
+	  <xsd:element name="GetDataDescriptionsRequest">
+          </xsd:element>
+
+	  <xsd:element name="GetDataDescriptionsResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="dataDescriptions" type="agtk:DataDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
           <xsd:element name="AddServiceRequest">
             <xsd:complexType>
               <xsd:sequence>
@@ -325,6 +336,17 @@
           </xsd:element>
 
           <xsd:element name="UpdateClientProfileResponse">
+          </xsd:element>
+
+	  <xsd:element name="GetDataStoreInformationRequest">
+          </xsd:element>
+
+          <xsd:element name="GetDataStoreInformationResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="2" maxOccurs="2" name="dataStoreInformation" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
           </xsd:element>
 
       </schema>
@@ -435,6 +457,12 @@
     <message name="RemoveDataResponse">
 	<part name="parameters" element="agtkv:RemoveDataResponse"/>
     </message>
+    <message name="GetDataDescriptionsRequest">
+	<part name="parameters" element="agtkv:GetDataDescriptionsRequest"/>
+    </message>
+    <message name="GetDataDescriptionsResponse">
+	<part name="parameters" element="agtkv:GetDataDescriptionsResponse"/>
+    </message>
     <message name="AddServiceRequest">
 	<part name="parameters" element="agtkv:AddServiceRequest"/>
     </message>
@@ -458,6 +486,12 @@
     </message>
     <message name="UpdateClientProfileResponse">
 	<part name="parameters" element="agtkv:UpdateClientProfileResponse"/>
+    </message>
+    <message name="GetDataStoreInformationRequest">
+	<part name="parameters" element="agtkv:GetDataStoreInformationRequest"/>
+    </message>
+    <message name="GetDataStoreInformationResponse">
+	<part name="parameters" element="agtkv:GetDataStoreInformationResponse"/>
     </message>
 
     <portType name="Venue">
@@ -536,6 +570,10 @@
 	    <input message="agtkv:RemoveDataRequest"/>
             <output message="agtkv:RemoveDataResponse"/>
 	</operation>
+	<operation name="GetDataDescriptions">
+	    <input message="agtkv:GetDataDescriptionsRequest"/>
+            <output message="agtkv:GetDataDescriptionsResponse"/>
+	</operation>
 	<operation name="AddService">
 	    <input message="agtkv:AddServiceRequest"/>
             <output message="agtkv:AddServiceResponse"/>
@@ -551,6 +589,10 @@
 	<operation name="UpdateClientProfile">
 	    <input message="agtkv:UpdateClientProfileRequest"/>
             <output message="agtkv:UpdateClientProfileResponse"/>
+	</operation>
+	<operation name="GetDataStoreInformation">
+	    <input message="agtkv:GetDataStoreInformationRequest"/>
+	    <output message="agtkv:GetDataStoreInformationResponse"/>
 	</operation>
     </portType>
 

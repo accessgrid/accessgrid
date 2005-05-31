@@ -182,6 +182,15 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
+        <operation name="GetDataDescriptions">
+	    <soap:operation soapAction="urn:#GetDataDescriptions"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
 	<operation name="AddService">
 	    <soap:operation soapAction="urn:#AddService"/>
 	    <input>
@@ -218,6 +227,16 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
+	<operation name="GetDataStoreInformation">
+	    <soap:operation soapAction="urn:#GetDataStoreInformation"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+
     </binding>
 
     <service name="Venue">
