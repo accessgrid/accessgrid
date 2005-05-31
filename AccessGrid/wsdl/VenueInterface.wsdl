@@ -51,8 +51,8 @@
           <xsd:element name="NegotiateCapabilitiesRequest">
             <xsd:complexType>
               <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="connectionId" type="xsd:string" />
                 <xsd:element minOccurs="0" maxOccurs="unbounded" name="capabilities" type="agtk:Capability" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="preferences" type="agtk:Preferences" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
