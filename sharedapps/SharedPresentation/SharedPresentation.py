@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.32 2004-08-19 22:21:57 eolson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.33 2005-05-31 22:25:24 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -40,7 +40,7 @@ else:
 # Imports we need from the Access Grid Module
 from AccessGrid import Platform
 from AccessGrid.Toolkit import WXGUIApplication
-from AccessGrid import DataStore
+#from AccessGrid import DataStore
 from AccessGrid.SharedAppClient import SharedAppClient
 from AccessGrid.DataStoreClient import GetVenueDataStore
 from AccessGrid.hosting import Client
@@ -813,8 +813,8 @@ class SharedPresentation:
             try:
                 self.methodDict[event](data)
             except:
-                self.log.exception("EXCEPTION PROCESSING EVENT")
-
+                #self.log.exception("EXCEPTION PROCESSING EVENT")
+                print 'exception processing event'
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #
@@ -886,7 +886,7 @@ class SharedPresentation:
                     # Default to loading from venue now.
                     dsc = GetVenueDataStore(self.venueUrl)
                     fileData = dsc.GetFileData(path)
-                    path = fileData['uri']
+                    path = fileData.uri
                 except:
                     self.log.exception("Unable to get file from venue.")
                     raise "Unable to get file from venue."
@@ -897,7 +897,7 @@ class SharedPresentation:
         """
         This method handles clicks on the MASTER checkbox
         """
-        self.log.debug("Method SendMaster called; flag=(%d)", flag)
+        #self.log.debug("Method SendMaster called; flag=(%d)", flag)
         publicId = self.sharedAppClient.GetPublicId()
 
         if flag:
@@ -988,7 +988,7 @@ class SharedPresentation:
         if self.masterId == event.data[0]:
             # We put the passed in event on the event queue
             try:
-                self.eventQueue.put([SharedPresEvent.NEXT, event.data])
+                self.eventQueue.put([SharedPresEvent.NEXT, event.GetData()])
             except Queue.Full:
                 self.log.debug("Dropping event, event Queue full!")
 
@@ -1003,11 +1003,11 @@ class SharedPresentation:
             self.log.debug( "got my own event; skip")
             return
 
-        if self.masterId == event.data[0]:
+        if self.masterId == event.GetData()[0]:
             # We put the passed in event on the event queue
             try:
-                self.eventQueue.put([SharedPresEvent.PREV, event.data])
-            except Full:
+                self.eventQueue.put([SharedPresEvent.PREV, event.GetData()])
+            except Queue.Full:
                 self.log.debug("Dropping event, event Queue full!")
         
     def RecvGoto(self, event):
@@ -1021,10 +1021,10 @@ class SharedPresentation:
             self.log.debug( "got my own event; skip")
             return
 
-        if self.masterId == event.data[0]:
+        if self.masterId == event.GetData()[0]:
             # We put the passed in event on the event queue
             try:
-                self.eventQueue.put([SharedPresEvent.GOTO, event.data[1]])
+                self.eventQueue.put([SharedPresEvent.GOTO, event.GetData()[1]])
             except Full:
                 self.log.debug("Dropping event, event Queue full!")
         
@@ -1039,10 +1039,10 @@ class SharedPresentation:
             self.log.debug( "got my own event; skip")
             return
 
-        if self.masterId == event.data[0]:
+        if self.masterId == event.GetData()[0]:
             # We put the passed in event on the event queue
             try:
-                self.eventQueue.put([SharedPresEvent.LOAD, event.data])
+                self.eventQueue.put([SharedPresEvent.LOAD, event.GetData()])
             except Full:
                 self.log.debug("Dropping event, event Queue full!")
 
@@ -1056,7 +1056,7 @@ class SharedPresentation:
 
         # We put the passed in event on the event queue
         try:
-            self.eventQueue.put([SharedPresEvent.MASTER, event.data])
+            self.eventQueue.put([SharedPresEvent.MASTER, event.GetData()])
         except Full:
             self.log.debug("Dropping event, event Queue full!")
 
@@ -1133,7 +1133,9 @@ class SharedPresentation:
                 tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation2.ppt")
            
             try:
-                DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
+                ds = GetVenueDataStore(self.venueUrl)
+                ds.Download(slidesUrl, tmpFile)
+                #DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
                 self.viewer.LoadPresentation(tmpFile)
             except:
                 self.log.exception("Can not load presentation %s"%slidesUrl)
@@ -1383,7 +1385,9 @@ class SharedPresentation:
                 tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation2.ppt")
            
             try:
-                DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
+                ds = GetVenueDataStore(self.venueUrl)
+                ds.Download(slidesUrl, tmpFile)
+                #DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
                 self.viewer.LoadPresentation(tmpFile)
                
             except:
@@ -1477,7 +1481,9 @@ class SharedPresentation:
                 if tmpFile == self.viewer.openFile:
                     tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation2.ppt")
                 try:
-                    DataStore.GSIHTTPDownloadFile(self.presentation, tmpFile, None, None )
+                    ds = GetVenueDataStore(self.venueUrl)
+                    ds.UploadFile(self.presentation, tmpFile)
+                    #DataStore.GSIHTTPDownloadFile(self.presentation, tmpFile, None, None )
                     self.viewer.LoadPresentation(tmpFile)
                 except:
                     errorFlag = 1
