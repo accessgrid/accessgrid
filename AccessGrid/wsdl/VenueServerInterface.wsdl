@@ -82,7 +82,7 @@
           <xsd:element name="GetVenuesResponse">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="venueDescriptionList" type="agtk:VenueDescription" />
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="venueDescriptionList" type="agtk:VenueDescription" />
 
               </xsd:sequence>
             </xsd:complexType>
