@@ -199,6 +199,7 @@ class NetworkService (asyncore.dispatcher):
                   %(port))
         
         self.create_socket (socket.AF_INET, socket.SOCK_STREAM)
+        self.set_reuse_addr()
         self.bind(('', port))
         self.listen(5) # maximum number of queued connections
         self.handler = handler
