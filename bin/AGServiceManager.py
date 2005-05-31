@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.56 2005-01-12 21:30:02 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.57 2005-05-31 21:35:17 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -18,8 +18,10 @@ from AccessGrid.hosting import SecureServer, InsecureServer
 from AccessGrid.Toolkit import Service
 from AccessGrid.Platform import IsLinux
 from AccessGrid.Platform.Config import AGTkConfig, SystemConfig
-from AccessGrid.AGServiceManager import AGServiceManager, AGServiceManagerI
-from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
+from AccessGrid.AGServiceManager import AGServiceManager
+from AccessGrid.interfaces.AGServiceManager_interface import AGServiceManager as AGServiceManagerI
+from AccessGrid.AGNodeService import AGNodeService
+from AccessGrid.interfaces.AGNodeService_interface import AGNodeService as AGNodeServiceI
 from AccessGrid import ServiceDiscovery
 
 # default arguments
@@ -98,7 +100,7 @@ def main():
     gServiceManager = AGServiceManager(server)
     
     # Create the Service Manager Service
-    smi = AGServiceManagerI(gServiceManager)
+    smi = AGServiceManagerI(impl=gServiceManager,auth_method_name=None)
     server.RegisterObject(smi,path="/ServiceManager")
     url = server.FindURLForObject(gServiceManager)
     gServiceManager.SetName('%s:%d' % (hostname,port))
@@ -108,7 +110,7 @@ def main():
         # Create a Node Service
         gNodeService = AGNodeService()
         # Create the Node Service Service
-        nsi = AGNodeServiceI(gNodeService)
+        nsi = AGNodeServiceI(impl=gNodeService,auth_method_name=None)
         server.RegisterObject(nsi, path="/NodeService")
         nsurl = server.FindURLForObject(gNodeService)
         log.info("Starting Node Service URL: %s", nsurl)
