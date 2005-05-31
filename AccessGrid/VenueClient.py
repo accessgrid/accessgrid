@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.216 2005-05-20 16:00:25 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.217 2005-05-31 22:53:32 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.216 2005-05-20 16:00:25 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.217 2005-05-31 22:53:32 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -776,6 +776,11 @@ class VenueClient:
             evtLocation = state.eventLocation.split(":")
             if len(evtLocation) > 1:
                 evtLocation = (str(evtLocation[0]), int(evtLocation[1]))
+
+            textLocation = state.textLocation.split(":")
+            if len(textLocation) > 1:
+                textLocation = (str(textLocation[0]), int(textLocation[1]))
+                
             # next line needed needed until zsi can handle dictionaries.
             self.venueState = VenueState(uniqueId=state.uniqueId, name=state.name, description=state.description, uri=state.uri, connections=state.connections, clients=state.clients, data=state.data, eventLocation=evtLocation, textLocation=state.textLocation, applications=state.applications, services=state.services)
 
@@ -817,7 +822,6 @@ class VenueClient:
             #evtLocation = self.__venueProxy.GetEventServiceLocation()
                       
             # Create event client
-            evtLocation = ("localhost", 8002)
             self.eventClient = EventClient(evtLocation, 
                                            self.profile.connectionId,
                                            self.venueState.GetUniqueId())
@@ -829,8 +833,6 @@ class VenueClient:
             self.eventClient.Send("connect", self.profile.connectionId)
 
             # Create text client
-            #textLocation = self.__venueProxy.GetTextServiceLocation()
-            textLocation = ("phosphorus.mcs.anl.gov", 5223)
             self.__StartJabber(textLocation)
             
             # Get personaldatastore information
