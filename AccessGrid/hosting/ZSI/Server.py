@@ -2,7 +2,7 @@
 # Name:        Server.py
 # Purpose:     
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.3 2005-05-17 22:04:26 eolson Exp $
+# RCS-ID:      $Id: Server.py,v 1.4 2005-05-31 22:50:29 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@ ZSI server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.3 2005-05-17 22:04:26 eolson Exp $"
+__revision__ = "$Id: Server.py,v 1.4 2005-05-31 22:50:29 lefvert Exp $"
 
 # External imports
 import urlparse
@@ -150,16 +150,20 @@ class _Server:
             uri = "%s%s" % (self.GetURLBase(), path)
             if self._serving.has_key(uri):
                 del self._serving[uri]
+            
         else:
             # No path specified, remove object and any paths associated with it
             for u,o in self._serving.items():
                 if obj == o:
                     del self._serving[u]
-        try:
-            self._server.removeNode(path)
-        except KeyError:
-            log.exception("Couldn't remove object from SOAP Server: %s", obj)
-            raise 
+       
+        if len(path)>0:
+            try:
+                self._server.removeNode(path)
+                
+            except KeyError:
+                log.exception("Couldn't remove object from SOAP Server: %s", obj)
+                raise 
 
     # Don't forget we expose interfaces, so
     # interfaces.impl == passed in object
