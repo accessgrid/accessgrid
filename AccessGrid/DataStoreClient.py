@@ -2,13 +2,13 @@
 # Name:        DataStoreClient.py
 # Purpose:     
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.25 2005-05-31 22:03:01 lefvert Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.26 2005-05-31 22:25:55 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.25 2005-05-31 22:03:01 lefvert Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.26 2005-05-31 22:25:55 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -246,10 +246,11 @@ class DataStoreClient:
         # this will break with duplicate names, so we need
         # to fix that when that becomes possible.
         #
+        if descList:
 
-        for desc in descList:
-            self.dataCache.append(desc)
-            self.dataIndex[desc.name] = desc
+            for desc in descList:
+                self.dataCache.append(desc)
+                self.dataIndex[desc.name] = desc
 
     def QueryMatchingFilesMultiple(self, patternList):
 
