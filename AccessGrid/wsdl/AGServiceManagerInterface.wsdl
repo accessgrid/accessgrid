@@ -154,6 +154,16 @@
           <xsd:element name="StopServicesResponse">
           </xsd:element>
 
+          <xsd:element name="IsValidRequest">
+          </xsd:element>
+
+          <xsd:element name="IsValidResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="isValid" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
 
 
       </schema>
@@ -238,6 +248,12 @@
     <message name="StopServicesResponse">
 	<part name="parameters" element="agtksm:StopServicesResponse"/>
     </message>
+    <message name="IsValidRequest">
+	<part name="parameters" element="agtksm:IsValidRequest"/>
+    </message>
+    <message name="IsValidResponse">
+	<part name="parameters" element="agtksm:IsValidResponse"/>
+    </message>
 
       
       
@@ -293,6 +309,10 @@
     <operation name="StopServices">
         <input message="agtksm:StopServicesRequest"/>
         <output message="agtksm:StopServicesResponse"/>
+    </operation>
+    <operation name="IsValid">
+        <input message="agtksm:IsValidRequest"/>
+        <output message="agtksm:IsValidResponse"/>
     </operation>
     </portType>
 
