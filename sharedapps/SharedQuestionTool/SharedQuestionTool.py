@@ -4,8 +4,8 @@
 #
 # Author:      Susanne Lefvert
 #
-# Created:     $Date: 2004-07-27 21:27:11 $
-# RCS-ID:      $Id: SharedQuestionTool.py,v 1.3 2004-07-27 21:27:11 lefvert Exp $
+# Created:     $Date: 2005-05-31 22:13:37 $
+# RCS-ID:      $Id: SharedQuestionTool.py,v 1.4 2005-05-31 22:13:37 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -72,15 +72,16 @@ class SharedQuestionTool(Model):
         # Get all questions currently stored in the application service
         clients = self.sharedAppClient.GetDataKeys()
         
-        for clientId in clients:
-            try:
-                list = self.sharedAppClient.GetData(clientId)
-                if len(list) > 0:
-                    qlist = self.__FromXML(list)
-                    for question in qlist:
-                        self.allQuestions.append(question)
-            except:
-                self.log.exception("SharedQuestionTool.__init__: Failed to get questions")
+        if clients:
+            for clientId in clients:
+                try:
+                    list = self.sharedAppClient.GetData(clientId)
+                    if len(list) > 0:
+                        qlist = self.__FromXML(list)
+                        for question in qlist:
+                            self.allQuestions.append(question)
+                except:
+                    self.log.exception("SharedQuestionTool.__init__: Failed to get questions")
                 
     def Shutdown(self):
         ''' Exit the application service.'''
@@ -138,14 +139,14 @@ class SharedQuestionTool(Model):
     # 
     def SendQuestionCb(self, event):
         """ Callback invoked when incoming SEND_QUESTION events arrive."""
-        question = event.data
+        question = event.GetData()
         self.allQuestions.append(question)
 
         self.NotifyObservers()
         
     def RemoveQuestionCb(self, event):
         """ Callback invoked when incoming SEND_REMOVE events arrive."""
-        question = dict(event.data)
+        question = dict(event.GetData())
 
         i = 0
         for q in self.allQuestions:
