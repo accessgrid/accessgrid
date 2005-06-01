@@ -4,8 +4,8 @@
 #
 # Author:      Susanne Lefvert
 #
-# Created:     $Date: 2005-06-01 17:03:48 $
-# RCS-ID:      $Id: SharedQuestionTool.py,v 1.5 2005-06-01 17:03:48 lefvert Exp $
+# Created:     $Date: 2005-06-01 17:06:53 $
+# RCS-ID:      $Id: SharedQuestionTool.py,v 1.6 2005-06-01 17:06:53 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -427,6 +427,13 @@ class AudienceView(wxPanel, Observer):
         
         self.sendButton = wxButton(self, wxNewId(), "Send")
         self.closeButton = wxButton(self, wxNewId(), "Close")
+
+        if IsOSX():
+            pointSize = 12
+            f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD)
+            textAttr = wxTextAttr(wxBLACK)
+            textAttr.SetFont(f)
+            self.currentQuestion.SetDefaultStyle(textAttr)
         
         self.__Layout()
         
