@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.217 2005-05-31 22:53:32 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.218 2005-06-01 13:19:58 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.217 2005-05-31 22:53:32 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.218 2005-06-01 13:19:58 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -49,7 +49,7 @@ from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Descriptions import CreateServiceDescription
 from AccessGrid.Descriptions import CreateApplicationDescription
 from AccessGrid.Descriptions import CreateStreamDescription
-from AccessGrid.AGNodeService import AGNodeServiceIW
+from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 from AccessGrid import ServiceDiscovery
 from AccessGrid.Descriptions import VenueState
@@ -114,8 +114,7 @@ class VenueClient:
 
         self.capabilities = []
         self.nodeServiceUri = self.defaultNodeServiceUri
-        if hosting.GetHostingImpl() == "SOAPpy":
-            self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
+        self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
         self.homeVenue = None
         self.houseKeeper = Scheduler()
         self.provider = None
@@ -306,7 +305,7 @@ class VenueClient:
 
         if pnode:
             from AccessGrid.AGServiceManager import AGServiceManager
-            from AccessGrid.AGServiceManager import AGServiceManagerI
+            from AccessGrid.interfaces.AGServiceManager_interface import AGServiceManagerI
             self.sm = AGServiceManager(self.server, self.app)
             smi = AGServiceManagerI(self.sm)
             uri = self.server.RegisterObject(smi, path="/ServiceManager")
@@ -319,7 +318,8 @@ class VenueClient:
             except:
                 log.exception("Couldn't publish node service advertisement")
 
-            from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
+            from AccessGrid.AGNodeService import AGNodeService
+            from AccessGrid.interfaces.AGNodeService_interface import AGNodeService as AGNodeServiceI
             self.ns = AGNodeService(self.app)
             nsi = AGNodeServiceI(self.ns)
             uri = self.server.RegisterObject(nsi, path="/NodeService")
@@ -833,7 +833,10 @@ class VenueClient:
             self.eventClient.Send("connect", self.profile.connectionId)
 
             # Create text client
-            self.__StartJabber(textLocation)
+            try:
+                self.__StartJabber(textLocation)
+            except Exception,e:
+                print "exception starting jabber", e
             
             # Get personaldatastore information
             self.dataStoreUploadUrl = self.__venueProxy.GetUploadDescriptor()
@@ -1071,19 +1074,20 @@ class VenueClient:
                 log.exception("Error setting identity")
 
         # Set the streams to use the selected transport
-        for stream in self.streamDescList:
-            if stream.__dict__.has_key('networkLocations'):
-                try:
-                    self.UpdateStream(stream)
-                except NetworkLocationNotFound, e:
-                    log.debug("UpdateNodeService: Couldn't update stream with transport/provider info")
-                    exc = e
+#         for stream in self.streamDescList:
+#             if stream.__dict__.has_key('networkLocations'):
+#                 try:
+#                     self.UpdateStream(stream)
+#                 except NetworkLocationNotFound, e:
+#                     log.debug("UpdateNodeService: Couldn't update stream with transport/provider info")
+#                     exc = e
 
         # Send streams to the node service
         try:
+            log.debug("Setting node service streams")
             self.nodeService.SetStreams( self.streamDescList )
         except:
-            log.info("Error setting streams")
+            log.exception("Error setting streams")
 
         # Raise exception if occurred
         if exc:
