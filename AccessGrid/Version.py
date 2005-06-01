@@ -5,20 +5,21 @@
 # Author:      Eric Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Version.py,v 1.10 2004-09-09 22:50:48 judson Exp $
+# RCS-ID:      $Id: Version.py,v 1.11 2005-06-01 15:58:51 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Version.py,v 1.10 2004-09-09 22:50:48 judson Exp $"
+__revision__ = "$Id: Version.py,v 1.11 2005-06-01 15:58:51 lefvert Exp $"
 
 # Call GetVersion() to get AGTK version information.
-MAJOR_VERSION = 2
-MINOR_VERSION = 3
+MAJOR_VERSION = 3 
+MINOR_VERSION = 0
 POINT_VERSION = 0
+STATUS = "alfa"
 
-BUILD_NUMBER = 4
+BUILD_NUMBER = 1
 
 class Version:
     """
@@ -106,6 +107,9 @@ def CreateVersionFromString(strng):
     if len(ver_list) == 3:
         ver.point = int(ver_list[2])
     return ver
+
+def GetStatus():
+    return STATUS 
 
 def GetVersion():
     """ Use this to get the current version of AGTK. """

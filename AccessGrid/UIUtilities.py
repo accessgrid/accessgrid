@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.66 2004-09-10 20:39:51 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.67 2005-06-01 15:58:51 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.66 2004-09-10 20:39:51 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.67 2005-06-01 15:58:51 lefvert Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -30,7 +30,7 @@ from AccessGrid import icons
 from AccessGrid.Utilities import SubmitBug, VENUE_CLIENT_LOG
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.Version import GetVersion
+from AccessGrid.Version import GetVersion, GetStatus
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig
 from AccessGrid.Platform import Config
 
@@ -190,8 +190,8 @@ class ProgressDialog(wxProgressDialog):
 class AboutDialog(wxDialog):
             
     def __init__(self, parent):
-        wxDialog.__init__(self, parent, -1, str(GetVersion()) )
-        version = str(GetVersion())       
+        version = str(GetVersion()) + " "+GetStatus()     
+        wxDialog.__init__(self, parent, -1, version)
         bmp = icons.getAboutBitmap()
         info = "Version: %s \nPlease visit www.accessgrid.org for more information" %version
         self.ReadLicenseFile()
