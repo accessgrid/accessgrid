@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.85 2005-04-06 20:34:55 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.86 2005-06-01 12:59:35 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.85 2005-04-06 20:34:55 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.86 2005-06-01 12:59:35 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -357,8 +357,8 @@ class AGServiceManager:
         options.append( token )
 
         # - if service manager is insecure, services will be too
-        if self.app.GetOption('insecure'):
-            options.append( '--insecure' )
+        if self.app.GetOption('secure'):
+            options.append( '--secure' )
 
         log.info("Running Service; options: %s", str(options))
 
@@ -382,6 +382,10 @@ class AGServiceManager:
         
         return serviceUrl,pid
 
+
+
+    def IsValid(self):
+        return 1
 
 
 
