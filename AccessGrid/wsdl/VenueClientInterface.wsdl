@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  xmlns:agvc="http://www.accessgrid.org/v3.0/venueclient"
+  targetNamespace="http://www.accessgrid.org/v3.0/venueclient">
+
+      <types>
+      <schema targetNamespace="http://www.accessgrid.org/v3.0/venueclient" 
+              elementFormDefault="qualified" 
+	      attributeFormDefault="unqualified" 
+              xmlns="http://www.w3.org/2001/XMLSchema">
+
+          <xsd:element name="EnterVenueRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="EnterVenueResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetApplicationsRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetApplicationsResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetClientProfileRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetClientProfileResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetConnectionsRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetConnectionsResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetDataStoreInformationRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetDataStoreInformationResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetNodeServiceURLRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetNodeServiceURLResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetPersonalDataRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetPersonalDataResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetServicesRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetServicesResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetStreamsRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetStreamsResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetUsersRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetUsersResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetVenueDataRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetVenueDataResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetVenueURLRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetVenueURLResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="IsValidRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="IsValidResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="_IsValidRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="_IsValidResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="_SOAPIWrapper__CheckUrlRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="_SOAPIWrapper__CheckUrlResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="__init__Request">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="__init__Response">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+      </schema>
+      </types>
+
+
+
+    <message name="EnterVenueRequest">
+	<part name="parameters" element="agvc:EnterVenueRequest"/>
+    </message>
+    <message name="EnterVenueResponse">
+	<part name="parameters" element="agvc:EnterVenueResponse"/>
+    </message>
+    <message name="GetApplicationsRequest">
+	<part name="parameters" element="agvc:GetApplicationsRequest"/>
+    </message>
+    <message name="GetApplicationsResponse">
+	<part name="parameters" element="agvc:GetApplicationsResponse"/>
+    </message>
+    <message name="GetClientProfileRequest">
+	<part name="parameters" element="agvc:GetClientProfileRequest"/>
+    </message>
+    <message name="GetClientProfileResponse">
+	<part name="parameters" element="agvc:GetClientProfileResponse"/>
+    </message>
+    <message name="GetConnectionsRequest">
+	<part name="parameters" element="agvc:GetConnectionsRequest"/>
+    </message>
+    <message name="GetConnectionsResponse">
+	<part name="parameters" element="agvc:GetConnectionsResponse"/>
+    </message>
+    <message name="GetDataStoreInformationRequest">
+	<part name="parameters" element="agvc:GetDataStoreInformationRequest"/>
+    </message>
+    <message name="GetDataStoreInformationResponse">
+	<part name="parameters" element="agvc:GetDataStoreInformationResponse"/>
+    </message>
+    <message name="GetNodeServiceURLRequest">
+	<part name="parameters" element="agvc:GetNodeServiceURLRequest"/>
+    </message>
+    <message name="GetNodeServiceURLResponse">
+	<part name="parameters" element="agvc:GetNodeServiceURLResponse"/>
+    </message>
+    <message name="GetPersonalDataRequest">
+	<part name="parameters" element="agvc:GetPersonalDataRequest"/>
+    </message>
+    <message name="GetPersonalDataResponse">
+	<part name="parameters" element="agvc:GetPersonalDataResponse"/>
+    </message>
+    <message name="GetServicesRequest">
+	<part name="parameters" element="agvc:GetServicesRequest"/>
+    </message>
+    <message name="GetServicesResponse">
+	<part name="parameters" element="agvc:GetServicesResponse"/>
+    </message>
+    <message name="GetStreamsRequest">
+	<part name="parameters" element="agvc:GetStreamsRequest"/>
+    </message>
+    <message name="GetStreamsResponse">
+	<part name="parameters" element="agvc:GetStreamsResponse"/>
+    </message>
+    <message name="GetUsersRequest">
+	<part name="parameters" element="agvc:GetUsersRequest"/>
+    </message>
+    <message name="GetUsersResponse">
+	<part name="parameters" element="agvc:GetUsersResponse"/>
+    </message>
+    <message name="GetVenueDataRequest">
+	<part name="parameters" element="agvc:GetVenueDataRequest"/>
+    </message>
+    <message name="GetVenueDataResponse">
+	<part name="parameters" element="agvc:GetVenueDataResponse"/>
+    </message>
+    <message name="GetVenueURLRequest">
+	<part name="parameters" element="agvc:GetVenueURLRequest"/>
+    </message>
+    <message name="GetVenueURLResponse">
+	<part name="parameters" element="agvc:GetVenueURLResponse"/>
+    </message>
+    <message name="IsValidRequest">
+	<part name="parameters" element="agvc:IsValidRequest"/>
+    </message>
+    <message name="IsValidResponse">
+	<part name="parameters" element="agvc:IsValidResponse"/>
+    </message>
+    <message name="_IsValidRequest">
+	<part name="parameters" element="agvc:_IsValidRequest"/>
+    </message>
+    <message name="_IsValidResponse">
+	<part name="parameters" element="agvc:_IsValidResponse"/>
+    </message>
+    <message name="_SOAPIWrapper__CheckUrlRequest">
+	<part name="parameters" element="agvc:_SOAPIWrapper__CheckUrlRequest"/>
+    </message>
+    <message name="_SOAPIWrapper__CheckUrlResponse">
+	<part name="parameters" element="agvc:_SOAPIWrapper__CheckUrlResponse"/>
+    </message>
+    <message name="__init__Request">
+	<part name="parameters" element="agvc:__init__Request"/>
+    </message>
+    <message name="__init__Response">
+	<part name="parameters" element="agvc:__init__Response"/>
+    </message>
+
+
+
+    <portType name="VenueClient">
+    <operation name="EnterVenue">
+        <input message="agvc:EnterVenueRequest"/>
+        <output message="agvc:EnterVenueResponse"/>
+    </operation>
+    <operation name="GetApplications">
+        <input message="agvc:GetApplicationsRequest"/>
+        <output message="agvc:GetApplicationsResponse"/>
+    </operation>
+    <operation name="GetClientProfile">
+        <input message="agvc:GetClientProfileRequest"/>
+        <output message="agvc:GetClientProfileResponse"/>
+    </operation>
+    <operation name="GetConnections">
+        <input message="agvc:GetConnectionsRequest"/>
+        <output message="agvc:GetConnectionsResponse"/>
+    </operation>
+    <operation name="GetDataStoreInformation">
+        <input message="agvc:GetDataStoreInformationRequest"/>
+        <output message="agvc:GetDataStoreInformationResponse"/>
+    </operation>
+    <operation name="GetNodeServiceURL">
+        <input message="agvc:GetNodeServiceURLRequest"/>
+        <output message="agvc:GetNodeServiceURLResponse"/>
+    </operation>
+    <operation name="GetPersonalData">
+        <input message="agvc:GetPersonalDataRequest"/>
+        <output message="agvc:GetPersonalDataResponse"/>
+    </operation>
+    <operation name="GetServices">
+        <input message="agvc:GetServicesRequest"/>
+        <output message="agvc:GetServicesResponse"/>
+    </operation>
+    <operation name="GetStreams">
+        <input message="agvc:GetStreamsRequest"/>
+        <output message="agvc:GetStreamsResponse"/>
+    </operation>
+    <operation name="GetUsers">
+        <input message="agvc:GetUsersRequest"/>
+        <output message="agvc:GetUsersResponse"/>
+    </operation>
+    <operation name="GetVenueData">
+        <input message="agvc:GetVenueDataRequest"/>
+        <output message="agvc:GetVenueDataResponse"/>
+    </operation>
+    <operation name="GetVenueURL">
+        <input message="agvc:GetVenueURLRequest"/>
+        <output message="agvc:GetVenueURLResponse"/>
+    </operation>
+    <operation name="IsValid">
+        <input message="agvc:IsValidRequest"/>
+        <output message="agvc:IsValidResponse"/>
+    </operation>
+    <operation name="_IsValid">
+        <input message="agvc:_IsValidRequest"/>
+        <output message="agvc:_IsValidResponse"/>
+    </operation>
+    <operation name="_SOAPIWrapper__CheckUrl">
+        <input message="agvc:_SOAPIWrapper__CheckUrlRequest"/>
+        <output message="agvc:_SOAPIWrapper__CheckUrlResponse"/>
+    </operation>
+    <operation name="__init__">
+        <input message="agvc:__init__Request"/>
+        <output message="agvc:__init__Response"/>
+    </operation>
+    </portType>
+
+</definitions>
+

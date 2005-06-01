@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  xmlns:agvc="http://www.accessgrid.org/v3.0/venueclient"
+  targetNamespace="http://www.accessgrid.org/v3.0/venueclient">
+
+  <import namespace="http://www.accessgrid.org/v3.0/venueclient" 
+          location="VenueClientInterface.wsdl"/>
+
+  <import namespace="http://www.accessgrid.org/v3.0" 
+          location="AccessGrid_Types.xsd"/>
+
+  <binding name="VenueClient" type="agvc:VenueClient">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <operation name="EnterVenue">
+	    <soap:operation soapAction="urn:#EnterVenue"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetApplications">
+	    <soap:operation soapAction="urn:#GetApplications"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetClientProfile">
+	    <soap:operation soapAction="urn:#GetClientProfile"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetConnections">
+	    <soap:operation soapAction="urn:#GetConnections"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetDataStoreInformation">
+	    <soap:operation soapAction="urn:#GetDataStoreInformation"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetNodeServiceURL">
+	    <soap:operation soapAction="urn:#GetNodeServiceURL"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetPersonalData">
+	    <soap:operation soapAction="urn:#GetPersonalData"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetServices">
+	    <soap:operation soapAction="urn:#GetServices"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetStreams">
+	    <soap:operation soapAction="urn:#GetStreams"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetUsers">
+	    <soap:operation soapAction="urn:#GetUsers"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetVenueData">
+	    <soap:operation soapAction="urn:#GetVenueData"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetVenueURL">
+	    <soap:operation soapAction="urn:#GetVenueURL"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    </binding>
+    <service name="VenueClient">
+        <port name="VenueClient" binding="agvc:VenueClient">
+	    <soap:address location="http://localhost:7000"/>
+	</port>
+    </service>
+
+
+</definitions>
+
