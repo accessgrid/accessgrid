@@ -25,6 +25,7 @@ class Preferences:
     CLIENT_PORT = "clientPort"
     STARTUP_MEDIA = "startupMedia"
     NODE_URL = "defaultNodeServiceUrl"
+    NODE_CONFIG = "defaultNodeConfig"
     MULTICAST = "multicast"
     LOG_TO_CMD = "logToCmd"
     ENABLE_VIDEO = "enableVideo"
@@ -48,7 +49,8 @@ class Preferences:
                          self.SECURE_CLIENT_CONNECTION: 0,
                          self.CLIENT_PORT: 0,
                          self.STARTUP_MEDIA: 1,
-                         self.NODE_URL: "https://localhost:11000/NodeService",
+                         self.NODE_URL: "http://localhost:11000/NodeService",
+                         self.NODE_CONFIG: "",
                          self.MULTICAST: 1,
                          self.LOG_TO_CMD: 0,
                          self.ENABLE_VIDEO: 1,
@@ -175,38 +177,6 @@ class Preferences:
 
         self.StorePreferences()
                         
-    def SetDefaultNodeConfig(self, configName):
-        '''
-        Set default node configuration. This will get saved
-        using the node service, not in the preference file.
-        '''
-        # To avoid storing redundant information, save
-        # this directly in the node config.
-        if type(configName) != str:
-            return Exception, "Invalid Type: SetDefaultNodeConfig takes a string value as argument."
-
-        try:
-            from AccessGrid.AGNodeService import AGNodeServiceIW
-            AGNodeServiceIW(self.GetPreference(self.NODE_URL)).SetDefaultConfiguration(configName)
-        except:
-            log.exception("Preferences:SetDefaultNodeConfig: Failed to set default node service configuration.")
-
-    def GetDefaultNodeConfig(self):
-        '''
-        Get default node configuration from running
-        node service.
-        '''
-        # Retreive from node service; not stored in preferences.
-        config = ""
-        
-        try:
-            from AccessGrid.AGNodeService import AGNodeServiceIW
-            config = AGNodeServiceIW(self.GetPreference(self.NODE_URL)).GetDefaultConfiguration()
-        except:
-            log.exception("Preferences:SetDefaultNodeConfig: Failed to set default node service configuration.")
-                               
-        return str(config)
-
     def GetNodeConfigs(self):
         '''
         Get all available node configuration from a node service.
@@ -338,6 +308,8 @@ class PreferencesDialog(wxDialog):
                                         self.nodePanel.GetAudio())
         self.preferences.SetPreference(Preferences.NODE_URL,
                                        self.nodePanel.GetDefaultNodeUrl())
+        self.preferences.SetPreference(Preferences.NODE_CONFIG,
+                                       self.nodePanel.GetDefaultNodeConfig())
         self.preferences.SetPreference(Preferences.RECONNECT,
                                        self.venueConnectionPanel.GetReconnect())
         self.preferences.SetPreference(Preferences.MAX_RECONNECT,
@@ -359,9 +331,6 @@ class PreferencesDialog(wxDialog):
 
         p = self.profilePanel.GetNewProfile()
         self.preferences.SetProfile(p)
-
-        c = self.nodePanel.GetDefaultNodeConfig()
-        self.preferences.SetDefaultNodeConfig(c)
 
         return self.preferences
             
@@ -507,9 +476,12 @@ class NodePanel(wxPanel):
         self.videoButton.SetValue(int(preferences.GetPreference(Preferences.ENABLE_VIDEO)))
         self.audioButton.SetValue(int(preferences.GetPreference(Preferences.ENABLE_AUDIO)))
         
+        default = ""
         try:
             selections = preferences.GetNodeConfigs()
-            default = preferences.GetDefaultNodeConfig()
+            default = preferences.GetPreference(Preferences.NODE_CONFIG)
+            log.debug("default node config: %s", default)
+            log.debug("node configs: %s", str(selections))
         except:
             log.exception("Preferences:NodePanel: Failed to load node service configurations.")
             selections = ["No configurations, run node service"]
