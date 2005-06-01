@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.45 2004-09-08 21:08:51 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.46 2005-06-01 13:30:37 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1072,7 +1072,7 @@ class NodeClient:
             return []
 
         for resource in resourceList:
-            if resource.role == 'producer' and resource.type == 'video':
+            if resource.type == 'video':
                 self.cameraList.append(resource)
 
         return self.cameraList
