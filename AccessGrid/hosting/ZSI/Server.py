@@ -2,7 +2,7 @@
 # Name:        Server.py
 # Purpose:     
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.4 2005-05-31 22:50:29 lefvert Exp $
+# RCS-ID:      $Id: Server.py,v 1.5 2005-06-01 13:28:29 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@ ZSI server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.4 2005-05-31 22:50:29 lefvert Exp $"
+__revision__ = "$Id: Server.py,v 1.5 2005-06-01 13:28:29 turam Exp $"
 
 # External imports
 import urlparse
@@ -241,6 +241,11 @@ class _Server:
             else:
                 path = urlparse.urlparse(URL)[2]
         return path
+
+import SocketServer
+class ThreadingServiceContainer(SocketServer.ThreadingMixIn,ServiceContainer):
+    def __init__(self, server_address, services=[]):
+        ServiceContainer.__init__(self, server_address)
         
 class SecureServer(_Server):
     """
@@ -280,7 +285,8 @@ class InsecureServer(_Server):
         @type debug: 0, or 1
         """
         # This is where you set things for debugging
-        _Server.__init__(self, addr, ServiceContainer(addr))
+        #_Server.__init__(self, addr, ServiceContainer(addr))
+        _Server.__init__(self, addr, ThreadingServiceContainer(addr))
 
     def GetURLBase(self):
         """
