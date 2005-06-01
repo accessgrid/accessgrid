@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.39 2004-12-08 16:48:06 judson Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.40 2005-06-01 15:36:30 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.39 2004-12-08 16:48:06 judson Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.40 2005-06-01 15:36:30 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -572,7 +572,7 @@ class VenueClientController:
         *appList* List of ApplicationDescriptions to remove from venue
         
         """
-        
+              
         if not appList or not isinstance(appList,list):
             raise ValueError
             
@@ -990,14 +990,18 @@ class VenueClientController:
                                          
             try:
                 my_identity = Application.instance().GetDefaultSubject()
-                self.__venueClient.dataStore.UploadLocalFiles([filepath], my_identity.name,
+              
+                if not my_identity:
+                    dn = "No Identity"
+                else:
+                    dn = my_identity.name
+                self.__venueClient.dataStore.UploadLocalFiles([filepath], dn,
                                                               self.__venueClient.GetPreferences().GetProfile().publicId)
 
                 # Send an event alerting about new data (only if it is new)
-                #if newData: 
                 dataDescription = self.__venueClient.dataStore.GetDescription(name)
-                self.__venueClient.SendEvent(Events.AddDataEvent(self.__venueClient.GetEventChannelId(), 
-                                                               dataDescription))
+                self.__venueClient.SendEvent(Events.Event.ADD_DATA, dataDescription)
+                
             except DataStore.DuplicateFile, e:
                 title = "Duplicated File"
                 info = "This file %s is already added. Rename your file and add it again." %e
@@ -1059,8 +1063,7 @@ class VenueClientController:
         '''
         # Distribute event to all participants so they can join.
         data = ApplicationCmdDescription(objDesc, verb, cmd, self.__venueClient.GetPreferences().GetProfile())
-        self.__venueClient.SendEvent(Events.OpenAppEvent(self.__venueClient.GetEventChannelId(), 
-                                                          data))
+        self.__venueClient.SendEvent(Events.Event.OPEN_APP, data)
                         
     def StartCmd(self, objDesc, verb=None,cmd=None):
         """
@@ -1083,6 +1086,7 @@ class VenueClientController:
         if verb:
             commandList = self.GetCommands(objDesc)
             command = commandList[verb]
+
         elif cmd:
             command = cmd
 
@@ -1117,33 +1121,14 @@ class VenueClientController:
                     command = command+" %(localFilePath)s"
             else:
                 command = "\"%(localFilePath)s\""
-            
-        elif isinstance(objDesc, ServiceDescription):
-            # Fix odd commands
-            if IsWindows():
-                if command.find("%1") != -1:
-                    command = command.replace("%1", "")
-                if command.find("%L") != -1:
-                    command = command.replace("%L", "")
-                if command.find("%*") != -1:
-                    command = command.replace("%*", "")
-            else:
-                if command.find("%s") != -1:
-                    command = command.replace("%s", "")
-
-            command = command.strip()
-            
-            if len(command) > 1:
-                if command.find("%") == -1:
-                    command = command+" %(appUrl)s"
-            else:
-                command = "\"%(appUrl)s\""
-                   
+                                 
         else:
             # Get the app dir and go there
             if (isinstance(objDesc, ApplicationDescription) or
-                isinstance(objDesc, AGNetworkServiceDescription)):
+                isinstance(objDesc, AGNetworkServiceDescription) or
+                isinstance(objDesc, ServiceDescription)):
                 name = self.__venueClientApp.GetNameForMimeType(objDesc.mimeType)
+                
                 if name != None:
                     appName = '_'.join(name.split(' '))
                     
@@ -1154,7 +1139,7 @@ class VenueClientController:
                         appDir = os.path.join(AGTkConfig.instance().GetSharedAppDir(), appName)
                     else:
                         raise Exception, "Couldn't find shared app client"
-                        
+
                     try:
                         os.chdir(appDir)
                     except:
@@ -1274,9 +1259,10 @@ class VenueClientApp:
         # Application Databases
         self.userAppDatabase = AppDb(path=UserConfig.instance().GetConfigDir())
         self.systemAppDatabase = AppDb(path=AGTkConfig.instance().GetConfigDir())
+
         # Mime Config
         self.mimeConfig = Config.MimeConfig.instance()
-        
+
     #
     # MyVenues Methods
     #
@@ -1352,20 +1338,8 @@ class VenueClientApp:
     #
     def GetCommands(self,objDesc):
         commandList = None
-       
-        if isinstance(objDesc,ServiceDescription):
-            # Data and Service commands are retrieved from the mime db
-            list = objDesc.name.split('.')
-            ext = ""
-            
-            if len(list) == 2:
-                ext = list[1]
 
-            commandList = self.mimeConfig.GetMimeCommands(
-                mimeType = objDesc.mimeType,
-                ext = ext)
-    
-        elif isinstance(objDesc,DataDescription):
+        if isinstance(objDesc,DataDescription):
             # Data and Service commands are retrieved from the mime db
             list = objDesc.name.split('.')
             ext = ""
@@ -1373,6 +1347,11 @@ class VenueClientApp:
                 ext = list[1]
             commandList = self.mimeConfig.GetMimeCommands(ext = ext)
 
+        elif isinstance(objDesc, ServiceDescription):
+            commandList = dict()
+            commandList.update(self.userAppDatabase.GetCommands(objDesc.mimeType))
+            commandList.update(self.systemAppDatabase.GetCommands(objDesc.mimeType))
+           
         elif isinstance(objDesc, AGNetworkServiceDescription):
             commandList = dict()
             commandList.update(self.userAppDatabase.GetCommands(objDesc.mimeType))

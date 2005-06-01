@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.218 2005-06-01 13:19:58 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.219 2005-06-01 15:36:30 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.218 2005-06-01 13:19:58 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.219 2005-06-01 15:36:30 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -517,11 +517,11 @@ class VenueClient:
           
         data = event.GetData()
       
-        if data.type == "None" or data.type == None:
+        if data.GetType() == "None" or data.GetType() == None:
             # Venue data gets saved in venue state
             self.venueState.AddData(data)
                       
-        elif data.type not in self.requests:
+        elif data.GetType() not in self.requests:
             # If we haven't done an initial request of this
             # persons data, don't react on events.
             return
@@ -1111,8 +1111,8 @@ class VenueClient:
             raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
                                           (self.transport, self.provider.name, self.provider.location))
     
-    def SendEvent(self,event):
-        self.eventClient.Send(event)
+    def SendEvent(self,eventType, data):
+        self.eventClient.Send(eventType, data)
 
     def Shutdown(self):
 
