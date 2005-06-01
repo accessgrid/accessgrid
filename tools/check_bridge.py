@@ -26,7 +26,7 @@ BRIDGESERVER = "BridgeServer"
 #
 # Initialize application
 #
-a =Toolkit.CmdlineApplication.instance()
+a =Toolkit.Service.instance()
 
 
 # Handle command-line
