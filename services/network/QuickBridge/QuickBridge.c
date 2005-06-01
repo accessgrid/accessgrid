@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.7 2005-05-30 14:02:51 douglask Exp $
+ * $Id: QuickBridge.c,v 1.8 2005-06-01 14:55:46 turam Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -44,10 +44,11 @@
 #include <netdb.h>
 #else
 #include "getopt.h"
+#include <WinSock2.h>
+#include <ws2tcpip.h>
+#include <windows.h>
 #include <signal.h>
 #include <memory.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #include <mmsystem.h>
 #endif
 
@@ -670,7 +671,19 @@ Session *setup_session(Ports ucport,Ports mcport,u_long multicastaddress,u_char 
 				/*enter the address/port data into the mcaddr[data] structure*/
 				memset((char *) &s->mcaddr[i], 0, sizeof(s->mcaddr[i]));
 				s->mcaddr[i].sin_family=AF_INET;
+
+        /*
+         * Under windows, you cannot bind to a multicastaddress/port, you
+         * must bind to INADDR_ANY/port. So here we temporarily set the 
+         * address to * and after the bind, restore it to the proper address
+         * as it is required for sending data back from the unicast side to
+         * the multicast address.
+         */
+#ifdef WIN32
+        s->mcaddr[i].sin_addr.s_addr = htonl(INADDR_ANY);
+#else
 				s->mcaddr[i].sin_addr.s_addr = multicastaddress;
+#endif /* WIN32 */
 				s->mcaddr[i].sin_port = htons(mcport[i]);
 
 				/*get a mcfd[data] socket, bind to address */
@@ -681,7 +694,11 @@ Session *setup_session(Ports ucport,Ports mcport,u_long multicastaddress,u_char 
 				if (bind(s->mcfd[i], (struct sockaddr *) &s->mcaddr[i], sizeof(s->mcaddr[i])) < 0) {
 						perror("can't bind mcaddr to socket!");
 						exit(1);
-					}
+				}
+#ifdef WIN32
+				s->mcaddr[i].sin_addr.s_addr = multicastaddress;
+#endif /* WIN32 */
+
 					/*now set multicast socket TTL option*/
 					/*setsocketopt (int filedescriptor, int level, in optname),*/
 					/*charpointer optvalue, intpointer optlen)*/
@@ -693,7 +710,7 @@ Session *setup_session(Ports ucport,Ports mcport,u_long multicastaddress,u_char 
 						do_loopback=0;
 						if (setsockopt(s->mcfd[i], IPPROTO_IP, IP_MULTICAST_LOOP, \
 							&do_loopback, sizeof(do_loopback)) < 0){
-								perror("can't set multicast ttl socket option!");
+								perror("can't set multicast loopback socket option!");
 								exit(1);
 							}
 			}
