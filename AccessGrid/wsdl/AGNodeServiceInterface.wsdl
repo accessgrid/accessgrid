@@ -65,7 +65,7 @@
           <xsd:element name="GetServiceManagersResponse">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="argname" type="agtk:AGServiceManagerDescription" />
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="serviceManagerList" type="agtk:AGServiceManagerDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -76,7 +76,7 @@
           <xsd:element name="GetServicesResponse">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="argname" type="agtk:AGServiceDescription" />
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="serviceList" type="agtk:AGServiceDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -310,6 +310,12 @@
     <message name="StoreConfigurationResponse">
 	<part name="parameters" element="agns:StoreConfigurationResponse"/>
     </message>
+    <message name="IsValidRequest">
+	<part name="parameters" element="agns:IsValidRequest"/>
+    </message>
+    <message name="IsValidResponse">
+	<part name="parameters" element="agns:IsValidResponse"/>
+    </message>
 
 
 
@@ -381,6 +387,10 @@
     <operation name="StoreConfiguration">
         <input message="agns:StoreConfigurationRequest"/>
         <output message="agns:StoreConfigurationResponse"/>
+    </operation>
+    <operation name="IsValid">
+        <input message="agns:IsValidRequest"/>
+        <output message="agns:IsValidResponse"/>
     </operation>
     </portType>
 
