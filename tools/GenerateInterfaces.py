@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 import os, sys
 from optparse import OptionParser
 
@@ -13,6 +13,11 @@ if sys.platform == "win32":
     os.chdir( os.path.join("..", "AccessGrid", "wsdl") )
     dstPath = os.path.join("..", "interfaces")
     srcPath = "."
+elif sys.platform=="darwin":
+    dstPath = os.path.join("..", "AccessGrid", "interfaces")
+    srcPath = os.path.join("..", "AccessGrid", "wsdl")
+    w2pyExec = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/wsdl2py"
+    w2dExec = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/wsdl2dispatch"
 else:
     dstPath = os.path.join("..", "AccessGrid", "interfaces")
     srcPath = os.path.join("..", "AccessGrid", "wsdl")
