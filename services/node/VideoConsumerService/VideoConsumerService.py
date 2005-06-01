@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.1 2005-01-06 23:18:49 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.2 2005-06-01 13:36:37 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ except: pass
 
 from AccessGrid import Toolkit
 
-from AccessGrid.Types import Capability
+from AccessGrid.Descriptions import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
 from AccessGrid.Platform import IsWindows, IsLinux
@@ -120,10 +120,6 @@ class VideoConsumerService( AGService ):
             if self.profile:
                 name = self.profile.name
                 email = self.profile.email
-            else:
-                # Error case
-                name = email = Toolkit.GetDefaultSubject().GetCN()
-                self.log.error("Starting service without profile set")
             options.append('-XrtpName=%s' % (name,))
             options.append('-XrtpEmail=%s' % (email,))
 
@@ -151,7 +147,7 @@ class VideoConsumerService( AGService ):
         # Disable firewall
         self.sysConf.AppFirewallConfig(self.executable, 0)
 
-    def ConfigureStream( self, streamDescription ):
+    def SetStream( self, streamDescription ):
         """Configure the Service according to the StreamDescription"""
 
         ret = AGService.ConfigureStream( self, streamDescription )
