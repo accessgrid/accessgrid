@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.245 2005-05-31 22:51:39 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.246 2005-06-01 16:54:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.245 2005-05-31 22:51:39 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.246 2005-06-01 16:54:07 lefvert Exp $"
 
 import sys
 import time
@@ -421,7 +421,7 @@ class Venue(AuthorizationMixIn):
         self.cache = ClientProfileCache(self.profileCachePath)
 
         # Start the event client.
-        self.eventClient = EventClient(self.server.GetEventServiceLocation(), 
+        self.eventClient = EventClient(self.GetEventServiceLocation(), 
                                        self.GetId(),
                                        self.GetId())
         self.eventClient.Start()
@@ -1694,9 +1694,14 @@ class Venue(AuthorizationMixIn):
         return location
 
     def GetTextServiceLocation(self):
-        #host = Service.instance().GetHostname()
-        host = "phosphorus.mcs.anl.gov"
-        return (host, 5223)
+        serverServices = self.server.GetServices()
+        location = None
+        
+        for s in serverServices:
+            if s.GetType() == "JabberText":
+                location = s.GetLocation()
+      
+        return location
     
     def AddData(self, dataDescription ):
         """

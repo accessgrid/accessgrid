@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.184 2005-05-18 16:07:01 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.185 2005-06-01 16:54:06 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.184 2005-05-18 16:07:01 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.185 2005-06-01 16:54:06 lefvert Exp $"
 
 
 # Standard stuff
@@ -56,7 +56,7 @@ from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.Descriptions import Capability
 
-from AccessGrid.AsyncoreEventService import EventService
+from AccessGrid.AsyncoreEventService import EventService, VenueServerServiceDescription
 
 from AccessGrid.Utilities import ServerLock
 
@@ -110,8 +110,8 @@ class VenueServer(AuthorizationMixIn):
     configDefaults = {
         "VenueServer.dataPort" : 8006,
         "VenueServer.eventPort" : 8002,
-        "VenueServer.textHost" : 'localhost',
-        "VenueServer.textPort" : 8004,
+        "VenueServer.textHost" : 'phosphorus.mcs.anl.gov',
+        "VenueServer.textPort" : 5223,
         "VenueServer.encryptAllMedia" : 1,
         "VenueServer.houseKeeperFrequency" : 300,
         "VenueServer.persistenceFilename" : 'VenueServer.dat',
@@ -251,7 +251,16 @@ class VenueServer(AuthorizationMixIn):
                                          (self.hostname, int(self.eventPort)))
         self.RegisterService(self.eventService.GetDescription())
         self.eventService.start()
-                        
+
+        # Register the text service
+        textServiceDescription = VenueServerServiceDescription(str(GUID()),
+                                                               "Jabber Text Service",
+                                                               "Text service based on jabber",
+                                                               "JabberText",
+                                                               (self.textHost, int(self.textPort)),
+                                                               [])
+        self.RegisterService(textServiceDescription)
+        
         # End of server wide services initialization
 
         # Try to open the persistent store for Venues. If we fail, we
@@ -562,12 +571,6 @@ class VenueServer(AuthorizationMixIn):
                     
                         v.AddService(ServiceDescription(name, description, uri,
                                                         mimeType))
-
-    def GetEventServiceLocation(self):
-        return (self.hostname, int(self.eventPort))
-
-    def GetTextServiceLocation(self):
-        return (self.textHost, int(self.textPort))
 
     def MakeVenueURL(self, uniqueId):
         """
