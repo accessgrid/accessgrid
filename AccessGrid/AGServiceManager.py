@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.86 2005-06-01 12:59:35 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.87 2005-06-01 21:12:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.86 2005-06-01 12:59:35 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.87 2005-06-01 21:12:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -30,7 +30,8 @@ from AccessGrid.Descriptions import CreateAGServicePackageDescription
 from AccessGrid.Descriptions import CreateAGServiceDescription
 from AccessGrid.Descriptions import CreateParameter
 from AccessGrid.Descriptions import AGServiceManagerDescription
-from AccessGrid.AGService import AGServiceIW, AGServiceI
+from AccessGrid.interfaces.AGService_interface import AGService as AGServiceI
+from AccessGrid.interfaces.AGService_client import AGServiceIW
 
 log = Log.GetLogger(Log.ServiceManager)
 
@@ -387,169 +388,6 @@ class AGServiceManager:
     def IsValid(self):
         return 1
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-class AGServiceManagerI(SOAPInterface):
-    """
-    Interface Class for AGServiceManager
-    """
-    
-    def __init__(self,impl):
-        SOAPInterface.__init__(self,impl)
-
-    def _authorize(self, *args, **kw):
-        # Authorize everybody.
-        return 1
-    
-    def Shutdown(self):
-        """
-        Interface to shut down the service manager
-
-        **Arguments:**
-        **Raises:**
-        **Returns:**
-        """
-        self.impl.Shutdown()
-
-    def AddService(self, servicePkgDescStruct ):
-        servicePkgDesc = CreateAGServicePackageDescription(servicePkgDescStruct)
-        return self.impl.AddService(servicePkgDesc)
-        
-    def AddServiceByName(self,name):
-        return self.impl.AddServiceByName(name)
-    
-    def RemoveService(self, serviceDescStruct):
-        """
-        Interface to remove a service from the service manager
-
-        **Arguments:**
-            *serviceToRemove* A description of the service to remove
-            
-        **Raises:**
-        **Returns:**
-        """
-        serviceDesc = CreateAGServiceDescription(serviceDescStruct)
-        self.impl.RemoveService(serviceDesc)
-
-    def RemoveServices(self):
-        """
-        Interface to remove the services on a service manager
-
-        **Arguments:**
-        **Raises:**
-        **Returns:**
-        """
-        self.impl.RemoveServices()
-
-    def RegisterService(self,token,url):
-        self.impl.RegisterService(token,url)
-
-    def GetServices(self):
-        """
-        Interface to get a list of AGServiceDescriptions representing
-        the services on the service manager
-
-        **Arguments:**
-        **Raises:**
-        
-        **Returns:**
-            a list of AGServiceDescriptions
-        """
-        return self.impl.GetServices()
-
-    def GetServicePackageDescriptions(self):
-        """
-        Interface to get a list of AGServiceDescriptions representing
-        the services available for installation
-
-        **Arguments:**
-        **Raises:**
-        
-        **Returns:**
-            a list of AGServiceDescriptions
-        """
-        return self.impl.GetServicePackageDescriptions()
-
-    def StopServices(self):
-        """
-        Interface to stop services on the service manager
-
-        **Arguments:**
-        **Raises:**
-        **Returns:**
-        """
-        self.impl.StopServices()
-
-    def SetNodeServiceUrl(self,nodeServiceUri):
-        self.impl.SetNodeServiceUrl(nodeServiceUri)
-
-    def GetNodeServiceUrl(self):
-        return self.impl.GetNodeServiceUrl()
-        
-    def GetDescription(self):
-        return self.impl.GetDescription()
-
-
-class AGServiceManagerIW(SOAPIWrapper):
-    """
-    Interface Wrapper Class for AGServiceManager
-    """
-    
-    def __init__(self,url):
-        SOAPIWrapper.__init__(self,url)
-    
-    def Shutdown(self):
-        self.proxy.Shutdown()
-
-    def AddService(self, servicePackage ):
-        return self.proxy.AddService(servicePackage)
-        
-    def AddServiceByName(self,name):
-        return self.proxy.AddServiceByName(name)
-
-    def RegisterService(self,token,url):
-        self.proxy.RegisterService(token,url)
-
-    def RemoveService(self, serviceToRemove):
-        self.proxy.RemoveService(serviceToRemove)
-
-    def RemoveServices(self):
-        self.proxy.RemoveServices()
-
-    def GetServices(self):
-        svcList = list()
-        for s in self.proxy.GetServices():
-            svcList.append(CreateAGServiceDescription(s))
-        return svcList
-
-    def GetServicePackageDescriptions(self):
-        svcList = list()
-        for s in self.proxy.GetServicePackageDescriptions():
-            svcList.append(CreateAGServicePackageDescription(s))
-        return svcList
-
-    def StopServices(self):
-        self.proxy.StopServices()
-
-    def SetNodeServiceUrl(self,nodeServiceUri):
-        self.proxy.SetNodeServiceUrl(nodeServiceUri)
-
-    def GetNodeServiceUrl(self):
-        return self.proxy.GetNodeServiceUrl()
-
-    def GetDescription(self):
-        return self.proxy.GetDescription()
 
 
 
