@@ -4,8 +4,8 @@
 #
 # Author:      Susanne Lefvert
 #
-# Created:     $Date: 2005-05-31 22:13:37 $
-# RCS-ID:      $Id: SharedQuestionTool.py,v 1.4 2005-05-31 22:13:37 lefvert Exp $
+# Created:     $Date: 2005-06-01 17:03:48 $
+# RCS-ID:      $Id: SharedQuestionTool.py,v 1.5 2005-06-01 17:03:48 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -28,6 +28,7 @@ from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid import icons
 from AccessGrid.GUID import GUID
 from AccessGrid.Toolkit import WXGUIApplication
+from AccessGrid.Platform import IsOSX 
 
 
 class SharedQuestionTool(Model):
@@ -325,6 +326,14 @@ class ModeratorView(wxPanel, Observer):
         self.__Layout()
         self.__PopulateQList()
 
+        # Fix for osx
+        if IsOSX():
+            pointSize = 12
+            f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD)
+            textAttr = wxTextAttr(wxBLACK)
+            textAttr.SetFont(f)
+            self.currentQuestion.SetDefaultStyle(textAttr)
+           
         EVT_BUTTON(self, self.closeButton.GetId(), self.Close)
         EVT_LIST_ITEM_SELECTED(self, self.questionList.GetId(), self.SelectQuestion)
         
