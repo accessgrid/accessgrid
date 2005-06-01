@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: OMVideoProducerService.py,v 1.1 2004-12-23 19:20:54 turam Exp $
+# RCS-ID:      $Id: OMVideoProducerService.py,v 1.2 2005-06-01 13:33:56 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@ except: pass
 
 from AccessGrid import Toolkit
 
-from AccessGrid.Types import Capability
+from AccessGrid.Descriptions import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
 from AccessGrid.Platform import IsWindows, IsLinux
