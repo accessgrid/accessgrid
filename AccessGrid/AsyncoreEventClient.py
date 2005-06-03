@@ -8,7 +8,7 @@ import asyncore
 import cPickle
 
 from wxPython.wx import *
-from AsyncoreEventService import PickledEvent
+from AsyncoreEventService import XMLEvent 
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.VenueClient)
@@ -40,7 +40,7 @@ class EventClient:
         data - event data
         '''
         # create an event
-        event = PickledEvent(eventType, self.client.channelId, self.client.id, data)
+        event = XMLEvent(eventType, self.client.channelId, self.client.id, data)
         self.client.send_a_line(event)
         
     def Start(self):
@@ -175,13 +175,13 @@ class AsyncoreEventClient(threading.Thread):
             self.event_loop.schedule(1,self.check_status)
         
     def received_a_line(self, event):
-        e = PickledEvent.CreateEvent(event)
+        e = XMLEvent.CreateEvent(event)
               
         # Notify ui of the event
         self.send_event(event)
         
     def send_a_line(self, event):
-        self.client.out_buffer.append(event.GetString())
+        self.client.out_buffer.append((event.GetXML()))
         self.client.handle_write()
 
     def run(self):
@@ -196,7 +196,7 @@ class AsyncoreEventClient(threading.Thread):
         '''
         send an event back to our GUI thread
         '''
-        e = PickledEvent.CreateEvent(event)
+        e = XMLEvent.CreateEvent(event)
         
         if self.callbacks.has_key(e.GetEventType()):
             log.debug("send_event: Callback found for event type %s"%e.GetEventType())

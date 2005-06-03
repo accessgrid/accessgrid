@@ -8,14 +8,16 @@ import socket
 import asyncore
 import signal
 
-import cPickle # use this for now...
-
 from AccessGrid import Log
 
 log = Log.GetLogger(Log.EventService)
 Log.SetDefaultLevel(Log.EventService, Log.DEBUG)
 
-class PickledEvent:
+from ZSI.writer import SoapWriter
+from ZSI.parse import ParsedSoap
+from AccessGrid.interfaces.AccessGrid_Types import www_accessgrid_org_v3_0
+
+class XMLEvent:
     '''
     Event class. This will eventually be built using xml.
     '''
@@ -25,36 +27,39 @@ class PickledEvent:
         senderId - unique id of sender
         data - event data
         '''
-        self.__channelId = str(channelId)
-        self.__senderId = str(senderId)
-        self.__data = data
-        self.__time = "here goes time later..."
-        self.__eventType = str(type)
+        self.channelId = str(channelId)
+        self.senderId = str(senderId)
+        self.data = data
+        self.time = "here goes time later..."
+        self.eventType = str(type)
+
+        self.soapWriter = SoapWriter()
         
     def GetChannelId(self):
-        return self.__channelId
+        return self.channelId
 
     def GetSenderId(self):
-        return self.__senderId
+        return self.senderId
 
     def GetData(self):
-        return self.__data
+        return self.data
 
     def GetEventType(self):
-        return self.__eventType 
+        return self.eventType 
 
-    def GetString(self):
-        return cPickle.dumps(self)
+    def GetXML(self):
+        xml = self.soapWriter.serialize(self, www_accessgrid_org_v3_0.Event_('qwe'))
+        xml = str(xml)
+        return xml
 
-    def CreateEvent(eventString):
-        e = ""
-        if eventString:
-            e = cPickle.loads(eventString)
-        return e
+    def CreateEvent(xml):
+        ps = ParsedSoap(xml)
+        p = www_accessgrid_org_v3_0.Event_('qwe').parse(ps.body_root, ps)
+        ret = XMLEvent(p.eventType, p.channelId, p.senderId,  p.data)
+        return ret
 
     # Makes it possible to access the method without an instance.
     CreateEvent = staticmethod(CreateEvent)
-
 
 class VenueServerServiceDescription:
     '''
@@ -331,7 +336,7 @@ class EventService(threading.Thread, VenueServerService):
     a socket. The EventService inherits VenueServerService to
     expose a set of methods that can be used in the venue server. 
     '''
-
+    
     def __init__(self, name, description, id, type, location):
         threading.Thread.__init__(self)
         VenueServerService.__init__(self, name, description, id, type, location)
@@ -372,10 +377,9 @@ class EventService(threading.Thread, VenueServerService):
         to a channel when first event is received. This method is
         triggered by a client sending an event over the network.
         '''
-        
         # deserialize the event
-        event = PickledEvent.CreateEvent(event)
-                 
+        event = XMLEvent.CreateEvent(str(event))
+                         
         try:
             # Does the channel exist? 
             if not self.HasChannel(event.GetChannelId()):
@@ -385,7 +389,7 @@ class EventService(threading.Thread, VenueServerService):
                 return
 
             channel = self.GetChannel(event.GetChannelId())
-            
+
             log.debug('EventService.received_event: Send event %s to channel %s'
                       %(event.GetEventType(), event.GetChannelId()))
 
@@ -397,9 +401,10 @@ class EventService(threading.Thread, VenueServerService):
             # distribute the event to all connections in the
             # channel.
             log.debug('EventService.received_event: Distribute this event %s to all connection on all channels %s'%(event.GetEventType(), len(channel.GetConnections())))
-            
+
+           
             for connection in channel.GetConnections():
-                connection.add_to_buffer(event.GetString())
+                connection.add_to_buffer(event.GetXML())
         except:
             log.exception("EventServcie.received_event: Caught exception.")
             
