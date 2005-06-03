@@ -226,5 +226,15 @@
       </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="Event">
+      <xs:sequence>
+        <xs:element name = "channelId" type = "xs:string"/>
+        <xs:element name = "senderId" type = "xs:string"/>
+        <xs:element name = "data" type = "xs:anyType"/>
+	<xs:element name = "time" type = "xs:string"/>
+        <xs:element name = "eventType" type = "xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+
  </xs:schema>
 
