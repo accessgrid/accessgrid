@@ -37,12 +37,21 @@
 	</operation>
 	<operation name="GetVenues">
 	    <soap:operation soapAction="urn:#GetVenues"/>
+            <input>
+		<soap:body use="literal"/> 
+	    </input>
             <output>
 		<soap:body use="literal"/> 
 	    </output>
-	    <input>
+	</operation>
+        <operation name="GetVenuesAsConnectionDescriptions">
+	    <soap:operation soapAction="urn:#GetVenuesAsConnectionDescriptions"/>
+            <input>
 		<soap:body use="literal"/> 
 	    </input>
+            <output>
+		<soap:body use="literal"/> 
+	    </output>
 	</operation>
 	<operation name="AddVenue">
 	    <soap:operation soapAction="urn:#AddVenue"/>

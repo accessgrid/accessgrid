@@ -86,6 +86,18 @@
 
               </xsd:sequence>
             </xsd:complexType>
+
+          </xsd:element>
+	  <xsd:element name="GetVenuesAsConnectionDescriptionsRequest">
+          </xsd:element>
+
+          <xsd:element name="GetVenuesAsConnectionDescriptionsResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="connectionDescriptionList" type="agtk:ConnectionDescription" />
+
+              </xsd:sequence>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetPropertyRequest">
@@ -165,6 +177,12 @@
     <message name="GetVenuesResponse">
 	<part name="parameters" element="agtkvs:GetVenuesResponse"/>
     </message>
+     <message name="GetVenuesAsConnectionDescriptionsRequest">
+	<part name="parameters" element="agtkvs:GetVenuesAsConnectionDescriptionsRequest"/>
+    </message>
+    <message name="GetVenuesAsConnectionDescriptionsResponse">
+	<part name="parameters" element="agtkvs:GetVenuesAsConnectionDescriptionsResponse"/>
+    </message>
     <message name="GetPropertyRequest">
 	<part name="parameters" element="agtkvs:GetPropertyRequest"/>
     </message>
@@ -196,6 +214,10 @@
 	<operation name="GetVenues">
 	    <input message="agtkvs:GetVenuesRequest"/>
 	    <output message="agtkvs:GetVenuesResponse"/>
+	</operation>
+	<operation name="GetVenuesAsConnectionDescriptions">
+	    <input message="agtkvs:GetVenuesAsConnectionDescriptionsRequest"/>
+	    <output message="agtkvs:GetVenuesAsConnectionDescriptionsResponse"/>
 	</operation>
 	<operation name="AddVenue">
 	    <input message="agtkvs:AddVenueRequest"/>
