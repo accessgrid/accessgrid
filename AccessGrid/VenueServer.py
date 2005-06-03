@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.185 2005-06-01 16:54:06 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.186 2005-06-03 21:19:55 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.185 2005-06-01 16:54:06 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.186 2005-06-03 21:19:55 lefvert Exp $"
 
 
 # Standard stuff
@@ -906,6 +906,19 @@ class VenueServer(AuthorizationMixIn):
         except:
             log.exception("GetVenues: GetVenues failed!")
             raise VenueServerException("GetVenues Failed!")
+
+    def GetVenuesAsConnectionDescriptions(self):
+        cdl = []
+
+        try:
+            cdl = map(lambda venue: ConnectionDescription(venue.name,
+                                                          venue.description,
+                                                          venue.uri,
+                                                          venue.uniqueId), self.venues.values())
+            return cdl
+        except:
+            log.exception("GetVenuesAsConnectionDescriptions: Failed!")
+            raise VenueServerException("GetVenuesAsConnectionDescriptions Failed!")
 
     def GetDefaultVenue(self):
         """
