@@ -43,9 +43,21 @@
           <xsd:element name="GetDataResponse">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="data" type="xsd:any" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="data" type="xsd:anyType" />
               </xsd:sequence>
             </xsd:complexType>
+          </xsd:element>
+
+	  <xsd:element name="RemoveDataRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="key" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveDataResponse">
           </xsd:element>
 
           <xsd:element name="GetDataChannelRequest">
@@ -184,7 +196,7 @@
               <xsd:sequence>
                 <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
                 <xsd:element minOccurs="0" maxOccurs="1" name="key" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="value" type="xsd:any" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="value" type="xsd:anyType" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -232,6 +244,12 @@
     </message>
     <message name="GetDataResponse">
 	<part name="parameters" element="agsa:GetDataResponse"/>
+    </message>
+    <message name="RemoveDataRequest">
+	<part name="parameters" element="agsa:RemoveDataRequest"/>
+    </message>
+    <message name="RemoveDataResponse">
+	<part name="parameters" element="agsa:RemoveDataResponse"/>
     </message>
     <message name="GetDataChannelRequest">
 	<part name="parameters" element="agsa:GetDataChannelRequest"/>
@@ -310,6 +328,10 @@
     <operation name="GetData">
         <input message="agsa:GetDataRequest"/>
         <output message="agsa:GetDataResponse"/>
+    </operation>
+    <operation name="RemoveData">
+        <input message="agsa:RemoveDataRequest"/>
+        <output message="agsa:RemoveDataResponse"/>
     </operation>
     <operation name="GetDataChannel">
         <input message="agsa:GetDataChannelRequest"/>
