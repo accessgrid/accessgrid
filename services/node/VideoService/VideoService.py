@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.3 2005-05-30 13:55:26 douglask Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.4 2005-06-06 17:25:55 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -590,7 +590,8 @@ class VideoService( AGService ):
 
 if __name__ == '__main__':
 
-    from AccessGrid.AGService import AGServiceI, RunService
+    from AccessGrid.interfaces.AGService_interface import AGService as AGServiceI
+    from AccessGrid.AGService import RunService
 
     service = VideoService()
     serviceI = AGServiceI(service)

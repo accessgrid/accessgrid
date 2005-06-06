@@ -2,7 +2,7 @@
 # Name:        MacVideoProducerService.py
 # Purpose:
 # Created:     2004/11
-# RCS-ID:      $Id: MacVideoProducerService.py,v 1.1 2005-01-06 23:29:54 turam Exp $
+# RCS-ID:      $Id: MacVideoProducerService.py,v 1.2 2005-06-06 17:25:55 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -127,7 +127,8 @@ class MacVideoProducerService( AGService ):
 
 if __name__ == '__main__':
 
-    from AccessGrid.AGService import AGServiceI, RunService
+    from AccessGrid.interfaces.AGService_interface import AGService as AGServiceI
+    from AccessGrid.AGService import RunService
 
     service = MacVideoProducerService()
     serviceI = AGServiceI(service)

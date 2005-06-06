@@ -12,7 +12,8 @@ import os
 import sys
 
 from AccessGrid.GUID import GUID
-from AccessGrid.AGService import AGService, AGServiceI, RunService
+from AccessGrid.AGService import AGService, RunService
+from AccessGrid.interfaces.AGService_client import AGService as AGServiceI
 from AccessGrid.Types import Capability
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter
 from AccessGrid.AGParameter import RangeParameter, TextParameter

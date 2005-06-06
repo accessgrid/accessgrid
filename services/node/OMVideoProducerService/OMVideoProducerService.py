@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: OMVideoProducerService.py,v 1.2 2005-06-01 13:33:56 turam Exp $
+# RCS-ID:      $Id: OMVideoProducerService.py,v 1.3 2005-06-06 17:25:55 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -359,9 +359,9 @@ class VideoProducerService( AGService ):
 
 if __name__ == '__main__':
 
-    import sys
-    from AccessGrid.AGService import AGServiceI, RunService
+    from AccessGrid.interfaces.AGService_interface import AGService as AGServiceI
+    from AccessGrid.AGService import RunService
 
     service = VideoProducerService()
     serviceI = AGServiceI(service)
-    RunService(service,serviceI,int(sys.argv[1]))
+    RunService(service,serviceI)

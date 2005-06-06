@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.2 2005-01-14 23:53:35 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.3 2005-06-06 17:25:54 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -270,7 +270,8 @@ class AudioService( AGService ):
 
 if __name__ == '__main__':
 
-    from AccessGrid.AGService import AGServiceI, RunService
+    from AccessGrid.interfaces.AGService_interface import AGService as AGServiceI
+    from AccessGrid.AGService import RunService
 
     # Look for executables in the current directory,
     # since the rat startup script needs to 
