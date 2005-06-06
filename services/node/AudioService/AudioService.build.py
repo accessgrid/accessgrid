@@ -45,7 +45,6 @@ if needBuild:
     os.system(buildCmd)
 
 # Write the service manifest
-os.chdir(servicesDir)
 f = open('AudioService.manifest','w')
 for filename in ratFiles:
     f.write(filename + "\n")

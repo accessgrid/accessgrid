@@ -33,7 +33,6 @@ if not os.path.exists(VIC_EXE_PATH):
     os.system(buildCmd)
 
 # Write the service manifest
-os.chdir(servicesDir)
 f = open('VideoProducerService.manifest','w')
 f.write(VIC_EXE + '\n')
 f.close()
