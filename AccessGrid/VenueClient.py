@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.220 2005-06-06 17:39:03 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.221 2005-06-06 21:32:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.220 2005-06-06 17:39:03 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.221 2005-06-06 21:32:09 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -35,7 +35,6 @@ from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.AsyncoreEventClient import EventClient
-from AccessGrid.AsyncoreEventService import PickledEvent
 #from AccessGrid.TextClient import TextClient
 from AccessGrid.Events import Event, ConnectEvent
 from AccessGrid.Events import DisconnectEvent, ClientExitingEvent
@@ -53,6 +52,7 @@ from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 from AccessGrid import ServiceDiscovery
 from AccessGrid.Descriptions import VenueState
+from AccessGrid.MulticastWatcher import MulticastWatcher
 
 from AccessGrid.Jabber.JabberClient import JabberClient
 
@@ -170,6 +170,16 @@ class VenueClient:
         
         self.jabber = JabberClient()
         
+        self.multicastWatcher = MulticastWatcher(statusChangeCB=self.__McastStatusCB)
+        self.multicastWatcher.Start()
+        
+        
+    def __McastStatusCB(self,obj):
+        for s in self.observers:
+            s.UpdateMulticastStatus(obj.GetStatus())
+
+        
+
     ##########################################################################
     #
     # Private Methods
@@ -1129,6 +1139,8 @@ class VenueClient:
                           
         if self.dataStore:
             self.dataStore.Shutdown()
+            
+        self.multicastWatcher.Stop()
        
     def UpdateProfileCache(self, profile):
         try:
@@ -1479,6 +1491,10 @@ class VenueClient:
                 log.exception("Error retrieving admin list using legacy method")
                 
         return isVenueAdministrator
+        
+        
+    def GetMulticastStatus(self):
+        return self.multicastWatcher.GetStatus()
     
 
 # Retrieve a list of urls of (presumably) running venue clients
