@@ -62,6 +62,17 @@ else:
     svcexp = re.compile(".*svc$", re.IGNORECASE)
     services = map(lambda x: os.path.splitext(x)[0],
                    filter(svcexp.search, os.listdir(inputDir)))
+    dirlist = os.listdir(inputDir)
+    services = []
+    for dir in dirlist:
+        thisdir = os.path.join(inputDir,dir)
+        if os.path.isdir(thisdir):
+            thisServiceList = map(lambda x: os.path.splitext(x)[0],
+                           filter(svcexp.search, os.listdir(thisdir)))
+            if thisServiceList:
+                services += thisServiceList
+        
+    
 
 sdir = os.getcwd()
 os.chdir(inputDir)
@@ -69,6 +80,11 @@ os.chdir(inputDir)
 print "Building services:", services
 
 for service in services:
+    
+    
+    # Get in the right directory
+    os.chdir(os.path.join(inputDir,service))
+    
     servDesc = service + ".svc"
     servImplPy = service + ".py"
     serviceBuildPy = service + '.build.py'
