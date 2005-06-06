@@ -40,6 +40,7 @@ os.system(command)
 wsdlList =  [
             [ 'AG_VenueServer_Types' , 'VenueServerBinding.wsdl' ],
             [ 'AG_Venue_Types', 'VenueBinding.wsdl' ],
+            [ 'AG_VenueClient_Types', 'VenueClientBinding.wsdl' ],
             [ 'AG_ServiceManager_Types', 'AGServiceManagerBinding.wsdl' ],
             [ 'AG_NodeService_Types', 'AGNodeServiceBinding.wsdl' ],
             [ 'AG_Service_Types', 'AGServiceBinding.wsdl' ],
