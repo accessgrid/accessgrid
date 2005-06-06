@@ -10,7 +10,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClientObserver.py,v 1.4 2004-09-10 03:58:53 judson Exp $"
+__revision__ = "$Id: VenueClientObserver.py,v 1.5 2005-06-06 21:32:29 turam Exp $"
 
 class VenueClientObserver:
 
@@ -83,8 +83,10 @@ class VenueClientObserver:
         raise Exception("VenueClientObserver.ExitVenue not implemented")
 
     def HandleError(self,err):
-        raise Exception("VenueClientObserver.Exception not implemented")
+        raise Exception("VenueClientObserver.HandleError not implemented")
 
+    def UpdateMulticastStatus(self,status):
+        raise Exception("VenueClientObserver.UpdateMulticastStatus not implemented")
 
 class TestVenueClientObserver(VenueClientObserver):
 
