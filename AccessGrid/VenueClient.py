@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.219 2005-06-01 15:36:30 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.220 2005-06-06 17:39:03 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.219 2005-06-01 15:36:30 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.220 2005-06-06 17:39:03 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -287,10 +287,8 @@ class VenueClient:
         else:
             self.server = InsecureServer((hostname, port))
 
-        # VenueClient interface not fully defined yet.
-        #from AccessGrid.interfaces.VenueClient_interface import VenueClient as VenueClientI
-        #vci = VenueClientI(impl=self)
-        """
+        from AccessGrid.interfaces.VenueClient_interface import VenueClient as VenueClientI
+        vci = VenueClientI(impl=self,auth_method_name=None)
         uri = self.server.RegisterObject(vci, path='/VenueClient')
         try:
             ServiceDiscovery.Publisher(hostname,VenueClient.ServiceType,
@@ -305,9 +303,9 @@ class VenueClient:
 
         if pnode:
             from AccessGrid.AGServiceManager import AGServiceManager
-            from AccessGrid.interfaces.AGServiceManager_interface import AGServiceManagerI
+            from AccessGrid.interfaces.AGServiceManager_interface import AGServiceManager as AGServiceManagerI
             self.sm = AGServiceManager(self.server, self.app)
-            smi = AGServiceManagerI(self.sm)
+            smi = AGServiceManagerI(impl=self.sm,auth_method_name=None)
             uri = self.server.RegisterObject(smi, path="/ServiceManager")
             self.sm.SetUri(uri)
             log.debug("__StartWebService: service manager: %s",
@@ -321,7 +319,7 @@ class VenueClient:
             from AccessGrid.AGNodeService import AGNodeService
             from AccessGrid.interfaces.AGNodeService_interface import AGNodeService as AGNodeServiceI
             self.ns = AGNodeService(self.app)
-            nsi = AGNodeServiceI(self.ns)
+            nsi = AGNodeServiceI(impl=self.ns,auth_method_name=None)
             uri = self.server.RegisterObject(nsi, path="/NodeService")
             self.ns.SetUri(uri)
             log.debug("__StartWebService: node service: %s",
@@ -335,7 +333,6 @@ class VenueClient:
                 log.exception("Couldn't publish node service advertisement")
                 
         self.server.RunInThread()
-        """
 
         if pnode:
             try:
