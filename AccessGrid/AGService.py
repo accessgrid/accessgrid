@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.46 2005-04-06 20:32:44 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.47 2005-06-06 17:30:39 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.46 2005-04-06 20:32:44 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.47 2005-06-06 17:30:39 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -253,170 +253,8 @@ class AGService:
     def GetPackageFile(self):
         return self.packageFile
 
-
-
-
-
-
-
-
-
-
-from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
-
-class AGServiceI(SOAPInterface):
-    """
-    Interface Class for AGService
-    """
-    
-    def __init__(self,impl):
-        SOAPInterface.__init__(self,impl)
-    
-    def _authorize(self, *args, **kw):
-        # Authorize everybody.
+    def IsValid(self):
         return 1
-
-    def Start(self):
-        self.impl.Start()
-
-    def Stop(self):
-        self.impl.Stop()
-        
-    def GetCapabilities( self ):
-        return self.impl.GetCapabilities()
-
-    def GetResource( self ):
-        return self.impl.GetResource()
-
-    def SetResource( self, resourceStruct ):
-        resource = CreateResourceDescription(resourceStruct)
-        self.impl.SetResource(resource )
-
-    def SetConfiguration(self,serviceConfig ):
-        self.impl.SetConfiguration(serviceConfig )
-
-    def GetConfiguration( self ):
-        return self.impl.GetConfiguration()
-
-    def SetStream( self, streamDescStruct ):
-        streamDesc = CreateStreamDescription(streamDescStruct)
-        self.impl.SetStream(streamDesc )
-
-    def IsStarted( self ):
-        return self.impl.IsStarted()
-
-    def SetEnabled(self, enabled):
-        self.impl.SetEnabled(enabled)
-
-    def GetEnabled(self):
-        return self.impl.GetEnabled()
-
-    def Shutdown(self):
-        self.impl.Shutdown()
-
-    def SetIdentity(self, profileStruct):
-        profile = CreateClientProfile(profileStruct)
-        self.impl.SetIdentity(profile)
-
-    def SetServiceManagerUrl(self,serviceManagerUri):
-        self.impl.SetServiceManagerUrl(serviceManagerUri)
-        
-    def GetServiceManagerUrl(self):
-        return self.impl.GetServiceManagerUrl()
-    
-    def GetDescription(self):
-        return self.impl.GetDescription()
-        
-    def GetResources(self):
-        return self.impl.GetResources()
-    
-    def SetPackageFile(self,packageFile):
-        self.impl.SetPackageFile(packageFile)
-        
-    def GetPackageFile(self):
-        return self.impl.GetPackageFile()
-
-class AGServiceIW(SOAPIWrapper):
-    """
-    Interface Wrapper Class for AGService
-    """
-    
-    def __init__(self,url):
-        SOAPIWrapper.__init__(self,url)
-    
-    def Start(self):
-        self.proxy.Start()
-
-    def Stop(self):
-        self.proxy.Stop()
-        
-    def GetCapabilities( self ):
-    
-        capStructList = self.proxy.GetCapabilities()
-        
-        capList = map( lambda capStruct:
-                       CreateCapability(capStruct),
-                       capStructList)
-        return capList
-
-
-    def GetResource( self ):
-        resourceStruct = self.proxy.GetResource()
-        resource = CreateResourceDescription(resourceStruct)
-        return resource
-
-    def SetResource( self, resource ):
-        self.proxy.SetResource(resource )
-
-    def SetConfiguration(self,configuration ):
-        self.proxy.SetConfiguration(configuration )
-
-    def GetConfiguration( self ):
-        config = []
-        configStruct = self.proxy.GetConfiguration()
-        for parmStruct in configStruct:
-            config.append(CreateParameter(parmStruct))
-        return config
-
-    def SetStream( self, streamDescription ):
-        self.proxy.SetStream(streamDescription )
-
-    def IsStarted( self ):
-        return self.proxy.IsStarted()
-
-    def SetEnabled(self, enabled):
-        self.proxy.SetEnabled(enabled)
-
-    def GetEnabled(self):
-        return self.proxy.GetEnabled()
-
-    def Shutdown(self):
-        self.proxy.Shutdown()
-
-    def SetIdentity(self, profile):
-        self.proxy.SetIdentity(profile)
-
-    def SetServiceManagerUrl(self,serviceManagerUri):
-        self.proxy.SetServiceManagerUrl(serviceManagerUri)
-        
-    def GetServiceManagerUrl(self):
-        return self.proxy.GetServiceManagerUrl()
-    
-    def GetDescription(self):
-        serviceDescStruct = self.proxy.GetDescription()
-        serviceDesc = CreateAGServiceDescription(serviceDescStruct)
-        return serviceDesc
-        
-    def GetResources(self):
-        resourceStructs = self.proxy.GetResources()
-        resources = map(lambda x: CreateResourceDescription(x), resourceStructs)
-        return resources
-
-    def SetPackageFile(self,packageFile):
-        self.proxy.SetPackageFile(packageFile)
-        
-    def GetPackageFile(self):
-        return self.proxy.GetPackageFile()
 
 
 #
@@ -439,8 +277,7 @@ def SignalHandler(signum, frame, service):
 def RunService(service,serviceInterface):
     import signal, time
     from AccessGrid.hosting import SecureServer, InsecureServer
-    from AccessGrid.AGServiceManager import AGServiceManagerIW
-    
+    from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
     
     serviceName = service.GetName()
 
@@ -473,6 +310,10 @@ def RunService(service,serviceInterface):
     else:
         server = InsecureServer( (hostname, port) )
     
+    serviceInterface.impl = service
+    serviceInterface.auth_method_name = None    
+
+
     # Register the service interface with the server
     servicePath = '/Services/%s.%s' % (serviceName, str(GUID()))
     server.RegisterObject(serviceInterface, path = servicePath)
