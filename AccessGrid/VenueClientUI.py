@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.84 2005-05-20 16:00:25 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.85 2005-06-06 21:34:29 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.84 2005-05-20 16:00:25 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.85 2005-06-06 21:34:29 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -176,6 +176,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         wxFrame.__init__(self, NULL, -1, "")
         self.__BuildUI(app)
         self.SetSize(wxSize(400, 500))
+        
+        self.statusbar.SetMcastStatus(self.venueClient.GetMulticastStatus())
         
         # Tell the UI about installed applications
         self.__EnableAppMenu( false )
@@ -986,7 +988,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         if self.nodeManagementFrame:
             self.nodeManagementFrame.Raise()
         else:
-            self.nodeManagementFrame = NodeManagementClientFrame(self, -1, "Access Grid Node Management")
+            self.nodeManagementFrame = NodeManagementClientFrame(self, -1, 
+                                        "Access Grid Node Management")
+
             log.debug("VenueClientFrame.ManageNodeCB: open node management")
 
             try:
@@ -1692,6 +1696,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def GetPersonalData(self,clientProfile):
         return self.venueClient.GetPersonalData(clientProfile)
 
+    def SetMcastStatus(self,status):
+        wxCallAfter(self.statusbar.SetMcastStatus,status)
 
     # end General Implementation
     #
@@ -2143,6 +2149,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                         "Lost Connection")
         else:
             log.info("Unhandled observer exception in VenueClientUI")
+            
+    def UpdateMulticastStatus(self,status):
+        wxCallAfter(self.statusbar.SetMcastStatus,status)
 
 
     # end Implementation of VenueClientObserver
@@ -3917,6 +3926,8 @@ class StatusBar(wxStatusBar):
         self.sizeChanged = False
         EVT_SIZE(self, self.OnSize)
         EVT_IDLE(self, self.OnIdle)
+        
+        self.mcast = wxStaticText(self,-1,'NO MULTICAST')
 
         self.progress = wxGauge(self, wxNewId(), 100,
                                 style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
@@ -3928,8 +3939,9 @@ class StatusBar(wxStatusBar):
         self.__hideProgressUI()
         self.Reset()
 
-        self.fields = 1
+        self.fields = 2
         self.SetFieldsCount(self.fields)
+        self.Reposition()
 
     def SetMax(self, value):
         self.max = value
@@ -3971,7 +3983,7 @@ class StatusBar(wxStatusBar):
             self.progress.SetValue(100)
             self.__hideProgressUI()
             self.SetMessage("Transfer complete")
-            self.fields = 1
+            self.fields = 2
             self.SetFieldsCount(self.fields)
             return 
         
@@ -3994,7 +4006,7 @@ class StatusBar(wxStatusBar):
         if not self.transferDone:
             self.__cancelFlag = 1
             self.__hideProgressUI()
-            self.fields = 1
+            self.fields = 2
             self.SetFieldsCount(self.fields)
        
                                     
@@ -4020,7 +4032,12 @@ class StatusBar(wxStatusBar):
         '''
         Make sure objects are positioned correct in the statusbar.
         '''
-        if self.fields == 1:
+        # Mcast status
+        rect = self.GetFieldRect(1)
+        self.mcast.SetPosition(wxPoint(rect.x+2, rect.y+2))
+        self.mcast.SetSize(wxSize(rect.width-4, rect.height-4))
+
+        if self.fields == 2:
             self.__hideProgressUI()
             return
 
@@ -4036,6 +4053,14 @@ class StatusBar(wxStatusBar):
         #self.cancelButton.SetSize(wxSize(rect.width-2, rect.height-2))
         self.cancelButton.SetSize(wxSize(50, rect.height-2))
         self.sizeChanged = False
+        
+    def SetMcastStatus(self,bool):
+        if bool:
+            self.mcast.SetForegroundColour(wxBLACK)
+            self.mcast.SetLabel("Multicast")
+        else:
+            self.mcast.SetForegroundColour(wxRED)
+            self.mcast.SetLabel("NO MULTICAST")
         
         
 ################################################################################
