@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.40 2005-06-01 15:36:30 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.41 2005-06-07 22:26:15 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.40 2005-06-01 15:36:30 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.41 2005-06-07 22:26:15 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -604,6 +604,18 @@ class VenueClientController:
                 
     def SendTextCB(self,text):
         self.__venueClient.SendText(text)
+
+
+    #
+    # Navigation Actions
+    #
+    
+    def GetVenues(self):
+        return self.__venueClient.GetVenues()
+        
+    def GetVenueConnections(self, venueUrl):
+        return self.__venueClient.GetVenueConnections(venueUrl)
+
 
     # end Core UI Callbacks
     #
@@ -1231,8 +1243,8 @@ class VenueClientController:
         
     def GetMyVenues(self):
         return self.__venueClientApp.GetMyVenues()
-        
 
+   
     # end General Implementation
     #
     ##########################################################################
@@ -1315,7 +1327,7 @@ class VenueClientApp:
         This method returns the user's saved venues list
         """
         return self.myVenuesDict
-        
+            
     #
     # Applications Methods
     # 

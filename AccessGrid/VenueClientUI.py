@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.86 2005-06-07 20:59:00 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.87 2005-06-07 22:26:15 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.86 2005-06-07 20:59:00 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.87 2005-06-07 22:26:15 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -340,10 +340,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.preferences.AppendSeparator()
         self.preferences.AppendCheckItem(self.ID_ENABLE_VIDEO, "Enable Video",
                                          "Enable/disable video for your node")
-        self.preferences.Check(self.ID_ENABLE_VIDEO,true)
+
+        videoFlag = self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_VIDEO)
+        self.preferences.Check(self.ID_ENABLE_VIDEO, int(videoFlag))
         self.preferences.AppendCheckItem(self.ID_ENABLE_AUDIO, "Enable Audio",
                                          "Enable/disable audio for your node")
-        self.preferences.Check(self.ID_ENABLE_AUDIO,true)
+
+        audioFlag = self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_VIDEO)
+        self.preferences.Check(self.ID_ENABLE_AUDIO, int(audioFlag))
         self.preferences.Append(self.ID_MYNODE_MANAGE, "&Manage My Node...",
                                 "Configure your node")
         self.preferences.AppendSeparator()
@@ -521,10 +525,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
       
         self.textClientPanel = JabberClientPanel(self.textInputWindow, -1,
                                                  self.textOutput, self)
-        #self.textClientPanel = TextClientPanel(self.textInputWindow, -1,
-        #                                       self.textOutput, self)
-               
-        self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT)
+        self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT, self.controller)
         self.contentListPanel = ContentListPanel(self)
         dataDropTarget = DataDropTarget(self)
         self.contentListPanel.SetDropTarget(dataDropTarget)
@@ -889,8 +890,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         except:
             self.Error("Error using multicast","Use Multicast")
 
+
     def UseUnicastCB(self,event):
-    
         transportList = self.venueClient.GetTransportList()
         if 'unicast' not in transportList:
             self.preferences.Check(self.ID_USE_MULTICAST, true)
@@ -940,19 +941,20 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 
     def EnableVideoCB(self,event):
         enableFlag = self.preferences.IsChecked(self.ID_ENABLE_VIDEO)
+                
         try:
             self.controller.EnableVideoCB(enableFlag)
         except:
-            #self.gui.Error("Error enabling/disabling video", "Error enabling/disabling video")
-            pass
+            self.gui.Error("Error enabling/disabling video", "Error enabling/disabling video")
+            
 
     def EnableAudioCB(self,event):
         enableFlag = self.preferences.IsChecked(self.ID_ENABLE_AUDIO)
+                        
         try:
             self.controller.EnableAudioCB(enableFlag)
         except:
-            #self.gui.Error("Error enabling/disabling audio", "Error enabling/disabling audio")
-            pass
+            self.gui.Error("Error enabling/disabling audio", "Error enabling/disabling audio")
 
     def SetNodeUrlCB(self, event = None):
         nodeUrl = None
@@ -2063,9 +2065,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             #  Load exits
             # log.debug("Add exits")
             wxCallAfter(self.statusbar.SetStatusText, "Load exits")
-            for conn in venueState.connections.values():
-                wxCallAfter(self.venueListPanel.AddVenueDoor,
-                            conn)
+            wxCallAfter(self.venueListPanel.AddConnections)
                 # log.debug("   %s" %(conn.name))
 
             #
@@ -2269,11 +2269,12 @@ class VenueListPanel(wxSashWindow):
     ID_MINIMIZE = wxNewId()
     ID_MAXIMIZE = wxNewId()
       
-    def __init__(self, parent,id):
+    def __init__(self, parent, id, app):
         wxSashWindow.__init__(self, parent, id)
         self.parent = parent
         #self.panel = wxPanel(self, -1,  style = wxSUNKEN_BORDER)
-        self.list = VenueList(self, parent)
+        #self.list = VenueList(self, parent)
+        self.list = NavigationPanel(self, app)
         self.minimizeButton = wxButton(self, self.ID_MINIMIZE, "<<", size = wxSize(40,-1),
                                        #wxDefaultPosition, wxSize(25,21),
                                        style = wxBU_EXACTFIT )
@@ -2328,7 +2329,6 @@ class VenueListPanel(wxSashWindow):
         self.exitsText.Hide()
         self.minimizeButton.Hide()  
         self.maximizeButton.Show()
-        self.list.HideDoors()
         self.SetSize(wxSize(self.maximizeButton.GetSize().GetWidth(), currentHeight))
         self.parent.UpdateLayout()
 
@@ -2337,7 +2337,6 @@ class VenueListPanel(wxSashWindow):
         self.exitsText.Show()
         self.maximizeButton.Hide()
         self.minimizeButton.Show()  
-        self.list.ShowDoors()
         self.SetSize(wxSize(180, currentHeight))
         self.parent.UpdateLayout()
         
@@ -2353,11 +2352,87 @@ class VenueListPanel(wxSashWindow):
         
     def AddVenueDoor(self,connectionDescription):
         self.list.AddVenueDoor(connectionDescription)
+
+    def AddConnections(self):
+        self.list.AddConnections()
         
     def RemoveVenueDoor(self,connectionDescription):
         self.list.RemoveVenueDoor(connectionDescription)
 
+class NavigationPanel(wxPanel):
+    def __init__(self, parent, app):
+        wxPanel.__init__(self, parent, -1, size=wxSize(175, 300))
+        self.tree = wxTreeCtrl(self, wxNewId(), wxDefaultPosition, 
+                               wxDefaultSize, style = wxTR_HAS_BUTTONS |
+                               wxTR_LINES_AT_ROOT | wxTR_HIDE_ROOT |
+                               wxTR_MULTIPLE)
+        self.app = app
 
+        EVT_LEFT_DCLICK(self.tree, self.OnDoubleClick)
+        EVT_TREE_ITEM_EXPANDING(self.tree, self.tree.GetId(), self.OnExpand)
+        
+        self.__PopulateTree()
+        self.__Layout()
+
+    def OnDoubleClick(self, event):
+        self.x = event.GetX()
+        self.y = event.GetY()
+        treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
+                
+        if not treeId.IsOk():
+            return
+
+        wxBeginBusyCursor()
+        venue = self.tree.GetPyData(treeId)
+        self.app.EnterVenueCB(venue.uri)
+        wxEndBusyCursor()
+                
+    def OnExpand(self, event):
+        treeId = event.GetItem()
+        child, cookie = self.tree.GetFirstChild(treeId)
+       
+        if self.tree.GetItemText(child) == "temp node":
+            # Remove temporary node
+            self.tree.DeleteChildren(treeId)
+
+        venue = self.tree.GetPyData(treeId)
+        exits = self.app.GetVenueConnections(venue.uri)
+        if not exits:
+            exits = []
+        for exit in exits:
+            self.tree.AppendItem(treeId, exit)
+            self.tree.Expand(treeId)
+            self.tree.SetItemData(treeId, wxTreeItemData("url"))
+                
+    def AddVenueDoor(self, venue):
+        newItem = self.tree.AppendItem(self.root, venue.name)
+
+        # Add temporary node to always show + and - buttons.
+        tempItem = self.tree.AppendItem(newItem, "temp node")
+        self.tree.SetItemBold(newItem)
+        self.tree.SetItemData(newItem, wxTreeItemData(venue)) 
+
+    def AddConnections(self):
+        venues = self.app.GetVenues()
+        if venues:
+            for venue in venues:
+                self.AddVenueDoor(venue)
+
+    def CleanUp(self):
+        self.tree.DeleteAllItems()
+                        
+    def __PopulateTree(self):
+        # depending on the preference, we will get all venues from the
+        # server, all exits to this venue, or my venues.
+        self.root = self.tree.AddRoot("")
+                                        
+    def __Layout(self):
+        sizer = wxBoxSizer(wxHORIZONTAL)
+        sizer.Add(self.tree, 1, wxEXPAND)
+        self.SetSizer(sizer)
+        self.SetAutoLayout(1)
+
+"""        
 class VenueList(wxScrolledWindow):
     '''
     VenueList. 
@@ -2422,8 +2497,8 @@ class VenueList(wxScrolledWindow):
             description = self.exitsDict[id]
             self.app.EnterVenueCB(description.uri)
         else:
-            text = "The exit is no longer valid "
-            title = "Notification"
+            text = 'The exit is no longer valid '
+            title = 'Notification'
             MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
                 
 
@@ -2519,7 +2594,7 @@ class ExitPanel(wxPanel):
         b.Fit(self)
         self.SetAutoLayout(1)
         #self.Layout()
-
+"""
 
 
 #############################################################################
@@ -4905,8 +4980,15 @@ class DesktopDropTarget(wxFileDropTarget):
 
 if __name__ == "__main__":
     pp = wxPySimpleApp()
-    n = VenuePropertiesDialog(None, -1, 'Properties')
-    n.ShowModal()
+    #n = VenuePropertiesDialog(None, -1, 'Properties')
+    #n.ShowModal()
+    
+    f = wxFrame(None, -1, "Navigation")
+    n = NavigationPanel(f, -1)
+    f.Show()
+    
+    pp.MainLoop()
+   
     
     #n = AddAppDialog(None, -1, "Start Application Session", 
     #                 ApplicationDescription("test", "test", "test", "test", "test"))

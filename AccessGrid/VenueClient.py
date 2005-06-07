@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.221 2005-06-06 21:32:09 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.222 2005-06-07 22:26:15 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.221 2005-06-06 21:32:09 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.222 2005-06-07 22:26:15 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -35,7 +35,6 @@ from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.AsyncoreEventClient import EventClient
-#from AccessGrid.TextClient import TextClient
 from AccessGrid.Events import Event, ConnectEvent
 from AccessGrid.Events import DisconnectEvent, ClientExitingEvent
 from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent
@@ -508,7 +507,6 @@ class VenueClient:
         
     def ModifyUserEvent(self, event):
         log.debug("ModifyUserEvent: Got Modify User Event")
-
         profile = event.GetData()
 
         # Pre-2.3 server compatability code
@@ -1152,6 +1150,30 @@ class VenueClient:
     # Venue calls
     #
 
+    def GetVenues(self):
+        if not self.IsInVenue():
+            return []
+        
+        self.preferences = self.app.GetPreferences()
+
+        # Use preference for navigation layout 
+        # self.preferences.GetDisplayMode()
+        displayMode = 0
+
+        if displayMode == 0:
+            return self.__venueProxy.GetConnections()
+           
+        elif displayMode == 1:
+            print "Get my venues"
+        elif displayMode == 2:
+            print "Get exits"
+
+    def GetVenueConnections(self, venueUrl):
+        venueProxy = VenueIW(venueUrl)
+        venues =  venueProxy.GetConnections()
+        print 'get connections from the venue'
+        return venues
+
     def UpdateClientProfile(self,profile):
         self.__venueProxy.UpdateClientProfile(profile)
         
@@ -1168,9 +1190,9 @@ class VenueClient:
         #try:
         self.__venueProxy.AddService(serviceDescription)
         #except Exception,e:
-            #if e.faultstring == "ServiceAlreadyPresent":
-            #    raise ServiceAlreadyPresent
-            #raise
+        #    if e.faultstring == "ServiceAlreadyPresent":
+        #        raise ServiceAlreadyPresent
+        #    raise
 
     def UpdateService(self,serviceDescription):
         self.__venueProxy.UpdateService(serviceDescription)
