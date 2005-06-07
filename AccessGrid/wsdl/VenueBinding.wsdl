@@ -155,6 +155,15 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
+	<operation name="GetConnections">
+	    <soap:operation soapAction="urn:#GetConnections"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
 	<operation name="GetUploadDescriptor">
 	    <soap:operation soapAction="urn:#GetUploadDescriptor"/>
 	    <input>

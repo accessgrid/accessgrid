@@ -214,6 +214,17 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="GetConnectionsRequest"> 
+          </xsd:element>
+
+          <xsd:element name="GetConnectionsResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="connections" type="agtk:ConnectionDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+	
           <xsd:element name="SetConnectionsRequest">
             <xsd:complexType>
               <xsd:sequence>
@@ -433,6 +444,12 @@
     <message name="SetPropertyResponse">
 	<part name="parameters" element="agtkv:SetPropertyResponse"/>
     </message>
+    <message name="GetConnectionsRequest">
+	<part name="parameters" element="agtkv:GetConnectionsRequest"/>
+    </message>
+    <message name="GetConnectionsResponse">
+	<part name="parameters" element="agtkv:GetConnectionsResponse"/>
+    </message>
     <message name="SetConnectionsRequest">
 	<part name="parameters" element="agtkv:SetConnectionsRequest"/>
     </message>
@@ -557,6 +574,10 @@
 	<operation name="SetConnections">
 	    <input message="agtkv:SetConnectionsRequest"/>
             <output message="agtkv:SetConnectionsResponse"/>
+	</operation>
+	<operation name="GetConnections">
+	    <input message="agtkv:GetConnectionsRequest"/>
+            <output message="agtkv:GetConnectionsResponse"/>
 	</operation>
 	<operation name="GetUploadDescriptor">
 	    <input message="agtkv:GetUploadDescriptorRequest"/>
