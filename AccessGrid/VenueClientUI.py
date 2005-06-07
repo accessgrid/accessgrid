@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.85 2005-06-06 21:34:29 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.86 2005-06-07 20:59:00 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.85 2005-06-06 21:34:29 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.86 2005-06-07 20:59:00 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -419,10 +419,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # Do not enable menus until connected
         self.__HideMenu()
-
-        # Don't allow a choice of unicast until in a venue (then we might not
-        # have it anyhow)
-        self.preferences.Enable(self.ID_USE_UNICAST, false)
 
     def __SetEvents(self):
     
@@ -879,9 +875,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 self.Error("Modified profile could not be saved", "Edit Profile Error")
         profileDialog.Destroy()
         
-    def SetUnicastEnabled(self, flag):
-        self.preferences.Enable(self.ID_USE_UNICAST, flag)
-        
     def SetTransport(self, transport):
         if transport == "multicast":
             self.preferences.Check(self.ID_USE_MULTICAST, true)
@@ -897,6 +890,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.Error("Error using multicast","Use Multicast")
 
     def UseUnicastCB(self,event):
+    
+        transportList = self.venueClient.GetTransportList()
+        if 'unicast' not in transportList:
+            self.preferences.Check(self.ID_USE_MULTICAST, true)
+            self.preferences.Check(self.ID_USE_UNICAST, false)
+            self.Warn("No unicast bridge is currently available in this venue.",
+                       "Use Unicast")
+            return
 
         # Get a list of providers
         providerList = self.venueClient.GetNetworkLocationProviders()
@@ -953,19 +954,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             #self.gui.Error("Error enabling/disabling audio", "Error enabling/disabling audio")
             pass
 
-    def __UpdateTransports(self):
-        """
-        This method is called when a venue stream is modified.
-        """
-        transportList = self.venueClient.GetTransportList()
-        if 'unicast' in transportList:
-            self.SetUnicastEnabled(1)
-        else:
-            self.SetUnicastEnabled(0)
-
-        transport = self.venueClient.GetTransport()
-        self.SetTransport(transport)
-               
     def SetNodeUrlCB(self, event = None):
         nodeUrl = None
         setNodeUrlDialog = UrlDialog(self, -1, "Set node service URL", \
@@ -1962,13 +1950,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             wxCallAfter(self.venueListPanel.AddVenueDoor, connection)
 
     def AddStream(self,streamDesc):
-        wxCallAfter(self.__UpdateTransports)
+        pass
                        
     def RemoveStream(self,streamDesc):
-        wxCallAfter(self.__UpdateTransports)
+        pass
 
     def ModifyStream(self,streamDesc):
-        wxCallAfter(self.__UpdateTransports)
+        pass
                    
     def AddText(self,name,text):
         """
@@ -2102,9 +2090,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             # (this is not the app menu above)
             wxCallAfter(self.__EnableAppMenu, true)
 
-            # Enable/disable the unicast menu entry appropriately
-            wxCallAfter(self.__UpdateTransports)
-            
             # Update the UI
             wxCallAfter(self.AddVenueToHistory, URL)
             
