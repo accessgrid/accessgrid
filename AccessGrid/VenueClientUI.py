@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.87 2005-06-07 22:26:15 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.88 2005-06-07 22:46:42 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.87 2005-06-07 22:26:15 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.88 2005-06-07 22:46:42 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3983,11 +3983,11 @@ class StatusBar(wxStatusBar):
         wxStatusBar.__init__(self, parent, -1)
         self.hidden = 0
        
-        self.sizeChanged = False
+        #self.sizeChanged = False
         EVT_SIZE(self, self.OnSize)
-        EVT_IDLE(self, self.OnIdle)
+        #EVT_IDLE(self, self.OnIdle)
         
-        self.mcast = wxStaticText(self,-1,'NO MULTICAST')
+        self.mcast = wxStaticText(self,-1,'No Multicast')
 
         self.progress = wxGauge(self, wxNewId(), 100,
                                 style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
@@ -4079,14 +4079,15 @@ class StatusBar(wxStatusBar):
         # Set a flag so the idle time handler will also do the repositioning.
         # It is done this way to get around a bug where GetFieldRect is not
         # accurate during the EVT_SIZE resulting from a frame maximize.
-        self.sizeChanged = True
+        #self.sizeChanged = True
 
-    def OnIdle(self, evt):
-        '''
-        When idle, fix object positions in statusbar.
-        '''
-        if self.sizeChanged:
-            self.Reposition()
+    #def OnIdle(self, evt):
+    #    '''
+    #    When idle, fix object positions in statusbar.
+    #    '''
+    #    if self.sizeChanged:
+    #        print '--- reposition'
+    #        self.Reposition()
     
     def Reposition(self):
         '''
@@ -4105,22 +4106,23 @@ class StatusBar(wxStatusBar):
         rect = self.GetFieldRect(1)
         self.progress.SetPosition(wxPoint(rect.x+2, rect.y+2))
         self.progress.SetSize(wxSize(rect.width-4, rect.height-4))
-        self.sizeChanged = False
-        
+               
         # Cancel button
         rect = self.GetFieldRect(2)
         self.cancelButton.SetPosition(wxPoint(rect.x+2, rect.y+2))
         #self.cancelButton.SetSize(wxSize(rect.width-2, rect.height-2))
         self.cancelButton.SetSize(wxSize(50, rect.height-2))
-        self.sizeChanged = False
+        #self.sizeChanged = False
         
     def SetMcastStatus(self,bool):
         if bool:
             self.mcast.SetForegroundColour(wxBLACK)
-            self.mcast.SetLabel("Multicast")
+            if self.mcast.GetLabel() != "Multicast":
+                self.mcast.SetLabel("Multicast")
         else:
             self.mcast.SetForegroundColour(wxRED)
-            self.mcast.SetLabel("NO MULTICAST")
+            if self.mcast.GetLabel() != "No Multicast":
+                self.mcast.SetLabel("No Multicast")
         
         
 ################################################################################
