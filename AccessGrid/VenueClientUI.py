@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.90 2005-06-08 18:43:50 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.91 2005-06-08 20:11:46 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.90 2005-06-08 18:43:50 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.91 2005-06-08 20:11:46 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2277,19 +2277,12 @@ class VenueListPanel(wxSashWindow):
     def __init__(self, parent, id, app):
         wxSashWindow.__init__(self, parent, id)
         self.parent = parent
-        #self.panel = wxPanel(self, -1,  style = wxSUNKEN_BORDER)
-        #self.list = VenueList(self, parent)
         self.list = NavigationPanel(self, app)
         self.minimizeButton = wxButton(self, self.ID_MINIMIZE, "<<", size = wxSize(40,-1),
-                                       #wxDefaultPosition, wxSize(25,21),
                                        style = wxBU_EXACTFIT )
         self.maximizeButton = wxButton(self, self.ID_MAXIMIZE, ">>", size = wxSize(40,-1),
-                                       #wxDefaultPosition, wxSize(25,21),
                                        style = wxBU_EXACTFIT )
         self.exitsText = wxButton(self, -1, "Exits") 
-                                  #wxDefaultPosition,
-                                  #wxSize(20,21), wxBU_EXACTFIT)
-        
         self.imageList = wxImageList(32,32)
                 
         self.__Layout()
@@ -2300,8 +2293,6 @@ class VenueListPanel(wxSashWindow):
         font = wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana")
         self.minimizeButton.SetToolTipString("Hide Exits")
         self.maximizeButton.SetToolTipString("Show Exits")
-        #self.exitsText.SetBackgroundColour("WHITE")
-        #self.SetBackgroundColour(self.maximizeButton.GetBackgroundColour())
         self.maximizeButton.Hide()
                 
     def __AddEvents(self):
@@ -2314,8 +2305,7 @@ class VenueListPanel(wxSashWindow):
 
     def FixDoorsLayout(self):
         self.__Layout()
-        #wxLayoutAlgorithm().LayoutWindow(self, self.panel)
-
+    
     def __Layout(self):
         panelSizer = wxBoxSizer(wxHORIZONTAL)
         panelSizer.Add(self.exitsText, 1, wxEXPAND)
@@ -2344,7 +2334,6 @@ class VenueListPanel(wxSashWindow):
         self.minimizeButton.Show()  
         self.SetSize(wxSize(180, currentHeight))
         self.parent.UpdateLayout()
-
   
     def OnClick(self, event):
         if event.GetId() == VenueListPanel.ID_MINIMIZE:
@@ -2371,21 +2360,25 @@ class NavigationPanel(wxPanel):
         self.tree = wxTreeCtrl(self, wxNewId(), wxDefaultPosition, 
                                wxDefaultSize, style = wxTR_HAS_BUTTONS |
                                wxTR_LINES_AT_ROOT | wxTR_HIDE_ROOT |
-                               wxTR_MULTIPLE)
+                               wxTR_SINGLE )
         self.app = app
         self.parent = parent
         EVT_LEFT_DCLICK(self.tree, self.OnDoubleClick)
-        EVT_TREE_ITEM_EXPANDING(self.tree, self.tree.GetId(), self.OnExpand)
-        
-        self.__PopulateTree()
+        EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
+
+        self.root = self.tree.AddRoot("")
         self.__Layout()
 
     def OnDoubleClick(self, event):
+        '''
+        Called when user double clicks the tree.
+        '''
         self.x = event.GetX()
         self.y = event.GetY()
         treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
-                
-        if not treeId.IsOk():
+
+        # Check to see if the click was made on the tree item text.
+        if not treeId.IsOk() and flag & wxTREE_HITTEST_ONITEMLABEL:
             return
 
         wxBeginBusyCursor()
@@ -2393,8 +2386,19 @@ class NavigationPanel(wxPanel):
         self.app.controller.EnterVenueCB(venue.uri)
         wxEndBusyCursor()
                 
-    def OnExpand(self, event):
-        treeId = event.GetItem()
+    def OnLeftDown(self, event):
+        '''
+        Called when user clicks the tree
+        '''
+        self.x = event.GetX()
+        self.y = event.GetY()
+
+        treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
+
+        # Check to see if the click hit the twist button
+        if not treeId.IsOk() and flag & wxTREE_HITTEST_ONITEMBUTTON:
+            return
+                
         child, cookie = self.tree.GetFirstChild(treeId)
        
         if self.tree.GetItemText(child) == "temp node":
@@ -2403,15 +2407,20 @@ class NavigationPanel(wxPanel):
 
         venue = self.tree.GetPyData(treeId)
         exits = self.app.controller.GetVenueConnections(venue.uri)
+
         if not exits:
             exits = []
 
         for exit in exits:
-            self.tree.AppendItem(treeId, exit.name)
-            self.tree.Expand(treeId)
-            self.tree.SetItemData(treeId, wxTreeItemData("url"))
-                
+            newItemId = self.tree.AppendItem(treeId, exit.name)
+            self.tree.SetItemData(newItemId, wxTreeItemData(exit))
+
+        self.tree.Expand(treeId)
+                        
     def AddVenueDoor(self, venue):
+        '''
+        Add a new entry in the list of venues.
+        '''
         newItem = self.tree.AppendItem(self.root, venue.name)
 
         # Add temporary node to always show + and - buttons.
@@ -2420,22 +2429,31 @@ class NavigationPanel(wxPanel):
         self.tree.SetItemData(newItem, wxTreeItemData(venue)) 
 
     def UpdateView(self):
+        '''
+        Remove all tree entries and update view with new data.
+        '''
         self.CleanUp()
         self.AddConnections()
 
     def AddConnections(self):
+        '''
+        Add entries to the list of venues depending on preferences. 
+        '''
         dm = self.app.venueClient.GetPreferences().GetPreference(Preferences.DISPLAY_MODE)
 
+        # Show my venues
         if dm == Preferences.MY_VENUES:
             myVenues = self.app.controller.GetMyVenues()
             venues = []
             for venue in myVenues.keys():
                 cd = VenueDescription(name = venue, uri = myVenues[venue])
                 venues.append(cd)
-            
+
+        # Show all venues on this server
         elif dm == Preferences.ALL_VENUES:
             venues = self.app.controller.GetVenuesFromServer(self.app.venueClient.GetVenueServer())
-                       
+
+        # Show connections to this venue
         elif dm == Preferences.EXITS:
             venues = self.app.controller.GetVenueConnections(self.app.venueClient.GetVenue())
                             
@@ -2444,182 +2462,16 @@ class NavigationPanel(wxPanel):
                 self.AddVenueDoor(venue)
 
     def CleanUp(self):
+        '''
+        Remove all tree entries
+        '''
         self.tree.DeleteAllItems()
-                        
-    def __PopulateTree(self):
-        # depending on the preference, we will get all venues from the
-        # server, all exits to this venue, or my venues.
-        self.root = self.tree.AddRoot("")
-                                        
+                                           
     def __Layout(self):
         sizer = wxBoxSizer(wxHORIZONTAL)
         sizer.Add(self.tree, 1, wxEXPAND)
         self.SetSizer(sizer)
         self.SetAutoLayout(1)
-
-"""        
-class VenueList(wxScrolledWindow):
-    '''
-    VenueList. 
-    
-    The venueList is a scrollable window containing all exits to current venue.
-    
-    '''   
-    def __init__(self, parent, app):
-        self.app = app
-        wxScrolledWindow.__init__(self, parent, -1, size=wxSize(175, 300))
-        self.doorsAndLabelsList = []
-        self.exitsDict = {}
-        self.__Layout()
-        self.parent = parent
-        self.EnableScrolling(true, true)
-        self.SetScrollRate(1, 1)
-                      
-    def __Layout(self):
-        self.box = wxBoxSizer(wxVERTICAL)
-        self.SetSizer(self.box)
-        self.SetAutoLayout(1)
-        self.Layout()
-               
-    def AddVenueDoor(self, connectionDescription):
-        panel = ExitPanel(self, wxNewId(), connectionDescription)
-        self.doorsAndLabelsList.append(panel)
-        self.doorsAndLabelsList.sort(lambda x, y: cmp(x.GetName(),
-                                                      y.GetName()))
-        index = self.doorsAndLabelsList.index(panel)
-                      
-        self.box.Insert(index, panel, 0, wxEXPAND)
-
-        id = panel.GetButtonId()
-
-        self.exitsDict[id] = connectionDescription
-        self.FitInside()
-        self.EnableScrolling(true, true)
-                            
-    def CleanUp(self):
-        for item in self.doorsAndLabelsList:
-            self.box.Remove(item)
-            item.Destroy()
-
-        self.__Layout()
-        #self.parent.__Layout()  
-
-        self.exitsDict.clear()
-        del self.doorsAndLabelsList[0:]
-                                          
-    def HideDoors(self):
-        for item in self.doorsAndLabelsList:
-            item.Hide()
-        self.SetScrollRate(0, 0)
-            
-    def ShowDoors(self):
-        for item in self.doorsAndLabelsList:
-            item.Show()
-        self.SetScrollRate(1, 1)
-        
-    def GoToNewVenue(self, event, id):
-        if(self.exitsDict.has_key(id)):
-            description = self.exitsDict[id]
-            self.app.EnterVenueCB(description.uri)
-        else:
-            text = 'The exit is no longer valid '
-            title = 'Notification'
-            MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
-                
-
-class ExitPanel(wxPanel):
-
-    ID_PROPERTIES = wxNewId()
-    
-    def __init__(self, parent, id, connectionDescription):
-        wxPanel.__init__(self, parent, id, wxDefaultPosition,
-                         size = wxSize(175, 300), style = wxRAISED_BORDER)
-        self.id = id
-        self.parent = parent
-        self.connectionDescription = connectionDescription
-        self.SetBackgroundColour(wxColour(190,190,190))
-        self.bitmap = icons.getDefaultDoorClosedBitmap()
-        self.bitmapSelect = icons.getDefaultDoorOpenedBitmap()
-        self.button = wxStaticBitmap(self, self.id, self.bitmap,
-                                     wxPoint(0, 0), wxDefaultSize,
-                                     wxBU_EXACTFIT)
-        self.SetToolTipString(connectionDescription.description)
-        self.label = wxTextCtrl(self, self.id, "", size= wxSize(0,10),
-                                style = wxNO_BORDER|wxTE_MULTILINE|wxTE_RICH)
-        self.label.SetValue(connectionDescription.name)
-        self.label.SetBackgroundColour(wxColour(190,190,190))
-        self.label.SetToolTipString(connectionDescription.description)
-        self.button.SetToolTipString(connectionDescription.description)
-        self.__Layout()
-        
-        EVT_LEFT_DOWN(self.button, self.OnClick) 
-        EVT_LEFT_DOWN(self.label, self.OnClick)
-        EVT_LEFT_DOWN(self, self.OnClick)
-        EVT_RIGHT_DOWN(self.button, self.OnRightClick) 
-        EVT_RIGHT_DOWN(self.label, self.OnRightClick)
-        EVT_RIGHT_DOWN(self, self.OnRightClick)
-        
-        EVT_ENTER_WINDOW(self, self.OnMouseEnter)
-        EVT_LEAVE_WINDOW(self, self.OnMouseLeave)
-            
-    def OnMouseEnter(self, event):
-        '''
-        Sets a new door image when mouse enters the panel
-        '''
-        self.button.SetBitmap(self.bitmapSelect)
-        
-    def OnMouseLeave(self, event):
-        '''
-        Sets a new door image when mouse leaves the panel
-        '''
-        self.button.SetBitmap(self.bitmap)
-               
-    def OnClick(self, event):
-        '''
-        Move client to a new venue
-        '''
-        self.parent.GoToNewVenue(event, self.GetButtonId())
-
-    def OnRightClick(self, event):
-        '''
-        Opens a menu for this connected venue
-        '''
-        self.x = event.GetX() + self.button.GetPosition().x
-        self.y = event.GetY() + self.button.GetPosition().y
-        
-        propertiesMenu = wxMenu()
-        propertiesMenu.Append(self.ID_PROPERTIES,"Properties...",
-                             "View information about the venue")
-      
-       
-        self.PopupMenu(propertiesMenu, wxPoint(self.x, self.y))
-        EVT_MENU(self, self.ID_PROPERTIES, self.OpenPropertiesDialog)
-                
-    def OpenPropertiesDialog(self, event):
-        '''
-        Opens a profile dialog for this exit
-        '''
-        doorView = ExitPropertiesDialog(self, -1, "Venue Properties",
-                                        self.connectionDescription)
-        doorView.ShowModal()
-        doorView.Destroy()
-            
-    def GetName(self):
-        return self.label.GetValue().lower()
-
-    def GetButtonId(self):
-        return self.id
-
-    def __Layout(self):
-        b = wxBoxSizer(wxHORIZONTAL)
-        b.Add(self.button, 0, wxALIGN_LEFT|wxTOP|wxBOTTOM|wxRIGHT|wxLEFT, 2)
-        b.Add(self.label, 1,  wxALIGN_CENTER|wxTOP|wxBOTTOM|wxRIGHT|wxEXPAND, 2)
-        b.Add(wxSize(5,2))
-        self.SetSizer(b)
-        b.Fit(self)
-        self.SetAutoLayout(1)
-        #self.Layout()
-"""
 
 
 #############################################################################
