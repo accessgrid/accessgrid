@@ -44,6 +44,51 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
+	<operation name="GetDefaultVenue">
+	    <soap:operation soapAction="urn:#GetDefaultVenue"/>
+            <input>
+		<soap:body use="literal"/> 
+	    </input>
+            <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+        <operation name="GetBaseAddress">
+	    <soap:operation soapAction="urn:#GetBaseAddress"/>
+            <input>
+		<soap:body use="literal"/> 
+	    </input>
+            <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+        <operation name="GetAddressMask">
+	    <soap:operation soapAction="urn:#GetAddressMask"/>
+            <input>
+		<soap:body use="literal"/> 
+	    </input>
+            <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+	<operation name="GetEncryptAllMedia">
+	    <soap:operation soapAction="urn:#GetEncryptAllMedia"/>
+            <input>
+		<soap:body use="literal"/> 
+	    </input>
+            <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+        <operation name="GetAddressAllocationMethod">
+	    <soap:operation soapAction="urn:#GetAddressAllocationMethod"/>
+            <input>
+		<soap:body use="literal"/> 
+	    </input>
+            <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
         <operation name="GetVenuesAsConnectionDescriptions">
 	    <soap:operation soapAction="urn:#GetVenuesAsConnectionDescriptions"/>
             <input>

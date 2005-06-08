@@ -86,8 +86,63 @@
 
               </xsd:sequence>
             </xsd:complexType>
-
           </xsd:element>
+
+          <xsd:element name="GetDefaultVenueRequest">
+          </xsd:element>
+
+          <xsd:element name="GetDefaultVenueResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="venueUrl" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+ 	  <xsd:element name="GetBaseAddressRequest">
+          </xsd:element>
+
+          <xsd:element name="GetBaseAddressResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="venueUrl" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+	  <xsd:element name="GetAddressMaskRequest">
+          </xsd:element>
+
+          <xsd:element name="GetAddressMaskResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="venueUrl" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetEncryptAllMediaRequest">
+          </xsd:element>
+
+          <xsd:element name="GetEncryptAllMediaResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="venueUrl" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetAddressAllocationMethodRequest">
+          </xsd:element>
+
+          <xsd:element name="GetAddressAllocationMethodResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="venueUrl" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
 	  <xsd:element name="GetVenuesAsConnectionDescriptionsRequest">
           </xsd:element>
 
@@ -142,8 +197,6 @@
           </xsd:element>
           <xsd:element name="SetDefaultVenueResponse">
           </xsd:element>
-
-
       </schema>
     </types>
 
@@ -177,7 +230,37 @@
     <message name="GetVenuesResponse">
 	<part name="parameters" element="agtkvs:GetVenuesResponse"/>
     </message>
-     <message name="GetVenuesAsConnectionDescriptionsRequest">
+    <message name="GetDefaultVenueRequest">
+	<part name="parameters" element="agtkvs:GetDefaultVenueRequest"/>
+    </message>
+    <message name="GetDefaultVenueResponse">
+	<part name="parameters" element="agtkvs:GetDefaultVenueResponse"/>
+    </message>
+    <message name="GetBaseAddressRequest">
+	<part name="parameters" element="agtkvs:GetBaseAddressRequest"/>
+    </message>
+    <message name="GetBaseAddressResponse">
+	<part name="parameters" element="agtkvs:GetBaseAddressResponse"/>
+    </message>
+    <message name="GetAddressMaskRequest">
+	<part name="parameters" element="agtkvs:GetAddressMaskRequest"/>
+    </message>
+    <message name="GetAddressMaskResponse">
+	<part name="parameters" element="agtkvs:GetAddressMaskResponse"/>
+    </message>
+    <message name="GetEncryptAllMediaRequest">
+	<part name="parameters" element="agtkvs:GetEncryptAllMediaRequest"/>
+    </message>
+    <message name="GetEncryptAllMediaResponse">
+	<part name="parameters" element="agtkvs:GetEncryptAllMediaResponse"/>
+    </message>
+    <message name="GetAddressAllocationMethodRequest">
+	<part name="parameters" element="agtkvs:GetAddressAllocationMethodRequest"/>
+    </message>
+    <message name="GetAddressAllocationMethodResponse">
+	<part name="parameters" element="agtkvs:GetAddressAllocationMethodResponse"/>
+    </message>
+    <message name="GetVenuesAsConnectionDescriptionsRequest">
 	<part name="parameters" element="agtkvs:GetVenuesAsConnectionDescriptionsRequest"/>
     </message>
     <message name="GetVenuesAsConnectionDescriptionsResponse">
@@ -214,6 +297,26 @@
 	<operation name="GetVenues">
 	    <input message="agtkvs:GetVenuesRequest"/>
 	    <output message="agtkvs:GetVenuesResponse"/>
+	</operation>
+	<operation name="GetDefaultVenue">
+	    <input message="agtkvs:GetDefaultVenueRequest"/>
+	    <output message="agtkvs:GetDefaultVenueResponse"/>
+	</operation>
+	<operation name="GetBaseAddress">
+	    <input message="agtkvs:GetBaseAddressRequest"/>
+	    <output message="agtkvs:GetBaseAddressResponse"/>
+	</operation>
+	<operation name="GetAddressMask">
+	    <input message="agtkvs:GetAddressMaskRequest"/>
+	    <output message="agtkvs:GetAddressMaskResponse"/>
+	</operation>
+	<operation name="GetEncryptAllMedia">
+	    <input message="agtkvs:GetEncryptAllMediaRequest"/>
+	    <output message="agtkvs:GetEncryptAllMediaResponse"/>
+	</operation>
+        <operation name="GetAddressAllocationMethod">
+	    <input message="agtkvs:GetAddressAllocationMethodRequest"/>
+	    <output message="agtkvs:GetAddressAllocationMethodResponse"/>
 	</operation>
 	<operation name="GetVenuesAsConnectionDescriptions">
 	    <input message="agtkvs:GetVenuesAsConnectionDescriptionsRequest"/>
