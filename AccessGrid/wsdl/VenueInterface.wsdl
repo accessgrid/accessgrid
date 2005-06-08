@@ -48,6 +48,17 @@
             </xsd:complexType>
           </xsd:element>
 
+	 <xsd:element name="AsVenueDescriptionRequest">
+         </xsd:element>
+
+          <xsd:element name="AsVenueDescriptionResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="venueDescription" type="agtk:VenueDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
           <xsd:element name="NegotiateCapabilitiesRequest">
             <xsd:complexType>
               <xsd:sequence>
@@ -378,6 +389,12 @@
     <message name="GetStateResponse">
 	<part name="parameters" element="agtkv:GetStateResponse"/>
     </message>
+    <message name="AsVenueDescriptionRequest">
+	<part name="parameters" element="agtkv:AsVenueDescriptionRequest"/>
+    </message>
+    <message name="AsVenueDescriptionResponse">
+	<part name="parameters" element="agtkv:AsVenueDescriptionResponse"/>
+    </message>
     <message name="NegotiateCapabilitiesRequest">
 	<part name="parameters" element="agtkv:NegotiateCapabilitiesRequest"/>
     </message>
@@ -522,6 +539,10 @@
 	<operation name="GetState">
 	    <input message="agtkv:GetStateRequest"/>
 	    <output message="agtkv:GetStateResponse"/>
+	</operation>
+	<operation name="AsVenueDescription">
+	    <input message="agtkv:AsVenueDescriptionRequest"/>
+	    <output message="agtkv:AsVenueDescriptionResponse"/>
 	</operation>
 	<operation name="NegotiateCapabilities">
 	    <input message="agtkv:NegotiateCapabilitiesRequest"/>
