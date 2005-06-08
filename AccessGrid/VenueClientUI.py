@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.88 2005-06-07 22:46:42 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.89 2005-06-08 15:54:15 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.88 2005-06-07 22:46:42 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.89 2005-06-08 15:54:15 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -43,6 +43,7 @@ from AccessGrid.ClientProfile import *
 from AccessGrid.Preferences import PreferencesDialog, Preferences
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription, AGNetworkServiceDescription
+from AccessGrid.Descriptions import VenueDescription
 from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIDialog
 from AccessGrid.Utilities import SubmitBug
 from AccessGrid.VenueClientObserver import VenueClientObserver
@@ -525,7 +526,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
       
         self.textClientPanel = JabberClientPanel(self.textInputWindow, -1,
                                                  self.textOutput, self)
-        self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT, self.controller)
+        self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT, self)
         self.contentListPanel = ContentListPanel(self)
         dataDropTarget = DataDropTarget(self)
         self.contentListPanel.SetDropTarget(dataDropTarget)
@@ -1686,8 +1687,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def GetPersonalData(self,clientProfile):
         return self.venueClient.GetPersonalData(clientProfile)
 
-    def SetMcastStatus(self,status):
-        wxCallAfter(self.statusbar.SetMcastStatus,status)
+    def UpdateNavigation(self):
+        self.venueListPanel.list.UpdateView()
+        
 
     # end General Implementation
     #
@@ -1698,6 +1700,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     # Implementation of VenueClientObserver
     # Note:  These methods are called by an event processor in a different thread,
     #        so any wx calls here must be made with wxCallAfter.
+
+    def SetMcastStatus(self,status):
+        wxCallAfter(self.statusbar.SetMcastStatus,status)
 
     def AddUser(self, profile):
         """
@@ -2339,7 +2344,8 @@ class VenueListPanel(wxSashWindow):
         self.minimizeButton.Show()  
         self.SetSize(wxSize(180, currentHeight))
         self.parent.UpdateLayout()
-        
+
+  
     def OnClick(self, event):
         if event.GetId() == VenueListPanel.ID_MINIMIZE:
             self.Hide()
@@ -2367,7 +2373,7 @@ class NavigationPanel(wxPanel):
                                wxTR_LINES_AT_ROOT | wxTR_HIDE_ROOT |
                                wxTR_MULTIPLE)
         self.app = app
-
+        self.parent = parent
         EVT_LEFT_DCLICK(self.tree, self.OnDoubleClick)
         EVT_TREE_ITEM_EXPANDING(self.tree, self.tree.GetId(), self.OnExpand)
         
@@ -2384,7 +2390,7 @@ class NavigationPanel(wxPanel):
 
         wxBeginBusyCursor()
         venue = self.tree.GetPyData(treeId)
-        self.app.EnterVenueCB(venue.uri)
+        self.app.controller.EnterVenueCB(venue.uri)
         wxEndBusyCursor()
                 
     def OnExpand(self, event):
@@ -2396,7 +2402,7 @@ class NavigationPanel(wxPanel):
             self.tree.DeleteChildren(treeId)
 
         venue = self.tree.GetPyData(treeId)
-        exits = self.app.GetVenueConnections(venue.uri)
+        exits = self.app.controller.GetVenueConnections(venue.uri)
         if not exits:
             exits = []
         for exit in exits:
@@ -2412,8 +2418,26 @@ class NavigationPanel(wxPanel):
         self.tree.SetItemBold(newItem)
         self.tree.SetItemData(newItem, wxTreeItemData(venue)) 
 
+    def UpdateView(self):
+        self.CleanUp()
+        self.AddConnections()
+
     def AddConnections(self):
-        venues = self.app.GetVenues()
+        dm = self.app.venueClient.GetPreferences().GetPreference(Preferences.DISPLAY_MODE)
+
+        if dm == Preferences.MY_VENUES:
+            myVenues = self.app.controller.GetMyVenues()
+            venues = []
+            for venue in myVenues.keys():
+                cd = VenueDescription(name = venue, uri = myVenues[venue])
+                venues.append(cd)
+            
+        elif dm == Preferences.ALL_VENUES:
+            venues = self.app.controller.GetVenuesFromServer(self.app.venueClient.GetVenueServer())
+                       
+        elif dm == Preferences.EXITS:
+            venues = self.app.controller.GetVenueConnections(self.app.venueClient.GetVenue())
+                            
         if venues:
             for venue in venues:
                 self.AddVenueDoor(venue)

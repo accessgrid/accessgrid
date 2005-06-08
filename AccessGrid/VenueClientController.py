@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.41 2005-06-07 22:26:15 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.42 2005-06-08 15:54:15 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.41 2005-06-07 22:26:15 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.42 2005-06-08 15:54:15 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -610,12 +610,21 @@ class VenueClientController:
     # Navigation Actions
     #
     
-    def GetVenues(self):
-        return self.__venueClient.GetVenues()
+    def GetVenuesFromServer(self, serverUrl):
+        ''' Return all venues on the server at serverUrl'''
+
+        #
+        # DOES NOT WORK YET!
+        #
+        
+        sProxy = VenueServerIW(serverUrl)
+        return sProxy.GetVenues()
         
     def GetVenueConnections(self, venueUrl):
+        ''' Return all connections for venue at venueUrl'''
         return self.__venueClient.GetVenueConnections(venueUrl)
 
+    
 
     # end Core UI Callbacks
     #
@@ -677,6 +686,9 @@ class VenueClientController:
         # Enable video and audio
         self.EnableVideoCB(int(preferences.GetPreference(Preferences.ENABLE_VIDEO)))
         self.EnableAudioCB(int(preferences.GetPreference(Preferences.ENABLE_AUDIO)))
+
+        # Update navigation panel
+        self.gui.UpdateNavigation()
         
         # Update client profile in venue
         if self.__venueClient.GetVenue() != None:
@@ -1248,6 +1260,7 @@ class VenueClientController:
     # end General Implementation
     #
     ##########################################################################
+
 
 
 

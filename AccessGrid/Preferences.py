@@ -30,6 +30,10 @@ class Preferences:
     LOG_TO_CMD = "logToCmd"
     ENABLE_VIDEO = "enableVideo"
     ENABLE_AUDIO = "enableAudio"
+    DISPLAY_MODE = "displayMode"
+    EXITS = "exits"
+    MY_VENUES = "my venues"
+    ALL_VENUES = "all venues"
                 
     def __init__(self):
         '''
@@ -54,7 +58,8 @@ class Preferences:
                          self.MULTICAST: 1,
                          self.LOG_TO_CMD: 0,
                          self.ENABLE_VIDEO: 1,
-                         self.ENABLE_AUDIO: 1
+                         self.ENABLE_AUDIO: 1,
+                         self.DISPLAY_MODE: self.EXITS
                          }
 
         # Set default log levels to Log.DEBUG.
@@ -265,10 +270,13 @@ class PreferencesDialog(wxDialog):
                                          self.preferences)
         self.networkPanel = NetworkPanel(self.preferencesPanel, wxNewId(),
                                          self.preferences)
+        self.navigationPanel = NavigationPanel(self.preferencesPanel, wxNewId(),
+                                               self.preferences)
         self.loggingPanel.Hide()
         self.venueConnectionPanel.Hide()
         self.clientConnectionPanel.Hide()
         self.networkPanel.Hide()
+        self.navigationPanel.Hide()
         self.nodePanel.Hide()
         self.currentPanel = self.loggingPanel
                            
@@ -322,6 +330,8 @@ class PreferencesDialog(wxDialog):
                                        self.clientConnectionPanel.GetSecureClientConnection())
         self.preferences.SetPreference(Preferences.MULTICAST,
                                        self.networkPanel.GetMulticast())
+        self.preferences.SetPreference(Preferences.DISPLAY_MODE,
+                                       self.navigationPanel.GetDisplayMode())
         self.preferences.SetPreference(Preferences.CLIENT_PORT,
                                        self.clientConnectionPanel.GetPort())
       
@@ -375,6 +385,8 @@ class PreferencesDialog(wxDialog):
                                                 " Client Connection")
         self.network = self.sideTree.AppendItem(self.root,
                                                 " Network")
+        self.navigation = self.sideTree.AppendItem(self.root,
+                                                " Navigation")
         self.sideTree.SetItemData(self.profile,
                                   wxTreeItemData(self.profilePanel))
         self.sideTree.SetItemData(self.node,
@@ -387,6 +399,8 @@ class PreferencesDialog(wxDialog):
                                    wxTreeItemData(self.clientConnectionPanel))
         self.sideTree.SetItemData(self.network,
                                   wxTreeItemData(self.networkPanel))
+        self.sideTree.SetItemData(self.navigation,
+                                  wxTreeItemData(self.navigationPanel))
         self.sideTree.SelectItem(self.profile)
 
     def __OnSize(self,event):
@@ -978,7 +992,88 @@ class NetworkPanel(wxPanel):
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(1)
+
+class NetworkPanel(wxPanel):
+    def __init__(self, parent, id, preferences):
+        wxPanel.__init__(self, parent, id)
+        self.Centre()
+        self.titleText = wxStaticText(self, -1, "Multicast")
+        self.titleLine = wxStaticLine(self, -1)
+        self.multicastButton = wxCheckBox(self, wxNewId(), "  Use multicast ")
         
+        self.multicastButton.SetValue(int(preferences.GetPreference(Preferences.MULTICAST)))
+                        
+        if IsOSX():
+            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+        else:
+            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+                                
+        self.__Layout()
+         
+    def GetMulticast(self):
+        if self.multicastButton.IsChecked():
+            return 1
+        else:
+            return 0
+          
+    def __Layout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.titleText, 0, wxALL, 5)
+        sizer2.Add(self.titleLine, 1, wxALIGN_CENTER | wxALL, 5)
+        sizer.Add(sizer2, 0, wxEXPAND)
+        sizer.Add(self.multicastButton, 0, wxALL|wxEXPAND, 10)
+       
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+        
+class NavigationPanel(wxPanel):
+    def __init__(self, parent, id, preferences):
+        wxPanel.__init__(self, parent, id)
+        self.Centre()
+        self.titleText = wxStaticText(self, -1, "Navigation View")
+        self.titleLine = wxStaticLine(self, -1)
+        self.exitsButton = wxRadioButton(self, wxNewId(), "  Show Exits ")
+        self.myVenuesButton = wxRadioButton(self, wxNewId(), "  Show My Venues ")
+        self.allVenuesButton = wxRadioButton(self, wxNewId(), "  Show All Venues ")
+
+        value = preferences.GetPreference(Preferences.DISPLAY_MODE)
+        if value == Preferences.EXITS:
+            self.exitsButton.SetValue(1)
+        elif value == Preferences.MY_VENUES:
+            self.myVenuesButton.SetValue(1)
+        elif value == Preferences.ALL_VENUES:
+            self.allVenuesButton.SetValue(1)
+               
+        if IsOSX():
+            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+        else:
+            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+                                
+        self.__Layout()
+         
+    def GetDisplayMode(self):
+        if self.exitsButton.GetValue():
+            return Preferences.EXITS
+        elif self.myVenuesButton.GetValue():
+            return Preferences.MY_VENUES
+        elif self.allVenuesButton.GetValue():
+            return Preferences.ALL_VENUES
+          
+    def __Layout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.titleText, 0, wxALL, 5)
+        sizer2.Add(self.titleLine, 1, wxALIGN_CENTER | wxALL, 5)
+        sizer.Add(sizer2, 0, wxEXPAND)
+        sizer.Add(self.exitsButton, 0, wxALL|wxEXPAND, 10)
+        sizer.Add(self.myVenuesButton, 0, wxALL|wxEXPAND, 10)
+        sizer.Add(self.allVenuesButton, 0, wxALL|wxEXPAND, 10)
+               
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
         
 if __name__ == "__main__":
     pp = wxPySimpleApp()

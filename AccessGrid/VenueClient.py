@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.222 2005-06-07 22:26:15 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.223 2005-06-08 15:54:15 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.222 2005-06-07 22:26:15 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.223 2005-06-08 15:54:15 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -1157,16 +1157,16 @@ class VenueClient:
         self.preferences = self.app.GetPreferences()
 
         # Use preference for navigation layout 
-        # self.preferences.GetDisplayMode()
-        displayMode = 0
-
-        if displayMode == 0:
+        displayMode = self.preferences.GetPreference(Preferences.DISPLAY_MODE)
+       
+        if displayMode == Preferences.EXITS:
             return self.__venueProxy.GetConnections()
            
-        elif displayMode == 1:
+        elif displayMode == Preferences.MY_VENUES:
             print "Get my venues"
-        elif displayMode == 2:
-            print "Get exits"
+            return ["my venues"]
+        elif displayMode == Preferences.EXITS:
+            return ["exits"]
 
     def GetVenueConnections(self, venueUrl):
         venueProxy = VenueIW(venueUrl)
@@ -1282,6 +1282,15 @@ class VenueClient:
         GetVenue gets the venue the client is currently in.
         """
         return self.venueUri
+
+    def GetVenueServer(self):
+        """
+        Get venue server gets the server the client
+        is currently connected to.
+        """
+        hostPort = self.venueUri.split('/')[2]
+        serverUri = "https://"+hostPort+"/VenueServer"
+        return serverUri
         
     def GetVenueName(self):
         return self.venueState.GetName()
@@ -1544,7 +1553,6 @@ def GetVenueClientUrls():
     nlist.reverse()
 
     return nlist[0:4]
-                                    
 
 class VenueClientI(SOAPInterface):
     def __init__(self, impl):
