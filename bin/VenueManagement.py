@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.149 2005-02-14 22:14:46 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.150 2005-06-08 22:44:35 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.149 2005-02-14 22:14:46 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.150 2005-06-08 22:44:35 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -42,20 +42,20 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid import icons
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
 from AccessGrid.Utilities import VENUE_MANAGEMENT_LOG
-from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIPanel, AuthorizationUIDialog
-from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
+#from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIPanel, AuthorizationUIDialog
+#from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 from AccessGrid import Log
 from AccessGrid.hosting import Client
-from AccessGrid.VenueServer import VenueServerIW
+from AccessGrid.interfaces.VenueServer_client import VenueServerIW
 from AccessGrid.Venue import VenueIW
 from AccessGrid import Toolkit
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig
 from AccessGrid.Platform import IsWindows, IsOSX
 
+from AccessGrid.VenueClientUI import ContentListPanel
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
 
 log = Log.GetLogger(Log.VenueManagement)
-
 
 class VenueManagementClient(wxApp):
     """
@@ -99,7 +99,7 @@ class VenueManagementClient(wxApp):
         self.address = VenueServerAddress(self.frame, self)
         self.tabs = VenueManagementTabs(self.frame, -1, self)
         self.statusbar = self.frame.CreateStatusBar(1)
-
+        
         self.menubar = wxMenuBar()
         self.myServersDict = {}
         self.myServersMenuIds = {}
@@ -439,7 +439,8 @@ class VenueManagementClient(wxApp):
             self.server = VenueServerIW(URL)
             log.debug("VenueManagementClient.ConnectToServer: Get venues from server")
             self.venueList = {}
-            vl = self.server.GetVenues()
+            #self.server.GetProperty(["test"])
+            vl = self.server.GetVenuesAsConnectionDescriptions()
             for v in vl:
                 self.venueList[v.uri] = v
                 
@@ -765,8 +766,8 @@ class VenueProfilePanel(wxPanel):
             # clear the exit list
             self.exits.Clear()
 
-            for e in venue.connections:
-                self.exits.Append(e.name, e)
+            #for e in venue.connections:
+            #    self.exits.Append(e.name, e)
 
             self.exitsLabel.Show()
             self.url.Show()
@@ -1415,7 +1416,7 @@ class VenueParamFrame(wxDialog):
         self.encryptionPanel = EncryptionPanel(self.noteBook, -1, application)
         self.staticAddressingPanel = StaticAddressingPanel(self.noteBook, -1,
                                                            application)
-        self.authorizationPanel = AuthorizationUIPanel(self.noteBook, -1, log)
+        #self.authorizationPanel = AuthorizationUIPanel(self.noteBook, -1, log)
         
         self.noteBook.AddPage(self.generalPanel, "General")
         self.noteBook.AddPage(self.encryptionPanel, "Encryption")
@@ -2081,7 +2082,7 @@ class StaticAddressingValidator(wxPyValidator):
 class AddVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title, venueList, application):
         VenueParamFrame.__init__(self, parent, id, title, application)
-        self.authorizationPanel.Hide()
+        #self.authorizationPanel.Hide()
         self.SetSize(wxSize(600, 470))
         self.SetLabel('Add Venue')
         self.application.SetCurrentVenue(None)
@@ -2140,9 +2141,9 @@ class ModifyVenueFrame(VenueParamFrame):
         self.generalPanel.LoadLocalVenues()
 
         # Connect to authorization manager.
-        self.noteBook.AddPage(self.authorizationPanel, "Security")
+        #self.noteBook.AddPage(self.authorizationPanel, "Security")
 
-        self.authorizationPanel.ConnectToAuthManager(self.venue.uri)
+        #self.authorizationPanel.ConnectToAuthManager(self.venue.uri)
         #self.authorizationPanel.Hide()
         
         wxEndBusyCursor()
@@ -2163,7 +2164,7 @@ class ModifyVenueFrame(VenueParamFrame):
                 try:
                     log.debug("ModifyVenueFrame.OnOk: Modify venue")
                     self.parent.ModifyVenue(self.venue)
-                    self.authorizationPanel.Apply()
+                    #self.authorizationPanel.Apply()
                     
                 except Exception, e:
                     log.exception("ModifyVenueFrame.OnOk: Modify venue failed")
@@ -2182,7 +2183,7 @@ class ModifyVenueFrame(VenueParamFrame):
                         log.exception("ModifyVenueFrame.OnOk: SetDefaultVenue failed")
 
                 # Send security info to authorization manager,
-                self.authorizationPanel.Apply(event)
+                #self.authorizationPanel.Apply(event)
                                        
                 self.Hide()
 
@@ -2192,6 +2193,10 @@ class ModifyVenueFrame(VenueParamFrame):
         item = venueList.GetSelection()
         self.venue = venueList.GetClientData(item)
 
+        # Get the real venue description
+        venueProxy = VenueIW(self.venue.uri)
+        self.venue = venueProxy.AsVenueDescription()
+        
         self.generalPanel.title.AppendText(self.venue.name)
         self.generalPanel.description.AppendText(self.venue.description)
 
