@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.150 2005-06-08 22:44:35 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.151 2005-06-09 22:07:54 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.150 2005-06-08 22:44:35 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.151 2005-06-09 22:07:54 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -552,7 +552,7 @@ class VenueManagementClient(wxApp):
 
     def DeleteVenue(self, venue):
         log.debug("VenueManagementClient.DeleteVenue: Delete venue: %s" %str(venue.uri))
-        self.server.RemoveVenue(venue.uri)
+        self.server.RemoveVenue(venue.id)
         if self.venueList.has_key(venue.uri):
             del self.venueList[venue.uri]
 
@@ -993,7 +993,7 @@ class VenueListPanel(wxPanel):
                     self.venuesList.SetString(theId, self.defaultVenue.name)
 
             # Set default venue for this server
-            self.application.server.SetDefaultVenue(venue.uri)
+            self.application.server.SetDefaultVenue(venue.id)
 
         # Set the default venue
         self.defaultVenue = venue
@@ -1017,7 +1017,7 @@ class VenueListPanel(wxPanel):
                 
         else:
             if venue.uri != None:
-                self.application.server.ModifyVenue(venue.uri, venue)
+                self.application.server.ModifyVenue(str(venue.id), venue)
                 self.venuesList.SetClientData(item, venue)
                 self.venuesList.SetString(item, venue.name)
                 self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
@@ -1489,9 +1489,11 @@ class VenueParamFrame(wxDialog):
             encryptTuple = (1, self.encryptionPanel.keyCtrl.GetValue())
 
         # Make a venue description
+        
         venue = VenueDescription(self.generalPanel.title.GetValue(),
                                  self.generalPanel.description.GetValue(),
                                  encryptTuple, exitsList, streams)
+    
         self.venue = venue
 
     def Validate(self):
@@ -1587,7 +1589,7 @@ class GeneralPanel(wxPanel):
             log.debug("VenueParamFrame.__LoadVenues: Load venues from: %s " % URL)
             server = VenueServerIW(URL)
             
-            vl = server.GetVenues()
+            vl = server.GetVenuesAsConnectionDescriptions()
             
             # Remove the current venue from the list of potential exits
             if self.application.currentVenue:
@@ -1597,7 +1599,7 @@ class GeneralPanel(wxPanel):
             self.venues.Clear()
             cdl = map(lambda x: ConnectionDescription(x.name,
                                                       x.description,
-                                                      x.uri), vl)
+                                                      x.uri, x.id), vl)
             map(lambda x: self.venues.Append(x.name, x), cdl)
             
             self.currentVenueUrl = URL
@@ -2159,8 +2161,10 @@ class ModifyVenueFrame(VenueParamFrame):
 #FIXME - This is obviously an immediately-before-release fix;
 #        it needs to be resolved corectly
                 venueUri = self.venue.uri
+                id = self.venue.id
                 self.Ok()
                 self.venue.uri = venueUri
+                self.venue.id = id
                 try:
                     log.debug("ModifyVenueFrame.OnOk: Modify venue")
                     self.parent.ModifyVenue(self.venue)
