@@ -107,6 +107,15 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
+	<operation name="ModifyVenue">
+	    <soap:operation soapAction="urn:#ModifyVenue"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
 	<operation name="RemoveVenue">
 	    <soap:operation soapAction="urn:#RemoveVenue"/>
 	    <input>

@@ -76,6 +76,17 @@
             </xsd:complexType>
           </xsd:element>
 
+	   <xsd:element name="ModifyVenueRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+		 <xsd:element minOccurs="0" maxOccurs="1" name="uri" type="xsd:anyURI" />
+                 <xsd:element minOccurs="0" maxOccurs="1" name="venueDescription" type="agtk:VenueDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="ModifyVenueResponse">
+          </xsd:element>
+
           <xsd:element name="GetVenuesRequest">
           </xsd:element>
 
@@ -224,6 +235,12 @@
     <message name="AddVenueResponse">
 	<part name="parameters" element="agtkvs:AddVenueResponse"/>
     </message>
+    <message name="ModifyVenueRequest">
+	<part name="parameters" element="agtkvs:ModifyVenueRequest"/>
+    </message>
+    <message name="ModifyVenueResponse">
+	<part name="parameters" element="agtkvs:ModifyVenueResponse"/>
+    </message>
     <message name="GetVenuesRequest">
 	<part name="parameters" element="agtkvs:GetVenuesRequest"/>
     </message>
@@ -325,6 +342,10 @@
 	<operation name="AddVenue">
 	    <input message="agtkvs:AddVenueRequest"/>
 	    <output message="agtkvs:AddVenueResponse"/>
+	</operation>
+	<operation name="ModifyVenue">
+	    <input message="agtkvs:ModifyVenueRequest"/>
+	    <output message="agtkvs:ModifyVenueResponse"/>
 	</operation>
 	<operation name="RemoveVenue">
 	    <input message="agtkvs:RemoveVenueRequest"/>
