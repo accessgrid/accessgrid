@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.186 2005-06-03 21:19:55 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.187 2005-06-10 14:52:50 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.186 2005-06-03 21:19:55 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.187 2005-06-10 14:52:50 lefvert Exp $"
 
 
 # Standard stuff
@@ -590,10 +590,14 @@ class VenueServer(AuthorizationMixIn):
             log.info("Saving Performance Data.")
             self.perfFile.writerow(data)
 
-    def Shutdown(self):
+    def Shutdown(self, secondsFromNow):
         """
         Shutdown shuts down the server.
         """
+        #
+        # Seconds from now is NOT working!
+        #
+        
         log.info("Starting Shutdown!")
 
         # Shut file
@@ -612,7 +616,7 @@ class VenueServer(AuthorizationMixIn):
         self.simpleLock.release()
 
         log.info("Shutdown -> Checkpointing...")
-        self.Checkpoint()
+        self.Checkpoint(0)
         log.info("                            done")
 
         # BEGIN Critical Section
@@ -643,7 +647,7 @@ class VenueServer(AuthorizationMixIn):
         # END Critical Section
         self.simpleLock.release()
         
-    def Checkpoint(self):
+    def Checkpoint(self, secondsFromNow):
         """
         Checkpoint stores the current state of the running VenueServer to
         non-volatile storage. In the event of catastrophic failure, the
@@ -653,6 +657,10 @@ class VenueServer(AuthorizationMixIn):
         state that is lost (the longer the time between checkpoints, the more
         that can be lost).
         """
+
+        #
+        # Seconds from now is NOT working!
+        #
 
         # Don't checkpoint if we are already
         if not self.checkpointing:
@@ -818,13 +826,15 @@ class VenueServer(AuthorizationMixIn):
         for sd in current_streams:
             venue.RemoveStream(sd)
 
+      
         for sd in venueDesc.streams:
             sd.encryptionFlag = venue.encryptMedia
             sd.encryptionKey = venue.encryptionKey
             venue.AddStream(sd)
-
+            
+      
         self.venues[oid] = venue
-        
+
         # END Critical Section
         self.simpleLock.release()
         
@@ -880,7 +890,7 @@ class VenueServer(AuthorizationMixIn):
         del self.venues[oid]
 
         # Checkpoint so we don't save it again
-        self.Checkpoint()
+        self.Checkpoint(0)
 
     def GetVenues(self):
         """
@@ -909,7 +919,7 @@ class VenueServer(AuthorizationMixIn):
 
     def GetVenuesAsConnectionDescriptions(self):
         cdl = []
-
+               
         try:
             cdl = map(lambda venue: ConnectionDescription(venue.name,
                                                           venue.description,
@@ -919,7 +929,7 @@ class VenueServer(AuthorizationMixIn):
         except:
             log.exception("GetVenuesAsConnectionDescriptions: Failed!")
             raise VenueServerException("GetVenuesAsConnectionDescriptions Failed!")
-
+        
     def GetDefaultVenue(self):
         """
         GetDefaultVenue returns the URL to the default Venue on the
@@ -996,7 +1006,7 @@ class VenueServer(AuthorizationMixIn):
         self.simpleLock.acquire()
 
         self.encryptAllMedia = int(value)
-        self.config["VenueServer.encryptAllMedia"] = value
+        self.config["VenueServer.encryptAllMedia"] = self.encryptAllMedia
 
         # END Critical Section
         self.simpleLock.release()
@@ -1024,10 +1034,10 @@ class VenueServer(AuthorizationMixIn):
         # BEGIN Critical Section
         self.simpleLock.acquire()
 
-        self.addressAllocationMethod = addressAllocationMethod
+        self.addressAllocationMethod = str(addressAllocationMethod)
         self.multicastAddressAllocator.SetAllocationMethod(
-            addressAllocationMethod )
-        self.config["VenueServer.addressAllocationMethod"] = addressAllocationMethod
+            self.addressAllocationMethod)
+        self.config["VenueServer.addressAllocationMethod"] =  self.addressAllocationMethod
 
         # END Critical Section
         self.simpleLock.release()
@@ -1046,8 +1056,7 @@ class VenueServer(AuthorizationMixIn):
         """
         # BEGIN Critical Section
         self.simpleLock.acquire()
-
-        self.baseAddress = address
+        self.baseAddress = str(address)
         self.multicastAddressAllocator.SetBaseAddress( address )
         self.config["VenueServer.baseAddress"] = address
 
@@ -1068,11 +1077,9 @@ class VenueServer(AuthorizationMixIn):
         """
         # BEGIN Critical Section
         self.simpleLock.acquire()
-
-        self.addressMask = mask
-        self.multicastAddressAllocator.SetAddressMask( mask )
-        self.config["VenueServer.addressMask"] = mask
-
+        self.addressMask = int(mask)
+        self.multicastAddressAllocator.SetAddressMask( self.addressMask )
+        self.config["VenueServer.addressMask"] = self.addressMask
         # END Critical Section
         self.simpleLock.release()
 
