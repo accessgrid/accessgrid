@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.76 2005-05-17 22:04:26 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.77 2005-06-10 18:31:06 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.76 2005-05-17 22:04:26 eolson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.77 2005-06-10 18:31:06 lefvert Exp $"
 
 import os
 import time
@@ -687,6 +687,9 @@ class DataStore:
         desc = DataDescription(filename)
         desc.SetStatus(DataDescription.STATUS_PENDING)
         desc.SetOwner(identityToken.dn)
+
+        
+
 
         self.cbLock.acquire()
         self.dataDescContainer.AddData(desc)
@@ -1632,7 +1635,6 @@ def HTTPUploadFiles(identity, upload_url, file_list, progressCB):
     If progressCB returns true, the transfer is to be cancelled.
 
     """
-
     uploader = HTTPUploadEngine(identity, upload_url, progressCB)
     uploader.UploadFiles(file_list)
 
@@ -1933,92 +1935,10 @@ class HTTPUploadEngine:
 
 if __name__ == "__main__":
 
-    hdlr = Log.StreamHandler()
-    hdlr.setLevel(Log.GetHighestLevel())
-    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
-    
-    #
-    # Test DataDescriptionContainer
-    # 
-  
-    class FAKEEvent:
-        '''
-        To test DataDescriptionContainer
-        '''
-        ADD_DATA = 1
-        REMOVE_DATA = 2
-        UPDATE_DATA = 3
-        
-        def __init__(self, arg1, arg2, arg3):
-            pass
-        
-        def Distribute(self, id, event):
-            return "DISTRIBUTE"
-
-        def Send(self, event):
-            pass
-        
-    dContainer = DataDescriptionContainer() #FAKEEvent(1,2,3), 5)
-    d1 = DataDescription("file1")
-    d1.description = "noaoin"
-    d2 = DataDescription("file2")
-    d3 = DataDescription("file3")
-    dContainer.AddData(d1)
-    dContainer.AddData(d2)
-    dContainer.AddData(d3)
-
-    print '*** Test AddData'
-    
-    dDict = dContainer.GetDataDescriptions()
-      
-    if (d1 in dDict) & (d2 in dDict) & (d3 in dDict):
-        print "OK!"
-    else:
-        print "FAILED! AddData does not work as expected, should include 'file1', 'file2', 'file3'", dDict
-
-    print '*** Test RemoveData'
-    
-    dContainer.RemoveData(d2)
-    dDict = dContainer.GetDataDescriptions()
-    if d2.name in dDict:
-        print "FAILED! RemoveData does not work as expected"
-    else:
-        print "OK!"
-
-    print '*** Test UpdateData'
-   
-    d4 = DataDescription("file1")
-    d4.description = "test"
-    try:
-        dContainer.UpdateData(d4)
-    except Exception,e:
-        print "exception ", e
-    dDict = dContainer.GetDataDescriptions()
-    flag = 1
-    for x in dDict:
-        if x.name == d4.name and x.description == "test":
-            flag = 0
-            print "OK!"
-
-    if flag:
-        print "FAILED! UpdateData does not work as expected ", dDict
-      
-    print '*** Test GetData'
-        
-    if dContainer.GetData(d3.name) == d3:
-        print "OK!"         
-        
-    else:
-        print "FAILED! GetData does not work as expected"
-
-    print '*** Test AsINIBlock'          
-    print dContainer.AsINIBlock()
-            
     #
     # Test DataStore
     #
-
-    print '------------ Test DataStore'
+    from AccessGrid.Toolkit import Application
     
     class TestCallbackClass:
         def __init__(self):
@@ -2033,7 +1953,7 @@ if __name__ == "__main__":
             log.debug("GetData %s returning %s", filename, d)
             return d
 
-        def UpdateData(self, desc):
+        def UpdateData(self, desc, eventFlag):
             self.data[desc.GetName()] = desc
             log.debug("UpdateData: %s", desc)
 
@@ -2041,39 +1961,40 @@ if __name__ == "__main__":
             self.data[desc.GetName()] = desc
             log.debug("AddData: %s", desc)
 
-    class Handler:
-        def GetDownloadFilename(self, id_token, url_path):
-            log.debug("Get download: id='%s' path='%s'", id_token, url_path)
-            return r"c:\temp\junoSetup.exe"
+    host = "zuz.mcs.anl.gov"
+    port = 9999
+    dataTransferServer = HTTPTransferServer((host, port))
+    dataTransferServer.run()
 
-        def GetUploadFilename(self, id_token, file_info):
-            log.debug("Get upload filename for %s %s", id_token, file_info)
-            return os.path.join("c:\\", "temp", "uploads", file_info['name'])
+    callbackClass = TestCallbackClass()
+    dataStorePath = os.path.join(os.getcwd(), "DATA_STORE_TEST", "uniqueId")
+    dataStore = DataStore(callbackClass, dataStorePath,
+                               "uniqueId",
+                               dataTransferServer)
 
-        def CanUploadFile(self, id_token, file_info):
-            log.debug("CanUpload: id=%s file_info=%s", id_token, file_info)
-            return 1
+    print "\n\nDataStore running at host: %s port: %s"%(host, str(port))
+    print "Data directory is: ", dataStorePath
+    print dataStore.GetUploadDescriptor()
+   
+    #
+    # Test DataStore
+    #
+    
+    localFile = "FileToUpload"
+    my_identity = str(Application.instance().GetDefaultSubject())
+    uploadURL = dataStore.GetUploadDescriptor()
+    progressCB = None
+    
+    print '\n*** upload (you need this file in local directory) *** \n\n', localFile
 
-        def AddPendingUpload(self, id_token, filename):
-            log.debug("AddPendingUpload: %s %s", id_token, filename)
+    HTTPUploadFiles(my_identity, uploadURL, [localFile], progressCB)
+    dataDescList = dataStore.GetDataDescriptions()
 
-        def CompleteUpload(self, id_token, file_info):
-            log.debug("CompleteUpload %s %s", id_token, file_info)
+    print "\n*** data descriptions in data store *** \n\n", dataDescList
 
+    dataStore.RemoveFiles(dataDescList)
 
-    prefix = "test"
-    s.RegisterPrefix(prefix, Handler())
+    print '\n*** after remove files *** \n\n', dataStore.GetDataDescriptions()
 
-    log.debug("%s", s.GetDownloadDescriptor(prefix, "JunoSetup.exe"))
-    log.debug("%s", s.GetUploadDescriptor(prefix))
-
-    s.run()
-
-    try:
-        while 1:
-            time.sleep(.1)
-
-    except:
-        os._exit(0)
-
-
+    dataStore.Shutdown()
+    dataTransferServer.stop()
