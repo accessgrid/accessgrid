@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.91 2005-06-08 20:11:46 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.92 2005-06-10 21:22:33 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.91 2005-06-08 20:11:46 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.92 2005-06-10 21:22:33 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -73,7 +73,7 @@ class VenueAddressBar(wxSashWindow):
 class VenueListPanel(wxSashWindow):
 class VenueList(wxScrolledWindow):
 class ContentListPanel(wxPanel):                   
-class TextClientPanel(wxPanel):
+class JabberClientPanel(wxPanel):
 class StatusBar(wxStatusBar):
 class ExitPanel(wxPanel):
 
@@ -2017,6 +2017,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         enterUISuccess = 1
 
         try:
+
+            #
+            # Reflect venue entry in the client
+            #
+            wxCallAfter(self.textClientPanel.OutputText, None,
+                        "-- Entered venue %s" % self.venueClient.GetVenueName())
+            wxCallAfter(self.textClientPanel.OutputText, "enter",
+                        self.venueClient.GetVenueDescription())
             
             wxCallAfter(self.statusbar.SetStatusText, "Entered venue %s successfully" 
                         %self.venueClient.GetVenueName())
@@ -2073,13 +2081,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             wxCallAfter(self.venueListPanel.AddConnections)
                 # log.debug("   %s" %(conn.name))
 
-            #
-            # Reflect venue entry in the client
-            #
-            wxCallAfter(self.textClientPanel.OutputText, None,
-                        "-- Entered venue %s" % self.venueClient.GetVenueName())
-            wxCallAfter(self.textClientPanel.OutputText, "enter",
-                        self.venueClient.GetVenueDescription())
+           
 
             wxCallAfter(self.SetVenueUrl, URL)
                                               
@@ -2124,6 +2126,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         wxCallAfter(self.venueAddressBar.SetTitle,
                     "You are not in a venue",
                     'Click "Go" to connect to the venue, which address is displayed in the address bar')
+
+        wxCallAfter(self.textClientPanel.Clear)
 
         # Disable menus
         wxCallAfter(self.__HideMenu)
@@ -2277,13 +2281,14 @@ class VenueListPanel(wxSashWindow):
     def __init__(self, parent, id, app):
         wxSashWindow.__init__(self, parent, id)
         self.parent = parent
+        self.exitsText = wxButton(self, -1, "Exits") 
+        self.imageList = wxImageList(32,32)
         self.list = NavigationPanel(self, app)
         self.minimizeButton = wxButton(self, self.ID_MINIMIZE, "<<", size = wxSize(40,-1),
                                        style = wxBU_EXACTFIT )
         self.maximizeButton = wxButton(self, self.ID_MAXIMIZE, ">>", size = wxSize(40,-1),
                                        style = wxBU_EXACTFIT )
-        self.exitsText = wxButton(self, -1, "Exits") 
-        self.imageList = wxImageList(32,32)
+        
                 
         self.__Layout()
         self.__AddEvents()
@@ -2367,6 +2372,7 @@ class NavigationPanel(wxPanel):
         EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
 
         self.root = self.tree.AddRoot("")
+        self.AddConnections()
         self.__Layout()
 
     def OnDoubleClick(self, event):
@@ -2378,7 +2384,7 @@ class NavigationPanel(wxPanel):
         treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
 
         # Check to see if the click was made on the tree item text.
-        if not treeId.IsOk() and flag & wxTREE_HITTEST_ONITEMLABEL:
+        if not treeId.IsOk() or not flag & wxTREE_HITTEST_ONITEMLABEL:
             return
 
         wxBeginBusyCursor()
@@ -2411,12 +2417,14 @@ class NavigationPanel(wxPanel):
         if not exits:
             exits = []
 
+        self.tree.DeleteChildren(treeId)
+
         for exit in exits:
             newItemId = self.tree.AppendItem(treeId, exit.name)
             self.tree.SetItemData(newItemId, wxTreeItemData(exit))
-
-        self.tree.Expand(treeId)
-                        
+                       
+        event.Skip()
+                               
     def AddVenueDoor(self, venue):
         '''
         Add a new entry in the list of venues.
@@ -2427,7 +2435,7 @@ class NavigationPanel(wxPanel):
         tempItem = self.tree.AppendItem(newItem, "temp node")
         self.tree.SetItemBold(newItem)
         self.tree.SetItemData(newItem, wxTreeItemData(venue)) 
-
+        
     def UpdateView(self):
         '''
         Remove all tree entries and update view with new data.
@@ -2449,14 +2457,18 @@ class NavigationPanel(wxPanel):
                 cd = VenueDescription(name = venue, uri = myVenues[venue])
                 venues.append(cd)
 
+            self.parent.exitsText.SetLabel("My Venues")
+
         # Show all venues on this server
         elif dm == Preferences.ALL_VENUES:
             venues = self.app.controller.GetVenuesFromServer(self.app.venueClient.GetVenueServer())
+            self.parent.exitsText.SetLabel("All Venues")
 
         # Show connections to this venue
         elif dm == Preferences.EXITS:
             venues = self.app.controller.GetVenueConnections(self.app.venueClient.GetVenue())
-                            
+            self.parent.exitsText.SetLabel("Exits")
+
         if venues:
             for venue in venues:
                 self.AddVenueDoor(venue)
@@ -3398,229 +3410,7 @@ class ContentListPanel(wxPanel):
 
 #########################################################################
 #
-# Text Client Panel
-
-class TextClientPanel(wxPanel):
-    
-    ID_BUTTON = wxNewId()
-
-    def __init__(self, parent, id, textOutputCtrl, app):
-        wxPanel.__init__(self, parent, id)
-
-        self.parent = parent
-        self.textOutput = textOutputCtrl
-        self.app = app
-        
-        self.display = wxButton(self, self.ID_BUTTON, "Display",
-                                style = wxBU_EXACTFIT)
-        self.textInputId = wxNewId()
-        self.textInput = wxTextCtrl(self, self.textInputId, "",
-                                    size = wxSize(-1, 25),
-                                    style= wxTE_MULTILINE)
-
-
-        self.__SetProperties()
-        self.__Layout()
-
-        EVT_TEXT_URL(self.textOutput, self.textOutput.GetId(), self.OnUrl)
-        EVT_CHAR(self.textOutput, self.ChangeTextWindow)
-        EVT_CHAR(self.textInput, self.TestEnter) 
-        EVT_BUTTON(self, self.ID_BUTTON, self.LocalInput)
-        EVT_SIZE(self, self.__OnSize)
-      
-        self.Show(true)
-
-    def __OnSize(self,event):
-        self.__Layout()
-
-    def __SetProperties(self):
-        '''
-        Sets UI properties.
-        '''
-        pass
-        
-    def __Layout(self):
-        '''
-        Handles UI layout.
-        '''
-        box = wxBoxSizer(wxHORIZONTAL)
-        box.Add(self.textInput, 1, wxALIGN_CENTER | wxEXPAND | wxLEFT, 2)
-        box.Add(self.display, 0, wxALIGN_CENTER |wxALL, 2)
-        
-        self.SetSizer(box)
-                
-        self.Layout()
-
-    def __OutputText(self, name, message):
-        '''
-        Prints received text in the text chat.
-        **Arguments**
-        *name* Statement to put in front of message (for example; "You say,").
-        *message* The actual message.
-        '''
-        
-        # Event message
-        if name == None:
-            # Add time to event message
-            dateAndTime = strftime("%a, %d %b %Y, %H:%M:%S", localtime() )
-            message = message + " ("+dateAndTime+")" 
-
-            # Events are coloured blue
-            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLUE))
-            self.textOutput.AppendText(message+'\n')
-            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
-
-        elif name == "enter":
-            # Descriptions are coloured black
-            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
-            self.textOutput.AppendText(message+'\n')
-        # Someone is writing a message
-        else:
-            # Set names bold
-            pointSize = wxNORMAL_FONT.GetPointSize()
-
-            # Fix for osx
-            if IsOSX():
-                pointSize = 12
-                
-            f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD)
-            textAttr = wxTextAttr(wxBLACK)
-            textAttr.SetFont(f)
-            self.textOutput.SetDefaultStyle(textAttr)
-            self.textOutput.AppendText(name)
-          
-            # Set text normal
-            f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxNORMAL)
-            textAttr = wxTextAttr(wxBLACK)
-            textAttr.SetFont(f)
-            self.textOutput.SetDefaultStyle(textAttr)
-            self.textOutput.AppendText('\"' + message+'\"\n')
-            
-        if IsWindows():
-            # Scrolling is not correct on windows when I use
-            # wxTE_RICH flag in text output window.
-           
-            self.SetRightScroll()
-
-    def OutputText(self, name, message):
-        '''
-        Print received text in text chat.
-        
-        **Arguments**
-        *name* Statement to put in front of message (for example; "You say,").
-        *message* The actual message.
-        '''
-        
-        wxCallAfter(self.__OutputText, name, message)
-        
-    def LocalInput(self, event):
-        '''
-        User input
-        '''
-        log.debug("TextClientPanel.LocalInput: User writes: %s"
-                  % self.textInput.GetValue())
-
-        try:
-            text = self.textInput.GetValue()
-            self.app.SendTextCB(text)
-            self.textInput.Clear()
-            self.textInput.SetFocus()
-        except:
-            self.textInput.Clear()
-            text = "Could not send text message successfully"
-            title = "Notification"
-            log.exception("TextClientPanel.LocalInput: %s" %text)
-            MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
-     
-    def OnCloseWindow(self):
-        '''
-        Perform necessary cleanup before shutting down the window.
-        '''
-        log.debug("TextClientPanel.LocalInput:: Destroy text client")
-        self.textClient.Stop()
-        self.Destroy()
-
-    def TestEnter(self, event):
-        '''
-        Check to see what keys are pressed down when enter button is pressed.
-        If cltl or shift are held down, ignore the event; the enter will then just
-        switch rows in the text input field instead of sending the event.
-        '''
-        key = event.GetKeyCode()
-        shiftKey = event.ShiftDown()
-        ctrlKey = event.ControlDown()
-
-        # If enter key is pressed, send message to
-        # text output field
-        if key == WXK_RETURN:
-            # If shift or ctrl key is pressed, ignore
-            # the event and switch line in the text input
-            # field.
-            if shiftKey or ctrlKey:
-                event.Skip()
-            else:
-                self.LocalInput(None)
-        else:
-            event.Skip()
-            return
-
-    def OnUrl(self, event):
-        '''
-        If a url is pressed in the text chat, this method is called to
-        bring up correct web site.
-        '''
-        # Ignore mouse over events.
-        if event.GetMouseEvent().GetButton() == wxMOUSE_BTN_NONE:
-            event.Skip()
-            return
-        
-        start = event.GetURLStart()
-        end = event.GetURLEnd()
-        url = self.textOutput.GetRange(start, end)
-        
-        self.app.OpenURL(url)
-      
-    def ChangeTextWindow(self, event):
-        '''
-        If user tries to print in text output field, this method
-        changes focus to text input field to make it clear for
-        users where to write messages.
-        '''
-        key = event.GetKeyCode()
-        ctrlKey = event.ControlDown()
-       
-        # If ctrl key is pressed, do not enter text
-        # automatically into the text output field.
-        if ctrlKey:
-            event.Skip()
-            return
-        
-        self.textInput.SetFocus()
-        if(44 < key < 255) and not ctrlKey:
-            self.textInput.AppendText(chr(key))
-
-    def SetRightScroll(self):
-        '''
-        Scrolls to right position in text output field 
-        '''
-        # Added due to wxPython bug. The wxTextCtrl doesn't
-        # scroll properly when the wxTE_AUTO_URL flag is set. 
-        #pos = self.textOutput.GetInsertionPoint()
-        #self.textOutput.ShowPosition(pos - 1)
-        self.textOutput.ScrollLines(-1)
-                                            
-    def ClearTextWidgets(self):
-        '''
-        Clears text widgets.
-        '''
-        self.textOutput.Clear()
-        self.textInput.Clear()
-
-    def GetText(self):
-        return self.textOutput.GetValue()
-
-
-################################################################################
+# Jabber Client Panel
 
 class JabberClientPanel(wxPanel):
     
@@ -3631,7 +3421,7 @@ class JabberClientPanel(wxPanel):
         wxPanel.__init__(self, parent, id)
 
         self.parent = parent
-        self.textOutput = textOutputCtrl
+        self.__textOutput = textOutputCtrl
         self.app = app
   
         self.display = wxButton(self, self.ID_BUTTON, "Display",
@@ -3644,8 +3434,8 @@ class JabberClientPanel(wxPanel):
         self.__SetProperties()
         self.__DoLayout()
 
-        EVT_TEXT_URL(self.textOutput, self.textOutput.GetId(), self.OnUrl)
-        EVT_CHAR(self.textOutput, self.ChangeTextWindow)
+        EVT_TEXT_URL(self.__textOutput, self.__textOutput.GetId(), self.OnUrl)
+        EVT_CHAR(self.__textOutput, self.ChangeTextWindow)
         EVT_CHAR(self.textInput, self.TestEnter) 
         EVT_BUTTON(self, self.ID_BUTTON, self.LocalInput)
       
@@ -3688,14 +3478,14 @@ class JabberClientPanel(wxPanel):
             message = message + " ("+dateAndTime+")" 
 
             # Events are coloured blue
-            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLUE))
-            self.textOutput.AppendText(message+'\n')
-            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
+            self.__textOutput.SetDefaultStyle(wxTextAttr(wxBLUE))
+            self.__textOutput.AppendText(message+'\n')
+            self.__textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
 
         elif name == "enter":
             # Descriptions are coloured black
-            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
-            self.textOutput.AppendText(message+'\n')
+            self.__textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
+            self.__textOutput.AppendText(message+'\n')
         # Someone is writing a message
         else:
             # Set names bold
@@ -3708,15 +3498,15 @@ class JabberClientPanel(wxPanel):
             f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD)
             textAttr = wxTextAttr(wxBLACK)
             textAttr.SetFont(f)
-            self.textOutput.SetDefaultStyle(textAttr)
-            self.textOutput.AppendText(name)
+            self.__textOutput.SetDefaultStyle(textAttr)
+            self.__textOutput.AppendText(name)
           
             # Set text normal
             f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxNORMAL)
             textAttr = wxTextAttr(wxBLACK)
             textAttr.SetFont(f)
-            self.textOutput.SetDefaultStyle(textAttr)
-            self.textOutput.AppendText('\"' + message+'\"\n')
+            self.__textOutput.SetDefaultStyle(textAttr)
+            self.__textOutput.AppendText('\"' + message+'\"\n')
 
         #if IsWindows():
             # Scrolling is not correct on windows when I use
@@ -3732,6 +3522,11 @@ class JabberClientPanel(wxPanel):
         *message* The actual message.
         '''
         wxCallAfter(self.__OutputText, name, message)
+
+    def Clear(self):
+        print "CLEAR"
+        self.__textOutput.AppendText("CLEAR")
+        self.__textOutput.Clear()
         
     def LocalInput(self, event):
         '''
@@ -3793,7 +3588,7 @@ class JabberClientPanel(wxPanel):
         '''
         start = event.GetURLStart()
         end = event.GetURLEnd()
-        url = self.textOutput.GetRange(start, end)
+        url = self.__textOutput.GetRange(start, end)
         
         self.app.OpenURL(url)
       
@@ -3824,17 +3619,17 @@ class JabberClientPanel(wxPanel):
         # scroll properly when the wxTE_AUTO_URL flag is set. 
         #pos = self.textOutput.GetInsertionPoint()
         #self.textOutput.ShowPosition(pos - 1)
-        self.textOutput.ScrollLines(-1)
+        self.__textOutput.ScrollLines(-1)
                                             
     def ClearTextWidgets(self):
         '''
         Clears text widgets.
         '''
-        self.textOutput.Clear()
+        self.__textOutput.Clear()
         self.textInput.Clear()
 
     def GetText(self):
-        return self.textOutput.GetValue()
+        return self.__textOutput.GetValue()
 
     def messageCB(self, msg):
         """Called when a message is recieved"""

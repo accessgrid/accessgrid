@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.43 2005-06-10 15:49:40 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.44 2005-06-10 21:22:33 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.43 2005-06-10 15:49:40 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.44 2005-06-10 21:22:33 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -613,11 +613,20 @@ class VenueClientController:
     
     def GetVenuesFromServer(self, serverUrl):
         ''' Return all venues on the server at serverUrl'''
-        sProxy = VenueServerIW(serverUrl)
+
+        if serverUrl:
+            sProxy = VenueServerIW(serverUrl)
+        else:
+            return []
+                
         return sProxy.GetVenues()
         
     def GetVenueConnections(self, venueUrl):
         ''' Return all connections for venue at venueUrl'''
+            
+        if not self.__venueClient.IsInVenue() or not venueUrl:
+            return []
+        
         return self.__venueClient.GetVenueConnections(venueUrl)
     
 

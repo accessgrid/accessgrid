@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.223 2005-06-08 15:54:15 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.224 2005-06-10 21:22:33 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.223 2005-06-08 15:54:15 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.224 2005-06-10 21:22:33 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -741,7 +741,7 @@ class VenueClient:
             #
             # Enter the venue
             #
-            self.venueUri = URL
+            self.venueUri = str(URL)
             self.__venueProxy = VenueIW(URL) #, tracefile=sys.stdout)
 
             log.debug("EnterVenue: Invoke venue enter")
@@ -836,12 +836,6 @@ class VenueClient:
                 
             self.eventClient.Start()
             self.eventClient.Send("connect", self.profile.connectionId)
-
-            # Create text client
-            try:
-                self.__StartJabber(textLocation)
-            except Exception,e:
-                print "exception starting jabber", e
             
             # Get personaldatastore information
             self.dataStoreUploadUrl = self.__venueProxy.GetUploadDescriptor()
@@ -863,6 +857,12 @@ class VenueClient:
                 # but still enter the venue
                 log.warn("EnterVenue: Error updating node service")
 
+            # Create text client
+            try:
+                self.__StartJabber(textLocation)
+            except Exception,e:
+                print "exception starting jabber", e
+
     def __StartJabber(self, textLocation):
         jabberHost = textLocation[0]
         jabberPort = textLocation[1]
@@ -871,24 +871,25 @@ class VenueClient:
             # Create jabber chat client if necessary
             self.jabber.Connect(jabberHost, jabberPort) 
         
-        self.jabberHost = jabberHost
-                
-        jabberId = str(self.profile.connectionId)
-        jabberPwd = str(self.profile.connectionId)
-            
-        # Set the user information
-        self.jabber.SetUserInfo(self.profile.name,
-                                jabberId, jabberPwd, 'AG')
-        
-        ## Register the user in the jabber server
-        self.jabber.Register()
-        self.jabber.Login()
+            self.jabberHost = jabberHost
 
+            jabberId = str(self.profile.connectionId)
+            jabberPwd = str(self.profile.connectionId)
+            
+            # Set the user information
+            self.jabber.SetUserInfo(self.profile.name,
+                                    jabberId, jabberPwd, 'AG')
+        
+             ## Register the user in the jabber server
+            self.jabber.Register()
+            self.jabber.Login()
+            
         # Create the jabber text client
         currentRoom = self.venueState.name.replace(" ", "-")
         currentRoom = currentRoom.lower()
         self.jabber.SetChatRoom(currentRoom)
         self.jabber.SendPresence('available')
+
                                         
     def EnterVenue(self, URL):
         """
@@ -988,7 +989,7 @@ class VenueClient:
 
         try:
             self.jabber.SendPresence('unavailable')
-            self.jabber.SetChatRoom("")
+            #self.jabber.SetChatRoom("")
         except:
             log.exception("ExitVenue: Exit jabber failed")
         
@@ -1163,7 +1164,6 @@ class VenueClient:
             return self.__venueProxy.GetConnections()
            
         elif displayMode == Preferences.MY_VENUES:
-            print "Get my venues"
             return ["my venues"]
         elif displayMode == Preferences.EXITS:
             return ["exits"]
@@ -1171,7 +1171,6 @@ class VenueClient:
     def GetVenueConnections(self, venueUrl):
         venueProxy = VenueIW(venueUrl)
         venues =  venueProxy.GetConnections()
-        print 'get connections from the venue'
         return venues
 
     def UpdateClientProfile(self,profile):
@@ -1288,8 +1287,12 @@ class VenueClient:
         Get venue server gets the server the client
         is currently connected to.
         """
-        hostPort = self.venueUri.split('/')[2]
-        serverUri = "https://"+hostPort+"/VenueServer"
+        serverUri = None
+        
+        if self.venueUri:
+            hostPort = self.venueUri.split('/')[2]
+            serverUri = "https://"+hostPort+"/VenueServer"
+
         return serverUri
         
     def GetVenueName(self):
