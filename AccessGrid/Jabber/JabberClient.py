@@ -69,7 +69,8 @@ class JabberClient:
     def SendPresence(self, type='available'):
         log.debug("Sending the presence to '%s' of type '%s'..." % (self.to, type))
         req = stanza.Presence()
-        if type == 'available': 
+
+        if type == 'available' or type == 'unavailable': 
             req.to_ = self.to
             req.type_ = type
             req.x_ = (stanza.External(),)
@@ -80,7 +81,7 @@ class JabberClient:
     def MessageCB(self, msg_stanza):
         message = msg_stanza.body_
         sender  = msg_stanza.from_ 
-   
+
         if not message == '':
             if self.roomLocked:
                 if string.find(message,'This room is locked') > -1:
