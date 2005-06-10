@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.92 2005-06-10 21:22:33 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.93 2005-06-10 21:50:39 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.92 2005-06-10 21:22:33 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.93 2005-06-10 21:50:39 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2354,12 +2354,16 @@ class VenueListPanel(wxSashWindow):
         self.list.AddVenueDoor(connectionDescription)
 
     def AddConnections(self):
-        self.list.AddConnections()
+        self.list.UpdateView()
         
     def RemoveVenueDoor(self,connectionDescription):
         self.list.RemoveVenueDoor(connectionDescription)
 
 class NavigationPanel(wxPanel):
+    ID_EXITS = 0
+    ID_MY_VENUES = 1
+    ID_ALL = 2
+    
     def __init__(self, parent, app):
         wxPanel.__init__(self, parent, -1, size=wxSize(175, 300))
         self.tree = wxTreeCtrl(self, wxNewId(), wxDefaultPosition, 
@@ -2368,13 +2372,43 @@ class NavigationPanel(wxPanel):
                                wxTR_SINGLE )
         self.app = app
         self.parent = parent
+
+        self.displayMenu = wxMenu()
+        self.displayMenu.Append(self.ID_EXITS,"Show Exits",
+                                "Show exits to this venue")
+        self.displayMenu.Append(self.ID_MY_VENUES,"Show My Venues",
+                                "Show all venues you have saved in the My Venues menu")
+        self.displayMenu.Append(self.ID_ALL,"Show All Venues",
+                                "Show all venues on this server")
+        
         EVT_LEFT_DCLICK(self.tree, self.OnDoubleClick)
         EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
-
+        EVT_RIGHT_DOWN(self.tree, self.OnRightDown)
+        EVT_MENU(self, self.ID_EXITS, self.OnExitsMenu)
+        EVT_MENU(self, self.ID_MY_VENUES, self.OnMyVenuesMenu)
+        EVT_MENU(self, self.ID_ALL, self.OnAllMenu)
+        
         self.root = self.tree.AddRoot("")
-        self.AddConnections()
+        self.UpdateView()
         self.__Layout()
 
+    def OnExitsMenu(self, event):
+        self.UpdateView(Preferences.EXITS)
+        
+    def OnMyVenuesMenu(self, event):
+        self.UpdateView(Preferences.MY_VENUES)
+        
+    def OnAllMenu(self, event):
+        self.UpdateView(Preferences.ALL_VENUES)
+
+    def OnRightDown(self, event):
+        self.x = event.GetX()
+        self.y = event.GetY()
+               
+        self.PopupMenu(self.displayMenu,
+                       wxPoint(self.x, self.y))
+        
+  
     def OnDoubleClick(self, event):
         '''
         Called when user double clicks the tree.
@@ -2412,7 +2446,9 @@ class NavigationPanel(wxPanel):
             self.tree.DeleteChildren(treeId)
 
         venue = self.tree.GetPyData(treeId)
-        exits = self.app.controller.GetVenueConnections(venue.uri)
+
+        if venue:
+            exits = self.app.controller.GetVenueConnections(venue.uri)
 
         if not exits:
             exits = []
@@ -2435,20 +2471,18 @@ class NavigationPanel(wxPanel):
         tempItem = self.tree.AppendItem(newItem, "temp node")
         self.tree.SetItemBold(newItem)
         self.tree.SetItemData(newItem, wxTreeItemData(venue)) 
-        
-    def UpdateView(self):
-        '''
-        Remove all tree entries and update view with new data.
-        '''
-        self.CleanUp()
-        self.AddConnections()
-
-    def AddConnections(self):
+      
+    def UpdateView(self, displayMode = None):
         '''
         Add entries to the list of venues depending on preferences. 
         '''
-        dm = self.app.venueClient.GetPreferences().GetPreference(Preferences.DISPLAY_MODE)
-
+        self.CleanUp()
+        
+        dm = displayMode
+        
+        if not dm:
+            dm = self.app.venueClient.GetPreferences().GetPreference(Preferences.DISPLAY_MODE)
+        
         # Show my venues
         if dm == Preferences.MY_VENUES:
             myVenues = self.app.controller.GetMyVenues()
