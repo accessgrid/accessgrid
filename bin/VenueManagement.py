@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.151 2005-06-09 22:07:54 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.152 2005-06-10 14:54:37 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.151 2005-06-09 22:07:54 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.152 2005-06-10 14:54:37 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -418,7 +418,7 @@ class VenueManagementClient(wxApp):
         self.frame.Close(true)
 
     def Checkpoint(self, event):
-        self.server.Checkpoint()
+        self.server.Checkpoint(0)
     
     def Shutdown(self, event):
         self.server.Shutdown(0)
@@ -500,7 +500,7 @@ class VenueManagementClient(wxApp):
                 self.address.addressText.Append(self.serverUrl)
 
             # fill in encryption
-            key = self.server.GetEncryptAllMedia()
+            key = int(self.server.GetEncryptAllMedia())
             log.debug("VenueManagementClient.ConnectToServer: Set server encryption key: %s" % key)
             dp.encryptionButton.SetValue(key)
             self.encrypt = key
@@ -910,19 +910,19 @@ class VenueListPanel(wxPanel):
                         self.defaultVenue = None
 
                 except Exception, e:
-                    if "faultstring" in dir(e) and e.faultstring == "NotAuthorized":
-                        text = "You and are not authorized to administrate \
-                                this server.\n"
-                        MessageDialog(None, text, "Authorization Error",
-                                      wxOK|wxICON_WARNING)
-                        log.info("VenueManagementClient.ConnectToServer: \
-                                  Not authorized to administrate the server.")
-                    else:
-                        log.exception("VenueListPanel.DeleteVenue: Could not \
-                                       delete venue %s" %venueToDelete.name)
-                        text = "The venue could not be deleted" + venueToDelete.name
-                        ErrorDialog(None, text, "Delete Venue Error",
-                                    logFile = VENUE_MANAGEMENT_LOG)
+                    #if "faultstring" in dir(e) and e.faultstring == "NotAuthorized":
+                    #    text = "You and are not authorized to administrate \
+                    #            this server.\n"
+                    #    MessageDialog(None, text, "Authorization Error",
+                    #                  wxOK|wxICON_WARNING)
+                    #    log.info("VenueManagementClient.ConnectToServer: \
+                    #              Not authorized to administrate the server.")
+                    #else:
+                    log.exception("VenueListPanel.DeleteVenue: Could not \
+                    delete venue %s" %venueToDelete.name)
+                    text = "The venue could not be deleted" + venueToDelete.name
+                    ErrorDialog(None, text, "Delete Venue Error",
+                                logFile = VENUE_MANAGEMENT_LOG)
                 except:
                     log.exception("VenueListPanel.DeleteVenue: Could \
                                    not delete venue %s" %venueToDelete.name)
@@ -1149,16 +1149,16 @@ class DetailPanel(wxPanel):
             log.debug("DetailPanel.ClickedOnEncrypt: Set encryption")
             self.application.SetEncryption(event.Checked())
         except Exception, e:
-             if e.faultstring == "NotAuthorized":
-                 self.encryptionButton.SetValue(not event.Checked())
-                 text = "You are not an administrator on this server and are not authorized to change the media encryption flag.\n"
-                 MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
-                 log.info("DetailPanel.ClickedOnEncrypt: Not authorized to change server's media encryption flag.")
-             else:
-                 self.encryptionButton.SetValue(not event.Checked())
-                 log.exception("DetailPanel.ClickedOnEncrypt: Set encryption failed")
-                 text = "The encryption option could not be set"
-                 ErrorDialog(None, text, "Set Encryption Error", logFile = VENUE_MANAGEMENT_LOG)
+             #if e.faultstring == "NotAuthorized":
+             #    self.encryptionButton.SetValue(not event.Checked())
+             #    text = "You are not an administrator on this server and are not authorized to change the media encryption flag.\n"
+             #    MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+             #    log.info("DetailPanel.ClickedOnEncrypt: Not authorized to change server's media encryption flag.")
+             #else:
+             self.encryptionButton.SetValue(not event.Checked())
+             log.exception("DetailPanel.ClickedOnEncrypt: Set encryption failed")
+             text = "The encryption option could not be set"
+             ErrorDialog(None, text, "Set Encryption Error", logFile = VENUE_MANAGEMENT_LOG)
         except:
             self.encryptionButton.SetValue(not event.Checked())
             log.exception("DetailPanel.ClickedOnEncrypt: Set encryption failed")
@@ -1210,14 +1210,14 @@ class DetailPanel(wxPanel):
             self.ipAddress.Enable(false)
             self.changeButton.Enable(false)
             self.randomButton.SetValue(true)
-            if e.faultstring == "NotAuthorized":
-                text = "You are not an administrator on this server and are not authorized to set multicast addressing to interval.\n"
-                MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
-                log.info("DetailPanel.ClickedOnInterval: Not authorized to set server's multicast address to interval.")
-            else:
-                log.exception("DetailPanel.ClickedOnInterval: Set multicast address to interval failed")
-                text = "The multicast option could not be set."
-                ErrorDialog(None, text, "Set Multicast Error", logFile = VENUE_MANAGEMENT_LOG)
+            #if e.faultstring == "NotAuthorized":
+            #    text = "You are not an administrator on this server and are not authorized to set multicast addressing to interval.\n"
+            #    MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+            #    log.info("DetailPanel.ClickedOnInterval: Not authorized to set server's multicast address to interval.")
+            #else:
+            log.exception("DetailPanel.ClickedOnInterval: Set multicast address to interval failed")
+            text = "The multicast option could not be set."
+            ErrorDialog(None, text, "Set Multicast Error", logFile = VENUE_MANAGEMENT_LOG)
 
         except:
             log.exception('DetailPanel.ClickedOnInterval: failed')
@@ -1242,14 +1242,14 @@ class DetailPanel(wxPanel):
 
         except Exception, e:
             self.ipAddress.SetLabel(oldIpAddress)
-            if e.faultstring == "NotAuthorized":
-                text = "You are not an administrator on this server and are not authorized to set the multicast address.\n"
-                MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
-                log.info("DetailPanel.SetAddress: Not authorized to set server's multicast address.")
-            else:
-                log.exception("DetailPanel.SetAddress: Set ip and mask failed")
-                text = "The multicast option could not be set."
-                ErrorDialog(None, text, "Set Multicast Error", logFile = VENUE_MANAGEMENT_LOG)
+            #if e.faultstring == "NotAuthorized":
+            #    text = "You are not an administrator on this server and are not authorized to set the multicast address.\n"
+            #    MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+            #    log.info("DetailPanel.SetAddress: Not authorized to set server's multicast address.")
+            #else:
+            log.exception("DetailPanel.SetAddress: Set ip and mask failed")
+            text = "The multicast option could not be set."
+            ErrorDialog(None, text, "Set Multicast Error", logFile = VENUE_MANAGEMENT_LOG)
 
         except:
             self.ipAddress.SetLabel(oldIpAddress)
@@ -2106,15 +2106,15 @@ class AddVenueFrame(VenueParamFrame):
                 log.debug("AddVenueFrame.OnOk: Add venue.")
                 self.parent.AddVenue(self.venue)
             except Exception, e:
-                if e.faultstring == "NotAuthorized":
-                    text = "You are not a server administrator and are not authorized to add venues to this server.\n"
-                    MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
-                    log.info("AddVenueFrame.OnOK: Not authorized to add venue to server.")
-                else:
-                    log.exception("AddVenueFrame.OnOk: Could not add venue")
-                    text = "Could not add venue %s" %self.venue.name
-                    ErrorDialog(None, text, "Add Venue Error",
-                                logFile = VENUE_MANAGEMENT_LOG)
+                #if e.faultstring == "NotAuthorized":
+                #    text = "You are not a server administrator and are not authorized to add venues to this server.\n"
+                #    MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+                #    log.info("AddVenueFrame.OnOK: Not authorized to add venue to server.")
+                #else:
+                log.exception("AddVenueFrame.OnOk: Could not add venue")
+                text = "Could not add venue %s" %self.venue.name
+                ErrorDialog(None, text, "Add Venue Error",
+                            logFile = VENUE_MANAGEMENT_LOG)
             except:
                 log.exception("AddVenueFrame.OnOk: Could not add venue")
                 text = "Could not add venue %s" %self.venue.name
