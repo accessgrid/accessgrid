@@ -16,12 +16,13 @@
               xmlns="http://www.w3.org/2001/XMLSchema">
 
           <xsd:element name="CheckpointRequest">
-            <xsd:complexType>
+           <xsd:complexType>
               <xsd:sequence>
                 <xsd:element minOccurs="0" maxOccurs="1" name="secondsFromNow" type="xsd:integer" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
+
           <xsd:element name="CheckpointResponse">
             <xsd:complexType>
               <xsd:sequence>
@@ -39,11 +40,6 @@
           </xsd:element>
 
           <xsd:element name="ShutdownResponse">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="result" type="xsd:boolean" />
-              </xsd:sequence>
-            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="RemoveVenueRequest">
@@ -208,6 +204,51 @@
           </xsd:element>
           <xsd:element name="SetDefaultVenueResponse">
           </xsd:element>
+
+	  <xsd:element name="SetBaseAddressRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="address" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetBaseAddressResponse">
+          </xsd:element> 
+
+	   <xsd:element name="SetAddressAllocationMethodRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="allocationMethod" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetAddressAllocationMethodResponse">
+          </xsd:element>
+
+	  <xsd:element name="SetAddressMaskRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="address" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetAddressMaskResponse">
+          </xsd:element> 
+
+          <xsd:element name="SetEncryptAllMediaRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="address" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetEncryptAllMediaResponse">
+          </xsd:element> 
+
       </schema>
     </types>
 
@@ -301,6 +342,31 @@
     <message name="SetDefaultVenueResponse">
 	<part name="parameters" element="agtkvs:SetDefaultVenueResponse"/>
     </message>
+    <message name="SetBaseAddressRequest">
+	<part name="parameters" element="agtkvs:SetBaseAddressRequest"/>
+    </message>
+    <message name="SetBaseAddressResponse">
+	<part name="parameters" element="agtkvs:SetBaseAddressResponse"/>
+    </message>
+    <message name="SetAddressMaskRequest">
+	<part name="parameters" element="agtkvs:SetAddressMaskRequest"/>
+    </message>
+    <message name="SetAddressMaskResponse">
+	<part name="parameters" element="agtkvs:SetAddressMaskResponse"/>
+    </message>
+    <message name="SetAddressAllocationMethodRequest">
+	<part name="parameters" element="agtkvs:SetAddressAllocationMethodRequest"/>
+    </message>
+    <message name="SetAddressAllocationMethodResponse">
+	<part name="parameters" element="agtkvs:SetAddressAllocationMethodResponse"/>
+    </message>
+    <message name="SetEncryptAllMediaRequest">
+	<part name="parameters" element="agtkvs:SetEncryptAllMediaRequest"/>
+    </message>
+    <message name="SetEncryptAllMediaResponse">
+	<part name="parameters" element="agtkvs:SetEncryptAllMediaResponse"/>
+    </message>
+
 
     <portType name="VenueServer">
 	<operation name="Checkpoint">
@@ -362,6 +428,22 @@
 	<operation name="SetDefaultVenue">
 	    <input message="agtkvs:SetDefaultVenueRequest"/>
 	    <output message="agtkvs:SetDefaultVenueResponse"/>
+	</operation>
+	<operation name="SetBaseAddress">
+	    <input message="agtkvs:SetBaseAddressRequest"/>
+	    <output message="agtkvs:SetBaseAddressResponse"/>
+	</operation>
+	<operation name="SetAddressMask">
+	    <input message="agtkvs:SetAddressMaskRequest"/>
+	    <output message="agtkvs:SetAddressMaskResponse"/>
+	</operation>
+	<operation name="SetAddressAllocationMethod">
+	    <input message="agtkvs:SetAddressAllocationMethodRequest"/>
+	    <output message="agtkvs:SetAddressAllocationMethodResponse"/>
+	</operation>
+	<operation name="SetEncryptAllMedia">
+	    <input message="agtkvs:SetEncryptAllMediaRequest"/>
+	    <output message="agtkvs:SetEncryptAllMediaResponse"/>
 	</operation>
     </portType>
 

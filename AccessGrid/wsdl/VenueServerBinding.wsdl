@@ -152,6 +152,42 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
+	<operation name="SetBaseAddress">
+	    <soap:operation soapAction="urn:#SetBaseAddress"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+        <operation name="SetAddressMask">
+	    <soap:operation soapAction="urn:#SetAddressMask"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+ 	<operation name="SetAddressAllocationMethod">
+	    <soap:operation soapAction="urn:#SetAddressAllocationMethod"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+	<operation name="SetEncryptAllMedia">
+	    <soap:operation soapAction="urn:#SetEncryptAllMedia"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
     </binding>
 
     <service name="VenueServer">
