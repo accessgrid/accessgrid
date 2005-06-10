@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.187 2005-06-10 14:52:50 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.188 2005-06-10 15:32:08 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.187 2005-06-10 14:52:50 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.188 2005-06-10 15:32:08 lefvert Exp $"
 
 
 # Standard stuff
@@ -590,14 +590,13 @@ class VenueServer(AuthorizationMixIn):
             log.info("Saving Performance Data.")
             self.perfFile.writerow(data)
 
-    def Shutdown(self, secondsFromNow):
+    def Shutdown(self, secondsFromNow = 0):
         """
         Shutdown shuts down the server.
         """
         #
         # Seconds from now is NOT working!
         #
-        
         log.info("Starting Shutdown!")
 
         # Shut file
@@ -606,19 +605,22 @@ class VenueServer(AuthorizationMixIn):
             
         # BEGIN Critical Section
         self.simpleLock.acquire()
-        
-        for v in self.venues.values():
-            v.Shutdown()
+             
+        try:
+            for v in self.venues.values():
+                v.Shutdown()
 
-        self.houseKeeper.StopAllTasks()
+            self.houseKeeper.StopAllTasks()
+        except:
+            log.exception("Exception shutting down venues", e)
 
         # END Critical Section
         self.simpleLock.release()
-
+                 
         log.info("Shutdown -> Checkpointing...")
         self.Checkpoint(0)
         log.info("                            done")
-
+        
         # BEGIN Critical Section
         self.simpleLock.acquire()
         
@@ -631,23 +633,30 @@ class VenueServer(AuthorizationMixIn):
             self.dataTransferServer.stop()
         except IOError, e:
             log.exception("Exception shutting down data service.", e)
+        except:
+            log.exception("Exception shutting down data service.")
 
         try:
             self.eventService.shutdown()
         except IOError, e:
             log.exception("Exception shutting down event client.", e)
+        except:
+            log.exception("Exception shutting down event client.")
+        
+        try:
+            self.hostingEnvironment.Stop()
+            del self.hostingEnvironment
+        except:
+            log.exception("Exception shutting down hosting environment")
 
-        self.hostingEnvironment.Stop()
-        del self.hostingEnvironment
-            
         log.info("                              done.")
 
         log.info("Shutdown Complete.")
-
+        
         # END Critical Section
         self.simpleLock.release()
-        
-    def Checkpoint(self, secondsFromNow):
+             
+    def Checkpoint(self, secondsFromNow = 0):
         """
         Checkpoint stores the current state of the running VenueServer to
         non-volatile storage. In the event of catastrophic failure, the
@@ -744,52 +753,59 @@ class VenueServer(AuthorizationMixIn):
         # BEGIN Critical Section
         self.simpleLock.acquire()
 
-        # Add the venue to the list of venues
-        oid = venue.GetId()
-        self.venues[oid] = venue
-
-        # Create an interface
-        vi = VenueI(impl=venue, auth_method_name="authorize")
-
-        if authPolicy is not None:
-            venue.ImportAuthorizationPolicy(authPolicy)
-        else:
-            # This is a new venue, not from persistence,
-             # so we have to create the policy
-            log.info("Creating new auth policy for the venue.")
+        try:
             
-            # Get method actions
-            if hosting.GetHostingImpl() == "SOAPpy":
-                venue.authManager.AddActions(vi._GetMethodActions())
-            venue.authManager.AddRoles(venue.GetRequiredRoles())
-            venue.authManager.AddRoles(venue.authManager.GetDefaultRoles())
-            venue._AddDefaultRolesToActions()
-
-            # Default to giving administrators access to all venue actions.
-            for action in venue.authManager.GetActions():
-                venue.authManager.AddRoleToAction(action.GetName(),
-                                               Role.Administrators.GetName())
-        
-        # This could be done by the server, and probably should be
-        subj = self.servicePtr.GetDefaultSubject()
-        
-        if subj is not None:
-           venue.authManager.AddSubjectToRole(subj.GetName(),
-                                              Role.Administrators.GetName())
-        
-#        print "Venue Policy:"
-#        print venue.authManager.xml.toprettyxml()
+            # Add the venue to the list of venues
+            oid = venue.GetId()
+            self.venues[oid] = venue
             
-        # Set parent auth mgr to server so administrators cascades?
-        venue.authManager.SetParent(self.authManager)
+            # Create an interface
+            vi = VenueI(impl=venue, auth_method_name="authorize")
+            
+            if authPolicy is not None:
+                venue.ImportAuthorizationPolicy(authPolicy)
+            else:
+                # This is a new venue, not from persistence,
+                # so we have to create the policy
+                log.info("Creating new auth policy for the venue.")
+            
+                # Get method actions
+                if hosting.GetHostingImpl() == "SOAPpy":
+                    venue.authManager.AddActions(vi._GetMethodActions())
+                venue.authManager.AddRoles(venue.GetRequiredRoles())
+                venue.authManager.AddRoles(venue.authManager.GetDefaultRoles())
+                venue._AddDefaultRolesToActions()
 
-        # We have to register this venue as a new service.
-        if(self.hostingEnvironment != None):
-            self.hostingEnvironment.RegisterObject(vi,
-                                                   path=PathFromURL(venue.uri))
-            if hosting.GetHostingImpl() == "SOAPpy":
-                self.hostingEnvironment.RegisterObject(AuthorizationManagerI(venue.authManager),
-                                                   path=PathFromURL(venue.uri)+"/Authorization")
+                # Default to giving administrators access to all venue actions.
+                for action in venue.authManager.GetActions():
+                    venue.authManager.AddRoleToAction(action.GetName(),
+                                                      Role.Administrators.GetName())
+        
+            # This could be done by the server, and probably should be
+            subj = self.servicePtr.GetDefaultSubject()
+        
+            if subj is not None:
+                venue.authManager.AddSubjectToRole(subj.GetName(),
+                                                       Role.Administrators.GetName())
+        
+            #        print "Venue Policy:"
+            #        print venue.authManager.xml.toprettyxml()
+            
+            # Set parent auth mgr to server so administrators cascades?
+            venue.authManager.SetParent(self.authManager)
+            
+            # We have to register this venue as a new service.
+            if(self.hostingEnvironment != None):
+                self.hostingEnvironment.RegisterObject(vi,
+                                                       path=PathFromURL(venue.uri))
+                if hosting.GetHostingImpl() == "SOAPpy":
+                    self.hostingEnvironment.RegisterObject(AuthorizationManagerI(venue.authManager),
+                                                           path=PathFromURL(venue.uri)+"/Authorization")
+
+        except:
+            self.simpleLock.release()
+            log.exception("AddVenue: Failed.")
+            raise VenueServerException("AddVenue Failed!")
 
         # END Critical Section
         self.simpleLock.release()
@@ -799,8 +815,6 @@ class VenueServer(AuthorizationMixIn):
             self.SetDefaultVenue(oid)
 
         venue.authManager.GetActions()
-
-        
         
         # return the URL to the new venue
         return venue.uri
@@ -813,28 +827,34 @@ class VenueServer(AuthorizationMixIn):
 
         # BEGIN Critical Section
         self.simpleLock.acquire()
-
-        venue.name = venueDesc.name
-        venue.description = venueDesc.description
-        venue.uri = venueDesc.uri
-        venue.SetEncryptMedia(venueDesc.encryptMedia,
-                              venueDesc.encryptionKey)
-
-        venue.SetConnections(venueDesc.connections)
-
-        current_streams = venue.GetStaticStreams()    
-        for sd in current_streams:
-            venue.RemoveStream(sd)
-
-      
-        for sd in venueDesc.streams:
-            sd.encryptionFlag = venue.encryptMedia
-            sd.encryptionKey = venue.encryptionKey
-            venue.AddStream(sd)
             
-      
-        self.venues[oid] = venue
+        try:
+            venue.name = venueDesc.name
+            venue.description = venueDesc.description
+            venue.uri = venueDesc.uri
+            venue.SetEncryptMedia(venueDesc.encryptMedia,
+                                  venueDesc.encryptionKey)
+            
+            venue.SetConnections(venueDesc.connections)
+            
+            current_streams = venue.GetStaticStreams()    
+            for sd in current_streams:
+                venue.RemoveStream(sd)
 
+      
+            for sd in venueDesc.streams:
+                sd.encryptionFlag = venue.encryptMedia
+                sd.encryptionKey = venue.encryptionKey
+                venue.AddStream(sd)
+                
+      
+            self.venues[oid] = venue
+        except:
+            # END Critical Section
+            self.simpleLock.release()
+            log.exception("ModifyVenue: Failed.")
+            raise VenueServerException("ModifyVenue Failed!")
+            
         # END Critical Section
         self.simpleLock.release()
         
@@ -872,11 +892,7 @@ class VenueServer(AuthorizationMixIn):
         except Exception, e:
             self.simpleLock.release()
             log.exception(e)
-           
-            # For now, comment out error. SOAPpy needs a fix.
-            #
-            #raise UnbindVenueError
-
+            raise UnbindVenueError
 
         except:
             self.simpleLock.release()
@@ -884,7 +900,7 @@ class VenueServer(AuthorizationMixIn):
             raise UnbindVenueError
 
         # Shutdown the venue
-        venue.Shutdown()
+        venue.Shutdown(0)
 
         # Clean it out of the venueserver
         del self.venues[oid]
@@ -950,24 +966,33 @@ class VenueServer(AuthorizationMixIn):
         # BEGIN Critical Section
         self.simpleLock.acquire()
 
-        # Unregister the previous default venue
-        ovi = self.hostingEnvironment.FindObjectForPath(defaultPath)
-        ovia = self.hostingEnvironment.FindObjectForPath(defaultAuthPath)
-        if ovi != None:
-            self.hostingEnvironment.UnregisterObject(ovi, path=defaultPath)
-        # handle authorization too
-        if ovia != None:
-            self.hostingEnvironment.UnregisterObject(ovia, path=defaultAuthPath)
-            
-        # Setup the new default venue
-        self.config["VenueServer.defaultVenue"] = oid
-        u,vi = self.hostingEnvironment.FindObject(self.venues[oid])
-        vaurl = self.MakeVenueURL(oid)+"/Authorization"
-        vai = self.hostingEnvironment.FindObjectForURL(vaurl)
-        self.hostingEnvironment.RegisterObject(vi, path=defaultPath)
-        if vai != None:
-            self.hostingEnvironment.RegisterObject(vai, path=defaultAuthPath)
+        try:
 
+            # Unregister the previous default venue
+            ovi = self.hostingEnvironment.FindObjectForPath(defaultPath)
+            ovia = self.hostingEnvironment.FindObjectForPath(defaultAuthPath)
+            if ovi != None:
+                self.hostingEnvironment.UnregisterObject(ovi, path=defaultPath)
+            # handle authorization too
+            if ovia != None:
+                self.hostingEnvironment.UnregisterObject(ovia, path=defaultAuthPath)
+            
+            # Setup the new default venue
+            self.config["VenueServer.defaultVenue"] = oid
+            u,vi = self.hostingEnvironment.FindObject(self.venues[oid])
+            vaurl = self.MakeVenueURL(oid)+"/Authorization"
+            vai = self.hostingEnvironment.FindObjectForURL(vaurl)
+            self.hostingEnvironment.RegisterObject(vi, path=defaultPath)
+            if vai != None:
+                self.hostingEnvironment.RegisterObject(vai, path=defaultAuthPath)
+
+        except:
+            # END Critical Section
+            self.simpleLock.release()
+            log.exception("SetDefaultVenue: Failed.")
+            raise VenueServerException("SetDefaultVenue Failed!")
+        
+            
         # END Critical Section
         self.simpleLock.release()
 
@@ -978,17 +1003,24 @@ class VenueServer(AuthorizationMixIn):
         # BEGIN Critical Section
         self.simpleLock.acquire()
 
-        self.dataStorageLocation = dataStorageLocation
-        self.config["VenueServer.dataStorageLocation"] = dataStorageLocation
+        try:
+            self.dataStorageLocation = dataStorageLocation
+            self.config["VenueServer.dataStorageLocation"] = dataStorageLocation
+            
+            # Check for and if necessary create the data store directory
+            if not os.path.exists(self.dataStorageLocation):
+                try:
+                    os.mkdir(self.dataStorageLocation)
+                except OSError:
+                    log.exception("Could not create VenueServer Data Store.")
+                    self.dataStorageLocation = None
 
-        # Check for and if necessary create the data store directory
-        if not os.path.exists(self.dataStorageLocation):
-            try:
-                os.mkdir(self.dataStorageLocation)
-            except OSError:
-                log.exception("Could not create VenueServer Data Store.")
-                self.dataStorageLocation = None
-
+        except:
+            # END Critical Section
+            self.simpleLock.release()
+            log.exception("SetStorageLocation: Failed.")
+            raise VenueServerException("SetStorageLocation Failed!")
+                     
         # END Critical Section
         self.simpleLock.release()
 
@@ -1005,9 +1037,16 @@ class VenueServer(AuthorizationMixIn):
         # BEGIN Critical Section
         self.simpleLock.acquire()
 
-        self.encryptAllMedia = int(value)
-        self.config["VenueServer.encryptAllMedia"] = self.encryptAllMedia
+        try:
+            self.encryptAllMedia = int(value)
+            self.config["VenueServer.encryptAllMedia"] = self.encryptAllMedia
 
+        except:
+            # END Critical Section
+            self.simpleLock.release()
+            log.exception("SetEncryptAllMedia: Failed.")
+            raise VenueServerException("SetEncryptAllMedia Failed!")
+                    
         # END Critical Section
         self.simpleLock.release()
 
@@ -1034,10 +1073,17 @@ class VenueServer(AuthorizationMixIn):
         # BEGIN Critical Section
         self.simpleLock.acquire()
 
-        self.addressAllocationMethod = str(addressAllocationMethod)
-        self.multicastAddressAllocator.SetAllocationMethod(
-            self.addressAllocationMethod)
-        self.config["VenueServer.addressAllocationMethod"] =  self.addressAllocationMethod
+        try:
+            self.addressAllocationMethod = str(addressAllocationMethod)
+            self.multicastAddressAllocator.SetAllocationMethod(
+                self.addressAllocationMethod)
+            self.config["VenueServer.addressAllocationMethod"] =  self.addressAllocationMethod
+
+        except:
+            # END Critical Section
+            self.simpleLock.release()
+            log.exception("SetAddressAllocationMethod: Failed.")
+            raise VenueServerException("SetAddressAllocationMethod Failed!")
 
         # END Critical Section
         self.simpleLock.release()
@@ -1056,11 +1102,18 @@ class VenueServer(AuthorizationMixIn):
         """
         # BEGIN Critical Section
         self.simpleLock.acquire()
-        self.baseAddress = str(address)
-        self.multicastAddressAllocator.SetBaseAddress( address )
-        self.config["VenueServer.baseAddress"] = address
 
-        # END Critical Section
+        try:
+            self.baseAddress = str(address)
+            self.multicastAddressAllocator.SetBaseAddress( address )
+            self.config["VenueServer.baseAddress"] = address
+        except:
+            # END Critical Section
+            self.simpleLock.release()
+            log.exception("SetBaseAddress: Failed.")
+            raise VenueServerException("SetAddressAllocationMethod Failed!")
+
+        # END CRITICAL SECTION
         self.simpleLock.release()
 
     def GetBaseAddress(self):
@@ -1077,9 +1130,16 @@ class VenueServer(AuthorizationMixIn):
         """
         # BEGIN Critical Section
         self.simpleLock.acquire()
-        self.addressMask = int(mask)
-        self.multicastAddressAllocator.SetAddressMask( self.addressMask )
-        self.config["VenueServer.addressMask"] = self.addressMask
+        try:
+            self.addressMask = int(mask)
+            self.multicastAddressAllocator.SetAddressMask( self.addressMask )
+            self.config["VenueServer.addressMask"] = self.addressMask
+        except:
+            # END Critical Section
+            self.simpleLock.release()
+            log.exception("SetAddressMask: Failed.")
+            raise VenueServerException("SetAddressMask Failed!")
+                        
         # END Critical Section
         self.simpleLock.release()
 
