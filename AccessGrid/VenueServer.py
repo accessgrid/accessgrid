@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.188 2005-06-10 15:32:08 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.189 2005-06-10 15:49:40 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.188 2005-06-10 15:32:08 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.189 2005-06-10 15:49:40 lefvert Exp $"
 
 
 # Standard stuff
@@ -612,7 +612,7 @@ class VenueServer(AuthorizationMixIn):
 
             self.houseKeeper.StopAllTasks()
         except:
-            log.exception("Exception shutting down venues", e)
+            log.exception("Exception shutting down venues")
 
         # END Critical Section
         self.simpleLock.release()
@@ -900,7 +900,7 @@ class VenueServer(AuthorizationMixIn):
             raise UnbindVenueError
 
         # Shutdown the venue
-        venue.Shutdown(0)
+        venue.Shutdown()
 
         # Clean it out of the venueserver
         del self.venues[oid]
@@ -908,7 +908,7 @@ class VenueServer(AuthorizationMixIn):
         # Checkpoint so we don't save it again
         self.Checkpoint(0)
 
-    def GetVenues(self):
+    def GetVenueDescriptions(self):
         """
         GetVenues returns a list of Venues Descriptions for the venues
         hosted by this VenueServer.
@@ -930,10 +930,10 @@ class VenueServer(AuthorizationMixIn):
                        self.venues.values())
             return vdl
         except:
-            log.exception("GetVenues: GetVenues failed!")
-            raise VenueServerException("GetVenues Failed!")
+            log.exception("GetVenues: GetVenueDescriptions failed!")
+            raise VenueServerException("GetVenueDescriptions Failed!")
 
-    def GetVenuesAsConnectionDescriptions(self):
+    def GetVenues(self):
         cdl = []
                
         try:
@@ -943,8 +943,8 @@ class VenueServer(AuthorizationMixIn):
                                                           venue.uniqueId), self.venues.values())
             return cdl
         except:
-            log.exception("GetVenuesAsConnectionDescriptions: Failed!")
-            raise VenueServerException("GetVenuesAsConnectionDescriptions Failed!")
+            log.exception("GetVenues: Failed!")
+            raise VenueServerException("GetVenues Failed!")
         
     def GetDefaultVenue(self):
         """

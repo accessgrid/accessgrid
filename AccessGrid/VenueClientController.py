@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.42 2005-06-08 15:54:15 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.43 2005-06-10 15:49:40 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.42 2005-06-08 15:54:15 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.43 2005-06-10 15:49:40 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -32,6 +32,7 @@ from AccessGrid.Platform import IsWindows, Config
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.VenueClient import NetworkLocationNotFound
 from AccessGrid import Events
+from AccessGrid.interfaces.VenueServer_client import VenueServerIW
 
 log = Log.GetLogger(Log.VenueClientController)
 
@@ -612,18 +613,12 @@ class VenueClientController:
     
     def GetVenuesFromServer(self, serverUrl):
         ''' Return all venues on the server at serverUrl'''
-
-        #
-        # DOES NOT WORK YET!
-        #
-        
         sProxy = VenueServerIW(serverUrl)
         return sProxy.GetVenues()
         
     def GetVenueConnections(self, venueUrl):
         ''' Return all connections for venue at venueUrl'''
         return self.__venueClient.GetVenueConnections(venueUrl)
-
     
 
     # end Core UI Callbacks

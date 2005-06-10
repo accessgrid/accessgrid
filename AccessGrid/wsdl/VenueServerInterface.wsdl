@@ -83,10 +83,10 @@
           <xsd:element name="ModifyVenueResponse">
           </xsd:element>
 
-          <xsd:element name="GetVenuesRequest">
+          <xsd:element name="GetVenueDescriptionsRequest">
           </xsd:element>
 
-          <xsd:element name="GetVenuesResponse">
+          <xsd:element name="GetVenueDescriptionsResponse">
             <xsd:complexType>
               <xsd:sequence>
                 <xsd:element minOccurs="0" maxOccurs="unbounded" name="venueDescriptionList" type="agtk:VenueDescription" />
@@ -150,10 +150,10 @@
             </xsd:complexType>
           </xsd:element>
 
-	  <xsd:element name="GetVenuesAsConnectionDescriptionsRequest">
+	  <xsd:element name="GetVenuesRequest">
           </xsd:element>
 
-          <xsd:element name="GetVenuesAsConnectionDescriptionsResponse">
+          <xsd:element name="GetVenuesResponse">
             <xsd:complexType>
               <xsd:sequence>
                 <xsd:element minOccurs="0" maxOccurs="unbounded" name="connectionDescriptionList" type="agtk:ConnectionDescription" />
@@ -282,11 +282,11 @@
     <message name="ModifyVenueResponse">
 	<part name="parameters" element="agtkvs:ModifyVenueResponse"/>
     </message>
-    <message name="GetVenuesRequest">
-	<part name="parameters" element="agtkvs:GetVenuesRequest"/>
+    <message name="GetVenueDescriptionsRequest">
+	<part name="parameters" element="agtkvs:GetVenueDescriptionsRequest"/>
     </message>
-    <message name="GetVenuesResponse">
-	<part name="parameters" element="agtkvs:GetVenuesResponse"/>
+    <message name="GetVenueDescriptionsResponse">
+	<part name="parameters" element="agtkvs:GetVenueDescriptionsResponse"/>
     </message>
     <message name="GetDefaultVenueRequest">
 	<part name="parameters" element="agtkvs:GetDefaultVenueRequest"/>
@@ -318,11 +318,11 @@
     <message name="GetAddressAllocationMethodResponse">
 	<part name="parameters" element="agtkvs:GetAddressAllocationMethodResponse"/>
     </message>
-    <message name="GetVenuesAsConnectionDescriptionsRequest">
-	<part name="parameters" element="agtkvs:GetVenuesAsConnectionDescriptionsRequest"/>
+    <message name="GetVenuesRequest">
+	<part name="parameters" element="agtkvs:GetVenuesRequest"/>
     </message>
-    <message name="GetVenuesAsConnectionDescriptionsResponse">
-	<part name="parameters" element="agtkvs:GetVenuesAsConnectionDescriptionsResponse"/>
+    <message name="GetVenuesResponse">
+	<part name="parameters" element="agtkvs:GetVenuesResponse"/>
     </message>
     <message name="GetPropertyRequest">
 	<part name="parameters" element="agtkvs:GetPropertyRequest"/>
@@ -377,9 +377,9 @@
 	    <input message="agtkvs:ShutdownRequest"/>
 	    <output message="agtkvs:ShutdownResponse"/>
 	</operation>
-	<operation name="GetVenues">
-	    <input message="agtkvs:GetVenuesRequest"/>
-	    <output message="agtkvs:GetVenuesResponse"/>
+	<operation name="GetVenueDescriptions">
+	    <input message="agtkvs:GetVenueDescriptionsRequest"/>
+	    <output message="agtkvs:GetVenueDescriptionsResponse"/>
 	</operation>
 	<operation name="GetDefaultVenue">
 	    <input message="agtkvs:GetDefaultVenueRequest"/>
@@ -401,9 +401,9 @@
 	    <input message="agtkvs:GetAddressAllocationMethodRequest"/>
 	    <output message="agtkvs:GetAddressAllocationMethodResponse"/>
 	</operation>
-	<operation name="GetVenuesAsConnectionDescriptions">
-	    <input message="agtkvs:GetVenuesAsConnectionDescriptionsRequest"/>
-	    <output message="agtkvs:GetVenuesAsConnectionDescriptionsResponse"/>
+	<operation name="GetVenues">
+	    <input message="agtkvs:GetVenuesRequest"/>
+	    <output message="agtkvs:GetVenuesResponse"/>
 	</operation>
 	<operation name="AddVenue">
 	    <input message="agtkvs:AddVenueRequest"/>
