@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.77 2005-06-10 18:31:06 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.78 2005-06-10 18:38:44 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.77 2005-06-10 18:31:06 lefvert Exp $"
+__revision__ = "$Id: DataStore.py,v 1.78 2005-06-10 18:38:44 lefvert Exp $"
 
 import os
 import time
@@ -1990,7 +1990,17 @@ if __name__ == "__main__":
     HTTPUploadFiles(my_identity, uploadURL, [localFile], progressCB)
     dataDescList = dataStore.GetDataDescriptions()
 
+    dataDescList = dataStore.GetDataDescriptions()
     print "\n*** data descriptions in data store *** \n\n", dataDescList
+
+    import time
+    time.sleep(2)
+    
+    my_identity = str(Application.instance().GetDefaultSubject())
+    localFile = "DownloadedFile"
+    data = dataDescList[0]
+    print '\n*** download file', dataDescList[0].name, 'to', localFile, ' *** \n\n'
+    HTTPDownloadFile(my_identity, data.uri, localFile, data.size, data.checksum)
 
     dataStore.RemoveFiles(dataDescList)
 
