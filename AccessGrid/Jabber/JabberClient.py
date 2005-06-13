@@ -41,9 +41,9 @@ class JabberClient:
         #email isn't passed in
         #self.email = email
 
-    def SetChatRoom(self, room):
+    def SetChatRoom(self, room, conferenceServer):
         self.currentRoom = string.lower(room)
-        self.currentRoomId = room + "@conference.phosphorus.mcs.anl.gov"
+        self.currentRoomId = room + '@' + conferenceServer
         self.to = self.currentRoomId + "/" + self.name
 
     def SetPanel(self, panel):
