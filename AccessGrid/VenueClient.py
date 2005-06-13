@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.224 2005-06-10 21:22:33 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.225 2005-06-13 16:14:03 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.224 2005-06-10 21:22:33 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.225 2005-06-13 16:14:03 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -861,6 +861,7 @@ class VenueClient:
             try:
                 self.__StartJabber(textLocation)
             except Exception,e:
+                log.exception("EnterVenue.__StartJabber failed")
                 print "exception starting jabber", e
 
     def __StartJabber(self, textLocation):
@@ -887,9 +888,16 @@ class VenueClient:
         # Create the jabber text client
         currentRoom = self.venueState.name.replace(" ", "-")
         currentRoom = currentRoom.lower()
-        self.jabber.SetChatRoom(currentRoom)
-        self.jabber.SendPresence('available')
 
+        # Create conference host
+        conferenceHost = "conference"
+        domain = jabberHost.split('.')[1:]
+       
+        for i in range(len(domain)):
+            conferenceHost = conferenceHost + '.' + domain[i]
+         
+        self.jabber.SetChatRoom(currentRoom, conferenceHost)
+        self.jabber.SendPresence('available')
                                         
     def EnterVenue(self, URL):
         """

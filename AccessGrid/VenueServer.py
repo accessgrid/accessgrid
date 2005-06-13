@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.189 2005-06-10 15:49:40 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.190 2005-06-13 16:14:03 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.189 2005-06-10 15:49:40 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.190 2005-06-13 16:14:03 lefvert Exp $"
 
 
 # Standard stuff
@@ -110,7 +110,7 @@ class VenueServer(AuthorizationMixIn):
     configDefaults = {
         "VenueServer.dataPort" : 8006,
         "VenueServer.eventPort" : 8002,
-        "VenueServer.textHost" : 'phosphorus.mcs.anl.gov',
+        "VenueServer.textHost" : 'localhost',
         "VenueServer.textPort" : 5223,
         "VenueServer.encryptAllMedia" : 1,
         "VenueServer.houseKeeperFrequency" : 300,
