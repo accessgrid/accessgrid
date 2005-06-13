@@ -2,14 +2,14 @@
 # Name:        MulticastWatcher.py
 # Purpose:     Class to watch a multicast address for traffic and report status
 # Created:     2005/06/06
-# RCS-ID:      $Id: MulticastWatcher.py,v 1.1 2005-06-06 21:30:27 turam Exp $
+# RCS-ID:      $Id: MulticastWatcher.py,v 1.2 2005-06-13 19:42:06 turam Exp $
 # Copyright:   (c) 2005
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: MulticastWatcher.py,v 1.1 2005-06-06 21:30:27 turam Exp $"
+__revision__ = "$Id: MulticastWatcher.py,v 1.2 2005-06-13 19:42:06 turam Exp $"
 
 import socket, threading, string, struct
 import time
@@ -120,12 +120,14 @@ if __name__ == '__main__':
         running.clear()
 
     def myStatusChangedCB(obj):
-        print "Status: ", obj.GetStatus()
+        print "Multicast Status: ", obj.GetStatus()
 
     signal.signal(signal.SIGINT, signalHandler)
 
     mw = MulticastWatcher(statusChangeCB=myStatusChangedCB)
     mw.Start()
+    
+    print "Multicast Status: ", mw.GetStatus()
 
     running = threading.Event()
     running.set()
