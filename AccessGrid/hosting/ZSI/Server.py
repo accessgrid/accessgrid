@@ -2,7 +2,7 @@
 # Name:        Server.py
 # Purpose:     
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.5 2005-06-01 13:28:29 turam Exp $
+# RCS-ID:      $Id: Server.py,v 1.6 2005-06-13 20:11:13 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,12 +11,13 @@ ZSI server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.5 2005-06-01 13:28:29 turam Exp $"
+__revision__ = "$Id: Server.py,v 1.6 2005-06-13 20:11:13 turam Exp $"
 
 # External imports
 import urlparse
 from threading import Thread, Event
-from ZSI.ServiceContainer import ServiceContainer
+
+from ServiceContainer import ThreadingServiceContainer, ThreadingSecureServiceContainer
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.Hosting)
@@ -242,17 +243,13 @@ class _Server:
                 path = urlparse.urlparse(URL)[2]
         return path
 
-import SocketServer
-class ThreadingServiceContainer(SocketServer.ThreadingMixIn,ServiceContainer):
-    def __init__(self, server_address, services=[]):
-        ServiceContainer.__init__(self, server_address)
         
 class SecureServer(_Server):
     """
     The SecureServer extends the ZSI server base class to use
     HTTPS for connections.
     """
-    def __init__(self, addr, debug = 0):
+    def __init__(self, addr, certfile,keyfile,caCertDir,debug = 0):
         """
         @param addr: the address the server should listen on
         @param debug: a debug flag to pass down internally
@@ -260,8 +257,12 @@ class SecureServer(_Server):
         @type addr: (host, port) tuple
         @type debug: 0, or 1
         """
+        
         # This is where you set things for debugging
-        _Server.__init__(self, addr, ServiceContainer(addr))
+        _Server.__init__(self, addr, ThreadingSecureServiceContainer(addr,
+                                            certfile,
+                                            keyfile,
+                                            caCertDir))
         
     def GetURLBase(self):
         """
@@ -285,7 +286,6 @@ class InsecureServer(_Server):
         @type debug: 0, or 1
         """
         # This is where you set things for debugging
-        #_Server.__init__(self, addr, ServiceContainer(addr))
         _Server.__init__(self, addr, ThreadingServiceContainer(addr))
 
     def GetURLBase(self):
