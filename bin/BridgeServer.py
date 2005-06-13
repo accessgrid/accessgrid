@@ -3,7 +3,7 @@
 # Name:        BridgeServer.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2003/08/02
-# RCS-ID:      $Id: BridgeServer.py,v 1.27 2004-09-07 20:36:25 turam Exp $
+# RCS-ID:      $Id: BridgeServer.py,v 1.28 2005-06-13 20:40:36 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -57,8 +57,8 @@ from AccessGrid import NetService
 from AccessGrid import Platform
 from AccessGrid import Toolkit
 from AccessGrid import Utilities
-from AccessGrid.Venue import VenueIW
-from AccessGrid.VenueServer import VenueServerIW
+from AccessGrid.interfaces.Venue_client import VenueIW
+from AccessGrid.interfaces.VenueServer_client import VenueServerIW
 from AccessGrid.Events import Event, ConnectEvent, HeartbeatEvent
 from AccessGrid.EventClient import EventClient, EventClientWriteDataException
 from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
