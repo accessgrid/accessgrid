@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.152 2005-06-10 14:54:37 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.153 2005-06-13 19:28:27 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.152 2005-06-10 14:54:37 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.153 2005-06-13 19:28:27 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -440,7 +440,7 @@ class VenueManagementClient(wxApp):
             log.debug("VenueManagementClient.ConnectToServer: Get venues from server")
             self.venueList = {}
             #self.server.GetProperty(["test"])
-            vl = self.server.GetVenuesAsConnectionDescriptions()
+            vl = self.server.GetVenues()
             for v in vl:
                 self.venueList[v.uri] = v
                 
@@ -710,17 +710,10 @@ class VenueProfilePanel(wxPanel):
                                       | wxNO_3D | wxTE_MULTILINE
                                       | wxTE_RICH2 | wxTE_READONLY)
         self.line1 = wxStaticLine(self, -1)
-        self.line2 = wxStaticLine(self, -1)
-        self.urlLabel = wxStaticText(self, -1, 'URL:', size = wxSize(50, -1),
-                                     name = "urlLabel", style = wxALIGN_RIGHT)
+        self.urlLabel = wxStaticText(self, -1, 'URL:  ',
+                                     name = "urlLabel", style = wxALIGN_LEFT|wxCENTER)
         self.url = wxTextCtrl(self, -1, '', name = 'url', style = wxALIGN_LEFT
                               | wxTE_READONLY)
-        self.exitsLabel = wxStaticText(self, -1, 'Exits:',
-                                       size = wxSize(50, -1),
-                                       name = "exitsLabel",
-                                       style = wxALIGN_RIGHT |wxLB_SORT)
-        self.exits = wxListBox(self, -1, size = wxSize(50, 100),
-                               style = wxTE_READONLY | wxLB_SORT)
         self.venueTitle = wxStaticText(self, -1, 'Profile', style = wxALIGN_LEFT)
         if IsOSX():
             self.venueTitle.SetFont(wxFont(12, wxNORMAL, wxNORMAL, wxBOLD))
@@ -742,11 +735,8 @@ class VenueProfilePanel(wxPanel):
         self.venueTitle.SetLabel('Profile')
         self.description.SetValue('')
         self.url.SetValue('')
-        self.exits.Clear()
-
+       
     def __hideFields(self):
-        self.exitsLabel.Hide()
-        self.exits.Hide()
         self.urlLabel.Hide()
         self.url.Hide()
 
@@ -763,34 +753,20 @@ class VenueProfilePanel(wxPanel):
             self.venueTitle.SetLabel(venue.name)
             self.url.SetValue(venue.uri)
 
-            # clear the exit list
-            self.exits.Clear()
-
-            #for e in venue.connections:
-            #    self.exits.Append(e.name, e)
-
-            self.exitsLabel.Show()
             self.url.Show()
             self.urlLabel.Show()
             self.description.SetValue(venue.description)
-            self.exits.Show()
 
     def __doLayout(self):
         urlBox=wxBoxSizer(wxHORIZONTAL)
-        urlBox.Add(self.urlLabel,0,wxEXPAND|wxRIGHT,5)
+        urlBox.Add(self.urlLabel,0,wxEXPAND|wxALIGN_LEFT|wxCENTER)
         urlBox.Add(self.url,1,wxEXPAND)
-        
-        exitBox=wxBoxSizer(wxHORIZONTAL)
-        exitBox.Add(self.exitsLabel,0,wxEXPAND|wxRIGHT,5)
-        exitBox.Add(self.exits,1,wxEXPAND)
-        
+               
         mainBox=wxBoxSizer(wxVERTICAL)
         mainBox.Add(self.venueTitle,0,wxEXPAND|wxALL,5)
         mainBox.Add(self.line1,0,wxEXPAND)
         mainBox.Add(self.description,1,wxEXPAND|wxALL,5)
-        mainBox.Add(self.line2,0,wxEXPAND)
         mainBox.Add(urlBox,0,wxEXPAND|wxALL,5)
-        mainBox.Add(exitBox,1,wxEXPAND|wxBOTTOM|wxLEFT|wxRIGHT,5)
 
         self.SetSizer(mainBox)
         self.Show(1)
@@ -1329,8 +1305,7 @@ class SecurityPanel(wxPanel):
         sizer2.Add(self.securityButton, 0, wxALL, 5)
 
         sizer.Add(sizer2, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 15)
-        #sizer.Add(self.securityButton,0,wxALIGN_RIGHT|wxLEFT|wxRIGHT|wxBOTTOM|wxCENTER, 5)
-        
+              
         self.SetSizer(sizer)
         sizer.Fit(self)
         sizer.Layout()
@@ -1502,10 +1477,11 @@ class VenueParamFrame(wxDialog):
                      
 class GeneralPanel(wxPanel):
     ID_TRANSFER = wxNewId()
-    ID_REMOVE_EXIT = wxNewId()
     ID_LOAD = wxNewId()
     ID_DEFAULT = wxNewId()
-    ID_EXIT_RENAME = wxNewId()
+    ID_EXIT_EDIT = wxNewId()
+    ID_EXIT_ADD = wxNewId()
+    ID_EXIT_REMOVE = wxNewId()
     
     def __init__(self, parent, id, app):
         wxPanel.__init__(self, parent, id)
@@ -1546,8 +1522,6 @@ class GeneralPanel(wxPanel):
                                   choices = [self.application.serverUrl],
                                   style = wxCB_DROPDOWN)
         self.goButton = wxButton(self, self.ID_LOAD, "Go")
-        self.removeExitButton = wxButton(self, self.ID_REMOVE_EXIT,
-                                         "     Remove Exit     ")
         self.exitsLabel = wxStaticText(self, -1, "Exits for your venue:")
         # This is the exits this venue has
         self.exits = wxListBox(self, -1, size = wxSize(250, 100),
@@ -1555,12 +1529,18 @@ class GeneralPanel(wxPanel):
 
         # Menu for exits:
         self.exitsMenu = wxMenu()
-        self.exitsMenu.Append(self.ID_EXIT_RENAME,"Change Title...",
-                             "Give this exit a new title.")
-
+        self.exitsMenu.Append(self.ID_EXIT_ADD,"Add Exit...",
+                              "Add an exit.")
+        self.exitsMenu.Append(self.ID_EXIT_EDIT,"Edit...",
+                              "Edit this exit.")
+        self.exitsMenu.Append(self.ID_EXIT_REMOVE,"Remove",
+                              "Remove this exit.")
+        
         self.SetValidator(GeneralPanelValidator())
         
-        EVT_MENU(self, self.ID_EXIT_RENAME, self.UpdateExit)
+        EVT_MENU(self, self.ID_EXIT_EDIT, self.UpdateExit)
+        EVT_MENU(self, self.ID_EXIT_ADD, self.ManuallyAddExit)
+        EVT_MENU(self, self.ID_EXIT_REMOVE, self.RemoveExit)
         EVT_RIGHT_DOWN(self.exits, self.OnRightClick)
         EVT_SIZE(self,self.__onSize)
         
@@ -1589,7 +1569,7 @@ class GeneralPanel(wxPanel):
             log.debug("VenueParamFrame.__LoadVenues: Load venues from: %s " % URL)
             server = VenueServerIW(URL)
             
-            vl = server.GetVenuesAsConnectionDescriptions()
+            vl = server.GetVenues()
             
             # Remove the current venue from the list of potential exits
             if self.application.currentVenue:
@@ -1614,15 +1594,11 @@ class GeneralPanel(wxPanel):
             MessageDialog(None, "Could not load exits from server at " + str(URL), "Load Exits Error", wxOK|wxICON_INFORMATION)
     
     def OnRightClick(self, event):
-        index = self.exits.GetSelection()
-        if index == -1:
-            return
         self.x = event.GetX() + self.exits.GetPosition().x
         self.y = event.GetY() + self.exits.GetPosition().y
         
         self.PopupMenu(self.exitsMenu, wxPoint(self.x, self.y))
-       
-                
+                       
     def AddExit(self, event):
         index = self.venues.GetSelection()
         if index != -1:
@@ -1644,23 +1620,45 @@ class GeneralPanel(wxPanel):
                 exitExistDialog.Destroy()
             else:
                 self.exits.Append(venue.name, venue)
-              
-
-    def UpdateExit(self, event):
+                                 
+    def ManuallyAddExit(self, event):
         index = self.exits.GetSelection()
-        oldName = self.exits.GetString(index)
-        name = None
-        
-        dlg = RenameExitDialog(self, -1, "Change Venue Title", oldName)
+              
+        dlg = RenameExitDialog(self, -1, "ADD EXIT", "Enter Name Here", "Enter URL Here")
         if (dlg.ShowModal() == wxID_OK ):
             name = dlg.GetName()
-        else:
-            return
-        
+            url = dlg.GetUrl()
+
+            connDesc = ConnectionDescription(name, "", uri = url)
+            index = self.exits.Append(name, connDesc)
+            self.exits.SetClientData(index, connDesc)
+                 
+    def UpdateExit(self, event):
+        index = self.exits.GetSelection()
+
         if index != -1:
+            oldName = self.exits.GetString(index)
+            oldUrl =  self.exits.GetClientData(index).uri
+
+            name = None
+            
+            dlg = RenameExitDialog(self, -1, "Edit Exit", oldName, oldUrl)
+            if (dlg.ShowModal() == wxID_OK ):
+                name = dlg.GetName()
+                url = dlg.GetUrl()
+            else:
+                return
+               
             self.exits.SetString(index, name)
             connDesc = self.exits.GetClientData(index)
             connDesc.SetName(name)
+            connDesc.SetURI(url)
+            self.exits.SetClientData(index, connDesc)
+            
+        else:
+            dlg = wxMessageDialog(self, "Select exit to edit", "Edit Exit",
+                                  style = wxICON_INFORMATION|wxOK)
+            dlg.ShowModal()
             
     def RemoveExit(self, event):
         index = self.exits.GetSelection()
@@ -1669,7 +1667,6 @@ class GeneralPanel(wxPanel):
     
     def __setEvents(self):
         EVT_BUTTON(self, self.ID_TRANSFER, self.AddExit)
-        EVT_BUTTON(self, self.ID_REMOVE_EXIT, self.RemoveExit)
         EVT_BUTTON(self, self.ID_LOAD, self.LoadRemoteVenues)
 
     def __doLayout(self):
@@ -1701,8 +1698,7 @@ class GeneralPanel(wxPanel):
         exitsSizer=wxBoxSizer(wxVERTICAL)
         exitsSizer.Add(self.exitsLabel,0,wxEXPAND|wxBOTTOM,5)
         exitsSizer.Add(self.exits,1,wxEXPAND|wxBOTTOM,5)
-        exitsSizer.Add(self.removeExitButton,0,wxEXPAND)
-        
+               
         bottomSubSizer=wxBoxSizer(wxHORIZONTAL)
         bottomSubSizer.Add(availSizer,1,wxEXPAND|wxRIGHT,5)
         bottomSubSizer.Add(addSizer,0,wxCENTER|wxRIGHT,5)
@@ -1715,7 +1711,6 @@ class GeneralPanel(wxPanel):
 
         mainSizer=wxBoxSizer(wxVERTICAL)
         mainSizer.Add(infoSizer,1,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,5)
-        #mainSizer.Add(self.line2,0,wxEXPAND)
         mainSizer.Add(bottomSizer,1,wxEXPAND|wxALL,5)
 
         self.SetSizer(mainSizer)
@@ -2250,14 +2245,16 @@ class ModifyVenueFrame(VenueParamFrame):
                                                               sl.ttl)
 
 class RenameExitDialog(wxDialog):
-    def __init__(self, parent, id, title, oldName):
+    def __init__(self, parent, id, title, oldName, oldUrl):
         wxDialog.__init__(self, parent, id, title)
-        self.text = wxStaticText(self, -1, "Please, enter a new title for the venue.", style=wxALIGN_LEFT)
+        #self.text = wxStaticText(self, -1, "Please, enter a new title for the venue.", style=wxALIGN_LEFT)
        
         self.line = wxStaticLine(self, -1)
 
         self.nameText = wxStaticText(self, -1, "Title:")
         self.nameBox =  wxTextCtrl(self, -1, oldName)
+        self.urlText = wxStaticText(self, -1, "Url:")
+        self.urlBox =  wxTextCtrl(self, -1, oldUrl)
         self.nameBox.SetSize(wxSize(200, 20))
 
         self.okButton = wxButton(self, wxID_OK, "Ok")
@@ -2267,15 +2264,18 @@ class RenameExitDialog(wxDialog):
     
     def GetName(self):
         return self.nameBox.GetValue()
+
+    def GetUrl(self):
+        return self.urlBox.GetValue()
         
     def Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add(self.text, 0, wxALL, 10)
-        sizer.Add(wxSize(2,2))
-
-        s2 =  wxBoxSizer(wxHORIZONTAL)
+        
+        s2 = wxFlexGridSizer(2, 2, 5, 5) 
         s2.Add(self.nameText, 0, wxCENTER | wxRIGHT, 5)
         s2.Add(self.nameBox, 0,  wxCENTER | wxLEFT, 5)
+        s2.Add(self.urlText, 0, wxCENTER | wxRIGHT, 5)
+        s2.Add(self.urlBox, 0,  wxCENTER | wxLEFT | wxEXPAND, 5)
         sizer.Add(s2, 0, wxEXPAND| wxALL, 10)
         sizer.Add(self.line, 0, wxALL | wxEXPAND, 10)
 
