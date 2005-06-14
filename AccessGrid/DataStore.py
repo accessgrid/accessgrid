@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.78 2005-06-10 18:38:44 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.79 2005-06-14 17:41:06 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.78 2005-06-10 18:38:44 lefvert Exp $"
+__revision__ = "$Id: DataStore.py,v 1.79 2005-06-14 17:41:06 lefvert Exp $"
 
 import os
 import time
@@ -331,7 +331,12 @@ class DataStore:
                 persistentData.append(data)
 
         self.cbLock.acquire()
-        self.dataDescContainer.LoadPersistentData(persistentData)
+
+        try:
+            self.dataDescContainer.LoadPersistentData(persistentData)
+        except:
+            log.exception("DataStore.LoadPersistentData: Failed")
+            
         self.cbLock.release()
         
     def AsINIBlock(self):
@@ -343,7 +348,12 @@ class DataStore:
             *string* The INI formatted list of DataDescriptions in the DataStore.
         '''
         self.cbLock.acquire()
-        block = self.dataDescContainer.AsINIBlock()
+
+        try:
+            block = self.dataDescContainer.AsINIBlock()
+        except:
+            log.exception("DataStore.AsINIBlock: Failed")
+
         self.cbLock.release()   
                 
         return block
@@ -356,7 +366,11 @@ class DataStore:
             *dataDescriptionList* A list of DataDescriptions representing data currently in the DataStore
         '''
         self.cbLock.acquire()
-        dataDescriptionList = self.dataDescContainer.GetDataDescriptions()
+        try:
+            dataDescriptionList = self.dataDescContainer.GetDataDescriptions()
+        except:
+            log.exception("DataStore.GetDataDescription: Failed")
+
         self.cbLock.release()
                 
         return dataDescriptionList
@@ -426,7 +440,11 @@ class DataStore:
         errorFlag = None
 
         self.cbLock.acquire()
-        oldName = self.dataDescContainer.GetDataFromId(data.id).name
+        try:
+            oldName = self.dataDescContainer.GetDataFromId(data.id).name
+        except:
+            log.exception("DataStore.ModifyData: Failed")
+            
         self.cbLock.release()
 
         if oldName != data.name:
@@ -444,8 +462,12 @@ class DataStore:
                 errorFlag = 1
 
         self.cbLock.acquire()
-        data.uri = self.GetDownloadDescriptor(data.name)
-        self.dataDescContainer.UpdateData(data)
+        try:
+            data.uri = self.GetDownloadDescriptor(data.name)
+            self.dataDescContainer.UpdateData(data)
+        except:
+            log.exception("DataStore.ModifyFiles: Failed")
+            
         self.cbLock.release()
 
         if errorFlag:
@@ -474,7 +496,11 @@ class DataStore:
                     os.mkdir(self.pathname)
 
                 self.cbLock.acquire()
-                desc = self.dataDescContainer.GetData(name)
+                try:
+                    desc = self.dataDescContainer.GetData(name)
+                except:
+                    log.exception("DataStore.UploadLocalFile: failed")
+
                 self.cbLock.release()
                 
                 if desc == None:
@@ -503,14 +529,23 @@ class DataStore:
                     desc.SetLastModified(self.GetTime())
 
                     self.transferEngineLock.acquire()
-                    desc.SetURI(self.transfer_engine.GetDownloadDescriptor(self.prefix,
+                    try:
+                        desc.SetURI(self.transfer_engine.GetDownloadDescriptor(self.prefix,
                                                                                name))
+                    except:
+                        log.exception("DataStore.AddFile: Failed")
+                        
                     self.transferEngineLock.release()
 
                     log.debug("DataStore::AddFile: updating with %s %s", desc, desc.__dict__)
 
                     self.cbLock.acquire()
-                    self.dataDescContainer.AddData(desc)
+
+                    try:
+                        self.dataDescContainer.AddData(desc)
+                    except:
+                        log.exception("DataStore.AddFile: Failed")
+                        
                     self.cbLock.release()
                     
                 else:
@@ -529,7 +564,12 @@ class DataStore:
 
         """
         self.transferEngineLock.acquire()
-        descriptor = self.transfer_engine.GetUploadDescriptor(self.prefix)
+
+        try:
+            descriptor = self.transfer_engine.GetUploadDescriptor(self.prefix)
+        except:
+            log.exception("DataStore.GetUploadDescriptor: Failed")
+        
         self.transferEngineLock.release()
                 
         return descriptor
@@ -547,7 +587,11 @@ class DataStore:
             return None
 
         self.transferEngineLock.acquire()
-        descriptor = self.transfer_engine.GetDownloadDescriptor(self.prefix, filename)
+        try:
+            descriptor = self.transfer_engine.GetDownloadDescriptor(self.prefix, filename)
+        except:
+            log.exception("DataStore.GetDownloadDescriptor")
+            
         self.transferEngineLock.release()
              
         return descriptor
@@ -593,7 +637,11 @@ class DataStore:
         filename = file_info['name']
 
         self.cbLock.acquire()
-        desc = self.dataDescContainer.GetData(filename)
+        try:
+            desc = self.dataDescContainer.GetData(filename)
+        except:
+            log.exception("DataStore.GetData: Failed")
+            
         self.cbLock.release()
 
         if desc is None or desc == "":
@@ -620,7 +668,11 @@ class DataStore:
         filename = file_info['name']
         
         self.cbLock.acquire()
-        desc = self.dataDescContainer.GetData(filename)
+        try:
+            desc = self.dataDescContainer.GetData(filename)
+        except:
+            log.exception("DataStore.GetUploadFilename: Failed")
+            
         self.cbLock.release()
                         
         if desc is None:
@@ -648,7 +700,12 @@ class DataStore:
         from the manifest).
         """
         self.cbLock.acquire()
-        desc = self.dataDescContainer.GetData(file_info['name'])
+
+        try:
+            desc = self.dataDescContainer.GetData(file_info['name'])
+        except:
+            log.exception("DataStore.CompleteUpload: Failed")
+
         self.cbLock.release()
         
         log.debug("Datastore::CompleteUpload: got desc %s %s", desc, desc.__dict__)
@@ -668,13 +725,21 @@ class DataStore:
         if url is None:
             log.warn("File %s has vanished", desc.name)
             self.cbLock.acquire()
-            self.dataDescContainer.RemoveData(desc)
+            try:
+                self.dataDescContainer.RemoveData(desc)
+            except:
+                log.exception("DataStore.RemoveData: Failed")
+                
             self.cbLock.release()
         else:
             desc.SetURI(url)
             self.cbLock.acquire()
-            self.dataDescContainer.UpdateData(desc)
-            self.callbackClass.UpdateData(desc, 1)
+            try:
+                self.dataDescContainer.UpdateData(desc)
+                self.callbackClass.UpdateData(desc, 1)
+            except:
+                log.exception("DataStore.RemoveData: Failed")
+                
             self.cbLock.release()
                       
     def AddPendingUpload(self, identityToken, filename):
@@ -692,8 +757,11 @@ class DataStore:
 
 
         self.cbLock.acquire()
-        self.dataDescContainer.AddData(desc)
-        self.callbackClass.AddData(desc)
+        try:
+            self.dataDescContainer.AddData(desc)
+            self.callbackClass.AddData(desc)
+        except:
+            log.exception("DataStore.AddPendingUpload: Failed")
         self.cbLock.release()
                         
         return desc
@@ -716,7 +784,12 @@ class DataStore:
         # distribute updated event.
 
         self.cbLock.acquire()
-        self.callbackClass.DistributeEvent(Event( Event.REMOVE_DATA, self.callbackClass.uniqueId, desc ))
+       
+        try:
+            self.callbackClass.DistributeEvent(Event.REMOVE_DATA, desc )
+        except:
+            log.exception("DataStore.CancelPendingUpload: Failed")
+            
         self.cbLock.release()
         
     def GetDescription(self, filename):
