@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.153 2005-06-13 19:28:27 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.154 2005-06-14 15:45:23 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.153 2005-06-13 19:28:27 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.154 2005-06-14 15:45:23 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -103,11 +103,9 @@ class VenueManagementClient(wxApp):
         self.menubar = wxMenuBar()
         self.myServersDict = {}
         self.myServersMenuIds = {}
-        #self.homeServer = 'https://localhost/VenueServer'
         self.userConf = UserConfig.instance()
         self.myServersFile = os.path.join(self.userConf.GetConfigDir(), "myServers.txt" )
         
-
         self.__doLayout()
         self.__setMenuBar()
         self.__setProperties()
@@ -133,8 +131,6 @@ class VenueManagementClient(wxApp):
                  lambda event, url=self.manual_url: self.OpenHelpURL(url))
 
         # My Servers Menu
-        #EVT_MENU(self, self.ID_MYSERVERS_GOTODEFAULT, self.GoToDefaultServerCB)
-        #EVT_MENU(self, self.ID_MYSERVERS_SETDEFAULT, self.SetAsDefaultServerCB)
         EVT_MENU(self, self.ID_MYSERVERS_ADD, self.AddToMyServersCB)
         EVT_MENU(self, self.ID_MYSERVERS_EDIT, self.EditMyServersCB)
 
@@ -156,13 +152,7 @@ class VenueManagementClient(wxApp):
 
         self.menubar.Append(self.serverMenu, "&Server")
         self.myServersMenu = wxMenu()
-        #self.myServersMenu.Append(self.ID_MYSERVERS_GOTODEFAULT, "Go to Home Server",
-        #                          "Go to default venue")
-        #self.myServersMenu.Append(self.ID_MYSERVERS_SETDEFAULT, "Set as Home Server",
-        #                     "Set current server as default")
-        #self.myServersMenu.AppendSeparator()
-    
-        self.myServersMenu.Append(self.ID_MYSERVERS_ADD, "Add &Current Server...",
+        self.myServersMenu.Append(self.ID_MYSERVERS_ADD, "Add Server...",
                              "Add this server to your list of servers")
         self.myServersMenu.Append(self.ID_MYSERVERS_EDIT, "Edit My &Servers...",
                              "Edit your servers")
@@ -206,8 +196,11 @@ class VenueManagementClient(wxApp):
         self.frame.Layout()
 
     def __fixName(self, name):
-        parts = name.split('/')
-        return parts[2]
+        if len(name)>0:
+            parts = name.split('/')
+            return parts[2]
+        else:
+            return name
 
     def __loadMyServers(self):
         
@@ -259,103 +252,64 @@ class VenueManagementClient(wxApp):
         myServersFileH.close()
 
     def EnableMenu(self, flag):
-        #self.myServersMenu.Enable(self.ID_MYSERVERS_SETDEFAULT, flag)
-        self.myServersMenu.Enable(self.ID_MYSERVERS_ADD, flag)
+        #self.myServersMenu.Enable(self.ID_MYSERVERS_ADD, flag)
         self.serverMenu.Enable(self.ID_SERVER_CHECKPOINT , flag)
         self.serverMenu.Enable(self.ID_SERVER_SHUTDOWN, flag)
-        
-    #def GoToDefaultServerCB(self,event):
-    #    '''
-    #    Connect to default venue server.
-    #    '''
-    #    serverUrl = self.homeServer
-    #    self.ConnectToServer(serverUrl)
-
-    #def SetAsDefaultServerCB(self,event):
-    #    '''
-    #    Set default venue server.
-    #    '''
-    #    self.homeServer = self.serverUrl 
-        
+                
     def AddToMyServersCB(self, event):
-        #url = self.serverClient.GetServer()
-        #name = self.serverClient.GetServerName()
-
         url =  self.serverUrl
-        name = self.serverUrl
-        # myServersDict = self.controller.GetMyServers()
-
         myServersDict = self.myServersDict
               
         if not url:
-            log.info("Invalid server url %s", url)
-            #MessageDialog(None,"Error adding server to server list", "Add Server Error",
-            #              style=wxOK|wxICON_INFORMATION)
-            
-            
-        if url in myServersDict.values():
-            #
-            # Server URL already in list
-            #
-            for n in myServersDict.keys():
-                if myServersDict[n] == url:
-                    name = n
-            text = "This server is already added to your servers as "+"'"+name+"'"
-            MessageDialog(self.frame,text, "Add Server Error",
-                          style=wxOK|wxICON_INFORMATION)
-           
-        else:
-            #
-            # Server url not in list
-            # - Prompt for name and validate
-            #
-            serverName = None
-            dialog = AddURLBaseDialog(self.frame, -1, self.__fixName(name), type = 'server')
-            if (dialog.ShowModal() == wxID_OK):
-                serverName = dialog.GetValue()
-            dialog.Destroy()
-
-            if serverName:
-                addServer = 1
-                if myServersDict.has_key(serverName):
+            url = ""
+        
+        #
+        # Server url not in list
+        # - Prompt for name and validate
+        #
+        serverName = None
+        dialog = AddURLBaseDialog(self.frame, -1, self.__fixName(url), url, type = 'server')
+        if (dialog.ShowModal() == wxID_OK):
+            serverName = dialog.GetName()
+            serverUrl = dialog.GetUrl()
+        dialog.Destroy()
+        
+        if serverName:
+            addServer = 1
+            if myServersDict.has_key(serverName):
+                #
+                # Server name already in list
+                #
+                
+                info = "A server with the same name is already added, do you want to overwrite it?"
+                
+                dlg = wxMessageDialog(self.frame, info, "Duplicated Server",
+                                      style = wxICON_INFORMATION | wxOK | wxCANCEL)
+                
+                if dlg.ShowModal() == wxID_OK:
+                    # 
+                    # User chose to replace the file 
                     #
-                    # Server name already in list
-                    #
-                                       
-                    info = "A server with the same name is already added, do you want to overwrite it?"
-
-                    dlg = wxMessageDialog(self.frame, info, "Duplicated Server",
-                                          style = wxICON_INFORMATION | wxOK | wxCANCEL)
-                                        
-                    if dlg.ShowModal() == wxID_OK:
-                        # 
-                        # User chose to replace the file 
-                        #
-                        self.RemoveFromMyServers(serverName)
-                                                
-                        addServer = 1
-                    else:
-                        # 
-                        # User chose to not replace the file
-                        #
-                        addServer = 0
-                else:
-                    #
-                    # Server name not in list
-                    #
-                    addServer = 1
+                    self.RemoveFromMyServers(serverName)
                     
-                if addServer:
-                    try:
-                        self.AddToMyServers(serverName,url)
-                        self.__saveMyServersToFile()
-                                               
-                    except:
-                        log.exception("Error adding server")
-                        MessageDialog(self.frame,
-                                      "Error adding server to server list",
-                                      "Add Server Error",
-                                      style=wxOK|wxICON_WARNING)
+                    addServer = 1
+                else:
+                    # 
+                    # User chose to not replace the file
+                    #
+                    addServer = 0
+                                  
+            if addServer:
+                try:
+                    self.AddToMyServers(serverName, serverUrl)
+                    self.__saveMyServersToFile()
+                    
+                except:
+                    log.exception("Error adding server")
+                    MessageDialog(self.frame,
+                                  "Error adding server to server list",
+                                  "Add Server Error",
+                                  style=wxOK|wxICON_WARNING)
         
     def EditMyServersCB(self, event):
         
