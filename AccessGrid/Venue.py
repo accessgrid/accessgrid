@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.247 2005-06-14 17:45:21 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.248 2005-06-14 17:53:37 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.247 2005-06-14 17:45:21 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.248 2005-06-14 17:53:37 lefvert Exp $"
 
 import sys
 import time
@@ -937,12 +937,17 @@ class Venue(AuthorizationMixIn):
 
         self.clientsBeingRemovedLock.acquire()
 
-        if privateId in self.clientsBeingRemoved and self.clientsBeingRemoved[privateId]:
-            log.debug("RemoveUser: private id %s already being removed", privateId)
-            self.clientsBeingRemovedLock.release()
-            return
-
-        self.clientsBeingRemoved[privateId] = 1
+        try:
+            if privateId in self.clientsBeingRemoved and self.clientsBeingRemoved[privateId]:
+                log.debug("RemoveUser: private id %s already being removed", privateId)
+                self.clientsBeingRemovedLock.release()
+                return
+            
+            self.clientsBeingRemoved[privateId] = 1
+           
+        except:
+            log.exception("Venue.RemoveUser: Failed")
+            
         self.clientsBeingRemovedLock.release()
 
         self.simpleLock.acquire()
@@ -954,13 +959,13 @@ class Venue(AuthorizationMixIn):
                 self.streamList.RemoveProducer(privateId)
             except:
                 log.exception("Error removing Producers")
-
+                
             try:
                 # Remove clients from venue
                 if not self.clients.has_key(privateId):
                     log.warn("RemoveUser: Tried to remove a client that doesn't exist")
-                    self.simpleLock.release()
                     usage_log.info("\"RemoveUser\",\"%s\",\"%s\",\"%s\"", "DN Unavailable", self.name, self.uniqueId)
+                    self.simpleLock.release()
                     return
                 else:
                     usage_log.info("\"RemoveUser\",\"%s\",\"%s\",\"%s\"", 
@@ -998,8 +1003,7 @@ class Venue(AuthorizationMixIn):
 
             except:
                 log.exception("Error removing client from venue users role")
-                    
-
+                
             try:
                 vclient = self.clients[privateId]
                 clientProfile = vclient.GetClientProfile()
@@ -1018,8 +1022,13 @@ class Venue(AuthorizationMixIn):
         except:
             log.exception("Venue.RemoveUser: Body of method threw exception")
 
+       
         self.clientsBeingRemovedLock.acquire()
-        del self.clientsBeingRemoved[privateId]
+        try:
+            del self.clientsBeingRemoved[privateId]
+        except:
+            log.exception("Venue.RemoveUser: Failed")
+            
         self.clientsBeingRemovedLock.release()
 
         self.simpleLock.release()
