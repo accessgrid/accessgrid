@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.67 2005-06-01 15:58:51 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.68 2005-06-14 15:44:46 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.67 2005-06-01 15:58:51 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.68 2005-06-14 15:44:46 lefvert Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -695,16 +695,18 @@ def PassphraseVerifyDialogTest():
 # Add URL Base Dialog
 class AddURLBaseDialog(wxDialog):
        
-    def __init__(self, parent, id, name, type = 'venue'):
-        wxDialog.__init__(self, parent, id, "Add current venue")
+    def __init__(self, parent, id, name, url, type = 'venue'):
+        wxDialog.__init__(self, parent, id, "Add %s"%(type))
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.type = type
         self.Centre()
-        info = "Current %s will be added to your list of %s."%(self.type,self.type)
+        info = "This %s will be added to your list of %ss."%(self.type,self.type)
         self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
         self.addressText = wxStaticText(self, -1, "Name: ", style=wxALIGN_LEFT)
         self.address = wxTextCtrl(self, -1, name, size = wxSize(300,20))
+        self.urlText =  wxStaticText(self, -1, "URL: ", style=wxALIGN_LEFT)
+        self.url = wxTextCtrl(self, -1, url, size = wxSize(300,20))
         self.Layout()
                         
     def Layout(self):
@@ -712,9 +714,11 @@ class AddURLBaseDialog(wxDialog):
         sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
         sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
 
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2 = wxFlexGridSizer(2,2,10,10)
         sizer2.Add(self.addressText, 0)
         sizer2.Add(self.address, 1, wxEXPAND)
+        sizer2.Add(self.urlText, 0)
+        sizer2.Add(self.url, 1, wxEXPAND)
 
         sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
 
@@ -728,9 +732,11 @@ class AddURLBaseDialog(wxDialog):
         sizer.Fit(self)
         self.SetAutoLayout(1)
         
-    def GetValue(self):
+    def GetName(self):
         return self.address.GetValue()
 
+    def GetUrl(self):
+        return self.url.GetValue()
 
 # Edit URL Base Dialog
 class EditURLBaseDialog(wxDialog):

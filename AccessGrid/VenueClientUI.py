@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.93 2005-06-10 21:50:39 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.94 2005-06-14 15:44:46 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.93 2005-06-10 21:50:39 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.94 2005-06-14 15:44:46 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -362,7 +362,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                              "Set current venue as default")
         self.myVenues.AppendSeparator()
         
-        self.myVenues.Append(self.ID_MYVENUE_ADD, "Add &Current Venue...",
+        self.myVenues.Append(self.ID_MYVENUE_ADD, "Add Venue...",
                              "Add this venue to your list of venues")
         self.myVenues.Append(self.ID_MYVENUE_EDIT, "Manage My &Venues...",
                              "Edit your venues")
@@ -597,7 +597,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
         self.menubar.Enable(self.ID_VENUE_PROPERTIES, false)
-        self.menubar.Enable(self.ID_MYVENUE_ADD, false)
+        #self.menubar.Enable(self.ID_MYVENUE_ADD, false)
         self.menubar.Enable(self.ID_MYVENUE_SETDEFAULT, false)
         self.menubar.Enable(self.ID_VENUE_APPLICATION, false)
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, false)
@@ -1061,66 +1061,49 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.Error("Error setting default venue", "Set Default Venue Error")
 
     def AddToMyVenuesCB(self, event):
-        url = self.venueClient.GetVenue()
-        name = self.venueClient.GetVenueName()
+        url = ""
+        name = ""
         myVenuesDict = self.controller.GetMyVenues()
+       
+        if self.venueClient.IsInVenue():
+            url = self.venueClient.GetVenue()
+            name = self.venueClient.GetVenueName()
+                          
+            if not url:
+                url = ""
+                name = ""
+     
         
-        if not url:
-            log.info("Invalid venue url %s", url)
-            self.Error("Error adding venue to venue list","Add Venue Error")
-            
-        if url in myVenuesDict.values():
-            #
-            # Venue URL already in list
-            #
-            for n in myVenuesDict.keys():
-                if myVenuesDict[n] == url:
-                    name = n
-            text = "This venue is already added to your venues as "+"'"+name+"'"
-            self.Notify(text, "Add venue")
-        else:
-            #
-            # Venue url not in list
-            # - Prompt for name and validate
-            #
-            venueName = None
-            dialog = AddURLBaseDialog(self, -1, name)
-            if (dialog.ShowModal() == wxID_OK):
-                venueName = dialog.GetValue()
-            dialog.Destroy()
+        # Venue url not in list
+        # - Prompt for name and validate
+        venueName = None
+        dialog = AddURLBaseDialog(self, -1, name, url)
+        if (dialog.ShowModal() == wxID_OK):
+            venueName = dialog.GetName()
+            venueUrl = dialog.GetUrl()
+        dialog.Destroy()
 
-            if venueName:
-                addVenue = 1
-                if myVenuesDict.has_key(venueName):
-                    #
-                    # Venue name already in list
-                    #
-                    info = "A venue with the same name is already added, do you want to overwrite it?"
-                    if self.Prompt(info ,"Duplicated Venue"):
-                        # 
-                        # User chose to replace the file 
-                        #
-                        self.RemoveFromMyVenues(venueName)
-                        self.controller.AddToMyVenuesCB(venueName,url)
-                        addVenue = 1
-                    else:
-                        # 
-                        # User chose to not replace the file
-                        #
-                        addVenue = 0
-                else:
-                    #
-                    # Venue name not in list
-                    #
+        if venueName:
+            addVenue = 1
+            if myVenuesDict.has_key(venueName):
+                # Venue name already in list
+                info = "A venue with the same name is already added, do you want to overwrite it?"
+                if self.Prompt(info ,"Duplicated Venue"):
+                    # User chose to replace the file 
+                    self.RemoveFromMyVenues(venueName)
+                    self.controller.AddToMyVenuesCB(venueName,url)
                     addVenue = 1
-                    
-                if addVenue:
-                    try:
-                        self.controller.AddToMyVenuesCB(venueName,url)
-                        self.AddToMyVenues(venueName,url)
-                    except:
-                        log.exception("Error adding venue")
-                        self.Error("Error adding venue to venue list", "Add Venue Error")
+                else:
+                    # User chose to not replace the file
+                    addVenue = 0
+                                   
+            if addVenue:
+                try:
+                    self.controller.AddToMyVenuesCB(venueName,venueUrl)
+                    self.AddToMyVenues(venueName,venueUrl)
+                except:
+                    log.exception("Error adding venue")
+                    self.Error("Error adding venue to venue list", "Add Venue Error")
         
     def EditMyVenuesCB(self, event):
         myVenues = None
