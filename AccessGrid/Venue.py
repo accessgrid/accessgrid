@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.246 2005-06-01 16:54:07 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.247 2005-06-14 17:45:21 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.246 2005-06-01 16:54:07 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.247 2005-06-14 17:45:21 lefvert Exp $"
 
 import sys
 import time
@@ -565,7 +565,8 @@ class Venue(AuthorizationMixIn):
         desc = VenueDescription(self.name, self.description,
                                 (self.encryptMedia, self.encryptionKey),
                                 self.connections,
-                                self.GetStaticStreams())
+                                self.GetStaticStreams(),
+                                self.uniqueId)
         uri = self.server.MakeVenueURL(self.uniqueId)
         desc.SetURI(uri)
 
@@ -1475,11 +1476,12 @@ class Venue(AuthorizationMixIn):
         passed in cannot be successfully converted to a real
         Stream Description.
         """
+                  
         log.debug("%s - Venue.AddStream: %s %d %d", self.uniqueId,
                   inStreamDescription.location.host,
                   inStreamDescription.location.port,
                   inStreamDescription.location.ttl )
-        
+
         self.streamList.AddStream(inStreamDescription)
 
         # Distribute event announcing new stream
@@ -1761,7 +1763,10 @@ class Venue(AuthorizationMixIn):
             log.info("Venue.UpdateData tried to modify non venue data. That should not happen")
             
         return dataDescription
-            
+
+    def DistributeEvent(self, type, data):
+        self.eventClient.Send(type, data)
+                    
     def GetDataStoreInformation(self):
         """
         Retrieve an upload descriptor and a URL to the Venue's DataStore 
