@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.44 2005-06-10 21:22:33 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.45 2005-06-17 23:46:35 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.44 2005-06-10 21:22:33 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.45 2005-06-17 23:46:35 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -784,11 +784,11 @@ class VenueClientController:
         try:
             if uploadUrl.startswith("https:"):
                 log.debug("Url starts with https:")
-                DataStore.HTTPUploadFiles(uploadUrl, fileList, progressCB)
+                DataStore.UploadFiles('',uploadUrl, fileList, progressCB)
             else:
                 my_identity = str(Application.instance().GetDefaultSubject())
                 log.debug("Got identity %s" % my_identity)
-                DataStore.HTTPUploadFiles(my_identity, uploadUrl,
+                DataStore.UploadFiles(my_identity, uploadUrl,
                 fileList, progressCB)
 
         except DataStore.FileNotFound, e:
@@ -973,14 +973,14 @@ class VenueClientController:
         try:
             if url.startswith("https"):
                 log.debug("url=%s, local path =%s, size = %s, checksum = %s"%(url, local_pathname, size, checksum))
-                DataStore.HTTPDownloadFile(url, local_pathname, size,
+                DataStore.DownloadFile('',url, local_pathname, size,
                                               checksum, progressCB)
-                log.debug("finished HTTPDownload")
+                log.debug("finished Download")
 
             else:
                 log.debug("url does not start with https")
                 my_identity = str(Application.instance().GetDefaultSubject())
-                DataStore.HTTPDownloadFile(my_identity, url, local_pathname, size,
+                DataStore.DownloadFile(my_identity, url, local_pathname, size,
                                            checksum, progressCB)
         except DataStore.DownloadFailed:
             log.exception("bin.VenueClient:get_ident_and_download: Got exception on download")
@@ -1044,7 +1044,7 @@ class VenueClientController:
     def UploadFilesNoDialog(self, fileList):
         """
         This method uploads the given files to the venue.
-        This uses the DataStore HTTP upload engine code.
+        This uses the DataStore upload engine code.
 
         **Arguments:**
         
@@ -1058,10 +1058,10 @@ class VenueClientController:
         error_msg = None
         try:
             if uploadUrl.startswith("https:"):
-                DataStore.HTTPUploadFiles(uploadUrl, fileList)
+                DataStore.UploadFiles('',uploadUrl, fileList,None)
             else:
                 my_identity = str(Application.instance().GetDefaultSubject())
-                DataStore.HTTPUploadFiles(my_identity, uploadUrl, fileList)
+                DataStore.UploadFiles(my_identity, uploadUrl, fileList,None)
         except DataStore.FileNotFound, e:
             error_msg = "File not found: %s" % (e[0])
         except DataStore.NotAPlainFile, e:
