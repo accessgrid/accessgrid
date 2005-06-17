@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.80 2005-06-17 16:13:28 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.81 2005-06-17 23:45:29 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.80 2005-06-17 16:13:28 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.81 2005-06-17 23:45:29 turam Exp $"
 
 import os
 import time
@@ -860,54 +860,54 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         #
 
         try:
-        log.debug("HTTPTransferHandler::do_POST: path=%s", self.path)
+            log.debug("HTTPTransferHandler::do_POST: path=%s", self.path)
 
-        path_parts = self.path.split('/')
-        if path_parts[0] != '':
-            log.debug("HTTPTransferHandler::do_POST: File not found")
-            self.send_error(404, "File not found")
-            return None
-
-        #
-        # This is always empty, so nuke it.
-        #
-
-        del path_parts[0]
-
-        #
-        # Check for /<prefix>/manifest
-        #
-        if len(path_parts) == 2 and path_parts[1] == "manifest":
-            return self.ProcessManifest(path_parts[0], identityToken)
-
-        #
-        # Check for /<prefix>/<transfer_key>/<file_num>, designating a file upload.
-        #
-
-        if len(path_parts) == 3:
-            prefix = path_parts[0]
-            transfer_key = path_parts[1]
-            file_num = path_parts[2]
-
-            #
-            # Ensure file_num is numeric
-            #
-
-            if not re.search("^\d+$", file_num):
+            path_parts = self.path.split('/')
+            if path_parts[0] != '':
+                log.debug("HTTPTransferHandler::do_POST: File not found")
                 self.send_error(404, "File not found")
                 return None
 
             #
-            # This might be right. Pass control off
-            # to the method that handles the details of
-            # file uploads.
-            
-            return self.ProcessFileUpload(identityToken, prefix, transfer_key, file_num)
-            
-        #
-        # Default.
-        #
-        self.send_error(404, "File not found")
+            # This is always empty, so nuke it.
+            #
+
+            del path_parts[0]
+
+            #
+            # Check for /<prefix>/manifest
+            #
+            if len(path_parts) == 2 and path_parts[1] == "manifest":
+                return self.ProcessManifest(path_parts[0], identityToken)
+
+            #
+            # Check for /<prefix>/<transfer_key>/<file_num>, designating a file upload.
+            #
+
+            if len(path_parts) == 3:
+                prefix = path_parts[0]
+                transfer_key = path_parts[1]
+                file_num = path_parts[2]
+
+                #
+                # Ensure file_num is numeric
+                #
+
+                if not re.search("^\d+$", file_num):
+                    self.send_error(404, "File not found")
+                    return None
+
+                #
+                # This might be right. Pass control off
+                # to the method that handles the details of
+                # file uploads.
+
+                return self.ProcessFileUpload(identityToken, prefix, transfer_key, file_num)
+
+            #
+            # Default.
+            #
+            self.send_error(404, "File not found")
         except:
             log.exception("Exception in do_POST")
         return None
@@ -1545,7 +1545,7 @@ def HTTPDownloadFile(identity, download_url, destination, size, checksum,
                                   identity, progressCB)
 
 try:
-    from M2Crypto import SSL, httpslib
+    from M2Crypto import SSL
     SSL.Connection.clientPostConnectionCheck = None
     SSL.Connection.serverPostConnectionCheck = None
     class HTTPSTransferServer(SSL.SSLServer, TransferServer):
@@ -1727,7 +1727,7 @@ try:
         """
 
         return HTTPFamilyDownloadFile(download_url, destination, size, checksum,
-                                      None, progressCB, httpslib.HTTPSConnection)
+                                      None, progressCB, httplib.HTTPSConnection)
 
     def HTTPSUploadFiles(identity, upload_url, file_list, progressCB):
         """
@@ -1746,7 +1746,7 @@ try:
 
         """
         uploader = HTTPUploadEngine(None, upload_url, progressCB,
-                                    httpslib.HTTPSConnection)
+                                    httplib.HTTPSConnection)
         uploader.UploadFiles(file_list)
         
 except ImportError, e:
@@ -2224,6 +2224,24 @@ class HTTPUploadEngine:
         io.close()
 
         return (mstr, file_info)
+
+def UploadFiles(identity, upload_url, file_list, progressCB):
+    if upload_url.startswith('https'):
+        print "secure upload"
+        return HTTPSUploadFiles(identity,upload_url,file_list,progressCB)
+    else:
+        print "insecure upload"
+        return HTTPUploadFiles(identity,upload_url,file_list,progressCB)
+
+def DownloadFile(identity, download_url, destination, size, checksum,
+                     progressCB = None):
+    print "download_url = ", download_url
+    if download_url.startswith('https'):
+        return HTTPSDownloadFile(identity,download_url,destination,size,checksum,progressCB)
+    else:
+        return HTTPDownloadFile(identity,download_url,destination,size,checksum,progressCB)
+
+
 
 if __name__ == "__main__":
 
