@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.79 2005-06-14 17:41:06 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.80 2005-06-17 16:13:28 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.79 2005-06-14 17:41:06 lefvert Exp $"
+__revision__ = "$Id: DataStore.py,v 1.80 2005-06-17 16:13:28 turam Exp $"
 
 import os
 import time
@@ -430,7 +430,7 @@ class DataStore:
             if errorFlag:
                 filesWithError = filesWithError + " "+data.name
                 
-        if errorFlag:
+        if filesWithError:
             raise FileNotFound(filesWithError)
 
     def ModifyData(self, data):
@@ -859,6 +859,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         # empty if that is the case).
         #
 
+        try:
         log.debug("HTTPTransferHandler::do_POST: path=%s", self.path)
 
         path_parts = self.path.split('/')
@@ -907,6 +908,8 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         # Default.
         #
         self.send_error(404, "File not found")
+        except:
+            log.exception("Exception in do_POST")
         return None
 
     def ProcessFileUpload(self, identityToken, prefix, transfer_key, file_num):
@@ -1306,6 +1309,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             log.debug("HTTPTransferHandler::ProcessGet: Done copying")
             fp.close()
 
+
 class TransferServer:
     """
     A TransferServer provides file upload and download services.
@@ -1479,6 +1483,8 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
     def __init__(self, address = ('', 0)):
         TransferServer.__init__(self)
         BaseHTTPServer.HTTPServer.__init__(self, address, HTTPTransferHandler)
+        self.done = threading.Event()
+        self.done.clear()
 
     def GetIdentityToken(self, transferHandler):
         """
@@ -1498,14 +1504,14 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
         
 
     def GetUploadDescriptor(self, prefix):
-        hn = SystemConfig.instance().GetHostname()
+        hn = self.server_name
         return urlparse.urlunparse(("http",
                                  "%s:%d" % (hn, self.socket.getsockname()[1]),
                                  prefix,    # Path
                                  "", "", ""))
                                  
     def GetDownloadDescriptor(self, prefix, path):
-        hn = SystemConfig.instance().GetHostname()
+        hn = self.server_name
         return urlparse.urlunparse(("http",
                                     "%s:%d" % (hn,
                                                self.socket.getsockname()[1]),
@@ -1513,13 +1519,13 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
                                     "", "", ""))
                                  
     def run(self):
-        self.done = 0
+        self.done.clear()
         self.server_thread = threading.Thread(target = self.thread_run,
                                               name = 'TransferServer')
         self.server_thread.start()
 
     def stop(self):
-        self.done = 1
+        self.done.set()
 
     def thread_run(self):
         """
@@ -1527,15 +1533,227 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
         """
 
         pause = 1 # second
-        while not self.done:
+        while not self.done.isSet():
             r,w,e = select.select([self.socket], [], [], pause)
             if r:
                 self.handle_request()
+
 
 def HTTPDownloadFile(identity, download_url, destination, size, checksum,
                      progressCB = None):
     return HTTPFamilyDownloadFile(download_url, destination, size, checksum,
                                   identity, progressCB)
+
+try:
+    from M2Crypto import SSL, httpslib
+    SSL.Connection.clientPostConnectionCheck = None
+    SSL.Connection.serverPostConnectionCheck = None
+    class HTTPSTransferServer(SSL.SSLServer, TransferServer):
+        """
+        A HTTPSTransferServer is a SSL-enabled HTTP-based implementation of a TransferServer.
+
+        Note that most of the work is done in HTTPTransferHandler.
+
+        This implementation uses a pool of worker threads to handle the requests.
+        We could just use SocketServer.ThreadingMixIn, but I worry about 
+        an unbounded number of incoming request overloading the server.
+
+        self.requestQueue is a Queue object. Each worker thread runs __WorkerRun(),
+        which blocks on a get on teh request queue.
+
+        Incoming requests are just placed on the queue.
+        """
+
+        def __init__(self, address, certfile,keyfile,caCertDir,numThreads=1):
+            TransferServer.__init__(self)
+
+            host,port = address
+            self.server_name = socket.getfqdn(host)
+            self.server_name = host
+            self.server_port = port
+
+            self.done = threading.Event()
+            self.done.clear()
+
+            self.numThreads = numThreads
+            self.requestQueue = Queue.Queue()
+            self._CreateWorkers()
+
+            ssl_context = SSL.Context('sslv23')
+            ssl_context.load_cert(certfile,keyfile)
+            ssl_context.load_verify_locations(capath=caCertDir)
+            ssl_context.set_verify(SSL.verify_peer, 10)
+            #ssl_context.set_info_callback()
+            SSL.SSLServer.__init__(self, address, HTTPTransferHandler,
+                                        ssl_context)
+
+        def get_request(self):
+            """Get the request and client address from the socket.
+
+            May be overridden.
+
+            """
+            ret = self.socket.accept()
+            return ret
+
+        def handle_request(self):
+            try:
+                request, client_address = self.get_request()
+                if self.verify_request(request, client_address):
+                    self.process_request(request, client_address)
+            except:
+                self.handle_error(request,client_address)
+
+        def finish(self):
+            self.request.set_shutdown(SSL.SSL_RECEIVED_SHUTDOWN | SSL.SSL_SENT_SHUTDOWN)
+            self.request.close()
+
+        def _CreateWorkers(self):
+            self.workerThread = {}
+            self.startLock = threading.Lock()
+            for workerNum in range(self.numThreads):
+                log.debug("Creating thread %d", workerNum)
+                self.workerThread[workerNum] = threading.Thread(target = self.__WorkerRun,
+                                                                name = 'TransferWorker'+'%d'%workerNum,
+                                                                args = (workerNum,))
+                self.startLock.acquire()
+                log.debug("Starting thread %d", workerNum)
+                self.workerThread[workerNum].start()
+                log.debug("Waiting thread %d", workerNum)
+                self.startLock.acquire()
+                self.startLock.release()
+            log.debug("Done creating workers")
+
+        def __WorkerRun(self, workerNum):
+            log.debug("Worker %d starting", workerNum)
+            self.startLock.release()
+
+            while not self.done.isSet():
+                cmd = self.requestQueue.get(1)
+                log.debug("Worker %d gets cmd %s", workerNum, cmd)
+                cmdType = cmd[0]
+                if cmdType == "quit":
+                    break
+                elif cmdType == "request":
+                    request = cmd[1]
+                    client_address = cmd[2]
+                    log.debug("handle request '%s' '%s'", request, client_address)
+                    try:
+                        self.finish_request(request, client_address)
+                        self.close_request(request)
+                    except:
+                        log.exception("Worker %d: Request handling threw exception", workerNum)
+            log.debug("Worker %d exiting", workerNum)
+
+
+        def process_request(self, request, client_address):
+            log.info("process_request: request=%s client_address=%s", request, client_address)
+            self.requestQueue.put(("request", request, client_address))
+
+        def GetIdentityToken(self, transferHandler):
+            """
+            Create an identity token for this GSIHTTP-based transfer.
+
+            It contains the DN from the connection's security context.
+            """
+            log.debug("In GetIdentityToken")
+
+            cert = 0
+            #cert = transferHandler.connection.get_peer_cert()
+            if cert:
+                subject = cert.get_subject()
+            else:
+                subject = 'none given'
+            return HTTPIdentityToken(subject)
+
+        def _GetListenPort(self):
+            return self.server_port
+
+        def GetUploadDescriptor(self, prefix):
+            hn = SystemConfig.instance().GetHostname()
+
+            return urlparse.urlunparse(("https",
+                                     "%s:%d" % (hn, self._GetListenPort()),
+                                     prefix,
+                                     "", "", ""))
+
+        def GetDownloadDescriptor(self, prefix, path):
+            hn = SystemConfig.instance().GetHostname()
+            return urlparse.urlunparse(("https",
+                                        "%s:%d" % (hn, self._GetListenPort()),
+                                        "%s/%s" % (prefix, urllib.quote(path)),
+                                        "", "", ""))
+
+        def run(self):
+            self.done.clear()
+            self.server_thread = threading.Thread(target = self.thread_run,
+                                                  name = 'TransferServer')
+            self.server_thread.start()
+
+        def stop(self):
+            self.done.set()
+            for workerNum in range(self.numThreads):
+                log.debug("Quitting thread %d", workerNum)
+                self.requestQueue.put("quit")
+            log.debug("closing server")
+            self.server_close()
+            log.debug("Exiting server.stop")
+
+        def thread_run(self):
+            """
+            thread_run is the server thread's main function.
+            """
+            import select
+            while not self.done.isSet():
+                try:
+                    r,w,e = select.select([self.socket.fileno()],[],[],1)
+                    if r:
+                        self.handle_request()
+                except:
+                    log.exception("Exception handling request")
+
+                log.info("done = %d", self.done.isSet())
+
+            log.info("------------ LEAVING thread_run  ----------------------")
+
+
+
+    def HTTPSDownloadFile(identity,download_url, destination, size, checksum,progressCB = None):
+        """
+        Download a file with HTTPS.
+
+        Define a local connection class so we can poke about at the
+        tcp attributes here.
+        """
+
+        return HTTPFamilyDownloadFile(download_url, destination, size, checksum,
+                                      None, progressCB, httpslib.HTTPSConnection)
+
+    def HTTPSUploadFiles(identity, upload_url, file_list, progressCB):
+        """
+        Upload the given list of files to the server using HTTP.
+
+        progressCB is a callback that will be invoked this way:
+
+           progressCB(filename, bytes_sent, total_bytes, file_done, transfer_done)
+
+        filename is the file to which the progress update applies
+        bytes_sent and total_bytes denote the file's progress
+        file_done is set when the given file upload is complete
+        transfer_done is set when the entire transfer is complete
+
+        If progressCB returns true, the transfer is to be cancelled.
+
+        """
+        uploader = HTTPUploadEngine(None, upload_url, progressCB,
+                                    httpslib.HTTPSConnection)
+        uploader.UploadFiles(file_list)
+        
+except ImportError, e:
+    log.info('Import error: %s', e.args[0])
+except:
+    log.exception('Exception in HTTPS data store code')
+
 
 def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
                            identity = None,
@@ -1870,6 +2088,7 @@ class HTTPUploadEngine:
 
         conn.close()
         
+        
     def uploadManifest(self, conn, base_path, manifest):
         """
         Upload the manifest to the upload server.
@@ -2011,6 +2230,7 @@ if __name__ == "__main__":
     #
     # Test DataStore
     #
+    import signal
     from AccessGrid.Toolkit import Application
     
     class TestCallbackClass:
@@ -2034,9 +2254,41 @@ if __name__ == "__main__":
             self.data[desc.GetName()] = desc
             log.debug("AddData: %s", desc)
 
-    host = "zuz.mcs.anl.gov"
+    def SignalHandler(signum, frame):
+        global dataStore, dataTransferServer
+        print "Shutting down on signal", signum
+        dataStore.Shutdown()
+        dataTransferServer.stop()
+
+
+    app = Application.instance()
+    app.Initialize('DataStore')
+
+    signal.signal(signal.SIGINT, SignalHandler)
+
+
+    host = "localhost"
     port = 9999
-    dataTransferServer = HTTPTransferServer((host, port))
+    server_address = (host,port)
+    
+    
+    if app.GetOption('secure'):
+        certfile = app.GetOption('cert')
+        keyfile = app.GetOption('key')
+        cadir = app.GetOption('cadir')
+        
+        if not certfile:
+            print 'No certificate file specified; exiting'
+            sys.exit(1)
+        if not cadir:
+            print 'No certificate authority directory specified; exiting'
+            sys.exit(1)
+        dataTransferServer = HTTPSTransferServer(server_address,
+                                                 app.GetOption('cert'),
+                                                 app.GetOption('key'),
+                                                 app.GetOption('cadir'))
+    else:
+        dataTransferServer = HTTPTransferServer(server_address)
     dataTransferServer.run()
 
     callbackClass = TestCallbackClass()
@@ -2045,39 +2297,30 @@ if __name__ == "__main__":
                                "uniqueId",
                                dataTransferServer)
 
-    print "\n\nDataStore running at host: %s port: %s"%(host, str(port))
+    print "DataStore running at host: %s port: %s"%(host, str(port))
     print "Data directory is: ", dataStorePath
-    print dataStore.GetUploadDescriptor()
+    print "Upload descriptor: ", dataStore.GetUploadDescriptor()
    
+    dataDescList = dataStore.GetDataDescriptions()
+    print "Data descriptions in data store: ", dataDescList
+
+    print "Removing existing data"
+    dataStore.RemoveFiles(dataDescList)
+
+    print "Data descriptions in data store (after removal): ", dataStore.GetDataDescriptions()
+
     #
     # Test DataStore
     #
     
-    localFile = "FileToUpload"
-    my_identity = str(Application.instance().GetDefaultSubject())
-    uploadURL = dataStore.GetUploadDescriptor()
-    progressCB = None
-    
-    print '\n*** upload (you need this file in local directory) *** \n\n', localFile
+    print "Waiting for threads to stop"
+    while 1:
+        ts = threading.enumerate()
+        if len(ts) == 1:
+            break
 
-    HTTPUploadFiles(my_identity, uploadURL, [localFile], progressCB)
-    dataDescList = dataStore.GetDataDescriptions()
+        #for t in ts:
+        #    print 't = ', t
 
-    dataDescList = dataStore.GetDataDescriptions()
-    print "\n*** data descriptions in data store *** \n\n", dataDescList
+        time.sleep(1)   
 
-    import time
-    time.sleep(2)
-    
-    my_identity = str(Application.instance().GetDefaultSubject())
-    localFile = "DownloadedFile"
-    data = dataDescList[0]
-    print '\n*** download file', dataDescList[0].name, 'to', localFile, ' *** \n\n'
-    HTTPDownloadFile(my_identity, data.uri, localFile, data.size, data.checksum)
-
-    dataStore.RemoveFiles(dataDescList)
-
-    print '\n*** after remove files *** \n\n', dataStore.GetDataDescriptions()
-
-    dataStore.Shutdown()
-    dataTransferServer.stop()
