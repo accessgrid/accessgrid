@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.62 2005-05-18 16:09:38 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.63 2005-06-17 23:41:25 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.62 2005-05-18 16:09:38 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.63 2005-06-17 23:41:25 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -69,10 +69,6 @@ def main():
         print " Initialization Error: ", e
         sys.exit(-1)
         
-#    if not app.certificateManager.GetDefaultIdentity():
-#        print 'No default identity, check your certificates.'
-#        sys.exit(-1)
-
     # Get the Log
     log = app.GetLog()
     port = app.GetOption("port")
@@ -82,7 +78,10 @@ def main():
     log.info("VenueServer running using hostname: %s", hostname)
     
     if app.GetOption("secure"):
-        server = SecureServer((hostname, port))
+        server = SecureServer((hostname, port),
+                              app.GetOption('cert'),
+                              app.GetOption('key'),
+                              app.GetOption('cadir'))
     else:
         server = InsecureServer((hostname, port))
     
