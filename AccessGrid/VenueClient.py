@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.225 2005-06-13 16:14:03 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.226 2005-06-17 23:42:19 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.225 2005-06-13 16:14:03 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.226 2005-06-17 23:42:19 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -347,7 +347,7 @@ class VenueClient:
             try:
                 prefs = self.app.GetPreferences()
                 defaultConfig = prefs.GetPreference(Preferences.NODE_CONFIG)
-                self.ns.LoadConfiguration(defaultConfig)
+                #self.ns.LoadConfiguration(defaultConfig)
             except:
                 log.exception("Error loading default configuration")
             
