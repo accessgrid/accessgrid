@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.248 2005-06-14 17:53:37 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.249 2005-06-17 16:35:13 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.248 2005-06-14 17:53:37 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.249 2005-06-17 16:35:13 turam Exp $"
 
 import sys
 import time
@@ -268,6 +268,26 @@ class Venue(AuthorizationMixIn):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
+    
+    
+    def authorize(self, auth_info, post, action):
+        from ZSI.ServiceContainer import GetSOAPContext
+        ctx = GetSOAPContext()
+#         print dir(ctx)
+#         print "Container: ", ctx.connection
+        if hasattr(ctx.connection,'get_peer_cert'):
+            cert = ctx.connection.get_peer_cert()
+            if cert:
+                print "Subject:", cert.get_subject()
+            else:
+                print "Subject: No peer cert"
+#         print "Parsed SOAP: ", ctx.parsedsoap
+#         print "Container: ", ctx.container
+#         print "HTTP Headers:\n", ctx.httpheaders
+#         print "----"
+#         print "XML Data:\n", ctx.xmldata
+        return 1
+    
     def __init__(self, server, name, description, dataStoreLocation,
                  oid=None):
         """
@@ -1047,7 +1067,7 @@ class Venue(AuthorizationMixIn):
         log.debug("Calling SetConnections.")
 
         self.connections = list(connectionList)
-        self.eventClient.Send(Event.SET_CONNECTIONS, connectionList)
+        #self.eventClient.Send(Event.SET_CONNECTIONS, connectionList)
 
     def Enter(self, clientProfile):
         """
