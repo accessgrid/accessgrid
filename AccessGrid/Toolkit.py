@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.88 2005-06-02 19:19:41 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.89 2005-06-17 23:38:57 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.88 2005-06-02 19:19:41 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.89 2005-06-17 23:38:57 turam Exp $"
 
 # Standard imports
 import os
@@ -81,6 +81,15 @@ class AppBase:
        self.parser.add_option("-i", "--secure", action="store_true",
                               dest="secure", default=0,
                               help="Use secure communications.")
+       self.parser.add_option("--cert", dest="cert",
+                              metavar="CERTFILE", default=None,
+                         help="Specify a configuration file for the program.")
+       self.parser.add_option("--key", dest="key",
+                              metavar="KEYFILE", default=None,
+                         help="Specify a configuration file for the program.")
+       self.parser.add_option("--cadir", dest="cadir",
+                              metavar="CADIR", default=None,
+                         help="Specify a configuration file for the program.")
 
        self.options = None
        self.certMgrUI = None
@@ -257,6 +266,9 @@ class AppBase:
            # If not in debug, we only used the StreamHandler before Logging was initialized.
            #    so we don't have a StreamLoggerLevels.  
            self.streamLoggerLevels = None
+           
+       if self.options.cert:
+           self.options.secure = 1
            
        return ret_args
 
