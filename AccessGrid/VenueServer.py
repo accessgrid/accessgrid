@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.190 2005-06-13 16:14:03 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.191 2005-06-17 23:50:44 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.190 2005-06-13 16:14:03 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.191 2005-06-17 23:50:44 turam Exp $"
 
 
 # Standard stuff
@@ -46,7 +46,7 @@ from AccessGrid.hosting import PathFromURL, IdFromURL
 from AccessGrid.GUID import GUID
 from AccessGrid.Venue import Venue, VenueI
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-from AccessGrid.DataStore import HTTPTransferServer
+from AccessGrid.DataStore import HTTPTransferServer, HTTPSTransferServer
 from AccessGrid.scheduler import Scheduler
 
 from AccessGrid.Descriptions import ConnectionDescription, StreamDescription
@@ -239,8 +239,17 @@ class VenueServer(AuthorizationMixIn):
         # Starting Venue Server wide Services, these *could* also
         # be separated, we just have to figure out the mechanics and
         # make sure the usability doesn't plummet for administrators.
-        self.dataTransferServer = HTTPTransferServer(('',
-                                                      int(self.dataPort)) )
+        if self.servicePtr.GetOption("secure"):
+            print "Starting secure transfer server"
+            self.dataTransferServer = HTTPSTransferServer(
+                                            ('',int(self.dataPort)),
+                                            self.servicePtr.GetOption('cert'),
+                                            self.servicePtr.GetOption('key'),
+                                            self.servicePtr.GetOption('cadir'))
+        else:
+            print "Starting insecure transfer server"
+            self.dataTransferServer = HTTPTransferServer(
+                                            ('',int(self.dataPort)) )
         self.dataTransferServer.run()
 
         
@@ -676,6 +685,7 @@ class VenueServer(AuthorizationMixIn):
             self.checkpointing = 1
 	    log.info("Checkpoint starting at: %s", time.asctime())
         else:
+            log.info("Checkpointing active; skipping")
             return
         
         # Open the persistent store
