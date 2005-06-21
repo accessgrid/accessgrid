@@ -351,6 +351,8 @@ class EventService(threading.Thread, VenueServerService):
                
         self.server = NetworkService(port,self.received_event)
         self.event_loop = EventLoop()
+        
+        self.buffer = ''
 
     def Start(self):
         self.start()
@@ -370,7 +372,27 @@ class EventService(threading.Thread, VenueServerService):
         else:
             self.event_loop.schedule(1,self.check_status)
             
-    def received_event(self, networkConnection, event):
+    def received_event(self,networkConnection,event):
+        eventList = []
+        
+        self.buffer += event
+        
+        envelopeEndTag = '</SOAP-ENV:Envelope>'
+        while 1:
+            i = string.find(self.buffer,envelopeEndTag,1)
+            if i < 0:
+                break
+                
+            msgEnd = i + len(envelopeEndTag)
+            ev = self.buffer[0:msgEnd]
+            self.buffer = self.buffer[msgEnd:]
+            
+            eventList.append(ev)
+            
+        for ev in eventList:
+            self._received_event(networkConnection,ev)
+            
+    def _received_event(self, networkConnection, event):
         '''
         Event callback for reading. Distribute the event
         to all connections in a channel. A connection is added
@@ -406,7 +428,7 @@ class EventService(threading.Thread, VenueServerService):
             for connection in channel.GetConnections():
                 connection.add_to_buffer(event.GetXML())
         except:
-            log.exception("EventServcie.received_event: Caught exception.")
+            log.exception("EventService.received_event: Caught exception.")
             
 
     def run(self):

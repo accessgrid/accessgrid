@@ -7,7 +7,6 @@ import socket
 import asyncore
 import cPickle
 
-from wxPython.wx import *
 from AsyncoreEventService import XMLEvent 
 
 from AccessGrid import Log
@@ -145,13 +144,14 @@ class AsyncoreEventClient(threading.Thread):
 
     def __init__(self, location, id, channelId):
         threading.Thread.__init__(self)
-        self.keep_going = true
-        self.running    = false
+        self.keep_going = 1
+        self.running    = 0
         self.callbacks = {}
         self.id = id
         self.channelId = channelId
         self.client = NetworkClient(location, self.received_a_line)
         self.event_loop = EventLoop()
+        self.buffer = ''
                 
     def register_callback(self, eventType, callback):
         if not self.callbacks.has_key(eventType):
@@ -173,8 +173,28 @@ class AsyncoreEventClient(threading.Thread):
             asyncore.close_all()
         else:
             self.event_loop.schedule(1,self.check_status)
+            
+    def received_a_line(self,event):
+        eventList = []
         
-    def received_a_line(self, event):
+        self.buffer += event
+        
+        envelopeEndTag = '</SOAP-ENV:Envelope>'
+        while 1:
+            i = string.find(self.buffer,envelopeEndTag,1)
+            if i < 0:
+                break
+                
+            msgEnd = i + len(envelopeEndTag)
+            ev = self.buffer[0:msgEnd]
+            self.buffer = self.buffer[msgEnd:]
+            
+            eventList.append(ev)
+            
+        for ev in eventList:
+            self._received_a_line(ev)
+        
+    def _received_a_line(self, event):
         e = XMLEvent.CreateEvent(event)
               
         # Notify ui of the event
@@ -185,12 +205,12 @@ class AsyncoreEventClient(threading.Thread):
         self.client.handle_write()
 
     def run(self):
-        self.running = true
+        self.running = 1
         self.event_loop.schedule(1,self.check_status)
         # loop here checking every 0.5 seconds for shutdowns etc..
         self.event_loop.go(0.5)
         time.sleep(1)
-        self.running = false
+        self.running = 0
     
     def send_event(self,event):
         '''
@@ -201,11 +221,13 @@ class AsyncoreEventClient(threading.Thread):
         if self.callbacks.has_key(e.GetEventType()):
             log.debug("send_event: Callback found for event type %s"%e.GetEventType())
             for c in self.callbacks[e.GetEventType()]:
-                wxCallAfter(c, e)
+                c(e)
         else:
             log.debug("No callback registered for event %s. Can not update UI."%e.GetEventType())
             
 if __name__=='__main__':
+
+    from wxPython.wx import *
 
     # Test for the event client/service. After starting the event service,
     # run this client. A UI will open which allows you to transmit key values.
@@ -235,8 +257,8 @@ if __name__=='__main__':
             self.frame = frame = MainFrame(NULL, -1, 
                                            "wxPython+threading")
             self.SetTopWindow(frame)
-            frame.Show(true)
-            return true
+            frame.Show(1)
+            return 1
   
     class MainFrame(wxFrame):
         '''
@@ -249,7 +271,7 @@ if __name__=='__main__':
                              title,
                              wxDefaultPosition, # position
                              wxSize(512,512))
-            self.SetAutoLayout(true)
+            self.SetAutoLayout(1)
             self.CreateStatusBar()
             menuBar = wxMenuBar()
             menu    = wxMenu()
@@ -292,18 +314,18 @@ if __name__=='__main__':
             key = event.KeyCode()
             
             if key == 27:
-                self.Close(true)
+                self.Close(1)
           
             else:
                 self.eventClient.Send("test", chr(key))
                 return
 
         def TimeToQuit(self, event):
-            self.Close(true)
+            self.Close(1)
 
         def OnTest(self, evt):
             string = "channelId = %s, senderId = %s, data = %s"%(evt.GetChannelId(), evt.GetSenderId(), evt.GetData())
-            wxLogMessage("Received: \"%s\"." % string)
+            wxCallAfter(wxLogMessage,"Received: \"%s\"." % string)
 
         def shutdown_network(self):
             wxLogMessage('Shutting down event client.')
