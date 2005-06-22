@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.226 2005-06-17 23:42:19 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.227 2005-06-22 22:41:45 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.226 2005-06-17 23:42:19 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.227 2005-06-22 22:41:45 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -24,6 +24,7 @@ from AccessGrid import DataStore
 from AccessGrid import hosting
 from AccessGrid.Toolkit import Application, Service
 from AccessGrid.Preferences import Preferences
+from AccessGrid.Descriptions import Capability
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Venue import ServiceAlreadyPresent
@@ -55,7 +56,11 @@ from AccessGrid.MulticastWatcher import MulticastWatcher
 
 from AccessGrid.Jabber.JabberClient import JabberClient
 
-
+try:
+    from AccessGrid.Beacon.rtpBeacon import Beacon
+except:
+    pass
+    
 class EnterVenueException(Exception):
     pass
    
@@ -94,6 +99,7 @@ class VenueClient:
         This client class is used on shared and personal nodes.
         """
         self.jabberHost = None
+        self.beacon = None
         self.userConf = UserConfig.instance()
         self.isPersonalNode = pnode
 
@@ -106,14 +112,18 @@ class VenueClient:
         self.profile = self.preferences.GetProfile()
        
         self.defaultNodeServiceUri = self.preferences.GetPreference(Preferences.NODE_URL) 
-        
+
+       
 #        if pnode == 0:
 #            pnode = int(self.preferences.GetPreference(Preferences.STARTUP_MEDIA))
 #            self.isPersonalNode = pnode
 
         self.capabilities = []
         self.nodeServiceUri = self.defaultNodeServiceUri
+        self.nodeServiceUri = "http://zuz.mcs.anl.gov:11000/NodeService"
         self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
+        self.nodeService.GetCapabilities()
+
         self.homeVenue = None
         self.houseKeeper = Scheduler()
         self.provider = None
@@ -171,13 +181,17 @@ class VenueClient:
         
         self.multicastWatcher = MulticastWatcher(statusChangeCB=self.__McastStatusCB)
         self.multicastWatcher.Start()
-        
+
+       
+        self.beaconLocation = None
+
+        # Create beacon capability
+        self.beaconCapabilities = [Capability(Capability.PRODUCER, "Beacon"),
+                                   Capability(Capability.CONSUMER, "Beacon")]
         
     def __McastStatusCB(self,obj):
         for s in self.observers:
             s.UpdateMulticastStatus(obj.GetStatus())
-
-        
 
     ##########################################################################
     #
@@ -789,13 +803,14 @@ class VenueClient:
             # next line needed needed until zsi can handle dictionaries.
             self.venueState = VenueState(uniqueId=state.uniqueId, name=state.name, description=state.description, uri=state.uri, connections=state.connections, clients=state.clients, data=state.data, eventLocation=evtLocation, textLocation=state.textLocation, applications=state.applications, services=state.services)
 
+            
             # Retreive stream descriptions
             if len(self.capabilities) > 0:
                 self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.profile.connectionId,
                                                                               self.capabilities)
-
             self.venueUri = URL
-                        
+
+            
             #
             # Create the event client
             #
@@ -862,8 +877,33 @@ class VenueClient:
                 self.__StartJabber(textLocation)
             except Exception,e:
                 log.exception("EnterVenue.__StartJabber failed")
-                print "exception starting jabber", e
+             
+            # Create the beacon client
+            self.__StartBeacon(self.beaconLocation)
 
+    def __StartBeacon(self, beaconLocation):
+        ''' Create and start the beacon client listening to beaconLocation '''
+
+        try:
+            self.beacon = None
+            
+            # Get beacon location
+            for s in self.streamDescList:
+                if s.capability.type == "Beacon":
+                    self.beaconLocation = s.location
+
+            # Create beacon
+            if self.beaconLocation:
+                self.beacon = Beacon()
+                self.beacon.SetConfigData('user', self.profile.name)
+                self.beacon.SetConfigData('groupAddress', str(self.beaconLocation.host)) #'233.4.200.19' )
+                self.beacon.SetConfigData('groupPort', str(self.beaconLocation.port))#'10002')
+                log.info("VenueClient.__StartBeacon: Address %s/%s"
+                         %(self.beaconLocation.host, self.beaconLocation.port))
+                self.beacon.Start()
+        except:
+            log.exception("VenueClient.__StartBeacon failed")
+                   
     def __StartJabber(self, textLocation):
         jabberHost = textLocation[0]
         jabberPort = textLocation[1]
@@ -915,6 +955,12 @@ class VenueClient:
         try:
             self.profile.capabilities = self.nodeService.GetCapabilities()
             self.capabilities = self.profile.capabilities
+
+            if not self.capabilities:
+                self.capabilities = []
+                
+            self.capabilities = self.capabilities + self.beaconCapabilities 
+            
         except:
             # This is a non fatal error, users should be notified
             # but still enter the venue
@@ -923,6 +969,11 @@ class VenueClient:
             
             try:
                 self.capabilities = self.nodeService.GetCapabilities()
+
+                if not self.capabilities:
+                    self.capabilities = []
+                
+                self.capabilities = self.capabilities + self.beaconCapabilities
             except:
                 # This is a non fatal error, users should be notified
                 # but still enter the venue
@@ -1000,7 +1051,11 @@ class VenueClient:
             #self.jabber.SetChatRoom("")
         except:
             log.exception("ExitVenue: Exit jabber failed")
-        
+
+        try:
+            self.beacon.Stop()
+        except:
+            log.exception("ExitVenue: Exit beacon failed")
         self.__InitVenueData()
         self.isInVenue = 0
         self.exitingLock.acquire()
@@ -1537,6 +1592,10 @@ class VenueClient:
         
     def GetMulticastStatus(self):
         return self.multicastWatcher.GetStatus()
+
+    def GetBeacon(self):
+        return self.beacon
+    
     
 
 # Retrieve a list of urls of (presumably) running venue clients

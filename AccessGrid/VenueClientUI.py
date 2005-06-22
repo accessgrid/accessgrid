@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.94 2005-06-14 15:44:46 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.95 2005-06-22 22:41:45 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.94 2005-06-14 15:44:46 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.95 2005-06-22 22:41:45 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -53,6 +53,8 @@ from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError
 from AccessGrid.VenueClient import DisconnectError
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
+from AccessGrid.Beacon.rtpBeaconUI import BeaconFrame
+            
 
 try:
     import win32api
@@ -212,6 +214,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # Make sure data can be dragged from tree to the desktop.
         #self.SetDropTarget(DesktopDropTarget(self))
 
+       
         
     ############################################################################
     # Section Index
@@ -2231,8 +2234,10 @@ class VenueAddressBar(wxSashWindow):
         
     def GoBack(self, event):
         self.parent.GoBackCB()
-      
+
     def CallAddress(self, event = None):
+       
+        
         url = self.address.GetValue()
         venueUri = self.__FixSpaces(url)
         self.parent.EnterVenueCB(venueUri)
@@ -3671,9 +3676,11 @@ class StatusBar(wxStatusBar):
     def __init__(self, parent):
         wxStatusBar.__init__(self, parent, -1)
         self.hidden = 0
+        self.parent = parent
         EVT_SIZE(self, self.OnSize)
 
-        self.mcast = wxStaticText(self,-1,'No Multicast')
+        self.mcast = wxButton(self, wxNewId(), "No Multicast",
+                              style = wxNO_BORDER ) #wxStaticText(self,-1,'No Multicast')
 
         self.progress = wxGauge(self, wxNewId(), 100,
                                 style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
@@ -3681,6 +3688,7 @@ class StatusBar(wxStatusBar):
 
         self.cancelButton = wxButton(self, wxNewId(), "Cancel")
         EVT_BUTTON(self, self.cancelButton.GetId(), self.OnCancel)
+        EVT_BUTTON(self, self.mcast.GetId(), self.OnMulticast)
 
         self.__hideProgressUI()
         self.Reset()
@@ -3691,6 +3699,15 @@ class StatusBar(wxStatusBar):
         self.SetStatusWidths([-1,self.secondFieldWidth])
         self.Reposition()
 
+    def OnMulticast(self, event):
+
+        if self.mcast.GetLabel() != "Multicast":
+            self.parent.Notify("You do not have multicast enabled. \nPlease contact your network administrator.", "Show Multicast Connectivity")
+        else:
+           
+            beacon = self.parent.venueClient.GetBeacon()
+            frame = BeaconFrame(self, log, beacon)
+        
     def __hideProgressUI(self):
         self.hidden = 1
         self.progress.Hide()
@@ -3771,8 +3788,8 @@ class StatusBar(wxStatusBar):
         '''
         # Mcast status
         rect = self.GetFieldRect(1)
-        self.mcast.SetPosition(wxPoint(rect.x+2, rect.y+4))
-        self.mcast.SetSize(wxSize(rect.width-4, rect.height-4))
+        self.mcast.SetPosition(wxPoint(rect.x, rect.y))
+        self.mcast.SetSize(wxSize(rect.width+8, rect.height))
 
         if self.fields == 2:
             self.__hideProgressUI()
