@@ -26,6 +26,7 @@ class Preferences:
     STARTUP_MEDIA = "startupMedia"
     NODE_URL = "defaultNodeServiceUrl"
     NODE_CONFIG = "defaultNodeConfig"
+    NODE_CONFIG_TYPE = "user"
     MULTICAST = "multicast"
     LOG_TO_CMD = "logToCmd"
     ENABLE_VIDEO = "enableVideo"
@@ -43,6 +44,7 @@ class Preferences:
         objects and are saved to separate config file, for example
         client profile.
         '''
+
         self.preferences = {}
         
         # Default preferences
@@ -54,6 +56,7 @@ class Preferences:
                          self.CLIENT_PORT: 0,
                          self.STARTUP_MEDIA: 1,
                          self.NODE_URL: "http://localhost:11000/NodeService",
+                         self.NODE_CONFIG_TYPE : "",
                          self.NODE_CONFIG: "",
                          self.MULTICAST: 1,
                          self.LOG_TO_CMD: 0,
@@ -70,7 +73,7 @@ class Preferences:
         categories = Log.GetCategories()
         for category in categories:
             self.default[category] = Log.DEBUG
-            
+
         # Use the already implemented parts of
         # client profile. Save client profile
         # to separate profile file.
@@ -84,7 +87,7 @@ class Preferences:
         self.config = UserConfig.instance(initIfNeeded=0)
 
         self.LoadPreferences()
-
+     
     def GetPreference(self, preference):
         '''
         Accessor for client preferences. If the preference
@@ -181,6 +184,18 @@ class Preferences:
             self.preferences[key] = self.default[key]
 
         self.StorePreferences()
+
+    def GetDefaultNodeConfig(self):
+        configs = self.GetNodeConfigs()
+        defaultName = self.GetPreference(self.NODE_CONFIG)
+        defaultType = self.GetPreference(self.NODE_CONFIG_TYPE)
+        
+        for c in configs:
+            if c.name == defaultName and c.type == defaultType:
+                return c
+            
+        return None
+        
                         
     def GetNodeConfigs(self):
         '''
@@ -189,12 +204,13 @@ class Preferences:
         ** Returns **
         *configs* list of node configurations [string]
         '''
+        from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
+
         # Retreive from node service; not stored in preferences.
         configs = []
-
         try:
-            from AccessGrid.AGNodeService import AGNodeServiceIW
-            configs = AGNodeServiceIW(self.GetPreference(self.NODE_URL)).GetConfigurations()
+            nservice = AGNodeServiceIW(self.GetPreference(self.NODE_URL))
+            configs = nservice.GetConfigurations() 
         except:
             log.exception("Preferences:SetDefaultNodeConfig: Failed to set default node service configuration.")
                                
@@ -250,7 +266,6 @@ class PreferencesDialog(wxDialog):
                                    wxDefaultSize, style = wxTR_HIDE_ROOT)
         self.okButton = wxButton(self, wxID_OK, "Save")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Close")
-
         self.preferences = preferences
 
         # Create panels for preferences
@@ -279,7 +294,7 @@ class PreferencesDialog(wxDialog):
         self.navigationPanel.Hide()
         self.nodePanel.Hide()
         self.currentPanel = self.loggingPanel
-                           
+
         EVT_SASH_DRAGGED(self.sideWindow, self.ID_WINDOW_LEFT, self.__OnSashDrag)
         EVT_TREE_SEL_CHANGED(self, self.sideTree.GetId(), self.OnSelect)
                        
@@ -317,7 +332,9 @@ class PreferencesDialog(wxDialog):
         self.preferences.SetPreference(Preferences.NODE_URL,
                                        self.nodePanel.GetDefaultNodeUrl())
         self.preferences.SetPreference(Preferences.NODE_CONFIG,
-                                       self.nodePanel.GetDefaultNodeConfig())
+                                       self.nodePanel.GetDefaultNodeConfig().name)
+        self.preferences.SetPreference(Preferences.NODE_CONFIG_TYPE,
+                                       self.nodePanel.GetDefaultNodeConfig().type)
         self.preferences.SetPreference(Preferences.RECONNECT,
                                        self.venueConnectionPanel.GetReconnect())
         self.preferences.SetPreference(Preferences.MAX_RECONNECT,
@@ -484,16 +501,23 @@ class NodePanel(wxPanel):
         else:
             self.nodeText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
             self.mediaText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
-                        
+
         self.mediaButton.SetValue(int(preferences.GetPreference(Preferences.STARTUP_MEDIA)))
         self.nodeUrlCtrl.SetValue(preferences.GetPreference(Preferences.NODE_URL))
         self.videoButton.SetValue(int(preferences.GetPreference(Preferences.ENABLE_VIDEO)))
         self.audioButton.SetValue(int(preferences.GetPreference(Preferences.ENABLE_AUDIO)))
-        
+
         default = ""
         try:
-            selections = preferences.GetNodeConfigs()
-            default = preferences.GetPreference(Preferences.NODE_CONFIG)
+            selections = map(lambda c:c.name + " ("+c.type+")", preferences.GetNodeConfigs())
+            defaultNodeName = preferences.GetPreference(Preferences.NODE_CONFIG)
+            defaultNodeType = preferences.GetPreference(Preferences.NODE_CONFIG_TYPE)
+            
+            self.configMap = {}
+            
+            for config in preferences.GetNodeConfigs():
+                self.configMap[config.name + " ("+config.type +")"] = config
+
             log.debug("default node config: %s", default)
             log.debug("node configs: %s", str(selections))
         except:
@@ -501,7 +525,7 @@ class NodePanel(wxPanel):
             selections = ["No configurations, run node service"]
                     
         self.nodeConfigCtrl = wxComboBox(self, wxNewId(),
-                                         default,
+                                         defaultNodeName + " ("+defaultNodeType+")",
                                          choices = selections,
                                          style = wxCB_DROPDOWN,
                                          size = wxSize(235, -1))
@@ -511,7 +535,7 @@ class NodePanel(wxPanel):
         return self.nodeUrlCtrl.GetValue()
 
     def GetDefaultNodeConfig(self):
-        return self.nodeConfigCtrl.GetValue()
+        return self.configMap[self.nodeConfigCtrl.GetValue()]
 
     def GetMediaStartup(self):
         if self.mediaButton.IsChecked():
@@ -1076,7 +1100,16 @@ class NavigationPanel(wxPanel):
         self.SetAutoLayout(1)
         
 if __name__ == "__main__":
+    from AccessGrid.Toolkit import WXGUIApplication
+    
     pp = wxPySimpleApp()
+
+    # Init the toolkit with the standard environment.
+    app = WXGUIApplication()
+
+    # Try to initialize
+    app.Initialize("Preferences")
+    
     p = Preferences()
     pDialog = PreferencesDialog(NULL, -1,
                                 'Preferences', p)
