@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.227 2005-06-22 22:41:45 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.228 2005-06-27 22:07:44 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.227 2005-06-22 22:41:45 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.228 2005-06-27 22:07:44 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -113,17 +113,19 @@ class VenueClient:
        
         self.defaultNodeServiceUri = self.preferences.GetPreference(Preferences.NODE_URL) 
 
-       
-#        if pnode == 0:
-#            pnode = int(self.preferences.GetPreference(Preferences.STARTUP_MEDIA))
-#            self.isPersonalNode = pnode
+        if pnode == 0:
+            pnode = int(self.preferences.GetPreference(Preferences.STARTUP_MEDIA))
+            self.isPersonalNode = pnode
 
         self.capabilities = []
         self.nodeServiceUri = self.defaultNodeServiceUri
-        self.nodeServiceUri = "http://zuz.mcs.anl.gov:11000/NodeService"
         self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
-        self.nodeService.GetCapabilities()
 
+        try:
+            self.nodeService.GetCapabilities()
+        except:
+            log.info("__init__: Get node capabilities failed")
+        
         self.homeVenue = None
         self.houseKeeper = Scheduler()
         self.provider = None
@@ -310,6 +312,7 @@ class VenueClient:
         else:
             self.server = InsecureServer((hostname, port))
 
+
         from AccessGrid.interfaces.VenueClient_interface import VenueClient as VenueClientI
         vci = VenueClientI(impl=self,auth_method_name=None)
         uri = self.server.RegisterObject(vci, path='/VenueClient')
@@ -330,6 +333,7 @@ class VenueClient:
             self.sm = AGServiceManager(self.server, self.app)
             smi = AGServiceManagerI(impl=self.sm,auth_method_name=None)
             uri = self.server.RegisterObject(smi, path="/ServiceManager")
+            
             self.sm.SetUri(uri)
             log.debug("__StartWebService: service manager: %s",
                       uri)
@@ -360,8 +364,10 @@ class VenueClient:
         if pnode:
             try:
                 prefs = self.app.GetPreferences()
-                defaultConfig = prefs.GetPreference(Preferences.NODE_CONFIG)
-                #self.ns.LoadConfiguration(defaultConfig)
+                #defaultConfig = prefs.GetPreference(Preferences.NODE_CONFIG)
+                defaultConfig = prefs.GetDefaultNodeConfig()
+                self.ns.LoadConfiguration(defaultConfig)
+
             except:
                 log.exception("Error loading default configuration")
             
