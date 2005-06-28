@@ -6,35 +6,49 @@
 # Author:      Thomas Uram, Susanne Lefvert
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeaconUI.py,v 1.1 2005-06-22 22:40:19 lefvert Exp $
+# RCS-ID:      $Id: rtpBeaconUI.py,v 1.2 2005-06-28 15:29:57 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
 
-__revision__ = "$Id: rtpBeaconUI.py,v 1.1 2005-06-22 22:40:19 lefvert Exp $"
+__revision__ = "$Id: rtpBeaconUI.py,v 1.2 2005-06-28 15:29:57 lefvert Exp $"
 
 from wxPython.wx import *
 from wxPython.grid import *
 from wxPython.lib.mixins.grid import wxGridAutoEditMixin
 
+from AccessGrid import icons
+
 import copy
+import threading
+import time
+
 
 class BeaconFrame(wxFrame):
     def __init__(self, parent, log, beacon):
-        wxFrame.__init__(self, parent, -1, "RTP Beacon View", size=(910,310))
-
+        wxFrame.__init__(self, parent, -1, "RTP Beacon View", size=(820,250))
+        self.SetIcon(icons.getAGIconIcon())
+        self.running = 1
+        self.updateThread = None
         self.beacon = beacon
         self.grid = wxGrid(self,-1)
-
+               
         if not self.beacon:
+            messageDialog = wxMessageDialog(self, "You have to be connected to a venue to see multicast connectivity to other participants.",
+                                            "Not Connected",
+                                            style = wxOK|wxICON_INFORMATION)
+            messageDialog.ShowModal()
+            messageDialog.Destroy()
+
             self.OnExit(None)
             return
             
         address = self.beacon.GetConfigData('groupAddress')
         port = self.beacon.GetConfigData('groupPort')
         self.SetLabel("Multicast Connectivity (Beacon Address: %s/%s)"%(address, port))
-        num = 10
+        num = 9
         self.grid.CreateGrid(num,num)
+        self.grid.EnableScrolling(1,1)
         
         self.grid.DisableDragRowSize()
         self.grid.DisableDragColSize()
@@ -43,57 +57,108 @@ class BeaconFrame(wxFrame):
             self.grid.SetColLabelValue(i,"")
             self.grid.SetRowLabelValue(i,"")
 
-        EVT_IDLE(self,self.OnIdle)
+        EVT_CLOSE(self, self.OnExit)
+       
+        self.__Layout()
         self.Show(True)
-        self.Layout()
-        
-    def OnIdle(self, event):
-        YELLOW = wxColour(255,255,0)
-        GRAY = wxColour(220,220,220)
+
+        self.updateThread = threading.Thread(target=self.ChangeValuesThread)
+        self.updateThread.setDaemon(1)
+        self.updateThread.start()
+
+    def __Layout(self):
+        '''
+        Do ui layout.
+        '''
+        sizer = wxBoxSizer(wxHORIZONTAL)
+        sizer.Add(self.grid, 1, wxEXPAND)
+
+        self.SetSizer(sizer)
+        self.SetAutoLayout(1)
+
+    def OnExit(self, event):
+        '''
+        Invoked when window is closed.
+        '''
+        self.Hide()
+        self.running = 0
+        if self.updateThread:
+            self.updateThread.join()
+        self.Destroy()
+
+    def ChangeValuesThread(self):
+        '''
+        Update UI based on beacon data.
+        '''
+        while self.running:
+            YELLOW = wxColour(255,255,0)
+            GRAY = wxColour(220,220,220)
        
-        # Get snapshot of sources
-        sources = copy.copy(self.beacon.GetSources()) 
-       
-        colNr = 0
+            # Get snapshot of sources
+            sources = copy.copy(self.beacon.GetSources()) 
+            colNr = 0
         
-        # for each ssrc
-        for s in sources:
+            # for each ssrc
+            for s in sources:
             
-            # set row and column headings
-            rowhead = self.beacon.GetSdes(s)
-          
-            if not rowhead:
-                rowhead = str(s)
-             
-            self.grid.SetRowLabelValue(colNr, rowhead)
-            self.grid.SetColLabelValue(colNr, rowhead)
+                # set column heading
+                colhead = self.beacon.GetSdes(s)
+                
+                if not colhead:
+                    colhead = str(s)
 
-            rowNr = 0
+                if colNr >= self.grid.GetNumberCols():
+                    self.grid.AppendCols(1)
+                    self.grid.SetColLabelValue(colNr, colhead)
 
-            # set cell values
-            for o in sources:
-                rr = self.beacon.GetReport(s, o)
+                elif self.grid.GetColLabelValue(colNr) != colhead:
+                    self.grid.SetColLabelValue(colNr, colhead)
+                
+                rowNr = 0
+
+                # set cell values
+                for o in sources:
+
+                    row = s
+                    col = o
+
+                    # set row heading
+                    rowhead = self.beacon.GetSdes(o)
+                    if not rowhead:
+                        rowhead = str(o)
+
+                    if rowNr >= self.grid.GetNumberRows():
+                        self.grid.AppendRows(1)
+                        self.grid.SetRowLabelValue(rowNr, rowhead)
+                    elif self.grid.GetRowLabelValue(rowNr) != rowhead:
+                        self.grid.SetRowLabelValue(rowNr, rowhead)
+
+                    if self.beacon.GetSdes(s):
+                        row = self.beacon.GetSdes(s)
+                    if self.beacon.GetSdes(o):
+                        col = self.beacon.GetSdes(o)
+
+                    # get receiver report and add value to grid
+                    rr = self.beacon.GetReport(s, o)
                                 
-                if rr:
-                    loss = rr.fract_lost
-                    self.grid.SetCellValue(rowNr,colNr,'%d%%' % (loss))
+                    if rr:
+                        loss = rr.fract_lost
+                        self.grid.SetCellValue(rowNr,colNr,'%d%%' % (loss))
 
-                    # set black colour between same sender
-                    if s == o:
-                        self.grid.SetCellBackgroundColour(colNr, colNr, wxBLACK) 
-                    elif loss < 10:
-                        self.grid.SetCellBackgroundColour(rowNr,colNr,wxGREEN)
-                    elif loss < 30:
-                        self.grid.SetCellBackgroundColour(rowNr,colNr,YELLOW)
+                        # set black colour for same sender
+                        if s == o:
+                            self.grid.SetCellBackgroundColour(rowNr, colNr, wxBLACK) 
+                        elif loss < 10:
+                            self.grid.SetCellBackgroundColour(rowNr,colNr,wxGREEN)
+                        elif loss < 30:
+                            self.grid.SetCellBackgroundColour(rowNr,colNr,YELLOW)
+                        else:
+                            self.grid.SetCellBackgroundColour(rowNr,colNr,wxRED)
                     else:
-                        self.grid.SetCellBackgroundColour(rowNr,colNr,wxRED)
-
-                else:
-                    if s == o:
-                        self.grid.SetCellBackgroundColour(colNr, colNr, wxBLACK)
+                        if s == o:
+                            # set black colour for same sender
+                            self.grid.SetCellBackgroundColour(rowNr, colNr, wxBLACK)
                                             
-                rowNr = rowNr + 1
-
-            colNr = colNr + 1
-
-        self.Refresh()
+                    rowNr = rowNr + 1
+                colNr = colNr + 1
+            self.Refresh()
