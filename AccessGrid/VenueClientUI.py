@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.95 2005-06-22 22:41:45 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.96 2005-06-28 18:49:27 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.95 2005-06-22 22:41:45 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.96 2005-06-28 18:49:27 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2175,8 +2175,10 @@ class VenueAddressBar(wxSashWindow):
         
         self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go",
                              wxDefaultPosition, wxSize(40, 21))
+        self.goButton.SetToolTip(wxToolTip("Enter venue"))
         self.backButton = wxButton(self.addressPanel, self.ID_BACK ,
                                "<<", wxDefaultPosition, wxSize(36, 21))
+        self.backButton.SetToolTip(wxToolTip("Go to previous venue"))
         self.__Layout()
         self.__AddEvents()
         
@@ -3448,6 +3450,8 @@ class JabberClientPanel(wxPanel):
   
         self.display = wxButton(self, self.ID_BUTTON, "Display",
                                 style = wxBU_EXACTFIT)
+
+        self.display.SetToolTip(wxToolTip("Send text message"))
         self.textInputId = wxNewId()
         self.textInput = wxTextCtrl(self, self.textInputId, "",
                                     size = wxSize(1000, 25),
@@ -3682,6 +3686,7 @@ class StatusBar(wxStatusBar):
         self.mcast = wxButton(self, wxNewId(), "No Multicast",
                               style = wxNO_BORDER ) #wxStaticText(self,-1,'No Multicast')
 
+        self.mcast.SetToolTip(wxToolTip("Show multicast connectivity"))
         self.progress = wxGauge(self, wxNewId(), 100,
                                 style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
         self.progress.SetValue(True)
@@ -4603,20 +4608,24 @@ class VenuePropertiesDialog(wxDialog):
 
         j = 0
         for stream in streamList:
-            self.list.InsertStringItem(j, 'item')
-            self.list.SetStringItem(j, 0, str(stream.location.host))
-            self.list.SetStringItem(j, 1, str(stream.location.port))
-            if hasattr(stream.location, 'ttl'):
-                self.list.SetStringItem(j, 2, str(stream.location.ttl))
-            else:
-                self.list.SetStringItem(j, 2, str(''))
-            self.list.SetStringItem(j, 3, str(stream.capability.type))
-            if stream.static:
-                self.list.SetStringItem(j, 4, 'static')
-            else:
-                self.list.SetStringItem(j, 4, 'dynamic')
+            for location in stream.networkLocations:
+            
+                self.list.InsertStringItem(j, 'item')
+                self.list.SetStringItem(j, 0, str(stream.location.host))
+                self.list.SetStringItem(j, 1, str(stream.location.port))
+                if hasattr(stream.location, 'ttl'):
+                    self.list.SetStringItem(j, 2, str(stream.location.ttl))
+                else:
+                    self.list.SetStringItem(j, 2, str(''))
+
+                self.list.SetStringItem(j, 3, str(stream.capability.type +
+                                                  " (" +location.type+")"))
+                if stream.static:
+                    self.list.SetStringItem(j, 4, 'static')
+                else:
+                    self.list.SetStringItem(j, 4, 'dynamic')
                 
-            j = j + 1
+                j = j + 1
                 
     def __Layout(self):
         '''
