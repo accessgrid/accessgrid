@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.96 2005-06-28 18:49:27 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.97 2005-06-29 22:03:25 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.96 2005-06-28 18:49:27 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.97 2005-06-29 22:03:25 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -727,12 +727,22 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         #
         # Prompt for files to upload if not given
         #
+        
         if not fileList:
             dlg = wxFileDialog(self, "Choose file(s):",
                                style = wxOPEN | wxMULTIPLE)
             if dlg.ShowModal() == wxID_OK:
                 fileList = dlg.GetPaths()
-                
+
+                for f in fileList:
+                    try:
+                        unicode(f)
+                    except:
+                        fileList = []
+                        MessageDialog(self, \
+                                      'File %s includes foreign characters. \nPlease rename before uploading.'%f,
+                                      'Upload File')
+
             dlg.Destroy()
 
 
@@ -3564,9 +3574,9 @@ class JabberClientPanel(wxPanel):
             self.textInput.Clear()
             self.textInput.SetFocus()
             if not sent:
-                text = "You are not in a venue"
-                title = "Error"
-                MessageDialog(self, text, title, style = wxOK|wxICON_ERROR)
+                text = "You have to be connected to a venue to send a text message"
+                title = "Not Connected"
+                MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
         except Exception, e:
             self.textInput.Clear()
             log.exception(e)
