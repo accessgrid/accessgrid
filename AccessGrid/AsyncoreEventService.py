@@ -334,147 +334,6 @@ class NetworkService(asyncore.dispatcher):
     def set_handler(self,handler):
         self.handler = handler
             
-            
-try:
-    from M2Crypto import SSL
-    from M2Crypto.SSL import ssl_dispatcher
-    SSL.Connection.clientPostConnectionCheck = None
-    SSL.Connection.serverPostConnectionCheck = None
-    class SecureNetworkConnection (SSL.ssl_dispatcher):
-        '''
-        A network connection is an instances of class asyncore.dispatcher.
-        This class takes care of read/write on the socket.
-        '''
-        def __init__ (self, conn, addr,handler=None):
-            SSL.ssl_dispatcher.__init__(self, conn)
-            self.__handler = handler
-            self.__buffer = []
-            self.__data = ''
-
-            # the connection object is the unique id for this class.
-            self.__id = conn
-
-        def get_id(self):
-            return self.__id
-
-        def add_to_buffer(self, data):
-            """
-            Add data to submit.
-            """
-            try:
-                self.__buffer.append(data)
-            except:
-                log.exception("NetworkConnection.add_to_buffer: Failed %s"%(data))
-
-        def handle_read(self):
-            """
-            Called when the asynchronous loop detects that a read()
-            call on the connection's socket will succeed. 
-            """
-            try:
-                self.__data = self.recv(8192)
-                if self.__handler:
-                    self.__handler(self, self.__data)
-                else:
-                    log.warn("NetworkConnection.handle_read: Unhandled message %s"(self.__buffer))
-            except:
-                log.exception("NetworkConnection.handle_read: Failed %s"
-                              %(self.__data))
-
-        def writable(self):
-            """
-            Method used to determine whether the connection's socket
-            should be added to the list of connections polled for write
-            events. 
-            """
-            return (len(self.__buffer) > 0)
-
-        def handle_write(self):
-            """
-            Called when the asynchronous loop detects that a writable
-            socket can be written. Implements buffering.
-            """
-            try:
-                sent = self.send(self.__buffer[0])
-                self.__buffer = self.__buffer[1:]
-
-            except:
-                log.exception("NetworkConnection.handle_write: Failed %s"
-                              %(self.__buffer))
-
-        def handle_close(self):
-            """
-            Called when socket is closed.
-            """
-            try:
-                self.close()
-            except:
-                log.exception("NetworkConnection.handle_close: Failed")
-                
-    class SecureNetworkService (ssl_dispatcher):
-        '''
-        The NetworkService accepts incoming network connections. 
-        '''
-        def __init__ (self,port,context,handler=None):
-            '''
-            Create a socket and listen for connections. Bind socket
-            to address localhost and port.
-            '''
-            ssl_dispatcher.__init__ (self)
-
-            self.handler = handler
-            self.context = context
-
-            log.debug('NetworkService: Bind to localhost on port %s'
-                      %(port))
-
-            self.create_socket (self.context)
-            self.set_reuse_addr()
-            self.bind(('', port))
-            self.listen(5) # maximum number of queued connections
-
-        def handle_accept (self):
-            '''
-            Accept incoming connections. 
-            '''
-            try:
-                conn, addr = self.accept()
-
-
-                log.debug('NetworkService: Incoming connection from %s:%d'
-                          %(addr[0], addr[1]))
-                # create a connection
-                SecureNetworkConnection(conn, addr, self.handler)
-            except:
-                log.exception('Exception in accept')
-
-        def set_handler(self,handler):
-            self.handler = handler
-
-    class SecureEventService(EventServiceBase):
-        def __init__(self,name,description,id,type,location):
-
-            host,port = location
-            log.debug("EventServcie.__init__: Starting event service at %s %s"
-                      %(host, port))
-
-            certfile = '/home/turam/certs/anoncert.pem'
-            keyfile = None
-            caCertDir = '/home/turam/.AccessGrid/Config/trustedCACerts'        
-            context = SSL.Context()
-            context.load_cert(certfile,keyfile)
-            context.load_verify_locations(capath=caCertDir)
-            context.set_verify(SSL.verify_peer, 10)
-            server = SecureNetworkService(port,context)
-
-            EventServiceBase.__init__(self,name,description,id,type,location,server)
-        
-except ImportError, e:
-    log.info('Import error: %s', e.args[0])
-except:
-    log.exception('Exception in secure event service code')
-
-
 class EventLoop:
     """
     Adapted from class event_loop in Sam Rushing's async package
@@ -640,6 +499,150 @@ class EventService(EventServiceBase):
         EventServiceBase.__init__(self,name,description,id,type,location,server)
         
         
+
+
+            
+try:
+    from M2Crypto import SSL
+    from M2Crypto.SSL import ssl_dispatcher
+    SSL.Connection.clientPostConnectionCheck = None
+    SSL.Connection.serverPostConnectionCheck = None
+    class SecureNetworkConnection (SSL.ssl_dispatcher):
+        '''
+        A network connection is an instances of class asyncore.dispatcher.
+        This class takes care of read/write on the socket.
+        '''
+        def __init__ (self, conn, addr,handler=None):
+            SSL.ssl_dispatcher.__init__(self, conn)
+            self.__handler = handler
+            self.__buffer = []
+            self.__data = ''
+
+            # the connection object is the unique id for this class.
+            self.__id = conn
+
+        def get_id(self):
+            return self.__id
+
+        def add_to_buffer(self, data):
+            """
+            Add data to submit.
+            """
+            try:
+                self.__buffer.append(data)
+            except:
+                log.exception("NetworkConnection.add_to_buffer: Failed %s"%(data))
+
+        def handle_read(self):
+            """
+            Called when the asynchronous loop detects that a read()
+            call on the connection's socket will succeed. 
+            """
+            try:
+                self.__data = self.recv(8192)
+                if self.__handler:
+                    self.__handler(self, self.__data)
+                else:
+                    log.warn("NetworkConnection.handle_read: Unhandled message %s"(self.__buffer))
+            except:
+                log.exception("NetworkConnection.handle_read: Failed %s"
+                              %(self.__data))
+
+        def writable(self):
+            """
+            Method used to determine whether the connection's socket
+            should be added to the list of connections polled for write
+            events. 
+            """
+            return (len(self.__buffer) > 0)
+
+        def handle_write(self):
+            """
+            Called when the asynchronous loop detects that a writable
+            socket can be written. Implements buffering.
+            """
+            try:
+                sent = self.send(self.__buffer[0])
+                self.__buffer = self.__buffer[1:]
+
+            except:
+                log.exception("NetworkConnection.handle_write: Failed %s"
+                              %(self.__buffer))
+
+        def handle_close(self):
+            """
+            Called when socket is closed.
+            """
+            try:
+                self.close()
+            except:
+                log.exception("NetworkConnection.handle_close: Failed")
+                
+    class SecureNetworkService (ssl_dispatcher):
+        '''
+        The NetworkService accepts incoming network connections. 
+        '''
+        def __init__ (self,port,context,handler=None):
+            '''
+            Create a socket and listen for connections. Bind socket
+            to address localhost and port.
+            '''
+            ssl_dispatcher.__init__ (self)
+
+            self.handler = handler
+            self.context = context
+
+            log.debug('NetworkService: Bind to localhost on port %s'
+                      %(port))
+
+            self.create_socket (self.context)
+            self.set_reuse_addr()
+            self.bind(('', port))
+            self.listen(5) # maximum number of queued connections
+
+        def handle_accept (self):
+            '''
+            Accept incoming connections. 
+            '''
+            try:
+                conn, addr = self.accept()
+
+
+                log.debug('NetworkService: Incoming connection from %s:%d'
+                          %(addr[0], addr[1]))
+                # create a connection
+                SecureNetworkConnection(conn, addr, self.handler)
+            except:
+                log.exception('Exception in accept')
+
+        def set_handler(self,handler):
+            self.handler = handler
+
+    class SecureEventService(EventServiceBase):
+        def __init__(self,name,description,id,type,location,certfile,keyfile,cadir):
+
+            host,port = location
+            log.debug("EventServcie.__init__: Starting event service at %s %s"
+                      %(host, port))
+
+            context = SSL.Context()
+            context.load_cert(certfile,keyfile)
+            context.load_verify_locations(capath=cadir)
+            context.set_verify(SSL.verify_peer, 10)
+            server = SecureNetworkService(port,context)
+
+            EventServiceBase.__init__(self,name,description,id,type,location,server)
+        
+except ImportError, e:
+    import traceback
+    traceback.print_exc()
+    log.info('Import error: %s', e.args[0])
+except:
+    import traceback
+    traceback.print_exc()
+    log.exception('Exception in secure event service code')
+
+
         
 if __name__=='__main__':
 
