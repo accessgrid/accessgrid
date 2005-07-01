@@ -16,9 +16,10 @@ class EventClient:
     '''
     Interface class.
     '''
-    def __init__(self, location, id, channelId):
-        log.debug('EventClient.__init__: Create event client, location: %s id %s' %(location, channelId))
-        self.client = AsyncoreEventClient(location, id, channelId)
+    def __init__(self, location, id, channelId,client=None):
+        if not client:
+            client = NetworkClient(location)
+        self.client = AsyncoreEventClient(location, id, channelId, client)
                 
     def RegisterCallback(self, eventType, callback):
         '''
@@ -105,7 +106,80 @@ class NetworkClient (asyncore.dispatcher):
                 
     def writable(self):
         return 0
+
+    def set_handler(self,handler):
+        self.handler = handler
              
+
+try:
+    from M2Crypto import SSL
+    SSL.Connection.clientPostConnectionCheck = None
+    SSL.Connection.serverPostConnectionCheck = None
+    class SecureNetworkClient(SSL.ssl_dispatcher):
+        '''
+        The NetworkClient is an instances of class asyncore.dispatcher.
+        This class takes care of read/write on the socket.
+        '''
+        def __init__ (self, location, handler=None):
+            '''
+            location - (host, port) location
+            handler - callback for handling read and writes
+            '''
+            self.out_buffer = []
+            self.in_buffer = []
+
+            SSL.ssl_dispatcher.__init__ (self)
+            log.debug('NetworkClient.__init__: Connect to %s %s'%location)
+
+
+            context = SSL.Context()
+
+            self.create_socket(context)
+            self.connect(location)
+
+            self.handler = None
+
+        def handle_connect(self):
+            pass
+
+        def handle_read(self):
+           try:
+               self.in_buffer.append(self.recv(8192))
+
+               if self.handler:
+                   self.handler(self.in_buffer[0])
+                   self.in_buffer = self.in_buffer[1:]
+               else:
+                   log.warn('NetworkClient.handle_read:  Unhandled message %s' %self.out_buffer)
+
+           except:
+                log.exception('NetworkClient.handle_read: handle_read failed')
+
+        def handle_write(self):
+            try:
+                sent = self.send(self.out_buffer[0])
+                self.out_buffer = self.out_buffer[1:]
+
+            except:
+                log.exception('NetworkClient.handle_write error')
+
+        def writable(self):
+            return 0
+
+        def set_handler(self,handler):
+            self.handler = handler
+
+    class SecureEventClient(EventClient):
+        def __init__(self, location, id, channelId):
+            client = SecureNetworkClient(location)
+            EventClient.__init__(self,location,id,channelId,client)
+
+except ImportError, e:
+    log.info('Import error: %s', e.args[0])
+except:
+    log.exception('Exception in secure event service code')
+    
+
 # Adapted from class event_loop in Sam Rushing's async package
 class EventLoop:
 
@@ -142,14 +216,15 @@ class AsyncoreEventClient(threading.Thread):
     a socket, then sends the command back to the GUI as a "NetworkEvent"
     '''
 
-    def __init__(self, location, id, channelId):
+    def __init__(self, location, id, channelId,client):
         threading.Thread.__init__(self)
         self.keep_going = 1
         self.running    = 0
         self.callbacks = {}
         self.id = id
         self.channelId = channelId
-        self.client = NetworkClient(location, self.received_a_line)
+        self.client = client
+        self.client.set_handler(self.received_a_line)
         self.event_loop = EventLoop()
         self.buffer = ''
                 
