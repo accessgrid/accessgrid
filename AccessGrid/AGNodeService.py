@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.90 2005-06-01 21:11:22 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.91 2005-07-05 21:28:34 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.90 2005-06-01 21:11:22 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.91 2005-07-05 21:28:34 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -261,7 +261,6 @@ class AGNodeService:
         """
         Load named node configuration
         """
-
         log.info("NodeService.LoadConfiguration")
         exceptionText = ""
 
@@ -297,6 +296,7 @@ class AGNodeService:
             #
             serviceManagerList = []
             serviceManagerSections = string.split( configParser.get("node", "servicemanagers") )
+          
             for serviceManagerSection in serviceManagerSections:
                 #
                 # Create Service Manager
@@ -355,12 +355,13 @@ class AGNodeService:
         #
         self.serviceManagers = dict()
         for serviceManager, serviceList in serviceManagerList:
-        
+
+            
             serviceManagerProxy = AGServiceManagerIW(serviceManager.uri)
 
             #
             # Skip unreachable service managers
-            #
+            
             try:
                 serviceManagerProxy.IsValid()
             except:
@@ -376,13 +377,15 @@ class AGNodeService:
             #
             # Remove all services from service manager
             #
+         
             try:
                 serviceManagerProxy.RemoveServices()
             except:
                 log.exception("Exception removing services from Service Manager")
                 exceptionText += "Couldn't remove services from Service Manager: %s" %(serviceManager.name)
-                
+
             servicePackages = serviceManagerProxy.GetServicePackageDescriptions()
+            
                 
             #
             # Add Service to Service Manager
@@ -406,8 +409,7 @@ class AGNodeService:
                     # Set the identity to be used by the service
                     prefs = self.app.GetPreferences()
                     serviceProxy.SetIdentity(prefs.GetProfile() )
-                        
-                        
+                                            
                 except:
                     log.exception("Exception adding service %s" % (service.packageName))
                     exceptionText += "Couldn't add service %s" % (service.packageName)
@@ -495,8 +497,8 @@ class AGNodeService:
         Store node configuration with specified name
         """
         log.info("NodeService.StoreConfiguration")
+        
         try:
-
             if config.type == NodeConfigDescription.SYSTEM:
                 fileName = os.path.join(self.sysNodeConfigDir, config.name)
             else:
@@ -521,7 +523,6 @@ class AGNodeService:
             node_servicemanagers = ""
 
             for serviceManager in self.serviceManagers.values():
-
                 servicemanager_services = ""
 
                 #
@@ -532,8 +533,12 @@ class AGNodeService:
                 node_servicemanagers += serviceManagerSection + " "
                 configParser.set( serviceManagerSection, "name", serviceManager.name )
                 configParser.set( serviceManagerSection, "url", serviceManager.uri )
-
+                
                 services = AGServiceManagerIW( serviceManager.uri ).GetServices()
+
+                if not services:
+                    services = []
+
                 for service in services:
                 
                     serviceSection = 'service%d' % numServices
