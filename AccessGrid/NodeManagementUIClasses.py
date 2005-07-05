@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.78 2005-06-02 18:36:36 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.79 2005-07-05 21:27:35 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.78 2005-06-02 18:36:36 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.79 2005-07-05 21:27:35 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -31,6 +31,7 @@ from AccessGrid.UIUtilities import AboutDialog
 from AccessGrid.AGParameter import ValueParameter, RangeParameter
 from AccessGrid.AGParameter import OptionSetParameter
 from AccessGrid.Descriptions import AGServiceManagerDescription, AGServiceDescription
+from AccessGrid.Descriptions import NodeConfigDescription
 from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.AGServiceManager import AGServiceManager
@@ -106,7 +107,7 @@ class RendezvousServiceDialog(wxDialog):
         self.browser = ServiceDiscovery.Browser(serviceType,self.BrowseCallback)
         self.browser.Start()
 
-        x,y = wx.wxGetMousePosition()
+        x,y = wxGetMousePosition()
         w,h = self.GetSize()
         self.Move( (x-w/2,y-h/2) )
 
@@ -164,7 +165,7 @@ class ServiceChoiceDialog(wxDialog):
         
         self.SetSizer( sizer1 )
         
-        x,y = wx.wxGetMousePosition()
+        x,y = wxGetMousePosition()
         w,h = self.GetSize()
         self.Move( (x-w/2,y-h/2) )
         #EVT_TEXT_ENTER(self, self.GetId(), self.OnOK)
@@ -219,6 +220,12 @@ class StoreConfigDialog(wxDialog):
         wxDialog.__init__(self, parent, id, title, style =
                           wxDEFAULT_DIALOG_STYLE)
 
+        # Create a display name - config map
+        self.configs = {}
+        for c in choices:
+            displayName = c.name+" ("+c.type+")"
+            self.configs[displayName] = c
+            
         # Set up sizers
         gridSizer = wxFlexGridSizer(5, 1, 5, 5)
         gridSizer.AddGrowableCol(0)
@@ -231,7 +238,7 @@ class StoreConfigDialog(wxDialog):
 
         # Create config list label and listctrl
         configLabel = wxStaticText(self,-1,"Configuration name")
-        self.configList = wxListBox(self,-1, style=wxLB_SINGLE, choices=choices)
+        self.configList = wxListBox(self,wxNewId(), style=wxLB_SINGLE, choices=self.configs.keys())
         gridSizer.Add( configLabel, 1 )
         gridSizer.Add( self.configList, 0, wxEXPAND )
         EVT_LISTBOX(self, self.configList.GetId(), self.__ListItemSelectedCallback)
@@ -244,6 +251,10 @@ class StoreConfigDialog(wxDialog):
         # Create default checkbox
         self.defaultCheckbox = wxCheckBox(self,-1,"Set as default")
         gridSizer.Add( self.defaultCheckbox, 1, wxEXPAND )
+
+        # Create system checkbox
+        self.systemCheckbox = wxCheckBox(self,-1,"Save as system configuration")
+        gridSizer.Add( self.systemCheckbox, 1, wxEXPAND )
 
         # Create ok/cancel buttons
         sizer3 = wxBoxSizer(wxHORIZONTAL)
@@ -264,7 +275,23 @@ class StoreConfigDialog(wxDialog):
         sizer1.Fit(self)
 
     def __ListItemSelectedCallback(self, event):
-        self.configText.SetValue( event.GetString() )
+        name = event.GetString()
+
+        if self.configs.has_key(event.GetString()):
+            name = self.configs[event.GetString()].name
+        
+        self.configText.SetValue(name )
+
+        # If system config is selected, check the system button
+        c = None
+        if self.configs.has_key(name):
+            c = self.configs[event.GetString()]
+            
+            if c.type == NodeConfigDescription.SYSTEM:
+                self.systemCheckbox.SetValue(1)
+            else:
+                self.systemCheckbox.SetValue(0)
+
         self.okButton.Enable(true)
 
     def __TextEnteredCallback(self,event):
@@ -276,8 +303,18 @@ class StoreConfigDialog(wxDialog):
             self.okButton.Enable(false)
 
     def GetValue(self):
-        # Get value of textfield and checkbox
-        return (self.configText.GetValue(), self.defaultCheckbox.IsChecked())
+        # Get value of textfield, default checkbox, and system checkbox
+        name = self.configText.GetValue()
+
+        # Check if the config already exists and
+        # get the real name
+        if self.configs.has_key(name):
+            config = self.configs[name]
+            name = config.name
+                
+        return (name,
+                self.defaultCheckbox.IsChecked(),
+                self.systemCheckbox.IsChecked())
 
 
               
@@ -409,7 +446,7 @@ class ServiceConfigurationDialog(wxDialog):
 
         sizer1.Fit(self)
         
-        x,y = wx.wxGetMousePosition()
+        x,y = wxGetMousePosition()
         w,h = self.GetSize()
         self.Move( (x-w/2,y-h/2) )
 
@@ -606,8 +643,14 @@ class NodeManagementClientFrame(wxFrame):
         """
         configs = self.nodeServiceHandle.GetConfigurations()
 
+        # Map display name to configurations
+        configMap = {}
+        for c in configs:
+            displayName = c.name+" ("+c.type+")"
+            configMap[displayName] = c
+
         d = wxSingleChoiceDialog( self, "Select a configuration file to load", 
-                                  "Load Configuration Dialog", map(lambda x:x.name,configs))
+                                  "Load Configuration Dialog", configMap.keys())
         ret = d.ShowModal()
 
         if ret == wxID_OK:
@@ -616,7 +659,10 @@ class NodeManagementClientFrame(wxFrame):
             if len( conf ) == 0:
                 self.Error( "No selection made" )
                 return
-                
+
+            # Get correct config name
+            if configMap.has_key:
+                conf = configMap[conf].name
 
             try:
                 if self.nodeServiceHandle.NeedMigrateNodeConfig(conf):
@@ -640,7 +686,6 @@ class NodeManagementClientFrame(wxFrame):
                 wxBeginBusyCursor()
                 self.nodeServiceHandle.LoadConfiguration( config )
             except:
-                wxEndBusyCursor()
                 log.exception("NodeManagementClientFrame.LoadConfiguration: Can not load configuration from node service")
                 self.Error("Error loading node configuration %s" % (conf,))
 
@@ -656,21 +701,21 @@ class NodeManagementClientFrame(wxFrame):
         configs = self.nodeServiceHandle.GetConfigurations()
 
         # Prompt user to name the configuration
-        d = StoreConfigDialog(self,-1,"Store Configuration", map(lambda x:x.name,configs) )
+        d = StoreConfigDialog(self,-1,"Store Configuration", configs)
         ret = d.ShowModal()
 
         if ret == wxID_OK:
             ret = d.GetValue()
             if ret:
-                (configName,isDefault) = ret
+                (configName,isDefault,isSystem) = ret
                 
                 # Handle error cases
                 if len( configName ) == 0:
                     self.Error( "Invalid config name specified (%s)" % (configName,) )
                     return
-
+                     
                 # Confirm overwrite
-                if configName in configs:
+                if configName in map(lambda x: x.name, configs): #configs:
                     text ="Overwrite %s?" % (configName,)
                     dlg = wxMessageDialog(self, text, "Confirm",
                                           style = wxICON_INFORMATION | wxOK | wxCANCEL)
@@ -680,16 +725,23 @@ class NodeManagementClientFrame(wxFrame):
                         return
 
                 config = None
+             
                 for c in configs:
                     if configName == c.name:
                         config = c
 
+                if not config:
+                    # Create a new configuration
+                    config = NodeConfigDescription(configName, NodeConfigDescription.USER)
+
+                if isSystem:
+                    config.type = NodeConfigDescription.SYSTEM
+                                    
                 # Store the configuration
                 try:
                     wxBeginBusyCursor()
                     self.nodeServiceHandle.StoreConfiguration( config )
                 except:
-                    wxEndBusyCursor()
                     log.exception("Error storing node configuration %s" % (configName,))
                     self.Error("Error storing node configuration %s" % (configName,))
 
@@ -697,8 +749,7 @@ class NodeManagementClientFrame(wxFrame):
                 if isDefault:
                     prefs = self.app.GetPreferences()
                     prefs.SetPreference(Preferences.NODE_CONFIG,configName)
-                
-                
+                    
                 wxEndBusyCursor()
 
         d.Destroy()
@@ -735,9 +786,7 @@ class NodeManagementClientFrame(wxFrame):
             self.tree.SetItemImage(sm, self.smImage, which=wxTreeItemIcon_Expanded)
             self.tree.SetItemData(sm,wxTreeItemData(serviceManager))
             services = AGServiceManagerIW( serviceManager.uri ).GetServices()
-            
-            print "services = ", type(services), services
-            
+                        
             if services: 
               for service in services:
                 s = self.tree.AppendItem(sm,service.name)
@@ -760,8 +809,7 @@ class NodeManagementClientFrame(wxFrame):
             if serviceManager.uri in selectionUrls:
                 self.tree.SelectItem(sm)
         self.tree.Expand(root)
-        print "Done with UpdateUI"
-
+    
     ############################
     ## HOST menu
     ############################
@@ -958,7 +1006,6 @@ class NodeManagementClientFrame(wxFrame):
             self.UpdateUI()
 
         except:
-            wxEndBusyCursor()
             log.exception("Error enabling service")
             self.Error("Error enabling service")
             
@@ -997,7 +1044,6 @@ class NodeManagementClientFrame(wxFrame):
             # Update the service list
             self.UpdateUI()
         except:
-            wxEndBusyCursor()
             log.exception("Error disabling service")
             self.Error("Error disabling service")
 
@@ -1150,7 +1196,7 @@ class NodeManagementClientFrame(wxFrame):
         menu.Append(ID_SERVICE_REMOVE, "Remove", "Remove the selected service")
 
         # Get the Mouse Position on the Screen 
-        (windowx, windowy) = wx.wxGetMousePosition() 
+        (windowx, windowy) = wxGetMousePosition() 
         # Translate the Mouse's Screen Position to the Mouse's Control Position 
         pos = self.tree.ScreenToClientXY(windowx, windowy)
         posl = [ pos[0] + 155, pos[1] + 25 ]
@@ -1168,7 +1214,7 @@ class NodeManagementClientFrame(wxFrame):
         menu.Append(ID_HOST_REMOVE, "Remove Service Manager", "Remove a service manager")
 
         # Get the Mouse Position on the Screen 
-        (windowx, windowy) = wx.wxGetMousePosition() 
+        (windowx, windowy) = wxGetMousePosition() 
         # Translate the Mouse's Screen Position to the Mouse's Control Position 
         pos = self.tree.ScreenToClientXY(windowx, windowy)
         posl = [ pos[0] + 25, pos[1] + 25 ]
