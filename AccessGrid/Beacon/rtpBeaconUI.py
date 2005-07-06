@@ -6,12 +6,12 @@
 # Author:      Thomas Uram, Susanne Lefvert
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeaconUI.py,v 1.3 2005-07-06 18:01:37 lefvert Exp $
+# RCS-ID:      $Id: rtpBeaconUI.py,v 1.4 2005-07-06 21:46:33 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
 
-__revision__ = "$Id: rtpBeaconUI.py,v 1.3 2005-07-06 18:01:37 lefvert Exp $"
+__revision__ = "$Id: rtpBeaconUI.py,v 1.4 2005-07-06 21:46:33 lefvert Exp $"
 
 from wxPython.wx import *
 from wxPython.grid import *
@@ -45,7 +45,7 @@ class BeaconFrame(wxFrame):
 
         address = self.beacon.GetConfigData('groupAddress')
         port = self.beacon.GetConfigData('groupPort')
-        self.SetLabel("Multicast Connectivity (Beacon Address: %s/%s)"%(address, port))
+        self.SetLabel("Multicast Connectivity (Beacon Address: %s/%s - Fractional Loss)"%(address, port))
         num = 9
         self.grid.CreateGrid(num,num)
         self.grid.EnableScrolling(1,1)
@@ -141,7 +141,9 @@ class BeaconFrame(wxFrame):
                     rr = self.beacon.GetReport(s, o)
                                 
                     if rr:
-                        loss = rr.fract_lost
+                        # 1/4 packets lost, the loss fraction would be 1/4*256 = 64 
+                        loss = (rr.fract_lost / 256.0) * 100.0
+                        
                         wxCallAfter(self.grid.SetCellValue, rowNr,colNr,'%d%%' % (loss))
 
                         # set black colour for same sender
