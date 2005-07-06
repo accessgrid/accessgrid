@@ -6,12 +6,12 @@
 # Author:      Thomas Uram, Susanne Lefvert
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeaconUI.py,v 1.2 2005-06-28 15:29:57 lefvert Exp $
+# RCS-ID:      $Id: rtpBeaconUI.py,v 1.3 2005-07-06 18:01:37 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
 
-__revision__ = "$Id: rtpBeaconUI.py,v 1.2 2005-06-28 15:29:57 lefvert Exp $"
+__revision__ = "$Id: rtpBeaconUI.py,v 1.3 2005-07-06 18:01:37 lefvert Exp $"
 
 from wxPython.wx import *
 from wxPython.grid import *
@@ -32,7 +32,7 @@ class BeaconFrame(wxFrame):
         self.updateThread = None
         self.beacon = beacon
         self.grid = wxGrid(self,-1)
-               
+                       
         if not self.beacon:
             messageDialog = wxMessageDialog(self, "You have to be connected to a venue to see multicast connectivity to other participants.",
                                             "Not Connected",
@@ -42,14 +42,14 @@ class BeaconFrame(wxFrame):
 
             self.OnExit(None)
             return
-            
+
         address = self.beacon.GetConfigData('groupAddress')
         port = self.beacon.GetConfigData('groupPort')
         self.SetLabel("Multicast Connectivity (Beacon Address: %s/%s)"%(address, port))
         num = 9
         self.grid.CreateGrid(num,num)
         self.grid.EnableScrolling(1,1)
-        
+             
         self.grid.DisableDragRowSize()
         self.grid.DisableDragColSize()
         
@@ -63,7 +63,6 @@ class BeaconFrame(wxFrame):
         self.Show(True)
 
         self.updateThread = threading.Thread(target=self.ChangeValuesThread)
-        self.updateThread.setDaemon(1)
         self.updateThread.start()
 
     def __Layout(self):
@@ -129,9 +128,9 @@ class BeaconFrame(wxFrame):
 
                     if rowNr >= self.grid.GetNumberRows():
                         self.grid.AppendRows(1)
-                        self.grid.SetRowLabelValue(rowNr, rowhead)
+                        wxCallAfter(self.grid.SetRowLabelValue, rowNr, rowhead)
                     elif self.grid.GetRowLabelValue(rowNr) != rowhead:
-                        self.grid.SetRowLabelValue(rowNr, rowhead)
+                        wxCallAfter(self.grid.SetRowLabelValue, rowNr, rowhead)
 
                     if self.beacon.GetSdes(s):
                         row = self.beacon.GetSdes(s)
@@ -143,22 +142,23 @@ class BeaconFrame(wxFrame):
                                 
                     if rr:
                         loss = rr.fract_lost
-                        self.grid.SetCellValue(rowNr,colNr,'%d%%' % (loss))
+                        wxCallAfter(self.grid.SetCellValue, rowNr,colNr,'%d%%' % (loss))
 
                         # set black colour for same sender
                         if s == o:
-                            self.grid.SetCellBackgroundColour(rowNr, colNr, wxBLACK) 
+                            wxCallAfter(self.grid.SetCellBackgroundColour, rowNr, colNr, wxBLACK) 
                         elif loss < 10:
-                            self.grid.SetCellBackgroundColour(rowNr,colNr,wxGREEN)
+                            wxCallAfter(self.grid.SetCellBackgroundColour,rowNr,colNr,wxGREEN)
                         elif loss < 30:
-                            self.grid.SetCellBackgroundColour(rowNr,colNr,YELLOW)
+                            wxCallAfter(self.grid.SetCellBackgroundColour, rowNr,colNr,YELLOW)
                         else:
-                            self.grid.SetCellBackgroundColour(rowNr,colNr,wxRED)
+                            wxCallAfter(self.grid.SetCellBackgroundColour, rowNr,colNr,wxRED)
                     else:
                         if s == o:
                             # set black colour for same sender
-                            self.grid.SetCellBackgroundColour(rowNr, colNr, wxBLACK)
+                            wxCallAfter(self.grid.SetCellBackgroundColour, rowNr, colNr, wxBLACK)
                                             
                     rowNr = rowNr + 1
                 colNr = colNr + 1
-            self.Refresh()
+            wxCallAfter(self.Refresh)
+            time.sleep(2)
