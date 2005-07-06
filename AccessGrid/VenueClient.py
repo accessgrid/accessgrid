@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.228 2005-06-27 22:07:44 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.229 2005-07-06 18:01:11 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.228 2005-06-27 22:07:44 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.229 2005-07-06 18:01:11 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -119,6 +119,7 @@ class VenueClient:
 
         self.capabilities = []
         self.nodeServiceUri = self.defaultNodeServiceUri
+        self.nodeServiceUri =  "http://zuz.mcs.anl.gov:11000/NodeService"
         self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
 
         try:
@@ -885,9 +886,18 @@ class VenueClient:
                 log.exception("EnterVenue.__StartJabber failed")
              
             # Create the beacon client
-            self.__StartBeacon(self.beaconLocation)
+            if int(self.preferences.GetPreference(Preferences.BEACON)):
+                self.StartBeacon()
 
-    def __StartBeacon(self, beaconLocation):
+    def StopBeacon(self):
+        ''' Stop the beacon client'''
+        if self.beacon:
+            try:
+                self.beacon.Stop()
+            except:
+                log.exception("VenueClient.StopBeacon failed")
+                
+    def StartBeacon(self):
         ''' Create and start the beacon client listening to beaconLocation '''
 
         try:
@@ -902,13 +912,15 @@ class VenueClient:
             if self.beaconLocation:
                 self.beacon = Beacon()
                 self.beacon.SetConfigData('user', self.profile.name)
-                self.beacon.SetConfigData('groupAddress', str(self.beaconLocation.host)) #'233.4.200.19' )
-                self.beacon.SetConfigData('groupPort', str(self.beaconLocation.port))#'10002')
-                log.info("VenueClient.__StartBeacon: Address %s/%s"
+                self.beacon.SetConfigData('groupAddress',
+                                          str(self.beaconLocation.host))#'233.4.200.19' )
+                self.beacon.SetConfigData('groupPort',
+                                          str(self.beaconLocation.port))#'10002')
+                log.info("VenueClient.StartBeacon: Address %s/%s"
                          %(self.beaconLocation.host, self.beaconLocation.port))
                 self.beacon.Start()
         except:
-            log.exception("VenueClient.__StartBeacon failed")
+            log.exception("VenueClient.StartBeacon failed")
                    
     def __StartJabber(self, textLocation):
         jabberHost = textLocation[0]
@@ -1059,7 +1071,7 @@ class VenueClient:
             log.exception("ExitVenue: Exit jabber failed")
 
         try:
-            self.beacon.Stop()
+            self.StopBeacon()
         except:
             log.exception("ExitVenue: Exit beacon failed")
         self.__InitVenueData()

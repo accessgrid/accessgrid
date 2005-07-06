@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.97 2005-06-29 22:03:25 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.98 2005-07-06 18:01:11 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.97 2005-06-29 22:03:25 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.98 2005-07-06 18:01:11 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3560,7 +3560,6 @@ class JabberClientPanel(wxPanel):
         wxCallAfter(self.__OutputText, name, message)
 
     def Clear(self):
-        print "CLEAR"
         self.__textOutput.AppendText("CLEAR")
         self.__textOutput.Clear()
         
@@ -3716,10 +3715,15 @@ class StatusBar(wxStatusBar):
 
     def OnMulticast(self, event):
 
+        pref = self.parent.venueClient.GetPreferences()
+
         if self.mcast.GetLabel() != "Multicast":
             self.parent.Notify("You do not have multicast enabled. \nPlease contact your network administrator.", "Show Multicast Connectivity")
+        elif not self.parent.venueClient.IsInVenue():
+              self.parent.Notify("You must be connected to a venue to see\nmulticast connectivity to other participants.", "Show Multicast Connectivity")
+        elif not int(pref.GetPreference(Preferences.BEACON)):
+            self.parent.Notify("You have beacon set to disabled.\nYou can enable it in the network panel in your preferences.", "Show Multicast Connectivity")
         else:
-           
             beacon = self.parent.venueClient.GetBeacon()
             frame = BeaconFrame(self, log, beacon)
         

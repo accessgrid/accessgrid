@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.45 2005-06-17 23:46:35 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.46 2005-07-06 18:01:11 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.45 2005-06-17 23:46:35 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.46 2005-07-06 18:01:11 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -693,6 +693,12 @@ class VenueClientController:
 
         # Update navigation panel
         self.gui.UpdateNavigation()
+
+        # Start/Stop beacon
+        if int(preferences.GetPreference(Preferences.BEACON)):
+            self.__venueClient.StartBeacon()
+        else:
+            self.__venueClient.StopBeacon()
         
         # Update client profile in venue
         if self.__venueClient.GetVenue() != None:

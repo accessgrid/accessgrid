@@ -28,6 +28,7 @@ class Preferences:
     NODE_CONFIG = "defaultNodeConfig"
     NODE_CONFIG_TYPE = "user"
     MULTICAST = "multicast"
+    BEACON = "beacon"
     LOG_TO_CMD = "logToCmd"
     ENABLE_VIDEO = "enableVideo"
     ENABLE_AUDIO = "enableAudio"
@@ -59,6 +60,7 @@ class Preferences:
                          self.NODE_CONFIG_TYPE : "",
                          self.NODE_CONFIG: "",
                          self.MULTICAST: 1,
+                         self.BEACON: 1,
                          self.LOG_TO_CMD: 0,
                          self.ENABLE_VIDEO: 1,
                          self.ENABLE_AUDIO: 1,
@@ -347,6 +349,8 @@ class PreferencesDialog(wxDialog):
                                        self.clientConnectionPanel.GetSecureClientConnection())
         self.preferences.SetPreference(Preferences.MULTICAST,
                                        self.networkPanel.GetMulticast())
+        self.preferences.SetPreference(Preferences.BEACON,
+                                       self.networkPanel.GetBeacon())
         self.preferences.SetPreference(Preferences.DISPLAY_MODE,
                                        self.navigationPanel.GetDisplayMode())
         self.preferences.SetPreference(Preferences.CLIENT_PORT,
@@ -991,6 +995,11 @@ class NetworkPanel(wxPanel):
         self.multicastButton = wxCheckBox(self, wxNewId(), "  Use multicast ")
         
         self.multicastButton.SetValue(int(preferences.GetPreference(Preferences.MULTICAST)))
+
+        self.beaconButton = wxCheckBox(self, wxNewId(), "  Run beacon ")
+        
+        self.beaconButton.SetValue(int(preferences.GetPreference(Preferences.BEACON)))
+                        
                         
         if IsOSX():
             self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
@@ -1004,6 +1013,12 @@ class NetworkPanel(wxPanel):
             return 1
         else:
             return 0
+
+    def GetBeacon(self):
+        if self.beaconButton.IsChecked():
+            return 1
+        else:
+            return 0
           
     def __Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
@@ -1012,45 +1027,12 @@ class NetworkPanel(wxPanel):
         sizer2.Add(self.titleLine, 1, wxALIGN_CENTER | wxALL, 5)
         sizer.Add(sizer2, 0, wxEXPAND)
         sizer.Add(self.multicastButton, 0, wxALL|wxEXPAND, 10)
-       
+        sizer.Add(self.beaconButton, 0, wxALL|wxEXPAND, 10)
+        
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(1)
 
-class NetworkPanel(wxPanel):
-    def __init__(self, parent, id, preferences):
-        wxPanel.__init__(self, parent, id)
-        self.Centre()
-        self.titleText = wxStaticText(self, -1, "Multicast")
-        self.titleLine = wxStaticLine(self, -1)
-        self.multicastButton = wxCheckBox(self, wxNewId(), "  Use multicast ")
-        
-        self.multicastButton.SetValue(int(preferences.GetPreference(Preferences.MULTICAST)))
-                        
-        if IsOSX():
-            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
-        else:
-            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
-                                
-        self.__Layout()
-         
-    def GetMulticast(self):
-        if self.multicastButton.IsChecked():
-            return 1
-        else:
-            return 0
-          
-    def __Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.titleText, 0, wxALL, 5)
-        sizer2.Add(self.titleLine, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer.Add(sizer2, 0, wxEXPAND)
-        sizer.Add(self.multicastButton, 0, wxALL|wxEXPAND, 10)
-       
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.SetAutoLayout(1)
         
 class NavigationPanel(wxPanel):
     def __init__(self, parent, id, preferences):
