@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.61 2005-05-27 15:59:38 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.62 2005-07-08 14:49:06 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.61 2005-05-27 15:59:38 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.62 2005-07-08 14:49:06 turam Exp $"
 
 import os
 import socket
@@ -234,7 +234,7 @@ class SystemConfig(Config.SystemConfig):
             proxyStr = str(val)
 
             # See if it is set for different protocols
-            if proxyStr.find(";") < 0:
+            if proxyStr.find(";") >= 0:
                 # It is. Find the http= part.
                 protos = proxyStr.split(";")
                 http = filter(lambda a: a.startswith("http="), protos)
