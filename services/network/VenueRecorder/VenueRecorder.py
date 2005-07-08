@@ -4,8 +4,8 @@
 # 
 # Author:      Susanne Lefvert 
 # 
-# Created:     $Date: 2005-07-08 18:03:49 $ 
-# RCS-ID:      $Id: VenueRecorder.py,v 1.10 2005-07-08 18:03:49 lefvert Exp $ 
+# Created:     $Date: 2005-07-08 21:22:13 $ 
+# RCS-ID:      $Id: VenueRecorder.py,v 1.11 2005-07-08 21:22:13 lefvert Exp $ 
 # Copyright:   (c) 2002 
 # Licence:     See COPYING.TXT 
 #----------------------------------------------------------------------------- 
@@ -2109,7 +2109,13 @@ if __name__ == "__main__":
     
     # Create model and view 
     v = VenueRecorderModel(app.GetLog())
-    uiApp = VenueRecorderUI(v, app.GetLog()) 
+    uiApp = VenueRecorderUI(v, app.GetLog())
+
+    # Needed for class recording. It really should
+    # get the log file as parameter so we don't need to
+    # have this global variable.
+    log = app.GetLog()
+
 
     #pref = PreferencesDialog(None, -1, "test")
     #pref.Show()
