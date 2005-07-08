@@ -4,8 +4,8 @@
 # 
 # Author:      Susanne Lefvert 
 # 
-# Created:     $Date: 2005-07-01 22:05:03 $ 
-# RCS-ID:      $Id: VenueRecorder.py,v 1.9 2005-07-01 22:05:03 lefvert Exp $ 
+# Created:     $Date: 2005-07-08 18:03:49 $ 
+# RCS-ID:      $Id: VenueRecorder.py,v 1.10 2005-07-08 18:03:49 lefvert Exp $ 
 # Copyright:   (c) 2002 
 # Licence:     See COPYING.TXT 
 #----------------------------------------------------------------------------- 
@@ -201,7 +201,7 @@ class Recording:
 class VenueRecorderModel(Model): 
     """ 
     The venue recorder model class includes all logic for the program. There
-    is no user interface codein this class. The ui and the model is
+    is no user interface code in this class. The ui and the model is
     separated using the observer pattern for easy separation. When
     state gets updated in the model, all obervers are notified and
     updates the view/ui.  The venue recorder model includes methods for recording
@@ -214,9 +214,7 @@ class VenueRecorderModel(Model):
     STOPPED = "stopped"
     MODE_MULTICAST = "multicast"
     MODE_VENUE = "venue"
-    PLAYBACK_MODE = MODE_VENUE
-    RECORDING_MODE = MODE_VENUE
-             
+               
     def __init__(self, log): 
         ''' 
         Initialize venue recorder model including all logic of the program.  
@@ -240,6 +238,8 @@ class VenueRecorderModel(Model):
         self.__recordVideoPort = "2222"
         self.__recordAudioHost = "224.2.3.6"
         self.__recordAudioPort = "4444"
+        self.__playbackMode = self.MODE_VENUE
+        self.__recordingMode = self.MODE_VENUE
 
         homePath = None
         name = None
@@ -262,7 +262,8 @@ class VenueRecorderModel(Model):
             sys.exit(-1)
        
         self.__path = os.path.join(homePath, 
-                                   name) 
+                                   name)
+        self.__preferencesPath = os.path.join(self.__path, "Preferences")  
         self.__processManager = ProcessManager() 
  
         if not os.path.exists(self.__path): 
@@ -270,8 +271,11 @@ class VenueRecorderModel(Model):
  
         self.__log.debug("VenueRecorderModel.__init__: Persistence path: %s"
                          %(self.__path)) 
+
         self.__LoadRecordings()
-               
+        self.LoadPreferences()
+        
+                     
     def __LoadRecordings(self): 
         ''' 
         Load recordings from file. 
@@ -291,44 +295,120 @@ class VenueRecorderModel(Model):
                 if os.path.isfile(rFile):
                     recording = Recording.LoadRecording(rFile)
                     self.__recordings[recording.GetId()] = recording
-                else:
-                    self.__log.error("VenueRecorderModel.__LoadRecordings: This is not a file %s"%rFile)
-            else:
-                self.__log.error("VenueRecorderModel.__LoadRecordings: This is not a directory %s"%path)
+             
+    def SavePreferences(self):
+        '''
+        Write preferences config file to path
+        '''
+        config = {}
 
+        # Store modes
+        config['Preferences.playbackMode'] = self.__playbackMode 
+        config['Preferences.recordingMode'] = self.__recordingMode
+
+        # Store playback preferences
+        config['Preferences.playbackVenue'] = self.__playbackVenueUrl
+        config['Preferences.playVideoHost'] = self.__playVideoHost
+        config['Preferences.playVideoPort'] = self.__playVideoPort
+        config['Preferences.playAudioHost'] = self.__playAudioHost
+        config['Preferences.playAudioPort'] = self.__playAudioPort
+
+        # Store recording preferences
+        config['Preferences.recordingVenue'] = self.__recordingVenueUrl
+        config['Preferences.recordVideoHost'] = self.__recordVideoHost
+        config['Preferences.recordVideoPort'] = self.__recordVideoPort 
+        config['Preferences.recordAudioHost'] = self.__recordAudioHost
+        config['Preferences.recordAudioPort'] = self.__recordAudioPort
+
+        SaveConfig(self.__preferencesPath, config)
+
+    def LoadPreferences(self):
+        '''
+        Load preferences from config file at path
+        '''
+            
+        if os.path.exists(self.__preferencesPath):
+        
+            config = LoadConfig(self.__preferencesPath)
+            
+            # Get play preferences
+            self.__playbackMode = config['Preferences.playbackMode']
+            self.__playbackVenueUrl = config['Preferences.playbackVenue']
+            self.__playVideoHost = config['Preferences.playVideoHost']
+            self.__playVideoPort = config['Preferences.playVideoPort'] 
+            self.__playAudioHost = config['Preferences.playAudioHost'] 
+            self.__playAudioPort =  config['Preferences.playAudioPort']
+            
+            # Get recording preferences
+            self.__recordingMode = config['Preferences.recordingMode']
+            self.__recordingVenueUrl = config['Preferences.recordingVenue']
+            self.__recordVideoHost = config['Preferences.recordVideoHost']
+            self.__recordVideoPort = config['Preferences.recordVideoPort']
+            self.__recordAudioHost = config['Preferences.recordAudioHost'] 
+            self.__recordAudioPort = config['Preferences.recordAudioPort']
+               
     def GetPlayVenue(self):
+        '''
+        Get url for venue for playback
+        '''
         return self.__playbackVenueUrl
 
     def GetPlayMulticast(self):
+        '''
+        Get host and port for playback
+        '''
         return (self.__playVideoHost, self.__playVideoPort,
                 self.__playAudioHost, self.__playAudioPort)
 
     def SetPlayVenue(self, url):
+        '''
+        Set url for venue playback
+        '''
         self.__playbackVenueUrl = url
 
     def SetPlayMulticast(self, val):
+        '''
+        Set host and port for playback
+        '''
         vhost, vport, ahost, aport = val
         self.__playVideoHost = vhost
-        self.__playVideoPort = vport
         self.__playAudioHost = ahost
-        self.__playAudioPort = aport
+
+        # Make sure port is event
+        self.__playVideoPort = int(vport) - (int(vport)%2)
+        self.__playAudioPort = int(aport) - (int(aport)%2)
 
     def GetRecordVenue(self):
+        '''
+        Get url where recordings will be sent for playback
+        '''
         return self.__recordingVenueUrl
 
     def GetRecordMulticast(self):
+        '''
+        Get address and port where recordings will be sent for
+        playback
+        '''
         return (self.__recordVideoHost, self.__recordVideoPort,
                 self.__recordAudioHost, self.__recordAudioPort)
 
     def SetRecordVenue(self, url):
+        '''
+        Set url for venue recording
+        '''
         self.__recordingVenueUrl = url
 
     def SetRecordMulticast(self, val):
+        '''
+        Set host and port for recording
+        '''
         vhost, vport, ahost, aport = val
         self.__recordVideoHost = vhost
-        self.__recordVideoPort = vport
         self.__recordAudioHost = ahost
-        self.__recordAudioPort = aport
+
+        # Make sure port is even.
+        self.__recordVideoPort = int(vport) - (int(vport)%2)
+        self.__recordAudioPort = int(aport) - (int(aport)%2) 
 
     def GetRecordingFromZipFile(self, archivePath):
         '''
@@ -562,7 +642,7 @@ class VenueRecorderModel(Model):
         # Notify ui to update view 
         self.NotifyObservers() 
 
-    def PlayLocally(self, recording, startTime = 0):
+    def PlayMulticast(self, recording, startTime = 0):
         ''' 
         Method for playing at a multicast location.  
        
@@ -584,7 +664,6 @@ class VenueRecorderModel(Model):
        
         aFile = os.path.join(recordingPath, "audio.rtp")
 
-        # Make sure rtp address is even.
         args = [ 
             "-T",
             "-b", startTime,
@@ -596,14 +675,13 @@ class VenueRecorderModel(Model):
             
         # Send video 
         vFile = os.path.join(recordingPath, "video.rtp") 
-        
-        # Make sure rtp address is even.
+                      
         args = [ 
             "-T",
             "-b", startTime,
             "-f", vFile, 
             # l.host+"/"+str(port)+"/127",
-                self.__playVideoHost+"/"+str(self.__playVideoPort)+"/127", 
+            self.__playVideoHost+"/"+str(self.__playVideoPort)+"/127", 
             ]
         self.__log.debug("Starting process: %s %s"%(rtpplay, str(args))) 
         self.__processManager.StartProcess(rtpplay,args) 
@@ -615,7 +693,7 @@ class VenueRecorderModel(Model):
         # Notify ui to update view 
         self.NotifyObservers()
 
-    def RecordLocally(self, recording):
+    def RecordMulticast(self, recording):
         # Use rtpdump to record video and audio 
         recordingPath = os.path.join(self.__path,
                                      str(recording.GetId())) 
@@ -627,46 +705,34 @@ class VenueRecorderModel(Model):
         rtpdump = os.path.join(os.getcwd(),"rtpdump")
         
         # Record video. 
-        if 1:#videoStream: 
-            #l = videoStream.location 
-            vFile = os.path.join(recordingPath, "video.rtp") 
-                        
-            #Usage: rtpdump -F dump -o file host/port 
-            # Make sure rtp address is even.
-            #port = l.port - (l.port%2)
-         
-            args = [ 
-                "-F", "dump", 
-                "-o", vFile, 
-                self.__recordVideoHost+"/"+str(self.__recordVideoPort), 
+        vFile = os.path.join(recordingPath, "video.rtp") 
+        
+        #Usage: rtpdump -F dump -o file host/port 
+        
+        args = [ 
+            "-F", "dump", 
+            "-o", vFile, 
+            self.__recordVideoHost+"/"+str(self.__recordVideoPort), 
             ]
-
-            self.__log.debug("Starting process: %s %s"%(rtpdump, str(args))) 
-            self.__processManager.StartProcess(rtpdump,args) 
- 
-        else:
-            self.__log.info("VenueRecorderModel.Record: No video stream present in %s"%(recording.GetVenueUrl())) 
-          
+        
+        self.__log.debug("Starting process: %s %s"%(rtpdump, str(args))) 
+        self.__processManager.StartProcess(rtpdump,args) 
+           
         # Record audio 
-        if 1: #audioStream: 
-            #l = audioStream.location 
-            aFile = os.path.join(recordingPath, "audio.rtp") 
-            #Usage: rtpdump -F dump -o aFile l.host+"/"+l.port 
-
-            # Make sure rtp address is even.
-            #port = l.port - (l.port%2)
-            
-            args = [ 
-                "-F", "dump", 
-                "-o", aFile, 
-                #l.host+"/"+str(port), 
-                self.__recordAudioHost+"/"+str(self.__recordAudioPort)
+        
+        aFile = os.path.join(recordingPath, "audio.rtp") 
+        #Usage: rtpdump -F dump -o aFile l.host+"/"+l.port 
+        
+        args = [ 
+            "-F", "dump", 
+            "-o", aFile, 
+            #l.host+"/"+str(port), 
+            self.__recordAudioHost+"/"+str(self.__recordAudioPort)
             ]
-            self.__log.debug("Starting process: %s %s"%(rtpdump, str(args))) 
-            self.__processManager.StartProcess(rtpdump,args) 
-        else:
-            self.__log.info("VenueRecorderModel.Record: No audio stream present in %s"%(recording.GetVenueUrl())) 
-            
+
+        self.__log.debug("Starting process: %s %s"%(rtpdump, str(args))) 
+        self.__processManager.StartProcess(rtpdump,args) 
+                    
         # Set state
         recording.SetName("video %s/%s audio %s/%s"%(self.__recordVideoHost, self.__recordVideoPort,
                                                      self.__recordAudioHost, self.__recordAudioPort))
@@ -806,17 +872,24 @@ class VenueRecorderModel(Model):
 
     def SetPlaybackMode(self, mode):
         '''
-        Set playback mode. Either you can decide to
-        playback a recording in a venue or on your local
-        machine.
+        Set playback mode. You can either playback a recording in a venue
+        or to multicast locations for audio and video.
         '''
-        self.PLAYBACK_MODE = mode
+        self.__playbackMode = mode
 
     def SetRecordingMode(self, mode):
-        self.RECORDING_MODE = mode
+        '''
+        Set recording mode. You can either record from a venue
+        or from multicast locations for audio and video.
+        '''
+        self.__recordingMode = mode
 
     def GetRecordingMode(self):
-        return self.RECORDING_MODE
+        '''
+        Returns the recording mode, either VenueRecorderModel.MODE_VENUE,
+        or VenueRecorderModel.MODE_LOCALLY
+        '''
+        return self.__recordingMode
 
     def GetPlaybackMode(self):
         '''
@@ -826,7 +899,7 @@ class VenueRecorderModel(Model):
         *playbackMode* either VenueRecorderModel.MODE_ LOCALLY or
         VenueRecorderModel.MODE_VENUE
         '''
-        return self.PLAYBACK_MODE
+        return self.__playbackMode
          
     def GetCurrentRecording(self): 
         ''' 
@@ -909,9 +982,7 @@ class VenueRecorderView(wxFrame, Observer):
     RECORDING_MENU_PROPERTIES = wxNewId()
     
     MENU_PREFERENCES = wxNewId()
-    #FILE_MENU_LOCALLY = wxNewId()
-    #FILE_MENU_VENUE = wxNewId()
-    
+     
     def __init__(self, parent, venueRecorderModel, log): 
         ''' 
         Create ui components. 
@@ -967,9 +1038,6 @@ class VenueRecorderView(wxFrame, Observer):
 
         self.playMenu = wxMenu()
         self.playMenu.Append(self.MENU_PREFERENCES, "Preferences", "Set your prefered options")
-        #self.playMenu.AppendRadioItem(self.FILE_MENU_VENUE, "Send To Venue", "Play recording in a venue")
-        #self.playMenu.AppendRadioItem(self.FILE_MENU_LOCALLY, "Send To Multicast Address",
-        #                              "Play recordings at multicast location")
         self.menubar.Append(self.playMenu, "Menu")
         self.sliderThread = None
         
@@ -994,9 +1062,7 @@ class VenueRecorderView(wxFrame, Observer):
         EVT_MENU(self, self.RECORDING_MENU_PROPERTIES, self.PropertiesCB)
 
         EVT_MENU(self, self.MENU_PREFERENCES, self.PreferencesCB)
-        #EVT_MENU(self, self.FILE_MENU_LOCALLY, self.PlayLocallyCB)
-        #EVT_MENU(self, self.FILE_MENU_VENUE, self.PlayInVenueCB)
-
+ 
     def ShowMessage(self, parent, text, title, style):
         '''
         Show a message dialog.
@@ -1026,8 +1092,7 @@ class VenueRecorderView(wxFrame, Observer):
         if (status != self.venueRecorderModel.PLAYING and
             status != self.venueRecorderModel.RECORDING):
             self.slider.SetRange(0, int(recording.GetDuration()))
-            #self.slider.SetValue(0)
-               
+                
     def PropertiesCB(self, event):
         '''
         Invoked when a user selects the properties menu item for
@@ -1056,8 +1121,18 @@ class VenueRecorderView(wxFrame, Observer):
                 self.venueRecorderModel.UpdateRecording(r)
 
     def PreferencesCB(self, event):
-        dlg = PreferencesDialog(self, -1, "Preferences")
+        '''
+        Invoked when a user selects the preferences menu.
+        '''
+
+        self.venueRecorderModel.LoadPreferences()
+        
+        dlg = PreferencesDialog(self, -1, "Preferences", self.venueRecorderModel)
         if dlg.ShowModal() == wxID_OK:
+
+            playTooltip = ""
+            recordTooltip = ""
+            
             # Get preferences for playback
             self.playbackMode = dlg.GetPlaybackMode()
          
@@ -1065,7 +1140,7 @@ class VenueRecorderView(wxFrame, Observer):
                 self.venueRecorderModel.SetPlayVenue(dlg.GetPlayVenue())
             else:
                 self.venueRecorderModel.SetPlayMulticast(dlg.GetPlayAddress())
-
+                            
             self.venueRecorderModel.SetPlaybackMode(self.playbackMode)
 
             # Get preferences for recording
@@ -1078,15 +1153,35 @@ class VenueRecorderView(wxFrame, Observer):
                 
             self.venueRecorderModel.SetRecordingMode(self.recordingMode)
 
-
+            # Save the preferences to file
+            self.venueRecorderModel.SavePreferences()
+            self.SetTooltips()
+                                
         dlg.Destroy()
 
-    def PlayLocallyCB(self, event):
-        self.venueRecorderModel.SetPlaybackMode(VenueRecorderModel.MODE_MULTICAST)
-        
-    def PlayInVenueCB(self, event):
-        self.venueRecorderModel.SetPlaybackMode(VenueRecorderModel.MODE_VENUE)
-                      
+    def SetTooltips(self):
+        '''
+        Set ui tool tips
+        '''
+        recordTooltip = ""
+        playTooltip = ""
+
+        # Record button 
+        if self.venueRecorderModel.GetRecordingMode() == self.venueRecorderModel.MODE_VENUE:
+            recordTooltip = "%s"%(self.venueRecorderModel.GetRecordVenue())
+        else:
+            recordTooltip = "Video:%s/%s Audio: %s/%s"%(self.venueRecorderModel.GetRecordMulticast())
+
+        # Play button
+        if self.venueRecorderModel.GetPlaybackMode() == self.venueRecorderModel.MODE_VENUE:
+            playTooltip = "%s"%(self.venueRecorderModel.GetPlayVenue())
+        else:
+            playTooltip = "Video:%s/%s Audio: %s/%s"%(self.venueRecorderModel.GetPlayMulticast())
+
+        # Set button tooltips
+        self.playButton.SetToolTipString(playTooltip)
+        self.recordButton.SetToolTipString(recordTooltip)
+                              
     def ImportRecordingCB(self, event):
         '''
         Invoked when a user selects the import menu item for a recording.
@@ -1201,6 +1296,9 @@ class VenueRecorderView(wxFrame, Observer):
                 self.venueRecorderModel.ExportToZipFile([recording], fileName)
                
     def ExportRecordingAllCB(self, event):
+        '''
+        Export all recordings to file.
+        '''
         defaultName = os.path.join(os.getcwd(), "RecordingList.agrcd)") 
         # Get path from user.
         dlg = wxFileDialog(self, "Choose file(s):",
@@ -1294,25 +1392,13 @@ class VenueRecorderView(wxFrame, Observer):
         else:
             val = self.ShowMessage(self.panel, 
                                    "Error when playing; %s was not found"
-                                   %(self.venueRecorderModel.GetSelectedRecording().GetName()), 
+                                   %(r.GetName()), 
                                    "Play", style = wxICON_ERROR) 
             return 
 
         # Open a UI where you can enter the venue url
              
         if  self.venueRecorderModel.GetPlaybackMode() == VenueRecorderModel.MODE_VENUE:
-        
-            #dlg = VenueUrlDialog(self, -1, "Play",
-            #                     "Where do you want to play the %s recording?"
-            #                     %(r.GetName()),
-            #                     "https://localhost:9000/Venues/default") 
-            #if dlg.ShowModal() != wxID_OK: 
-            #    return 
-
-       
-            #wxBeginBusyCursor() 
-        
-            #venueUrl = dlg.GetVenueUrl()
             venueUrl = self.venueRecorderModel.GetPlayVenue()
 
             
@@ -1322,15 +1408,16 @@ class VenueRecorderView(wxFrame, Observer):
             except:
                 wxEndBusyCursor() 
                 val = self.ShowMessage(self.panel, 
-                                       "Error when playing", 
-                                       "Play", style = wxICON_ERROR) 
+                                       "Error when playing %s \nin venue %s"
+                                       %(r.GetName(), venueUrl), 
+                                       "Play", style = wxICON_ERROR)  
                 self.log.exception("VenueRecorderView.PlayCB: Failed to play recording %s in venue %s" 
                                    %(r.GetName(), venueUrl)) 
             
             wxEndBusyCursor() 
 
         else:
-            self.venueRecorderModel.PlayLocally(r, startTime)
+            self.venueRecorderModel.PlayMulticast(r, startTime)
  
          
     def __TestStop(self): 
@@ -1374,15 +1461,6 @@ class VenueRecorderView(wxFrame, Observer):
             return 
 
         if  self.venueRecorderModel.GetRecordingMode() == VenueRecorderModel.MODE_VENUE:
-
-            # Open a UI where you can enter the venue url 
-            #dlg = VenueUrlDialog(self, -1, "Record", 
-            #                     "Which venue do you want to record from?",
-            #                     "https://ivs.mcs.anl.gov:9000/Venues/default") 
-            #if dlg.ShowModal() != wxID_OK: 
-            #    return 
-         
-            #venueUrl = dlg.GetVenueUrl() 
             venueUrl = self.venueRecorderModel.GetRecordVenue()
          
             nr = len(self.venueRecorderModel.GetRecordings()) 
@@ -1393,14 +1471,14 @@ class VenueRecorderView(wxFrame, Observer):
             wxBeginBusyCursor() 
             
             try: 
-                # Start recording 
+                # Start recording
                 self.venueRecorderModel.Record(r) 
             except: 
                 self.log.exception("VenueRecorderView.RecordCB: Failed to record %s from %s" 
                                    %(r.GetName(), r.GetVenueUrl())) 
 
                 val = self.ShowMessage(self.panel, 
-                                       "Error when recording", 
+                                       "Error when recording %s \nfrom venue %s"%(r.GetName(), r.GetVenueUrl()), 
                                        "Record", style = wxICON_ERROR) 
                                        
             wxEndBusyCursor() 
@@ -1411,9 +1489,8 @@ class VenueRecorderView(wxFrame, Observer):
          
             # Create a Recording object
             r = Recording(name, "Session 1") 
-            self.venueRecorderModel.RecordLocally(r)
- 
-         
+            self.venueRecorderModel.RecordMulticast(r)
+          
     def StopCB(self, event): 
         ''' 
         Invoked when the stop button is clicked. 
@@ -1426,8 +1503,7 @@ class VenueRecorderView(wxFrame, Observer):
                                    "Error when stopping", 
                                    "Stop", style = wxICON_ERROR) 
 
-     
-                    
+                         
     def Update(self): 
         ''' 
         Invoked when the venueRecorder model changes state. This
@@ -1444,8 +1520,15 @@ class VenueRecorderView(wxFrame, Observer):
         recordings = self.venueRecorderModel.GetRecordings() 
 
         if  status == self.venueRecorderModel.RECORDING: 
-            tooltip = "Stop recording" 
-            statusText = "Recording from venue %s"%(currentRecording.GetVenueUrl()) 
+            tooltip = "Stop recording"
+
+            if self.venueRecorderModel.GetRecordingMode() == VenueRecorderModel.MODE_VENUE:
+                statusText = "Recording from venue %s"%(currentRecording.GetVenueUrl()) 
+            else:
+                vhost, vport, ahost, aport = self.venueRecorderModel.GetRecordMulticast() 
+                statusText = "Recording %s at \nVideo: %s/%s \nAudio: %s/%s"%(currentRecording.GetName(), vhost, vport, ahost, aport)
+            
+            
         elif status == self.venueRecorderModel.PLAYING: 
             tooltip = "Stop playing"
             
@@ -1453,7 +1536,6 @@ class VenueRecorderView(wxFrame, Observer):
                 statusText = "Playing %s at %s"%(currentRecording.GetName(), self.venueRecorderModel.GetPlayVenue())
 
             else:
-                location = self.venueRecorderModel.GetPlayMulticast()
                 vhost, vport, ahost, aport = self.venueRecorderModel.GetPlayMulticast() 
                 statusText = "Playing %s at \nVideo: %s/%s \nAudio: %s/%s"%(currentRecording.GetName(), vhost, vport, ahost, aport)
             
@@ -1468,7 +1550,8 @@ class VenueRecorderView(wxFrame, Observer):
                 self.sliderThread.abort()
                 self.sliderThread = None
                
-        self.stopButton.SetToolTipString(tooltip) 
+        self.stopButton.SetToolTipString(tooltip)
+        
         self.statusField.SetValue(statusText) 
         j = 0 
 
@@ -1507,6 +1590,8 @@ class VenueRecorderView(wxFrame, Observer):
                     i = 1
                     self.recordingList.Select(id)
 
+
+        self.SetTooltips()
                                                     
     def SortCB(self, item1, item2): 
         ''' 
@@ -1603,6 +1688,11 @@ class VenueUrlDialog(wxDialog):
 
 
 class SliderThread(Thread):
+    '''
+    Thread that moves the slider during
+    playback.
+    '''
+
     def __init__(self, app, startTime, endTime):
         Thread.__init__(self)
         self.terminate = 0
@@ -1616,7 +1706,6 @@ class SliderThread(Thread):
         for i in range(self.startTime, self.endTime):
             time.sleep(1)
             if self.terminate:
-                #wxCallAfter(self.app.slider.SetValue, 0)
                 return
        
             wxCallAfter(self.app.slider.SetValue, i)
@@ -1775,47 +1864,55 @@ class PropertiesDialog(wxDialog):
 
 
 class PreferencesDialog(wxDialog):
-
-    def __init__(self, parent, id, title):
+    '''
+    Dialog to diplay user preferences for recording and playback.
+    '''
+    def __init__(self, parent, id, title, model):
         wxDialog.__init__(self, parent, id, title)
         self.SetSize(wxSize(100,100))
+        self.model = model
         self.playbackText = wxStaticText(self, -1, "Playback Mode")
         self.playbackText.SetForegroundColour(wxBLUE)
         self.playInVenueButton = wxRadioButton(self, wxNewId(), "Play in venue",
                                                style = wxRB_GROUP)
         self.playInVenueText = wxStaticText(self, -1, "Venue URL:")
-        self.playInVenueUrl = wxTextCtrl(self, -1, "https://localhost:8000/Venues/default", size = wxSize(300,-1))
+        self.playInVenueUrl = wxTextCtrl(self, -1, self.model.GetPlayVenue(), size = wxSize(300,-1))
         self.playInMulticastButton = wxRadioButton(self, wxNewId(),
                                                    "Play at multicast location",
                                                    size = wxSize(200, -1))
+
+        vhost, vport, ahost, aport = self.model.GetPlayMulticast()
+        
         self.playVideoAddressText = wxStaticText(self, -1, "Video Address: ")
-        self.playVideoAddress = wxTextCtrl(self, -1, "")
+        self.playVideoAddress = wxTextCtrl(self, -1, vhost)
         self.playVideoPortText = wxStaticText(self, -1, "Video Port: ")
-        self.playVideoPort = wxTextCtrl(self, -1, "")
+        self.playVideoPort = wxTextCtrl(self, -1, vport)
 
         self.playAudioAddressText = wxStaticText(self, -1, "Audio Address: ")
-        self.playAudioAddress = wxTextCtrl(self, -1, "")
+        self.playAudioAddress = wxTextCtrl(self, -1, ahost)
         self.playAudioPortText = wxStaticText(self, -1, "Audio Port: ")
-        self.playAudioPort = wxTextCtrl(self, -1, "")
+        self.playAudioPort = wxTextCtrl(self, -1, aport)
 
+        vhost, vport, ahost, aport = self.model.GetRecordMulticast()
+        
         self.recordingText = wxStaticText(self, -1, "Recording Mode")
         self.recordingText.SetForegroundColour(wxBLUE)
         self.recordInVenueButton = wxRadioButton(self, wxNewId(),
                                                  "Record from venue",
                                                  style = wxRB_GROUP)
         self.recordInVenueText = wxStaticText(self, -1, "Venue URL:")
-        self.recordInVenueUrl = wxTextCtrl(self, -1, "https://ivs.mcs.anl.gov:9000/Venues/default")
+        self.recordInVenueUrl = wxTextCtrl(self, -1, self.model.GetRecordVenue())
         self.recordInMulticastButton = wxRadioButton(self, wxNewId(),
                                                      "Record from multicast location")
         self.recordVideoAddressText = wxStaticText(self, -1, "Video Address: ")
-        self.recordVideoAddress = wxTextCtrl(self, -1, "")
+        self.recordVideoAddress = wxTextCtrl(self, -1, vhost)
         self.recordVideoPortText = wxStaticText(self, -1, "Video Port: ")
-        self.recordVideoPort = wxTextCtrl(self, -1, "")
+        self.recordVideoPort = wxTextCtrl(self, -1, vport)
 
         self.recordAudioAddressText = wxStaticText(self, -1, "Audio Address: ")
-        self.recordAudioAddress = wxTextCtrl(self, -1, "")
+        self.recordAudioAddress = wxTextCtrl(self, -1, ahost)
         self.recordAudioPortText = wxStaticText(self, -1, "Audio Port: ")
-        self.recordAudioPort = wxTextCtrl(self, -1, "")
+        self.recordAudioPort = wxTextCtrl(self, -1, aport)
         
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
@@ -1829,12 +1926,22 @@ class PreferencesDialog(wxDialog):
         EVT_RADIOBUTTON(self, self.recordInVenueButton.GetId(), self.RecordVenueCB)
         EVT_RADIOBUTTON(self, self.recordInMulticastButton.GetId(), self.RecordMulticastCB)
 
-        self.EnablePlayVenue(0)
-        self.EnableRecordVenue(0)
+        if self.model.GetPlaybackMode() == VenueRecorderModel.MODE_VENUE:
+            self.EnablePlayVenue(0)
+        else:
+            self.EnablePlayVenue(1)
+
+        if self.model.GetRecordingMode() == VenueRecorderModel.MODE_VENUE:
+            self.EnableRecordVenue(0)
+        else:
+            self.EnableRecordVenue(1)
 
     def EnablePlayVenue(self, val):
         self.playInVenueText.Enable(not val)
         self.playInVenueUrl.Enable(not val)
+
+        self.playInVenueButton.SetValue(not val)
+        self.playInMulticastButton.SetValue(val)
         
         self.playVideoAddressText.Enable(val)
         self.playVideoPortText.Enable(val)
@@ -1849,6 +1956,9 @@ class PreferencesDialog(wxDialog):
     def EnableRecordVenue(self, val):
         self.recordInVenueText.Enable(not val)
         self.recordInVenueUrl.Enable(not val)
+
+        self.recordInVenueButton.SetValue(not val)
+        self.recordInMulticastButton.SetValue(val)
         
         self.recordVideoAddress.Enable(val)
         self.recordVideoPort.Enable(val)
@@ -1999,12 +2109,10 @@ if __name__ == "__main__":
     
     # Create model and view 
     v = VenueRecorderModel(app.GetLog())
-    
-    log = app.GetLog()
-
     uiApp = VenueRecorderUI(v, app.GetLog()) 
+
     #pref = PreferencesDialog(None, -1, "test")
     #pref.Show()
         
-    # Start application main thread
+    # Start main ui thread
     wxapp.MainLoop() 
