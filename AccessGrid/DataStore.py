@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.81 2005-06-17 23:45:29 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.82 2005-07-11 18:52:28 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.81 2005-06-17 23:45:29 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.82 2005-07-11 18:52:28 turam Exp $"
 
 import os
 import time
@@ -1711,8 +1711,6 @@ try:
                         self.handle_request()
                 except:
                     log.exception("Exception handling request")
-
-                log.info("done = %d", self.done.isSet())
 
             log.info("------------ LEAVING thread_run  ----------------------")
 
