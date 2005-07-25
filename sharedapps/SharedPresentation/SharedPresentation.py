@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.33 2005-05-31 22:25:24 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.34 2005-07-25 22:17:39 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -637,6 +637,7 @@ class SharedPresEvent:
     LOCAL_CLOSE = "local close"
     LOCAL_SYNC = "local sync"
     LOCAL_QUIT = "local quit"
+    LOCAL_NO_VIEWER = "local no viewer"
 
 class SharedPresKey:
     SLIDEURL = "slideurl"
@@ -705,6 +706,7 @@ class SharedPresentation:
         self.methodDict[SharedPresEvent.LOCAL_CLOSE] = self.ClosePresentation
         self.methodDict[SharedPresEvent.LOCAL_SYNC] = self.Sync
         self.methodDict[SharedPresEvent.LOCAL_QUIT] = self.Quit
+        self.methodDict[SharedPresEvent.LOCAL_NO_VIEWER] = self.NoViewer
 
         # Get client profile
         try:
@@ -798,8 +800,8 @@ class SharedPresentation:
             self.viewer.Start()
            
         except ViewerSoftwareNotInstalled:
-            print "The necessary viewer software is not installed; exiting"
-            self.eventQueue.put([SharedPresEvent.LOCAL_QUIT, None])
+            self.log.debug("The necessary viewer software (for example power point) is not installed; exiting")
+            self.eventQueue.put([SharedPresEvent.LOCAL_NO_VIEWER, None])
                
         # Loop, processing events from the event queue
         self.running = 1
@@ -1210,6 +1212,10 @@ class SharedPresentation:
             self.viewer.EndShow()
         except:
             self.log.exception("Can not end show, ignore")
+
+    def NoViewer(self, data=None):
+        wxCallAfter(self.controller.ShowMessage, "The necessary viewer software (for example PowerPoint) is not installed", "Viewer Not Installed")
+        self.Quit()
         
     def Quit(self, data=None):
         """
