@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.34 2005-07-25 22:17:39 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.35 2005-07-26 19:12:49 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -96,11 +96,14 @@ class PowerPointViewer:
         from win32com.client import gencache
         import pythoncom
         pythoncom.CoInitialize()
+       
         try:
             gencache.EnsureModule('{91493440-5A91-11CF-8700-00AA0060263B}', 0, 2, 6)
-        except:
+        except IOError:
+            # This occurs if a non-admin user runs the shared presentation. Ignore.
+            pass
+        except Exception, e:
             raise ViewerSoftwareNotInstalled()
-
     
     def Start(self):
         """
