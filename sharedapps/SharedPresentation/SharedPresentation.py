@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.35 2005-07-26 19:12:49 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.36 2005-07-27 22:32:30 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -78,13 +78,13 @@ class PowerPointViewer:
     self.win -- The window showing a slideshow of the current presentation.
     """
 
-    def __init__(self):
+    def __init__(self, log):
         """
         We aren't doing anything in here because we really don't need
         anything yet. Once things get started up externally, this gets fired
         up through the other methods.
         """
-        
+        self.log = log
         self.ppt = None
         self.presentation = None
         self.win = None
@@ -100,9 +100,25 @@ class PowerPointViewer:
         try:
             gencache.EnsureModule('{91493440-5A91-11CF-8700-00AA0060263B}', 0, 2, 6)
         except IOError:
-            # This occurs if a non-admin user runs the shared presentation. Ignore.
-            pass
+            self.log.exception("Failed to ensure module, try to create a local copy")
+            # This may be caused if a non-admin user runs the shared
+            # presentation for the first time without write access to
+            # Python\site-packages\win32com\gen_py. Try to create the
+            # module in the local directory instead and import it.
+
+            from win32com.client import makepy
+            
+            localModule = open("PowerPointModule.py", 'w')
+            
+            makepy.GenerateFromTypeLibSpec("Microsoft PowerPoint 10.0 Object Library", localModule)
+            
+            if localModule:
+                localModule.close()
+
+            import PowerPointModule
+        
         except Exception, e:
+            self.log.exception("Failed to ensure module")
             raise ViewerSoftwareNotInstalled()
     
     def Start(self):
@@ -799,7 +815,7 @@ class SharedPresentation:
         # eventQueue.
 
         try:
-            self.viewer = defaultViewer()
+            self.viewer = defaultViewer(self.log)
             self.viewer.Start()
            
         except ViewerSoftwareNotInstalled:

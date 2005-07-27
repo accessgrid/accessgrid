@@ -38,7 +38,7 @@ class ImpressViewer:
     self.desktop -- Open Office desktop.  Files are loaded from here.
     self.doc -- the current presentation document.
     """
-    def __init__(self):
+    def __init__(self, log):
         """
         We aren't doing anything in here because we really don't need
         anything yet. Once things get started up externally, this gets fired
