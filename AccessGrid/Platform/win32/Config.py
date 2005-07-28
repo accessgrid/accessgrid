@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.63 2005-07-28 21:54:17 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.64 2005-07-28 22:05:54 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.63 2005-07-28 21:54:17 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.64 2005-07-28 22:05:54 lefvert Exp $"
 
 import os
 import socket
@@ -368,60 +368,9 @@ class SystemConfig(Config.SystemConfig):
         
         return perfData
 
-     def AppFirewallConfig(self, path, enableFlag):
-        self.__AppFirewallConfig(path, enableFlag, "StandardProfile")
-        self.__AppFirewallConfig(path, enableFlag, "DomainProfile")
-
-    def __AppFirewallConfig(self, path, enableFlag, profile):
-        """
-        This method pokes the windows registry to enable or disable an
-        application in the firewall config.
-        """
-
-        if enableFlag:
-            enStr = "Enabled"
-        else:
-            enStr = "Disabled"
-
-        try:
-            # Get the name of the firewall applications key in the registry
-            #key = "SYSTEM\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy\\StandardProfile\\AuthorizedApplications\\List"
-            key =  "SYSTEM\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy\\%s\\AuthorizedApplications\\List"%profile
-            fwKey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key, 0,
-                                    _winreg.KEY_ALL_ACCESS)
-
-            # Get the number of applications currently configured
-            (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(fwKey)
-
-            
-            # Find the application among the key's values
-            for i in range(0, nValues):
-                (vName, vData, vType) = _winreg.EnumValue(fwKey, i)
-                if path == vName:
-                    # Set the flag to the value passed in
-                    (p, e, d) = vData[len(vName)+1:].split(":")
-                    vData = ":".join([vName, p, enStr, d])
-                    break
-                else:
-                    vName = None
-                    vData = None
-
-            if vName == None:
-                vName = path
-
-            if vData == None:
-                vData = "%s:*:%s:AG Tools" % (path, enStr)
-
-            # Put the value back in the registry
-            _winreg.SetValueEx(fwKey, vName, 0,_winreg.REG_SZ, vData)
-
-        except Exception:
-            log.exception("Exception configuring firewall for application: %s",
-                          path)
-
     def AppFirewallConfig(self, path, enableFlag):
-        self.__AppFirewallConfig(path, enableFlag, "StandardProfile")
-        self.__AppFirewallConfig(path, enableFlag, "DomainProfile")
+       self.__AppFirewallConfig(path, enableFlag, "StandardProfile")
+       self.__AppFirewallConfig(path, enableFlag, "DomainProfile")
 
     def __AppFirewallConfig(self, path, enableFlag, profile):
         """
