@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.3 2005-06-06 17:25:54 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.4 2005-07-28 21:51:30 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -33,8 +33,19 @@ class AudioService( AGService ):
 
         if Platform.IsWindows():
             rat = "rat.exe"
+            ratmedia = "ratmedia.exe"
+            ratui = "rat-ui.exe"
+            ratkill = "rat-kill.exe"
         else:
             rat = "rat"
+            ratmedia = "ratmedia"
+            ratui = "rat-ui"
+            ratkill = "rat-kill"
+
+        self.executable = os.path.join(os.getcwd(), rat)
+        self.rat_media = os.path.join(os.getcwd(), ratmedia) 
+        self.rat_ui = os.path.join(os.getcwd(), ratui)
+        self.rat_kill = os.path.join(os.getcwd(), ratkill)
 
         self.executable = os.path.join(os.getcwd(), rat)
 
@@ -168,6 +179,9 @@ class AudioService( AGService ):
 
             # Enable firewall
             self.sysConf.AppFirewallConfig(self.executable, 1)
+            self.sysConf.AppFirewallConfig(self.rat_media, 1)
+            self.sysConf.AppFirewallConfig(self.rat_ui, 1)
+            self.sysConf.AppFirewallConfig(self.rat_kill, 1)
             
             # Start the service;
             # in this case, store command line args in a list and let
@@ -234,9 +248,12 @@ class AudioService( AGService ):
 
             self.processManager.TerminateAllProcesses()
 
-
             # Disable firewall
             self.sysConf.AppFirewallConfig(self.executable, 0)
+            self.sysConf.AppFirewallConfig(self.rat_media, 0)
+            self.sysConf.AppFirewallConfig(self.rat_ui, 0)
+            self.sysConf.AppFirewallConfig(self.rat_kill, 0)
+
         except:
             self.log.exception("Exception in AGService.Stop ")
             raise Exception("AGService.Stop failed : ", str( sys.exc_value ) )
@@ -255,6 +272,7 @@ class AudioService( AGService ):
 
         # If started, stop
         if self.started:
+            self.sysConf.AppFirewallConfig(self.rat_kill, 1)
             self.Stop()
 
         # If enabled, start
