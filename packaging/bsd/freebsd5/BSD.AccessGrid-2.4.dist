@@ -1,0 +1,43 @@
+
+/set type=dir uname=root gname=wheel mode=0755
+.
+    usr
+        bin
+        ..
+        local
+            lib
+                python2.4
+                    site-packages
+                    ..
+                ..
+            ..
+        ..
+
+        share
+            doc
+            ..
+        ..
+        X11R6
+            share
+                gnome
+                    applications
+                    ..
+                    vfolders
+                    ..
+                ..
+            ..
+            etc
+                xdg
+                    menus
+                        applications-merged
+                        ..
+                    ..
+                ..
+            ..
+        ..
+    ..
+
+    etc
+    ..
+..
+
