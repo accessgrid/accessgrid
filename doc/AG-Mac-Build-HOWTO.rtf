@@ -1,735 +1,370 @@
-{\rtf1\ansi\deff1\adeflang1025
-{\fonttbl{\f0\froman\fprq2\fcharset0 Times;}{\f1\froman\fprq2\fcharset0 Times New Roman;}{\f2\froman\fprq2\fcharset0 Times New Roman;}{\f3\fswiss\fprq2\fcharset0 Arial;}{\f4\fmodern\fprq1\fcharset0 Courier New;}{\f5\fswiss\fprq2\fcharset0 Tahoma;}{\f6\froman\fprq2\fcharset2 Symbol;}{\f7\fnil\fprq2\fcharset2 Wingdings;}}
-{\colortbl;\red0\green0\blue0;\red0\green0\blue255;\red128\green0\blue128;\red0\green0\blue128;\red128\green128\blue128;}
-{\stylesheet{\s1\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255\snext1 Default;}
-{\s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\sbasedon1\snext2 Normal;}
-{\s3\sb240\sa60\keepn\qc\aspalpha\rtlch\af3\afs32\lang255\ltrch\dbch\af3\afs32\loch\f3\fs32\lang255\b\sbasedon2\snext2{\*\soutlvl0} heading 1;}
-{\s4\li360\ri0\fi-360\sb240\sa60\keepn\tx360\aspalpha\rtlch\af3\afs28\lang255\ltrch\dbch\af3\afs28\loch\f3\fs28\lang255\i\b\sbasedon5\snext2{\*\soutlvl1} heading 2;}
-{\s5\li360\ri0\fi-360\tx360\aspalpha\rtlch\lang255\ltrch\loch\lang255\sbasedon2\snext5 List Number;}
-{\s6\li720\ri0\fi-360\sb240\sa60\keepn\tx720\aspalpha\rtlch\af3\afs26\lang255\ltrch\dbch\af3\afs26\loch\f3\fs26\lang255\b\sbasedon2\snext2{\*\soutlvl2} heading 3;}
-{\s7\li720\ri720\fi0\aspalpha\rtlch\af4\afs20\lang255\ltrch\dbch\af4\afs20\loch\f4\fs20\lang255\sbasedon2\snext7 Plain Text,Literal Code;}
-{\s8\tqc\tx4320\tqr\tx8640\aspalpha\rtlch\lang255\ltrch\loch\lang255\sbasedon2\snext8 header;}
-{\s9\tqc\tx4320\tqr\tx8640\aspalpha\rtlch\lang255\ltrch\loch\lang255\sbasedon2\snext9 footer;}
-{\s10\aspalpha\rtlch\af5\lang255\ltrch\dbch\af5\loch\f5\lang255\sbasedon2\snext10 Document Map;}
-{\s11\aspalpha\rtlch\af5\afs16\lang255\ltrch\dbch\af5\afs16\loch\f5\fs16\lang255\sbasedon2\snext11 Balloon Text;}
-{\s12\qc\aspalpha\rtlch\af3\lang255\ltrch\dbch\af3\loch\f3\lang255\sbasedon2\snext12 Author Information;}
-{\s13\aspalpha\rtlch\afs20\lang255\ltrch\dbch\afs20\loch\fs20\lang255\sbasedon2\snext13 footnote text;}
-{\s14\tqc\tx4320\tqr\tx8640\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255\sbasedon1\snext14 Footer;}
-{\s15\tqc\tx4320\tqr\tx8640\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255\sbasedon1\snext15 Header;}
-{\*\cs17\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6 RTF_Num 2 1;}
-{\*\cs18\rtlch\af4\lang255\ltrch\dbch\af4\loch\f4 RTF_Num 2 2;}
-{\*\cs19\rtlch\af7\lang255\ltrch\dbch\af7\loch\f7 RTF_Num 2 3;}
-{\*\cs20\rtlch\af6\lang255\ltrch\dbch\af6\loch\f6 RTF_Num 2 4;}
-{\*\cs21\rtlch\af4\lang255\ltrch\dbch\af4\loch\f4 RTF_Num 2 5;}
-{\*\cs22\rtlch\af7\lang255\ltrch\dbch\af7\loch\f7 RTF_Num 2 6;}
-{\*\cs23\rtlch\af6\lang255\ltrch\dbch\af6\loch\f6 RTF_Num 2 7;}
-{\*\cs24\rtlch\af4\lang255\ltrch\dbch\af4\loch\f4 RTF_Num 2 8;}
-{\*\cs25\rtlch\af7\lang255\ltrch\dbch\af7\loch\f7 RTF_Num 2 9;}
-{\*\cs26\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 1;}
-{\*\cs27\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 2;}
-{\*\cs28\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 3;}
-{\*\cs29\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 4;}
-{\*\cs30\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 5;}
-{\*\cs31\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 6;}
-{\*\cs32\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 7;}
-{\*\cs33\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 8;}
-{\*\cs34\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 9;}
-{\*\cs35\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 1;}
-{\*\cs36\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 2;}
-{\*\cs37\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 3;}
-{\*\cs38\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 4;}
-{\*\cs39\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 5;}
-{\*\cs40\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 6;}
-{\*\cs41\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 7;}
-{\*\cs42\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 8;}
-{\*\cs43\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 9;}
-{\*\cs44\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 1;}
-{\*\cs45\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 2;}
-{\*\cs46\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 3;}
-{\*\cs47\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 4;}
-{\*\cs48\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 5;}
-{\*\cs49\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 6;}
-{\*\cs50\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 7;}
-{\*\cs51\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 8;}
-{\*\cs52\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 9;}
-{\*\cs53\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 1;}
-{\*\cs54\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 2;}
-{\*\cs55\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 3;}
-{\*\cs56\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 4;}
-{\*\cs57\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 5;}
-{\*\cs58\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 6;}
-{\*\cs59\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 7;}
-{\*\cs60\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 8;}
-{\*\cs61\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 9;}
-{\*\cs62\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 1;}
-{\*\cs63\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 2;}
-{\*\cs64\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 3;}
-{\*\cs65\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 4;}
-{\*\cs66\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 5;}
-{\*\cs67\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 6;}
-{\*\cs68\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 7;}
-{\*\cs69\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 8;}
-{\*\cs70\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 9;}
-{\*\cs71\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 1;}
-{\*\cs72\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 2;}
-{\*\cs73\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 3;}
-{\*\cs74\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 4;}
-{\*\cs75\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 5;}
-{\*\cs76\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 6;}
-{\*\cs77\cf0\rtlch\af6\afs24\lang255\ltrch\dbch\af6\afs24\langfe255\loch\f6\fs24\lang1033 RTF_Num 2 7;}
-{\*\cs78\cf0\rtlch\af4\afs24\lang255\ltrch\dbch\af4\afs24\langfe255\loch\f4\fs24\lang1033 RTF_Num 2 8;}
-{\*\cs79\cf0\rtlch\af7\afs24\lang255\ltrch\dbch\af7\afs24\langfe255\loch\f7\fs24\lang1033 RTF_Num 2 9;}
-{\*\cs80\cf0\rtlch\af1\afs24\lang255\ltrch\dbch\af1\afs24\langfe255\loch\f1\fs24\lang1033 RTF_Num 2 1;}
-{\*\cs81\cf0\rtlch\af1\afs24\lang255\ltrch\dbch\af1\afs24\langfe255\loch\f1\fs24\lang1033 RTF_Num 2 2;}
-{\*\cs82\cf0\rtlch\af1\afs24\lang255\ltrch\dbch\af1\afs24\langfe255\loch\f1\fs24\lang1033 RTF_Num 2 3;}
-{\*\cs83\cf0\rtlch\af1\afs24\lang255\ltrch\dbch\af1\afs24\langfe255\loch\f1\fs24\lang1033 RTF_Num 2 4;}
-{\*\cs84\cf0\rtlch\af1\afs24\lang255\ltrch\dbch\af1\afs24\langfe255\loch\f1\fs24\lang1033 RTF_Num 2 5;}
-{\*\cs85\cf0\rtlch\af1\afs24\lang255\ltrch\dbch\af1\afs24\langfe255\loch\f1\fs24\lang1033 RTF_Num 2 6;}
-{\*\cs86\cf0\rtlch\af1\afs24\lang255\ltrch\dbch\af1\afs24\langfe255\loch\f1\fs24\lang1033 RTF_Num 2 7;}
-{\*\cs87\cf0\rtlch\af1\afs24\lang255\ltrch\dbch\af1\afs24\langfe255\loch\f1\fs24\lang1033 RTF_Num 2 8;}
-{\*\cs88\cf0\rtlch\af1\afs24\lang255\ltrch\dbch\af1\afs24\langfe255\loch\f1\fs24\lang1033 RTF_Num 2 9;}
-{\*\cs89\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 3 1;}
-{\*\cs90\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 3 2;}
-{\*\cs91\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 3 3;}
-{\*\cs92\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 3 4;}
-{\*\cs93\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 3 5;}
-{\*\cs94\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 3 6;}
-{\*\cs95\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 3 7;}
-{\*\cs96\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 3 8;}
-{\*\cs97\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 3 9;}
-{\*\cs98\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 4 1;}
-{\*\cs99\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 4 2;}
-{\*\cs100\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 4 3;}
-{\*\cs101\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 4 4;}
-{\*\cs102\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 4 5;}
-{\*\cs103\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 4 6;}
-{\*\cs104\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 4 7;}
-{\*\cs105\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 4 8;}
-{\*\cs106\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 4 9;}
-{\*\cs107\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 5 1;}
-{\*\cs108\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 6 1;}
-{\*\cs109\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 6 2;}
-{\*\cs110\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 6 3;}
-{\*\cs111\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 6 4;}
-{\*\cs112\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 6 5;}
-{\*\cs113\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 6 6;}
-{\*\cs114\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 6 7;}
-{\*\cs115\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 6 8;}
-{\*\cs116\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 6 9;}
-{\*\cs117\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 7 1;}
-{\*\cs118\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 7 2;}
-{\*\cs119\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 7 3;}
-{\*\cs120\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 7 4;}
-{\*\cs121\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 7 5;}
-{\*\cs122\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 7 6;}
-{\*\cs123\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 7 7;}
-{\*\cs124\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 7 8;}
-{\*\cs125\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 7 9;}
-{\*\cs126\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 8 1;}
-{\*\cs127\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 8 2;}
-{\*\cs128\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 8 3;}
-{\*\cs129\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 8 4;}
-{\*\cs130\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 8 5;}
-{\*\cs131\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 8 6;}
-{\*\cs132\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 8 7;}
-{\*\cs133\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 8 8;}
-{\*\cs134\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 8 9;}
-{\*\cs135\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 9 1;}
-{\*\cs136\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 9 2;}
-{\*\cs137\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 9 3;}
-{\*\cs138\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 9 4;}
-{\*\cs139\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 9 5;}
-{\*\cs140\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 9 6;}
-{\*\cs141\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 9 7;}
-{\*\cs142\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 9 8;}
-{\*\cs143\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 9 9;}
-{\*\cs144\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 10 1;}
-{\*\cs145\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 10 2;}
-{\*\cs146\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 10 3;}
-{\*\cs147\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 10 4;}
-{\*\cs148\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 10 5;}
-{\*\cs149\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 10 6;}
-{\*\cs150\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 10 7;}
-{\*\cs151\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 10 8;}
-{\*\cs152\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 10 9;}
-{\*\cs153\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 11 1;}
-{\*\cs154\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 11 2;}
-{\*\cs155\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 11 3;}
-{\*\cs156\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 11 4;}
-{\*\cs157\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 11 5;}
-{\*\cs158\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 11 6;}
-{\*\cs159\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 11 7;}
-{\*\cs160\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 11 8;}
-{\*\cs161\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 11 9;}
-{\*\cs162\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 12 1;}
-{\*\cs163\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 12 2;}
-{\*\cs164\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 12 3;}
-{\*\cs165\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 12 4;}
-{\*\cs166\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 12 5;}
-{\*\cs167\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 12 6;}
-{\*\cs168\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 12 7;}
-{\*\cs169\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 12 8;}
-{\*\cs170\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 12 9;}
-{\*\cs171\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 13 1;}
-{\*\cs172\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 13 2;}
-{\*\cs173\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 13 3;}
-{\*\cs174\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 13 4;}
-{\*\cs175\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 13 5;}
-{\*\cs176\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 13 6;}
-{\*\cs177\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 13 7;}
-{\*\cs178\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 13 8;}
-{\*\cs179\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 13 9;}
-{\*\cs180\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 14 1;}
-{\*\cs181\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 14 2;}
-{\*\cs182\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 14 3;}
-{\*\cs183\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 14 4;}
-{\*\cs184\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 14 5;}
-{\*\cs185\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 14 6;}
-{\*\cs186\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 14 7;}
-{\*\cs187\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 14 8;}
-{\*\cs188\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 14 9;}
-{\*\cs189\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 15 1;}
-{\*\cs190\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 15 2;}
-{\*\cs191\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 15 3;}
-{\*\cs192\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 15 4;}
-{\*\cs193\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 15 5;}
-{\*\cs194\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 15 6;}
-{\*\cs195\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 15 7;}
-{\*\cs196\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 15 8;}
-{\*\cs197\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 15 9;}
-{\*\cs198\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 16 1;}
-{\*\cs199\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 16 2;}
-{\*\cs200\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 16 3;}
-{\*\cs201\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 16 4;}
-{\*\cs202\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 16 5;}
-{\*\cs203\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 16 6;}
-{\*\cs204\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 16 7;}
-{\*\cs205\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 16 8;}
-{\*\cs206\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 16 9;}
-{\*\cs207\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 17 1;}
-{\*\cs208\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 17 2;}
-{\*\cs209\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 17 3;}
-{\*\cs210\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 17 4;}
-{\*\cs211\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 17 5;}
-{\*\cs212\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 17 6;}
-{\*\cs213\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 17 7;}
-{\*\cs214\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 17 8;}
-{\*\cs215\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 17 9;}
-{\*\cs216\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 18 1;}
-{\*\cs217\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 18 2;}
-{\*\cs218\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 18 3;}
-{\*\cs219\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 18 4;}
-{\*\cs220\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 18 5;}
-{\*\cs221\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 18 6;}
-{\*\cs222\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 18 7;}
-{\*\cs223\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 18 8;}
-{\*\cs224\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 18 9;}
-{\*\cs225\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 19 1;}
-{\*\cs226\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 19 2;}
-{\*\cs227\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 19 3;}
-{\*\cs228\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 19 4;}
-{\*\cs229\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 19 5;}
-{\*\cs230\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 19 6;}
-{\*\cs231\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 19 7;}
-{\*\cs232\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 19 8;}
-{\*\cs233\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 19 9;}
-{\*\cs234\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 20 1;}
-{\*\cs235\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 20 2;}
-{\*\cs236\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 20 3;}
-{\*\cs237\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 20 4;}
-{\*\cs238\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 20 5;}
-{\*\cs239\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 20 6;}
-{\*\cs240\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 20 7;}
-{\*\cs241\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 20 8;}
-{\*\cs242\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 20 9;}
-{\*\cs243\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 21 1;}
-{\*\cs244\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 21 2;}
-{\*\cs245\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 21 3;}
-{\*\cs246\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 21 4;}
-{\*\cs247\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 21 5;}
-{\*\cs248\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 21 6;}
-{\*\cs249\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 21 7;}
-{\*\cs250\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 21 8;}
-{\*\cs251\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 21 9;}
-{\*\cs252\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 22 1;}
-{\*\cs253\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 22 2;}
-{\*\cs254\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 22 3;}
-{\*\cs255\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 22 4;}
-{\*\cs256\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 22 5;}
-{\*\cs257\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 22 6;}
-{\*\cs258\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 22 7;}
-{\*\cs259\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 22 8;}
-{\*\cs260\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 22 9;}
-{\*\cs261\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 23 1;}
-{\*\cs262\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 23 2;}
-{\*\cs263\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 23 3;}
-{\*\cs264\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 23 4;}
-{\*\cs265\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 23 5;}
-{\*\cs266\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 23 6;}
-{\*\cs267\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 23 7;}
-{\*\cs268\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 23 8;}
-{\*\cs269\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 23 9;}
-{\*\cs270\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 24 1;}
-{\*\cs271\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 24 2;}
-{\*\cs272\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 24 3;}
-{\*\cs273\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 24 4;}
-{\*\cs274\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 24 5;}
-{\*\cs275\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 24 6;}
-{\*\cs276\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 24 7;}
-{\*\cs277\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 24 8;}
-{\*\cs278\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 24 9;}
-{\*\cs279\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 25 1;}
-{\*\cs280\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 25 2;}
-{\*\cs281\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 25 3;}
-{\*\cs282\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 25 4;}
-{\*\cs283\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 25 5;}
-{\*\cs284\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 25 6;}
-{\*\cs285\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 25 7;}
-{\*\cs286\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 25 8;}
-{\*\cs287\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 25 9;}
-{\*\cs288\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 26 1;}
-{\*\cs289\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 27 1;}
-{\*\cs290\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 27 2;}
-{\*\cs291\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 27 3;}
-{\*\cs292\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 27 4;}
-{\*\cs293\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 27 5;}
-{\*\cs294\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 27 6;}
-{\*\cs295\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 27 7;}
-{\*\cs296\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 27 8;}
-{\*\cs297\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 27 9;}
-{\*\cs298\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 28 1;}
-{\*\cs299\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 28 2;}
-{\*\cs300\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 28 3;}
-{\*\cs301\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 28 4;}
-{\*\cs302\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 28 5;}
-{\*\cs303\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 28 6;}
-{\*\cs304\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 28 7;}
-{\*\cs305\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 28 8;}
-{\*\cs306\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 28 9;}
-{\*\cs307\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 29 1;}
-{\*\cs308\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 29 2;}
-{\*\cs309\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 29 3;}
-{\*\cs310\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 29 4;}
-{\*\cs311\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 29 5;}
-{\*\cs312\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 29 6;}
-{\*\cs313\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 29 7;}
-{\*\cs314\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 29 8;}
-{\*\cs315\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 29 9;}
-{\*\cs316\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 30 1;}
-{\*\cs317\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 30 2;}
-{\*\cs318\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 30 3;}
-{\*\cs319\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 30 4;}
-{\*\cs320\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 30 5;}
-{\*\cs321\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 30 6;}
-{\*\cs322\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 30 7;}
-{\*\cs323\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 30 8;}
-{\*\cs324\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 30 9;}
-{\*\cs325\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 31 1;}
-{\*\cs326\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 31 2;}
-{\*\cs327\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 31 3;}
-{\*\cs328\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 31 4;}
-{\*\cs329\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 31 5;}
-{\*\cs330\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 31 6;}
-{\*\cs331\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 31 7;}
-{\*\cs332\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 31 8;}
-{\*\cs333\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 31 9;}
-{\*\cs334\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 32 1;}
-{\*\cs335\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 32 2;}
-{\*\cs336\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 32 3;}
-{\*\cs337\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 32 4;}
-{\*\cs338\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 32 5;}
-{\*\cs339\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 32 6;}
-{\*\cs340\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 32 7;}
-{\*\cs341\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 32 8;}
-{\*\cs342\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 32 9;}
-{\*\cs343\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 34 1;}
-{\*\cs344\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 34 2;}
-{\*\cs345\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 34 3;}
-{\*\cs346\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 34 4;}
-{\*\cs347\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 34 5;}
-{\*\cs348\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 34 6;}
-{\*\cs349\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 34 7;}
-{\*\cs350\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 34 8;}
-{\*\cs351\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 34 9;}
-{\*\cs352\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 35 1;}
-{\*\cs353\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 35 2;}
-{\*\cs354\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 35 3;}
-{\*\cs355\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 35 4;}
-{\*\cs356\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 35 5;}
-{\*\cs357\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 35 6;}
-{\*\cs358\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 35 7;}
-{\*\cs359\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 35 8;}
-{\*\cs360\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 35 9;}
-{\*\cs361\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 36 1;}
-{\*\cs362\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 36 2;}
-{\*\cs363\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 36 3;}
-{\*\cs364\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 36 4;}
-{\*\cs365\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 36 5;}
-{\*\cs366\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 36 6;}
-{\*\cs367\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 36 7;}
-{\*\cs368\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 36 8;}
-{\*\cs369\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 36 9;}
-{\*\cs370\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 37 1;}
-{\*\cs371\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 37 2;}
-{\*\cs372\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 37 3;}
-{\*\cs373\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 37 4;}
-{\*\cs374\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 37 5;}
-{\*\cs375\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 37 6;}
-{\*\cs376\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 37 7;}
-{\*\cs377\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 37 8;}
-{\*\cs378\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 37 9;}
-{\*\cs379\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 38 1;}
-{\*\cs380\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 38 2;}
-{\*\cs381\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 38 3;}
-{\*\cs382\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 38 4;}
-{\*\cs383\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 38 5;}
-{\*\cs384\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 38 6;}
-{\*\cs385\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 38 7;}
-{\*\cs386\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 38 8;}
-{\*\cs387\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 38 9;}
-{\*\cs388\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 39 1;}
-{\*\cs389\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 39 2;}
-{\*\cs390\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 39 3;}
-{\*\cs391\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 39 4;}
-{\*\cs392\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 39 5;}
-{\*\cs393\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 39 6;}
-{\*\cs394\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 39 7;}
-{\*\cs395\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 39 8;}
-{\*\cs396\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 39 9;}
-{\*\cs397\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 40 1;}
-{\*\cs398\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 40 2;}
-{\*\cs399\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 40 3;}
-{\*\cs400\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 40 4;}
-{\*\cs401\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 40 5;}
-{\*\cs402\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 40 6;}
-{\*\cs403\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 40 7;}
-{\*\cs404\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 40 8;}
-{\*\cs405\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 40 9;}
-{\*\cs406\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 41 1;}
-{\*\cs407\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 41 2;}
-{\*\cs408\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 41 3;}
-{\*\cs409\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 41 4;}
-{\*\cs410\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 41 5;}
-{\*\cs411\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 41 6;}
-{\*\cs412\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 41 7;}
-{\*\cs413\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 41 8;}
-{\*\cs414\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 41 9;}
-{\*\cs415\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 42 1;}
-{\*\cs416\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 42 2;}
-{\*\cs417\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 42 3;}
-{\*\cs418\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 42 4;}
-{\*\cs419\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 42 5;}
-{\*\cs420\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 42 6;}
-{\*\cs421\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 42 7;}
-{\*\cs422\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 42 8;}
-{\*\cs423\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 42 9;}
-{\*\cs424\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 43 1;}
-{\*\cs425\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 43 2;}
-{\*\cs426\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 43 3;}
-{\*\cs427\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 43 4;}
-{\*\cs428\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 43 5;}
-{\*\cs429\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 43 6;}
-{\*\cs430\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 43 7;}
-{\*\cs431\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 43 8;}
-{\*\cs432\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 43 9;}
-{\*\cs433\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 44 1;}
-{\*\cs434\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 44 2;}
-{\*\cs435\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 44 3;}
-{\*\cs436\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 44 4;}
-{\*\cs437\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 44 5;}
-{\*\cs438\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 44 6;}
-{\*\cs439\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 44 7;}
-{\*\cs440\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 44 8;}
-{\*\cs441\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 44 9;}
-{\*\cs442\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 45 1;}
-{\*\cs443\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 45 2;}
-{\*\cs444\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 45 3;}
-{\*\cs445\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 45 4;}
-{\*\cs446\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 45 5;}
-{\*\cs447\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 45 6;}
-{\*\cs448\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 45 7;}
-{\*\cs449\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 45 8;}
-{\*\cs450\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 45 9;}
-{\*\cs451\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 46 1;}
-{\*\cs452\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 46 2;}
-{\*\cs453\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 46 3;}
-{\*\cs454\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 46 4;}
-{\*\cs455\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 46 5;}
-{\*\cs456\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 46 6;}
-{\*\cs457\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 46 7;}
-{\*\cs458\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 46 8;}
-{\*\cs459\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 46 9;}
-{\*\cs460\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 47 1;}
-{\*\cs461\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 47 2;}
-{\*\cs462\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 47 3;}
-{\*\cs463\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 47 4;}
-{\*\cs464\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 47 5;}
-{\*\cs465\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 47 6;}
-{\*\cs466\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 47 7;}
-{\*\cs467\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 47 8;}
-{\*\cs468\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 47 9;}
-{\*\cs469\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 48 1;}
-{\*\cs470\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 48 2;}
-{\*\cs471\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 48 3;}
-{\*\cs472\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 48 4;}
-{\*\cs473\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 48 5;}
-{\*\cs474\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 48 6;}
-{\*\cs475\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 48 7;}
-{\*\cs476\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 48 8;}
-{\*\cs477\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 48 9;}
-{\*\cs478\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 49 1;}
-{\*\cs479\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 49 2;}
-{\*\cs480\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 49 3;}
-{\*\cs481\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 49 4;}
-{\*\cs482\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 49 5;}
-{\*\cs483\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 49 6;}
-{\*\cs484\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 49 7;}
-{\*\cs485\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 49 8;}
-{\*\cs486\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 49 9;}
-{\*\cs487\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 50 1;}
-{\*\cs488\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 50 2;}
-{\*\cs489\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 50 3;}
-{\*\cs490\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 50 4;}
-{\*\cs491\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 50 5;}
-{\*\cs492\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 50 6;}
-{\*\cs493\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 50 7;}
-{\*\cs494\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 50 8;}
-{\*\cs495\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 50 9;}
-{\*\cs496\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 51 1;}
-{\*\cs497\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 51 2;}
-{\*\cs498\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 51 3;}
-{\*\cs499\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 51 4;}
-{\*\cs500\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 51 5;}
-{\*\cs501\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 51 6;}
-{\*\cs502\rtlch\af6\lang255\ltrch\dbch\af6\langfe1033\loch\f6\lang255 RTF_Num 51 7;}
-{\*\cs503\rtlch\af4\lang255\ltrch\dbch\af4\langfe1033\loch\f4\lang255 RTF_Num 51 8;}
-{\*\cs504\rtlch\af7\lang255\ltrch\dbch\af7\langfe1033\loch\f7\lang255 RTF_Num 51 9;}
-{\*\cs505\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 52 1;}
-{\*\cs506\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 52 2;}
-{\*\cs507\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 52 3;}
-{\*\cs508\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 52 4;}
-{\*\cs509\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 52 5;}
-{\*\cs510\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 52 6;}
-{\*\cs511\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 52 7;}
-{\*\cs512\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 52 8;}
-{\*\cs513\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 52 9;}
-{\*\cs514\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 53 1;}
-{\*\cs515\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 53 2;}
-{\*\cs516\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 53 3;}
-{\*\cs517\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 53 4;}
-{\*\cs518\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 53 5;}
-{\*\cs519\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 53 6;}
-{\*\cs520\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 53 7;}
-{\*\cs521\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 53 8;}
-{\*\cs522\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 RTF_Num 53 9;}
-{\*\cs523\rtlch\afs24\lang255\ltrch\dbch\afs24\langfe255\loch\fs24\lang255\sbasedon524 Default Paragraph Font;}
-{\*\cs524\rtlch\afs24\lang255\ltrch\dbch\afs24\langfe255\loch\fs24\lang255 Normal;}
-{\*\cs525\cf2\ul\rtlch\afs24\lang255\ltrch\dbch\afs24\langfe255\loch\fs24\lang255\sbasedon523 Hyperlink;}
-{\*\cs526{\*\updnprop5800}\up6\rtlch\afs24\lang255\ltrch\dbch\afs24\langfe255\loch\fs24\lang255\sbasedon523 footnote reference;}
-{\*\cs527\cf3\ul\rtlch\afs24\lang255\ltrch\dbch\afs24\langfe255\loch\fs24\lang255\sbasedon523 FollowedHyperlink;}
-{\*\cs528\cf4\ul\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255 Internet Link;}
-}{\*\listtable{\list\listtemplateid1
-{\listlevel\levelnfc0\leveljc0\levelstartat1\levelfollow2{\leveltext \'02\'00);}{\levelnumbers\'01;}\fi-360\li360}
-{\listlevel\levelnfc4\leveljc0\levelstartat1\levelfollow2{\leveltext \'02\'01);}{\levelnumbers\'01;}\fi-360\li720}
-{\listlevel\levelnfc2\leveljc0\levelstartat1\levelfollow2{\leveltext \'02\'02);}{\levelnumbers\'01;}\fi-360\li1080}
-{\listlevel\levelnfc0\leveljc0\levelstartat1\levelfollow2{\leveltext \'03(\'03);}{\levelnumbers\'02;}\fi-360\li1440}
-{\listlevel\levelnfc4\leveljc0\levelstartat1\levelfollow2{\leveltext \'03(\'04);}{\levelnumbers\'02;}\fi-360\li1800}
-{\listlevel\levelnfc2\leveljc0\levelstartat1\levelfollow2{\leveltext \'03(\'05);}{\levelnumbers\'02;}\fi-360\li2160}
-{\listlevel\levelnfc0\leveljc0\levelstartat1\levelfollow2{\leveltext \'02\'06.;}{\levelnumbers\'01;}\fi-360\li2520}
-{\listlevel\levelnfc4\leveljc0\levelstartat1\levelfollow2{\leveltext \'02\'07.;}{\levelnumbers\'01;}\fi-360\li2880}
-{\listlevel\levelnfc2\leveljc0\levelstartat1\levelfollow2{\leveltext \'02\'08.;}{\levelnumbers\'01;}\fi-360\li3240}{\listname RTF_Num 11;}\listid1}
-{\list\listtemplateid2
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li1440}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li2160}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li2880}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li3600}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li4320}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li5040}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li5760}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li6480}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li7200}{\listname RTF_Num 12;}\listid2}
-{\list\listtemplateid3
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li720}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li1440}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li2160}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li2880}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li3600}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li4320}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li5040}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li5760}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li6480}{\listname RTF_Num 15;}\listid3}
-{\list\listtemplateid4
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li720}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li1440}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li2160}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li2880}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li3600}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li4320}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li5040}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li5760}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li6480}{\listname RTF_Num 21;}\listid4}
-{\list\listtemplateid5
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li720}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li1440}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li2160}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li2880}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li3600}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li4320}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li5040}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li5760}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li6480}{\listname RTF_Num 22;}\listid5}
-{\list\listtemplateid6
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li360}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li1080}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li1800}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li2520}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li3240}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li3960}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li4680}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li5400}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li6120}{\listname RTF_Num 30;}\listid6}
-{\list\listtemplateid7
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li720}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li1440}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li2160}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li2880}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li3600}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li4320}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li5040}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li5760}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li6480}{\listname RTF_Num 50;}\listid7}
-{\list\listtemplateid8
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\langfe1033\f6\f6\fi-360\li720}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li1440}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li2160}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li2880}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li3600}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li4320}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61623 ?;}{\levelnumbers;}\f6\f6\f6\f6\fi-360\li5040}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u111 ?;}{\levelnumbers;}\f4\f4\f4\f4\fi-360\li5760}
-{\listlevel\levelnfc23\leveljc0\levelstartat1\levelfollow2{\leveltext \'01\u61607 ?;}{\levelnumbers;}\f7\f7\f7\f7\fi-360\li6480}{\listname RTF_Num 51;}\listid8}
-}{\listoverridetable{\listoverride\listid1\listoverridecount0\ls0}{\listoverride\listid2\listoverridecount0\ls1}{\listoverride\listid3\listoverridecount0\ls2}{\listoverride\listid4\listoverridecount0\ls3}{\listoverride\listid5\listoverridecount0\ls4}{\listoverride\listid6\listoverridecount0\ls5}{\listoverride\listid7\listoverridecount0\ls6}{\listoverride\listid8\listoverridecount0\ls7}}
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf100
+{\fonttbl\f0\fswiss\fcharset77 Arial-BoldMT;\f1\fswiss\fcharset77 Arial-BoldItalicMT;\f2\froman\fcharset77 Times-Roman;
+\f3\froman\fcharset77 TimesNewRomanPSMT;\f4\fnil\fcharset77 LastResort;\f5\fmodern\fcharset77 CourierNewPSMT;
+\f6\fswiss\fcharset77 Helvetica;\f7\fnil\fcharset77 Monaco;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue128;}
+\margl1440\margr1440\margb720\margt720\vieww17560\viewh17060\viewkind0
+\deftab720
+\pard\pardeftab720\sb240\sa60\qc
 
-{\info{\comment StarWriter}{\vern6410}}\deftab720
-{\*\pgdsctbl
-{\pgdsc0\pgdscuse195\pgwsxn12240\pghsxn15840\marglsxn1440\margrsxn1440\margtsxn1440\margbsxn1440\pgdscnxt0 Default;}
-{\pgdsc1\pgdscuse195\pgwsxn12240\pghsxn15840\marglsxn1440\margrsxn1440\margtsxn720\margbsxn720\headery0{\*\headeryb0\headerxl0\headerxr0\headeryh720}{\header \pard\plain \s15\tqc\tx4320\tqr\tx8640\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255\tqc\tx4320\tqr\tx8640\ltrch\dbch\langfe1033\loch\lang255 
-\par }
-\footery0{\*\footeryt0\footerxl0\footerxr0\footeryh720}{\footer \pard\plain \s9\tqc\tx4320\tqr\tx8640\aspalpha\rtlch\lang255\ltrch\loch\lang255\qc\tqc\tx4320\tqr\tx8640\aspalpha\rtlch\af3\afs20\ltrch\dbch\af3\afs20\loch\f3\fs20\lang255 {\ltrch\loch\f3 Copyright 2003 Argonne National Laboratory/University of Chicago.}
-\par 
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\qc\aspalpha\ltrch\dbch\af3\afs20\loch\f3\fs20\lang255 {\ltrch\loch\f3 For more information email: ag-mcs@mcs.anl.gov.}
-\par \pard\plain \s9\tqc\tx4320\tqr\tx8640\aspalpha\rtlch\lang255\ltrch\loch\lang255\tqc\tx4320\tqr\tx8640\aspalpha\ltrch\loch\lang255 
-\par }
-\pgdscnxt1 Convert 1;}}
-{\*\pgdscno1}\paperh15840\paperw12240\margl1440\margr1440\margt720\margb720\sectd\sbknone\pgwsxn12240\pghsxn15840\marglsxn1440\margrsxn1440\margtsxn1440\margbsxn1595\headery720{\header \pard\plain \s15\tqc\tx4320\tqr\tx8640\rtlch\lang255\ltrch\dbch\langfe1033\loch\lang255\tqc\tx4320\tqr\tx8640\ltrch\dbch\langfe1033\loch\lang255 
-\par }
-\footery720{\footer \pard\plain \s9\tqc\tx4320\tqr\tx8640\aspalpha\rtlch\lang255\ltrch\loch\lang255\qc\tqc\tx4320\tqr\tx8640\aspalpha\rtlch\af3\afs20\ltrch\dbch\af3\afs20\loch\f3\fs20\lang255 {\ltrch\loch\f3 Copyright 2003 Argonne National Laboratory/University of Chicago.}
-\par 
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\qc\aspalpha\ltrch\dbch\af3\afs20\loch\f3\fs20\lang255 {\ltrch\loch\f3 For more information email: ag-mcs@mcs.anl.gov.}
-\par \pard\plain \s9\tqc\tx4320\tqr\tx8640\aspalpha\rtlch\lang255\ltrch\loch\lang255\tqc\tx4320\tqr\tx8640\aspalpha\ltrch\loch\lang255 
-\par }
-\ftnbj\ftnstart1\ftnrstcont\ftnnar\aenddoc\aftnrstcont\aftnstart1\aftnnrlc
-\pard\plain \sb240\sa60\keepn\f3\fs32\lang255\b\f3\fs32\b\f3\fs32\b\qc\aspalpha \s3\sb240\sa60\keepn\qc\aspalpha\rtlch\af3\afs32\lang255\ltrch\dbch\af3\afs32\loch\f3\fs32\lang255\b\rtlch\ab\ltrch\dbch\ab {\ltrch\loch\f3 Access Grid Mac Packaging How-To}
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\sb240\sa60\keepn\f3\fs28\lang255\i\b\f3\fs28\f3\fs28\tx0\aspalpha a)}\ilvl1 \s4\li360\ri0\fi-360\sb240\sa60\keepn\tx0\aspalpha\rtlch\af3\afs28\lang255\ltrch\dbch\af3\afs28\loch\f3\fs28\lang255\i\b\li720\ri0\fi-360\tx0\ls0 {\ltrch\loch\f3 Overview}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255 
-\par {\ltrch\loch\f1 Packaging for the AccessGrid toolkit has been designed to facilitate building packages for the platforms currently supported by the project, and to ease addition of new platforms.  The command for building a snapshot is BuildSnapshot.py}
-\par 
-\par {\ltrch\loch\f1 The build directory hierarchy has the following structure:}
-\par 
-\par {\ltrch\loch\f1 \tab packaging}
-\par {\ltrch\loch\f1 \tab packaging/mac}
-\par 
-\par {\ltrch\loch\f1 The BuildSnapshot.py script resides in the packaging directory.  It performs a series of platform-independent steps, and then executes the BuildPackage.py script in the next level directory, determined based on the platform on which it is run.  The build p
-rogresses down the hierarchy, performing more specific build steps the deeper it goes.}
-\par 
-\par {\ltrch\loch\f1 At this time, the mac/BuildPackage.py script just creates the src.tar.gz file and calls the next level BuildPackage.py script.  Alternate distributions can be specified with the \lquote \emdash dist\rquote  option to BuildSnapshot.py:}
-\par 
-\par {\ltrch\loch\f1 \tab python BuildSnapshot.py [--dist <distName>]}
-\par 
-\par 
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\sb240\sa60\keepn\f3\fs28\lang255\i\b\f3\fs28\f3\fs28\tx0\aspalpha b)}\ilvl1 \s4\li360\ri0\fi-360\sb240\sa60\keepn\tx0\aspalpha\rtlch\af3\afs28\lang255\ltrch\dbch\af3\afs28\loch\f3\fs28\lang255\i\b\li720\ri0\fi-360\tx0\ls0 {\ltrch\loch\f3 Prepare the build machine}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255 
-\par {\ltrch\loch\f1 The following steps are prerequisites to the build process; these packages are not included in the resulting package.}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li360\ri0\fi0 
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi-360\ls2 {\ltrch\loch\f1 Obtain OSX 10.3}
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi-360\ls2 {\ltrch\loch\f1 Install 4Suite\tab \tab {{\field{\*\fldinst HYPERLINK "http://sourceforge.net/projects/foursuite/" }{\fldrslt \*\cs528\cf4\ul\rtlch\ltrch\dbch\loch\lang255 http://sourceforge.net/projects/foursuite/}}}     \line \tab (4Suite is for automatic tests.  Installation may fail on OSX \endash  this is not critical)}
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi-360\ls2 {\ltrch\loch\f1 Install epydoc (for generating developer documentation from the python source)}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li2520\ri0\fi360{\ltrch\loch\f1{{\field{\*\fldinst HYPERLINK "http://sourceforge.net/project/showfiles.php?group_id=32455" }{\fldrslt \*\cs528\cf4\ul\rtlch\ltrch\dbch\loch\lang255 http://sourceforge.net/project/showfiles.php?group_id=32455}}} }
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\lang255\aspalpha\f6\f6\langfe1033\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi-360\ls7 {\ltrch\loch\f1 Install GPT3.0.1 and Globus Toolkit 3.0.2}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li2160\ri0\fi720 {\ltrch\loch\f1 http://www.globus.org/toolkit/downloads/3.0}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f4\f4\f4 o}\ilvl1 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls7 {\ltrch\loch\f1 Make sure there are no leftover gpt or globus directories in your PATH.}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f4\f4\f4 o}\ilvl1 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls7 {\ltrch\loch\f1 Retrieve the \ldblquote GPT Source Installation Package\rdblquote }
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f4\f4\f4 o}\ilvl1 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls7 {\ltrch\loch\f1 Extract the source tarball gt3.0.2-source-installer.tar.gz}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f4\f4\f4 o}\ilvl1 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls7 {\ltrch\loch\f1 In the gt3.0.2-source-installer directory, extract the GPT source gpt-3.0.1-src.tar.gz}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f4\f4\f4 o}\ilvl1 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls7 {\ltrch\loch\f1 Set the GPT_LOCATION environment variable to /path/to/build/dir/gpt}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f4\f4\f4 o}\ilvl1 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls7 {\ltrch\loch\f1 In the gpt-3.0.1 directory, build GPT and run the postinstall script:}
-\par \pard\plain {\listtext\pard\plain \li2160\ri0\fi-360\lang255\aspalpha\f7\f7\f7 \u61607 ?}\ilvl2 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li2160\ri0\fi-360\ls7 {\ltrch\loch\f1 ./build_gpt}
-\par \pard\plain {\listtext\pard\plain \li2160\ri0\fi-360\lang255\aspalpha\f7\f7\f7 \u61607 ?}\ilvl2 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li2160\ri0\fi-360\ls7 {\ltrch\loch\f1 $\{GPT_LOCATION\}/sbin/gpt-postinstall}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f4\f4\f4 o}\ilvl1 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls7 {\ltrch\loch\f1  Build the globus data management bundle:}
-\par \pard\plain {\listtext\pard\plain \li2160\ri0\fi-360\lang255\aspalpha\f7\f7\f7 \u61607 ?}\ilvl2 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li2160\ri0\fi-360\ls7 {\ltrch\loch\f1 Change to the gt3.0.2-source-installer directory.}
-\par \pard\plain {\listtext\pard\plain \li2160\ri0\fi-360\lang255\aspalpha\f7\f7\f7 \u61607 ?}\ilvl2 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li2160\ri0\fi-360\ls7 {\ltrch\loch\f1 Set the GLOBUS_LOCATION environment variable to /path/to/build/dir/globus}
-\par \pard\plain {\listtext\pard\plain \li2160\ri0\fi-360\lang255\aspalpha\f7\f7\f7 \u61607 ?}\ilvl2 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li2160\ri0\fi-360\ls7 {\ltrch\loch\f1 Clear your LD_LIBRARY_PATH of any old globus directories.}
-\par \pard\plain {\listtext\pard\plain \li2160\ri0\fi-360\lang255\aspalpha\f7\f7\f7 \u61607 ?}\ilvl2 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li2160\ri0\fi-360\ls7 {\ltrch\loch\f1 Build:  $\{GPT_LOCATION\}/sbin/gpt-build globus-data-management-client-2.4.3-src_bundle.tar.gz gcc32dbgpthr\line After attempting to build once, perform the following modifications to allow the build to work:}
-\par \pard\plain {\listtext\pard\plain \li2880\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl3 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li2880\ri0\fi-360\ls7 {\ltrch\loch\f1 In $GLOBUS_LOCATION/sbin/libtool-$FLAVOR}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li2880\ri0\fi0 {\ltrch\loch\f1 Change: allow_undefined_flag="-flat_namespace -undefined suppress"}
-\par {\ltrch\loch\f1 To:  allow_undefined_flag="-undefined dynamic_lookup"}
-\par \pard\plain {\listtext\pard\plain \li2880\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl3 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li2880\ri0\fi-360\ls7 {\ltrch\loch\f1 Set env var: MACOSX_DEPLOYMENT_TARGET=10.3}
-\par \pard\plain {\listtext\pard\plain \li2880\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl3 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li2880\ri0\fi-360\ls7 {\ltrch\loch\f1 In $GLOBUS_LOCATION/libexec/globus-build-$FLAVOR.sh}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li2880\ri0\fi0 {\ltrch\loch\f1 use the following line for CPPFLAGS:}
-\par {\ltrch\loch\f1 CPPFLAGS=" -I<yourglobusdir>/include -I<yourglobusdir>/include/gcc32dbgpthr -no-cpp-precomp -DHAVE_NETDB_H -DHAVE_SYS_SOCKET_H -DBIND_8_COMPAT"}
-\par {\ltrch\loch\f1 Note: This correctly removes all occurances of /sw/*, either -I or -L}
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\sb240\sa60\keepn\f3\fs28\lang255\i\b\f3\fs28\f3\fs28\tx0\aspalpha c)}\ilvl1 \s4\li360\ri0\fi-360\sb240\sa60\keepn\tx0\aspalpha\rtlch\af3\afs28\lang255\ltrch\dbch\af3\afs28\loch\f3\fs28\lang255\i\b\li720\ri0\fi-360\tx0\ls0 {\ltrch\loch\f3 Retrieve sources}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255 
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li360\ri0\fi0 {\ltrch\loch\f1 Follow these steps to build an AG package from CVS.  If you are building from sources in the source tarball, all required sources are included therein, and don\rquote t have to be retrieved as described here.}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255 
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi-360\ls2 {\ltrch\loch\f1 Create a directory that will be used for the build (e.g., /path/to/build/dir)}
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi-360\ls2 {\ltrch\loch\f1 Change to the build directory}
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi-360\ls2 {\ltrch\loch\f1 Checkout ag-dist-mac from ANL cvs}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f4\f4\f4 o}\ilvl1 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls2 {\ltrch\loch\f1 CVSROOT: :pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li0\ri0\fi720 {\ltrch\loch\f1 The checkout includes the following:}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f4\f4\f4 o}\ilvl1 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls2 {\ltrch\loch\f1 ag-packaging}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f4\f4\f4 o}\ilvl1 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls2 {\ltrch\loch\f1 pyOpenSSL}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li360\ri0\fi0 
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi-360\ls4 {\ltrch\loch\f1 Retrieve the following packages and extract them:}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255 
-\par \pard\plain {\listtext\pard\plain \li1080\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1080\ri0\fi-360\ls5 {\ltrch\loch\f1 Copy the gt3.0.2-source-installer directory (from above) to the build directory}
-\par \pard\plain {\listtext\pard\plain \li1080\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1080\ri0\fi-360\ls5 {\ltrch\loch\f1 fpconst-0.7.0 http://www.analytics.washington.edu/~warnes/fpconst}
-\par \pard\plain {\listtext\pard\plain \li1080\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1080\ri0\fi-360\ls2 {\ltrch\loch\f1 SOAPpy-0.11.4\tab \tab http://pywebsvcs.sourceforge.net}
-\par \pard\plain {\listtext\pard\plain \li1800\ri0\fi-360\lang255\aspalpha\f4\f4\f4 o}\ilvl1 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1800\ri0\fi-360\ls2 {\ltrch\loch\f1 Apply the one-line patch to SOAPpy (remove a %s from Server.py line 337).}
-\par \pard\plain {\listtext\pard\plain \li1080\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1080\ri0\fi-360\ls2 {\ltrch\loch\f1 pyGlobus 2.4\line Download pyGlobus from either the latest AccessGrid release tarball or from the \ldblquote Download GTG Software\rdblquote  link on the pyGlobus main page: \ldblquote pyGlobus for gt-2.4.x\rdblquote \line We currently only build the io, security, and util modules.}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255 
-\par 
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\sb240\sa60\keepn\f3\fs28\lang255\i\b\f3\fs28\f3\fs28\tx0\aspalpha d)}\ilvl1 \s4\li360\ri0\fi-360\sb240\sa60\keepn\tx0\aspalpha\rtlch\af3\afs28\lang255\ltrch\dbch\af3\afs28\loch\f3\fs28\lang255\i\b\li720\ri0\fi-360\tx0\ls0 {\ltrch\loch\f3 Build packages}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li360\ri0\fi0 
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi-360\ls6 {\ltrch\loch\f1 Set the AGBUILDROOT environment variable to it}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f4\f4\f4 o}\ilvl1 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls6 {\ltrch\loch\f1 export AGBUILDROOT=/path/to/build/dir}
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi-360\ls6 {\ltrch\loch\f1 Change to the build directory}
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi-360\ls6 {\ltrch\loch\f1 Change to the ag-packaging directory}
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi-360\ls6 {\ltrch\loch\f1 To build from CVS:}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li360\ri0\fi0 
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi0 {\ltrch\loch\f1 sudo python BuildSnapshot.py [--dist <distName>]}
-\par 
-\par {\ltrch\loch\f1 Towards the end of the build process, follow the instructions the build script gives you on using the PackageManager and Disk Utility programs.}
-\par 
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi-360\ls6 {\ltrch\loch\f1 To build from a source tarball:}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255 
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi720 {\ltrch\loch\f1 sudo python BuildSnapshot.py  --no-checkout}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li2880\ri0\fi720 {\ltrch\loch\f1 --sourcedir=<name of AccessGrid dir from src.tar.gz>}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255 
-\par {\ltrch\loch\f1 \tab BuildSnapshot will (among other things):}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls1 {\ltrch\loch\f1 checkout the AccessGrid source code into a timestamped directory}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls1 {\ltrch\loch\f1 Build the AccessGrid python module}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls1 {\ltrch\loch\f1 Run tests}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls1 {\ltrch\loch\f1 Generate epydoc documentation}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls1 {\ltrch\loch\f1 Make service packages (e.g. AudioService.zip)}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls1 {\ltrch\loch\f1 Make shared application packages (e.g. SharedBrowser.agpkg)}
-\par \pard\plain {\listtext\pard\plain \li1440\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li1440\ri0\fi-360\ls1 {\ltrch\loch\f1 Execute mac/BuildPackage.py}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255 
-\par {\ltrch\loch\f1 The result is a dmg.gz file.  }
-\par 
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\sb240\sa60\keepn\f3\fs28\lang255\i\b\f3\fs28\f3\fs28\tx0\aspalpha e)}\ilvl1 \s4\li360\ri0\fi-360\sb240\sa60\keepn\tx0\aspalpha\rtlch\af3\afs28\lang255\ltrch\dbch\af3\afs28\loch\f3\fs28\lang255\i\b\li720\ri0\fi-360\tx0\ls0 {\ltrch\loch\f3 Notes}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255 
-\par \pard\plain {\listtext\pard\plain \li720\ri0\fi-360\lang255\aspalpha\f6\f6\f6 \u61623 ?}\ilvl0 \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li720\ri0\fi-360\ls3 {\ltrch\loch\f1 BuildSnapshot and underlying scripts run mostly without error checking, making it very difficult to determine whether the build was successful.  It should inform and exit if a problem occurs.}
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255\li360\ri0\fi0 
-\par \pard\plain \s2\aspalpha\rtlch\lang255\ltrch\dbch\langfe255\loch\lang255 
-\par }
+\f0\b\fs32 \cf0 Access Grid Mac Packaging How-To\
+\pard\tx0\pardeftab720\li720\fi-360\ri0\sb240\sa60\ql\qnatural
+
+\f1\i\fs28 \cf0 a)Overview\
+\pard\pardeftab720\ql\qnatural
+
+\f2\i0\b0\fs24 \cf0 \
+
+\f3 Packaging for the AccessGrid toolkit has been designed to facilitate building packages for the platforms currently supported by the project, and to ease addition of new platforms.  The command for building a snapshot is BuildSnapshot.py
+\f2 \
+\
+
+\f3 The build directory hierarchy has the following structure:
+\f2 \
+\
+
+\f3 	packaging
+\f2 \
+
+\f3 	packaging/mac
+\f2 \
+\
+
+\f3 The BuildSnapshot.py script resides in the packaging directory.  It performs a series of platform-independent steps, and then executes the BuildPackage.py script in the next level directory, determined based on the platform on which it is run.  The build progresses down the hierarchy, performing more specific build steps the deeper it goes.
+\f2 \
+\
+
+\f3 At this time, the mac/BuildPackage.py script just creates the src.tar.gz file and calls the next level BuildPackage.py script.  Alternate distributions can be specified with the \'d4\'d1dist\'d5 option to BuildSnapshot.py:
+\f2 \
+\
+
+\f3 	python BuildSnapshot.py [--dist <distName>]
+\f2 \
+\
+\
+\pard\tx0\pardeftab720\li720\fi-360\ri0\sb240\sa60\ql\qnatural
+
+\f1\i\b\fs28 \cf0 b)Prepare the build machine\
+\pard\pardeftab720\ql\qnatural
+
+\f2\i0\b0\fs24 \cf0 \
+
+\f3 The following steps are prerequisites to the build process; these packages are not included in the resulting package.
+\f2 \
+\pard\pardeftab720\li360\ri0\ql\qnatural
+\cf0 \
+\pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3 Obtain OSX 10.3
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 Install 4Suite		{\field{\*\fldinst{HYPERLINK "http://sourceforge.net/projects/foursuite/"}}{\fldrslt \cf2 \ul \ulc2 http://sourceforge.net/projects/foursuite/}}     \uc0\u8232 	(4Suite is for automatic tests.  Installation may fail on OSX \'d0 this is not critical)
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 Install epydoc (for generating developer documentation from the python source)
+\f2 \
+\pard\pardeftab720\li2520\fi360\ri0\ql\qnatural
+{\field{\*\fldinst{HYPERLINK "http://sourceforge.net/project/showfiles.php?group_id=32455"}}{\fldrslt 
+\f3 \cf2 \ul \ulc2 http://sourceforge.net/project/showfiles.php?group_id=32455}}
+\f3  
+\f2 \
+\pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3 Install GPT3.0.1 and Globus Toolkit 3.0.2
+\f2 \
+\pard\pardeftab720\li2160\fi720\ri0\ql\qnatural
+
+\f3 \cf0 http://www.globus.org/toolkit/downloads/3.0
+\f2 \
+\pard\pardeftab720\li1440\fi-360\ri0\ql\qnatural
+
+\f5 \cf0 o
+\f3 Make sure there are no leftover gpt or globus directories in your PATH.
+\f2 \
+
+\f5 o
+\f3 Retrieve the \'d2GPT Source Installation Package\'d3
+\f2 \
+
+\f5 o
+\f3 Extract the source tarball gt3.0.2-source-installer.tar.gz\
+	* In the resulting folder, replace one of the files with the file at the following url:  \
+	
+\f6 http://www-unix.mcs.anl.gov/fl/research/accessgrid/software/required/source/globus-data-management-client-2.4.3-src_bundle.tar.gz\
+
+\f3 	This file includes a patch to prevent sockets from hanging the VenueServer.
+\f2 \
+
+\f5 o
+\f3 In the gt3.0.2-source-installer directory, extract the GPT source gpt-3.0.1-src.tar.gz
+\f2 \
+
+\f5 o
+\f3 Set the GPT_LOCATION environment variable to /path/to/build/dir/gpt
+\f2 \
+
+\f5 o
+\f3 In the gpt-3.0.1 directory, build GPT and run the postinstall script:
+\f2 \
+\pard\pardeftab720\li2160\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61607 
+\f3 ./build_gpt
+\f2 \
+\pard\pardeftab720\li1440\fi-360\ri0\ql\qnatural
+
+\f5 \cf0 o
+\f3  Build the globus data management bundle:
+\f2 \
+\pard\pardeftab720\li2160\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61607 
+\f3 Change to the gt3.0.2-source-installer directory.
+\f2 \
+
+\f4 \uc0\u61607 
+\f3 Set the GLOBUS_LOCATION environment variable to /path/to/build/dir/globus
+\f2 \
+
+\f4 \uc0\u61607 
+\f3 Clear your LD_LIBRARY_PATH of any old globus directories.
+\f2 \
+
+\f4 \uc0\u61607 
+\f3 Build:  $\{GPT_LOCATION\}/sbin/gpt-build globus-data-management-client-2.4.3-src_bundle.tar.gz gcc32dbgpthr\uc0\u8232 After attempting to build once, perform the following modifications to allow the build to work:
+\f2 \
+\pard\pardeftab720\li2880\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3 In $GLOBUS_LOCATION/sbin/libtool-$FLAVOR
+\f2 \
+\pard\pardeftab720\li2880\ri0\ql\qnatural
+
+\f3 \cf0 Change: allow_undefined_flag="-flat_namespace -undefined suppress"
+\f2 \
+
+\f3 To:  allow_undefined_flag="-undefined dynamic_lookup"
+\f2 \
+\pard\pardeftab720\li2880\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3 Set env var: MACOSX_DEPLOYMENT_TARGET=10.3
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 In $GLOBUS_LOCATION/libexec/globus-build-$FLAVOR.sh
+\f2 \
+\pard\pardeftab720\li2880\ri0\ql\qnatural
+
+\f3 \cf0 use the following line for CPPFLAGS:
+\f2 \
+
+\f3 CPPFLAGS=" -I<yourglobusdir>/include -I<yourglobusdir>/include/gcc32dbgpthr -no-cpp-precomp -DHAVE_NETDB_H -DHAVE_SYS_SOCKET_H -DBIND_8_COMPAT"
+\f2 \
+
+\f3 Note: This correctly removes all occurances of /sw/*, either -I or -L and -traditional-cpp.\
+\pard\pardeftab720\li2160\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61607 
+\f3 $\{GPT_LOCATION\}/sbin/gpt-postinstall
+\f2 \
+\pard\pardeftab720\li2880\ri0\ql\qnatural
+\cf0 \
+\pard\tx0\pardeftab720\li720\fi-360\ri0\sb240\sa60\ql\qnatural
+
+\f1\i\b\fs28 \cf0 c)Retrieve sources\
+\pard\pardeftab720\ql\qnatural
+
+\f2\i0\b0\fs24 \cf0 \
+\pard\pardeftab720\li360\ri0\ql\qnatural
+
+\f3 \cf0 Follow these steps to build an AG package from CVS.  If you are building from sources in the source tarball, all required sources are included therein, and don\'d5t have to be retrieved as described here.
+\f2 \
+\pard\pardeftab720\ql\qnatural
+\cf0 \
+\pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3 Create a directory that will be used for the build (e.g., /path/to/build/dir)
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 Change to the build directory
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 Checkout ag-dist-mac from ANL cvs
+\f2 \
+\pard\pardeftab720\li1440\fi-360\ri0\ql\qnatural
+
+\f5 \cf0 o
+\f3 CVSROOT: :pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl
+\f2 \
+\pard\pardeftab720\fi720\ri0\ql\qnatural
+
+\f3 \cf0 The checkout includes the following:
+\f2 \
+\pard\pardeftab720\li1440\fi-360\ri0\ql\qnatural
+
+\f5 \cf0 o
+\f3 ag-packaging
+\f2 \
+
+\f5 o
+\f3 pyOpenSSL
+\f2 \
+\pard\pardeftab720\li360\ri0\ql\qnatural
+\cf0 \
+\pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3 Retrieve the following packages and extract them:
+\f2 \
+\pard\pardeftab720\ql\qnatural
+\cf0 \
+\pard\pardeftab720\li1080\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3 Copy the gt3.0.2-source-installer directory (from above) to the build directory
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 fpconst-0.7.0 http://research.warnes.net/~warnes/fpconst
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 SOAPpy-0.11.4		http://pywebsvcs.sourceforge.net
+\f2 \
+\pard\pardeftab720\li1800\fi-360\ri0\ql\qnatural
+
+\f5 \cf0 o
+\f3 Apply the one-line patch to SOAPpy (remove a %s from Server.py line 337).
+\f2 \
+\pard\pardeftab720\li1080\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3 pyGlobus 2.4\uc0\u8232 Download pyGlobus from either the latest AccessGrid release tarball or from the \'d2Download GTG Software\'d3 link on the pyGlobus main page: \'d2pyGlobus for gt-2.4.x\'d3\u8232 We currently only build the io, security, and util modules.\
+
+\f4 \uc0\u61623 
+\f7  
+\f3 Download ucl rat sources from cvs:\
+
+\f2 	http://www-mice.cs.ucl.ac.uk/multimedia/software/documentation/cvsanon.html\
+
+\f4 \uc0\u61623 
+\f7  
+\f3 Download openmash vic sources:\
+	http://www.openmash.org/developers/cvs/index.html\
+\pard\tx0\pardeftab720\li720\fi-360\ri0\sb240\sa60\ql\qnatural
+
+\f1\i\b\fs28 \cf0 d)Build packages\
+\pard\pardeftab720\li360\ri0\ql\qnatural
+
+\f2\i0\b0\fs24 \cf0 \
+\pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3 Set the AGBUILDROOT environment variable to it
+\f2 \
+\pard\pardeftab720\li1440\fi-360\ri0\ql\qnatural
+
+\f5 \cf0 o
+\f3 export AGBUILDROOT=/path/to/build/dir
+\f2 \
+\pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3 Change to the build directory
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 Change to the ag-packaging directory
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 To build from CVS:
+\f2 \
+\pard\pardeftab720\li360\ri0\ql\qnatural
+\cf0 \
+\pard\pardeftab720\li1440\ri0\ql\qnatural
+
+\f3 \cf0 sudo python BuildSnapshot.py [--dist <distName>]
+\f2 \
+\
+
+\f3 Towards the end of the build process, follow the instructions the build script gives you on using the PackageManager and Disk Utility programs.
+\f2 \
+\
+\pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3 To build from a source tarball:
+\f2 \
+\pard\pardeftab720\li720\fi720\ri0\ql\qnatural
+
+\f3 \cf0 sudo python BuildSnapshot.py  --no-checkout
+\f2 \
+\pard\pardeftab720\li2880\fi720\ri0\ql\qnatural
+
+\f3 \cf0 --sourcedir=<name of AccessGrid dir from src.tar.gz>
+\f2 \
+\pard\pardeftab720\ql\qnatural
+\cf0 \
+
+\f3 	BuildSnapshot will (among other things):
+\f2 \
+\pard\pardeftab720\li1440\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3 checkout the AccessGrid source code into a timestamped directory
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 Build the AccessGrid python module
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 Run tests
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 Generate epydoc documentation
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 Make service packages (e.g. AudioService.zip)
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 Make shared application packages (e.g. SharedBrowser.agpkg)
+\f2 \
+
+\f4 \uc0\u61623 
+\f3 Execute mac/BuildPackage.py
+\f2 \
+\pard\pardeftab720\ql\qnatural
+\cf0 \
+
+\f3 The result is a dmg.gz file.  
+\f2 \
+\
+\pard\tx0\pardeftab720\li720\fi-360\ri0\sb240\sa60\ql\qnatural
+
+\f1\i\b\fs28 \cf0 e)Notes\
+\pard\pardeftab720\ql\qnatural
+
+\f2\i0\b0\fs24 \cf0 \
+\pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3 BuildSnapshot and underlying scripts run mostly without error checking, making it very difficult to determine whether the build was successful.  It should inform and exit if a problem occurs.
+\f2 \
+\pard\pardeftab720\li360\ri0\ql\qnatural
+\cf0 \
+\pard\pardeftab720\ql\qnatural
+\cf0 \
+}
