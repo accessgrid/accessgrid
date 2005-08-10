@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        VenueVNCServer.py
 # RCS-ID:      
