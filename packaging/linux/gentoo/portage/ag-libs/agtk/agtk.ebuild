@@ -1,39 +1,43 @@
 # Copyright 1999-2004 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /cvs/fl/AccessGrid/packaging/linux/gentoo/portage/ag-libs/agtk/agtk.ebuild,v 1.1 2004-09-14 14:08:22 turam Exp $
+# $Header: /cvs/fl/AccessGrid/packaging/linux/gentoo/portage/ag-libs/agtk/agtk.ebuild,v 1.2 2005-08-16 19:54:50 turam Exp $
 
 inherit eutils distutils
 
 DESCRIPTION="The Access Grid Toolkit"
-
 HOMEPAGE="http://www.mcs.anl.gov/fl/research/accessgrid/"
-
-SRC_URI="http://www.mcs.anl.gov/fl/research/accessgrid/software/releases/${PV}/source/${P}.tar.bz2"
-
+SRC_URI="http://www.mcs.anl.gov/fl/research/accessgrid/software/releases/${PV}/source/${P}.tar.gz"
 LICENSE="AGTPL"
-
 SLOT="0"
-
-KEYWORDS="~x86"
-
+KEYWORDS="x86"
 IUSE=""
-
 DEPEND=">=python-2.3
 	>=globus-client/globus-data-management-client-2.4.3
 	>=pyglobus-0.9.7
-	>=soappy-0.11.4
-	>=pyOpenSSL_AG-0.5.1
+	=soappy-0.11.4
+	>=pyOpenSSL_AG-0.5.1.1
 	>=wxGTK-2.4.2
 	>=wxpython-2.4.2.4
-        >=xawtv-3.86
-        >=ag-media/rat-4.2.22
-        >=ag-media/vic-1.1.13"
+    >=ag-media/rat-4.2.22
+    >=ag-media/vic-1.1.13
+	app-arch/unzip
+	app-arch/zip
+	!ag-libs/agtk-cvs"
 
 src_compile() {
-	epatch ${FILESDIR}/Config.py-2.3-beta1.patch
+	if [ ${PR} = "r0" ]; then
+		doc_ver=${P}
+	else
+		doc_ver=${PVR}
+	fi
+	einfo "Fixing documentation path"
+	sed -i s/\"AccessGrid\",\ \"Documentation\"/\"${doc_ver}\",\ \"Documentation\"/ ${S}/AccessGrid/Platform/unix/Config.py
+	if [ ${?} -ne 0 ]; then
+		eerror "sed failed to patch Config.py"
+	fi
 	distutils_src_compile
-        echo "--- Building QuickBridge" ${WORKDIR}/${P}/services/network/QuickBridge
-        pushd ${WORKDIR}/${P}/services/network/QuickBridge
+        echo "--- Building QuickBridge" ${S}/services/network/QuickBridge
+        pushd ${S}/services/network/QuickBridge
         echo " - list files"
         ls
         gcc -O -o QuickBridge QuickBridge.c
@@ -45,14 +49,15 @@ src_install() {
 	${python} setup.py install --root=${D} --no-compile
 	rm -rf ${D}/usr/bin ${D}/usr/etc/init.d ${D}/usr/share/AccessGrid ${D}/usr/share/applnk ${D}/usr/share/gnome
 	mv ${D}/usr/etc ${D}/etc
-	dodoc COPYING.txt ChangeLog README README-developers TODO
+	mkdir ${D}/usr/share/doc/${PF}
+	mv ${D}/usr/share/doc/AccessGrid/{COPYING.txt,ChangeLog,README,README-developers,TODO} ${D}/usr/share/doc/${PF}/.
 	mv ${D}/usr/share/doc/AccessGrid/Documentation ${D}/usr/share/doc/${PF}/.
 	rm -rf ${D}/usr/share/doc/AccessGrid
 	install -d ${D}/etc/AccessGrid/Services
 	install -d ${D}/etc/AccessGrid/Logs
         echo "--- Building node service packages"
         mkdir ${D}/etc/AccessGrid/NodeServices
-        pushd ${WORKDIR}/${P}/services/node
+        pushd ${S}/services/node
         echo " - list files"
         ls
         echo "  - VideoService"
@@ -74,12 +79,11 @@ src_install() {
         echo "--- Copying shared application packages"
 	cp -a ${FILESDIR}/SharedApplications ${D}/etc/AccessGrid
         echo "--- Copying QuickBridge"
-        ls ${WORKDIR}/${P}/services/network/QuickBridge/QuickBridge
+        ls ${S}/services/network/QuickBridge/QuickBridge
         mkdir ${D}/usr/bin
-        cp -a -v ${WORKDIR}/${P}/services/network/QuickBridge/QuickBridge ${D}/usr/bin
+        cp -a -v ${S}/services/network/QuickBridge/QuickBridge ${D}/usr/bin
         echo "--- Configuring executable scripts"
-	dobin   bin/AGNodeService.py            \
-            bin/AGServiceManager.py             \
+	dobin   bin/AGServiceManager.py             \
             bin/BridgeServer.py                 \
             bin/CertificateManager.py           \
             bin/CertificateRequestTool.py       \
