@@ -7,4 +7,4 @@ Icon=/usr/share/AccessGrid/ag.ico
 Terminal=true
 Type=Application
 Encoding=UTF-8
-Categories=X-Access-Grid-Base
+Categories=X-Access-Grid-Base;

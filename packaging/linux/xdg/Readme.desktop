@@ -6,4 +6,4 @@ Icon=/usr/share/AccessGrid/ag.ico
 Terminal=false
 Type=Link
 Encoding=UTF-8
-Categories=X-Access-Grid-Base
+Categories=X-Access-Grid-Base;

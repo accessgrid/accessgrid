@@ -6,4 +6,5 @@ Exec=/bin/sh -c "VenueServer.py -d; sleep 2"
 Icon=/usr/share/AccessGrid/ag.ico
 Terminal=true
 Type=Application
-Categories=X-Access-Grid-Services
+Encoding=UTF-8
+Categories=X-Access-Grid-Services;
