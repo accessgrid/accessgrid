@@ -1,15 +1,23 @@
+%define ispython64bit	%(python -c 'import sys ; print (int(sys.maxint == 9223372036854775807L))')
+
+%ifarch ppc
+%define _libdir		/usr/lib
+%endif
+
 %define	name		globus-accessgrid
 %define	version		2.4
-%define	release		6
+%define	release		8
 %define	prefix		%{_libdir}/globus
 %define buildroot	/var/tmp/%{name}-%{version}
 
 %define has_ld_so_conf_d %([ -d /etc/ld.so.conf.d ] && echo 1 || echo 0)
 
-%ifarch x86_64
-%define globus_flavor gcc64dbgpthr
+%if %{ispython64bit}
+%define globus_flavor gcc64pthr
+%define globus_dbg_flavor gcc64dbgpthr
 %else
-%define globus_flavor gcc32dbgpthr
+%define globus_flavor gcc32pthr
+%define globus_dbg_flavor gcc32dbgpthr
 %endif
 
 Summary:	The Globus Toolkit
@@ -40,6 +48,8 @@ export GLOBUS_LOCATION=%{buildroot}%{prefix}
 
 ##
 # Globus Data Management Client
+${GPT_LOCATION}/sbin/gpt-build ${AGBUILDROOT}/gt3.0.2-source-installer/globus-data-management-client-2.4.3-src_bundle.tar.gz %{globus_dbg_flavor}
+(cd ${GLOBUS_LOCATION}/setup/globus/ ; ./setup-globus-common ; ./setup-ssl-utils)
 ${GPT_LOCATION}/sbin/gpt-build ${AGBUILDROOT}/gt3.0.2-source-installer/globus-data-management-client-2.4.3-src_bundle.tar.gz %{globus_flavor}
 (cd ${GLOBUS_LOCATION}/setup/globus/ ; ./setup-globus-common ; ./setup-ssl-utils)
 
@@ -48,8 +58,8 @@ ${GPT_LOCATION}/sbin/gpt-build ${AGBUILDROOT}/gt3.0.2-source-installer/globus-da
 sed -e 's,/usr/local/bin/perl,/usr/bin/perl,g' < %{buildroot}%{prefix}/bin/der_chop > %{buildroot}%{prefix}/bin/der_chop.sed
 mv -f %{buildroot}%{prefix}/bin/der_chop.sed %{buildroot}%{prefix}/bin/der_chop
 chmod 0755 %{buildroot}%{prefix}/bin/der_chop
+cp -f -p %{buildroot}%{prefix}/bin/der_chop %{buildroot}%{prefix}/bin/%{globus_dbg_flavor}/shared/der_chop
 cp -f -p %{buildroot}%{prefix}/bin/der_chop %{buildroot}%{prefix}/bin/%{globus_flavor}/shared/der_chop
-
 %install
 mkdir -p %{buildroot}/etc/profile.d
 
@@ -72,13 +82,8 @@ chmod 0755 %{buildroot}/etc/profile.d/globus.*
 
 %if %{has_ld_so_conf_d}
   mkdir -p %{buildroot}/etc/ld.so.conf.d
-%ifarch x86_64
-  echo "%{prefix}/lib" > %{buildroot}/etc/ld.so.conf.d/globus-x86_64.conf
-  chmod 0644 %{buildroot}/etc/ld.so.conf.d/globus-x86_64.conf
-%else
-  echo "%{prefix}/lib" > %{buildroot}/etc/ld.so.conf.d/globus.conf
-  chmod 0644 %{buildroot}/etc/ld.so.conf.d/globus.conf
-%endif
+  echo "%{prefix}/lib" > %{buildroot}/etc/ld.so.conf.d/globus-%{_arch}.conf
+  chmod 0644 %{buildroot}/etc/ld.so.conf.d/globus-%{_arch}.conf
 %endif
 
 %clean
@@ -112,3 +117,4 @@ fi
 %if %{has_ld_so_conf_d}
   /etc/ld.so.conf.d/*
 %endif
+

@@ -3,7 +3,7 @@
 # spec file. If you see %{variable_name} this is where it's assigned
 #
 %define	name		AccessGrid
-%define version		2.3
+%define version		2.4
 %define release		RELEASE
 %define	prefix		/usr
 %define sysconfdir	/etc/%{name}/Config
@@ -12,6 +12,10 @@
 %define xdg_data_dirs	%{sharedir}
 %define buildroot	%{_builddir}/AccessGrid-%{version}
 %define debug_package	%{nil}
+
+%ifarch ppc
+%define _libdir          /usr/lib
+%endif
 
 
 # Optik is included with Python 2.3, so only require it for older pythons
@@ -39,6 +43,7 @@ BuildRoot:	%{buildroot}
 Requires:	wxPython
 Requires:	globus-accessgrid
 Requires:	PyXML >= 0.8.3
+Requires:	vnc-server
 %if %{require_optik}
 Requires:	python-optik >= 1.4.1
 %endif
@@ -47,12 +52,6 @@ Requires:	patch
 %endif
 BuildRequires:	globus-accessgrid
 BuildRequires:	wxPython
-Obsoletes:	AccessGrid-BridgeServer
-Obsoletes:	AccessGrid-VenueServer
-Obsoletes:	AccessGrid-VenueClient
-Obsoletes:	pyOpenSSL_AG
-Obsoletes:	pyGlobus
-Obsoletes:	logging
 
 %description
 The Access Grid Toolkit provides the necessary components for users to
@@ -130,6 +129,7 @@ python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}
 %{prefix}/bin/certmgr.py
 %{prefix}/bin/agpm.py
 %{prefix}/bin/GoToVenue.py
+%{prefix}/bin/VenueVNCServer.py
 %{sharedir}/doc/AccessGrid
 #
 # - Install VenueManagement.py and VenueServer.py

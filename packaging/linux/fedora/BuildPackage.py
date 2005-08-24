@@ -1,6 +1,6 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 
-import sys, os, time
+import sys, os, time, commands
 from optparse import OptionParser
 
 parser = OptionParser()
@@ -45,10 +45,12 @@ print "version = ", version
 TmpDir = os.tmpnam()
 if not os.path.exists(TmpDir):
     os.mkdir(TmpDir)
-RpmDir = os.path.join(TmpDir,"AccessGrid-%s-%s" % (version,metainfo))
-if not os.path.exists(RpmDir):
-    os.mkdir(RpmDir)
 StartDir = os.getcwd()
+BuildArch = commands.getoutput("rpm --eval %{_build_arch}")
+
+cmd = "cp -p ../../../sharedapps/VenueVNC/server/VenueVNCServer.py %s/bin" % DestDir
+print "cmd = ", cmd
+os.system(cmd)
 
 # copy XDG Gnome/KDE menu related files and delete legacy Gnome/KDE dirs
 cmd = "cp -p ../ag-ellipse.png %s/share/AccessGrid/" % DestDir
@@ -95,16 +97,17 @@ else:
     print "cmd = ", cmd
     os.system(cmd)
 
-# 	 
+#
 # Build globus rpm      
-#   
-os.chdir(StartDir)    
-cmd = "rpmbuild -ba globus-accessgrid.spec"     
-print "cmd = ", cmd     
-os.system(cmd)      
-cmd = "cp /usr/src/redhat/RPMS/i386/globus-accessgrid-2.4-6.i386.rpm %s" % (RpmDir,)   
-print "cmd = ", cmd     
-os.system(cmd)      
+# 
+os.chdir(StartDir) 
+installedRPM = commands.getoutput("/bin/rpm -q --queryformat='%{VERSION}%{ARCH}' globus-accessgrid")
+toBeBuiltRPM = commands.getoutput("/bin/rpm -q --queryformat='%{VERSION}' --specfile globus-accessgrid.spec")
+toBeBuiltRPM += BuildArch
+if (installedRPM != toBeBuiltRPM) :
+    cmd = "rpmbuild --target=%s -ba globus-accessgrid.spec" % (BuildArch,)
+    print "cmd = ", cmd     
+    os.system(cmd)      
 
 #
 # Build AccessGrid rpms
@@ -132,36 +135,7 @@ print "cmd = ", cmd
 os.system(cmd)
     
 # - build the rpms
-cmd = "rpmbuild -ba AccessGrid.spec" 
-print "cmd = ", cmd
-os.system(cmd)
-
-# - copy the rpms to the dist dir
-print "** Copying RPMs to the RPM directory"
-cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-%s-%s.i386.rpm %s" % (version,metainfo,RpmDir)
-print "cmd = ", cmd
-os.system(cmd)
-
-#
-# Copy the install.sh script into the dist dir
-#
-installsh_in = os.path.join(BuildDir,'packaging','linux','rpm','install.sh')
-installsh_out = os.path.join(RpmDir,'install.sh')
-cmd = 'sed s/AG_VER=VER/AG_VER=\\"%s-%s\\"/ %s > %s' % (version,metainfo,
-                                                    installsh_in,installsh_out)
-print "cmd = ", cmd
-os.system(cmd)
-
-os.chmod(installsh_out,0755)
-
-#
-# Create the targz file including the rpms and install script
-#
-print "Creating the AccessGrid install bundle"
-targzfile = 'AccessGrid-%s-%s.tar.gz' % (version,metainfo)
-targzpath=os.path.join(SourceDir,targzfile)
-os.chdir(TmpDir)
-cmd = "tar czf %s AccessGrid-%s-%s" % (targzpath,version,metainfo)
+cmd = "rpmbuild --target=%s -ba AccessGrid.spec" % (BuildArch,)
 print "cmd = ", cmd
 os.system(cmd)
 
@@ -171,3 +145,4 @@ os.chdir(StartDir)
 cmd = "rm -rf %s" % (TmpDir,)
 print "cmd = ", cmd
 os.system(cmd)
+
