@@ -188,6 +188,11 @@ def GetHighestLevel():
 #   handlers can then be set with LoggerLevels object.
 logging.root.setLevel(HIGHEST_LEVEL)
 
+def noop():
+    pass
+# Don't let dependencies add the extra handler that's prints to a terminal.
+logging.basicConfig = noop
+
 # ---- Formats ----
 _defaultFormatter = Formatter("%(asctime)s %(thread)s %(name)s \
     %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
