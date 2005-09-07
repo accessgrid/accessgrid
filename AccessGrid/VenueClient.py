@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.229 2005-07-06 18:01:11 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.230 2005-09-07 20:08:40 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.229 2005-07-06 18:01:11 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.230 2005-09-07 20:08:40 eolson Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -119,7 +119,6 @@ class VenueClient:
 
         self.capabilities = []
         self.nodeServiceUri = self.defaultNodeServiceUri
-        self.nodeServiceUri =  "http://zuz.mcs.anl.gov:11000/NodeService"
         self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
 
         try:
