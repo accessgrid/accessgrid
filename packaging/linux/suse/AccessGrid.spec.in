@@ -1,0 +1,195 @@
+#
+# The following are variables that are used throughout the rest of the
+# spec file. If you see %{variable_name} this is where it's assigned
+#
+%define	name		AccessGrid
+%define version		2.4
+%define release		RELEASE
+%define	prefix		/usr
+%define sysconfdir	/etc/%{name}/Config
+%define sharedir	%{prefix}/share
+%define xdg_config_dirs	/etc/xdg
+%define xdg_data_dirs	%{sharedir}
+%define buildroot	%{_builddir}/AccessGrid-%{version}
+%define debug_package	%{nil}
+
+%ifarch ppc
+%define _libdir          /usr/lib
+%endif
+
+%define pyver %(python -c 'import sys ; print sys.version[:3]')
+
+#
+# The following defines the AccessGrid rpm
+#
+
+Summary:	The Access Grid Toolkit
+Name:		%{name}
+Version:	%{version}
+Release:	%{release}
+License:	AGTPL
+Group:		Utilities/System
+URL:		http://www.accessgrid.org
+Vendor:		Argonne National Laboratory
+Source:		%{name}-%{version}-%{release}.tar.gz
+BuildRoot:	%{buildroot}
+Requires:	python-wxGTK
+Requires:	globus-accessgrid
+Requires:	PyXML >= 0.8.3
+Requires:	xorg-x11-Xvnc
+BuildRequires:	python-devel
+BuildRequires:	globus-accessgrid
+BuildRequires:	python-wxGTK
+
+%description
+The Access Grid Toolkit provides the necessary components for users to
+participate in Access Grid based collaborations, and also for developers
+to work on network services, applications services and node services to
+extend the functionality of the Access Grid.
+
+This module provides the core components to start participating in the
+Access Grid.
+
+%prep
+%setup -n AccessGrid-%{version} -c
+
+#%build
+
+#
+# The following installs the package in the buildroot,
+# moves the etc directory to the "root" directory,
+# until services are starting at boot
+#
+
+%install
+# Move node services and shared apps into etc 
+mv NodeServices etc/AccessGrid
+mv SharedApplications etc/AccessGrid
+rm -f share/applications/AccessGrid/DevelopersDocumentation.desktop
+mkdir etc/AccessGrid/Services
+mkdir etc/AccessGrid/PackageCache
+mkdir etc/AccessGrid/Logs
+
+# Create a usr dir, and move dirs thereunder
+mkdir usr
+mv share usr/share
+%ifarch x86_64
+mv lib64 usr/lib64
+mv lib/python%{pyver}/site-packages/* usr/lib64/python%{pyver}/site-packages
+rm -rf lib
+%else
+mv lib usr/lib
+%endif
+mv bin usr/bin
+
+# compile python modules
+. /etc/profile.d/globus.sh
+python -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}/python%{pyver}",10,"%{_libdir}/python%{pyver}", 1)'
+python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}/python%{pyver}",10,"%{_libdir}/python%{pyver}")'
+
+
+#
+# Define the files that are to go into the AccessGrid package
+# - Mark documents as documents for rpm
+# - Install python modules with default permissions
+# - Install AGServiceManager.py and agsm service with executable permissions
+#
+%files
+%defattr(-,root,root)
+%{_libdir}/python%{pyver}/site-packages/*
+/etc/AccessGrid
+/etc/init.d/agns
+/etc/init.d/agsm
+%{sharedir}/%{name}/ag.ico
+%{sharedir}/%{name}/ag-ellipse.png
+%defattr(0755,root,root)
+%{prefix}/bin/AGServiceManager.py
+# - Install VenueClient.py, and NodeManagement.py with executable permissions
+# - Install the AGNodeService config file and tag it as a config file
+#   for rpm
+# - Install the default node configuration, make it owned by ag, and tag it
+#   as a config file for rpm
+%defattr(0755,root,root)
+%{prefix}/bin/VenueClient.py
+%{prefix}/bin/NodeManagement.py
+%{prefix}/bin/NodeSetupWizard.py
+%{prefix}/bin/CertificateRequestTool.py
+%{prefix}/bin/certmgr.py
+%{prefix}/bin/agpm.py
+%{prefix}/bin/GoToVenue.py
+%{prefix}/bin/VenueVNCServer.py
+%{sharedir}/doc/AccessGrid
+#
+# - Install VenueManagement.py and VenueServer.py
+#   with executable permissions
+#
+%defattr(0755,root,root)
+%{prefix}/bin/VenueManagement.py
+%{prefix}/bin/VenueServer.py
+#
+# - Install the python BridgeServer implementation
+# - Install the QuickBridge executable
+#
+%defattr(0755,root,root)
+%{prefix}/bin/BridgeServer.py
+%{prefix}/bin/QuickBridge
+# - Install the Gnome/KDE menu items
+%defattr(-,root,root)
+%{xdg_data_dirs}/applications/%{name}
+%{xdg_config_dirs}/menus/applications-merged/*
+%{xdg_data_dirs}/desktop-directories/*
+
+#
+# AccessGrid package postinstall commands
+#
+
+%post
+rm -f /etc/AccessGrid/Config/ApplicationDatabase
+rm -rf /etc/AccessGrid/SharedApplications/Shared_Browser
+rm -rf /etc/AccessGrid/SharedApplications/Shared_Presentation
+rm -rf /etc/AccessGrid/SharedApplications/Shared_Question_Tool
+rm -rf /etc/AccessGrid/SharedApplications/VenueVNC
+agpm.py --post-install 2>&1 > /dev/null
+chmod a+x /etc/AccessGrid/SharedApplications/VenueVNC/vncviewer
+
+#
+# AccessGrid package pre-uninstall
+#
+
+%preun
+if [ $1 = 0 ]; then
+  # clean up non-RPM managed files and dirs
+  rm -f /etc/AccessGrid/Config/ApplicationDatabase
+  rm -rf /etc/AccessGrid/SharedApplications/Shared_Browser
+  rm -rf /etc/AccessGrid/SharedApplications/Shared_Presentation
+  rm -rf /etc/AccessGrid/SharedApplications/Shared_Question_Tool
+  rm -rf /etc/AccessGrid/SharedApplications/VenueVNC
+fi
+
+#
+# After the RPMs have been successfully built remove the temporary build
+# space
+#
+
+%clean
+rm -rf %{buildroot}
+
+#
+# This is the ChangeLog. You should add to this if you do anything to this
+# spec file
+#
+
+%changelog
+
+* Mon Nov 22 2004 Douglas Kosovic <douglask@itee.uq.edu.au>
+- Added PyXML 0.8.3 dependency needed for VenueServer on RH9 and RHEL3
+
+* Mon Sep 13 2004 Douglas Kosovic <douglask@itee.uq.edu.au>
+- clean up some non-RPM managed files and dirs in preun step
+- moved python module compiling from post to install step
+- generate optimized python bytecode with -O python switch
+
+* Mon Aug 30 2004 Douglas Kosovic <douglask@itee.uq.edu.au>
+- Merged Fedora Core 1 & 2 AccessGrid.spec.in files into this single file
+
+
