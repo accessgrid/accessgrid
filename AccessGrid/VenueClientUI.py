@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.98 2005-07-06 18:01:11 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.99 2005-09-23 22:15:49 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.98 2005-07-06 18:01:11 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.99 2005-09-23 22:15:49 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -27,6 +27,7 @@ import webbrowser
 import traceback
 import re
 import sys
+from twisted.internet import reactor
 
 from time import localtime , strftime
 from AccessGrid import Log
@@ -210,6 +211,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.flag_url = "http://www.mcs.anl.gov/fl/research/accessgrid"
         self.fl_url = "http://www.mcs.anl.gov/fl/"
         self.bugzilla_url = "http://bugzilla.mcs.anl.gov/AccessGrid"
+
+        reactor.interleave(wxCallAfter)
 
         # Make sure data can be dragged from tree to the desktop.
         #self.SetDropTarget(DesktopDropTarget(self))

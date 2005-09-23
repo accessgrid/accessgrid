@@ -1,15 +1,16 @@
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.230 2005-09-07 20:08:40 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.231 2005-09-23 22:15:49 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.230 2005-09-07 20:08:40 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.231 2005-09-23 22:15:49 eolson Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -35,7 +36,7 @@ from AccessGrid.Utilities import LoadConfig
 from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.scheduler import Scheduler
-from AccessGrid.AsyncoreEventClient import EventClient
+from AccessGrid.VenueEventClient import VenueEventClient
 from AccessGrid.Events import Event, ConnectEvent
 from AccessGrid.Events import DisconnectEvent, ClientExitingEvent
 from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent
@@ -848,15 +849,15 @@ class VenueClient:
             #evtLocation = self.__venueProxy.GetEventServiceLocation()
                       
             # Create event client
-            self.eventClient = EventClient(evtLocation, 
+            self.eventClient = VenueEventClient(evtLocation, 
                                            self.profile.connectionId,
                                            self.venueState.GetUniqueId())
                                            
             for e in coherenceCallbacks.keys():
-                self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
+                self.eventClient.RegisterEventCallback(e, coherenceCallbacks[e])
                 
             self.eventClient.Start()
-            self.eventClient.Send("connect", self.profile.connectionId)
+            #self.eventClient.Send("connect", self.profile.connectionId)
             
             # Get personaldatastore information
             self.dataStoreUploadUrl = self.__venueProxy.GetUploadDescriptor()

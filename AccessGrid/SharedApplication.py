@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.25 2005-05-27 13:57:52 turam Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.26 2005-09-23 22:15:49 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,14 +14,14 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.25 2005-05-27 13:57:52 turam Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.26 2005-09-23 22:15:49 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
 from AccessGrid.GUID import GUID
 from AccessGrid import Events
 from AccessGrid.Events import Event
-from AccessGrid.AsyncoreEventClient import EventClient
+from AccessGrid.VenueEventClient import VenueEventClient
 from AccessGrid.Descriptions import ApplicationDescription, AppParticipantDescription, AppDataDescription
 from AccessGrid.Descriptions import CreateClientProfile
 
@@ -432,7 +432,7 @@ class SharedApplication(AuthorizationMixIn):
         self.eventService.CreateChannel(channel_id)
         evtLocation = self.eventService.GetLocation()
         evtLocation = ("localhost", 8002)
-        self.eventClient = EventClient(evtLocation, 
+        self.eventClient = VenueEventClient(evtLocation, 
                                        1,
                                        channel_id)
         self.eventClient.Start()

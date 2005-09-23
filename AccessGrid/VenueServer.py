@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.191 2005-06-17 23:50:44 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.192 2005-09-23 22:15:49 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.191 2005-06-17 23:50:44 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.192 2005-09-23 22:15:49 eolson Exp $"
 
 
 # Standard stuff
@@ -56,7 +56,8 @@ from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.Descriptions import Capability
 
-from AccessGrid.AsyncoreEventService import EventService, VenueServerServiceDescription
+from AccessGrid.EventService import EventService
+from AccessGrid.VenueServerService import VenueServerServiceDescription
 
 from AccessGrid.Utilities import ServerLock
 

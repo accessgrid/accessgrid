@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.63 2005-06-17 23:41:25 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.64 2005-09-23 22:15:49 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.63 2005-06-17 23:41:25 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.64 2005-09-23 22:15:49 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -23,6 +23,7 @@ import threading
 from optparse import Option
 
 # Our imports
+from twisted.internet import reactor
 from AccessGrid.Toolkit import Service
 from AccessGrid.VenueServer import VenueServer
 from AccessGrid import Log
@@ -44,6 +45,7 @@ def SignalHandler(signum, frame):
     log.info("Signal: %d Frame: %s", signum, frame)
 
     venueServer.Shutdown()
+    reactor.stop()
 
 def main():
     """
@@ -98,6 +100,7 @@ def main():
     # We start the execution
     server.RunInThread()
 
+    """
     # We run in a stupid loop so there is still a main thread
     # We might be able to simply join the hostingEnvironmentThread, but
     # we have to be able to catch signals.
@@ -106,6 +109,8 @@ def main():
             time.sleep(0.5)
         except IOError, e:
             log.info("Sleep interrupted, exiting.")
+    """
+    reactor.run()
              
     log.debug("After main loop!")
 

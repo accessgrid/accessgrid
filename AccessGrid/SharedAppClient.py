@@ -3,7 +3,7 @@ import os
 from AccessGrid import Log
 #from AccessGrid.EventClient import EventClient
 from AccessGrid.Events import Event
-from AccessGrid.AsyncoreEventClient import EventClient
+from AccessGrid.VenueEventClient import VenueEventClient
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.hosting import Client
@@ -109,7 +109,7 @@ class SharedAppClient:
             self.log.exception("SharedAppClient.Connect: Failed to get data channel")
                     
         # Subscribe to the data/event channel
-        self.eventClient = EventClient((eventhost, eventport), 
+        self.eventClient = VenueEventClient((eventhost, eventport), 
                                        self.__privateId,
                                        self.__channelId)
         self.RegisterEventCallback(Event.APP_SET_DATA, self.__ReceiveDataUpdate)
@@ -143,7 +143,7 @@ class SharedAppClient:
         '''
         if not self.__EventIsRegistered(eventType):
             # Only register the event once since the same callback method is used.
-            self.eventClient.RegisterCallback(eventType, self.HandleEvent)
+            self.eventClient.RegisterEventCallback(eventType, self.HandleEvent)
 
         # Insert unique callback in table.
         self.__callbackTable.append((eventType, callback))

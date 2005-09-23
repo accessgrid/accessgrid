@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.266 2004-12-08 16:48:20 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.267 2005-09-23 22:15:49 eolson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.266 2004-12-08 16:48:20 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.267 2005-09-23 22:15:49 eolson Exp $"
 
 # Standard Imports
 import os
@@ -19,6 +19,8 @@ from optparse import Option
 
 # GUI related imports
 from wxPython.wx import wxPySimpleApp
+from twisted.internet import threadedselectreactor
+threadedselectreactor.install()
 
 # Our imports
 from AccessGrid.Toolkit import WXGUIApplication
@@ -29,6 +31,7 @@ from AccessGrid.VenueClientController import VenueClientController
 from AccessGrid.VenueClient import VenueClient
 from AccessGrid.UIUtilities import ErrorDialog
 from AccessGrid.UIUtilities import ProgressDialog
+from twisted.internet import reactor
 
 def main():
     log = None
