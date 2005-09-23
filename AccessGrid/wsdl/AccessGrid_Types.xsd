@@ -8,7 +8,7 @@
       <xs:sequence>
         <xs:element name="id" type="xs:string"/>
         <xs:element name="host" type="xs:string"/>
-        <xs:element name="port" type="xs:integer"/>
+        <xs:element name="port" type="xs:int"/>
         <xs:element name="profile" nillable="true" type="tns:ProviderProfile"/>
       </xs:sequence>
     </xs:complexType>
@@ -31,7 +31,7 @@
       <xs:complexContent>
         <xs:extension base="tns:NetworkLocation">
           <xs:sequence>
-            <xs:element name="ttl" type="xs:integer"/>
+            <xs:element name="ttl" type="xs:int"/>
           </xs:sequence>
         </xs:extension>
       </xs:complexContent>
@@ -67,7 +67,7 @@
         <xs:element name = "location" type = "tns:NetworkLocation"/>
         <xs:element name = "description" nillable="true" type = "xs:string"/>
         <xs:element name = "capability" type = "tns:Capability"/>
-        <xs:element name = "encryptionFlag" type = "xs:integer"/>
+        <xs:element name = "encryptionFlag" type = "xs:int"/>
         <xs:element name = "encryptionKey" nillable="true" type = "xs:string"/>
         <xs:element name = "static" type = "xs:boolean"/>
         <xs:element name = "networkLocations" minOccurs="0" maxOccurs="unbounded" type = "tns:NetworkLocation"/>
@@ -80,7 +80,7 @@
 	<xs:element name="uri" type="xs:string" nillable="true"/>
 	<xs:element name="name" type="xs:string"/>
 	<xs:element name="description" type="xs:string"/>
-	<xs:element name="encryptMedia" type="xs:integer"/>
+	<xs:element name="encryptMedia" type="xs:int"/>
 	<xs:element name="encryptionKey" type="xs:string" nillable="true"/>
 	<xs:element name="connections" minOccurs="0" maxOccurs="unbounded" type="tns:ConnectionDescription"/>
         <xs:element name="streams" minOccurs="0" maxOccurs="unbounded" type="tns:StreamDescription"/>
@@ -171,7 +171,7 @@
         <xs:element name="description" nillable="true" type="xs:string"/>
         <xs:element name="uri" nillable="true" type="xs:string"/>
         <xs:element name="status" nillable="true" type="xs:string"/>
-        <xs:element name="size" nillable="true" type="xs:integer"/>
+        <xs:element name="size" nillable="true" type="xs:int"/>
         <xs:element name="checksum" nillable="true" type="xs:string"/>
         <xs:element name="owner" nillable="true" type="xs:string"/>
         <xs:element name="type" nillable="true" type="xs:string"/>
@@ -235,12 +235,11 @@
       </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="Event">
+    <xs:complexType name="EventDescription">
       <xs:sequence>
         <xs:element name = "channelId" type = "xs:string"/>
         <xs:element name = "senderId" type = "xs:string"/>
         <xs:element name = "data" type = "xs:anyType"/>
-	<xs:element name = "time" type = "xs:string"/>
         <xs:element name = "eventType" type = "xs:string"/>
       </xs:sequence>
     </xs:complexType>

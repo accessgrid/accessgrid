@@ -9,6 +9,7 @@ mapping = {
     "DataDescription" : ("AccessGrid.Descriptions", "DataDescription"),
     "VenueDescription" : ("AccessGrid.Descriptions", "VenueDescription"),
     "StreamDescription" : ("AccessGrid.Descriptions", "StreamDescription"),
+    "EventDescription" : ("AccessGrid.Descriptions", "EventDescription"),
     "NetworkLocation" : ("AccessGrid.NetworkLocation", "NetworkLocation"),
     "MulticastNetworkLocation" : ("AccessGrid.NetworkLocation", "MulticastNetworkLocation"),
     "UnicastNetworkLocation" : ("AccessGrid.NetworkLocation", "UnicastNetworkLocation"),

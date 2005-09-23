@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.78 2005-05-27 14:04:00 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.79 2005-09-23 22:00:49 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.78 2005-05-27 14:04:00 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.79 2005-09-23 22:00:49 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -565,6 +565,33 @@ class NodeConfigDescription:
     def __init__(self,name="",type=""):
         self.name = name
         self.type = type
+
+class EventDescription:
+    '''
+    Event class.
+    '''
+    def __init__(self, type=None, channelId=None, senderId=None, data=None):
+        '''
+        channelId - which channel this event should be sent on
+        senderId - unique id of sender
+        data - event data
+        '''
+        self.channelId = str(channelId)
+        self.senderId = str(senderId)
+        self.data = data
+        self.eventType = str(type)
+
+    def GetChannelId(self):
+        return self.channelId
+
+    def GetSenderId(self):
+        return self.senderId
+
+    def GetData(self):
+        return self.data
+
+    def GetEventType(self):
+        return self.eventType 
 
 #
 #
