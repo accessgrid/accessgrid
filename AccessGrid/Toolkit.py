@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.89 2005-06-17 23:38:57 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.90 2005-09-23 22:03:05 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.89 2005-06-17 23:38:57 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.90 2005-09-23 22:03:05 eolson Exp $"
 
 # Standard imports
 import os
@@ -30,7 +30,6 @@ from AccessGrid.Version import GetVersion
 from AccessGrid.Security import X509Subject
 from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.wsdl import SchemaToPyTypeMap
-from AccessGrid import hosting
 
 class AppBase:
     """
@@ -172,17 +171,10 @@ class AppBase:
 
        self.__SetLogPreference()
 
-       # Register types with transport so they can be serialized and deserialized
-       self.__RegisterAGTypes()
-
        # Check if machine clock is synchronized.
        self.__CheckForInvalidClock()
-       
-       return argvResult
 
-    def __RegisterAGTypes(self):
-        for key,value in SchemaToPyTypeMap.mapping.items():
-            hosting.RegisterType(schemaTypeName=key, classModuleName=value[0], className=value[1])
+       return argvResult
 
     def __SetLogPreference(self):
         """

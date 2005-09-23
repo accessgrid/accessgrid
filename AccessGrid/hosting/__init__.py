@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.15 2005-06-02 19:19:42 eolson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.16 2005-09-23 22:03:06 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 AG Hosting environment tools.
 """
-__revision__ = "$Id: __init__.py,v 1.15 2005-06-02 19:19:42 eolson Exp $"
+__revision__ = "$Id: __init__.py,v 1.16 2005-09-23 22:03:06 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -30,7 +30,6 @@ Client = lambda x: None
 Decorate = lambda x: None
 Reconstitute = lambda x: None
 __root = lambda x: None
-RegisterType = lambda x: None
 
 def GetHostingImpl():
     """
@@ -51,7 +50,7 @@ def SetHostingImpl(choice):
     @return: 1 if successful, None if not
     """
     global __hostingImpl, __root, Server, Client, Decorate, Reconstitute
-    global GetSOAPContext, SecureServer, InsecureServer, RegisterType
+    global GetSOAPContext, SecureServer, InsecureServer
     
     __hostingImpl = choice
     
@@ -72,7 +71,6 @@ def SetHostingImpl(choice):
     try:
         c = __import__(nic, globals(), locals(), ["Client"])
         Client = c.Client
-        RegisterType = c.RegisterType
     except ImportError:
         raise
 
