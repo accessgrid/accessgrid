@@ -93,6 +93,8 @@ DataStoreClient = "DataStoreClient"
 DataStore = "DataStore"
 DataService = "DataService"
 EventService = "EventService"
+GroupMsgClient = "GroupMsgClient"
+GroupMsgService = "GroupMsgService"
 Hosting = "Hosting"
 Platform = "Platform"
 ProcessManager = "ProcessManager"
@@ -216,7 +218,7 @@ def GetUsageFormatter():
 # Does NOT Need to include all components and can be empty.
 # Will optimize if needed.
 
-_categoryNames=[AGService, AppMonitor, AuthorizationUI, BridgeServer , CertificateManager , CertificateRepository , CertificateManagerWXGUI , CertificateRequestTool , CertReqService , CRSClient , DataStoreClient , DataStore , DataService , EventService , ProcessManager , NodeManagementUIClasses , NodeSetupWizard , NodeService , Security , ProxyGen , ServiceManager , SharedApplication , TextClient , SimpleTextProcessor , TextConnection , TextService , Toolkit , Types , Utilities , VenueManagement , VenueClient , VenueClientController , VenueClientUIClasses , VenueClientUI , VenueServer , EventClient , Logging, Usage]
+_categoryNames=[AGService, AppMonitor, AuthorizationUI, BridgeServer , CertificateManager , CertificateRepository , CertificateManagerWXGUI , CertificateRequestTool , CertReqService , CRSClient , DataStoreClient , DataStore , DataService , EventService , GroupMsgClient, GroupMsgService, ProcessManager , NodeManagementUIClasses , NodeSetupWizard , NodeService , Security , ProxyGen , ServiceManager , SharedApplication , TextClient , SimpleTextProcessor , TextConnection , TextService , Toolkit , Types , Utilities , VenueManagement , VenueClient , VenueClientController , VenueClientUIClasses , VenueClientUI , VenueServer , EventClient , Logging, Usage]
 
 def GetCategories():
     return _categoryNames
