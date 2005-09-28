@@ -3,39 +3,28 @@
 # Name:        GroupMsgClient.py
 # Purpose:     A Group Messaging service client.
 # Created:     2005/09/09
-# RCS-ID:      $Id: GroupMsgClient.py,v 1.1 2005-09-23 22:08:17 eolson Exp $
+# RCS-ID:      $Id: GroupMsgClient.py,v 1.2 2005-09-28 20:13:44 eolson Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 from AccessGrid import Log
 
-log = Log.GetLogger(Log.EventClient)
-Log.SetDefaultLevel(Log.EventClient, Log.DEBUG)
+log = Log.GetLogger(Log.GroupMsgClient)
+Log.SetDefaultLevel(Log.GroupMsgClient, Log.DEBUG)
 
 from twisted.internet.protocol import ClientFactory
-#from twisted.protocols.basic import LineOnlyReceiver
 from twisted.protocols.basic import Int32StringReceiver
-#from twisted.internet import reactor
-#from AsyncoreEventService import XMLEvent, GroupDoesNotExistException
 from GroupMsgDefines import GroupDoesNotExistException, NotConnectedException, UnspecifiedErrorException, IncompatibleVersionException, UnpackUByte, ERROR, ServerUnableToSendException, ClientNotInGroupException, GeneralReceivedErrorException
 import sys, time
 import threading
 
-#class GroupMsgClientProtocol(LineOnlyReceiver):
 class GroupMsgClientProtocol(Int32StringReceiver):
     def connectionMade(self):
-        #print "connectionMade, sending info"
-        # send our name/id and group we'd like to join
-        #self.sendLine(str(self.factory.id) + ":" + str(self.factory.group))
-        self.sendString(str(self.factory.group))
-        self.factory.startedSending = False
-        self.factory.connection = self
+        # send handshake info which includes the group we'd like to join
+        self.factory.startHandshake(self)
 
-    #def lineReceived(self, line):
     def stringReceived(self, line):
-        #if self.factory.receiveCallback == None:
-        #    print "lineReceived", line
         self.factory.linesReceived += 1
         if self.factory.startedSending == False:
             self.ReceiveConnectResponse(line)
@@ -44,21 +33,14 @@ class GroupMsgClientProtocol(Int32StringReceiver):
             if self.factory.receiveCallback != None:
                 apply(self.factory.receiveCallback, [line])
             else:
-                print "Group message:", line
+                log.info("Group message: %s", line)
             
-    # For testing with lineOnlyReceiver
-    #sendString = LineOnlyReceiver.sendLine
-    #lineReceived = stringReceived
-    #sendLine = sendString
-    # For testing with IntNNStringReceiver
-
     def ReceiveConnectResponse(self, data):
         version = UnpackUByte(data[0])
         if version == "1":
-            # versionIteration = UnpackUByte(data[1])
-            self.factory.setConnectionId(data[2:])
-            print "Connected.  Connection ID: ", self.factory.connectionId # Handshake finished
-            self.factory.clientConnectionMade()
+            # versionIteration = UnpackUByte(data[1]) # Not used yet
+            # Handshake finished
+            self.factory.clientConnectionMade(connectionId=data[2:])
         elif version == "0":
             err = self.ReceiveError(data)
         else:
@@ -77,6 +59,13 @@ class GroupMsgClientProtocol(Int32StringReceiver):
         else:
             raise GeneralReceivedErrorException(errorCode)
 
+class ClientConnectionFailed(Exception):
+    """
+    This exception is used to indicate the client's attempt
+    to connect the the group msg service have failed.
+    """
+    pass
+
 class GroupMsgClientFactory(ClientFactory):
     protocol = GroupMsgClientProtocol
 
@@ -86,6 +75,12 @@ class GroupMsgClientFactory(ClientFactory):
         self.receiveCallback = None
         self.lostConnectionCallback = None
         self.madeConnectionCallback = None
+        self.measurePerformance = False
+
+    def startHandshake(self, connection):
+        connection.sendString(str(self.group))
+        self.startedSending = False
+        self.connection = connection
 
     def setReceiveCallback(self, callback):
         self.receiveCallback = callback
@@ -113,7 +108,9 @@ class GroupMsgClientFactory(ClientFactory):
     def setGroup(self, group):
         self.group = group
 
-    def clientConnectionMade(self):
+    def clientConnectionMade(self, connectionId):
+        self.setConnectionId(connectionId)
+        log.info("Connected.  Connection ID: %s", self.connectionId)
         self.startedSending = True
         self.timeStart = time.time()
         self.timeFinish = 0
@@ -121,22 +118,21 @@ class GroupMsgClientFactory(ClientFactory):
             apply(self.madeConnectionCallback)
 
     def clientConnectionFailed(self, connector, reason):
-        print 'connection failed:', reason.getErrorMessage()
-        raise Exception, "ConnectionFailed"
+        log.error('connection failed: %s', reason.getErrorMessage())
+        raise ClientConnectionFailed
 
     def clientConnectionLost(self, connector, reason):
-        delta = self.timeFinish - self.timeStart
-        if (delta > 0):
-            print "msgs per sec:", self.receivedMessages * 1.0 / delta
-            print "secs per msg:", delta * 1.0 / self.receivedMessages
-        self.connection=None
-        #reactor.stop()
+        if self.measurePerformance:
+            delta = self.timeFinish - self.timeStart
+            if (delta > 0):
+                print "msgs per sec:", self.receivedMessages * 1.0 / delta
+                print "secs per msg:", delta * 1.0 / self.receivedMessages
+            self.connection=None
+
         if self.lostConnectionCallback != None:
             apply(self.lostConnectionCallback, [connector, reason])
         else:
-            print 'connection lost:', reason.getErrorMessage()
-            #print "total lines received", self.linesReceived
-            #print "total messages received", self.receivedMessages
+            log.info('connection lost: %s', reason.getErrorMessage())
 
 
 class GroupMsgClient:
@@ -188,7 +184,6 @@ class GroupMsgClient:
     def Send(self, data):
         if self.factory.connection == None:
             raise NotConnectedException
-        #self.factory.connection.sendLine(data)  # for LineReceiver
         self.factory.connection.sendString(data) # for Int32StringReceiver
 
     def Receive(self, data):
@@ -199,13 +194,13 @@ class GroupMsgClient:
         if self.lostConnectionCallback != None:
             apply(self.lostConnectionCallback, [connector, reason])
         else:
-            print 'GroupMsgClient: connection lost:', reason.getErrorMessage()
+            log.info('GroupMsgClient: connection lost: %s', reason.getErrorMessage())
 
     def MadeConnection(self):
         if self.madeConnectionCallback != None:
             apply(self.madeConnectionCallback)
         else:
-            print 'GroupMsgClient: made connection.'
+            log.info('GroupMsgClient: made connection.')
 
     def IsConnected(self):
         if self.factory.connection==None:
@@ -214,6 +209,9 @@ class GroupMsgClient:
             return True
         return False
 
+#
+# Test Code Below
+#
 
 class TestMessages:
     '''
@@ -291,6 +289,7 @@ class TestMessages:
         print "Stopping."
         if reactor.running:
             reactor.stop()
+
 # for testing
 def GenerateRandomString(length=6):
     import string, random
@@ -301,20 +300,12 @@ def GenerateRandomString(length=6):
 
 def testMain(location, privateId, channel="Test", msgLength=13, numMsgs=1000, multipleClients=False):
     gmc = GroupMsgClient(location, privateId, channel)
+    gmc.measurePerformance = True
     tm = TestMessages(gmc=gmc, numMsgs=numMsgs, multipleClients=multipleClients)
     tm.SetMsgData(GenerateRandomString(length=msgLength))
     gmc.Start() # Connect
 
-# For testing
-def generateRandomString(length=6):
-    import string, random
-    random.seed(99)
-    letterList = [random.choice(string.letters) for x in xrange(length)]
-    retStr = "".join(letterList)
-    return retStr
-
 def simpleMain(group="Test"):
-    #name = generateRandomString()
     factory = GroupMsgClientFactory()
     factory.setGroup(group)
     reactor.connectTCP('localhost', 8002, factory)
