@@ -4,12 +4,17 @@
 # Purpose:     A group messaging service client that handles Access Grid
 #                 venue events.
 # Created:     2005/09/09
-# RCS-ID:      $Id: VenueEventClient.py,v 1.1 2005-09-23 22:09:36 eolson Exp $
+# RCS-ID:      $Id: VenueEventClient.py,v 1.2 2005-09-28 20:14:43 eolson Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import sys, time
+
+from AccessGrid import Log
+log = Log.GetLogger(Log.EventClient)
+Log.SetDefaultLevel(Log.EventClient, Log.DEBUG)
+
 from AccessGrid.Descriptions import EventDescription
 from AccessGrid.XMLGroupMsgClient import XMLGroupMsgClient
 
@@ -44,7 +49,7 @@ class VenueEventClient:
         if self.madeConnectionCallback != None:
             apply(self.madeConnectionCallback)
         else:
-            print "VenueEventClient made connection."
+            log.info("VenueEventClient made connection.")
 
     def Send(self, eventType, data):
         event = EventDescription(eventType, self.channelId, self.id, data)
@@ -60,6 +65,8 @@ class VenueEventClient:
     def LostConnection(self, connector, reason):
         if self.lostConnectionCallback != None:
             apply(self.lostConnectionCallback, [connector, reason])
+        else:
+            log.info("VenueEventClient lost connection.")
 
     def RegisterEventCallback(self, eventType, callback):
         self.eventCallbacks.setdefault(eventType, list())
