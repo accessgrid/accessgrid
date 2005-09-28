@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.64 2005-09-23 22:15:49 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.65 2005-09-28 20:33:31 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.64 2005-09-23 22:15:49 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.65 2005-09-28 20:33:31 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -45,7 +45,8 @@ def SignalHandler(signum, frame):
     log.info("Signal: %d Frame: %s", signum, frame)
 
     venueServer.Shutdown()
-    reactor.stop()
+    if reactor.running:
+        reactor.stop()
 
 def main():
     """
