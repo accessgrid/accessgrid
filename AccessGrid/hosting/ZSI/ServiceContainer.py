@@ -1,6 +1,14 @@
 import urlparse
 from ZSI.ServiceContainer import SOAPRequestHandler, ServiceSOAPBinding
 
+class AGSOAPRequestHandler(SOAPRequestHandler):
+    def log_message(self, format, *args):
+        # default was:
+        #sys.stderr.write("%s - - [%s] %s\n" %
+        #                 (self.address_string(),
+        #                  self.log_date_time_string(),
+        #                  format%args))
+        pass
 
 class ServiceContainerBase:
     '''HTTPServer that stores service instances according 
@@ -53,7 +61,7 @@ class ServiceContainerBase:
             else:
                 raise NoSuchService, 'No service(%s) in ServiceContainer' %path
             
-    def __init__(self, server_address, services=[], RequestHandlerClass=SOAPRequestHandler):
+    def __init__(self, server_address, services=[], RequestHandlerClass=AGSOAPRequestHandler):
         '''server_address -- 
            RequestHandlerClass -- 
         '''
@@ -91,7 +99,7 @@ class ServiceContainerBase:
 
 from BaseHTTPServer import HTTPServer
 class ServiceContainer(ServiceContainerBase,HTTPServer):
-    def __init__(self, server_address, services=[], RequestHandlerClass=SOAPRequestHandler):
+    def __init__(self, server_address, services=[], RequestHandlerClass=AGSOAPRequestHandler):
         '''server_address -- 
            RequestHandlerClass -- 
         '''
@@ -114,7 +122,7 @@ if haveCryptoLib:
     SSL.Connection.clientPostConnectionCheck = None
     SSL.Connection.serverPostConnectionCheck = None
     class SecureServiceContainer(ServiceContainerBase,SSL.SSLServer):
-        def __init__(self, server_address,certfile,keyfile,caCertDir, services=[],RequestHandlerClass=SOAPRequestHandler):
+        def __init__(self, server_address,certfile,keyfile,caCertDir, services=[],RequestHandlerClass=AGSOAPRequestHandler):
             '''server_address -- 
                RequestHandlerClass -- 
             '''
