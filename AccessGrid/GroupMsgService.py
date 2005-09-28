@@ -3,7 +3,7 @@
 # Name:        GroupMsgService.py
 # Purpose:     A Group Messaging service server.
 # Created:     2005/09/09
-# RCS-ID:      $Id: GroupMsgService.py,v 1.1 2005-09-23 22:08:17 eolson Exp $
+# RCS-ID:      $Id: GroupMsgService.py,v 1.2 2005-09-28 20:20:07 eolson Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,14 +15,13 @@ log = Log.GetLogger(Log.EventService)
 Log.SetDefaultLevel(Log.EventService, Log.DEBUG)
 
 import sys, struct
+from AccessGrid.GUID import GUID
 from twisted.internet.protocol import Protocol, ServerFactory
-#from twisted.protocols.basic import LineOnlyReceiver
 from twisted.protocols.basic import Int32StringReceiver
 from twisted.internet import reactor
 from GroupMsgDefines import GroupDoesNotExistException, NotConnectedException, PackUByte, ERROR, ClientNotInGroupException
 from VenueServerService import VenueServerServiceInterface
 
-#class GroupMsgServiceProtocol(LineOnlyReceiver):
 class GroupMsgServiceProtocol(Int32StringReceiver):
     protocolVersion = 1
     protocolIteration = 0 # to identify updates
@@ -34,7 +33,6 @@ class GroupMsgServiceProtocol(Int32StringReceiver):
     def connectionMade(self):
         self.factory.connectionMade(self.transport)
 
-    #def lineReceived(self, data):
     def stringReceived(self, data):
         #print "lineReceived", data
         connection = self.transport
@@ -47,14 +45,9 @@ class GroupMsgServiceProtocol(Int32StringReceiver):
                 try:
                     self.factory.addConnection(connection, groupId)
                 except GroupDoesNotExistException:
-                    #self.transport.write("nosuchgroup" + "\r\n")
-                    #self.sendString("nosuchgroup")
                     self.sendError(ERROR.NO_SUCH_GROUP)
                     self.transport.loseConnection()
-                    #print "nosuchgroup:", groupId, "possibilities:", self.factory.getGroupNames()
                         
-                #self.sendLine("ok") #self.transport.write("ok" + "\r\n")
-                #self.sendString("ok")
                 self.sendConnectResponse(connectionId=connection.connectionId)
                 #print "Wrote version 1 response ack"
                 assert True==self.factory.connectionHasGroup(connection)
@@ -67,13 +60,7 @@ class GroupMsgServiceProtocol(Int32StringReceiver):
                 self.sendError(ERROR.SERVER_UNABLE_TO_SEND)
                 self.transport.loseConnection()
 
-        #print "lineReceived returning"
-
-    # for testing between LineOnlyReceiver and intNNStringReceiver
-    #lineReceived = stringReceived
-
     def connectionLost(self, reason):
-        #print "Connection lost:", reason
         self.factory.removeConnection(self.transport)
 
     def sendError(self, errorCode):
@@ -97,11 +84,11 @@ class GroupMsgServiceFactory(ServerFactory):
 
     def connectionMade(self, connection):
         # Setup a connection id for each connection
-        peer = connection.getPeer()
-        id = peer.host + ":" + str(peer.port)
+        id = GUID()
         connection.connectionId = id
         # add connection to list, but it has no group yet
         self.connections[id] = (connection, None)
+        log.info("connectionMade %s:%s id:%s", connection.getPeer().host, connection.getPeer().port, connection.connectionId)
 
     def hasGroup(self, groupName):
         return id in self.groups.keys()
@@ -147,19 +134,17 @@ class GroupMsgServiceFactory(ServerFactory):
         self.connections[connection.connectionId] = (connection, groupName)
         # add the connection to the group's infomartion
         self.groups[groupName].append(connection)
-        #print "AddedConnection", id, groupName
         assert self.connectionHasGroup(connection)
+        log.info("addedConnection %s:%s id:%s", connection.getPeer().host, connection.getPeer().port, connection.connectionId)
 
     def removeConnection(self, connection):
         connectionId = connection.connectionId
         connectionTuple = self.connections.pop(connectionId)
         groupName = connectionTuple[1]
         self.groups[groupName].remove(connection)
-        #print "Removed connection:", connectionId
+        log.info("removedConnection %s:%s id:%s", connection.getPeer().host, connection.getPeer().port, connection.connectionId)
 
     def sendGroupMessage(self, connection, data):
-        #print "Sending Group Message", data
-        # look up group name
         groupName = self.connections[connection.connectionId][1]
         if None == groupName:
             return False  # user doesn't have a group yet
@@ -168,8 +153,6 @@ class GroupMsgServiceFactory(ServerFactory):
         #groupName = connectionTuple[1]
         #for conn in self.groups[groupName]:
         for conn in self.groups[groupName]:
-            #conn.write(data + "\r\n")  # sendLine
-            #conn.write(struct.pack("!h",len(data))+data) # sendString Int16
             conn.write(struct.pack("!i",len(data))+data) # sendString Int32
         return True
 
@@ -178,14 +161,15 @@ class GroupMsgService:
         self.location = location
         self.factory = GroupMsgServiceFactory()
         self.factory.protocol = GroupMsgServiceProtocol
+        self.listenPort = None
 
     def Start(self):
         port = self.location[1]
-        reactor.listenTCP(port, self.factory)
-        #reactor.run()
+        self.listenPort = reactor.listenTCP(port, self.factory)
 
     def Stop(self):
-        reactor.stop()
+        if self.listenPort != None:
+            self.listenPort.stopListening()
 
     start=Start
     stop=Stop
