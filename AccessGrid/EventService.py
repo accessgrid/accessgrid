@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service with an AccessGrid
 #                 VenueServerServiceInterface.
 # Created:     2005/09/09
-# RCS-ID:      $Id: EventService.py,v 1.26 2005-09-23 22:09:36 eolson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.27 2005-09-28 20:21:20 eolson Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,6 +23,11 @@ class EventService(GroupMsgService):
 
     def Start(self):
         GroupMsgService.Start(self)
+
+    def Stop(self):
+        GroupMsgService.Stop(self)
+
+    shutdown = Stop
 
     def GetId(self):
         return self.id
