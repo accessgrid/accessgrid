@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.99 2005-09-23 22:15:49 eolson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.100 2005-10-04 19:13:39 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.99 2005-09-23 22:15:49 eolson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.100 2005-10-04 19:13:39 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2363,9 +2363,9 @@ class VenueListPanel(wxSashWindow):
         self.list.RemoveVenueDoor(connectionDescription)
 
 class NavigationPanel(wxPanel):
-    ID_EXITS = 0
-    ID_MY_VENUES = 1
-    ID_ALL = 2
+    ID_EXITS = wxNewId()
+    ID_MY_VENUES = wxNewId()
+    ID_ALL = wxNewId()
     
     def __init__(self, parent, app):
         wxPanel.__init__(self, parent, -1, size=wxSize(175, 300))
