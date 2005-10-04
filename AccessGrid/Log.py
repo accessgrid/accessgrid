@@ -104,6 +104,8 @@ NodeService = "NodeService"
 Security = "Security"
 Platform = "Platform"
 ProxyGen = "ProxyGen"  # Security
+RTPSensor = "RTPSensor"
+RTPBeacon = "RTPBeacon"
 
 ServiceManager = "ServiceManager"
 SharedApplication = "SharedApplication"
@@ -218,7 +220,7 @@ def GetUsageFormatter():
 # Does NOT Need to include all components and can be empty.
 # Will optimize if needed.
 
-_categoryNames=[AGService, AppMonitor, AuthorizationUI, BridgeServer , CertificateManager , CertificateRepository , CertificateManagerWXGUI , CertificateRequestTool , CertReqService , CRSClient , DataStoreClient , DataStore , DataService , EventService , GroupMsgClient, GroupMsgService, ProcessManager , NodeManagementUIClasses , NodeSetupWizard , NodeService , Security , ProxyGen , ServiceManager , SharedApplication , TextClient , SimpleTextProcessor , TextConnection , TextService , Toolkit , Types , Utilities , VenueManagement , VenueClient , VenueClientController , VenueClientUIClasses , VenueClientUI , VenueServer , EventClient , Logging, Usage]
+_categoryNames=[AGService, AppMonitor, AuthorizationUI, BridgeServer , CertificateManager , CertificateRepository , CertificateManagerWXGUI , CertificateRequestTool , CertReqService , CRSClient , DataStoreClient , DataStore , DataService , EventService , GroupMsgClient, GroupMsgService, ProcessManager , NodeManagementUIClasses , NodeSetupWizard , NodeService , Security , ProxyGen , ServiceManager , SharedApplication , TextClient , SimpleTextProcessor , TextConnection , TextService , Toolkit , Types , Utilities , VenueManagement , VenueClient , VenueClientController , VenueClientUIClasses , VenueClientUI , VenueServer , EventClient , RTPSensor, RTPBeacon, Logging, Usage]
 
 def GetCategories():
     return _categoryNames
