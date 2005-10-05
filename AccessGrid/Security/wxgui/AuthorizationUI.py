@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.30 2004-12-08 16:48:08 judson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.31 2005-10-05 19:49:08 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.30 2004-12-08 16:48:08 judson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.31 2005-10-05 19:49:08 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -69,11 +69,18 @@ class AuthorizationUIPanel(wxPanel):
         self.changed = 0
         
         # Create ui componentes
-        self.leftSashWindow = wxSashWindow(self, self.ID_WINDOW_LEFT,
-                                                    size = wxSize(400,200))
-        self.rolePanel = wxPanel(self.leftSashWindow ,  wxNewId(),
-                                 style = wxSUNKEN_BORDER)
-        self.roleTitle = wxStaticText(self.rolePanel, -1, "Roles", size=wxSize(100,-1), style=wxALIGN_LEFT)
+        self.leftSashWindow = wxSashLayoutWindow(self, self.ID_WINDOW_LEFT)
+	self.leftSashWindow.SetDefaultSize((350, 1000))
+	self.leftSashWindow.SetOrientation(wxLAYOUT_VERTICAL)
+	self.leftSashWindow.SetAlignment(wxLAYOUT_LEFT)
+	self.leftSashWindow.SetSashVisible(wxSASH_RIGHT, True)
+
+	self.rolePanel = wxPanel(self.leftSashWindow ,  wxNewId(),
+                                 style = wxSUNKEN_BORDER, 
+				 size = wxSize(350, -1))
+        self.roleTitle = wxStaticText(self.rolePanel, -1, "Roles",
+				      size=wxSize(350,-1), style=wxALIGN_LEFT)
+        
         if IsOSX():
             self.roleTitle.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
         else:
@@ -81,7 +88,9 @@ class AuthorizationUIPanel(wxPanel):
 
         self.actionPanel = wxPanel(self,  wxNewId(),
                                    style = wxSUNKEN_BORDER)
-        self.actionTitle = wxStaticText(self.actionPanel, -1, "Actions", size=wxSize(100,-1), style=wxALIGN_LEFT)
+        self.actionTitle = wxStaticText(self.actionPanel, -1, "Actions", 
+					size=wxSize(100,-1), 
+					style=wxALIGN_LEFT)
         if IsOSX():
             self.actionTitle.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
         else:
@@ -99,7 +108,7 @@ class AuthorizationUIPanel(wxPanel):
 
         self.__setMenus()
         self.__setEvents()
-        self.__layout()
+        self.__Layout()
         
     def ConnectToAuthManager(self, url):
         '''
@@ -147,9 +156,9 @@ class AuthorizationUIPanel(wxPanel):
         self.cacheRoleName = 'Registered People'
        
         # Check if we already have the Registered People role.
-        for r in self.allRoles:
-            if r.GetName() == self.cacheRoleName:
-                self.cacheRole = r
+        #for r in self.allRoles:
+        #    if r.GetName() == self.cacheRoleName:
+        #        self.cacheRole = r
                
         # Add Registered People role.
         if not self.cacheRole:
@@ -272,7 +281,8 @@ class AuthorizationUIPanel(wxPanel):
         EVT_TREE_END_DRAG(self.tree, self.tree.GetId(), self.EndDrag)
         EVT_TREE_SEL_CHANGED(self.tree, self.tree.GetId(), self.OnSelect)
 
-        EVT_CHECKLISTBOX(self.actionList, self.actionList.GetId(), self.CheckAction)
+        EVT_CHECKLISTBOX(self.actionList, self.actionList.GetId(),
+                         self.CheckAction)
         EVT_LISTBOX(self, self.actionList.GetId(), self.SelectAction)
              
         EVT_MENU(self, self.ID_PERSON_ADDPERSON, self.AddPerson)
@@ -294,26 +304,24 @@ class AuthorizationUIPanel(wxPanel):
         '''
         Called when a user drags the sash window.
         '''
-        if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
-            # out of range
-            return
-
         eID = event.GetId()
         
         if eID == self.ID_WINDOW_LEFT:
             width = event.GetDragRect().width
-            self.leftSashWindow.SetSize(wxSize(width, -1))
-
-#        wxLayoutAlgorithm().LayoutWindow(self, self.actionPanel)
-        self.__layout()
+            self.leftSashWindow.SetDefaultSize(wxSize(width, -1))
+         
+        wxLayoutAlgorithm().LayoutWindow(self, self.actionPanel)
         self.actionPanel.Refresh()
+        s = self.leftSashWindow.GetSize()
+	self.rolePanel.SetSize(wxSize(s.width-5, s.height))
                                                 
     def __OnSize(self, event = None):
         '''
         Called when a user resizes the window.
         '''
-        self.__layout()
-        #wxLayoutAlgorithm().LayoutWindow(self, self.actionPanel)
+        wxLayoutAlgorithm().LayoutWindow(self, self.actionPanel)
+	s = self.leftSashWindow.GetSize()
+	self.rolePanel.SetSize(wxSize(s.width-5, s.height))
               
     def __participantInRole(self, roleId, person):
         '''
@@ -358,7 +366,7 @@ class AuthorizationUIPanel(wxPanel):
         @return: a list of actions for the role.
         '''
         actions = []
-        
+             
         for a in self.allActions:
             for r in a.GetRoles():
                 if r.name == role.name:
@@ -408,7 +416,7 @@ class AuthorizationUIPanel(wxPanel):
         self.personMenu.Append(self.ID_PERSON_PROPERTIES,"Properties",
                                "View distinguished name")
        
-    def __layout(self):
+    def __Layout(self):
         '''
         Handles UI layout,
         '''
@@ -417,26 +425,21 @@ class AuthorizationUIPanel(wxPanel):
         mainSizer.Add(self.roleTitle,0,wxEXPAND|wxALL,10)
         mainSizer.Add(self.tree,1,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,10)
         self.rolePanel.SetSizer(mainSizer)
-
+        mainSizer.Fit(self.rolePanel)
+	self.rolePanel.SetAutoLayout(1)
+       
         # Action Panel
         mainSizer2 = wxBoxSizer(wxVERTICAL)
         mainSizer2.Add(self.actionTitle,0,wxEXPAND|wxALL,10)
         mainSizer2.Add(self.actionList,1,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,10)
         self.actionPanel.SetSizer(mainSizer2)
-
-        mainSizer3=wxBoxSizer(wxHORIZONTAL)
-        mainSizer3.Add(self.rolePanel,1,wxEXPAND)
-        w,h=self.leftSashWindow.GetSizeTuple()
-        self.leftSashWindow.SetSizer(mainSizer3)
-        self.leftSashWindow.GetSizer().SetDimension(5,5,w-10,h-10)
-
-        self.leftSashWindow.SetSashVisible(wxSASH_RIGHT, TRUE)
+        mainSizer2.Fit(self.actionPanel)
+	self.actionPanel.SetAutoLayout(1)
         
-        mainSizer4=wxBoxSizer(wxHORIZONTAL)
-        mainSizer4.Add(self.leftSashWindow,0,wxEXPAND)
-        mainSizer4.Add(self.actionPanel,1,wxEXPAND)
-        self.SetSizer(mainSizer4)
-        self.Layout()
+        sizer = wxBoxSizer(wxHORIZONTAL)
+        sizer.Add(self.rolePanel, 1, wxEXPAND)
+        self.leftSashWindow.SetSizer(sizer)
+	sizer.Fit(self.leftSashWindow)
         
     def Copy(self, event):
         '''
@@ -757,8 +760,8 @@ class AuthorizationUIPanel(wxPanel):
         authP = authDoc.documentElement
 
         for role in self.allRoles:
-            #if self.cacheRoleName != role.name:
-            authP.appendChild(role.ToXML(authDoc))
+            if self.cacheRoleName != role.name:
+                authP.appendChild(role.ToXML(authDoc))
         
         for a in self.allActions:
             authP.appendChild(a.ToXML(authDoc, 1))
