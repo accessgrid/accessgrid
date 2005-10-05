@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.16 2004-08-26 14:37:00 turam Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.17 2005-10-05 18:01:39 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -245,8 +245,8 @@ class TitledPage(wxPyWizardPage):
         title = wxStaticText(self, -1, self.title, style = wxALIGN_CENTER)
         title.SetLabel(self.title)
         title.SetFont(wxFont(14, wxNORMAL, wxNORMAL, wxBOLD))
-        self.sizer.AddWindow(title, 0, wxALL|wxEXPAND, 5)
-        self.sizer.AddWindow(wxStaticLine(self, -1), 0, wxEXPAND|wxALL, 5)
+        self.sizer.Add(title, 0, wxALL|wxEXPAND, 5)
+        self.sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND|wxALL, 5)
         self.sizer.Add(wxSize(10, 10))
                        
     def OnPageShow(self):
@@ -308,7 +308,10 @@ class SelectCertWindow(TitledPage):
         TitledPage.__init__(self, parent, title)
         self.text = wxStaticText(self, -1, "Select Certificate Type: ")
         self.selectionList = ["Identity", "Service", "Anonymous"]
-        self.selections = wxComboBox(self, -1, self.selectionList[0], choices = self.selectionList, style = wxCB_READONLY)
+        self.selections = wxComboBox(self, -1, self.selectionList[0],
+                                     choices = self.selectionList,
+                                     style = wxCB_READONLY)
+        self.selections.SetValue(self.selectionList[0])
         self.info = wxStaticText(self, -1, "There are three kinds of certificates:")
         self.info1 = wxStaticText(self, -1, "Identity Certificate:")
         self.info2 = wxStaticText(self, -1, "To identify an individual.")
@@ -472,7 +475,7 @@ remember it: it is not possible to determine the passphrase from the certificate
         Sets background color of the item that triggered the event to white.
         '''        
         item = event.GetEventObject()
-        item.SetBackgroundColour("white")
+        item.SetBackgroundColour((254, 254, 254))
         item.Refresh()
 
     def __Layout(self):
@@ -611,12 +614,14 @@ class IdentityCertValidator(wxPyValidator):
         password2 = win.passwordVerCtrl.GetValue()
                
         if firstName == "":
-            MessageDialog(NULL, "Please enter your first name.", style = wxOK | wxICON_INFORMATION)
+            MessageDialog(NULL, "Please enter your first name.",
+                          style = wxOK | wxICON_INFORMATION)
             self.helpClass.SetColour(win.firstNameCtrl)
             return false
 
         elif lastName == "":
-            MessageDialog(NULL, "Please enter your last name.", style = wxOK | wxICON_INFORMATION)
+            MessageDialog(NULL, "Please enter your last name.",
+                          style = wxOK | wxICON_INFORMATION)
             self.helpClass.SetColour(win.lastNameCtrl)
             return false
         
@@ -710,7 +715,7 @@ class HostCertWindow(TitledPage):
         Sets background color of the item that triggered the event to white.
         '''    
         item = event.GetEventObject()
-        item.SetBackgroundColour("white")
+        item.SetBackgroundColour((254, 254, 254))
         item.Refresh()
         
     def Layout(self):
