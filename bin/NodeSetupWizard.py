@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.46 2005-06-01 13:30:37 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.47 2005-10-05 20:38:08 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -12,12 +12,16 @@ import os
 import string
 import sys
 
+if sys.platform == "darwin":
+    # OSX: pyGlobus/globus need to be loaded before modules such as socket.
+    import pyGlobus.ioc
+
 # Imports for user interface
 from wxPython.wx import *
 from wxPython.wizard import *
 
 # Agtk specific imports
-from AccessGrid.Toolkit import WXGUIApplication
+from AccessGrid.Toolkit import WXGUIApplication, CmdlineApplication
 from AccessGrid import Log
 from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.Config import SystemConfig
@@ -25,9 +29,11 @@ from AccessGrid import icons
 
 from AccessGrid.Platform import IsWindows
 
-from AccessGrid.AGNodeService import AGNodeServiceI, AGNodeService
-from AccessGrid.AGNodeService import AGNodeServiceIW
-from AccessGrid.hosting import SecureServer
+from AccessGrid.AGNodeService import AGNodeService #, AGNodeServiceI
+from AccessGrid.interfaces.AGNodeService_interface import AGNodeService as AGNodeServiceI
+#from AccessGrid.AGNodeService import AGNodeServiceIW
+from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
+from AccessGrid.hosting import SecureServer, InsecureServer
 from AccessGrid.AGParameter import ValueParameter
 from AccessGrid.Descriptions import AGServiceManagerDescription
 
@@ -36,9 +42,13 @@ from AccessGrid.Utilities import NODE_SETUP_WIZARD_LOG
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.UIUtilities import ProgressDialog
 
-from AccessGrid.AGService import AGServiceIW
-from AccessGrid.AGServiceManager import AGServiceManager, AGServiceManagerI
-from AccessGrid.AGServiceManager import AGServiceManagerIW
+from AccessGrid.interfaces.AGService_client import AGServiceIW
+#from AccessGrid.AGService import AGServiceIW
+from AccessGrid.AGServiceManager import AGServiceManager#, AGServiceManagerI
+from AccessGrid.interfaces.AGServiceManager_interface import AGServiceManager as AGServiceManagerI
+
+from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
+#from AccessGrid.AGServiceManager import AGServiceManagerIW
 
 log = Log.GetLogger(Log.NodeSetupWizard)
 
@@ -65,7 +75,7 @@ class TitledPage(wxPyWizardPage):
         self.SetSizer(self.sizer)
         title = wxStaticText(self, -1, self.title, style = wxALIGN_CENTER)
         title.SetLabel(self.title)
-        title.SetFont(wxFont(14, wxNORMAL, wxNORMAL, wxBOLD))
+        title.SetFont(wxFont(wxNORMAL_FONT.GetPointSize(), wxNORMAL, wxNORMAL, wxBOLD))
         self.sizer.AddWindow(title, 0, wxALL|wxEXPAND, 5)
         self.sizer.AddWindow(wxStaticLine(self, -1), 0, wxEXPAND|wxALL, 5)
         self.sizer.Add((10, 10))
@@ -147,21 +157,31 @@ class NodeSetupWizard(wxWizard):
             self.nodeClient.StartNodeService()
         except:
             log.exception("NodeSetupWizard.__init__: Can not start node service")
-            ErrorDialog(self, "Can not start Node Setup Wizard.",
-                        "Error", logFile = NODE_SETUP_WIZARD_LOG)
-
-        else:
-            # Run the wizard
-            progress.UpdateOneStep("Open wizard.")
-            progress.Destroy()
-
-            self.RunWizard(self.page1)
-
-            # Wizard finished; stop node service
-            try:
-                self.nodeClient.Stop()
-            except:
-                log.exception("NodeSetupWizard.__init__: Can not stop node service")
+            dlg = wxMessageDialog(None, "Do you want to clear the node service that is already running. \nNot recommended if you currently are participating in a meeting.", "Warning", style = wxOK | wxCANCEL | wxICON_INFORMATION)
+            if not dlg.ShowModal() == wxID_OK:
+                dlg.Destroy()
+                return
+            else:
+                log.info("NodeSetupWizard.__init__: Try connect to already running service")
+                try:
+                    self.nodeClient.ConnectToNodeService()
+                except:
+                    log.exception("NodeSetupWizard.__init__:Can not connect to node service")
+                    ErrorDialog(self, "Can not start Node Setup Wizard.",
+                                "Error", logFile = NODE_SETUP_WIZARD_LOG)
+                    return
+        
+        # Run the wizard
+        progress.UpdateOneStep("Open wizard.")
+        progress.Destroy()
+        
+        self.RunWizard(self.page1)
+        
+        # Wizard finished; stop node service
+        try:
+            self.nodeClient.Stop()
+        except:
+            log.exception("NodeSetupWizard.__init__: Can not stop node service")
 
     def ChangingPage(self, event):
         '''
@@ -199,7 +219,7 @@ class WelcomeWindow(TitledPage):
         TitledPage.__init__(self, parent, title)
         self.info = wxStaticText(self, -1, "This wizard will help you setup and test your Node. The node is your configuration of machines \ncontrolling cameras, speakers, and microphones.")
         self.beforeText = wxStaticText(self, -1,"Before continuing:")
-        self.beforeText.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        self.beforeText.SetFont(wxFont(wxNORMAL_FONT.GetPointSize(), wxNORMAL, wxNORMAL, wxBOLD))
         self.beforeText2 =  wxStaticText(self, -1,
                                 "Make sure you have Service Managers running on each machine in your node.")
         self.contText =  wxStaticText(self, -1, "Click 'Next' to continue.", style = wxCENTER)
@@ -365,7 +385,7 @@ class VideoCaptureWindow2(TitledPage):
         self.scrolledWindow.SetScrollbars(0,20,15,8)
         self.text = wxStaticText(self, -1, "Choose appropriate camera settings from the drop down boxes below. If the camera settings \nare wrong, your video might show up blue or black and white.")
         self.text2 = wxStaticText(self, -1, "Installed cameras")
-        self.text2.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        self.text2.SetFont(wxFont(wxNORMAL_FONT.GetPointSize(), wxNORMAL, wxNORMAL, wxBOLD))
         
         self.scrolledWindow.SetBackgroundColour('white')
         self.nodeClient = nodeClient
@@ -677,11 +697,12 @@ class ConfigWindow(TitledPage):
         self.info = wxStaticText(self, -1, 
                                  "This is your node configuration. Click 'Back' if you want to change something.")
         self.vCapHeading = wxStaticText(self, -1, "Video Capture Machine", style = wxALIGN_LEFT)
-        self.vCapHeading.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        self.vCapHeading.SetFont(wxFont(wxNORMAL_FONT.GetPointSize(), wxNORMAL, wxNORMAL, wxBOLD))
         self.vDispHeading = wxStaticText(self, -1, "Video Display Machine", style = wxALIGN_LEFT)
-        self.vDispHeading.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        self.vDispHeading.SetFont(wxFont(wxNORMAL_FONT.GetPointSize(), wxNORMAL, wxNORMAL, wxBOLD))
+
         self.audioHeading = wxStaticText(self, -1, "Audio Machine", style = wxALIGN_LEFT)
-        self.audioHeading.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        self.audioHeading.SetFont(wxFont(wxNORMAL_FONT.GetPointSize(), wxNORMAL, wxNORMAL, wxBOLD))
         self.vCapMachineText = wxStaticText(self, -1, "")
         self.vDispMachineText = wxStaticText(self, -1, "")
         self.audioMachineText = wxStaticText(self, -1, "")
@@ -697,7 +718,7 @@ class ConfigWindow(TitledPage):
         '''Enters appropriate text for audio machine'''
         if not flag:
             self.audioMachineText.SetLabel("%s using port %s." %(host, port))
-            self.audioUrl = "https://"+ host + ":"+ port + "/ServiceManager"
+            self.audioUrl = "http://"+ host + ":"+ port + "/ServiceManager"
             self.audioMachine = host
             self.audioPort = port
                       
@@ -710,7 +731,7 @@ class ConfigWindow(TitledPage):
         if not flag:
             self.cameraPorts = cameraPortDict
             self.vCapMachineText.SetLabel("%s using port %s." %(host, port))
-            self.videoCaptUrl = "https://"+ host + ":"+ port + "/ServiceManager"
+            self.videoCaptUrl = "http://"+ host + ":"+ port + "/ServiceManager"
             self.videoCaptMachine = host
             self.videoCaptPort = port
             
@@ -723,7 +744,7 @@ class ConfigWindow(TitledPage):
         '''Enters appropriate text for video display machine'''
         if not flag:
             self.vDispMachineText.SetLabel("%s using port %s." %(host, port))
-            self.videoDispUrl = "https://"+ host + ":"+ port + "/ServiceManager"
+            self.videoDispUrl = "http://"+ host + ":"+ port + "/ServiceManager"
             self.videoDispMachine = host
             self.videoDispPort = port
         else:
@@ -950,8 +971,12 @@ class NodeClient:
     def __init__(self, app = None):
         self.node = None
         self.app = app
-    
-    def StartNodeService(self):
+
+    def ConnectToNodeService(self):
+        '''
+        Connects to an already running node service
+        '''
+
         if not self.app:
             self.app = Service().instance()
 
@@ -964,7 +989,32 @@ class NodeClient:
         
         hostname = SystemConfig.instance().GetHostname()
         port = 11000
-        self.server = SecureServer((hostname, port), debug = self.app.GetDebugLevel())
+
+        url = "http://%s:%s/NodeService"%(hostname, port)
+        self.node = AGNodeServiceIW(url)
+        log.info("Connected to node service: %s", url)
+
+        url = "http://%s:%s/ServiceManager"%(hostname, port)
+        self.serviceManagerIW = AGServiceManagerIW(url)
+        log.info("Connected to service manager: %s", url)
+    
+    def StartNodeService(self):
+        '''
+        Starts a node service, assumes no service is already started.
+        '''
+        if not self.app:
+            self.app = Service().instance()
+
+            #Initialize node service
+            try:
+                self.app.Initialize("NodeService")
+            except Exception, e:
+                log.exception("NodeClient: init failed. Exiting.")
+                sys.exit(-1)
+        
+        hostname = SystemConfig.instance().GetHostname()
+        port = 11000
+        self.server = InsecureServer((hostname, port)) #, debug = self.app.GetDebugLevel())
 
         #
         # Start a node service
@@ -1028,10 +1078,9 @@ class NodeClient:
                     conf = AGServiceIW(serviceDesc.uri).GetConfiguration()
                                                                                 
                     # Set camera port type
-                    conf.append(ValueParameter("port", data[captureCard.resource]))
-                    
-                    #conf.parameters.append(ValueParameter("port", data[captureCard.resource]))
-                    AGServiceIW(serviceDesc.uri).SetConfiguration(conf)
+                    if data and data.has_key(captureCard.resource):
+                        conf.append(ValueParameter("port", data[captureCard.resource]))
+                        AGServiceIW(serviceDesc.uri).SetConfiguration(conf)
 
             else: # Video consumer or audio
                 log.debug("NodeClient.AddService: Audio or video consumer service")
@@ -1049,7 +1098,7 @@ class NodeClient:
         Checks to see if a video producer service is running on a service manager located
         at machine using port.
         '''
-        mgrUri = "https://"+ machine + ":"+ port + "/ServiceManager"
+        mgrUri = "http://"+ machine + ":"+ port + "/ServiceManager"
               
         # Is the service manager running on the specified machine and port?
 
@@ -1062,7 +1111,7 @@ class NodeClient:
         '''
         self.cameraList = []
         resourceList = []
-        mgrUri = "https://"+ machine + ":"+ port + "/ServiceManager"
+        mgrUri = "http://"+ machine + ":"+ port + "/ServiceManager"
       
         try:
             # Get available services
@@ -1072,7 +1121,7 @@ class NodeClient:
             return []
 
         for resource in resourceList:
-            if resource.type == 'video':
+            if resource.role == 'producer' and resource.type == 'video':
                 self.cameraList.append(resource)
 
         return self.cameraList
@@ -1091,18 +1140,17 @@ def main():
 
     # Init the toolkit with the standard environment.
     app = WXGUIApplication()
-
+    
     # Try to initialize
+  
     try:
         app.Initialize("NodeSetupWizard")
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
         sys.exit(-1)
-   
-    if not app.certificateManager.HaveValidProxy():
-        app.certificateManager.CreateProxy()
-        sys.exit(-1)
+
+    
 
     # Create a progress dialog
     startupDialog = ProgressDialog("Starting Node Setup Wizard...", "Initializing AccessGrid Toolkit", 5)
