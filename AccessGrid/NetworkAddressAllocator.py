@@ -2,13 +2,13 @@
 # Name:        NetworkAddressAllocator.py
 # Purpose:     This class manages multicast address allocation.
 # Created:     2002/12/12
-# RCS-ID:      $Id: NetworkAddressAllocator.py,v 1.6 2004-09-09 22:12:12 turam Exp $
+# RCS-ID:      $Id: NetworkAddressAllocator.py,v 1.7 2005-10-05 20:05:12 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetworkAddressAllocator.py,v 1.6 2004-09-09 22:12:12 turam Exp $"
+__revision__ = "$Id: NetworkAddressAllocator.py,v 1.7 2005-10-05 20:05:12 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import socket
@@ -61,14 +61,28 @@ class NetworkAddressAllocator:
         return port
         
     def AllocatePortInRange(self, even, portBase, portMax):
-    
+        if even:
+            evenPortBase = portBase + portBase % 2
+            evenPortMax = portMax - portMax % 2
+            diff = evenPortMax - evenPortBase
+            numEvenPorts = diff / 2 + 1
+            if len(self.allocatedPorts) >= numEvenPorts:
+                raise NoFreePortsError
+        else:
+            numPorts = portMax - portBase + 1
+            if len(self.allocatedPorts) >= numPorts:
+                raise NoFreePortsError
         # Check to see if port is used
         if even:
             modulus = 2
         else:
             modulus = 1
         while 1:
-            port = self.random.randrange(portBase, portMax, modulus)
+            if even:
+                port = self.random.randrange(evenPortBase, evenPortMax+1, modulus)
+            else:
+                port = self.random.randrange(portBase, portMax+1, modulus)
+            
             if port in self.allocatedPorts:
                 continue
             
@@ -89,13 +103,68 @@ class NetworkAddressAllocator:
         return port
     
 if __name__ == "__main__":
-    iter = 10
-    netAddressAllocator = NetworkAddressAllocator()
-    print "%d random ports: " % (iter)
-    for i in range(0, iter):
-        print netAddressAllocator.AllocatePort()
+    
+    def NumEvenPorts(portBase,portMax):
+        evenPortBase = portBase + portBase % 2
+        evenPortMax = portMax - portMax % 2
+        diff = evenPortMax - evenPortBase
+        numPorts = diff / 2 + 1
+        return numPorts
 
-    print "%d random even ports: " % (iter)
-    for i in range(0, iter):
-        print netAddressAllocator.AllocatePort(1)
+    def runTest(mn,mx,even=0, verbose=False):
+        print "Testing [%d,%d],even=%d" %( mn, mx, even)
+        if even:
+            iter = NumEvenPorts(mn,mx)
+        else:
+            iter = mx - mn + 1
+        print "\t%d ports: " % (iter )
+        netAdd = NetworkAddressAllocator(mn,mx)
+        ports = list()
+        for i in range(0, iter ):
+            port = netAdd.AllocatePort(even=even)
+            if verbose:
+                ports.append(port)
+        if verbose:
+            print "\t",ports
+        try:
+            port = netAdd.AllocatePort(even=even)
+            if verbose:
+                ports.append(port)
+        except NoFreePortsError:
+            print "\tCorrectly raised NoFreePortsError"
+        else:
+            raise Exception("\tDidn't raise \"NoFreePortsError\"")
+
+    netAdd = NetworkAddressAllocator(1000, 8000)
+    print 'even or odd', netAdd.AllocatePort(0)
+    print 'even or odd', netAdd.AllocatePort(0)
+    print 'even or odd', netAdd.AllocatePort(0)
+    print 'even or odd', netAdd.AllocatePort(0)
+    print 'even or odd', netAdd.AllocatePort(0)
+    print 'even or odd', netAdd.AllocatePort(0)
+    print 'even or odd', netAdd.AllocatePort(0)
+    print 'even', netAdd.AllocatePort(1)
+    print 'even', netAdd.AllocatePort(1)
+    print 'even', netAdd.AllocatePort(1)
+    print 'even', netAdd.AllocatePort(1)
+    print 'even', netAdd.AllocatePort(1)
+    print 'even', netAdd.AllocatePort(1)
+    print 'even', netAdd.AllocatePort(1)
+    print 'even', netAdd.AllocatePort(1)
+    print 'even', netAdd.AllocatePort(1)
+    print 'even', netAdd.AllocatePort(1)
+
+    
+    #print
+    #runTest(20001, 20011, even=0, verbose=True)
+    #
+    #runTest(20001, 20011, even=1, verbose=True)
+    #runTest(20002, 20011, even=1, verbose=True)
+    #runTest(20003, 20011, even=1, verbose=True)
+    #runTest(20004, 20011, even=1, verbose=True)
+    #
+    #runTest(20001, 20012, even=1, verbose=True)
+    #runTest(20001, 20013, even=1, verbose=True)
+    #runTest(20001, 20014, even=1, verbose=True)
+    #runTest(20001, 20015, even=1, verbose=True)
 
