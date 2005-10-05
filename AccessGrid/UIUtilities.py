@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.68 2005-06-14 15:44:46 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.69 2005-10-05 18:13:08 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.68 2005-06-14 15:44:46 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.69 2005-10-05 18:13:08 lefvert Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -701,7 +701,7 @@ class AddURLBaseDialog(wxDialog):
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.type = type
         self.Centre()
-        info = "This %s will be added to your list of %ss."%(self.type,self.type)
+        info = "Current %s will be added to your list of %s."%(self.type,self.type)
         self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
         self.addressText = wxStaticText(self, -1, "Name: ", style=wxALIGN_LEFT)
         self.address = wxTextCtrl(self, -1, name, size = wxSize(300,20))
@@ -711,7 +711,7 @@ class AddURLBaseDialog(wxDialog):
                         
     def Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
-        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
+        sizer1 = wxBoxSizer(wxVERTICAL)
         sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
 
         sizer2 = wxFlexGridSizer(2,2,10,10)
@@ -774,7 +774,8 @@ class EditURLBaseDialog(wxDialog):
         
     def __SetEvents(self):
         EVT_RIGHT_DOWN(self.myUrlsList, self.OnRightDown)
-        EVT_LIST_ITEM_SELECTED(self.myUrlsList, self.ID_LIST, self.OnItemSelected)
+        EVT_LIST_ITEM_SELECTED(self.myUrlsList, self.ID_LIST,
+                               self.OnItemSelected)
         EVT_MENU(self.menu, self.ID_RENAME, self.OnRename)
         EVT_MENU(self.menu, self.ID_DELETE, self.OnDelete)
                
@@ -788,7 +789,7 @@ class EditURLBaseDialog(wxDialog):
 
     def Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
-        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
+        sizer1 = wxBoxSizer(wxVERTICAL)
         sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 10)
         sizer1.Add(self.myUrlsList, 1, wxALL, 10)
 
@@ -874,9 +875,9 @@ class RenameDialog(wxDialog):
                        
     def Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
-        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
-        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
-
+        sizer1 = wxBoxSizer(wxVERTICAL)
+	sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 10)
+      
         sizer2 = wxBoxSizer(wxHORIZONTAL)
         sizer2.Add(self.nameText, 0)
         sizer2.Add(self.name, 1, wxEXPAND)
