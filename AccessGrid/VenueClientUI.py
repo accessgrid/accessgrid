@@ -5,21 +5,20 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.100 2005-10-04 19:13:39 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.101 2005-10-05 17:42:25 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.100 2005-10-04 19:13:39 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.101 2005-10-05 17:42:25 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
 import os
 import os.path
 import time
-import getopt
 from wx import VERSION as WXVERSION
 from wxPython.wx import *
 import string
@@ -34,7 +33,6 @@ from AccessGrid import Log
 log = Log.GetLogger(Log.VenueClientUI)
 Log.SetDefaultLevel(Log.VenueClientUI, Log.WARN)
 
-
 from AccessGrid import icons
 from AccessGrid import Toolkit
 from AccessGrid.Platform import IsWindows, IsOSX, Config
@@ -43,8 +41,7 @@ from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.ClientProfile import *
 from AccessGrid.Preferences import PreferencesDialog, Preferences
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
-from AccessGrid.Descriptions import ApplicationDescription, AGNetworkServiceDescription
-from AccessGrid.Descriptions import VenueDescription
+from AccessGrid.Descriptions import ApplicationDescription, VenueDescription
 from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIDialog
 from AccessGrid.Utilities import SubmitBug
 from AccessGrid.VenueClientObserver import VenueClientObserver
@@ -72,13 +69,14 @@ Main window components
 
 class VenueClientUI(VenueClientObserver):
 class VenueClientFrame(wxFrame):
-class VenueAddressBar(wxSashWindow):
-class VenueListPanel(wxSashWindow):
-class VenueList(wxScrolledWindow):
-class ContentListPanel(wxPanel):                   
+class VenueAddressBar(wxSashLayoutWindow):
+class VenueListPanel(wxSashLayoutWindow):
+class ContentListPanel(wxPanel):
+class TextPanelSash(wxSashLayoutWindow):
+class TextClientPanel(wxSashLayoutWindow):
 class JabberClientPanel(wxPanel):
 class StatusBar(wxStatusBar):
-class ExitPanel(wxPanel):
+
 
 
 Dialogs
@@ -132,6 +130,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_VENUE_PROPERTIES = wxNewId()
     ID_VENUE_OPEN_CHAT = wxNewId()
     ID_VENUE_CLOSE = wxNewId()
+    ID_PROFILE = wxNewId()
+    ID_PROFILE_EDIT = wxNewId()
     ID_CERTIFICATE_MANAGE = wxNewId()
     ID_USE_MULTICAST = wxNewId()
     ID_USE_UNICAST = wxNewId()
@@ -477,15 +477,15 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_TOP,
                                self.ID_WINDOW_BOTTOM, self.__OnSashDrag)
-        EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_BOTTOM,
-                               self.ID_WINDOW_BOTTOM2, self.__OnSashDrag)
+        EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_TOP,
+                               self.ID_WINDOW_BOTTOM, self.__OnSashDrag)
         EVT_SIZE(self, self.__OnSize)
 
     def __SetProperties(self):
         self.SetTitle("Venue Client")
         self.SetIcon(icons.getAGIconIcon())
-        self.venueListPanel.SetSize(wxSize(160, 300))
-        self.venueAddressBar.SetSize(wxSize(self.GetSize().GetWidth(),65))
+        #self.venueListPanel.SetSize(wxSize(160, 300))
+        #self.venueAddressBar.SetSize(wxSize(self.GetSize().GetWidth(),65))
         
     def __FillTempHelp(self, x):
         if x == '\\':
@@ -520,27 +520,31 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.venueAddressBar = VenueAddressBar(self, self.ID_WINDOW_TOP, 
                                                self.myVenuesDict,
                                                'default venue')
-        self.textInputWindow = wxSashWindow(self, self.ID_WINDOW_BOTTOM2,
-                                                  wxDefaultPosition,
-                                                  wxSize(-1, 35))
-        self.textOutputWindow = wxSashWindow(self, self.ID_WINDOW_BOTTOM,
-                                                   wxDefaultPosition,
-                                                   wxSize(-1, 100))
-        self.textOutput = wxTextCtrl(self.textOutputWindow, wxNewId(), "",
-                                     style= wxTE_MULTILINE | wxTE_READONLY |
-                                     wxTE_RICH|wxTE_AUTO_URL)
-      
-        self.textClientPanel = JabberClientPanel(self.textInputWindow, -1,
-                                                 self.textOutput, self)
-        self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT, self)
-        self.contentListPanel = ContentListPanel(self)
+        self.venueAddressBar.SetDefaultSize((1000, 65))
+	self.venueAddressBar.SetOrientation(wxLAYOUT_HORIZONTAL)
+	self.venueAddressBar.SetAlignment(wxLAYOUT_TOP)
+	self.venueAddressBar.SetSashVisible(wxSASH_BOTTOM, True)
+
+        self.textClientPanel = TextPanelSash(self, self.ID_WINDOW_BOTTOM)
+	self.textClientPanel.SetDefaultSize((1000, 100))
+	self.textClientPanel.SetOrientation(wxLAYOUT_HORIZONTAL)
+        self.textClientPanel.SetAlignment(wxLAYOUT_BOTTOM)
+	self.textClientPanel.SetSashVisible(wxSASH_TOP, True)
+
+        self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT,
+                                             self)
+	self.venueListPanel.SetDefaultSize((150, 1000))
+        self.venueListPanel.SetOrientation(wxLAYOUT_VERTICAL)
+        self.venueListPanel.SetAlignment(wxLAYOUT_LEFT)
+	self.venueListPanel.SetSashVisible(wxSASH_RIGHT, True)
+
+	self.contentListPanel = ContentListPanel(self)
         dataDropTarget = DataDropTarget(self)
         self.contentListPanel.SetDropTarget(dataDropTarget)
 
         self.__SetStatusbar()
         self.__SetMenubar(app)
         self.__SetProperties()
-        self.__Layout()
         self.__SetEvents()
         self.__LoadMyVenues()
 
@@ -558,43 +562,27 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 self.venueListPanel.Hide()
             elif width > (self.GetSize().GetWidth() - 20):
                 width = self.GetSize().GetWidth() - 20
-            self.venueListPanel.SetSize(wxSize(width, -1))
-
-        elif eID == self.ID_WINDOW_BOTTOM:
-            height = event.GetDragRect().height
-            self.textOutputWindow.SetSize(wxSize(-1, height))
            
-        elif eID == self.ID_WINDOW_BOTTOM2:
-            outputMinSize = 40
-            inputMinSize = 30
-            oldInputHeight = self.textInputWindow.GetSize().height
-            newInputHeight = event.GetDragRect().height
+            self.venueListPanel.SetDefaultSize(wxSize(width, 1000))
 
-            # Don't make text input too small.
-            if newInputHeight < inputMinSize:
-                newInputHeight = inputMinSize
-                            
-            diff = newInputHeight - oldInputHeight
-            oldOutputHeight = self.textOutputWindow.GetSize().height
-            newOutputHeight = oldOutputHeight - diff
+        elif eID == self.ID_WINDOW_TOP:
+            height = event.GetDragRect().height
+            self.venueAddressBar.SetDefaultSize(wxSize(1000, height))
+	
+	elif eID == self.ID_WINDOW_BOTTOM:
+	    height = event.GetDragRect().height
 
-            # Don't make input hide output.
-            if newOutputHeight < outputMinSize:
-                # fix both sizes
-                newInputHeight = newInputHeight - \
-                                (outputMinSize - newOutputHeight)
-                newOutputHeight = outputMinSize
-                            
-            self.textInputWindow.SetSize(wxSize(-1, newInputHeight))
-                        
-            # Make output smaller when input is bigger and vice versa.
-            self.textOutputWindow.SetSize(wxSize(-1, newOutputHeight))
+            # Avoid covering text area
+	    if height < 50:
+		height = 50
+	    self.textClientPanel.SetDefaultSize(wxSize(1000, height))
 
-        self.__Layout()
-                
+	wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
+	self.contentListPanel.Refresh()
+                         
     def __OnSize(self, event = None):
-        self.__Layout()
-       
+        wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
+               
     def __CleanUp(self):
         self.venueListPanel.CleanUp()
         self.contentListPanel.CleanUp()
@@ -603,13 +591,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
         self.menubar.Enable(self.ID_VENUE_PROPERTIES, false)
-        #self.menubar.Enable(self.ID_MYVENUE_ADD, false)
         self.menubar.Enable(self.ID_MYVENUE_SETDEFAULT, false)
         self.menubar.Enable(self.ID_VENUE_APPLICATION, false)
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, false)
         self.serviceHeadingMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
-        
-        
+                
     def __ShowMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
@@ -669,35 +655,20 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         subBox=wxBoxSizer(wxHORIZONTAL)
         subBox.Add(self.venueListPanel,0,wxEXPAND)
         subBox.Add(self.contentListPanel,1,wxEXPAND)
-        
-        textOutputBox=wxBoxSizer(wxHORIZONTAL)
-        textOutputBox.Add(self.textOutput,1,wxEXPAND)
-        w,h = self.textOutputWindow.GetSizeTuple()
-        self.textOutputWindow.SetSizer(textOutputBox)
-        self.textOutputWindow.GetSizer().SetDimension(5,5,w-10,h-10)
-        
-        textInputBox=wxBoxSizer(wxHORIZONTAL)
-        textInputBox.Add(self.textClientPanel,1,wxEXPAND)
-        w,h = self.textInputWindow.GetSizeTuple()
-        self.textInputWindow.SetSizer(textInputBox)
-        self.textInputWindow.GetSizer().SetDimension(5,5,w-10,h-10)
-        
+              
         mainBox=wxBoxSizer(wxVERTICAL)
         mainBox.Add(self.venueAddressBar,0,wxEXPAND)
         mainBox.Add(subBox,1,wxEXPAND)
-        mainBox.Add(self.textOutputWindow,0,wxEXPAND)
-        mainBox.Add(self.textInputWindow,0,wxEXPAND)
         
         self.venueListPanel.SetSashVisible(wxSASH_RIGHT, TRUE)
-        self.textOutputWindow.SetSashVisible(wxSASH_TOP, TRUE)
-        self.textInputWindow.SetSashVisible(wxSASH_TOP, TRUE)
-        
+              
         self.SetSizer(mainBox)
         self.Show(1)
         self.Layout()
     
-    def UpdateLayout(self):
-        self.__Layout()
+    def UpdateLayout(self, panel, size):
+        panel.SetDefaultSize(size)
+        wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
 
     # end Pure UI Methods
     #
@@ -2164,17 +2135,19 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 #
 # Venue Address Bar
 
-class VenueAddressBar(wxSashWindow):
+class VenueAddressBar(wxSashLayoutWindow):
     ID_GO = wxNewId()
     ID_BACK = wxNewId()
     ID_ADDRESS = wxNewId()
     
     def __init__(self, parent, id, venuesList, defaultVenue):
-        wxSashWindow.__init__(self, parent, id, wxDefaultPosition, 
+        wxSashLayoutWindow.__init__(self, parent, id,
+                                    wxDefaultPosition, 
                                     wxDefaultSize)
         self.parent = parent
-        self.addressPanel = wxPanel(self, -1, style = wxRAISED_BORDER, size = wxSize(-1,35))
-        self.titlePanel =  wxPanel(self, -1, size = wxSize(-1, 80),
+        self.addressPanel = wxPanel(self, -1, style = wxRAISED_BORDER,
+                                    size = wxSize(-1,30))
+        self.titlePanel =  wxPanel(self, -1, size = wxSize(-1, 10),
                                    style = wxRAISED_BORDER)
         self.title = wxStaticText(self.titlePanel, wxNewId(),
                                   'You are not in a venue',
@@ -2184,7 +2157,8 @@ class VenueAddressBar(wxSashWindow):
         self.address = wxComboBox(self.addressPanel, self.ID_ADDRESS,
                                   defaultVenue,
                                   choices = venuesList.keys(),
-                                  style = wxCB_DROPDOWN)
+                                  style = wxCB_DROPDOWN,
+                                  size = wxSize(-1, 35))
         
         self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go",
                              wxDefaultPosition, wxSize(40, 21))
@@ -2217,6 +2191,7 @@ class VenueAddressBar(wxSashWindow):
         self.address.SetValue(url)
 
     def SetTitle(self, name, description):
+        name = name.replace("&", "&&")
         self.title.SetLabel(name)
         self.titlePanel.SetToolTipString(description)
         self.__Layout()
@@ -2236,7 +2211,7 @@ class VenueAddressBar(wxSashWindow):
         self.addressPanel.SetSizer(box)
 
         titleBox = wxBoxSizer(wxHORIZONTAL)
-        titleBox.Add(self.title, 1, wxEXPAND|wxCENTER)
+        titleBox.Add(self.title, 1, wxCENTER)
         self.titlePanel.SetSizer(titleBox)
 
         venueServerAddressBox.Add(self.addressPanel, 0, wxEXPAND)
@@ -2263,7 +2238,7 @@ class VenueAddressBar(wxSashWindow):
 #
 # Venue List Panel
 
-class VenueListPanel(wxSashWindow):
+class VenueListPanel(wxSashLayoutWindow):
     '''VenueListPanel. 
     
     The venueListPanel contains a list of connected venues/exits to
@@ -2282,7 +2257,7 @@ class VenueListPanel(wxSashWindow):
     ID_MAXIMIZE = wxNewId()
       
     def __init__(self, parent, id, app):
-        wxSashWindow.__init__(self, parent, id)
+        wxSashLayoutWindow.__init__(self, parent, id)
         self.parent = parent
         self.exitsText = wxButton(self, -1, "Exits") 
         self.imageList = wxImageList(32,32)
@@ -2332,16 +2307,18 @@ class VenueListPanel(wxSashWindow):
         self.exitsText.Hide()
         self.minimizeButton.Hide()  
         self.maximizeButton.Show()
-        self.SetSize(wxSize(self.maximizeButton.GetSize().GetWidth(), currentHeight))
-        self.parent.UpdateLayout()
-
+        #self.list.HideDoors()
+        s = wxSize(self.maximizeButton.GetSize().GetWidth()+4, 1000)
+        self.parent.UpdateLayout(self, s)
+       
     def Show(self):
         currentHeight = self.GetSize().GetHeight()
         self.exitsText.Show()
         self.maximizeButton.Hide()
         self.minimizeButton.Show()  
-        self.SetSize(wxSize(180, currentHeight))
-        self.parent.UpdateLayout()
+        #self.list.ShowDoors()
+        s = wxSize(180, 1000)
+        self.parent.UpdateLayout(self, s)
   
     def OnClick(self, event):
         if event.GetId() == VenueListPanel.ID_MINIMIZE:
@@ -2390,11 +2367,15 @@ class NavigationPanel(wxPanel):
         EVT_MENU(self, self.ID_EXITS, self.OnExitsMenu)
         EVT_MENU(self, self.ID_MY_VENUES, self.OnMyVenuesMenu)
         EVT_MENU(self, self.ID_ALL, self.OnAllMenu)
+        EVT_SIZE(self, self.__OnSize)
         
         self.root = self.tree.AddRoot("")
         self.UpdateView()
         self.__Layout()
 
+    def __OnSize(self, event):
+        self.__Layout()
+	
     def OnExitsMenu(self, event):
         self.UpdateView(Preferences.EXITS)
         
@@ -2515,13 +2496,17 @@ class NavigationPanel(wxPanel):
         Remove all tree entries
         '''
         self.tree.DeleteAllItems()
-                                           
+        self.__Layout()
+        
     def __Layout(self):
         sizer = wxBoxSizer(wxHORIZONTAL)
         sizer.Add(self.tree, 1, wxEXPAND)
         self.SetSizer(sizer)
-        self.SetAutoLayout(1)
 
+        w,h = self.GetSizeTuple()
+        self.SetSizer(sizer)
+        self.GetSizer().SetDimension(5,5,w-10,h-10)
+        
 
 #############################################################################
 #
@@ -2895,7 +2880,6 @@ class ContentListPanel(wxPanel):
         self.tree.SetItemData(application, wxTreeItemData(appDesc))
         self.applicationDict[appDesc.uri] = application
         self.tree.SortChildren(self.applications)
-        #self.tree.Expand(self.applications)
         self.tree.Refresh()
       
     def UpdateApplication(self, appDesc):
@@ -3058,9 +3042,9 @@ class ContentListPanel(wxPanel):
                 # We don't have anything to do with this heading
                 pass
             
-            elif isinstance(item, AGNetworkServiceDescription):
-                menu = self.BuildNetworkServiceMenu(event, item)
-                self.PopupMenu(menu, wxPoint(self.x, self.y))
+            #elif isinstance(item, AGNetworkServiceDescription):
+            #    menu = self.BuildNetworkServiceMenu(event, item)
+            #    self.PopupMenu(menu, wxPoint(self.x, self.y))
             
             elif isinstance(item, ServiceDescription):
                 menu = self.BuildServiceMenu(event, item)
@@ -3390,11 +3374,11 @@ class ContentListPanel(wxPanel):
             
             dataView.Destroy()
 
-        elif isinstance(desc, AGNetworkServiceDescription):
-            serviceView = ServicePropertiesDialog(self, -1, "Service Properties")
-            serviceView.SetDescription(desc)
-            serviceView.ShowModal()
-            serviceView.Destroy()
+        #elif isinstance(desc, AGNetworkServiceDescription):
+        #    serviceView = ServicePropertiesDialog(self, -1, "Service Properties")
+        #    serviceView.SetDescription(desc)
+        #    serviceView.ShowModal()
+        #    serviceView.Destroy()
             
         elif isinstance(desc, ServiceDescription):
             serviceView = ServicePropertiesDialog(self, -1, "Service Properties")
@@ -3449,59 +3433,148 @@ class ContentListPanel(wxPanel):
 #
 # Jabber Client Panel
 
+class TextPanelSash(wxSashLayoutWindow):
+    
+    def __init__(self, parent, id):
+        wxSashLayoutWindow.__init__(self, parent, id)
+	self.parent = parent
+	self.textClientPanel = JabberClientPanel(self, -1)#wxPanel(self, -1)
+	EVT_SIZE(self, self.__OnSize)
+        self.__Layout()
+
+    #def GetText(self):
+    #    return self.textClientPanel.GetText()
+       
+    def OutputText(self, name, message):
+        self.textClientPanel.OutputText(name, message)
+        
+    def GetText(self):
+        return self.textClientPanel.GetText()
+
+    def Clear(self):
+        return self.textClientPanel.Clear()
+
+    def __OnSize(self, evt):
+        self.__Layout()
+
+    def __Layout(self):
+        box = wxBoxSizer(wxHORIZONTAL)
+        box.Add(self.textClientPanel, 1, wxEXPAND)
+        w,h = self.GetSizeTuple()
+        self.SetSizer(box)
+        self.GetSizer().SetDimension(5,5,w-10,h-10)
+
 class JabberClientPanel(wxPanel):
     
     ID_BUTTON = wxNewId()
+    ID_WINDOW_TOP = wxNewId()
     client =''
 
-    def __init__(self, parent, id, textOutputCtrl, app):
+    def __init__(self, parent, id):
         wxPanel.__init__(self, parent, id)
+        self.sashWindow = wxSashLayoutWindow(
+	    self, self.ID_WINDOW_TOP, wxDefaultPosition, (200, 30), 
+	    wxNO_BORDER)
+	
+        self.sashWindow.SetDefaultSize((1000, 60))
+        self.sashWindow.SetOrientation(wxLAYOUT_HORIZONTAL)
+        self.sashWindow.SetAlignment(wxLAYOUT_TOP)
+	self.sashWindow.SetSashVisible(wxSASH_BOTTOM, True)
+
+        self.outputPanel = wxPanel(self.sashWindow, -1)
+	self.textOutput = wxTextCtrl(self.outputPanel, wxNewId(), "",
+                                     style= wxTE_MULTILINE | wxTE_READONLY |
+                                     wxTE_RICH|wxTE_AUTO_URL) 
+       	self.app = parent.parent
+        self.panel = wxPanel(self, -1)
+        self.display = wxButton(self.panel, self.ID_BUTTON, "Display",
+                                style = wxBU_EXACTFIT)
+	self.textInput = wxTextCtrl(self.panel, wxNewId(), "",
+                                    size = wxSize(-1, 25),
+                                    style= wxTE_MULTILINE)
+	self.panelHeight = None
+
 
         self.parent = parent
-        self.__textOutput = textOutputCtrl
-        self.app = app
-  
-        self.display = wxButton(self, self.ID_BUTTON, "Display",
-                                style = wxBU_EXACTFIT)
-
         self.display.SetToolTip(wxToolTip("Send text message"))
-        self.textInputId = wxNewId()
-        self.textInput = wxTextCtrl(self, self.textInputId, "",
-                                    size = wxSize(1000, 25),
-                                    style= wxTE_MULTILINE)
-
-        self.__SetProperties()
+        
         self.__DoLayout()
 
-        EVT_TEXT_URL(self.__textOutput, self.__textOutput.GetId(), self.OnUrl)
-        EVT_CHAR(self.__textOutput, self.ChangeTextWindow)
+        EVT_TEXT_URL(self.textOutput, self.textOutput.GetId(), self.OnUrl)
+        EVT_CHAR(self.textOutput, self.ChangeTextWindow)
         EVT_CHAR(self.textInput, self.TestEnter) 
         EVT_BUTTON(self, self.ID_BUTTON, self.LocalInput)
-      
+        EVT_SIZE(self, self.__OnSize)
+	EVT_SASH_DRAGGED(self, self.ID_WINDOW_TOP, 
+			 self.__OnSashDrag)
         self.Show(true)
 
         self.app.venueClient.jabber.SetPanel(self)
-        
-    def __SetProperties(self):
-        '''
-        Sets UI properties.
-        '''
-        self.SetSize((375, 225))
-        
+
+    def __OnSashDrag(self, event):
+	eID = event.GetId()
+	
+	maxHeight = self.GetSize().height
+	
+        if eID == self.ID_WINDOW_TOP:
+	    h =  event.GetDragRect().height
+	    # Do not cover output
+	    
+	    if h < 10:
+		h = 10
+	    
+	    # Do not minimize input
+	    if maxHeight - h < 25:
+		h = maxHeight - 25
+	    self.sashWindow.SetDefaultSize(wxSize(1000, h))
+	    self.outputPanel.SetSize(wxSize(1000, h-5))
+    
+	wxLayoutAlgorithm().LayoutWindow(self, self.panel)
+	self.panel.Refresh()
+	self.panelHeight = self.panel.GetSize().height
+
+        #self.__Layout()
+
+    def __OnSize(self, event):
+	# Keep input constant
+	newHeight = event.GetSize().height
+	if not self.panelHeight:
+	    self.panelHeight = self.panel.GetSize().height
+
+	# Do not keep input constant if it is higher
+	# than output.
+	if newHeight >= self.panelHeight:
+	    sashHeight = newHeight - self.panelHeight
+	else:
+	    sashHeight = newHeight
+	
+	self.sashWindow.SetDefaultSize(wxSize(1000, sashHeight))
+	self.outputPanel.SetSize(wxSize(1000, sashHeight-5))
+	wxLayoutAlgorithm().LayoutWindow(self, self.panel)
+             
     def __DoLayout(self):
         '''
         Handles UI layout.
         '''
-        TextSizer = wxBoxSizer(wxVERTICAL)
         box = wxBoxSizer(wxHORIZONTAL)
-        box.Add(self.textInput, 1, wxALIGN_CENTER | wxEXPAND | wxALL, 2)
+        box.Add(self.textInput, 1, wxALIGN_CENTER | wxEXPAND |
+                wxLEFT | wxRIGHT | wxBOTTOM, 5)
         box.Add(self.display, 0, wxALIGN_CENTER |wxALL, 2)
-        
-        TextSizer.Add(box, 1, wxEXPAND|wxALIGN_CENTER)
-        self.SetAutoLayout(1)
-        self.SetSizer(TextSizer)
-        self.Layout()
 
+        self.panel.SetSizer(box)
+	box.Fit(self.panel)
+        self.panel.SetAutoLayout(1)
+
+        box2 = wxBoxSizer(wxHORIZONTAL)
+        box2.Add(self.textOutput, 1, wxEXPAND)
+        self.outputPanel.SetSizer(box2)
+        box2.Fit(self.outputPanel)
+        self.outputPanel.SetAutoLayout(1)
+
+        sizer = wxBoxSizer(wxHORIZONTAL)
+        sizer.Add(self.outputPanel, 1, wxEXPAND)
+        self.sashWindow.SetSizer(sizer)
+        
     def __OutputText(self, name, message):
         '''
         Prints received text in the text chat.
@@ -3517,37 +3590,40 @@ class JabberClientPanel(wxPanel):
             message = message + " ("+dateAndTime+")" 
 
             # Events are coloured blue
-            self.__textOutput.SetDefaultStyle(wxTextAttr(wxBLUE))
-            self.__textOutput.AppendText(message+'\n')
-            self.__textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
+            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLUE))
+            self.textOutput.AppendText(message+'\n')
+            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
 
         elif name == "enter":
             # Descriptions are coloured black
-            self.__textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
-            self.__textOutput.AppendText(message+'\n')
+            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
+            self.textOutput.AppendText(message+'\n')
         # Someone is writing a message
         else:
             # Set names bold
             pointSize = wxDEFAULT
 
             # Fix for osx
-            #if IsOSX():
-            #    pointSize = 12
-                
+            pointSize = wxNORMAL_FONT.GetPointSize()
+
+            # Fix for osx
+            if IsOSX():
+                pointSize = 12
+                           
             f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD)
             textAttr = wxTextAttr(wxBLACK)
             textAttr.SetFont(f)
-            self.__textOutput.SetDefaultStyle(textAttr)
-            self.__textOutput.AppendText(name)
+            self.textOutput.SetDefaultStyle(textAttr)
+            self.textOutput.AppendText(name)
           
             # Set text normal
             f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxNORMAL)
             textAttr = wxTextAttr(wxBLACK)
             textAttr.SetFont(f)
-            self.__textOutput.SetDefaultStyle(textAttr)
-            self.__textOutput.AppendText('\"' + message+'\"\n')
+            self.textOutput.SetDefaultStyle(textAttr)
+            self.textOutput.AppendText('\"' + message+'\"\n')
 
-        #if IsWindows():
+        if IsWindows():
             # Scrolling is not correct on windows when I use
             # wxTE_RICH flag in text output window.
             self.SetRightScroll()
@@ -3624,9 +3700,14 @@ class JabberClientPanel(wxPanel):
         If a url is pressed in the text chat, this method is called to
         bring up correct web site.
         '''
+        # Ignore mouse over events.
+        if event.GetMouseEvent().GetButton() == wxMOUSE_BTN_NONE:
+            event.Skip()
+            return
+
         start = event.GetURLStart()
         end = event.GetURLEnd()
-        url = self.__textOutput.GetRange(start, end)
+        url = self.textOutput.GetRange(start, end)
         
         self.app.OpenURL(url)
       
@@ -3657,17 +3738,17 @@ class JabberClientPanel(wxPanel):
         # scroll properly when the wxTE_AUTO_URL flag is set. 
         #pos = self.textOutput.GetInsertionPoint()
         #self.textOutput.ShowPosition(pos - 1)
-        self.__textOutput.ScrollLines(-1)
+        self.textOutput.ScrollLines(-1)
                                             
     def ClearTextWidgets(self):
         '''
         Clears text widgets.
         '''
-        self.__textOutput.Clear()
+        self.textOutput.Clear()
         self.textInput.Clear()
 
     def GetText(self):
-        return self.__textOutput.GetValue()
+        return self.textOutput.GetValue()
 
     def messageCB(self, msg):
         """Called when a message is recieved"""
@@ -3691,7 +3772,7 @@ class JabberClientPanel(wxPanel):
 class StatusBar(wxStatusBar):
     def __init__(self, parent):
         wxStatusBar.__init__(self, parent, -1)
-        self.hidden = 0
+        self.sizeChanged = False
         self.parent = parent
         EVT_SIZE(self, self.OnSize)
 
@@ -3860,7 +3941,7 @@ class UrlDialog(wxDialog):
         
     def __Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
-        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
+        #sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
         sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
 
         sizer2 = wxBoxSizer(wxHORIZONTAL)
@@ -3889,7 +3970,8 @@ class UrlDialog(wxDialog):
 
 class ProfileDialog(wxDialog):
     def __init__(self, parent, id, title, validate):
-        wxDialog.__init__(self, parent, id, title)
+        wxDialog.__init__(self, parent, id, title,
+                          style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
         if validate:
@@ -3928,7 +4010,6 @@ class ProfileDialog(wxDialog):
             self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
         self.titleLine = wxStaticLine(self,-1)
         self.buttonLine = wxStaticLine(self,-1)
-        #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
         self.__Layout()
         
     def __SetEditable(self, editable):
@@ -3938,7 +4019,6 @@ class ProfileDialog(wxDialog):
             self.phoneNumberCtrl.SetEditable(false)
             self.locationCtrl.SetEditable(false)
             self.homeVenueCtrl.SetEditable(false)
-            self.profileTypeBox.SetEditable(false)
             self.dnTextCtrl.SetEditable(false)
         else:
             self.nameCtrl.SetEditable(true)
@@ -3946,7 +4026,7 @@ class ProfileDialog(wxDialog):
             self.phoneNumberCtrl.SetEditable(true)
             self.locationCtrl.SetEditable(true)
             self.homeVenueCtrl.SetEditable(true)
-            self.profileTypeBox.SetEditable(true)
+            
         log.debug("VenueClientUI.py: Set editable in successfully dialog")
            
     def __Layout(self):
@@ -3959,6 +4039,7 @@ class ProfileDialog(wxDialog):
         self.gridSizer.Add(self.nameCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.emailText, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.emailCtrl, 0, wxEXPAND, 0)
+        self.gridSizer.AddGrowableCol(1)
         
         self.gridSizer.Add(self.phoneNumberText, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.phoneNumberCtrl, 0, wxEXPAND, 0)
@@ -3968,7 +4049,7 @@ class ProfileDialog(wxDialog):
         self.gridSizer.Add(self.homeVenueCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.profileTypeText, 0, wxALIGN_LEFT, 0)
         if self.profileTypeBox:
-            self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
+            self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND)
         if self.dnText:
             self.gridSizer.Add(self.dnText, 0, wxALIGN_LEFT, 0)
             self.gridSizer.Add(self.dnTextCtrl, 0, wxEXPAND, 0)
@@ -3987,12 +4068,10 @@ class ProfileDialog(wxDialog):
         self.sizer1.Add(sizer3, 0, wxALIGN_CENTER|wxALL, 10)
 
         self.SetSizer(self.sizer1)
-        #print str(self.GetSize())
         self.sizer1.Fit(self)
         self.SetAutoLayout(1)
         self.Layout()
-        #print str(self.GetSize())
-
+        
     def GetNewProfile(self):
         if(self.profile != None):
             self.profile.SetName(self.nameCtrl.GetValue())
@@ -4012,9 +4091,10 @@ class ProfileDialog(wxDialog):
 
     def SetProfile(self, profile):
         self.profile = profile
-        self.profileTypeBox = wxComboBox(self, -1, choices =['user', 'node'], 
-                                         style = wxCB_DROPDOWN|wxCB_READONLY)
-        #self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
+        self.selections = ["user", "node"]
+	self.profileTypeBox = wxComboBox(self, -1, self.selections[0],
+                                         choices = self.selections, 
+                                         style = wxCB_READONLY)
         self.__Layout()
         self.nameCtrl.SetValue(self.profile.GetName())
         self.emailCtrl.SetValue(self.profile.GetEmail())
@@ -4039,9 +4119,6 @@ class ProfileDialog(wxDialog):
         self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
         self.dnText = wxStaticText(self, -1, "Distinguished name: ")
         self.dnTextCtrl = wxTextCtrl(self, -1, "")
-        #self.gridSizer.Add(self.dnText, 0, wxEXPAND, 0)
-        #self.gridSizer.Add(self.dnTextCtrl, 0, wxEXPAND, 0)
-        #self.sizer1.Fit(self)
         self.__Layout()
         
         self.nameCtrl.SetValue(item.name)
@@ -4239,9 +4316,6 @@ class ExitPropertiesDialog(wxDialog):
                                                
     def __Layout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
-        #box = wxStaticBox(self, -1, "Properties")
-        #box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        #sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
         gridSizer = wxFlexGridSizer(9, 2, 5, 5)
         gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
         gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
@@ -4265,8 +4339,7 @@ class ExitPropertiesDialog(wxDialog):
         self.SetSizer(sizer1)
         sizer1.Fit(self)
         self.SetAutoLayout(1)
-        #self.Layout()
- 
+         
 ################################################################################
 
 class DataPropertiesDialog(wxDialog):
@@ -4301,8 +4374,7 @@ class DataPropertiesDialog(wxDialog):
         
     def __SetProperties(self):
         self.SetTitle("Please, fill in data information")
-        #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
-
+        
     def __SetEditable(self, editable):
         if not editable:
             # Name is always editable
@@ -4329,14 +4401,11 @@ class DataPropertiesDialog(wxDialog):
         gridSizer.Add(self.sizeCtrl, 0, wxEXPAND, 0)
         gridSizer.Add(self.lastModText, 0, wxALIGN_LEFT, 0)
         gridSizer.Add(self.lastModCtrl, 0, wxEXPAND, 0)
-        #sizer2.Add(gridSizer, 1, wxALL, 10)
-
+        
         sizer1.Add(self.titleText,0,wxEXPAND|wxALL,10)
         sizer1.Add(self.titleLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
         sizer1.Add(gridSizer, 1, wxALL, 10)
         sizer1.Add(self.buttonLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
-
-        #sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
 
         sizer3 = wxBoxSizer(wxHORIZONTAL)
         sizer3.Add(self.okButton, 0, wxALL, 10)
@@ -4426,9 +4495,6 @@ class ServicePropertiesDialog(wxDialog):
                   
     def __Layout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
-        #box = wxStaticBox(self, -1, "Properties")
-        #box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        #sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
         gridSizer = wxFlexGridSizer(9, 2, 5, 5)
         gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
         gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
@@ -4444,8 +4510,6 @@ class ServicePropertiesDialog(wxDialog):
         sizer1.Add(self.titleLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
         sizer1.Add(gridSizer, 1, wxALL, 10)
         sizer1.Add(self.buttonLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
-
-        #sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
 
         sizer3 = wxBoxSizer(wxHORIZONTAL)
         sizer3.Add(self.okButton, 0, wxALL, 10)
@@ -4486,7 +4550,9 @@ class ServicePropertiesDialog(wxDialog):
 
 class ApplicationPropertiesDialog(wxDialog):
     def __init__(self, parent, id, title):
-        wxDialog.__init__(self, parent, id, title)
+        wxDialog.__init__(self, parent, id, title,
+                          style = wxDEFAULT_DIALOG_STYLE | 
+			  wxRESIZE_BORDER)
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
         self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,-1))
@@ -4541,14 +4607,11 @@ class ApplicationPropertiesDialog(wxDialog):
         gridSizer.Add(self.typeCtrl, 0, wxEXPAND, 0)
         gridSizer.Add(self.descriptionText, 0, wxALIGN_LEFT, 0)
         gridSizer.Add(self.descriptionCtrl, 0, wxEXPAND, 0)
-        #sizer2.Add(gridSizer, 1, wxALL, 10)
-
+       
         sizer1.Add(self.titleText,0,wxEXPAND|wxALL,10)
         sizer1.Add(self.titleLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
         sizer1.Add(gridSizer, 1, wxALL, 10)
         sizer1.Add(self.buttonLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
-
-        #sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
 
         sizer3 = wxBoxSizer(wxHORIZONTAL)
         sizer3.Add(self.okButton, 0, wxALL, 10)
