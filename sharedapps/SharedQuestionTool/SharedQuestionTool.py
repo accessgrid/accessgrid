@@ -4,14 +4,18 @@
 #
 # Author:      Susanne Lefvert
 #
-# Created:     $Date: 2005-06-01 17:06:53 $
-# RCS-ID:      $Id: SharedQuestionTool.py,v 1.6 2005-06-01 17:06:53 lefvert Exp $
+# Created:     $Date: 2005-10-05 18:35:59 $
+# RCS-ID:      $Id: SharedQuestionTool.py,v 1.7 2005-10-05 18:35:59 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import os
 import sys
+
+if sys.platform=="darwin":
+    import pyGlobus.ioc
+
 import logging
 import sys
 import getopt
@@ -235,78 +239,38 @@ class SharedQuestionToolUI(wxApp):
         self.log = log
         self.questionTool = questionTool
         self.mainSizer = None
-        self.frame = wxFrame(None, -1, "Shared Question Tool")
+        self.frame = wxFrame(None, -1, "Shared Question Tool",
+                             size = wxSize(500, 500))
         self.frame.SetIcon(icons.getAGIconIcon())
         self.SetTopWindow(self.frame)
-        self.topPanel = wxPanel(self.frame, -1)
-        self.moderatorButton = wxCheckBox(self.topPanel, wxNewId(),
-                                          "Select for Moderator View.")
-        
-        self.audienceView = AudienceView(self.frame, self.questionTool)
-        self.moderatorView = ModeratorView(self.frame, self.questionTool)
-                
-        # Decide which view to show. 
-        self.SelectModerator()
+        self.topPanel = wxNotebook(self.frame, -1)
 
+
+
+        self.audienceView = AudienceView(self.topPanel, self.questionTool, 
+					 self)
+        self.moderatorView = ModeratorView(self.topPanel, self.questionTool, 
+					   self)
+	
+	self.topPanel.AddPage(self.audienceView, "Audience View")
+
+
+	self.topPanel.AddPage(self.moderatorView, "Moderator View")
+       
         # Register observers
         self.questionTool.RegisterObserver(self.audienceView)
         self.questionTool.RegisterObserver(self.moderatorView)
 
-        # Init events
-        EVT_CHECKBOX(self.frame, self.moderatorButton.GetId(), self.SelectModerator)
-
-        self.__Layout()
         self.frame.Show(1)
+
+    def Close(self):
+	self.frame.Destroy()
     
-    def SelectModerator(self, event = None):
-        '''
-        Invoked when user selects the moderator checkbox.
-        '''
-        if self.moderatorButton.IsChecked():
-            self.audienceView.Hide()
-            self.moderatorView.Show()
-            if self.mainSizer:
-                self.mainSizer.Remove(self.audienceView)
-                self.mainSizer.Add(self.moderatorView, 1, wxEXPAND)
-                self.frame.Layout()
-                self.frame.FitInside()
-        else:
-            self.audienceView.Show()
-            self.moderatorView.Hide()
-            if self.mainSizer:
-                self.mainSizer.Remove(self.moderatorView)
-                self.mainSizer.Add(self.audienceView, 1, wxEXPAND)
-                self.frame.Layout()
-                self.frame.FitInside()
-               
-    def __Layout(self):
-        '''
-        Layout ui components.
-        '''
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add((10,10))
-        sizer.Add(self.moderatorButton, 0, wxEXPAND|wxALL, 10)
-        self.topPanel.SetSizer(sizer)
-        sizer.Fit(self.topPanel)
-                
-        self.mainSizer = wxBoxSizer(wxVERTICAL)
-        self.mainSizer.Add(self.topPanel, 0, wxEXPAND)
-       
-        if self.moderatorButton.IsChecked():
-            self.mainSizer.Add(self.moderatorView, 1, wxEXPAND)
-        else:
-            self.mainSizer.Add(self.audienceView, 1, wxEXPAND)
-
-        self.frame.SetSizer(self.mainSizer)
-        self.mainSizer.Fit(self.frame)
-        self.frame.SetAutoLayout(1)
-        
-
 class ModeratorView(wxPanel, Observer):
     '''
     View for the moderator showing all sent and received questions.
     '''
-    def __init__(self, parent, questionTool):
+    def __init__(self, parent, questionTool, app):
         '''
         Create ui components.
         '''
@@ -314,6 +278,7 @@ class ModeratorView(wxPanel, Observer):
         Observer.__init__(self)
         self.questionTool = questionTool
         self.parent = parent
+        self.app = app
         self.questionList = wxListCtrl(self, wxNewId(), size = wxSize(460, 150), style=wxLC_REPORT)
         self.questionList.InsertColumn(0, "Question")
         self.questionList.InsertColumn(1, "Sender")
@@ -326,14 +291,6 @@ class ModeratorView(wxPanel, Observer):
         self.__Layout()
         self.__PopulateQList()
 
-        # Fix for osx
-        if IsOSX():
-            pointSize = 12
-            f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD)
-            textAttr = wxTextAttr(wxBLACK)
-            textAttr.SetFont(f)
-            self.currentQuestion.SetDefaultStyle(textAttr)
-           
         EVT_BUTTON(self, self.closeButton.GetId(), self.Close)
         EVT_LIST_ITEM_SELECTED(self, self.questionList.GetId(), self.SelectQuestion)
         
@@ -341,7 +298,7 @@ class ModeratorView(wxPanel, Observer):
         '''
         Invoked when closing the window.
         '''
-        self.parent.Close(1)
+        self.app.Close()
 
     def SelectQuestion(self, event):
         '''
@@ -382,18 +339,16 @@ class ModeratorView(wxPanel, Observer):
         Layout ui components.
         '''
         mainSizer = wxBoxSizer(wxVERTICAL)
-        
-        box = wxStaticBox(self, -1, "Received Questions")
-        box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        sizer = wxStaticBoxSizer(box, wxVERTICAL)
-        sizer.Add(self.questionList, 1, wxEXPAND| wxALL, 10)
+        sizer = wxBoxSizer(wxVERTICAL)
+	sizer.Add(wxStaticText(self, -1, "Received Questions"), 0, 
+		  wxLEFT, 10)
+	sizer.Add(self.questionList, 1, wxEXPAND| wxALL, 10)
         mainSizer.Add(sizer, 1, wxEXPAND|wxALL, 10)
-        
 
-        box = wxStaticBox(self, -1, "Selected Question")
-        box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        sizer = wxStaticBoxSizer(box, wxVERTICAL)
-        sizer.Add(self.currentQuestion, 1, wxEXPAND| wxALL, 10)
+        sizer = wxBoxSizer(wxVERTICAL)
+	sizer.Add(wxStaticText(self, -1, "Selected Questions"), 0, 
+		  wxLEFT|wxTOP, 10)
+	sizer.Add(self.currentQuestion, 1, wxEXPAND| wxALL, 10)
         mainSizer.Add(sizer, 1, wxEXPAND|wxALL, 10)
       
         mainSizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxLEFT|wxRIGHT, 5)
@@ -409,12 +364,13 @@ class AudienceView(wxPanel, Observer):
     View for an audience member allowing the user to send and view
     questions.
     '''
-    def __init__(self, parent, questionTool):
+    def __init__(self, parent, questionTool, app):
         '''
         Create ui components.
         '''
         wxPanel.__init__(self, parent, -1)
         Observer.__init__(self)
+        self.app = app
         self.parent = parent
         self.questionTool = questionTool
         self.questionList = wxListCtrl(self, wxNewId(), size = wxSize(460, 150),style=wxLC_REPORT)
@@ -424,16 +380,11 @@ class AudienceView(wxPanel, Observer):
         self.questionList.SetColumnWidth(1, 150)
         
         self.currentQuestion = wxTextCtrl(self, -1, style= wxTE_MULTILINE)
+        self.currentQuestion.Enable()
+	self.currentQuestion.SetEditable(True)
         
         self.sendButton = wxButton(self, wxNewId(), "Send")
-        self.closeButton = wxButton(self, wxNewId(), "Close")
-
-        if IsOSX():
-            pointSize = 12
-            f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD)
-            textAttr = wxTextAttr(wxBLACK)
-            textAttr.SetFont(f)
-            self.currentQuestion.SetDefaultStyle(textAttr)
+        self.closeButton = wxButton(self,  wxID_CLOSE, "Close")
         
         self.__Layout()
         
@@ -451,7 +402,7 @@ class AudienceView(wxPanel, Observer):
         '''
         Invoked when panel is closed.
         '''
-        self.parent.Close(1)
+        self.app.Close()
         
     def Update(self):
         '''
@@ -480,17 +431,15 @@ class AudienceView(wxPanel, Observer):
         Layout ui components.
         '''
         mainSizer = wxBoxSizer(wxVERTICAL)
-        
-        box = wxStaticBox(self, -1, "Your Sent and Received Questions")
-        box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        sizer = wxStaticBoxSizer(box, wxVERTICAL)
-        sizer.Add(self.questionList, 1, wxEXPAND| wxALL, 10)
+        sizer = wxBoxSizer(wxVERTICAL)
+	sizer.Add(wxStaticText(self, -1, "Your Sent ande Received Questions"),
+		  0, wxLEFT, 10)
+	sizer.Add(self.questionList, 1, wxEXPAND| wxALL, 10)
         mainSizer.Add(sizer, 1, wxEXPAND|wxALL, 10)
         
-        box = wxStaticBox(self, -1, "New Question")
-        box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        sizer = wxStaticBoxSizer(box, wxVERTICAL)
-        sizer.Add(self.currentQuestion, 1, wxEXPAND| wxALL, 10)
+        sizer = wxBoxSizer(wxVERTICAL)
+	sizer.Add(wxStaticText(self, -1, "New Question"), 0, wxLEFT|wxTOP, 10)
+	sizer.Add(self.currentQuestion, 1, wxEXPAND| wxALL, 10)
         mainSizer.Add(sizer, 1, wxEXPAND|wxALL, 10)
         
         mainSizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxLEFT|wxRIGHT, 5)
