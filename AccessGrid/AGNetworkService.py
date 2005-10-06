@@ -8,6 +8,7 @@ from AccessGrid.Venue import VenueIW
 from AccessGrid.AGNetworkServiceIW import AGNetworkServiceIW
 from AccessGrid.VenueServer import VenueServerIW
 from AccessGrid.Descriptions import CreateStreamDescription
+from AccessGrid.GUID import GUID
 
 from optparse import Option
 import signal
@@ -33,6 +34,7 @@ class AGNetworkService:
         self.mimeType = mimeType
         self.extension = extension
         self.visible = 1
+        self.id = GUID()
                 
         # Defined in Start.
         self.venueProxies = {}
@@ -52,8 +54,8 @@ class AGNetworkService:
                                          
         self.inCapabilities = []
         self.outCapabilities = []
-                    
-    def Start(self, soapInterface):
+
+    def Start(self, service, soapI = None):
         '''
         Performs necessary AG initialization operations for authorization,
         logging, command line options, and so forth.  Starts a SOAP service
@@ -61,8 +63,11 @@ class AGNetworkService:
         service from the command line.
         '''
         # Create the service interface.
-        # soapInterface = AGNetworkServiceI(service)
-        
+         if not soapI:
+            soapInterface = AGNetworkServiceI(service)
+        else:
+            soapInterface = soapI
+                
         self.app.Initialize(self.name)
         self.log = self.app.GetLog()
                 
@@ -104,6 +109,7 @@ class AGNetworkService:
         # Stop soap service.
         try:
             self.server.Stop()
+            self.flag = 0
         except:
             self.log.exception("AGNetworkService.Stop: Stop soap server failed %s")
                         
@@ -113,18 +119,19 @@ class AGNetworkService:
         shut down service properly.
         '''
 
-        flag = 1
-        while flag:
+        self.flag = 1
+        while self.flag:
             try:
                 time.sleep(0.5)
-            except IOError:
-                flag = 0
+            except:
+                self.flag = 0
                 self.log.debug("AGNetworkService.StartSignalLoop: Signal loop interrupted, exiting.")
 
     def StopSignalLoop(self, signum, frame):
         '''
         Signal callback that shuts down the service cleanly. 
         '''
+        self.flag = 0
         self.Stop()
                 
     def RegisterWithVenues(self, urls):
@@ -206,6 +213,7 @@ class AGNetworkService:
         nsd = AGNetworkServiceDescription(self.name, self.description, self.url, self.mimeType,
                                           self.extension, self.inCapabilities, self.outCapabilities,
                                           self.version, self.visible)
+        nsd.id = str(GUID())
         return nsd
 
 class AGNetworkServiceI(SOAPInterface):
