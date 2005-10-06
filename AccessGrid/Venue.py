@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.250 2005-09-23 22:15:49 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.251 2005-10-06 16:41:08 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.250 2005-09-23 22:15:49 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.251 2005-10-06 16:41:08 lefvert Exp $"
 
 import sys
 import time
@@ -445,8 +445,9 @@ class Venue(AuthorizationMixIn):
                                        self.GetId(),
                                        self.GetId())
         self.eventClient.Start()
-       
-    #self.StartApplications()
+        
+            
+    
 
     def __repr__(self):
         """
@@ -720,7 +721,6 @@ class Venue(AuthorizationMixIn):
         *privateId* Private id for the node
         *capabilities* Node capabilities
         """
-        
         log.debug("negotiate capabilities")
 
         if not self.clients.has_key(privateId):
@@ -751,7 +751,6 @@ class Venue(AuthorizationMixIn):
 
                 # add user as producer of new stream
                 if not matchesExistingStream:
-                   
                     capability = Capability( clientCapability.role,
                     clientCapability.type )
                     capability.parms = clientCapability.parms
@@ -773,7 +772,7 @@ class Venue(AuthorizationMixIn):
                     streamDesc )
 
                     # Distribute event announcing new stream
-                    self.eventClient.Send(Event.ADD_STREAM, streamDesc)
+                    #self.eventClient.Send(Event.ADD_STREAM, streamDesc)
                    
         # Compare user's consumer capabilities with existing stream
         # description capabilities. The user will receive a list of
@@ -781,8 +780,7 @@ class Venue(AuthorizationMixIn):
         clientConsumerCapTypes = []
         newCapabilities = []
         mismatchedStreams = []
-        matchingStreams = []
-              
+                     
         for capability in capabilities:
             if capability.role == Capability.CONSUMER:
                 clientConsumerCapTypes.append( capability.type )
@@ -790,7 +788,7 @@ class Venue(AuthorizationMixIn):
                 # Store new capabilities to check with new streams
                 if hasattr(capability, 'xml') and capability.xml:
                     newCapabilities.append(capability)
-                                            
+
         for stream in self.streamList.GetStreams():
             if stream.capability.type in clientConsumerCapTypes:
                 streamDescriptions.append( stream )
@@ -799,6 +797,8 @@ class Venue(AuthorizationMixIn):
         # Find mismatches in new capabilities. The streams might already
         # be added to the streamDescriptions list, so remove them from the list
         # and send them to the network service manager for resolution.
+
+        resolveMismatch = 1
         
         for s in self.streamList.GetStreams():
             match = 0
@@ -812,7 +812,9 @@ class Venue(AuthorizationMixIn):
                     
                     if sCap.Matches(cCap):
                         match = 1
-                                                                                       
+                        resolveMismatch = 0
+                        mismatchedStreams = []
+                                                                                                 
                 if not match:
                     # Append to the list of mismatched streams.
                     mismatchedStreams.append(s)
@@ -826,22 +828,23 @@ class Venue(AuthorizationMixIn):
         log.debug('Number of mismatched streams %s'%len(mismatchedStreams))
 
         # Use network services to resolve mismatches.
-        if len(mismatchedStreams)>0:
+        if len(mismatchedStreams)>0 and resolveMismatch:
             log.debug('Resolve mismatch')
             
             matchingStreams = self.networkServicesManager.ResolveMismatch(
                 mismatchedStreams, capabilities)
            
-            log.debug('Number of new streams %s'%len(matchingStreams))
-
-            for s in matchingStreams:
-                if not self.streamList.FindStreamByDescription(s):
-                    # Make new stream available for other clients.
-                    self.streamList.AddStream(s)
-                    
-            # Return new streams to the client.
-            streamDescriptions.extend(matchingStreams)
-     
+            for streamList, producer in matchingStreams:
+                for s in streamList:
+                    c = ServiceCapability.CreateServiceCapability(s.capability.xml)
+                
+                    if not self.streamList.FindStreamByDescription(s):
+                        # Make new stream available for other clients.
+                        self.streamList.AddStream(s)
+                        streamDescriptions.append(s)
+                        # Also add a new producer of the stream.
+                        self.streamList.AddStreamProducer( producer, s)
+                  
         return streamDescriptions
 
     def FindConnection(self, cid):
@@ -1152,6 +1155,7 @@ class Venue(AuthorizationMixIn):
         nsd = CreateAGNetworkServiceDescription(networkServiceDescription)
         try:
             self.networkServicesManager.UnRegisterService(nsd)
+            self.streamList.RemoveProducer(nsd.uri)
             self.eventClient.Send(Event.REMOVE_SERVICE, nsd)
           
         except:
@@ -1263,7 +1267,7 @@ class Venue(AuthorizationMixIn):
 
         *serviceDescription* Upon successfully adding the service.
         """
-
+      
         if self.services.has_key(serviceDescription.id):
             log.exception("AddService: service already present: %s",
                           serviceDescription.name)
@@ -1721,7 +1725,6 @@ class Venue(AuthorizationMixIn):
         for s in serverServices:
             if s.GetType() == "AsyncoreEvent":
                 location = s.GetLocation()
-
         return location
 
     def GetTextServiceLocation(self):
@@ -1733,7 +1736,7 @@ class Venue(AuthorizationMixIn):
                 location = s.GetLocation()
       
         return location
-    
+
     def AddData(self, dataDescription ):
         """
         LEGACY: This is just left here not to change the interface for

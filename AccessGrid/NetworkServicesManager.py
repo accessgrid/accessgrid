@@ -58,7 +58,7 @@ class NetworkServicesManager:
             self.log.error('UnRegisterService: Missing network service parameter, failed to remove service.')
             raise Exception, 'Missing network service description parameter'
             
-        nid = networkServiceDescription.url
+        nid = networkServiceDescription.uri
 
         if self.__services.has_key(nid):
 
@@ -106,8 +106,9 @@ class NetworkServicesManager:
                                                      nodeCapabilities,
                                                      self.__services.values())
         else:
-            self.log.debug("ResolveMismatch: There are no network services available, ignore matching")
             streamServiceList = []
+            self.log.debug("ResolveMismatch: There are no network services available, ignore matching")
+          
 
         # Resolve mismatches!
         for resolution in streamServiceList:
@@ -128,7 +129,7 @@ class NetworkServicesManager:
                     streams = []
         
             # Add new streams to list
-            matchedStreams.extend(streams)
+            matchedStreams.append((streams, service.uri))
 
         return matchedStreams
           
@@ -238,7 +239,6 @@ class NetworkServiceMatcher:
         * streamServiceList* A list containing tuple objects ([stream],[service])
         that associates a set of streams with a chain of network services.
         '''
-        
         # Check client preferences mismatch
         # If client preference does not match any of my consumer
         # capabilities; ignore that preference.
@@ -276,12 +276,35 @@ class NetworkServiceMatcher:
         # can resolve capability mismatch.
         return streamServiceList
 
+# To test
 if __name__ == "__main__":
 
-    from AccessGrid.Descriptions import AGNetworkServiceDescription
+    class FakeService:
+        def __init__(self):
+            self.uri = "fakeUri"
+            
+        def ToString(self):
+            return "fake service"
+
+    class FakeCapability:
+        def __init__(self):
+            pass
+       
+    class FakeStream:
+        def __init__(self):
+            self.capability = FakeCapability()
+
+    fakeService = FakeService()
     
+    cap1 = FakeCapability()
+    cap2 = FakeCapability()
+    fakeCapabilities = [cap1, cap2]
+
+    s1 = FakeStream()
+    s2 = FakeStream()
+    fakeStreams = [s1, s2]
 
     nsm = NetworkServicesManager()
-
-    ns = AGNetworkServiceDescription("TestNS", "Audio Transcoder", 'https://ns', 'https://vs',
-                                   ServiceCapability(), ServiceCapability(), '1.0')
+    nsm.RegisterService(fakeService)
+    print nsm.ResolveMismatch(fakeStreams, fakeCapabilities)
+    nsm.UnRegisterService(fakeService)
