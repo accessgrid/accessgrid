@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.81 2005-08-27 19:23:39 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.82 2005-10-07 19:11:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -210,7 +210,7 @@ mac_data =    [
                 "ChangeLog"
                 ]
                ),
-              ('bin', ['tools/GoToVenue.py', 'sharedapps/VenueVNC/server/VenueVNCServer.py']),
+              ('bin', ['tools/GoToVenue.py', 'sharedapps/VenueVNC/server/VenueVNCServer.py', 'packaging/mac/findwx26']),
               ('doc/VenueClientManual',
                [r"doc/VenueClientManual/VenueClientManual.htm",
                 r"doc/VenueClientManual/VenueClientManualHTML.htm",
