@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.231 2005-09-23 22:15:49 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.232 2005-10-07 22:51:18 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.231 2005-09-23 22:15:49 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.232 2005-10-07 22:51:18 eolson Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -873,7 +873,10 @@ class VenueClient:
             try:
                 self.UpdateNodeService()
             except NetworkLocationNotFound, e:
-                self.warningString += '\nError connecting media tools'
+                if self.transport == 'unicast':
+                    self.warningString += '\nThere is no unicast bridge available.'
+                else:
+                    self.warningString += '\nError connecting media tools.'
             except Exception, e:
                 # This is a non fatal error, users should be notified
                 # but still enter the venue
@@ -1193,6 +1196,15 @@ class VenueClient:
                           stream.id, self.transport)
                 stream.location = netloc   
                 found = 1
+
+        # prefer the same provider (above), but use any if available
+        if not found:
+            for netloc in stream.networkLocations:
+                if netloc.type == self.transport:
+                    log.debug("UpdateStream: Setting stream %s to %s",
+                              stream.id, self.transport)
+                    stream.location = netloc   
+                    found = 1
                 
         if not found:
             raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
