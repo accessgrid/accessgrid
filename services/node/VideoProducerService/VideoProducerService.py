@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.2 2005-06-06 17:17:30 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.3 2005-10-07 20:48:01 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ from AccessGrid import Toolkit
 from AccessGrid.Descriptions import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
-from AccessGrid.Platform import IsWindows, IsLinux, IsOSX
+from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD5
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
@@ -61,8 +61,8 @@ proc user_hook {} {
                 }
             }
         }
-        set inputPort %s
-        grabber port %s
+        set inputPort \"%s\"
+        grabber port \"%s\"
 
         if { [$transmitButton cget -state] != \"disabled\" } {
             set transmitButtonState 1
@@ -113,6 +113,11 @@ class VideoProducerService( AGService ):
         
         self.__GetResources()
 
+        if IsWindows():
+            try:
+                SystemConfig.instance().SetProcessorAffinity()
+            except:
+                self.log.exception("Exception setting processor affinity")
 
     def __SetRTPDefaults(self, profile):
         """
@@ -122,7 +127,7 @@ class VideoProducerService( AGService ):
             self.log.exception("Invalid profile (None)")
             raise Exception, "Can't set RTP Defaults without a valid profile."
 
-        if IsLinux():
+        if IsLinux() or IsOSX() or IsFreeBSD5():
             try:
                 rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
                 rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
@@ -256,6 +261,9 @@ class VideoProducerService( AGService ):
                                     portstr,
                                     portstr ) )
             f.close()
+            
+            # Open permissions on vic startupfile
+            os.chmod(startupfile,0777)
 
             # Replace double backslashes in the startupfile name with single
             #  forward slashes (vic will crash otherwise)
@@ -354,8 +362,6 @@ class VideoProducerService( AGService ):
                 self.configuration[index] = self.port
             else:
                 self.configuration.append(self.port)
-                
-            print "self.port.value = ", self.port.value
 
     def SetIdentity(self, profile):
         """
