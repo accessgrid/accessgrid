@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.4 2005-06-06 17:25:55 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.5 2005-10-07 20:47:09 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -63,8 +63,8 @@ proc user_hook {} {
                 }
             }
         }
-        set inputPort %s
-        grabber port %s
+        set inputPort \"%s\"
+        grabber port \"%s\"
 
         if { $transmitOnStartup } {
             if { [$transmitButton cget -state] != \"disabled\" } {
@@ -141,6 +141,11 @@ class VideoService( AGService ):
 
         self.__GetResources()
 
+        if IsWindows():
+            try:
+                SystemConfig.instance().SetProcessorAffinity()
+            except:
+                self.log.exception("Exception setting processor affinity")
 
     def __SetRTPDefaults(self, profile):
         """
@@ -150,7 +155,7 @@ class VideoService( AGService ):
             self.log.exception("Invalid profile (None)")
             raise Exception, "Can't set RTP Defaults without a valid profile."
 
-        if IsLinux():
+        if IsLinux() or IsOSX():
             try:
                 rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
                 rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
@@ -274,6 +279,10 @@ class VideoService( AGService ):
             if self.profile:
                 name = self.profile.name
                 email = self.profile.email
+            else:
+                # Error case
+                name = email = Toolkit.GetDefaultSubject().GetCN()
+                self.log.error("Starting service without profile set")
                 
             f.write( vicstartup % ( disableAutoplace,
                                     OnOff(self.muteSources.value),
@@ -291,6 +300,9 @@ class VideoService( AGService ):
                                     portstr,
                                     portstr ) )
             f.close()
+
+            # Open permissions on vic startupfile
+            os.chmod(startupfile,0777)
 
             # Replace double backslashes in the startupfile name with single
             #  forward slashes (vic will crash otherwise)
