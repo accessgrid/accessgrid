@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: Action.py,v 1.9 2004-09-09 14:21:00 turam Exp $
+# RCS-ID:      $Id: Action.py,v 1.10 2005-10-07 22:14:14 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ method invocation on services. There's no real limitation to what
 actions can be or what they can be used for however.
 """
 
-__revision__ = "$Id: Action.py,v 1.9 2004-09-09 14:21:00 turam Exp $"
+__revision__ = "$Id: Action.py,v 1.10 2005-10-07 22:14:14 eolson Exp $"
 
 import xml.dom.minidom
 from AccessGrid.Security.Role import RoleNotFound
@@ -156,7 +156,8 @@ class Action:
 
         @return: the role that was added to this action.
         """
-        self.roles.append(role)
+        if not self.HasRole(role.name):
+            self.roles.append(role)
         return role
 
     def RemoveRole(self, role):
