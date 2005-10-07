@@ -1,9 +1,9 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.47 2005-10-05 20:38:08 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.48 2005-10-07 22:44:51 eolson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------

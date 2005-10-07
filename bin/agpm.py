@@ -1,9 +1,9 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.26 2005-05-13 00:40:34 willing Exp $
+# RCS-ID:      $Id: agpm.py,v 1.27 2005-10-07 22:44:52 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.26 2005-05-13 00:40:34 willing Exp $"
+__revision__ = "$Id: agpm.py,v 1.27 2005-10-07 22:44:52 eolson Exp $"
 
 import os
 import re

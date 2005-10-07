@@ -1,9 +1,9 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        NodeManagement.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.28 2005-01-06 22:26:39 turam Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.29 2005-10-07 22:44:51 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------

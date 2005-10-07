@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        CvsSetup.py
 # Purpose:     Setup configuration files for development purposes without 

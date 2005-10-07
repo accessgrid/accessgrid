@@ -1,16 +1,16 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        CertificateRequestTool.py
 # Purpose:     Starts the CertificateRequestTool
 # Created:     2003/08/12
-# RCS_ID:      $Id: CertificateRequestTool.py,v 1.8 2004-09-10 18:59:03 judson Exp $
+# RCS_ID:      $Id: CertificateRequestTool.py,v 1.9 2005-10-07 22:44:51 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the tool used to get certificates.
 """
-__revision__ = "$Id: CertificateRequestTool.py,v 1.8 2004-09-10 18:59:03 judson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.9 2005-10-07 22:44:51 eolson Exp $"
 
 from AccessGrid.Toolkit import WXGUIApplication
 from wxPython.wx import wxPySimpleApp

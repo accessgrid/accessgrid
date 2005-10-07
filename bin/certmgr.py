@@ -1,9 +1,9 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        certmgr.py
 # Purpose:     Command line certificate management tool.
 # Created:     9/10/2003
-# RCS-ID:      $Id: certmgr.py,v 1.12 2004-09-07 20:25:59 turam Exp $
+# RCS-ID:      $Id: certmgr.py,v 1.13 2005-10-07 22:44:52 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This tool is used on the command line to interact with the users certificate
 environment.
 """
-__revision__ = "$Id: certmgr.py,v 1.12 2004-09-07 20:25:59 turam Exp $"
+__revision__ = "$Id: certmgr.py,v 1.13 2005-10-07 22:44:52 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string

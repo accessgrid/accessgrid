@@ -1,9 +1,9 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        CertificateManager.py
 # Purpose:     User tool for managing certificates.
 # Created:     2003/08/02
-# RCS-ID:      $Id: CertificateManager.py,v 1.3 2004-09-03 02:57:03 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.4 2005-10-07 22:44:51 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------

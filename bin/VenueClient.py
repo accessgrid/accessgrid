@@ -1,15 +1,15 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.268 2005-10-07 21:59:55 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.269 2005-10-07 22:44:52 eolson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.268 2005-10-07 21:59:55 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.269 2005-10-07 22:44:52 eolson Exp $"
 
 # Standard Imports
 import os

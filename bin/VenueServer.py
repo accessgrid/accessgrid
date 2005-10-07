@@ -1,17 +1,17 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.65 2005-09-28 20:33:31 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.66 2005-10-07 22:44:52 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.65 2005-09-28 20:33:31 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.66 2005-10-07 22:44:52 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
