@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.267 2005-09-23 22:15:49 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.268 2005-10-07 21:59:55 eolson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.267 2005-09-23 22:15:49 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.268 2005-10-07 21:59:55 eolson Exp $"
 
 # Standard Imports
 import os
@@ -75,6 +75,13 @@ def main():
     pnode = app.GetOption("pnode")
     url = app.GetOption("url")
     port = app.GetOption("port")
+
+    try:
+        import wxPython
+        wxversion_str = str(wxPython.wx.__version__)
+        log.info("wx version is: " + wxversion_str)
+    except:
+        log.exception("Unable to log wx version.")
     
     startupDialog.UpdateOneStep("Creating venue client components.")
 
