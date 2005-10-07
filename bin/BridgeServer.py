@@ -1,9 +1,9 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        BridgeServer.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2003/08/02
-# RCS-ID:      $Id: BridgeServer.py,v 1.28 2005-06-13 20:40:36 turam Exp $
+# RCS-ID:      $Id: BridgeServer.py,v 1.29 2005-10-07 21:20:03 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -138,16 +138,19 @@ class BridgeFactory:
         
         # Use the port range if given
         if portRange:
-            self.addressAllocator.SetPortMin(portRange[0])
-            self.addressAllocator.SetPortMax(portRange[1])
+            log.info("Allocator using port range: %s" % (portRange,))
+            self.SetPortMin(portRange[0])
+            self.SetPortMax(portRange[1])
 
     def SetBridgeExecutable(self,qbexec):
         self.qbexec = qbexec
         
     def SetPortMin(self,portMin):
+        log.info("BridgeFactory.SetPortMin %d", portMin)
         self.addressAllocator.SetPortBase(portMin)
         
     def SetPortMax(self,portMax):
+        log.info("BridgeFactory.SetPortMax %d", portMax)
         self.addressAllocator.SetPortMax(portMax)
 
     def CreateBridge(self,id,maddr,mport,mttl,uaddr,uport):
@@ -497,7 +500,7 @@ class Venue:
         It puts the received event on the queue for processing
         by the queue processing thread.
         """
-        log.info("Method Venue.EventReceivedCB called")
+        log.info("Method Venue.EventReceivedCB called; type=%s", event.eventType)
         if event.eventType == Event.ADD_STREAM:
             strDesc = event.data
             self.AddBridge(strDesc)
@@ -546,11 +549,13 @@ class Venue:
         uport = 0
         
         if self.venuePortConfig:
-            addressAllocator = NetworkAddressAllocator(
+            log.debug("venue port config: min=%d max=%d" %
+                            (self.venuePortConfig["portMin"],
+                            self.venuePortConfig["portMax"]) )
+            allocateEvenPort = 1
+            uport = self.bridgeFactory.addressAllocator.AllocatePortInRange(allocateEvenPort,
                                         self.venuePortConfig["portMin"],
                                         self.venuePortConfig["portMax"])
-            allocateEventPort = 1
-            uport = addressAllocator.AllocatePort(allocateEventPort)  
             log.info("Allocating port; port = %s", str(uport))
     
         # Create the bridge and start it
