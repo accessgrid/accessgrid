@@ -254,6 +254,7 @@ class PreferencesDialog(wxDialog):
                           style = wxRESIZE_BORDER | wxDEFAULT_DIALOG_STYLE,
                           size = wxSize(550, 350))
         self.Centre()
+       
       
         self.sideWindow = wxSashWindow(self, self.ID_WINDOW_LEFT,
                                        wxDefaultPosition,
@@ -333,10 +334,12 @@ class PreferencesDialog(wxDialog):
                                         self.nodePanel.GetAudio())
         self.preferences.SetPreference(Preferences.NODE_URL,
                                        self.nodePanel.GetDefaultNodeUrl())
-        self.preferences.SetPreference(Preferences.NODE_CONFIG,
-                                       self.nodePanel.GetDefaultNodeConfig().name)
-        self.preferences.SetPreference(Preferences.NODE_CONFIG_TYPE,
-                                       self.nodePanel.GetDefaultNodeConfig().type)
+
+        if self.nodePanel.GetDefaultNodeConfig():
+            self.preferences.SetPreference(Preferences.NODE_CONFIG,
+                                           self.nodePanel.GetDefaultNodeConfig().name)
+            self.preferences.SetPreference(Preferences.NODE_CONFIG_TYPE,
+                                           self.nodePanel.GetDefaultNodeConfig().type)
         self.preferences.SetPreference(Preferences.RECONNECT,
                                        self.venueConnectionPanel.GetReconnect())
         self.preferences.SetPreference(Preferences.MAX_RECONNECT,
@@ -539,7 +542,12 @@ class NodePanel(wxPanel):
         return self.nodeUrlCtrl.GetValue()
 
     def GetDefaultNodeConfig(self):
-        return self.configMap[self.nodeConfigCtrl.GetValue()]
+        key = self.nodeConfigCtrl.GetValue()
+
+        if key and self.configMap.has_key(key):
+            return self.configMap[key]
+        else:
+            return None
 
     def GetMediaStartup(self):
         if self.mediaButton.IsChecked():
@@ -626,7 +634,7 @@ class ProfilePanel(wxPanel):
             self.phoneNumberCtrl.SetEditable(false)
             self.locationCtrl.SetEditable(false)
             self.homeVenueCtrl.SetEditable(false)
-            self.profileTypeBox.SetEditable(false)
+            #self.profileTypeBox.SetEditable(false)
             self.dnTextCtrl.SetEditable(false)
         else:
             self.nameCtrl.SetEditable(true)
@@ -634,7 +642,7 @@ class ProfilePanel(wxPanel):
             self.phoneNumberCtrl.SetEditable(true)
             self.locationCtrl.SetEditable(true)
             self.homeVenueCtrl.SetEditable(true)
-            self.profileTypeBox.SetEditable(true)
+            #self.profileTypeBox.SetEditable(true)
         log.debug("VenueClientUI.py: Set editable in successfully dialog")
            
     def __Layout(self):
@@ -656,7 +664,8 @@ class ProfilePanel(wxPanel):
         if self.dnText:
             self.gridSizer.Add(self.dnText, 0, wxALIGN_LEFT, 0)
             self.gridSizer.Add(self.dnTextCtrl, 0, wxEXPAND, 0)
-         
+
+        self.gridSizer.AddGrowableCol(1)
         self.sizer1.Add(self.gridSizer, 1, wxALL|wxEXPAND, 10)
         self.SetSizer(self.sizer1)
         self.sizer1.Fit(self)
@@ -687,6 +696,7 @@ class ProfilePanel(wxPanel):
         self.profile = profile
         self.profileTypeBox = wxComboBox(self, -1, choices =['user', 'node'], 
                                          style = wxCB_DROPDOWN|wxCB_READONLY)
+        self.profileTypeBox.SetValue(self.profile.GetProfileType())
         self.__Layout()
         self.nameCtrl.SetValue(self.profile.GetName())
         self.emailCtrl.SetValue(self.profile.GetEmail())
