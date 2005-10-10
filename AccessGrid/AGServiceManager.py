@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.87 2005-06-01 21:12:16 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.88 2005-10-10 17:25:21 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.87 2005-06-01 21:12:16 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.88 2005-10-10 17:25:21 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -74,10 +74,11 @@ class AGServiceManager:
     ## SERVICE methods
     ####################
     
-    def AddServiceByName(self,name):
+    def AddServiceByName(self, name, resource = None, config = None, identity = None):
     
         servicePackage = None
         servicePackages =  self.GetServicePackageDescriptions()
+        
         for s in servicePackages:
             print "name = ", name, "s = ", s.packageFile
             if s.packageFile.endswith(name):
@@ -87,10 +88,10 @@ class AGServiceManager:
             raise Exception("No service package found for specified name",
                             name)
                             
-        return self.AddService(servicePackage)
+        return self.AddService(servicePackage, resource, config, identity)
     
     
-    def AddService( self, servicePackageDesc ):
+    def AddService( self, servicePackageDesc, resource = None, config = None, identity = None):
         """
         Add a service package to the service manager.  
         """
@@ -130,7 +131,7 @@ class AGServiceManager:
             serviceUrl,pid = self.__ExecuteService(servicePackage)
             
         # Set the package name in the service
-        AGServiceIW(serviceUrl).SetPackageFile(servicePackage.packageFile)
+        AGServiceIW(serviceUrl).SetPackageFile(servicePackage.packageFile, resource, config, identity)
 
         # Get the description from the service
         serviceDescription = AGServiceIW(serviceUrl).GetDescription()
@@ -382,8 +383,6 @@ class AGServiceManager:
         del self.registeringServices[token]
         
         return serviceUrl,pid
-
-
 
     def IsValid(self):
         return 1
