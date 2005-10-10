@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.102 2005-10-10 17:22:44 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.103 2005-10-10 17:51:47 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.102 2005-10-10 17:22:44 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.103 2005-10-10 17:51:47 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2415,6 +2415,7 @@ class NavigationPanel(wxPanel):
         '''
         self.x = event.GetX()
         self.y = event.GetY()
+        exits = None
 
         treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
 
@@ -2432,7 +2433,10 @@ class NavigationPanel(wxPanel):
 
         if venue:
             exits = self.app.controller.GetVenueConnections(venue.uri)
-
+        else:
+            # If we did not get click on a venue, ignore
+            return
+            
         if not exits:
             exits = []
 
@@ -3638,8 +3642,8 @@ class JabberClientPanel(wxPanel):
         wxCallAfter(self.__OutputText, name, message)
 
     def Clear(self):
-        self.__textOutput.AppendText("CLEAR")
-        self.__textOutput.Clear()
+        self.textOutput.AppendText("CLEAR")
+        self.textOutput.Clear()
         
     def LocalInput(self, event):
         '''
