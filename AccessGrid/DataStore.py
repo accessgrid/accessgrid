@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.82 2005-07-11 18:52:28 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.83 2005-10-10 16:52:51 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.82 2005-07-11 18:52:28 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.83 2005-10-10 16:52:51 eolson Exp $"
 
 import os
 import time
@@ -635,6 +635,15 @@ class DataStore:
         log.debug("CanUploadFile: dn %s fi %s", dn, file_info)
         
         filename = file_info['name']
+
+        try:
+            # Don't allow upload filenames that can't be decoded by us-ascii until
+            #   the rest of the toolkit supports unicode better.
+            unicode(filename, 'us-ascii')
+        except UnicodeDecodeError:
+            desc = "InvalidFileName"
+            log.info("CanUploadFile: returning 0, desc='%s'", desc)
+            return 0
 
         self.cbLock.acquire()
         try:
