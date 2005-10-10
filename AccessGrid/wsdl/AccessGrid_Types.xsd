@@ -227,11 +227,38 @@
       </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="AGParameter">
+    <xs:complexType name="ValueParameter">
       <xs:sequence>
-        <xs:element name = "appId" type = "xs:string"/>
-        <xs:element name = "clientProfile" type = "agtk:ClientProfile"/>
-        <xs:element name = "status" type = "xs:string"/>
+        <xs:element name = "name" type = "xs:string"/>
+        <xs:element name = "value" type = "xs:string"/>
+        <xs:element name = "type" type = "xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="TextParameter">
+      <xs:sequence>
+        <xs:element name = "name" type = "xs:string"/>
+        <xs:element name = "value" type = "xs:string"/>
+        <xs:element name = "type" type = "xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="RangeParameter">
+      <xs:sequence>
+        <xs:element name = "name" type = "xs:string"/>
+        <xs:element name = "value" type = "xs:int"/>
+        <xs:element name = "type" type = "xs:string"/>
+        <xs:element name = "low" type = "xs:int"/>
+        <xs:element name = "high" type = "xs:int"/>
+      </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="OptionSetParameter">
+      <xs:sequence>
+        <xs:element name = "name" type = "xs:string"/>
+        <xs:element name = "value" type = "xs:string"/>
+        <xs:element name = "type" type = "xs:string"/>
+      	<xs:element name = "options" minOccurs="0" maxOccurs="unbounded" type = "xs:any"/>
       </xs:sequence>
     </xs:complexType>
 
