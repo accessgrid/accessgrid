@@ -32,7 +32,7 @@
           <xsd:element name="GetConfigurationResponse">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="configuration" type="agtk:AGParameter" />
+	        <xsd:any processContents='lax' minOccurs="0" maxOccurs="unbounded"/>
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -128,7 +128,7 @@
           <xsd:element name="SetConfigurationRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="configuration" type="agtk:AGParameter" />
+                <xsd:any processContents='lax' minOccurs="0" maxOccurs="unbounded"/>
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -162,6 +162,9 @@
             <xsd:complexType>
               <xsd:sequence>
                 <xsd:element minOccurs="0" maxOccurs="1" name="packageFile" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="resource" type="xsd:string" />
+                <xsd:any processContents='lax' minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element minOccurs="0" maxOccurs="1" name="profile" type="agtk:ClientProfile" />    
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>

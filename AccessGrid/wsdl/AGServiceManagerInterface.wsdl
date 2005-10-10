@@ -19,7 +19,10 @@
             <xsd:complexType>
               <xsd:sequence>
                 <xsd:element minOccurs="0" maxOccurs="1" name="servicePackage" type="agtk:AGServicePackageDescription" />
-              </xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="resource" type="xsd:string" />
+                <xsd:any processContents='lax' minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element minOccurs="0" maxOccurs="1" name="profile" type="agtk:ClientProfile" />    
+                </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
 
@@ -35,6 +38,9 @@
             <xsd:complexType>
               <xsd:sequence>
                 <xsd:element minOccurs="0" maxOccurs="1" name="name" type="xsd:string" />
+		<xsd:element minOccurs="0" maxOccurs="1" name="resource" type="xsd:string" />
+                <xsd:any processContents='lax' minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element minOccurs="0" maxOccurs="1" name="profile" type="agtk:ClientProfile" />    
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
