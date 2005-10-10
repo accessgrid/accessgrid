@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.193 2005-10-07 22:36:38 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.194 2005-10-10 18:57:48 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.193 2005-10-07 22:36:38 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.194 2005-10-10 18:57:48 lefvert Exp $"
 
 
 # Standard stuff
@@ -46,7 +46,7 @@ from AccessGrid.hosting import PathFromURL, IdFromURL
 from AccessGrid.GUID import GUID
 from AccessGrid.Venue import Venue, VenueI
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-from AccessGrid.DataStore import HTTPTransferServer, HTTPSTransferServer
+from AccessGrid.DataStore import HTTPTransferServer #, HTTPSTransferServer
 from AccessGrid.scheduler import Scheduler
 
 from AccessGrid.Descriptions import ConnectionDescription, StreamDescription
@@ -111,7 +111,7 @@ class VenueServer(AuthorizationMixIn):
     configDefaults = {
         "VenueServer.dataPort" : 8006,
         "VenueServer.eventPort" : 8002,
-        "VenueServer.textHost" : 'localhost',
+        "VenueServer.textHost" : 'jabber.mcs.anl.gov',
         "VenueServer.textPort" : 5223,
         "VenueServer.encryptAllMedia" : 1,
         "VenueServer.houseKeeperFrequency" : 300,
@@ -241,18 +241,15 @@ class VenueServer(AuthorizationMixIn):
         # be separated, we just have to figure out the mechanics and
         # make sure the usability doesn't plummet for administrators.
         if self.servicePtr.GetOption("secure"):
-            print "Starting secure transfer server"
             self.dataTransferServer = HTTPSTransferServer(
                                             ('',int(self.dataPort)),
                                             self.servicePtr.GetOption('cert'),
                                             self.servicePtr.GetOption('key'),
                                             self.servicePtr.GetOption('cadir'))
         else:
-            print "Starting insecure transfer server"
             self.dataTransferServer = HTTPTransferServer(
                                             ('',int(self.dataPort)) )
         self.dataTransferServer.run()
-
         
         # Add the event service
         self.eventService = EventService("Event Service",
