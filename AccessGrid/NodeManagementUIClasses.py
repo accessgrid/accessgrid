@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.79 2005-07-05 21:27:35 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.80 2005-10-10 17:23:33 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.79 2005-07-05 21:27:35 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.80 2005-10-10 17:23:33 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -607,8 +607,11 @@ class NodeManagementClientFrame(wxFrame):
                 self.recentNodeServiceList.append(url)
             
             # Attach (or fail)
+            
+            
             wxBeginBusyCursor()
-            self.AttachToNode( url )
+            self.AttachToNode(AGNodeServiceIW(url))
+
             if not self.Connected():
                 self.Error( "Could not attach to AGNodeService at " + url  )
                 wxEndBusyCursor()
@@ -618,7 +621,7 @@ class NodeManagementClientFrame(wxFrame):
             self.UpdateUI()
             wxEndBusyCursor()
             
-    def AttachToNode( self, nodeServiceUri ):
+    def AttachToNode( self, nodeService ):
         """
         This method does the real work of attaching to a node service
         """
@@ -626,17 +629,10 @@ class NodeManagementClientFrame(wxFrame):
         # self.CheckCredentials()
 
         # Get proxy to the node service, if the url validates
-        try:
-            self.nodeServiceHandle = AGNodeServiceIW( nodeServiceUri )
-            self.nodeServiceHandle.IsValid()
-            self.SetStatusText("Connected",1)
-            self.EnableMenus(true)
-        except:
-            self.SetStatusText("Not Connected",1)
-            self.EnableMenus(false)
-            self.ClearUI()
-            log.exception("NodeManagementClientFrame.AttachToNode: Invalid Node Service URI: %s" % nodeServiceUri)
-
+        self.nodeServiceHandle = nodeService
+        self.SetStatusText("Connected",1)
+        self.EnableMenus(true)
+      
     def LoadConfiguration( self, event ):
         """
         Load a configuration for the node service
@@ -869,12 +865,12 @@ class NodeManagementClientFrame(wxFrame):
     def ServiceManagerSelectedCB(self, event):
         index = self.serviceManagerList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
         uri = self.serviceManagers[index].uri
-        try:
-            AGServiceManagerIW(uri).IsValid()
-        except:
-            log.exception("Service Manager is unreachable (%s)" % (uri,))
-            self.Error("Service Manager is unreachable (%s)" % (uri,))
-            return
+        #try:
+        #    AGServiceManagerIW(uri).IsValid()
+        #except:
+        #    log.exception("Service Manager is unreachable (%s)" % (uri,))
+        #    self.Error("Service Manager is unreachable (%s)" % (uri,))
+        #    return
 
         self.UpdateUI()
 
