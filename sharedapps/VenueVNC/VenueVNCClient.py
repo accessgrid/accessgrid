@@ -18,7 +18,7 @@ from AccessGrid import Events
 from AccessGrid import EventClient
 from AccessGrid import Toolkit
 from AccessGrid.Platform.Config import UserConfig
-from AccessGrid.Platform import IsWindows,IsLinux,IsOSX
+from AccessGrid.Platform import IsWindows,IsLinux,IsOSX,IsFreeBSD5
 from AccessGrid import DataStore
 from AccessGrid import Platform
 from AccessGrid.GUID import GUID
@@ -97,6 +97,8 @@ class vncSharedAppClient:
         elif IsOSX():
             vncviewer='/Applications/Chicken\ of\ the\ VNC.app/Contents/MacOS/Chicken\ of\ the\ VNC'
             execString='%s --PasswordFile %s %s' % (vncviewer,self.passwdFilename,self.vncContact)
+        elif IsFreeBSD5():
+            execString='chmod +x ./vncviewer; ./vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
         else:
             raise Exception("Unsupported platform")
         print "About the execute: %s"%(execString)
