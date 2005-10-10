@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.101 2005-10-05 17:42:25 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.102 2005-10-10 17:22:44 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.101 2005-10-05 17:42:25 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.102 2005-10-10 17:22:44 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -972,7 +972,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             log.debug("VenueClientFrame.ManageNodeCB: open node management")
 
             try:
-                self.nodeManagementFrame.AttachToNode( self.venueClient.GetNodeServiceUri() )
+                self.nodeManagementFrame.AttachToNode( self.venueClient.GetNodeService() )
             except:
                 log.exception("VenueClientUI.ManageNodeCB: Can not attach to node %s"%self.venueClient.GetNodeServiceUri())
                               
@@ -2159,7 +2159,6 @@ class VenueAddressBar(wxSashLayoutWindow):
                                   choices = venuesList.keys(),
                                   style = wxCB_DROPDOWN,
                                   size = wxSize(-1, 35))
-        
         self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go",
                              wxDefaultPosition, wxSize(40, 21))
         self.goButton.SetToolTip(wxToolTip("Enter venue"))
@@ -3941,7 +3940,7 @@ class UrlDialog(wxDialog):
         
     def __Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
-        #sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
+        sizer1 = wxBoxSizer(wxVERTICAL)
         sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
 
         sizer2 = wxBoxSizer(wxHORIZONTAL)
