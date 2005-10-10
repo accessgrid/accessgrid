@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.232 2005-10-07 22:51:18 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.233 2005-10-10 17:21:20 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.232 2005-10-07 22:51:18 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.233 2005-10-10 17:21:20 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -51,6 +51,7 @@ from AccessGrid.Descriptions import CreateApplicationDescription
 from AccessGrid.Descriptions import CreateStreamDescription
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
+from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid import ServiceDiscovery
 from AccessGrid.Descriptions import VenueState
 from AccessGrid.MulticastWatcher import MulticastWatcher
@@ -103,7 +104,8 @@ class VenueClient:
         self.beacon = None
         self.userConf = UserConfig.instance()
         self.isPersonalNode = pnode
-
+        self.nodeService = None
+              
         if app is not None:
             self.app = app
         else:
@@ -118,15 +120,11 @@ class VenueClient:
             pnode = int(self.preferences.GetPreference(Preferences.STARTUP_MEDIA))
             self.isPersonalNode = pnode
 
+        self.hostname = self.app.GetHostname()
         self.capabilities = []
         self.nodeServiceUri = self.defaultNodeServiceUri
-        self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
-
-        try:
-            self.nodeService.GetCapabilities()
-        except:
-            log.info("__init__: Get node capabilities failed")
-        
+        self.SetNodeUrl(self.nodeServiceUri)
+        #self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
         self.homeVenue = None
         self.houseKeeper = Scheduler()
         self.provider = None
@@ -141,6 +139,12 @@ class VenueClient:
             port = int(self.preferences.GetPreference(Preferences.CLIENT_PORT))
         
         self.__StartWebService(pnode, port)
+
+        #try:
+        #    self.nodeService.GetCapabilities()
+        #except:
+        #    log.info("__init__: Get node capabilities failed")
+
         self.__InitVenueData()
         self.isInVenue = 0
         self.isIdentitySet = 0
@@ -304,21 +308,20 @@ class VenueClient:
                 port = NetworkAddressAllocator().AllocatePort()
                         
         # First, check cmd line option
-        hostname = self.app.GetHostname()
+       
         if self.app.GetOption("secure"):
-            self.server = SecureServer((hostname, int(port)))
+            self.server = SecureServer((self.hostname, int(port)))
         # Second, check preferences
         elif int(self.preferences.GetPreference(Preferences.SECURE_CLIENT_CONNECTION)):
-            self.server = SecureServer((hostname, int(port)))
+            self.server = SecureServer((self.hostname, int(port)))
         else:
-            self.server = InsecureServer((hostname, port))
-
+            self.server = InsecureServer((self.hostname, port))
 
         from AccessGrid.interfaces.VenueClient_interface import VenueClient as VenueClientI
         vci = VenueClientI(impl=self,auth_method_name=None)
         uri = self.server.RegisterObject(vci, path='/VenueClient')
         try:
-            ServiceDiscovery.Publisher(hostname,VenueClient.ServiceType,
+            ServiceDiscovery.Publisher(self.hostname,VenueClient.ServiceType,
                                         uri,port=port)
         except:
             log.exception("Couldn't publish node service advertisement")
@@ -339,23 +342,22 @@ class VenueClient:
             log.debug("__StartWebService: service manager: %s",
                       uri)
             try:
-                ServiceDiscovery.Publisher(hostname,AGServiceManager.ServiceType,
+                ServiceDiscovery.Publisher(self.hostname,AGServiceManager.ServiceType,
                                             uri,port=port)
             except:
                 log.exception("Couldn't publish node service advertisement")
 
             from AccessGrid.AGNodeService import AGNodeService
             from AccessGrid.interfaces.AGNodeService_interface import AGNodeService as AGNodeServiceI
-            self.ns = AGNodeService(self.app)
-            nsi = AGNodeServiceI(impl=self.ns,auth_method_name=None)
+            ns = AGNodeService(self.app)
+            nsi = AGNodeServiceI(impl=ns,auth_method_name=None)
             uri = self.server.RegisterObject(nsi, path="/NodeService")
-            self.ns.SetUri(uri)
             log.debug("__StartWebService: node service: %s",
                       uri)
-            self.SetNodeUrl(self.server.FindURLForObject(self.ns))
+            self.SetNodeUrl(uri)
             
             try:
-                ServiceDiscovery.Publisher(hostname,AGNodeService.ServiceType,
+                ServiceDiscovery.Publisher(self.hostname,AGNodeService.ServiceType,
                                             uri,port=port)
             except:
                 log.exception("Couldn't publish node service advertisement")
@@ -367,7 +369,7 @@ class VenueClient:
                 prefs = self.app.GetPreferences()
                 #defaultConfig = prefs.GetPreference(Preferences.NODE_CONFIG)
                 defaultConfig = prefs.GetDefaultNodeConfig()
-                self.ns.LoadConfiguration(defaultConfig)
+                self.nodeService.LoadConfiguration(defaultConfig)
 
             except:
                 log.exception("Error loading default configuration")
@@ -386,7 +388,7 @@ class VenueClient:
     def __StopWebService(self):
     
         if self.isPersonalNode:
-            self.ns.Stop()
+            self.nodeService.Stop()
             self.sm.Shutdown()
     
         # Stop the ws server
@@ -945,7 +947,8 @@ class VenueClient:
              ## Register the user in the jabber server
             self.jabber.Register()
             self.jabber.Login()
-            
+
+        
         # Create the jabber text client
         currentRoom = self.venueState.name.replace(" ", "-")
         currentRoom = currentRoom.lower()
@@ -956,7 +959,7 @@ class VenueClient:
        
         for i in range(len(domain)):
             conferenceHost = conferenceHost + '.' + domain[i]
-         
+   
         self.jabber.SetChatRoom(currentRoom, conferenceHost)
         self.jabber.SendPresence('available')
                                         
@@ -988,19 +991,6 @@ class VenueClient:
             log.info("EnterVenue: Error getting node capabilities")
             errorInNode = 1
             
-            try:
-                self.capabilities = self.nodeService.GetCapabilities()
-
-                if not self.capabilities:
-                    self.capabilities = []
-                
-                self.capabilities = self.capabilities + self.beaconCapabilities
-            except:
-                # This is a non fatal error, users should be notified
-                # but still enter the venue
-                log.info("EnterVenue: Error getting node capabilities")
-                errorInNode = 1
-
         try:
             # Enter the venue
             self.__EnterVenue(URL)
@@ -1129,7 +1119,7 @@ class VenueClient:
         try:
             log.info("ExitVenue: Stopping node services")
             self.nodeService.StopServices()
-            self.nodeService.SetStreams([])
+            #self.nodeService.SetStreams([])
         except Exception:
             log.info("ExitVenue: Error stopping node services")
             
@@ -1148,12 +1138,12 @@ class VenueClient:
         log.debug("UpdateNodeService: Method UpdateNodeService called")
         exc = None
 
-        try:
-            self.nodeService.IsValid()
-        except:
-            log.info("UpdateNodeService: Node Service unreachable; skipping")
-            log.info("UpdateNodeService: url = %s", self.nodeServiceUri)
-            return
+        #try:
+        #    self.nodeService.IsValid()
+        #except:
+        #    log.info("UpdateNodeService: Node Service unreachable; skipping")
+        #    log.info("UpdateNodeService: url = %s", self.nodeServiceUri)
+        #    return
 
         # Set the identity of the user running the node
         if not self.isIdentitySet:
@@ -1500,13 +1490,26 @@ class VenueClient:
         
         *url* The string including the new node url address
         """
+        # Check if this is local host, then avoid using the
+        # soap interface
+        
         log.debug("SetNodeUrl: Set node service url:  %s" %url)
         self.nodeServiceUri = url
-        self.nodeService = AGNodeServiceIW(url)
-
+        
+        if url.find(self.hostname):
+            if not self.nodeService:
+                self.nodeService = AGNodeService(self.app)
+                self.nodeService.SetUri(url)   
+        else:
+            self.nodeService = AGNodeServiceIW(url)
+            
+             
         # assume that when the node service uri changes, the node service
         # needs identity info
         self.isIdentitySet = 0
+
+    def GetNodeService(self):
+        return self.nodeService
         
     def GetNodeServiceUri(self):
         return self.nodeServiceUri
