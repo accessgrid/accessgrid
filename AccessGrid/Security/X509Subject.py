@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: X509Subject.py,v 1.8 2004-10-14 22:00:07 turam Exp $
+# RCS-ID:      $Id: X509Subject.py,v 1.9 2005-10-10 22:19:27 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,8 +14,10 @@ Subjects are the basic security handle on entities that want to be a
 part of the security environment.
 """
 
-__revision__ = "$Id: X509Subject.py,v 1.8 2004-10-14 22:00:07 turam Exp $"
+__revision__ = "$Id: X509Subject.py,v 1.9 2005-10-10 22:19:27 lefvert Exp $"
 
+# external imports
+from OpenSSL_AG.crypto import X509NameType
 
 # imports from the AGTk
 from AccessGrid.Security.Subject import Subject, InvalidSubject
@@ -46,6 +48,19 @@ class X509Subject(Subject):
         @type auth_data: string
         """
         Subject.__init__(self, name, self.AUTH_TYPE, auth_data)
+        self.name = name
+        self.auth_type = self.AUTH_TYPE
+        self.auth_data = auth_data
+
+    def CreateSubject(subject):
+        newSubj = X509Subject(subject.name, subject.auth_data)
+        newSubj.id = subject.id
+        newSubj.auth_type = subject.auth_type
+        
+        return newSubj
+
+     # Makes it possible to access the method without an instance.
+    CreateSubject = staticmethod(CreateSubject)
 
     def GetCN(self):
         """

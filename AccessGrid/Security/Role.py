@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.19 2004-08-26 17:21:08 eolson Exp $
+# RCS-ID:      $Id: Role.py,v 1.20 2005-10-10 22:19:27 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ much more dynamic. We programmatically create, destroy and modify
 roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.19 2004-08-26 17:21:08 eolson Exp $"
+__revision__ = "$Id: Role.py,v 1.20 2005-10-10 22:19:27 lefvert Exp $"
 
 # external imports
 import xml.dom.minidom
@@ -27,6 +27,7 @@ import xml.dom.minidom
 from AccessGrid.Security.Subject import Subject, InvalidSubject
 from AccessGrid import Toolkit
 from AccessGrid.Security.Subject import SubjectAlreadyPresent
+import string
 
 class RoleNotFound(Exception):
     """
@@ -108,6 +109,24 @@ class Role:
         @return: string
         """
         return self._repr_()
+
+    def CreateRole(role):
+        n = role.name
+        subjects = []
+
+        for s in role.subjects:
+            subjects.append(X509Subject.X509Subject.CreateSubject(s))
+        requireDefaultId = int(role.requireDefaultId)
+
+        if len(subjects)<1:
+            subjects = None
+        
+        newRole = Role(n, subjects)
+        newRole.requireDefaultId = requireDefaultId
+        return newRole
+
+    # Makes it possible to access the method without an instance.
+    CreateRole = staticmethod(CreateRole)
     
     def ToXML(self, doc, ref=0):
         """
@@ -244,16 +263,15 @@ class Role:
 
         @return: 0 if not in this Role, 1 if in this Role.
         """
-        if not isinstance(subject, Subject):
-            raise InvalidSubject
-
-        if subject in self.subjects:
+        if self.name == "Everybody":
             return 1
-        elif self.name == "Everybody":
-            return 1
-        else:
-            return 0
 
+        for s in self.subjects:
+            if subject == s.name:
+                return 1
+            
+        return 0
+            
 # Some default roles
 Everybody = Role("Everybody")
 Administrators = Role("Administrators")

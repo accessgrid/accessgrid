@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: Action.py,v 1.11 2005-10-07 22:32:54 eolson Exp $
+# RCS-ID:      $Id: Action.py,v 1.12 2005-10-10 22:19:27 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,10 +20,10 @@ method invocation on services. There's no real limitation to what
 actions can be or what they can be used for however.
 """
 
-__revision__ = "$Id: Action.py,v 1.11 2005-10-07 22:32:54 eolson Exp $"
+__revision__ = "$Id: Action.py,v 1.12 2005-10-10 22:19:27 lefvert Exp $"
 
 import xml.dom.minidom
-from AccessGrid.Security.Role import RoleNotFound
+from AccessGrid.Security.Role import RoleNotFound, Role
 
 class ActionNotFound(Exception):
     """
@@ -76,6 +76,19 @@ class Action:
         The __str__ method provides a way to print this object as a string.
         """
         return self._repr_()
+
+    def CreateAction(action):
+        roles = []
+        for r in action.roles:
+            r = Role.CreateRole(r)
+            roles.append(Role.CreateRole(r))
+
+        a = Action(action.name, roles)
+
+        return a
+
+    # Makes it possible to access the method without an instance.
+    CreateAction = staticmethod(CreateAction)
     
     def ToXML(self, doc, ref=0):
         """
@@ -181,7 +194,7 @@ class Action:
 
         return role
     
-    def HasRole(self, role):
+    def HasRole(self, roleName):
 
         """
         This method checks to see if the specified role is found in the
@@ -195,11 +208,8 @@ class Action:
         for r in self.roles:
             # Find name instead. Otherwise, when restarting the
             # client, no roles are found for an action.
-            #
-            # if role in self.roles:
-            #    return 1
-
-            if r.name == role:
+       
+            if r.name == roleName:
                 return 1
 
         return 0
