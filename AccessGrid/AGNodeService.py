@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.91 2005-07-05 21:28:34 lefvert Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.92 2005-10-10 17:29:01 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.91 2005-07-05 21:28:34 lefvert Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.92 2005-10-10 17:29:01 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -184,7 +184,7 @@ class AGNodeService:
             serviceMediaTypes = map( lambda cap: cap.type,
                                      service.capabilities )
             if mediaType in serviceMediaTypes:
-                self.SetServiceEnabled( service.uri, enableFlag) 
+                self.SetServiceEnabled( service.uri, enableFlag)
 
     def StopServices(self):
         """
@@ -202,6 +202,9 @@ class AGNodeService:
         
         if len(exceptionText):
             raise Exception(exceptionText)
+
+        # Remove the streams
+        self.SetStreams([])
 
     ####################
     ## CONFIGURATION methods
@@ -362,14 +365,14 @@ class AGNodeService:
             #
             # Skip unreachable service managers
             
-            try:
-                serviceManagerProxy.IsValid()
-            except:
-                self.serviceManagers[serviceManager.uri] = None
-                log.info("AddServiceManager: Invalid service manager url (%s)"
-                         % serviceManager.uri)
-                exceptionText += "Couldn't reach service manager: %s" % serviceManager.name
-                continue
+            #try:
+            #    serviceManagerProxy.IsValid()
+            #except:
+            #    self.serviceManagers[serviceManager.uri] = None
+            #    log.info("AddServiceManager: Invalid service manager url (%s)"
+            #             % serviceManager.uri)
+            #    exceptionText += "Couldn't reach service manager: %s" % serviceManager.name
+            #    continue
 
             # Add service manager to list
             self.serviceManagers[serviceManager.uri] = serviceManager
@@ -392,23 +395,29 @@ class AGNodeService:
             #
             for service in serviceList:
                 try:
-                
-                    # Actually add the service to the servicemgr
-                    serviceDesc = AGServiceManagerIW( serviceManager.uri ).AddServiceByName(service.packageName)
+
+                    prefs = self.app.GetPreferences()
                     
-                    serviceProxy = AGServiceIW(serviceDesc.uri)
+                    # Actually add the service to the servicemgr
+                    # and set resources, parameters, and identity
+                    serviceDesc = AGServiceManagerIW( serviceManager.uri ).AddServiceByName(service.packageName,
+                                                                                            service.resource,
+                                                                                            service.parameters,
+                                                                                            prefs.GetProfile())
+                    
+                    #serviceProxy = AGServiceIW(serviceDesc.uri)
                     
                     # Set the resource
-                    if service.resource:
-                        serviceProxy.SetResource(service.resource)
+                    #if service.resource:
+                    #    serviceProxy.SetResource(service.resource)
                     
                     # Set the configuration
-                    if service.parameters:
-                        serviceProxy.SetConfiguration(service.parameters)
+                    #if service.parameters:
+                    #    serviceProxy.SetConfiguration(service.parameters)
                     
                     # Set the identity to be used by the service
-                    prefs = self.app.GetPreferences()
-                    serviceProxy.SetIdentity(prefs.GetProfile() )
+                    #prefs = self.app.GetPreferences()
+                    #serviceProxy.SetIdentity(prefs.GetProfile() )
                                             
                 except:
                     log.exception("Exception adding service %s" % (service.packageName))
@@ -547,16 +556,21 @@ class AGNodeService:
                     # 
                     # Create Resource section
                     #
-                    if service.resource:
+                  
+                    if service.resource and service.resource!='0':
                         resourceSection = 'resource%d' % numServices
                         configParser.add_section( resourceSection )
-                        configParser.set( resourceSection, "resource", service.resource.name )
-                        configParser.set( serviceSection, "resource", resourceSection )
+                        configParser.set( resourceSection, "resource",
+                                          service.resource.name )
+                        configParser.set( serviceSection, "resource",
+                                          resourceSection )
 
                     # 
                     # Create Service Config section
                     #
+
                     serviceConfig = AGServiceIW( service.uri ).GetConfiguration()
+                                                            
                     if serviceConfig:
                         serviceConfigSection = 'serviceconfig%d' % numServices
                         configParser.set( serviceSection, "serviceConfig", serviceConfigSection )
@@ -620,8 +634,8 @@ class AGNodeService:
         try:
             services = self.GetServices()
             for service in services:
-                capabilitySubset = AGServiceIW( service.uri ).GetCapabilities()
-                print "got capabilities", service.name, capabilitySubset
+                #capabilitySubset = AGServiceIW( service.uri ).GetCapabilities()
+                capabilitySubset = service.capabilities
                 capabilities = capabilities + capabilitySubset
 
         except:
