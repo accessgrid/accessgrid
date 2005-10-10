@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.4 2005-07-28 21:51:30 lefvert Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.5 2005-10-10 15:35:26 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -57,10 +57,12 @@ class AudioService( AGService ):
         self.inputGain = RangeParameter( "Input Gain", 50, 0, 100 )
         self.outputGain = RangeParameter( "Output Gain", 50, 0, 100 )
         self.silenceSuppression = OptionSetParameter( "Silence Suppression", "Off", ["Off","Automatic","Manual"] )
+        self.forceOSSAC97 = OptionSetParameter( "force_ac97", "False", ["True", "False"] )
 
         self.configuration.append(self.talk)
         self.configuration.append(self.inputGain)
         self.configuration.append(self.outputGain)
+        self.configuration.append(self.forceOSSAC97)
         self.configuration.append(self.silenceSuppression)
 
     def __SetRTPDefaults(self, profile):
@@ -176,6 +178,10 @@ class AudioService( AGService ):
         try:
             # Initialize environment for rat
             self.WriteRatDefaults()
+
+            if self.forceOSSAC97.value == "True":
+  	        self.log.info("Setting OSS_IS_AC97 = 1")
+  	        os.environ['OSS_IS_AC97'] = "1"
 
             # Enable firewall
             self.sysConf.AppFirewallConfig(self.executable, 1)
