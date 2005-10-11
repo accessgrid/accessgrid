@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.103 2005-10-10 17:51:47 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.104 2005-10-11 17:02:29 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.103 2005-10-10 17:51:47 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.104 2005-10-11 17:02:29 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -27,6 +27,7 @@ import traceback
 import re
 import sys
 from twisted.internet import reactor
+import calendar
 
 from time import localtime , strftime
 from AccessGrid import Log
@@ -52,7 +53,7 @@ from AccessGrid.VenueClient import DisconnectError
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
 from AccessGrid.Beacon.rtpBeaconUI import BeaconFrame
-            
+from AccessGrid.RssReader import RssReader,strtimeToSecs         
 
 try:
     import win32api
@@ -141,6 +142,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_MYVENUE_EDIT = wxNewId()
     ID_MYVENUE_GOTODEFAULT = wxNewId()
     ID_MYVENUE_SETDEFAULT = wxNewId()
+    ID_ADD_SCHEDULE = wxNewId()
+    ID_TIMED_UPDATE = wxNewId()
     ID_HELP = wxNewId()
     ID_HELP_ABOUT = wxNewId()
     ID_HELP_MANUAL = wxNewId()
@@ -217,6 +220,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # Make sure data can be dragged from tree to the desktop.
         #self.SetDropTarget(DesktopDropTarget(self))
 
+        # Build RSS reader
+        self.updateDuration = 3600
+        rssUrlList = ['http://www.mcs.anl.gov/~turam/rss2.cgi']
+        self.reader = RssReader(rssUrlList,self.updateDuration,[self])
+        self.reader.SetUpdateDuration(1800)
+        
+        self.myVenuesPos = 0
        
         
     ############################################################################
@@ -361,22 +371,28 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.preferences.Append(self.ID_PREFERENCES, "&Preferences...")
         self.menubar.Append(self.preferences, "&Tools")
         
-        self.myVenues = wxMenu()
-        self.myVenues.Append(self.ID_MYVENUE_GOTODEFAULT, "Go to Home Venue",
+        self.navigation = wxMenu()
+        self.navigation.Append(self.ID_MYVENUE_GOTODEFAULT, "Go to Home Venue",
                              "Go to default venue")
-        self.myVenues.Append(self.ID_MYVENUE_SETDEFAULT, "Set as Home Venue",
+        self.navigation.Append(self.ID_MYVENUE_SETDEFAULT, "Set as Home Venue",
                              "Set current venue as default")
-        self.myVenues.AppendSeparator()
         
-        self.myVenues.Append(self.ID_MYVENUE_ADD, "Add Venue...",
+        self.navigation.AppendSeparator()
+        self.navigation.Append(self.ID_MYVENUE_ADD, "Add Venue...",
                              "Add this venue to your list of venues")
-        self.myVenues.Append(self.ID_MYVENUE_EDIT, "Manage My &Venues...",
+        self.navigation.Append(self.ID_MYVENUE_EDIT, "Manage My &Venues...",
                              "Edit your venues")
-        self.myVenues.AppendSeparator()
+        self.navigation.AppendSeparator()
+        self.myVenuesPos = self.navigation.GetMenuItemCount()-1
         
-        self.menubar.Append(self.myVenues, "My Ven&ues")
+        self.navigation.Append(self.ID_ADD_SCHEDULE, "Add Schedule...",
+                             "Subscribe to a published meeting schedule")
+        item=self.navigation.AppendCheckItem(self.ID_TIMED_UPDATE, "Timed Update",
+                             "Update subscribed schedules periodically")
+        self.navigation.Check(item.GetId(),1) # timed update on by default
 
-              
+        self.menubar.Append(self.navigation, "Navigation")
+        
         self.help = wxMenu()
         self.help.Append(self.ID_HELP_MANUAL, "Venue Client &Manual",
                          "Venue Client Manual")
@@ -451,11 +467,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         EVT_MENU(self, self.ID_MYNODE_MANAGE, self.ManageNodeCB)
         EVT_MENU(self, self.ID_PREFERENCES, self.PreferencesCB)
         
-        # My Venues Menu
+        # Navigation Menu
         EVT_MENU(self, self.ID_MYVENUE_GOTODEFAULT, self.GoToDefaultVenueCB)
         EVT_MENU(self, self.ID_MYVENUE_SETDEFAULT, self.SetAsDefaultVenueCB)
         EVT_MENU(self, self.ID_MYVENUE_ADD, self.AddToMyVenuesCB)
         EVT_MENU(self, self.ID_MYVENUE_EDIT, self.EditMyVenuesCB)
+        EVT_MENU(self, self.ID_ADD_SCHEDULE, self.AddScheduleCB)
+        EVT_MENU(self, self.ID_TIMED_UPDATE, self.TimedUpdateCB)
         
         # Help Menu
         EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialogCB)
@@ -496,7 +514,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     
         # Delete existing menu items
         for ID in self.myVenuesMenuIds.values():
-            self.myVenues.Delete(ID)
+            self.navigation.Delete(ID)
         
         self.myVenuesMenuIds = {}
         self.myVenuesDict = self.controller.GetMyVenues()
@@ -507,7 +525,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.myVenuesMenuIds[name] = ID
             url = self.myVenuesDict[name]
             text = "Go to: " + url
-            self.myVenues.Append(ID, name, text)
+            self.navigation.Append(ID, name, text)
             EVT_MENU(self, ID, self.GoToMenuAddressCB)
                         
 
@@ -1032,7 +1050,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         preferencesDialog.Destroy()
 
     # 
-    # MyVenues Menu
+    # Navigation Menu
     #
     
     
@@ -1116,6 +1134,126 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.SetVenueUrl(venueUrl)
         self.EnterVenueCB(venueUrl)
 
+    # 
+    # Support for scheduler integration
+    #
+    def AddScheduleCB(self,event):
+        rssUrl = wxGetTextFromUser('Specify RSS URL of schedule to add',
+                                   'Add Schedule',
+                                   'http://www.mcs.anl.gov/~turam/rss2.cgi',
+                                   parent=self)
+        
+        if rssUrl:
+            self.reader.AddFeed(rssUrl)
+        
+    def TimedUpdateCB(self,event):
+        if event.IsChecked():
+            self.reader.SetUpdateDuration(self.updateDuration)
+        else:
+            self.reader.SetUpdateDuration(0)
+    
+    def UpdateRss(self,url,doc,docDate):
+        menutitle,menu = self._CreateMenu(doc)
+        menuid = wxNewId()
+        self.navigation.AppendMenu(menuid,menutitle,menu)
+        
+        menu.AppendSeparator()
+        
+        # Append remove item
+        removeitemid = wxNewId()
+        menu.Append(removeitemid,'Remove Schedule')
+        EVT_MENU(self,removeitemid,lambda evt,menuid=menuid,url=url: self.RemoveScheduleCB(evt,menuid,url))
+
+    def _CreateMenu(self,d):
+        """
+        This method has to get dirty with the rss doc, 
+        ripping bits out and reformatting where necessary
+        """
+        
+        months = { 1:'January',2:'February',3:'March',4:'April',
+                   5:'May',6:'June',7:'July',8:'August',9:'September',
+                   10:'October',11:'November',12:'December' }
+                   
+        menu = wxMenu('')
+
+        menutitle = d['feed']['title']
+        
+        lastdate = [0,0,0]
+        for e in d.entries:
+
+            # get all the data for the item as a Python dictionary
+            title = e.title
+            itemTime = e['modified']
+            timestart = itemTime.split(' ')[3]
+
+            # - compute local time string
+            localtime = strtimeToSecs(itemTime)
+            ltime = time.localtime(localtime)
+            
+            # - add entry for date, if needed
+            if lastdate != ltime[0:3]:
+                menu.Append(wxNewId(),'%02s %s %d'% 
+                                       (#calendar.weekday(ltime[0],ltime[1],ltime[2]-1),
+                                       ltime[2],
+                                       months[ltime[1]],
+                                       ltime[0]))
+                lastdate = ltime[0:3]
+            
+            # - compute event start time
+            hour = ltime[3]
+            min = ltime[4]
+            ampm="am"
+            if hour > 12:
+                hour -= 12
+                ampm = 'pm'
+            if hour < 10:
+                hour = ' ' + str(hour)
+            timestart = '%s:%02d%s' % (hour,min,ampm)
+
+            # build title
+            title = '%s: %s' % (timestart,title)
+            itemid = wxNewId()
+
+            # add submenu for event
+            submenu = wxMenu('')
+
+            # - view event details
+            vieweventid = wxNewId()
+            submenu.Append(vieweventid,'View event details')
+
+            # - go to venue
+            if e.has_key('enclosures'):
+                venueurl = e.enclosures[0]['url']
+                gotovenueid = wxNewId()
+                submenu.Append(gotovenueid,'Go to venue')
+                EVT_MENU(self,gotovenueid,lambda evt,url=venueurl: self.GoToVenueCB(evt,url))
+
+            menu.AppendMenu(itemid,title,submenu)
+
+            viewdetailurl = e.link
+            if e.has_key('enclosures'):
+                venueurl = e.enclosures[0]['url']
+            EVT_MENU(self,vieweventid,lambda evt,url=viewdetailurl: self.ViewEventCB(evt,url))
+        return menutitle,menu
+
+    def GoToVenueCB(self,event,url):
+        if url:
+            self.SetVenueUrl(url)
+            self.EnterVenueCB(url)
+            
+    
+    def ViewEventCB(self,event,url):
+        if url:
+            browser = webbrowser.get()
+            needNewWindow = 1
+            browser.open(url, needNewWindow)
+            
+    def RemoveScheduleCB(self,event,menuid,url):
+        self.navigation.Remove(menuid)
+        self.reader.RemoveFeed(url)
+
+
+
     #
     # Help Menu
     #
@@ -1174,6 +1312,35 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def EnterVenueCB(self, venueUrl):
         try:
             wxBeginBusyCursor()
+            
+            # manipulate the venue url some
+            defaultproto = 'https'
+            defaultport = 8000
+
+            # - define a mess of regular expressions for matching venue urls
+            hostre = re.compile('^[\w.-]*$')
+            hostportre = re.compile('^[\w.-]*:[\d]*$')
+            protohostre = re.compile('^[\w]*://[\w.-]*$')
+            protohostportre = re.compile('^[\w]*://[\w.-]*:[\d]*$')
+
+            # - check for host only
+            if hostre.match(venueUrl):
+                host = venueUrl
+                venueUrl = '%s://%s:%d/Venues/default' % (defaultproto,host,defaultport)
+            # - check for host:port
+            elif hostportre.match(venueUrl):
+                hostport = venueUrl
+                venueUrl = '%s://%s/Venues/default' % (defaultproto,hostport)
+            elif protohostre.match(venueUrl):
+                protohost = venueUrl
+                venueUrl = '%s:%d/Venues/default' % (protohost,defaultport)
+            elif protohostportre.match(venueUrl):
+                protohostport = venueUrl
+                venueUrl = '%s/Venues/default' % (protohostport)
+
+            # - update the venue url
+            self.venueAddressBar.SetAddress(venueUrl)
+            
             self.SetStatusText("Trying to enter venue at %s" % (venueUrl,))
 
             self.controller.EnterVenueCB(venueUrl)
@@ -1577,7 +1744,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def AddToMyVenues(self,name,url):
         ID = wxNewId()
         text = "Go to: " + url
-        self.myVenues.Append(ID, name, text)
+        self.navigation.Insert(self.myVenuesPos,ID, name, text)
         self.myVenuesMenuIds[name] = ID
         self.myVenuesDict[name] = url
         EVT_MENU(self, ID, self.GoToMenuAddressCB)
@@ -1585,7 +1752,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def RemoveFromMyVenues(self,venueName):
         # Remove the venue from my venues menu list
         menuId = self.myVenuesMenuIds[venueName]
-        self.myVenues.Remove(menuId)
+        self.navigation.Remove(menuId)
     
         # Remove it from the dictionary
         del self.myVenuesMenuIds[venueName]
@@ -1981,6 +2148,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 log.debug("warningString: %s" %warningString)
                 text = "Can not connect to venue located at %s. \n%s Please, try again." % (URL,warningString)
                 wxCallAfter(self.Notify, text, "Can not enter venue")
+                wxCallAfter(self.statusbar.SetStatusText, "" )
             return
 
         # initialize flag in case of failure
@@ -2259,13 +2427,7 @@ class VenueListPanel(wxSashLayoutWindow):
         wxSashLayoutWindow.__init__(self, parent, id)
         self.parent = parent
         self.exitsText = wxButton(self, -1, "Exits") 
-        self.imageList = wxImageList(32,32)
         self.list = NavigationPanel(self, app)
-        self.minimizeButton = wxButton(self, self.ID_MINIMIZE, "<<", size = wxSize(40,-1),
-                                       style = wxBU_EXACTFIT )
-        self.maximizeButton = wxButton(self, self.ID_MAXIMIZE, ">>", size = wxSize(40,-1),
-                                       style = wxBU_EXACTFIT )
-        
                 
         self.__Layout()
         self.__AddEvents()
@@ -2273,9 +2435,6 @@ class VenueListPanel(wxSashLayoutWindow):
 
     def __SetProperties(self):
         font = wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana")
-        self.minimizeButton.SetToolTipString("Hide Exits")
-        self.maximizeButton.SetToolTipString("Show Exits")
-        self.maximizeButton.Hide()
                 
     def __AddEvents(self):
         EVT_BUTTON(self, self.ID_MINIMIZE, self.OnClick) 
@@ -2291,7 +2450,6 @@ class VenueListPanel(wxSashLayoutWindow):
     def __Layout(self):
         panelSizer = wxBoxSizer(wxHORIZONTAL)
         panelSizer.Add(self.exitsText, 1, wxEXPAND)
-        panelSizer.Add(self.minimizeButton, 0, wxEXPAND)
 
         venueListPanelSizer = wxBoxSizer(wxVERTICAL)
         venueListPanelSizer.Add(panelSizer, 0, wxEXPAND)
@@ -2304,18 +2462,11 @@ class VenueListPanel(wxSashLayoutWindow):
     def Hide(self):
         currentHeight = self.GetSize().GetHeight()
         self.exitsText.Hide()
-        self.minimizeButton.Hide()  
-        self.maximizeButton.Show()
-        #self.list.HideDoors()
-        s = wxSize(self.maximizeButton.GetSize().GetWidth()+4, 1000)
         self.parent.UpdateLayout(self, s)
        
     def Show(self):
         currentHeight = self.GetSize().GetHeight()
         self.exitsText.Show()
-        self.maximizeButton.Hide()
-        self.minimizeButton.Show()  
-        #self.list.ShowDoors()
         s = wxSize(180, 1000)
         self.parent.UpdateLayout(self, s)
   
