@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.26 2005-09-23 22:15:49 eolson Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.27 2005-10-11 16:32:14 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.26 2005-09-23 22:15:49 eolson Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.27 2005-10-11 16:32:14 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -28,13 +28,10 @@ from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
 from AccessGrid.Toolkit import Application, Service
-from AccessGrid.Security.AuthorizationManager import AuthorizationManager
-from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
-from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
-from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
+from AccessGrid.Security.AuthorizationManager import AuthorizationManager, AuthorizationManagerI
 from AccessGrid.Security import X509Subject, Role
 from AccessGrid.interfaces.SharedApplication_interface import SharedApplication as SharedApplicationI
-
+import re
 log = Log.GetLogger(Log.SharedApplication)
 
 class InvalidPrivateToken(Exception):
@@ -44,7 +41,7 @@ class InvalidPrivateToken(Exception):
     """
     pass
 
-class SharedApplication(AuthorizationMixIn):
+class SharedApplication:
     """
     SharedApplication is the implementation class for an application
     """
@@ -75,20 +72,21 @@ class SharedApplication(AuthorizationMixIn):
         the app object is reawakened, it will recreate event channels
         for each of the channels that were registered.
         """
-        AuthorizationMixIn.__init__(self)
+        self.authManager = AuthorizationManager()
+        
         # Add required roles and set parent auth Mgr
-        self.AddRequiredRole(Role.Role("AllowedConnect"))
+        self.authManager.AddRequiredRole(Role.Role("AllowedConnect"))
         # Do not keep track of connected users at this time.
         # self.AddRequiredRole(Role.Role("AppUsers"))
-        self.AddRequiredRole(Role.Role("Administrators"))
-        self.AddRequiredRole(Role.Everybody)
-        
-        self.authManager.AddRoles(self.GetRequiredRoles())
+        self.authManager.AddRequiredRole(Role.Role("Administrators"))
+        self.authManager.AddRequiredRole(Role.Everybody)
 
+        self.authManager.AddRoles(self.authManager.GetRequiredRoles())
+        
         admins = self.authManager.FindRole("Administrators")
         self.servicePtr = Service.instance()
-        #admins.AddSubject(self.servicePtr.GetDefaultSubject())
-                                                                                
+        admins.AddSubject(self.servicePtr.GetDefaultSubject())
+                                                                                      
         # Default to admins
         self.authManager.SetDefaultRoles([admins])
         
@@ -107,9 +105,10 @@ class SharedApplication(AuthorizationMixIn):
             
         self.venueURL = ""
 
-        #ai = SharedApplicationI(self)
-        #self.authManager.AddActions(ai._GetMethodActions())
-
+        ai = SharedApplicationI(self)
+        self.authManagerI = AuthorizationManagerI(self.authManager)
+        self.authManager.AddActions(ai._GetMethodActions() + self.authManagerI._GetMethodActions())
+        
         # Add roles to actions.
        
         # Default to giving administrators access to all app actions.
@@ -147,6 +146,15 @@ class SharedApplication(AuthorizationMixIn):
         # Now to save data (state)
         for key, value in self.app_data.items():
             string += "%s : %s\n" % (key, value)
+
+        # Save application authorization policy
+        policy = self.authManager.ExportPolicy()
+        # Don't store these control characters, but lets make sure we
+        # bring them back
+        policy = re.sub("\r\n", "<CRLF>", policy)
+        policy = re.sub("\r", "<CR>", policy)
+        policy = re.sub("\n", "<LF>", policy)
+        string += 'authorizationPolicy : %s\n' % policy
 
         return string
     
@@ -337,8 +345,8 @@ class SharedApplication(AuthorizationMixIn):
         for channelId in self.channels:
             evt = Event(Event.APP_SET_DATA, channelId, data)
             #self.eventService.Distribute(channelId, evt)
-            self.eventClient.Send(Event.APP_SET_DATA, data)     
-
+            self.eventClient.Send(Event.APP_SET_DATA, data)
+            
     def GetData(self, private_token, key):
         key = key.lower() # Our .dat files use all lowercase keys
 
@@ -355,6 +363,15 @@ class SharedApplication(AuthorizationMixIn):
             return decodedData
         else:
             return ""
+
+    def RemoveData(self, private_token, key):
+        if not self.components.has_key(private_token):
+            raise InvalidPrivateToken
+        
+        if self.app_data.has_key(key):
+            del self.app_data[key]
+        else:
+            log.info("SharedApplication.RemoveData: Can not remove key=%s, data does not exist."%key)
 
     def GetDataKeys(self, private_token):
         '''

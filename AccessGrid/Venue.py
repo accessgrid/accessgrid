@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.251 2005-10-06 16:41:08 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.252 2005-10-11 16:34:19 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.251 2005-10-06 16:41:08 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.252 2005-10-11 16:34:19 lefvert Exp $"
 
 import sys
 import time
@@ -27,9 +27,6 @@ from AccessGrid.Toolkit import Service
 
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerI
-from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
-from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
-from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 from AccessGrid.Security import X509Subject, Role, Subject
 from AccessGrid.Security.Subject import SubjectAlreadyPresent
 
@@ -264,7 +261,7 @@ class VenueClientState:
     def SetStatus(self, status):
         self.status = status
         
-class Venue(AuthorizationMixIn):
+class Venue:
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
@@ -293,7 +290,8 @@ class Venue(AuthorizationMixIn):
         """
         Venue constructor.
         """
-              
+        self.authManager = AuthorizationManager()
+        
         # pointer to outside world
         self.servicePtr = Service.instance()
         
@@ -303,13 +301,12 @@ class Venue(AuthorizationMixIn):
             self.uniqueId = str(GUID())
 
         # Initialize Authorization Stuff
-        AuthorizationMixIn.__init__(self)
-        self.AddRequiredRole(Role.Role("AllowedEntry"))
-        self.AddRequiredRole(Role.Role("VenueUsers"))
-        self.AddRequiredRole(Role.Administrators)
-        self.AddRequiredRole(Role.Everybody)
+        self.authManager.AddRequiredRole(Role.Role("AllowedEntry"))
+        self.authManager.AddRequiredRole(Role.Role("VenueUsers"))
+        self.authManager.AddRequiredRole(Role.Administrators)
+        self.authManager.AddRequiredRole(Role.Everybody)
 
-        rl = self.GetRequiredRoles()
+        rl = self.authManager.GetRequiredRoles()
         self.authManager.AddRoles(rl)
 
         # Default actions for Entry Roles.
@@ -725,7 +722,7 @@ class Venue(AuthorizationMixIn):
 
         if not self.clients.has_key(privateId):
             raise InvalidVenueState
-                
+               
         streamDescriptions = []
 
         #
@@ -738,7 +735,7 @@ class Venue(AuthorizationMixIn):
         for clientCapability in capabilities:
             if clientCapability.role == Capability.PRODUCER:
                 matchesExistingStream = 0
-                
+                     
                 # add user as producer of all existing streams that match
                 for stream in self.streamList.GetStreams():
                     if stream.capability.matches( clientCapability ):
@@ -844,7 +841,6 @@ class Venue(AuthorizationMixIn):
                         streamDescriptions.append(s)
                         # Also add a new producer of the stream.
                         self.streamList.AddStreamProducer( producer, s)
-                  
         return streamDescriptions
 
     def FindConnection(self, cid):

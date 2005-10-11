@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.194 2005-10-10 18:57:48 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.195 2005-10-11 16:34:35 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.194 2005-10-10 18:57:48 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.195 2005-10-11 16:34:35 lefvert Exp $"
 
 
 # Standard stuff
@@ -32,9 +32,6 @@ from AccessGrid.interfaces.VenueServer_interface import VenueServer as VenueServ
 from AccessGrid.interfaces.Venue_interface import Venue as VenueI
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerI
-from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
-from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
-from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 from AccessGrid.Security import X509Subject, Role
 from AccessGrid.Security .Action import ActionAlreadyPresent
 from AccessGrid.Security.Subject import InvalidSubject
@@ -102,7 +99,7 @@ class InvalidVenueDescription(Exception):
     """
     pass
 
-class VenueServer(AuthorizationMixIn):
+class VenueServer:
     """
     The Virtual Venue Server object is responsible for creating,
     destroying, and configuring Virtual Venue objects.
@@ -178,10 +175,10 @@ class VenueServer(AuthorizationMixIn):
 	self.report = None
 
         # Initialize Auth stuff
-        AuthorizationMixIn.__init__(self)
-        self.AddRequiredRole(Role.Administrators)
-        self.AddRequiredRole(Role.Everybody)
-
+        self.authManager = AuthorizationManager()
+        self.authManager.AddRequiredRole(Role.Administrators)
+        self.authManager.AddRequiredRole(Role.Everybody)
+        
         # In the venueserver we default to admins
         self.authManager.SetDefaultRoles([Role.Administrators])
 
@@ -335,6 +332,7 @@ class VenueServer(AuthorizationMixIn):
 
         # Create the Web Service interface
         vsi = VenueServerI(impl=self, auth_method_name="authorize")
+        asi = AuthorizationManagerI(self.authManager)
 
         if self.authorizationPolicy is None:
            log.info("Creating new authorization policy, non in config.")
@@ -345,9 +343,10 @@ class VenueServer(AuthorizationMixIn):
            if hosting.GetHostingImpl() == "SOAPpy":
                # Default to giving administrators access to all actions.
                # This is implicitly adding the action too
-               for action in vsi._GetMethodActions():
-                  self.authManager.AddRoleToAction(action.GetName(),
-                                               Role.Administrators.GetName())
+               actions = vsi._GetMethodActions() + asi._GetMethodActions()
+               for action in actions:
+                   self.authManager.AddRoleToAction(action.GetName(),
+                                                    Role.Administrators.GetName())
             
            # Get authorization policy.
            pol = self.authManager.ExportPolicy()
