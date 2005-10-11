@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.104 2005-10-11 17:02:29 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.105 2005-10-11 20:21:56 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.104 2005-10-11 17:02:29 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.105 2005-10-11 20:21:56 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1007,7 +1007,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                     self.venueClient.SetNodeUrl(setNodeUrlDialog.GetValue())
 
                     try:
-                        self.nodeManagementFrame.AttachToNode( self.venueClient.GetNodeServiceUri() )
+                        self.nodeManagementFrame.AttachToNode( self.venueClient.GetNodeService() )
 
                     except:
                         log.exception("VenueClientUI.ManageNodeCB: Can not attach to node")
@@ -2571,9 +2571,10 @@ class NavigationPanel(wxPanel):
         treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
 
         # Check to see if the click hit the twist button
-        if not treeId.IsOk() and flag & wxTREE_HITTEST_ONITEMBUTTON:
+        
+        if not treeId.IsOk() or not(flag & wxTREE_HITTEST_ONITEMBUTTON):
             return
-                
+
         child, cookie = self.tree.GetFirstChild(treeId)
        
         if self.tree.GetItemText(child) == "temp node":
