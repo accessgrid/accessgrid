@@ -118,7 +118,10 @@ class RssReader:
             self.timer.start()
             
     def _TimedUpdate(self):
-        self._Synch()
+        try:
+            self._Synch()
+        except Exception,e:
+            print 'exception updating feed:', e
         if self.updateDuration > 0:
             self.timer = threading.Timer(self.updateDuration,self._TimedUpdate)
             self.timer.start()
