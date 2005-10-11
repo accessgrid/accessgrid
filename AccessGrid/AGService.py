@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.48 2005-10-10 17:26:01 lefvert Exp $
+# RCS-ID:      $Id: AGService.py,v 1.49 2005-10-11 19:55:10 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.48 2005-10-10 17:26:01 lefvert Exp $"
+__revision__ = "$Id: AGService.py,v 1.49 2005-10-11 19:55:10 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -331,10 +331,13 @@ def RunService(service,serviceInterface):
     service.SetUri(url)
     
     # Register with the calling service manager
-    log.debug("Registering with service manager; url=%s", serviceManagerUri)
-    token = svc.GetOption('token')
-    AGServiceManagerIW(serviceManagerUri).RegisterService(token,url)
-    
+    if serviceManagerUri:
+        log.debug("Registering with service manager; url=%s", serviceManagerUri)
+        token = svc.GetOption('token')
+        AGServiceManagerIW(serviceManagerUri).RegisterService(token,url)
+    else:
+        log.info("Service Manager does not exist for service %s"%(url))
+
     # Register the signal handler so we can shut down cleanly
     # lambda is used to pass the service instance to the 
     # signal handler

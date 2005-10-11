@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.92 2005-10-10 17:29:01 lefvert Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.93 2005-10-11 19:55:10 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.92 2005-10-10 17:29:01 lefvert Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.93 2005-10-11 19:55:10 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -158,6 +158,7 @@ class AGNodeService:
             log.exception("Exception in AGNodeService.GetServices.")
             raise Exception("AGNodeService.GetServices failed: %s" \
                             % str( sys.exc_value ) )
+
         return services
 
     def SetServiceEnabled(self, serviceUri, enabled):
@@ -636,11 +637,14 @@ class AGNodeService:
             for service in services:
                 #capabilitySubset = AGServiceIW( service.uri ).GetCapabilities()
                 capabilitySubset = service.capabilities
-                capabilities = capabilities + capabilitySubset
-
+                              
+                for cap in capabilitySubset:
+                    capabilities.append(cap)
+                    
         except:
             log.exception("Exception in AGNodeService.GetCapabilities.")
             raise Exception("AGNodeService.GetCapabilities failed: " + str( sys.exc_value ) )
+
         return capabilities
 
     def Stop(self):

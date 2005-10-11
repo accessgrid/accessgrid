@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.233 2005-10-10 17:21:20 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.234 2005-10-11 19:55:10 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.233 2005-10-10 17:21:20 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.234 2005-10-11 19:55:10 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -979,17 +979,20 @@ class VenueClient:
         try:
             self.profile.capabilities = self.nodeService.GetCapabilities()
             self.capabilities = self.profile.capabilities
-
+            
             if not self.capabilities:
                 self.capabilities = []
-                
+            
             self.capabilities = self.capabilities + self.beaconCapabilities 
             
         except:
-            # This is a non fatal error, users should be notified
-            # but still enter the venue
-            log.info("EnterVenue: Error getting node capabilities")
+            log.exception("EnterVenue: Exception getting capabilities")
             errorInNode = 1
+
+       #     # This is a non fatal error, users should be notified
+       #     # but still enter the venue
+       #     log.info("EnterVenue: Error getting node capabilities")
+       #     errorInNode = 1
             
         try:
             # Enter the venue
