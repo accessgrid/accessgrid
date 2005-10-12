@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.105 2005-10-11 20:21:56 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.106 2005-10-12 20:25:26 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.105 2005-10-11 20:21:56 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.106 2005-10-12 20:25:26 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -28,6 +28,7 @@ import re
 import sys
 from twisted.internet import reactor
 import calendar
+import threading
 
 from time import localtime , strftime
 from AccessGrid import Log
@@ -1343,8 +1344,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             
             self.SetStatusText("Trying to enter venue at %s" % (venueUrl,))
 
-            self.controller.EnterVenueCB(venueUrl)
-
+            # Enter in a thread so UI gets responsive immediately
+            upload_thread = threading.Thread(target = self.controller.EnterVenueCB, args = [venueUrl])
+            upload_thread.start()
+            
             # Check if unicast option is set in preferences.
             m = int(self.venueClient.GetPreferences().GetPreference(Preferences.MULTICAST))
             if m == 0:
@@ -2393,10 +2396,10 @@ class VenueAddressBar(wxSashLayoutWindow):
         self.parent.GoBackCB()
 
     def CallAddress(self, event = None):
-       
-        
         url = self.address.GetValue()
         venueUri = self.__FixSpaces(url)
+
+        
         self.parent.EnterVenueCB(venueUri)
 
         
