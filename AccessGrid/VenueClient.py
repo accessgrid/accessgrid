@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.235 2005-10-11 20:22:15 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.236 2005-10-12 19:08:50 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.235 2005-10-11 20:22:15 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.236 2005-10-12 19:08:50 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -799,20 +799,24 @@ class VenueClient:
                         print type(c), c
             self.venueState = VenueState(uniqueId=uniqueId, name=vname, description=description, uri=uri, connections="", clients=[], data=[], eventLocation=evtLocation, textLocation="", applications=[], services=[])
             """
+                    
             state = self.__venueProxy.GetState()
             # tuple of two different types doesn't serialize easily.
             evtLocation = state.eventLocation.split(":")
             if len(evtLocation) > 1:
                 evtLocation = (str(evtLocation[0]), int(evtLocation[1]))
 
-            textLocation = state.textLocation.split(":")
-            if len(textLocation) > 1:
-                textLocation = (str(textLocation[0]), int(textLocation[1]))
-                
-            # next line needed needed until zsi can handle dictionaries.
-            self.venueState = VenueState(uniqueId=state.uniqueId, name=state.name, description=state.description, uri=state.uri, connections=state.connections, clients=state.clients, data=state.data, eventLocation=evtLocation, textLocation=state.textLocation, applications=state.applications, services=state.services)
+            self.textLocation = state.textLocation.split(":")
+          
+            if len(self.textLocation) > 1:
+                self.textLocation = (str(self.textLocation[0]), int(self.textLocation[1]))
 
-            
+            self.dataStoreUploadUrl = state.dataLocation
+                            
+            # next line needed needed until zsi can handle dictionaries.
+            self.venueState = VenueState(uniqueId=state.uniqueId, name=state.name, description=state.description, uri=state.uri, connections=state.connections, clients=state.clients, data=state.data, eventLocation=evtLocation, textLocation=state.textLocation, dataLocation = state.dataLocation, applications=state.applications, services=state.services)
+
+
             # Retreive stream descriptions
             if len(self.capabilities) > 0:
                 self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.profile.connectionId,
@@ -860,9 +864,6 @@ class VenueClient:
                 
             self.eventClient.Start()
             #self.eventClient.Send("connect", self.profile.connectionId)
-            
-            # Get personaldatastore information
-            self.dataStoreUploadUrl = self.__venueProxy.GetUploadDescriptor()
         
             log.debug("Setting isInVenue flag.")
 
@@ -872,6 +873,7 @@ class VenueClient:
             # 
             # Update the node service with stream descriptions
             #
+            
             try:
                 self.UpdateNodeService()
             except NetworkLocationNotFound, e:
@@ -883,16 +885,8 @@ class VenueClient:
                 # This is a non fatal error, users should be notified
                 # but still enter the venue
                 log.warn("EnterVenue: Error updating node service")
-
-            # Create text client
-            try:
-                self.__StartJabber(textLocation)
-            except Exception,e:
-                log.exception("EnterVenue.__StartJabber failed")
-             
-            # Create the beacon client
-            if int(self.preferences.GetPreference(Preferences.BEACON)):
-                self.StartBeacon()
+           
+           
 
     def StopBeacon(self):
         ''' Stop the beacon client'''
@@ -975,7 +969,7 @@ class VenueClient:
         self.warningString = ''
         enterSuccess = 1
         errorInNode = 0
-        
+
         try:
             self.profile.capabilities = self.nodeService.GetCapabilities()
             self.capabilities = self.profile.capabilities
@@ -989,6 +983,8 @@ class VenueClient:
             log.exception("EnterVenue: Exception getting capabilities")
             errorInNode = 1
 
+            
+
        #     # This is a non fatal error, users should be notified
        #     # but still enter the venue
        #     log.info("EnterVenue: Error getting node capabilities")
@@ -997,7 +993,7 @@ class VenueClient:
         try:
             # Enter the venue
             self.__EnterVenue(URL)
-            
+
             # Cache profiles from venue.
             try:
                 log.debug("Updating client profile cache.")
@@ -1026,6 +1022,16 @@ class VenueClient:
             except:
                 log.exception("Exception in observer")
 
+        # Create text client
+        try:
+            self.__StartJabber(self.textLocation)
+        except Exception,e:
+            log.exception("EnterVenue.__StartJabber failed")
+             
+        # Create the beacon client
+        if int(self.preferences.GetPreference(Preferences.BEACON)):
+            self.StartBeacon()
+            
         return self.warningString
 
     def __ExitVenue(self):
@@ -1149,12 +1155,12 @@ class VenueClient:
         #    return
 
         # Set the identity of the user running the node
-        if not self.isIdentitySet:
-            try:
-                self.nodeService.SetIdentity(self.profile)
-                self.isIdentitySet = 1
-            except:
-                log.exception("Error setting identity")
+        #if not self.isIdentitySet:
+        #try:
+        #    self.nodeService.SetIdentity(self.profile)
+        #    self.isIdentitySet = 1
+        #except:
+        #    log.exception("Error setting identity")
 
         # Set the streams to use the selected transport
 #         for stream in self.streamDescList:
