@@ -112,6 +112,7 @@
         <xs:element name="uri" type="xs:string"/>
         <xs:element name="eventLocation" nillable="true" type="xs:string"/>
         <xs:element name="textLocation" nillable="true" type="xs:string"/>
+	<xs:element name="dataLocation" nillable="true" type="xs:string"/>
         <xs:element name="services" minOccurs="0" maxOccurs="unbounded" type="tns:ServiceDescription"/>
         <xs:element name="connections" minOccurs="0" maxOccurs="unbounded" type="tns:ConnectionDescription"/>
         <xs:element name="clients" minOccurs="0" maxOccurs="unbounded" type="tns:ClientProfile"/>

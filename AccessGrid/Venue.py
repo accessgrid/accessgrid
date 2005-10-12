@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.252 2005-10-11 16:34:19 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.253 2005-10-12 19:09:03 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.252 2005-10-11 16:34:19 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.253 2005-10-12 19:09:03 lefvert Exp $"
 
 import sys
 import time
@@ -630,9 +630,12 @@ class Venue:
         venueState.services = venueState.services.values()
         venueState.applications = venueState.applications.values()
         venueState.connections = venueState.connections.values()
+        venueState.dataLocation = self.GetUploadDescriptor()
+
         # tuple of different types can't be serialized
         venueState.eventLocation=  ":".join(map(lambda x : str(x), self.GetEventServiceLocation() ))
         venueState.textLocation = ":".join(map(lambda x : str(x), self.GetTextServiceLocation() ))
+                
         return venueState
 
     def GetId(self):
