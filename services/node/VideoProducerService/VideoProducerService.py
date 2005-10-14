@@ -2,17 +2,20 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.3 2005-10-07 20:48:01 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.4 2005-10-14 20:16:26 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import re
 import sys, os
 
-# for linux device detection
-import fcntl
-import struct
-import glob
+from AccessGrid.Platform import IsLinux
+
+if IsLinux():
+    # for linux device detection
+    import fcntl
+    import struct
+    import glob
 
 try:   
     import win32api
