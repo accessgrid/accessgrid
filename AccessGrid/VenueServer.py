@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.195 2005-10-11 16:34:35 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.196 2005-10-14 20:43:06 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.195 2005-10-11 16:34:35 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.196 2005-10-14 20:43:06 eolson Exp $"
 
 
 # Standard stuff
@@ -546,19 +546,22 @@ class VenueServer:
 
                 if len(appList) != 0:
                     for oid in string.split(appList, ':'):
-                        name = cp.get(oid, 'name')
-                        description = cp.get(oid, 'description')
-                        mimeType = cp.get(oid, 'mimeType')
+                        try:
+                            name = cp.get(oid, 'name')
+                            description = cp.get(oid, 'description')
+                            mimeType = cp.get(oid, 'mimeType')
 
-                        appDesc = v.CreateApplication(name, description,
+                            appDesc = v.CreateApplication(name, description,
                                                       mimeType, oid)
-                        appImpl = v.applications[appDesc.id]
+                            appImpl = v.applications[appDesc.id]
 
-                        for o in cp.options(oid):
-                            if o != 'name' and o != 'description' and \
-                               o != 'id' and o != 'uri' and o != mimeType:
-                                value = cp.get(oid, o)
-                                appImpl.app_data[o] = value
+                            for o in cp.options(oid):
+                                if o != 'name' and o != 'description' and \
+                                   o != 'id' and o != 'uri' and o != mimeType:
+                                    value = cp.get(oid, o)
+                                    appImpl.app_data[o] = value
+                        except:
+                            log.exception("Failed to load shared app")
                 else:
                     log.debug("No applications to load for Venue %s", sec)
 
@@ -570,13 +573,16 @@ class VenueServer:
 
                 for oid in serviceList.split(':'):
                     if oid:
-                        name = cp.get(oid, 'name')
-                        description = cp.get(oid, 'description')
-                        mimeType = cp.get(oid, 'mimeType')
-                        uri = cp.get(oid, 'uri')
+                        try:
+                            name = cp.get(oid, 'name')
+                            description = cp.get(oid, 'description')
+                            mimeType = cp.get(oid, 'mimeType')
+                            uri = cp.get(oid, 'uri')
                     
-                        v.AddService(ServiceDescription(name, description, uri,
-                                                        mimeType))
+                            v.AddService(ServiceDescription(name, description, uri,
+                                                            mimeType))
+                        except:
+                            log.exception("Failed to load service")
 
     def MakeVenueURL(self, uniqueId):
         """
@@ -769,9 +775,14 @@ class VenueServer:
             # Create an interface
             vi = VenueI(impl=venue, auth_method_name="authorize")
             
+            successfulPolicyImport = False
             if authPolicy is not None:
-                venue.ImportAuthorizationPolicy(authPolicy)
-            else:
+                try:
+                    venue.ImportAuthorizationPolicy(authPolicy)
+                    successfulPolicyImport = True
+                except:
+                    log.exception("Failed to Import Auth Policy")
+            if successfulPolicyImport == False:
                 # This is a new venue, not from persistence,
                 # so we have to create the policy
                 log.info("Creating new auth policy for the venue.")
