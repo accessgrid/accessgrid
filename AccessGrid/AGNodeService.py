@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.93 2005-10-11 19:55:10 lefvert Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.94 2005-10-18 21:13:36 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.93 2005-10-11 19:55:10 lefvert Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.94 2005-10-18 21:13:36 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -692,11 +692,12 @@ class AGNodeService:
 
 
     def __BrowseCB(self,type,name,uri=None):
-        print "Found service manager at uri ", uri
-        if uri in self.serviceManagers.keys() and self.serviceManagers[uri] == None:
-            smDesc = AGServiceManagerIW(uri).GetDescription()
-            print "   adding service"
-            AGServiceManagerIW(uri).AddServiceByName('AudioService.zip')
+        if type == ServiceDiscovery.Browser.ADD:
+            print "Found service manager at uri ", uri
+            if uri in self.serviceManagers.keys() and self.serviceManagers[uri] == None:
+                smDesc = AGServiceManagerIW(uri).GetDescription()
+                print "   adding service"
+                AGServiceManagerIW(uri).AddServiceByName('AudioService.zip')
             
 
     def IsValid(self):
