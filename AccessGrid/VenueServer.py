@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.196 2005-10-14 20:43:06 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.197 2005-10-18 20:23:07 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.196 2005-10-14 20:43:06 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.197 2005-10-18 20:23:07 eolson Exp $"
 
 
 # Standard stuff
@@ -339,7 +339,7 @@ class VenueServer:
            
            if hosting.GetHostingImpl() == "SOAPpy":
                self.authManager.AddActions(vsi._GetMethodActions())
-           self.authManager.AddRoles(self.GetRequiredRoles())
+           self.authManager.AddRoles(self.authManager.GetRequiredRoles())
            if hosting.GetHostingImpl() == "SOAPpy":
                # Default to giving administrators access to all actions.
                # This is implicitly adding the action too
@@ -790,7 +790,7 @@ class VenueServer:
                 # Get method actions
                 if hosting.GetHostingImpl() == "SOAPpy":
                     venue.authManager.AddActions(vi._GetMethodActions())
-                venue.authManager.AddRoles(venue.GetRequiredRoles())
+                venue.authManager.AddRoles(venue.authManager.GetRequiredRoles())
                 venue.authManager.AddRoles(venue.authManager.GetDefaultRoles())
                 venue._AddDefaultRolesToActions()
 
