@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.17 2005-10-05 18:01:39 lefvert Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.18 2005-10-18 21:39:02 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -1072,7 +1072,7 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
 
             crsURL = None
             if self.certInfo.GetType() == "anonymous":
-                crsURL = "http://www-unix.mcs.anl.gov/~olson/AG/auth/anonReqServer.cgi"
+                crsURL = "http://www-unix.mcs.anl.gov/fl/research/accessgrid/ca/anonymous/anonReqServer.cgi"
             
             success = gui.RequestCertificate(self.certInfo,
                                              self.password,
