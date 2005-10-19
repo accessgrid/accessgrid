@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.237 2005-10-19 19:48:57 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.238 2005-10-19 20:03:41 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.237 2005-10-19 19:48:57 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.238 2005-10-19 20:03:41 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -1382,8 +1382,9 @@ class VenueClient:
         serverUri = None
         
         if self.venueUri:
+            proto = self.venueUri.split(':')[0]
             hostPort = self.venueUri.split('/')[2]
-            serverUri = "https://"+hostPort+"/VenueServer"
+            serverUri = "%s://%s/VenueServer" % (proto,hostPort)
 
         return serverUri
         
