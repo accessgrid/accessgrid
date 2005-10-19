@@ -6,13 +6,13 @@ import sys
 import threading
 import urlparse
 import urllib
+import asyncore
 
 # Medusa 
-import asyncore
-import filesys
+from FTPS import filesys
+from FTPS import ftps_server
 
 # M2Crypto
-import ftps_server
 from M2Crypto import Rand, SSL
 
 from AccessGrid import Log
