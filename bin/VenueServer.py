@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.67 2005-10-19 19:23:32 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.68 2005-10-19 20:01:29 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.67 2005-10-19 19:23:32 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.68 2005-10-19 20:01:29 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -31,6 +31,9 @@ from AccessGrid.VenueServer import VenueServer
 from AccessGrid import Log
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.hosting import SecureServer, InsecureServer
+from AccessGrid import Toolkit
+
+from M2Crypto import threading as M2Crypto_threading
 
 # Global defaults
 log = None
@@ -55,6 +58,9 @@ def main():
     The main routine of this program.
     """
     global venueServer, log
+    
+    import threading
+    M2Crypto_threading.init()
 
     # Init toolkit with standard environment.
     app = Service.instance()
@@ -65,6 +71,9 @@ def main():
                         help="Set the port the service manager should run on.")
 
     app.AddCmdLineOption(portOption)
+    
+    # Set the default to secure
+    app.parser.defaults['secure'] = 1
     
     # Try to initialize
     try:
@@ -83,10 +92,9 @@ def main():
     log.info("VenueServer running using hostname: %s", hostname)
     
     if app.GetOption("secure"):
+        context = Toolkit.Service.instance().GetContext()
         server = SecureServer((hostname, port),
-                              app.GetOption('cert'),
-                              app.GetOption('key'),
-                              app.GetOption('cadir'))
+                              context)
     else:
         server = InsecureServer((hostname, port))
     
@@ -123,6 +131,9 @@ def main():
         log.debug("Stopped Hosting Environment, exiting.")
     except:
         log.exception("Exception stopping server")
+
+    M2Crypto_threading.cleanup()
+
 
     time.sleep(1)
     for thrd in threading.enumerate():
