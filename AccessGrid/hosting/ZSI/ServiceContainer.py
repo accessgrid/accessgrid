@@ -122,7 +122,7 @@ if haveCryptoLib:
     SSL.Connection.clientPostConnectionCheck = None
     SSL.Connection.serverPostConnectionCheck = None
     class SecureServiceContainer(ServiceContainerBase,SSL.SSLServer):
-        def __init__(self, server_address,certfile,keyfile,caCertDir, services=[],RequestHandlerClass=AGSOAPRequestHandler):
+        def __init__(self, server_address,context, services=[],RequestHandlerClass=AGSOAPRequestHandler):
             '''server_address -- 
                RequestHandlerClass -- 
             '''
@@ -130,10 +130,6 @@ if haveCryptoLib:
             ServiceContainerBase.__init__(self,server_address,services,RequestHandlerClass)
             self.server_name, self.server_port = server_address
 
-            context = SSL.Context()
-            context.load_cert(certfile,keyfile)
-            context.load_verify_locations(capath=caCertDir)
-            context.set_verify(SSL.verify_peer, 10)
             SSL.SSLServer.__init__(self, server_address, 
                                self.RequestHandlerClass,
                                context)
@@ -141,10 +137,9 @@ if haveCryptoLib:
             map(lambda s: self.setNode(s), services)
 
     class ThreadingSecureServiceContainer(SocketServer.ThreadingMixIn,SecureServiceContainer):
-        def __init__(self, server_address,certfile,keyfile,caCertDir,services=[]):
+        def __init__(self, server_address,context,services=[]):
             SecureServiceContainer.__init__(self, server_address,
-                                            certfile,keyfile,
-                                            caCertDir,
+                                            context,
                                             services)
 else:
     class ThreadingSecureServiceContainer:

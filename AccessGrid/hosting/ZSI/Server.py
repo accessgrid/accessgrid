@@ -2,7 +2,7 @@
 # Name:        Server.py
 # Purpose:     
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.6 2005-06-13 20:11:13 turam Exp $
+# RCS-ID:      $Id: Server.py,v 1.7 2005-10-19 19:34:18 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@ ZSI server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.6 2005-06-13 20:11:13 turam Exp $"
+__revision__ = "$Id: Server.py,v 1.7 2005-10-19 19:34:18 turam Exp $"
 
 # External imports
 import urlparse
@@ -249,7 +249,7 @@ class SecureServer(_Server):
     The SecureServer extends the ZSI server base class to use
     HTTPS for connections.
     """
-    def __init__(self, addr, certfile,keyfile,caCertDir,debug = 0):
+    def __init__(self, addr, context,debug = 0):
         """
         @param addr: the address the server should listen on
         @param debug: a debug flag to pass down internally
@@ -259,10 +259,7 @@ class SecureServer(_Server):
         """
         
         # This is where you set things for debugging
-        _Server.__init__(self, addr, ThreadingSecureServiceContainer(addr,
-                                            certfile,
-                                            keyfile,
-                                            caCertDir))
+        _Server.__init__(self, addr, ThreadingSecureServiceContainer(addr,context))
         
     def GetURLBase(self):
         """
