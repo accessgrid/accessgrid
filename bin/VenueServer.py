@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.66 2005-10-07 22:44:52 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.67 2005-10-19 19:23:32 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.66 2005-10-07 22:44:52 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.67 2005-10-19 19:23:32 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -23,6 +23,8 @@ import threading
 from optparse import Option
 
 # Our imports
+from twisted.internet import threadedselectreactor
+threadedselectreactor.install()
 from twisted.internet import reactor
 from AccessGrid.Toolkit import Service
 from AccessGrid.VenueServer import VenueServer
