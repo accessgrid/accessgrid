@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.41 2005-04-05 18:32:36 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.42 2005-10-19 19:34:47 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.41 2005-04-05 18:32:36 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.42 2005-10-19 19:34:47 turam Exp $"
 
 import re
 import os
@@ -225,19 +225,19 @@ class CertificateManager(object):
         self.CheckConfiguration()
 
         # Look for new CA Certificates in the system to import
-        if self.globusConfig:
-            log.debug("Searching for new CA certificates.")
-            for ca_cert in [f for f in os.listdir(self.globusConfig)
-                            if f.endswith(".0")]:
-                cpath = os.path.join(self.globusConfig.GetDistCACertDir(),
-                                     ca_cert)
-                try:
-                    repo.ImportCertificatePEM(cpath)
-                except CertificateRepository.RepoInvalidCertificate:
-                    self.log.warn("Not importing cert %s", cpath)
-                except:
-                    self.log.exception("Error during ca initialization.")
-            log.debug("Finished searching for new CA certificates.")
+#         if self.globusConfig:
+#             log.debug("Searching for new CA certificates.")
+#             for ca_cert in [f for f in os.listdir(self.globusConfig)
+#                             if f.endswith(".0")]:
+#                 cpath = os.path.join(self.globusConfig.GetDistCACertDir(),
+#                                      ca_cert)
+#                 try:
+#                     repo.ImportCertificatePEM(cpath)
+#                 except CertificateRepository.RepoInvalidCertificate:
+#                     self.log.warn("Not importing cert %s", cpath)
+#                 except:
+#                     self.log.exception("Error during ca initialization.")
+#             log.debug("Finished searching for new CA certificates.")
                 
     def InitializeRepository(self):
         """
