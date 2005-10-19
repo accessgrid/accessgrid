@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.197 2005-10-18 20:23:07 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.198 2005-10-19 19:51:55 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.197 2005-10-18 20:23:07 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.198 2005-10-19 19:51:55 turam Exp $"
 
 
 # Standard stuff
@@ -43,7 +43,7 @@ from AccessGrid.hosting import PathFromURL, IdFromURL
 from AccessGrid.GUID import GUID
 from AccessGrid.Venue import Venue, VenueI
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-from AccessGrid.DataStore import HTTPTransferServer #, HTTPSTransferServer
+from AccessGrid.DataStore import DataServer
 from AccessGrid.scheduler import Scheduler
 
 from AccessGrid.Descriptions import ConnectionDescription, StreamDescription
@@ -199,7 +199,8 @@ class VenueServer:
             defaultPort = 8000
             if self.servicePtr.GetOption("secure"):
                 self.hostingEnvironment = SecureServer((self.hostname,
-                                                        defaultPort) )
+                                                        defaultPort),
+                                                        self.servicePtr.GetContext() )
             else:
                 self.hostingEnvironment = InsecureServer((self.hostname,
                                                           defaultPort) )
@@ -237,16 +238,21 @@ class VenueServer:
         # Starting Venue Server wide Services, these *could* also
         # be separated, we just have to figure out the mechanics and
         # make sure the usability doesn't plummet for administrators.
-        if self.servicePtr.GetOption("secure"):
-            self.dataTransferServer = HTTPSTransferServer(
-                                            ('',int(self.dataPort)),
-                                            self.servicePtr.GetOption('cert'),
-                                            self.servicePtr.GetOption('key'),
-                                            self.servicePtr.GetOption('cadir'))
-        else:
-            self.dataTransferServer = HTTPTransferServer(
-                                            ('',int(self.dataPort)) )
-        self.dataTransferServer.run()
+        def authorizeDataTransferCB(channel,username,password):
+            # for now, allow all data transfers
+            # later, should verify some or all of:
+            # - presence of client-side cert (if required)
+            # - client-side cert validity (if provided)
+            # - username/password (if required) (could be connectionid/privateid)
+            return 1
+            
+        self.dataTransferServer = DataServer(self.dataStorageLocation,
+                                             hostname=self.hostname,
+                                             port=self.dataPort,
+                                             ssl_ctx=self.servicePtr.GetContext(),
+                                             authorizecb=authorizeDataTransferCB)
+        self.dataTransferServer.run_in_thread()
+
         
         # Add the event service
         self.eventService = EventService("Event Service",
