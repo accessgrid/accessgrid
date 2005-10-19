@@ -1,3 +1,15 @@
+#-----------------------------------------------------------------------------
+# Name:        RssReader.py
+# Purpose:     An RSS reader for meeting feeds
+# Created:     2005/10/19
+# RCS-ID:      $Id: RssReader.py,v 1.3 2005-10-19 19:47:33 turam Exp $
+# Copyright:   (c) 2005
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
+"""
+RssReader combines an RSS parser, feed url management, and timed updates,
+with the option of adding observers to get notification of changes
+"""
 
 
 import threading
@@ -5,6 +17,11 @@ import calendar
 import logging
 
 import feedparser
+
+# work around apparent bug in socket.setdefaulttimeout,
+# which is used in feedparser
+import socket
+socket.setdefaulttimeout(None)
 
 def strtimeToSecs(strtime):
     """
