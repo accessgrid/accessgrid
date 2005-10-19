@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.106 2005-10-12 20:25:26 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.107 2005-10-19 19:53:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.106 2005-10-12 20:25:26 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.107 2005-10-19 19:53:27 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -27,7 +27,6 @@ import traceback
 import re
 import sys
 from twisted.internet import reactor
-import calendar
 import threading
 
 from time import localtime , strftime
@@ -56,6 +55,7 @@ from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
 from AccessGrid.Beacon.rtpBeaconUI import BeaconFrame
 from AccessGrid.RssReader import RssReader,strtimeToSecs         
 
+from AccessGrid.Security.wxgui.CertificateManagerWXGUI import CertificateManagerWXGUI
 try:
     import win32api
 except:
@@ -334,20 +334,18 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         #
         # Retrieve the cert mgr GUI from the application.
         #
+        self.cmui = None
+        try:
+            mgr = app.GetCertificateManager()
+        except:
+            log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
+                           certificate mgr user interface, continuing")
 
-
-        #        self.cmui = None
-        #        try:
-        #            mgr = app.GetCertificateManager()
-        #        except:
-        #            log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
-        #                           certificate mgr user interface, continuing")
-        
-        #        self.cmui = CertificateManagerWXGUI()
-        #        self.cmui.SetCertificateManager(mgr)
-        #        certMenu = self.cmui.GetMenu(self)
-        #        for item in certMenu.GetMenuItems():
-        #            self.preferences.AppendItem(item)
+        self.cmui = CertificateManagerWXGUI()
+        self.cmui.SetCertificateManager(mgr)
+        certMenu = self.cmui.GetMenu(self)
+        for item in certMenu.GetMenuItems():
+            self.preferences.AppendItem(item)
         
 
         # Add node-related entries
@@ -388,9 +386,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         self.navigation.Append(self.ID_ADD_SCHEDULE, "Add Schedule...",
                              "Subscribe to a published meeting schedule")
-        item=self.navigation.AppendCheckItem(self.ID_TIMED_UPDATE, "Timed Update",
+        self.navigation.AppendCheckItem(self.ID_TIMED_UPDATE, "Timed Update",
                              "Update subscribed schedules periodically")
-        self.navigation.Check(item.GetId(),1) # timed update on by default
+        self.navigation.Check(self.ID_TIMED_UPDATE,1) # timed update on by default
 
         self.menubar.Append(self.navigation, "Navigation")
         
@@ -526,7 +524,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.myVenuesMenuIds[name] = ID
             url = self.myVenuesDict[name]
             text = "Go to: " + url
-            self.navigation.Append(ID, name, text)
+            self.navigation.Insert(self.myVenuesPos,ID, name, text)
             EVT_MENU(self, ID, self.GoToMenuAddressCB)
                         
 
@@ -540,24 +538,24 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                                                self.myVenuesDict,
                                                'default venue')
         self.venueAddressBar.SetDefaultSize((1000, 65))
-	self.venueAddressBar.SetOrientation(wxLAYOUT_HORIZONTAL)
-	self.venueAddressBar.SetAlignment(wxLAYOUT_TOP)
-	self.venueAddressBar.SetSashVisible(wxSASH_BOTTOM, True)
+        self.venueAddressBar.SetOrientation(wxLAYOUT_HORIZONTAL)
+        self.venueAddressBar.SetAlignment(wxLAYOUT_TOP)
+        self.venueAddressBar.SetSashVisible(wxSASH_BOTTOM, True)
 
         self.textClientPanel = TextPanelSash(self, self.ID_WINDOW_BOTTOM)
-	self.textClientPanel.SetDefaultSize((1000, 100))
-	self.textClientPanel.SetOrientation(wxLAYOUT_HORIZONTAL)
+        self.textClientPanel.SetDefaultSize((1000, 100))
+        self.textClientPanel.SetOrientation(wxLAYOUT_HORIZONTAL)
         self.textClientPanel.SetAlignment(wxLAYOUT_BOTTOM)
-	self.textClientPanel.SetSashVisible(wxSASH_TOP, True)
+        self.textClientPanel.SetSashVisible(wxSASH_TOP, True)
 
         self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT,
                                              self)
-	self.venueListPanel.SetDefaultSize((150, 1000))
+        self.venueListPanel.SetDefaultSize((150, 1000))
         self.venueListPanel.SetOrientation(wxLAYOUT_VERTICAL)
         self.venueListPanel.SetAlignment(wxLAYOUT_LEFT)
-	self.venueListPanel.SetSashVisible(wxSASH_RIGHT, True)
+        self.venueListPanel.SetSashVisible(wxSASH_RIGHT, True)
 
-	self.contentListPanel = ContentListPanel(self)
+        self.contentListPanel = ContentListPanel(self)
         dataDropTarget = DataDropTarget(self)
         self.contentListPanel.SetDropTarget(dataDropTarget)
 
@@ -576,11 +574,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         if eID == self.ID_WINDOW_LEFT:
             self.venueListPanel.Show()
             width = event.GetDragRect().width
+            minWidth = 10
             if width < 60:
-                width = 20
+                width = minWidth
                 self.venueListPanel.Hide()
-            elif width > (self.GetSize().GetWidth() - 20):
-                width = self.GetSize().GetWidth() - 20
+            elif width > (self.GetSize().GetWidth() - minWidth):
+                width = self.GetSize().GetWidth() - minWidth
            
             self.venueListPanel.SetDefaultSize(wxSize(width, 1000))
 
@@ -1194,8 +1193,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             # - add entry for date, if needed
             if lastdate != ltime[0:3]:
                 menu.Append(wxNewId(),'%02s %s %d'% 
-                                       (#calendar.weekday(ltime[0],ltime[1],ltime[2]-1),
-                                       ltime[2],
+                                       (ltime[2],
                                        months[ltime[1]],
                                        ltime[0]))
                 lastdate = ltime[0:3]
@@ -2440,8 +2438,6 @@ class VenueListPanel(wxSashLayoutWindow):
         font = wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana")
                 
     def __AddEvents(self):
-        EVT_BUTTON(self, self.ID_MINIMIZE, self.OnClick) 
-        EVT_BUTTON(self, self.ID_MAXIMIZE, self.OnClick) 
         EVT_SIZE(self,self.__OnSize)
     
     def __OnSize(self,evt):
@@ -2465,6 +2461,7 @@ class VenueListPanel(wxSashLayoutWindow):
     def Hide(self):
         currentHeight = self.GetSize().GetHeight()
         self.exitsText.Hide()
+        s = wxSize(180, 1000)
         self.parent.UpdateLayout(self, s)
        
     def Show(self):
@@ -2473,13 +2470,6 @@ class VenueListPanel(wxSashLayoutWindow):
         s = wxSize(180, 1000)
         self.parent.UpdateLayout(self, s)
   
-    def OnClick(self, event):
-        if event.GetId() == VenueListPanel.ID_MINIMIZE:
-            self.Hide()
-                                               
-        if event.GetId() == VenueListPanel.ID_MAXIMIZE:
-            self.Show()
-                                       
     def CleanUp(self):
         self.list.CleanUp()
         
@@ -2586,6 +2576,7 @@ class NavigationPanel(wxPanel):
 
         venue = self.tree.GetPyData(treeId)
 
+        exits = None
         if venue:
             exits = self.app.controller.GetVenueConnections(venue.uri)
         else:
@@ -2662,8 +2653,8 @@ class NavigationPanel(wxPanel):
         self.SetSizer(sizer)
 
         w,h = self.GetSizeTuple()
-        self.SetSizer(sizer)
-        self.GetSizer().SetDimension(5,5,w-10,h-10)
+#         self.SetSizer(sizer)
+#         self.GetSizer().SetDimension(5,5,w-10,h-10)
         
 
 #############################################################################
