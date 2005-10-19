@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.79 2005-09-23 22:00:49 eolson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.80 2005-10-19 18:37:41 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.79 2005-09-23 22:00:49 eolson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.80 2005-10-19 18:37:41 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -444,14 +444,15 @@ class AppDataDescription:
     
 class VenueState:
     def __init__( self, uniqueId=None, name=None, description=None, uri=None, connections=[],
-                  clients=[], data=[], eventLocation=None, textLocation=None, applications=[],
-                  services=[]):
+                  clients=[], data=[], eventLocation=None, textLocation=None, dataLocation=None,
+                  applications=[], services=[]):
         self.uniqueId = uniqueId
         self.name = name
         self.description = description
         self.uri = uri
         self.eventLocation = eventLocation
         self.textLocation = textLocation
+        self.dataLocation = dataLocation
         self.services = services
         
         self.connections = dict()
@@ -554,6 +555,10 @@ class VenueState:
         self.textLocation = textLocation
     def GetTextLocation( self ):
         return self.textLocation
+    def SetDataLocation( self, dataLocation ):
+        self.dataLocation = dataLocation
+    def GetDataLocation( self ):
+        return self.dataLocation
 
 class ResourceDescription: 
     def __init__(self,name):
