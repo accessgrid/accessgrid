@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.84 2005-10-19 19:43:27 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.85 2005-10-19 21:41:20 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.84 2005-10-19 19:43:27 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.85 2005-10-19 21:41:20 turam Exp $"
 
 import os
 import time
@@ -820,6 +820,7 @@ DataServer = FTPSServer.FTPSServer
 def UploadFiles(identity, upload_url, file_list, progressCB):
     log.debug('UploadFiles: %s %s', upload_url, str(file_list))
     for f in file_list:
+        f = str(f)
         fulluploadurl = os.path.join(upload_url,f)
         log.debug('UploadFiles: %s %s %s', upload_url,fulluploadurl, str(file_list))
         UploadFile(f,upload_url)
