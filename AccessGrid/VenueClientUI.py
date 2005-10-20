@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.107 2005-10-19 19:53:27 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.108 2005-10-20 02:59:54 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.107 2005-10-19 19:53:27 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.108 2005-10-20 02:59:54 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -161,7 +161,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
     ID_PARTICIPANT_PROFILE = wxNewId()
     ID_ME_PROFILE = wxNewId()
-    ID_ME_DATA = wxNewId()
+    #ID_ME_DATA = wxNewId()
 
     def __init__(self, venueClient, controller, app):
         sys.stdout = sys.__stdout__
@@ -426,9 +426,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
        
         self.meMenu.Append(self.ID_ME_PROFILE,"View Profile...",\
                                            "View participant's profile information")
-        self.meMenu.AppendSeparator()
-        self.meMenu.Append(self.ID_ME_DATA,"Add personal data...",\
-                                           "Add data you can bring to other venues")
+        #self.meMenu.Append(self.ID_ME_DATA,"Add personal data...",\
+        #                                   "Add data you can bring to other venues")
        
             
         self.participantMenu = wxMenu()
@@ -486,7 +485,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # Popup Menu Events
         EVT_MENU(self, self.ID_ME_PROFILE, self.EditProfileCB)
-        EVT_MENU(self, self.ID_ME_DATA, self.AddPersonalDataCB)
+        #EVT_MENU(self, self.ID_ME_DATA, self.AddPersonalDataCB)
         EVT_MENU(self, self.ID_PARTICIPANT_PROFILE, self.ViewProfileCB)
 
         # UI Events
@@ -2225,7 +2224,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             wxCallAfter(self.SetVenueUrl, URL)
                                               
             # log.debug("Add your personal data descriptions to venue")
-            wxCallAfter(self.statusbar.SetStatusText, "Add your personal data to venue")
+            #wxCallAfter(self.statusbar.SetStatusText, "Add your personal data to venue")
 
             # Enable menus
             wxCallAfter(self.__ShowMenu)
@@ -2820,6 +2819,9 @@ class ContentListPanel(wxPanel):
         self.tree.SortChildren(self.participants)
         self.tree.Expand(self.participants)
 
+
+        """
+        # personal data support disabled
         for data in dataList:
             participantData = self.tree.AppendItem(participant, data.name,
                                                    self.defaultDataId, self.defaultDataId)
@@ -2836,6 +2838,7 @@ class ContentListPanel(wxPanel):
             # Add this text to force a + in front of empty participant
             tempId = self.tree.AppendItem(participant, "No personal data available", index, index)
             self.temporaryDataDict[profile.publicId] = tempId
+        """
 
         self.tree.SortChildren(participant)
             
@@ -2982,6 +2985,8 @@ class ContentListPanel(wxPanel):
         if(id != None):
             self.tree.Delete(id)
 
+        """
+        # personal data disabled
         if(ownerId and self.tree.GetChildrenCount(ownerId) == 0):
             index = -1
             
@@ -2992,7 +2997,7 @@ class ContentListPanel(wxPanel):
             # Add this text to force a + in front of empty participant
             tempId = self.tree.AppendItem(ownerId, "No personal data available", index, index)
             self.temporaryDataDict[ownerProfile.publicId] = tempId
-                          
+        """         
     def AddService(self, serviceDescription):
         service = self.tree.AppendItem(self.services, serviceDescription.name,
                                       self.serviceId, self.serviceId)

@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.238 2005-10-19 20:03:41 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.239 2005-10-20 02:59:54 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.238 2005-10-19 20:03:41 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.239 2005-10-20 02:59:54 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -166,7 +166,7 @@ class VenueClient:
         self.requests = [] 
 
         # Create personal data store
-        if progressCB: progressCB("Starting personal data store")
+        #if progressCB: progressCB("Starting personal data store")
         #self.__CreatePersonalDataStore()
 
         # Manage the currently-exiting state
