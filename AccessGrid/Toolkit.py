@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.92 2005-10-19 19:48:13 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.93 2005-10-20 02:55:14 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.92 2005-10-19 19:48:13 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.93 2005-10-20 02:55:14 turam Exp $"
 
 # Standard imports
 import os
@@ -284,6 +284,12 @@ class AppBase:
 
     def AddCmdLineOption(self, option):
         self.parser.add_option(option)
+        
+    def SetCmdLineDefault(self,option,value):
+        if self.parser.defaults.has_key(option):
+            self.parser.defaults[option] = value
+        else:
+            self.log.error('SetCmdLineDefault called with invalid option: %s', option)
 
     def GetPreferences(self):
         '''
