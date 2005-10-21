@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.93 2005-10-20 02:55:14 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.94 2005-10-21 19:12:43 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.93 2005-10-20 02:55:14 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.94 2005-10-21 19:12:43 turam Exp $"
 
 # Standard imports
 import os
@@ -79,9 +79,9 @@ class AppBase:
        self.parser.add_option("--version", action="store_true", dest="version",
                               default=0,
                          help="Print out what version of the toolkit this is.")
-       self.parser.add_option("-i", "--secure", action="store_true",
+       self.parser.add_option("--secure", type="int",
                               dest="secure", default=0,
-                              help="Use secure communications.")
+                              help="Specify whether the service uses SSL.")
        self.parser.add_option("--cert", dest="cert",
                               metavar="CERTFILE", default=None,
                          help="Specify a configuration file for the program.")
