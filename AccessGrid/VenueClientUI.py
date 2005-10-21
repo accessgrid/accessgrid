@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.108 2005-10-20 02:59:54 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.109 2005-10-21 14:26:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.108 2005-10-20 02:59:54 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.109 2005-10-21 14:26:43 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -224,9 +224,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # Build RSS reader
         self.updateDuration = 3600
         rssUrlList = ['http://www.mcs.anl.gov/~turam/rss2.cgi']
-        self.reader = RssReader(rssUrlList,self.updateDuration,[self])
-        self.reader.SetUpdateDuration(1800)
-        
+        try:
+            self.reader = RssReader(rssUrlList,self.updateDuration,[self])
+            self.reader.SetUpdateDuration(1800)
+        except:
+            log.exception('Error constructing RSS reader')
         self.myVenuesPos = 0
        
         
