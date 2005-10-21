@@ -2,7 +2,7 @@
 
 Copyright (c) 1999-2004 Ng Pheng Siong. All rights reserved."""
 
-_RCS_id='$Id: ftps_server.py,v 1.1 2005-10-19 19:41:50 turam Exp $'
+_RCS_id='$Id: ftps_server.py,v 1.2 2005-10-21 14:25:45 turam Exp $'
 
 # Python
 import socket, string, sys, time
@@ -43,6 +43,13 @@ class ftp_tls_channel(ftp_server.ftp_channel):
         self._prot = None
         resp = '220 %s M2Crypto (Medusa) FTP/TLS server v%s ready.'
         self.respond(resp % (self.server.hostname, VERSION_STRING))
+        
+        self.firstread = 1
+
+    def check_command_authorization (self, command):
+        if command != 'auth' and not self.firstread and not self._ssl_accepted:
+            return 0
+        return ftp_server.ftp_channel.check_command_authorization(self,command)
 
     def writable(self):
         return self._ssl_accepting or self._ssl_accepted
@@ -53,7 +60,8 @@ class ftp_tls_channel(ftp_server.ftp_channel):
             self._ssl_accepted = self.socket.accept_ssl()
             if self._ssl_accepted:
                 self._ssl_accepting = 0
-        else:
+        else:  
+            self.firstread = 0
             try:
                 ftp_server.ftp_channel.handle_read(self) 
             except SSL.SSLError, what:
@@ -198,7 +206,7 @@ class ftp_tls_channel(ftp_server.ftp_channel):
                 self.passive_acceptor = None
             else:
                 if self._prot:
-                    cdc = tls_recv_channel(self, None, self.ssl_ctx, None, fd)
+                    cdc = tls_recv_channel(self, None, self.ssl_ctx, None, fd, self.callback)
                 else:
                     cdc = ftp_server.recv_channel(self, None, fd)
         else:
@@ -325,8 +333,9 @@ class ftp_tls_server(ftp_server.ftp_server):
     def log_info (self, message, type='info'):
         pass
         
-    def Callback(self):
-        print "GOT CALLBACK"
+    def Callback(self,cmd,name):
+        if self.callback:
+            self.callback(cmd,name)
 
 
 class nbio_ftp_tls_actor:
@@ -472,5 +481,5 @@ class tls_recv_channel(nbio_ftp_tls_actor, ftp_server.recv_channel):
         
     def handle_close(self):
         ftp_server.recv_channel.handle_close(self)
-#         if self.callback:
-#             self.callback()
+        if self.callback:
+            self.callback('RECV',self.fd.name)
