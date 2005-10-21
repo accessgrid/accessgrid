@@ -147,6 +147,10 @@ if __name__ == '__main__':
         num = int(percentDone * 10)
         print '-'*num,'\r',
         
+    serverUrl = 'ftps://localhost:39021'
+    if len(sys.argv) > 1:
+        serverUrl = sys.argv[1]
+        
 
     # set up test
     fileToUpload = 'upload'
@@ -165,10 +169,9 @@ if __name__ == '__main__':
     if os.path.exists(downloadedFile):
         os.remove(downloadedFile)
     
-    url = 'ftps://localhost:39021/patch'
         
     # Upload
-    url = 'ftps://localhost:39021/'
+    url = serverUrl
     print 'uploading', fileToUpload, 'to', url
     FTPSUploadFile(fileToUpload,url)
 
@@ -186,7 +189,7 @@ if __name__ == '__main__':
     
     
     # Download
-    url = 'ftps://localhost:39021/' + fileToUpload
+    url = serverUrl + '/' + fileToUpload
     print 'downloading', url, 'to',downloadedFile
     FTPSDownloadFile(url,downloadedFile,progressCB=cb)
     
