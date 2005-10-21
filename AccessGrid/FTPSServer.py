@@ -36,12 +36,13 @@ class FTPSServer:
     '''
     FTPS Server wrapper
     '''
-    def __init__(self,path,ssl_ctx,hostname=None,port=9021,authorizecb=None):
+    def __init__(self,path,ssl_ctx,hostname=None,port=9021,authorizecb=None,activitycb=None):
         self.path = path
         self.ssl_ctx = ssl_ctx
         self.hostname = hostname
         self.port = int(port)
         self.authorizecb = authorizecb
+        self.activitycb = activitycb
         self.timeout = 5
         
         self.ftps = None
@@ -54,7 +55,7 @@ class FTPSServer:
         self.running.set()
         
         fauthz = authorizer(self.path,self.authorizecb)
-        self.ftps = ftps_server.ftp_tls_server(fauthz, self.ssl_ctx, port=self.port)
+        self.ftps = ftps_server.ftp_tls_server(fauthz, self.ssl_ctx, port=self.port,callback=self.activitycb)
         while self.running.isSet():
             asyncore.poll(self.timeout,asyncore.socket_map)
         
