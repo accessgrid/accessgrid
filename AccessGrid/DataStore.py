@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.85 2005-10-19 21:41:20 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.86 2005-10-21 16:02:12 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.85 2005-10-19 21:41:20 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.86 2005-10-21 16:02:12 turam Exp $"
 
 import os
 import time
@@ -96,7 +96,7 @@ class DataDescriptionContainer:
         self.data[dataDescription.id] = dataDescription
         log.debug("DataDescriptionContainer::AddData: Distribute ADD_DATA event %s", dataDescription)
 
-    def UpdateData(self, dataDescription,):
+    def UpdateData(self, dataDescription):
         """
         **Arguments:**
             *dataDescription* DataDescription to update
@@ -260,7 +260,8 @@ class DataStore:
 #             except ConfigParser.NoOptionError:
 #                 log.info("LoadPersistentVenues: Data has no description")
             dd.SetStatus(DataDescription.STATUS_PRESENT)
-            dd.SetSize(12345)
+            stat = os.stat(os.path.join(self.path,f))
+            dd.SetSize(stat.st_size)
 #             dd.SetChecksum(cp.get(sec, 'checksum'))
 #             dd.SetOwner(cp.get(sec, 'owner'))
 #             dd.SetType(cp.get(sec, 'type'))
@@ -714,7 +715,7 @@ class DataStore:
         desc.SetChecksum(file_info['checksum'])
         desc.SetSize(int(file_info['size']))
         desc.SetStatus(DataDescription.STATUS_PRESENT)
-        desc.SetOwner(identityToken.dn)
+        desc.SetOwner(identityToken)
         desc.SetURI(self.GetDownloadDescriptor(file_info['name']))
         desc.SetLastModified(self.GetTime())
         
@@ -753,7 +754,8 @@ class DataStore:
 
         desc = DataDescription(filename)
         desc.SetStatus(DataDescription.STATUS_PENDING)
-        desc.SetOwner(identityToken.dn)
+        #desc.SetOwner(identityToken.dn)
+        desc.SetOwner(identityToken)
 
         
 
