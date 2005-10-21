@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.80 2005-10-19 18:37:41 eolson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.81 2005-10-21 16:03:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.80 2005-10-19 18:37:41 eolson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.81 2005-10-21 16:03:07 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -145,7 +145,7 @@ class DataDescription(ObjectDescription):
         return self.status
 
     def SetSize(self, size):
-        if type(size) != int:
+        if type(size) != int and type(size) != long:
             raise TypeError("Size must be an int.")
         self.size = size
 
