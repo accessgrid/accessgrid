@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.198 2005-10-19 19:51:55 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.199 2005-10-21 16:15:23 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.198 2005-10-19 19:51:55 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.199 2005-10-21 16:15:23 turam Exp $"
 
 
 # Standard stuff
@@ -250,7 +250,8 @@ class VenueServer:
                                              hostname=self.hostname,
                                              port=self.dataPort,
                                              ssl_ctx=self.servicePtr.GetContext(),
-                                             authorizecb=authorizeDataTransferCB)
+                                             authorizecb=authorizeDataTransferCB,
+                                             activitycb=self.dataActivityCB)
         self.dataTransferServer.run_in_thread()
 
         
@@ -343,6 +344,7 @@ class VenueServer:
         if self.authorizationPolicy is None:
            log.info("Creating new authorization policy, non in config.")
            
+           """
            if hosting.GetHostingImpl() == "SOAPpy":
                self.authManager.AddActions(vsi._GetMethodActions())
            self.authManager.AddRoles(self.authManager.GetRequiredRoles())
@@ -353,7 +355,7 @@ class VenueServer:
                for action in actions:
                    self.authManager.AddRoleToAction(action.GetName(),
                                                     Role.Administrators.GetName())
-            
+           """
            # Get authorization policy.
            pol = self.authManager.ExportPolicy()
            pol  = re.sub("\r\n", "<CRLF>", pol )
@@ -397,6 +399,17 @@ class VenueServer:
                                                int(self.dataPort) ) )
         print "Default Venue Url: %s" % "/".join([self.hostingEnvironment.GetURLBase(), self.venuePathPrefix, "default"])
 
+    def dataActivityCB(self,cmd,pathfile):
+        if cmd == 'RECV':
+            parts = pathfile.split('/')
+            venueid = parts[1]
+            filename = parts[2]
+            dataDesc = self.venues[venueid].dataStore.AddPendingUpload('',filename)
+            file_info = {'name':filename,
+                         'size':12345,
+                         'checksum': 123123123}
+            self.venues[venueid].dataStore.CompleteUpload('',file_info)    
+    
     def _InitFromFile(self, config):
         """
         """
