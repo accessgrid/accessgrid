@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.81 2005-10-10 19:45:29 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.82 2005-10-23 07:40:06 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.81 2005-10-10 19:45:29 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.82 2005-10-23 07:40:06 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -520,7 +520,9 @@ class NodeManagementClientFrame(wxFrame):
 
         imageSize = 19
         imageList = wxImageList(imageSize,imageSize)
-        self.smImage = imageList.Add(icons.getHostBitmap())
+        computerBitmap = icons.getComputerBitmap()
+        computerBitmap.SetSize((imageSize,imageSize))
+        self.smImage = imageList.Add(computerBitmap)
         self.svcImage = imageList.Add(icons.getServiceBitmap())
         self.tree.SetImageList(imageList)
         self.imageList = imageList
