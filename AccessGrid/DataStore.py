@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.86 2005-10-21 16:02:12 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.87 2005-10-23 07:39:18 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.86 2005-10-21 16:02:12 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.87 2005-10-23 07:39:18 turam Exp $"
 
 import os
 import time
@@ -829,6 +829,6 @@ def UploadFiles(identity, upload_url, file_list, progressCB):
 
 def DownloadFile(identity, download_url, destination, size, checksum,
                      progressCB = None):
-    return _DownloadFile(download_url,destination)
+    return _DownloadFile(download_url,destination,progressCB=progressCB)
 
 
