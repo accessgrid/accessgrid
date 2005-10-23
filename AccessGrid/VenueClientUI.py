@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.109 2005-10-21 14:26:43 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.110 2005-10-23 07:41:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.109 2005-10-21 14:26:43 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.110 2005-10-23 07:41:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -498,6 +498,16 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_TOP,
                                self.ID_WINDOW_BOTTOM, self.__OnSashDrag)
         EVT_SIZE(self, self.__OnSize)
+        
+        EVT_TOOL(self,self.audioToolId,self.AudioToolCB)
+        EVT_TOOL(self,self.videoToolId,self.VideoToolCB)
+        EVT_TOOL(self,self.cameraToolId,self.CameraToolCB)
+        EVT_TOOL(self,self.networkToolId,self.statusbar.OnMulticast)
+        
+    def AudioToolCB(self,event):
+        print 'Got tool press'
+    
+    VideoToolCB = CameraToolCB = NetworkToolCB = AudioToolCB
 
     def __SetProperties(self):
         self.SetTitle("Venue Client")
@@ -534,6 +544,18 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.Centre()
         self.menubar = wxMenuBar()
         self.statusbar = StatusBar(self)
+        
+        self.toolbar = self.CreateToolBar()
+        self.networkToolId = 4
+        self.toolbar.AddTool(4,icons.getNetworkBitmap() ,shortHelpString='Multicast',longHelpString='Show multicast status')
+        self.toolbar.AddSeparator()
+        self.cameraToolId = 1
+        self.toolbar.AddCheckTool(1,icons.getCameraBitmap(),shortHelp='Camera1',longHelp='En/disable this camera')
+        self.audioToolId = 2
+        self.toolbar.AddCheckTool(2,icons.getAudioBitmap() ,shortHelp='Audio',longHelp='En/disable audio')
+        self.videoToolId = 3
+        self.toolbar.AddCheckTool(3,icons.getDisplayBitmap() ,shortHelp='Display',longHelp='En/disable the display')
+        self.toolbar.Realize()
        
         self.venueAddressBar = VenueAddressBar(self, self.ID_WINDOW_TOP, 
                                                self.myVenuesDict,
@@ -678,6 +700,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         mainBox=wxBoxSizer(wxVERTICAL)
         mainBox.Add(self.venueAddressBar,0,wxEXPAND)
         mainBox.Add(subBox,1,wxEXPAND)
+        mainBox.Add(self.toolbar,0,wxEXPAND)
         
         self.venueListPanel.SetSashVisible(wxSASH_RIGHT, TRUE)
               
@@ -2332,8 +2355,8 @@ class VenueAddressBar(wxSashLayoutWindow):
         self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go",
                              wxDefaultPosition, wxSize(40, 21))
         self.goButton.SetToolTip(wxToolTip("Enter venue"))
-        self.backButton = wxButton(self.addressPanel, self.ID_BACK ,
-                               "<<", wxDefaultPosition, wxSize(36, 21))
+        self.backButton = wxBitmapButton(self.addressPanel, self.ID_BACK ,
+                               icons.getPreviousBitmap(), wxDefaultPosition, wxSize(36, 21))
         self.backButton.SetToolTip(wxToolTip("Go to previous venue"))
         self.__Layout()
         self.__AddEvents()
@@ -2654,8 +2677,8 @@ class NavigationPanel(wxPanel):
         self.SetSizer(sizer)
 
         w,h = self.GetSizeTuple()
-#         self.SetSizer(sizer)
-#         self.GetSizer().SetDimension(5,5,w-10,h-10)
+        self.SetSizer(sizer)
+        self.GetSizer().SetDimension(5,5,w-10,h-10)
         
 
 #############################################################################
