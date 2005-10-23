@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.80 2004-12-08 16:48:06 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.81 2005-10-23 07:42:14 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.80 2004-12-08 16:48:06 judson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.81 2005-10-23 07:42:14 turam Exp $"
 
 import os
 import string
@@ -263,9 +263,7 @@ def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
 
     
     def AppendNodeLogs(text):
-        text = text +"\n\n--- VenueClientServices.log INFORMATION ---\n\n"+ \
-               GetLogText(2000,"VenueClientServices.log")\
-               +"\n\n--- ServiceManager.log INFORMATION ---\n\n"+ \
+        text = text +"\n\n--- ServiceManager.log INFORMATION ---\n\n"+ \
                GetLogText(2000, "ServiceManager.log")\
              
         logDir = userConfig.GetLogDir()
