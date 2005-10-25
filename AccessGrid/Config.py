@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.32 2005-02-22 16:16:34 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.33 2005-10-25 17:14:44 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.32 2005-02-22 16:16:34 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.33 2005-10-25 17:14:44 lefvert Exp $"
 
 import os
 import sys
@@ -130,7 +130,7 @@ class AGTkConfig:
                not os.path.exists(self.logDir):
             raise IOError("AGTkConfig: log dir does not exist %s."%self.logDir)
  
-        return self.logDir
+        return str(self.logDir)
 
     def GetConfigDir(self):
         self.configDir = os.path.join(self.GetBaseDir(), "Config")
@@ -144,7 +144,7 @@ class AGTkConfig:
         if self.configDir is not None and not os.path.exists(self.configDir):
             raise IOError("AGTkConfig: config dir %s does not exist." % (self.configDir))
 
-        return self.configDir
+        return str(self.configDir)
 
     def GetSharedAppDir(self):
         if self.appDir == None:
@@ -163,7 +163,7 @@ class AGTkConfig:
         if self.appDir is not None and not os.path.exists(self.appDir):
             raise IOError("AGTkConfig: app dir does not exist %s." %self.appDir)
 
-        return self.appDir
+        return str(self.appDir)
 
     def GetNodeServicesDir(self):
     
@@ -185,7 +185,7 @@ class AGTkConfig:
                not os.path.exists(self.nodeServicesDir):
             raise IOError("AGTkConfig: node service dir does not exist %s."%self.nodeServicesDir)
 
-        return self.nodeServicesDir
+        return str(self.nodeServicesDir)
 
     def GetNodeConfigDir(self):
     
@@ -205,7 +205,7 @@ class AGTkConfig:
         if not os.path.exists(self.nodeConfigDir):
             raise Exception, "AGTkConfig: node config dir does not exist: %s." % self.nodeConfigDir
 
-        return self.nodeConfigDir
+        return str(self.nodeConfigDir)
 
     def GetServicesDir(self):
     
@@ -227,7 +227,7 @@ class AGTkConfig:
                not os.path.exists(self.servicesDir):
             raise IOError("AGTkConfig: services dir does not exist %s."%self.servicesDir)
 
-        return self.servicesDir
+        return str(self.servicesDir)
 
 
 class UserConfig:
@@ -406,7 +406,7 @@ class UserConfig:
                not os.path.exists(self.logDir):
             raise Exception, "AGTkConfig: log dir does not exist %s."%self.logDir 
 
-        return self.logDir
+        return str(self.logDir)
 
     def GetTempDir(self):
         raise Exception, "This should not be called directly, but through a subclass."
@@ -431,7 +431,7 @@ class UserConfig:
                not os.path.exists(self.configDir):
             raise Exception, "AGTkConfig: config dir does not exist %s."%self.configDir
 
-        return self.configDir
+        return str(self.configDir)
         
 
     def GetSharedAppDir(self):
@@ -448,7 +448,7 @@ class UserConfig:
         if self.appDir is not None and not os.path.exists(self.appDir):
             raise Exception, "AGTkConfig: app dir does not exist %s."%self.appDir
 
-        return self.appDir
+        return str(self.appDir)
 
     def GetNodeServicesDir(self):
         if self.nodeServicesDir == None:
@@ -467,7 +467,7 @@ class UserConfig:
             raise Exception, "AGTkConfig: node service dir does not exist %s."%self.nodeServicesDir
 
         # check to make it if needed
-        return self.nodeServicesDir
+        return str(self.nodeServicesDir)
 
 
     def GetLocalServicesDir(self):
@@ -483,7 +483,7 @@ class UserConfig:
         if not os.path.exists(self.localServicesDir):
             raise Exception, "AGTkConfig: local services dir does not exist."
 
-        return self.localServicesDir
+        return str(self.localServicesDir)
 
     def GetNodeConfigDir(self):
         if self.nodeConfigDir == None:
@@ -498,7 +498,7 @@ class UserConfig:
         if not os.path.exists(self.nodeConfigDir):
             raise Exception, "AGTkConfig: node service dir does not exist."
 
-        return self.nodeConfigDir
+        return str(self.nodeConfigDir)
 
     def GetServicesDir(self):
         if self.servicesDir == None:
@@ -516,7 +516,7 @@ class UserConfig:
                not os.path.exists(self.servicesDir):
             raise Exception, "AGTkConfig: services dir does not exist %s."%self.servicesDir
 
-        return self.servicesDir
+        return str(self.servicesDir)
 
 class SystemConfig:
     """
