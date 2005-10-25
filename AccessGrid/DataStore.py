@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.87 2005-10-23 07:39:18 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.88 2005-10-25 22:00:49 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.87 2005-10-23 07:39:18 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.88 2005-10-25 22:00:49 eolson Exp $"
 
 import os
 import time
@@ -251,7 +251,8 @@ class DataStore:
         persistentData = []
         
         files = os.listdir(self.path)
-        files.remove('DataStore.dat')
+        if 'DataStore.dat' in files:
+            files.remove('DataStore.dat')
         for f in files:   
             dd = DataDescription(f)
             dd.SetId(str(AccessGrid.GUID.GUID()))
