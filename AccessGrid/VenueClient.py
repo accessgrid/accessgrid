@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.239 2005-10-20 02:59:54 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.240 2005-10-25 18:39:05 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.239 2005-10-20 02:59:54 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.240 2005-10-25 18:39:05 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -432,7 +432,6 @@ class VenueClient:
         log.info("Try to reconnect to venue")
         
         venueUri = self.venueUri
-
         # Client no longer in venue
         self.isInVenue = 0
         
@@ -912,12 +911,13 @@ class VenueClient:
                 self.beacon = Beacon()
                 self.beacon.SetConfigData('user', self.profile.name)
                 self.beacon.SetConfigData('groupAddress',
-                                          str(self.beaconLocation.host))#'233.4.200.19' )
+                                          str(self.beaconLocation.host))#'233.4.200.19')##
                 self.beacon.SetConfigData('groupPort',
-                                          str(self.beaconLocation.port))#'10002')
+                                          str(self.beaconLocation.port)) #'10002')##
                 log.info("VenueClient.StartBeacon: Address %s/%s"
                          %(self.beaconLocation.host, self.beaconLocation.port))
                 self.beacon.Start()
+                
         except:
             log.exception("VenueClient.StartBeacon failed")
                    
@@ -944,16 +944,19 @@ class VenueClient:
 
         
         # Create the jabber text client
-        currentRoom = self.venueState.name.replace(" ", "-")
-        currentRoom = currentRoom.lower()
 
+        # Create room
+        server = str(self.venueState.uri).split('/')[2].split(":")[0]
+        currentRoom = self.venueState.name.replace(" ", "-")
+        currentRoom = currentRoom+"("+server+")"
+        
         # Create conference host
         conferenceHost = "conference"
         domain = jabberHost.split('.')[1:]
        
         for i in range(len(domain)):
             conferenceHost = conferenceHost + '.' + domain[i]
-   
+
         self.jabber.SetChatRoom(currentRoom, conferenceHost)
         self.jabber.SendPresence('available')
                                         
@@ -1003,7 +1006,7 @@ class VenueClient:
             except Exception, e:
                 log.exception("Unable to update client profile cache.")
                 
-            # Return a string of warnings that can be displayed to the user 
+            # Return a string of warnings that can be displayed to the user
             if errorInNode:
                 self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences->Manage My Node..." from the main menu'
 
@@ -1024,14 +1027,15 @@ class VenueClient:
 
         # Create text client
         try:
-            self.__StartJabber(self.textLocation)
+            if self.textLocation:
+                self.__StartJabber(self.textLocation)
         except Exception,e:
             log.exception("EnterVenue.__StartJabber failed")
              
         # Create the beacon client
         if int(self.preferences.GetPreference(Preferences.BEACON)):
             self.StartBeacon()
-            
+
         return self.warningString
 
     def __ExitVenue(self):
