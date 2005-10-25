@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.49 2005-10-11 19:55:10 lefvert Exp $
+# RCS-ID:      $Id: AGService.py,v 1.50 2005-10-25 21:02:43 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.49 2005-10-11 19:55:10 lefvert Exp $"
+__revision__ = "$Id: AGService.py,v 1.50 2005-10-25 21:02:43 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -45,7 +45,7 @@ class AGService:
         self.uri = 0
         self.serviceManagerUri = ''
 
-        self.resource = 0
+        self.resource = None
         self.executable = 0
         self.streamDescription = 0
         self.capabilities = []

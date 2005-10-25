@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.94 2005-10-18 21:13:36 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.95 2005-10-25 21:02:43 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.94 2005-10-18 21:13:36 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.95 2005-10-25 21:02:43 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -320,11 +320,11 @@ class AGNodeService:
                     if configParser.has_option(serviceSection,'resource'):
                         resourceSection = configParser.get( serviceSection, "resource" )
                         if resourceSection == "None":
-                            resource = 0
+                            resource = None
                         else:
                             resource = ResourceDescription( configParser.get( resourceSection, "name" ) )
                     else:
-                        resource = 0
+                        resource = None
 
                     #
                     # Read the service config

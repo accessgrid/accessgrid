@@ -76,7 +76,7 @@
           <xsd:element name="GetResourceResponse">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="resource" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" nillable="true" name="resource" type="agtk:ResourceDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -87,7 +87,7 @@
           <xsd:element name="GetResourcesResponse">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="resources" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="resources" type="agtk:ResourceDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -162,7 +162,7 @@
             <xsd:complexType>
               <xsd:sequence>
                 <xsd:element minOccurs="0" maxOccurs="1" name="packageFile" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="resource" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" nillable="true" name="resource" type="agtk:ResourceDescription" />
                 <xsd:any processContents='lax' minOccurs="0" maxOccurs="unbounded"/>
                 <xsd:element minOccurs="0" maxOccurs="1" name="profile" type="agtk:ClientProfile" />    
               </xsd:sequence>
@@ -175,7 +175,7 @@
           <xsd:element name="SetResourceRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="resource" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" nillable="true" name="resource" type="agtk:ResourceDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>

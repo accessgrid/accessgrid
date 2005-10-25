@@ -185,7 +185,7 @@
         <xs:element name="name" type="xs:string"/>
         <xs:element name="uri" type="xs:string"/>
         <xs:element name="capabilities" minOccurs="0" maxOccurs="unbounded" type="tns:Capability"/>
-        <xs:element name="resource" type="xs:string"/>
+        <xs:element name="resource" nillable="true" type="agtk:ResourceDescription"/>
         <xs:element name="packageFile" type="xs:string"/>
       </xs:sequence>
     </xs:complexType>
@@ -262,6 +262,12 @@
         <xs:element name = "senderId" type = "xs:string"/>
         <xs:element name = "data" type = "xs:anyType"/>
         <xs:element name = "eventType" type = "xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ResourceDescription">
+      <xs:sequence>
+        <xs:element name = "name" type = "xs:string"/>
       </xs:sequence>
     </xs:complexType>
 

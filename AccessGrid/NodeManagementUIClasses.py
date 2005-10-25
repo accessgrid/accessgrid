@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.82 2005-10-23 07:40:06 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.83 2005-10-25 21:02:43 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.82 2005-10-23 07:40:06 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.83 2005-10-25 21:02:43 eolson Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -934,7 +934,7 @@ class NodeManagementClientFrame(wxFrame):
                 #
                 wxBeginBusyCursor()
                 serviceDescription = AGServiceManagerIW(serviceManager.uri).AddService( serviceToAdd,
-                                                                                        [], [],
+                                                                                        None, [],
                                                                                         self.app.GetPreferences().GetProfile())
                 
                 # Set identity
