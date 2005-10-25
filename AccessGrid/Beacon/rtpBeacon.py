@@ -7,7 +7,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeacon.py,v 1.2 2005-06-28 15:29:57 lefvert Exp $
+# RCS-ID:      $Id: rtpBeacon.py,v 1.3 2005-10-25 18:47:17 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ RTP (a plain text string as it were). Then the normal RTP statistics
 communicated via RTCP are used to track the performance of the group.
 """
 
-__revision__ = "$Id: rtpBeacon.py,v 1.2 2005-06-28 15:29:57 lefvert Exp $"
+__revision__ = "$Id: rtpBeacon.py,v 1.3 2005-10-25 18:47:17 lefvert Exp $"
 
 import os, sys, signal, optparse, time, random, threading, copy
 import logging, logging.handlers
@@ -32,7 +32,6 @@ class Beacon:
     def __init__(self, log = None, config = None):
         ''' Initalize parameters '''
         self.__config = None
-        self.__log = log
         self.__rtpbeacon = None
         
         if config:
@@ -46,15 +45,15 @@ class Beacon:
         # Convert all values to strings (otherwise unicode on Windows)
         for option in self.__config.GetKeys():
             self.__config.configData[option] = str(self.__config.configData[option])
-
+       
     def Start(self):
         ''' Start the beacon '''
-        self.__rtpbeacon = RTPBeacon(config=self.__config, log=self.__log)
+        self.__rtpbeacon = RTPBeacon(config=self.__config)
         self.__rtpbeacon.Start()
         self.__sdes = {} # key ssrc, value sdes
         self.__sources = [] # ordered list of source numbers
         self.__rtpbeacon.sensor.handlerDict[3] = self.ReceiveSDES
-     
+       
     def Stop(self):
         ''' Stop the beacon '''
         self.__rtpbeacon.Stop()
@@ -97,7 +96,6 @@ class Beacon:
                
         if sdestype == 2:
             self.__sdes[event.ssrc] = sdes
-
                 
 if __name__ == "__main__":
     from wxPython.wx import *
@@ -131,7 +129,7 @@ if __name__ == "__main__":
 
     beacon = Beacon(log, options.config)
     beacon.SetConfigData('user', 'Susanne')
-    beacon.SetConfigData('groupAddress', '233.4.200.19' )#19')
+    beacon.SetConfigData('groupAddress', '233.4.200.19')#19')
     beacon.SetConfigData('groupPort', '10002')
     beacon.SetConfigData('reportInterval', '86400')
     beacon.Start()
