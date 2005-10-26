@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.110 2005-10-23 07:41:01 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.111 2005-10-26 21:28:34 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.110 2005-10-23 07:41:01 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.111 2005-10-26 21:28:34 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2478,8 +2478,8 @@ class VenueListPanel(wxSashLayoutWindow):
         venueListPanelSizer.Add(panelSizer, 0, wxEXPAND)
         venueListPanelSizer.Add(self.list, 1, wxEXPAND)
 
-        w,h = self.GetSizeTuple()
         self.SetSizer(venueListPanelSizer)
+        w,h = self.GetSizeTuple()
         self.GetSizer().SetDimension(5,5,w-10,h-10)
 
     def Hide(self):
@@ -2622,7 +2622,7 @@ class NavigationPanel(wxPanel):
         '''
         Add a new entry in the list of venues.
         '''
-        newItem = self.tree.AppendItem(self.root, venue.name)
+        newItem = self.tree.AppendItem(self.tree.GetRootItem(), venue.name)
 
         # Add temporary node to always show + and - buttons.
         tempItem = self.tree.AppendItem(newItem, "temp node")
@@ -2677,7 +2677,6 @@ class NavigationPanel(wxPanel):
         self.SetSizer(sizer)
 
         w,h = self.GetSizeTuple()
-        self.SetSizer(sizer)
         self.GetSizer().SetDimension(5,5,w-10,h-10)
         
 
