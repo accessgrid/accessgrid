@@ -1,3 +1,5 @@
+from AccessGrid import Log
+log = Log.GetLogger(Log.Hosting)
 import urlparse
 from ZSI.ServiceContainer import SOAPRequestHandler, ServiceSOAPBinding
 
@@ -9,6 +11,17 @@ class AGSOAPRequestHandler(SOAPRequestHandler):
         #                  self.log_date_time_string(),
         #                  format%args))
         pass
+
+    def send_fault(self, f, code=500):
+        detailStr = ""
+        try:
+            # f.detail should be a tuple from zsi
+            for detail in f.detail:
+                detailStr += str(detail)
+        except:
+            pass
+        log.error("%s\nDetail:%s", f, detailStr)
+        SOAPRequestHandler.send_fault(self, f, code)
 
 class ServiceContainerBase:
     '''HTTPServer that stores service instances according 
