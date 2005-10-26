@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.199 2005-10-21 16:15:23 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.200 2005-10-26 20:10:00 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.199 2005-10-21 16:15:23 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.200 2005-10-26 20:10:00 lefvert Exp $"
 
 
 # Standard stuff
@@ -32,7 +32,7 @@ from AccessGrid.interfaces.VenueServer_interface import VenueServer as VenueServ
 from AccessGrid.interfaces.Venue_interface import Venue as VenueI
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerI
-from AccessGrid.Security import X509Subject, Role
+from AccessGrid.Security import X509Subject, Role, Action
 from AccessGrid.Security .Action import ActionAlreadyPresent
 from AccessGrid.Security.Subject import InvalidSubject
 
@@ -178,9 +178,14 @@ class VenueServer:
         self.authManager = AuthorizationManager()
         self.authManager.AddRequiredRole(Role.Administrators)
         self.authManager.AddRequiredRole(Role.Everybody)
+
+        rl = self.authManager.GetRequiredRoles()
+        self.authManager.AddRoles(rl)
         
         # In the venueserver we default to admins
         self.authManager.SetDefaultRoles([Role.Administrators])
+
+      
 
         # Initialize our state
         self.checkpointing = 0
@@ -341,32 +346,29 @@ class VenueServer:
         vsi = VenueServerI(impl=self, auth_method_name="authorize")
         asi = AuthorizationManagerI(self.authManager)
 
-        if self.authorizationPolicy is None:
-           log.info("Creating new authorization policy, non in config.")
-           
-           """
-           if hosting.GetHostingImpl() == "SOAPpy":
-               self.authManager.AddActions(vsi._GetMethodActions())
-           self.authManager.AddRoles(self.authManager.GetRequiredRoles())
-           if hosting.GetHostingImpl() == "SOAPpy":
-               # Default to giving administrators access to all actions.
-               # This is implicitly adding the action too
-               actions = vsi._GetMethodActions() + asi._GetMethodActions()
-               for action in actions:
-                   self.authManager.AddRoleToAction(action.GetName(),
-                                                    Role.Administrators.GetName())
-           """
-           # Get authorization policy.
-           pol = self.authManager.ExportPolicy()
-           pol  = re.sub("\r\n", "<CRLF>", pol )
-           pol  = re.sub("\r", "<CR>", pol )
-           pol  = re.sub("\n", "<LF>", pol )
-           self.config["VenueServer.authorizationPolicy"] = pol
+        from AccessGrid.interfaces.VenueServer_client import VenueServerIW
 
-           SaveConfig(self.configFile, self.config)
-        else:
-           log.debug("Using policy from config file.")
+        # Add actions and roles to the authorization policy
 
+        # Remove methods starting with underscore
+        venueServerActions = filter(lambda x: not x.startswith("_"),
+                                    dir(VenueServerIW))
+        venueServerActions = map(lambda x: Action.Action(x),
+                                 venueServerActions)
+        self.authManager.AddActions(venueServerActions)
+                    
+        for action in venueServerActions:
+            self.authManager.AddRoleToAction(action.GetName(),
+                                             Role.Administrators.GetName())
+
+
+        # Methods you can call without being an admin
+        defaultActionNames = ["GetVenues"]
+
+        for actionName in defaultActionNames:
+            self.authManager.AddRoleToAction(actionName,
+                                             Role.Everybody.GetName())
+        
         # Get the silly default subject this really should be fixed
         try:
            subj = self.servicePtr.GetDefaultSubject()
@@ -376,9 +378,6 @@ class VenueServer:
                                                 Role.Administrators.GetName())
         except InvalidSubject:
            log.exception("Invalid Default Subject!")
-
-#        print "Venue Server Policy:"
-#        print self.authManager.xml.toprettyxml()
         
         # Then we create the VenueServer service
         venueServerUri = self.hostingEnvironment.RegisterObject(vsi, path='/VenueServer')
@@ -745,10 +744,9 @@ class VenueServer:
         pol  = re.sub("\r", "<CR>", pol )
         pol  = re.sub("\n", "<LF>", pol )
         self.config["VenueServer.authorizationPolicy"] = pol
-        
         # Finally we save the current config
         SaveConfig(self.configFile, self.config)
-
+      
         self.checkpointing = 0
 
         return 1
@@ -805,10 +803,6 @@ class VenueServer:
                 # This is a new venue, not from persistence,
                 # so we have to create the policy
                 log.info("Creating new auth policy for the venue.")
-            
-                # Get method actions
-                if hosting.GetHostingImpl() == "SOAPpy":
-                    venue.authManager.AddActions(vi._GetMethodActions())
                 venue.authManager.AddRoles(venue.authManager.GetRequiredRoles())
                 venue.authManager.AddRoles(venue.authManager.GetDefaultRoles())
                 venue._AddDefaultRolesToActions()
