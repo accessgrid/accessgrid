@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.111 2005-10-26 21:28:34 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.112 2005-10-27 04:49:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.111 2005-10-26 21:28:34 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.112 2005-10-27 04:49:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -174,6 +174,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         self.debugMode = 0
         self.browser = None
+        self.myVenuesPos = 0
         
         self.textClientPanel = None
         self.myVenuesDict = {}
@@ -229,7 +230,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.reader.SetUpdateDuration(1800)
         except:
             log.exception('Error constructing RSS reader')
-        self.myVenuesPos = 0
        
         
     ############################################################################
