@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.253 2005-10-12 19:09:03 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.254 2005-10-27 19:02:29 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.253 2005-10-12 19:09:03 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.254 2005-10-27 19:02:29 turam Exp $"
 
 import sys
 import time
@@ -272,18 +272,27 @@ class Venue:
         ctx = GetSOAPContext()
 #         print dir(ctx)
 #         print "Container: ", ctx.connection
-        if hasattr(ctx.connection,'get_peer_cert'):
-            cert = ctx.connection.get_peer_cert()
-            if cert:
-                print "Subject:", cert.get_subject()
-            else:
-                print "Subject: No peer cert"
 #         print "Parsed SOAP: ", ctx.parsedsoap
 #         print "Container: ", ctx.container
 #         print "HTTP Headers:\n", ctx.httpheaders
 #         print "----"
 #         print "XML Data:\n", ctx.xmldata
-        return 1
+        try:
+            if hasattr(ctx.connection,'get_peer_cert'):
+                cert = ctx.connection.get_peer_cert()
+                if cert:
+                    subject = cert.get_subject()
+                    subject = X509Subject.X509Subject(subject)
+                else:
+                    subject = None
+                    
+                action = action.split('#')[-1]
+                return self.authManager.IsAuthorized(subject, action)
+        except:
+            log.exception("Exception in Venue.authorize")
+            print "Exception in Venue.authorize; allowing call by default; should disallow for release"
+            return 1
+            #return 0
     
     def __init__(self, server, name, description, dataStoreLocation,
                  oid=None):
@@ -311,6 +320,7 @@ class Venue:
 
         # Default actions for Entry Roles.
         self.defaultEntryActionNames = ["Enter", "Exit", "GetStreams",
+                                        "UpdateLifetime",
                                         "NegotiateCapabilities",
                                         "GetStaticStreams",
                                         "GetUploadDescriptor",
@@ -340,6 +350,7 @@ class Venue:
                                         "IsAuthorized", "IsValid",
                                         "AllocateMulticastLocation",
                                         "RecycleMulticastLocation",
+                                        "GetState",
                                         ]
         # Methods in Venue IW that are not default to everybody:
         #   "Shutdown", "SetEncryptMedia", "RegenerateEncryptionKeys",
