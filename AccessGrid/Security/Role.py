@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.20 2005-10-10 22:19:27 lefvert Exp $
+# RCS-ID:      $Id: Role.py,v 1.21 2005-10-27 19:00:57 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ much more dynamic. We programmatically create, destroy and modify
 roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.20 2005-10-10 22:19:27 lefvert Exp $"
+__revision__ = "$Id: Role.py,v 1.21 2005-10-27 19:00:57 turam Exp $"
 
 # external imports
 import xml.dom.minidom
@@ -86,6 +86,12 @@ class Role:
         
         self.name = role_name
         self.requireDefaultId = 0
+       
+    def __cmp__(self, other):
+        try:
+            return self.name == other.name
+        except:
+            return 1
        
     def _repr_(self):
         """
