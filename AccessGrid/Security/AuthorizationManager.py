@@ -2,7 +2,7 @@
 # Name:        AuthorizationManager.py
 # Purpose:     The class that does the authorization work.
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.33 2005-10-10 22:19:27 lefvert Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.34 2005-10-27 19:01:35 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.33 2005-10-10 22:19:27 lefvert Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.34 2005-10-27 19:01:35 turam Exp $"
 
 # External Imports
 import os
@@ -75,6 +75,8 @@ class AuthorizationManager:
         self.profileCachePath = os.path.join(userConfig.GetConfigDir(),
                                              self.profileCachePrefix)
         self.profileCache = ClientProfileCache(self.profileCachePath)
+        
+        self.identificationRequired = 0
         
     def _repr_(self):
         """
@@ -197,14 +199,32 @@ class AuthorizationManager:
         @return: 0 if not authorized, 1 if authorized.
         @rtype: int
         """
+        action = MethodAction(action)
+        
         # this gets us all the roles for this action
         rolelist = self.GetRoles(action=action)
+        
+        if subject == None:
+            if self.IsIdentificationRequired():
+                return 0
+            else:
+                if Everybody in rolelist:
+                    return 1
+                else:
+                    return 0
+                
 
         for role in rolelist:
             if role.HasSubject(subject.name):
                 return 1
 
         return 0
+        
+    def RequireIdentification(self,boolFlag):
+        self.identificationRequired = boolflag
+    
+    def IsIdentificationRequired(self):
+        return self.identificationRequired
 
     def AddAction(self, action):
         """
