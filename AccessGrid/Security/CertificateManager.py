@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.42 2005-10-19 19:34:47 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.43 2005-10-27 18:59:33 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.42 2005-10-19 19:34:47 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.43 2005-10-27 18:59:33 turam Exp $"
 
 import re
 import os
@@ -45,7 +45,6 @@ from stat import *
 
 from AccessGrid import Log
 from AccessGrid import Utilities
-from AccessGrid.Security import GlobusConfig
 from AccessGrid.Security import CertificateRepository
 from AccessGrid.Security import CRSClient
 from AccessGrid import Platform
@@ -161,7 +160,6 @@ class CertificateManager(object):
         'useDefaultDN',
         'useCertFile',
         'useKeyFile',
-        'globusConfig'
         ]
 
     def __init__(self, userProfileDir):
@@ -178,12 +176,6 @@ class CertificateManager(object):
         self.defaultIdentity = None
         self.issuedGlobusWarning = 0
 
-        try:
-            self.globusConfig = GlobusConfig.GetConfig(initIfNeeded=1)
-        except Exception, e:
-            log.warn("Globus Configuration problem")
-            self.globusConfig = None
-            
         self.useDefaultDN = None
         self.useCertFile = None
         self.useKeyFile = None
@@ -224,21 +216,6 @@ class CertificateManager(object):
 
         self.CheckConfiguration()
 
-        # Look for new CA Certificates in the system to import
-#         if self.globusConfig:
-#             log.debug("Searching for new CA certificates.")
-#             for ca_cert in [f for f in os.listdir(self.globusConfig)
-#                             if f.endswith(".0")]:
-#                 cpath = os.path.join(self.globusConfig.GetDistCACertDir(),
-#                                      ca_cert)
-#                 try:
-#                     repo.ImportCertificatePEM(cpath)
-#                 except CertificateRepository.RepoInvalidCertificate:
-#                     self.log.warn("Not importing cert %s", cpath)
-#                 except:
-#                     self.log.exception("Error during ca initialization.")
-#             log.debug("Finished searching for new CA certificates.")
-                
     def InitializeRepository(self):
         """
         Initiailize the cert repository as we don't already have one.
@@ -262,129 +239,6 @@ class CertificateManager(object):
             raise Exception, "Received RepoAlreadyExists exception after we determined that it didn't actually exist"
 
         self.InitRepoFromGlobus(self.certRepo)
-
-    def InitRepoFromGlobus(self, repo):
-        """
-        Initialize the given repository from the Globus cert state.
-
-        If we cannot find an identity certificate, do a callback on the user interface
-        when we're done with the rest of the initialization so that the user
-        has an opportunity to request a certificate.
-
-        If we cannot find any globus state, callback to the user interface for that
-        as well. That's a harder problem to solve, but it's not up to us down here.
-        """
-        # If globus isn't available
-        if self.globusConfig is None:
-            return
-        
-        userCert = self.globusConfig.GetDistCertFileName()
-        userKey = self.globusConfig.GetDistKeyFileName()
-        caDir = self.globusConfig.GetDistCACertDir()
-
-        log.debug("Initializing from %s", caDir)
-
-        # First the user cert.
-        if userCert is not None and userKey is not None:
-            # Shh, don't tell. Create a cert object so we can
-            # extract the subject name to tell the user.
-            try:
-                certObj = CertificateRepository.Certificate(userCert)
-            except IOError:
-                if userCert.endswith(os.path.join("globus", "usercert.pem")):
-                    log.warn("Didn't find certficate in old globus path: %s",
-                             userCert)
-                else:
-                    self.GetUserInterface().ReportError(
-                        "Identity certificate does not exist at\n" +
-                        userCert + "\n" +
-                 "You will have to import a valid identity certificate later.")
-                certObj = None
-
-            impCert = None
-
-            if certObj is not None:
-
-                caption = "Initial import of identity certificate"
-                message = "Import certificate for %s. \nPlease enter the passphrase for the private key of this certificate." % (certObj.GetSubject())
-
-                # Import the identity cert.
-                # Loop until either it succeeds, or until the user cancels.
-                while 1:
-
-                    impCert = None
-                    passphraseCB = self.GetUserInterface().GetPassphraseCallback(caption,
-                                                                                 message)
-                    try:
-
-                        impCert = self.ImportIdentityCertificatePEM(repo, userCert, userKey,
-                                                                    passphraseCB)
-                        break
-
-                    except CertificateRepository.RepoInvalidCertificate:
-                        log.exception("invalid cert on import")
-                        self.GetUserInterface().ReportError("Your identity certificate is invalid or already present; not importing.")
-                        break
-
-                    except CertificateRepository.RepoBadPassphrase:
-                        log.exception("badd passphrase on import")
-                        cont = self.GetUserInterface().ReportBadPassphrase()
-                        if not cont:
-                            break
-
-                    except:
-                        log.exception("Unknown error on import")
-                        self.GetUserInterface().ReportError("Unknown error on initial certificate import; ignoring your identity certificate")
-                        break
-
-
-                if impCert is not None:
-                    idCerts = self.GetDefaultIdentityCerts()
-                    if len(idCerts) == 0:
-                        self.SetDefaultIdentity(impCert)
-            
-        # Now handle the CA certs.
-        if caDir is not None:
-            try:
-                files = os.listdir(caDir)
-            except:
-                self.GetUserInterface().ReportError("Error reading CA certificate directory\n" +
-                                                    caDir + "\n" +
-                                                    "You will have to import trusted CA certificates later.")
-                files = []
-
-            # Extract the files from the caDir that match OpenSSL's
-            # 8-character dot index format.
-            regexp = re.compile(r"^[\da-fA-F]{8}\.\d$")
-            possibleCertFiles = filter(lambda f, r = regexp: r.search(f), files)
-
-            for f in possibleCertFiles:
-
-                path = os.path.join(caDir, f);
-                log.info("%s might be a cert" % (path))
-
-                # Check for existence of signing policy
-                certbasename = f.split('.')[0]
-                signingPolicyFile = '%s.signing_policy' % (certbasename,)
-                signingPath = os.path.join(caDir,signingPolicyFile)
-                if not os.path.isfile(signingPath):
-                    log.info("Not importing CA cert %s; couldn't find signing policy file %s",
-                             f,signingPath)
-                    continue
-                    
-                try:
-                
-                    # Import the certificate
-                    desc = self.ImportCACertificatePEM(repo, path)
-                    
-                    # Copy the signing policy file
-                    shutil.copyfile(signingPath,
-                                        desc.GetFilePath("signing_policy"))
-                    
-                    log.info("Imported cert as %s.0", desc.GetSubject().get_hash())
-                    
-                except:
-                    log.exception("failure importing %s", path)
 
     def ImportRequestedCertificate(self, userCert):
         repo = self.GetCertificateRepository()
@@ -702,7 +556,6 @@ class CertificateManager(object):
             if os.path.isfile(spath):
                 shutil.copyfile(spath, os.path.join(self.caDir, "%s.signing_policy" % (nameHash)))
 
-        self.globusConfig.SetActiveCACertDir(self.caDir)
 
     def _InitEnvWithCert(self):
 
@@ -738,7 +591,6 @@ class CertificateManager(object):
             else:
                 raise Exception, "Invalid permissions on private key %s (must be 600 or less)" % (keyPath)
 
-        self.globusConfig.SetUserCert(certPath, keyPath)
 
     def SetDefaultIdentity(self, certDesc):
         """
@@ -757,9 +609,6 @@ class CertificateManager(object):
         # And set this one to be default.
         certDesc.SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
 
-    def GetGlobusConfig(self):
-        return self.globusConfig
-    
     def GetDefaultIdentity(self):
         return self.defaultIdentity
 
