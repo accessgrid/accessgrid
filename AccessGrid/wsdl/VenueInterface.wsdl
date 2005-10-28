@@ -180,7 +180,7 @@
             <xsd:complexType>
               <xsd:sequence>
                 <xsd:element minOccurs="0" maxOccurs="1" name="connectionId" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="requestedTimeout" type="xsd:float" default="0"/>
+                <xsd:element minOccurs="0" maxOccurs="1" name="requestedTimeout" type="xsd:float"/>
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
