@@ -149,6 +149,10 @@ if haveCryptoLib:
             self._nodes = self.NodeTree()
             map(lambda s: self.setNode(s), services)
 
+        def handle_error(self, request=None, client_address=None):
+            log.exception(request)
+            SSL.SSLServer.handle_error(self)
+
     class ThreadingSecureServiceContainer(SocketServer.ThreadingMixIn,SecureServiceContainer):
         def __init__(self, server_address,context,services=[]):
             SecureServiceContainer.__init__(self, server_address,
