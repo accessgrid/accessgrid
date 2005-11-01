@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: X509Subject.py,v 1.9 2005-10-10 22:19:27 lefvert Exp $
+# RCS-ID:      $Id: X509Subject.py,v 1.10 2005-11-01 18:40:40 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ Subjects are the basic security handle on entities that want to be a
 part of the security environment.
 """
 
-__revision__ = "$Id: X509Subject.py,v 1.9 2005-10-10 22:19:27 lefvert Exp $"
+__revision__ = "$Id: X509Subject.py,v 1.10 2005-11-01 18:40:40 turam Exp $"
 
 # external imports
 from OpenSSL_AG.crypto import X509NameType
@@ -40,13 +40,18 @@ class X509Subject(Subject):
     AUTH_TYPE = "x509"
     AUTH_ANON = "anonymous"
 
-    def __init__(self, name, auth_data = ""):
+    def __init__(self, name=None, auth_data = ""):
         """
         @param name: the name of the subject
         @param auth_data: opaque data associated with this subject.
         @type name: string
         @type auth_data: string
         """
+        
+        # manipulate the subject if necessary
+        if not name.startswith('/'):
+            name = '/' + '/'.join(name.split(', '))
+        
         Subject.__init__(self, name, self.AUTH_TYPE, auth_data)
         self.name = name
         self.auth_type = self.AUTH_TYPE
@@ -89,8 +94,6 @@ def CreateSubjectFromString(subjectString):
     @param subjectString: the DN of the subject
     @type subjectString: string.
     """
-    if type(subjectString) != type(""):
-        raise InvalidString
 
     return X509Subject(subjectString)
 
