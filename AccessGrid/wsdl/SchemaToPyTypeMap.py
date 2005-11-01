@@ -24,5 +24,12 @@ mapping = {
     "AGServicePackageDescription" : ("AccessGrid.Descriptions", "AGServicePackageDescription"),
     "AGServiceDescription" : ("AccessGrid.Descriptions", "AGServiceDescription"),
     "Capability" : ("AccessGrid.Descriptions", "Capability"),
+    
+    # Authorization Manager
+    "Role" : ("AccessGrid.Security.Role", "Role"),
+    "Action" : ("AccessGrid.Security.Action", "Action"),
+    "Subject" : ("AccessGrid.Security.Subject", "Subject"),
+    "X509Subject" : ("AccessGrid.Security.X509Subject", "X509Subject"),
+    
 }
 
