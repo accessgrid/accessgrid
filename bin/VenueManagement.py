@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.155 2005-10-07 22:44:52 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.156 2005-11-01 19:31:29 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.155 2005-10-07 22:44:52 eolson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.156 2005-11-01 19:31:29 turam Exp $"
 
 # Standard imports
 import sys
@@ -42,8 +42,8 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid import icons
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
 from AccessGrid.Utilities import VENUE_MANAGEMENT_LOG
-#from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIPanel, AuthorizationUIDialog
-#from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
+from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIPanel, AuthorizationUIDialog
+from AccessGrid.interfaces.AuthorizationManager_client import AuthorizationManagerIW
 from AccessGrid import Log
 from AccessGrid.hosting import Client
 from AccessGrid.interfaces.VenueServer_client import VenueServerIW
@@ -390,7 +390,12 @@ class VenueManagementClient(wxApp):
         try:
             wxBeginBusyCursor()
             log.debug("VenueManagementClient.ConnectToServer: Connect to server")
-            self.server = VenueServerIW(URL)
+            defaultId = self.application.app.certificateManager.GetDefaultIdentity()
+            transdict = {}
+            if defaultId:
+                transdict = {"cert_file":defaultId.GetPath(),
+                             "key_file":defaultId.GetKeyPath()}
+            self.server = VenueServerIW(URL,transdict=transdict)
             log.debug("VenueManagementClient.ConnectToServer: Get venues from server")
             self.venueList = {}
             #self.server.GetProperty(["test"])
@@ -496,7 +501,12 @@ class VenueManagementClient(wxApp):
             log.debug("VenueManagementClient.SetCurrentVenue: Set current venue to: %s, %s" % (str(venue.name),
                                                          str(venue.uri)))
             self.currentVenue = venue
-            self.currentVenueClient = VenueIW(venue.uri)
+            defaultId = self.application.app.certificateManager.GetDefaultIdentity()
+            transdict = {}
+            if defaultId:
+                transdict = {"cert_file":defaultId.GetPath(),
+                             "key_file":defaultId.GetKeyPath()}
+            self.currentVenueClient = VenueIW(venue.uri,transdict=transdict)
 
     def SetVenueEncryption(self, venue, value = 0, key = ''):
         self.SetCurrentVenue(venue)
@@ -568,9 +578,36 @@ class VenueServerAddress(wxPanel):
         EVT_TEXT_ENTER(self, self.ID_ADDRESS, self.CallAddress)
 
     def CallAddress(self, event):
-        URL = self.addressText.GetValue()
+        venueServerUrl = self.addressText.GetValue()
+
+        defaultproto = 'https'
+        defaultport = 8000
+
+        # - define a mess of regular expressions for matching venue urls
+        hostre = re.compile('^[\w.-]*$')
+        hostportre = re.compile('^[\w.-]*:[\d]*$')
+        protohostre = re.compile('^[\w]*://[\w.-]*$')
+        protohostportre = re.compile('^[\w]*://[\w.-]*:[\d]*$')
+
+        # - check for host only
+        if hostre.match(venueServerUrl):
+            host = venueServerUrl
+            venueServerUrl = '%s://%s:%d/VenueServer' % (defaultproto,host,defaultport)
+        # - check for host:port
+        elif hostportre.match(venueServerUrl):
+            hostport = venueServerUrl
+            venueServerUrl = '%s://%s/VenueServer' % (defaultproto,hostport)
+        elif protohostre.match(venueServerUrl):
+            protohost = venueServerUrl
+            venueServerUrl = '%s:%d/VenueServer' % (protohost,defaultport)
+        elif protohostportre.match(venueServerUrl):
+            protohostport = venueServerUrl
+            venueServerUrl = '%s/VenueServer' % (protohostport)
+            
+        self.addressText.SetValue(venueServerUrl)
+
         wxBeginBusyCursor()
-        self.application.ConnectToServer(URL)
+        self.application.ConnectToServer(venueServerUrl)
         wxEndBusyCursor()
 
     def __doLayout(self):
@@ -1521,7 +1558,12 @@ class GeneralPanel(wxPanel):
         try:
             wxBeginBusyCursor()
             log.debug("VenueParamFrame.__LoadVenues: Load venues from: %s " % URL)
-            server = VenueServerIW(URL)
+            defaultId = self.application.app.certificateManager.GetDefaultIdentity()
+            transdict = {}
+            if defaultId:
+                transdict = {"cert_file":defaultId.GetPath(),
+                             "key_file":defaultId.GetKeyPath()}
+            server = VenueServerIW(URL,transdict=transdict)
             
             vl = server.GetVenues()
             
@@ -2083,7 +2125,7 @@ class AddVenueFrame(VenueParamFrame):
 
 class ModifyVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title, venueList, application):
-        VenueParamFrame.__init__(self, parent, id, title, app)
+        VenueParamFrame.__init__(self, parent, id, title, application)
         wxBeginBusyCursor()
         self.SetSize(wxSize(600, 470))
         self.SetLabel('Modify Venue')
@@ -2147,7 +2189,12 @@ class ModifyVenueFrame(VenueParamFrame):
         self.venue = venueList.GetClientData(item)
 
         # Get the real venue description
-        venueProxy = VenueIW(self.venue.uri)
+        defaultId = self.application.app.certificateManager.GetDefaultIdentity()
+        transdict = {}
+        if defaultId:
+            transdict = {"cert_file":defaultId.GetPath(),
+                         "key_file":defaultId.GetKeyPath()}
+        venueProxy = VenueIW(self.venue.uri,transdict=transdict)
         self.venue = venueProxy.AsVenueDescription()
         
         self.generalPanel.title.AppendText(self.venue.name)
