@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: Action.py,v 1.12 2005-10-10 22:19:27 lefvert Exp $
+# RCS-ID:      $Id: Action.py,v 1.13 2005-11-01 18:37:03 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ method invocation on services. There's no real limitation to what
 actions can be or what they can be used for however.
 """
 
-__revision__ = "$Id: Action.py,v 1.12 2005-10-10 22:19:27 lefvert Exp $"
+__revision__ = "$Id: Action.py,v 1.13 2005-11-01 18:37:03 turam Exp $"
 
 import xml.dom.minidom
 from AccessGrid.Security.Role import RoleNotFound, Role
@@ -47,7 +47,7 @@ class Action:
     This class provides all the common action functionality. 
     """
     TYPE = "Invalid"
-    def __init__(self, name, roles=None):
+    def __init__(self, name=None, roles=None):
         """
         @param name: This is the name of the Action.
         @param roles: This is a list of roles to initialize the action with.
@@ -191,6 +191,7 @@ class Action:
             raise RoleNotFound(role)
 
         self.roles.remove(roleToRemove)
+        
 
         return role
     
