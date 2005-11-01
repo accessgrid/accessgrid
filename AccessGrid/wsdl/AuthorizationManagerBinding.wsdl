@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  xmlns:agtkam="http://www.accessgrid.org/v3.0/authorizationmanager"
+  targetNamespace="http://www.accessgrid.org/v3.0/authorizationmanager">
+
+  <import namespace="http://www.accessgrid.org/v3.0/authorizationmanager" 
+          location="AuthorizationManagerInterface.wsdl"/>
+
+  <import namespace="http://www.accessgrid.org/v3.0" 
+          location="AccessGrid_Types.xsd"/>
+
+  <binding name="AuthorizationManager" type="agtkam:AuthorizationManager">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <operation name="AddAction">
+	    <soap:operation soapAction="urn:#AddAction"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="AddRole">
+	    <soap:operation soapAction="urn:#AddRole"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="AddRoleToAction">
+	    <soap:operation soapAction="urn:#AddRoleToAction"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="AddRolesToAction">
+	    <soap:operation soapAction="urn:#AddRolesToAction"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="AddSubjectToRole">
+	    <soap:operation soapAction="urn:#AddSubjectToRole"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="AddSubjectsToRole">
+	    <soap:operation soapAction="urn:#AddSubjectsToRole"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="FindRole">
+	    <soap:operation soapAction="urn:#FindRole"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetPolicy">
+	    <soap:operation soapAction="urn:#GetPolicy"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="GetRolesForSubject">
+	    <soap:operation soapAction="urn:#GetRolesForSubject"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="ImportPolicy">
+	    <soap:operation soapAction="urn:#ImportPolicy"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="IsAuthorized">
+	    <soap:operation soapAction="urn:#IsAuthorized"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="ListActions">
+	    <soap:operation soapAction="urn:#ListActions"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="ListRoles">
+	    <soap:operation soapAction="urn:#ListRoles"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="ListRolesInAction">
+	    <soap:operation soapAction="urn:#ListRolesInAction"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="ListSubjects">
+	    <soap:operation soapAction="urn:#ListSubjects"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="RemoveAction">
+	    <soap:operation soapAction="urn:#RemoveAction"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="RemoveRole">
+	    <soap:operation soapAction="urn:#RemoveRole"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="RemoveRoleFromAction">
+	    <soap:operation soapAction="urn:#RemoveRoleFromAction"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="RemoveSubjectFromRole">
+	    <soap:operation soapAction="urn:#RemoveSubjectFromRole"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="RemoveSubjectsFromRole">
+	    <soap:operation soapAction="urn:#RemoveSubjectsFromRole"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    <operation name="TestImportExport">
+	    <soap:operation soapAction="urn:#TestImportExport"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+    </binding>
+    <service name="AuthorizationManager">
+        <port name="AuthorizationManager" binding="agtkam:AuthorizationManager">
+	    <soap:address location="http://localhost:7000"/>
+	</port>
+    </service>
+
+
+</definitions>
+

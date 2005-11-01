@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  xmlns:agtkam="http://www.accessgrid.org/v3.0/authorizationmanager"
+  targetNamespace="http://www.accessgrid.org/v3.0/authorizationmanager">
+
+      <types>
+      <schema targetNamespace="http://www.accessgrid.org/v3.0/authorizationmanager" 
+              elementFormDefault="qualified" 
+	      attributeFormDefault="unqualified" 
+              xmlns="http://www.w3.org/2001/XMLSchema">
+
+          <xsd:element name="AddActionRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="action" type="agtk:Action" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddActionResponse">
+          </xsd:element>
+
+          <xsd:element name="AddRoleRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="role" type="agtk:Role" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddRoleResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="role" type="agtk:Role" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddRoleToActionRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="action" type="agtk:Action" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="role" type="agtk:Role" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddRoleToActionResponse">
+          </xsd:element>
+
+          <xsd:element name="AddRolesToActionRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="unbounded" name="role" type="agtk:Role" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="action" type="agtk:Action" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddRolesToActionResponse">
+          </xsd:element>
+
+          <xsd:element name="AddSubjectToRoleRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="subject" type="agtk:X509Subject" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="role" type="agtk:Role" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddSubjectToRoleResponse">
+          </xsd:element>
+
+          <xsd:element name="AddSubjectsToRoleRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="unbounded" name="subjectList" type="agtk:X509Subject" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="role" type="agtk:Role" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddSubjectsToRoleResponse">
+          </xsd:element>
+
+          <xsd:element name="FindRoleRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="name" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="FindRoleResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="role" type="agtk:Role" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetPolicyRequest">
+          </xsd:element>
+
+          <xsd:element name="GetPolicyResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="argname" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetRolesForSubjectRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="subject" type="agtk:X509Subject" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetRolesForSubjectResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="unbounded" name="role" type="agtk:Role" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ImportPolicyRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="policy" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ImportPolicyResponse">
+          </xsd:element>
+
+          <xsd:element name="IsAuthorizedRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="subject" type="agtk:X509Subject" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="action" type="agtk:Action" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="IsAuthorizedResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="authorizedFlag" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ListActionsRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="subject" type="agtk:X509Subject" nillable="true"/>
+                <xsd:element minOccurs="1" maxOccurs="1" name="role" type="agtk:Role" nillable="true"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ListActionsResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="actionList" type="agtk:Action" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ListRolesRequest">
+          </xsd:element>
+
+          <xsd:element name="ListRolesResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="roleList" type="agtk:Role" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ListRolesInActionRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="action" type="agtk:Action" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ListRolesInActionResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="roleList" type="agtk:Role" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ListSubjectsRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="role" type="agtk:Role" nillable="true"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ListSubjectsResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="subjectList" type="agtk:X509Subject" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveActionRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="action" type="agtk:Action" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveActionResponse">
+          </xsd:element>
+
+          <xsd:element name="RemoveRoleRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="role" type="agtk:Role" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveRoleResponse">
+          </xsd:element>
+
+          <xsd:element name="RemoveRoleFromActionRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="role" type="agtk:Role" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="action" type="agtk:Action" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveRoleFromActionResponse">
+          </xsd:element>
+
+          <xsd:element name="RemoveSubjectFromRoleRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="subject" type="agtk:X509Subject" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="role" type="agtk:Role" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveSubjectFromRoleResponse">
+          </xsd:element>
+
+          <xsd:element name="RemoveSubjectsFromRoleRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="unbounded" name="subjectList" type="agtk:X509Subject" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="role" type="agtk:Role" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveSubjectsFromRoleResponse">
+          </xsd:element>
+
+          <xsd:element name="TestImportExportRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="policy" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="TestImportExportResponse">
+          </xsd:element>
+
+      </schema>
+      </types>
+
+
+
+    <message name="AddActionRequest">
+	<part name="parameters" element="agtkam:AddActionRequest"/>
+    </message>
+    <message name="AddActionResponse">
+	<part name="parameters" element="agtkam:AddActionResponse"/>
+    </message>
+    <message name="AddRoleRequest">
+	<part name="parameters" element="agtkam:AddRoleRequest"/>
+    </message>
+    <message name="AddRoleResponse">
+	<part name="parameters" element="agtkam:AddRoleResponse"/>
+    </message>
+    <message name="AddRoleToActionRequest">
+	<part name="parameters" element="agtkam:AddRoleToActionRequest"/>
+    </message>
+    <message name="AddRoleToActionResponse">
+	<part name="parameters" element="agtkam:AddRoleToActionResponse"/>
+    </message>
+    <message name="AddRolesToActionRequest">
+	<part name="parameters" element="agtkam:AddRolesToActionRequest"/>
+    </message>
+    <message name="AddRolesToActionResponse">
+	<part name="parameters" element="agtkam:AddRolesToActionResponse"/>
+    </message>
+    <message name="AddSubjectToRoleRequest">
+	<part name="parameters" element="agtkam:AddSubjectToRoleRequest"/>
+    </message>
+    <message name="AddSubjectToRoleResponse">
+	<part name="parameters" element="agtkam:AddSubjectToRoleResponse"/>
+    </message>
+    <message name="AddSubjectsToRoleRequest">
+	<part name="parameters" element="agtkam:AddSubjectsToRoleRequest"/>
+    </message>
+    <message name="AddSubjectsToRoleResponse">
+	<part name="parameters" element="agtkam:AddSubjectsToRoleResponse"/>
+    </message>
+    <message name="FindRoleRequest">
+	<part name="parameters" element="agtkam:FindRoleRequest"/>
+    </message>
+    <message name="FindRoleResponse">
+	<part name="parameters" element="agtkam:FindRoleResponse"/>
+    </message>
+    <message name="GetPolicyRequest">
+	<part name="parameters" element="agtkam:GetPolicyRequest"/>
+    </message>
+    <message name="GetPolicyResponse">
+	<part name="parameters" element="agtkam:GetPolicyResponse"/>
+    </message>
+    <message name="GetRolesForSubjectRequest">
+	<part name="parameters" element="agtkam:GetRolesForSubjectRequest"/>
+    </message>
+    <message name="GetRolesForSubjectResponse">
+	<part name="parameters" element="agtkam:GetRolesForSubjectResponse"/>
+    </message>
+    <message name="ImportPolicyRequest">
+	<part name="parameters" element="agtkam:ImportPolicyRequest"/>
+    </message>
+    <message name="ImportPolicyResponse">
+	<part name="parameters" element="agtkam:ImportPolicyResponse"/>
+    </message>
+    <message name="IsAuthorizedRequest">
+	<part name="parameters" element="agtkam:IsAuthorizedRequest"/>
+    </message>
+    <message name="IsAuthorizedResponse">
+	<part name="parameters" element="agtkam:IsAuthorizedResponse"/>
+    </message>
+    <message name="ListActionsRequest">
+	<part name="parameters" element="agtkam:ListActionsRequest"/>
+    </message>
+    <message name="ListActionsResponse">
+	<part name="parameters" element="agtkam:ListActionsResponse"/>
+    </message>
+    <message name="ListRolesRequest">
+	<part name="parameters" element="agtkam:ListRolesRequest"/>
+    </message>
+    <message name="ListRolesResponse">
+	<part name="parameters" element="agtkam:ListRolesResponse"/>
+    </message>
+    <message name="ListRolesInActionRequest">
+	<part name="parameters" element="agtkam:ListRolesInActionRequest"/>
+    </message>
+    <message name="ListRolesInActionResponse">
+	<part name="parameters" element="agtkam:ListRolesInActionResponse"/>
+    </message>
+    <message name="ListSubjectsRequest">
+	<part name="parameters" element="agtkam:ListSubjectsRequest"/>
+    </message>
+    <message name="ListSubjectsResponse">
+	<part name="parameters" element="agtkam:ListSubjectsResponse"/>
+    </message>
+    <message name="RemoveActionRequest">
+	<part name="parameters" element="agtkam:RemoveActionRequest"/>
+    </message>
+    <message name="RemoveActionResponse">
+	<part name="parameters" element="agtkam:RemoveActionResponse"/>
+    </message>
+    <message name="RemoveRoleRequest">
+	<part name="parameters" element="agtkam:RemoveRoleRequest"/>
+    </message>
+    <message name="RemoveRoleResponse">
+	<part name="parameters" element="agtkam:RemoveRoleResponse"/>
+    </message>
+    <message name="RemoveRoleFromActionRequest">
+	<part name="parameters" element="agtkam:RemoveRoleFromActionRequest"/>
+    </message>
+    <message name="RemoveRoleFromActionResponse">
+	<part name="parameters" element="agtkam:RemoveRoleFromActionResponse"/>
+    </message>
+    <message name="RemoveSubjectFromRoleRequest">
+	<part name="parameters" element="agtkam:RemoveSubjectFromRoleRequest"/>
+    </message>
+    <message name="RemoveSubjectFromRoleResponse">
+	<part name="parameters" element="agtkam:RemoveSubjectFromRoleResponse"/>
+    </message>
+    <message name="RemoveSubjectsFromRoleRequest">
+	<part name="parameters" element="agtkam:RemoveSubjectsFromRoleRequest"/>
+    </message>
+    <message name="RemoveSubjectsFromRoleResponse">
+	<part name="parameters" element="agtkam:RemoveSubjectsFromRoleResponse"/>
+    </message>
+    <message name="TestImportExportRequest">
+	<part name="parameters" element="agtkam:TestImportExportRequest"/>
+    </message>
+    <message name="TestImportExportResponse">
+	<part name="parameters" element="agtkam:TestImportExportResponse"/>
+    </message>
+
+
+
+    <portType name="AuthorizationManager">
+    <operation name="AddAction">
+        <input message="agtkam:AddActionRequest"/>
+        <output message="agtkam:AddActionResponse"/>
+    </operation>
+    <operation name="AddRole">
+        <input message="agtkam:AddRoleRequest"/>
+        <output message="agtkam:AddRoleResponse"/>
+    </operation>
+    <operation name="AddRoleToAction">
+        <input message="agtkam:AddRoleToActionRequest"/>
+        <output message="agtkam:AddRoleToActionResponse"/>
+    </operation>
+    <operation name="AddRolesToAction">
+        <input message="agtkam:AddRolesToActionRequest"/>
+        <output message="agtkam:AddRolesToActionResponse"/>
+    </operation>
+    <operation name="AddSubjectToRole">
+        <input message="agtkam:AddSubjectToRoleRequest"/>
+        <output message="agtkam:AddSubjectToRoleResponse"/>
+    </operation>
+    <operation name="AddSubjectsToRole">
+        <input message="agtkam:AddSubjectsToRoleRequest"/>
+        <output message="agtkam:AddSubjectsToRoleResponse"/>
+    </operation>
+    <operation name="FindRole">
+        <input message="agtkam:FindRoleRequest"/>
+        <output message="agtkam:FindRoleResponse"/>
+    </operation>
+    <operation name="GetPolicy">
+        <input message="agtkam:GetPolicyRequest"/>
+        <output message="agtkam:GetPolicyResponse"/>
+    </operation>
+    <operation name="GetRolesForSubject">
+        <input message="agtkam:GetRolesForSubjectRequest"/>
+        <output message="agtkam:GetRolesForSubjectResponse"/>
+    </operation>
+    <operation name="ImportPolicy">
+        <input message="agtkam:ImportPolicyRequest"/>
+        <output message="agtkam:ImportPolicyResponse"/>
+    </operation>
+    <operation name="IsAuthorized">
+        <input message="agtkam:IsAuthorizedRequest"/>
+        <output message="agtkam:IsAuthorizedResponse"/>
+    </operation>
+    <operation name="ListActions">
+        <input message="agtkam:ListActionsRequest"/>
+        <output message="agtkam:ListActionsResponse"/>
+    </operation>
+    <operation name="ListRoles">
+        <input message="agtkam:ListRolesRequest"/>
+        <output message="agtkam:ListRolesResponse"/>
+    </operation>
+    <operation name="ListRolesInAction">
+        <input message="agtkam:ListRolesInActionRequest"/>
+        <output message="agtkam:ListRolesInActionResponse"/>
+    </operation>
+    <operation name="ListSubjects">
+        <input message="agtkam:ListSubjectsRequest"/>
+        <output message="agtkam:ListSubjectsResponse"/>
+    </operation>
+    <operation name="RemoveAction">
+        <input message="agtkam:RemoveActionRequest"/>
+        <output message="agtkam:RemoveActionResponse"/>
+    </operation>
+    <operation name="RemoveRole">
+        <input message="agtkam:RemoveRoleRequest"/>
+        <output message="agtkam:RemoveRoleResponse"/>
+    </operation>
+    <operation name="RemoveRoleFromAction">
+        <input message="agtkam:RemoveRoleFromActionRequest"/>
+        <output message="agtkam:RemoveRoleFromActionResponse"/>
+    </operation>
+    <operation name="RemoveSubjectFromRole">
+        <input message="agtkam:RemoveSubjectFromRoleRequest"/>
+        <output message="agtkam:RemoveSubjectFromRoleResponse"/>
+    </operation>
+    <operation name="RemoveSubjectsFromRole">
+        <input message="agtkam:RemoveSubjectsFromRoleRequest"/>
+        <output message="agtkam:RemoveSubjectsFromRoleResponse"/>
+    </operation>
+    <operation name="TestImportExport">
+        <input message="agtkam:TestImportExportRequest"/>
+        <output message="agtkam:TestImportExportResponse"/>
+    </operation>
+    </portType>
+
+</definitions>
+
