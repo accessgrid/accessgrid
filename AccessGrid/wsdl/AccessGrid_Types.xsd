@@ -271,5 +271,38 @@
       </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="Role">
+      <xs:sequence>
+        <xs:element name = "name" type = "xs:string"/>
+        <xs:element name = "subjects" minOccurs="0" maxOccurs="unbounded" type = "xs:any"/>
+      	<xs:element name = "requireDefaultId" type = "xs:int"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Action">
+      <xs:sequence>
+        <xs:element name = "name" type = "xs:string"/>
+      	<xs:element name = "roles" minOccurs="0" maxOccurs="unbounded" type = "tns:Role"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Subject">
+      <xs:sequence>
+        <xs:element name = "name" type = "xs:string"/>
+        <xs:element name = "auth_type" type = "xs:string"/>
+        <xs:element name = "auth_data" type = "xs:string"/>
+      	<xs:element name = "id" type = "xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="X509Subject">
+      <xs:sequence>
+        <xs:element name = "name" type = "xs:string"/>
+        <xs:element name = "auth_type" type = "xs:string"/>
+        <xs:element name = "auth_data" type = "xs:string"/>
+      	<xs:element name = "id" type = "xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+
  </xs:schema>
 
