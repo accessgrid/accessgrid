@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.254 2005-10-27 19:02:29 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.255 2005-11-01 19:19:21 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.254 2005-10-27 19:02:29 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.255 2005-11-01 19:19:21 turam Exp $"
 
 import sys
 import time
@@ -26,8 +26,8 @@ from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.Toolkit import Service
 
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
-from AccessGrid.Security.AuthorizationManager import AuthorizationManagerI
-from AccessGrid.Security import X509Subject, Role, Subject
+from AccessGrid.interfaces.AuthorizationManager_interface import AuthorizationManager as AuthorizationManagerI
+from AccessGrid.Security import X509Subject, Role, Subject, Action
 from AccessGrid.Security.Subject import SubjectAlreadyPresent
 
 from AccessGrid import DataStore
@@ -281,13 +281,26 @@ class Venue:
             if hasattr(ctx.connection,'get_peer_cert'):
                 cert = ctx.connection.get_peer_cert()
                 if cert:
-                    subject = cert.get_subject()
+                    subject = cert.get_subject().as_text()
                     subject = X509Subject.X509Subject(subject)
                 else:
                     subject = None
                     
+                # Check whether user is authorized to perform this action
                 action = action.split('#')[-1]
-                return self.authManager.IsAuthorized(subject, action)
+                isAuth = self.authManager.IsAuthorized(subject, action) 
+                if isAuth:
+                    return 1
+                
+                # If user is a venueserver admin, allow them to do whatever they 
+                # want to a venue
+                adminRole = self.server.authManager.FindRole('Administrators')
+                admins = self.server.authManager.GetSubjects(adminRole)
+                print 'admins = ', admins
+                if subject in admins:
+                    return 1
+                    
+                return 0
         except:
             log.exception("Exception in Venue.authorize")
             print "Exception in Venue.authorize; allowing call by default; should disallow for release"
@@ -475,14 +488,16 @@ class Venue:
         
         # Add default entry roles to entry actions.
         for actionName in self.defaultEntryActionNames:
-            self.authManager.AddRoleToAction(actionName, "AllowedEntry")
-            self.authManager.AddRoleToAction(actionName,
-                                             Role.Everybody.GetName())
+            self.authManager.AddRoleToAction(Action.Action(actionName), 
+                                             Role.Role("AllowedEntry"))
+            self.authManager.AddRoleToAction(Action.Action(actionName),
+                                             Role.Everybody)
 
         # Add default entry roles to venueusers actions.
         # Currently no actions include VenueUsers
         for actionName in self.defaultVenueUserActionNames:
-            self.authManager.AddRoleToAction(actionName, "VenueUsers")
+            self.authManager.AddRoleToAction(Action.Action(actionName), 
+                                             Role.Role("VenueUsers"))
 
     def _UpdateProfileCache(self, profile):
         try:
@@ -1951,9 +1966,9 @@ class Venue:
             import traceback
             traceback.print_exc()
         # register the authorization interface and serve it.
-        #self.server.hostingEnvironment.RegisterObject(
-        #                          AuthorizationManagerI(app.authManager),
-        #                          path=path+'/Authorization')
+        self.server.hostingEnvironment.RegisterObject(
+                                 AuthorizationManagerI(app.authManager),
+                                 path=path+'/Authorization')
         # pull the url back out and put it in the app object
         appURL = self.server.hostingEnvironment.FindURLForObject(app)
         app.SetHandle(appURL)
