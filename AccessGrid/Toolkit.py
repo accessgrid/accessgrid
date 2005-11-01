@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.94 2005-10-21 19:12:43 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.95 2005-11-01 19:09:23 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.94 2005-10-21 19:12:43 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.95 2005-11-01 19:09:23 turam Exp $"
 
 # Standard imports
 import os
@@ -31,7 +31,7 @@ from AccessGrid.Security import X509Subject
 from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.wsdl import SchemaToPyTypeMap
 
-from M2Crypto.SSL import Context
+from M2Crypto import SSL
 
 class AppBase:
     """
@@ -186,12 +186,13 @@ class AppBase:
        
     def GetContext(self):
         if not self.context:
-            self.context = Context('sslv23')
+            self.context = SSL.Context('sslv23')
             
             defaultId = self.certificateManager.GetDefaultIdentity()
             caDir = self.certificateManager.caDir
             self.context.load_cert(defaultId.GetPath(),defaultId.GetKeyPath())
             self.context.load_verify_locations(capath=caDir)
+            self.context.set_verify(SSL.verify_peer,10)
         return self.context
 
     def __SetLogPreference(self):
@@ -367,7 +368,13 @@ class AppBase:
         return self.userConfig
 
     def GetDefaultSubject(self):
-        subject = None
+        ident = self.certificateManager.GetDefaultIdentity()
+
+        if ident is not None:
+            subject = X509Subject.CreateSubjectFromString(str(ident.GetSubject()))
+        else:
+            subject = None
+
         return subject
 
     def GetCertificateManager(self):
@@ -486,7 +493,6 @@ class CmdlineApplication(Application):
        
         # Create the singleton instance
         CmdlineApplication.theAppInstance = self
-        self.certMgrUI = CertificateManager.CertificateManagerUserInterface()
 
 class WXGUIApplication(Application):
     def __init__(self):
