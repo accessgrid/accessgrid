@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.31 2005-10-05 19:49:08 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.32 2005-11-01 18:42:10 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.31 2005-10-05 19:49:08 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.32 2005-11-01 18:42:10 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -27,7 +27,7 @@ from wxPython.wizard import *
 from AccessGrid import Toolkit
 from AccessGrid.Platform import IsWindows,IsOSX
 from AccessGrid.ClientProfile import ClientProfileCache
-from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
+from AccessGrid.interfaces.AuthorizationManager_client import AuthorizationManagerIW
 from AccessGrid.Venue import VenueIW
 from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Security.X509Subject import X509Subject    
@@ -606,7 +606,8 @@ class AuthorizationUIPanel(wxPanel):
                         else:
                             self.actionList.Check(index, 1)
             
-            self.actionTitle.SetLabel("Actions for %s"%self.currentRole.name)
+            if self.currentRole:
+                self.actionTitle.SetLabel("Actions for %s"%self.currentRole.name)
 
     def BeginDrag(self, event):
         '''
