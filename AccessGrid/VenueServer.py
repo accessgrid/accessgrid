@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.200 2005-10-26 20:10:00 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.201 2005-11-01 19:26:09 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.200 2005-10-26 20:10:00 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.201 2005-11-01 19:26:09 turam Exp $"
 
 
 # Standard stuff
@@ -31,7 +31,7 @@ from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.interfaces.VenueServer_interface import VenueServer as VenueServerI
 from AccessGrid.interfaces.Venue_interface import Venue as VenueI
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
-from AccessGrid.Security.AuthorizationManager import AuthorizationManagerI
+from AccessGrid.interfaces.AuthorizationManager_interface import AuthorizationManager as AuthorizationManagerI
 from AccessGrid.Security import X509Subject, Role, Action
 from AccessGrid.Security .Action import ActionAlreadyPresent
 from AccessGrid.Security.Subject import InvalidSubject
@@ -184,8 +184,6 @@ class VenueServer:
         
         # In the venueserver we default to admins
         self.authManager.SetDefaultRoles([Role.Administrators])
-
-      
 
         # Initialize our state
         self.checkpointing = 0
@@ -344,7 +342,7 @@ class VenueServer:
 
         # Create the Web Service interface
         vsi = VenueServerI(impl=self, auth_method_name="authorize")
-        asi = AuthorizationManagerI(self.authManager)
+        asi = AuthorizationManagerI(impl=self.authManager)
 
         from AccessGrid.interfaces.VenueServer_client import VenueServerIW
 
@@ -358,35 +356,35 @@ class VenueServer:
         self.authManager.AddActions(venueServerActions)
                     
         for action in venueServerActions:
-            self.authManager.AddRoleToAction(action.GetName(),
-                                             Role.Administrators.GetName())
-
+            self.authManager.AddRoleToAction(action,
+                                             Role.Administrators)
 
         # Methods you can call without being an admin
         defaultActionNames = ["GetVenues"]
 
         for actionName in defaultActionNames:
-            self.authManager.AddRoleToAction(actionName,
-                                             Role.Everybody.GetName())
+            self.authManager.AddRoleToAction(Action.Action(actionName),
+                                             Role.Everybody)
         
         # Get the silly default subject this really should be fixed
         try:
            subj = self.servicePtr.GetDefaultSubject()
            if subj is not None:
               log.debug("Default Subject: %s", subj.GetName())
-              self.authManager.AddSubjectToRole(subj.GetName(),
-                                                Role.Administrators.GetName())
+              self.authManager.AddSubjectToRole(subj,
+                                                Role.Administrators)
+           else:
+              log.debug('Default Subject is none; not adding to Administrators role')
         except InvalidSubject:
            log.exception("Invalid Default Subject!")
         
         # Then we create the VenueServer service
         venueServerUri = self.hostingEnvironment.RegisterObject(vsi, path='/VenueServer')
 
-        if hosting.GetHostingImpl() == "SOAPpy":
-            # Then we create an authorization interface and serve it
-            self.hostingEnvironment.RegisterObject(
-                                  AuthorizationManagerI(self.authManager),
-                                  path='/VenueServer/Authorization')
+        # Then we create an authorization interface and serve it
+        self.hostingEnvironment.RegisterObject(
+                              AuthorizationManagerI(impl=self.authManager),
+                              path='/VenueServer/Authorization')
 
         
 
@@ -397,6 +395,34 @@ class VenueServer:
         print("Server: %s \nData Port: %d" % ( venueServerUri,
                                                int(self.dataPort) ) )
         print "Default Venue Url: %s" % "/".join([self.hostingEnvironment.GetURLBase(), self.venuePathPrefix, "default"])
+
+    def authorize(self, auth_info, post, action):
+        from ZSI.ServiceContainer import GetSOAPContext
+        ctx = GetSOAPContext()
+#         print dir(ctx)
+#         print "Container: ", ctx.connection
+#         print "Parsed SOAP: ", ctx.parsedsoap
+#         print "Container: ", ctx.container
+#         print "HTTP Headers:\n", ctx.httpheaders
+#         print "----"
+#         print "XML Data:\n", ctx.xmldata
+        try:
+            if hasattr(ctx.connection,'get_peer_cert'):
+                cert = ctx.connection.get_peer_cert()
+                if cert:
+                    subject = cert.get_subject().as_text()
+                    subject = X509Subject.X509Subject(subject)
+                else:
+                    subject = None
+                    
+                action = action.split('#')[-1]
+                return self.authManager.IsAuthorized(subject, action)
+        except:
+            log.exception("Exception in Venue.authorize")
+            print "Exception in Venue.authorize; allowing call by default; should disallow for release"
+            return 1
+            #return 0
+    
 
     def dataActivityCB(self,cmd,pathfile):
         if cmd == 'RECV':
@@ -809,15 +835,15 @@ class VenueServer:
 
                 # Default to giving administrators access to all venue actions.
                 for action in venue.authManager.GetActions():
-                    venue.authManager.AddRoleToAction(action.GetName(),
-                                                      Role.Administrators.GetName())
+                    venue.authManager.AddRoleToAction(action,
+                                                      Role.Administrators)
         
             # This could be done by the server, and probably should be
             subj = self.servicePtr.GetDefaultSubject()
-        
+            
             if subj is not None:
-                venue.authManager.AddSubjectToRole(subj.GetName(),
-                                                       Role.Administrators.GetName())
+                venue.authManager.AddSubjectToRole(subj,
+                                                   Role.Administrators)
         
             #        print "Venue Policy:"
             #        print venue.authManager.xml.toprettyxml()
@@ -829,9 +855,8 @@ class VenueServer:
             if(self.hostingEnvironment != None):
                 self.hostingEnvironment.RegisterObject(vi,
                                                        path=PathFromURL(venue.uri))
-                if hosting.GetHostingImpl() == "SOAPpy":
-                    self.hostingEnvironment.RegisterObject(AuthorizationManagerI(venue.authManager),
-                                                           path=PathFromURL(venue.uri)+"/Authorization")
+                self.hostingEnvironment.RegisterObject(AuthorizationManagerI(impl=venue.authManager),
+                                                       path=PathFromURL(venue.uri)+"/Authorization")
 
         except:
             self.simpleLock.release()
