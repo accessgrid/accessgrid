@@ -2,7 +2,7 @@
 # Name:        AuthorizationManager.py
 # Purpose:     The class that does the authorization work.
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.34 2005-10-27 19:01:35 turam Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.35 2005-11-01 18:35:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,14 +16,13 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.34 2005-10-27 19:01:35 turam Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.35 2005-11-01 18:35:50 turam Exp $"
 
 # External Imports
 import os
 import xml.dom.minidom
 
 from AccessGrid import Log
-#AGTk Importsfrom AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.hosting import Decorate, Reconstitute, Client
 from AccessGrid.GUID import GUID
@@ -183,7 +182,7 @@ class AuthorizationManager:
 
         rval = authDoc.toxml()
 
-	del authP
+        del authP
 
         return rval
     
@@ -199,6 +198,7 @@ class AuthorizationManager:
         @return: 0 if not authorized, 1 if authorized.
         @rtype: int
         """
+        log.debug('Authorizing action %s for %s', action, subject)
         action = MethodAction(action)
         
         # this gets us all the roles for this action
@@ -206,18 +206,22 @@ class AuthorizationManager:
         
         if subject == None:
             if self.IsIdentificationRequired():
+                log.debug('Rejecting access from unidentified user; id required')
                 return 0
             else:
                 if Everybody in rolelist:
+                    log.debug('Accepting access from unidentified user as part of Everybody role')
                     return 1
                 else:
+                    log.debug('Rejecting access from unidentified user as part of Everybody role')
                     return 0
                 
-
         for role in rolelist:
             if role.HasSubject(subject.name):
-                return 1
-
+                log.debug('Accepting access from %s', subject.name)
+                return 1    
+                
+        log.debug('Rejecting access from %s', subject.name)
         return 0
         
     def RequireIdentification(self,boolFlag):
@@ -265,7 +269,7 @@ class AuthorizationManager:
                 del self.actions[i]
             i = i + 1
         
-    def GetActions(self, subjectName=None, roleName=None):
+    def GetActions(self, inSubject=None, inRole=None):
         """
         Get a list of actions, perhaps for a subject or a role.
 
@@ -276,38 +280,30 @@ class AuthorizationManager:
         @return: a list of actions
         @rtype: [AccessGrid.Security.Action]
         """
-        if subjectName:
-            if type(subjectName) != str:
-                raise StringRequired("subject name should be a string %s"%subjectName)
-
-        if roleName:
-            if type(roleName) != str:
-                raise StringRequired("role name should be a string %s"%roleName)
         
-        if subjectName == None and roleName == None:
+        if inSubject == None and inRole == None:
             # Just return the list of actions
             actionlist = self.actions
-        elif subjectName != None and roleName == None:
+        elif inSubject != None and inRole == None:
             # Return the list of actions for this subject
             actionlist = list()
-            roles = self.GetRolesForSubject(subjectName)
+            roles = self.GetRolesForSubject(inSubject.name)
             for r in roles:
                 for a in self.actions:
                     if a.HasRole(r.name) and a not in actionlist:
                         actionlist.append(a)
-        elif subjectName == None and roleName != None:
+        elif inSubject == None and inRole != None:
             # Return the list of actions for this role
             actionlist = list()
             for a in self.actions:
-                if a.HasRole(roleName) and a not in actionlist:
+                if a.HasRole(inRole.name) and a not in actionlist:
                     actionlist.append(a)
-                  
         else:
-            print "GetActions called with both a subject and a role"
+            raise Exception("GetActions called with both a subject and a role")
 
         return actionlist[:]
         
-    def FindAction(self, name):
+    def FindAction(self, actionName):
         """
         Find an action by name.
 
@@ -316,46 +312,56 @@ class AuthorizationManager:
         @return: Action or None
         @rtype: AccessGrid.Security.Action 
         """
-        name = str(name)
-
-        if type(name) != str:
-            s = "action name should be a string, name: %s type: %s"%(name, type(name))
-            raise StringRequired(s)
-        
         for a in self.actions:
-            if str(a.name) == str(name):
+            if str(a.name) == str(actionName):
                 return a
            
         return None
     
-    def AddRoleToAction(self, actionName, roleName):
+    def AddRoleToAction(self, inAction, inRole):
         """
         Encapsulation method, outside callers should not have to interact
         with anything but an authorization manager. This method hides the
         details of adding roles to actions.
         """
-        if type(actionName)!= str and type(roleName)!= str:
-            raise StringRequired("role name and action name should be strings %s %s"%(actionName, roleName))
-                
-        role = self.FindRole(roleName)
+        role = self.FindRole(inRole.name)
 
         if role is None:
-            log.error("Couldn't find role: %s", roleName)
-            raise RoleNotFound(roleName)
+            log.error("Couldn't find role: %s", inRole.name)
+            raise RoleNotFound(inRole.name)
 
-        action = self.FindAction(actionName)
+        action = self.FindAction(inAction.name)
             
         if action is None:
-            log.error("Coudn't find action: %s", actionName)
-            action = Action(actionName)
+            log.error("Coudn't find action: %s", inAction.name)
+            action = Action(inAction.name)
             self.AddAction(action)
                   
         if not action.HasRole(role):
             action.AddRole(role)
         else:
             log.warn("Not adding role %s to action %s, it's already there.",
-                     roleName, actionName)
+                     inRole.name, inAction.name)
 
+
+    def AddRolesToAction(self, roleList, action):
+        """
+        Add multiple roles to an action.
+    
+        @param roleList: the list of roles to add to the action.
+        @param action: the action that gets the roles added to it
+        @type roleList: [AccessGrid.Security.Role]
+        @type action: AccessGrid.Security.Action 
+        """
+        rl = []
+        
+        a = self.FindAction(action.name)
+        
+        if not a:
+            raise ActionNotFound(action.name)
+        
+        for r in rl:
+            a.AddRole(r)
 
     def AddRole(self, role, default = 0):
         """
@@ -428,18 +434,8 @@ class AuthorizationManager:
             rolelist = self.roles
         else:
 
-            # ---------------------------------------------------
-            # This allows old clients that uses IsValid() to connect
-            # to new server.
-            
-            if action.GetName() == "_IsValid":
-                action.SetName("IsValid")
-                
-            # ---------------------------------------------------
-
             foundAction = self.FindAction(action.GetName())
 
-            
             if not foundAction:
                 return []
                              
@@ -462,31 +458,28 @@ class AuthorizationManager:
                 return r
         return None
     
-    def AddSubjectToRole(self, subjectName, roleName):
+    def AddSubjectToRole(self, inSubject, inRole):
         """
         Encapsulation method, outside callers should not have to interact
         with anything but an authorization manager. This method hides the
         details of adding subjects to roles.
         """
-        if type(subjectName)!=str or type(roleName)!= str:
-            raise StringRequired("subject name and role name should be strings %s %s" %(subjectName, roleName))
+
+        log.debug("Adding Subject: %s to Role: %s", inSubject.name, inRole.name)
         
-        log.debug("Adding Subject: %s to Role: %s", subjectName, roleName)
-        xs = X509Subject.CreateSubjectFromString(subjectName)
-        
-        role = self.FindRole(roleName)
+        role = self.FindRole(inRole.name)
 
         if role is None:
-            log.error("Couldn't find role: %s", roleName)
-            raise RoleNotFound(roleName)
+            log.error("Couldn't find role: %s", inRole.name)
+            raise RoleNotFound(inRole.name)
                    
-        if not role.HasSubject(subjectName):
-            role.AddSubject(xs)
+        if not role.HasSubject(inSubject.name):
+            role.AddSubject(inSubject)
         else:
             log.warn("Not adding subject %s to role %s, it's already there.",
-                     subjectName, roleName)
+                     inSubject.name, inRole.name)
 
-    def GetRolesForSubject(self, subjectName):
+    def GetRolesForSubject(self, inSubject):
         """
         Get all the roles the specified subject is part of.
 
@@ -495,13 +488,10 @@ class AuthorizationManager:
         @return: a list of roles
         @rtype: AccessGrid.Security.Role 
         """
-        if type(subjectName) != str:
-            raise StringRequired("subjectName should be a string %s" %(subjectName))
-                
         rolelist = list()
 
         for r in self.roles:
-            if r.HasSubject(subjectName):
+            if r.HasSubject(inSubject.name):
                 rolelist.append(r)
 
         return rolelist
@@ -538,7 +528,7 @@ class AuthorizationManager:
         but when traversed (looking for authorization information) the
         tree is only ascended one level.
         """
-	return self.parent
+        return self.parent
 
     def GetDefaultRoles(self):
         """
@@ -546,7 +536,7 @@ class AuthorizationManager:
         @return: list of roles
         @rtype: [AccessGrid.Security.Role]
         """
-	return self.defaultRoles
+        return self.defaultRoles
 
     def SetRoles(self, action, roles):
         """
@@ -574,7 +564,7 @@ class AuthorizationManager:
         @type subjects: [AccessGrid.Security.X509Subject]
         @raise RoleNotFound: when the specified role is not found
         """
-	r = self.FindRole(role)
+        r = self.FindRole(role)
         if r != None:
             r.SetSubjects(subjects)
         else:
@@ -616,611 +606,81 @@ class AuthorizationManager:
         """
         self.rolesRequired.append(role)
         
-
-class AuthorizationManagerI(SOAPInterface):
-    """
-    Authorization manager network interface.
-    """
-    def __init__(self, impl):
-        """
-        The server side interface object. This gets an implementation
-        to initialize itself with.
-
-        @param impl: the implementation object this interface represents
-        @type impl: AccessGrid.Security.AuthorizationManager
-        """
-        SOAPInterface.__init__(self, impl)
-
-    def _authorize(self, *args, **kw):
-        """
-        The authorization callback.
-        """
-        log.debug("Authorizing: %s %s", args, *kw)
-        
-        subject, action = self._GetContext()
-
-        log.info("Authorizing action: %s for subject %s", action.name,
-                 subject.name)
-
-        return self.impl.IsAuthorized(subject, action)
-
-    def TestImportExport(self, policy):
-        """
-        A test call that verifies the policy can be imported and
-        exported without modification.
-
-        @param policy: an authorization policy
-        @type policy: a string containing an XML formatted policy.
-        """
-        self.impl.ImportPolicy(policy)
-
-    def ImportPolicy(self, policy):
-        """
-        Import policy.
-
-        @param policy: an authorization policy
-        @type policy: a string containing an XML formatted policy.
-        """
-        self.impl.ImportPolicy(policy)
-        
-    def GetPolicy(self):
-        """
-        Retrieve the policy.
-        @return: An XML formatted authorization policy.
-        @rtype: string
-        """
-        return self.impl.ToXML()
-    
-    def AddRole(self, role):
-        """
-        Add a role to the authorization manager.
-
-        @param role: the role to add.
-        @type role: AccessGrid.Security.Role object
-        """
-        r = Role.CreateRole(role)
-        r2 = self.impl.AddRole(r)
-        return r2
-
-    def GetRoles(self, action):
-        r = self.impl.GetRoles(Action.CreateAction(action))
-        return r
-
-    def FindRole(self, name):
-        """
-        Find a role in this authorization manager.
-
-        @param name: the name of the role to find
-        @type name: string
-        @return: the AccessGrid.Security.Role object or None
-        """
-        r = self.impl.FindRole(name)
-        return r
-
-    def RemoveRole(self, role):
-        """
-        Remove a role from the authorization manager.
-
-        @param name: role to remove
-        @type name: AccessGrid.Security.Role
-        """
-        self.impl.RemoveRole(role)
-        
-    def ListRoles(self, action = None):
-        """
-        Retrieve the entire list of Roles.
-        
-        @keyword action: the action to list roles for, if none is specified, list all known roles.
-        @type action: AccessGrid.Security.Action
-        
-        @return: a list of roles
-        @rtype: [AccessGrid.Security.Role]
-        """
-        if action == None:
-            roles = self.impl.GetRoles()
-        else:
-            a = Action.CreateAction(action)
-            a1 = self.impl.FindAction(a)
-            roles = a1.GetRoles()
-
-        return roles
-
-    def AddAction(self, action):
-        """
-        Add an action to the authorization manager.
-
-        @param action: the action to add
-        @type action: AccessGrid.Security.Action
-        """
-        a = Action.CreateAction(action)
-        self.impl.AddAction(a)        
-
-    def RemoveAction(self, action):
-        """
-        Remove an action from the authorization manager.
-
-        @param action: the action to remove
-        @type action: AccessGrid.Security.Action
-        """
-        a = Action.CreateAction(action)
-    
-        if not a:
-            raise ActionNotFound(action)
-        
-        self.impl.RemoveAction(a)
-
-    def ListActions(self, subject = None, role = None):
-        """
-        List the actions known by this authorization manager.
-        @return: a list of actions
-        @rtype: [AccessGrid.Security.Action]
-        """
-        
-        roleName = None
-        subjectName = None
-        
-        if role:
-            role = Role.CreateRole(role)
-            roleName = role.name
-        if subject:
-            subject = X509Subject.X509Subject.CreateSubject(subject)
-            subjectName = subject.name
-            
-        alist = self.impl.GetActions(subjectName, roleName)
-        return alist        
-
-    def ListSubjects(self, role=None):
-        """
-        List subjects that are in a specific role.
-
-        @keyword role: the role to list the subjects of, defaults to None
-        @type role: AccessGrid.Security.Role
-        @return: [AccessGrid.Security.X509Subject]
-        """
-
-        subjs = None
-        if role == None:
-            # This is not a great engineering solution, and we should
-            # probably revisit it with a better plan.
-            profiles = self.impl.profileCache.LoadAllProfiles()
-            subjs = map(lambda x:
-                X509Subject.CreateSubjectFromString(x.GetDistinguishedName()),
-                        profiles)
-        else:
-            r = Role.CreateRole(role)
-            roleR = self.impl.FindRole(r.name)
-            
-            if not roleR :
-                raise RoleNotFound(r.name)
-            
-            subjs = self.impl.GetSubjects(roleR)
-
-        subjs2 = Decorate(subjs)
-        return subjs
-
-    def AddSubjectsToRole(self, role, subjectList):
-
-        """
-        Add a subject to a particular role.
-        This uses AddSubjectsToRole internally.
-        
-        @param subjectList: the subject list to add
-        @param role: the role to add the subject to
-        @type subjectList: [AccessGrid.Security.X509Subject]
-        @type role: AccessGrid.Security.Role
-        """
-        r = Role.CreateRole(role)
-        role = self.impl.FindRole(r.name)
-                           
-        if not role:
-            raise RoleNotFound(r.name)
-            
-        for s in subjectList:
-            subject = X509Subject.X509Subject.CreateSubject(s)
-            role.AddSubject(subject)
-            
-    def AddRoleToAction(self, action, role):
-        """
-        Add a role to the specified action.
-        @param role: the role to add to the action
-        @param action: the action that gets the role added
-        @type role: AccessGrid.Security.Role
-        @type action: AccessGrid.Security.Action 
-        """
-        an = Action.CreateAction(action)
-        a = self.impl.FindAction(an.GetName())
-        
-        if not a:
-            raise ActionNotFound(an.GetName())
-
-        r = Role.CreateRole(role)
-
-        self.impl.AddRoleToAction(an.GetName(), r.GetName())
-
-    def AddRolesToAction(self, roleList, action):
-        """
-        Add multiple roles to an action.
-        
-        @param roleList: the list of roles to add to the action.
-        @param action: the action that gets the roles added to it
-        @type roleList: [AccessGrid.Security.Role]
-        @type action: AccessGrid.Security.Action 
-        """
-        an = Action.CreateAction(action)
-        rl = []
-        
-        for r in roleList:
-            rl.append(Role.CreateRole(r))
-
-        a = self.impl.FindAction(an.name)
-
-        if not a:
-            raise ActionNotFound(an.name)
-        
-        for r in rl:
-            a.AddRole(r)
-            
-    def RemoveSubjectsFromRole(self, role, subjectList):
-        """
+    def RemoveSubjectFromRole(self, subject, role):
+        """ 
         Remove multiple subjects from the role.
-    
+        
         @param subjectList: the list of subjects to remove
         @param role: the role to remove the subject from
         @type subjectList: [AccessGrid.Security.X509Subject] 
         @type role: AccessGrid.Security.Role 
         """
-        rn = Role.CreateRole(role)
-        r = self.impl.FindRole(rn.name)
+        r = self.FindRole(role.name)
         
         if not r:
-            raise RoleNotFound(rn.name)
+            raise RoleNotFound(role.name)
+        
+        r.RemoveSubject(subject)
 
+    def RemoveSubjectsFromRole(self, subjectList, role):
+        """ 
+        Remove multiple subjects from the role.
+        
+        @param subjectList: the list of subjects to remove
+        @param role: the role to remove the subject from
+        @type subjectList: [AccessGrid.Security.X509Subject] 
+        @type role: AccessGrid.Security.Role 
+        """
+        r = self.FindRole(role.name)
+        
+        if not r:
+            raise RoleNotFound(role.name)
+        
         for s in subjectList:
             subject = X509Subject.X509Subject.CreateSubject(s)
             r.RemoveSubject(subject)
-                    
-    def RemoveRoleFromAction(self, action, role):
-        """
-        Remove a Role from the action.
-        
-        @param role: the role to remove from the action
-        @param action: the action to remove the role from
-        @type role: AccessGrid.Security.Role
-        @type action: AccessGrid.Security.Action 
-        """
-        an = Action.CreateAction(action)
-        rn = Role.CreateRole(role)
-
-        a = self.impl.FindAction(an.name)
-
-        if not a:
-            raise ActionNotFound(an.name)
-        
-        r = a.FindRole(rn.name)
-
-        if not r:
-            raise RoleNotFound(rn.name)
-      
-        a.RemoveRole(r)
-
-    def GetRolesForSubject(self, subject):
-        """
-        Get the list of roles the subject is a part of.
-
-        @param subject: the subject the roles are for
-        @type subject: AccessGrid.Security.X509Subject 
-
-        @return: list of roles
-        @rtype: [AccessGrid.Security.Role] 
-        """
-        s = X509Subject.X509Subject.CreateSubject(subject)
-
-        rl = self.impl.GetRolesForSubject(s.name)
-        return rl
-        
-    def IsAuthorized(self, subject, action):
-        """
-        Check to see if the subject authorized for the action.
-        
-        @param subject: the subject being verified.
-        @param action: the action the subject is being verified for.
-        @type subject: AccessGrid.Security.X509Subject 
-        @type action: AccessGrid.Security.Action 
-        """
-        s = X509Subject.X509Subject.CreateSubject(subject)
-        a = Action.CreateAction(action)
-        ret = self.impl.IsAuthorized(s, a)
-        return ret
-
-class AuthorizationManagerIW(SOAPIWrapper):
-    """
-    SOAP interface to an authorization manager. The authorization manager
-    is designed to provide a simple interface that hides
-    the network plumbing between clients and servers. The client side
-    of this is just a functional interface through this object.
-    """
-    def __init__(self, url=None):
-        """
-        Create the client side object for the authorization service
-        specified by the url.
-
-        @param url: url to the authorization service
-        @param url: url to the authorization service
-        """
-        SOAPIWrapper.__init__(self, url)
-
-    def TestImportExport(self, policy):
-        """
-        A test call that verifies the policy can be imported and
-        exported without modification.
-
-        @param policy: an XML formatted authorization policy
-        @type policy: string
-        """
-        self.proxy.TestImportExport(policy)
-
-    def ImportPolicy(self, policy):
-        """
-        Imports a policy.
-
-        @param policy: an XML formatted authorization policy
-        @type policy: string
-        """
-        self.proxy.ImportPolicy(policy)
-            
-    def GetPolicy(self):
-        """
-        Retrieve the policy.
-
-        @return: An XML formatted authorization policy.
-        @rtype: string
-        """
-        return self.proxy.GetPolicy()
-    
-    def AddRole(self, role):
-        """
-        Add a role to the authorization manager.
-
-        @param role: the role to add.
-        @type role: AccessGrid.Security.Role 
-        """
-        role = self.proxy.AddRole(role)
-        r = Role.CreateRole(role)
-        return r
-      
-    def FindRole(self, name):
-        """
-        Find a role in this authorization manager.
-
-        @param name: the name of the role to find
-        @type name: string
-        @return: if found a role, otherwise None
-        @rtype: AccessGrid.Security.Role
-        """
-        
-        r = self.proxy.FindRole(name)
-        return Role.CreateRole(r)
-       
-        
-    def RemoveRole(self, role):
-        """
-        Remove a role from the authorization manager.
-        @param name: The role to remove.
-        @type name: AccessGrid.Security.Role
-        """
-        self.proxy.RemoveRole(role)
-
-    def ListRoles(self):
-        """
-        Retrieve the entire list of Roles.
-        
-        @return: A list of roles
-        @rtype: [AccessGrid.Security.Role]
-        """
-        rs = self.proxy.ListRoles()
-        rl = []
-        for r in rs:
-            rl.append(Role.CreateRole(r))
-        
-        return rl
-
-    def AddAction(self, action):
-        """
-        Add an action to the authorization manager.
-
-        @param action: Action to add
-        @type action: AccessGrid.Security.Action
-        """
-        # Create action from name.
-        self.proxy.AddAction(action)
-           
-    def RemoveAction(self, action):
-        """
-        Remove an action from the authorization manager.
-
-        @param name: The action to remove
-        @type name: AccessGrid.Security.Action
-        """
-        self.proxy.RemoveAction(action)
-
-    def ListActions(self, subject = None, role = None):
-        """
-        List the actions known by this authorization manager.
-
-        List the actions known by this authorization manager. Please set either
-        subject or role, not both at the same time.
-        
-        @keyword subject: List actions for this subject, defaults to None
-        @type subject: AccessGrid.Security.X509Subject
-        @keyword role: List actions for this role, defaults to None
-        @type role: AccessGrid.Security.Role
-        @return: A list of actions
-        @rtype: [AccessGrid.Security.Action]
-        """
-
-        al = self.proxy.ListActions(subject, role)
-        alist = []
-
-        for a in al:
-            action = Action.CreateAction(a)
-            alist.append(Action.CreateAction(action))
-         
-        return alist
-
-    def ListSubjects(self, role = None):
-        """
-        List subjects that are in a specific role.
-        @keyword role: The role to list the subjects of, defaults to None
-        @type role: AccessGrid.Security.Role
-        @return: A list of subjects
-        @rtype: [AccessGrid.Security.X509Subject]
-        """
-        if role != None:
-            sl = self.proxy.ListSubjects(role) 
-        else:
-            sl = self.proxy.ListSubjects(role) 
-
-        slist = []
-
-        for s in sl:
-            slist.append(X509Subject.X509Subject.CreateSubject(s))
-
-        return slist
-
-    def ListRolesInAction(self, action):
-        """
-        List the roles associated with a specific action.
-        @param action: The action to list roles for.
-        @type action: AccessGrid.Security.Action
-        @return: A list of roles
-        @rtype: [AccessGrid.Security.Role]
-        """
-        r = self.proxy.GetRoles(action)
-        rl = []
-
-        for role in r:
-            rl.append(Role.CreateRole(role))
-        
-        return rl 
-        
-    def AddSubjectToRole(self, subj, role):
-        """
-        Add a subject to a particular role.
-        This uses AddSubjectsToRole internally.
-
-        @param subj: The subject to add
-        @param role: The role to add the subject to
-        @type subj: AccessGrid.Security.X509Subject
-        @type role: AccessGrid.Security.Role
-        """
-        subjList = [subj,]
-        self.proxy.AddSubjectsToRole(role, subjList)
-
-    def AddSubjectsToRole(self, subjList, role):
-        """
-        Add a list of subjects to a  particular role.
-
-        @param subjList: A list of subjects
-        @param role: The role to add the subjects to
-        @type subjList: [AccessGrid.Security.X509Subject]
-        @type role: AccessGrid.Security.Role 
-        """
-        
-        self.proxy.AddSubjectsToRole(role, subjList)
-        
-    def AddRoleToAction(self, role, action):
-        """
-        Add a role to the specified action.
-
-        @param role: the role to add to the action
-        @param action: the action that gets the role added
-        @type role: AccessGrid.Security.Role
-        @type action: AccessGrid.Security.Action
-        """
-        self.proxy.AddRoleToAction(action, role)       
-
-    def AddRolesToAction(self, roleList, action):
-        """
-        Add multiple roles to an action.
- 
-        @param roleList: the list of roles to add to the action.
-        @param action: the action that gets the roles added to it
-        @type roleList: [AccessGrid.Security.Role]
-        @type action: AccessGrid.Security.Action 
-        """
-        self.proxy.AddRolesToAction(roleList, action)
-         
-    def RemoveSubjectFromRole(self, subj, role):
-        """
-        Remove the subject from the role.
-        
-        @param subj: the subject to remove
-        @param role: the role to remove the subject from
-        @type subj: AccessGrid.Security.X509Subject 
-        @type role: AccessGrid.Security.Role 
-        """
-        subjList = [subj,]
-        self.proxy.RemoveSubjectsFromRole(role, subjList)
-
-    def RemoveSubjectsFromRole(self, subjList, role):
-        """
-        Remove multiple subjects from the role.
-        
-        @param subjList: the list of subjects to remove
-        @param role: the role to remove the subject from
-        @type subjList: [AccessGrid.Security.X509Subject] 
-        @type role: AccessGrid.Security.Role 
-        """
-        self.proxy.RemoveSubjectsFromRole(role, subjList)
 
     def RemoveRoleFromAction(self, role, action):
         """
-        Remove a Role from the action.
-
+        Remove a role from the action.
+        
         @param role: the role to remove from the action
         @param action: the action to remove the role from
-        @type role: AccessGrid.Security.Role 
-        @type action: AccessGrid.Security.Action       
-        """
-
-        self.proxy.RemoveRoleFromAction(action, role)
-
-    def GetRolesForSubject(self, subject):
-        """
-        Get the list of roles the subject is a part of.
-
-        @param subject: the subject the roles are for
-        @type subject: AccessGrid.Security.X509Subject
-        @return: List of roles
-        @rtype: [AccessGrid.Security.Role]
-        """
-       
-        rl = self.proxy.GetRolesForSubject(subject)
-        roles = []
-
-        for r in rl:
-            roles.append(Role.CreateRole(r))
-
-        return roles
-       
-    def IsAuthorized(self, subject, action):
-        """
-        Check to see if the subject authorized for the action.
-        
-        @param subject: the subject being verified.
-        @param action: the action the subject is being verified for.
-        @type subject: AccessGrid.Security.X509Subject 
+        @type role: AccessGrid.Security.Role
         @type action: AccessGrid.Security.Action 
         """
-        ret = self.proxy.IsAuthorized(subject,action)
-        return ret
+        
+        # cheating
+        role.name = str(role.name)
+        action.name = str(action.name)
+        
+        
+        a = self.FindAction(action.name)
+
+        if not a:
+            raise ActionNotFound(action.name)
+        
+        r = a.FindRole(role.name)
+
+        if not r:
+            raise RoleNotFound(role.name)
+            
+        a.RemoveRole(r)
+
+
+    ListSubjects = GetSubjects
+    ListRoles = GetRoles
+    ListActions = GetActions
+    GetPolicy = ToXML
+    ListRolesInAction = GetRoles
+        
+
 
 
 if __name__ == "__main__":
     import logging
     import sys
     from AccessGrid import Toolkit
-    from AccessGrid.Toolkit import CmdlineApplication
     
     
     app = Toolkit.CmdlineApplication()
