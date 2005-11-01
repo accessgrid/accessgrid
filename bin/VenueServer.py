@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.68 2005-10-19 20:01:29 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.69 2005-11-01 19:33:50 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.68 2005-10-19 20:01:29 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.69 2005-11-01 19:33:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -72,8 +72,8 @@ def main():
 
     app.AddCmdLineOption(portOption)
     
-    # Set the default to secure
-    app.parser.defaults['secure'] = 1
+    # set default options
+    app.SetCmdLineDefault('secure',1)
     
     # Try to initialize
     try:
@@ -92,10 +92,12 @@ def main():
     log.info("VenueServer running using hostname: %s", hostname)
     
     if app.GetOption("secure"):
+        log.info('Running in secure mode')
         context = Toolkit.Service.instance().GetContext()
         server = SecureServer((hostname, port),
                               context)
     else:
+        log.info('Running in insecure mode')
         server = InsecureServer((hostname, port))
     
     # Then we create a VenueServer, giving it the hosting environment
