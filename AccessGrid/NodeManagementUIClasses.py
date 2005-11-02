@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.85 2005-11-02 21:53:36 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.86 2005-11-02 21:57:47 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.85 2005-11-02 21:53:36 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.86 2005-11-02 21:57:47 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -503,7 +503,7 @@ class NodeManagementClientFrame(wxFrame):
         self.SetMenuBar(menuBar)
 
         self.tree = wxTreeListCtrl(self,-1,
-				   wxTR_HIDE_ROOT|wxTR_TWIST_BUTTONS)
+				   style = wxTR_HIDE_ROOT|wxTR_TWIST_BUTTONS)
         self.tree.AddColumn("Name")
         self.tree.AddColumn("Resource")
         self.tree.AddColumn("Status")
