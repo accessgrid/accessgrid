@@ -2,32 +2,22 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.88 2005-10-25 22:00:49 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.89 2005-11-02 17:38:39 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.88 2005-10-25 22:00:49 eolson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.89 2005-11-02 17:38:39 eolson Exp $"
 
 import os
 import time
 import threading
 import re
-import urllib
-import urlparse
-import httplib
 import string
-import shutil
-import sys
-import socket
 import md5
 import ConfigParser
-import cStringIO
-import Queue
-import BaseHTTPServer
-import select
 
 from AccessGrid import Log
 import AccessGrid.GUID
