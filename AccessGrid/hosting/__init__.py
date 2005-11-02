@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.16 2005-09-23 22:03:06 eolson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.17 2005-11-02 21:06:32 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 AG Hosting environment tools.
 """
-__revision__ = "$Id: __init__.py,v 1.16 2005-09-23 22:03:06 eolson Exp $"
+__revision__ = "$Id: __init__.py,v 1.17 2005-11-02 21:06:32 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -30,6 +30,13 @@ Client = lambda x: None
 Decorate = lambda x: None
 Reconstitute = lambda x: None
 __root = lambda x: None
+
+HostingException = lambda x: None
+GetHostingExceptionModuleAndClassName = lambda x: None
+GetHostingException = lambda x: None
+ReraiseHostingException = lambda x: None
+NotAuthorized = lambda x: None
+NoSuchService = lambda x: None
 
 def GetHostingImpl():
     """
@@ -51,6 +58,7 @@ def SetHostingImpl(choice):
     """
     global __hostingImpl, __root, Server, Client, Decorate, Reconstitute
     global GetSOAPContext, SecureServer, InsecureServer
+    global HostingException, GetHostingExceptionModuleAndClassName, GetHostingException, ReraiseHostingException, NotAuthorized, NoSuchService
     
     __hostingImpl = choice
     
@@ -69,8 +77,14 @@ def SetHostingImpl(choice):
         raise
     
     try:
-        c = __import__(nic, globals(), locals(), ["Client"])
+        c = __import__(nic, globals(), locals(), ["Client", "HostingException", "GetHostingExceptionModuleAndClassName", "GetHostingException", "ReraiseHostingException", "NotAuthorized", "NoSuchService"])
         Client = c.Client
+        HostingException = c.HostingException
+        NotAuthorized = c.NotAuthorized
+        NoSuchService = c.NoSuchService
+        GetHostingExceptionModuleAndClassName = c.GetHostingExceptionModuleAndClassName
+        GetHostingException = c.GetHostingException
+        ReraiseHostingException = c.ReraiseHostingException
     except ImportError:
         raise
 
