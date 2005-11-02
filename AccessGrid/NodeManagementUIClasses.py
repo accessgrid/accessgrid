@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.86 2005-11-02 21:57:47 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.87 2005-11-02 23:19:36 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.86 2005-11-02 21:57:47 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.87 2005-11-02 23:19:36 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -772,7 +772,9 @@ class NodeManagementClientFrame(wxFrame):
         """
         
         selections = self.GetSelectedItems()
-        selectionUrls = map( lambda x: x.uri, selections)
+        selectionUrls = []
+        if len(selections)>0:
+          selectionUrls = map( lambda x: x.uri, selections)
 
         self.serviceManagers = self.nodeServiceHandle.GetServiceManagers()
 
@@ -1249,8 +1251,8 @@ class NodeManagementClientFrame(wxFrame):
             
         for s in selections:
             obj = self.tree.GetItemData(s).GetData()
-            if not selType or isinstance(obj,selType):
-                retList.append(obj)
+            if (not selType or isinstance(obj,selType)) and obj :
+              retList.append(obj)
             
         return retList
         
