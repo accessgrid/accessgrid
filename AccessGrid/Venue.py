@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.255 2005-11-01 19:19:21 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.256 2005-11-02 23:19:45 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.255 2005-11-01 19:19:21 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.256 2005-11-02 23:19:45 eolson Exp $"
 
 import sys
 import time
@@ -1137,7 +1137,6 @@ class Venue:
             log.debug("   " + str(c))
         log.debug("Enter: Distribute enter event ")
 
-        
         try:
             if self.servicePtr.GetOption("secure"):
                 dn = clientProfile.GetDistinguishedName()
@@ -1145,7 +1144,6 @@ class Venue:
         except SubjectAlreadyPresent:
             log.info("User already in venue users list: %s", dn)
 
-        
         try:
             state = self.AsVenueState()
             log.debug("state: %s", state)
@@ -1627,8 +1625,8 @@ class Venue:
         """
         log.debug("Called UpdateClientProfile on %s " %clientProfile.name)
 
-        for privateId in self.clients.keys():
-            vclient = self.clients[privateId]
+        for connectionId in self.clients.keys():
+            vclient = self.clients[connectionId]
             if vclient.GetPublicId() == clientProfile.publicId:
                 vclient.UpdateClientProfile(clientProfile)
                 #vclient.UpdateAccessTime()
@@ -1967,7 +1965,7 @@ class Venue:
             traceback.print_exc()
         # register the authorization interface and serve it.
         self.server.hostingEnvironment.RegisterObject(
-                                 AuthorizationManagerI(app.authManager),
+                                 AuthorizationManagerI(impl=app.authManager),
                                  path=path+'/Authorization')
         # pull the url back out and put it in the app object
         appURL = self.server.hostingEnvironment.FindURLForObject(app)

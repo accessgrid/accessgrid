@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.28 2005-11-01 19:06:22 turam Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.29 2005-11-02 23:19:45 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.28 2005-11-01 19:06:22 turam Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.29 2005-11-02 23:19:45 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -32,6 +32,9 @@ from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.interfaces.AuthorizationManager_interface import AuthorizationManager as AuthorizationManagerI
 from AccessGrid.Security import X509Subject, Role
 from AccessGrid.interfaces.SharedApplication_interface import SharedApplication as SharedApplicationI
+from AccessGrid.interfaces.SharedApplication_client import SharedApplicationIW
+from AccessGrid.Security import X509Subject, Role, Action
+import AccessGrid.Security
 import re
 log = Log.GetLogger(Log.SharedApplication)
 
@@ -79,14 +82,17 @@ class SharedApplication:
         self.authManager.AddRequiredRole(Role.Role("AllowedConnect"))
         # Do not keep track of connected users at this time.
         # self.AddRequiredRole(Role.Role("AppUsers"))
-        self.authManager.AddRequiredRole(Role.Role("Administrators"))
+        self.authManager.AddRequiredRole(Role.Administrators)
         self.authManager.AddRequiredRole(Role.Everybody)
 
         self.authManager.AddRoles(self.authManager.GetRequiredRoles())
         
         admins = self.authManager.FindRole("Administrators")
         self.servicePtr = Service.instance()
-        admins.AddSubject(self.servicePtr.GetDefaultSubject())
+        try:
+            admins.AddSubject(self.servicePtr.GetDefaultSubject())
+        except AccessGrid.Security.SubjectAlreadyPresent, e:
+            log.info("SubjectAlreadyPresent %s" % self.servicePtr.GetDefaultSubject())
                                                                                       
         # Default to admins
         self.authManager.SetDefaultRoles([admins])
@@ -107,17 +113,21 @@ class SharedApplication:
         self.venueURL = ""
 
         ai = SharedApplicationI(self)
-        self.authManagerI = AuthorizationManagerI(self.authManager)
-        self.authManager.AddActions(ai._GetMethodActions() + self.authManagerI._GetMethodActions())
+        self.authManagerI = AuthorizationManagerI(impl=self.authManager)
+        # Remove methods starting with underscore
+        sharedAppActions = filter(lambda x: not x.startswith("_"),
+                                    dir(SharedApplicationIW))
+        sharedAppActions = map(lambda x: Action.Action(x), sharedAppActions)
+
+        self.authManager.AddActions(sharedAppActions)
         
         # Add roles to actions.
        
         # Default to giving administrators access to all app actions.
-        admins = self.authManager.FindRole("Administrators")
-        actions = self.authManager.GetActions()
-        for action in actions:
-            action.AddRole(admins)
-        
+        for action in sharedAppActions:
+            self.authManager.AddRoleToAction(action,
+                                             Role.Administrators)
+
         allowedConnectRole = self.authManager.FindRole("AllowedConnect")
 
         # For now, default to giving allowedConnect role access to all app actions.

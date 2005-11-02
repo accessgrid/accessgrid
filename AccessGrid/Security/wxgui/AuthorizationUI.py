@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.32 2005-11-01 18:42:10 turam Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.33 2005-11-02 23:19:45 eolson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.32 2005-11-01 18:42:10 turam Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.33 2005-11-02 23:19:45 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -244,7 +244,7 @@ class AuthorizationUIPanel(wxPanel):
         for role in self.allRoles:
             # Add role
             roleId = self.tree.AppendItem(self.root, role.name, self.bulletId, self.bulletId)
-            self.roleToTreeIdDict[role] = roleId
+            self.roleToTreeIdDict[role.name] = roleId
             self.tree.SetItemBold(roleId)
             self.tree.SetItemData(roleId, wxTreeItemData(role))
 
