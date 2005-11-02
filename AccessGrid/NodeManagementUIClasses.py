@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.84 2005-10-25 21:08:39 eolson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.85 2005-11-02 21:53:36 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.84 2005-10-25 21:08:39 eolson Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.85 2005-11-02 21:53:36 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -88,7 +88,8 @@ class RendezvousServiceDialog(wxDialog):
 
         # Set up sizers
         sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxHORIZONTAL)
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        #sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxHORIZONTAL)
         sizer2.Add(self.listCtrl, 1, wxEXPAND, 10)
         sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
                  
@@ -110,7 +111,7 @@ class RendezvousServiceDialog(wxDialog):
         x,y = wxGetMousePosition()
         w,h = self.GetSize()
         self.Move( (x-w/2,y-h/2) )
-
+	
         #EVT_TEXT_ENTER(self, self.GetId(), self.OnOK)
 
     def __del__(self):
@@ -142,7 +143,8 @@ class ServiceChoiceDialog(wxDialog):
         # Set up sizers
         gridSizer = wxFlexGridSizer(3, 2, 5, 5)
         sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxHORIZONTAL)
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        #sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxHORIZONTAL)
         sizer2.Add(gridSizer, 1, wxALL, 10)
         sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
        
@@ -460,7 +462,7 @@ class NodeManagementClientFrame(wxFrame):
     def __init__(self, parent, ID, title):
         wxFrame.__init__(self, parent, ID, title,
                          wxDefaultPosition, wxSize(450, 300))
-
+	self.Center()
         self.SetTitle(title)
         self.SetIcon(icons.getAGIconIcon())
         self.serviceManagers = []
@@ -501,7 +503,7 @@ class NodeManagementClientFrame(wxFrame):
         self.SetMenuBar(menuBar)
 
         self.tree = wxTreeListCtrl(self,-1,
-                                   style=wxEXPAND|wxALL|wxTR_HIDE_ROOT|wxTR_TWIST_BUTTONS)
+				   wxTR_HIDE_ROOT|wxTR_TWIST_BUTTONS)
         self.tree.AddColumn("Name")
         self.tree.AddColumn("Resource")
         self.tree.AddColumn("Status")
@@ -550,7 +552,7 @@ class NodeManagementClientFrame(wxFrame):
         EVT_MENU(self, ID_SERVICE_DISABLE_ONE    ,  self.DisableService )
         
         EVT_TREE_KEY_DOWN(self.tree, self.tree.GetId(), self.OnKeyDown)
-        
+    
         self.menuBar = menuBar
         
         self.EnableMenus(false)
@@ -817,10 +819,11 @@ class NodeManagementClientFrame(wxFrame):
         Add a service manager to the node service
         """
 
-        dlg = ServiceChoiceDialog(self,-1,'ServiceManager Dialog',
+        dlg = ServiceChoiceDialog(self,-1,'Service Manager Dialog',
                                   self.recentServiceManagerList,
                                   AGServiceManager.ServiceType)
-        ret = dlg.ShowModal()
+        dlg.Center()
+	ret = dlg.ShowModal()
         if ret == wxID_OK:
 
             url = dlg.GetValue()
