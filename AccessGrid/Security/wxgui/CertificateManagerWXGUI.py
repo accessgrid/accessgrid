@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.18 2004-12-08 16:48:08 judson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.19 2005-11-02 21:44:47 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.18 2004-12-08 16:48:08 judson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.19 2005-11-02 21:44:47 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -39,7 +39,7 @@ log = Log.GetLogger(Log.CertificateManagerWXGUI)
 from AccessGrid.Security import CertificateManager
 from AccessGrid.Security import CertificateRepository
 from AccessGrid.Security.CRSClient import CRSClient, CRSClientInvalidURL, CRSClientConnectionFailed
-from AccessGrid.Security import ProxyGen
+#from AccessGrid.Security import ProxyGen
 
 from CertificateRequestTool import CertificateRequestTool
 from CertificateStatusDialog import CertificateStatusDialog
