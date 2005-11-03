@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.115 2005-11-03 16:04:40 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.116 2005-11-03 16:05:55 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.115 2005-11-03 16:04:40 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.116 2005-11-03 16:05:55 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -40,7 +40,8 @@ from AccessGrid.Platform import IsWindows, IsOSX, Config
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.ClientProfile import *
-from AccessGrid.Preferences import PreferencesDialog, Preferences
+from AccessGrid.Preferences import Preferences
+from AccessGrid.PreferencesUI import PreferencesDialog
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription, VenueDescription
 from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIDialog
@@ -1920,15 +1921,16 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         wxCallAfter(self.__SetMcastStatus,status)
         
     def __SetMcastStatus(self,bool):
-        b = self.toolbar.FindById(self.networkToolId)
-        if bool:
-            b.SetNormalBitmap(icons.getMulticastBitmap())
-            b.SetShortHelp("Multicast")
-        else:
-            b.SetNormalBitmap(icons.getNoMulticastBitmap())
-            b.SetDisabledBitmap(icons.getNoMulticastBitmap())
-            b.SetShortHelp("No Multicast")
-        self.toolbar.Refresh()
+        pass
+#         b = self.toolbar.FindById(self.networkToolId)
+#         if bool:
+#             b.SetNormalBitmap(icons.getMulticastBitmap())
+#             b.SetShortHelp("Multicast")
+#         else:
+#             b.SetNormalBitmap(icons.getNoMulticastBitmap())
+#             b.SetDisabledBitmap(icons.getNoMulticastBitmap())
+#             b.SetShortHelp("No Multicast")
+#         self.toolbar.Refresh()
 
     def AddUser(self, profile):
         """
