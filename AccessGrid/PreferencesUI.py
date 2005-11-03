@@ -3,6 +3,7 @@ import os
 from AccessGrid import Log
 from AccessGrid.Platform import IsOSX
 from AccessGrid.Preferences import Preferences
+from AccessGrid.Platform.Config import AGTkConfig
 
 from wxPython.wx import *
 import  wx.lib.intctrl
