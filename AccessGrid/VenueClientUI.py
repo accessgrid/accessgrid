@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.114 2005-11-03 14:34:23 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.115 2005-11-03 16:04:40 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.114 2005-11-03 14:34:23 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.115 2005-11-03 16:04:40 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -231,6 +231,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.reader.SetUpdateDuration(1800)
         except:
             log.exception('Error constructing RSS reader')
+            
+        self.beaconFrame = None
        
         
     ############################################################################
@@ -526,8 +528,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         elif not int(pref.GetPreference(Preferences.BEACON)):
             self.Notify("You have beacon set to disabled.\nYou can enable it in the network panel in your preferences.", "Show Multicast Connectivity")
         else:
-            beacon = self.parent.venueClient.GetBeacon()
-            frame = BeaconFrame(self, log, beacon)
+            if self.beaconFrame:
+                self.beaconFrame.Raise()
+            else:
+                beacon = self.venueClient.GetBeacon()
+                self.beaconFrame = BeaconFrame(self, log, beacon)
         
     def __SetProperties(self):
         self.SetTitle("Venue Client")
