@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.46 2005-07-06 18:01:11 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.47 2005-11-03 05:53:56 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.46 2005-07-06 18:01:11 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.47 2005-11-03 05:53:56 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -241,6 +241,18 @@ class VenueClientController:
             self.__venueClient.SetTransport(oldTransport)
             raise
 
+    def EnableDisplayCB(self,enableFlag):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
+        try:
+            self.__venueClient.SetVideoDisplayEnabled(enableFlag)
+        except:
+            log.exception("Couldn't enable/disable video display")
+
     def EnableVideoCB(self,enableFlag):
         """
         This method 
@@ -251,7 +263,7 @@ class VenueClientController:
         try:
             self.__venueClient.SetVideoEnabled(enableFlag)
         except:
-            log.exception("Couldn't enable/disable video")
+            log.exception("Couldn't enable/disable video capture")
 
     def EnableAudioCB(self,enableFlag):
         """
@@ -981,6 +993,7 @@ class VenueClientController:
                 log.debug("url=%s, local path =%s, size = %s, checksum = %s"%(url, local_pathname, size, checksum))
                 DataStore.DownloadFile('',url, local_pathname, size,
                                               checksum, progressCB)
+
                 log.debug("finished Download")
 
             else:

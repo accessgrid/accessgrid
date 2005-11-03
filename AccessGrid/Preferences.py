@@ -30,6 +30,7 @@ class Preferences:
     MULTICAST = "multicast"
     BEACON = "beacon"
     LOG_TO_CMD = "logToCmd"
+    ENABLE_DISPLAY = "enableDisplay"
     ENABLE_VIDEO = "enableVideo"
     ENABLE_AUDIO = "enableAudio"
     DISPLAY_MODE = "displayMode"
@@ -62,6 +63,7 @@ class Preferences:
                          self.MULTICAST: 1,
                          self.BEACON: 1,
                          self.LOG_TO_CMD: 0,
+                         self.ENABLE_DISPLAY: 1,
                          self.ENABLE_VIDEO: 1,
                          self.ENABLE_AUDIO: 1,
                          self.DISPLAY_MODE: self.EXITS
@@ -328,6 +330,8 @@ class PreferencesDialog(wxDialog):
                                        self.loggingPanel.GetLogToCmd())
         self.preferences.SetPreference(Preferences.STARTUP_MEDIA,
                                        self.nodePanel.GetMediaStartup())
+        self.preferences.SetPreference(Preferences.ENABLE_DISPLAY,
+                                       self.nodePanel.GetDisplay())
         self.preferences.SetPreference(Preferences.ENABLE_VIDEO,
                                        self.nodePanel.GetVideo())
         self.preferences.SetPreference(Preferences.ENABLE_AUDIO,
@@ -499,8 +503,9 @@ class NodePanel(wxPanel):
         self.nodeConfigText = wxStaticText(self, -1, "Node configuration")
         self.mediaText = wxStaticText(self, -1, "Media")
         self.mediaLine = wxStaticLine(self, -1)
-        self.videoButton = wxCheckBox(self, wxNewId(), " Enable Video")
         self.audioButton = wxCheckBox(self, wxNewId(), " Enable Audio")
+        self.displayButton = wxCheckBox(self, wxNewId(), " Enable Display")
+        self.videoButton = wxCheckBox(self, wxNewId(), " Enable Video")
 
         if IsOSX():
             self.nodeText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
@@ -511,8 +516,9 @@ class NodePanel(wxPanel):
 
         self.mediaButton.SetValue(int(preferences.GetPreference(Preferences.STARTUP_MEDIA)))
         self.nodeUrlCtrl.SetValue(preferences.GetPreference(Preferences.NODE_URL))
-        self.videoButton.SetValue(int(preferences.GetPreference(Preferences.ENABLE_VIDEO)))
         self.audioButton.SetValue(int(preferences.GetPreference(Preferences.ENABLE_AUDIO)))
+        self.displayButton.SetValue(int(preferences.GetPreference(Preferences.ENABLE_DISPLAY)))
+        self.videoButton.SetValue(int(preferences.GetPreference(Preferences.ENABLE_VIDEO)))
 
         default = ""
         try:
@@ -555,6 +561,12 @@ class NodePanel(wxPanel):
         else:
             return 0
 
+    def GetDisplay(self):
+        if self.displayButton.GetValue():
+            return 1
+        else:
+            return 0
+
     def GetVideo(self):
         if self.videoButton.GetValue():
             return 1
@@ -591,8 +603,9 @@ class NodePanel(wxPanel):
         sizer2.Add(self.mediaLine, 1, wxALIGN_CENTER | wxALL, 5)
         sizer.Add(sizer2, 0, wxEXPAND)
 
-        sizer.Add(self.videoButton, 0, wxEXPAND|wxALL, 10)
         sizer.Add(self.audioButton, 0, wxEXPAND|wxALL, 10)
+        sizer.Add(self.displayButton, 0, wxEXPAND|wxALL, 10)
+        sizer.Add(self.videoButton, 0, wxEXPAND|wxALL, 10)
                                        
         self.SetSizer(sizer)
         sizer.Fit(self)

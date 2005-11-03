@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.241 2005-11-01 19:20:02 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.242 2005-11-03 05:53:56 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.241 2005-11-01 19:20:02 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.242 2005-11-03 05:53:56 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -185,6 +185,7 @@ class VenueClient:
         self.cache = ClientProfileCache(self.profileCachePath)
         
         self.jabber = JabberClient()
+        self.textLocation = None
         
         self.multicastWatcher = MulticastWatcher(statusChangeCB=self.__McastStatusCB)
         self.multicastWatcher.Start()
@@ -1528,6 +1529,17 @@ class VenueClient:
     def GetNodeServiceUri(self):
         return self.nodeServiceUri
 
+    def SetVideoDisplayEnabled(self,enableFlag):
+        try:
+            serviceList = self.nodeService.GetServices()
+            for service in serviceList:
+                for cap in service.capabilities:
+                    if cap.type == 'video' and cap.role == 'consumer':
+                        self.SetServiceEnabled(service.uri,enableFlag)
+                        break
+        except:
+            log.info("Error enabling video")
+        
     def SetVideoEnabled(self,enableFlag):
         try:
             self.nodeService.SetServiceEnabledByMediaType("video",enableFlag)
