@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.113 2005-11-03 05:53:56 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.114 2005-11-03 14:34:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.113 2005-11-03 05:53:56 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.114 2005-11-03 14:34:23 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -187,7 +187,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.__BuildUI(app)
         self.SetSize(wxSize(400, 500))
         
-        self.statusbar.SetMcastStatus(self.venueClient.GetMulticastStatus())
+        self.__SetMcastStatus(self.venueClient.GetMulticastStatus())
         
         # Tell the UI about installed applications
         self.__EnableAppMenu( false )
@@ -350,6 +350,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         for item in certMenu.GetMenuItems():
             self.preferences.AppendItem(item)
         
+        self.preferences.AppendSeparator()
 
         # Add node-related entries
         self.preferences.AppendRadioItem(self.ID_USE_MULTICAST, "Use Multicast",
@@ -509,16 +510,25 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                                self.ID_WINDOW_BOTTOM, self.__OnSashDrag)
         EVT_SIZE(self, self.__OnSize)
         
-        EVT_TOOL(self,self.networkToolId,self.statusbar.OnMulticast)
+        EVT_TOOL(self,self.networkToolId,self.OnMulticast)
         EVT_TOOL(self,self.audioToolId,self.EnableAudioCB)
         EVT_TOOL(self,self.displayToolId,self.EnableDisplayCB)
         EVT_TOOL(self,self.videoToolId,self.EnableVideoCB)
         
-    def AudioToolCB(self,event):
-        print 'Got tool press'
-    
-    VideoToolCB = CameraToolCB = NetworkToolCB = AudioToolCB
+    def OnMulticast(self, event):
 
+        pref = self.venueClient.GetPreferences()
+
+        if not self.venueClient.GetMulticastStatus():
+            self.Notify("You do not have multicast enabled. \nPlease contact your network administrator.", "Show Multicast Connectivity")
+        elif not self.venueClient.IsInVenue():
+             self.Notify("You must be connected to a venue to see\nmulticast connectivity to other participants.", "Show Multicast Connectivity")
+        elif not int(pref.GetPreference(Preferences.BEACON)):
+            self.Notify("You have beacon set to disabled.\nYou can enable it in the network panel in your preferences.", "Show Multicast Connectivity")
+        else:
+            beacon = self.parent.venueClient.GetBeacon()
+            frame = BeaconFrame(self, log, beacon)
+        
     def __SetProperties(self):
         self.SetTitle("Venue Client")
         self.SetIcon(icons.getAGIconIcon())
@@ -557,7 +567,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         self.toolbar = self.CreateToolBar()
         self.networkToolId = 1
-        self.toolbar.AddTool(self.networkToolId,icons.getNetworkBitmap() ,shortHelpString='Multicast',longHelpString='Show multicast status')
+        multicastBitmap = icons.getMulticastBitmap()
+        self.toolbar.AddTool(self.networkToolId,multicastBitmap ,shortHelpString='Multicast Status',longHelpString='Display multicast status')
         self.toolbar.AddSeparator()
         self.audioToolId = 2
         self.toolbar.AddCheckTool(self.audioToolId,icons.getAudioBitmap() ,shortHelp='Audio',longHelp='Enable/disable audio')
@@ -1901,7 +1912,18 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     #        so any wx calls here must be made with wxCallAfter.
 
     def SetMcastStatus(self,status):
-        wxCallAfter(self.statusbar.SetMcastStatus,status)
+        wxCallAfter(self.__SetMcastStatus,status)
+        
+    def __SetMcastStatus(self,bool):
+        b = self.toolbar.FindById(self.networkToolId)
+        if bool:
+            b.SetNormalBitmap(icons.getMulticastBitmap())
+            b.SetShortHelp("Multicast")
+        else:
+            b.SetNormalBitmap(icons.getNoMulticastBitmap())
+            b.SetDisabledBitmap(icons.getNoMulticastBitmap())
+            b.SetShortHelp("No Multicast")
+        self.toolbar.Refresh()
 
     def AddUser(self, profile):
         """
@@ -2345,7 +2367,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             log.info("Unhandled observer exception in VenueClientUI")
             
     def UpdateMulticastStatus(self,status):
-        wxCallAfter(self.statusbar.SetMcastStatus,status)
+        wxCallAfter(self.__SetMcastStatus,status)
 
 
     # end Implementation of VenueClientObserver
@@ -2482,13 +2504,21 @@ class VenueListPanel(wxSashLayoutWindow):
     exits.
     '''
     
-    ID_MINIMIZE = wxNewId()
-    ID_MAXIMIZE = wxNewId()
-      
     def __init__(self, parent, id, app):
         wxSashLayoutWindow.__init__(self, parent, id)
         self.parent = parent
-        self.exitsText = wxButton(self, -1, "Exits") 
+        self.app = app
+        self.choices = {'Exits':Preferences.EXITS,
+                   'All Venues':Preferences.ALL_VENUES,
+                   'My Venues':Preferences.MY_VENUES}
+        self.viewSelector = wxComboBox(self,-1,choices=self.choices.keys(),
+                                       style=wxCB_READONLY)
+        defaultChoice = self.choices.keys()[0]
+        dm = self.app.venueClient.GetPreferences().GetPreference(Preferences.DISPLAY_MODE)
+        for k,v in self.choices.items():
+            if dm == v:
+                defaultChoice = k
+        self.viewSelector.SetValue(defaultChoice)
         self.list = NavigationPanel(self, app)
                 
         self.__Layout()
@@ -2500,16 +2530,26 @@ class VenueListPanel(wxSashLayoutWindow):
                 
     def __AddEvents(self):
         EVT_SIZE(self,self.__OnSize)
+        EVT_COMBOBOX(self,self.viewSelector.GetId(),self.__OnViewSelect)
     
     def __OnSize(self,evt):
         self.__Layout()
+        
+    def __OnViewSelect(self,event):
+        displayMode = self.GetDisplayMode()
+        self.list.UpdateView(displayMode)
+        
+    def GetDisplayMode(self):
+        selected = self.viewSelector.GetValue()
+        displayMode = self.choices[selected]
+        return displayMode
 
     def FixDoorsLayout(self):
         self.__Layout()
     
     def __Layout(self):
         panelSizer = wxBoxSizer(wxHORIZONTAL)
-        panelSizer.Add(self.exitsText, 1, wxEXPAND)
+        panelSizer.Add(self.viewSelector, 1, wxEXPAND)
 
         venueListPanelSizer = wxBoxSizer(wxVERTICAL)
         venueListPanelSizer.Add(panelSizer, 0, wxEXPAND)
@@ -2521,13 +2561,13 @@ class VenueListPanel(wxSashLayoutWindow):
 
     def Hide(self):
         currentHeight = self.GetSize().GetHeight()
-        self.exitsText.Hide()
+        self.viewSelector.Hide()
         s = wxSize(180, 1000)
         self.parent.UpdateLayout(self, s)
        
     def Show(self):
         currentHeight = self.GetSize().GetHeight()
-        self.exitsText.Show()
+        self.viewSelector.Show()
         s = wxSize(180, 1000)
         self.parent.UpdateLayout(self, s)
   
@@ -2675,7 +2715,7 @@ class NavigationPanel(wxPanel):
         dm = displayMode
         
         if not dm:
-            dm = self.app.venueClient.GetPreferences().GetPreference(Preferences.DISPLAY_MODE)
+            dm = self.parent.GetDisplayMode()
         
         # Show my venues
         if dm == Preferences.MY_VENUES:
@@ -2685,17 +2725,17 @@ class NavigationPanel(wxPanel):
                 cd = VenueDescription(name = venue, uri = myVenues[venue])
                 venues.append(cd)
 
-            self.parent.exitsText.SetLabel("My Venues")
+            self.parent.viewSelector.SetValue("My Venues")
 
         # Show all venues on this server
         elif dm == Preferences.ALL_VENUES:
             venues = self.app.controller.GetVenuesFromServer(self.app.venueClient.GetVenueServer())
-            self.parent.exitsText.SetLabel("All Venues")
+            self.parent.viewSelector.SetValue("All Venues")
 
         # Show connections to this venue
         elif dm == Preferences.EXITS:
             venues = self.app.controller.GetVenueConnections(self.app.venueClient.GetVenue())
-            self.parent.exitsText.SetLabel("Exits")
+            self.parent.viewSelector.SetValue("Exits")
 
         if venues:
             for venue in venues:
@@ -3991,17 +4031,12 @@ class StatusBar(wxStatusBar):
         self.parent = parent
         EVT_SIZE(self, self.OnSize)
 
-        self.mcast = wxButton(self, wxNewId(), "No Multicast",
-                              style = wxNO_BORDER ) #wxStaticText(self,-1,'No Multicast')
-
-        self.mcast.SetToolTip(wxToolTip("Show multicast connectivity"))
         self.progress = wxGauge(self, wxNewId(), 100,
                                 style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
         self.progress.SetValue(True)
 
         self.cancelButton = wxButton(self, wxNewId(), "Cancel")
         EVT_BUTTON(self, self.cancelButton.GetId(), self.OnCancel)
-        EVT_BUTTON(self, self.mcast.GetId(), self.OnMulticast)
 
         self.__hideProgressUI()
         self.Reset()
@@ -4012,20 +4047,6 @@ class StatusBar(wxStatusBar):
         self.SetStatusWidths([-1,self.secondFieldWidth])
         self.Reposition()
 
-    def OnMulticast(self, event):
-
-        pref = self.parent.venueClient.GetPreferences()
-
-        if self.mcast.GetLabel() != "Multicast":
-            self.parent.Notify("You do not have multicast enabled. \nPlease contact your network administrator.", "Show Multicast Connectivity")
-        elif not self.parent.venueClient.IsInVenue():
-              self.parent.Notify("You must be connected to a venue to see\nmulticast connectivity to other participants.", "Show Multicast Connectivity")
-        elif not int(pref.GetPreference(Preferences.BEACON)):
-            self.parent.Notify("You have beacon set to disabled.\nYou can enable it in the network panel in your preferences.", "Show Multicast Connectivity")
-        else:
-            beacon = self.parent.venueClient.GetBeacon()
-            frame = BeaconFrame(self, log, beacon)
-        
     def __hideProgressUI(self):
         self.hidden = 1
         self.progress.Hide()
@@ -4106,8 +4127,6 @@ class StatusBar(wxStatusBar):
         '''
         # Mcast status
         rect = self.GetFieldRect(1)
-        self.mcast.SetPosition(wxPoint(rect.x, rect.y))
-        self.mcast.SetSize(wxSize(rect.width+8, rect.height))
 
         if self.fields == 2:
             self.__hideProgressUI()
@@ -4123,15 +4142,6 @@ class StatusBar(wxStatusBar):
         self.cancelButton.SetPosition(wxPoint(rect.x+2, rect.y+2))
         self.cancelButton.SetSize(wxSize(50, rect.height-2))
         
-    def SetMcastStatus(self,bool):
-        if bool:
-            self.mcast.SetForegroundColour(wxBLACK)
-            if self.mcast.GetLabel() != "Multicast":
-                self.mcast.SetLabel("Multicast")
-        else:
-            self.mcast.SetForegroundColour(wxRED)
-            if self.mcast.GetLabel() != "No Multicast":
-                self.mcast.SetLabel("No Multicast")
         
         
 ################################################################################
