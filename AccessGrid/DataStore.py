@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.89 2005-11-02 17:38:39 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.90 2005-11-03 19:52:41 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.89 2005-11-02 17:38:39 eolson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.90 2005-11-03 19:52:41 turam Exp $"
 
 import os
 import time
@@ -810,16 +810,22 @@ _DownloadFile = FTPSClient.FTPSDownloadFile
 
 DataServer = FTPSServer.FTPSServer
 
-def UploadFiles(identity, upload_url, file_list, progressCB):
-    log.debug('UploadFiles: %s %s', upload_url, str(file_list))
+def UploadFiles(identity, upload_url, file_list, user=None,passw=None,progressCB=None):
+    log.info('UploadFiles: %s %s', upload_url, str(file_list))
     for f in file_list:
         f = str(f)
         fulluploadurl = os.path.join(upload_url,f)
         log.debug('UploadFiles: %s %s %s', upload_url,fulluploadurl, str(file_list))
-        UploadFile(f,upload_url)
+        UploadFile(f,upload_url,user=user,passw=passw,progressCB=progressCB)
+    if progressCB:
+        progressCB(f,
+                   1,
+                   0,
+                   1,1)
 
 def DownloadFile(identity, download_url, destination, size, checksum,
-                     progressCB = None):
-    return _DownloadFile(download_url,destination,progressCB=progressCB)
+                     user=None,passw=None,progressCB = None):
+    log.info("DownloadFile: url %s file %s", download_url,destination)
+    return _DownloadFile(download_url,destination,user=user,passw=passw,progressCB=progressCB)
 
 

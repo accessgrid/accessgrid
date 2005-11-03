@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.47 2005-11-03 05:53:56 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.48 2005-11-03 19:52:41 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.47 2005-11-03 05:53:56 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.48 2005-11-03 19:52:41 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -807,7 +807,7 @@ class VenueClientController:
                 my_identity = str(Application.instance().GetDefaultSubject())
                 log.debug("Got identity %s" % my_identity)
                 DataStore.UploadFiles(my_identity, uploadUrl,
-                fileList, progressCB)
+                fileList, progressCB=progressCB)
 
         except DataStore.FileNotFound, e:
             error_msg = "File not found: %s" % (e[0])
@@ -1000,7 +1000,7 @@ class VenueClientController:
                 log.debug("url does not start with https")
                 my_identity = str(Application.instance().GetDefaultSubject())
                 DataStore.DownloadFile(my_identity, url, local_pathname, size,
-                                           checksum, progressCB)
+                                           checksum, progressCB=progressCB)
         except DataStore.DownloadFailed:
             log.exception("bin.VenueClient:get_ident_and_download: Got exception on download")
             self.gui.Notify("The file could not be downloaded", "Download Error")

@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.116 2005-11-03 16:05:55 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.117 2005-11-03 19:52:41 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.116 2005-11-03 16:05:55 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.117 2005-11-03 19:52:41 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -4105,7 +4105,7 @@ class StatusBar(wxStatusBar):
         if self.max == 0:
             value = 100
         else:
-            value = int(100 * int(value) / int(self.max))
+            value = int(100*value)
         self.progress.SetValue(value)
 
     def OnCancel(self, event):

@@ -4,6 +4,7 @@
 import os
 import sys
 import urlparse
+import stat
 
 # add ftps to the list of protocols recognized by urlparse
 # as using a network location (allows urlparse to parse
@@ -83,9 +84,31 @@ def FTPSDownloadFile(url,destination,size=None,checksum=None,
     except:
         import traceback
         traceback.print_exc()
+        
+class FileWrapper(file):
+
+    def __init__(self,filename,mode,progressCB):
+        file.__init__(self,filename,mode)
+        self.filename = filename
+        self.progressCB = progressCB
+        
+        self.size = os.stat(filename)[stat.ST_SIZE]
+        self.bytesread = 0
+        
+    def read(self,numbytes):
+        buf = file.read(self,numbytes)
+        self.bytesread += len(buf)
+        if self.progressCB:
+            self.progressCB(self.filename,
+                            float(self.bytesread)/float(self.size),
+                            self.size,
+                            0,0)
+        return buf
+        
     
 def FTPSUploadFile(localfile,url,size=None,checksum=None,
-                   ssl_ctx=None,user=None,passw=None):
+                   ssl_ctx=None,user=None,passw=None,
+                   progressCB=None):
     """
     Upload the specified file to the specified URL
     """
@@ -115,7 +138,7 @@ def FTPSUploadFile(localfile,url,size=None,checksum=None,
         f.login(user,passw)
         
         # open local file and transfer file
-        fl = file(localfile,'r')
+        fl = FileWrapper(localfile,'r',progressCB)
 
         # change to target directory
         f.voidcmd('cwd %s' % str(parts[2]))
@@ -123,6 +146,12 @@ def FTPSUploadFile(localfile,url,size=None,checksum=None,
         # upload the file
         remotefile = localfile.split('/')[-1]
         f.storbinary('stor %s' % remotefile, fl)
+        
+        if progressCB:
+            progressCB(localfile,
+                       1,
+                       fl.size,
+                       1,0)
         
         # transfer finished; close up
         fl.close()
