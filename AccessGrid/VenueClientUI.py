@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.117 2005-11-03 19:52:41 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.118 2005-11-04 15:09:15 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.117 2005-11-03 19:52:41 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.118 2005-11-04 15:09:15 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2620,7 +2620,7 @@ class NavigationPanel(wxPanel):
         EVT_MENU(self, self.ID_ALL, self.OnAllMenu)
         EVT_SIZE(self, self.__OnSize)
         
-        self.root = self.tree.AddRoot("")
+        self.root = self.tree.AddRoot("ROOT")
         self.UpdateView()
         self.__Layout()
 
@@ -2697,8 +2697,12 @@ class NavigationPanel(wxPanel):
         self.tree.DeleteChildren(treeId)
 
         for exit in exits:
-            newItemId = self.tree.AppendItem(treeId, exit.name)
-            self.tree.SetItemData(newItemId, wxTreeItemData(exit))
+            newItem = self.tree.AppendItem(treeId,exit.name)
+
+            # Add temporary node to always show + and - buttons.
+            tempItem = self.tree.AppendItem(newItem, "temp node")
+            self.tree.SetItemBold(newItem)
+            self.tree.SetItemData(newItem, wxTreeItemData(exit)) 
                        
         event.Skip()
                                
@@ -2707,12 +2711,13 @@ class NavigationPanel(wxPanel):
         Add a new entry in the list of venues.
         '''
         newItem = self.tree.AppendItem(self.tree.GetRootItem(), venue.name)
-
+        
         # Add temporary node to always show + and - buttons.
         tempItem = self.tree.AppendItem(newItem, "temp node")
         self.tree.SetItemBold(newItem)
         self.tree.SetItemData(newItem, wxTreeItemData(venue)) 
       
+ 
     def UpdateView(self, displayMode = None):
         '''
         Add entries to the list of venues depending on preferences. 
@@ -2753,6 +2758,7 @@ class NavigationPanel(wxPanel):
         Remove all tree entries
         '''
         self.tree.DeleteAllItems()
+        self.root = self.tree.AddRoot("ROOT")
         self.__Layout()
         
     def __Layout(self):
