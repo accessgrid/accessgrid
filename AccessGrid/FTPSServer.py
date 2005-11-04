@@ -96,16 +96,32 @@ class FTPSServer:
 
 if __name__ == '__main__':
     from M2Crypto.SSL import Context
+    import socket
     
     ssl_ctx = Context('sslv23')
     ssl_ctx.load_cert('server.pem')
-    caDir = os.path.join(os.environ['HOME'],'.AccessGrid','Config','trustedCACerts')
+    # cheat to get the ca cert dir
+    if sys.platform == 'win32':
+        caDir = r'c:\\program files\\AGTk-2.4\\Config\CAcertificates'
+    elif sys.platform == 'linux2':
+        caDir = '/etc/AccessGrid/Config/CAcertificates'
+    elif sys.platform == 'darwin':
+        caDir = '/Applications/AccessGridToolkit.app/Contents/Resources/Config/CAcertificates/'
+    else:
+        print 'Unrecognized platform: ', sys.platform
+        sys.exit(1)
     ssl_ctx.load_verify_locations(capath=caDir)
     
     def authorize(channel,user,passw):
         return 1
+        
+    root = sys.argv[1]
+    port = sys.argv[2]
     
-    ftps = FTPSServer('/tmp',ssl_ctx,port=39021,authorizecb=authorize)
+    hostname = socket.gethostbyname(socket.gethostname())
+    print 'Server at: ftps://%s:%s, server dir %s' % ( hostname, port, root)
+    
+    ftps = FTPSServer(root,ssl_ctx,port=port,authorizecb=authorize)
     ftps.run()
     
 
