@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.48 2005-10-07 22:44:51 eolson Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.49 2005-11-04 14:10:15 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -11,10 +11,6 @@
 import os
 import string
 import sys
-
-if sys.platform == "darwin":
-    # OSX: pyGlobus/globus need to be loaded before modules such as socket.
-    import pyGlobus.ioc
 
 # Imports for user interface
 from wxPython.wx import *
