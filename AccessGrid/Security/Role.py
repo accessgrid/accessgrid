@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.22 2005-11-01 18:39:10 turam Exp $
+# RCS-ID:      $Id: Role.py,v 1.23 2005-11-08 20:31:33 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ much more dynamic. We programmatically create, destroy and modify
 roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.22 2005-11-01 18:39:10 turam Exp $"
+__revision__ = "$Id: Role.py,v 1.23 2005-11-08 20:31:33 turam Exp $"
 
 # external imports
 import xml.dom.minidom
@@ -200,7 +200,7 @@ class Role:
         @param sl: a list of subjects to set this Role with.
         @type sl: a list of AccessGrid.Security.Subject objects.
         """
-        self.subject = sl
+        self.subjects = sl
         
     def GetSubjectListAsStrings(self):
         """
