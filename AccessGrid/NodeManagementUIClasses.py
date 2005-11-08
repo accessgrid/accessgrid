@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.87 2005-11-02 23:19:36 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.88 2005-11-08 20:34:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.87 2005-11-02 23:19:36 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.88 2005-11-08 20:34:46 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -946,38 +946,38 @@ class NodeManagementClientFrame(wxFrame):
                 # Set identity
                 #AGServiceIW(serviceDescription.uri).SetIdentity(self.app.GetPreferences().GetProfile())
                 
-#                 # Configure resource
-#                 if serviceToAdd.resourceNeeded:
-#                     service = AGServiceIW(serviceDescription.uri)
-#                     resources = service.GetResources()
-#                     resourceNames = map(lambda x:x.name,resources)
-#                     if len(resources) > 0:
-#                         log.info("Prompt for resource")
-#                         log.debug("Resources: %s" % (resources,))
-# 
-#                         dlg = wxSingleChoiceDialog( self, 
-#                                                     "Select resource for service", 
-#                                                     "Add Service: Select Resource",
-#                                                     resourceNames )
-# 
-#                         dlg.SetSize(wxSize(300,200))
-# 
-#                         ret = dlg.ShowModal()
-# 
-#                         if ret != wxID_OK:
-#                             return
-# 
-#                         selectedResourceName = dlg.GetStringSelection()
-# 
-#                         foundResource = 0
-#                         for r in resources:
-#                             if r.name == selectedResourceName:
-#                                 service.SetResource(r)
-#                                 foundResource = 1
-#                         if not foundResource:
-#                             raise Exception("Unknown resource selected: %s", selectedResourceName)
-#                     else:
-#                         log.info("No resources for service")
+                # Configure resource
+                if serviceToAdd.resourceNeeded:
+                    service = AGServiceIW(serviceDescription.uri)
+                    resources = service.GetResources()
+                    resourceNames = map(lambda x:x.name,resources)
+                    if len(resources) > 0:
+                        log.info("Prompt for resource")
+                        log.debug("Resources: %s" % (resources,))
+
+                        dlg = wxSingleChoiceDialog( self, 
+                                                    "Select resource for service", 
+                                                    "Add Service: Select Resource",
+                                                    resourceNames )
+
+                        dlg.SetSize(wxSize(300,200))
+
+                        ret = dlg.ShowModal()
+
+                        if ret != wxID_OK:
+                            return
+
+                        selectedResourceName = dlg.GetStringSelection()
+
+                        foundResource = 0
+                        for r in resources:
+                            if r.name == selectedResourceName:
+                                service.SetResource(r)
+                                foundResource = 1
+                        if not foundResource:
+                            raise Exception("Unknown resource selected: %s", selectedResourceName)
+                    else:
+                        log.info("No resources for service")
             except:
                 wxEndBusyCursor()
                 log.exception( "Add Service failed:" + serviceToAdd.name)
