@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.201 2005-11-01 19:26:09 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.202 2005-11-08 15:30:17 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.201 2005-11-01 19:26:09 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.202 2005-11-08 15:30:17 turam Exp $"
 
 
 # Standard stuff
@@ -426,7 +426,7 @@ class VenueServer:
 
     def dataActivityCB(self,cmd,pathfile):
         if cmd == 'RECV':
-            parts = pathfile.split('/')
+            parts = pathfile.split(os.path.sep)
             venueid = parts[1]
             filename = parts[2]
             dataDesc = self.venues[venueid].dataStore.AddPendingUpload('',filename)
