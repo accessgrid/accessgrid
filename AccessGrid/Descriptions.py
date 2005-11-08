@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.81 2005-10-21 16:03:07 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.82 2005-11-08 20:42:01 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.81 2005-10-21 16:03:07 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.82 2005-11-08 20:42:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -561,7 +561,7 @@ class VenueState:
         return self.dataLocation
 
 class ResourceDescription: 
-    def __init__(self,name):
+    def __init__(self,name=""):
         self.name = name
 
 class NodeConfigDescription:
