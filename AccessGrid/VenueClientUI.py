@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.118 2005-11-04 15:09:15 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.119 2005-11-08 18:23:17 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.118 2005-11-04 15:09:15 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.119 2005-11-08 18:23:17 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -517,7 +517,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         EVT_TOOL(self,self.audioToolId,self.EnableAudioCB)
         EVT_TOOL(self,self.displayToolId,self.EnableDisplayCB)
         EVT_TOOL(self,self.videoToolId,self.EnableVideoCB)
-        
+
     def OnMulticast(self, event):
 
         pref = self.venueClient.GetPreferences()
@@ -571,28 +571,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.menubar = wxMenuBar()
         self.statusbar = StatusBar(self)
         
-        self.toolbar = self.CreateToolBar()
-        self.networkToolId = 1
-        multicastBitmap = icons.getMulticastBitmap()
-        self.toolbar.AddTool(self.networkToolId,multicastBitmap ,shortHelpString='Multicast Status',longHelpString='Display multicast status')
-        self.toolbar.AddSeparator()
-        self.audioToolId = 2
-        self.toolbar.AddCheckTool(self.audioToolId,icons.getAudioBitmap() ,shortHelp='Audio',longHelp='Enable/disable audio')
-        self.displayToolId = 3
-        self.toolbar.AddCheckTool(self.displayToolId,icons.getDisplayBitmap() ,shortHelp='Video Display',longHelp='Enable/disable the display')
-        self.videoToolId = 4
-        self.toolbar.AddCheckTool(self.videoToolId,icons.getCameraBitmap(),shortHelp='Video Capture',longHelp='Enable/disable this camera')
-        self.toolbar.Realize()
-
-        audioFlag = self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_AUDIO)
-        self.toolbar.ToggleTool(self.audioToolId,int(audioFlag))
-        displayFlag = self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_DISPLAY)
-        self.toolbar.ToggleTool(self.displayToolId,int(displayFlag))
-        videoFlag = self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_VIDEO)
-        self.toolbar.ToggleTool(self.videoToolId,int(videoFlag))
-
-
-       
         self.venueAddressBar = VenueAddressBar(self, self.ID_WINDOW_TOP, 
                                                self.myVenuesDict,
                                                'default venue')
@@ -617,6 +595,28 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.contentListPanel = ContentListPanel(self)
         dataDropTarget = DataDropTarget(self)
         self.contentListPanel.SetDropTarget(dataDropTarget)
+
+        # create toolbar
+        self.toolbar = self.CreateToolBar()
+        self.networkToolId = 1
+        multicastBitmap = icons.getMulticastBitmap()
+        self.toolbar.AddTool(self.networkToolId,multicastBitmap ,shortHelpString='Multicast Status',longHelpString='Display multicast status')
+        self.toolbar.AddSeparator()
+        self.audioToolId = 2
+        self.toolbar.AddCheckTool(self.audioToolId,icons.getAudioBitmap() ,shortHelp='Audio',longHelp='Enable/disable audio sending and receiving')
+        self.displayToolId = 3
+        self.toolbar.AddCheckTool(self.displayToolId,icons.getDisplayBitmap() ,shortHelp='Video Display',longHelp='Enable/disable video receiving')
+        self.videoToolId = 4
+        self.toolbar.AddCheckTool(self.videoToolId,icons.getCameraBitmap(),shortHelp='Video Capture',longHelp='Enable/disable video sending')
+        self.toolbar.Realize()
+        
+        audioFlag = self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_AUDIO)
+        self.toolbar.ToggleTool(self.audioToolId,int(audioFlag))
+        displayFlag = self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_DISPLAY)
+        self.toolbar.ToggleTool(self.displayToolId,int(displayFlag))
+        videoFlag = self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_VIDEO)
+        self.toolbar.ToggleTool(self.videoToolId,int(videoFlag))
+
 
         self.__SetStatusbar()
         self.__SetMenubar(app)
@@ -659,7 +659,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                          
     def __OnSize(self, event = None):
         wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
-               
+        
     def __CleanUp(self):
         self.venueListPanel.CleanUp()
         self.contentListPanel.CleanUp()
@@ -736,7 +736,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         mainBox=wxBoxSizer(wxVERTICAL)
         mainBox.Add(self.venueAddressBar,0,wxEXPAND)
         mainBox.Add(subBox,1,wxEXPAND)
-        mainBox.Add(self.toolbar,0,wxEXPAND)
         
         self.venueListPanel.SetSashVisible(wxSASH_RIGHT, TRUE)
               
