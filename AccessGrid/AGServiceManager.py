@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.88 2005-10-10 17:25:21 lefvert Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.89 2005-11-08 20:36:36 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.88 2005-10-10 17:25:21 lefvert Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.89 2005-11-08 20:36:36 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -26,9 +26,6 @@ from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid.AGServicePackage import AGServicePackage
 from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
-from AccessGrid.Descriptions import CreateAGServicePackageDescription
-from AccessGrid.Descriptions import CreateAGServiceDescription
-from AccessGrid.Descriptions import CreateParameter
 from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid.interfaces.AGService_interface import AGService as AGServiceI
 from AccessGrid.interfaces.AGService_client import AGServiceIW
