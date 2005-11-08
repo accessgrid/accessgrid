@@ -122,7 +122,6 @@ def FTPSUploadFile(localfile,url,size=None,checksum=None,
         # parse url
         parts = urlparse.urlparse(url)
         hostport = parts[1]
-        print parts, hostport
         host,port=hostport.split(':')
         port = int(port)
 
@@ -144,7 +143,7 @@ def FTPSUploadFile(localfile,url,size=None,checksum=None,
         f.voidcmd('cwd %s' % str(parts[2]))
         
         # upload the file
-        remotefile = localfile.split('/')[-1]
+        remotefile = os.path.split(localfile)[-1]
         f.storbinary('stor %s' % remotefile, fl)
         
         if progressCB:
@@ -182,8 +181,12 @@ if __name__ == '__main__':
         
 
     # set up test
+    if sys.platform == 'win32':
+	tmpdir = os.environ['TEMP']
+    elif sys.platform in ['linux2','darwin']:
+        tmpdir = '/tmp'
     fileToUpload = 'upload'
-    uploadedFile = os.path.join('/tmp',fileToUpload)
+    uploadedFile = os.path.join(tmpdir,fileToUpload)
     downloadedFile = 'download'
     downloadsuccess = uploadsuccess = 0
     
