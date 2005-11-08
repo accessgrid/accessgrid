@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.157 2005-11-04 14:10:15 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.158 2005-11-08 20:43:22 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.157 2005-11-04 14:10:15 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.158 2005-11-08 20:43:22 turam Exp $"
 
 # Standard imports
 import sys
@@ -386,7 +386,7 @@ class VenueManagementClient(wxApp):
         try:
             wxBeginBusyCursor()
             log.debug("VenueManagementClient.ConnectToServer: Connect to server")
-            defaultId = self.application.app.certificateManager.GetDefaultIdentity()
+            defaultId = self.app.certificateManager.GetDefaultIdentity()
             transdict = {}
             if defaultId:
                 transdict = {"cert_file":defaultId.GetPath(),
@@ -497,7 +497,7 @@ class VenueManagementClient(wxApp):
             log.debug("VenueManagementClient.SetCurrentVenue: Set current venue to: %s, %s" % (str(venue.name),
                                                          str(venue.uri)))
             self.currentVenue = venue
-            defaultId = self.application.app.certificateManager.GetDefaultIdentity()
+            defaultId = self.app.certificateManager.GetDefaultIdentity()
             transdict = {}
             if defaultId:
                 transdict = {"cert_file":defaultId.GetPath(),
