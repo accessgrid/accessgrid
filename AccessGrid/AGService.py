@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.50 2005-10-25 21:02:43 eolson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.51 2005-11-08 20:35:49 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.50 2005-10-25 21:02:43 eolson Exp $"
+__revision__ = "$Id: AGService.py,v 1.51 2005-11-08 20:35:49 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -248,7 +248,7 @@ class AGService:
 
     def SetPackageFile(self,packageFile, resource = None, config = None, identity = None):
         self.packageFile = packageFile
-        self.SetResource(resource)
+        if resource: self.SetResource(resource)
         self.SetConfiguration(config)
         self.SetIdentity(identity)
         
