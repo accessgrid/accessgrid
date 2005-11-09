@@ -52,15 +52,12 @@ class PreferencesDialog(wxDialog):
                                          self.preferences)
         self.venueConnectionPanel = VenueConnectionPanel(self.preferencesPanel, wxNewId(),
                                          self.preferences)
-        self.clientConnectionPanel = ClientConnectionPanel(self.preferencesPanel, wxNewId(),
-                                         self.preferences)
         self.networkPanel = NetworkPanel(self.preferencesPanel, wxNewId(),
                                          self.preferences)
         self.navigationPanel = NavigationPanel(self.preferencesPanel, wxNewId(),
                                                self.preferences)
         self.loggingPanel.Hide()
         self.venueConnectionPanel.Hide()
-        self.clientConnectionPanel.Hide()
         self.networkPanel.Hide()
         self.navigationPanel.Hide()
         self.nodePanel.Hide()
@@ -116,19 +113,12 @@ class PreferencesDialog(wxDialog):
                                        self.venueConnectionPanel.GetMaxReconnects())
         self.preferences.SetPreference(Preferences.RECONNECT_TIMEOUT,
                                        self.venueConnectionPanel.GetReconnectTimeOut())
-        self.preferences.SetPreference(Preferences.SECURE_VENUE_CONNECTION,
-                                       self.venueConnectionPanel.GetSecureVenueConnection())
-        self.preferences.SetPreference(Preferences.SECURE_CLIENT_CONNECTION,
-                                       self.clientConnectionPanel.GetSecureClientConnection())
         self.preferences.SetPreference(Preferences.MULTICAST,
                                        self.networkPanel.GetMulticast())
         self.preferences.SetPreference(Preferences.BEACON,
                                        self.networkPanel.GetBeacon())
         self.preferences.SetPreference(Preferences.DISPLAY_MODE,
                                        self.navigationPanel.GetDisplayMode())
-        self.preferences.SetPreference(Preferences.CLIENT_PORT,
-                                       self.clientConnectionPanel.GetPort())
-      
         cDict = self.loggingPanel.GetLogCategories()
         for category in cDict.keys():
             self.preferences.SetPreference(category, cDict[category])
@@ -175,8 +165,6 @@ class PreferencesDialog(wxDialog):
                                                 " Logging")
         self.venueConnection = self.sideTree.AppendItem(self.root,
                                                 " Venue Connection")
-        self.clientConnection = self.sideTree.AppendItem(self.root,
-                                                " Client Connection")
         self.network = self.sideTree.AppendItem(self.root,
                                                 " Network")
         self.navigation = self.sideTree.AppendItem(self.root,
@@ -189,8 +177,6 @@ class PreferencesDialog(wxDialog):
                                   wxTreeItemData(self.loggingPanel))
         self.sideTree.SetItemData(self.venueConnection,
                                   wxTreeItemData(self.venueConnectionPanel))
-        self.sideTree.SetItemData(self.clientConnection,
-                                   wxTreeItemData(self.clientConnectionPanel))
         self.sideTree.SetItemData(self.network,
                                   wxTreeItemData(self.networkPanel))
         self.sideTree.SetItemData(self.navigation,
@@ -626,27 +612,18 @@ class VenueConnectionPanel(wxPanel):
         self.maxReconnect = wx.lib.intctrl.IntCtrl(self, -1, 3, size = wxSize(30, -1))
         self.timeoutText = wxStaticText(self, -1, "Recovery timeout (seconds) ")
         self.timeout = wx.lib.intctrl.IntCtrl(self, -1, 10, size = wxSize(30, -1)) 
-       
-        self.titleText2 = wxStaticText(self, -1, "Security")
-        self.titleLine2 = wxStaticLine(self, -1)
-        self.secureButton = wxCheckBox(self, wxNewId(), "  Use secure connection ")
-
         reconnect = int(preferences.GetPreference(Preferences.RECONNECT))
         self.reconnectButton.SetValue(reconnect)
         self.maxReconnect.SetValue(int(preferences.GetPreference(Preferences.MAX_RECONNECT)))
         self.timeout.SetValue(int(preferences.GetPreference(Preferences.RECONNECT_TIMEOUT)))
-        self.secureButton.SetValue(int(preferences.GetPreference(Preferences.SECURE_VENUE_CONNECTION)))
-        
         self.EnableCtrls(reconnect)
                 
         if IsOSX():
             self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
-            self.titleText2.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
-                        
+                                
         else:
             self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
-            self.titleText2.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
-                        
+                                
         self.__Layout()
 
         EVT_CHECKBOX(self, self.reconnectButton.GetId(), self.ReconnectCB)
@@ -662,12 +639,6 @@ class VenueConnectionPanel(wxPanel):
 
     def GetReconnectTimeOut(self):
         return self.timeout.GetValue()
-
-    def GetSecureVenueConnection(self):
-        if self.secureButton.IsChecked():
-            return 1
-        else:
-            return 0
 
     def EnableCtrls(self, value):
         self.maxReconnect.Enable(value)
@@ -690,86 +661,6 @@ class VenueConnectionPanel(wxPanel):
         gridSizer.Add(self.timeoutText, 0, wxLEFT, 30)
         gridSizer.Add(self.timeout)
         sizer.Add(gridSizer)
-
-        sizer3 = wxBoxSizer(wxHORIZONTAL)
-        sizer3.Add(self.titleText2, 0, wxALL, 5)
-        sizer3.Add(self.titleLine2, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer.Add(sizer3, 0, wxEXPAND)
-        sizer.Add(self.secureButton, 0, wxALL, 10)
-
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.SetAutoLayout(1)
-
-class ClientConnectionPanel(wxPanel):
-    def __init__(self, parent, id, preferences):
-        wxPanel.__init__(self, parent, id)
-        self.Centre()
-        self.titleText = wxStaticText(self, -1, "Port Allocation")
-        self.titleLine = wxStaticLine(self, -1)
-        self.portButton = wxCheckBox(self, wxNewId(), "  Dynamically allocate port for incoming SOAP connections ")
-        self.connText = wxStaticText(self, -1, " Port ")
-        self.connCtrl = wx.lib.intctrl.IntCtrl(self, -1, 3, size = wxSize(50, -1))
-               
-        self.titleText2 = wxStaticText(self, -1, "Security")
-        self.titleLine2 = wxStaticLine(self, -1)
-        self.secureButton = wxCheckBox(self, wxNewId(), "  Use secure connection ")
-
-        self.secureButton.SetValue(int (preferences.GetPreference(Preferences.SECURE_CLIENT_CONNECTION)))
-        if int(preferences.GetPreference(Preferences.CLIENT_PORT)) == 0:
-            self.portButton.SetValue(1)
-            self.EnableCtrls(0)
-        self.connCtrl.SetValue(int(preferences.GetPreference(Preferences.CLIENT_PORT)))
-                        
-        if IsOSX():
-            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
-            self.titleText2.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
-                        
-        else:
-            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
-            self.titleText2.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
-
-        EVT_CHECKBOX(self, self.portButton.GetId(), self.PortCB)
-                        
-        self.__Layout()
-
-    def EnableCtrls(self, value):
-        self.connText.Enable(value)
-        self.connCtrl.Enable(value)
-
-    def PortCB(self, event):
-        self.EnableCtrls(not event.IsChecked())
-         
-    def GetPort(self):
-        if not self.portButton.IsChecked():
-            return self.connCtrl.GetValue()
-        else:
-            return 0
-       
-    def GetSecureClientConnection(self):
-        if self.secureButton.IsChecked():
-            return 1
-        else:
-            return 0
-
-    def __Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.titleText, 0, wxALL, 5)
-        sizer2.Add(self.titleLine, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer.Add(sizer2, 0, wxEXPAND)
-        sizer.Add(self.portButton, 0, wxALL|wxEXPAND, 10)
-        
-        gridSizer = wxGridSizer(0, 2, 5, 5)
-        gridSizer.Add(self.connText, 0, wxEXPAND|wxLEFT, 30)
-        gridSizer.Add(self.connCtrl, 0)
-        sizer.Add(gridSizer)
-
-        sizer3 = wxBoxSizer(wxHORIZONTAL)
-        sizer3.Add(self.titleText2, 0, wxALL, 5)
-        sizer3.Add(self.titleLine2, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer.Add(sizer3, 0, wxEXPAND)
-        sizer.Add(self.secureButton, 0, wxALL, 10)
 
         self.SetSizer(sizer)
         sizer.Fit(self)

@@ -17,9 +17,6 @@ class Preferences:
     RECONNECT = "reconnect"
     MAX_RECONNECT = "maxReconnect"
     RECONNECT_TIMEOUT = "reconnectTimeout"
-    SECURE_VENUE_CONNECTION = "secureVenueConnection"
-    SECURE_CLIENT_CONNECTION = "secureClientConnection"
-    CLIENT_PORT = "clientPort"
     STARTUP_MEDIA = "startupMedia"
     NODE_URL = "defaultNodeServiceUrl"
     NODE_CONFIG = "defaultNodeConfig"
@@ -50,8 +47,6 @@ class Preferences:
         self.default = { self.RECONNECT : 1,
                          self.MAX_RECONNECT : 3,
                          self.RECONNECT_TIMEOUT : 10,
-                         self.SECURE_VENUE_CONNECTION: 0,
-                         self.SECURE_CLIENT_CONNECTION: 0,
                          self.CLIENT_PORT: 0,
                          self.STARTUP_MEDIA: 1,
                          self.NODE_URL: "http://localhost:11000/NodeService",

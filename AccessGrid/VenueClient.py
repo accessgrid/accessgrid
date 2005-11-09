@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.242 2005-11-03 05:53:56 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.243 2005-11-09 21:08:20 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.242 2005-11-03 05:53:56 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.243 2005-11-09 21:08:20 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -308,15 +308,7 @@ class VenueClient:
             else:
                 port = NetworkAddressAllocator().AllocatePort()
                         
-        # First, check cmd line option
-       
-        if self.app.GetOption("secure"):
-            self.server = SecureServer((self.hostname, int(port)))
-        # Second, check preferences
-        elif int(self.preferences.GetPreference(Preferences.SECURE_CLIENT_CONNECTION)):
-            self.server = SecureServer((self.hostname, int(port)))
-        else:
-            self.server = InsecureServer((self.hostname, port))
+        self.server = InsecureServer((self.hostname, port))
 
         from AccessGrid.interfaces.VenueClient_interface import VenueClient as VenueClientI
         vci = VenueClientI(impl=self,auth_method_name=None)
@@ -918,7 +910,7 @@ class VenueClient:
                 log.info("VenueClient.StartBeacon: Address %s/%s"
                          %(self.beaconLocation.host, self.beaconLocation.port))
                 self.beacon.Start()
-                
+                              
         except:
             log.exception("VenueClient.StartBeacon failed")
                    
