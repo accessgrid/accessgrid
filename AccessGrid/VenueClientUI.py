@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.119 2005-11-08 18:23:17 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.120 2005-11-09 22:52:40 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.119 2005-11-08 18:23:17 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.120 2005-11-09 22:52:40 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2823,25 +2823,32 @@ class ContentListPanel(wxPanel):
         bm = icons.getBulletBitmap()
         bm.SetWidth(19); bm.SetHeight(19)
         self.bullet = imageList.Add(bm)
-        
-
+                
         bm = icons.getDefaultParticipantBitmap()
-        bm.SetWidth(19); bm.SetHeight(19)
+        i = bm.ConvertToImage()
+        i.Rescale(19,19)
+        bm = i.ConvertToBitmap()
         self.participantId = imageList.Add(bm)
-
+               
         bm = icons.getDefaultDataBitmap()
-        bm.SetWidth(19); bm.SetHeight(19)
+        i = bm.ConvertToImage()
+        i.Rescale(19,19)
+        bm = i.ConvertToBitmap()
         self.defaultDataId = imageList.Add(bm)
-
+        
         bm = icons.getDefaultServiceBitmap()
-        bm.SetWidth(19); bm.SetHeight(19)
+        i = bm.ConvertToImage()
+        i.Rescale(19,19)
+        bm = i.ConvertToBitmap()
         self.serviceId = imageList.Add(bm)
         self.applicationId = imageList.Add(bm)
-
+        
         bm = icons.getDefaultNodeBitmap()
-        bm.SetWidth(19); bm.SetHeight(19)
+        i = bm.ConvertToImage()
+        i.Rescale(19,19)
+        bm = i.ConvertToBitmap()
         self.nodeId = imageList.Add(bm)
-
+                
         self.tree.AssignImageList(imageList)
 
     def __GetPersonalDataFromItem(self, treeId):

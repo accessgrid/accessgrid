@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.90 2005-11-09 16:31:03 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.91 2005-11-09 22:52:40 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.90 2005-11-09 16:31:03 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.91 2005-11-09 22:52:40 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -463,17 +463,21 @@ class NodeManagementClientFrame(wxFrame):
 
         wxInitAllImageHandlers()
 
-
         imageSize = 19
         imageList = wxImageList(imageSize,imageSize)
-        computerBitmap = icons.getComputerBitmap()
-        computerBitmap.SetWidth(imageSize)
-        computerBitmap.SetHeight(imageSize)
-        self.smImage = imageList.Add(computerBitmap)
-        serviceBitmap = icons.getServiceBitmap()
-        serviceBitmap.SetWidth(imageSize)
-        serviceBitmap.SetHeight(imageSize)
-        self.svcImage = imageList.Add(serviceBitmap)
+
+        bm = icons.getComputerBitmap()
+        i = bm.ConvertToImage()
+        i.Rescale(19,19)
+        bm = i.ConvertToBitmap()
+        self.smImage = imageList.Add(bm)
+
+        bm = icons.getServiceBitmap()
+        i = bm.ConvertToImage()
+        i.Rescale(19,19)
+        bm = i.ConvertToBitmap()
+        self.svcImage = imageList.Add(bm)
+        
         self.tree.SetImageList(imageList)
         self.imageList = imageList
                 
