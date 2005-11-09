@@ -8,8 +8,8 @@ parser.add_option("-q", "--quiet", dest="quiet", action="store_true",
 options, args = parser.parse_args()
 
 if sys.platform == "win32":
-    w2pyExec = "python %s " % os.path.join(sys.prefix, "Scripts", "wsdl2py")
-    w2dExec = "python %s " %  os.path.join(sys.prefix, "Scripts", "wsdl2dispatch")
+    w2pyExec = "%s %s " % (sys.executable, os.path.join(sys.prefix, "Scripts", "wsdl2py") )
+    w2dExec = "%s %s " %  (sys.executable, os.path.join(sys.prefix, "Scripts", "wsdl2dispatch") )
     os.chdir( os.path.join("..", "AccessGrid", "wsdl") )
     dstPath = os.path.join("..", "interfaces")
     srcPath = "."
