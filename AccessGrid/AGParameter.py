@@ -5,21 +5,21 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGParameter.py,v 1.9 2004-05-12 17:09:09 turam Exp $
+# RCS-ID:      $Id: AGParameter.py,v 1.10 2005-11-09 16:30:37 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGParameter.py,v 1.9 2004-05-12 17:09:09 turam Exp $"
+__revision__ = "$Id: AGParameter.py,v 1.10 2005-11-09 16:30:37 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 class ValueParameter:
 
     TYPE = "ValueParameter"
 
-    def __init__( self, name, value=None ):
+    def __init__( self, name="", value=None ):
         self.name = name
         self.value = value
         self.type = self.TYPE
@@ -31,7 +31,7 @@ class TextParameter:
 
     TYPE = "TextParameter"
 
-    def __init__( self, name, value=None ):
+    def __init__( self, name="", value="" ):
         self.name = name
         self.value = value
         self.type = self.TYPE
@@ -43,7 +43,7 @@ class RangeParameter( ValueParameter ):
 
     TYPE = "RangeParameter"
 
-    def __init__( self, name, value, low, high ):
+    def __init__( self, name="", value=None, low=0, high=0 ):
 
         ValueParameter.__init__( self, name, value )
         self.low = int(low)
@@ -63,7 +63,7 @@ class OptionSetParameter( ValueParameter ):
 
     TYPE = "OptionSetParameter"
 
-    def __init__( self, name, value, options ):
+    def __init__( self, name="", value=None, options=[] ):
         ValueParameter.__init__( self, name, value )
         self.options = options
 
