@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.88 2005-11-08 20:34:46 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.89 2005-11-09 15:00:00 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.88 2005-11-08 20:34:46 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.89 2005-11-09 15:00:00 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -75,62 +75,6 @@ class ServiceResolveTimeout(Exception): pass
 class UnresolvableService(Exception):   pass
 
 
-class RendezvousServiceDialog(wxDialog):
-    """
-    """
-    def __init__(self, parent, id, title, choices, serviceType ):
-
-        wxDialog.__init__(self, parent, id, title, 
-                          style=wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER,
-                          )
-
-        self.listCtrl = wxListBox(self,-1,choices=choices)
-
-        # Set up sizers
-        sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        #sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxHORIZONTAL)
-        sizer2.Add(self.listCtrl, 1, wxEXPAND, 10)
-        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
-                 
-        # Create ok/cancel buttons
-        sizer3 = wxBoxSizer(wxHORIZONTAL)
-        okButton = wxButton( self, wxID_OK, "OK")
-        cancelButton = wxButton( self, wxID_CANCEL, "Cancel" )
-        sizer3.Add(okButton, 0, wxALL, 10)
-        sizer3.Add(cancelButton, 0, wxALL, 10)
-        sizer1.Add(sizer3, 0, wxALIGN_CENTER)
-        
-        self.SetSizer( sizer1 )
-        sizer1.Fit(self)
-        self.SetAutoLayout(1)
-        
-        self.browser = ServiceDiscovery.Browser(serviceType,self.BrowseCallback)
-        self.browser.Start()
-
-        x,y = wxGetMousePosition()
-        w,h = self.GetSize()
-        self.Move( (x-w/2,y-h/2) )
-	
-        #EVT_TEXT_ENTER(self, self.GetId(), self.OnOK)
-
-    def __del__(self):
-        self.browser.Stop()
-
-    def BrowseCallback(self,op,serviceName,url=None):
-        if op == ServiceDiscovery.Browser.ADD:
-            self.AddItem(serviceName,url)
-        
-    def AddItem(self,name,url):
-        wxCallAfter(self.listCtrl.Append,name,url)
-        wxCallAfter(self.listCtrl.Refresh)
-        
-    def GetValue(self):
-        # Get details of selected service
-        indx = self.listCtrl.GetSelection()
-        url = self.listCtrl.GetClientData(indx)
-        return url
-
 class ServiceChoiceDialog(wxDialog):
     def __init__(self, parent, id, title, choices, serviceType, size=wxSize(450,130) ):
 
@@ -153,10 +97,6 @@ class ServiceChoiceDialog(wxDialog):
         self.comboBoxCtrl = wxComboBox(self,-1, choices=choices)
         gridSizer.Add( self.comboBoxCtrl, 0, wxEXPAND)
         
-        browseButton = wxButton(self,-1,'Browse')
-        gridSizer.Add( browseButton, 0, wxALIGN_RIGHT)
-        EVT_BUTTON(self,browseButton.GetId(),self.OnBrowse)
-          
         # Create ok/cancel buttons
         sizer3 = wxBoxSizer(wxHORIZONTAL)
         okButton = wxButton( self, wxID_OK, "OK")
@@ -172,14 +112,18 @@ class ServiceChoiceDialog(wxDialog):
         self.Move( (x-w/2,y-h/2) )
         #EVT_TEXT_ENTER(self, self.GetId(), self.OnOK)
 
-    def OnBrowse(self,event):
-        dlg = RendezvousServiceDialog(self,-1,'Choose service',
-                                      [], self.serviceType)
-        ret = dlg.ShowModal()
-        if ret == wxID_OK:
-            val = dlg.GetValue()
-            self.comboBoxCtrl.SetValue(val)
+        self.browser = ServiceDiscovery.Browser(serviceType,self.BrowseCallback)
+        self.browser.Start()
+
+
+    def BrowseCallback(self,op,serviceName,url=None):
+        if op == ServiceDiscovery.Browser.ADD:
+            if self.comboBoxCtrl.FindString(url) == wxNOT_FOUND:
+                self.AddItem(serviceName,url)
         
+    def AddItem(self,name,url):
+        wxCallAfter(self.comboBoxCtrl.Append,url)
+
     def GetValue(self):
         return self.comboBoxCtrl.GetValue()
 
