@@ -32,7 +32,7 @@
           <xsd:element name="GetConfigurationResponse">
             <xsd:complexType>
               <xsd:sequence>
-	        <xsd:any processContents='lax' minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="configuration" type="xsd:anyType" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
