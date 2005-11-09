@@ -47,7 +47,6 @@ class Preferences:
         self.default = { self.RECONNECT : 1,
                          self.MAX_RECONNECT : 3,
                          self.RECONNECT_TIMEOUT : 10,
-                         self.CLIENT_PORT: 0,
                          self.STARTUP_MEDIA: 1,
                          self.NODE_URL: "http://localhost:11000/NodeService",
                          self.NODE_CONFIG_TYPE : "",

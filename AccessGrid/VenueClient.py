@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.243 2005-11-09 21:08:20 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.244 2005-11-09 21:32:33 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.243 2005-11-09 21:08:20 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.244 2005-11-09 21:32:33 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -135,9 +135,6 @@ class VenueClient:
             if pnode:   progressCB("Starting personal node.")
             else:       progressCB("Starting web service.")
 
-        if int(self.preferences.GetPreference(Preferences.CLIENT_PORT)) != 0:
-            port = int(self.preferences.GetPreference(Preferences.CLIENT_PORT))
-        
         self.__StartWebService(pnode, port)
 
         #try:
