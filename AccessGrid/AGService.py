@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.51 2005-11-08 20:35:49 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.52 2005-11-10 17:38:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.51 2005-11-08 20:35:49 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.52 2005-11-10 17:38:46 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -237,7 +237,7 @@ class AGService:
         return AGServiceDescription(self.name,
                                     self.uri,
                                     self.capabilities,
-                                    self.resource,
+                                    self.GetResource(),
                                     self.packageFile)
 
     def SetUri(self,uri):
