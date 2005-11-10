@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.91 2005-11-09 22:52:40 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.92 2005-11-10 18:10:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.91 2005-11-09 22:52:40 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.92 2005-11-10 18:10:10 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -126,6 +126,10 @@ class ServiceChoiceDialog(wxDialog):
 
     def GetValue(self):
         return self.comboBoxCtrl.GetValue()
+
+    def Destroy(self):
+        self.browser.Stop()
+        wxDialog.Destroy(self)
 
 def BuildServiceManagerMenu( ):
     """
@@ -406,7 +410,7 @@ class NodeManagementClientFrame(wxFrame):
     def __init__(self, parent, ID, title):
         wxFrame.__init__(self, parent, ID, title,
                          wxDefaultPosition, wxSize(450, 300))
-	self.Center()
+        self.Center()
         self.SetTitle(title)
         self.SetIcon(icons.getAGIconIcon())
         self.serviceManagers = []
@@ -447,7 +451,7 @@ class NodeManagementClientFrame(wxFrame):
         self.SetMenuBar(menuBar)
 
         self.tree = wxTreeListCtrl(self,-1,
-				   style = wxTR_HIDE_ROOT|wxTR_TWIST_BUTTONS)
+                                   style = wxTR_MULTIPLE|wxTR_HIDE_ROOT|wxTR_TWIST_BUTTONS)
         self.tree.AddColumn("Name")
         self.tree.AddColumn("Resource")
         self.tree.AddColumn("Status")
@@ -557,8 +561,10 @@ class NodeManagementClientFrame(wxFrame):
                                   AGNodeService.ServiceType)
         ret = dlg.ShowModal()
 
+
         if ret == wxID_OK:
             url = dlg.GetValue()
+            dlg.Destroy()
             if url not in self.recentNodeServiceList:
                 self.recentNodeServiceList.append(url)
             
@@ -576,6 +582,8 @@ class NodeManagementClientFrame(wxFrame):
             # Update the servicemanager and service lists
             self.UpdateUI()
             wxEndBusyCursor()
+        else:
+            dlg.Destroy()
             
     def AttachToNode( self, nodeService ):
         """
@@ -758,7 +766,10 @@ class NodeManagementClientFrame(wxFrame):
                 if service.uri in selectionUrls:
                     self.tree.SelectItem(s)
                 
-            self.tree.Expand(sm)
+              self.tree.Expand(sm)
+            else:
+              s = self.tree.AppendItem(sm,'No services')
+              self.tree.Collapse(sm)
             
             if serviceManager.uri in selectionUrls:
                 self.tree.SelectItem(sm)
@@ -776,10 +787,11 @@ class NodeManagementClientFrame(wxFrame):
                                   self.recentServiceManagerList,
                                   AGServiceManager.ServiceType)
         dlg.Center()
-	ret = dlg.ShowModal()
+        ret = dlg.ShowModal()
         if ret == wxID_OK:
 
             url = dlg.GetValue()
+            dlg.Destroy()
             if url not in self.recentServiceManagerList:
                 self.recentServiceManagerList.append(url)
             try:
@@ -793,6 +805,8 @@ class NodeManagementClientFrame(wxFrame):
             self.UpdateUI()
             
             wxEndBusyCursor()
+        else:
+            dlg.Destroy()
 
     def RemoveServiceManager( self, event ):
         """
@@ -1129,6 +1143,15 @@ class NodeManagementClientFrame(wxFrame):
         
     def PopupThatMenu(self, evt):
     
+        # if current item is not selected:
+        # - deselect everything else
+        # - select the current item
+        item = evt.GetItem()
+        selections = self.tree.GetSelections()
+        if item not in selections:
+            self.tree.UnselectAll()
+            self.tree.SelectItem(item)
+
         selections = self.GetSelectedItems()
         
         if len(selections) == 0:
