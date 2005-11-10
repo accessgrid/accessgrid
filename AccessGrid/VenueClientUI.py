@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.123 2005-11-10 21:34:32 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.124 2005-11-10 23:12:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.123 2005-11-10 21:34:32 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.124 2005-11-10 23:12:25 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -661,7 +661,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
         
     def __CleanUp(self):
-        self.venueListPanel.CleanUp()
+        #self.venueListPanel.CleanUp()
         self.contentListPanel.CleanUp()
 
     def __HideMenu(self):
@@ -2582,7 +2582,8 @@ class VenueListPanel(wxSashLayoutWindow):
         self.list.AddVenueDoor(connectionDescription)
 
     def AddConnections(self):
-        self.list.UpdateView()
+        if self.GetDisplayMode() == Preferences.EXITS:
+            self.list.UpdateView()
         
     def RemoveVenueDoor(self,connectionDescription):
         self.list.RemoveVenueDoor(connectionDescription)
@@ -2719,6 +2720,9 @@ class NavigationPanel(wxPanel):
         '''
         Add entries to the list of venues depending on preferences. 
         '''
+        print 'in UpdateView', displayMode
+        import traceback
+        traceback.print_stack()
         self.CleanUp()
         
         dm = displayMode
@@ -2815,36 +2819,31 @@ class ContentListPanel(wxPanel):
         EVT_TREE_SEL_CHANGED(self.tree, id, self.OnSelect)
        
     def __SetImageList(self):
+        imageSize = 22
+
         wxInitAllImageHandlers()
-        imageList = wxImageList(19,19)
+        imageList = wxImageList(imageSize,imageSize)
 
         bm = icons.getBulletBitmap()
-        bm.SetWidth(19); bm.SetHeight(19)
+        i = bm.ConvertToImage()
+        i.Rescale(imageSize,imageSize)
+        bm = i.ConvertToBitmap()
         self.bullet = imageList.Add(bm)
                 
         bm = icons.getDefaultParticipantBitmap()
-        i = bm.ConvertToImage()
-        i.Rescale(19,19)
-        bm = i.ConvertToBitmap()
         self.participantId = imageList.Add(bm)
                
         bm = icons.getDefaultDataBitmap()
         i = bm.ConvertToImage()
-        i.Rescale(19,19)
+        i.Rescale(imageSize,imageSize)
         bm = i.ConvertToBitmap()
         self.defaultDataId = imageList.Add(bm)
         
         bm = icons.getDefaultServiceBitmap()
-        i = bm.ConvertToImage()
-        i.Rescale(19,19)
-        bm = i.ConvertToBitmap()
         self.serviceId = imageList.Add(bm)
         self.applicationId = imageList.Add(bm)
         
         bm = icons.getDefaultNodeBitmap()
-        i = bm.ConvertToImage()
-        i.Rescale(19,19)
-        bm = i.ConvertToBitmap()
         self.nodeId = imageList.Add(bm)
                 
         self.tree.AssignImageList(imageList)
