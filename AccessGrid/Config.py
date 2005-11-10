@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.33 2005-10-25 17:14:44 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.34 2005-11-10 22:31:55 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.33 2005-10-25 17:14:44 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.34 2005-11-10 22:31:55 eolson Exp $"
 
 import os
 import sys
@@ -538,6 +538,7 @@ class SystemConfig:
         
         self.tempDir = None
         self.hostname = None
+        self.SetHostname()
 
     def _repr_(self):
         tmpstr = "System Configuration:\n"
@@ -574,6 +575,49 @@ class SystemConfig:
         Get the path to the system temp directory.
         """
         raise Exception, "This should not be called directly, but through a subclass."
+
+    def SetHostname(self):
+        envHostname = os.getenv("AG_HOSTNAME")
+
+        if envHostname is not None:
+            self.hostname = envHostname
+            log.debug("Using AG_HOSTNAME=%s as set in the environment",
+                      self.hostname)
+            return
+        else:
+            hostname = socket.getfqdn()
+            # It has to really be a fqdn.
+            if hostname.find(".") < 0:
+                return self._SetHostnameToLocalIP()
+
+            # And one has to be able to bind to it.
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                sock.bind((hostname, 0))
+                # This worked, so we are okay.
+                log.debug("System hostname of %s is valid", hostname)
+                self.hostname = hostname
+                return
+            except socket.error:
+                log.exception("Error setting hostname.")
+
+            # Binding to our hostname didn't work. Retrieve our IP address
+            # and use that.
+            self._SetHostnameToLocalIP()
+
+    def _SetHostnameToLocalIP(self):
+        """
+        Set the hostname to the IP address
+        """
+        try:
+            self.hostname = self.GetLocalIPAddress()
+            log.debug("retrieved local IP address %s", self.hostname)
+        except:
+            self.hostname = "127.0.0.1"
+            
+            log.exception("Failed to determine local IP address, using %s",
+                          self.hostname)
+
         
     def GetHostname(self):
         """
