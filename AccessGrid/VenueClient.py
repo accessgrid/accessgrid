@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.244 2005-11-09 21:32:33 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.245 2005-11-10 18:10:24 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.244 2005-11-09 21:32:33 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.245 2005-11-10 18:10:24 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -151,21 +151,6 @@ class VenueClient:
         
         self.observers = []
 
-        # attributes for personal data store
-        self.personalDataStorePrefix = "personalDataStore"
-        self.personalDataStorePort = 0
-        self.personalDataStorePath = os.path.join(self.userConf.GetConfigDir(),
-                                                  self.personalDataStorePrefix)
-        self.personalDataFile = os.path.join(self.personalDataStorePath,
-                                             "myData.txt" )
-        # If already requested personal data, clients public id is saved
-        # in requests.        
-        self.requests = [] 
-
-        # Create personal data store
-        #if progressCB: progressCB("Starting personal data store")
-        #self.__CreatePersonalDataStore()
-
         # Manage the currently-exiting state
         self.exiting = 0
         self.exitingLock = threading.Lock()
@@ -210,42 +195,6 @@ class VenueClient:
         self.__venueProxy = None
         #self.privateId = None
 
-    def __CreatePersonalDataStore(self):
-        """
-        Creates the personal data storage and loads personal data
-        from file to a dictionary of DataDescriptions. If the file is removed
-        from local path, the description is not added to the list.
-        """
-        
-        log.debug("__createPersonalDataStore: Creating personal datastore at %s using prefix %s and port %s" %(self.personalDataStorePath, self.personalDataStorePrefix,self.personalDataStorePort))
-        
-        if not os.path.exists(self.personalDataStorePath):
-            try:
-                os.mkdir(self.personalDataStorePath)
-            except OSError:
-                log.exception("__createPersonalDataStore: Could not create personal data storage path")
-                self.personalDataStorePath = None
-
-        if self.personalDataStorePath:
-            self.transferEngine = DataStore.HTTPTransferServer(('',
-                                                   self.personalDataStorePort))
-            self.transferEngine.run()
-            self.dataStore = DataStore.DataStore(self,
-                                                 self.personalDataStorePath, 
-                                                 self.personalDataStorePrefix,
-                                                 self.transferEngine)
-                   
-            # load personal data from file
-            
-            log.debug("__createPersonalDataStore: Load personal data from file")
-            if os.path.exists(self.personalDataFile):
-                try:
-                    fileH = open(self.personalDataFile, 'r')
-                    dList = cPickle.load(fileH)
-                    self.dataStore.LoadPersistentData(dList)
-                    fileH.close()
-                except:
-                    log.exception("__createPersonalDataStore: Personal data could not be added")
 
     def __CheckForInvalidClock(self):
         """
@@ -512,11 +461,6 @@ class VenueClient:
 
         log.debug("RemoveUserEvent: Got Remove User Event...done")
 
-        # Remove client from the list of clients who have
-        # been requested for personal data
-        if profile.publicId in self.requests:
-            self.requests.remove(profile.publicId)
-        
     def ModifyUserEvent(self, event):
         log.debug("ModifyUserEvent: Got Modify User Event")
         profile = event.GetData()
@@ -538,11 +482,6 @@ class VenueClient:
             # Venue data gets saved in venue state
             self.venueState.AddData(data)
                       
-        elif data.GetType() not in self.requests:
-            # If we haven't done an initial request of this
-            # persons data, don't react on events.
-            return
-
         for s in self.observers:
             s.AddData(data)
 
@@ -555,11 +494,6 @@ class VenueClient:
             # Venue data gets saved in venue state
             self.venueState.UpdateData(data)
                       
-        elif data.type not in self.requests:
-            # If we haven't done an initial request of this
-            # persons data, don't react on events.
-            return
-
         for s in self.observers:
             s.UpdateData(data)
 
@@ -571,11 +505,6 @@ class VenueClient:
             # Venue data gets removed from venue state
             self.venueState.RemoveData(data)
             
-        elif data.type not in self.requests:
-            # If we haven't done an initial request of this
-            # persons data, don't react on events.
-            return
-
         for s in self.observers:
             s.RemoveData(data)
                 
@@ -1030,7 +959,6 @@ class VenueClient:
 
     def __ExitVenue(self):
         # Clear the list of personal data requests.
-        self.requests = []
 
         # Cancel the heartbeat
         self.heartBeatTimer.cancel()
@@ -1207,12 +1135,6 @@ class VenueClient:
         self.eventClient.Send(eventType, data)
 
     def Shutdown(self):
-
-        #
-        # stop personal data server
-        #  
-        if self.transferEngine:
-            self.transferEngine.stop()
 
         self.__StopWebService()
         
@@ -1411,54 +1333,6 @@ class VenueClient:
         else:
             return self.dataStore.GetUploadDescriptor(), self.dataStore.GetLocation()
         
-    def GetPersonalData(self, clientProfile=None):
-        '''
-        Get personal data from client
-        
-        **Arguments**
-            *clientProfile* of the person we want to get data from
-        '''
-        
-        # Handle request for my own data
-        # (bleh, multipurpose code)
-        if not clientProfile or clientProfile.publicId == self.profile.publicId:
-            log.debug('GetPersonalData: I am trying to get my own data')
-            self.requests.append(self.profile.publicId)
-            return self.dataStore.GetDataDescriptions()
-
-        
-        
-        url = clientProfile.venueClientURL
-        publicId = clientProfile.publicId
-
-        dataList = []
-                
-        #
-        # After initial request, personal data will be updated via events.
-        #
-
-        if not publicId in self.requests:
-            log.debug("GetPersonalData: The client has NOT been queried for personal data yet %s", clientProfile.name)
-
-            self.requests.append(publicId)
-                    
-            log.debug("GetPersonalData: This is somebody else's data")
-            try:
-                v = VenueClientIW(url)
-                dataDescriptionList = v.GetPersonalData()
-            except:
-                log.exception("GetPersonalData: call failed")
-                raise GetDataDescriptionsError()
-            
-            for data in dataDescriptionList:
-                dataDesc = CreateDataDescription(data)
-                dataList.append( dataDesc )
-        
-        else:
-            log.debug("GetPersonalData: The client has been queried for personal %s" %clientProfile.name)
-            
-        return dataList
-
     def GetUsers(self):
         return self.venueState.GetUsers()
         
@@ -1689,10 +1563,6 @@ class VenueClientI(SOAPInterface):
         r = self.impl.GetDataStoreInformation()
         return r
 
-    def GetPersonalData(self):
-        dl = self.impl.GetPersonalData()
-        return dl
-
     def GetVenueData(self):
         dl = self.impl.GetVenueData()
         return dl
@@ -1757,14 +1627,6 @@ class VenueClientIW(SOAPIWrapper):
 
     def GetVenueData(self):
         dataStructList = self.proxy.GetVenueData()
-        
-        dataList = list()
-        for dataStruct in dataStructList:
-            dataList.append(CreateDataDescription(dataStruct))
-        return dataList
-        
-    def GetPersonalData(self):
-        dataStructList = self.proxy.GetPersonalData()
         
         dataList = list()
         for dataStruct in dataStructList:
