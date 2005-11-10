@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.96 2005-11-08 15:29:32 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.97 2005-11-10 20:47:09 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.96 2005-11-08 15:29:32 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.97 2005-11-10 20:47:09 eolson Exp $"
 
 # Standard imports
 import os
@@ -57,9 +57,6 @@ class AppBase:
        The application constructor that enforces the singleton pattern.
        """
 
-       # Load client preferences
-       self.preferences = Preferences()
-       
        self.parser = OptionParser()
        self.parser.add_option("-d", "--debug", action="store_true",
                               dest="debug", default=0,
@@ -132,6 +129,10 @@ class AppBase:
        except Exception:
            self.log.exception("User Initialization failed.")
            sys.exit(-1)
+
+       # Load client preferences
+       self.preferences = Preferences()
+       self.ProcessArgsThatUsePreferences()
        
        # 4. Redirect logging to files in the user's directory,
        #    purging memory to file
@@ -268,6 +269,17 @@ class AppBase:
            print "Access Grid Toolkit Version: ", GetVersion()
            sys.exit(0)
            
+       if self.options.cert:
+           self.options.secure = 1
+           
+       return ret_args
+
+    def ProcessArgsThatUsePreferences(self):
+       """
+       Process toolkit wide logging arguments. Then return the modified
+       argv so the app can choose to parse more if it requires that.
+       """
+
        if self.options.debug or int(self.preferences.GetPreference(Preferences.LOG_TO_CMD)):
            self.streamLoggerLevels = Log.HandleLoggers(Log.defStreamHandler,
                                            Log.GetDefaultLoggers())
@@ -278,11 +290,6 @@ class AppBase:
            # If not in debug, we only used the StreamHandler before Logging was initialized.
            #    so we don't have a StreamLoggerLevels.  
            self.streamLoggerLevels = None
-           
-       if self.options.cert:
-           self.options.secure = 1
-           
-       return ret_args
 
     def AddCmdLineOption(self, option):
         self.parser.add_option(option)
