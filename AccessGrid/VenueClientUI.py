@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.122 2005-11-10 21:17:51 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.123 2005-11-10 21:34:32 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.122 2005-11-10 21:17:51 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.123 2005-11-10 21:34:32 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -587,7 +587,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT,
                                              self)
-        self.venueListPanel.SetDefaultSize((150, 1000))
+        self.venueListPanel.SetDefaultSize((170, 1000))
         self.venueListPanel.SetOrientation(wxLAYOUT_VERTICAL)
         self.venueListPanel.SetAlignment(wxLAYOUT_LEFT)
         self.venueListPanel.SetSashVisible(wxSASH_RIGHT, True)
