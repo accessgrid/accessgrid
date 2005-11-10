@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.4 2005-10-14 20:16:26 lefvert Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.5 2005-11-10 17:26:51 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ except: pass
 
 from AccessGrid import Toolkit
 
-from AccessGrid.Descriptions import Capability
+from AccessGrid.Descriptions import Capability, ResourceDescription
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
 from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD5
@@ -98,7 +98,7 @@ class VideoProducerService( AGService ):
 
         # note: the datatype of the port parameter changes when a resource is set!
         self.streamname = TextParameter( "Stream Name", "Video" )
-        self.port = TextParameter( "port", "" )
+        self.port = TextParameter( "Port", "" )
         self.encoding = OptionSetParameter( "Encoding", "h261", VideoProducerService.encodings )
         self.standard = OptionSetParameter( "Standard", "NTSC", VideoProducerService.standards )
         self.bandwidth = RangeParameter( "Bandwidth", 800, 0, 3072 )
@@ -214,18 +214,16 @@ class VideoProducerService( AGService ):
             self.sysConf.AppFirewallConfig(self.executable, 1)
 
             # Resolve assigned resource to a device understood by vic
-            print "self.resource = ", type(self.resource), self.resource
-            print "res = ", self.resource.resource
             if self.resource == "None":
                 vicDevice = "None"
             else:
-                vicDevice = self.resource.resource
+                vicDevice = self.resource[0]
                 vicDevice = vicDevice.replace("[","\[")
                 vicDevice = vicDevice.replace("]","\]")
 
             if IsWindows():
                 try:
-                    self.MapWinDevice(self.resource.resource)
+                    self.MapWinDevice(self.resource[0])
                 except:
                     self.log.exception("Exception mapping device")
 
@@ -319,8 +317,10 @@ class VideoProducerService( AGService ):
         # Disable firewall
         self.sysConf.AppFirewallConfig(self.executable, 0)
 
-    def ConfigureStream( self, streamDescription ):
+    def SetStream( self, streamDescription ):
         """Configure the Service according to the StreamDescription"""
+        self.log.info('SetStream: %s', streamDescription)
+        self.log.info('  enabled: %d', self.enabled)
 
         ret = AGService.ConfigureStream( self, streamDescription )
         if ret and self.started:
@@ -335,36 +335,42 @@ class VideoProducerService( AGService ):
         if self.enabled:
             self.Start()
 
+    def GetResource( self ):
+        return ResourceDescription(self.resource[0])
+
     def SetResource( self, resource ):
         """Set the resource used by this service"""
 
-        self.log.info("VideoProducerService.SetResource : %s" % resource )
-        self.resource = resource
-        #if "portTypes" in self.resource.__dict__.keys():
-        if 1:
+        self.log.info("VideoProducerService.SetResource : %s" % resource.name)
+        for r in self.resources:
+            if r[0] == resource.name:
+                self.resource = r
 
-            # Find the config element that refers to "port"
-            try:
-                index = self.configuration.index(self.port)
-                found = 1
-            except ValueError:
-                found = 0
+        # Find the config element that refers to "port"
+        try:
+            index = self.configuration.index(self.port)
+            found = 1
+        except ValueError:
+            found = 0
 
-            # Create the port parameter as an option set parameter, now
-            # that we have multiple possible values for "port"
-            # If self.port is valid, keep it instead of setting the default value.
-            if ( isinstance(self.port, TextParameter) or isinstance(self.port, ValueParameter) ) and self.port.value != "" and self.port.value in self.resource[1]:
-                self.port = OptionSetParameter( "Port", self.port.value,
-                                                             self.resource[1] )
-            else:
-                self.port = OptionSetParameter( "Port", self.resource[1][0],
-                                                             self.resource[1] )
+        # Create the port parameter as an option set parameter, now
+        # that we have multiple possible values for "port"
+        # If self.port is valid, keep it instead of setting the default value.
+        if (( isinstance(self.port, TextParameter) or isinstance(self.port, ValueParameter) ) 
+              and self.port.value != "" and self.port.value in self.resource[1]):
+            self.port = OptionSetParameter( "Port", self.port.value,
+                                                         self.resource[1] )
+        else:
+            self.port = OptionSetParameter( "Port", self.resource[1][0],
+                                                         self.resource[1] )
 
-            # Replace or append the "port" element
-            if found:
-                self.configuration[index] = self.port
-            else:
-                self.configuration.append(self.port)
+        self.log.info('port = %s', self.port.value)
+
+        # Replace or append the "port" element
+        if found:
+            self.configuration[index] = self.port
+        else:
+            self.configuration.append(self.port)
 
     def SetIdentity(self, profile):
         """
@@ -375,7 +381,9 @@ class VideoProducerService( AGService ):
         self.__SetRTPDefaults(profile)
         
     def GetResources(self):
-        return map(lambda x: x[0] , self.resources)
+        ret = map(lambda x: ResourceDescription(x[0]) , self.resources)
+        self.log.info('resources: %s', ret)
+        return ret
 
     def __GetResources(self):
         if IsWindows():
