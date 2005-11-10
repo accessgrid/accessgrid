@@ -5,15 +5,16 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.92 2005-11-10 18:10:10 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.93 2005-11-10 21:49:02 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.92 2005-11-10 18:10:10 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.93 2005-11-10 21:49:02 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
+import threading
 
 from wxPython.wx import *
 from wxPython.lib.dialogs import wxMultipleChoiceDialog
@@ -114,20 +115,24 @@ class ServiceChoiceDialog(wxDialog):
 
         self.browser = ServiceDiscovery.Browser(serviceType,self.BrowseCallback)
         self.browser.Start()
-
+        
+        self.exists = threading.Event()
+        self.exists.set()
+        
 
     def BrowseCallback(self,op,serviceName,url=None):
-        if op == ServiceDiscovery.Browser.ADD:
-            if self.comboBoxCtrl.FindString(url) == wxNOT_FOUND:
-                self.AddItem(serviceName,url)
+        if self.exists.isSet() and op == ServiceDiscovery.Browser.ADD:
+            wxCallAfter(self.AddItem,serviceName,url)
         
     def AddItem(self,name,url):
-        wxCallAfter(self.comboBoxCtrl.Append,url)
+        if self.comboBoxCtrl.FindString(url) == wxNOT_FOUND:
+            self.comboBoxCtrl.Append(url)
 
     def GetValue(self):
         return self.comboBoxCtrl.GetValue()
 
     def Destroy(self):
+        self.exists.clear()
         self.browser.Stop()
         wxDialog.Destroy(self)
 
