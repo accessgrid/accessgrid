@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.43 2005-10-27 18:59:33 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.44 2005-11-10 20:56:39 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.43 2005-10-27 18:59:33 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.44 2005-11-10 20:56:39 eolson Exp $"
 
 import re
 import os
@@ -238,7 +238,7 @@ class CertificateManager(object):
             log.exception("repo already exists")
             raise Exception, "Received RepoAlreadyExists exception after we determined that it didn't actually exist"
 
-        self.InitRepoFromGlobus(self.certRepo)
+        #self.InitRepoFromGlobus(self.certRepo)
 
     def ImportRequestedCertificate(self, userCert):
         repo = self.GetCertificateRepository()
