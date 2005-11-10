@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.120 2005-11-09 22:52:40 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.121 2005-11-10 20:53:09 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.120 2005-11-09 22:52:40 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.121 2005-11-10 20:53:09 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -574,7 +574,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.venueAddressBar = VenueAddressBar(self, self.ID_WINDOW_TOP, 
                                                self.myVenuesDict,
                                                'default venue')
-        self.venueAddressBar.SetDefaultSize((1000, 65))
+        self.venueAddressBar.SetDefaultSize((1000, 55))
         self.venueAddressBar.SetOrientation(wxLAYOUT_HORIZONTAL)
         self.venueAddressBar.SetAlignment(wxLAYOUT_TOP)
         self.venueAddressBar.SetSashVisible(wxSASH_BOTTOM, True)
@@ -2403,25 +2403,23 @@ class VenueAddressBar(wxSashLayoutWindow):
                                     wxDefaultPosition, 
                                     wxDefaultSize)
         self.parent = parent
-        self.addressPanel = wxPanel(self, -1, style = wxRAISED_BORDER,
-                                    size = wxSize(-1,30))
-        self.titlePanel =  wxPanel(self, -1, size = wxSize(-1, 10),
-                                   style = wxRAISED_BORDER)
+        self.addressPanel = wxPanel(self, -1, style = wxRAISED_BORDER)
+        self.titlePanel =  wxPanel(self, -1, style = wxRAISED_BORDER)
         self.title = wxStaticText(self.titlePanel, wxNewId(),
                                   'You are not in a venue',
                                   style = wxALIGN_CENTER)
-        font = wxFont(16, wxSWISS, wxNORMAL, wxNORMAL, false)
+        font = wxFont(14, wxSWISS, wxNORMAL, wxNORMAL, false)
         self.title.SetFont(font)
         self.address = wxComboBox(self.addressPanel, self.ID_ADDRESS,
                                   defaultVenue,
                                   choices = venuesList.keys(),
-                                  style = wxCB_DROPDOWN,
-                                  size = wxSize(-1, 35))
+                                  style = wxCB_DROPDOWN)
         self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go",
-                             wxDefaultPosition, wxSize(40, 21))
+                             wxDefaultPosition, wxSize(25, 21))
         self.goButton.SetToolTip(wxToolTip("Enter venue"))
         self.backButton = wxBitmapButton(self.addressPanel, self.ID_BACK ,
-                               icons.getPreviousBitmap(), wxDefaultPosition, wxSize(36, 21))
+                                         icons.getPreviousBitmap(),
+                                         wxDefaultPosition, wxSize(25, 21))
         self.backButton.SetToolTip(wxToolTip("Go to previous venue"))
         self.__Layout()
         self.__AddEvents()
@@ -2462,9 +2460,9 @@ class VenueAddressBar(wxSashLayoutWindow):
         venueServerAddressBox = wxBoxSizer(wxVERTICAL)
         
         box = wxBoxSizer(wxHORIZONTAL)
-        box.Add(self.backButton, 0, wxEXPAND|wxRIGHT|wxALIGN_CENTER|wxLEFT, 5)
-        box.Add(self.address, 1, wxEXPAND|wxRIGHT|wxALIGN_CENTER, 5)
-        box.Add(self.goButton, 0, wxEXPAND|wxRIGHT|wxALIGN_CENTER, 5)
+        box.Add(self.backButton, 0, wxRIGHT|wxLEFT, 5)
+        box.Add(self.address, 1, wxRIGHT, 5)
+        box.Add(self.goButton, 0, wxRIGHT, 5)
         self.addressPanel.SetSizer(box)
 
         titleBox = wxBoxSizer(wxHORIZONTAL)
@@ -2476,7 +2474,7 @@ class VenueAddressBar(wxSashLayoutWindow):
         w,h = self.GetSizeTuple()
         self.SetSizer(venueServerAddressBox)
         self.GetSizer().SetDimension(5,5,w-10,h-10)
-        
+
         self.Layout()
         
     def GoBack(self, event):
