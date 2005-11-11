@@ -6,6 +6,7 @@ from wx import EmptyIcon
 import cStringIO, zlib
 
 
+
 catalog = {}
 index = []
 
@@ -1797,3 +1798,42 @@ def getVideoIcon():
     icon.CopyFromBitmap(getVideoBitmap())
     return icon
 
+
+if __name__ == '__main__':
+
+    from wxPython.wx import *
+
+    import types
+    import re
+    
+    re_func = re.compile('get.*Bitmap')
+    locsDict = locals().copy()
+    funcsDict = {}
+    for k,v in locsDict.items():
+        m = re_func.match(k)
+        if m:
+            funcsDict[k] = v
+
+    if not funcsDict:
+        print 'no bitmaps found; exiting'
+        sys.exit(-1)
+        
+    wxapp = wxPySimpleApp()
+    
+    f = wxFrame(None,-1,'icons.py')
+    
+    sizer = wxBoxSizer(wxVERTICAL)
+    f.SetSizer(sizer)
+    
+    for func in funcsDict.values():
+        bitmap = wxStaticBitmap(f,-1,func())    
+    
+        sizer.Add(bitmap,0)
+        
+        
+    img = wxImage('system-users.png')
+    bitmap = wxStaticBitmap(f,-1,img.ConvertToBitmap())
+    sizer.Add(bitmap,0)
+    
+    f.Show(1)
+    wxapp.MainLoop()
