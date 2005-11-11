@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.98 2005-11-11 18:45:01 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.99 2005-11-11 20:52:20 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.98 2005-11-11 18:45:01 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.99 2005-11-11 20:52:20 eolson Exp $"
 
 # Standard imports
 import os
@@ -389,6 +389,9 @@ class AppBase:
 
     def GetCertificateManager(self):
        return self.certificateManager
+
+    def GetCertificateManagerUI(self):
+       return self.certMgrUI
 
     def GetHostname(self):
         return self.systemConfig.GetHostname()

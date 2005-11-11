@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.44 2005-11-10 20:56:39 eolson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.45 2005-11-11 20:52:20 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.44 2005-11-10 20:56:39 eolson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.45 2005-11-11 20:52:20 eolson Exp $"
 
 import re
 import os
@@ -252,7 +252,7 @@ class CertificateManager(object):
 
         if defID is None:
             self.SetDefaultIdentity(impCert)
-            self.GetUserInterface().InitGlobusEnvironment()
+            #self.GetUserInterface().InitGlobusEnvironment()
         
         repo.NotifyObservers()
         return impCert
@@ -733,6 +733,7 @@ class CertificateManager(object):
             certRet = (0, "Error retrieving certificate")
             
         return certRet
+
     
 class CertificateRequestInfo:
     """
@@ -928,7 +929,7 @@ class CertificateManagerUserInterface:
         return success
 
     def RequestCertificate(self, reqInfo, password,
-                           proxyEnabled, proxyHost, proxyPort):
+                           proxyEnabled, proxyHost, proxyPort, crsServerURL = None):
         """
         Request a certificate.
 
@@ -948,7 +949,10 @@ class CertificateManagerUserInterface:
 
             # Ptui. Hardcoding name for the current AGdev CA.
             # Also hardcoding location of submission URL.
-            submitServerURL = "http://www.mcs.anl.gov/fl/research/accessgrid/ca/agdev/server.cgi"
+            if crsServerURL == None:
+                submitServerURL = "http://www.mcs.anl.gov/fl/research/accessgrid/ca/agdev/server.cgi"
+            else:
+                submitServerURL = crsServerURL
 
             name = reqInfo.GetDN()
             log.debug("Requesting certificate for dn %s", name)

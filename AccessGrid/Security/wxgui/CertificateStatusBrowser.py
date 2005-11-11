@@ -361,8 +361,9 @@ class CertRequestWrapper:
     
 
 class CertificateStatusBrowser(CertificateBrowserBase):
-    def __init__(self, parent, id, certMgr):
+    def __init__(self, parent, id, certMgr, certMgrUI):
         self.updateStatus = 0
+        self.certMgrUI = certMgrUI
 
         CertificateBrowserBase.__init__(self, parent, id, certMgr)
 
@@ -411,7 +412,7 @@ class CertificateStatusBrowser(CertificateBrowserBase):
         sizer.Add(self.httpProxyPanel, 0, wxEXPAND)
 
     def OnRequestNewCertificate(self, event):
-        self.certMgr.GetUserInterface().RunCertificateRequestTool(self)
+        self.certMgrUI.RunCertificateRequestTool(self)
         self.Load()
 
     def OnInstallCert(self, event):

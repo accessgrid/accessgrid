@@ -8,7 +8,7 @@ from AccessGrid.Security.wxgui.CABrowser import CABrowser
 from AccessGrid.Security.wxgui.CertificateStatusBrowser import CertificateStatusBrowser
 
 class CertificateManagerDialog(wxDialog):
-    def __init__(self, parent, id, title, certMgr):
+    def __init__(self, parent, id, title, certMgr, certMgrUI):
         wxDialog.__init__(self, parent, id, title, size = wxSize(700, 400),
                           style= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 
@@ -31,7 +31,7 @@ class CertificateManagerDialog(wxDialog):
         self.caBrowser = CABrowser(self.notebook, -1, self.certMgr)
         self.notebook.AddPage(self.caBrowser, "Trusted CA Certificates")
 
-        self.statusBrowser = CertificateStatusBrowser(self.notebook, -1, self.certMgr)
+        self.statusBrowser = CertificateStatusBrowser(self.notebook, -1, self.certMgr, certMgrUI)
         self.notebook.AddPage(self.statusBrowser, "Certificate Requests")
 
         # Default to certificate pane.
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     app = AccessGrid.Toolkit.WXGUIApplication()
     app.Initialize()
 
-    d = CertificateManagerDialog(None, -1, "CMGR", app.GetCertificateManager())
+    d = CertificateManagerDialog(None, -1, "CMGR", app.GetCertificateManager(), app.GetCertificateManagerUI())
     
     d.Show(1)
 

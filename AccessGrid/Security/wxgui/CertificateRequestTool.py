@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.18 2005-10-18 21:39:02 turam Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.19 2005-11-11 20:52:20 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -1063,7 +1063,7 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
         try:
             proxyInfo = self.proxyPanel.GetInfo()
             certMgr = Toolkit.Application.instance().GetCertificateManager()
-            gui = certMgr.GetUserInterface()
+            gui = Toolkit.Application.instance().GetCertificateManagerUI()
 
             #
             # Sigh, continue to hardcode URLs. Next turn of the crank
@@ -1073,7 +1073,6 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
             crsURL = None
             if self.certInfo.GetType() == "anonymous":
                 crsURL = "http://www-unix.mcs.anl.gov/fl/research/accessgrid/ca/anonymous/anonReqServer.cgi"
-            
             success = gui.RequestCertificate(self.certInfo,
                                              self.password,
                                              proxyInfo[0],
