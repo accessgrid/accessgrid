@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.93 2005-11-10 21:49:02 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.94 2005-11-11 20:05:54 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.93 2005-11-10 21:49:02 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.94 2005-11-11 20:05:54 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -113,11 +113,11 @@ class ServiceChoiceDialog(wxDialog):
         self.Move( (x-w/2,y-h/2) )
         #EVT_TEXT_ENTER(self, self.GetId(), self.OnOK)
 
-        self.browser = ServiceDiscovery.Browser(serviceType,self.BrowseCallback)
-        self.browser.Start()
-        
         self.exists = threading.Event()
         self.exists.set()
+        
+        self.browser = ServiceDiscovery.Browser(serviceType,self.BrowseCallback)
+        self.browser.Start()
         
 
     def BrowseCallback(self,op,serviceName,url=None):
@@ -472,19 +472,13 @@ class NodeManagementClientFrame(wxFrame):
 
         wxInitAllImageHandlers()
 
-        imageSize = 19
+        imageSize = 22
         imageList = wxImageList(imageSize,imageSize)
 
         bm = icons.getComputerBitmap()
-        i = bm.ConvertToImage()
-        i.Rescale(19,19)
-        bm = i.ConvertToBitmap()
         self.smImage = imageList.Add(bm)
 
-        bm = icons.getServiceBitmap()
-        i = bm.ConvertToImage()
-        i.Rescale(19,19)
-        bm = i.ConvertToBitmap()
+        bm = icons.getDefaultServiceBitmap()
         self.svcImage = imageList.Add(bm)
         
         self.tree.SetImageList(imageList)
