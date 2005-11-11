@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.82 2005-11-08 20:42:01 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.83 2005-11-11 21:35:10 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.82 2005-11-08 20:42:01 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.83 2005-11-11 21:35:10 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -437,7 +437,7 @@ class AppParticipantDescription:
         self.status = status
         
 class AppDataDescription:
-    def __init__(self, appId, key, value):
+    def __init__(self, appId=None, key=None, value=None):
         self.appId = appId
         self.key = key
         self.value = value
