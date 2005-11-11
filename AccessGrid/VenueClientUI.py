@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.125 2005-11-11 17:50:13 eolson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.126 2005-11-11 20:28:03 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.125 2005-11-11 17:50:13 eolson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.126 2005-11-11 20:28:03 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2720,9 +2720,6 @@ class NavigationPanel(wxPanel):
         '''
         Add entries to the list of venues depending on preferences. 
         '''
-        print 'in UpdateView', displayMode
-        import traceback
-        traceback.print_stack()
         self.CleanUp()
         
         dm = displayMode
@@ -3888,11 +3885,11 @@ class JabberClientPanel(wxPanel):
 
             # Detect /me
             if message.startswith("/me ") and len(message.strip()) > 3:
-                nameText = "*" + name[:-2] # remove trailing ": "
+                nameText = name[:-2] # remove trailing ": "
                 messageText = " " + message[4:] + "\n"
             else:
                 nameText = name
-                messageText = '\"' + message+'\"\n'
+                messageText = message + '\n'
 
             self.textOutput.AppendText(nameText)
           
