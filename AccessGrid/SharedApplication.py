@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.29 2005-11-02 23:19:45 eolson Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.30 2005-11-11 21:26:44 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.29 2005-11-02 23:19:45 eolson Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.30 2005-11-11 21:26:44 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -35,6 +35,7 @@ from AccessGrid.interfaces.SharedApplication_interface import SharedApplication 
 from AccessGrid.interfaces.SharedApplication_client import SharedApplicationIW
 from AccessGrid.Security import X509Subject, Role, Action
 import AccessGrid.Security
+from AccessGrid.Security.Subject import SubjectAlreadyPresent
 import re
 log = Log.GetLogger(Log.SharedApplication)
 
@@ -91,7 +92,7 @@ class SharedApplication:
         self.servicePtr = Service.instance()
         try:
             admins.AddSubject(self.servicePtr.GetDefaultSubject())
-        except AccessGrid.Security.SubjectAlreadyPresent, e:
+        except SubjectAlreadyPresent, e:
             log.info("SubjectAlreadyPresent %s" % self.servicePtr.GetDefaultSubject())
                                                                                       
         # Default to admins
