@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.69 2005-11-01 19:33:50 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.70 2005-11-11 18:45:00 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.69 2005-11-01 19:33:50 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.70 2005-11-11 18:45:00 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -32,6 +32,7 @@ from AccessGrid import Log
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.hosting import SecureServer, InsecureServer
 from AccessGrid import Toolkit
+from AccessGrid.Security import CertificateManager
 
 from M2Crypto import threading as M2Crypto_threading
 
@@ -93,7 +94,12 @@ def main():
     
     if app.GetOption("secure"):
         log.info('Running in secure mode')
-        context = Toolkit.Service.instance().GetContext()
+        try:
+            context = Toolkit.Service.instance().GetContext()
+        except CertificateManager.NoCertificates:
+            errorMsg = "No certificate is available to start a secure server.  Please import a certificate into your repository (and request one first if necessary) or specify a certificate on the command-line."
+            sys.exit(errorMsg)
+
         server = SecureServer((hostname, port),
                               context)
     else:

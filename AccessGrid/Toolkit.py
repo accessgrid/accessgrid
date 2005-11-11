@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.97 2005-11-10 20:47:09 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.98 2005-11-11 18:45:01 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.97 2005-11-10 20:47:09 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.98 2005-11-11 18:45:01 eolson Exp $"
 
 # Standard imports
 import os
@@ -190,6 +190,8 @@ class AppBase:
             self.context = SSL.Context('sslv23')
             
             defaultId = self.certificateManager.GetDefaultIdentity()
+            if defaultId == None:
+                raise CertificateManager.NoCertificates()
             caDir = self.certificateManager.caDir
             self.context.load_cert(defaultId.GetPath(),defaultId.GetKeyPath())
             self.context.load_verify_locations(capath=caDir)
