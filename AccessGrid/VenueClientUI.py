@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.124 2005-11-10 23:12:25 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.125 2005-11-11 17:50:13 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.124 2005-11-10 23:12:25 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.125 2005-11-11 17:50:13 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3885,14 +3885,23 @@ class JabberClientPanel(wxPanel):
             textAttr = wxTextAttr(wxBLACK)
             textAttr.SetFont(f)
             self.textOutput.SetDefaultStyle(textAttr)
-            self.textOutput.AppendText(name)
+
+            # Detect /me
+            if message.startswith("/me ") and len(message.strip()) > 3:
+                nameText = "*" + name[:-2] # remove trailing ": "
+                messageText = " " + message[4:] + "\n"
+            else:
+                nameText = name
+                messageText = '\"' + message+'\"\n'
+
+            self.textOutput.AppendText(nameText)
           
             # Set text normal
             f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxNORMAL)
             textAttr = wxTextAttr(wxBLACK)
             textAttr.SetFont(f)
             self.textOutput.SetDefaultStyle(textAttr)
-            self.textOutput.AppendText('\"' + message+'\"\n')
+            self.textOutput.AppendText(messageText)
 
         if IsWindows():
             # Scrolling is not correct on windows when I use
