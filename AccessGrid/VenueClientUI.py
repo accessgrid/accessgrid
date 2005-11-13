@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.126 2005-11-11 20:28:03 eolson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.127 2005-11-13 23:32:59 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.126 2005-11-11 20:28:03 eolson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.127 2005-11-13 23:32:59 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -56,7 +56,6 @@ from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
 from AccessGrid.Beacon.rtpBeaconUI import BeaconFrame
 from AccessGrid.RssReader import RssReader,strtimeToSecs         
 
-from AccessGrid.Security.wxgui.CertificateManagerWXGUI import CertificateManagerWXGUI
 try:
     import win32api
 except:
@@ -324,36 +323,39 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_SAVE_TEXT,"Save Text...",
                           "Save text from chat to file.")
-        self.venue.Append(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES,"Administrate Roles...",
-                          "Change venue authorization settings.")
-        self.venue.AppendSeparator()
+# - Disabled for 3.0: No client-side auth support
+#         self.venue.Append(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES,"Administrate Roles...",
+#                           "Change venue authorization settings.")
+#         self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_PROPERTIES,"Properties...",
                           "View information about the venue.")
         
-        self.venue.AppendSeparator()
-        self.venue.Append(self.ID_VENUE_CLOSE,"&Exit", "Exit venue")
+        if sys.platform not in ['darwin']:
+            self.venue.AppendSeparator()
+            self.venue.Append(self.ID_VENUE_CLOSE,"&Exit", "Exit venue")
         
         self.menubar.Append(self.venue, "&Venue")
               
         self.preferences = wxMenu()
-        
-        #
-        # Retrieve the cert mgr GUI from the application.
-        #
-        self.cmui = None
-        try:
-            mgr = app.GetCertificateManager()
-        except:
-            log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
-                           certificate mgr user interface, continuing")
 
-        self.cmui = CertificateManagerWXGUI()
-        self.cmui.SetCertificateManager(mgr)
-        certMenu = self.cmui.GetMenu(self)
-        for item in certMenu.GetMenuItems():
-            self.preferences.AppendItem(item)
-        
-        self.preferences.AppendSeparator()
+# - Disabled for 3.0: No client-side auth support
+#         #
+#         # Retrieve the cert mgr GUI from the application.
+#         #
+#         self.cmui = None
+#         try:
+#             mgr = app.GetCertificateManager()
+#         except:
+#             log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
+#                            certificate mgr user interface, continuing")
+# 
+#         self.cmui = CertificateManagerWXGUI()
+#         self.cmui.SetCertificateManager(mgr)
+#         certMenu = self.cmui.GetMenu(self)
+#         for item in certMenu.GetMenuItems():
+#             self.preferences.AppendItem(item)
+#         
+#         self.preferences.AppendSeparator()
 
         # Add node-related entries
         self.preferences.AppendRadioItem(self.ID_USE_MULTICAST, "Use Multicast",
@@ -877,8 +879,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         """
         streams = self.venueClient.GetVenueStreams()
         venuePropertiesDialog = VenuePropertiesDialog(self, -1,
-                                                      'Venue Properties')
-        venuePropertiesDialog.PopulateList(streams)
+                                                      'Venue Properties', self.venueClient)
+        #venuePropertiesDialog.PopulateList(streams)
         venuePropertiesDialog.ShowModal()
        
     def ModifyAppRolesCB(self, event):
@@ -4897,8 +4899,10 @@ class ApplicationPropertiesDialog(wxDialog):
 ################################################################################
 
 class VenuePropertiesDialog(wxDialog):
-    def __init__(self, parent, id, title):
+    def __init__(self, parent, id, title, venueClient):
         wxDialog.__init__(self, parent, id, title)
+        self.venueClient = venueClient
+        self.streamListLabel = wxStaticText(self,-1,'Streams')
         self.list = wxListCtrl(self, wxNewId(), size = wxSize(460, 150),style=wxLC_REPORT)
 
         self.list.InsertColumn(0, "Address")
@@ -4912,6 +4916,14 @@ class VenuePropertiesDialog(wxDialog):
         self.list.SetColumnWidth(2, 80)
         self.list.SetColumnWidth(3, 100)
         self.list.SetColumnWidth(3, 100)
+        
+        self.textLocationLabel = wxStaticText(self,-1,'Text Location')
+        self.textLocationText = wxTextCtrl(self,-1,
+                                        self.venueClient.GetChatLocation())
+        
+        self.dataLocationLabel = wxStaticText(self,-1,'Data Location')
+        self.dataLocationText = wxTextCtrl(self,-1,
+                                        self.venueClient.venueState.GetDataLocation())
 
         self.okButton = wxButton(self, wxID_OK, "Ok")
         
@@ -4925,13 +4937,11 @@ class VenuePropertiesDialog(wxDialog):
                        
         self.__Layout()
 
-    def PopulateList(self, streamList):
-        '''
-        Enter correct values into the listctrl.
-        '''
-       
-        if not streamList:
-            return
+
+        # Populate venue properties dialog
+        
+        # - stream information
+        streamList = self.venueClient.GetVenueStreams()
 
         j = 0
         for stream in streamList:
@@ -4964,7 +4974,21 @@ class VenuePropertiesDialog(wxDialog):
         #sizer = wxStaticBoxSizer(box, wxVERTICAL)
         mainSizer.Add(self.titleText,0,wxEXPAND|wxALL,10)
         mainSizer.Add(self.titleLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
+        mainSizer.Add(self.streamListLabel,0)
         mainSizer.Add(self.list, 1, wxEXPAND| wxALL, 10)
+        
+        # text location 
+        horsizer = wxBoxSizer(wxHORIZONTAL)
+        horsizer.Add(self.textLocationLabel,0)
+        horsizer.Add(self.textLocationText,1,wxEXPAND)
+        mainSizer.Add(horsizer,0,wxEXPAND)
+        
+        # data location
+        horsizer = wxBoxSizer(wxHORIZONTAL)
+        horsizer.Add(self.dataLocationLabel,0)
+        horsizer.Add(self.dataLocationText,1,wxEXPAND)
+        mainSizer.Add(horsizer,0,wxEXPAND)
+        
         mainSizer.Add(self.buttonLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
         
         #mainSizer.Add(sizer, 1, wxEXPAND| wxALL, 10)
