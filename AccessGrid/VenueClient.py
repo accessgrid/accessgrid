@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.245 2005-11-10 18:10:24 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.246 2005-11-13 23:34:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.245 2005-11-10 18:10:24 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.246 2005-11-13 23:34:52 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -101,6 +101,7 @@ class VenueClient:
         This client class is used on shared and personal nodes.
         """
         self.jabberHost = None
+        self.chatLocation= ''
         self.beacon = None
         self.userConf = UserConfig.instance()
         self.isPersonalNode = pnode
@@ -843,7 +844,7 @@ class VenueClient:
     def __StartJabber(self, textLocation):
         jabberHost = textLocation[0]
         jabberPort = textLocation[1]
-
+        
         if self.jabberHost != jabberHost:
             # Create jabber chat client if necessary
             self.jabber.Connect(jabberHost, jabberPort) 
@@ -861,13 +862,14 @@ class VenueClient:
             self.jabber.Register()
             self.jabber.Login()
 
-        
+    
         # Create the jabber text client
 
         # Create room
         server = str(self.venueState.uri).split('/')[2].split(":")[0]
         currentRoom = self.venueState.name.replace(" ", "-")
         currentRoom = currentRoom+"("+server+")"
+        self.chatLocation = currentRoom
         
         # Create conference host
         conferenceHost = "conference"
@@ -1317,21 +1319,6 @@ class VenueClient:
     # Personal Data
     #
 
-    def GetDataStoreInformation(self):
-        """
-        Retrieve an upload descriptor and a URL to personal DataStore 
-        
-        **Returns:**
-        
-        *(upload description, url)* the upload descriptor to the DataStore
-        and the url to the DataStore SOAP service.
-        
-        """
-               
-        if self.dataStore is None:
-            return (None, None)
-        else:
-            return self.dataStore.GetUploadDescriptor(), self.dataStore.GetLocation()
         
     def GetUsers(self):
         return self.venueState.GetUsers()
@@ -1354,7 +1341,8 @@ class VenueClient:
     def GetStreams(self):
         return self.streamDescList
         
-    
+    def GetChatLocation(self):
+        return self.chatLocation
 
     #
     # NodeService Info
@@ -1397,6 +1385,7 @@ class VenueClient:
             serviceList = self.nodeService.GetServices()
             for service in serviceList:
                 for cap in service.capabilities:
+                    print 'cap = ', cap.type, cap.role
                     if cap.type == 'video' and cap.role == 'consumer':
                         self.SetServiceEnabled(service.uri,enableFlag)
                         break
@@ -1405,7 +1394,13 @@ class VenueClient:
         
     def SetVideoEnabled(self,enableFlag):
         try:
-            self.nodeService.SetServiceEnabledByMediaType("video",enableFlag)
+            serviceList = self.nodeService.GetServices()
+            for service in serviceList:
+                for cap in service.capabilities:
+                    print 'cap = ', cap.type, cap.role
+                    if cap.type == 'video' and cap.role == 'producer':
+                        self.SetServiceEnabled(service.uri,enableFlag)
+                        break
         except:
             log.info("Error enabling video")
         
