@@ -91,7 +91,6 @@ else:
                         networkAddrStr=binascii.hexlify(socket.inet_aton(ip))+"%04x" % os.getpid()
                 else:
                         # can't get IP address... use another value, like our Python id() and PID
-                        Log.warn('getGUID','Can\'t get IP address')
                         try:
                                 ip=os.getpid()
                         except:
