@@ -3,7 +3,7 @@
 # Name:        certmgr.py
 # Purpose:     Command line certificate management tool.
 # Created:     9/10/2003
-# RCS-ID:      $Id: certmgr.py,v 1.13 2005-10-07 22:44:52 eolson Exp $
+# RCS-ID:      $Id: certmgr.py,v 1.14 2005-11-13 23:29:37 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This tool is used on the command line to interact with the users certificate
 environment.
 """
-__revision__ = "$Id: certmgr.py,v 1.13 2005-10-07 22:44:52 eolson Exp $"
+__revision__ = "$Id: certmgr.py,v 1.14 2005-11-13 23:29:37 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -230,42 +230,32 @@ class CertMgrCmdProcessor(cmd.Cmd):
                 self.certMgr.GetUserInterface().InitGlobusEnvironment()
         self.loadCerts()
 
-    def do_globus_init(self, line):
-        """
-        Usage:
-        globus_init
-
-        Initialize certificates from the default Globus locations,
-        if possible.
-        """
-        self.certMgr.InitRepoFromGlobus(self.certRepo)
-        self.loadCerts()
-
-    def do_gen_proxy(self, line):
-        """
-        Usage:
-        gen_proxy
-
-        Create a proxy from the default certificate.
-        """
-        self.certMgr.CreateProxy()
-
-    def do_check_proxy(self, line):
-        """
-        Usage:
-        check_proxy
-
-        Check to see if there is a valid proxy.
-        """
-        try:
-            proxy = self.certMgr.GetGlobusProxyCert()
-        except Exception:
-            proxy = None
-
-        if proxy is None:
-            print "No proxy found."
-        else:
-            print "Proxy will expire: %s" % proxy.GetNotValidAfterText()
+# Disabled for 3.0, which does not use proxy certificates
+#     def do_gen_proxy(self, line):
+#         """
+#         Usage:
+#         gen_proxy
+# 
+#         Create a proxy from the default certificate.
+#         """
+#         self.certMgr.CreateProxy()
+# 
+#     def do_check_proxy(self, line):
+#         """
+#         Usage:
+#         check_proxy
+# 
+#         Check to see if there is a valid proxy.
+#         """
+#         try:
+#             proxy = self.certMgr.GetGlobusProxyCert()
+#         except Exception:
+#             proxy = None
+# 
+#         if proxy is None:
+#             print "No proxy found."
+#         else:
+#             print "Proxy will expire: %s" % proxy.GetNotValidAfterText()
         
     def do_export(self, line):
         """
