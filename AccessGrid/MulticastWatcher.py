@@ -2,14 +2,14 @@
 # Name:        MulticastWatcher.py
 # Purpose:     Class to watch a multicast address for traffic and report status
 # Created:     2005/06/06
-# RCS-ID:      $Id: MulticastWatcher.py,v 1.2 2005-06-13 19:42:06 turam Exp $
+# RCS-ID:      $Id: MulticastWatcher.py,v 1.3 2005-11-13 23:36:56 turam Exp $
 # Copyright:   (c) 2005
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: MulticastWatcher.py,v 1.2 2005-06-13 19:42:06 turam Exp $"
+__revision__ = "$Id: MulticastWatcher.py,v 1.3 2005-11-13 23:36:56 turam Exp $"
 
 import socket, threading, string, struct
 import time
@@ -51,7 +51,7 @@ class MulticastWatcher:
 
     MSGSIZE = 5192
 
-    def __init__(self,host='233.4.200.19',port=10002,
+    def __init__(self,host='233.4.200.18',port=10022,
                  statusChangeCB=None,
                  timeout=5):
         self.host = host
