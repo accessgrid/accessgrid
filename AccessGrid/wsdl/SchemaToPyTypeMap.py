@@ -15,6 +15,7 @@ mapping = {
     "UnicastNetworkLocation" : ("AccessGrid.NetworkLocation", "UnicastNetworkLocation"),
     "ProviderProfile" : ("AccessGrid.NetworkLocation", "ProviderProfile"),
     "AppParticipantDescription" : ("AccessGrid.Descriptions", "AppParticipantDescription"),
+    "SharedAppState" : ("AccessGrid.Descriptions", "SharedAppState"),
     "VenueState" : ("AccessGrid.Descriptions", "VenueState"),
     "ResourceDescription" : ("AccessGrid.Descriptions", "ResourceDescription"),
     

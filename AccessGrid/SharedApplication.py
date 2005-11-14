@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.30 2005-11-11 21:26:44 eolson Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.31 2005-11-14 20:37:56 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.30 2005-11-11 21:26:44 eolson Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.31 2005-11-14 20:37:56 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -22,7 +22,7 @@ from AccessGrid.GUID import GUID
 from AccessGrid import Events
 from AccessGrid.Events import Event
 from AccessGrid.VenueEventClient import VenueEventClient
-from AccessGrid.Descriptions import ApplicationDescription, AppParticipantDescription, AppDataDescription
+from AccessGrid.Descriptions import ApplicationDescription, AppParticipantDescription, AppDataDescription, SharedAppState
 from AccessGrid.Descriptions import CreateClientProfile
 
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
@@ -213,14 +213,14 @@ class SharedApplication:
         if not self.components.has_key(private_token):
             raise InvalidPrivateToken
         
-        appState = {
-            'name' : self.name,
-            'description' : self.description,
-            'id' : self.id,
-            'mimeType' : self.mimeType,
-            'uri' : self.uri,
-            'data' : self.app_data
-            }
+        appState = SharedAppState(
+            name = self.name,
+            description = self.description,
+            id = self.id,
+            mimeType = self.mimeType,
+            uri = self.uri,
+            data = self.app_data.values()
+            )
             
         return appState
 

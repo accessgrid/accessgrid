@@ -132,12 +132,7 @@
           <xsd:element name="GetStateResponse">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="name" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="description" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="id" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="mimeType" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="uri" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="appData" type="agtk:Dictionary" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="name" type="agtk:SharedAppState" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>

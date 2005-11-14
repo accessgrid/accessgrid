@@ -121,6 +121,17 @@
       </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="SharedAppState">
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="name" type="xs:string" />
+        <xs:element minOccurs="0" maxOccurs="1" name="description" type="xs:string" />
+        <xs:element minOccurs="0" maxOccurs="1" name="id" type="xs:string" />
+        <xs:element minOccurs="0" maxOccurs="1" name="mimeType" type="xs:string" />
+        <xs:element minOccurs="0" maxOccurs="1" name="uri" type="xs:string" />
+        <xs:element minOccurs="0" maxOccurs="unbounded" name="data" type="agtk:AppDataDescription" />
+      </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="Capability">
       <xs:sequence>
         <xs:element name="role" type="xs:string"/>

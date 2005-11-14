@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.83 2005-11-11 21:35:10 eolson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.84 2005-11-14 20:37:56 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.83 2005-11-11 21:35:10 eolson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.84 2005-11-14 20:37:56 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -441,6 +441,18 @@ class AppDataDescription:
         self.appId = appId
         self.key = key
         self.value = value
+
+class SharedAppState:
+    def __init__( self, name=None, description=None, id=None, mimeType=None, uri=None, data=None):
+        self.name = name
+        self.id = id
+        self.description = description
+        self.mimeType = mimeType
+        self.uri = uri
+        if data == None:
+            self.data = []
+        else:
+            self.data = data
     
 class VenueState:
     def __init__( self, uniqueId=None, name=None, description=None, uri=None, connections=[],
