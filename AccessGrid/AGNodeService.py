@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.95 2005-10-25 21:02:43 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.96 2005-11-14 03:09:57 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.95 2005-10-25 21:02:43 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.96 2005-11-14 03:09:57 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -561,7 +561,7 @@ class AGNodeService:
                     if service.resource and service.resource!='0':
                         resourceSection = 'resource%d' % numServices
                         configParser.add_section( resourceSection )
-                        configParser.set( resourceSection, "resource",
+                        configParser.set( resourceSection, "name",
                                           service.resource.name )
                         configParser.set( serviceSection, "resource",
                                           resourceSection )
