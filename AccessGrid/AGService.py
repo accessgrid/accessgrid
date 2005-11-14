@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.52 2005-11-10 17:38:46 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.53 2005-11-14 03:10:22 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.52 2005-11-10 17:38:46 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.53 2005-11-14 03:10:22 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -197,9 +197,12 @@ class AGService:
         self.enabled = enabled
 
         # If it is being disabled, stop it
-        if enabled == 0 and self.started:
+        if not enabled and self.started:
             self.log.info("Stopping service")
             self.Stop()
+        elif enabled and not self.started:
+            self.log.info('Starting service')
+            self.Start()
 
 
     def GetEnabled(self):
@@ -299,6 +302,8 @@ def RunService(service,serviceInterface):
     svc.Initialize(serviceName)
     log = svc.GetLog()
     Log.SetDefaultLevel(serviceName, Log.DEBUG)   
+
+    log.debug("options = %s", str(sys.argv))
     
     # Get options
     port = svc.GetOption("port")
