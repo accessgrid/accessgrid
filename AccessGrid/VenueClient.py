@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.246 2005-11-13 23:34:52 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.247 2005-11-14 03:12:04 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.246 2005-11-13 23:34:52 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.247 2005-11-14 03:12:04 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -57,6 +57,8 @@ from AccessGrid.Descriptions import VenueState
 from AccessGrid.MulticastWatcher import MulticastWatcher
 
 from AccessGrid.Jabber.JabberClient import JabberClient
+
+from AccessGrid.interfaces.AGService_client import AGServiceIW
 
 try:
     from AccessGrid.Beacon.rtpBeacon import Beacon
@@ -346,13 +348,13 @@ class VenueClient:
         
     def Heartbeat(self):
         try:
-            log.debug("Calling Heartbeat, time now: %d", time.time())
+            #log.debug("Calling Heartbeat, time now: %d", time.time())
             if self.heartBeatTimer is not None:
                 self.heartBeatTimer.cancel()
 
             self.nextTimeout = self.__venueProxy.UpdateLifetime(
                 self.profile.connectionId,self.heartBeatTimeout)
-            log.debug("Next Heartbeat needed before: %d", self.nextTimeout)
+            #log.debug("Next Heartbeat needed before: %d", self.nextTimeout)
             
             self.heartBeatTimer = threading.Timer(self.nextTimeout - 5.0,
                                                   self.Heartbeat)
@@ -1387,7 +1389,7 @@ class VenueClient:
                 for cap in service.capabilities:
                     print 'cap = ', cap.type, cap.role
                     if cap.type == 'video' and cap.role == 'consumer':
-                        self.SetServiceEnabled(service.uri,enableFlag)
+                        AGServiceIW(service.uri).SetEnabled(enableFlag)
                         break
         except:
             log.info("Error enabling video")
@@ -1399,10 +1401,10 @@ class VenueClient:
                 for cap in service.capabilities:
                     print 'cap = ', cap.type, cap.role
                     if cap.type == 'video' and cap.role == 'producer':
-                        self.SetServiceEnabled(service.uri,enableFlag)
+                        AGServiceIW(service.uri).SetEnabled(enableFlag)
                         break
         except:
-            log.info("Error enabling video")
+            log.exception("Error enabling video")
         
     def SetAudioEnabled(self,enableFlag):
         try:
