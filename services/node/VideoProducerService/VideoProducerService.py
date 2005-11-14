@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.5 2005-11-10 17:26:51 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.6 2005-11-14 03:19:47 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -113,6 +113,7 @@ class VideoProducerService( AGService ):
         self.configuration.append (self.quality )
         
         self.profile = None
+        self.resource = ''
         
         self.__GetResources()
 
@@ -336,7 +337,10 @@ class VideoProducerService( AGService ):
             self.Start()
 
     def GetResource( self ):
-        return ResourceDescription(self.resource[0])
+        if self.resource:
+            return ResourceDescription(self.resource[0])
+        else:
+            return ResourceDescription('')
 
     def SetResource( self, resource ):
         """Set the resource used by this service"""
