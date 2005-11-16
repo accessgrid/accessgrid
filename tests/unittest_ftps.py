@@ -5,7 +5,7 @@
 # Author:      Tom Uram
 #   
 # Created:     2003/05/14
-# RCS-ID:      $Id: unittest_ftps.py,v 1.1 2005-11-04 21:06:48 turam Exp $
+# RCS-ID:      $Id: unittest_ftps.py,v 1.2 2005-11-16 22:52:23 turam Exp $
 # Copyright:   (c) 2005
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -94,14 +94,15 @@ class TestCase(unittest.TestCase):
             pass#print percent
             
         # Download
-        FTPSDownloadFile(self.downloadUrl,
+        for i in range(100):
+            FTPSDownloadFile(self.downloadUrl,
                          self.downloadedFile,
                          progressCB=cb)
                          
                          
-        downloadedfilesize = os.stat(self.downloadedFile)[stat.ST_SIZE]
-        print 'remotefile [%s] localfile [%s]' % (self.filesize,downloadedfilesize)            
-        assert(downloadedfilesize == self.filesize)
+            downloadedfilesize = os.stat(self.downloadedFile)[stat.ST_SIZE]
+            #print 'remotefile [%s] localfile [%s]' % (self.filesize,downloadedfilesize)            
+            assert(downloadedfilesize == self.filesize)
         
     def test99KillServer(self):
         StopProcess()

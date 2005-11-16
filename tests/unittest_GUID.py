@@ -27,22 +27,13 @@ class GUIDTestCase(unittest.TestCase):
        g = GUID() 
 
     def testGUIDConstructor(self):
-       g = GUID("asdadsf") 
+       g = GUID() 
 
     def testRepeatGUID(self):
-       g1 = GUID("asdadsf") 
-       g2 = GUID("asdadsf") 
-       assert g1.guid == g2.guid
+       g1 = GUID() 
+       g2 = GUID() 
+       assert g1 != g2
 
-    def testRepeatGUID2(self):
-       g1 = GUID()
-       g2 = GUID()
-       assert g1.guid != g2.guid
-
-    def testRepeatGUID3(self):
-       g1 = GUID("abcdefG")
-       g2 = GUID("abcdefZ")
-       assert g1.guid != g2.guid
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
