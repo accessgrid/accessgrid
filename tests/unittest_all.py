@@ -31,7 +31,7 @@ def suite():
 
     alltests = unittest.TestSuite()
     for module in map(__import__, modules_to_test):
-       alltests.addTest(unittest.findTn unitestCases(module))
+       alltests.addTest(unittest.findTestCases(module))
     return alltests
 
 if __name__ == '__main__':
