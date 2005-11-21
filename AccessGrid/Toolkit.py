@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.100 2005-11-13 23:35:35 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.101 2005-11-21 22:40:30 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.100 2005-11-13 23:35:35 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.101 2005-11-21 22:40:30 turam Exp $"
 
 # Standard imports
 import os
@@ -197,7 +197,7 @@ class AppBase:
             self.context.load_verify_locations(capath=caDir)
             self.context.set_verify(SSL.verify_peer,10)
             self.context.set_session_id_ctx('127.0.0.1:8006')
-            self.context.set_cipher_list('LOW:@STRENGTH')
+            self.context.set_cipher_list('LOW:TLSv1:@STRENGTH')
         return self.context
 
     def __SetLogPreference(self):
