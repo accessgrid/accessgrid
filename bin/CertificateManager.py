@@ -3,7 +3,7 @@
 # Name:        CertificateManager.py
 # Purpose:     User tool for managing certificates.
 # Created:     2003/08/02
-# RCS-ID:      $Id: CertificateManager.py,v 1.4 2005-10-07 22:44:51 eolson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.5 2005-11-30 12:08:07 braitmai Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ def main():
 
     d = CertificateManagerDialog.CertificateManagerDialog(None, -1,
                                                  "Certificate Manager",
-                                                 app.GetCertificateManager()) 
+                                                 app.GetCertificateManager(), app.GetCertificateManagerUI()) 
     d.Show(1)
     
     pyapp.SetTopWindow(d)
