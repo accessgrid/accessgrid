@@ -26,7 +26,7 @@ def suite():
         #'unittest_Node',
         #'unittest_Platform',
         #'unittest_VenueServer',
-        'unittest_version'
+        'unittest_version',
         'unittest_EnterVenue'
         ]
 
