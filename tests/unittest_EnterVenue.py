@@ -5,7 +5,7 @@
 # Author:      Tom Uram
 #   
 # Created:     2003/05/14
-# RCS-ID:      $Id: unittest_EnterVenue.py,v 1.2 2005-12-05 18:48:04 turam Exp $
+# RCS-ID:      $Id: unittest_EnterVenue.py,v 1.3 2005-12-05 22:05:23 turam Exp $
 # Copyright:   (c) 2005
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -54,7 +54,9 @@ def StopProcess():
 threading.Thread(target=StartProcess,name='StartProcess').start()
 print 'serverUrl = ', serverUrl
 venueServer = VenueServerIW(serverUrl)
-while 1:
+time_to_wait = 10
+secs_past = 0
+while secs_past < time_to_wait:
     try:
         venueList = venueServer.GetVenues()
         #print 'got venue list:', venueList
@@ -62,7 +64,14 @@ while 1:
     except Exception,e:
         print 'exception',e
     time.sleep(1)
+    secs_past += 1
     
+app = CmdlineApplication()
+app.Initialize('qwe')
+vc = VenueClient(app=app)
+vcc = VenueClientController()
+vcc.SetVenueClient(vc)
+
 
 
 
@@ -107,13 +116,7 @@ def suite():
     suite1 = unittest.makeSuite(TestCase)
     return unittest.TestSuite([suite1])
 
-if __name__ == '__main__':
-    app = CmdlineApplication()
-    app.Initialize('qwe')
-    vc = VenueClient(app=app)
-    vcc = VenueClientController()
-    vcc.SetVenueClient(vc)
+# When this module is executed from the command-line, run the test suite
+unittest.main(defaultTest='suite')
 
-    # When this module is executed from the command-line, run the test suite
-    unittest.main(defaultTest='suite')
 
