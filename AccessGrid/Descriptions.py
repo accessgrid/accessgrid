@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.84 2005-11-14 20:37:56 eolson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.85 2005-12-05 20:04:24 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.84 2005-11-14 20:37:56 eolson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.85 2005-12-05 20:04:24 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -609,6 +609,19 @@ class EventDescription:
 
     def GetEventType(self):
         return self.eventType 
+
+
+QUICKBRIDGE_TYPE = "QuickBridge"
+UMTP_TYPE = "UMTP"
+
+class BridgeDescription:
+    def __init__(self, guid, name, host, port, serverType, description=""):
+        self.guid = guid
+        self.name = name
+        self.host = host
+        self.port = port
+        self.serverType = serverType
+        self.description = description
 
 #
 #
