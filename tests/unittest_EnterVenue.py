@@ -5,7 +5,7 @@
 # Author:      Tom Uram
 #   
 # Created:     2003/05/14
-# RCS-ID:      $Id: unittest_EnterVenue.py,v 1.1 2005-12-05 17:31:01 turam Exp $
+# RCS-ID:      $Id: unittest_EnterVenue.py,v 1.2 2005-12-05 18:48:04 turam Exp $
 # Copyright:   (c) 2005
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -43,7 +43,7 @@ def StartProcess():
     pid= os.spawnv(os.P_NOWAIT,
                    sys.executable,
                    [sys.executable,
-                   '../bin/VenueServer.py'])
+                   'bin/VenueServer.py'])
 
 def StopProcess():
     global pid
