@@ -4,9 +4,14 @@ from AccessGrid import Log
 from AccessGrid.Platform import IsOSX
 from AccessGrid.Preferences import Preferences
 from AccessGrid.Platform.Config import AGTkConfig
+from AccessGrid.GUID import GUID
+from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
+from AccessGrid.Registry.RegistryClient import RegistryClient
 
 from wxPython.wx import *
+from wxPython.gizmos import wxTreeListCtrl
 import  wx.lib.intctrl
+from AccessGrid import icons
 
 log = Log.GetLogger(Log.VenueClient)
 
@@ -62,7 +67,7 @@ class PreferencesDialog(wxDialog):
         self.navigationPanel.Hide()
         self.nodePanel.Hide()
         self.currentPanel = self.loggingPanel
-
+        
         EVT_SASH_DRAGGED(self.sideWindow, self.ID_WINDOW_LEFT, self.__OnSashDrag)
         EVT_TREE_SEL_CHANGED(self, self.sideTree.GetId(), self.OnSelect)
                        
@@ -672,33 +677,156 @@ class NetworkPanel(wxPanel):
         self.Centre()
         self.titleText = wxStaticText(self, -1, "Multicast")
         self.titleLine = wxStaticLine(self, -1)
-        self.multicastButton = wxCheckBox(self, wxNewId(), "  Use multicast ")
+        self.multicastButton = wxCheckBox(self, wxNewId(), "  Use unicast ")
+        self.bridges = []
+        self.counter = 0
+        self.keyMap = {}
+        # Make a call to the registry to get available bridges
+        self.registryClient = RegistryClient(url="file://../tests/localhost_registry_nodes.txt")
+
+        # Temporary...
+        # Register a bridge using the RegistryClient
+        info = BridgeDescription(guid=GUID(), name="defaultName", host="localhost", port="9999", serverType=QUICKBRIDGE_TYPE, description="")
+        self.registryClient.RegisterBridge(info)
+        # 
         
-        self.multicastButton.SetValue(int(preferences.GetPreference(Preferences.MULTICAST)))
+        self.multicastButton.SetValue(not int(preferences.GetPreference(Preferences.MULTICAST)))
 
         self.beaconButton = wxCheckBox(self, wxNewId(), "  Run beacon ")
         
         self.beaconButton.SetValue(int(preferences.GetPreference(Preferences.BEACON)))
-                        
-                        
+        self.__InitList()
+
+        EVT_RIGHT_DOWN(self.list, self.OnRightDown)
+        EVT_RIGHT_UP(self.list, self.OnRightClick)
+                                      
         if IsOSX():
             self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
         else:
             self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
                                 
         self.__Layout()
-         
+    
+    def OnRightDown(self, event):
+        """
+        Invoked when user righ-click an item in the list
+        """
+        self.x = event.GetX()
+        self.y = event.GetY()
+        item, flags = self.list.HitTest((self.x, self.y))
+
+        if flags & wx.LIST_HITTEST_ONITEM:
+            self.list.Select(item)
+            self.selected = item
+   
+    def OnRightClick(self, event):
+        '''
+        Invoked when user releases right click in the list.
+        '''
+        # only do this part the first time so the events are only bound once
+        if not hasattr(self, "enableId"):
+            self.enableId = wx.NewId()
+            EVT_MENU(self, self.enableId, self.Enable)
+            
+        # make a menu
+        self.menu = wx.Menu()
+        self.menu.AppendCheckItem(self.enableId, "Enabled")
+
+        # Check the actual item to see if it is enabled or not
+        intId = self.list.GetItemData(self.selected)
+        selectedItemId = self.__GetGUID(intId)
+        selectedItem = self.__GetBridge(selectedItemId)
+
+        #if selectedItem[5] == "Enabled" or selectedItem[5] == "In Use":
+        self.menu.Check(self.enableId, 1)
+        #else:
+        #    self.menu.Check(self.enableId, 0)
+
+        self.list.PopupMenu(self.menu, wxPoint(self.x, self.y))
+        self.menu.Destroy()
+
+    def Enable(self, event):
+        '''
+        Invoked when user selects enable in the item menu.
+        '''
+        enableFlag = event.IsChecked()
+        self.menu.Check(self.enableId, enableFlag)
+
+        intId = self.list.GetItemData(self.selected)
+        selectedItemId = self.GetGUID(intId)
+        selectedItem = self.GetBridge(selectedItemId)
+        if enableFlag:
+            # selectedItem[5]= "Enabled"
+            self.list.SetStringItem(self.selected, 4, "Enabled")
+        else:
+            # selectedItem[5] = "Disabled"
+            self.list.SetStringItem(self.selected, 4, "Disabled")
+                            
     def GetMulticast(self):
         if self.multicastButton.IsChecked():
-            return 1
-        else:
             return 0
+        else:
+            return 1
 
     def GetBeacon(self):
         if self.beaconButton.IsChecked():
             return 1
         else:
             return 0
+
+    def Lookup(self):
+        '''
+        Get bridges from the registry
+        '''
+        # Lookup bridges using the RegistryClient
+        self.bridges = self.registryClient.LookupBridge()    # or rc.Lookup(10)
+
+        # Create key map for item data in list ctrl
+        # List ctrl can unfortunately not add anything other
+        #than int as item data.
+        for b in self.bridges:
+            self.keyMap[b["guid"]] = self.counter
+            self.counter = self.counter + 1
+                
+        return self.bridges
+
+    def __GetGUID(self, intKey):
+        for guid in self.keyMap.keys():
+            if self.keyMap[guid] == intKey:
+                return guid
+    
+    def __GetBridge(self, id):
+        for b in self.bridges:
+            if b["guid"] == str(id):
+                return b
+       
+    def __InitList(self):
+        self.list = wxListCtrl(self, wxNewId(),style=wxLC_REPORT)
+
+        self.list.InsertColumn(0, "Bridge")
+        self.list.InsertColumn(1, "Host")
+        self.list.InsertColumn(2, "Port")
+        self.list.InsertColumn(3, "Type")
+        self.list.InsertColumn(4, "Status")
+             
+        self.list.SetColumnWidth(0, 100)
+        self.list.SetColumnWidth(1, 60)
+        self.list.SetColumnWidth(2, 60)
+        self.list.SetColumnWidth(3, 100)
+        self.list.SetColumnWidth(4, 70)
+
+        bridgeList = self.Lookup()
+
+        for index in range(0, len(bridgeList)):
+            self.list.InsertStringItem(index, bridgeList[index]["name"])
+            self.list.SetStringItem(index, 1, bridgeList[index]["host"])
+            self.list.SetStringItem(index, 2, bridgeList[index]["port"])
+            self.list.SetStringItem(index, 3, bridgeList[index]["serverType"])
+            self.list.SetStringItem(index, 4, "Enabled")
+
+            data = self.keyMap[bridgeList[index]["guid"]]
+
+            self.list.SetItemData(index, data)
           
     def __Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
@@ -706,8 +834,9 @@ class NetworkPanel(wxPanel):
         sizer2.Add(self.titleText, 0, wxALL, 5)
         sizer2.Add(self.titleLine, 1, wxALIGN_CENTER | wxALL, 5)
         sizer.Add(sizer2, 0, wxEXPAND)
-        sizer.Add(self.multicastButton, 0, wxALL|wxEXPAND, 10)
         sizer.Add(self.beaconButton, 0, wxALL|wxEXPAND, 10)
+        sizer.Add(self.multicastButton, 0, wxALL|wxEXPAND, 10)
+        sizer.Add(self.list, 1, wxALL|wxEXPAND, 10)
         
         self.SetSizer(sizer)
         sizer.Fit(self)
