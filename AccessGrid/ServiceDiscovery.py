@@ -178,7 +178,7 @@ try:
 
 
         def Start(self):
-            t = threading.Thread(target=self.Run)
+            t = threading.Thread(target=self.Run,name=self.__class__)
             t.start()
 
         def Run(self):
