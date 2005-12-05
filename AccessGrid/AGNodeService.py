@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.96 2005-11-14 03:09:57 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.97 2005-12-05 20:51:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.96 2005-11-14 03:09:57 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.97 2005-12-05 20:51:23 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -648,7 +648,7 @@ class AGNodeService:
         return capabilities
 
     def Stop(self):
-        pass
+        self.serviceBrowser.Stop()
         
     def SetUri(self,uri):
         self.uri = uri
