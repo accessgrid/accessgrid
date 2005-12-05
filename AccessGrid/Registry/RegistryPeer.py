@@ -9,12 +9,12 @@ from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler, SimpleXMLRPCDispatche
 
 class RegistryInterface:
 
-    # Bridge Interface, accepts RegisteredServerInfo
-    def RegisterServer(self, serverInfo):
+    # Bridge Interface, accepts a BridgeDescription
+    def RegisterBridge(self, bridgeDescription):
         pass
 
     # Client Interface
-    def Lookup(self, maxToReturn=None):
+    def LookupBridge(self, maxToReturn=None):
         pass
 
     # Peer Interface
@@ -92,7 +92,7 @@ class RegistryBase(RegistryInterface):
             except Exception:
                 traceback.print_exc()
 
-    def RandomLookup(self, maxToReturn=None):
+    def RandomBridgeLookup(self, maxToReturn=None):
         keys = self.registeredServers.keys()
         if maxToReturn == None or maxToReturn==0:
             numToReturn = len(keys)
@@ -106,7 +106,7 @@ class RegistryBase(RegistryInterface):
             serversToReturn.append(self.registeredServers[key])
         return serversToReturn 
 
-    Lookup = RandomLookup
+    LookupBridge = RandomBridgeLookup
 
 class AGXMLRPCServer(DocXMLRPCServer):
     def __init__(self, addr, requestHandler=SimpleXMLRPCRequestHandler, logRequests=1):
@@ -121,12 +121,12 @@ class RegistryPeerXMLRPC(RegistryBase):
         self.registeredServers = {}
 
     def _RegisterFunctions(self):
-        self.requestServer.register_function(self.Lookup, "Lookup")
-        self.requestServer.register_function(self.Register, "Register")
+        self.requestServer.register_function(self.LookupBridge, "LookupBridge")
+        self.requestServer.register_function(self.RegisterBridge, "RegisterBridge")
 
-    def Register(self, serverInfo):
-        print "Registering server:", serverInfo
-        self.registeredServers[(serverInfo["host"], serverInfo["port"])] = serverInfo
+    def RegisterBridge(self, bridgeDescription):
+        print "Registering bridge:", bridgeDescription
+        self.registeredServers[(bridgeDescription["host"], bridgeDescription["port"])] = bridgeDescription
         print self.registeredServers
         return True
 

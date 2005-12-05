@@ -10,11 +10,11 @@ class RegistryClient:
         self.sortedRegistryPeers = self._getSortedRegistryPeers()
         self.serverProxy = xmlrpclib.ServerProxy("http://" + self.sortedRegistryPeers[0])
 
-    def Register(self, registeredServerInfo):
-        return self.serverProxy.Register(registeredServerInfo)
+    def RegisterBridge(self, registeredServerInfo):
+        return self.serverProxy.RegisterBridge(registeredServerInfo)
 
-    def Lookup(self, maxToReturn=10):
-        return self.serverProxy.Lookup(maxToReturn)
+    def LookupBridge(self, maxToReturn=10):
+        return self.serverProxy.LookupBridge(maxToReturn)
         # TODO, retry with other nodes on failure?
 
     def _getSortedRegistryPeers(self, maxToReturn=5):
@@ -33,4 +33,16 @@ class RegistryClient:
         f.close()
         registryPeers = contents.split()
         return registryPeers
+
+if __name__=="__main__":
+    rc = RegistryClient(url="file://../../tests/localhost_registry_nodes.txt")
+    from AccessGrid.GUID import GUID
+    from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
+
+    # Register a bridge using the RegistryClient
+    info = BridgeDescription(guid=GUID(), name="defaultName", host="localhost", port="9999", serverType=QUICKBRIDGE_TYPE, description="")
+    rc.RegisterBridge(info)
+    
+    # Lookup a bridge using the RegistryClient
+    print "Found:", rc.LookupBridge()    # or rc.Lookup(10)
 
