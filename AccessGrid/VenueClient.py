@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.247 2005-11-14 03:12:04 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.248 2005-12-05 21:47:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.247 2005-11-14 03:12:04 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.248 2005-12-05 21:47:01 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -291,7 +291,7 @@ class VenueClient:
 
             from AccessGrid.AGNodeService import AGNodeService
             from AccessGrid.interfaces.AGNodeService_interface import AGNodeService as AGNodeServiceI
-            ns = AGNodeService(self.app)
+            ns = self.nodeService = AGNodeService(self.app)
             nsi = AGNodeServiceI(impl=ns,auth_method_name=None)
             uri = self.server.RegisterObject(nsi, path="/NodeService")
             log.debug("__StartWebService: node service: %s",
@@ -965,7 +965,8 @@ class VenueClient:
         # Clear the list of personal data requests.
 
         # Cancel the heartbeat
-        self.heartBeatTimer.cancel()
+        if self.heartBeatTimer is not None:
+            self.heartBeatTimer.cancel()
 
         self.exitingLock.acquire()
         if self.exiting:
@@ -1147,11 +1148,18 @@ class VenueClient:
                 self.server.Stop()
             except:
                 log.exception("Failed to stop server")
-                          
-        if self.dataStore:
-            self.dataStore.Shutdown()
+
+        try:
+        
+            self.multicastWatcher.Stop()
+        except Exception,e:
+            log.exception('Error shutting down multicast watcher')
+
+        if self.eventClient:
+            self.eventClient.Stop()
             
-        self.multicastWatcher.Stop()
+        if self.beacon:
+            self.beacon.Stop()
        
     def UpdateProfileCache(self, profile):
         try:
@@ -1229,11 +1237,6 @@ class VenueClient:
             # Venue data
             self.__venueProxy.RemoveData(data)
             
-        elif(data.type == self.profile.publicId):
-            # My data
-            self.dataStore.RemoveFiles(dataList)
-            self.eventClient.Send(Event.REMOVE_DATA, data)
-            #self.eventClient.Send(RemoveDataEvent(self.GetEventChannelId(), data))
             
         else:
             # Ignore this until we have authorization in place.
@@ -1250,15 +1253,6 @@ class VenueClient:
                 log.exception("Error updating data")
                 raise
             
-        elif(data.type == self.profile.publicId):
-            # My data
-            try:
-                self.dataStore.ModifyData(data)
-                self.eventClient.Send(Event.REMOVE_DATA, data)
-                #self.eventClient.Send(UpdateDataEvent(self.GetEventChannelId(), data))
-            except:
-                log.exception("Error modifying personal data")
-                raise
         else:
             # Ignore this until we have authorization in place.
             raise NotAuthorizedError
@@ -1365,9 +1359,10 @@ class VenueClient:
         self.nodeServiceUri = url
         
         if url.find(self.hostname):
-            if not self.nodeService:
-                self.nodeService = AGNodeService(self.app)
-                self.nodeService.SetUri(url)   
+            pass
+#             if not self.nodeService:
+#                 self.nodeService = AGNodeService(self.app)
+#                 self.nodeService.SetUri(url)   
         else:
             self.nodeService = AGNodeServiceIW(url)
             
