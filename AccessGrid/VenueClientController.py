@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.48 2005-11-03 19:52:41 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.49 2005-12-06 23:57:03 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.48 2005-11-03 19:52:41 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.49 2005-12-06 23:57:03 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -800,14 +800,15 @@ class VenueClientController:
 
         error_msg = None
         try:
-            if uploadUrl.startswith("https:"):
-                log.debug("Url starts with https:")
-                DataStore.UploadFiles('',uploadUrl, fileList, progressCB)
-            else:
-                my_identity = str(Application.instance().GetDefaultSubject())
-                log.debug("Got identity %s" % my_identity)
-                DataStore.UploadFiles(my_identity, uploadUrl,
-                fileList, progressCB=progressCB)
+            my_identity = str(Application.instance().GetDefaultSubject())
+            log.debug("Got identity %s" % my_identity)
+            user=str(uploadUrl.split('/')[-1])
+            passw=str(self.__venueClient.profile.connectionId)
+            DataStore.UploadFiles(my_identity, uploadUrl,
+                                  fileList, 
+                                  user=user,
+                                  passw=passw,
+                                  progressCB=progressCB)
 
         except DataStore.FileNotFound, e:
             error_msg = "File not found: %s" % (e[0])
@@ -989,20 +990,19 @@ class VenueClientController:
         """
         log.debug("Get ident and download")
         try:
-            if url.startswith("https"):
-                log.debug("url=%s, local path =%s, size = %s, checksum = %s"%(url, local_pathname, size, checksum))
-                DataStore.DownloadFile('',url, local_pathname, size,
-                                              checksum, progressCB)
-
-                log.debug("finished Download")
-
-            else:
-                log.debug("url does not start with https")
-                my_identity = str(Application.instance().GetDefaultSubject())
-                DataStore.DownloadFile(my_identity, url, local_pathname, size,
-                                           checksum, progressCB=progressCB)
+            my_identity = str(Application.instance().GetDefaultSubject())
+            user=str(url.split('/')[-2])
+            passw=str(self.__venueClient.profile.connectionId)
+            DataStore.DownloadFile(my_identity, url, local_pathname, size,
+                                       checksum, 
+                                       user=user,
+                                       passw=passw,
+                                       progressCB=progressCB)
         except DataStore.DownloadFailed:
             log.exception("bin.VenueClient:get_ident_and_download: Got exception on download")
+            self.gui.Notify("The file could not be downloaded", "Download Error")
+        except:
+            log.exception('unexpected exception on download')
             self.gui.Notify("The file could not be downloaded", "Download Error")
                        
                                 
@@ -1076,11 +1076,8 @@ class VenueClientController:
 
         error_msg = None
         try:
-            if uploadUrl.startswith("https:"):
-                DataStore.UploadFiles('',uploadUrl, fileList,None)
-            else:
-                my_identity = str(Application.instance().GetDefaultSubject())
-                DataStore.UploadFiles(my_identity, uploadUrl, fileList,None)
+            my_identity = str(Application.instance().GetDefaultSubject())
+            DataStore.UploadFiles(my_identity, uploadUrl, fileList,None)
         except DataStore.FileNotFound, e:
             error_msg = "File not found: %s" % (e[0])
         except DataStore.NotAPlainFile, e:
