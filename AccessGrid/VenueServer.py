@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.202 2005-11-08 15:30:17 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.203 2005-12-06 23:58:42 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.202 2005-11-08 15:30:17 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.203 2005-12-06 23:58:42 turam Exp $"
 
 
 # Standard stuff
@@ -247,7 +247,9 @@ class VenueServer:
             # - presence of client-side cert (if required)
             # - client-side cert validity (if provided)
             # - username/password (if required) (could be connectionid/privateid)
-            return 1
+            if username in self.venues.keys() and password in self.venues[username].clients.keys():
+                return 1
+            return 0
             
         self.dataTransferServer = DataServer(self.dataStorageLocation,
                                              hostname=self.hostname,
