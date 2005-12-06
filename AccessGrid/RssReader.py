@@ -2,7 +2,7 @@
 # Name:        RssReader.py
 # Purpose:     An RSS reader for meeting feeds
 # Created:     2005/10/19
-# RCS-ID:      $Id: RssReader.py,v 1.3 2005-10-19 19:47:33 turam Exp $
+# RCS-ID:      $Id: RssReader.py,v 1.4 2005-12-06 21:19:08 turam Exp $
 # Copyright:   (c) 2005
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -152,10 +152,11 @@ class RssReader:
     def AddFeed(self,url):
         self._ProcessUrl(url)
         
+    def GetFeeds(self):
+        return self.entries.keys()
+        
     def RemoveFeed(self,url):
-        print 'entries', self.entries.keys()
         if url in self.entries.keys():
-            print 'removing url', url
             del self.entries[url]
         else:
             print 'url not found', url
