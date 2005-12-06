@@ -5,13 +5,13 @@
 # Author:      From the Python Cookbook
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: scheduler.py,v 1.10 2004-06-30 07:57:46 judson Exp $
+# RCS-ID:      $Id: scheduler.py,v 1.11 2005-12-06 22:59:15 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: scheduler.py,v 1.10 2004-06-30 07:57:46 judson Exp $"
+__revision__ = "$Id: scheduler.py,v 1.11 2005-12-06 22:59:15 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -25,7 +25,7 @@ class Task( Thread ):
 	self._includeRuntime = includeRuntime
         self._running = 1
         self._quitEvent = Event()
-        Thread.__init__( self )
+        Thread.__init__( self,name=str(self) )
 
     def __repr__( self ):
         return '%s %s %s' % (
