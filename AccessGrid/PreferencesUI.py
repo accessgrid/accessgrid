@@ -4,6 +4,7 @@ from AccessGrid import Log
 from AccessGrid.Platform import IsOSX
 from AccessGrid.Preferences import Preferences
 from AccessGrid.Platform.Config import AGTkConfig
+from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.GUID import GUID
 from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
 from AccessGrid.Registry.RegistryClient import RegistryClient
@@ -258,6 +259,7 @@ class NodePanel(wxPanel):
         self.nodeUrlText = wxStaticText(self, -1, "Node service URL")
         self.nodeUrlCtrl = wxTextCtrl(self, -1, "httptest", size = wxSize(250, -1))
         self.nodeConfigText = wxStaticText(self, -1, "Node configuration")
+        self.nodeConfigRefresh = wxButton(self,-1,'Refresh')
         self.mediaText = wxStaticText(self, -1, "Media")
         self.mediaLine = wxStaticLine(self, -1)
         self.audioButton = wxCheckBox(self, wxNewId(), " Enable Audio")
@@ -294,18 +296,26 @@ class NodePanel(wxPanel):
             log.exception("Preferences:NodePanel: Failed to load node service configurations.")
             selections = ["No configurations, run node service"]
                     
-        self.nodeConfigCtrl = wxComboBox(self, wxNewId(),
-                                         defaultNodeName + " ("+defaultNodeType+")",
+        self.nodeConfigCtrl = wxChoice(self, wxNewId(),
                                          choices = selections,
                                          style = wxCB_DROPDOWN,
                                          size = wxSize(235, -1))
+        self.nodeConfigCtrl.SetSelection(0)
+        EVT_TEXT_ENTER(self,self.nodeUrlCtrl.GetId(),self.OnRefresh)
+        EVT_BUTTON(self,self.nodeConfigRefresh.GetId(),self.OnRefresh)
         self.__Layout()
+
+    def OnRefresh(self,event):
+        nodeConfigs = AGNodeServiceIW(self.nodeUrlCtrl.GetValue()).GetConfigurations()
+        for nodeConfig in nodeConfigs:
+            self.nodeConfigCtrl.Append(nodeConfig.name)
+        self.nodeConfigCtrl.SetSelection(0)
 
     def GetDefaultNodeUrl(self):
         return self.nodeUrlCtrl.GetValue()
 
     def GetDefaultNodeConfig(self):
-        key = self.nodeConfigCtrl.GetValue()
+        key = self.nodeConfigCtrl.GetStringSelection()
 
         if key and self.configMap.has_key(key):
             return self.configMap[key]
@@ -353,6 +363,8 @@ class NodePanel(wxPanel):
         gridSizer = wxFlexGridSizer(0, 2, 5, 5)
         gridSizer.Add(self.nodeConfigText, 0, wxTOP | wxBOTTOM, 5)
         gridSizer.Add(self.nodeConfigCtrl)
+        gridSizer.Add(wxStaticText(self,-1,''))
+        gridSizer.Add(self.nodeConfigRefresh,0,wxRIGHT)
         sizer.Add(gridSizer, 0, wxLEFT, 30)
 
         sizer2 = wxBoxSizer(wxHORIZONTAL)
