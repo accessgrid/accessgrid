@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.128 2005-12-06 21:18:07 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.129 2005-12-06 22:59:36 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.128 2005-12-06 21:18:07 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.129 2005-12-06 22:59:36 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -4938,19 +4938,21 @@ class VenuePropertiesDialog(wxDialog):
         wxDialog.__init__(self, parent, id, title)
         self.venueClient = venueClient
         self.streamListLabel = wxStaticText(self,-1,'Streams')
-        self.list = wxListCtrl(self, wxNewId(), size = wxSize(460, 150),style=wxLC_REPORT)
+        self.list = wxListCtrl(self, wxNewId(), size = wxSize(500, 150),style=wxLC_REPORT)
 
         self.list.InsertColumn(0, "Address")
         self.list.InsertColumn(1, "Port")
         self.list.InsertColumn(2, "TTL")
         self.list.InsertColumn(3, "Purpose")
         self.list.InsertColumn(4, "Type")
+        self.list.InsertColumn(5, "EncryptionKey")
 
         self.list.SetColumnWidth(0, 100)
         self.list.SetColumnWidth(1, 80)
         self.list.SetColumnWidth(2, 80)
         self.list.SetColumnWidth(3, 100)
-        self.list.SetColumnWidth(3, 100)
+        self.list.SetColumnWidth(4, 100)
+        self.list.SetColumnWidth(5, 100)
         
         self.textLocationLabel = wxStaticText(self,-1,'Text Location')
         self.textLocationText = wxTextCtrl(self,-1,
@@ -4996,6 +4998,11 @@ class VenuePropertiesDialog(wxDialog):
                     self.list.SetStringItem(j, 4, 'static')
                 else:
                     self.list.SetStringItem(j, 4, 'dynamic')
+                    
+                if stream.encryptionFlag:
+                    self.list.SetStringItem(j, 5, stream.encryptionKey)
+                else:
+                    self.list.SetStringItem(j, 5, '-')
                 
                 j = j + 1
                 
