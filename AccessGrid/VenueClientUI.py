@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.127 2005-11-13 23:32:59 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.128 2005-12-06 21:18:07 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.127 2005-11-13 23:32:59 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.128 2005-12-06 21:18:07 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -54,7 +54,7 @@ from AccessGrid.VenueClient import DisconnectError
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
 from AccessGrid.Beacon.rtpBeaconUI import BeaconFrame
-from AccessGrid.RssReader import RssReader,strtimeToSecs         
+from AccessGrid.RssReader import RssReader,strtimeToSecs        
 
 try:
     import win32api
@@ -225,10 +225,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # Build RSS reader
         self.updateDuration = 3600
-        rssUrlList = ['http://www.mcs.anl.gov/~turam/rss2.cgi']
+        rssUrlList = self._LoadFeeds()
         try:
             self.reader = RssReader(rssUrlList,self.updateDuration,[self])
-            self.reader.SetUpdateDuration(1800)
+            self.reader.SetUpdateDuration(self.updateDuration)
         except:
             log.exception('Error constructing RSS reader')
             
@@ -1217,13 +1217,19 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     # Support for scheduler integration
     #
     def AddScheduleCB(self,event):
+        defaultRssUrl = 'http://www.mcs.anl.gov/~turam/rss2.cgi'
         rssUrl = wxGetTextFromUser('Specify RSS URL of schedule to add',
                                    'Add Schedule',
-                                   'http://www.mcs.anl.gov/~turam/rss2.cgi',
+                                   defaultRssUrl,
                                    parent=self)
         
         if rssUrl:
+            # Add feed to reader
             self.reader.AddFeed(rssUrl)
+
+            # Persist feed
+            self._SaveFeeds()
+          
         
     def TimedUpdateCB(self,event):
         if event.IsChecked():
@@ -1242,6 +1248,39 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         removeitemid = wxNewId()
         menu.Append(removeitemid,'Remove Schedule')
         EVT_MENU(self,removeitemid,lambda evt,menuid=menuid,url=url: self.RemoveScheduleCB(evt,menuid,url))
+
+    def _GetFeedConfigFile(self):
+        ucd = self.app.GetUserConfig().GetConfigDir()
+        feedFile = os.path.join(ucd,'schedule.cfg')
+        return feedFile
+        
+    def _LoadFeeds(self):
+        rssUrls = []
+        feedFile = self._GetFeedConfigFile()
+        if os.path.exists(feedFile):
+            f = open(feedFile,'r')
+            rssUrls = f.readlines()
+            f.close()
+            
+            # strip first and last characters
+            # (should be '[' and ']')
+            rssUrls = map(lambda x: x[1:-2], rssUrls)
+        return rssUrls
+
+    def _SaveFeeds(self):
+        rssUrls = self.reader.GetFeeds()
+
+        feedFile = self._GetFeedConfigFile()
+        f = open(feedFile,'w')
+        for url in rssUrls:
+            f.write('[%s]\n'%url)
+        f.close()
+
+    def RemoveScheduleCB(self,event,menuid,url):
+        self.navigation.Remove(menuid)
+        self.reader.RemoveFeed(url)
+        
+        self._SaveFeeds()
 
     def _CreateMenu(self,d):
         """
@@ -1303,7 +1342,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             if e.has_key('enclosures'):
                 venueurl = e.enclosures[0]['url']
                 gotovenueid = wxNewId()
-                submenu.Append(gotovenueid,'Go to venue')
+                submenu.Append(gotovenueid,'Go to Venue')
                 EVT_MENU(self,gotovenueid,lambda evt,url=venueurl: self.GoToVenueCB(evt,url))
 
             menu.AppendMenu(itemid,title,submenu)
@@ -1326,10 +1365,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             needNewWindow = 1
             browser.open(url, needNewWindow)
             
-    def RemoveScheduleCB(self,event,menuid,url):
-        self.navigation.Remove(menuid)
-        self.reader.RemoveFeed(url)
-
 
 
     #
