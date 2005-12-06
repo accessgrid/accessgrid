@@ -25,7 +25,7 @@ class authorizer:
         self.authorizecb = authorizecb
         
     def authorize (self, channel, username, password):
-
+    
         channel.read_only = 0
         if self.authorizecb and self.authorizecb(channel,username,password):
             return 1, 'Ok.', filesys.os_filesystem (self.root)
@@ -57,7 +57,11 @@ class FTPSServer:
         fauthz = authorizer(self.path,self.authorizecb)
         self.ftps = ftps_server.ftp_tls_server(fauthz, self.ssl_ctx, port=self.port,callback=self.activitycb)
         while self.running.isSet():
-            asyncore.poll(self.timeout,asyncore.socket_map)
+            try:
+                asyncore.poll(self.timeout,asyncore.socket_map)
+            except:
+                import traceback
+                traceback.print_exc()
         
     def run_in_thread(self):
         '''
@@ -111,6 +115,9 @@ if __name__ == '__main__':
         print 'Unrecognized platform: ', sys.platform
         sys.exit(1)
     ssl_ctx.load_verify_locations(capath=caDir)
+    ssl_ctx.set_cipher_list('LOW:TLSv1:@STRENGTH')
+    ssl_ctx.set_verify(SSL.verify_peer,10)
+    ssl_ctx.set_session_id_ctx('127.0.0.1:8006')
     
     def authorize(channel,user,passw):
         return 1
