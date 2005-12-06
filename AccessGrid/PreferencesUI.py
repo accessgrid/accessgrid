@@ -3,6 +3,7 @@ import os
 from AccessGrid import Log
 from AccessGrid.Platform import IsOSX
 from AccessGrid.Preferences import Preferences
+from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.Platform.Config import AGTkConfig
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.GUID import GUID
@@ -500,7 +501,7 @@ class LoggingPanel(wxPanel):
         self.preferences = preferences
         self.cmdButton = wxCheckBox(self, wxNewId(), "  Display log messages in command window ")
         self.locationText = wxStaticText(self, -1, "Location of log files")
-        self.locationCtrl = wxTextCtrl(self, -1, AGTkConfig.instance().GetLogDir(),
+        self.locationCtrl = wxTextCtrl(self, -1, UserConfig.instance().GetLogDir(),
                                        size = wxSize(30, -1),  style = wxTE_READONLY)
         self.levelText = wxStaticText(self, -1, "Log levels ")
         self.scWindow = wxScrolledWindow(self, -1, size = wxSize(10,50),
