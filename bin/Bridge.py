@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.1 2005-12-07 01:47:34 eolson Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.2 2005-12-08 22:03:21 eolson Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -12,8 +12,7 @@ import sys, os
 from optparse import OptionParser
 from AccessGrid.Registry.RegistryClient import RegistryClient
 from AccessGrid.Registry.RegistryPeer import AGXMLRPCServer
-import BridgeServer
-from BridgeServer import BridgeFactory
+from AccessGrid.BridgeFactory import BridgeFactory
 from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE, StreamDescription
 from AccessGrid.NetworkLocation import UnicastNetworkLocation, ProviderProfile
 from AccessGrid.GUID import GUID
@@ -26,7 +25,7 @@ class QuickBridgeServer:
     def __init__(self, name, location, listenPort, qbexec, registryUrl, portRange=None):
         if not os.path.exists(qbexec):
             raise Exception("QuickBridge executable does not exist at this location:", qbexec)
-        self.bridgeFactory = BridgeFactory(qbexec=qbexec, portRange=portRange)
+        self.bridgeFactory = BridgeFactory(qbexec=qbexec, portRange=portRange, log=log)
         self.providerProfile = ProviderProfile(name, location)
         self.listenPort = listenPort
         self.listeningServer = AGXMLRPCServer( ("", listenPort) )
@@ -114,7 +113,6 @@ def main():
 
     global log
     log = app.GetLog()
-    BridgeServer.log = log
 
     if options.name == None or options.location == None:
         raise Exception("Please specify both a name and location.")
