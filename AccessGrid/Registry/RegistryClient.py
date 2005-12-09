@@ -2,6 +2,7 @@
 
 import xmlrpclib
 import urllib
+from AccessGrid.Descriptions import BridgeDescription
 
 class RegistryClient:
     def __init__(self, url):
@@ -12,9 +13,17 @@ class RegistryClient:
 
     def RegisterBridge(self, registeredServerInfo):
         return self.serverProxy.RegisterBridge(registeredServerInfo)
-
+       
     def LookupBridge(self, maxToReturn=10):
-        return self.serverProxy.LookupBridge(maxToReturn)
+        bridgeDicts = self.serverProxy.LookupBridge(maxToReturn)
+        bridgeDescriptions = []
+
+        for b in bridgeDicts:
+            desc = BridgeDescription(b["guid"], b["name"], b["host"], b["port"], b["serverType"], b["description"])
+           
+            bridgeDescriptions.append(desc)
+        
+        return bridgeDescriptions
         # TODO, retry with other nodes on failure?
 
     def _getSortedRegistryPeers(self, maxToReturn=5):
