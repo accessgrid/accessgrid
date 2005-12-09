@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.90 2005-11-03 19:52:41 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.91 2005-12-09 15:30:13 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.90 2005-11-03 19:52:41 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.91 2005-12-09 15:30:13 turam Exp $"
 
 import os
 import time
@@ -18,6 +18,7 @@ import re
 import string
 import md5
 import ConfigParser
+import stat
 
 from AccessGrid import Log
 import AccessGrid.GUID
@@ -377,7 +378,6 @@ class DataStore:
 
         return fileList
 
-
     def RemoveFiles(self, dataDescriptionList):
         filesWithError = ""
 
@@ -686,6 +686,34 @@ class DataStore:
         path = os.path.join(self.pathname, filename)
 
         return path
+
+    def AddFile(self,identityToken,filename):
+    
+        url = self.GetDownloadDescriptor(filename)
+
+        desc = DataDescription(filename)
+        desc.SetSize(int(os.stat(filename)[stat.ST_SIZE]))
+        desc.SetStatus(DataDescription.STATUS_PRESENT)
+        desc.SetOwner(identityToken)
+        desc.SetURI(url)
+        desc.SetLastModified(self.GetTime())
+        
+        if self.dataDescContainer.GetData(filename):
+            print 'calling update data'
+            desc.SetURI(url)
+            self.cbLock.acquire()
+            try:
+                self.dataDescContainer.UpdateData(desc)
+                self.callbackClass.UpdateData(desc, 1)
+            except:
+                log.exception("DataStore.RemoveData: Failed")
+            self.cbLock.release()
+        else:
+            self.cbLock.acquire()
+            self.dataDescContainer.AddData(desc)
+            self.callbackClass.AddData(desc)
+            self.cbLock.release()
+                
 
     def CompleteUpload(self, identityToken, file_info):
         """
