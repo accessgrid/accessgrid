@@ -2,7 +2,7 @@
 
 Copyright (c) 1999-2004 Ng Pheng Siong. All rights reserved."""
 
-_RCS_id='$Id: ftps_server.py,v 1.3 2005-12-09 15:32:07 turam Exp $'
+_RCS_id='$Id: ftps_server.py,v 1.4 2005-12-09 22:21:36 turam Exp $'
 
 # Python
 import socket, string, sys, time
@@ -211,7 +211,7 @@ class ftp_tls_channel(ftp_server.ftp_channel):
                     cdc = ftp_server.recv_channel(self, None, fd)
         else:
             if self._prot:
-                cdc = tls_recv_channel(self, None, self.ssl_ctx, self._prot, 
+                cdc = tls_recv_channel(self, None, self.ssl_ctx,  
                                        self.client_addr, fd, self.callback)
             else:
                 cdc = ftp_server.recv_channel(self, self.client_addr, fd)
@@ -396,7 +396,7 @@ class nbio_ftp_tls_actor:
         """Receive data over SSL."""
         try:
             result = self.socket.recv(buffer_size)
-            if not result:
+            if result == '':
                 self.handle_close()
                 return ''
             else:
