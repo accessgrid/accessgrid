@@ -11,6 +11,11 @@ import stat
 # ftps urls correctly)
 urlparse.uses_netloc.append('ftps')
 
+from AccessGrid import Log
+log = Log.GetLogger('FTPSClient')
+Log.SetDefaultLevel('FTPSClient', Log.DEBUG)
+
+
 from M2Crypto import SSL, ftpslib, threading
 
 # module defaults
@@ -19,13 +24,15 @@ DEFAULT_PROTOCOL = 'sslv23'
 
 bytes_received = 0
     
-def FTPSDownloadFile(url,destination,size=None,checksum=None,
+def FTPSDownloadFile(url,destination,
                      ssl_ctx=None,user=None,passw=None,
                      progressCB=None):
     """
     Download from the specified URL, storing the resulting file
     in the specified destination
     """
+    log.debug('Entered FTPSDownloadFile: url=%s destination=%s',
+                url, destination)
 
     if ssl_ctx is None:
         ssl_ctx = SSL.Context(DEFAULT_PROTOCOL)
@@ -35,7 +42,6 @@ def FTPSDownloadFile(url,destination,size=None,checksum=None,
     url = str(url)
 
     try:
-        bytes_received = 0
         def cb(data,size,fl):
           try:
             global bytes_received
@@ -44,8 +50,8 @@ def FTPSDownloadFile(url,destination,size=None,checksum=None,
             if progressCB:
                 progressCB(float(bytes_received)/size,0)
           except:
-            import traceback
-            traceback.print_exc()
+            log.exception('Error in FTPSDownloadFile data callback')
+            raise
 
         # parse url
         parts = urlparse.urlparse(url)
@@ -82,8 +88,8 @@ def FTPSDownloadFile(url,destination,size=None,checksum=None,
         fl.close()
         f.quit()
     except:
-        import traceback
-        traceback.print_exc()
+        log.exception('Error in FTPSDownloadFile')
+        raise
         
 class FileWrapper(file):
 
@@ -99,19 +105,26 @@ class FileWrapper(file):
         buf = file.read(self,numbytes)
         self.bytesread += len(buf)
         if self.progressCB:
-            self.progressCB(self.filename,
-                            float(self.bytesread)/float(self.size),
-                            self.size,
-                            0,0)
+            try:
+                if self.size != 0:
+                    self.progressCB(self.filename,
+                                float(self.bytesread)/float(self.size),
+                                self.size,
+                                0,0)
+            except:
+                log.exception('Exception in progress callback')
         return buf
         
     
-def FTPSUploadFile(localfile,url,size=None,checksum=None,
+def FTPSUploadFile(localfile,url,
                    ssl_ctx=None,user=None,passw=None,
                    progressCB=None):
     """
     Upload the specified file to the specified URL
     """
+
+    log.debug('Entered FTPSUploadFile: localfile=%s url=%s',
+                localfile, url)
 
     if ssl_ctx is None:
         ssl_ctx = SSL.Context(DEFAULT_PROTOCOL)
@@ -147,23 +160,25 @@ def FTPSUploadFile(localfile,url,size=None,checksum=None,
         f.storbinary('stor %s' % remotefile, fl)
         
         if progressCB:
-            progressCB(localfile,
+            try:
+                progressCB(localfile,
                        1,
                        fl.size,
                        1,0)
+            except:
+                log.exception('Error in progress callback')
         
         # transfer finished; close up
         fl.close()
         f.quit()
     except:
-        import traceback
-        traceback.print_exc()
+        log.exception('Error in FTPSUploadFile')
+        raise
     
 
 if __name__ == '__main__':
     import time
     import shutil
-    import os
     
     
     threading.init()
