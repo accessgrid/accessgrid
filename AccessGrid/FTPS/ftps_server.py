@@ -2,7 +2,7 @@
 
 Copyright (c) 1999-2004 Ng Pheng Siong. All rights reserved."""
 
-_RCS_id='$Id: ftps_server.py,v 1.2 2005-10-21 14:25:45 turam Exp $'
+_RCS_id='$Id: ftps_server.py,v 1.3 2005-12-09 15:32:07 turam Exp $'
 
 # Python
 import socket, string, sys, time
@@ -200,7 +200,7 @@ class ftp_tls_channel(ftp_server.ftp_channel):
                     cdc = tls_recv_channel(self, conn, self.ssl_ctx, addr, fd, self.callback)
                 else:
                     cdc = ftp_server.recv_channel(self, addr, fd)
-                cdc.set_socket(conn)
+                    cdc.set_socket(conn)
                 cdc.connected = 1
                 self.passive_acceptor.close()
                 self.passive_acceptor = None
