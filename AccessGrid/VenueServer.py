@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.203 2005-12-06 23:58:42 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.204 2005-12-09 16:02:57 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.203 2005-12-06 23:58:42 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.204 2005-12-09 16:02:57 turam Exp $"
 
 
 # Standard stuff
@@ -431,11 +431,7 @@ class VenueServer:
             parts = pathfile.split(os.path.sep)
             venueid = parts[1]
             filename = parts[2]
-            dataDesc = self.venues[venueid].dataStore.AddPendingUpload('',filename)
-            file_info = {'name':filename,
-                         'size':12345,
-                         'checksum': 123123123}
-            self.venues[venueid].dataStore.CompleteUpload('',file_info)    
+            self.venues[venueid].dataStore.AddFile('',filename)   
     
     def _InitFromFile(self, config):
         """
