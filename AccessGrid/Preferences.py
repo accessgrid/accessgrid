@@ -7,6 +7,8 @@ from AccessGrid import Log
 from AccessGrid.Platform import IsWindows, IsOSX
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Utilities import LoadConfig, SaveConfig
+from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
+from AccessGrid.GUID import GUID
 
 log = Log.GetLogger(Log.VenueClient)
 
@@ -80,7 +82,8 @@ class Preferences:
         # service.
         self.nodeConfigs = []
         self.config = UserConfig.instance(initIfNeeded=0)
-
+        self.bridges = {} # Stores current bridges to display in UI
+        self.bridgesPrefs = {} # Stores status of a bridge
         self.LoadPreferences()
      
     def GetPreference(self, preference):
@@ -129,6 +132,9 @@ class Preferences:
         for key in self.preferences.keys():
             tempDict["Preferences."+key] = self.preferences[key]
 
+        for key in self.bridges.keys():
+            tempDict["Bridges."+key] = self.bridges[key].status
+         
         # Save preference
         try:
             log.debug("Preferences.StorePreferences: open file")
@@ -155,8 +161,13 @@ class Preferences:
 
             # Remove category from preference
             for p in preferences.keys():
+                category = p.split(".")[0]
                 pref = p.split(".")[1]
-                self.preferences[pref] = preferences[p]
+
+                if category == "Preferences":
+                    self.preferences[pref] = preferences[p]
+                elif category == "Bridges":
+                    self.bridgesPrefs[pref] = preferences[p]
         except:
             log.exception("Preferences.LoadPreferences: open file error")
             self.preferences = {}
@@ -190,8 +201,18 @@ class Preferences:
                 return c
             
         return None
-        
-                        
+
+    def SetBridges(self, bridges):
+        self.bridges = bridges
+       
+        # Set correct status for bridges
+        for id in self.bridges.keys():
+            if self.bridgesPrefs.has_key(id):
+                self.bridges[id].status = self.bridgesPrefs[id]
+                
+    def GetBridges(self):
+        return self.bridges
+                                    
     def GetNodeConfigs(self):
         '''
         Get all available node configuration from a node service.
@@ -200,7 +221,7 @@ class Preferences:
         *configs* list of node configurations [string]
         '''
         from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
-
+        
         # Retreive from node service; not stored in preferences.
         configs = []
         try:
@@ -236,3 +257,4 @@ class Preferences:
         return self.profile
     
 
+    

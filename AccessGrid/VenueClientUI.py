@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.129 2005-12-06 22:59:36 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.130 2005-12-09 21:58:10 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.129 2005-12-06 22:59:36 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.130 2005-12-09 21:58:10 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -43,6 +43,7 @@ from AccessGrid.ClientProfile import *
 from AccessGrid.Preferences import Preferences
 from AccessGrid.PreferencesUI import PreferencesDialog
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
+from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
 from AccessGrid.Descriptions import ApplicationDescription, VenueDescription
 from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIDialog
 from AccessGrid.Utilities import SubmitBug
@@ -137,6 +138,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_CERTIFICATE_MANAGE = wxNewId()
     ID_USE_MULTICAST = wxNewId()
     ID_USE_UNICAST = wxNewId()
+    ID_BRIDGES = wxNewId()
     ID_MYNODE_MANAGE = wxNewId()
     ID_PREFERENCES = wxNewId()
     ID_MYVENUE_ADD = wxNewId()
@@ -169,7 +171,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         sys.stderr = sys.__stderr__
 
         self.app = app
-        
+        self.bridges = None
+        self.bridgeKeyMap = {}
         self.venueClient = venueClient
         self.controller = controller
 
@@ -311,6 +314,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # ---- menus for main menu bar
         self.venue = wxMenu()
+      
         self.venue.Append(self.ID_VENUE_DATA_ADD,"Add Data...",
                              "Add data to the venue.")
         self.venue.Append(self.ID_VENUE_SERVICE_ADD,"Add Service...",
@@ -362,6 +366,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                                          "Use multicast to connect media")
         self.preferences.AppendRadioItem(self.ID_USE_UNICAST, "Use Unicast",
                                          "Use unicast to connect media")
+        index =  int(self.venueClient.GetPreferences().GetPreference(Preferences.MULTICAST))
+        self.preferences.Check(self.ID_USE_MULTICAST, index)
+        self.preferences.Check(self.ID_USE_UNICAST, not index)
+        self.bridgeSubmenu = wxMenu()
+                       
+        self.preferences.AppendMenu(self.ID_BRIDGES, "Bridges", self.bridgeSubmenu)
         self.preferences.AppendSeparator()
         
         # - enable display/video/audio
@@ -461,6 +471,42 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # Do not enable menus until connected
         self.__HideMenu()
+
+    def __CreateBridgeMenu(self):
+        self.bridges = self.venueClient.GetBridges()
+        self.currentBridge = self.venueClient.GetCurrentBridge()
+        items = self.bridgeSubmenu.GetMenuItems()
+       
+        for i in items:
+            self.bridgeSubmenu.DeleteItem(i)
+                
+        for b in self.bridges:
+            id = wxNewId()
+            self.bridgeSubmenu.AppendCheckItem(id, b.name)
+            self.bridgeKeyMap[b.guid] = id
+
+            if b.status == STATUS_ENABLED:
+                self.bridgeSubmenu.Enable(id, true)
+            else:
+                self.bridgeSubmenu.Enable(id, false)
+
+            if self.currentBridge and b.guid == self.currentBridge.guid:
+                self.bridgeSubmenu.Check(id, 1)
+                
+            EVT_MENU(self, id, lambda evt,
+                     menuid=id, bridgeDesc=b: self.CheckBridgeCB(evt, menuid, bridgeDesc))
+
+            
+                
+    def CheckBridgeCB(self, event, menuid, bridgeDescription):
+        # Uncheck all items except the checked one
+        items = self.bridgeSubmenu.GetMenuItems()
+
+        for i in items:
+            if i.GetId() != menuid:
+                self.bridgeSubmenu.Check(i.GetId(), 0)
+        
+        self.venueClient.SetCurrentBridge(bridgeDescription)
 
     def __SetEvents(self):
     
@@ -774,7 +820,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         if uploadUrl is None or uploadUrl == "":
         
             self.Notify("Cannot add data: Venue does not have an operational\ndata storage server.",
-                          "Cannot upload")
+                        "Cannot upload")
             return
         
         #
@@ -944,21 +990,60 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         profileDialog.Destroy()
         
     def SetTransport(self, transport):
+
         if transport == "multicast":
             self.preferences.Check(self.ID_USE_MULTICAST, true)
+            self.menubar.Enable(self.ID_BRIDGES, false)
         elif transport == "unicast":  
             self.preferences.Check(self.ID_USE_UNICAST, true)
+            self.menubar.Enable(self.ID_BRIDGES, true)
 
-    def UseMulticastCB(self,event):
+    def UseMulticastCB(self, event=None):
         try:
             self.controller.UseMulticastCB()
+            self.menubar.Enable(self.ID_BRIDGES, false)
+            self.preferences.Check(self.ID_USE_MULTICAST, true)
+            self.preferences.Check(self.ID_USE_UNICAST, false)
+                    
         except NetworkLocationNotFound:
             self.Error("Multicast streams not found","Use Multicast")
         except:
             self.Error("Error using multicast","Use Multicast")
 
 
-    def UseUnicastCB(self,event):
+    def UseUnicastCB(self,event=None):
+        self.menubar.Enable(self.ID_BRIDGES, true)
+        self.preferences.Check(self.ID_USE_MULTICAST, false)
+        self.preferences.Check(self.ID_USE_UNICAST, true)
+
+        if not self.bridges:
+            self.__CreateBridgeMenu()
+
+        # Get current bridge
+        currentBridge = self.venueClient.GetCurrentBridge()
+
+        # Use current bridge
+        self.controller.UseUnicastCB(currentBridge)
+        
+        
+        #transportList = self.venueClient.GetTransportList()
+        #if 'unicast' not in transportList:
+        #    self.preferences.Check(self.ID_USE_MULTICAST, true)
+        #    self.preferences.Check(self.ID_USE_UNICAST, false)
+        #    self.Warn("No unicast bridge is currently available in this venue.",
+        #              "Use Unicast")
+        #    return
+
+        # Get current provider
+        #provider = self.venueClient.GetProvider()
+
+        # Use the provider
+
+        # This is where I get the provider...
+        #self.controller.UseUnicastCB(provider)
+        
+        
+        """
         transportList = self.venueClient.GetTransportList()
         if 'unicast' not in transportList:
             self.preferences.Check(self.ID_USE_MULTICAST, true)
@@ -1005,6 +1090,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             # Set the menu checkbox appropriately
             transport = self.venueClient.GetTransport()
             self.SetTransport(transport)
+           """
+
                 
     def EnableDisplayCB(self,event):
         # ensure that toggle and menu item are in sync
@@ -1117,12 +1204,31 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 # Check for unicast preference.
                 currentTransport = self.venueClient.GetTransport()
                 multicastPref = int(p.GetPreference(Preferences.MULTICAST))
-                
+
                 if multicastPref and currentTransport == "unicast":
                     self.UseMulticastCB()
                 elif (not multicastPref) and currentTransport == "multicast":
                     self.UseUnicastCB()
-              
+
+                # Check for disabled bridge preferences
+
+                bDict = p.GetBridges()
+                for id in bDict.keys():
+                    if self.bridgeKeyMap.has_key(id):
+                        index = self.bridgeKeyMap[id]
+                        status = true
+                        
+                        if bDict[id].status == STATUS_DISABLED:
+                            status = false
+                                                    
+                        # Update bridge menu
+                        self.bridgeSubmenu.Enable(index, status)
+                        
+                        # Change status for venue client bridges
+                        for b in self.venueClient.GetBridges():
+                            if b.guid == id:
+                                b.status = bDict[id].status
+                       
             except:
                 log.exception("Error editing preferences")
                 self.Error("Preferences could not be saved", "Edit Preferences Error")

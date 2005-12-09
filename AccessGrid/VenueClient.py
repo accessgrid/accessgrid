@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.248 2005-12-05 21:47:01 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.249 2005-12-09 21:58:10 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.248 2005-12-05 21:47:01 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.249 2005-12-09 21:58:10 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -55,7 +55,9 @@ from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid import ServiceDiscovery
 from AccessGrid.Descriptions import VenueState
 from AccessGrid.MulticastWatcher import MulticastWatcher
-
+from AccessGrid.Registry.RegistryClient import RegistryClient
+from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
+from AccessGrid.GUID import GUID
 from AccessGrid.Jabber.JabberClient import JabberClient
 
 from AccessGrid.interfaces.AGService_client import AGServiceIW
@@ -134,6 +136,7 @@ class VenueClient:
         self.heartBeatTimer = None
         self.heartBeatTimeout = 10
 
+       
         if progressCB: 
             if pnode:   progressCB("Starting personal node.")
             else:       progressCB("Starting web service.")
@@ -150,8 +153,11 @@ class VenueClient:
         self.isIdentitySet = 0
 
         self.streamDescList = []
-        self.transport = "multicast"
-        
+
+        if self.preferences.GetPreference(Preferences.MULTICAST):   
+            self.transport = "multicast"
+        else:
+            self.transport = "unicast"
         self.observers = []
 
         # Manage the currently-exiting state
@@ -181,7 +187,44 @@ class VenueClient:
         # Create beacon capability
         self.beaconCapabilities = [Capability(Capability.PRODUCER, "Beacon"),
                                    Capability(Capability.CONSUMER, "Beacon")]
+
+        self.bridges = []
+        self.currentBridge = None
+        self.registryUrl = "http://www.accessgrid.org/registry/peers.txt"
+
+    def __LoadBridges(self):
+        # Get bridges from registry
+        self.registryClient = RegistryClient(url=self.registryUrl)
+        self.bridges = self.registryClient.LookupBridge()
+                
+        prefs = self.app.GetPreferences()
+        # Set bridges in preferences
+
+        tempDict = {}
+        for b in self.bridges:
+            tempDict[b.guid] = b
+        prefs.SetBridges(tempDict)
+
+        # Get bridges with updated enable/disable information
+        prefBridges = prefs.GetBridges()
+
+        # Check preferences for bridge status
+        for b in self.bridges:
+            i = b.guid
+            if prefBridges.has_key(i):
+                b.status = prefBridges[b.guid].status
+          
+        # Set bridges in preferences based on registry
+        tempDict = {}
+        for b in self.bridges:
+            tempDict[b.guid] = b
         
+        prefs.SetBridges(tempDict)
+
+        # Set current bridge, defaults to the first one in the
+        # sorted list.
+        self.currentBridge = self.bridges[0]
+
     def __McastStatusCB(self,obj):
         for s in self.observers:
             s.UpdateMulticastStatus(obj.GetStatus())
@@ -791,6 +834,7 @@ class VenueClient:
             # Finally, set the flag that we are in a venue
             self.isInVenue = 1
 
+
             # 
             # Update the node service with stream descriptions
             #
@@ -957,7 +1001,8 @@ class VenueClient:
              
         # Create the beacon client
         if int(self.preferences.GetPreference(Preferences.BEACON)):
-            self.StartBeacon()
+            pass
+            #self.StartBeacon()
 
         return self.warningString
 
@@ -1074,30 +1119,29 @@ class VenueClient:
         log.debug("UpdateNodeService: Method UpdateNodeService called")
         exc = None
 
-        #try:
-        #    self.nodeService.IsValid()
-        #except:
-        #    log.info("UpdateNodeService: Node Service unreachable; skipping")
-        #    log.info("UpdateNodeService: url = %s", self.nodeServiceUri)
-        #    return
+        # If unicast is selected, load bridge information from registry
+        if self.GetTransport() == "unicast":
+            self.__LoadBridges()
+            
+            # Connect to current bridge
+            # networkLocation = self.BridgeClient(url, streamDesc)
 
-        # Set the identity of the user running the node
-        #if not self.isIdentitySet:
-        #try:
-        #    self.nodeService.SetIdentity(self.profile)
-        #    self.isIdentitySet = 1
-        #except:
-        #    log.exception("Error setting identity")
+            # Update stream descriptions in self.streamDescList
+            # make sure network location is set to unicast...
 
-        # Set the streams to use the selected transport
-#         for stream in self.streamDescList:
-#             if stream.__dict__.has_key('networkLocations'):
-#                 try:
-#                     self.UpdateStream(stream)
-#                 except NetworkLocationNotFound, e:
-#                     log.debug("UpdateNodeService: Couldn't update stream with transport/provider info")
-#                     exc = e
+            for stream in self.streamDescList:
+                self.UpdateStream(stream)
 
+
+            # Set the streams to use the selected transport
+            #         for stream in self.streamDescList:
+            #             if stream.__dict__.has_key('networkLocations'):
+            #                 try:
+            #                     self.UpdateStream(stream)
+            #                 except NetworkLocationNotFound, e:
+            #                     log.debug("UpdateNodeService: Couldn't update stream with transport/provider info")
+            #                     exc = e
+            
         # Send streams to the node service
         try:
             log.debug("Setting node service streams")
@@ -1382,7 +1426,6 @@ class VenueClient:
             serviceList = self.nodeService.GetServices()
             for service in serviceList:
                 for cap in service.capabilities:
-                    print 'cap = ', cap.type, cap.role
                     if cap.type == 'video' and cap.role == 'consumer':
                         AGServiceIW(service.uri).SetEnabled(enableFlag)
                         break
@@ -1394,7 +1437,6 @@ class VenueClient:
             serviceList = self.nodeService.GetServices()
             for service in serviceList:
                 for cap in service.capabilities:
-                    print 'cap = ', cap.type, cap.role
                     if cap.type == 'video' and cap.role == 'producer':
                         AGServiceIW(service.uri).SetEnabled(enableFlag)
                         break
@@ -1423,6 +1465,19 @@ class VenueClient:
     #
     # Bridging Info
     #
+    
+    def GetBridges(self):
+        return self.bridges
+
+    def GetCurrentBridge(self):
+        return self.currentBridge
+
+    def SetCurrentBridge(self, bridgeDescription):
+        self.currentBridge = bridgeDescription
+
+        # Connect to the bridge here....provide stream descriptions
+        # Update stream descriptions with new network locations
+        # received from the bridge...
         
     def GetNetworkLocationProviders(self):
         """
@@ -1451,7 +1506,6 @@ class VenueClient:
         return self.provider
 
     def SetTransport(self,transport):
-
         # Update the transport
         self.transport = transport
 
@@ -1459,6 +1513,9 @@ class VenueClient:
         return self.transport
 
     def GetTransportList(self):
+        #
+        # Is this needed now when bridges are removed from the venue?
+        #
         transportDict = dict()
         for stream in self.streamDescList:
             if stream.__dict__.has_key('networkLocations'):

@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.49 2005-12-06 23:57:03 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.50 2005-12-09 21:58:10 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.49 2005-12-06 23:57:03 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.50 2005-12-09 21:58:10 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -214,7 +214,7 @@ class VenueClientController:
             log.exception("Multicast streams not found")
             raise
 
-    def UseUnicastCB(self,provider):
+    def UseUnicastCB(self, bridge):
         """
         This method 
 
@@ -222,14 +222,16 @@ class VenueClientController:
         
         """
         
-        if not provider or not isinstance(provider,ProviderProfile):
-            raise ValueError
+        #if not provider or not isinstance(provider,ProviderProfile):
+        #    raise ValueError
 
-        oldProvider = self.__venueClient.GetProvider()
+        #oldProvider = self.__venueClient.GetProvider()
+        oldBridge = self.__venueClient.GetCurrentBridge()
         oldTransport = self.__venueClient.GetTransport()
 
         # Set the transport in the venue client and update the node service
-        self.__venueClient.SetProvider(provider)
+        #self.__venueClient.SetProvider(provider)
+        self.__venueClient.SetCurrentBridge(bridge)
         self.__venueClient.SetTransport("unicast")
         try:
             self.__venueClient.UpdateNodeService()
@@ -237,8 +239,9 @@ class VenueClientController:
             log.exception("Error switching to unicast")
         
             # Reset the provider/transport 
-            self.__venueClient.SetProvider(oldProvider)
-            self.__venueClient.SetTransport(oldTransport)
+            # self.__venueClient.SetProvider(oldProvider)
+            #self.__venueClient.SetCurrentBridge(oldBridge)
+            #self.__venueClient.SetTransport(oldTransport)
             raise
 
     def EnableDisplayCB(self,enableFlag):

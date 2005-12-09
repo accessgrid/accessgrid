@@ -8,7 +8,7 @@ from AccessGrid.Platform.Config import AGTkConfig
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.GUID import GUID
 from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
-from AccessGrid.Registry.RegistryClient import RegistryClient
+from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
 
 from wxPython.wx import *
 from wxPython.gizmos import wxTreeListCtrl
@@ -691,18 +691,10 @@ class NetworkPanel(wxPanel):
         self.titleText = wxStaticText(self, -1, "Multicast")
         self.titleLine = wxStaticLine(self, -1)
         self.multicastButton = wxCheckBox(self, wxNewId(), "  Use unicast ")
-        self.bridges = []
         self.counter = 0
         self.keyMap = {}
-        # Make a call to the registry to get available bridges
-        self.registryClient = RegistryClient(url="file://../tests/localhost_registry_nodes.txt")
 
-        # Temporary...
-        # Register a bridge using the RegistryClient
-        info = BridgeDescription(guid=GUID(), name="defaultName", host="localhost", port="9999", serverType=QUICKBRIDGE_TYPE, description="")
-        self.registryClient.RegisterBridge(info)
-        # 
-        
+        self.bridges = preferences.GetBridges()
         self.multicastButton.SetValue(not int(preferences.GetPreference(Preferences.MULTICAST)))
 
         self.beaconButton = wxCheckBox(self, wxNewId(), "  Run beacon ")
@@ -750,10 +742,10 @@ class NetworkPanel(wxPanel):
         selectedItemId = self.__GetGUID(intId)
         selectedItem = self.__GetBridge(selectedItemId)
 
-        #if selectedItem[5] == "Enabled" or selectedItem[5] == "In Use":
-        self.menu.Check(self.enableId, 1)
-        #else:
-        #    self.menu.Check(self.enableId, 0)
+        if selectedItem.status == STATUS_ENABLED:
+            self.menu.Check(self.enableId, 1)
+        else:
+            self.menu.Check(self.enableId, 0)
 
         self.list.PopupMenu(self.menu, wxPoint(self.x, self.y))
         self.menu.Destroy()
@@ -766,14 +758,14 @@ class NetworkPanel(wxPanel):
         self.menu.Check(self.enableId, enableFlag)
 
         intId = self.list.GetItemData(self.selected)
-        selectedItemId = self.GetGUID(intId)
-        selectedItem = self.GetBridge(selectedItemId)
+        selectedItemId = self.__GetGUID(intId)
+        selectedItem = self.__GetBridge(selectedItemId)
         if enableFlag:
-            # selectedItem[5]= "Enabled"
-            self.list.SetStringItem(self.selected, 4, "Enabled")
+            selectedItem.status= STATUS_ENABLED
+            self.list.SetStringItem(self.selected, 4, selectedItem.status)
         else:
-            # selectedItem[5] = "Disabled"
-            self.list.SetStringItem(self.selected, 4, "Disabled")
+            selectedItem.status = STATUS_DISABLED
+            self.list.SetStringItem(self.selected, 4, selectedItem.status)
                             
     def GetMulticast(self):
         if self.multicastButton.IsChecked():
@@ -787,18 +779,15 @@ class NetworkPanel(wxPanel):
         else:
             return 0
 
-    def Lookup(self):
+    def __CreateBridgeMap(self):
         '''
         Get bridges from the registry
         '''
-        # Lookup bridges using the RegistryClient
-        self.bridges = self.registryClient.LookupBridge()    # or rc.Lookup(10)
-
         # Create key map for item data in list ctrl
         # List ctrl can unfortunately not add anything other
-        #than int as item data.
-        for b in self.bridges:
-            self.keyMap[b["guid"]] = self.counter
+        # than int as item data.
+        for b in self.bridges.values():
+            self.keyMap[b.guid] = self.counter
             self.counter = self.counter + 1
                 
         return self.bridges
@@ -809,8 +798,8 @@ class NetworkPanel(wxPanel):
                 return guid
     
     def __GetBridge(self, id):
-        for b in self.bridges:
-            if b["guid"] == str(id):
+        for b in self.bridges.values():
+            if b.guid == str(id):
                 return b
        
     def __InitList(self):
@@ -828,18 +817,17 @@ class NetworkPanel(wxPanel):
         self.list.SetColumnWidth(3, 100)
         self.list.SetColumnWidth(4, 70)
 
-        bridgeList = self.Lookup()
+        bridgeDict = self.CreateBridgeMap()
+      
+        for index in bridgeDict.keys():
+            self.list.InsertStringItem(self.keyMap[index], bridgeDict[index].name)
+            self.list.SetStringItem(self.keyMap[index], 1, bridgeDict[index].host)
+            self.list.SetStringItem(self.keyMap[index], 2, bridgeDict[index].port)
+            self.list.SetStringItem(self.keyMap[index], 3, bridgeDict[index].serverType)
+            self.list.SetStringItem(self.keyMap[index], 4, bridgeDict[index].status)
 
-        for index in range(0, len(bridgeList)):
-            self.list.InsertStringItem(index, bridgeList[index]["name"])
-            self.list.SetStringItem(index, 1, bridgeList[index]["host"])
-            self.list.SetStringItem(index, 2, bridgeList[index]["port"])
-            self.list.SetStringItem(index, 3, bridgeList[index]["serverType"])
-            self.list.SetStringItem(index, 4, "Enabled")
-
-            data = self.keyMap[bridgeList[index]["guid"]]
-
-            self.list.SetItemData(index, data)
+            data = self.keyMap[bridgeDict[index].guid]
+            self.list.SetItemData(self.keyMap[index], data)
           
     def __Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
@@ -920,3 +908,4 @@ if __name__ == "__main__":
     pDialog.ShowModal()
     p = pDialog.GetPreferences()
     p.StorePreferences()
+    
