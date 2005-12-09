@@ -37,6 +37,8 @@ class FTPSServer:
     FTPS Server wrapper
     '''
     def __init__(self,path,ssl_ctx,hostname=None,port=9021,authorizecb=None,activitycb=None):
+        log.debug('  FTPSServer __init__: path=%s hostname=%s port=%s', 
+                    path, hostname,port)
         self.path = path
         self.ssl_ctx = ssl_ctx
         self.hostname = hostname
@@ -52,6 +54,8 @@ class FTPSServer:
         '''
         Run the server
         '''
+        log.debug('Entered FTPSServer.run')
+
         self.running.set()
         
         fauthz = authorizer(self.path,self.authorizecb)
@@ -60,13 +64,13 @@ class FTPSServer:
             try:
                 asyncore.poll(self.timeout,asyncore.socket_map)
             except:
-                import traceback
-                traceback.print_exc()
+                log.exception('exception in FTPS server main loop')
         
     def run_in_thread(self):
         '''
         Run the server in a thread
         '''
+        log.debug('Entered FTPSServer.run_in_thread')
         t = threading.Thread(name='ftps server',target=self.run)
         t.start()
         
@@ -74,27 +78,33 @@ class FTPSServer:
         '''
         Stop the server
         '''
+        log.debug('Entered FTPSServer.stop')
         self.running.clear()
         
     def GetUploadDescriptor(self,prefix):
         '''
         Get the upload URL for the server
         '''
-        uploadDescriptor = '%s://%s:%d/%s' % ('ftps',
+        log.debug('Entered FTPSServer.GetUploadDescriptor')
+        descriptor = '%s://%s:%d/%s' % ('ftps',
                                                  self.hostname,
                                                  self.port,
                                                  prefix)
-        return uploadDescriptor
+        log.debug('  descriptor = %s', descriptor)
+        return descriptor
                                                  
     def GetDownloadDescriptor(self, prefix, fil):
         '''
         Get the download descriptor for the specified file
         '''
-        return urlparse.urlunparse(("ftps",
+        log.debug('Entered FTPSServer.GetDownloadDescriptor')
+        descriptor = urlparse.urlunparse(("ftps",
                                     "%s:%d" % (self.hostname,
                                                self.port),
                                     "%s/%s" % (prefix, urllib.quote(fil)),
                                     "", "", ""))
+        log.debug('  descriptor = %s', descriptor)
+        return descriptor
                                     
         
 
