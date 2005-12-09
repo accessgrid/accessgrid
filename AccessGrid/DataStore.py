@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.91 2005-12-09 15:30:13 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.92 2005-12-09 22:27:59 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.91 2005-12-09 15:30:13 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.92 2005-12-09 22:27:59 turam Exp $"
 
 import os
 import time
@@ -690,9 +690,11 @@ class DataStore:
     def AddFile(self,identityToken,filename):
     
         url = self.GetDownloadDescriptor(filename)
+        
+        path = os.path.join(self.pathname,filename)
 
         desc = DataDescription(filename)
-        desc.SetSize(int(os.stat(filename)[stat.ST_SIZE]))
+        desc.SetSize(int(os.stat(path)[stat.ST_SIZE]))
         desc.SetStatus(DataDescription.STATUS_PRESENT)
         desc.SetOwner(identityToken)
         desc.SetURI(url)
