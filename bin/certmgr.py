@@ -3,7 +3,7 @@
 # Name:        certmgr.py
 # Purpose:     Command line certificate management tool.
 # Created:     9/10/2003
-# RCS-ID:      $Id: certmgr.py,v 1.14 2005-11-13 23:29:37 turam Exp $
+# RCS-ID:      $Id: certmgr.py,v 1.15 2005-12-09 22:26:34 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This tool is used on the command line to interact with the users certificate
 environment.
 """
-__revision__ = "$Id: certmgr.py,v 1.14 2005-11-13 23:29:37 turam Exp $"
+__revision__ = "$Id: certmgr.py,v 1.15 2005-12-09 22:26:34 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -43,6 +43,7 @@ class CertMgrCmdProcessor(cmd.Cmd):
 
         self.log = log
         self.certMgr = certMgr
+        self.certMgrUI = CmdlineApplication.instance().GetCertificateManagerUI()
         self.certRepo = certMgr.GetCertificateRepository()
         self.interactive = 1
         self.forceOverwrite = 0
@@ -227,7 +228,7 @@ class CertMgrCmdProcessor(cmd.Cmd):
             idCerts = self.certMgr.GetIdentityCerts()
             if len(idCerts) > 0:
                 self.certMgr.SetDefaultIdentity(idCerts[0])
-                self.certMgr.GetUserInterface().InitGlobusEnvironment()
+                self.certMgrUI.InitGlobusEnvironment()
         self.loadCerts()
 
 # Disabled for 3.0, which does not use proxy certificates
@@ -424,7 +425,7 @@ class CertMgrCmdProcessor(cmd.Cmd):
                                                                     host,
                                                                     email)
 
-        self.certMgr.GetUserInterface().RequestCertificate(reqInfo, None, 0, None, None)
+        self.certMgrUI.RequestCertificate(reqInfo, None, 0, None, None)
         
     def help_import(self):
         """
@@ -545,7 +546,7 @@ the base name of certfile, with a .signing_policy suffix.
             return None
 
         try:
-            ui = self.certMgr.GetUserInterface()
+            ui = self.certMgrUI
             cb = ui.GetPassphraseCallback("Private key passphrase",
                                 "Enter the passphrase to your private key.")
             impCert = self.certMgr.ImportIdentityCertificatePEM(self.certMgr.GetCertificateRepository(),
