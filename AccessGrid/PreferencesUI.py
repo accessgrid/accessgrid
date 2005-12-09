@@ -299,8 +299,8 @@ class NodePanel(wxPanel):
                     
         self.nodeConfigCtrl = wxChoice(self, wxNewId(),
                                          choices = selections,
-                                         style = wxCB_DROPDOWN,
-                                         size = wxSize(235, -1))
+                                       size = wxSize(235, -1))
+
         self.nodeConfigCtrl.SetSelection(0)
         EVT_TEXT_ENTER(self,self.nodeUrlCtrl.GetId(),self.OnRefresh)
         EVT_BUTTON(self,self.nodeConfigRefresh.GetId(),self.OnRefresh)
@@ -817,7 +817,7 @@ class NetworkPanel(wxPanel):
         self.list.SetColumnWidth(3, 100)
         self.list.SetColumnWidth(4, 70)
 
-        bridgeDict = self.CreateBridgeMap()
+        bridgeDict = self.__CreateBridgeMap()
       
         for index in bridgeDict.keys():
             self.list.InsertStringItem(self.keyMap[index], bridgeDict[index].name)
