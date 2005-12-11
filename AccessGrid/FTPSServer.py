@@ -59,7 +59,7 @@ class FTPSServer:
         self.running.set()
         
         fauthz = authorizer(self.path,self.authorizecb)
-        self.ftps = ftps_server.ftp_tls_server(fauthz, self.ssl_ctx, port=self.port,callback=self.activitycb)
+        self.ftps = ftps_server.ftp_tls_server(fauthz, self.ssl_ctx, port=self.port,callback=self.activitycb,log_obj=log)
         while self.running.isSet():
             try:
                 asyncore.poll(self.timeout,asyncore.socket_map)
