@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.92 2005-12-09 22:27:59 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.93 2005-12-11 07:10:13 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.92 2005-12-09 22:27:59 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.93 2005-12-11 07:10:13 turam Exp $"
 
 import os
 import time
@@ -85,7 +85,6 @@ class DataDescriptionContainer:
             raise DataAlreadyPresent
 
         self.data[dataDescription.id] = dataDescription
-        log.debug("DataDescriptionContainer::AddData: Distribute ADD_DATA event %s", dataDescription)
 
     def UpdateData(self, dataDescription):
         """
@@ -464,85 +463,6 @@ class DataStore:
         '''
         return time.strftime("%a, %b %d, %Y, %H:%M:%S", time.localtime() )
         
-    def UploadLocalFiles(self, fileList, dn, id):
-        '''
-        Add file to a local datastore
-        '''
-        for filename in fileList:
-            try:
-                # Transfer file from local path to local data store path
-                infile = open(filename, 'rb')
-                fileString = infile.read()
-                
-                path, name = os.path.split(filename)
-
-                if not os.path.exists(self.pathname):
-                    log.debug("DataStore::AddFile: Personal data storage directory does not exist, create it")
-                    os.mkdir(self.pathname)
-
-                self.cbLock.acquire()
-                try:
-                    desc = self.dataDescContainer.GetData(name)
-                except:
-                    log.exception("DataStore.UploadLocalFile: failed")
-
-                self.cbLock.release()
-                
-                if desc == None:
-                    dataStorePath = os.path.join(self.pathname, name)
-                    log.debug("DataStore::AddFile: Personal datastorage is located at %s"%dataStorePath)
-                    output = open(dataStorePath, 'wb')
-                    output.write(fileString)
-                    infile.close()
-                    output.close()
-                    
-                    # Create DataDescription
-                    size = os.path.getsize(dataStorePath)
-                    log.debug("DataStore::AddFile: Size of file %s" %size)
-                    
-                    # This should be done in a loop in case
-                    # the file is big
-                    checksum = md5.new(fileString).hexdigest()
-                    log.debug("DataStore::AddFile: Checksum %s" %checksum)
-                    
-                    desc = DataDescription(name)
-                    desc.SetOwner(dn)
-                    desc.SetType(id) # id shows that this data is personal
-                    desc.SetChecksum(checksum)
-                    desc.SetSize(int(size))
-                    desc.SetStatus(DataDescription.STATUS_PRESENT)
-                    desc.SetLastModified(self.GetTime())
-
-                    self.transferEngineLock.acquire()
-                    try:
-                        desc.SetURI(self.transfer_engine.GetDownloadDescriptor(self.prefix,
-                                                                               name))
-                    except:
-                        log.exception("DataStore.AddFile: Failed")
-                        
-                    self.transferEngineLock.release()
-
-                    log.debug("DataStore::AddFile: updating with %s %s", desc, desc.__dict__)
-
-                    self.cbLock.acquire()
-
-                    try:
-                        self.dataDescContainer.AddData(desc)
-                    except:
-                        log.exception("DataStore.AddFile: Failed")
-                        
-                    self.cbLock.release()
-                    
-                else:
-                    raise DuplicateFile(desc) 
-
-            except DuplicateFile, e:
-                raise e
-        
-            except:
-                log.exception("DataStore::AddFile: Error when trying to add local data to datastorage")
-                raise UploadFailed("Error when trying to add local data to datastorage")
-           
     def GetUploadDescriptor(self):
         """
         Return the upload descriptor for this datastore.
