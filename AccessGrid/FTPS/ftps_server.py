@@ -2,7 +2,7 @@
 
 Copyright (c) 1999-2004 Ng Pheng Siong. All rights reserved."""
 
-_RCS_id='$Id: ftps_server.py,v 1.4 2005-12-09 22:21:36 turam Exp $'
+_RCS_id='$Id: ftps_server.py,v 1.5 2005-12-11 06:58:23 turam Exp $'
 
 # Python
 import socket, string, sys, time
@@ -20,13 +20,15 @@ class ftp_tls_channel(ftp_server.ftp_channel):
     
     """FTP/TLS server channel for Medusa."""
 
-    def __init__(self, server, ssl_ctx, conn, addr, callback ):
+    def __init__(self, server, ssl_ctx, conn, addr, callback, log_obj=None ):
         """Initialise the channel."""
         self.ssl_ctx = ssl_ctx
         self.server = server
         self.current_mode = 'a'
         self.addr = addr
         self.callback = callback
+        self.log_obj = log_obj
+
         asynchat.async_chat.__init__(self, conn)
         self.set_terminator('\r\n')
         self.client_addr = (addr[0], 21)
@@ -43,6 +45,7 @@ class ftp_tls_channel(ftp_server.ftp_channel):
         self._prot = None
         resp = '220 %s M2Crypto (Medusa) FTP/TLS server v%s ready.'
         self.respond(resp % (self.server.hostname, VERSION_STRING))
+        
         
         self.firstread = 1
 
@@ -263,13 +266,15 @@ class ftp_tls_channel(ftp_server.ftp_channel):
         else:
             self.respond('504 PROT %s unsupported' % line[1])
             
-#     def log (self, message):
-#         # consider logging here
-#         pass
-# 
-#     def log_info (self, message, type='info'):
-#         # consider logging here
-#         pass
+    def log (self, message):
+        # consider logging here
+        if self.log_obj:
+            self.log_obj.info(message)
+
+    def log_info (self, message, type='info'):
+        # consider logging here
+        if self.log_obj:
+            self.log_obj.info(message)
 
 
 class ftp_tls_server(ftp_server.ftp_server):
@@ -307,14 +312,8 @@ class ftp_tls_server(ftp_server.ftp_server):
         self.set_reuse_addr()
         self.bind((self.ip, self.port))
         self.listen(5)
-
-        if log_obj is None:
-            log_obj = sys.stdout
-
-        if resolver:
-            self.logger = logger.resolving_logger(resolver, log_obj)
-        else:
-            self.logger = logger.unresolving_logger(logger.file_logger(sys.stdout))
+        
+        self.log_obj = log_obj
 
         l = 'M2Crypto (Medusa) FTP/TLS server started at %s\n\tAuthz: %s\n\tHostname: %s\n\tPort: %d'
         self.log_info(l % (time.ctime(time.time()), repr(self.authorizer), self.hostname, self.port))
@@ -324,14 +323,16 @@ class ftp_tls_server(ftp_server.ftp_server):
         conn, addr = self.accept()
         self.total_sessions.increment()
         self.log_info('Connection from %s:%d' % addr)
-        self.ftp_channel_class(self, self.ssl_ctx, conn, addr, self.Callback)
+        self.ftp_channel_class(self, self.ssl_ctx, conn, addr, self.Callback, log_obj=self.log_obj)
 
     def log (self, message):
         # consider logging here
-        pass
+        if self.log_obj:
+            self.log_obj.info(message)
 
     def log_info (self, message, type='info'):
-        pass
+        if self.log_obj:
+            self.log_obj.info(message)
         
     def Callback(self,cmd,name):
         if self.callback:
