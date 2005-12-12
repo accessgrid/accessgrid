@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.130 2005-12-09 21:58:10 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.131 2005-12-12 16:49:04 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.130 2005-12-09 21:58:10 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.131 2005-12-12 16:49:04 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -370,6 +370,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.preferences.Check(self.ID_USE_MULTICAST, index)
         self.preferences.Check(self.ID_USE_UNICAST, not index)
         self.bridgeSubmenu = wxMenu()
+
+        # If unicast is initially selected, create bridge menu
+        if not index:
+            self.__CreateBridgeMenu()
                        
         self.preferences.AppendMenu(self.ID_BRIDGES, "Bridges", self.bridgeSubmenu)
         self.preferences.AppendSeparator()
@@ -473,7 +477,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.__HideMenu()
 
     def __CreateBridgeMenu(self):
+        
         self.bridges = self.venueClient.GetBridges()
+        
         self.currentBridge = self.venueClient.GetCurrentBridge()
         items = self.bridgeSubmenu.GetMenuItems()
        
@@ -1016,14 +1022,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.preferences.Check(self.ID_USE_MULTICAST, false)
         self.preferences.Check(self.ID_USE_UNICAST, true)
 
-        if not self.bridges:
-            self.__CreateBridgeMenu()
-
         # Get current bridge
         currentBridge = self.venueClient.GetCurrentBridge()
 
         # Use current bridge
         self.controller.UseUnicastCB(currentBridge)
+
+        self.__CreateBridgeMenu()
         
         
         #transportList = self.venueClient.GetTransportList()

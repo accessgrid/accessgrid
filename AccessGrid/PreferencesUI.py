@@ -822,7 +822,7 @@ class NetworkPanel(wxPanel):
         for index in bridgeDict.keys():
             self.list.InsertStringItem(self.keyMap[index], bridgeDict[index].name)
             self.list.SetStringItem(self.keyMap[index], 1, bridgeDict[index].host)
-            self.list.SetStringItem(self.keyMap[index], 2, bridgeDict[index].port)
+            self.list.SetStringItem(self.keyMap[index], 2, str(bridgeDict[index].port))
             self.list.SetStringItem(self.keyMap[index], 3, bridgeDict[index].serverType)
             self.list.SetStringItem(self.keyMap[index], 4, bridgeDict[index].status)
 

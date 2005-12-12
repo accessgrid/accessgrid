@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.249 2005-12-09 21:58:10 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.250 2005-12-12 16:49:04 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.249 2005-12-09 21:58:10 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.250 2005-12-12 16:49:04 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -153,11 +153,17 @@ class VenueClient:
         self.isIdentitySet = 0
 
         self.streamDescList = []
+        
+        self.bridges = []
+        self.currentBridge = None
+        self.registryUrl = "http://www.accessgrid.org/registry/peers.txt"
 
-        if self.preferences.GetPreference(Preferences.MULTICAST):   
+        if int(self.preferences.GetPreference(Preferences.MULTICAST)):   
             self.transport = "multicast"
         else:
             self.transport = "unicast"
+            self.__LoadBridges()
+                    
         self.observers = []
 
         # Manage the currently-exiting state
@@ -188,14 +194,11 @@ class VenueClient:
         self.beaconCapabilities = [Capability(Capability.PRODUCER, "Beacon"),
                                    Capability(Capability.CONSUMER, "Beacon")]
 
-        self.bridges = []
-        self.currentBridge = None
-        self.registryUrl = "http://www.accessgrid.org/registry/peers.txt"
-
+      
     def __LoadBridges(self):
         # Get bridges from registry
         self.registryClient = RegistryClient(url=self.registryUrl)
-        self.bridges = self.registryClient.LookupBridge()
+        self.bridges = self.registryClient.LookupBridge(5)
                 
         prefs = self.app.GetPreferences()
         # Set bridges in preferences
@@ -207,20 +210,7 @@ class VenueClient:
 
         # Get bridges with updated enable/disable information
         prefBridges = prefs.GetBridges()
-
-        # Check preferences for bridge status
-        for b in self.bridges:
-            i = b.guid
-            if prefBridges.has_key(i):
-                b.status = prefBridges[b.guid].status
-          
-        # Set bridges in preferences based on registry
-        tempDict = {}
-        for b in self.bridges:
-            tempDict[b.guid] = b
-        
-        prefs.SetBridges(tempDict)
-
+      
         # Set current bridge, defaults to the first one in the
         # sorted list.
         self.currentBridge = self.bridges[0]
