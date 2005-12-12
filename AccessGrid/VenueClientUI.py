@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.131 2005-12-12 16:49:04 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.132 2005-12-12 22:10:44 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.131 2005-12-12 16:49:04 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.132 2005-12-12 22:10:44 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -479,7 +479,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def __CreateBridgeMenu(self):
         
         self.bridges = self.venueClient.GetBridges()
-        
         self.currentBridge = self.venueClient.GetCurrentBridge()
         items = self.bridgeSubmenu.GetMenuItems()
        
@@ -513,6 +512,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 self.bridgeSubmenu.Check(i.GetId(), 0)
         
         self.venueClient.SetCurrentBridge(bridgeDescription)
+
+        # Use current bridge
+        self.controller.UseUnicastCB(bridgeDescription)
 
     def __SetEvents(self):
     
