@@ -5,14 +5,15 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/13/12
-# RCS-ID:      $Id: NetworkLocation.py,v 1.15 2005-05-09 21:54:15 eolson Exp $
+# RCS-ID:      $Id: NetworkLocation.py,v 1.16 2005-12-12 22:57:18 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetworkLocation.py,v 1.15 2005-05-09 21:54:15 eolson Exp $"
+__revision__ = "$Id: NetworkLocation.py,v 1.16 2005-12-12 22:57:18 lefvert Exp $"
 __docformat__ = "restructuredtext en"
+
 
 class ProviderProfile:
     """
@@ -42,8 +43,8 @@ class NetworkLocation:
             self.port = port
         self.type = self.TYPE
         self.id = None
-        self.privateId = None
-        self.profile = ProviderProfile(None,None)
+        self.privateId = ""
+        self.profile = ProviderProfile("","")
 
     def SetHost(self, host):
         self.host = host
