@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.250 2005-12-12 16:49:04 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.251 2005-12-12 22:01:47 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.250 2005-12-12 16:49:04 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.251 2005-12-12 22:01:47 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -56,7 +56,10 @@ from AccessGrid import ServiceDiscovery
 from AccessGrid.Descriptions import VenueState
 from AccessGrid.MulticastWatcher import MulticastWatcher
 from AccessGrid.Registry.RegistryClient import RegistryClient
-from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
+from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE, UMTP_TYPE
+from AccessGrid.QuickBridgeClient import QuickBridgeClient
+#from AccessGrid.UmtpBridgeClient import UmtpBridgeClient
+
 from AccessGrid.GUID import GUID
 from AccessGrid.Jabber.JabberClient import JabberClient
 
@@ -196,25 +199,32 @@ class VenueClient:
 
       
     def __LoadBridges(self):
-        # Get bridges from registry
-        self.registryClient = RegistryClient(url=self.registryUrl)
-        self.bridges = self.registryClient.LookupBridge(5)
-                
-        prefs = self.app.GetPreferences()
-        # Set bridges in preferences
+        '''
+        Gets bridge information from bridge registry. Sets current
+        bridge to the first one in the sorted list. Also, check preferences
+        to see if any of the retreived bridges are disabled.
+        '''
+        if not self.currentBridge:
+            # Get bridges from registry once
+            self.registryClient = RegistryClient(url=self.registryUrl)
+            self.bridges = self.registryClient.LookupBridge(5) # Get 5 bridges
 
+            # Set current bridge, defaults to the first one in the
+            # sorted list.
+            self.currentBridge = self.bridges[0]
+            
+        prefs = self.app.GetPreferences()
+
+        # Set bridges in preferences
         tempDict = {}
         for b in self.bridges:
             tempDict[b.guid] = b
         prefs.SetBridges(tempDict)
-
+        
         # Get bridges with updated enable/disable information
         prefBridges = prefs.GetBridges()
-      
-        # Set current bridge, defaults to the first one in the
-        # sorted list.
-        self.currentBridge = self.bridges[0]
 
+        
     def __McastStatusCB(self,obj):
         for s in self.observers:
             s.UpdateMulticastStatus(obj.GetStatus())
@@ -829,17 +839,17 @@ class VenueClient:
             # Update the node service with stream descriptions
             #
             
-            try:
-                self.UpdateNodeService()
-            except NetworkLocationNotFound, e:
-                if self.transport == 'unicast':
-                    self.warningString += '\nThere is no unicast bridge available.'
-                else:
-                    self.warningString += '\nError connecting media tools.'
-            except Exception, e:
-                # This is a non fatal error, users should be notified
-                # but still enter the venue
-                log.warn("EnterVenue: Error updating node service")
+            #try:
+            self.UpdateNodeService()
+            #except NetworkLocationNotFound, e:
+            #    if self.transport == 'unicast':
+            #        self.warningString += '\nThere is no unicast bridge available.'
+            #    else:
+            #        self.warningString += '\nError connecting media tools.'
+            #except Exception, e:
+            #    # This is a non fatal error, users should be notified
+            #    # but still enter the venue
+            #    log.exception("EnterVenue: Error updating node service")
            
            
 
@@ -1113,14 +1123,8 @@ class VenueClient:
         if self.GetTransport() == "unicast":
             self.__LoadBridges()
             
-            # Connect to current bridge
-            # networkLocation = self.BridgeClient(url, streamDesc)
-
-            # Update stream descriptions in self.streamDescList
-            # make sure network location is set to unicast...
-
-            for stream in self.streamDescList:
-                self.UpdateStream(stream)
+        for stream in self.streamDescList:
+            self.UpdateStream(stream)
 
 
             # Set the streams to use the selected transport
@@ -1148,28 +1152,37 @@ class VenueClient:
         Apply selections of transport and netloc provider to the given stream.
         """
         found = 0
-        for netloc in stream.networkLocations:
-            # use the stream if it's the right transport and
-            # if transport is multicast OR the provider matches
-            if netloc.type == self.transport and (self.transport == 'multicast' or netloc.profile.name == self.provider.name):
-                log.debug("UpdateStream: Setting stream %s to %s",
-                          stream.id, self.transport)
-                stream.location = netloc   
-                found = 1
-
-        # prefer the same provider (above), but use any if available
-        if not found:
+        
+        if self.transport == "unicast":
+            # Check streams if they have a unicast network location
             for netloc in stream.networkLocations:
-                if netloc.type == self.transport:
-                    log.debug("UpdateStream: Setting stream %s to %s",
-                              stream.id, self.transport)
-                    stream.location = netloc   
+                if netloc.type == "unicast":
+                    stream.location = netloc
                     found = 1
-                
+             
         if not found:
-            raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
-                                          (self.transport, self.provider.name, self.provider.location))
-    
+            # If no unicast network location found, connect to bridge to retreive one.
+            if self.currentBridge:
+                #if str(self.currentBridge.serverType) == QUICKBRIDGE_TYPE:
+                qbc = QuickBridgeClient(self.currentBridge.host, self.currentBridge.port)
+                #elif self.currentBridge.type == UMTP_TYPE:
+                #    qbc = UmtpBridgeClient(self.currentBridge.host, self.currentBridge.port)
+                #else:
+                #    log.warn("VenueClient.UpdateStream: current bridge type invalid %s"%(self.currentBridge.serverType))
+
+                # THIS SHOULD BE SOLVED IN A DIFFERENT WAY.
+                # xmlrpc complains about none type...
+                stream.networkLocations[0].privateId = "privateId"
+                stream.networkLocations[0].profile.location = "location"
+                stream.networkLocations[0].profile.name = "name"
+                #
+                
+                stream.location = qbc.JoinBridge(stream.networkLocations[0])
+                found = 1
+            else:
+                raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
+                                              (self.transport, self.currentBridge.name, self.provider.host))
+
     def SendEvent(self,eventType, data):
         self.eventClient.Send(eventType, data)
 
@@ -1457,61 +1470,35 @@ class VenueClient:
     #
     
     def GetBridges(self):
+        ''' Get a list of available unicast bridges'''
         return self.bridges
 
     def GetCurrentBridge(self):
+        ''' Get selected unicast bridge'''
         return self.currentBridge
 
     def SetCurrentBridge(self, bridgeDescription):
+        ''' Select bridge to use for unicast connections '''
         self.currentBridge = bridgeDescription
-
-        # Connect to the bridge here....provide stream descriptions
-        # Update stream descriptions with new network locations
-        # received from the bridge...
         
-    def GetNetworkLocationProviders(self):
-        """
-        GetNetworkLocationProviders returns a list of entities providing
-        network locations to the current venue.
-
-        Note:  To do this, it looks for providers in the first stream.
-               For now, this assumption is safe.
-        """
-
-        transport = 'unicast'
-
-        providerList = []
-        if self.streamDescList and self.streamDescList[0].__dict__.has_key('networkLocations'):
-            networkLocations = self.streamDescList[0].networkLocations
-            for netLoc in networkLocations:
-                if netLoc.type == transport:
-                    providerList.append(netLoc.profile)
-
-        return providerList
-                    
-    def SetProvider(self,provider):
-        self.provider = provider
-
-    def GetProvider(self):
-        return self.provider
-
     def SetTransport(self,transport):
-        # Update the transport
+        ''' Set transport used, either multicast or unicast '''
         self.transport = transport
 
     def GetTransport(self):
+        ''' Get transport used, either multicast or unicast '''
         return self.transport
 
-    def GetTransportList(self):
+#    def GetTransportList(self):
         #
         # Is this needed now when bridges are removed from the venue?
         #
-        transportDict = dict()
-        for stream in self.streamDescList:
-            if stream.__dict__.has_key('networkLocations'):
-                for netloc in stream.networkLocations:
-                    transportDict[netloc.type] = 1
-        return transportDict.keys()
+#        transportDict = dict()
+#        for stream in self.streamDescList:
+#            if stream.__dict__.has_key('networkLocations'):
+#                for netloc in stream.networkLocations:
+#                    transportDict[netloc.type] = 1
+#        return transportDict.keys()
 
     #
     # Other
