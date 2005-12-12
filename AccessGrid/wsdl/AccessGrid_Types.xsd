@@ -70,7 +70,7 @@
         <xs:element name = "encryptionFlag" type = "xs:int"/>
         <xs:element name = "encryptionKey" nillable="true" type = "xs:string"/>
         <xs:element name = "static" type = "xs:boolean"/>
-        <xs:element name = "networkLocations" minOccurs="0" maxOccurs="unbounded" type = "tns:NetworkLocation"/>
+        <xs:element name = "networkLocations" minOccurs="0" maxOccurs="unbounded" type = "xs:anyType"/>
       </xs:sequence>
     </xs:complexType>
 
