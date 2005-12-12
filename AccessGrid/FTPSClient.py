@@ -150,7 +150,7 @@ def FTPSUploadFile(localfile,url,
         f.login(user,passw)
         
         # open local file and transfer file
-        fl = FileWrapper(localfile,'r',progressCB)
+        fl = FileWrapper(localfile,'rb',progressCB)
 
         # change to target directory
         f.voidcmd('cwd %s' % str(parts[2]))
