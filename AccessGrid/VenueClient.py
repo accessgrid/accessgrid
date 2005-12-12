@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.252 2005-12-12 22:14:38 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.253 2005-12-12 22:58:05 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.252 2005-12-12 22:14:38 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.253 2005-12-12 22:58:05 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -1169,13 +1169,6 @@ class VenueClient:
                 #    qbc = UmtpBridgeClient(self.currentBridge.host, self.currentBridge.port)
                 #else:
                 #    log.warn("VenueClient.UpdateStream: current bridge type invalid %s"%(self.currentBridge.serverType))
-
-                # THIS SHOULD BE SOLVED IN A DIFFERENT WAY.
-                # xmlrpc complains about none type...
-                stream.networkLocations[0].privateId = "privateId"
-                stream.networkLocations[0].profile.location = "location"
-                stream.networkLocations[0].profile.name = "name"
-                #
 
                 print '================== join bridge', self.currentBridge.host, self.currentBridge.port
                 stream.location = qbc.JoinBridge(stream.networkLocations[0])
