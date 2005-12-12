@@ -22,73 +22,73 @@ class RegistryInterface:
         pass
 
 class RegistryBase(RegistryInterface):
-    def __init__(self, port, nodeListUrl="", localTest=False):
+    def __init__(self, port, peerListUrl=""):
         self.port = port
         self.host = ""
         self.peerUpdateInterval = 3 # 60  # seconds
-        self.nodeListUrl = nodeListUrl
-        self.registryNodes = []
-        if not localTest:
-            self._readNodeList(url=self.nodeListUrl)
+        self.peerListUrl = peerListUrl
+        self.registryPeers = []
+        self.localPeerAddr = None
+        if peerListUrl.startswith("file://"):
+            self._readPeerListLocalTest(self.peerListUrl)
         else:
-            self._readNodeListLocalTest(self.nodeListUrl)
-        self.localNodeAddr = None
+            self._readPeerList(url=self.peerListUrl)
 
-    def _readNodeList(self,url):
+    def _readPeerList(self,url):
         opener = urllib.FancyURLopener({})
         f = opener.open(url)
         contents = f.read()
         f.close()
-        registryNodes = contents.split()
+        registryPeers = contents.split()
         fqdn = socket.getfqdn(socket.gethostname())
-        localNodeName = fqdn + ":%s" % self.port
-        if localNodeName not in registryNodes:
-            raise Exception ("Error: this node " + localNodeName + " is not listed in the master list.  The current registry requires all nodes to know about each other.")
-        registryNodes.remove(localNodeName)
-        self.host = localNodeName
-        self.registryNodes = registryNodes
+        localPeerName = fqdn + ":%s" % self.port
+        if localPeerName not in registryPeers:
+            raise Exception ("Error: this peer " + localPeerName + " is not listed in the master list.  The current registry requires all peers to know about each other.")
+        registryPeers.remove(localPeerName)
+        self.host = localPeerName
+        self.registryPeers = registryPeers
 
-    def _readNodeListLocalTest(self,filename):
+    def _readPeerListLocalTest(self,filename):
         opener = urllib.FancyURLopener({})
         #f = opener.open(url)
         f = open(filename, "r")
         contents = f.read()
         f.close()
-        registryNodes = contents.split() # split by line
+        registryPeers = contents.split() # split by line
         # make list of (host,port)
-        def makeHostPortListFromString(nodeList):
-            nodes = []
-            for node in nodeList:
-                splitNode = node.split(":")
-                nodes.append( (splitNode[0], int(splitNode[1])) )
-            return nodes
-        registryNodes = makeHostPortListFromString(registryNodes)
+        def makeHostPortListFromString(peerList):
+            peers = []
+            for peer in peerList:
+                splitPeer = peer.split(":")
+                peers.append( (splitPeer[0], int(splitPeer[1])) )
+            return peers
+        registryPeers = makeHostPortListFromString(registryPeers)
 
-        # for local test, just find the node with the same port
-        localNodeName = None
-        for node in registryNodes:
-            if node[1] == self.port:
-                localNodeAddr = node
+        # for local test, just find the peer with the same port
+        localPeerName = None
+        for peer in registryPeers:
+            if peer[1] == self.port:
+                localPeerAddr = peer
 
-        if localNodeAddr not in registryNodes:
-            raise Exception ("Error: this node " + localNodeAddr + " is not listed in the master list.  The current registry requires all nodes to know about each other.")
-        registryNodes.remove(localNodeAddr)
-        print "localNode:", localNodeAddr
-        print "otherNodes:", registryNodes
+        if localPeerAddr not in registryPeers:
+            raise Exception ("Error: this peer " + localPeerAddr + " is not listed in the master list.  The current registry requires all peers to know about each other.")
+        registryPeers.remove(localPeerAddr)
+        print "localPeer:", localPeerAddr
+        print "otherPeers:", registryPeers
 
-        self.registryNodes = []
+        self.registryPeers = []
 
-    def RefreshNodeList(self, url=None):
-        # Allows a running node to refresh its node list in case a node has been manually added or removed.
+    def RefreshPeerList(self, url=None):
+        # Allows a running peer to refresh its peer list in case a peer has been manually added or removed.
         # Call to this function probably would be initiated manually.
         if url == None:
-            url = self.nodeListUrl
-        self._readNodeList(url)
+            url = self.peerListUrl
+        self._readPeerList(url)
 
     def ConnectToRegistries(self):
-        for node in self.registryNodes:
+        for peer in self.registryPeers:
             try:
-                print "Would connect to:", node
+                print "Would connect to:", peer
             except Exception:
                 traceback.print_exc()
 
@@ -114,8 +114,8 @@ class AGXMLRPCServer(DocXMLRPCServer):
         DocXMLRPCServer.__init__(self, addr, requestHandler=requestHandler, logRequests=logRequests)
 
 class RegistryPeerXMLRPC(RegistryBase):
-    def __init__(self, port, nodeListUrl, localTest=False):
-        RegistryBase.__init__(self, port, nodeListUrl, localTest)
+    def __init__(self, port, peerListUrl):
+        RegistryBase.__init__(self, port, peerListUrl)
         self.requestServer = AGXMLRPCServer( ("", self.port) )
         self._RegisterFunctions()
         self.registeredServers = {}
@@ -141,13 +141,15 @@ RegistryPeer=RegistryPeerXMLRPC
 
 
 if __name__ == "__main__":
-    defaultPort = 16000
+    defaultPort = 8030
+    defaultPeerListUrl = "file://../../tests/localhost_registry_nodes.txt"
+    # defaultPeerListUrl="http://www.accessgrid.org/registry/peers.txt"
     parser = OptionParser()
     parser.add_option("-p", "--port", dest="port", default=defaultPort, help="Listening port.", type="int")
+    parser.add_option("-u", "--peerListUrl", dest="peerListUrl", default=defaultPeerListUrl, help="The url to bootstrap the system.  For the current design, this is a complete list of peers.")
     (options, ret_args) = parser.parse_args(args=sys.argv)
 
-    # r = RegistryPeer(nodeListUrl="http://www.mcs.anl.gov/~eolson/registry_nodes.txt", port=options.port)
-    r = RegistryPeer(nodeListUrl="../../tests/localhost_registry_nodes.txt", port=options.port, localTest=True)
+    r = RegistryPeer(peerListUrl=options.peerListUrl, port=options.port)
     r.Run()
     
 
