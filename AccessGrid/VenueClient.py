@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.251 2005-12-12 22:01:47 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.252 2005-12-12 22:14:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.251 2005-12-12 22:01:47 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.252 2005-12-12 22:14:38 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -1160,7 +1160,7 @@ class VenueClient:
                     stream.location = netloc
                     found = 1
              
-        if not found:
+        if not found and self.transport == "unicast":
             # If no unicast network location found, connect to bridge to retreive one.
             if self.currentBridge:
                 #if str(self.currentBridge.serverType) == QUICKBRIDGE_TYPE:
@@ -1176,8 +1176,10 @@ class VenueClient:
                 stream.networkLocations[0].profile.location = "location"
                 stream.networkLocations[0].profile.name = "name"
                 #
-                
+
+                print '================== join bridge', self.currentBridge.host, self.currentBridge.port
                 stream.location = qbc.JoinBridge(stream.networkLocations[0])
+                print '================== after join bridge', stream.location
                 found = 1
             else:
                 raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
