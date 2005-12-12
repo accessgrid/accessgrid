@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.2 2005-12-08 22:03:21 eolson Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.3 2005-12-12 20:21:49 eolson Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -25,7 +25,7 @@ class QuickBridgeServer:
     def __init__(self, name, location, listenPort, qbexec, registryUrl, portRange=None):
         if not os.path.exists(qbexec):
             raise Exception("QuickBridge executable does not exist at this location:", qbexec)
-        self.bridgeFactory = BridgeFactory(qbexec=qbexec, portRange=portRange, log=log)
+        self.bridgeFactory = BridgeFactory(qbexec=qbexec, portRange=portRange, logger=log)
         self.providerProfile = ProviderProfile(name, location)
         self.listenPort = listenPort
         self.listeningServer = AGXMLRPCServer( ("", listenPort) )

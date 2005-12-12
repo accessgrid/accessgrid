@@ -1,7 +1,7 @@
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 from AccessGrid import Log
-logger = None
+log = None
 
 class BridgeFactory:
     """
@@ -59,11 +59,11 @@ class BridgeFactory:
             self.processManager.TerminateAllProcesses()
 
 
-    def __init__(self, qbexec, portRange=None, log=Log.GetLogger("BridgeFactory")):
+    def __init__(self, qbexec, portRange=None, logger=Log.GetLogger("BridgeFactory")):
         self.qbexec = qbexec
         self.portRange = portRange
-        global logger
-        logger = log
+        global log
+        log = logger
 
         self.bridges = dict()
 
