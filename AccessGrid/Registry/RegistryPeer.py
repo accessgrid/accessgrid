@@ -30,7 +30,7 @@ class RegistryBase(RegistryInterface):
         self.registryPeers = []
         self.localPeerAddr = None
         if peerListUrl.startswith("file://"):
-            self._readPeerListLocalTest(self.peerListUrl)
+            self._readPeerListLocalTest(self.peerListUrl[7:])
         else:
             self._readPeerList(url=self.peerListUrl)
 
@@ -65,7 +65,7 @@ class RegistryBase(RegistryInterface):
         registryPeers = makeHostPortListFromString(registryPeers)
 
         # for local test, just find the peer with the same port
-        localPeerName = None
+        localPeerAddr = ""
         for peer in registryPeers:
             if peer[1] == self.port:
                 localPeerAddr = peer
