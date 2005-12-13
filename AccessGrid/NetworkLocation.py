@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/13/12
-# RCS-ID:      $Id: NetworkLocation.py,v 1.16 2005-12-12 22:57:18 lefvert Exp $
+# RCS-ID:      $Id: NetworkLocation.py,v 1.17 2005-12-13 18:32:08 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetworkLocation.py,v 1.16 2005-12-12 22:57:18 lefvert Exp $"
+__revision__ = "$Id: NetworkLocation.py,v 1.17 2005-12-13 18:32:08 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -42,7 +42,7 @@ class NetworkLocation:
         else:
             self.port = port
         self.type = self.TYPE
-        self.id = None
+        self.id = ""
         self.privateId = ""
         self.profile = ProviderProfile("","")
 
