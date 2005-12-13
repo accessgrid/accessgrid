@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.253 2005-12-12 22:58:05 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.254 2005-12-13 18:31:24 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.253 2005-12-12 22:58:05 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.254 2005-12-13 18:31:24 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -1169,10 +1169,8 @@ class VenueClient:
                 #    qbc = UmtpBridgeClient(self.currentBridge.host, self.currentBridge.port)
                 #else:
                 #    log.warn("VenueClient.UpdateStream: current bridge type invalid %s"%(self.currentBridge.serverType))
-
-                print '================== join bridge', self.currentBridge.host, self.currentBridge.port
                 stream.location = qbc.JoinBridge(stream.networkLocations[0])
-                print '================== after join bridge', stream.location
+                stream.networkLocations.append(stream.location)
                 found = 1
             else:
                 raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
