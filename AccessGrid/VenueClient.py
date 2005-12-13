@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.255 2005-12-13 20:35:19 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.256 2005-12-13 23:03:48 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.255 2005-12-13 20:35:19 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.256 2005-12-13 23:03:48 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -784,8 +784,14 @@ class VenueClient:
             if len(self.capabilities) > 0:
                 self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.profile.connectionId,
                                                                               self.capabilities)
+              
+                # THIS SHOULD BE MULTICAST NETWORK LOCATION WITH TTL FIELD!
+                for stream in self.streamDescList:
+                    print '\n*************************', stream.location.__class__,
 
-                    
+                    for net in stream.networkLocations:
+                        print "**************net loc", net.__class__
+                                                           
             self.venueUri = URL
 
             
@@ -843,7 +849,7 @@ class VenueClient:
             try:
                 self.UpdateNodeService()
             except NetworkLocationNotFound, e:
-                
+                log.debug("UpdateNodeService: Couldn't update stream with transport/provider info")
                 if self.transport == 'unicast':
                     self.warningString += '\nConnection to unicast bridge failed. Select other bridge.'
                 else:
@@ -1127,16 +1133,6 @@ class VenueClient:
             
         for stream in self.streamDescList:
             self.UpdateStream(stream)
-
-
-            # Set the streams to use the selected transport
-            #         for stream in self.streamDescList:
-            #             if stream.__dict__.has_key('networkLocations'):
-            #                 try:
-            #                     self.UpdateStream(stream)
-            #                 except NetworkLocationNotFound, e:
-            #                     log.debug("UpdateNodeService: Couldn't update stream with transport/provider info")
-            #                     exc = e
             
         # Send streams to the node service
         try:
@@ -1157,17 +1153,12 @@ class VenueClient:
      
         # Check streams if they have a network location
         for netloc in stream.networkLocations:
-            #
-            # Comparison to any is WRONG!!! 
-            #
-            
             # If transport is multicast, use the location
-            if (self.transport == "multicast" and
-            (netloc.type == self.transport or netloc.type == "any")):
+            if self.transport == "multicast" and netloc.GetType() == self.transport:
                 stream.location = netloc
                 found = 1
             # If transport is unicast, use location if provider matches
-            elif (self.transport == "unicast" and netloc.type == self.transport and
+            elif (self.transport == "unicast" and netloc.GetType() == self.transport and
                   netloc.profile.name == self.currentBridge.name):
                 stream.location = netloc
                 found = 1
