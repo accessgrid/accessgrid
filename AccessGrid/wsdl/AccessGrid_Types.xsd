@@ -7,8 +7,10 @@
     <xs:complexType name="NetworkLocation">
       <xs:sequence>
         <xs:element name="id" type="xs:string"/>
+	<xs:element name="privateId" type="xs:string"/>
         <xs:element name="host" type="xs:string"/>
         <xs:element name="port" type="xs:int"/>
+	<xs:element name="type" type="xs:string"/>
         <xs:element name="profile" nillable="true" type="tns:ProviderProfile"/>
       </xs:sequence>
     </xs:complexType>
@@ -64,7 +66,7 @@
       <xs:sequence>
         <xs:element name = "id" type = "xs:string"/>
         <xs:element name = "name" type = "xs:string"/>
-        <xs:element name = "location" type = "tns:NetworkLocation"/>
+        <xs:element name = "location" type = "xs:anyType"/>
         <xs:element name = "description" nillable="true" type = "xs:string"/>
         <xs:element name = "capability" type = "tns:Capability"/>
         <xs:element name = "encryptionFlag" type = "xs:int"/>
