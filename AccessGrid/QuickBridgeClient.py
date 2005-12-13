@@ -2,7 +2,7 @@
 # Name:        QuickBridgeClient.py
 # Purpose:     Interface to a QuickBridge server.
 # Created:     2005/12/06
-# RCS-ID:      $Id: QuickBridgeClient.py,v 1.1 2005-12-07 01:47:34 eolson Exp $
+# RCS-ID:      $Id: QuickBridgeClient.py,v 1.2 2005-12-13 16:35:00 eolson Exp $
 # Copyright:   (c) 2005-2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ class QuickBridgeClient(BridgeClient):
         self.serverProxy = xmlrpclib.ServerProxy("http://" + host + ":" + str(port))
 
     def JoinBridge(self, multicastNetworkLocation):
-        self.serverProxy.JoinBridge(multicastNetworkLocation)
+        return self.serverProxy.JoinBridge(multicastNetworkLocation)
 
 if __name__=="__main__":
     # Example below.  You should start Bridge.py first.
