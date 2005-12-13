@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/13/12
-# RCS-ID:      $Id: NetworkLocation.py,v 1.17 2005-12-13 18:32:08 lefvert Exp $
+# RCS-ID:      $Id: NetworkLocation.py,v 1.18 2005-12-13 23:04:20 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetworkLocation.py,v 1.17 2005-12-13 18:32:08 lefvert Exp $"
+__revision__ = "$Id: NetworkLocation.py,v 1.18 2005-12-13 23:04:20 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -60,6 +60,12 @@ class NetworkLocation:
 
     def GetPort(self):
         return self.port
+
+    def GetType(self):
+        return self.type
+
+    def SetType(self, type):
+        self.type = type
 
     def __repr__(self):
         string = "%s %d" % (self.host, self.port)
