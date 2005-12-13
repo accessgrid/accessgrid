@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.132 2005-12-12 22:10:44 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.133 2005-12-13 20:37:17 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.132 2005-12-12 22:10:44 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.133 2005-12-13 20:37:17 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -366,7 +366,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                                          "Use multicast to connect media")
         self.preferences.AppendRadioItem(self.ID_USE_UNICAST, "Use Unicast",
                                          "Use unicast to connect media")
-        index =  int(self.venueClient.GetPreferences().GetPreference(Preferences.MULTICAST))
+     
+        transport = self.venueClient.GetTransport()
+        index = true
+        if transport == "unicast":
+            index = false
+
         self.preferences.Check(self.ID_USE_MULTICAST, index)
         self.preferences.Check(self.ID_USE_UNICAST, not index)
         self.bridgeSubmenu = wxMenu()
@@ -514,8 +519,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.venueClient.SetCurrentBridge(bridgeDescription)
 
         # Use current bridge
-        self.controller.UseUnicastCB(bridgeDescription)
-
+        try:
+            self.controller.UseUnicastCB(bridgeDescription)
+        except:
+            self.Notify("Connection to bridge %s failed. \nPlease use a different bridge."%(bridgeDescription.name),
+                        "Bridge Connection")
+                        
     def __SetEvents(self):
     
         # Venue Menu
@@ -1210,12 +1219,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
                 # Check for unicast preference.
                 currentTransport = self.venueClient.GetTransport()
-                multicastPref = int(p.GetPreference(Preferences.MULTICAST))
-
-                if multicastPref and currentTransport == "unicast":
+       
+                if currentTransport == "unicast":
                     self.UseMulticastCB()
-                elif (not multicastPref) and currentTransport == "multicast":
-                    self.UseUnicastCB()
+               
 
                 # Check for disabled bridge preferences
 
@@ -1574,11 +1581,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             upload_thread.start()
             
             # Check if unicast option is set in preferences.
-            m = int(self.venueClient.GetPreferences().GetPreference(Preferences.MULTICAST))
-            if m == 0:
-                self.UseUnicastCB()
-          
+            currentTransport = self.venueClient.GetTransport()
            
+            if currentTransport == "unicast":
+                self.UseUnicastCB()
+                             
             wxEndBusyCursor()
         except:
             wxEndBusyCursor()
