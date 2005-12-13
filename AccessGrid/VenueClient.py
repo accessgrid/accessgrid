@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.254 2005-12-13 18:31:24 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.255 2005-12-13 20:35:19 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.254 2005-12-13 18:31:24 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.255 2005-12-13 20:35:19 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -135,7 +135,6 @@ class VenueClient:
         #self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
         self.homeVenue = None
         self.houseKeeper = Scheduler()
-        self.provider = None
         self.heartBeatTimer = None
         self.heartBeatTimeout = 10
 
@@ -785,6 +784,8 @@ class VenueClient:
             if len(self.capabilities) > 0:
                 self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.profile.connectionId,
                                                                               self.capabilities)
+
+                    
             self.venueUri = URL
 
             
@@ -839,17 +840,18 @@ class VenueClient:
             # Update the node service with stream descriptions
             #
             
-            #try:
-            self.UpdateNodeService()
-            #except NetworkLocationNotFound, e:
-            #    if self.transport == 'unicast':
-            #        self.warningString += '\nThere is no unicast bridge available.'
-            #    else:
-            #        self.warningString += '\nError connecting media tools.'
-            #except Exception, e:
-            #    # This is a non fatal error, users should be notified
-            #    # but still enter the venue
-            #    log.exception("EnterVenue: Error updating node service")
+            try:
+                self.UpdateNodeService()
+            except NetworkLocationNotFound, e:
+                
+                if self.transport == 'unicast':
+                    self.warningString += '\nConnection to unicast bridge failed. Select other bridge.'
+                else:
+                    self.warningString += '\nError connecting media tools.'
+            except Exception, e:
+                # This is a non fatal error, users should be notified
+                # but still enter the venue
+                log.exception("EnterVenue: Error updating node service")
            
            
 
@@ -1152,29 +1154,47 @@ class VenueClient:
         Apply selections of transport and netloc provider to the given stream.
         """
         found = 0
-        
-        if self.transport == "unicast":
-            # Check streams if they have a unicast network location
-            for netloc in stream.networkLocations:
-                if netloc.type == "unicast":
-                    stream.location = netloc
-                    found = 1
+     
+        # Check streams if they have a network location
+        for netloc in stream.networkLocations:
+            #
+            # Comparison to any is WRONG!!! 
+            #
+            
+            # If transport is multicast, use the location
+            if (self.transport == "multicast" and
+            (netloc.type == self.transport or netloc.type == "any")):
+                stream.location = netloc
+                found = 1
+            # If transport is unicast, use location if provider matches
+            elif (self.transport == "unicast" and netloc.type == self.transport and
+                  netloc.profile.name == self.currentBridge.name):
+                stream.location = netloc
+                found = 1
              
         if not found and self.transport == "unicast":
-            # If no unicast network location found, connect to bridge to retreive one.
+            # If no unicast network location was found, connect to the bridge to retreive one.
             if self.currentBridge:
+
                 #if str(self.currentBridge.serverType) == QUICKBRIDGE_TYPE:
                 qbc = QuickBridgeClient(self.currentBridge.host, self.currentBridge.port)
                 #elif self.currentBridge.type == UMTP_TYPE:
                 #    qbc = UmtpBridgeClient(self.currentBridge.host, self.currentBridge.port)
                 #else:
                 #    log.warn("VenueClient.UpdateStream: current bridge type invalid %s"%(self.currentBridge.serverType))
-                stream.location = qbc.JoinBridge(stream.networkLocations[0])
-                stream.networkLocations.append(stream.location)
-                found = 1
+
+                try:
+                    stream.location = qbc.JoinBridge(stream.networkLocations[0])
+                    stream.networkLocations.append(stream.location)
+                   
+                except:
+                    log.exception("VenueClient.UpdateStream: Failed to connect to bridge %s"%(self.currentBridge.name))
+                    raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
+                                                  (self.transport, self.currentBridge.name, self.currentBridge.host))
+
             else:
                 raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
-                                              (self.transport, self.currentBridge.name, self.provider.host))
+                                              (self.transport, self.currentBridge.name, self.currentBridge.host))
 
     def SendEvent(self,eventType, data):
         self.eventClient.Send(eventType, data)
