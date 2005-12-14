@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.256 2005-12-13 23:03:48 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.257 2005-12-14 23:27:09 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.256 2005-12-13 23:03:48 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.257 2005-12-14 23:27:09 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -206,7 +206,7 @@ class VenueClient:
         if not self.currentBridge:
             # Get bridges from registry once
             self.registryClient = RegistryClient(url=self.registryUrl)
-            self.bridges = self.registryClient.LookupBridge(5) # Get 5 bridges
+            self.bridges = self.registryClient.LookupBridge(5, sort = True) 
 
             # Set current bridge, defaults to the first one in the
             # sorted list.
@@ -783,18 +783,9 @@ class VenueClient:
             # Retreive stream descriptions
             if len(self.capabilities) > 0:
                 self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.profile.connectionId,
-                                                                              self.capabilities)
-              
-                # THIS SHOULD BE MULTICAST NETWORK LOCATION WITH TTL FIELD!
-                for stream in self.streamDescList:
-                    print '\n*************************', stream.location.__class__,
-
-                    for net in stream.networkLocations:
-                        print "**************net loc", net.__class__
-                                                           
+                                                                              self.capabilities)                                                                         
             self.venueUri = URL
 
-            
             #
             # Create the event client
             #
