@@ -23,20 +23,26 @@
     </xs:complexType>
 
     <xs:complexType name="UnicastNetworkLocation">
-      <xs:complexContent>
-        <xs:extension base="tns:NetworkLocation">
-        </xs:extension>
-      </xs:complexContent>
+      <xs:sequence>
+        <xs:element name="id" type="xs:string"/>
+	<xs:element name="privateId" type="xs:string"/>
+        <xs:element name="host" type="xs:string"/>
+        <xs:element name="port" type="xs:int"/>
+	<xs:element name="type" type="xs:string"/>
+        <xs:element name="profile" nillable="true" type="tns:ProviderProfile"/>
+      </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="MulticastNetworkLocation">
-      <xs:complexContent>
-        <xs:extension base="tns:NetworkLocation">
-          <xs:sequence>
-            <xs:element name="ttl" type="xs:int"/>
-          </xs:sequence>
-        </xs:extension>
-      </xs:complexContent>
+      <xs:sequence>
+        <xs:element name="id" type="xs:string"/>
+	<xs:element name="privateId" type="xs:string"/>
+        <xs:element name="host" type="xs:string"/>
+        <xs:element name="port" type="xs:int"/>
+	<xs:element name="type" type="xs:string"/>
+        <xs:element name="profile" nillable="true" type="tns:ProviderProfile"/>
+        <xs:element name="ttl" type="xs:int"/>
+      </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="Dictionary">
