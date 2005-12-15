@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.258 2005-12-15 15:26:30 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.259 2005-12-15 16:03:39 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.258 2005-12-15 15:26:30 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.259 2005-12-15 16:03:39 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -25,7 +25,7 @@ from AccessGrid import DataStore
 from AccessGrid import hosting
 from AccessGrid.Toolkit import Application, Service
 from AccessGrid.Preferences import Preferences
-from AccessGrid.Descriptions import Capability
+from AccessGrid.Descriptions import Capability, STATUS_ENABLED
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Venue import ServiceAlreadyPresent
@@ -208,23 +208,30 @@ class VenueClient:
             self.registryClient = RegistryClient(url=self.registryUrl)
             self.bridges = self.registryClient.LookupBridge(5, sort = True) 
 
-            # Set current bridge, defaults to the first one in the
-            # sorted list.
-            if self.bridges:
-                self.currentBridge = self.bridges[0]
-            
         prefs = self.app.GetPreferences()
 
-        # Set bridges in preferences
-        tempDict = {}
-        for b in self.bridges:
-            tempDict[b.guid] = b
-        prefs.SetBridges(tempDict)
+        if self.bridges:
+            # Set bridges in preferences
+            tempDict = {}
+            for b in self.bridges:
+                tempDict[b.guid] = b
+            prefs.SetBridges(tempDict)
         
-        # Get bridges with updated enable/disable information
-        prefBridges = prefs.GetBridges()
-
+            # Get bridges with updated enable/disable information
+            prefBridges = prefs.GetBridges()
         
+            # Set enable/disable information
+            for b in self.bridges:
+                if prefBridges.has_key(b.guid):
+                    b.status = prefBridges[b.guid].status
+                              
+            # Set current bridge, defaults to the first enabled bridge
+            # in the sorted list.
+            for b in self.bridges:
+                if b.status == STATUS_ENABLED:
+                    self.currentBridge = b
+                    break
+                
     def __McastStatusCB(self,obj):
         for s in self.observers:
             s.UpdateMulticastStatus(obj.GetStatus())
