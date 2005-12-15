@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.257 2005-12-14 23:27:09 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.258 2005-12-15 15:26:30 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.257 2005-12-14 23:27:09 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.258 2005-12-15 15:26:30 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -210,7 +210,8 @@ class VenueClient:
 
             # Set current bridge, defaults to the first one in the
             # sorted list.
-            self.currentBridge = self.bridges[0]
+            if self.bridges:
+                self.currentBridge = self.bridges[0]
             
         prefs = self.app.GetPreferences()
 
