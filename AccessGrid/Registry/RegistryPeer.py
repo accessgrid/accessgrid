@@ -6,12 +6,14 @@ import random
 from optparse import OptionParser
 from DocXMLRPCServer import DocXMLRPCServer 
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler, SimpleXMLRPCDispatcher
+from AccessGrid.AGXMLRPCServer import AsyncAGXMLRPCServer
 
 class RegistryInterface:
 
     # Bridge Interface, accepts a BridgeDescription
+    # Returns the amount of time before the registration expires.
     def RegisterBridge(self, bridgeDescription):
-        pass
+        return 0     # Returns the number of seconds before it needs to update
 
     # Client Interface
     def LookupBridge(self, maxToReturn=None):
@@ -22,6 +24,8 @@ class RegistryInterface:
         pass
 
 class RegistryBase(RegistryInterface):
+    defaultSecondsBetweenBridgeCleanups = 30
+    defaultRegistrationLengthSecs = 120
     def __init__(self, port, peerListUrl=""):
         self.port = port
         self.host = ""
@@ -33,6 +37,10 @@ class RegistryBase(RegistryInterface):
             self._readPeerListLocalTest(self.peerListUrl[7:])
         else:
             self._readPeerList(url=self.peerListUrl)
+        self.secondsBetweenBridgeCleanups = self.defaultSecondsBetweenBridgeCleanups
+        self.nextBridgeCleanupTime = time.time() + self.secondsBetweenBridgeCleanups
+        self.registrationLengthSecs = self.defaultRegistrationLengthSecs
+        self.registeredBridges = {}
 
     def _readPeerList(self,url):
         opener = urllib.FancyURLopener({})
@@ -78,6 +86,30 @@ class RegistryBase(RegistryInterface):
 
         self.registryPeers = []
 
+    def _CleanupBridges(self):
+        bridgesToRemove = []
+        now = time.time()
+        for key in self.registeredBridges.keys():
+            expirationTime = self.registeredBridges[key][1]
+            if now > expirationTime:
+                print "removing bridge:", key
+                log.info("removing bridge: %s" % key)
+                bridgesToRemove.append(key)
+        for bridge in bridgesToRemove:
+            self.registeredBridges.pop(bridge)
+
+    def _UpdateCallback(self):
+        if time.time() > self.nextBridgeCleanupTime:
+            self._CleanupBridges()
+            self.nextBridgeCleanupTime = time.time() + self.secondsBetweenBridgeCleanups
+
+        # self._RefreshPeerList()
+
+    def _StoreBridgeDescription(self, bridgeDescriptionDict, expirationTime):
+        # The function to actually store bridge data that is registered.
+        # For now stored based on host and port.
+        self.registeredBridges[(bridgeDescriptionDict["host"], bridgeDescriptionDict["port"])] = (bridgeDescriptionDict, expirationTime)
+
     def RefreshPeerList(self, url=None):
         # Allows a running peer to refresh its peer list in case a peer has been manually added or removed.
         # Call to this function probably would be initiated manually.
@@ -93,7 +125,7 @@ class RegistryBase(RegistryInterface):
                 traceback.print_exc()
 
     def RandomBridgeLookup(self, maxToReturn=None):
-        keys = self.registeredServers.keys()
+        keys = self.registeredBridges.keys()
         if maxToReturn == None or maxToReturn==0:
             numToReturn = len(keys)
         else:
@@ -103,39 +135,31 @@ class RegistryBase(RegistryInterface):
             key = keys[random.randrange(len(keys))]
             print "Key:", key
             keys.remove(key)
-            serversToReturn.append(self.registeredServers[key])
+            serversToReturn.append(self.registeredBridges[key][0])
         return serversToReturn 
 
     LookupBridge = RandomBridgeLookup
 
-class AGXMLRPCServer(DocXMLRPCServer):
-    def __init__(self, addr, requestHandler=SimpleXMLRPCRequestHandler, logRequests=1):
-        self.allow_reuse_address = True
-        DocXMLRPCServer.__init__(self, addr, requestHandler=requestHandler, logRequests=logRequests)
-
 class RegistryPeerXMLRPC(RegistryBase):
     def __init__(self, port, peerListUrl):
         RegistryBase.__init__(self, port, peerListUrl)
-        self.requestServer = AGXMLRPCServer( ("", self.port) )
+        self.requestServer = AsyncAGXMLRPCServer( ("", self.port), intervalSecs=1, callback=self._UpdateCallback )
         self._RegisterFunctions()
-        self.registeredServers = {}
 
     def _RegisterFunctions(self):
         self.requestServer.register_function(self.LookupBridge, "LookupBridge")
         self.requestServer.register_function(self.RegisterBridge, "RegisterBridge")
 
     def RegisterBridge(self, bridgeDescription):
-        print "Registering bridge:", bridgeDescription
-        self.registeredServers[(bridgeDescription["host"], bridgeDescription["port"])] = bridgeDescription
-        print self.registeredServers
-        return True
+        print "Registering bridge:", bridgeDescription["host"], bridgeDescription["port"]
+        expirationTime = time.time() + self.registrationLengthSecs
+        self._StoreBridgeDescription(bridgeDescription, expirationTime)
+        print "bridges:", self.registeredBridges.keys()
+        return self.registrationLengthSecs
 
     def Run(self):
         self.ConnectToRegistries()
-        try:
-            self.requestServer.serve_forever()
-        except Exception, e:
-            print e
+        self.requestServer.run()
 
 RegistryPeer=RegistryPeerXMLRPC
 
