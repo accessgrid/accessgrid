@@ -3,15 +3,16 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.3 2005-12-12 20:21:49 eolson Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.4 2005-12-16 20:43:22 eolson Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
 
 import sys, os
+import time
 from optparse import OptionParser
 from AccessGrid.Registry.RegistryClient import RegistryClient
-from AccessGrid.Registry.RegistryPeer import AGXMLRPCServer
+from AccessGrid.AGXMLRPCServer import AsyncAGXMLRPCServer
 from AccessGrid.BridgeFactory import BridgeFactory
 from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE, StreamDescription
 from AccessGrid.NetworkLocation import UnicastNetworkLocation, ProviderProfile
@@ -19,6 +20,7 @@ from AccessGrid.GUID import GUID
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid import Log
 from AccessGrid import Toolkit
+import traceback
 log = None
 
 class QuickBridgeServer:
@@ -28,7 +30,7 @@ class QuickBridgeServer:
         self.bridgeFactory = BridgeFactory(qbexec=qbexec, portRange=portRange, logger=log)
         self.providerProfile = ProviderProfile(name, location)
         self.listenPort = listenPort
-        self.listeningServer = AGXMLRPCServer( ("", listenPort) )
+        self.listeningServer = AsyncAGXMLRPCServer( ("", listenPort), intervalSecs=1, callback=self.MaintenanceCallback )
         self._RegisterRemoteFunctions()
         self.registryClient = RegistryClient(url=registryUrl)
         hostname = SystemConfig.instance().GetHostname()
@@ -39,8 +41,9 @@ class QuickBridgeServer:
         else:
             self.portMin = self.portRange[0]
             self.portMax = self.portRange[1]
-        self.bridgeDescription = BridgeDescription(guid=GUID(), name=name, host=hostname, port=self.listenPort, serverType="QUICKBRIDGE_TYPE", description="")
-        self.registryClient.RegisterBridge(self.bridgeDescription)
+        self.bridgeDescription = BridgeDescription(guid=GUID(), name=name, host=hostname, port=self.listenPort, serverType=QUICKBRIDGE_TYPE, description="")
+        self._RegisterWithRegistry()
+        self.running = False
 
     def _RegisterRemoteFunctions(self):
         self.listeningServer.register_function(self.JoinBridge, "JoinBridge")
@@ -60,11 +63,26 @@ class QuickBridgeServer:
         networkLocation.privateId = GUID()
         return networkLocation
 
-    def Run(self):
+    def _RegisterWithRegistry(self):
+        self.validSecs = self.registryClient.RegisterBridge(self.bridgeDescription)
+        now = time.time()
+        if self.validSecs == True:  # only needed until registry code is updated
+            self.validSecs = 120  # expires every 2 minutes
+        self.registrationExpirationTime = now + self.validSecs
+        self.nextRegistrationTime = now + (self.validSecs * .9 - 10)
+
+    def _RegisterWithRegistryIfNeeded(self):
+        if time.time() > self.nextRegistrationTime:
+            self._RegisterWithRegistry()
+
+    def MaintenanceCallback(self):
         try:
-            self.listeningServer.serve_forever()
-        except Exception, e:
-            print e
+            self._RegisterWithRegistryIfNeeded()
+        except:
+            log.exception()
+
+    def Run(self):
+        self.listeningServer.run()
 
     def SetName(self,name):
         self.providerProfile.name = name
@@ -106,7 +124,7 @@ def main():
     app = Toolkit.Service.instance()
 
     try:
-        app.Initialize("QuickBridgeServer", args=ret_args)
+        app.Initialize("Bridge", args=ret_args)
     except:
         print "Failed to initialize toolkit, exiting."
         sys.exit(-1)
