@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.5 2005-12-17 00:06:27 eolson Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.6 2005-12-17 00:10:59 eolson Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -21,6 +21,7 @@ from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid import Log
 from AccessGrid import Toolkit
 import traceback
+import random
 log = None
 
 class QuickBridgeServer:
