@@ -172,7 +172,7 @@ class RegistryClient:
 
 
 if __name__=="__main__":
-    rc = RegistryClient(url="file://../../tests/localhost_registry_nodes.txt")
+    rc = RegistryClient(url="http://www.accessgrid.org/registry/peers.txt")
     from AccessGrid.GUID import GUID
     from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
 
@@ -180,5 +180,8 @@ if __name__=="__main__":
     info = BridgeDescription(guid=GUID(), name="defaultName", host="localhost", port="9999", serverType=QUICKBRIDGE_TYPE, description="")
     rc.RegisterBridge(info)
     
-     # Lookup a bridge using the RegistryClient
-    print "Found:", rc.LookupBridge()    # or rc.Lookup(10)
+    # Lookup a bridge using the RegistryClient
+    bridgeDescList = rc.LookupBridge()
+    for b in bridgeDescList:
+        print b.name, b.host, b.port, b.description
+        
