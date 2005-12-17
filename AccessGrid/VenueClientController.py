@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.50 2005-12-09 21:58:10 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.51 2005-12-17 04:40:35 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.50 2005-12-09 21:58:10 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.51 2005-12-17 04:40:35 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -392,33 +392,9 @@ class VenueClientController:
             self.__venueClient.ExitVenue()
 
         # Enter the venue
+        log.debug('VenueClientController calling Venue.EnterVenue')
         self.__venueClient.EnterVenue(venueUrl)
-
-    #
-    # Participant Actions
-    #
-       
-    def AddPersonalDataCB(self, fileList):
-        """
-        This method 
-
-        **Arguments:**
-        
-        """
-        #
-        # Verify that we have a valid upload URL. If we don't have one,
-        # then there isn't a data upload service available.
-        #
-
-        if not fileList or not isinstance(fileList,list):
-            raise ValueError
-
-        try:
-            self.UploadPersonalFiles(fileList)
-        except:
-            log.exception("Error adding personal data")
-            raise
-
+        log.debug('VenueClientController after Venue.EnterVenue')
     #
     # Data Actions
     #
@@ -1009,60 +985,6 @@ class VenueClientController:
             self.gui.Notify("The file could not be downloaded", "Download Error")
                        
                                 
-    def UploadPersonalFiles(self, fileList):
-        """
-        This method uploads the given personal files to the venue.
-
-        **Arguments:**
-        
-        *fileList* The list of files to upload
-        
-        """
-        log.debug("Upload personal files")
-
-        for filepath in fileList:
-
-            # Check if data is already added
-            pathParts = os.path.split(filepath)
-            index = len(pathParts)-1
-            name = pathParts[index]
-
-            dataDescriptions = self.__venueClient.GetPersonalData()
-            for data in dataDescriptions:
-                if data.name == name:
-                    title = "Duplicated File"
-                    info = "A file named %s is already added, do you want to overwrite?" % name
-                    # Overwrite?
-                    if self.gui.Prompt( info, title ):
-                        self.__venueClient.RemoveData(data)
-                    else:
-                        return
-                                         
-            try:
-                my_identity = Application.instance().GetDefaultSubject()
-              
-                if not my_identity:
-                    dn = "No Identity"
-                else:
-                    dn = my_identity.name
-                self.__venueClient.dataStore.UploadLocalFiles([filepath], dn,
-                                                              self.__venueClient.GetPreferences().GetProfile().publicId)
-
-                # Send an event alerting about new data (only if it is new)
-                dataDescription = self.__venueClient.dataStore.GetDescription(name)
-                self.__venueClient.SendEvent(Events.Event.ADD_DATA, dataDescription)
-                
-            except DataStore.DuplicateFile, e:
-                title = "Duplicated File"
-                info = "This file %s is already added. Rename your file and add it again." %e
-                self.gui.Notify(info, title)
-                                                     
-            except Exception, e:
-                log.exception("bin.VenueClient:UploadPersonalFiles failed")
-                title = "Add Personal Data Error"
-                text = "The file could not be added, error occured."
-                self.gui.Error(text, title)
-                
     def UploadFilesNoDialog(self, fileList):
         """
         This method uploads the given files to the venue.
