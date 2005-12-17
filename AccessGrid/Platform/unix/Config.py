@@ -3,14 +3,15 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.61 2005-05-12 21:20:11 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.62 2005-12-17 04:37:43 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.61 2005-05-12 21:20:11 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.62 2005-12-17 04:37:43 turam Exp $"
 
+import sys
 import os
 import mimetypes
 import mailcap
@@ -36,7 +37,7 @@ class AGTkConfig(Config.AGTkConfig):
     data that is created when the toolkit is installed.
 
     """
-    AGTkBasePath = "/etc/AccessGrid"
+    AGTkBasePath = "/etc/AccessGrid3"
 
     def instance(initIfNeeded=0):
         if AGTkConfig.theAGTkConfigInstance == None:
@@ -86,9 +87,11 @@ class AGTkConfig(Config.AGTkConfig):
         return binDir
 
     def GetDocDir(self):
-        self.docDir = os.path.join(self.GetInstallDir(), "share", "doc",
+        if sys.platform == 'darwin':
+            self.docDir = os.path.join(self.GetInstallDir(), "doc")
+        else:
+            self.docDir = os.path.join(self.GetInstallDir(), "share", "doc",
                                        "AccessGrid", "Documentation")
-
         # Check dir and make it if needed.
         if self.initIfNeeded:
             if self.docDir is not None and \
@@ -125,7 +128,7 @@ class UserConfig(Config.UserConfig):
         try:
             self.baseDir = os.environ[AGTK_USER]
         except:
-            self.baseDir = os.path.join(os.environ['HOME'], ".AccessGrid")
+            self.baseDir = os.path.join(os.environ['HOME'], ".AccessGrid3")
 
         try:
             # Create directory if it doesn't exist

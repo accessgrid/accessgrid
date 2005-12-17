@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.64 2005-07-28 22:05:54 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.65 2005-12-17 04:37:43 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.64 2005-07-28 22:05:54 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.65 2005-12-17 04:37:43 turam Exp $"
 
 import os
 import socket
@@ -138,7 +138,7 @@ class UserConfig(Config.UserConfig):
         except:
             try:
                 base = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
-                self.baseDir = os.path.join(base, "AccessGrid")
+                self.baseDir = os.path.join(base, "AccessGrid3")
 
                 if self.initIfNeeded:
                     # Create directory if it doesn't exist
