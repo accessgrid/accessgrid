@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.4 2005-12-16 20:43:22 eolson Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.5 2005-12-17 00:06:27 eolson Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -79,7 +79,9 @@ class QuickBridgeServer:
         try:
             self._RegisterWithRegistryIfNeeded()
         except:
-            log.exception()
+            secsToSleep = random.randrange(5,60)
+            log.error("Error reregistering, retry in " + str(secsToSleep) + " seconds.")
+            time.sleep(secsToSleep)
 
     def Run(self):
         self.listeningServer.run()
