@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.133 2005-12-13 20:37:17 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.134 2005-12-17 04:50:56 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.133 2005-12-13 20:37:17 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.134 2005-12-17 04:50:56 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -598,6 +598,17 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 self.beaconFrame.Raise()
             else:
                 beacon = self.venueClient.GetBeacon()
+                # If beacon is not running, can't show beacon view; inform user
+                if not beacon:
+                    messageDialog = wxMessageDialog(self, "Beacon statistics not available",
+                                                    "Alert",
+                                                    style = wxOK|wxICON_INFORMATION)
+                    messageDialog.ShowModal()
+                    messageDialog.Destroy()
+
+                    self.OnExit(None)
+                    return
+
                 self.beaconFrame = BeaconFrame(self, log, beacon)
         
     def __SetProperties(self):
