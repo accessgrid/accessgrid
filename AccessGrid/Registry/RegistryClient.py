@@ -62,12 +62,13 @@ class RegistryClient:
             try:
                 pingVal = self._ping(desc.host)
                 pingValsDict[desc] = pingVal
+                #print desc.name, desc.host, pingVal
                 
-            except:
+            except Exception,e:
                 #
                 # log exception
                 #
-                pass
+                print 'exception:', e
 
         # Sort bridges based on ping values
         values = pingValsDict.values()          
@@ -130,10 +131,11 @@ class RegistryClient:
                 raise "Ping: Host %s timed out"%(host)
         
             # Find average round trip time
-            i = ret.find('=')
-            ret = ret[i]
+            i = ret.find('time')
+            ret = ret[i:]
             ret = ret.split('=')[1]
-            ret = ret.split('/')[1]
+            ret = ret.split()[0]
+            val = float(ret)
         
         if IsWindows():
             cmd = 'ping -n 1 %s'%(host)
@@ -181,7 +183,7 @@ if __name__=="__main__":
     rc.RegisterBridge(info)
     
     # Lookup a bridge using the RegistryClient
-    bridgeDescList = rc.LookupBridge()
+    bridgeDescList = rc.LookupBridge(sort=1)
     for b in bridgeDescList:
         print b.name, b.host, b.port, b.description
         
