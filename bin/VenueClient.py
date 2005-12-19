@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.269 2005-10-07 22:44:52 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.270 2005-12-19 22:38:27 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.269 2005-10-07 22:44:52 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.270 2005-12-19 22:38:27 turam Exp $"
 
 # Standard Imports
 import os
@@ -33,8 +33,12 @@ from AccessGrid.UIUtilities import ErrorDialog
 from AccessGrid.UIUtilities import ProgressDialog
 from twisted.internet import reactor
 
+from M2Crypto import threading as m2threading
+
 def main():
     log = None
+
+    m2threading.init()
 
     # Create the wxpython app
     wxapp = wxPySimpleApp()
@@ -107,6 +111,8 @@ def main():
     # Spin
     wxapp.SetTopWindow(vcui)
     wxapp.MainLoop()
+    
+    m2threading.cleanup()
 
 # The main block
 if __name__ == "__main__":
