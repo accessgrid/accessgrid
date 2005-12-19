@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.97 2005-12-05 20:51:23 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.98 2005-12-19 20:19:26 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.97 2005-12-05 20:51:23 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.98 2005-12-19 20:19:26 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -41,6 +41,9 @@ from AccessGrid.Descriptions import CreateParameter
 from AccessGrid.Descriptions import CreateNodeConfigDescription
 from AccessGrid import ServiceDiscovery
 from AccessGrid.AGServiceManager import AGServiceManager
+
+from AccessGrid.interfaces.AGNodeService_interface import AGNodeService as AGNodeServiceI
+from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 
 log = Log.GetLogger(Log.NodeService)
 
