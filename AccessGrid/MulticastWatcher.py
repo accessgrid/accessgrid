@@ -2,14 +2,14 @@
 # Name:        MulticastWatcher.py
 # Purpose:     Class to watch a multicast address for traffic and report status
 # Created:     2005/06/06
-# RCS-ID:      $Id: MulticastWatcher.py,v 1.5 2005-12-18 23:13:00 turam Exp $
+# RCS-ID:      $Id: MulticastWatcher.py,v 1.6 2005-12-19 17:52:27 turam Exp $
 # Copyright:   (c) 2005
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: MulticastWatcher.py,v 1.5 2005-12-18 23:13:00 turam Exp $"
+__revision__ = "$Id: MulticastWatcher.py,v 1.6 2005-12-19 17:52:27 turam Exp $"
 
 import socket, threading, string, struct
 import time
@@ -22,7 +22,9 @@ def openmcastsock(group, port):
     
     # Allow multiple copies of this program on one machine
     # (not strictly needed)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    if hasattr(socket,'SO_REUSEPORT'):
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
     
     # Bind it to the port
     # IRJ -- This needs to be fixed
