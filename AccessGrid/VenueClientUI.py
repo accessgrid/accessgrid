@@ -5,14 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.135 2005-12-19 20:25:18 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.136 2005-12-19 22:30:37 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-
-__revision__ = "$Id: VenueClientUI.py,v 1.135 2005-12-19 20:25:18 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.136 2005-12-19 22:30:37 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -490,7 +489,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         for i in items:
             self.bridgeSubmenu.DeleteItem(i)
                 
-        for b in self.bridges:
+        for b in self.bridges.values():
             id = wxNewId()
             self.bridgeSubmenu.AppendCheckItem(id, b.name)
             self.bridgeKeyMap[b.guid] = id
@@ -506,7 +505,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             EVT_MENU(self, id, lambda evt,
                      menuid=id, bridgeDesc=b: self.CheckBridgeCB(evt, menuid, bridgeDesc))
 
-            
+        if len(self.bridges.values())<1:
+            self.Warn("No unicast bridge is currently available.", "Use Unicast")
+           
                 
     def CheckBridgeCB(self, event, menuid, bridgeDescription):
         # Uncheck all items except the checked one
@@ -1236,8 +1237,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                
 
                 # Check for disabled bridge preferences
-
                 bDict = p.GetBridges()
+                bridges = self.venueClient.GetBridges()
+                
                 for id in bDict.keys():
                     if self.bridgeKeyMap.has_key(id):
                         index = self.bridgeKeyMap[id]
@@ -1250,10 +1252,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                         self.bridgeSubmenu.Enable(index, status)
                         
                         # Change status for venue client bridges
-                        for b in self.venueClient.GetBridges():
-                            if b.guid == id:
-                                b.status = bDict[id].status
+                        if bridges.has_key(id):
+                            bridges[id].status = bDict[id].status
                        
+                self.venueClient.SetBridges(bridges)
             except:
                 log.exception("Error editing preferences")
                 self.Error("Preferences could not be saved", "Edit Preferences Error")

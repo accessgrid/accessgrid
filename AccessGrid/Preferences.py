@@ -33,6 +33,7 @@ class Preferences:
     EXITS = "exits"
     MY_VENUES = "my venues"
     ALL_VENUES = "all venues"
+    BRIDGE_REGISTRY = "bridgeRegistry"
                 
     def __init__(self):
         '''
@@ -59,7 +60,8 @@ class Preferences:
                          self.ENABLE_DISPLAY: 1,
                          self.ENABLE_VIDEO: 1,
                          self.ENABLE_AUDIO: 1,
-                         self.DISPLAY_MODE: self.EXITS
+                         self.DISPLAY_MODE: self.EXITS,
+                         self.BRIDGE_REGISTRY: "http://www.accessgrid.org/registry/peers.txt"
                          }
 
         # Set default log levels to Log.DEBUG.
@@ -82,8 +84,7 @@ class Preferences:
         # service.
         self.nodeConfigs = []
         self.config = UserConfig.instance(initIfNeeded=0)
-        self.bridges = {} # Stores current bridges to display in UI
-        self.bridgesPrefs = {} # Stores status of a bridge
+        self.__bridges = {} # Stores current bridges to display in UI
         self.LoadPreferences()
      
     def GetPreference(self, preference):
@@ -132,9 +133,9 @@ class Preferences:
         for key in self.preferences.keys():
             tempDict["Preferences."+key] = self.preferences[key]
 
-        for key in self.bridges.keys():
-            tempDict["Bridges."+key] = self.bridges[key].status
-         
+        for key in self.__bridges.keys():
+            tempDict["Bridges."+key] = self.__bridges[key].status
+                   
         # Save preference
         try:
             log.debug("Preferences.StorePreferences: open file")
@@ -167,7 +168,12 @@ class Preferences:
                 if category == "Preferences":
                     self.preferences[pref] = preferences[p]
                 elif category == "Bridges":
-                    self.bridgesPrefs[pref] = preferences[p]
+                    # create an empty description with status information
+                    tempDesc = BridgeDescription(pref, "tmp",
+                                                 "tmp", "tmp", "tmp",
+                                                 "tmp")
+                    tempDesc.status = preferences[p] 
+                    self.__bridges[pref] = tempDesc
         except:
             log.exception("Preferences.LoadPreferences: open file error")
             self.preferences = {}
@@ -203,15 +209,10 @@ class Preferences:
         return None
 
     def SetBridges(self, bridges):
-        self.bridges = bridges
-       
-        # Set correct status for bridges
-        for id in self.bridges.keys():
-            if self.bridgesPrefs.has_key(id):
-                self.bridges[id].status = self.bridgesPrefs[id]
-                
+        self.__bridges = bridges
+                       
     def GetBridges(self):
-        return self.bridges
+        return self.__bridges
                                     
     def GetNodeConfigs(self):
         '''

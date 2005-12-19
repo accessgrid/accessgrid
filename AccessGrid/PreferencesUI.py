@@ -124,6 +124,7 @@ class PreferencesDialog(wxDialog):
                                        self.networkPanel.GetMulticast())
         self.preferences.SetPreference(Preferences.BEACON,
                                        self.networkPanel.GetBeacon())
+        self.preferences.SetBridges(self.networkPanel.GetBridges())
         self.preferences.SetPreference(Preferences.DISPLAY_MODE,
                                        self.navigationPanel.GetDisplayMode())
         cDict = self.loggingPanel.GetLogCategories()
@@ -744,7 +745,7 @@ class NetworkPanel(wxPanel):
 
         if selectedItem.status == STATUS_ENABLED:
             self.menu.Check(self.enableId, 1)
-        else:
+        else: 
             self.menu.Check(self.enableId, 0)
 
         self.list.PopupMenu(self.menu, wxPoint(self.x, self.y))
@@ -762,11 +763,15 @@ class NetworkPanel(wxPanel):
         selectedItem = self.__GetBridge(selectedItemId)
         if enableFlag:
             selectedItem.status= STATUS_ENABLED
-            self.list.SetStringItem(self.selected, 4, selectedItem.status)
         else:
             selectedItem.status = STATUS_DISABLED
-            self.list.SetStringItem(self.selected, 4, selectedItem.status)
-                            
+
+        self.list.SetStringItem(self.selected, 4, selectedItem.status)
+        self.bridges[selectedItemId].status = selectedItem.status
+
+    def GetBridges(self):
+        return self.bridges
+                                    
     def GetMulticast(self):
         if self.multicastButton.IsChecked():
             return 0

@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.259 2005-12-15 16:03:39 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.260 2005-12-19 22:30:37 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.259 2005-12-15 16:03:39 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.260 2005-12-19 22:30:37 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -58,7 +58,6 @@ from AccessGrid.MulticastWatcher import MulticastWatcher
 from AccessGrid.Registry.RegistryClient import RegistryClient
 from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE, UMTP_TYPE
 from AccessGrid.QuickBridgeClient import QuickBridgeClient
-#from AccessGrid.UmtpBridgeClient import UmtpBridgeClient
 
 from AccessGrid.GUID import GUID
 from AccessGrid.Jabber.JabberClient import JabberClient
@@ -132,7 +131,6 @@ class VenueClient:
         self.capabilities = []
         self.nodeServiceUri = self.defaultNodeServiceUri
         self.SetNodeUrl(self.nodeServiceUri)
-        #self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
         self.homeVenue = None
         self.houseKeeper = Scheduler()
         self.heartBeatTimer = None
@@ -144,25 +142,21 @@ class VenueClient:
             else:       progressCB("Starting web service.")
 
         self.__StartWebService(pnode, port)
-
-        #try:
-        #    self.nodeService.GetCapabilities()
-        #except:
-        #    log.info("__init__: Get node capabilities failed")
-
         self.__InitVenueData()
+
         self.isInVenue = 0
         self.isIdentitySet = 0
 
         self.streamDescList = []
-        
-        self.bridges = []
+
+        self.bridges = {}
         self.currentBridge = None
-        self.registryUrl = "http://www.accessgrid.org/registry/peers.txt"
+        self.registryUrl = self.preferences.GetPreference(Preferences.BRIDGE_REGISTRY)
 
         if int(self.preferences.GetPreference(Preferences.MULTICAST)):   
             self.transport = "multicast"
         else:
+            progressCB("Connecting to bridges")
             self.transport = "unicast"
             self.__LoadBridges()
                     
@@ -195,7 +189,6 @@ class VenueClient:
         # Create beacon capability
         self.beaconCapabilities = [Capability(Capability.PRODUCER, "Beacon"),
                                    Capability(Capability.CONSUMER, "Beacon")]
-
       
     def __LoadBridges(self):
         '''
@@ -205,30 +198,34 @@ class VenueClient:
         '''
         if not self.currentBridge:
             # Get bridges from registry once
-            self.registryClient = RegistryClient(url=self.registryUrl)
-            self.bridges = self.registryClient.LookupBridge(5, sort = True) 
-
+           
+            try:
+                self.registryClient = RegistryClient(url=self.registryUrl)
+                bridgeList = self.registryClient.LookupBridge(10)
+                                
+                for b in bridgeList:
+                    self.bridges[b.guid] = b
+            except:
+                log.exception("__LoadBridges: Can not connect to bridge registry %s ", self.registryUrl)
+    
+        
         prefs = self.app.GetPreferences()
 
         if self.bridges:
-            # Set bridges in preferences
-            tempDict = {}
-            for b in self.bridges:
-                tempDict[b.guid] = b
-            prefs.SetBridges(tempDict)
-        
-            # Get bridges with updated enable/disable information
-            prefBridges = prefs.GetBridges()
-        
-            # Set enable/disable information
-            for b in self.bridges:
-                if prefBridges.has_key(b.guid):
-                    b.status = prefBridges[b.guid].status
-                              
+            # Updated bridge enable/disable information from preferences
+            preferencesBridges = prefs.GetBridges()
+
+            for b in preferencesBridges.values():
+                if self.bridges.has_key(b.guid):
+                     self.bridges[b.guid].status = b.status 
+                     
+            prefs.SetBridges(self.bridges)
+                                       
             # Set current bridge, defaults to the first enabled bridge
-            # in the sorted list.
-            for b in self.bridges:
-                if b.status == STATUS_ENABLED:
+            # that can be pinged.
+            for b in self.bridges.values():
+                if (b.status == STATUS_ENABLED and
+                    self.registryClient.PingHost(b.host) > -1):
                     self.currentBridge = b
                     break
                 
@@ -359,7 +356,6 @@ class VenueClient:
         if pnode:
             try:
                 prefs = self.app.GetPreferences()
-                #defaultConfig = prefs.GetPreference(Preferences.NODE_CONFIG)
                 defaultConfig = prefs.GetDefaultNodeConfig()
                 self.nodeService.LoadConfiguration(defaultConfig)
 
@@ -1107,7 +1103,7 @@ class VenueClient:
         try:
             log.info("ExitVenue: Stopping node services")
             self.nodeService.StopServices()
-            #self.nodeService.SetStreams([])
+   
         except Exception:
             log.info("ExitVenue: Error stopping node services")
             
@@ -1476,6 +1472,9 @@ class VenueClient:
         ''' Get a list of available unicast bridges'''
         return self.bridges
 
+    def SetBridges(self, bridges):
+        self.bridges = bridges
+
     def GetCurrentBridge(self):
         ''' Get selected unicast bridge'''
         return self.currentBridge
@@ -1491,17 +1490,6 @@ class VenueClient:
     def GetTransport(self):
         ''' Get transport used, either multicast or unicast '''
         return self.transport
-
-#    def GetTransportList(self):
-        #
-        # Is this needed now when bridges are removed from the venue?
-        #
-#        transportDict = dict()
-#        for stream in self.streamDescList:
-#            if stream.__dict__.has_key('networkLocations'):
-#                for netloc in stream.networkLocations:
-#                    transportDict[netloc.type] = 1
-#        return transportDict.keys()
 
     #
     # Other
