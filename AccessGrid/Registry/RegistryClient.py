@@ -11,13 +11,29 @@ from AccessGrid.Descriptions import BridgeDescription
 class RegistryClient:
     def __init__(self, url):
         self.url = url
+        self.serverProxy = None
         self.registryPeers = self._readPeerList(url=self.url)
-        self.sortedRegistryPeers = self._getSortedRegistryPeers()
-        self.serverProxy = xmlrpclib.ServerProxy("http://" + self.sortedRegistryPeers[0])
+        #self.sortedRegistryPeers = self._getSortedRegistryPeers()
+
+        # Connect to the first reachable register according to ping
+        for r in self.registryPeers:
+            host = r.split(':')[0]
+            if self.PingHost(host) > -1:
+                self.serverProxy = xmlrpclib.ServerProxy("http://" + r[0])
+        else:
+            # Throw exception!
+            print '============= no registry peers reachable'
    
     def RegisterBridge(self, registeredServerInfo):
         return self.serverProxy.RegisterBridge(registeredServerInfo)
-       
+
+    def PingHost(self, host):
+        try:
+            pingVal = self._ping(host)
+            return pingVal
+        except:
+            return -1
+                 
     def LookupBridge(self, maxToReturn=10, sort = False):
         '''
         Query registry for a list of bridges
@@ -29,41 +45,44 @@ class RegistryClient:
         @return: command output
         @rtype: string
         '''
-        # TODO, retry with other nodes on failure?
 
-        bridges = self.serverProxy.LookupBridge(maxToReturn)
-        bridgeDescriptions = []
-
+        bridges = []
+        self.bridges = []
+         
+        if self.serverProxy:
+            bridges = self.serverProxy.LookupBridge()
+       
         # Create real bridge descriptions
         for b in bridges:
             desc = BridgeDescription(b["guid"], b["name"], b["host"],
                                      b["port"], b["serverType"],
                                      b["description"])
-            bridgeDescriptions.append(desc)
-            
+            self.bridges.append(desc)
+                
         if sort:
-            bridgeDescriptions = self._getSortedBridges(bridgeDescriptions)
-        
-        return bridgeDescriptions
+            return self._getSortedBridges(maxToReturn)
+        else:
+            return self.bridges
 
-    def _getSortedBridges(self, bridges):
+    def _getSortedBridges(self, maxToReturn):
         '''
-        Sort a list of bridges based on ping values.
+        Sort a list of bridges based on ping values. Bridges
+        that can not be reached will be ignored.
 
-        @param bridges: list of bridges
-        @type bridges: [AccessGrid.Descriptions.BridgeDescription]
+        @param maxToReturn number of bridges to return
+        @type maxToReturn int
         @return: list of sorted bridges
         @rtype: [AccessGrid.Descriptions.BridgeDescription]
         '''
         bridgeDescriptions = []
         pingValsDict = {}
                       
-        for desc in bridges:
+        for desc in self.bridges[0:maxToReturn]:
             try:
                 pingVal = self._ping(desc.host)
                 pingValsDict[desc] = pingVal
                 #print desc.name, desc.host, pingVal
-                
+              
             except Exception,e:
                 #
                 # log exception
@@ -86,7 +105,36 @@ class RegistryClient:
     def _getSortedRegistryPeers(self, maxToReturn=5):
         # TODO, ping (and cache) and sort registries.
         selection = self.registryPeers[:maxToReturn]
-        return selection
+        print len(selection)
+        sortedSelection = []
+        pingValsDict = {}
+        
+        for registry in selection:
+            #try:
+            print registry
+            pingVal = self._ping(registry.split(':')[0])
+            pingValsDict[registry] = pingVal
+                
+            #except:
+            #    # TODO, retry with other nodes on failure?
+            #    print '=========== can not reach registry'
+            #    #
+            #    # log exception
+            #    #
+            #    pass
+
+        # Sort registries based on ping values
+        values = pingValsDict.values()          
+        values.sort()
+               
+        for val in values:
+            for key in pingValsDict.keys():
+                if val == pingValsDict[key]:
+                    sortedSelection.append(key)
+                    del pingValsDict[key]
+
+        print len(sortedSelection)
+        return sortedSelection
 
     def _readPeerList(self,url):
         if url.startswith("file://"):
