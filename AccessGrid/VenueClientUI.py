@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.134 2005-12-17 04:50:56 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.135 2005-12-19 20:25:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.134 2005-12-17 04:50:56 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.135 2005-12-19 20:25:18 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -675,7 +675,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # create toolbar
         self.toolbar = self.CreateToolBar()
         self.networkToolId = 1
-        multicastBitmap = icons.getMulticastBitmap()
+        multicastBitmap = icons.getNoMulticastBitmap()
         self.toolbar.AddTool(self.networkToolId,multicastBitmap ,shortHelpString='Multicast Status',longHelpString='Display multicast status')
         self.toolbar.AddSeparator()
         self.audioToolId = 2
@@ -3101,27 +3101,6 @@ class ContentListPanel(wxPanel):
         self.tree.SortChildren(self.participants)
         self.tree.Expand(self.participants)
 
-
-        """
-        # personal data support disabled
-        for data in dataList:
-            participantData = self.tree.AppendItem(participant, data.name,
-                                                   self.defaultDataId, self.defaultDataId)
-            self.personalDataDict[data.id] = participantData 
-            self.tree.SetItemData(participantData, wxTreeItemData(data))
-
-        if(self.tree.GetChildrenCount(participant) == 0):
-            index = -1
-
-            # To solve wx bug
-            if sys.platform == "win32":
-                index = -2
-                
-            # Add this text to force a + in front of empty participant
-            tempId = self.tree.AppendItem(participant, "No personal data available", index, index)
-            self.temporaryDataDict[profile.publicId] = tempId
-        """
-
         self.tree.SortChildren(participant)
             
     def RemoveParticipant(self, profile):
@@ -3163,62 +3142,15 @@ class ContentListPanel(wxPanel):
         self.AddParticipant(profile, personalData)
 
     def AddData(self, dataDescription):
-        log.debug("ContentListPanel.AddData: profile.type = %s" %dataDescription.type)
-
         #if venue data
         if(dataDescription.type == 'None' or dataDescription.type == None):
-            log.debug("ContentListPanel.AddData: This is venue data")
             dataId = self.tree.AppendItem(self.data, dataDescription.name,
                                       self.defaultDataId, self.defaultDataId)
             self.tree.SetItemData(dataId, wxTreeItemData(dataDescription)) 
             self.dataDict[dataDescription.id] = dataId
             self.tree.SortChildren(self.data)
             self.tree.Refresh()
-            #self.tree.Expand(self.data)
             
-        #if personal data
-        else:
-            log.debug("ContentListPanel.AddData: This is personal data")
-            id = dataDescription.type
-
-            participantId = None
-
-            # As of 2.3, the participant dict is indexed by connection id rather than
-            # public id.  Personal data is, however, stamped with the public id
-            # in all releases.  Search for the owner of the data by public id.
-            clientList = self.parent.venueClient.GetVenueState().GetUsers()
-
-            for client in clientList:
-                if client.publicId == dataDescription.type:
-                    participantId = self.participantDict[client.connectionId]
-                        
-            if participantId:
-                
-                #
-                # Test if personal data is already added
-                #
-                                    
-                if not self.personalDataDict.has_key(dataDescription.id):
-                    # Remove the temporary text "No personal data available"
-                    if self.temporaryDataDict.has_key(id):
-                        tempText = self.temporaryDataDict[id]
-                        if tempText:
-                            self.tree.Delete(tempText)
-                            del self.temporaryDataDict[id]
-                                                                    
-                    dataId = self.tree.AppendItem(participantId, dataDescription.name, \
-                                                  self.defaultDataId, self.defaultDataId)
-                    self.tree.SetItemData(dataId, wxTreeItemData(dataDescription))
-                    self.personalDataDict[dataDescription.id] = dataId
-                    self.tree.SortChildren(participantId)
-                    self.tree.SelectItem(participantId)
-
-                else:
-                    log.info("ContentListPanel.AddData: Personal data dict already has this data.")
-                                        
-            else:
-                log.info("ContentListPanel.AddData: Owner of data does not exist")
-
        
     def UpdateData(self, dataDescription):
         id = None
@@ -3227,11 +3159,6 @@ class ContentListPanel(wxPanel):
         if(self.dataDict.has_key(dataDescription.id)):
             log.debug("ContentListPanel.UpdateData: DataDict has data")
             id = self.dataDict[dataDescription.id]
-            
-        #if personal data
-        elif (self.personalDataDict.has_key(dataDescription.id)):
-            log.debug("ContentListPanel.UpdateData: Personal DataDict has data")
-            id = self.personalDataDict[dataDescription.id]
             
         if(id != None):
             self.tree.SetItemData(id, wxTreeItemData(dataDescription))
@@ -3250,16 +3177,6 @@ class ContentListPanel(wxPanel):
             id = self.dataDict[dataDescription.id]
             del self.dataDict[dataDescription.id]
             
-        elif (self.personalDataDict.has_key(dataDescription.id)):
-            # personal data
-            id = self.personalDataDict[dataDescription.id]
-            ownerId = self.tree.GetItemParent(id)
-            ownerProfile = self.tree.GetItemData(ownerId).GetData()
-            self.parent.statusbar.SetStatusText("%s just removed personal file '%s'"%(ownerProfile.name, 
-                                                dataDescription.name))
-            log.debug("ContentListPanel.RemoveData: Remove personal data")
-            id = self.personalDataDict[dataDescription.id]
-            del self.personalDataDict[dataDescription.id]
 
         else:
             log.info("ContentListPanel.RemoveData: No key matches, can not remove data")
@@ -3267,19 +3184,6 @@ class ContentListPanel(wxPanel):
         if(id != None):
             self.tree.Delete(id)
 
-        """
-        # personal data disabled
-        if(ownerId and self.tree.GetChildrenCount(ownerId) == 0):
-            index = -1
-            
-            # To solve wx bug
-            if sys.platform == "win32":
-                index = -2
-                
-            # Add this text to force a + in front of empty participant
-            tempId = self.tree.AppendItem(ownerId, "No personal data available", index, index)
-            self.temporaryDataDict[ownerProfile.publicId] = tempId
-        """         
     def AddService(self, serviceDescription):
         service = self.tree.AppendItem(self.services, serviceDescription.name,
                                       self.serviceId, self.serviceId)
@@ -3287,7 +3191,6 @@ class ContentListPanel(wxPanel):
         self.serviceDict[serviceDescription.id] = service
         self.tree.SortChildren(self.services)
         self.tree.Refresh()
-        #self.tree.Expand(self.services)
         
     def UpdateService(self, serviceDescription):
         if(self.serviceDict.has_key(serviceDescription.id)):
