@@ -16,11 +16,19 @@ class RegistryClient:
         #self.sortedRegistryPeers = self._getSortedRegistryPeers()
 
         # Connect to the first reachable register according to ping
+        foundServer = 0
+
         for r in self.registryPeers:
             host = r.split(':')[0]
             if self.PingHost(host) > -1:
-                self.serverProxy = xmlrpclib.ServerProxy("http://" + r[0])
-        else:
+                try:
+                    self.serverProxy = xmlrpclib.ServerProxy("http://" + r[0])
+                    foundServer = 1
+                    break
+                except Exception,e:
+                    print 'exception:', e
+            
+        if not foundServer:
             # Throw exception!
             print '============= no registry peers reachable'
    
@@ -49,8 +57,7 @@ class RegistryClient:
         bridges = []
         self.bridges = []
          
-        if self.serverProxy:
-            bridges = self.serverProxy.LookupBridge()
+        bridges = self.serverProxy.LookupBridge()
        
         # Create real bridge descriptions
         for b in bridges:
