@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.34 2005-11-10 22:31:55 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.35 2005-12-19 20:22:12 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.34 2005-11-10 22:31:55 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.35 2005-12-19 20:22:12 turam Exp $"
 
 import os
 import sys
@@ -80,7 +80,6 @@ class AGTkConfig:
         self.GetInstallDir()
         self.GetConfigDir()
         self.GetDocDir()
-        self.GetLogDir()
         self.GetSharedAppDir()
         self.GetNodeServicesDir()
         self.GetNodeConfigDir()
@@ -110,27 +109,6 @@ class AGTkConfig:
 
     def GetDocDir(self):
         raise Exception, "This should not be called directly, but through a subclass."
-
-    def GetLogDir(self):
-        if self.logDir == None:
-            ucd = self.GetBaseDir()
-            self.logDir = os.path.join(ucd, "Logs")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if self.logDir is not None and \
-                   not os.path.exists(self.logDir):
-                try:
-                    os.mkdir(self.logDir)
-                except:
-                    log.exception("Couldn't make log dir.")
-
-        # Check the installation
-        if self.logDir is not None and \
-               not os.path.exists(self.logDir):
-            raise IOError("AGTkConfig: log dir does not exist %s."%self.logDir)
- 
-        return str(self.logDir)
 
     def GetConfigDir(self):
         self.configDir = os.path.join(self.GetBaseDir(), "Config")
@@ -291,10 +269,6 @@ class UserConfig:
         except:
             print "No Shared App Dir!"
         try:
-            self.GetNodeServicesDir()
-        except:
-            print "No Node Service Dir!"
-        try:
             self.GetNodeConfigDir()
         except:
             print "No Node Config Dir!"
@@ -315,7 +289,6 @@ class UserConfig:
         tmpstr += "Temp Dir: %s\n" % self.GetTempDir()
         tmpstr += "Log Dir: %s\n" % self.GetLogDir()
         tmpstr += "Shared App Dir: %s\n" % self.GetSharedAppDir()
-        tmpstr += "Node Services Dir: %s\n" % self.GetNodeServicesDir()
         tmpstr += "Services Dir: %s\n" % self.GetServicesDir()
         return tmpstr
 
@@ -449,26 +422,6 @@ class UserConfig:
             raise Exception, "AGTkConfig: app dir does not exist %s."%self.appDir
 
         return str(self.appDir)
-
-    def GetNodeServicesDir(self):
-        if self.nodeServicesDir == None:
-            ucd = self.GetBaseDir()
-            self.nodeServicesDir = os.path.join(ucd, "NodeServices")
-
-        # Check dir and create it if needed.
-        if self.initIfNeeded:
-            if self.nodeServicesDir is not None and \
-                   not os.path.exists(self.nodeServicesDir):
-                os.mkdir(self.nodeServicesDir)
-
-        # Check the installation
-        if self.nodeServicesDir is not None and \
-               not os.path.exists(self.nodeServicesDir):
-            raise Exception, "AGTkConfig: node service dir does not exist %s."%self.nodeServicesDir
-
-        # check to make it if needed
-        return str(self.nodeServicesDir)
-
 
     def GetLocalServicesDir(self):
         if self.localServicesDir == None:
