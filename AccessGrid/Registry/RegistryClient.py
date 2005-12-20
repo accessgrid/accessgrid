@@ -22,7 +22,7 @@ class RegistryClient:
             host = r.split(':')[0]
             if self.PingHost(host) > -1:
                 try:
-                    self.serverProxy = xmlrpclib.ServerProxy("http://" + r[0])
+                    self.serverProxy = xmlrpclib.ServerProxy("http://" + r)
                     foundServer = 1
                     break
                 except Exception,e:
