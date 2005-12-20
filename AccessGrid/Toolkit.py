@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.102 2005-12-09 22:24:19 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.103 2005-12-20 18:17:28 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.102 2005-12-09 22:24:19 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.103 2005-12-20 18:17:28 eolson Exp $"
 
 # Standard imports
 import os
@@ -85,14 +85,13 @@ class AppBase:
                          help="Specify a configuration file for the program.")
 
        self.options = None
-       self.certMgrUI = None
        self.userConfig = None
        self.agtkConfig = None
        self.systemConfig = SystemConfig.instance()
        self.log = None
        
-       self.__certificateManager = None
-       self.__certMgrUI = None
+       self._certificateManager = None
+       self._certMgrUI = None
        
        # This initializes logging
        self.log = Log.GetLogger(Log.Toolkit)
@@ -388,31 +387,31 @@ class AppBase:
         return subject
 
     def GetCertificateManager(self):
-        if self.__certificateManager == None:
+        if self._certificateManager == None:
             from AccessGrid.Security import CertificateManager
             configDir = self.userConfig.GetConfigDir()
-            self.__certificateManager = CertificateManager.CertificateManager(configDir)
+            self._certificateManager = CertificateManager.CertificateManager(configDir)
             self.log.info("Initialized certificate manager.")
-            self.__certificateManager.InitEnvironment()
-        return self.__certificateManager
+            self._certificateManager.InitEnvironment()
+        return self._certificateManager
 
     def GetCertificateManagerUI(self):
-        if self.__certMgrUI == None:
+        if self._certMgrUI == None:
             # 5. Initialize Certificate Management
             # This has to be done by sub-classes
             from AccessGrid.Security import CertificateManager
-            self.__certMgrUI = CertificateManager.CertificateManagerUserInterface(self.GetCertificateManager())
+            self._certMgrUI = CertificateManager.CertificateManagerUserInterface(self.GetCertificateManager())
             # 6. Do one final check, if we don't have a default
             #    Identity we warn them, but they can still request certs.
             #
-            self.__certMgrUI.InitGlobusEnvironment()
+            self._certMgrUI.InitGlobusEnvironment()
 
             if self.GetDefaultSubject() is None:
                 self.log.error("Toolkit initialized with no default identity.")
 
             self.log.info("Initialized certificate manager UI.")
 
-        return self.__certMgrUI
+        return self._certMgrUI
 
     def GetHostname(self):
         return self.systemConfig.GetHostname()
@@ -549,19 +548,19 @@ class WXGUIApplication(Application):
                 [ ("GoToVenue.py", vcCmd, "Open") ] )
 
     def GetCertificateManagerUI(self):
-        if self.__certMgrUI == None:
+        if self._certMgrUI == None:
             # 5. Initialize Certificate Management
             from AccessGrid.Security.wxgui import CertificateManagerWXGUI
-            self.__certMgrUI = CertificateManagerWXGUI.CertificateManagerWXGUI()
+            self._certMgrUI = CertificateManagerWXGUI.CertificateManagerWXGUI()
 
             # 6. Do one final check, if we don't have a default
             #    identity we warn them, but they can still request certs.
-            self.__certMgrUI.InitGlobusEnvironment()
+            self._certMgrUI.InitGlobusEnvironment()
 
             if self.GetDefaultSubject() is None:
                 self.log.error("Toolkit initialized with no default identity.")
 
-        return self.__certMgrUI
+        return self._certMgrUI
 
 class Service(AppBase):
     """
