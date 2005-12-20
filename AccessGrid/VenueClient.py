@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.260 2005-12-19 22:30:37 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.261 2005-12-20 23:12:27 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.260 2005-12-19 22:30:37 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.261 2005-12-20 23:12:27 eolson Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -1175,12 +1175,11 @@ class VenueClient:
                    
                 except:
                     log.exception("VenueClient.UpdateStream: Failed to connect to bridge %s"%(self.currentBridge.name))
-                    raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
-                                                  (self.transport, self.currentBridge.name, self.currentBridge.host))
+                    #raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
+                    #                              (self.transport, self.currentBridge.name, self.currentBridge.host))
 
             else:
-                raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
-                                              (self.transport, self.currentBridge.name, self.currentBridge.host))
+                raise NetworkLocationNotFound("transport=%s"%(self.transport))
 
     def SendEvent(self,eventType, data):
         self.eventClient.Send(eventType, data)
