@@ -2,7 +2,7 @@
 
 Copyright (c) 1999-2004 Ng Pheng Siong. All rights reserved."""
 
-_RCS_id='$Id: ftps_server.py,v 1.5 2005-12-11 06:58:23 turam Exp $'
+_RCS_id='$Id: ftps_server.py,v 1.6 2005-12-21 17:58:00 turam Exp $'
 
 # Python
 import socket, string, sys, time
@@ -267,12 +267,10 @@ class ftp_tls_channel(ftp_server.ftp_channel):
             self.respond('504 PROT %s unsupported' % line[1])
             
     def log (self, message):
-        # consider logging here
         if self.log_obj:
             self.log_obj.info(message)
 
     def log_info (self, message, type='info'):
-        # consider logging here
         if self.log_obj:
             self.log_obj.info(message)
 
@@ -326,7 +324,6 @@ class ftp_tls_server(ftp_server.ftp_server):
         self.ftp_channel_class(self, self.ssl_ctx, conn, addr, self.Callback, log_obj=self.log_obj)
 
     def log (self, message):
-        # consider logging here
         if self.log_obj:
             self.log_obj.info(message)
 
