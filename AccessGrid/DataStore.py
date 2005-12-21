@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.93 2005-12-11 07:10:13 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.94 2005-12-21 19:07:32 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.93 2005-12-11 07:10:13 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.94 2005-12-21 19:07:32 turam Exp $"
 
 import os
 import time
@@ -52,6 +52,9 @@ class DataAlreadyPresent(Exception):
     pass
 
 class DataNotFound(Exception):
+    pass
+
+class UserCancelled(Exception):
     pass
 
 class DataDescriptionContainer:
@@ -766,16 +769,26 @@ def UploadFiles(identity, upload_url, file_list, user=None,passw=None,progressCB
         f = str(f)
         fulluploadurl = os.path.join(upload_url,f)
         log.debug('UploadFiles: %s %s %s', upload_url,fulluploadurl, str(file_list))
-        UploadFile(f,upload_url,user=user,passw=passw,progressCB=progressCB)
+        try:
+        
+            UploadFile(f,upload_url,user=user,passw=passw,progressCB=progressCB)
+        except FTPSClient.UserCancelled:
+            raise UserCancelled(f)
     if progressCB:
         progressCB(f,
                    1,
                    0,
                    1,1)
 
+
 def DownloadFile(identity, download_url, destination, size, checksum,
                      user=None,passw=None,progressCB = None):
     log.info("DownloadFile: url %s file %s", download_url,destination)
-    return _DownloadFile(download_url,destination,user=user,passw=passw,progressCB=progressCB)
+    try:
+        ret = _DownloadFile(download_url,destination,user=user,passw=passw,progressCB=progressCB)
+    except FTPSClient.UserCancelled:
+        raise UserCancelled(download_url)
+        
+    return ret
 
 

@@ -22,6 +22,9 @@ from M2Crypto import SSL, ftpslib, threading
 DEFAULT_PROTOCOL = 'sslv23'
 
 
+class UserCancelled(Exception): pass
+
+
 bytes_received = 0
     
 def FTPSDownloadFile(url,destination,
@@ -43,15 +46,19 @@ def FTPSDownloadFile(url,destination,
 
     try:
         def cb(data,size,fl):
-          try:
-            global bytes_received
-            fl.write(data)
-            bytes_received += len(data)
-            if progressCB:
-                progressCB(float(bytes_received)/size,0)
-          except:
-            log.exception('Error in FTPSDownloadFile data callback')
-            raise
+            try:
+              global bytes_received
+              fl.write(data)
+              bytes_received += len(data)
+              if progressCB:
+                  cancelled = progressCB(float(bytes_received)/size,0)
+                  if cancelled:
+                      raise UserCancelled('User cancelled download')
+            except UserCancelled:
+              raise
+            except:
+              log.exception('Error in FTPSDownloadFile data callback')
+              raise
 
         # parse url
         parts = urlparse.urlparse(url)
@@ -87,6 +94,8 @@ def FTPSDownloadFile(url,destination,
             progressCB(siz,1)
         fl.close()
         f.quit()
+    except UserCancelled:
+        raise
     except:
         log.exception('Error in FTPSDownloadFile')
         raise
@@ -107,10 +116,14 @@ class FileWrapper(file):
         if self.progressCB:
             try:
                 if self.size != 0:
-                    self.progressCB(self.filename,
+                    cancelled = self.progressCB(self.filename,
                                 float(self.bytesread)/float(self.size),
                                 self.size,
                                 0,0)
+                    if cancelled:
+                        raise UserCancelled('User cancelled upload')
+            except UserCancelled:
+                raise
             except:
                 log.exception('Exception in progress callback')
         return buf
@@ -171,6 +184,9 @@ def FTPSUploadFile(localfile,url,
         # transfer finished; close up
         fl.close()
         f.quit()
+        
+    except UserCancelled:
+        raise
     except:
         log.exception('Error in FTPSUploadFile')
         raise

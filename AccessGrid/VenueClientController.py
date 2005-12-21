@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.52 2005-12-21 16:47:08 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.53 2005-12-21 19:07:32 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.52 2005-12-21 16:47:08 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.53 2005-12-21 19:07:32 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -785,6 +785,8 @@ class VenueClientController:
                                   passw=passw,
                                   progressCB=progressCB)
 
+        except DataStore.UserCancelled:
+            log.info('User cancelled upload of %s', fileList)
         except DataStore.FileNotFound, e:
             error_msg = "File not found: %s" % (e[0])
         except DataStore.NotAPlainFile, e:
@@ -973,6 +975,8 @@ class VenueClientController:
                                        user=user,
                                        passw=passw,
                                        progressCB=progressCB)
+        except DataStore.UserCancelled:
+            log.info('User cancelled download of %s' % (url))
         except DataStore.DownloadFailed:
             log.exception("bin.VenueClient:get_ident_and_download: Got exception on download")
             self.gui.Notify("The file could not be downloaded", "Download Error")

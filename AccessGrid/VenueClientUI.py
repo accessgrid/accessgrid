@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.139 2005-12-21 16:47:08 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.140 2005-12-21 19:07:32 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.139 2005-12-21 16:47:08 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.140 2005-12-21 19:07:32 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -4219,9 +4219,11 @@ class StatusBar(wxStatusBar):
         if not self.transferDone:
             self.__cancelFlag = 1
             self.__hideProgressUI()
+            self.SetMessage("")
             self.fields = 2
             self.SetFieldsCount(self.fields)
             self.SetStatusWidths([-1,self.secondFieldWidth])
+            self.Refresh()
             
     def OnSize(self, evt):
         '''
