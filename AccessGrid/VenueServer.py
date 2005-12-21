@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.204 2005-12-09 16:02:57 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.205 2005-12-21 23:42:13 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.204 2005-12-09 16:02:57 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.205 2005-12-21 23:42:13 turam Exp $"
 
 
 # Standard stuff
@@ -107,6 +107,8 @@ class VenueServer:
 
     configDefaults = {
         "VenueServer.dataPort" : 8006,
+        "VenueServer.dataPortRangeStart" : 50000,
+        "VenueServer.dataPortRangeEnd" : 50020,
         "VenueServer.eventPort" : 8002,
         "VenueServer.textHost" : 'jabber.mcs.anl.gov',
         "VenueServer.textPort" : 5223,
@@ -140,6 +142,8 @@ class VenueServer:
         """
         # Set attributes
         self.dataPort = -1
+        self.dataPortRangeStart = 50000
+        self.dataPortRangeEnd = 50020
         self.encryptAllMedia = 1
         self.houseKeeperFrequency = 300
         self.persistenceFilename = "VenueServer.dat"
@@ -250,10 +254,11 @@ class VenueServer:
             if username in self.venues.keys() and password in self.venues[username].clients.keys():
                 return 1
             return 0
-            
+
         self.dataTransferServer = DataServer(self.dataStorageLocation,
                                              hostname=self.hostname,
                                              port=self.dataPort,
+                                             dataports=range(int(self.dataPortRangeStart),int(self.dataPortRangeEnd)),
                                              ssl_ctx=self.servicePtr.GetContext(),
                                              authorizecb=authorizeDataTransferCB,
                                              activitycb=self.dataActivityCB)
