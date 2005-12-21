@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.137 2005-12-19 23:02:02 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.138 2005-12-21 15:04:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.137 2005-12-19 23:02:02 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.138 2005-12-21 15:04:09 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -607,7 +607,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                     messageDialog.ShowModal()
                     messageDialog.Destroy()
 
-                    self.OnExit(None)
+                    self.OnExit()
                     return
 
                 self.beaconFrame = BeaconFrame(self, log, beacon)
