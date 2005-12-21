@@ -2,7 +2,7 @@
 
 Copyright (c) 1999-2004 Ng Pheng Siong. All rights reserved."""
 
-_RCS_id='$Id: ftps_server.py,v 1.6 2005-12-21 17:58:00 turam Exp $'
+_RCS_id='$Id: ftps_server.py,v 1.7 2005-12-21 23:41:45 turam Exp $'
 
 # Python
 import socket, string, sys, time
@@ -284,7 +284,7 @@ class ftp_tls_server(ftp_server.ftp_server):
     ftp_channel_class = ftp_tls_channel
 
     def __init__(self, authz, ssl_ctx, host=None, ip='', port=21, resolver=None, 
-                 log_obj=None, callback=None):
+                 dataports=None, log_obj=None, callback=None):
         """Initialise the server."""
         self.ssl_ctx = ssl_ctx
         self.ip = ip
@@ -296,6 +296,12 @@ class ftp_tls_server(ftp_server.ftp_server):
             self.hostname = socket.gethostname()
         else:
             self.hostname = host
+
+        # use data port range if specified
+        if dataports:
+            self.port_factory = ftp_server.PortFactory(dataports)
+        else:
+            self.port_factory = None
 
         self.total_sessions = counter()
         self.closed_sessions = counter()

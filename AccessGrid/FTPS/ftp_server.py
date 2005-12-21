@@ -5,7 +5,7 @@
 #                                                All Rights Reserved.
 #
 
-RCS_ID =  '$Id: ftp_server.py,v 1.1 2005-10-19 19:41:50 turam Exp $'
+RCS_ID =  '$Id: ftp_server.py,v 1.2 2005-12-21 23:41:45 turam Exp $'
 
 # An extensible, configurable, asynchronous FTP server.
 #
@@ -57,6 +57,58 @@ from counter import counter
 import producers
 import status_handler
 import logger
+
+import threading
+import random
+
+class PortFactory:
+
+    used_port_list = []
+    
+    port_lock = threading.Lock()
+    
+    def __init__(self,port_list):
+        self.port_list = port_list
+        self.used_port_list = []
+    
+    def set_port_list(self,port_list):
+    
+        self.port_lock.acquire()
+        try:
+            self.port_list = port_list
+        finally:
+            self.port_lock.release()
+    
+    def get_port(self):
+    
+        port = 0
+    
+        self.port_lock.acquire()
+        try:
+            #print 'get_port: port_list, used_ports', self.port_list, self.used_port_list
+            available_ports = filter(lambda x: x not in self.used_port_list,
+                                     self.port_list)
+            if available_ports:
+                port = random.choice(available_ports)
+                self.used_port_list.append(port)
+            else:
+                raise Exception('no free ports')
+        
+        finally:
+            self.port_lock.release()
+            
+        return port
+    
+    def recycle_port(self,port):
+    
+        self.port_lock.acquire()
+        try:
+            if port in self.used_port_list:
+                self.used_port_list.remove(port)
+        finally:
+            self.port_lock.release()
+
+            
 
 class ftp_channel (asynchat.async_chat):
 
@@ -698,6 +750,7 @@ class ftp_server (asyncore.dispatcher):
             ip              ='',
             port            =21,
             resolver        =None,
+            dataports       =None,
             logger_object=logger.file_logger (sys.stdout)
             ):
         self.ip = ip
@@ -708,6 +761,12 @@ class ftp_server (asyncore.dispatcher):
             self.hostname = socket.gethostname()
         else:
             self.hostname = hostname
+            
+        # use data port range if specified
+        if dataports:
+            self.port_factory = PortFactory(dataports)
+        else:
+            self.port_factory = None
 
         # statistics
         self.total_sessions = counter()
@@ -813,12 +872,30 @@ class passive_acceptor (asyncore.dispatcher):
         asyncore.dispatcher.__init__ (self)
         self.control_channel = control_channel
         self.create_socket (socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if hasattr(socket,'SO_REUSEPORT'):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         # bind to an address on the interface that the
         # control connection is coming from.
-        self.bind ((
-                self.control_channel.getsockname()[0],
-                0
-                ))
+        port_to_use = 0
+        while 1:
+            # use port factory if server has one
+            if self.control_channel.server.port_factory:
+                port_factory = self.control_channel.server.port_factory
+                port_to_use = port_factory.get_port()
+                #print 'using port %d from factory' % (port_to_use,)
+                
+            try:
+                self.bind ((
+                    self.control_channel.getsockname()[0],
+                    port_to_use
+                    ))
+                #print 'succeeded with port: ', port_to_use
+                break
+            except Exception,e:
+                pass
+                #print 'exception %s binding to port %d' % (e,port_to_use)
+                
         self.addr = self.getsockname()
         self.listen (1)
 
@@ -839,6 +916,12 @@ class passive_acceptor (asyncore.dispatcher):
         else:
             self.ready = conn, addr
         self.close()
+        
+    def close(self):
+        if self.control_channel.server.port_factory:
+            port_factory = self.control_channel.server.port_factory
+            port_factory.recycle_port(self.addr[1])
+        asyncore.dispatcher.close(self)
 
 
 class xmit_channel (asynchat.async_chat):
