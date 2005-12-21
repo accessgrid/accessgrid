@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.261 2005-12-20 23:12:27 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.262 2005-12-21 16:47:08 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.261 2005-12-20 23:12:27 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.262 2005-12-21 16:47:08 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -202,12 +202,10 @@ class VenueClient:
             try:
                 self.registryClient = RegistryClient(url=self.registryUrl)
                 bridgeList = self.registryClient.LookupBridge(10)
-                                
                 for b in bridgeList:
                     self.bridges[b.guid] = b
             except:
                 log.exception("__LoadBridges: Can not connect to bridge registry %s ", self.registryUrl)
-    
         
         prefs = self.app.GetPreferences()
 
@@ -846,7 +844,7 @@ class VenueClient:
             except NetworkLocationNotFound, e:
                 log.debug("UpdateNodeService: Couldn't update stream with transport/provider info")
                 if self.transport == 'unicast':
-                    self.warningString += '\nConnection to unicast bridge failed. Select other bridge.'
+                    self.warningString += '\nConnection to unicast bridge %s failed. Select other bridge.'%(self.currentBridge.name)
                 else:
                     self.warningString += '\nError connecting media tools.'
             except Exception, e:
@@ -1175,9 +1173,9 @@ class VenueClient:
                    
                 except:
                     log.exception("VenueClient.UpdateStream: Failed to connect to bridge %s"%(self.currentBridge.name))
-                    #raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
-                    #                              (self.transport, self.currentBridge.name, self.currentBridge.host))
-
+                    raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
+                                                  (self.transport, self.currentBridge.name, self.currentBridge.host))
+                                                  
             else:
                 raise NetworkLocationNotFound("transport=%s"%(self.transport))
 

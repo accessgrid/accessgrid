@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.51 2005-12-17 04:40:35 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.52 2005-12-21 16:47:08 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.51 2005-12-17 04:40:35 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.52 2005-12-21 16:47:08 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -230,20 +230,10 @@ class VenueClientController:
         oldTransport = self.__venueClient.GetTransport()
 
         # Set the transport in the venue client and update the node service
-        #self.__venueClient.SetProvider(provider)
         self.__venueClient.SetCurrentBridge(bridge)
         self.__venueClient.SetTransport("unicast")
-        try:
-            self.__venueClient.UpdateNodeService()
-        except:
-            log.exception("Error switching to unicast")
+        self.__venueClient.UpdateNodeService()
         
-            # Reset the provider/transport 
-            # self.__venueClient.SetProvider(oldProvider)
-            #self.__venueClient.SetCurrentBridge(oldBridge)
-            #self.__venueClient.SetTransport(oldTransport)
-            raise
-
     def EnableDisplayCB(self,enableFlag):
         """
         This method 
@@ -677,7 +667,13 @@ class VenueClientController:
 
         # Update node url
         self.__venueClient.SetNodeUrl(preferences.GetPreference(Preferences.NODE_URL))
-
+        
+       
+        if int(preferences.GetPreference(Preferences.MULTICAST)):
+            self.__venueClient.SetTransport("multicast")
+        else:
+            self.__venueClient.SetTransport("unicast")
+            
         # Enable video and audio
         self.EnableVideoCB(int(preferences.GetPreference(Preferences.ENABLE_VIDEO)))
         self.EnableAudioCB(int(preferences.GetPreference(Preferences.ENABLE_AUDIO)))

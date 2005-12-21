@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.138 2005-12-21 15:04:09 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.139 2005-12-21 16:47:08 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.138 2005-12-21 15:04:09 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.139 2005-12-21 16:47:08 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1049,7 +1049,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         currentBridge = self.venueClient.GetCurrentBridge()
 
         # Use current bridge
-        self.controller.UseUnicastCB(currentBridge)
+        try:
+            self.controller.UseUnicastCB(currentBridge)
+        except:
+            log.exception("Failed to connect to bridge %s"%(currentBridge.name))
+            self.Warn("Failed to connect to bridge %s."%(currentBridge.name),
+                      "Use Unicast")
 
         self.__CreateBridgeMenu()
         
@@ -2397,10 +2402,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         """
         log.debug("bin.VenueClient::EnterVenue: Enter venue with url: %s", URL)
-
+    
+        # Show warnings, do not enter venue
         if not enterSuccess:
-            # Currently receives type of error in warningString.  This will go back
-            #   catching an exception with vc redesign.
+            # Currently receives type of error in warningString.
+            # This will go back catching an exception with vc redesign.
+            # For now, show all warnings to user
+            
             if warningString == "NotAuthorized":
                 text = "You are not authorized to enter the venue located at %s.\n." % URL
                 wxCallAfter(MessageDialog, None, text, "Notification")
@@ -2413,8 +2421,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 text = "Can not connect to venue located at %s. \n%s Please, try again." % (URL,warningString)
                 wxCallAfter(self.Notify, text, "Can not enter venue")
                 wxCallAfter(self.statusbar.SetStatusText, "" )
-            return
 
+            return
+               
         # initialize flag in case of failure
         enterUISuccess = 1
 
