@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.262 2005-12-21 16:47:08 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.263 2005-12-21 21:32:55 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.262 2005-12-21 16:47:08 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.263 2005-12-21 21:32:55 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -221,11 +221,12 @@ class VenueClient:
                                        
             # Set current bridge, defaults to the first enabled bridge
             # that can be pinged.
-            for b in self.bridges.values():
-                if (b.status == STATUS_ENABLED and
-                    self.registryClient.PingHost(b.host) > -1):
-                    self.currentBridge = b
-                    break
+            if not self.currentBridge:
+                for b in self.bridges.values():
+                    if (b.status == STATUS_ENABLED and
+                        self.registryClient.PingHost(b.host) > -1):
+                        self.currentBridge = b
+                        break
                 
     def __McastStatusCB(self,obj):
         for s in self.observers:
@@ -1155,7 +1156,7 @@ class VenueClient:
                   netloc.profile.name == self.currentBridge.name):
                 stream.location = netloc
                 found = 1
-             
+            
         if not found and self.transport == "unicast":
             # If no unicast network location was found, connect to the bridge to retreive one.
             if self.currentBridge:

@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.140 2005-12-21 19:07:32 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.141 2005-12-21 21:32:55 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.140 2005-12-21 19:07:32 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.141 2005-12-21 21:32:55 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -518,11 +518,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 self.bridgeSubmenu.Check(i.GetId(), 0)
         
         self.venueClient.SetCurrentBridge(bridgeDescription)
-
+             
         # Use current bridge
         try:
             self.controller.UseUnicastCB(bridgeDescription)
         except:
+            log.exception("Connection to bridge %s failed"%(bridgeDescription.name))
+
             self.Notify("Connection to bridge %s failed. \nPlease use a different bridge."%(bridgeDescription.name),
                         "Bridge Connection")
                         
