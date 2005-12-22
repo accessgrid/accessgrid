@@ -115,7 +115,8 @@ class ImportCACertDialog(wxDialog):
         # Introductory text.
         #
 
-        introText = """This talks about the stuff that one needs to know about cert imports.
+        introText = """Enter the pathname to the CA certificate below,
+or use the Browse button to browse to it.         
     """
         intro = wxStaticText(self, -1, introText)
         topsizer.Add(intro, 0, wxEXPAND)
@@ -162,10 +163,11 @@ class ImportCACertDialog(wxDialog):
         # Signing policy text.
         #
 
-        spText = """
-This talks
-about the weird stuff that one
-needs to know about signing policies.
+        spText = """\
+Enter the filename of the signing policy for this CA
+certificate below, or use the Browse button to browse for
+it. Alternatively, it may be possible to construct the 
+signing policy from the CA certificate.
     """
         sp = wxStaticText(self, -1, spText)
         
