@@ -52,8 +52,12 @@ class RegistryTestCase(unittest.TestCase):
         gRegistryPeer.Stop()
         time.sleep(2) # assumes AGXMLRPC timeout interval is 1 second
 
+    """
     def testStartRegistry(self):
-        pass # tested during setup and teardown functions
+        from AccessGrid.Registry.RegistryClient import RegistryClient
+        rc = RegistryClient(url=GetRegistryUrl())
+        rc.LookupBridge(10)
+    """
 
     def _bridgeDescriptionsMatch(self, bridge1, bridge2):
         keys = set(bridge1.__dict__.keys() + bridge2.__dict__.keys())
@@ -97,7 +101,6 @@ class RegistryTestCase(unittest.TestCase):
         assert found1
         assert found2
          
-
     # def testRegistryPeer(self):
 
 
