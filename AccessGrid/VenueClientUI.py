@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.143 2005-12-22 23:28:53 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.144 2005-12-22 23:35:26 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.143 2005-12-22 23:28:53 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.144 2005-12-22 23:35:26 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1033,15 +1033,15 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         if transport == "multicast":
             self.preferences.Check(self.ID_USE_MULTICAST, true)
-            self.menubar.Enable(self.ID_BRIDGES, false)
+            #self.menubar.Enable(self.ID_BRIDGES, false)
         elif transport == "unicast":  
             self.preferences.Check(self.ID_USE_UNICAST, true)
-            self.menubar.Enable(self.ID_BRIDGES, true)
+            #self.menubar.Enable(self.ID_BRIDGES, true)
 
     def UseMulticastCB(self, event=None):
         try:
             self.controller.UseMulticastCB()
-            self.menubar.Enable(self.ID_BRIDGES, false)
+            #self.menubar.Enable(self.ID_BRIDGES, false)
             self.preferences.Check(self.ID_USE_MULTICAST, true)
             self.preferences.Check(self.ID_USE_UNICAST, false)
                     
@@ -1052,7 +1052,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
 
     def UseUnicastCB(self,event=None):
-        self.menubar.Enable(self.ID_BRIDGES, true)
+        #self.menubar.Enable(self.ID_BRIDGES, true)
         self.preferences.Check(self.ID_USE_MULTICAST, false)
         self.preferences.Check(self.ID_USE_UNICAST, true)
 
