@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.263 2005-12-21 21:32:55 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.264 2005-12-22 14:45:02 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.263 2005-12-21 21:32:55 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.264 2005-12-22 14:45:02 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -309,8 +309,9 @@ class VenueClient:
         vci = VenueClientI(impl=self,auth_method_name=None)
         uri = self.server.RegisterObject(vci, path='/VenueClient')
         try:
-            ServiceDiscovery.Publisher(self.hostname,VenueClient.ServiceType,
-                                        uri,port=port)
+            threading.Thread(target = ServiceDiscovery.Publisher,
+                            args = (self.hostname,VenueClient.ServiceType,
+                                        uri,port)).start()
         except:
             log.exception("Couldn't publish node service advertisement")
 
@@ -330,8 +331,9 @@ class VenueClient:
             log.debug("__StartWebService: service manager: %s",
                       uri)
             try:
-                ServiceDiscovery.Publisher(self.hostname,AGServiceManager.ServiceType,
-                                            uri,port=port)
+                threading.Thread(target = ServiceDiscovery.Publisher,
+                                args=(self.hostname,AGServiceManager.ServiceType,
+                                            uri,port)).start()
             except:
                 log.exception("Couldn't publish node service advertisement")
 
@@ -345,8 +347,9 @@ class VenueClient:
             self.SetNodeUrl(uri)
             
             try:
-                ServiceDiscovery.Publisher(self.hostname,AGNodeService.ServiceType,
-                                            uri,port=port)
+                threading.Thread(target = ServiceDiscovery.Publisher,
+                                args = (self.hostname,AGNodeService.ServiceType,
+                                            uri,port)).start()
             except:
                 log.exception("Couldn't publish node service advertisement")
                 
@@ -1003,8 +1006,7 @@ class VenueClient:
              
         # Create the beacon client
         if int(self.preferences.GetPreference(Preferences.BEACON)):
-            pass
-            #self.StartBeacon()
+            self.StartBeacon()
 
         return self.warningString
 
