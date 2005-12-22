@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.21 2005-12-22 21:14:49 turam Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.22 2005-12-22 21:36:41 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.21 2005-12-22 21:14:49 turam Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.22 2005-12-22 21:36:41 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -284,7 +284,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         certRepo = self.certificateManager.GetCertificateRepository()
         try:
             self.certificateManager.InitRepoFromGlobus(certRepo)
-            self.certificateManager.GetUserInterface().InitGlobusEnvironment()
+            self.certificateManager.GetUserInterface().InitEnvironment()
 
             dlg = wxMessageDialog(None, "Globus environment imported successfully.",
                                   "Import successful",
@@ -304,7 +304,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
     def OnOpenPendingRequestsDialog(self, event, win):
         self.RunCertificateStatusTool(win)
 
-    def InitGlobusEnvironment(self):
+    def InitEnvironment(self):
         """
         Initialize the globus runtime environment.
 
@@ -314,7 +314,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
         If it does not succeed, it may raise a number of different exceptions
         based on what in particular the error was. These must be handled
-        before the InitGlobusEnvironment call can succeed.
+        before the InitEnvironment call can succeed.
 
         Since this is the user interface class, it can expect to do some
         work on behalf of the user to remedy the problems.
@@ -1153,7 +1153,7 @@ class TrustedCertDialog(wxDialog):
                 shutil.copyfile(spPath,
                                 impCert.GetFilePath("signing_policy"))
 
-            self.certMgr.GetUserInterface().InitGlobusEnvironment()
+            self.certMgr.GetUserInterface().InitEnvironment()
             self.browser.LoadCerts()
 
             dlg = wxMessageDialog(None, "Certificate imported successfully. Subject is\n" +
@@ -1193,7 +1193,7 @@ class TrustedCertDialog(wxDialog):
         isDefault = self.certMgr.IsDefaultIdentityCert(cert)
 
         self.certMgr.GetCertificateRepository().RemoveCertificate(cert)
-        self.certMgr.GetUserInterface().InitGlobusEnvironment()
+        self.certMgr.GetUserInterface().InitEnvironment()
 
         self.browser.LoadCerts()
 
@@ -1230,7 +1230,7 @@ class IdentityCertDialog(wxDialog):
         cert = event.cert
         print "Got set default ", cert.GetSubject()
         self.certMgr.SetDefaultIdentity(cert)
-        self.certMgr.GetUserInterface().InitGlobusEnvironment()
+        self.certMgr.GetUserInterface().InitEnvironment()
         self.browser.LoadCerts()
 
     def OnCertSelected(self, event):
@@ -1466,7 +1466,7 @@ class IdentityCertDialog(wxDialog):
             idCerts = self.certMgr.GetIdentityCerts()
             if len(idCerts) > 0:
                 self.certMgr.SetDefaultIdentity(idCerts[0])
-                self.certMgr.GetUserInterface().InitGlobusEnvironment()
+                self.certMgr.GetUserInterface().InitEnvironment()
 
         self.browser.LoadCerts()
 

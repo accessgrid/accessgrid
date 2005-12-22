@@ -167,7 +167,7 @@ class IdentityBrowser(CertificateBrowserBase):
             return
 
         self.certMgr.GetCertificateRepository().RemoveCertificate(cert, dlg.GetRetainPrivateKey())
-        self.certMgr.GetUserInterface().InitGlobusEnvironment()
+        self.certMgr.GetUserInterface().InitEnvironment()
         self.Load()
 
     def OnSetDefault(self, event):
@@ -177,7 +177,7 @@ class IdentityBrowser(CertificateBrowserBase):
             return
 
         self.certMgr.SetDefaultIdentity(cert)
-        self.certMgr.GetUserInterface().InitGlobusEnvironment()
+        self.certMgr.GetUserInterface().InitEnvironment()
         self.Load()
 
     def OnCertSelected(self, event, cert):

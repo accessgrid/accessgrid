@@ -86,7 +86,7 @@ class CABrowser(CertificateBrowserBase):
             return
 
         self.certMgr.GetCertificateRepository().RemoveCertificate(cert)
-        self.certMgr.GetUserInterface().InitGlobusEnvironment()
+        self.certMgr.GetUserInterface().InitEnvironment()
         self.Load()
 
     def OnExport(self, event):

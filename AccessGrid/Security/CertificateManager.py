@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.45 2005-11-11 20:52:20 eolson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.46 2005-12-22 21:36:41 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.45 2005-11-11 20:52:20 eolson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.46 2005-12-22 21:36:41 turam Exp $"
 
 import re
 import os
@@ -91,7 +91,7 @@ class CertificateManager(object):
 
     This certificate manager will not use the system trusted CA directory
     directly; it maintains a local cache of trusted CA certs in the
-    repository. Since OpenSSL and the Globus library expect these certificates
+    repository. Since OpenSSL expects these certificates
     to have a particular file layout, the certificate manager will regenerate
     this cache from the certificates in teh repository each time the set of
     trusted CA certificates  in the repo changes. This set of certificates can
@@ -100,12 +100,12 @@ class CertificateManager(object):
         repo.FindCertificatesWithMetadata("AG.CertificateManager.certType",
                                            "trustedCA")
 
-    Globus proxies are also stored in the repository's space. Since they do
+    Proxies are also stored in the repository's space. Since they do
     not have unique serial numbers, they are stored in filespace provided
     for users with each certificate:
 
         certDesc = defaultCert
-        proxyPath = certDesc.GetFilePath("globus_proxy")
+        proxyPath = certDesc.GetFilePath("proxy")
         CreateGlobusProxy(certDesc.GetCertPath(),
                           certDesc.GetKeyPath(),
                           proxyPath)
@@ -156,7 +156,6 @@ class CertificateManager(object):
         'certRepo',
         'caDir',
         'defaultIdentity',
-        'issuedGlobusWarning',
         'useDefaultDN',
         'useCertFile',
         'useKeyFile',
@@ -174,7 +173,6 @@ class CertificateManager(object):
         self.certRepoPath = os.path.join(userProfileDir, "certRepo")
         self.caDir = os.path.join(userProfileDir, "trustedCACerts")
         self.defaultIdentity = None
-        self.issuedGlobusWarning = 0
 
         self.useDefaultDN = None
         self.useCertFile = None
@@ -223,9 +221,6 @@ class CertificateManager(object):
         We need to first create a new repository (by passing create=1
         to the constructor).
 
-        Then we need to grope about in the system for the location of any
-        existing certificates, both user identity and trusted CA.
-
         """
 
         log.debug("initializing repository")
@@ -252,7 +247,7 @@ class CertificateManager(object):
 
         if defID is None:
             self.SetDefaultIdentity(impCert)
-            #self.GetUserInterface().InitGlobusEnvironment()
+            self.GetUserInterface().InitEnvironment()
         
         repo.NotifyObservers()
         return impCert
@@ -433,7 +428,7 @@ class CertificateManager(object):
         Examine the default identity certificate.
 
         If it has an encrypted private key, check for the existence of
-        a Globus proxy for the cert. If one does not exist, raise the
+        a proxy for the cert. If one does not exist, raise the
         ProxyExpired exception.
 
         Otherwise, set the following environment variables:
@@ -565,32 +560,6 @@ class CertificateManager(object):
         certPath = self.defaultIdentity.GetPath()
         keyPath = self.defaultIdentity.GetKeyPath()
         
-        #
-        # Check permissions on cert and key file according to 
-        # globus requirements, and set them if possible
-        #
-        # - Certificate file
-        s = os.stat(certPath)
-        if s[0] & (S_IXUSR |
-                   S_IWGRP | S_IXGRP |
-                   S_IWOTH | S_IXOTH):
-            if Platform.IsWindows() or (s[ST_UID] == os.getuid()) :
-                log.info("Setting permissions on certificate %s to 644", certPath)
-                os.chmod(certPath,0644)
-            else:
-                raise Exception, "Invalid permissions on certificate %s (must be 644 or less)" % (certPath)
-
-        # - Key file
-        s = os.stat(keyPath)
-        if s[0] & (S_IXUSR |
-                   S_IRGRP | S_IWGRP | S_IXGRP |
-                   S_IROTH | S_IWOTH | S_IXOTH):
-            if Platform.IsWindows() or (s[ST_UID] == os.getuid()) :
-                log.info("Setting permissions on certificate %s to 600", keyPath)
-                os.chmod(keyPath,0600)
-            else:
-                raise Exception, "Invalid permissions on private key %s (must be 600 or less)" % (keyPath)
-
 
     def SetDefaultIdentity(self, certDesc):
         """
@@ -881,9 +850,9 @@ class CertificateManagerUserInterface:
     def GetPassphraseCallback(self, caption, message):
         return CmdlinePassphraseCallback(caption, message)
 
-    def InitGlobusEnvironment(self):
+    def InitEnvironment(self):
         """
-        Initialize the globus runtime environment.
+        Initialize the runtime security environment.
 
         This method invokes certmgr.InitEnvironment().
 
@@ -891,7 +860,7 @@ class CertificateManagerUserInterface:
 
         If it does not succeed, it may raise a number of different exceptions
         based on what in particular the error was. These must be handled
-        before the InitGlobusEnvironment call can succeed.
+        before the InitEnvironment call can succeed.
 
         Since this is the user interface class, it can expect to do some
         work on behalf of the user to remedy the problems.
