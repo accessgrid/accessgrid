@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.265 2005-12-22 21:48:37 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.266 2005-12-22 23:28:53 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.265 2005-12-22 21:48:37 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.266 2005-12-22 23:28:53 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -197,8 +197,7 @@ class VenueClient:
         to see if any of the retreived bridges are disabled.
         '''
         if not self.currentBridge:
-            # Get bridges from registry once
-           
+            # Get bridges from registry
             try:
                 self.registryClient = RegistryClient(url=self.registryUrl)
                 bridgeList = self.registryClient.LookupBridge(10)
@@ -210,19 +209,15 @@ class VenueClient:
         prefs = self.app.GetPreferences()
 
         if self.bridges:
-            # Updated bridge enable/disable information from preferences
-            preferencesBridges = prefs.GetBridges()
-
-            for b in preferencesBridges.values():
-                if self.bridges.has_key(b.guid):
-                     self.bridges[b.guid].status = b.status 
-                     
-            prefs.SetBridges(self.bridges)
-                                       
-            # Set current bridge, defaults to the first enabled bridge
-            # that can be pinged.
+            # Set current bridge
             if not self.currentBridge:
-                for b in self.bridges.values():
+                bList = self.bridges.values()
+                
+                # sort the bridge list
+                bList.sort(lambda x,y: cmp(x.rank, y.rank))
+
+                # connect to first pingable bridge in sorted list
+                for b in bList:
                     if (b.status == STATUS_ENABLED and
                         self.registryClient.PingHost(b.host) > -1):
                         self.currentBridge = b
@@ -912,8 +907,7 @@ class VenueClient:
              ## Register the user in the jabber server
             self.jabber.Register()
             self.jabber.Login()
-
-    
+               
         # Create the jabber text client
 
         # Create room

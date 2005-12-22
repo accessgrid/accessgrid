@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.142 2005-12-22 08:06:28 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.143 2005-12-22 23:28:53 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.142 2005-12-22 08:06:28 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.143 2005-12-22 23:28:53 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -492,8 +492,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
        
         for i in items:
             self.bridgeSubmenu.DeleteItem(i)
-                
-        for b in self.bridges.values():
+
+        bList = self.bridges.values()
+
+        # sort the bridge list
+        bList.sort(lambda x,y: cmp(x.rank, y.rank))
+
+        for b in bList:
             id = wxNewId()
             self.bridgeSubmenu.AppendCheckItem(id, b.name)
             self.bridgeKeyMap[b.guid] = id
