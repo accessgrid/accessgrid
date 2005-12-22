@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.141 2005-12-21 21:32:55 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.142 2005-12-22 08:06:28 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.141 2005-12-21 21:32:55 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.142 2005-12-22 08:06:28 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -231,6 +231,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         try:
             self.reader = RssReader(rssUrlList,self.updateDuration,[self])
             self.reader.SetUpdateDuration(self.updateDuration)
+            
+            # update rss feeds in thread
+            t = threading.Thread(target=self.reader.Synch,name='RssReader.Synch')
+            t.start()
         except:
             log.exception('Error constructing RSS reader')
             
