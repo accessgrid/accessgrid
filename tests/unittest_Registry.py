@@ -14,7 +14,7 @@
 Unittest for Registry
 
 """
-import sys
+import sys, os
 import logging, logging.handlers
 import unittest
 import threading
@@ -34,7 +34,12 @@ class RegistryTestCase(unittest.TestCase):
     def _startRegistry(self):
         from AccessGrid.Registry.RegistryPeer import RegistryPeer
         port = 8030
-        peerListUrl = "file://localhost_registry_nodes.txt"
+        defaultPath = "localhost_registry_nodes.txt"
+        if os.path.exists(defaultPath):
+            peerListPath = defaultPath
+        else:
+            peerListPath = os.path.join(os.environ["AGTK_LOCATION"],"tests",defaultPath)
+        peerListUrl = "file://" + peerListPath
         global gRegistryPeer
         gRegistryPeer = RegistryPeer(peerListUrl=peerListUrl, port=port)
         threading.Thread(target=gRegistryPeer.Run).start()
