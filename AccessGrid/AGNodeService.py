@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.98 2005-12-19 20:19:26 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.99 2005-12-22 21:45:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.98 2005-12-19 20:19:26 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.99 2005-12-22 21:45:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -696,7 +696,7 @@ class AGNodeService:
 
     def __BrowseCB(self,type,name,uri=None):
         if type == ServiceDiscovery.Browser.ADD:
-            print "Found service manager at uri ", uri
+            #print "Found service manager at uri ", uri
             if uri in self.serviceManagers.keys() and self.serviceManagers[uri] == None:
                 smDesc = AGServiceManagerIW(uri).GetDescription()
                 print "   adding service"
