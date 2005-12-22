@@ -2,7 +2,7 @@
 # Name:        RssReader.py
 # Purpose:     An RSS reader for meeting feeds
 # Created:     2005/10/19
-# RCS-ID:      $Id: RssReader.py,v 1.4 2005-12-06 21:19:08 turam Exp $
+# RCS-ID:      $Id: RssReader.py,v 1.5 2005-12-22 07:56:23 turam Exp $
 # Copyright:   (c) 2005
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -84,9 +84,7 @@ class RssReader:
         
         self._StartTimer()
         
-        self._Synch()
-        
-    def _Synch(self):
+    def Synch(self):
         for rssUrl in self.rssUrlList:
             self._ProcessUrl(rssUrl)
         
@@ -136,7 +134,7 @@ class RssReader:
             
     def _TimedUpdate(self):
         try:
-            self._Synch()
+            self.Synch()
         except Exception,e:
             print 'exception updating feed:', e
         if self.updateDuration > 0:
