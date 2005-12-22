@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.20 2005-11-11 20:52:20 eolson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.21 2005-12-22 21:14:49 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.20 2005-11-11 20:52:20 eolson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.21 2005-12-22 21:14:49 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -118,7 +118,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
     wxWindows-based user interfact to the certificate mgr.
     """
 
-    def __init__(self, cm=None):
+    def __init__(self, cm):
         CertificateManager.CertificateManagerUserInterface.__init__(self, cm)
 
         # Perform a check to see if we're root, if we're not on windows.
@@ -343,16 +343,6 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                 certs = self.certificateManager.GetIdentityCerts()
                 self.certificateManager.SetDefaultIdentity(certs[0])
                 # loop back to init env
-
-            except CertificateManager.NoProxyFound:
-                retry = self.CreateProxy()
-                if not retry:
-                    break
-
-            except CertificateManager.ProxyExpired:
-                retry = self.CreateProxy()
-                if not retry:
-                    break
 
     def HandleNoCertificateInteraction(self):
         """
@@ -1431,10 +1421,6 @@ class IdentityCertDialog(wxDialog):
             # 
             self.certMgr.InitEnvironment()
 
-        except CertificateManager.NoProxyFound:
-            pass
-        except CertificateManager.ProxyExpired:
-            pass
         except Exception, e:
             log.exception("InitEnvironment raised an exception during import")
         
