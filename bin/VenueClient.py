@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.270 2005-12-19 22:38:27 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.271 2005-12-22 21:54:53 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.270 2005-12-19 22:38:27 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.271 2005-12-22 21:54:53 turam Exp $"
 
 # Standard Imports
 import os
@@ -30,7 +30,6 @@ from AccessGrid.VenueClientUI import VenueClientUI
 from AccessGrid.VenueClientController import VenueClientController
 from AccessGrid.VenueClient import VenueClient
 from AccessGrid.UIUtilities import ErrorDialog
-from AccessGrid.UIUtilities import ProgressDialog
 from twisted.internet import reactor
 
 from M2Crypto import threading as m2threading
@@ -42,11 +41,6 @@ def main():
 
     # Create the wxpython app
     wxapp = wxPySimpleApp()
-
-    # Create a progress dialog
-    startupDialog = ProgressDialog("Starting Venue Client...",
-                                   "Initializing AccessGrid Toolkit", 4)
-    startupDialog.Show()
 
     # Init the toolkit with the standard environment.
     app = WXGUIApplication()
@@ -87,11 +81,9 @@ def main():
     except:
         log.exception("Unable to log wx version.")
     
-    startupDialog.UpdateOneStep("Creating venue client components.")
-
     # Create venue client components
     vc = VenueClient(pnode=pnode, port=port,
-                     progressCB=startupDialog.UpdateOneStep, app=app)
+                     app=app)
     vcc = VenueClientController()
     vcc.SetVenueClient(vc)
     vcui = VenueClientUI(vc, vcc, app)
@@ -102,12 +94,8 @@ def main():
 
     # Enter the specified venue
     if url:
-        startupDialog.UpdateOneStep("Entering venue")
         vc.EnterVenue(url)
         
-    # Startup complete; kill progress dialog
-    startupDialog.Destroy()
-
     # Spin
     wxapp.SetTopWindow(vcui)
     wxapp.MainLoop()
