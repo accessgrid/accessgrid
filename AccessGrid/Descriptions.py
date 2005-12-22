@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.86 2005-12-09 21:58:10 lefvert Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.87 2005-12-22 23:27:14 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.86 2005-12-09 21:58:10 lefvert Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.87 2005-12-22 23:27:14 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -625,7 +625,7 @@ class BridgeDescription:
         self.serverType = serverType
         self.description = description
         self.status = STATUS_ENABLED
-
+        self.rank = 10 
 #
 #
 #
