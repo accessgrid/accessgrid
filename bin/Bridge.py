@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.6 2005-12-17 00:10:59 eolson Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.7 2005-12-22 22:04:46 turam Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -135,10 +135,18 @@ def main():
     global log
     log = app.GetLog()
 
-    if options.name == None or options.location == None:
-        raise Exception("Please specify both a name and location.")
+    if options.name == None:
+        print 'Error: No name specified'
+        parser.print_help()
+        sys.exit(-1)
+    if options.location == None:
+        print 'Error: No location specified'
+        parser.print_help()
+        sys.exit(-1)
     if options.registryUrl == None:
-        raise Exception("Please specify the registry url.")
+        print 'Error: No registry url specified'
+        parser.print_help()
+        sys.exit(-1)
 
     """
     # Signal handler to catch signals and shutdown
