@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.103 2005-12-20 18:17:28 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.104 2005-12-22 21:13:58 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.103 2005-12-20 18:17:28 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.104 2005-12-22 21:13:58 turam Exp $"
 
 # Standard imports
 import os
@@ -551,7 +551,8 @@ class WXGUIApplication(Application):
         if self._certMgrUI == None:
             # 5. Initialize Certificate Management
             from AccessGrid.Security.wxgui import CertificateManagerWXGUI
-            self._certMgrUI = CertificateManagerWXGUI.CertificateManagerWXGUI()
+            self._certMgrUI = CertificateManagerWXGUI.CertificateManagerWXGUI(
+                                self.GetCertificateManager())
 
             # 6. Do one final check, if we don't have a default
             #    identity we warn them, but they can still request certs.
