@@ -27,8 +27,7 @@ def suite():
         #'unittest_Platform',
         #'unittest_VenueServer',
         'unittest_version',
-        'unittest_EnterVenue',
-        'unittest_Registry'
+        'unittest_EnterVenue'
         ]
 
     alltests = unittest.TestSuite()
