@@ -36,7 +36,7 @@ class CertificateManagerDialog(wxDialog):
         self.notebook.AddPage(self.statusBrowser, "Certificate Requests")
 
         # Default to certificate pane.
-        self.notebook.SetSelection(1)
+        self.notebook.SetSelection(0)
 
         hsizer = wxBoxSizer(wxHORIZONTAL)
         sizer.Add(hsizer, 0)
