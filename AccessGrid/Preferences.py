@@ -9,6 +9,7 @@ from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
 from AccessGrid.GUID import GUID
+from AccessGrid.BridgeCache import BridgeCache
 
 log = Log.GetLogger(Log.VenueClient)
 
@@ -78,6 +79,10 @@ class Preferences:
         # to separate profile file.
         self.profile = ClientProfile()
 
+        # Use the bridge cache object. Save bridges
+        # to separate file
+        self.bridgeCache = BridgeCache()
+        
         # Use already implemented parts of
         # node service. Default node service
         # config will get saved using the node
@@ -132,9 +137,6 @@ class Preferences:
         # Add category to preference
         for key in self.preferences.keys():
             tempDict["Preferences."+key] = self.preferences[key]
-
-        for key in self.__bridges.keys():
-            tempDict["Bridges."+key] = self.__bridges[key].status
                    
         # Save preference
         try:
@@ -151,6 +153,10 @@ class Preferences:
             self.profile.Save(profileFile)
         except:
             log.exception("Preferences.StorePreferences: store profile file error")
+
+        # Save bridge information in separate file
+        self.bridgeCache.StoreBridges(self.__bridges.values())
+        
             
     def LoadPreferences(self):
         '''
@@ -167,13 +173,7 @@ class Preferences:
 
                 if category == "Preferences":
                     self.preferences[pref] = preferences[p]
-                elif category == "Bridges":
-                    # create an empty description with status information
-                    tempDesc = BridgeDescription(pref, "tmp",
-                                                 "tmp", "tmp", "tmp",
-                                                 "tmp")
-                    tempDesc.status = preferences[p] 
-                    self.__bridges[pref] = tempDesc
+             
         except:
             log.exception("Preferences.LoadPreferences: open file error")
             self.preferences = {}
@@ -187,6 +187,10 @@ class Preferences:
         except IOError:
             log.exception("Preferences.LoadPreferences: open file io error")
 
+        # Load bridges separately
+        for b in self.bridgeCache.GetBridges():
+            self.__bridges[b.guid] = b
+    
     def ResetPreferences(self):
         '''
         Reset all preferences to default values. The preferences will

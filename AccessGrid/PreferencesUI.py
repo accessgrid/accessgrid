@@ -791,7 +791,8 @@ class NetworkPanel(wxPanel):
         # Create key map for item data in list ctrl
         # List ctrl can unfortunately not add anything other
         # than int as item data.
-        for b in self.bridges.values():
+        values = self.bridges.values()
+        for b in values:
             self.keyMap[b.guid] = self.counter
             self.counter = self.counter + 1
                 
@@ -815,13 +816,15 @@ class NetworkPanel(wxPanel):
         self.list.InsertColumn(2, "Port")
         self.list.InsertColumn(3, "Type")
         self.list.InsertColumn(4, "Status")
-             
-        self.list.SetColumnWidth(0, 100)
+        self.list.InsertColumn(5, "Distance")
+              
+        self.list.SetColumnWidth(0, 90)
         self.list.SetColumnWidth(1, 60)
-        self.list.SetColumnWidth(2, 60)
-        self.list.SetColumnWidth(3, 100)
-        self.list.SetColumnWidth(4, 70)
-
+        self.list.SetColumnWidth(2, 50)
+        self.list.SetColumnWidth(3, 80)
+        self.list.SetColumnWidth(4, 60)
+        self.list.SetColumnWidth(5, 60)
+                
         bridgeDict = self.__CreateBridgeMap()
       
         for index in bridgeDict.keys():
@@ -830,7 +833,8 @@ class NetworkPanel(wxPanel):
             self.list.SetStringItem(self.keyMap[index], 2, str(bridgeDict[index].port))
             self.list.SetStringItem(self.keyMap[index], 3, bridgeDict[index].serverType)
             self.list.SetStringItem(self.keyMap[index], 4, bridgeDict[index].status)
-
+            self.list.SetStringItem(self.keyMap[index], 5, str(bridgeDict[index].rank))
+                        
             data = self.keyMap[bridgeDict[index].guid]
             self.list.SetItemData(self.keyMap[index], data)
           
