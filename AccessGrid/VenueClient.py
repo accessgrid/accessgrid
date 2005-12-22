@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.264 2005-12-22 14:45:02 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.265 2005-12-22 21:48:37 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.264 2005-12-22 14:45:02 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.265 2005-12-22 21:48:37 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -156,7 +156,7 @@ class VenueClient:
         if int(self.preferences.GetPreference(Preferences.MULTICAST)):   
             self.transport = "multicast"
         else:
-            progressCB("Connecting to bridges")
+            if progressCB: progressCB("Connecting to bridges")
             self.transport = "unicast"
             self.__LoadBridges()
                     
