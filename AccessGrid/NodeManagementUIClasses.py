@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.94 2005-11-11 20:05:54 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.95 2005-12-22 07:54:14 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.94 2005-11-11 20:05:54 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.95 2005-12-22 07:54:14 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -127,6 +127,10 @@ class ServiceChoiceDialog(wxDialog):
     def AddItem(self,name,url):
         if self.comboBoxCtrl.FindString(url) == wxNOT_FOUND:
             self.comboBoxCtrl.Append(url)
+            
+            # Set the field value, if it's not set
+            if not self.comboBoxCtrl.GetValue():
+                self.comboBoxCtrl.SetValue(url)
 
     def GetValue(self):
         return self.comboBoxCtrl.GetValue()
@@ -558,6 +562,7 @@ class NodeManagementClientFrame(wxFrame):
         dlg = ServiceChoiceDialog(self,-1,'NodeService Dialog',
                                   self.recentNodeServiceList,
                                   AGNodeService.ServiceType)
+        dlg.Center()
         ret = dlg.ShowModal()
 
 
