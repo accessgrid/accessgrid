@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.35 2005-12-19 20:22:12 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.36 2005-12-22 23:27:00 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.35 2005-12-19 20:22:12 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.36 2005-12-22 23:27:00 lefvert Exp $"
 
 import os
 import sys
@@ -252,8 +252,8 @@ class UserConfig:
         self.servicesDir = None
         self.profileFilename = None
         self.preferencesFilename = None
+        self.bridgesFilename = None
         self.logDir = None
-        self.preferencesFilename = None
 
         self._Initialize()
         
@@ -357,6 +357,13 @@ class UserConfig:
                                                     "preferences")
 
         return self.preferencesFilename
+
+    def GetBridges(self):
+        if self.bridgesFilename == None:
+            self.bridgesFilename = os.path.join(self.GetConfigDir(),
+                                                "bridges")
+
+        return self.bridgesFilename
 
     def GetBaseDir(self):
         raise Exception, "This should not be called directly, but through a subclass."
