@@ -20,6 +20,15 @@ import unittest
 import threading
 import time
 
+def GetRegistryUrl():
+    defaultPath = "localhost_registry_alt_ports.txt"
+    if os.path.exists(defaultPath):
+        peerListPath = defaultPath
+    else:
+        peerListPath = os.path.join(os.environ["AGTK_LOCATION"],"tests",defaultPath)
+    peerListUrl = "file://" + peerListPath
+    return peerListUrl
+
 class RegistryTestCase(unittest.TestCase):
     """A test case for the Registry."""
 
@@ -33,15 +42,9 @@ class RegistryTestCase(unittest.TestCase):
 
     def _startRegistry(self):
         from AccessGrid.Registry.RegistryPeer import RegistryPeer
-        port = 8030
-        defaultPath = "localhost_registry_nodes.txt"
-        if os.path.exists(defaultPath):
-            peerListPath = defaultPath
-        else:
-            peerListPath = os.path.join(os.environ["AGTK_LOCATION"],"tests",defaultPath)
-        peerListUrl = "file://" + peerListPath
+        port = 18030
         global gRegistryPeer
-        gRegistryPeer = RegistryPeer(peerListUrl=peerListUrl, port=port)
+        gRegistryPeer = RegistryPeer(peerListUrl=GetRegistryUrl(), port=port)
         threading.Thread(target=gRegistryPeer.Run).start()
 
     def _stopRegistry(self):
@@ -63,8 +66,7 @@ class RegistryTestCase(unittest.TestCase):
         from AccessGrid.Registry.RegistryClient import RegistryClient
         from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE, UMTP_TYPE
         from AccessGrid.GUID import GUID
-        peerListUrl = "file://localhost_registry_nodes.txt"
-        rc = RegistryClient(url=peerListUrl)
+        rc = RegistryClient(url=GetRegistryUrl())
 
         guid1 = GUID()
         name1 = "name1"
