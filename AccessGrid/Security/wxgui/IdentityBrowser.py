@@ -280,82 +280,20 @@ class IdentityBrowser(CertificateBrowserBase):
         subj = GetCNFromX509Subject(cert.GetSubject())
         issuer = GetCNFromX509Subject(cert.GetIssuer())
 
-        proxyValid = ""
-
         if self.certMgr.IsDefaultIdentityCert(cert):
             isDefault= "Y"
-
-            #
-            # If this is the default identity cert,
-            # we might have a proxy. Note that in future
-            # when we may have multiple valid proxies, this
-            # test will have to move out of here. It's here
-            # as a currently-valid optimization.
-            #
-
-            proxyValid = self._TestGlobusProxy(cert)
-            
         else:
             isDefault = ""
 
         valid = self.certMgr.CheckValidity(cert)
 
-        return cert, [type, subj, issuer, isDefault, valid, proxyValid]
-
-    def _TestGlobusProxy(self, defaultCert):
-
-        try:
-            proxyCert = self.certMgr.GetGlobusProxyCert()
-
-        except:
-            return "Missing"
-
-        if not proxyCert.IsGlobusProxy():
-            return "Not a proxy"
-
-        proxyIssuer = proxyCert.GetIssuer()
-        idSubject = defaultCert.GetSubject()
-        if proxyIssuer.get_der() != idSubject.get_der():
-            return "Proxy for other id"
-
-        #
-        # Check to see if the proxy cert has expired.
-        #
-
-        if proxyCert.IsExpired():
-            return "Expired"
-
-        if not self.certMgr.VerifyCertificatePath(proxyCert):
-            return "Missing CA"
-
-        #
-        # Otherwise, return the remaining lifetime.
-        #
-
-        left = proxyCert.GetNotValidAfter() - int(time.time())
-
-        out = ""
-        if left > 86400:
-            days = int(left / 86400)
-            out += "%dd " % (days)
-
-            left = left % 86400
-
-        hour = int(left / 3600)
-        left = left % 3600
-
-        min = int(left / 60)
-        sec = left % 60
-
-        out += "%02d:%02d:%02d left" % (hour, min, sec)
-
-        return out
+        return cert, [type, subj, issuer, isDefault, valid]
 
     def _getListColumns(self):
-        return ["Certificate Type", "Subject Name", "Issuer", "Default", "Validity", "Proxy status"]
+        return ["Certificate Type", "Subject Name", "Issuer", "Default", "Validity"]
 
     def _getListColumnWidths(self):
-        return [wxLIST_AUTOSIZE_USEHEADER, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE_USEHEADER, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE_USEHEADER]
+        return [wxLIST_AUTOSIZE_USEHEADER, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE_USEHEADER, wxLIST_AUTOSIZE]
 
 
 if __name__ == "__main__":
