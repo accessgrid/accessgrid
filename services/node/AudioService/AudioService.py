@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.5 2005-10-10 15:35:26 eolson Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.6 2006-01-03 21:08:37 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -55,15 +55,21 @@ class AudioService( AGService ):
         # Set configuration parameters
         self.talk = OptionSetParameter( "Talk", "Off", ["On", "Off"] )
         self.inputGain = RangeParameter( "Input Gain", 50, 0, 100 )
-        self.outputGain = RangeParameter( "Output Gain", 50, 0, 100 )
+        if sys.platform=='darwin':
+            self.outputGain = RangeParameter( "Output Gain", 4, 0, 100 )
+        else:
+            self.outputGain = RangeParameter( "Output Gain", 50, 0, 100 )
         self.silenceSuppression = OptionSetParameter( "Silence Suppression", "Off", ["Off","Automatic","Manual"] )
-        self.forceOSSAC97 = OptionSetParameter( "force_ac97", "False", ["True", "False"] )
 
         self.configuration.append(self.talk)
         self.configuration.append(self.inputGain)
         self.configuration.append(self.outputGain)
-        self.configuration.append(self.forceOSSAC97)
         self.configuration.append(self.silenceSuppression)
+
+        if Platform.isLinux() or Platform.isFreeBSD5():
+            # note: the forceOSSAC97 attribute will only exist for the above platforms
+            self.forceOSSAC97 = OptionSetParameter( "Force AC97", "False", ["True", "False"] )
+            self.configuration.append(self.forceOSSAC97)
 
     def __SetRTPDefaults(self, profile):
         """
@@ -73,7 +79,7 @@ class AudioService( AGService ):
             self.log.exception("Invalid profile (None)")
             raise Exception, "Can't set RTP Defaults without a valid profile."
 
-        if sys.platform == 'linux2':
+        if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5':
             try:
                 rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
                 rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
@@ -136,7 +142,7 @@ class AudioService( AGService ):
             except:
                 self.log.exception("Couldn't put rat defaults in registry.")
 
-        elif Platform.isLinux() or Platform.isOSX():
+        elif Platform.isLinux() or Platform.isOSX() or Platform.isFreeBSD5():
 
             ratDefaultsFile = os.path.join(os.environ["HOME"],".RATdefaults")
             ratDefaults = dict()
@@ -175,13 +181,56 @@ class AudioService( AGService ):
 
     def Start( self ):
         """Start service"""
+
+        if sys.platform=='darwin':
+            # Detect of X11 is started or not, and start it if necessary.
+            try:
+                import socket
+                sock = socket.socket()
+
+                try:
+                    sock.connect( ("localhost", 6000) )
+                    self.log.info("X11 already started")
+                except:
+                    x11Path = "/Applications/Utilities/X11.app/Contents/MacOS/X11"
+                    if not os.path.exists(x11Path):
+                        self.log.error("X11 not found in %s" % x11Path)
+                    else:
+                        self.log.info("starting X11")
+                        os.system(x11Path + " &")
+                        # wait until the X server starts or x seconds pass
+                        connected = 0
+                        timePassed = 0
+                        sock2 = socket.socket()
+                        while not connected and timePassed < 10:
+                            time.sleep(1)
+                            timePassed += 1
+                            try:
+                                sock2.connect( ("localhost", 6000) )
+                            except:
+                                pass    # failed to connect to x server so far
+                            else:
+                                connected = 1  # x server is up
+                        if connected:
+                            self.log.info("X11 started successfully")
+                        if timePassed >= 10:
+                            self.log.warning("Timed out waiting for X11 to start")
+                        sock2.close()
+                sock.close()
+            except:
+                self.log.exception("Error in X11 init code")
+
+            self.log.info("Finished checks for X11")
+
         try:
             # Initialize environment for rat
             self.WriteRatDefaults()
 
-            if self.forceOSSAC97.value == "True":
-  	        self.log.info("Setting OSS_IS_AC97 = 1")
-  	        os.environ['OSS_IS_AC97'] = "1"
+            if Platform.isLinux() or Platform.isFreeBSD5():
+                # note: the forceOSSAC97 attribute will only exist for the above platforms
+                if self.forceOSSAC97.value == "True":
+  	                self.log.info("Setting OSS_IS_AC97 = 1")
+  	                os.environ['OSS_IS_AC97'] = "1"
 
             # Enable firewall
             self.sysConf.AppFirewallConfig(self.executable, 1)
@@ -196,7 +245,7 @@ class AudioService( AGService ):
             if self.streamDescription.name and \
                    len(self.streamDescription.name.strip()) > 0:
                 options.append( "-C" )
-                if sys.platform == 'linux2':
+                if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5':
                     # Rat doesn't like spaces in linux command line arguments.
                     stream_description_no_spaces = string.replace(
                         self.streamDescription.name, " ", "_")
@@ -204,7 +253,10 @@ class AudioService( AGService ):
                 else:
                     options.append(self.streamDescription.name)
             options.append( "-f" )
-            options.append( "L16-16K-Mono" )
+            if sys.platform == "darwin":
+                options.append( "L16-8K-Mono" ) # prevent mac mash converter
+            else:                               # issues (at least on this G5).
+                options.append( "L16-16K-Mono" )
             # Check whether the network location has a "type"
             # attribute Note: this condition is only to maintain
             # compatibility between older venue servers creating
