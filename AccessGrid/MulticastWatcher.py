@@ -2,14 +2,25 @@
 # Name:        MulticastWatcher.py
 # Purpose:     Class to watch a multicast address for traffic and report status
 # Created:     2005/06/06
-# RCS-ID:      $Id: MulticastWatcher.py,v 1.6 2005-12-19 17:52:27 turam Exp $
+# RCS-ID:      $Id: MulticastWatcher.py,v 1.7 2006-01-04 18:56:21 turam Exp $
 # Copyright:   (c) 2005
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
+MulticastWatcher that listens for traffic on the specified multicast group
+and maintains status (receiving/notreceiving).  In the style of the Internet2
+Detective, it listens to the multicast beacon group for data, presuming that
+some data is always being sent to that group.
+
+MulticastWatcher has two modes:
+- active listening, with the option of calling a user-specified callback
+  when the status changes
+- passive listening, only listening when the status is queried, subject to 
+  the (user-configurable) timeout
+
 """
-__revision__ = "$Id: MulticastWatcher.py,v 1.6 2005-12-19 17:52:27 turam Exp $"
+__revision__ = "$Id: MulticastWatcher.py,v 1.7 2006-01-04 18:56:21 turam Exp $"
 
 import socket, threading, string, struct
 import time
@@ -69,11 +80,11 @@ class MulticastWatcher:
         self.lastRecvTime = 0
         
         self.running = threading.Event()
-        self.listeningThread = threading.Thread(target=self.Listen,
-                                                name=self.__class__)
         
     def Start(self):
         self.running.set()
+        self.listeningThread = threading.Thread(target=self.Listen,
+                                                name=self.__class__)
         self.listeningThread.start()
         
     def Stop(self):
@@ -81,6 +92,9 @@ class MulticastWatcher:
         
     def Listen(self):
         while self.running.isSet():
+            self.__Listen()
+        
+    def __Listen(self):
             fdList = select.select([self.sock.fileno()],[],[],self.timeout)
             if fdList[0] and self.sock.fileno() in fdList[0]:
                 data,src_addr = self.sock.recvfrom(self.MSGSIZE)
@@ -107,6 +121,9 @@ class MulticastWatcher:
             self.statusChangeCB(self)
             
     def GetStatus(self):
+        # If not running, listen once to get current state
+        if not self.running.isSet():
+            self.__Listen()
         return self.mcastStatus.isSet()
 
 
