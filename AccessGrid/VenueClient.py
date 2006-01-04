@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.266 2005-12-22 23:28:53 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.267 2006-01-04 18:57:06 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.266 2005-12-22 23:28:53 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.267 2006-01-04 18:57:06 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -180,9 +180,7 @@ class VenueClient:
         self.jabber = JabberClient()
         self.textLocation = None
         
-        self.multicastWatcher = MulticastWatcher(statusChangeCB=self.__McastStatusCB)
-        self.multicastWatcher.Start()
-
+        self.multicastWatcher = MulticastWatcher()
        
         self.beaconLocation = None
 
@@ -1189,12 +1187,6 @@ class VenueClient:
             except:
                 log.exception("Failed to stop server")
 
-        try:
-        
-            self.multicastWatcher.Stop()
-        except Exception,e:
-            log.exception('Error shutting down multicast watcher')
-
         if self.eventClient:
             self.eventClient.Stop()
             
@@ -1398,7 +1390,7 @@ class VenueClient:
         log.debug("SetNodeUrl: Set node service url:  %s" %url)
         self.nodeServiceUri = url
         
-        if url.find(self.hostname):
+        if url.find(self.hostname) >=0:
             pass
 #             if not self.nodeService:
 #                 self.nodeService = AGNodeService(self.app)
