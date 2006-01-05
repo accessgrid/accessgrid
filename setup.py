@@ -2,15 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-<<<<<<< setup.py
-<<<<<<< setup.py
-# RCS-ID:      $Id: setup.py,v 1.83 2005-12-26 20:16:19 turam Exp $
-=======
-# RCS-ID:      $Id: setup.py,v 1.83 2005-12-26 20:16:19 turam Exp $
->>>>>>> 1.81
-=======
-# RCS-ID:      $Id: setup.py,v 1.83 2005-12-26 20:16:19 turam Exp $
->>>>>>> 1.82
+# RCS-ID:      $Id: setup.py,v 1.84 2006-01-05 22:23:50 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
