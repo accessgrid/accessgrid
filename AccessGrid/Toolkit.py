@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.105 2006-01-05 23:57:14 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.106 2006-01-06 20:04:20 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.105 2006-01-05 23:57:14 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.106 2006-01-06 20:04:20 turam Exp $"
 
 # Standard imports
 import os
@@ -99,6 +99,7 @@ class AppBase:
        self.log.info("Command and arguments: %s" % sys.argv )
        
        self.__context = None
+       self.__passphrase = None
 
     # This method implements the initialization strategy outlined
     # in AGEP-0112
@@ -180,6 +181,16 @@ class AppBase:
            
        return argvResult
        
+    def GetPassphrase(self,verifyFlag=0,prompt1="Enter the passphrase to your private key.", prompt2='Verify passphrase:'):
+
+        print "note: verifyFlag is unused"
+        if self.__passphrase:
+            return self.__passphrase
+        else:
+            cb = self.GetCertificateManagerUI().GetPassphraseCallback(prompt1,
+                                                                      prompt2)
+            p1 = cb(0)
+            return p1
        
     def GetContext(self):
         if not self.__context:
@@ -191,7 +202,8 @@ class AppBase:
                 from AccessGrid.Security import CertificateManager
                 raise CertificateManager.NoCertificates()
             caDir = self.GetCertificateManager().caDir
-            self.__context.load_cert(defaultId.GetPath(),defaultId.GetKeyPath())
+            self.__context.load_cert(defaultId.GetPath(),defaultId.GetKeyPath(),
+                                     callback=self.GetPassphrase)
             self.__context.load_verify_locations(capath=caDir)
             self.__context.set_verify(SSL.verify_peer,10)
             self.__context.set_session_id_ctx('127.0.0.1:8006')
@@ -405,7 +417,7 @@ class AppBase:
             # 6. Do one final check, if we don't have a default
             #    Identity we warn them, but they can still request certs.
             #
-            self._certMgrUI.InitGlobusEnvironment()
+            self._certMgrUI.InitEnvironment()
 
             if self.GetDefaultSubject() is None:
                 self.log.error("Toolkit initialized with no default identity.")
@@ -557,7 +569,7 @@ class WXGUIApplication(Application):
 
             # 6. Do one final check, if we don't have a default
             #    identity we warn them, but they can still request certs.
-            self._certMgrUI.InitGlobusEnvironment()
+            self._certMgrUI.InitEnvironment()
 
             if self.GetDefaultSubject() is None:
                 self.log.error("Toolkit initialized with no default identity.")
