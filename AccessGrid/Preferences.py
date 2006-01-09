@@ -233,7 +233,7 @@ class Preferences:
             nservice = AGNodeServiceIW(self.GetPreference(self.NODE_URL))
             configs = nservice.GetConfigurations() 
         except:
-            log.exception("Preferences:SetDefaultNodeConfig: Failed to set default node service configuration.")
+            log.exception("Preferences:GetNodeConfigs: Failed to get node service configurations.")
                                
         return configs
 
