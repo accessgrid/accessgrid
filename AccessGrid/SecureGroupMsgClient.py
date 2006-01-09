@@ -3,22 +3,39 @@
 # Name:        SecureGroupMsgClient.py
 # Purpose:     A Secure Group Messaging service client.
 # Created:     2005/10/10
-# RCS-ID:      $Id: SecureGroupMsgClient.py,v 1.1 2005-10-10 22:01:35 eolson Exp $
+# RCS-ID:      $Id: SecureGroupMsgClient.py,v 1.2 2006-01-09 22:32:27 eolson Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-from GroupMsgClient import GroupMsgClient, TestMessages
-from twisted.internet import ssl
+from GroupMsgClient import GroupMsgClient, TestMessages, GenerateRandomString
+import M2Crypto.SSL.TwistedProtocolWrapper as wrapper
+
+from M2Crypto import SSL
+
+class ClientContextFactory:
+    """A context factory for SSL clients."""
+    isClient = 1
+    method = "sslv23"
+    def getContext(self):
+        return SSL.Context(self.method)
+
 
 class SecureGroupMsgClient(GroupMsgClient):
 
     def Start(self, wxapp=None):
         host = self.location[0]
         port = self.location[1]
-        # late import to allow for selecting type of reactor
-        from twisted.internet import reactor
-        reactor.connectSSL(host, port, self.factory, ssl.ClientContextFactory())
+        #reactor.connectSSL(host, port, self.factory, ssl.ClientContextFactory())
+        wrapper.connectSSL(host, port, self.factory, ClientContextFactory(), postConnectionCheck=None)
+
+
+def testMain(location, privateId, channel="Test", msgLength=13, numMsgs=1000, multipleClients=False):
+    gmc = SecureGroupMsgClient(location, privateId, channel)
+    gmc.measurePerformance = True
+    tm = TestMessages(gmc=gmc, numMsgs=numMsgs, multipleClients=multipleClients)
+    tm.SetMsgData(GenerateRandomString(length=msgLength))
+    gmc.Start() # Connect
 
 def main():
     location = ('localhost',7002)
@@ -27,6 +44,7 @@ def main():
     numMsgs = 1000
     msgLength = 1000
 
+    """
     gmc = SecureGroupMsgClient(location, privateId, channel=groupName)
     gmc.measurePerformance = True
 
@@ -35,6 +53,12 @@ def main():
     msgData = "".join([random.choice(string.letters) for x in xrange(msgLength)])
     tm.SetMsgData(msgData)
     gmc.Start()
+    """
+
+    group = "Test"
+    testMessageSize = 13
+    numMsgs = 1000
+    testMain(location=location, privateId=privateId, channel=group, msgLength=testMessageSize, numMsgs=numMsgs, multipleClients=False)
 
     from twisted.internet import reactor
     reactor.run()
