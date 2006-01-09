@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.22 2005-12-22 21:36:41 turam Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.23 2006-01-09 20:10:49 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.22 2005-12-22 21:36:41 turam Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.23 2006-01-09 20:10:49 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -284,7 +284,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         certRepo = self.certificateManager.GetCertificateRepository()
         try:
             self.certificateManager.InitRepoFromGlobus(certRepo)
-            self.certificateManager.GetUserInterface().InitEnvironment()
+            Toolkit.GetDefaultApplication.GetCertificateManagerUI().InitEnvironment()
 
             dlg = wxMessageDialog(None, "Globus environment imported successfully.",
                                   "Import successful",
@@ -1153,7 +1153,7 @@ class TrustedCertDialog(wxDialog):
                 shutil.copyfile(spPath,
                                 impCert.GetFilePath("signing_policy"))
 
-            self.certMgr.GetUserInterface().InitEnvironment()
+            Toolkit.GetDefaultApplication.GetCertificateManagerUI().InitEnvironment()
             self.browser.LoadCerts()
 
             dlg = wxMessageDialog(None, "Certificate imported successfully. Subject is\n" +
@@ -1193,7 +1193,7 @@ class TrustedCertDialog(wxDialog):
         isDefault = self.certMgr.IsDefaultIdentityCert(cert)
 
         self.certMgr.GetCertificateRepository().RemoveCertificate(cert)
-        self.certMgr.GetUserInterface().InitEnvironment()
+        Toolkit.GetDefaultApplication.GetCertificateManagerUI().InitEnvironment()
 
         self.browser.LoadCerts()
 
@@ -1230,7 +1230,7 @@ class IdentityCertDialog(wxDialog):
         cert = event.cert
         print "Got set default ", cert.GetSubject()
         self.certMgr.SetDefaultIdentity(cert)
-        self.certMgr.GetUserInterface().InitEnvironment()
+        Toolkit.GetDefaultApplication.GetCertificateManagerUI().InitEnvironment()
         self.browser.LoadCerts()
 
     def OnCertSelected(self, event):
@@ -1367,7 +1367,7 @@ class IdentityCertDialog(wxDialog):
         dlg.Destroy()
 
         try:
-            cb = self.certMgr.GetUserInterface().GetPassphraseCallback("Private key passphrase",
+            cb = Toolkit.GetDefaultApplication.GetCertificateManagerUI().GetPassphraseCallback("Private key passphrase",
                                                                      "Enter the passphrase to your private key.")
             impCert = self.certMgr.ImportIdentityCertificatePEM(self.certMgr.GetCertificateRepository(),
                                                                  path, kpath, cb)
@@ -1466,7 +1466,7 @@ class IdentityCertDialog(wxDialog):
             idCerts = self.certMgr.GetIdentityCerts()
             if len(idCerts) > 0:
                 self.certMgr.SetDefaultIdentity(idCerts[0])
-                self.certMgr.GetUserInterface().InitEnvironment()
+                Toolkit.GetDefaultApplication.GetCertificateManagerUI().InitEnvironment()
 
         self.browser.LoadCerts()
 

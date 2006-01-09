@@ -7,6 +7,7 @@ from AccessGrid import Platform
 from AccessGrid.ServiceProfile import ServiceProfile
 from CertificateBrowserBase import CertificateBrowserBase
 from CertificateViewer import CertificateViewer
+from AccessGrid import Toolkit
 
 import ImportExportUtils
 
@@ -167,7 +168,7 @@ class IdentityBrowser(CertificateBrowserBase):
             return
 
         self.certMgr.GetCertificateRepository().RemoveCertificate(cert, dlg.GetRetainPrivateKey())
-        self.certMgr.GetUserInterface().InitEnvironment()
+        Toolkit.GetDefaultApplication().GetCertificateManagerUI().InitEnvironment()
         self.Load()
 
     def OnSetDefault(self, event):
@@ -177,7 +178,7 @@ class IdentityBrowser(CertificateBrowserBase):
             return
 
         self.certMgr.SetDefaultIdentity(cert)
-        self.certMgr.GetUserInterface().InitEnvironment()
+        Toolkit.GetDefaultApplication().GetCertificateManagerUI().InitEnvironment()
         self.Load()
 
     def OnCertSelected(self, event, cert):

@@ -5,12 +5,12 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: ImportExportUtils.py,v 1.4 2004-03-25 19:45:47 olson Exp $
+# RCS-ID:      $Id: ImportExportUtils.py,v 1.5 2006-01-09 20:10:49 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-__revision__ = "$Id: ImportExportUtils.py,v 1.4 2004-03-25 19:45:47 olson Exp $"
+__revision__ = "$Id: ImportExportUtils.py,v 1.5 2006-01-09 20:10:49 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -26,6 +26,7 @@ from wxPython.wx import *
 
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog, ErrorDialogWithTraceback
 from AccessGrid import Log
+from AccessGrid import Toolkit
 
 log = Log.GetLogger(Log.CertificateManagerWXGUI)
 
@@ -696,7 +697,7 @@ def ImportPKCS12IdentityCertificate(certMgr, pkcsFile):
             return None
 
     if mustDecrypt:
-        pwcb = certMgr.GetUserInterface().GetPassphraseCallback("Import passphrase",
+        pwcb = Toolkit.GetDefaultApplication().GetCertificateManagerUI().GetPassphraseCallback("Import passphrase",
                                                                 "Please enter the import passphrase for this PKCS#12 file.")
 
         while 1:
@@ -768,9 +769,8 @@ def ImportPEMIdentityCertificate(certMgr, certFile, keyFile):
 
     try:
         print "Import PEM, looking for cb"
-        cb = certMgr.GetUserInterface().GetPassphraseCallback("Private key passphrase",
-                                                              "Enter the passphrase to your private key.")
-
+        cb = Toolkit.GetDefaultApplication().GetCertificateManagerUI().GetPassphraseCallback("Private key passphrase",
+                                                               "Enter the passphrase to your private key.")
         impCert = certMgr.ImportIdentityCertificatePEM(certMgr.GetCertificateRepository(),
                                                        certFile, keyFile, cb)
         log.debug("Imported identity %s", str(impCert.GetSubject()))

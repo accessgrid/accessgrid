@@ -3,6 +3,7 @@ import time
 from wxPython.wx import *
 
 from AccessGrid.Security.Utilities import GetCNFromX509Subject
+from AccessGrid.Toolkit import Application
 
 from CertificateBrowserBase import CertificateBrowserBase
 from CertificateViewer import CertificateViewer
@@ -86,7 +87,7 @@ class CABrowser(CertificateBrowserBase):
             return
 
         self.certMgr.GetCertificateRepository().RemoveCertificate(cert)
-        self.certMgr.GetUserInterface().InitEnvironment()
+        Toolkit.GetDefaultApplication.GetCertificateManagerUI().InitEnvironment()
         self.Load()
 
     def OnExport(self, event):
