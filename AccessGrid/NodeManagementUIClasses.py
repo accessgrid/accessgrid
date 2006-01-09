@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.95 2005-12-22 07:54:14 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.96 2006-01-09 20:15:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.95 2005-12-22 07:54:14 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.96 2006-01-09 20:15:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -491,7 +491,7 @@ class NodeManagementClientFrame(wxFrame):
 
         # Create the status bar
         self.CreateStatusBar(2)
-        self.SetStatusText("This is the statusbar",1)
+        self.SetStatusText("Not Connected",1)
 
         # Associate menu items with callbacks
         EVT_MENU(self, ID_FILE_ATTACH            ,  self.Attach )
@@ -598,8 +598,9 @@ class NodeManagementClientFrame(wxFrame):
 
         # Get proxy to the node service, if the url validates
         self.nodeServiceHandle = nodeService
-        self.SetStatusText("Connected",1)
-        self.EnableMenus(true)
+        if self.nodeServiceHandle.IsValid():
+            self.SetStatusText("Connected",1)
+            self.EnableMenus(true)
       
     def LoadConfiguration( self, event ):
         """
