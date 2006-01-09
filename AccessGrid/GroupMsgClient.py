@@ -3,7 +3,7 @@
 # Name:        GroupMsgClient.py
 # Purpose:     A Group Messaging service client.
 # Created:     2005/09/09
-# RCS-ID:      $Id: GroupMsgClient.py,v 1.2 2005-09-28 20:13:44 eolson Exp $
+# RCS-ID:      $Id: GroupMsgClient.py,v 1.3 2006-01-09 22:30:33 eolson Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -238,9 +238,11 @@ class TestMessages:
             self.groupMsgClient.RegisterReceiveCallback(self.Receive)
             self.groupMsgClient.RegisterLostConnectionCallback(self.LostConnection)
             self.groupMsgClient.RegisterMadeConnectionCallback(self.StartSending)
+        from twisted.internet import reactor
+        self.reactor = reactor
 
     def StartSending(self):
-        reactor.callLater(0, self.Send)
+        self.reactor.callLater(0, self.Send)
 
     def SetMsgData(self, data):
         self.msgData = data
@@ -266,7 +268,7 @@ class TestMessages:
 
         # Prepare to call again until all messages are sent
         if self.numSentMessages < self.numExpectedMsgs:
-            reactor.callLater(0, self.Send) 
+            self.reactor.callLater(0, self.Send) 
         else:
             print "Finished sending test messages."
 
@@ -275,7 +277,7 @@ class TestMessages:
         if self.multiClient: # finish after a timeout
             if time.time() - self.startTime > self.multiClientTimeout:
                 print "Finished (allotted time)"
-                reactor.stop()
+                self.reactor.stop()
         else:                # finish after i receive all my own messages
             if self.numMessagesReceived >= self.numExpectedMsgs:
                 self.finishTime = time.time()
@@ -287,8 +289,8 @@ class TestMessages:
     def LostConnection(self, connector, reason):
         print 'TestMessages client connection lost:', reason.getErrorMessage()
         print "Stopping."
-        if reactor.running:
-            reactor.stop()
+        if self.reactor.running:
+            self.reactor.stop()
 
 # for testing
 def GenerateRandomString(length=6):
