@@ -3,7 +3,7 @@
 # Name:        NodeManagement.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.29 2005-10-07 22:44:51 eolson Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.30 2006-01-09 20:16:14 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,6 +14,7 @@ from wxPython.wx import *
 
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.Toolkit import WXGUIApplication
+from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 
 log = None
 app = None
@@ -28,12 +29,9 @@ class MyApp(wxApp):
         frame = NodeManagementClientFrame(NULL, -1,
                                           "Access Grid Node Management")
 
-#         if not app.certificateManager.HaveValidProxy():
-#             app.certificateManager.CreateProxy()
-#             return false
-        
         try:
-            frame.AttachToNode(self.defNSUrl)
+            nodeService = AGNodeServiceIW(self.defNSUrl)
+            frame.AttachToNode(nodeService)
             # Avoid UI errors if fail to attach to node.
             if frame.nodeServiceHandle.IsValid():
                 frame.UpdateUI()
