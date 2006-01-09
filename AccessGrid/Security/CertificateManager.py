@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.46 2005-12-22 21:36:41 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.47 2006-01-09 20:12:41 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.46 2005-12-22 21:36:41 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.47 2006-01-09 20:12:41 turam Exp $"
 
 import re
 import os
@@ -140,9 +140,6 @@ class CertificateManager(object):
 
     Instance variables
     ------------------
-
-    userInterface	Reference to the UI object responsbile
-    			for manipulations on this manager.
 
     userProfileDir	Location of the per-user profile directory
     			for the user of this manager.
