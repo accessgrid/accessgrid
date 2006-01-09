@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.106 2006-01-06 20:04:20 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.107 2006-01-09 15:37:29 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.106 2006-01-06 20:04:20 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.107 2006-01-09 15:37:29 turam Exp $"
 
 # Standard imports
 import os
@@ -183,14 +183,15 @@ class AppBase:
        
     def GetPassphrase(self,verifyFlag=0,prompt1="Enter the passphrase to your private key.", prompt2='Verify passphrase:'):
 
-        print "note: verifyFlag is unused"
+        # note: verifyFlag is unused
         if self.__passphrase:
             return self.__passphrase
         else:
             cb = self.GetCertificateManagerUI().GetPassphraseCallback(prompt1,
                                                                       prompt2)
             p1 = cb(0)
-            return p1
+            self.__passphrase = ''.join(p1)
+            return self.__passphrase
        
     def GetContext(self):
         if not self.__context:
