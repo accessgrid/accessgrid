@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.107 2006-01-09 15:37:29 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.108 2006-01-09 20:11:49 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.107 2006-01-09 15:37:29 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.108 2006-01-09 20:11:49 turam Exp $"
 
 # Standard imports
 import os
@@ -39,18 +39,27 @@ class AppBase:
 
     # The class method for retrieving/creating the singleton
     def instance():
-       """
-       The interface for getting the one true instance of this object.
-       """
-       raise Exception, "This should never be called directly."
+        """
+        The interface for getting the one true instance of this object.
+        """
+        return AppBase.theInstance
        
     instance = staticmethod(instance)
+    
+    def set_instance(obj):
+        AppBase.theInstance = obj
+    set_instance = staticmethod(set_instance)
+    
 
     # The real constructor
     def __init__(self):
        """
        The application constructor that enforces the singleton pattern.
        """
+       if AppBase.instance():
+          raise Exception, "Only one instance of AppBase is allowed; already have instance of %s" % (AppBase.instance().__class__,)
+
+       AppBase.set_instance(self)
 
        self.parser = OptionParser()
        self.parser.add_option("-d", "--debug", action="store_true",
@@ -457,18 +466,15 @@ class Application(AppBase):
     build new parts of the AGTk. The application object is required to
     be a singleton in any process.
     """
-    # The singleton
-    theAppInstance = None
-
     # The class method for retrieving/creating the singleton
     def instance():
-       """
-       The interface for getting the one true instance of this object.
-       """
-       if Application.theAppInstance == None:
-          Application()
-         
-       return Application.theAppInstance
+        """
+        The interface for getting the one true instance of this object.
+        """
+        if AppBase.instance() == None:
+            Application()
+
+        return AppBase.instance()
       
     instance = staticmethod(instance)
 
@@ -479,12 +485,6 @@ class Application(AppBase):
        """
        AppBase.__init__(self)
        
-       if Application.theAppInstance is not None:
-          raise Exception, "Only one instance of Application is allowed"
-       
-       # Create the singleton instance
-       Application.theAppInstance = self
-
     # This method implements the initialization strategy outlined
     # in AGEP-0112
     def Initialize(self, name=None, args=None):
@@ -506,35 +506,48 @@ class CmdlineApplication(Application):
     """
     An application that's going to run without a gui.
     """
-    # The singleton
-    theAppInstance = None
-    
     # The class method for retrieving/creating the singleton
     def instance():
         """
         The interface for getting the one true instance of this object.
         """
-        if CmdlineApplication.theAppInstance == None:
+        obj = AppBase.instance()
+        if obj == None:
             CmdlineApplication()
-         
-        return CmdlineApplication.theAppInstance
+        elif obj.__class__ != CmdlineApplication:
+            raise Exception("Attempt to retrieve instance of type %s in presence of existing instance of %s" %
+                            (CmdlineApplication,obj.__class__))
+
+        return AppBase.instance()
       
     instance = staticmethod(instance)
-
+    
     # The real constructor
     def __init__(self):
         """
         The application constructor that enforces the singleton pattern.
         """
         Application.__init__(self)
+        
        
-        if CmdlineApplication.theAppInstance is not None:
-            raise Exception, "Only one instance of Application is allowed"
-       
-        # Create the singleton instance
-        CmdlineApplication.theAppInstance = self
-
 class WXGUIApplication(Application):
+
+    """
+    The interface for getting the one true instance of this object.
+    """
+    # The class method for retrieving/creating the singleton
+    def instance():
+        obj = AppBase.instance()
+        if obj == None:
+            WXGUIApplication()
+        elif obj.__class__ != WXGUIApplication:
+            raise Exception("Attempt to retrieve instance of type %s in presence of existing instance of %s" %
+                            (WXGUIApplication,obj.__class__))
+
+        return AppBase.instance()
+      
+    instance = staticmethod(instance)
+    
     def __init__(self):
         Application.__init__(self)
 
@@ -583,18 +596,16 @@ class Service(AppBase):
     build new parts of the AGTk. The service object is required to
     be a singleton in any process.
     """
-    # The singleton
-    theServiceInstance = None
-
     # The class method for retrieving/creating the singleton
     def instance():
-       """
-       The interface for getting the one true instance of this object.
-       """
-       if Service.theServiceInstance == None:
-          Service()
-         
-       return Service.theServiceInstance
+        obj = AppBase.instance()
+        if obj == None:
+            Service()
+        elif obj.__class__ != Service:
+            raise Exception("Attempt to retrieve instance of type %s in presence of existing instance of %s" %
+                            (Service,obj.__class__))
+
+        return AppBase.instance()
       
     instance = staticmethod(instance)
 
@@ -606,12 +617,6 @@ class Service(AppBase):
         AppBase.__init__(self)
 
         self.profile = None
-
-        if Service.theServiceInstance is not None:
-          raise Exception, "Only one instance of Service is allowed"
-
-        # Create the singleton instance
-        Service.theServiceInstance = self
 
         # Add cert, key, and profile options
         profileOption = Option("--profile", dest="profile", metavar="PROFILE",
@@ -740,3 +745,6 @@ def GetDefaultSubject():
 
     return defaultSubj
 
+
+def GetDefaultApplication():
+    return AppBase.instance()
