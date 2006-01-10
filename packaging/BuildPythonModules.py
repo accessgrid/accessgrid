@@ -45,59 +45,23 @@ else:
 
 print "Python: ", PYVER
 
-if PYVER=="2.2":
-	
-    print "Building Logging 0.4.7"
-    SetupModule("logging-0.4.7", SOURCE, DEST)
-
-    try:
-        print "Building Optik 1.4.1"
-        SetupModule("Optik-1.4.1", SOURCE, DEST)
-    except:
-        print "Warning: " + SOURCE + "/Optik-1.4.1 not found, ignoring"
-
-
-print "Building fpconst 0.7.0"
-SetupModule("fpconst-0.7.0", SOURCE, DEST)
-
-print "Building SOAPpy 0.11.4"
-SetupModule("SOAPpy-0.11.4", SOURCE, DEST)
-
-print "Building pyOpenSSL_AG"
+print "*********** Building pyOpenSSL_AG\n"
 SetupModule("pyOpenSSL", SOURCE, DEST)
 
-print "Building pyGlobus"
-if sys.platform == 'win32':
-    os.environ['GLOBUS_LOCATION']=os.path.join(SOURCE,'WinGlobus')
-    flavor = 'win32'
-elif sys.platform == 'linux2' or sys.platform == 'darwin':
-    if sys.maxint == 9223372036854775807L:
-        flavor = 'gcc64dbgpthr'
-    else:
-        flavor = 'gcc32dbgpthr'
-else:
-    print "Couldn't build pyGlobus; unsupported platform :", sys.platform
-    sys.exit(1)
+print "*********** Building bajjer\n"
+SetupModule("bajjer-0.2.3", SOURCE, DEST)
 
-os.chdir(os.path.join(SOURCE,'pyGlobus'))
+print "*********** Building feedparser\n"
+SetupModule("feedparser", SOURCE, DEST)
 
-os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','clean',
-          '--all', '--flavor=%s'%(flavor,))
-if sys.platform == 'win32':
-    os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','build',
-              '--flavor=%s' % (flavor,))
-    os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','install',
-              '--flavor=%s' % (flavor,),
-              '--prefix=%s' % (DEST,), 
-              '--no-compile')
-else:
-    os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','build',
-              '--run-swig',
-              '--with-modules=io,security,util',
-              '--flavor=%s' % (flavor,))
-    os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','install',
-              '--with-modules=io,security,util',
-              '--flavor=%s' % (flavor,),
-              '--prefix=%s' % (DEST,), 
-              '--no-compile')
-    
+print "*********** Building pyxml\n"
+SetupModule("PyXML-0.8.4", SOURCE, DEST)
+
+print "*********** Building ZopeInterface\n"
+SetupModule("ZopeInterface-3.0.1", SOURCE, DEST)
+
+print "*********** Building zsi\n"
+SetupModule("zsi", SOURCE, DEST)
+
+print "*********** Building m2crypto\n"
+SetupModule("m2crypto-0.15", SOURCE, DEST)

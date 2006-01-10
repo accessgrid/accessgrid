@@ -21,7 +21,7 @@ if not os.environ.has_key('AGBUILDROOT'):
     sys.exit(1)
 
 if sys.platform == 'win32' and not os.environ.has_key('MSVC_VERSION'):
-    print "MSVC_VERSION environment must be set, or pyOpenSSL and pyGlobus will not build correctly."
+    print "MSVC_VERSION environment must be set, or pyOpenSSL will not build correctly."
     sys.exit(1)
     
 # Build packages according to the command line
@@ -77,13 +77,6 @@ if sys.platform == 'linux2':
 parser.add_option("-r", "--rebuild", action="store_true", dest="rebuild",
                   help="Rebuild an installer from a previously used build dir.")
 options, args = parser.parse_args()
-
-#
-# The openssl in winglobus is critical put it in our path
-#
-if sys.platform == 'win32':
-    oldpath = os.environ['PATH']
-    os.environ['PATH'] = os.path.join(SourceDir, "WinGlobus", "bin")+";"+oldpath
 
 # Build Name
 #  This is the default name we use for the installer
@@ -188,9 +181,11 @@ if not oldpath:
     nppath = os.pathsep.join([npath, oldpath])
 else:
     nppath = npath
+
 os.environ['PYTHONPATH'] = nppath
 
 # Build stuff that needs to be built for modules to work
+#os.chdir(StartDir)
 
 if sys.platform != 'darwin':
     cmd = "%s %s" % (sys.executable, "BuildOpenSSL.py")
@@ -202,37 +197,12 @@ if sys.platform == 'win32':
     cmd = "%s %s" % ("MakeVfwScan.bat", DestDir)
     os.system(cmd)
     os.chdir(td)
+
      
 # Build the other python modules
 cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
                           BuildDir, DestDir)
 os.system(cmd)
-
-# run the tests
-os.chdir(os.path.join(BuildDir, "tests"))
-testfile = "%s-test.html" % DestDir
-if sys.platform != 'darwin':
-    os.system("%s test_dist.py --html -o %s -t %s" % (sys.executable,
-                                            "%s-test.html" % DestDir,
-                                                  BuildTime))
-
-# Generate epydoc documentation
-os.chdir(BuildDir)
-
-if sys.platform == 'win32':
-    ep = os.path.join(os.path.dirname(sys.executable), "Scripts",
-                      "epydoc.py")
-elif sys.platform == 'linux2' or sys.platform == 'darwin':
-    ep = find_executable("epydoc")
-
-cmd = "%s %s --html -o %s -n \"Access Grid Toolkit\" -u \"%s\" AccessGrid" % \
-      (sys.executable, ep, os.path.join(DestDir, 'doc','Developer'),
-       "http://www.mcs.anl.gov/fl/research/accessgrid")
-
-try:
-    os.system(cmd)
-except:
-    print "Failed to generate docs"
 
 # put the old python path back
 if oldpath is not None:
@@ -306,14 +276,3 @@ if len(nfl) == 1:
 else:
     pkg_file = None
 
-if os.path.exists(testfile):
-    hfi = file(testfile, "r")
-    lines = hfi.readlines()
-    hfi.close()
-        
-    hfo = file(testfile, "w+")
-    for line in lines:
-        hfo.write(line.replace("PACKAGEFILE", "%s" % str(pkg_file)))
-    hfo.close()
-else:
-    print "Test results not found !"
