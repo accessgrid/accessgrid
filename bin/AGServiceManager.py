@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.58 2006-01-10 22:42:09 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.59 2006-01-10 23:17:17 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -75,17 +75,6 @@ def main():
 
     log = app.GetLog()
     Log.SetDefaultLevel(Log.ServiceManager, Log.DEBUG)
-
-#     if not app.certificateManager.GetDefaultIdentity():
-#         log.error('No default identity, check your certificates.')
-#         print 'No default identity, check your certificates.'
-#         sys.exit(-1)
-#         
-#     if not app.certificateManager.HaveValidProxy():
-#         msg = 'No valid proxy; exiting.'
-#         log.error(msg)
-#         print msg
-#         sys.exit(-1)
 
     port = app.GetOption("port")
         
