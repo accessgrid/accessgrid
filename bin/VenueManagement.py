@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.159 2006-01-10 22:06:12 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.160 2006-01-10 22:22:09 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.159 2006-01-10 22:06:12 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.160 2006-01-10 22:22:09 turam Exp $"
 
 # Standard imports
 import sys
@@ -605,12 +605,13 @@ class VenueServerAddress(wxPanel):
         elif protohostportre.match(venueServerUrl):
             protohostport = venueServerUrl
             venueServerUrl = '%s/VenueServer' % (protohostport)
-            
-        self.addressText.SetValue(venueServerUrl)
 
         wxBeginBusyCursor()
         self.application.ConnectToServer(venueServerUrl)
         wxEndBusyCursor()
+        
+        self.addressText.SetValue(venueServerUrl)
+
 
     def __doLayout(self):
         venueServerAddressBox = wxBoxSizer(wxVERTICAL)
