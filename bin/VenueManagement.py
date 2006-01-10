@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.158 2005-11-08 20:43:22 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.159 2006-01-10 22:06:12 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.158 2005-11-08 20:43:22 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.159 2006-01-10 22:06:12 turam Exp $"
 
 # Standard imports
 import sys
@@ -111,6 +111,12 @@ class VenueManagementClient(wxApp):
 
         self.app = Toolkit.WXGUIApplication()
         self.app.Initialize("VenueManagement")
+        
+        self.certmgr = self.app.GetCertificateManager()
+        c = self.app.GetContext()
+        
+        
+        
         return true
 
     def __setEvents(self):
@@ -386,7 +392,7 @@ class VenueManagementClient(wxApp):
         try:
             wxBeginBusyCursor()
             log.debug("VenueManagementClient.ConnectToServer: Connect to server")
-            defaultId = self.app.certificateManager.GetDefaultIdentity()
+            defaultId = self.certmgr.GetDefaultIdentity()
             transdict = {}
             if defaultId:
                 transdict = {"cert_file":defaultId.GetPath(),
@@ -497,7 +503,7 @@ class VenueManagementClient(wxApp):
             log.debug("VenueManagementClient.SetCurrentVenue: Set current venue to: %s, %s" % (str(venue.name),
                                                          str(venue.uri)))
             self.currentVenue = venue
-            defaultId = self.app.certificateManager.GetDefaultIdentity()
+            defaultId = self.app.GetCertificateManager().GetDefaultIdentity()
             transdict = {}
             if defaultId:
                 transdict = {"cert_file":defaultId.GetPath(),
@@ -1554,7 +1560,7 @@ class GeneralPanel(wxPanel):
         try:
             wxBeginBusyCursor()
             log.debug("VenueParamFrame.__LoadVenues: Load venues from: %s " % URL)
-            defaultId = self.application.app.certificateManager.GetDefaultIdentity()
+            defaultId = Toolkit.GetDefaultApplication().GetCertificateManager().GetDefaultIdentity()
             transdict = {}
             if defaultId:
                 transdict = {"cert_file":defaultId.GetPath(),
@@ -2185,7 +2191,7 @@ class ModifyVenueFrame(VenueParamFrame):
         self.venue = venueList.GetClientData(item)
 
         # Get the real venue description
-        defaultId = self.application.app.certificateManager.GetDefaultIdentity()
+        defaultId = Toolkit.GetDefaultApplication().GetCertificateManager().GetDefaultIdentity()
         transdict = {}
         if defaultId:
             transdict = {"cert_file":defaultId.GetPath(),
