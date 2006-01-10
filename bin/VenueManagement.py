@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.161 2006-01-10 22:34:36 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.162 2006-01-10 23:10:50 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.161 2006-01-10 22:34:36 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.162 2006-01-10 23:10:50 turam Exp $"
 
 # Standard imports
 import sys
@@ -49,7 +49,6 @@ from AccessGrid import Toolkit
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig
 from AccessGrid.Platform import IsWindows, IsOSX
 
-from AccessGrid.VenueClientUI import ContentListPanel
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
 
 log = Log.GetLogger(Log.VenueManagement)
@@ -2250,6 +2249,7 @@ class ModifyVenueFrame(VenueParamFrame):
         else:
             self.staticAddressingPanel.panel.Enable(true)
             self.staticAddressingPanel.staticAddressingButton.SetValue(true)
+            self.staticAddressingPanel.genAddrButton.Enable(true)
             for stream in self.venue.streams:
                 if(stream.capability.type == Capability.VIDEO):
                     sl = stream.location
