@@ -1,11 +1,11 @@
 #!/usr/bin/python
 #-----------------------------------------------------------------------------
-# Name:        EventService.py
+# Name:        VenueEventClient.py
 # Purpose:     A group messaging service client that handles Access Grid
 #                 venue events.
 # Created:     2005/09/09
-# RCS-ID:      $Id: VenueEventClient.py,v 1.2 2005-09-28 20:14:43 eolson Exp $
-# Copyright:   (c) 2005 
+# RCS-ID:      $Id: VenueEventClient.py,v 1.3 2006-01-10 23:33:02 eolson Exp $
+# Copyright:   (c) 2005,2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
@@ -17,6 +17,7 @@ Log.SetDefaultLevel(Log.EventClient, Log.DEBUG)
 
 from AccessGrid.Descriptions import EventDescription
 from AccessGrid.XMLGroupMsgClient import XMLGroupMsgClient
+from AccessGrid.GroupMsgClient import GroupMsgClient
 
 class VenueEventClient:
     '''
@@ -25,21 +26,26 @@ class VenueEventClient:
     Doesn't inherit from GroupMsgClientBase since RegisterEventCallback
        is different and uses different arguments than a standard Receive.
     '''
-    defaultGroupMsgClientClass = XMLGroupMsgClient
-    def __init__(self, location, privateId, channel, groupMsgClientClass=None):
+    defaultGroupMsgClientClassList = [XMLGroupMsgClient, GroupMsgClient]
+    def __init__(self, location, privateId, channel, groupMsgClientClassList=[GroupMsgClient]):
         self.id = privateId
         self.location = location
         self.channelId = channel
         self.eventCallbacks = {}
         self.madeConnectionCallback = None
         self.lostConnectionCallback = None
-        if groupMsgClientClass != None:
-            self.groupMsgClientClass = groupMsgClientClass
+        if len(groupMsgClientClassList) > 0:
+            self.groupMsgClientClass = groupMsgClientClassList[0]
+            newGroupMsgClientClassList = groupMsgClientClassList[1:]
         else:
-            self.groupMsgClientClass = self.defaultGroupMsgClientClass
+            self.groupMsgClientClass = self.defaultGroupMsgClientClassList[0]
+            newGroupMsgClientClassList = self.defaultGroupMsgClientClassList[1:]
 
         #self.groupMsgClient = apply(XMLGroupMsgClient, [location, privateId, channel] )
-        self.groupMsgClient = apply(self.groupMsgClientClass, [location, privateId, channel])
+        if len(newGroupMsgClientClassList) == 0:
+            self.groupMsgClient = apply(self.groupMsgClientClass, [location, privateId, channel])
+        else:
+            self.groupMsgClient = apply(self.groupMsgClientClass, [location, privateId, channel, newGroupMsgClientClassList])
 
         self.groupMsgClient.RegisterReceiveCallback(self.Receive)
         self.groupMsgClient.RegisterLostConnectionCallback(self.LostConnection)
@@ -117,9 +123,11 @@ class TestMessages:
             self.venueEventClient.RegisterEventCallback("Test", self.Receive)
             self.venueEventClient.RegisterLostConnectionCallback(self.LostConnection)
             self.venueEventClient.RegisterMadeConnectionCallback(self.StartSending)
+        from twisted.internet import reactor
+        self.reactor = reactor
 
     def StartSending(self):
-        reactor.callLater(0, self.Send)
+        self.reactor.callLater(0, self.Send)
 
     def SetMsgData(self, data):
         self.msgData = data
@@ -145,7 +153,7 @@ class TestMessages:
 
         # Prepare to call again until all messages are sent
         if self.numSentMessages < self.numExpectedMsgs:
-            reactor.callLater(0, self.Send) 
+            self.reactor.callLater(0, self.Send) 
         else:
             print "Finished sending test messages."
 
@@ -154,7 +162,7 @@ class TestMessages:
         if self.multiClient: # finish after a timeout
             if time.time() - self.startTime > self.multiClientTimeout:
                 print "Finished (allotted time)"
-                reactor.stop()
+                self.reactor.stop()
         else:                # finish after i receive all my own messages
             if self.numMessagesReceived >= self.numExpectedMsgs:
                 self.finishTime = time.time()
@@ -166,19 +174,19 @@ class TestMessages:
     def LostConnection(self, connector, reason):
         print 'TestMessages client connection lost:', reason.getErrorMessage()
         print "Stopping."
-        if reactor.running:
-            reactor.stop()
+        if self.reactor.running:
+            self.reactor.stop()
      
 
-def testMain(location, privateId, channel="Test", msgLength=13, numMsgs=100, groupMsgClientClass=None, multipleClients=False):
+def testMain(location, privateId, channel="Test", msgLength=13, numMsgs=100, groupMsgClientClassList=None, multipleClients=False):
     #from PickleGroupMsgClient import PickleGroupMsgClient
-    vec = VenueEventClient(location, privateId, channel, groupMsgClientClass=groupMsgClientClass)
+    vec = VenueEventClient(location, privateId, channel, groupMsgClientClassList=groupMsgClientClassList)
     tm = TestMessages(vec=vec, numMsgs=numMsgs, multipleClients=multipleClients)
     tm.SetMsgData(GenerateRandomString(length=msgLength))
     vec.Start()
     #reactor.callLater(0, tm.Send) # wait 2 secs
 
-def mainWithUI(group="Test", groupMsgClientClass=None):
+def mainWithUI(group="Test", groupMsgClientClassList=None, eventPort=8002):
 
     # Test for the event client/service. After starting the event service,
     # run this client. A UI will open which allows you to transmit key values.
@@ -245,9 +253,8 @@ def mainWithUI(group="Test", groupMsgClientClass=None):
             
             # start the event server thread
             eventHost = "localhost"
-            eventPort = 8002
             channelId = group
-            self.eventClient = VenueEventClient((eventHost, eventPort), 1, channelId, groupMsgClientClass=groupMsgClientClass)
+            self.eventClient = VenueEventClient((eventHost, eventPort), 1, channelId, groupMsgClientClassList=groupMsgClientClassList)
             self.eventClient.RegisterEventCallback("test", self.OnTest)
             self.eventClient.RegisterMadeConnectionCallback(self.MadeConnection)
             self.eventClient.RegisterLostConnectionCallback(self.LostConnection)
@@ -266,6 +273,7 @@ def mainWithUI(group="Test", groupMsgClientClass=None):
             self.show_status("Connecting to %s on port %d." % 
                              (eventHost, eventPort))
 
+            from twisted.internet import reactor
             reactor.interleave(wxCallAfter)
 
         def MadeConnection(self):
@@ -302,6 +310,7 @@ def mainWithUI(group="Test", groupMsgClientClass=None):
 
         def LostConnection(self, connector, reason):
             print "wx Test: Lost connection", reason
+            from twisted.internet import reactor
             reactor.addSystemEventTrigger('after', 'shutdown', self.Destroy)
             reactor.stop()
 
@@ -313,7 +322,7 @@ def mainWithUI(group="Test", groupMsgClientClass=None):
     #app.MainLoop()
     return app
 
-def main():
+def main(eventPort=8002):
     wxapp = None
     if "--psyco" in sys.argv:
         print "optimizing with psyco."
@@ -323,7 +332,7 @@ def main():
     testMessageSize = 13
     useUI = True
     multipleClients = False
-    location = ('localhost',8002)
+    location = ('localhost',eventPort)
     privateId = GenerateRandomString(length=6)
     format='xml' # or 'pickle'
     numMsgs = 10
@@ -347,18 +356,19 @@ def main():
 
     if format=='xml':
         from AccessGrid.XMLGroupMsgClient import XMLGroupMsgClient
-        groupMsgClientClass = XMLGroupMsgClient
+        groupMsgClientClassList = [XMLGroupMsgClient, GroupMsgClient]
     elif format=='pickle':
         from AccessGrid.PickleGroupMsgClient import PickleGroupMsgClient
-        groupMsgClientClass = PickleGroupMsgClient
+        groupMsgClientClassList = [PickleGroupMsgClient, GroupMsgClient]
     else:
         raise Exception("Unknown format")
 
     if useUI:
-        wxapp = mainWithUI(group=group, groupMsgClientClass=groupMsgClientClass)
+        wxapp = mainWithUI(group=group, groupMsgClientClassList=groupMsgClientClassList, eventPort=eventPort)
         wxapp.MainLoop()
     else:
-        testMain(location=location, privateId=privateId, channel=group, msgLength=testMessageSize, numMsgs=numMsgs, groupMsgClientClass=groupMsgClientClass, multipleClients=multipleClients)
+        testMain(location=location, privateId=privateId, channel=group, msgLength=testMessageSize, numMsgs=numMsgs, groupMsgClientClassList=groupMsgClientClassList, multipleClients=multipleClients)
+        from twisted.internet import reactor
         reactor.run()
 
 if __name__ == '__main__':
@@ -376,5 +386,5 @@ if __name__ == '__main__':
 
     main()
 
-from twisted.internet import reactor
+from wxPython.wx import *
 
