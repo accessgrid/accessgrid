@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.160 2006-01-10 22:22:09 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.161 2006-01-10 22:34:36 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.160 2006-01-10 22:22:09 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.161 2006-01-10 22:34:36 turam Exp $"
 
 # Standard imports
 import sys
@@ -23,6 +23,7 @@ import time
 import re
 import webbrowser
 import cPickle
+from optparse import Option
 
 # UI imports
 from wxPython.wx import *
@@ -110,13 +111,21 @@ class VenueManagementClient(wxApp):
         self.EnableMenu(0)
 
         self.app = Toolkit.WXGUIApplication()
+        
+        urlOption = Option("--url", type="string", dest="url",
+                           default="", metavar="URL",
+                           help="URL of venue to enter on startup.")
+        self.app.AddCmdLineOption(urlOption)
+
         self.app.Initialize("VenueManagement")
         
         self.certmgr = self.app.GetCertificateManager()
         c = self.app.GetContext()
         
-        
-        
+        venueServerUrl = self.app.GetOption('url')
+        if venueServerUrl:
+            self.ConnectToServer(venueServerUrl)
+            
         return true
 
     def __setEvents(self):
@@ -455,10 +464,13 @@ class VenueManagementClient(wxApp):
                 dp.changeButton.Enable(true)
                 dp.intervalButton.SetValue(true)
 
-            # fill in address
+            # add address to address list, if not already there
             if self.address.addressText.FindString(self.serverUrl) == wxNOT_FOUND:
-                log.debug("VenueManagementClient.ConnectToServer: Set address: %s" %self.serverUrl)
+                log.debug("VenueManagementClient.ConnectToServer: Add address: %s" %self.serverUrl)
                 self.address.addressText.Append(self.serverUrl)
+                
+            # set the address displayed
+            self.address.addressText.SetValue(self.serverUrl)
 
             # fill in encryption
             key = int(self.server.GetEncryptAllMedia())
@@ -610,7 +622,7 @@ class VenueServerAddress(wxPanel):
         self.application.ConnectToServer(venueServerUrl)
         wxEndBusyCursor()
         
-        self.addressText.SetValue(venueServerUrl)
+        #self.addressText.SetValue(venueServerUrl)
 
 
     def __doLayout(self):
@@ -2421,41 +2433,3 @@ if __name__ == "__main__":
     app.SetLogger(debugMode)
     app.MainLoop()
 
-    """class Application:
-        def __init__(self):
-            self.serverUrl = ''
-        
-        def OpenHelpURL(self, url):
-            print 'open help'
-            
-        def ConnectToServer(self, URL):
-            print 'connect to server'
-            
-        def GetCName(self, distinguishedName):
-            print 'get c name'
-    
-        def SetCurrentVenue(self, venue = None):
-            print 'set current'
-
-        def DeleteVenue(self, venue):
-            print 'delete venue'
-
-        def DeleteAdministrator(self, dnName):
-            print 'delete admin'
-
-        def ModifyAdministrator(self, oldName, dnName):
-            print 'modify admin'
-        
-        def SetRandom(self):
-            print 'set random'
-
-        def SetInterval(self, address, mask):
-            print 'set interval'
-
-        def SetEncryption(self, value):
-            print 'set encryption'
-    """
-
-    #pp = wxPySimpleApp()
-    #addVenueDialog = AddVenueFrame(None, -1, "", [], Application())
-    #addVenueDialog.Destroy()
