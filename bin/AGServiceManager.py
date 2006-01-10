@@ -1,9 +1,9 @@
-#!/usr/bin/python2 
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.57 2005-05-31 21:35:17 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.58 2006-01-10 22:42:09 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
