@@ -65,3 +65,6 @@ SetupModule("zsi", SOURCE, DEST)
 
 print "*********** Building m2crypto\n"
 SetupModule("m2crypto-0.15", SOURCE, DEST)
+
+print "*********** Building twisted\n"
+SetupModule("Twisted-2.1.0", SOURCE, DEST)
