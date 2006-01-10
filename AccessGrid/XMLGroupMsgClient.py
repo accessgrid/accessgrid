@@ -3,7 +3,7 @@
 # Name:        XMLGroupMsgClient.py
 # Purpose:     A group messaging service xml layer.
 # Created:     2005/09/09
-# RCS-ID:      $Id: XMLGroupMsgClient.py,v 1.2 2005-09-23 22:22:20 eolson Exp $
+# RCS-ID:      $Id: XMLGroupMsgClient.py,v 1.3 2006-01-10 23:28:41 eolson Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -30,8 +30,8 @@ except:
  
 
 class XMLGroupMsgClient(GroupMsgClientBase):
-    def __init__(self, location, privateId, channel):
-        GroupMsgClientBase.__init__(self, location, privateId, channel, groupMsgClientClass=GroupMsgClient)
+    def __init__(self, location, privateId, channel, groupMsgClientClassList=[GroupMsgClient]):
+        GroupMsgClientBase.__init__(self, location, privateId, channel, groupMsgClientClassList=groupMsgClientClassList)
 
     def Send(self, data):
         xml = self._Serialize(data)

@@ -3,7 +3,7 @@
 # Name:        GroupMsgClientBase.py
 # Purpose:     A base class for building more complex messaging services.
 # Created:     2005/09/09
-# RCS-ID:      $Id: GroupMsgClientBase.py,v 1.1 2005-09-23 22:08:17 eolson Exp $
+# RCS-ID:      $Id: GroupMsgClientBase.py,v 1.2 2006-01-10 23:28:41 eolson Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,11 +17,17 @@ class GroupMsgClientBase:
     Inheriting this class mostly provides callback code.
     '''
 
-    def __init__(self, location, privateId, channel, groupMsgClientClass=GroupMsgClient):
+    def __init__(self, location, privateId, channel, groupMsgClientClassList=[GroupMsgClient]):
         self.receiveCallback = None
         self.lostConnectionCallback = None
         self.madeConnectionCallback = None
-        self.groupMsgClient = apply(groupMsgClientClass, [location, privateId, channel])
+        if len(groupMsgClientClassList) < 1:
+            raise Exception("Expecting a group message related class.")
+        if len(groupMsgClientClassList) > 1:
+            newGroupMsgClientClassList = groupMsgClientClassList[1:]
+            self.groupMsgClient = apply(groupMsgClientClassList[0], [location, privateId, channel, newGroupMsgClientClassList])
+        else: # len == 1; last one should be either GroupMsgClient or SecureGroupMsgClient
+            self.groupMsgClient = apply(groupMsgClientClassList[0], [location, privateId, channel])
         self.groupMsgClient.RegisterReceiveCallback(self.Receive)
         self.groupMsgClient.RegisterLostConnectionCallback(self.LostConnection)
         self.groupMsgClient.RegisterMadeConnectionCallback(self.MadeConnection)
@@ -124,7 +130,9 @@ class SingleMessageTester:
 
 if __name__ == '__main__':
     # How to use multiple layers (example: first layer XML, second layer custom events)
-    groupMsgLayer2 = Layer2(location=('localhost',8002), privateId="testId", channel="Test", groupMsgClientClass=Layer1)
+    groupMsgLayer2 = Layer2(location=('localhost',8002), privateId="testId", channel="Test", groupMsgClientClassList=[Layer1,GroupMsgClient])
+    # The last parameter is the list of layers.  The last one should be GroupMsgClient or SecureGroupMsgClient.
+    # groupMsgLayer2 = Layer2(location=('localhost',8002), privateId="testId", channel="Test", groupMsgClientClassList=[Layer1,GroupMsgClient])
     groupMsgLayer2.Start() # make connection
 
     tester = SingleMessageTester(groupMsgLayer2)
