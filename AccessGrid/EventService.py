@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service with an AccessGrid
 #                 VenueServerServiceInterface.
 # Created:     2005/09/09
-# RCS-ID:      $Id: EventService.py,v 1.27 2005-09-28 20:21:20 eolson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.28 2006-01-10 20:30:09 eolson Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,19 +13,19 @@ import sys
 from GroupMsgService import GroupMsgService
 from VenueServerService import VenueServerServiceDescription
 
-class EventService(GroupMsgService):
-    def __init__(self, name, description, id, type, location):
-        GroupMsgService.__init__(self, location)
+class EventService:
+    def __init__(self, name, description, id, type, location, groupMsgService=GroupMsgService):
+        self.groupMsgService = groupMsgService(location)
         self.name = name
         self.description = description
         self.id = id
         self.type = type
 
     def Start(self):
-        GroupMsgService.Start(self)
+        self.groupMsgService.Start()
 
     def Stop(self):
-        GroupMsgService.Stop(self)
+        self.groupMsgService.Stop()
 
     shutdown = Stop
 
@@ -42,19 +42,19 @@ class EventService(GroupMsgService):
         return self.description
 
     def GetChannelNames(self):
-        return GroupMsgService.GetGroupNames(self)
+        return self.groupMsgService.GetGroupNames()
 
     def CreateChannel(self, channelId):
-        return GroupMsgService.CreateGroup(self, channelId)
+        return self.groupMsgService.CreateGroup(channelId)
 
     def DestroyChannel(self, channelId):
-        return GroupMsgService.RemoveGroup(self, channelId)
+        return self.groupMsgService.RemoveGroup(channelId)
 
     #def GetChannel(self, channelId):
     #    raise UnimplementedException
 
     def HasChannel(self, channelId):
-        return GroupMsgService.HasGroup(self, channelId)
+        return self.groupMsgService.HasGroup(channelId)
 
     def GetLocation(self):
         '''
@@ -68,7 +68,7 @@ def main():
             showPerformance = True
 
     eventService = EventService(name="test", description="atest", id="testId", type="event", location=('localhost',8002))
-    eventService.CreateGroup("Test")
+    eventService.CreateChannel("Test")
     eventService.Start()
     from twisted.internet import reactor
     reactor.run()
