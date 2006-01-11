@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service with an AccessGrid
 #                 VenueServerServiceInterface.
 # Created:     2005/09/09
-# RCS-ID:      $Id: EventService.py,v 1.28 2006-01-10 20:30:09 eolson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.29 2006-01-11 17:24:06 eolson Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -28,6 +28,7 @@ class EventService:
         self.groupMsgService.Stop()
 
     shutdown = Stop
+    start = Start
 
     def GetId(self):
         return self.id
@@ -38,7 +39,7 @@ class EventService:
         '''
         return VenueServerServiceDescription(self.id, self.name,
                                              self.description, self.type,
-                                             self.location, self.GetChannelNames())
+                                             self.groupMsgService.location, self.GetChannelNames())
         return self.description
 
     def GetChannelNames(self):
@@ -60,7 +61,7 @@ class EventService:
         '''
         A tuple of (host, port)
         '''
-        return self.location
+        return self.groupMsgService.location
 
 def main():
     for arg in sys.argv:
