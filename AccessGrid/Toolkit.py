@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.108 2006-01-09 20:11:49 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.109 2006-01-11 16:47:18 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.108 2006-01-09 20:11:49 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.109 2006-01-11 16:47:18 eolson Exp $"
 
 # Standard imports
 import os
@@ -412,6 +412,8 @@ class AppBase:
     def GetCertificateManager(self):
         if self._certificateManager == None:
             from AccessGrid.Security import CertificateManager
+            if self.userConfig == None:
+                raise Exception("No user config dir, Toolkit may not be initialized.")
             configDir = self.userConfig.GetConfigDir()
             self._certificateManager = CertificateManager.CertificateManager(configDir)
             self.log.info("Initialized certificate manager.")
