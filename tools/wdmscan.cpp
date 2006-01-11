@@ -55,7 +55,7 @@ DirectShowScanner::DirectShowScanner() {
 
          //debug_msg("DirectShowScanner::DirectShowScanner():  found nameBuf/FriendlyName=%s\n", nameBuf);
 
-		 fprintf(stderr,"%s\n", nameBuf);
+		 printf("%s\n", nameBuf);
 
          // needs work, but don't add drivers that look like VFW drivers - msp
          if( (strstr(nameBuf, "VFW") == NULL) ) {
