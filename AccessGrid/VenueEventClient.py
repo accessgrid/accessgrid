@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service client that handles Access Grid
 #                 venue events.
 # Created:     2005/09/09
-# RCS-ID:      $Id: VenueEventClient.py,v 1.3 2006-01-10 23:33:02 eolson Exp $
+# RCS-ID:      $Id: VenueEventClient.py,v 1.4 2006-01-11 17:27:26 eolson Exp $
 # Copyright:   (c) 2005,2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,13 +27,15 @@ class VenueEventClient:
        is different and uses different arguments than a standard Receive.
     '''
     defaultGroupMsgClientClassList = [XMLGroupMsgClient, GroupMsgClient]
-    def __init__(self, location, privateId, channel, groupMsgClientClassList=[GroupMsgClient]):
+    def __init__(self, location, privateId, channel, groupMsgClientClassList=None):
         self.id = privateId
         self.location = location
         self.channelId = channel
         self.eventCallbacks = {}
         self.madeConnectionCallback = None
         self.lostConnectionCallback = None
+        if groupMsgClientClassList == None:
+            groupMsgClientClassList = self.defaultGroupMsgClientClassList
         if len(groupMsgClientClassList) > 0:
             self.groupMsgClientClass = groupMsgClientClassList[0]
             newGroupMsgClientClassList = groupMsgClientClassList[1:]
@@ -41,11 +43,11 @@ class VenueEventClient:
             self.groupMsgClientClass = self.defaultGroupMsgClientClassList[0]
             newGroupMsgClientClassList = self.defaultGroupMsgClientClassList[1:]
 
-        #self.groupMsgClient = apply(XMLGroupMsgClient, [location, privateId, channel] )
+        #self.groupMsgClient = XMLGroupMsgClient(location, privateId, channel, [GroupMsgClient])
         if len(newGroupMsgClientClassList) == 0:
-            self.groupMsgClient = apply(self.groupMsgClientClass, [location, privateId, channel])
+            self.groupMsgClient = self.groupMsgClientClass(location, privateId, channel)
         else:
-            self.groupMsgClient = apply(self.groupMsgClientClass, [location, privateId, channel, newGroupMsgClientClassList])
+            self.groupMsgClient = self.groupMsgClientClass(location, privateId, channel, newGroupMsgClientClassList)
 
         self.groupMsgClient.RegisterReceiveCallback(self.Receive)
         self.groupMsgClient.RegisterLostConnectionCallback(self.LostConnection)
@@ -53,7 +55,7 @@ class VenueEventClient:
 
     def MadeConnection(self):
         if self.madeConnectionCallback != None:
-            apply(self.madeConnectionCallback)
+            self.madeConnectionCallback()
         else:
             log.info("VenueEventClient made connection.")
 
@@ -66,11 +68,11 @@ class VenueEventClient:
         eventDesc = event
         if eventDesc.eventType in self.eventCallbacks.keys():
             for callback in self.eventCallbacks[eventDesc.eventType]:
-                apply(callback, [eventDesc])
+                callback(eventDesc)
 
     def LostConnection(self, connector, reason):
         if self.lostConnectionCallback != None:
-            apply(self.lostConnectionCallback, [connector, reason])
+            self.lostConnectionCallback(connector, reason)
         else:
             log.info("VenueEventClient lost connection.")
 
