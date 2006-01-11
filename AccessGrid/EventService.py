@@ -1,74 +1,32 @@
 #!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        EventService.py
-# Purpose:     A group messaging service with an AccessGrid
-#                 VenueServerServiceInterface.
-# Created:     2005/09/09
-# RCS-ID:      $Id: EventService.py,v 1.29 2006-01-11 17:24:06 eolson Exp $
-# Copyright:   (c) 2005 
+# Purpose:     A secure version of the EventService.
+# Created:     2006/01/10
+# RCS-ID:      $Id: EventService.py,v 1.30 2006-01-11 18:56:08 eolson Exp $
+# Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import sys
-from GroupMsgService import GroupMsgService
-from VenueServerService import VenueServerServiceDescription
 
-class EventService:
-    def __init__(self, name, description, id, type, location, groupMsgService=GroupMsgService):
-        self.groupMsgService = groupMsgService(location)
-        self.name = name
-        self.description = description
-        self.id = id
-        self.type = type
+from SecureGroupMsgService import SecureGroupMsgService
+from InsecureEventService import InsecureEventService
 
-    def Start(self):
-        self.groupMsgService.Start()
+class SecureEventService(InsecureEventService):
+    # An EventService with encryption.  Simply changes the default groupMsgService.
+    def __init__(self, name, description, id, type, location, groupMsgService=SecureGroupMsgService):
+        InsecureEventService.__init__(self, name=name, description=description, id=id, type=type, 
+                location=location, groupMsgService=groupMsgService)
 
-    def Stop(self):
-        self.groupMsgService.Stop()
-
-    shutdown = Stop
-    start = Start
-
-    def GetId(self):
-        return self.id
-
-    def GetDescription(self):
-        '''
-        Returns a VenueServerServiceDescription.
-        '''
-        return VenueServerServiceDescription(self.id, self.name,
-                                             self.description, self.type,
-                                             self.groupMsgService.location, self.GetChannelNames())
-        return self.description
-
-    def GetChannelNames(self):
-        return self.groupMsgService.GetGroupNames()
-
-    def CreateChannel(self, channelId):
-        return self.groupMsgService.CreateGroup(channelId)
-
-    def DestroyChannel(self, channelId):
-        return self.groupMsgService.RemoveGroup(channelId)
-
-    #def GetChannel(self, channelId):
-    #    raise UnimplementedException
-
-    def HasChannel(self, channelId):
-        return self.groupMsgService.HasGroup(channelId)
-
-    def GetLocation(self):
-        '''
-        A tuple of (host, port)
-        '''
-        return self.groupMsgService.location
+EventService = SecureEventService
 
 def main():
-    for arg in sys.argv:
-        if arg.startswith("--perf"):
-            showPerformance = True
+    from AccessGrid.Toolkit import Service
+    # Initialize the toolkit so Access Grid certificates will be available.
+    Service.instance().Initialize("SecureEventService")
 
-    eventService = EventService(name="test", description="atest", id="testId", type="event", location=('localhost',8002))
+    eventService = SecureEventService(name="test", description="atest", id="testId", type="event", location=('localhost',7002))
     eventService.CreateChannel("Test")
     eventService.Start()
     from twisted.internet import reactor
@@ -76,8 +34,5 @@ def main():
 
 
 if __name__ == '__main__':
-    if "--psyco" in sys.argv:
-        import psyco
-        psyco.full()
     main()
 

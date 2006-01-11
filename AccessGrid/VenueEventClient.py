@@ -1,330 +1,45 @@
 #!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        VenueEventClient.py
-# Purpose:     A group messaging service client that handles Access Grid
-#                 venue events.
-# Created:     2005/09/09
-# RCS-ID:      $Id: VenueEventClient.py,v 1.5 2006-01-11 18:36:14 eolson Exp $
-# Copyright:   (c) 2005,2006
+# Purpose:     A secure group messaging service client that handles Access
+#                 Grid venue events.
+# Created:     2006/01/10
+# RCS-ID:      $Id: VenueEventClient.py,v 1.6 2006-01-11 18:56:08 eolson Exp $
+# Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-import sys, time
-
-from AccessGrid import Log
-log = Log.GetLogger(Log.EventClient)
-Log.SetDefaultLevel(Log.EventClient, Log.DEBUG)
-
-from AccessGrid.Descriptions import EventDescription
+import sys
+from twisted.internet import threadedselectreactor
+try:
+    threadedselectreactor.install()
+    from twisted.internet import reactor
+except:
+    pass
+from AccessGrid.InsecureVenueEventClient import mainWithUI, GenerateRandomString
+from AccessGrid.InsecureVenueEventClient import InsecureVenueEventClient, TestMessages
+from AccessGrid.SecureGroupMsgClient import SecureGroupMsgClient
 from AccessGrid.XMLGroupMsgClient import XMLGroupMsgClient
-from AccessGrid.GroupMsgClient import GroupMsgClient
 
-class VenueEventClient:
+class SecureVenueEventClient(InsecureVenueEventClient):
     '''
-    Sends and Receives Venue group events.
-
-    Doesn't inherit from GroupMsgClientBase since RegisterEventCallback
-       is different and uses different arguments than a standard Receive.
+    A version of the EventClient that supports encryption.
     '''
-    defaultGroupMsgClientClassList = [XMLGroupMsgClient, GroupMsgClient]
-    def __init__(self, location, privateId, channel, groupMsgClientClassList=None):
-        self.id = privateId
-        self.location = location
-        self.channelId = channel
-        self.eventCallbacks = {}
-        self.madeConnectionCallback = None
-        self.lostConnectionCallback = None
-        if groupMsgClientClassList == None:
-            groupMsgClientClassList = self.defaultGroupMsgClientClassList
-        if len(groupMsgClientClassList) > 0:
-            self.groupMsgClientClass = groupMsgClientClassList[0]
-            newGroupMsgClientClassList = groupMsgClientClassList[1:]
-        else:
-            self.groupMsgClientClass = self.defaultGroupMsgClientClassList[0]
-            newGroupMsgClientClassList = self.defaultGroupMsgClientClassList[1:]
+    defaultGroupMsgClientClassList = [XMLGroupMsgClient, SecureGroupMsgClient]
 
-        #self.groupMsgClient = XMLGroupMsgClient(location, privateId, channel, [GroupMsgClient])
-        if len(newGroupMsgClientClassList) == 0:
-            self.groupMsgClient = self.groupMsgClientClass(location, privateId, channel)
-        else:
-            self.groupMsgClient = self.groupMsgClientClass(location, privateId, channel, newGroupMsgClientClassList)
 
-        self.groupMsgClient.RegisterReceiveCallback(self.Receive)
-        self.groupMsgClient.RegisterLostConnectionCallback(self.LostConnection)
-        self.groupMsgClient.RegisterMadeConnectionCallback(self.MadeConnection)
+VenueEventClient = SecureVenueEventClient
 
-    def MadeConnection(self):
-        if self.madeConnectionCallback != None:
-            self.madeConnectionCallback()
-        else:
-            log.info("VenueEventClient made connection.")
 
-    def Send(self, eventType, data):
-        event = EventDescription(eventType, self.channelId, self.id, data)
-        #reactor.callLater(0, self.groupMsgClient.Send, [event])
-        self.groupMsgClient.Send(event)
-
-    def Receive(self, event):
-        eventDesc = event
-        if eventDesc.eventType in self.eventCallbacks.keys():
-            for callback in self.eventCallbacks[eventDesc.eventType]:
-                callback(eventDesc)
-
-    def LostConnection(self, connector, reason):
-        if self.lostConnectionCallback != None:
-            self.lostConnectionCallback(connector, reason)
-        else:
-            log.info("VenueEventClient lost connection.")
-
-    def RegisterEventCallback(self, eventType, callback):
-        self.eventCallbacks.setdefault(eventType, list())
-        self.eventCallbacks[eventType].append(callback)
-
-    def RegisterMadeConnectionCallback(self, callback):
-        self.madeConnectionCallback = callback
-
-    def RegisterLostConnectionCallback(self, callback):
-        self.lostConnectionCallback = callback
-
-    def Start(self):
-        self.groupMsgClient.Start()
-
-    def Stop(self):
-        self.groupMsgClient.Stop()
-
-# For testing
-def GenerateRandomString(length=6):
-    import string, random
-    random.seed(99)
-    letterList = [random.choice(string.letters) for x in xrange(length)]
-    retStr = "".join(letterList)
-    return retStr
-
-class TestMessages:
-    '''
-    Class for sending test messages on a VenueEventClient.
-    Starts sending test messages after a connection is made.
-    '''
-    numMsgsDefault=10000
-
-    def __init__(self, vec=None, numMsgs=None, multipleClients=False):
-        self.msgData = "1234567890123"
-        if numMsgs == None:
-            self.numExpectedMsgs = numMsgsDefault
-        else:
-            self.numExpectedMsgs = numMsgs
-        self.numMessagesReceived = 0
-        self.numSentMessages = 0
-        self.startTime = 0
-        self.finishTime = 0
-        self.venueEventClient = vec
-        self.maxMessagesPerSend = 15
-        self.multiClient = multipleClients
-        self.multiClientTimeout = 15
-        if self.venueEventClient != None:
-            self.venueEventClient.RegisterEventCallback("Test", self.Receive)
-            self.venueEventClient.RegisterLostConnectionCallback(self.LostConnection)
-            self.venueEventClient.RegisterMadeConnectionCallback(self.StartSending)
-        from twisted.internet import reactor
-        self.reactor = reactor
-
-    def StartSending(self):
-        self.reactor.callLater(0, self.Send)
-
-    def SetMsgData(self, data):
-        self.msgData = data
-
-    def SetVenueEventClient(self, vec):
-        self.venueEventClient = vec
-
-    def Send(self):
-        # Send one message to eliminate any python setup times from measurements.
-        if self.numSentMessages == 0:
-            self.venueEventClient.Send("Test", self.msgData)
-            self.numSentMessages += 1
-        else:
-        
-            if self.numMessagesReceived == 1:
-                self.startTime = time.time()
-
-            if self.numMessagesReceived >= 1:
-                numToSend = min( self.maxMessagesPerSend, (self.numExpectedMsgs - self.numSentMessages))
-                for i in range(numToSend):
-                    self.venueEventClient.Send("Test", self.msgData)
-                self.numSentMessages += numToSend
-
-        # Prepare to call again until all messages are sent
-        if self.numSentMessages < self.numExpectedMsgs:
-            self.reactor.callLater(0, self.Send) 
-        else:
-            print "Finished sending test messages."
-
-    def Receive(self, msg):    
-        self.numMessagesReceived += 1
-        if self.multiClient: # finish after a timeout
-            if time.time() - self.startTime > self.multiClientTimeout:
-                print "Finished (allotted time)"
-                self.reactor.stop()
-        else:                # finish after i receive all my own messages
-            if self.numMessagesReceived >= self.numExpectedMsgs:
-                self.finishTime = time.time()
-                print "Finished receiving test messages."
-                # Use numMessagesReceived - 1 since first msg was not measured
-                print "  Msgs / sec = ", (self.numMessagesReceived - 1) / (self.finishTime - self.startTime)
-                self.venueEventClient.Stop()
-
-    def LostConnection(self, connector, reason):
-        print 'TestMessages client connection lost:', reason.getErrorMessage()
-        print "Stopping."
-        if self.reactor.running:
-            self.reactor.stop()
-     
+### The code below is to help test and demo. ###
 
 def testMain(location, privateId, channel="Test", msgLength=13, numMsgs=100, groupMsgClientClassList=None, multipleClients=False):
-    #from PickleGroupMsgClient import PickleGroupMsgClient
-    vec = VenueEventClient(location, privateId, channel, groupMsgClientClassList=groupMsgClientClassList)
+    vec = SecureVenueEventClient(location, privateId, channel, groupMsgClientClassList=groupMsgClientClassList)
     tm = TestMessages(vec=vec, numMsgs=numMsgs, multipleClients=multipleClients)
     tm.SetMsgData(GenerateRandomString(length=msgLength))
     vec.Start()
-    #reactor.callLater(0, tm.Send) # wait 2 secs
 
-def mainWithUI(group="Test", venueEventClientClass=VenueEventClient, groupMsgClientClassList=None, eventPort=8002):
-
-    # Test for the event client/service. After starting the event service,
-    # run this client. A UI will open which allows you to transmit key values.
-    # The same key value is received in an event and printed in the window.
-    # This is a good example on how to interact with the wx main thread from
-    # the network thread.
- 
-    class NetworkEvent(wxPyEvent):
-        '''
-        the network thread communicates back to the main GUI thread via
-        this sythetic event
-        '''
-        def __init__(self,msg=""):
-            wxPyEvent.__init__(self)
-            self.SetEventType(wxEVT_NETWORK)
-            self.msg = msg
-    wxEVT_NETWORK = 2000
-
-    def EVT_NETWORK(win, func):
-        win.Connect(-1, -1, wxEVT_NETWORK, func)
-
-    class MyApp(wxApp):
-        '''
-        main wx ui app.
-        '''
-        def OnInit(self):
-            self.frame = frame = MainFrame(NULL, -1, 
-                                           "wxPython+threading")
-            self.SetTopWindow(frame)
-            frame.Show(1)
-            return 1
-  
-    class MainFrame(wxFrame):
-        '''
-        all the ui components.
-        '''
-        ID_EXIT  = 102
-
-        def __init__(self, parent, ID, title):
-            wxFrame.__init__(self, parent, ID,
-                             title,
-                             wxDefaultPosition, # position
-                             wxSize(512,512))
-            self.SetAutoLayout(1)
-            self.CreateStatusBar()
-            menuBar = wxMenuBar()
-            menu    = wxMenu()
-            menu.AppendSeparator()
-            menu.Append(self.ID_EXIT, "E&xit", "Terminate the program")
-            menuBar.Append(menu, "&File");
-            self.SetMenuBar(menuBar)
-            EVT_MENU(self,self.ID_EXIT,self.TimeToQuit)
-            
-            sizer = wxBoxSizer(wxVERTICAL)
-            self.SetSizer(sizer)
-            
-            # a logging window
-            self.log = wxTextCtrl(self,-1,style = wxTE_MULTILINE)
-            wxLog_SetActiveTarget(wxLogTextCtrl(self.log))
-            sizer.Add(self.log,1,wxEXPAND|wxALL,1)
-            
-            # trap characters
-            EVT_CHAR(self.log, self.OnChar)
-            
-            # start the event server thread
-            eventHost = "localhost"
-            channelId = group
-            self.eventClient = venueEventClientClass((eventHost, eventPort), 1, channelId, groupMsgClientClassList=groupMsgClientClassList)
-            self.eventClient.RegisterEventCallback("test", self.OnTest)
-            self.eventClient.RegisterMadeConnectionCallback(self.MadeConnection)
-            self.eventClient.RegisterLostConnectionCallback(self.LostConnection)
-            self.eventClient.Start()
-
-            #timeout = 3
-            #timeStart = time.time()
-            #while (not self.eventClient.IsConnected()) and (timeout > time.time() - timeStart):
-            #    print "Waiting for connection"
-            #    time.sleep(1)
-            #self.eventClient.Send("connect", "")    
-                        
-            # cleanup
-            EVT_CLOSE(self, self.OnCloseWindow)
-            
-            self.show_status("Connecting to %s on port %d." % 
-                             (eventHost, eventPort))
-
-            from twisted.internet import reactor
-            reactor.interleave(wxCallAfter)
-
-        def MadeConnection(self):
-            eventHost = self.eventClient.location[0]
-            eventPort = self.eventClient.location[1]
-            self.show_status("Connected to %s on port %d." % 
-                             (eventHost, eventPort))
-
-        def OnCloseWindow(self, event):
-            self.shutdown_network()
-            # Do rest of shutdown when LostConnection callback is called.
-
-        def OnChar(self, event):
-            key = event.KeyCode()
-            
-            if key == 27:
-                self.Close(1)
-          
-            else:
-                self.eventClient.Send("test", chr(key))
-                return
-
-        def TimeToQuit(self, event):
-            print "TimeToQuit"
-            self.Close(1)
-
-        def OnTest(self, evt):
-            string = "channelId = %s, senderId = %s, data = %s"%(evt.GetChannelId(), evt.GetSenderId(), evt.GetData())
-            wxCallAfter(wxLogMessage,"Received: \"%s\"." % string)
-
-        def shutdown_network(self):
-            wxLogMessage('Shutting down event client.')
-            self.eventClient.Stop()
-
-        def LostConnection(self, connector, reason):
-            print "wx Test: Lost connection", reason
-            from twisted.internet import reactor
-            reactor.addSystemEventTrigger('after', 'shutdown', self.Destroy)
-            reactor.stop()
-
-        def show_status(self,t):
-            self.SetStatusText(t)
-
-    # Start the ui main thread.
-    app = MyApp(0)
-    #app.MainLoop()
-    return app
-
-def main(eventPort=8002):
+def main(eventPort=7002):
     wxapp = None
     if "--psyco" in sys.argv:
         print "optimizing with psyco."
@@ -334,9 +49,10 @@ def main(eventPort=8002):
     testMessageSize = 13
     useUI = True
     multipleClients = False
+    eventPort = 7002
     location = ('localhost',eventPort)
     privateId = GenerateRandomString(length=6)
-    format='xml' # or 'pickle'
+    format= 'default' # or  'xml' # or 'pickle'
     numMsgs = 10
     for arg in sys.argv:
         if arg.startswith("--group="):
@@ -356,22 +72,25 @@ def main(eventPort=8002):
             numMsgs = int(arg.lstrip("--numMsgs="))
             print "Setting number of messages:", numMsgs
 
-    if format=='xml':
+    if format=='default':
+        groupMsgClientClassList = None # Will use the default for SecureVenueEventClient
+    elif format=='xml':
         from AccessGrid.XMLGroupMsgClient import XMLGroupMsgClient
-        groupMsgClientClassList = [XMLGroupMsgClient, GroupMsgClient]
+        groupMsgClientClassList = [XMLGroupMsgClient, SecureGroupMsgClient]
     elif format=='pickle':
         from AccessGrid.PickleGroupMsgClient import PickleGroupMsgClient
-        groupMsgClientClassList = [PickleGroupMsgClient, GroupMsgClient]
+        groupMsgClientClassList = [PickleGroupMsgClient, SecureGroupMsgClient]
     else:
         raise Exception("Unknown format")
 
     if useUI:
-        wxapp = mainWithUI(group=group, venueEventClientClass=VenueEventClient, groupMsgClientClassList=groupMsgClientClassList, eventPort=eventPort)
+        wxapp = mainWithUI(group=group, venueEventClientClass=SecureVenueEventClient, groupMsgClientClassList=groupMsgClientClassList, eventPort=eventPort)
         wxapp.MainLoop()
     else:
         testMain(location=location, privateId=privateId, channel=group, msgLength=testMessageSize, numMsgs=numMsgs, groupMsgClientClassList=groupMsgClientClassList, multipleClients=multipleClients)
         from twisted.internet import reactor
         reactor.run()
+
 
 if __name__ == '__main__':
     # need to parse for wx here to be able to get wx imports 
@@ -380,13 +99,7 @@ if __name__ == '__main__':
     for arg in sys.argv:
         if arg.startswith("--perf"):
             useUI = False
-    if useUI:
-        from wxPython.wx import *
-        from twisted.internet import threadedselectreactor
-        threadedselectreactor.install()
-    from twisted.internet import reactor
 
-    main()
+    main(eventPort=7002)
 
-from wxPython.wx import *
 
