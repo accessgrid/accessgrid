@@ -196,6 +196,8 @@ if sys.platform == 'win32':
     os.chdir(os.path.join(BuildDir, "tools"))
     cmd = "%s %s" % ("MakeVfwScan.bat", DestDir)
     os.system(cmd)
+    cmd = "%s %s" % ("MakeWdmScan.bat", DestDir)
+    os.system(cmd)
     os.chdir(td)
 
      
