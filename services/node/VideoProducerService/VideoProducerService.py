@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.6 2005-11-14 03:19:47 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.7 2006-01-11 19:05:29 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -504,22 +504,43 @@ class VideoProducerService( AGService ):
         deviceList = list()
         
         try:
-            vfwscanexe = os.path.join(AGTkConfig.instance().GetBinDir(),
+            # scan for vfw devices
+            scanexe = os.path.join(AGTkConfig.instance().GetBinDir(),
                                       'vfwscan.exe')
-            vfwscanexe = win32api.GetShortPathName(vfwscanexe)
-            if os.path.exists(vfwscanexe):
+            scanexe = win32api.GetShortPathName(scanexe)
+            if os.path.exists(scanexe):
                 try:
                     self.log.info("Using vfwscan to get devices")
-                    self.log.debug("vfwscanexe = %s", vfwscanexe)
-                    f = os.popen(vfwscanexe,'r')
+                    self.log.debug("vfwscanexe = %s", scanexe)
+                    f = os.popen(scanexe,'r')
                     filelines = f.readlines()
                     f.close()
 
-                    self.log.debug("filelines = %s", filelines)
+                    self.log.debug("vfwscan filelines = %s", filelines)
 
-                    deviceList = map( lambda d: d.strip(), filelines)
+                    devices = map( lambda d: d.strip(), filelines)
+                    deviceList += devices
                 except:
                     self.log.exception("vfw device scan failed")
+            
+            # scan for wdm devices
+            scanexe = os.path.join(AGTkConfig.instance().GetBinDir(),
+                                      'wdmscan.exe')
+            scanexe = win32api.GetShortPathName(scanexe)
+            if os.path.exists(scanexe):
+                try:
+                    self.log.info("Using wdmscan to get devices")
+                    self.log.debug("wdmscanexe = %s", scanexe)
+                    f = os.popen(scanexe,'r')
+                    filelines = f.readlines()
+                    f.close()
+
+                    self.log.debug("wdmscan filelines = %s", filelines)
+
+                    devices = map( lambda d: d.strip(), filelines)
+                    deviceList += devices
+                except:
+                    self.log.exception("wdm device scan failed")
             
             if not len(deviceList):
                 self.log.info("Retrieving devices from registry")
