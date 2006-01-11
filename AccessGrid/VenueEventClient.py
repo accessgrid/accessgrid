@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service client that handles Access Grid
 #                 venue events.
 # Created:     2005/09/09
-# RCS-ID:      $Id: VenueEventClient.py,v 1.4 2006-01-11 17:27:26 eolson Exp $
+# RCS-ID:      $Id: VenueEventClient.py,v 1.5 2006-01-11 18:36:14 eolson Exp $
 # Copyright:   (c) 2005,2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -188,7 +188,7 @@ def testMain(location, privateId, channel="Test", msgLength=13, numMsgs=100, gro
     vec.Start()
     #reactor.callLater(0, tm.Send) # wait 2 secs
 
-def mainWithUI(group="Test", groupMsgClientClassList=None, eventPort=8002):
+def mainWithUI(group="Test", venueEventClientClass=VenueEventClient, groupMsgClientClassList=None, eventPort=8002):
 
     # Test for the event client/service. After starting the event service,
     # run this client. A UI will open which allows you to transmit key values.
@@ -256,7 +256,7 @@ def mainWithUI(group="Test", groupMsgClientClassList=None, eventPort=8002):
             # start the event server thread
             eventHost = "localhost"
             channelId = group
-            self.eventClient = VenueEventClient((eventHost, eventPort), 1, channelId, groupMsgClientClassList=groupMsgClientClassList)
+            self.eventClient = venueEventClientClass((eventHost, eventPort), 1, channelId, groupMsgClientClassList=groupMsgClientClassList)
             self.eventClient.RegisterEventCallback("test", self.OnTest)
             self.eventClient.RegisterMadeConnectionCallback(self.MadeConnection)
             self.eventClient.RegisterLostConnectionCallback(self.LostConnection)
@@ -366,7 +366,7 @@ def main(eventPort=8002):
         raise Exception("Unknown format")
 
     if useUI:
-        wxapp = mainWithUI(group=group, groupMsgClientClassList=groupMsgClientClassList, eventPort=eventPort)
+        wxapp = mainWithUI(group=group, venueEventClientClass=VenueEventClient, groupMsgClientClassList=groupMsgClientClassList, eventPort=eventPort)
         wxapp.MainLoop()
     else:
         testMain(location=location, privateId=privateId, channel=group, msgLength=testMessageSize, numMsgs=numMsgs, groupMsgClientClassList=groupMsgClientClassList, multipleClients=multipleClients)

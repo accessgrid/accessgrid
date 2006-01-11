@@ -4,20 +4,24 @@
 # Purpose:     A secure group messaging service client that handles Access
 #                 Grid venue events.
 # Created:     2006/01/10
-# RCS-ID:      $Id: SecureVenueEventClient.py,v 1.1 2006-01-10 23:33:02 eolson Exp $
+# RCS-ID:      $Id: SecureVenueEventClient.py,v 1.2 2006-01-11 18:36:14 eolson Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import sys
-from AccessGrid.VenueEventClient import mainWithUI, GenerateRandomString
 from twisted.internet import threadedselectreactor
-threadedselectreactor.install() 
-from twisted.internet import reactor
+try:
+    threadedselectreactor.install()
+    from twisted.internet import reactor
+except:
+    pass
+from AccessGrid.VenueEventClient import mainWithUI, GenerateRandomString
+from AccessGrid.VenueEventClient import VenueEventClient, TestMessages
 from AccessGrid.SecureGroupMsgClient import SecureGroupMsgClient
 from AccessGrid.XMLGroupMsgClient import XMLGroupMsgClient
 
-class SecureVenueEventClient:
+class SecureVenueEventClient(VenueEventClient):
     '''
     A version of the EventClient that supports encryption.
     '''
@@ -45,7 +49,7 @@ def main(eventPort=7002):
     eventPort = 7002
     location = ('localhost',eventPort)
     privateId = GenerateRandomString(length=6)
-    format='xml' # or 'pickle'
+    format= 'default' # or  'xml' # or 'pickle'
     numMsgs = 10
     for arg in sys.argv:
         if arg.startswith("--group="):
@@ -65,7 +69,9 @@ def main(eventPort=7002):
             numMsgs = int(arg.lstrip("--numMsgs="))
             print "Setting number of messages:", numMsgs
 
-    if format=='xml':
+    if format=='default':
+        groupMsgClientClassList = None # Will use the default for SecureVenueEventClient
+    elif format=='xml':
         from AccessGrid.XMLGroupMsgClient import XMLGroupMsgClient
         groupMsgClientClassList = [XMLGroupMsgClient, SecureGroupMsgClient]
     elif format=='pickle':
@@ -75,7 +81,7 @@ def main(eventPort=7002):
         raise Exception("Unknown format")
 
     if useUI:
-        wxapp = mainWithUI(group=group, groupMsgClientClassList=groupMsgClientClassList, eventPort=eventPort)
+        wxapp = mainWithUI(group=group, venueEventClientClass=SecureVenueEventClient, groupMsgClientClassList=groupMsgClientClassList, eventPort=eventPort)
         wxapp.MainLoop()
     else:
         testMain(location=location, privateId=privateId, channel=group, msgLength=testMessageSize, numMsgs=numMsgs, groupMsgClientClassList=groupMsgClientClassList, multipleClients=multipleClients)
