@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.86 2006-01-13 17:05:03 lefvert Exp $
+# RCS-ID:      $Id: setup.py,v 1.87 2006-01-13 21:37:44 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,12 +46,6 @@ win32_data = [
     ('bin', [r'tools/GoToVenue.py', r'sharedapps/VenueVNC/server/VenueVNCServer.py']),
     ('NodeServices', ''),
     ('SharedApplications', ''),
-    ('doc/VenueClientManual', glob.glob('doc/VenueClientManual/*.*')),
-    ('doc/VenueClientManual/VenueClientManual_files',
-     glob.glob('doc/VenueClientManual/VenueClientManual_files/*.*')),
-    ('doc/VenueManagementManual', glob.glob('doc/VenueManagementManual/*.*')),
-    ('doc/VenueManagementManual/VenueManagementManual_files',
-     glob.glob('doc/VenueManagementManual/VenueManagementManual_files/*.*')),
     ('install', [r'packaging/windows/agicons.exe',
                  r'packaging/windows/msvcr70.dll',
                  r'packaging/windows/msvcr71.dll']),
@@ -118,8 +112,6 @@ linux_data = [('etc/init.d',
                ),
               ('share/gnome/apps/AccessGrid/Documentation',
                [
-                r"packaging/linux/gnome/VenueClientManual.desktop",
-                r"packaging/linux/gnome/VenueManagementManual.desktop",
                 r"packaging/linux/gnome/License.desktop",
                 ]
                ),
@@ -151,12 +143,10 @@ linux_data = [('etc/init.d',
                ),
               ('share/applnk/AccessGrid/Documentation',
                [
-                r"packaging/linux/kde/VenueClientManual.desktop",
-                r"packaging/linux/kde/VenueManagementManual.desktop",
                 r"packaging/linux/kde/License.desktop",
                 ]
                ),
-
+              
               ('share/doc/AccessGrid',
                ["COPYING.txt",
                 "Install.LINUX",
@@ -168,38 +158,20 @@ linux_data = [('etc/init.d',
                 ]
                ),
               ('bin', ['tools/GoToVenue.py', 'sharedapps/VenueVNC/server/VenueVNCServer.py']),
-              ('share/doc/AccessGrid/Documentation/VenueClientManual',
-               [r"doc/VenueClientManual/VenueClientManual.htm",
-                r"doc/VenueClientManual/VenueClientManualHTML.htm",
-                r"doc/VenueClientManual/1.htm"
-                ]
-               ),
-              ('share/doc/AccessGrid/Documentation/VenueClientManual/VenueClientManual_files',
-               filter(os.path.isfile, glob.glob("doc/VenueClientManual/VenueClientManual_files/*"))
-               ),
-              ('share/doc/AccessGrid/Documentation/VenueManagementManual',
-               [r"doc/VenueManagementManual/VenueManagementManual.htm",
-                r"doc/VenueManagementManual/VenueManagementManualHTML.htm",
-                r"doc/VenueManagementManual/1.htm"
-                ]
-               ),
-              ('share/doc/AccessGrid/Documentation/VenueManagementManual/VenueManagementManual_files',
-               filter(os.path.isfile, glob.glob("doc/VenueManagementManual/VenueManagementManual_files/*"))
-               )
               ]
 
 mac_scripts = [ r"bin/VenueServer.py", 
-                  r"bin/VenueClient.py", 
-                  r"bin/VenueManagement.py",
-                  r"bin/AGServiceManager.py",
-                  r"bin/NodeManagement.py",
-                  r"bin/NodeSetupWizard.py",
-                  r"bin/CertificateRequestTool.py",
-                  r"bin/CertificateManager.py",
-                  r"bin/certmgr.py",
-                  r"bin/agpm.py",
-                  r"bin/AGLauncher.py",
-                  ]
+                r"bin/VenueClient.py", 
+                r"bin/VenueManagement.py",
+                r"bin/AGServiceManager.py",
+                r"bin/NodeManagement.py",
+                r"bin/NodeSetupWizard.py",
+                r"bin/CertificateRequestTool.py",
+                r"bin/CertificateManager.py",
+                r"bin/certmgr.py",
+                r"bin/agpm.py",
+                r"bin/AGLauncher.py",
+                ]
 
 mac_data =    [ 
               ('Config/nodeConfig',
@@ -224,26 +196,7 @@ mac_data =    [
                 ]
                ),
               ('bin', ['tools/GoToVenue.py', 'sharedapps/VenueVNC/server/VenueVNCServer.py', 'packaging/mac/findwx26']),
-              ('doc/VenueClientManual',
-               [r"doc/VenueClientManual/VenueClientManual.htm",
-                r"doc/VenueClientManual/VenueClientManualHTML.htm",
-                r"doc/VenueClientManual/1.htm"
-                ]
-               ),
-              ('doc/VenueClientManual/VenueClientManual_files',
-               filter(os.path.isfile, glob.glob("doc/VenueClientManual/VenueClientManual_files/*"))
-               ),
-              ('doc/VenueManagementManual',
-               [r"doc/VenueManagementManual/VenueManagementManual.htm",
-                r"doc/VenueManagementManual/VenueManagementManualHTML.htm",
-                r"doc/VenueManagementManual/1.htm"
-                ]
-               ),
-              ('doc/VenueManagementManual/VenueManagementManual_files',
-               filter(os.path.isfile, glob.glob("doc/VenueManagementManual/VenueManagementManual_files/*"))
-               )
               ]
-
 
 if sys.platform == 'win32':
     inst_scripts = win32_scripts
