@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.84 2006-01-05 22:23:50 lefvert Exp $
+# RCS-ID:      $Id: setup.py,v 1.85 2006-01-13 00:02:48 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -240,21 +240,23 @@ else:
     inst_scripts = linux_scripts
     inst_data = linux_data
     
-packages = ['AccessGrid',
-            'AccessGrid.hosting',
-            'AccessGrid.hosting.SOAPpy',
-            'AccessGrid.tests',
-            'AccessGrid.Security',
-            'AccessGrid.Security.wxgui',
-            'AccessGrid.Platform',
+packages = ['AccessGrid3',
+            'AccessGrid3.hosting',
+            'AccessGrid3.hosting.SOAPpy',
+            'AccessGrid3.tests',
+            'AccessGrid3.Security',
+            'AccessGrid3.Security.wxgui',
+            'AccessGrid3.Platform',
+            'AccessGrid3.wsdl',
+            'AccessGrid3.interfaces'
             ]
 
 # We only send the code for the platform we're building
 if sys.platform == 'win32':
-    packages.append('AccessGrid.Platform.win32')
+    packages.append('AccessGrid3.Platform.win32')
 
 if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5':
-    packages.append('AccessGrid.Platform.unix')
+    packages.append('AccessGrid3.Platform.unix')
 
 setup (
     name = 'AGTk',
@@ -276,6 +278,7 @@ functionality of the Access Grid.
     #
     # Package list -- These files end up in $PYTHON\lib\site-packages
     #
+    package_dir = {"AccessGrid3" : "AccessGrid"},
     packages = packages,
 
     #
