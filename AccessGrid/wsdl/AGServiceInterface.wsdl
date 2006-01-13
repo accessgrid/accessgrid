@@ -16,6 +16,8 @@
               xmlns="http://www.w3.org/2001/XMLSchema">
 
           <xsd:element name="GetCapabilitiesRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetCapabilitiesResponse">
@@ -27,6 +29,8 @@
           </xsd:element>
 
           <xsd:element name="GetConfigurationRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetConfigurationResponse">
@@ -38,6 +42,8 @@
           </xsd:element>
 
           <xsd:element name="GetDescriptionRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetDescriptionResponse">
@@ -49,6 +55,8 @@
           </xsd:element>
 
           <xsd:element name="GetEnabledRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetEnabledResponse">
@@ -60,6 +68,8 @@
           </xsd:element>
 
           <xsd:element name="GetPackageFileRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetPackageFileResponse">
@@ -71,6 +81,8 @@
           </xsd:element>
 
           <xsd:element name="GetResourceRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetResourceResponse">
@@ -82,6 +94,8 @@
           </xsd:element>
 
           <xsd:element name="GetResourcesRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetResourcesResponse">
@@ -93,6 +107,8 @@
           </xsd:element>
 
           <xsd:element name="GetServiceManagerUrlRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetServiceManagerUrlResponse">
@@ -104,6 +120,8 @@
           </xsd:element>
 
           <xsd:element name="IsStartedRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="IsStartedResponse">
@@ -115,6 +133,8 @@
           </xsd:element>
 
           <xsd:element name="IsValidRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="IsValidResponse">
@@ -134,6 +154,8 @@
           </xsd:element>
 
           <xsd:element name="SetConfigurationResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="SetEnabledRequest">
@@ -145,6 +167,8 @@
           </xsd:element>
 
           <xsd:element name="SetEnabledResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="SetIdentityRequest">
@@ -156,6 +180,8 @@
           </xsd:element>
 
           <xsd:element name="SetIdentityResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="SetPackageFileRequest">
@@ -170,6 +196,8 @@
           </xsd:element>
 
           <xsd:element name="SetPackageFileResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="SetResourceRequest">
@@ -181,6 +209,8 @@
           </xsd:element>
 
           <xsd:element name="SetResourceResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="SetServiceManagerUrlRequest">
@@ -192,6 +222,8 @@
           </xsd:element>
 
           <xsd:element name="SetServiceManagerUrlResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="SetStreamRequest">
@@ -203,24 +235,38 @@
           </xsd:element>
 
           <xsd:element name="SetStreamResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="ShutdownRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="ShutdownResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="StartRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="StartResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="StopRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="StopResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
 

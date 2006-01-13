@@ -54,6 +54,8 @@
           </xsd:element>
 
           <xsd:element name="GetDescriptionRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetDescriptionResponse">
@@ -65,6 +67,8 @@
           </xsd:element>
 
           <xsd:element name="GetNodeServiceUrlRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetNodeServiceUrlResponse">
@@ -76,6 +80,8 @@
           </xsd:element>
 
           <xsd:element name="GetServicePackageDescriptionsRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetServicePackageDescriptionsResponse">
@@ -87,6 +93,8 @@
           </xsd:element>
 
           <xsd:element name="GetServicesRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetServicesResponse">
@@ -98,6 +106,8 @@
           </xsd:element>
 
           <xsd:element name="IsValidRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="IsValidResponse">
@@ -118,6 +128,8 @@
           </xsd:element>
 
           <xsd:element name="RegisterServiceResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="RemoveServiceRequest">
@@ -129,12 +141,18 @@
           </xsd:element>
 
           <xsd:element name="RemoveServiceResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="RemoveServicesRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="RemoveServicesResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="SetNodeServiceUrlRequest">
@@ -146,21 +164,33 @@
           </xsd:element>
 
           <xsd:element name="SetNodeServiceUrlResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="ShutdownRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="ShutdownResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="StopServicesRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="StopServicesResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="IsValidRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="IsValidResponse">

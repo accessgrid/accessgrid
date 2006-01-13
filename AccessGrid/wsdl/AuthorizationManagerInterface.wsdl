@@ -24,6 +24,8 @@
           </xsd:element>
 
           <xsd:element name="AddActionResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="AddRoleRequest">
@@ -52,6 +54,8 @@
           </xsd:element>
 
           <xsd:element name="AddRoleToActionResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="AddRolesToActionRequest">
@@ -64,6 +68,8 @@
           </xsd:element>
 
           <xsd:element name="AddRolesToActionResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="AddSubjectToRoleRequest">
@@ -76,6 +82,8 @@
           </xsd:element>
 
           <xsd:element name="AddSubjectToRoleResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="AddSubjectsToRoleRequest">
@@ -88,6 +96,8 @@
           </xsd:element>
 
           <xsd:element name="AddSubjectsToRoleResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="FindRoleRequest">
@@ -107,6 +117,8 @@
           </xsd:element>
 
           <xsd:element name="GetPolicyRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetPolicyResponse">
@@ -142,6 +154,8 @@
           </xsd:element>
 
           <xsd:element name="ImportPolicyResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="IsAuthorizedRequest">
@@ -179,6 +193,8 @@
           </xsd:element>
 
           <xsd:element name="ListRolesRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="ListRolesResponse">
@@ -230,6 +246,8 @@
           </xsd:element>
 
           <xsd:element name="RemoveActionResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="RemoveRoleRequest">
@@ -241,6 +259,8 @@
           </xsd:element>
 
           <xsd:element name="RemoveRoleResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="RemoveRoleFromActionRequest">
@@ -253,6 +273,8 @@
           </xsd:element>
 
           <xsd:element name="RemoveRoleFromActionResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="RemoveSubjectFromRoleRequest">
@@ -265,6 +287,8 @@
           </xsd:element>
 
           <xsd:element name="RemoveSubjectFromRoleResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="RemoveSubjectsFromRoleRequest">
@@ -277,6 +301,8 @@
           </xsd:element>
 
           <xsd:element name="RemoveSubjectsFromRoleResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="TestImportExportRequest">
@@ -288,6 +314,8 @@
           </xsd:element>
 
           <xsd:element name="TestImportExportResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
       </schema>

@@ -58,6 +58,8 @@
           </xsd:element>
 
           <xsd:element name="RemoveDataResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetDataChannelRequest">
@@ -95,6 +97,8 @@
           </xsd:element>
 
           <xsd:element name="GetIdRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetIdResponse">
@@ -197,6 +201,8 @@
           </xsd:element>
 
           <xsd:element name="SetDataResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="SetParticipantProfileRequest">
@@ -209,6 +215,8 @@
           </xsd:element>
 
           <xsd:element name="SetParticipantProfileResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="SetParticipantStatusRequest">
@@ -221,6 +229,8 @@
           </xsd:element>
 
           <xsd:element name="SetParticipantStatusResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
       </schema>

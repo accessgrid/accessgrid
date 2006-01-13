@@ -40,6 +40,8 @@
           </xsd:element>
 
           <xsd:element name="ShutdownResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="RemoveVenueRequest">
@@ -80,10 +82,15 @@
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
+
           <xsd:element name="ModifyVenueResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetVenueDescriptionsRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetVenueDescriptionsResponse">
@@ -96,6 +103,8 @@
           </xsd:element>
 
           <xsd:element name="GetDefaultVenueRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetDefaultVenueResponse">
@@ -107,6 +116,8 @@
           </xsd:element>
 
  	  <xsd:element name="GetBaseAddressRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetBaseAddressResponse">
@@ -118,6 +129,8 @@
           </xsd:element>
 
 	  <xsd:element name="GetAddressMaskRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetAddressMaskResponse">
@@ -129,6 +142,8 @@
           </xsd:element>
 
           <xsd:element name="GetEncryptAllMediaRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetEncryptAllMediaResponse">
@@ -140,6 +155,8 @@
           </xsd:element>
 
           <xsd:element name="GetAddressAllocationMethodRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetAddressAllocationMethodResponse">
@@ -151,6 +168,8 @@
           </xsd:element>
 
 	  <xsd:element name="GetVenuesRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetVenuesResponse">
@@ -202,7 +221,10 @@
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
+
           <xsd:element name="SetDefaultVenueResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
 	  <xsd:element name="SetBaseAddressRequest">
@@ -214,6 +236,8 @@
           </xsd:element>
 
           <xsd:element name="SetBaseAddressResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element> 
 
 	   <xsd:element name="SetAddressAllocationMethodRequest">
@@ -225,6 +249,8 @@
           </xsd:element>
 
           <xsd:element name="SetAddressAllocationMethodResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
 	  <xsd:element name="SetAddressMaskRequest">
@@ -236,6 +262,8 @@
           </xsd:element>
 
           <xsd:element name="SetAddressMaskResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element> 
 
           <xsd:element name="SetEncryptAllMediaRequest">
@@ -247,6 +275,8 @@
           </xsd:element>
 
           <xsd:element name="SetEncryptAllMediaResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element> 
 
       </schema>

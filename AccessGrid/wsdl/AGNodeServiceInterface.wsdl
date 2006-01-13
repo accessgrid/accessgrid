@@ -24,6 +24,8 @@
           </xsd:element>
 
           <xsd:element name="AddServiceManagerResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="AddStreamRequest">
@@ -35,9 +37,13 @@
           </xsd:element>
 
           <xsd:element name="AddStreamResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetCapabilitiesRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetCapabilitiesResponse">
@@ -49,6 +55,8 @@
           </xsd:element>
 
           <xsd:element name="GetConfigurationsRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetConfigurationsResponse">
@@ -60,6 +68,8 @@
           </xsd:element>
 
           <xsd:element name="GetServiceManagersRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetServiceManagersResponse">
@@ -71,6 +81,8 @@
           </xsd:element>
 
           <xsd:element name="GetServicesRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="GetServicesResponse">
@@ -82,6 +94,8 @@
           </xsd:element>
 
           <xsd:element name="IsValidRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="IsValidResponse">
@@ -101,6 +115,8 @@
           </xsd:element>
 
           <xsd:element name="LoadConfigurationResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="MigrateNodeConfigRequest">
@@ -112,6 +128,8 @@
           </xsd:element>
 
           <xsd:element name="MigrateNodeConfigResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="NeedMigrateNodeConfigRequest">
@@ -139,6 +157,8 @@
           </xsd:element>
 
           <xsd:element name="RemoveServiceManagerResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="RemoveStreamRequest">
@@ -150,6 +170,8 @@
           </xsd:element>
 
           <xsd:element name="RemoveStreamResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="SetServiceEnabledRequest">
@@ -161,6 +183,8 @@
           </xsd:element>
 
           <xsd:element name="SetServiceEnabledResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="SetServiceEnabledByMediaTypeRequest">
@@ -172,6 +196,8 @@
           </xsd:element>
 
           <xsd:element name="SetServiceEnabledByMediaTypeResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="SetStreamsRequest">
@@ -183,12 +209,18 @@
           </xsd:element>
 
           <xsd:element name="SetStreamsResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="StopServicesRequest">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="StopServicesResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="StoreConfigurationRequest">
@@ -200,6 +232,8 @@
           </xsd:element>
 
           <xsd:element name="StoreConfigurationResponse">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
 
