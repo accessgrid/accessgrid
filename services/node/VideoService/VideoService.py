@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.6 2006-01-11 19:06:49 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.7 2006-01-13 16:33:11 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -119,7 +119,7 @@ class VideoService( AGService ):
 
         # Set configuration parameters
         # note: the datatype of the port parameter changes when a resource is set!
-        self.streamname = TextParameter( "Stream Name", "Video" )
+        self.streamname = TextParameter( "Stream Name", "" )
         self.port = TextParameter( "port", "" )
         self.encoding = OptionSetParameter( "Encoding", "h261", VideoService.encodingOptions )
         self.standard = OptionSetParameter( "Standard", "NTSC", VideoService.standardOptions )
@@ -316,7 +316,7 @@ class VideoService( AGService ):
             options.append( "-u" )
             options.append( startupfile )
             options.append( "-C" )
-            options.append( '"' + self.streamname.value + '"'  )
+            options.append( str(self.streamname.value) )
             if self.streamDescription.encryptionFlag != 0:
                 options.append( "-K" )
                 options.append( self.streamDescription.encryptionKey )
@@ -417,7 +417,9 @@ class VideoService( AGService ):
         else:
             self.configuration.append(self.port)
             
-        print "self.port.value = ", self.port.value
+        # If the stream name has not been set, set it to the resource name
+        if not self.streamname.value:
+            self.streamname.value = resource.name
 
     def SetIdentity(self, profile):
         """
