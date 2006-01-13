@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.96 2006-01-09 20:15:01 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.97 2006-01-13 16:37:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.96 2006-01-09 20:15:01 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.97 2006-01-13 16:37:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -759,9 +759,9 @@ class NodeManagementClientFrame(wxFrame):
                 s = self.tree.AppendItem(sm,service.name)
                 self.tree.SetItemImage(s, self.svcImage, which = wxTreeItemIcon_Normal)
                 self.tree.SetItemData(s,wxTreeItemData(service))
-                #resource = AGServiceIW(service.uri).GetResource()
-                #if resource:
-                #    self.tree.SetItemText(s,resource.name,1)
+                resource = AGServiceIW(service.uri).GetResource()
+                if resource:
+                    self.tree.SetItemText(s,resource.name,1)
                 if AGServiceIW( service.uri ).GetEnabled():
                     status = "Enabled"
                 else:
