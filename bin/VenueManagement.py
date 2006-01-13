@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.163 2006-01-13 21:52:34 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.164 2006-01-13 22:10:34 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.163 2006-01-13 21:52:34 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.164 2006-01-13 22:10:34 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -77,7 +77,7 @@ class VenueManagementClient(wxApp):
 
         self.agtkConf = AGTkConfig.instance()
       
-        self.manual_url = "http://www.mcs.anl.gov/fl/research/accessgrid/documentation/manual/VenueManagement/3_0"
+        self.manual_url = "http://www.mcs.anl.gov/fl/research/accessgrid/documentation/manuals/VenueManagement/3_0"
         self.server = None
         self.serverUrl = None
         self.currentVenueClient = None
