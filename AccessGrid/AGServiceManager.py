@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.90 2005-12-19 20:20:48 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.91 2006-01-13 18:55:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.90 2005-12-19 20:20:48 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.91 2006-01-13 18:55:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -100,6 +100,21 @@ class AGServiceManager:
         servicePackage = \
             self.GetServicePackage(servicePackageDesc.GetPackageFile())
               
+
+        # prevent SOAP socket from being inherited by child processes
+        # which we're about to spawn
+        try:
+            import posix
+            import fcntl
+            from ZSI.ServiceContainer import GetSOAPContext
+            ctx = GetSOAPContext()
+            if ctx:
+                fd = ctx.connection.fileno()
+                old = fcntl.fcntl(fd, fcntl.F_GETFD)
+                fcntl.fcntl(fd, fcntl.F_SETFD, old | fcntl.FD_CLOEXEC)
+        except ImportError:
+            pass
+
 
         #
         # Extract the service package

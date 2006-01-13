@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.54 2005-12-19 20:20:24 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.55 2006-01-13 18:55:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.54 2005-12-19 20:20:24 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.55 2006-01-13 18:55:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -74,6 +74,20 @@ class AGService:
         """
         Internal : Start the service; encapsulates Start functionality for subclasses
         """
+
+        # prevent SOAP socket from being inherited by child processes
+        # which we're about to spawn
+        try:
+            import posix
+            import fcntl
+            from ZSI.ServiceContainer import GetSOAPContext
+            ctx = GetSOAPContext()
+            if ctx:
+                fd = ctx.connection.fileno()
+                old = fcntl.fcntl(fd, fcntl.F_GETFD)
+                fcntl.fcntl(fd, fcntl.F_SETFD, old | fcntl.FD_CLOEXEC)
+        except ImportError:
+            pass
 
         # if started, stop
         if self.started == 1:
