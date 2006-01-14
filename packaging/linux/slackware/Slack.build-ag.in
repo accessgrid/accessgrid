@@ -3,7 +3,7 @@
 # spec file. If you see %{variable_name} this is where it's assigned
 #
 name=AccessGrid
-version=2.3
+version=3.0
 release=RELEASE
 prefix=/usr
 sysconfdir=etc/${name}/Config

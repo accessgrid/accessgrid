@@ -66,14 +66,10 @@ fi
 
 
 #
-# Define Slackware packages
+# Define Slackware packages.
 # To update this script to install newer versions of packages
 # change the variables defined here
 #
-
-export GLOBUS="globus-accessgrid"
-export GLOBUS_VER="2.4-i486-2"
-
 export AG="AccessGrid"
 export AG_VER=VER
  
@@ -137,17 +133,6 @@ if [ ! $? -eq 0 ]; then
 fi
 echo "python2 OK"
 
-
-
-#
-# Install globus package
-#
-echo ""
-echo "***********************************************"
-echo "Installing ${GLOBUS}-${GLOBUS_VER} " 
-echo "***********************************************"
-Install $GLOBUS $GLOBUS_VER
-echo ""
 
 #
 # Install AG package
