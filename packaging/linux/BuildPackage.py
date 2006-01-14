@@ -44,13 +44,15 @@ StartDir = os.getcwd()
 d,agsourcedir = os.path.split(BuildDir)
 distDirs = [agsourcedir,
             "ag-media",
-            "SOAPpy-0.11.4",
-            "fpconst-0.7.0",
-            "openssl-0.9.7d",
-            "pyGlobus",
+            "openssl-0.9.7g",
+            "pyxml",
+            "Twisted-2.1.0",
+            "ZopeInterface-3.0.1",
+            "bajjer-0.2.3",
+            "feedparser",
+            "m2",
             "pyOpenSSL",
-            "gt3.0.2-source-installer/globus-data-management-client-2.4.3-src_bundle.tar.gz",
-            "gt3.0.2-source-installer/gpt-3.0.1-src.tar.gz",
+            "zsi",
             ]
 if float(options.pyver) < 2.3:
     distDirs.append("logging-0.4.7")
