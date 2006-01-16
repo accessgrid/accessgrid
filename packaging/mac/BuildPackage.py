@@ -44,7 +44,9 @@ print "version = ", version
 
 # ----- Finish creating the DestDir -----
 # Ensure empty Services directory is created
-os.mkdir(os.path.join(DestDir, "Services"))
+servicesPath = os.path.join(DestDir, "Services")
+if not os.path.exists(servicesPath):
+    os.mkdir(servicesPath)
 
 # copy AGNodeServiceMac.cfg to AGNodeService.cfg
 shutil.copy2(os.path.join(BuildDir, "packaging", "config", "AGNodeServiceMac.cfg"), os.path.join(DestDir, "Config", "AGNodeService.cfg"))

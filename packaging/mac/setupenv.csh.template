@@ -2,11 +2,8 @@
 
 setenv AGTK_LOCATION ${AGTK_APP_ROOT}/Contents/Resources
 setenv PYTHONPATH ${AGTK_LOCATION}:${AGTK_APP_ROOT}/Contents/Resources/lib/python2.3/site-packages
+setenv PYTHONPATH ${AGTK_APP_ROOT}/Contents/Resources/lib/python2.3/site-packages/AccessGrid3:${PYTHONPATH}
 setenv WX26PATH "`$AGTK_LOCATION/bin/findwx26`"
 if ("x" != "x${WX26PATH}") setenv PYTHONPATH ${PYTHONPATH}:${WX26PATH}
-setenv GLOBUS_LOCATION ${AGTK_APP_ROOT}/Contents/Resources/globus
-source "${GLOBUS_LOCATION}/etc/globus-user-env.csh"
-setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:${AGTK_APP_ROOT}/Contents/Resources/lib
-setenv DYLD_LIBRARY_PATH ${LD_LIBRARY_PATH}
 setenv PATH ${PATH}:${AGTK_APP_ROOT}/Contents/Resources/bin
 
