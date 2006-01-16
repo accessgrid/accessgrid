@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.91 2006-01-16 18:02:50 lefvert Exp $
+# RCS-ID:      $Id: setup.py,v 1.92 2006-01-16 19:01:44 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -32,7 +32,7 @@ os.environ['PYTHONPATH'] = cdir
 os.chdir(os.path.join(cdir,'tools'))
 cmd = "%s %s"%(sys.executable, "GenerateInterfaces.py")
 #print "cmd = ", cmd
-#os.system(cmd)
+os.system(cmd)
 
 os.chdir(cdir)
 os.environ['PYTHONPATH'] = oldpath
