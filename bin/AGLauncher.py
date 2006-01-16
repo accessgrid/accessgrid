@@ -1,5 +1,11 @@
 #!/usr/bin/python
 
+import os
+import sys
+if sys.platform == "darwin":
+    # OSX: pyGlobus/globus need to be loaded before modules such as socket.
+    import pyGlobus.ioc
+
 from AccessGrid.Platform import IsOSX, IsWindows
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Toolkit import WXGUIApplication
@@ -9,10 +15,6 @@ import webbrowser
 class LauncherFrame(wxFrame):
     BUTTON_MAIN_ID = 1000   # Main binaries
     BUTTON_VC_ID = 1001       # Venue Client
-    BUTTON_CM_ID = 1002       # Certificate Management
-    BUTTON_NS_ID = 1003       # Node Service
-    BUTTON_SM_ID = 1004       # Service Manager
-    BUTTON_VS_ID = 1005       # Venue Server
     BUTTON_DOCS_ID = 2000   # Documentation
     BUTTON_README_ID = 2001   # ReadMe
     BUTTON_VCM_ID = 2002      # Venue Client Manual
@@ -22,16 +24,21 @@ class LauncherFrame(wxFrame):
     BUTTON_NM_ID = 3001       # Node Management
     BUTTON_VM_ID = 3002       # Venue Management
     BUTTON_NSW_ID = 3003      # Node Setup Wizard
-    BUTTON_CRW_ID = 3004	  # Certificate Request Wizard
-    BUTTON_DEBUG_ID = 4000  # Debug form of main binaries
-    BUTTON_VCD_ID = 4001      # Venue Client Debug
-    BUTTON_CMD_ID = 4002       # Certificate Management
-    BUTTON_NSD_ID = 4003	  # Node Service Debug
-    BUTTON_SMD_ID = 4004      # Service Manager Debug
-    BUTTON_VSD_ID = 4005      # Venue Server Debug
+    BUTTON_CM_ID = 3004       # Certificate Management
+    #BUTTON_CRW_ID = 3004	  # Certificate Request Wizard
+    BUTTON_SERVICE_ID = 4000 # Configuration
+    BUTTON_NS_ID = 4001       # Node Service
+    BUTTON_SM_ID = 4002       # Service Manager
+    BUTTON_VS_ID = 4003       # Venue Server
+    BUTTON_DEBUG_ID = 5000  # Debug form of main binaries
+    BUTTON_VCD_ID = 5001      # Venue Client Debug
+    BUTTON_CMD_ID = 5002       # Certificate Management
+    BUTTON_NSD_ID = 5003	  # Node Service Debug
+    BUTTON_SMD_ID = 5004      # Service Manager Debug
+    BUTTON_VSD_ID = 5005      # Venue Server Debug
 	
     def __init__(self, parent=None, id=-1, title="Access Grid Launcher",agtk_location=None):
-        wxFrame.__init__(self,parent,id,title,size=wxSize(600,300),style=wxDEFAULT_FRAME_STYLE&(~wxMAXIMIZE_BOX))
+        wxFrame.__init__(self,parent,id,title,size=wxSize(400,125),style=wxDEFAULT_FRAME_STYLE&(~wxMAXIMIZE_BOX))
 
 	self.processManager=ProcessManager();
 	self.browser=None;
@@ -59,6 +66,15 @@ class LauncherFrame(wxFrame):
             self.confButton=wxToggleButton(self,self.BUTTON_CONFIG_ID,"Configuration");
             EVT_TOGGLEBUTTON(self,self.BUTTON_CONFIG_ID,self.OnToggle);
         self.confButton.SetValue(false);
+
+        if IsOSX():
+            self.servButton=wxRadioButton(self,self.BUTTON_SERVICE_ID,"Services");
+            EVT_RADIOBUTTON(self,self.BUTTON_SERVICE_ID,self.OnToggle);
+        else:
+            self.servButton=wxToggleButton(self,self.BUTTON_CONFIG_ID,"Services");
+            EVT_TOGGLEBUTTON(self,self.BUTTON_SERVICE_ID,self.OnToggle);
+        self.servButton.SetValue(false);
+        
         
         if IsOSX():
             self.debugButton=wxRadioButton(self,self.BUTTON_DEBUG_ID,"Debug");
@@ -68,6 +84,7 @@ class LauncherFrame(wxFrame):
             EVT_TOGGLEBUTTON(self,self.BUTTON_DEBUG_ID,self.OnToggle);
         self.debugButton.SetValue(false)
 	self.debugButton.Disable()
+	self.debugButton.Show(false)
         
         if not agtk_location:
             agtk_location=".."
@@ -76,27 +93,19 @@ class LauncherFrame(wxFrame):
         self.mainButtonActions=[];
         self.mainButtonList.append(wxButton(self,self.BUTTON_VC_ID,"Venue Client"));
         self.mainButtonActions.append([self.RunPython,"%s/bin/VenueClient.py"%(agtk_location),['--personalNode']]);
-        self.mainButtonList.append(wxButton(self,self.BUTTON_CM_ID,"Certificate Management"));
-        self.mainButtonActions.append([self.RunPython,"%s/bin/CertificateManager.py"%(agtk_location),[]]);
-        self.mainButtonList.append(wxButton(self,self.BUTTON_NS_ID,"Node Service"));
-        self.mainButtonActions.append([self.RunPython,"%s/bin/AGServiceManager.py"%(agtk_location),['-n']]);
-        self.mainButtonList.append(wxButton(self,self.BUTTON_SM_ID,"Service Manager"));
-        self.mainButtonActions.append([self.RunPython,"%s/bin/AGServiceManager.py"%(agtk_location),[]]);
-        self.mainButtonList.append(wxButton(self,self.BUTTON_VS_ID,"Venue Server"));
-        self.mainButtonActions.append([self.RunPython,"%s/bin/VenueServer.py"%(agtk_location),[]]);
         for button in self.mainButtonList:
             button.Show(false);
         
         self.docsButtonList=[];
         self.docsButtonActions=[];
         self.docsButtonList.append(wxButton(self,self.BUTTON_README_ID,"Read Me"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/share/doc/AccessGrid/README"%(agtk_location),[]]);
+        self.docsButtonActions.append([self.LoadURL,"file://%s/doc/README"%(agtk_location),[]]);
         self.docsButtonList.append(wxButton(self,self.BUTTON_VCM_ID,"Venue Client Manual"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/share/doc/AccessGrid/Documentation/VenueClientManual/VenueClientManualHTML.htm"%(agtk_location),[]]);
+        self.docsButtonActions.append([self.LoadURL,"file://%s/doc/VenueClientManual/VenueClientManualHTML.htm"%(agtk_location),[]]);
         self.docsButtonList.append(wxButton(self,self.BUTTON_VMCM_ID,"Venue Management Manual"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/share/doc/AccessGrid/Documentation/VenueManagementManual/VenueManagementManualHTML.htm"%(agtk_location),[]]);
+        self.docsButtonActions.append([self.LoadURL,"file://%s/doc/VenueManagementManual/VenueManagementManualHTML.htm"%(agtk_location),[]]);
         self.docsButtonList.append(wxButton(self,self.BUTTON_LIC_ID,"License"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/share/doc/AccessGrid/COPYING.txt"%(agtk_location),[]]);
+        self.docsButtonActions.append([self.LoadURL,"file://%s/COPYING.txt"%(agtk_location),[]]);
         for button in self.docsButtonList:
             button.Show(false);
         
@@ -108,9 +117,31 @@ class LauncherFrame(wxFrame):
         self.configButtonActions.append([self.RunPython,"%s/bin/VenueManagement.py"%(agtk_location),[]]);
         self.configButtonList.append(wxButton(self,self.BUTTON_NSW_ID,"Node Setup Wizard"));
         self.configButtonActions.append([self.RunPython,"%s/bin/NodeSetupWizard.py"%(agtk_location),[]]);
-        self.configButtonList.append(wxButton(self,self.BUTTON_CRW_ID,"Certificate Request Wizard"));
-        self.configButtonActions.append([self.RunPython,"%s/bin/CertificateRequestTool.py"%(agtk_location),[]]);
+        #self.configButtonList.append(wxButton(self,self.BUTTON_CRW_ID,"Certificate Request Wizard"));
+        #self.configButtonActions.append([self.RunPython,"%s/bin/CertificateRequestTool.py"%(agtk_location),[]]);
+        self.configButtonList.append(wxButton(self,self.BUTTON_CM_ID,"Certificate Management"));
+        self.configButtonActions.append([self.RunPython,"%s/bin/CertificateManager.py"%(agtk_location),[]]);
         for button in self.configButtonList:
+            button.Show(false);
+
+        self.serviceButtonList=[];
+        self.serviceButtonActions=[];
+        self.serviceButtonList.append(wxButton(self,self.BUTTON_NS_ID,"Node Service"));
+        if IsOSX():
+            self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit.app/Contents/MacOS/runns.sh"]]);
+        else:
+            self.serviceButtonActions.append([self.RunPython,"%s/bin/AGServiceManager.py"%(agtk_location),["-n"]]);
+        self.serviceButtonList.append(wxButton(self,self.BUTTON_SM_ID,"Service Manager"));
+        if IsOSX():
+            self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit.app/Contents/MacOS/runsm.sh"]]);
+        else:
+            self.serviceButtonActions.append([self.RunPython,"%s/bin/AGServiceManager.py"%(agtk_location),[]]);
+        self.serviceButtonList.append(wxButton(self,self.BUTTON_VS_ID,"Venue Server"));
+        if IsOSX():
+            self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit.app/Contents/MacOS/runvs.sh"]]);
+        else:
+            self.serviceButtonActions.append([self.RunPython,"%s/bin/VenueServer.py"%(agtk_location),[]]);
+        for button in self.serviceButtonList:
             button.Show(false);
         
         self.debugButtonList=[];
@@ -120,7 +151,7 @@ class LauncherFrame(wxFrame):
         self.debugButtonList.append(wxButton(self,self.BUTTON_CMD_ID,"Certificate Management (Debug)"));
         self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/CertificateManager.py"%(agtk_location),["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_NSD_ID,"Node Service (Debug)"));
-        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/AGServiceManager.py"%(agtk_location),["-d", "-n"]]);
+        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/AGNodeService.py"%(agtk_location),["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_SMD_ID,"Service Manager (Debug)"));
         self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/AGServiceManager.py"%(agtk_location),["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_VSD_ID,"Venue Server (Debug)"));
@@ -140,7 +171,7 @@ class LauncherFrame(wxFrame):
         EVT_BUTTON(self,self.BUTTON_NM_ID,self.OnButton);
         EVT_BUTTON(self,self.BUTTON_VM_ID,self.OnButton);
         EVT_BUTTON(self,self.BUTTON_NSW_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_CRW_ID,self.OnButton);
+        #EVT_BUTTON(self,self.BUTTON_CRW_ID,self.OnButton);
         EVT_BUTTON(self,self.BUTTON_VCD_ID,self.OnButton);
         EVT_BUTTON(self,self.BUTTON_CMD_ID,self.OnButton);
         EVT_BUTTON(self,self.BUTTON_NSD_ID,self.OnButton);
@@ -155,12 +186,15 @@ class LauncherFrame(wxFrame):
         self.mainButton.SetValue(false);
         self.docButton.SetValue(false);
         self.confButton.SetValue(false);
+        self.servButton.SetValue(false);
         self.debugButton.SetValue(false);
        
         if evt.GetId() == self.BUTTON_DOCS_ID:
             self.docButton.SetValue(true);
         elif evt.GetId() == self.BUTTON_CONFIG_ID:
             self.confButton.SetValue(true);
+        elif evt.GetId() == self.BUTTON_SERVICE_ID:
+            self.servButton.SetValue(true);
         elif evt.GetId() == self.BUTTON_DEBUG_ID:
             self.debugButton.SetValue(true);
         else:
@@ -178,6 +212,9 @@ class LauncherFrame(wxFrame):
         elif self.confButton.GetValue():
             buttonBase=self.BUTTON_CONFIG_ID;
             actionSet=self.configButtonActions;
+        elif self.servButton.GetValue():
+            buttonBase=self.BUTTON_SERVICE_ID;
+            actionSet=self.serviceButtonActions;
         elif self.debugButton.GetValue():
             buttonBase=self.BUTTON_DEBUG_ID;
             actionSet=self.debugButtonActions;
@@ -190,6 +227,12 @@ class LauncherFrame(wxFrame):
 
         buttonVal=buttonVal-1; # Adjust to make a proper array index
         actionSet[buttonVal][0](actionSet[buttonVal][1],actionSet[buttonVal][2]); # Call encoded action with encoded argument.
+
+    def RunCommandline(self,cmd,args):
+        print "Run: %s"%(cmd);
+        print "args: ",
+        print args;
+        self.processManager.StartProcess(cmd,args);
     
     def RunPython(self,cmd,args):
         if IsOSX() or IsWindows():
@@ -239,6 +282,8 @@ class LauncherFrame(wxFrame):
             button.Show(false);
         for button in self.configButtonList:
             button.Show(false);
+        for button in self.serviceButtonList:
+            button.Show(false);
         for button in self.debugButtonList:
             button.Show(false);
 
@@ -249,6 +294,8 @@ class LauncherFrame(wxFrame):
             buttonSet=self.docsButtonList;
         elif self.confButton.GetValue():
             buttonSet=self.configButtonList;
+        elif self.servButton.GetValue():
+            buttonSet=self.serviceButtonList;
         elif self.debugButton.GetValue():
             buttonSet=self.debugButtonList;
         else:
@@ -261,6 +308,8 @@ class LauncherFrame(wxFrame):
         menuButtonSizer.Add(self.docButton,0,wxEXPAND);
 	menuButtonSizer.Add(wxSize(0,0),1);
         menuButtonSizer.Add(self.confButton,0,wxEXPAND);
+	menuButtonSizer.Add(wxSize(0,0),1);
+        menuButtonSizer.Add(self.servButton,0,wxEXPAND);
 	menuButtonSizer.Add(wxSize(0,0),1);
         menuButtonSizer.Add(self.debugButton,0,wxEXPAND);
 	menuButtonSizer.Add(wxSize(0,0),1);
@@ -289,22 +338,41 @@ class MyApp(wxApp):
         return True;
     
 if __name__ == '__main__':
-    #app=MyApp();
-    #app.MainLoop();
+    if len(sys.argv) < 2:
+        print "Missing argument for the base path of the Access Grid Toolkit."
+    basePath = sys.argv[1]
 
-    import sys
+    if sys.platform == "darwin":
+        from argvemulator import ArgvCollector
+        ArgvCollector().mainloop()
 
-    pp = wxPySimpleApp();
+    # Check to see if this was launched to handle an agpkg file.
+    if ".agpkg" in str(sys.argv).lower():
+        pp = wxPySimpleApp();
+        for arg in sys.argv:
+            if ".agpkg" in str(arg).lower():
+                # Register an agpkg
+                pkgFile = arg
+                cmd = os.path.join(basePath, "bin", "agpm.py") + " --package %s" % str(pkgFile)
+                os.system(cmd)
+    else:
+
+        #app=MyApp();
+        #app.MainLoop();
+
+        import sys
+
+        pp = wxPySimpleApp();
     
-    app=WXGUIApplication();
-    try:
-        args = app.Initialize('AGLauncher')
-    except:
-        pass
+        app=WXGUIApplication();
+        #try:
+            #args = app.Initialize('AGLauncher')
+        #except:
+            #pass
 
-    frame=LauncherFrame(None,-1,"Access Grid Launcher",sys.argv[1]);
-    frame.Show();
-    pp.SetTopWindow(frame);
-    pp.MainLoop();
+        frame=LauncherFrame(None,-1,"Access Grid Launcher",sys.argv[1]);
+        frame.Show();
+        pp.SetTopWindow(frame);
+        pp.MainLoop();
 
-
+    
