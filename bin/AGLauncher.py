@@ -128,17 +128,17 @@ class LauncherFrame(wxFrame):
         self.serviceButtonActions=[];
         self.serviceButtonList.append(wxButton(self,self.BUTTON_NS_ID,"Node Service"));
         if IsOSX():
-            self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit.app/Contents/MacOS/runns.sh"]]);
+            self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit3.app/Contents/MacOS/runns.sh"]]);
         else:
             self.serviceButtonActions.append([self.RunPython,"%s/bin/AGServiceManager.py"%(agtk_location),["-n"]]);
         self.serviceButtonList.append(wxButton(self,self.BUTTON_SM_ID,"Service Manager"));
         if IsOSX():
-            self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit.app/Contents/MacOS/runsm.sh"]]);
+            self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit3.app/Contents/MacOS/runsm.sh"]]);
         else:
             self.serviceButtonActions.append([self.RunPython,"%s/bin/AGServiceManager.py"%(agtk_location),[]]);
         self.serviceButtonList.append(wxButton(self,self.BUTTON_VS_ID,"Venue Server"));
         if IsOSX():
-            self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit.app/Contents/MacOS/runvs.sh"]]);
+            self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit3.app/Contents/MacOS/runvs.sh"]]);
         else:
             self.serviceButtonActions.append([self.RunPython,"%s/bin/VenueServer.py"%(agtk_location),[]]);
         for button in self.serviceButtonList:
