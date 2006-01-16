@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.65 2005-12-17 04:37:43 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.66 2006-01-16 23:12:14 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.65 2005-12-17 04:37:43 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.66 2006-01-16 23:12:14 lefvert Exp $"
 
 import os
 import socket
@@ -90,21 +90,21 @@ class AGTkConfig(Config.AGTkConfig):
 
         return binDir
 
-    def GetDocDir(self):
+    #def GetDocDir(self):
+    #
+    #    self.docDir = os.path.join(self.GetBaseDir(), "doc")
+    #
+    #    # Check dir and make it if needed.
+    #    if self.initIfNeeded:
+    #        if self.docDir is not None and \
+    #               not os.path.exists(self.docDir):
+    #            os.mkdir(self.docDir)
+    
+    # Check the installation
+        #if self.docDir is not None and not os.path.exists(self.docDir):
+        #    raise IOError("AGTkConfig: doc dir does not exist %s."%self.docDir)
 
-        self.docDir = os.path.join(self.GetBaseDir(), "doc")
-
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if self.docDir is not None and \
-                   not os.path.exists(self.docDir):
-                os.mkdir(self.docDir)
-
-        # Check the installation
-        if self.docDir is not None and not os.path.exists(self.docDir):
-            raise IOError("AGTkConfig: doc dir does not exist %s."%self.docDir)
-
-        return self.docDir
+    #    return self.docDir
 
 class UserConfig(Config.UserConfig):
     """

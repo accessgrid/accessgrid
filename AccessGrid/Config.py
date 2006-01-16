@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.36 2005-12-22 23:27:00 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.37 2006-01-16 23:11:53 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.36 2005-12-22 23:27:00 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.37 2006-01-16 23:11:53 lefvert Exp $"
 
 import os
 import sys
@@ -34,8 +34,6 @@ class AGTkConfig:
     @ivar version: The version of this installation.
     @type installDir: string
     @ivar installDir: The directory this toolkit is installed in.
-    @type docDir: string
-    @ivar docDir: The directory for documentation for the toolkit.
     @type appDir: string
     @ivar appDir: The directory for system installed shared applications
     @type nodeServicesDir: string
@@ -70,7 +68,7 @@ class AGTkConfig:
         self.nodeServicesDir = None
         self.nodeConfigDir = None
         self.appDir = None
-        self.docDir = None
+        #self.docDir = None
         
         # Now fill in data
         self._Initialize()
@@ -79,7 +77,7 @@ class AGTkConfig:
         self.GetBaseDir()
         self.GetInstallDir()
         self.GetConfigDir()
-        self.GetDocDir()
+        #self.GetDocDir()
         self.GetSharedAppDir()
         self.GetNodeServicesDir()
         self.GetNodeConfigDir()
@@ -89,7 +87,7 @@ class AGTkConfig:
         tmpstr = "Access Grid Toolkit Configuration:\n"
         tmpstr += "Version: %s\n" % self.GetVersion()
         tmpstr += "InstallDir: %s\n" % self.GetInstallDir()
-        tmpstr += "DocDir: %s\n" % self.GetDocDir()
+        #tmpstr += "DocDir: %s\n" % self.GetDocDir()
         tmpstr += "LogDir: %s\n" % self.GetLogDir()
         tmpstr += "ConfigDir: %s\n" % self.GetConfigDir()
         tmpstr += "SharedAppDir: %s\n" % self.GetSharedAppDir()
@@ -107,8 +105,8 @@ class AGTkConfig:
     def GetInstallDir(self):
         raise Exception, "This should not be called directly, but through a subclass."
 
-    def GetDocDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+    #def GetDocDir(self):
+    #    raise Exception, "This should not be called directly, but through a subclass."
 
     def GetConfigDir(self):
         self.configDir = os.path.join(self.GetBaseDir(), "Config")

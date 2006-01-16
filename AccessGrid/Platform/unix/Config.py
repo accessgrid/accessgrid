@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.62 2005-12-17 04:37:43 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.63 2006-01-16 23:12:32 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.62 2005-12-17 04:37:43 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.63 2006-01-16 23:12:32 lefvert Exp $"
 
 import sys
 import os
@@ -86,24 +86,24 @@ class AGTkConfig(Config.AGTkConfig):
         binDir = os.path.join(self.GetInstallDir(), "bin")
         return binDir
 
-    def GetDocDir(self):
-        if sys.platform == 'darwin':
-            self.docDir = os.path.join(self.GetInstallDir(), "doc")
-        else:
-            self.docDir = os.path.join(self.GetInstallDir(), "share", "doc",
-                                       "AccessGrid", "Documentation")
-        # Check dir and make it if needed.
-        if self.initIfNeeded:
-            if self.docDir is not None and \
-                   not os.path.exists(self.docDir):
-                if os.path.exists(self.GetBaseDir()):
-                    os.makedirs(self.docDir)
+    #def GetDocDir(self):
+    #    if sys.platform == 'darwin':
+    #        self.docDir = os.path.join(self.GetInstallDir(), "doc")
+    #    else:
+    #        self.docDir = os.path.join(self.GetInstallDir(), "share", "doc",
+    #                                   "AccessGrid", "Documentation")
+    #    # Check dir and make it if needed.
+    #    if self.initIfNeeded:
+    #        if self.docDir is not None and \
+    #               not os.path.exists(self.docDir):
+    #            if os.path.exists(self.GetBaseDir()):
+    #                os.makedirs(self.docDir)
 
-        # Check the installation
-        if self.docDir is not None and not os.path.exists(self.docDir):
-            raise Exception, "AGTkConfig: doc dir does not exist."
-
-        return self.docDir
+    #    # Check the installation
+    #    #if self.docDir is not None and not os.path.exists(self.docDir):
+    #    #    raise Exception, "AGTkConfig: doc dir does not exist."
+    #
+    #        return self.docDir
 
 class UserConfig(Config.UserConfig):
     """
