@@ -34,10 +34,6 @@ import base64
 
 from optparse import Option
 
-if sys.platform=="darwin":
-    # On osx pyGlobus/globus need to be loaded before various modules such as socket.
-    import pyGlobus.ioc
-
 from AccessGrid import Events
 from AccessGrid import EventClient
 from AccessGrid import Toolkit
@@ -54,7 +50,6 @@ from AccessGrid.SharedApplication import SharedApplicationIW
 from AccessGrid.ClientProfile import ClientProfile
 
 from SOAPpy import faultType
-from pyGlobus.io import GSITCPSocketException
 if IsLinux() or IsFreeBSD5():
     import commands
 
@@ -403,12 +398,6 @@ if __name__ == "__main__":
             print "Bad venue url"
         sys.stdout.flush()
         os._exit(1)
-    except GSITCPSocketException, e:
-        print "Failed to create VenueVNC session: ",
-        if str(e).endswith('could not be resolved'):
-            print str(e)
-        elif str(e).endswith('(Connection refused)'):
-            print "connection refused (no venue server at given port)"
         
         os._exit(1)
     except Exception, e:

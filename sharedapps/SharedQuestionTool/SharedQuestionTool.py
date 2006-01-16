@@ -4,17 +4,14 @@
 #
 # Author:      Susanne Lefvert
 #
-# Created:     $Date: 2005-10-05 18:35:59 $
-# RCS-ID:      $Id: SharedQuestionTool.py,v 1.7 2005-10-05 18:35:59 lefvert Exp $
+# Created:     $Date: 2006-01-16 20:45:27 $
+# RCS-ID:      $Id: SharedQuestionTool.py,v 1.8 2006-01-16 20:45:27 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import os
 import sys
-
-if sys.platform=="darwin":
-    import pyGlobus.ioc
 
 import logging
 import sys

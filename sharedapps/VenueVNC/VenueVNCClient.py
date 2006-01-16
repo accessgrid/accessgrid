@@ -9,9 +9,6 @@ import os
 import sys
 import base64
 
-if sys.platform == 'darwin':
-    import pyGlobus.ioc
-
 from AccessGrid.hosting import Client
 
 from AccessGrid import Events

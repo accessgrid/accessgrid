@@ -2,9 +2,6 @@
 
 import os
 import sys
-if sys.platform == "darwin":
-    # OSX: pyGlobus/globus need to be loaded before modules such as socket.
-    import pyGlobus.ioc
 
 from AccessGrid.Platform import IsOSX, IsWindows
 from AccessGrid.Platform.ProcessManager import ProcessManager
