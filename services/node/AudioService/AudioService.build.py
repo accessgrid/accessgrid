@@ -18,15 +18,22 @@ if sys.platform == 'win32':
                  'ratui.exe',
                  'rat-kill.exe' ]
     copyExe = 'copy'
-elif sys.platform == 'linux2':
+elif sys.platform == 'linux2' or sys.platform == 'freebsd5':
     ratFiles = [ 'rat',
                  'rat-4.2.22',
                  'rat-4.2.22-media',
                  'rat-4.2.22-ui',
                  'rat-kill' ]
     copyExe = 'cp'
+elif sys.platform == 'darwin':
+    ratFiles = [ 'rat',
+                 'rat-4.2.26',
+                 'rat-4.2.26-media',
+                 'rat-4.2.26-ui',
+                 'rat-kill' ]
+    copyExe = 'cp -p'
 else:
-    print "** Error: Unsupported platform: " + sys.platform
+    print "** Error: Unsupported platform by AudioService: " + sys.platform
     
 
 # Check whether we need to build
@@ -39,7 +46,12 @@ for f in ratFiles:
 # Build rat if necessary
 if needBuild:
     print "source dist = ", SOURCE, DEST
-    buildCmd = '%s %s %s %s' % (sys.executable,
+    if sys.platform == 'darwin':
+        buildCmd = '%s %s %s %s' % (sys.executable,
+                                os.path.join(AGDIR,'packaging','BuildUclRat.py'),
+                                SOURCE, servicesDir)
+    else:
+        buildCmd = '%s %s %s %s' % (sys.executable,
                                 os.path.join(AGDIR,'packaging','BuildRat.py'),
                                 SOURCE, servicesDir)
     os.system(buildCmd)

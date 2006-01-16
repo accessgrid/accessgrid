@@ -9,28 +9,50 @@ SOURCE=sys.argv[1]
 AGDIR=sys.argv[2]
 DEST=sys.argv[3]
 
+# choices: ["openmash", "vic"]
+executableToBuild = "vic"
+
 servicesDir = os.path.join(AGDIR,'services','node')
 
 # Identify platform and set plat-specific bits
 if sys.platform == 'win32':
     VIC_EXE = 'vic.exe'
     copyExe = 'copy'
-elif sys.platform == 'linux2':
+elif sys.platform == 'linux2' or sys.platform == 'freebsd5':
     VIC_EXE = 'vic'
     copyExe = 'cp'
+elif sys.platform == 'darwin':
+    if executableToBuild == "vic":
+        VIC_EXE = 'vic'
+        vicFiles = [VIC_EXE]
+        copyExe = 'cp -p'
+    elif executableToBuild == "openmash":
+        VIC_EXE = 'vic'
+        vicFiles = [VIC_EXE, 'mash', 'mash-5.3beta2']
+        copyExe = 'cp -p'
 else:
-    print "** Error: Unsupported platform: " + sys.platform
+    print "** Error: Unsupported platform by VideoConsumerService: " + sys.platform
     
 VIC_EXE_PATH = os.path.join(servicesDir,VIC_EXE)
 
 # Build vic if necessary
-if not os.path.exists(VIC_EXE_PATH):
+needBuild = 0
+for f in vicFiles:
+    if not os.path.exists(os.path.join(servicesDir,f)):
+        needBuild = 1
+        break
+
+if needBuild:
     # Build vic
-    buildCmd = '%s %s %s %s' % (sys.executable,
+    if executableToBuild == "openmash":
+        buildCmd = '%s %s %s %s' % (sys.executable,
+                                os.path.join(AGDIR,'packaging','BuildMash.py'),
+                                SOURCE, servicesDir)
+    else:
+        buildCmd = '%s %s %s %s' % (sys.executable,
                                 os.path.join(AGDIR,'packaging','BuildVic.py'),
                                 SOURCE, servicesDir)
     os.system(buildCmd)
-
 
 # Write the service manifest
 f = open('VideoConsumerService.manifest','w')
