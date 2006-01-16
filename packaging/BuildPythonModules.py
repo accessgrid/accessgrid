@@ -46,7 +46,17 @@ else:
 print "Python: ", PYVER
 
 print "*********** Building pyOpenSSL_AG\n"
-SetupModule("pyOpenSSL", SOURCE, DEST)
+if sys.platform == 'win32':
+   # Find better solution later...
+    os.chdir(os.path.join(SOURCE,"pyOpenSSL"))
+    os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","clean","--all")
+    sslp = os.path.join(SOURCE, "openssl-0.9.7g")
+    os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","build_ext","-I%s"%(os.path.join(sslp,"inc32")),"-L%s"%(os.path.join(sslp, "out32dll")))
+    os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","build")
+    os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","install",
+              "--prefix=%s"%(DEST,), "--no-compile")
+else:
+    SetupModule("pyOpenSSL", SOURCE, DEST)
 
 print "*********** Building bajjer\n"
 SetupModule("bajjer-0.2.3", SOURCE, DEST)
