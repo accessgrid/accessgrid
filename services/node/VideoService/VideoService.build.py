@@ -35,7 +35,7 @@ if not os.path.exists(VIC_EXE_PATH):
 
 # Write the service manifest
 f = open('VideoService.manifest','w')
-f.write(VIC_EXE + '\n')
+f.write(os.path.join(servicesDir, VIC_EXE) + '\n')
 f.close()
 
 
