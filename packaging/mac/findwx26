@@ -1,0 +1,17 @@
+#!/usr/bin/python
+
+# Attempts to find the location of wxPython 2.6 on OSX.
+# Prints the path if found; prints nothing otherwise.
+
+try:
+    import wxversion
+    wxversion.select('2.6')
+    import wx
+    pathToWxFile = wx.__file__
+    splitPath = pathToWxFile.split("/")
+    dirSplitPath = splitPath[:-2]
+    pathToWx = "/".join(dirSplitPath)
+    print pathToWx
+except:
+    pass
+

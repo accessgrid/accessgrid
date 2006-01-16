@@ -49,14 +49,6 @@ os.mkdir(os.path.join(DestDir, "Services"))
 # copy AGNodeServiceMac.cfg to AGNodeService.cfg
 shutil.copy2(os.path.join(BuildDir, "packaging", "config", "AGNodeServiceMac.cfg"), os.path.join(DestDir, "Config", "AGNodeService.cfg"))
 
-# Remove services that are not being used yet (should add a platform-specific servicesToInclude file)
-servicesToRemove = ["AudioService.zip", "VideoService.zip", "VideoConsumerService.zip", "VideoProducerService.zip"]
-for s in servicesToRemove:
-    servicePath = os.path.join(DestDir, "NodeServices", s)
-    if os.path.exists( servicePath ):
-        os.remove(servicePath)
-
-
 # ----- Make package tree and copy files there -----
 
 TmpDir = tempfile.mkdtemp()
@@ -86,17 +78,29 @@ os.mkdir(resourcesDir)
 os.mkdir(pkgResourcesDir)
 os.mkdir(macosDir)
 shutil.copy2("Info.plist", contentsDir)
+shutil.copy2("Description.plist", pkgResourcesDir)
 
 globusLocation = os.environ["GLOBUS_LOCATION"]
 shutil.copytree(globusLocation, os.path.join(resourcesDir, "globus") )
 
 #shutil.copy2("AGTk.icns", resourcesDir)
 shutil.copy2("runag.sh.template", resourcesDir)
+shutil.copy2("setupenv.sh.template", resourcesDir)
+shutil.copy2("setupenv.csh.template", resourcesDir)
 
 # resources
 shutil.copy2(os.path.join(BuildDir, "COPYING.txt"), os.path.join(pkgResourcesDir, "License.txt") )
 shutil.copy2(os.path.join(BuildDir, "README"), os.path.join(pkgResourcesDir, "ReadMe.txt") )
 shutil.copy2("postflight", pkgResourcesDir)
+
+# Remove shared applications that don't work on the mac yet.
+sharedAppDir = os.path.join(DestDir, "SharedApplications")
+sharedAppsToRemove = ["SharedBrowser", "SharedPresentation"]
+for appName in sharedAppsToRemove:
+    for ext in [".agpkg", ".zip"]:
+        appPath = os.path.join(sharedAppDir, appName + ext)
+        if os.path.exists(appPath):
+            os.remove(appPath)
 
 # Copy dist files to the resource directory for the package.
 fileList = os.listdir(DestDir)
@@ -107,57 +111,59 @@ for f in fileList:
     else:
         shutil.copy2(fpath, resourcesDir)
 
-# Create package with package manager
-shutil.copy2("agtk.pmsp", TmpDir)
-pmspDestFile = os.path.join(TmpDir, "agtk.pmsp")
+# Establish filenames and backup any old files.
+nameWithVersion="AGTk-%s" % version
+pkgDir  = os.path.join("..", nameWithVersion)
+pkgPath = os.path.join(pkgDir, "AGTk-%s.pkg" % version)
 
-print "\n\nInsert the following information into the Package Manager UI:"
-print "---Description---"
-print "Title: Access Grid Toolkit"
-print "Version:", str(version)
-print "Description:\nVersion 2.3 of the Access Grid ToolKit.\n\nSee http://www.accessgrid.org for more details."
-print "---Files---"
-print "Root:", pkgContentsDir
-print "---Resources---"
-print "Resources:", pkgResourcesDir
-print "---Display---"
-print "Display name: Access Grid Toolkit"
-print "Identifier: edu.uchicago.accessgrid"
-print "Get-Info string: AccessGrid Toolkit 2.3"
-print "Short Version:", str(version)
-print "Verify Major and Minor versions are correct"
+def makeBackup(filePath, extension=".old"):
+    # Rename a file if it exists
+    if os.path.exists(filePath):
+        backupPath = filePath + ".old"
+        print "Backing up old file:", filePath, "to", backupPath
+        if os.path.exists(backupPath):
+            if os.path.isdir(backupPath):
+                print "\tRemoving old backup (directory):", backupPath
+                for root, dirs, files in os.walk(backupPath, topdown=False):
+                    for name in files:
+                        os.remove(os.path.join(root, name))
+                    for name in dirs:
+                        os.rmdir(os.path.join(root, name))
+            else:
+                print "\tRemoving old backup (file):", backupPath
+                os.remove(backupPath)
+        os.rename(filePath, backupPath)
 
-print
-print "Waiting for you to Create the package in an empty folder and quit the Package Manager"
+makeBackup(pkgDir)
+os.mkdir(pkgDir)
 
-os.system("/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker %s" % pmspDestFile)
+# Create package.
+pkgrExe = "/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker"
+pkgInfoPlist = os.path.join(contentsDir, "Info.plist")
+pkgDescPlist = os.path.join(pkgResourcesDir, "Description.plist")
+pkgrArgs = "-build -p %s -f %s -ds -r %s -i %s -d %s" % (pkgPath, pkgContentsDir, pkgResourcesDir, pkgInfoPlist, pkgDescPlist)
+cmd = pkgrExe + " " + pkgrArgs
+print "Running packaging command:", cmd
+os.system(cmd)
 
 
-print "Now create a Disk Image with the Disk Utility"
-print "Under Images->New->Image From Folder"
-print "(note: your .pkg file should be in a folder by itself so you can make an image of that folder.)"
-print "Waiting for you to finish creating the disk image and quit Disk Utility"
-
-# Create dmg with /Applications/Utilities/Disk Utility.app
-os.system("/Applications/Utilities/Disk\ Utility.app/Contents/MacOS/Disk\ Utility")
+# Create disk image (.dmg) with hdiutil.
+dmgPath = os.path.join("..", nameWithVersion + ".dmg")
+if os.path.exists(dmgPath):
+    print "Removing old file:", dmgPath
+    os.remove(dmgPath)
+cmd = "hdiutil create -fs HFS+ -volname %s -srcfolder %s %s" % (nameWithVersion, pkgPath, dmgPath)
+print "Creating dmg:", cmd
+os.system(cmd)
 
 
 # gzip package to reduce size by 1/3
 
-dmgLocation = ""
-while (not os.path.exists(dmgLocation)):
-    dmgLocation = raw_input("Please enter the location of the .dmg file you created (or q to quit): ")
-
-    if len(dmgLocation) > 0:
-        if dmgLocation[0] == 'q':
-            print "Received user's command to (q)uit."
-            sys.exit(1)
-
-    if not os.path.exists(dmgLocation):
-        print "file does not exist: ", dmgLocation
-
+dmgLocation = dmgPath
+gzDmgLocation = dmgLocation + ".gz"
+makeBackup(gzDmgLocation)
 print "gzipping:", dmgLocation
 os.system("gzip " + dmgLocation)
 
-print "Your final package:", dmgLocation + ".gz" 
+print "Your final package:", os.path.abspath(gzDmgLocation)
 
