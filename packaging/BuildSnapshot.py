@@ -31,6 +31,8 @@ elif sys.platform == 'linux2':
     bdir = 'linux'
 elif sys.platform == 'darwin':
     bdir = 'mac'
+elif sys.platform == 'freebsd5':
+    bdir = 'bsd'
 else:
     print "Unsupported platform: %s; exiting" % (sys.platform,)
     bdir = None
@@ -71,7 +73,7 @@ parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
 parser.add_option("-p", "--pythonversion", dest="pyver",
                   metavar="PYTHONVERSION", default=pyver,
                   help="Which version of python to build the installer for.")
-if sys.platform == 'linux2':
+if sys.platform == 'linux2' or sys.platform == 'freebsd5':
     parser.add_option("--dist", action="store", dest="dist",default="rpm",
                        help="Which distribution to build the installer for (linux only).")
 parser.add_option("-r", "--rebuild", action="store_true", dest="rebuild",
@@ -175,7 +177,7 @@ else:
 # setup a new python path
 if sys.platform == 'win32':
     npath = os.path.join(DestDir, "Lib", "site-packages")
-elif sys.platform == 'linux2' or sys.platform == 'darwin':
+elif sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5':
     npath = os.path.join(DestDir, "lib", "python%s"%(options.pyver,), "site-packages")
 if not oldpath:
     nppath = os.pathsep.join([npath, oldpath])
@@ -200,6 +202,13 @@ if sys.platform == 'win32':
     os.system(cmd)
     os.chdir(td)
 
+elif sys.platform == 'darwin':
+    # vic
+    td = os.getcwd()
+    os.chdir(os.path.join(BuildDir, "tools"))
+    cmd = "%s %s" % ("./MakeOsxVGrabberScan.py", os.path.join(DestDir, 'bin') )
+    os.system(cmd)
+    os.chdir(td)
      
 # Build the other python modules
 cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
@@ -212,7 +221,7 @@ if oldpath is not None:
 
 
 # Build the QuickBridge executable
-if sys.platform == 'linux2' or sys.platform == 'darwin':
+if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5':
     print "Building QuickBridge"
     os.chdir(os.path.join(BuildDir,'services','network','QuickBridge'))
     cmd = "gcc -O -o QuickBridge QuickBridge.c"
@@ -262,7 +271,7 @@ if bdir is not None:
                                                                  options.pyver,
                                                                  metainfo.replace(' ', '_'),
                                                                  version)
-        if sys.platform == 'linux2':
+        if sys.platform == 'linux2' or sys.platform == 'freebsd5':
             cmd += ' --dist %s' % (options.dist,)
         print "cmd = ", cmd
         os.system(cmd)
