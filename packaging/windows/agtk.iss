@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.107 2004-09-10 20:04:05 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.108 2006-01-16 16:13:08 lefvert Exp $
 ;
 
 ; Set externally
@@ -94,8 +94,6 @@ Source: Lib\site-packages\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{
 
 ; Documentation
 ; Source: doc\Developer\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
-Source: doc\VenueClientManual\*.*; DestDir: {app}\doc\VenueClientManual; Flags: recursesubdirs
-Source: doc\VenueManagementManual\*.*; DestDir: {app}\doc\VenueManagementManual; Flags: recursesubdirs
 
 ; Certificates for trusted CA's
 Source: config\CAcertificates\*.*; DestDir: {app}\config\CAcertificates
@@ -143,8 +141,6 @@ Name: {group}\Services\Service Manager; IconFilename: {app}\install\agicons.exe;
 Name: {group}\Services\Node Service (Debug); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\AGServiceManager.py"" -n --debug"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the node service software in debugging mode.
 Name: {group}\Services\Node Service; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\AGServiceManager.py"" -n"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the node service software in debugging mode.
 
-Name: {group}\Documentation\Venue Client Manual; Filename: {app}\doc\VenueClientManual\VenueClientManualHTML.htm; Comment: Read the Venue Client Manual.
-Name: {group}\Documentation\Venue Management Client Manual; Filename: {app}\doc\VenueManagementManual\VenueManagementManualHTML.htm; Comment: Read the Venue Management Manual.
 Name: {group}\Documentation\View License; IconFilename: {app}\install\agicons.exe; Filename: {app}\COPYING.txt; Comment: Read the software license under which the AGTk is distributed
 ; Name: {group}\Documentation\Developers Documentation; Filename: {app}\doc\Developer\index.html; Comment: epydoc-generated documentation for developers.
 
