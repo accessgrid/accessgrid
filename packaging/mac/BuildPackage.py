@@ -80,9 +80,6 @@ os.mkdir(macosDir)
 shutil.copy2("Info.plist", contentsDir)
 shutil.copy2("Description.plist", pkgResourcesDir)
 
-globusLocation = os.environ["GLOBUS_LOCATION"]
-shutil.copytree(globusLocation, os.path.join(resourcesDir, "globus") )
-
 #shutil.copy2("AGTk.icns", resourcesDir)
 shutil.copy2("runag.sh.template", resourcesDir)
 shutil.copy2("setupenv.sh.template", resourcesDir)
