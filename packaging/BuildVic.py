@@ -20,6 +20,14 @@ def build_linux(dir):
     os.chdir(dir)
     os.system('./vic-build')
 
+def build_darwin(dir):
+    os.chdir(dir)
+    os.system('./vic-build')
+
+def build_freebsd5(dir):
+    os.chdir(dir)
+    os.system('./vic-build-freebsd')
+
 
 # Set plat-specific bits
 if sys.platform == 'win32':
@@ -28,8 +36,16 @@ if sys.platform == 'win32':
     build = build_win
 elif sys.platform == 'linux2':
     VIC_EXE = os.path.join(VICDIR,'vic','vic')
-    copyExe = 'cp'
+    copyExe = 'cp -p'
     build = build_linux
+elif sys.platform == 'darwin':
+    VIC_EXE = os.path.join(VICDIR,'vic','vic')
+    copyExe = 'cp -p'
+    build = build_darwin
+elif sys.platform == 'freebsd5':
+    VIC_EXE = os.path.join(VICDIR,'vic','vic')
+    copyExe = 'cp'
+    build = build_freebsd5
 else:
     raise Exception, 'Unsupported platform: ' + sys.platform
     
