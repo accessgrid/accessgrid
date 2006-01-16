@@ -55,10 +55,10 @@ TmpDir = tempfile.mkdtemp()
 print "TmpDir:", TmpDir
 pkgContentsDir = os.path.join(TmpDir, "pkg_contents")
 pkgResourcesDir = os.path.join(TmpDir, "pkg_resources")
-bundleDir = os.path.join(pkgContentsDir, "AccessGridToolkit.app")
-contentsDir = os.path.join(pkgContentsDir, "AccessGridToolkit.app", "Contents")
-resourcesDir = os.path.join(pkgContentsDir, "AccessGridToolkit.app", "Contents", "Resources")
-macosDir = os.path.join(pkgContentsDir, "AccessGridToolkit.app", "Contents", "MacOS")
+bundleDir = os.path.join(pkgContentsDir, "AccessGridToolkit3.app")
+contentsDir = os.path.join(pkgContentsDir, "AccessGridToolkit3.app", "Contents")
+resourcesDir = os.path.join(pkgContentsDir, "AccessGridToolkit3.app", "Contents", "Resources")
+macosDir = os.path.join(pkgContentsDir, "AccessGridToolkit3.app", "Contents", "MacOS")
 
 # move previous bundle build dir if it exists
 if os.path.exists( pkgContentsDir ):
