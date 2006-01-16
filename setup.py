@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.88 2006-01-14 13:01:54 willing Exp $
+# RCS-ID:      $Id: setup.py,v 1.89 2006-01-16 05:43:32 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -211,6 +211,7 @@ else:
 packages = ['AccessGrid3',
             'AccessGrid3.hosting',
             'AccessGrid3.hosting.SOAPpy',
+            'AccessGrid3.hosting.ZSI',
             'AccessGrid3.tests',
             'AccessGrid3.Security',
             'AccessGrid3.Security.wxgui',
