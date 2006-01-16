@@ -5,13 +5,13 @@
 # Author:      Eric Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Version.py,v 1.11 2005-06-01 15:58:51 lefvert Exp $
+# RCS-ID:      $Id: Version.py,v 1.12 2006-01-16 19:35:19 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Version.py,v 1.11 2005-06-01 15:58:51 lefvert Exp $"
+__revision__ = "$Id: Version.py,v 1.12 2006-01-16 19:35:19 eolson Exp $"
 
 # Call GetVersion() to get AGTK version information.
 MAJOR_VERSION = 3 
@@ -132,6 +132,8 @@ if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1 and sys.argv[1] == '--build':
         print GetBuildNumber()
+    elif len(sys.argv) > 1 and sys.argv[1] == '--major':
+        print GetVersion().major
     else:
         print GetVersion()
 
