@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.90 2006-01-16 08:43:45 willing Exp $
+# RCS-ID:      $Id: setup.py,v 1.91 2006-01-16 18:02:50 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -32,7 +32,7 @@ os.environ['PYTHONPATH'] = cdir
 os.chdir(os.path.join(cdir,'tools'))
 cmd = "%s %s"%(sys.executable, "GenerateInterfaces.py")
 #print "cmd = ", cmd
-os.system(cmd)
+#os.system(cmd)
 
 os.chdir(cdir)
 os.environ['PYTHONPATH'] = oldpath
@@ -208,28 +208,28 @@ else:
     inst_scripts = linux_scripts
     inst_data = linux_data
     
-packages = ['AccessGrid3',
-            'AccessGrid3.hosting',
-            'AccessGrid3.hosting.SOAPpy',
-            'AccessGrid3.hosting.ZSI',
-            'AccessGrid3.tests',
-            'AccessGrid3.Security',
-            'AccessGrid3.Security.wxgui',
-            'AccessGrid3.Platform',
-            'AccessGrid3.wsdl',
-            'AccessGrid3.interfaces',
-	    'AccessGrid3.Registry',
-	    'AccessGrid3.Jabber',
-	    'AccessGrid3.Beacon',
-	    'AccessGrid3.FTPS'
+packages = ['AccessGrid3.AccessGrid',
+            'AccessGrid3.AccessGrid.hosting',
+            'AccessGrid3.AccessGrid.hosting.SOAPpy',
+            'AccessGrid3.AccessGrid.hosting.ZSI',
+            'AccessGrid3.AccessGrid.tests',
+            'AccessGrid3.AccessGrid.Security',
+            'AccessGrid3.AccessGrid.Security.wxgui',
+            'AccessGrid3.AccessGrid.Platform',
+            'AccessGrid3.AccessGrid.wsdl',
+            'AccessGrid3.AccessGrid.interfaces',
+	    'AccessGrid3.AccessGrid.Registry',
+	    'AccessGrid3.AccessGrid.Jabber',
+	    'AccessGrid3.AccessGrid.Beacon',
+	    'AccessGrid3.AccessGrid.FTPS'
             ]
 
 # We only send the code for the platform we're building
 if sys.platform == 'win32':
-    packages.append('AccessGrid3.Platform.win32')
+    packages.append('AccessGrid3.AccessGrid.Platform.win32')
 
 if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5':
-    packages.append('AccessGrid3.Platform.unix')
+    packages.append('AccessGrid3.AccessGrid.Platform.unix')
 
 setup (
     name = 'AGTk',
@@ -251,7 +251,7 @@ functionality of the Access Grid.
     #
     # Package list -- These files end up in $PYTHON\lib\site-packages
     #
-    package_dir = {"AccessGrid3" : "AccessGrid"},
+    package_dir = {"AccessGrid3.AccessGrid" : "AccessGrid"},
     packages = packages,
 
     #
