@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.89 2006-01-16 05:43:32 willing Exp $
+# RCS-ID:      $Id: setup.py,v 1.90 2006-01-16 08:43:45 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -217,7 +217,11 @@ packages = ['AccessGrid3',
             'AccessGrid3.Security.wxgui',
             'AccessGrid3.Platform',
             'AccessGrid3.wsdl',
-            'AccessGrid3.interfaces'
+            'AccessGrid3.interfaces',
+	    'AccessGrid3.Registry',
+	    'AccessGrid3.Jabber',
+	    'AccessGrid3.Beacon',
+	    'AccessGrid3.FTPS'
             ]
 
 # We only send the code for the platform we're building
