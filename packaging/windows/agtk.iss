@@ -1,11 +1,12 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.108 2006-01-16 16:13:08 lefvert Exp $
+; RCS-ID: $Id: agtk.iss,v 1.109 2006-01-17 16:02:33 lefvert Exp $
 ;
 
 ; Set externally
 ; SourceDir : The location of the AccessGrid Build Tree
 ; BuildDir : The location of the prebuilt distribution
 ; AppVersion : what version are you packaging
+; DirName : name of program files directory
 ; VersionInformation: a string indicating the more version information
 ; PythonSubVersion: a string indicating the version of python (2.2 or 2.3)
 
@@ -38,6 +39,7 @@
 ; used internally
 #define AppName "Access Grid Toolkit"
 #define AppNameShort "AGTk"
+#define DirName "3"
 
 [Setup]
 AppVerName={#AppVersion}-{#VersionInformation}
@@ -57,7 +59,7 @@ MinVersion=0,5.0.2195
 LicenseFile=COPYING.txt
 DisableDirPage=false
 DefaultGroupName={#AppName} {#AppVersion}
-DefaultDirName={pf}\{#AppNameShort}-{#AppVersion}
+DefaultDirName={pf}\{#AppNameShort}-{#DirName}
 UsePreviousAppDir=false
 UserInfoPage=false
 WindowVisible=false
