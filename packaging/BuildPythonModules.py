@@ -78,3 +78,6 @@ SetupModule("m2crypto-0.15", SOURCE, DEST)
 
 print "*********** Building twisted\n"
 SetupModule("Twisted-2.1.0", SOURCE, DEST)
+
+print "*********** Building bonjour-py\n"
+SetupModule("bonjour-py-0.1", SOURCE, DEST)
