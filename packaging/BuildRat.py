@@ -27,7 +27,7 @@ def build_win(dir):
             proj = "rat.2003.sln"
 
     if proj is not None:
-        os.system("devenv %s /rebuild Release" % os.path.join(dir, "rat-ui",
+        os.system("devenv %s /rebuild Release" % os.path.join(dir, "rat",
                                                               proj))
     
 def build_linux(dir):
