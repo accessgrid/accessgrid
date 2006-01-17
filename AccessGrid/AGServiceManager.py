@@ -2,20 +2,22 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.91 2006-01-13 18:55:12 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.92 2006-01-17 18:48:26 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.91 2006-01-13 18:55:12 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.92 2006-01-17 18:48:26 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
 import os
 import time
 import threading
+import StringIO
+import ConfigParser
 
 from AccessGrid import Log
 from AccessGrid.GUID import GUID
@@ -99,8 +101,8 @@ class AGServiceManager:
         
         servicePackage = \
             self.GetServicePackage(servicePackageDesc.GetPackageFile())
-              
 
+                  
         # prevent SOAP socket from being inherited by child processes
         # which we're about to spawn
         try:
@@ -122,11 +124,13 @@ class AGServiceManager:
         try:
             # Create dir for package
             servicePath = self.__GetServicePath(servicePackage)
-            
-            log.info("Extracting service package to %s", servicePath)
 
-            # Extract the package
-            servicePackage.Extract(servicePath)
+            # Only extract package if version is greater than existing service
+            if self.__CheckServiceVersion(servicePath, servicePackage):
+                log.info("Extracting service package to %s", servicePath)
+                
+                # Extract the package
+                servicePackage.Extract(servicePath)
                 
         except:
             log.exception("Service Manager failed to extract service implementation %s", 
@@ -314,7 +318,33 @@ class AGServiceManager:
         serviceDirName = servicePackage.name.replace(' ', '_')
         servicePath = os.path.join(self.localServicesDir,serviceDirName)
         return servicePath
+
+    def __CheckServiceVersion(self, servicePath, servicePackage):
+        descFile = os.path.join(servicePath, servicePackage.name+".svc")
+        version = 0
         
+        if os.path.exists(descFile):
+
+            try:
+                # Get version from description file
+                svcFileContent = file(descFile).read()
+                
+                # set up string io from svc file content
+                sp = StringIO.StringIO(svcFileContent)
+                
+                # read config from string io
+                c = ConfigParser.ConfigParser()
+                c.optionxform = str
+                c.readfp( sp )
+                
+                # read parameters
+                version = c.get("ServiceDescription","version")
+                log.info("Installed service version: %s, package version: %s"%(version, servicePackage.version))
+            except:
+                log.exception("AGServiceManager.__CheckVersion: Failed to check version")
+         
+        return version < servicePackage.version
+                
     def __AddInlineService(self,servicePackage):
         log.info("Importing inline service class %s", 
                  servicePackage.inlineClass )
