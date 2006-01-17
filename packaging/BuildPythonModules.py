@@ -81,3 +81,7 @@ SetupModule("Twisted-2.1.0", SOURCE, DEST)
 
 print "*********** Building bonjour-py\n"
 SetupModule("bonjour-py-0.1", SOURCE, DEST)
+
+print "*********** Building common\n"
+SetupModule(os.path.join("common","examples", "_common"), SOURCE, DEST)
+
