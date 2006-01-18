@@ -77,14 +77,6 @@ mv share usr/share
 mv lib usr/lib
 mv bin usr/bin
 
-# Replace RH abomination with Slackware init scripts
-#
-[ -n "${buildroot}/etc/init.d" -a "${buildroot}/etc/init.d" != / ] && rm -rf ${buildroot}/etc/init.d
-mkdir -p ${buildroot}/etc/rc.d
-cp ${here}/rc.agns ${buildroot}/etc/rc.d/
-cp ${here}/rc.agsm ${buildroot}/etc/rc.d/
-chmod -R 0755 ${buildroot}/etc/rc.d
-
 
 #
 # AccessGrid package postinstall commands
@@ -111,9 +103,9 @@ def modimport(module):
 	    pass
 
 sys.stdout.write("Compiling Access Grid Python modules.... ")
-modimport(AccessGrid)
-modimport(AccessGrid.hosting)
-modimport(AccessGrid.Platform)
+modimport(AccessGrid3)
+modimport(AccessGrid3.hosting)
+modimport(AccessGrid3.Platform)
 sys.stdout.write("Done compiling AccessGrid modules\n")
 EOF
 chmod +x ${buildroot}/install/AccessGrid-Postinstall.py
