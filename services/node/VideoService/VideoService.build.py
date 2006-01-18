@@ -17,9 +17,11 @@ servicesDir = os.path.join(AGDIR,'services','node')
 # Identify platform and set plat-specific bits
 if sys.platform == 'win32':
     VIC_EXE = 'vic.exe'
+    vicFiles = [VIC_EXE]
     copyExe = 'copy'
 elif sys.platform == 'linux2' or sys.platform == 'freebsd5':
     VIC_EXE = 'vic'
+    vicFiles = [VIC_EXE]
     copyExe = 'cp'
 elif sys.platform == 'darwin':
     if executableToBuild == "vic":
