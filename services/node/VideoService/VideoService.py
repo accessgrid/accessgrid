@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.7 2006-01-13 16:33:11 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.8 2006-01-18 20:10:16 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -554,8 +554,9 @@ class VideoService( AGService ):
             # scan for vfw devices
             scanexe = os.path.join(AGTkConfig.instance().GetBinDir(),
                                       'vfwscan.exe')
-            scanexe = win32api.GetShortPathName(scanexe)
+          
             if os.path.exists(scanexe):
+                scanexe = win32api.GetShortPathName(scanexe)
                 try:
                     self.log.info("Using vfwscan to get devices")
                     self.log.debug("vfwscanexe = %s", scanexe)
@@ -573,8 +574,9 @@ class VideoService( AGService ):
             # scan for wdm devices
             scanexe = os.path.join(AGTkConfig.instance().GetBinDir(),
                                       'wdmscan.exe')
-            scanexe = win32api.GetShortPathName(scanexe)
+            
             if os.path.exists(scanexe):
+                scanexe = win32api.GetShortPathName(scanexe)
                 try:
                     self.log.info("Using wdmscan to get devices")
                     self.log.debug("wdmscanexe = %s", scanexe)
