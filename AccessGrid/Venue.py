@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.258 2005-12-19 16:37:56 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.259 2006-01-18 20:24:49 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.258 2005-12-19 16:37:56 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.259 2006-01-18 20:24:49 turam Exp $"
 
 import sys
 import time
@@ -769,7 +769,7 @@ class Venue:
                     if stream.capability.matches( clientCapability ):
                         streamDesc = stream
                         self.streamList.AddStreamProducer( privateId,
-                        streamDesc )
+                                                           streamDesc )
                         streamDescriptions.append( streamDesc )
                         matchesExistingStream = 1
                         log.debug("added user as producer of existent stream")
@@ -777,7 +777,7 @@ class Venue:
                 # add user as producer of new stream
                 if not matchesExistingStream:
                     capability = Capability( clientCapability.role,
-                    clientCapability.type )
+                                             clientCapability.type )
                     capability.parms = clientCapability.parms
 
                     # Add new capability as xml document.
@@ -787,14 +787,15 @@ class Venue:
 
                     addr = self.AllocateMulticastLocation()
                     streamDesc = StreamDescription( self.name,
-                    addr,
-                    capability, 
-                    self.encryptMedia, 
-                    self.encryptionKey,
-                    0)
+                                                    addr,
+                                                    capability, 
+                                                    self.encryptMedia, 
+                                                    self.encryptionKey,
+                                                    0)
                     log.debug("added user as producer of non-existent stream")
                     self.streamList.AddStreamProducer( privateId,
-                    streamDesc )
+                                                       streamDesc )
+                    streamDescriptions.append( streamDesc )
 
                     # Distribute event announcing new stream
                     #self.eventClient.Send(Event.ADD_STREAM, streamDesc)
@@ -816,7 +817,8 @@ class Venue:
 
         for stream in self.streamList.GetStreams():
             if stream.capability.type in clientConsumerCapTypes:
-                streamDescriptions.append( stream )
+                if stream not in streamDescriptions:
+                    streamDescriptions.append( stream )
                        
         # Additional Check!
         # Find mismatches in new capabilities. The streams might already
@@ -869,6 +871,7 @@ class Venue:
                         streamDescriptions.append(s)
                         # Also add a new producer of the stream.
                         self.streamList.AddStreamProducer( producer, s)
+                        
         return streamDescriptions
 
     def FindConnection(self, cid):
