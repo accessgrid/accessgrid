@@ -6,12 +6,12 @@
 # Author:      Thomas Uram, Susanne Lefvert
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeaconUI.py,v 1.5 2006-01-18 22:43:09 turam Exp $
+# RCS-ID:      $Id: rtpBeaconUI.py,v 1.6 2006-01-18 22:50:33 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
 
-__revision__ = "$Id: rtpBeaconUI.py,v 1.5 2006-01-18 22:43:09 turam Exp $"
+__revision__ = "$Id: rtpBeaconUI.py,v 1.6 2006-01-18 22:50:33 turam Exp $"
 
 from wxPython.wx import *
 from wxPython.grid import *
@@ -168,6 +168,4 @@ class BeaconFrame(wxFrame):
             wxCallAfter(self.Refresh)
             time.sleep(2)
           except Exception,e:
-            self.log.exception('Exception in 
-
-
+            self.log.exception('Exception updating beacon ui')
