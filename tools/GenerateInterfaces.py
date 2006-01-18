@@ -8,21 +8,21 @@ parser.add_option("-q", "--quiet", dest="quiet", action="store_true",
 options, args = parser.parse_args()
 
 if sys.platform == "win32":
-    w2pyExec = "%s %s " % (sys.executable, os.path.join(sys.prefix, "Scripts", "wsdl2py") )
-    w2dExec = "%s %s " %  (sys.executable, os.path.join(sys.prefix, "Scripts", "wsdl2dispatch") )
+    w2pyExec = "%s %s " % (sys.executable, os.path.join(sys.prefix, "Scripts", "wsdl2py.py") )
+    w2dExec = "%s %s " %  (sys.executable, os.path.join(sys.prefix, "Scripts", "wsdl2dispatch.py") )
     os.chdir( os.path.join("..", "AccessGrid", "wsdl") )
     dstPath = os.path.join("..", "interfaces")
     srcPath = "."
 elif sys.platform=="darwin":
     dstPath = os.path.join("..", "AccessGrid", "interfaces")
     srcPath = os.path.join("..", "AccessGrid", "wsdl")
-    w2pyExec = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/wsdl2py"
-    w2dExec = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/wsdl2dispatch"
+    w2pyExec = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/wsdl2py.py"
+    w2dExec = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/wsdl2dispatch.py"
 else:
     dstPath = os.path.join("..", "AccessGrid", "interfaces")
     srcPath = os.path.join("..", "AccessGrid", "wsdl")
-    w2pyExec = "wsdl2py"
-    w2dExec = "wsdl2dispatch"
+    w2pyExec = "wsdl2py.py"
+    w2dExec = "wsdl2dispatch.py"
 
 if not os.path.exists(dstPath):
     os.mkdir(dstPath)
