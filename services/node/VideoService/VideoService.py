@@ -2,17 +2,20 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.8 2006-01-18 20:10:16 lefvert Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.9 2006-01-18 22:45:23 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import re
 import sys, os
 
-# for linux device detection
-import fcntl
 import struct
 import glob
+    
+try:
+    # for linux device detection
+    import fcntl
+except: pass
 
 try:   
     import win32api
@@ -102,10 +105,14 @@ class VideoService( AGService ):
     def __init__( self ):
         AGService.__init__( self )
 
-        self.capabilities = [ Capability( Capability.PRODUCER,
-                                          Capability.VIDEO ),
-                              Capability( Capability.CONSUMER,
-                                          Capability.VIDEO ) ]
+        self.capabilities = [ Capability( Capability.CONSUMER,
+                                          Capability.VIDEO,
+                                          "H261",
+                                          90000),
+                              Capability( Capability.PRODUCER,
+                                          Capability.VIDEO,
+                                          "H261",
+                                          90000)]
         if IsWindows():
             vic = "vic.exe"
         else:
