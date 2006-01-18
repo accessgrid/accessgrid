@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.87 2005-12-22 23:27:14 lefvert Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.88 2006-01-18 22:48:25 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.87 2005-12-22 23:27:14 lefvert Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.88 2006-01-18 22:48:25 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -21,10 +21,7 @@ from AccessGrid.GUID import GUID
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.NetworkLocation import ProviderProfile
-from AccessGrid.ServiceCapability import ServiceCapability
 from AccessGrid.ClientProfile import ClientProfile
-
-
 
 class ObjectDescription:
     """
@@ -302,18 +299,22 @@ class Capability:
     VIDEO = "video"
     TEXT  = "text"
 
-    def __init__( self, role=None, type=None ):
-        self.role = role
-        self.type = type
-        self.parms = dict()
-        self.xml = ''
+    def __init__( self, role=None, type=None, codec=None, rate=None, channels = 1):
+        self.role = role # consumer/producer
+        self.type = type # audio/video/other
+        self.codec = codec # according to mime type
+        self.rate = rate # RTP clock rate
+        self.channels = channels
         
     def __repr__(self):
-        string = "%s %s" % (self.role, self.type)
+        string = "%s, %s, %s, %s, %s" % (self.role, self.type, self.codec, str(self.rate), str(self.channels))
         return string
 
     def matches( self, capability ):
-        if self.type != capability.type:
+        if (self.type != capability.type and
+            self.codec != capability.codec and
+            self.channels != capability.channels and
+            self.rate != capability.rate):
             # type mismatch
             return 0
 
@@ -358,8 +359,6 @@ class StreamDescription( ObjectDescription ):
                self.networkLocations.remove(networkLocation)
 
    def AsINIBlock(self):
-       # Make sure xml capabilities are stored properly
-       
        string = ObjectDescription.AsINIBlock(self)
        string += "encryptionFlag : %s\n" % self.encryptionFlag
        if self.encryptionFlag:
@@ -634,13 +633,9 @@ class BridgeDescription:
 
 
 def CreateCapability(capabilityStruct):
-    # Old capability
-    cap = Capability(capabilityStruct.role,capabilityStruct.type)
-
-    # Add new capability as xml document.
-    if hasattr(capabilityStruct, 'xml') and capabilityStruct.xml:
-        cap.xml = capabilityStruct.xml
-    
+    c = capabilityStruct
+    cap = Capability(c.role,c.type,c.codec,c.rate,c.channels)
+        
     if hasattr(capabilityStruct.parms,"_asdict"):
         parmsdict = capabilityStruct.parms._asdict()
         for k,v in parmsdict.items():
