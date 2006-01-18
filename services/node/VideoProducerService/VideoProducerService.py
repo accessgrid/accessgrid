@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.9 2006-01-17 19:47:19 lefvert Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.10 2006-01-18 22:44:51 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -84,7 +84,9 @@ class VideoProducerService( AGService ):
         AGService.__init__( self )
 
         self.capabilities = [ Capability( Capability.PRODUCER,
-                                          Capability.VIDEO ) ]
+                                          Capability.VIDEO,
+                                          "H261",
+                                          90000)]
         if IsWindows():
             vic = "vic.exe"
         else:
@@ -527,6 +529,10 @@ class VideoProducerService( AGService ):
                     deviceList += devices
                 except:
                     self.log.exception("vfw device scan failed")
+
+            else:
+                self.log.info("%s does not exist"%(scanexe))
+                
             
             # scan for wdm devices
             scanexe = os.path.join(AGTkConfig.instance().GetBinDir(),
@@ -546,7 +552,10 @@ class VideoProducerService( AGService ):
                     deviceList += devices
                 except:
                     self.log.exception("wdm device scan failed")
-            
+
+            else:
+                self.log.info("%s does not exist"%(scanexe))
+                            
             if not len(deviceList):
                 self.log.info("Retrieving devices from registry")
                 
