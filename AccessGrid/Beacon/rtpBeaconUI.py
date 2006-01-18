@@ -6,12 +6,12 @@
 # Author:      Thomas Uram, Susanne Lefvert
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeaconUI.py,v 1.4 2005-07-06 21:46:33 lefvert Exp $
+# RCS-ID:      $Id: rtpBeaconUI.py,v 1.5 2006-01-18 22:43:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
 
-__revision__ = "$Id: rtpBeaconUI.py,v 1.4 2005-07-06 21:46:33 lefvert Exp $"
+__revision__ = "$Id: rtpBeaconUI.py,v 1.5 2006-01-18 22:43:09 turam Exp $"
 
 from wxPython.wx import *
 from wxPython.grid import *
@@ -26,50 +26,66 @@ import time
 
 class BeaconFrame(wxFrame):
     def __init__(self, parent, log, beacon):
-        wxFrame.__init__(self, parent, -1, "RTP Beacon View", size=(820,250))
+        wxFrame.__init__(self, parent, -1, "RTP Beacon View", size=(400,300))
+        self.log = log
+        self.beacon = beacon
+        
         self.SetIcon(icons.getAGIconIcon())
         self.running = 1
         self.updateThread = None
-        self.beacon = beacon
+        
+        
+        # Build up the user interface
+        self.SetLabel("Multicast Connectivity")
+
+        # - sizer for pulldowns
+        self.topsizer = wxBoxSizer(wxHORIZONTAL)
+        
+        # - pulldown for group to monitor (currently only beacon group, later audio/video)
+        choices = ['Beacon']
+        self.groupBox = wxChoice(self,-1,choices = choices)
+        self.groupBox.SetSelection(0)
+        
+        # - pulldown for data to display (currently only fract.loss, later delay/jitter/cum.loss)
+        choices = ['Fractional Loss']
+        self.dataTypeBox = wxChoice(self,-1,choices = choices)
+        self.dataTypeBox.SetSelection(0)
+        
+        self.topsizer.Add(self.groupBox,0)
+        self.topsizer.Add(self.dataTypeBox,0)
+        
+        # Create the beacon grid
         self.grid = wxGrid(self,-1)
-                       
-        if not self.beacon:
-            messageDialog = wxMessageDialog(self, "You have to be connected to a venue to see multicast connectivity to other participants.",
-                                            "Not Connected",
-                                            style = wxOK|wxICON_INFORMATION)
-            messageDialog.ShowModal()
-            messageDialog.Destroy()
-
-            self.OnExit(None)
-            return
-
-        address = self.beacon.GetConfigData('groupAddress')
-        port = self.beacon.GetConfigData('groupPort')
-        self.SetLabel("Multicast Connectivity (Beacon Address: %s/%s - Fractional Loss)"%(address, port))
-        num = 9
-        self.grid.CreateGrid(num,num)
-        self.grid.EnableScrolling(1,1)
-             
+        self.grid.EnableEditing(false)
+        self.grid.SetColLabelSize(0)
+        self.grid.SetRowLabelAlignment(wxLEFT,wxBOTTOM)
         self.grid.DisableDragRowSize()
         self.grid.DisableDragColSize()
+        self.grid.SetRowLabelSize(150)
+        self.grid.SetDefaultColSize(40)
+        self.grid.EnableScrolling(1,1)
+        self.grid.CreateGrid(1,1)
         
-        for i in range(num):
-            self.grid.SetColLabelValue(i,"")
-            self.grid.SetRowLabelValue(i,"")
-
+        # Register event handlers
         EVT_CLOSE(self, self.OnExit)
        
+        # Layout
         self.__Layout()
         self.Show(True)
 
+        # Start update thread
         self.updateThread = threading.Thread(target=self.ChangeValuesThread)
         self.updateThread.start()
+
+    def OnIdle(self, event):
+        self.beacon.Update()
 
     def __Layout(self):
         '''
         Do ui layout.
         '''
-        sizer = wxBoxSizer(wxHORIZONTAL)
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer.Add(self.topsizer,0, wxEXPAND)
         sizer.Add(self.grid, 1, wxEXPAND)
 
         self.SetSizer(sizer)
@@ -90,77 +106,68 @@ class BeaconFrame(wxFrame):
         Update UI based on beacon data.
         '''
         while self.running:
+          try:
             YELLOW = wxColour(255,255,0)
             GRAY = wxColour(220,220,220)
        
             # Get snapshot of sources
             sources = copy.copy(self.beacon.GetSources()) 
-            colNr = 0
-        
-            # for each ssrc
-            for s in sources:
             
-                # set column heading
-                colhead = self.beacon.GetSdes(s)
-                
-                if not colhead:
-                    colhead = str(s)
+            # Resize grid as needed
+            numRows = self.grid.GetNumberRows()
+            if numRows > len(sources):
+                self.grid.DeleteCols(numRows - len(sources))
+                self.grid.DeleteRows(numRows - len(sources))
+            elif numRows < len(sources):
+                self.grid.AppendCols(len(sources) - numRows )
+                self.grid.AppendRows(len(sources) - numRows )
+            
 
-                if colNr >= self.grid.GetNumberCols():
-                    self.grid.AppendCols(1)
-                    self.grid.SetColLabelValue(colNr, colhead)
+            # Sort the list of sources
+            sources.sort()
+            
+            # Update the beacon grid
+            rowNr = 0
+            for s in sources:
 
-                elif self.grid.GetColLabelValue(colNr) != colhead:
-                    self.grid.SetColLabelValue(colNr, colhead)
-                
-                rowNr = 0
+                sdes = self.beacon.GetSdes(s)
+                if sdes:
+                    self.grid.SetRowLabelValue(rowNr,str(sdes))
+                else:
+                    self.grid.SetRowLabelValue(rowNr,str(s))
 
                 # set cell values
                 for o in sources:
 
-                    row = s
-                    col = o
+                    # set black colour for same sender
+                    if s == o:
+                        wxCallAfter(self.grid.SetCellBackgroundColour, rowNr, rowNr, wxBLACK) 
+                        continue
 
-                    # set row heading
-                    rowhead = self.beacon.GetSdes(o)
-                    if not rowhead:
-                        rowhead = str(o)
-
-                    if rowNr >= self.grid.GetNumberRows():
-                        self.grid.AppendRows(1)
-                        wxCallAfter(self.grid.SetRowLabelValue, rowNr, rowhead)
-                    elif self.grid.GetRowLabelValue(rowNr) != rowhead:
-                        wxCallAfter(self.grid.SetRowLabelValue, rowNr, rowhead)
-
-                    if self.beacon.GetSdes(s):
-                        row = self.beacon.GetSdes(s)
-                    if self.beacon.GetSdes(o):
-                        col = self.beacon.GetSdes(o)
+                    colNr = sources.index(o)
 
                     # get receiver report and add value to grid
-                    rr = self.beacon.GetReport(s, o)
-                                
+                    rr = self.beacon.GetReport(o,s)
+
                     if rr:
+
                         # 1/4 packets lost, the loss fraction would be 1/4*256 = 64 
                         loss = (rr.fract_lost / 256.0) * 100.0
-                        
-                        wxCallAfter(self.grid.SetCellValue, rowNr,colNr,'%d%%' % (loss))
 
-                        # set black colour for same sender
-                        if s == o:
-                            wxCallAfter(self.grid.SetCellBackgroundColour, rowNr, colNr, wxBLACK) 
-                        elif loss < 10:
+                        wxCallAfter(self.grid.SetCellValue, rowNr,colNr,'%d%%' % (loss))
+                        if loss < 10:
                             wxCallAfter(self.grid.SetCellBackgroundColour,rowNr,colNr,wxGREEN)
                         elif loss < 30:
                             wxCallAfter(self.grid.SetCellBackgroundColour, rowNr,colNr,YELLOW)
                         else:
                             wxCallAfter(self.grid.SetCellBackgroundColour, rowNr,colNr,wxRED)
                     else:
-                        if s == o:
-                            # set black colour for same sender
-                            wxCallAfter(self.grid.SetCellBackgroundColour, rowNr, colNr, wxBLACK)
-                                            
-                    rowNr = rowNr + 1
-                colNr = colNr + 1
+                        wxCallAfter(self.grid.SetCellBackgroundColour, rowNr,colNr,GRAY)
+                rowNr += 1
+
             wxCallAfter(self.Refresh)
             time.sleep(2)
+          except Exception,e:
+            self.log.exception('Exception in 
+
+

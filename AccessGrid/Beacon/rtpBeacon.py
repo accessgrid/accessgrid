@@ -7,7 +7,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeacon.py,v 1.3 2005-10-25 18:47:17 lefvert Exp $
+# RCS-ID:      $Id: rtpBeacon.py,v 1.4 2006-01-18 22:43:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
@@ -18,42 +18,42 @@ RTP (a plain text string as it were). Then the normal RTP statistics
 communicated via RTCP are used to track the performance of the group.
 """
 
-__revision__ = "$Id: rtpBeacon.py,v 1.3 2005-10-25 18:47:17 lefvert Exp $"
+__revision__ = "$Id: rtpBeacon.py,v 1.4 2006-01-18 22:43:09 turam Exp $"
 
 import os, sys, signal, optparse, time, random, threading, copy
 import logging, logging.handlers
 
 import common
 from common import common
-from common.RTPBeacon import RTPBeacon, RTPBeaconFileConfig, RTPBeaconRegConfig
+from common.RTPBeacon import RTPBeacon, RTPBeaconConfig
 from rtpBeaconUI import BeaconFrame
         
 class Beacon:
     def __init__(self, log = None, config = None):
         ''' Initalize parameters '''
-        self.__config = None
+        self.log = log
+        self.__config = config
+        if not self.__config:
+            self.__config = RTPBeaconConfig()
         self.__rtpbeacon = None
         
-        if config:
-            self.__config = RTPBeaconFileConfig(config)
-        else:
-            if sys.platform == 'win32':
-                self.__config = RTPBeaconRegConfig()
-            else:
-                self.__config = RTPBeaconFileConfig()
-                        
-        # Convert all values to strings (otherwise unicode on Windows)
-        for option in self.__config.GetKeys():
-            self.__config.configData[option] = str(self.__config.configData[option])
+        self.__sdes = {} # key ssrc, value sdes
+        self.__sources = [] # ordered list of source numbers
+
+    def Update(self):
+        self.__rtpbeacon.sensor.Update()
        
     def Start(self):
         ''' Start the beacon '''
         self.__rtpbeacon = RTPBeacon(config=self.__config)
         self.__rtpbeacon.Start()
-        self.__sdes = {} # key ssrc, value sdes
-        self.__sources = [] # ordered list of source numbers
-        self.__rtpbeacon.sensor.handlerDict[3] = self.ReceiveSDES
-       
+        self.__rtpbeacon.sensor.handlerDict[3] = self.ProcessSDES
+        self.__rtpbeacon.sensor.handlerDict[4] = self.ProcessBye
+        self.__rtpbeacon.sensor.handlerDict[6] = self.ProcessSourceDeleted
+        
+        # don't honor timeouts for now, not sure they can be trusted
+        #self.__rtpbeacon.sensor.handlerDict[10] = self.ProcessTimeout
+    
     def Stop(self):
         ''' Stop the beacon '''
         self.__rtpbeacon.Stop()
@@ -86,7 +86,7 @@ class Beacon:
         ''' Get receiver report '''
         return self.__rtpbeacon.sensor.session.get_rr(ssrc2, ssrc1)
         
-    def ReceiveSDES(self, session, event):
+    def ProcessSDES(self, session, event):
         ''' Handler for SDES update events. '''
         sdestype, sdes = common.make_sdes_item(event.data)
 
@@ -96,9 +96,26 @@ class Beacon:
                
         if sdestype == 2:
             self.__sdes[event.ssrc] = sdes
+            
+    def ProcessSourceDeleted(self, session, event):
+        self.__RemoveSource(session,event.ssrc)
+        
+    def ProcessTimeout(self, session, event):
+        self.__RemoveSource(session,event.ssrc)
+
+    def ProcessBye(self,session,event):
+        self.__RemoveSource(session,event.ssrc)
+    
+    def __RemoveSource(self,session,ssrc):
+        if event.ssrc in self.__sources:
+            self.__sources.remove(event.ssrc)
+        if event.ssrc in self.__sdes:
+            self.__sdes.remove(event.ssrc)
+            
                 
 if __name__ == "__main__":
     from wxPython.wx import *
+    from common.RTPBeacon import RTPBeaconFileConfig
    
     # Parse command line options
     parser = optparse.OptionParser()
@@ -127,9 +144,13 @@ if __name__ == "__main__":
     log.addHandler(hdlr)
     log.setLevel(options.verbose)
 
-    beacon = Beacon(log, options.config)
+    config = None
+    if options.config:
+        config = RTPBeaconFileConfig(options.config)
+
+    beacon = Beacon(log, config)
     beacon.SetConfigData('user', 'Susanne')
-    beacon.SetConfigData('groupAddress', '233.4.200.19')#19')
+    beacon.SetConfigData('groupAddress', '233.4.200.18')#19')
     beacon.SetConfigData('groupPort', '10002')
     beacon.SetConfigData('reportInterval', '86400')
     beacon.Start()
