@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.147 2006-01-19 20:12:38 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.148 2006-01-19 20:48:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.147 2006-01-19 20:12:38 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.148 2006-01-19 20:48:46 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -163,7 +163,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
     ID_PARTICIPANT_PROFILE = wxNewId()
     ID_ME_PROFILE = wxNewId()
-    #ID_ME_DATA = wxNewId()
 
     def __init__(self, venueClient, controller, app):
         sys.stdout = sys.__stdout__
@@ -225,7 +224,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.updateDuration = 3600
         rssUrlList = self._LoadFeeds()
         try:
-            self.reader = RssReader(rssUrlList,self.updateDuration,[self])
+            self.reader = RssReader(rssUrlList,self.updateDuration,[self],log=log)
             self.reader.SetUpdateDuration(self.updateDuration)
             
             # update rss feeds in thread
@@ -1003,6 +1002,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.controller.ExitCB()
         except:
             log.exception("Error on exit")
+            
+        self.Destroy()
 
     #
     # Preferences Menu
@@ -1194,8 +1195,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                                         "Access Grid Node Management")
 
             log.debug("VenueClientFrame.ManageNodeCB: open node management")
+            log.debug('nodeservice url: %s', self.venueClient.GetNodeService() )
 
             try:
+                
                 self.nodeManagementFrame.AttachToNode( self.venueClient.GetNodeService() )
             except:
                 log.exception("VenueClientUI.ManageNodeCB: Can not attach to node %s"%self.venueClient.GetNodeServiceUri())
@@ -1606,8 +1609,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.SetStatusText("Trying to enter venue at %s" % (venueUrl,))
 
             # Enter in a thread so UI gets responsive immediately
-            upload_thread = threading.Thread(target = self.controller.EnterVenueCB, args = [venueUrl])
-            upload_thread.start()
+#             upload_thread = threading.Thread(target = self.controller.EnterVenueCB, args = [venueUrl])
+#             upload_thread.start()
+            self.controller.EnterVenueCB(venueUrl)
             
             # Check if unicast option is set in preferences.
             currentTransport = self.venueClient.GetTransport()
@@ -2106,17 +2110,19 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         wxCallAfter(self.__SetMcastStatus,status)
         
     def __SetMcastStatus(self,bool):
-        pass
-#         b = self.toolbar.FindById(self.networkToolId)
-#         if bool:
-#             b.SetNormalBitmap(icons.getMulticastBitmap())
-#             b.SetShortHelp("Multicast")
-#         else:
-#             b.SetNormalBitmap(icons.getNoMulticastBitmap())
-#             b.SetDisabledBitmap(icons.getNoMulticastBitmap())
-#             b.SetShortHelp("No Multicast")
-#         self.toolbar.Refresh()
-
+        if bool:
+            bitmap = icons.getMulticastBitmap()
+            shortHelp = 'Multicast available'
+            longHelp = 'Click to display beacon grid'
+        else:
+            bitmap = icons.getNoMulticastBitmap()
+            shortHelp = 'Multicast not available'
+            longHelp = 'You currently have no multicast connectivity'
+        self.toolbar.DeleteTool(self.networkToolId)
+        self.toolbar.InsertTool(0,self.networkToolId,bitmap ,shortHelpString=shortHelp,
+                                longHelpString=longHelp)
+        self.toolbar.Realize()
+        
     def AddUser(self, profile):
         """
         This method is called every time a venue participant enters
@@ -2940,6 +2946,7 @@ class NavigationPanel(wxPanel):
         if venues:
             for venue in venues:
                 self.AddVenueDoor(venue)
+            self.tree.SortChildren(self.tree.GetRootItem())
 
     def CleanUp(self):
         '''
@@ -3122,8 +3129,6 @@ class ContentListPanel(wxPanel):
         self.participantDict[profile.connectionId] = participant
         self.tree.SortChildren(self.participants)
         self.tree.Expand(self.participants)
-
-        self.tree.SortChildren(participant)
             
     def RemoveParticipant(self, profile):
         log.debug("ContentListPanel.RemoveParticipant: Remove participant")
