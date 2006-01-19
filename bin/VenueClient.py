@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.271 2005-12-22 21:54:53 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.272 2006-01-19 20:51:26 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.271 2005-12-22 21:54:53 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.272 2006-01-19 20:51:26 turam Exp $"
 
 # Standard Imports
 import os
@@ -51,8 +51,8 @@ def main():
                         help="Set the port the venueclient control interface\
                         should listen on.")
     app.AddCmdLineOption(portOption)
-    pnodeOption = Option("--personalNode", action="store_true", dest="pnode",
-                         default=0,
+    pnodeOption = Option("--personalNode", type="int", dest="pnode",
+                         default=None,
                          help="Run NodeService and ServiceManager with the client.")
     app.AddCmdLineOption(pnodeOption)
     urlOption = Option("--url", type="string", dest="url",
@@ -91,7 +91,7 @@ def main():
     # Associate the components with the ui
     vcc.SetGui(vcui)
     vc.AddObserver(vcui)
-
+    
     # Enter the specified venue
     if url:
         vc.EnterVenue(url)
@@ -99,12 +99,10 @@ def main():
     # Spin
     wxapp.SetTopWindow(vcui)
     wxapp.MainLoop()
-    
     m2threading.cleanup()
 
 # The main block
 if __name__ == "__main__":
     main()
-    
 
 
