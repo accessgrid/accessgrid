@@ -3,7 +3,7 @@
 # Name:        CertificateManager.py
 # Purpose:     User tool for managing certificates.
 # Created:     2003/08/02
-# RCS-ID:      $Id: CertificateManager.py,v 1.5 2005-11-30 12:08:07 braitmai Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.6 2006-01-19 20:49:52 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,6 +16,7 @@ from wxPython.wx import *
 # Our imports
 from AccessGrid.Toolkit import WXGUIApplication
 from AccessGrid.Security.wxgui import CertificateManagerDialog
+from AccessGrid.Security.wxgui import CertificateManagerWXGUI
 
 def main():
     pyapp = wxPySimpleApp()
@@ -29,9 +30,12 @@ def main():
         print "Exiting."
         sys.exit(-1)
 
+    certMgr = app.GetCertificateManager()
+    certMgrGui = CertificateManagerWXGUI.CertificateManagerWXGUI(certMgr)
     d = CertificateManagerDialog.CertificateManagerDialog(None, -1,
                                                  "Certificate Manager",
-                                                 app.GetCertificateManager(), app.GetCertificateManagerUI()) 
+                                                 certMgr, 
+                                                 certMgrGui) 
     d.Show(1)
     
     pyapp.SetTopWindow(d)
