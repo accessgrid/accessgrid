@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.109 2006-01-11 16:47:18 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.110 2006-01-19 18:58:17 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.109 2006-01-11 16:47:18 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.110 2006-01-19 18:58:17 turam Exp $"
 
 # Standard imports
 import os
@@ -184,8 +184,9 @@ class AppBase:
        self.__SetLogPreference()
 
        # Check if machine clock is synchronized.
-       self.__CheckForInvalidClock()
-       
+       # - Disabled for 3.0: clock-sync is important when using proxy certs, which we're not
+       #self.__CheckForInvalidClock()  
+            
        self.__context = None
            
        return argvResult
