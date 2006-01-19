@@ -7,7 +7,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeacon.py,v 1.4 2006-01-18 22:43:09 turam Exp $
+# RCS-ID:      $Id: rtpBeacon.py,v 1.5 2006-01-19 19:30:29 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ RTP (a plain text string as it were). Then the normal RTP statistics
 communicated via RTCP are used to track the performance of the group.
 """
 
-__revision__ = "$Id: rtpBeacon.py,v 1.4 2006-01-18 22:43:09 turam Exp $"
+__revision__ = "$Id: rtpBeacon.py,v 1.5 2006-01-19 19:30:29 turam Exp $"
 
 import os, sys, signal, optparse, time, random, threading, copy
 import logging, logging.handlers
@@ -125,6 +125,9 @@ if __name__ == "__main__":
     parser.add_option("-c", "--config", dest="config", metavar="CONFIG",
                       default=None,
                       help="Specify the filename of a config file.")
+    parser.add_option("-u", "--user", dest="user", metavar="USER",
+                      default='ag user',
+                      help="Specify the name of the user running the beacon.")
     
     options, args = parser.parse_args()
     
@@ -149,7 +152,7 @@ if __name__ == "__main__":
         config = RTPBeaconFileConfig(options.config)
 
     beacon = Beacon(log, config)
-    beacon.SetConfigData('user', 'Susanne')
+    beacon.SetConfigData('user', options.user)
     beacon.SetConfigData('groupAddress', '233.4.200.18')#19')
     beacon.SetConfigData('groupPort', '10002')
     beacon.SetConfigData('reportInterval', '86400')
@@ -157,7 +160,7 @@ if __name__ == "__main__":
        
     # Create the user interface
     app = wxPySimpleApp()
-    frame = BeaconFrame(None, sys.stdout, beacon)
+    frame = BeaconFrame(None, log, beacon)
     app.MainLoop()
 
     beacon.Stop()
