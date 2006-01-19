@@ -209,7 +209,11 @@ elif sys.platform == 'darwin':
     cmd = "%s %s" % ("./MakeOsxVGrabberScan.py", os.path.join(DestDir, 'bin') )
     os.system(cmd)
     os.chdir(td)
-     
+
+# Build the UCL common library
+cmd = "%s %s" % (sys.executable, "BuildCommon.py")
+os.system(cmd)
+
 # Build the other python modules
 cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
                           BuildDir, DestDir)
