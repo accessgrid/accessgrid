@@ -20,12 +20,15 @@ PYVER=sys.version[:3]
 #
 # Setup the given module in the given dest directory
 #
-def SetupModule(modName, source, dest):
+def SetupModule(modName, source, dest, morebuildopts=[]):
     os.chdir(os.path.join(source,modName))
     os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","clean","--all")
-    os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","build")
-    os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","install",
-              "--prefix=%s"%(dest,), "--no-compile")
+
+    buildopts = [ sys.executable, 'setup.py','build'] + morebuildopts
+    os.spawnv(os.P_WAIT,sys.executable,buildopts)
+
+    installopts = [sys.executable, 'setup.py','install','--prefix=%s'%(dest,),'--no-compile'] + morebuildopts
+    os.spawnv(os.P_WAIT,sys.executable,installopts)
 
 
 #
@@ -83,5 +86,5 @@ print "*********** Building bonjour-py\n"
 SetupModule("bonjour-py-0.1", SOURCE, DEST)
 
 print "*********** Building common\n"
-SetupModule(os.path.join("common","examples", "_common"), SOURCE, DEST)
+SetupModule(os.path.join("common","examples", "_common"), SOURCE, DEST,['--debug'])
 
