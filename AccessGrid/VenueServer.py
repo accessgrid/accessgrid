@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.205 2005-12-21 23:42:13 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.206 2006-01-19 20:57:33 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.205 2005-12-21 23:42:13 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.206 2006-01-19 20:57:33 turam Exp $"
 
 
 # Standard stuff
@@ -242,25 +242,12 @@ class VenueServer:
                 log.exception("Could not create VenueServer Data Store.")
                 self.dataStorageLocation = None
 
-        # Starting Venue Server wide Services, these *could* also
-        # be separated, we just have to figure out the mechanics and
-        # make sure the usability doesn't plummet for administrators.
-        def authorizeDataTransferCB(channel,username,password):
-            # for now, allow all data transfers
-            # later, should verify some or all of:
-            # - presence of client-side cert (if required)
-            # - client-side cert validity (if provided)
-            # - username/password (if required) (could be connectionid/privateid)
-            if username in self.venues.keys() and password in self.venues[username].clients.keys():
-                return 1
-            return 0
-
         self.dataTransferServer = DataServer(self.dataStorageLocation,
                                              hostname=self.hostname,
                                              port=self.dataPort,
                                              dataports=range(int(self.dataPortRangeStart),int(self.dataPortRangeEnd)),
                                              ssl_ctx=self.servicePtr.GetContext(),
-                                             authorizecb=authorizeDataTransferCB,
+                                             authorizecb=self.authorizeDataTransferCB,
                                              activitycb=self.dataActivityCB)
         self.dataTransferServer.run_in_thread()
 
@@ -403,16 +390,19 @@ class VenueServer:
                                                int(self.dataPort) ) )
         print "Default Venue Url: %s" % "/".join([self.hostingEnvironment.GetURLBase(), self.venuePathPrefix, "default"])
 
+    def authorizeDataTransferCB(self,channel,username,password):
+        # for now, allow all data transfers
+        # later, should verify some or all of:
+        # - presence of client-side cert (if required)
+        # - client-side cert validity (if provided)
+        # - username/password (if required) (could be connectionid/privateid)
+        if username in self.venues.keys() and password in self.venues[username].clients.keys():
+            return 1
+        return 0
+
     def authorize(self, auth_info, post, action):
         from ZSI.ServiceContainer import GetSOAPContext
         ctx = GetSOAPContext()
-#         print dir(ctx)
-#         print "Container: ", ctx.connection
-#         print "Parsed SOAP: ", ctx.parsedsoap
-#         print "Container: ", ctx.container
-#         print "HTTP Headers:\n", ctx.httpheaders
-#         print "----"
-#         print "XML Data:\n", ctx.xmldata
         try:
             if hasattr(ctx.connection,'get_peer_cert'):
                 cert = ctx.connection.get_peer_cert()
