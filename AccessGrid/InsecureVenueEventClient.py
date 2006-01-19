@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service client that handles Access Grid
 #                 venue events.
 # Created:     2005/09/09
-# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.1 2006-01-11 18:56:08 eolson Exp $
+# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.2 2006-01-19 23:30:38 eolson Exp $
 # Copyright:   (c) 2005,2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ from AccessGrid.Descriptions import EventDescription
 from AccessGrid.XMLGroupMsgClient import XMLGroupMsgClient
 from AccessGrid.GroupMsgClient import GroupMsgClient
 
-class InsecureVenueEventClient:
+class BaseVenueEventClient:
     '''
     Sends and Receives Venue group events.
 
@@ -57,7 +57,7 @@ class InsecureVenueEventClient:
         if self.madeConnectionCallback != None:
             self.madeConnectionCallback()
         else:
-            log.info("InsecureVenueEventClient made connection.")
+            log.info("BaseVenueEventClient made connection.")
 
     def Send(self, eventType, data):
         event = EventDescription(eventType, self.channelId, self.id, data)
@@ -74,7 +74,7 @@ class InsecureVenueEventClient:
         if self.lostConnectionCallback != None:
             self.lostConnectionCallback(connector, reason)
         else:
-            log.info("InsecureVenueEventClient lost connection.")
+            log.info("BaseVenueEventClient lost connection.")
 
     def RegisterEventCallback(self, eventType, callback):
         self.eventCallbacks.setdefault(eventType, list())
@@ -91,6 +91,8 @@ class InsecureVenueEventClient:
 
     def Stop(self):
         self.groupMsgClient.Stop()
+
+InsecureVenueEventClient = BaseVenueEventClient
 
 # For testing
 def GenerateRandomString(length=6):

@@ -4,7 +4,7 @@
 # Purpose:     A secure group messaging service client that handles Access
 #                 Grid venue events.
 # Created:     2006/01/10
-# RCS-ID:      $Id: VenueEventClient.py,v 1.6 2006-01-11 18:56:08 eolson Exp $
+# RCS-ID:      $Id: VenueEventClient.py,v 1.7 2006-01-19 23:30:38 eolson Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,11 +17,11 @@ try:
 except:
     pass
 from AccessGrid.InsecureVenueEventClient import mainWithUI, GenerateRandomString
-from AccessGrid.InsecureVenueEventClient import InsecureVenueEventClient, TestMessages
+from AccessGrid.InsecureVenueEventClient import BaseVenueEventClient, TestMessages
 from AccessGrid.SecureGroupMsgClient import SecureGroupMsgClient
 from AccessGrid.XMLGroupMsgClient import XMLGroupMsgClient
 
-class SecureVenueEventClient(InsecureVenueEventClient):
+class SecureVenueEventClient(BaseVenueEventClient):
     '''
     A version of the EventClient that supports encryption.
     '''

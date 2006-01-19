@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service with an AccessGrid
 #                 VenueServerServiceInterface.
 # Created:     2005/09/09
-# RCS-ID:      $Id: InsecureEventService.py,v 1.1 2006-01-11 18:56:08 eolson Exp $
+# RCS-ID:      $Id: InsecureEventService.py,v 1.2 2006-01-19 23:30:38 eolson Exp $
 # Copyright:   (c) 2005, 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@ import sys
 from GroupMsgService import GroupMsgService
 from VenueServerService import VenueServerServiceDescription
 
-class InsecureEventService:
+class BaseEventService:
     def __init__(self, name, description, id, type, location, groupMsgService=GroupMsgService):
         self.groupMsgService = groupMsgService(location)
         self.name = name
@@ -62,6 +62,8 @@ class InsecureEventService:
         A tuple of (host, port)
         '''
         return self.groupMsgService.location
+
+InsecureEventService = BaseEventService
 
 def main():
     for arg in sys.argv:
