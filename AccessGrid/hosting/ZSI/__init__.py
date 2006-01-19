@@ -1,14 +1,24 @@
 #-----------------------------------------------------------------------------
 # Name:        __init__.py
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.4 2005-11-02 21:06:32 eolson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.5 2006-01-19 20:46:41 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 ZSI hosting interface modules.
 """
-__revision__ = "$Id: __init__.py,v 1.4 2005-11-02 21:06:32 eolson Exp $"
+__revision__ = "$Id: __init__.py,v 1.5 2006-01-19 20:46:41 eolson Exp $"
+
+def SetupParser():
+    from ZSI.parse import ParsedSoap
+    from xml.dom import expatbuilder
+    class ExpatReaderClass:
+        fromString = staticmethod(expatbuilder.parseString)
+        fromStream = staticmethod(expatbuilder.parse)
+    ParsedSoap.defaultReaderClass = ExpatReaderClass
+
+SetupParser()
 
 from ZSI import TC
 from AccessGrid.interfaces.AccessGrid_Types import www_accessgrid_org_v3_0 as AGTypes
