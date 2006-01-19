@@ -35,7 +35,6 @@ import base64
 from optparse import Option
 
 from AccessGrid import Events
-from AccessGrid import EventClient
 from AccessGrid import Toolkit
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD5
@@ -246,7 +245,7 @@ class vncServer:
             log.exception("Failed to unlink password file")
 
 class VNCServerAppObject:
-    def __init__(self,venueUrl,vncserverexe,displayID,geometry,depth,name):
+    def __init__(self,venueUrl,vncserverexe,displayID,geometry,depth,name, clientProfile):
         log.debug('VNCServerAppObject.__init__')
         self.running = 0
         
@@ -272,7 +271,7 @@ class VNCServerAppObject:
 
         try:
             # Join the App Object
-            (self.publicID,self.privateID)=self.appProxy.Join()
+            (self.publicID,self.privateID)=self.appProxy.Join(clientProfile)
 
             # Upload the auth file to the app object
             self.appProxy.SetData(self.privateID,"VNC_Pwd",base64.encodestring(self.vncServer.getPassword()))
@@ -385,13 +384,16 @@ if __name__ == "__main__":
         timestamp = time.strftime("%I:%M:%S %p %B %d, %Y")
         name = "VenueVNC - %s" % (timestamp)
     
+    clientProfileFile = os.path.join(UserConfig.instance().GetConfigDir(),
+                                     "profile")
+    clientProfile = ClientProfile(clientProfileFile)
     
     try:
         appObj=VNCServerAppObject(app.GetOption('venueUrl'),vncserverexe,
                                   app.GetOption('display'),
                                   app.GetOption('geometry'),
                                   app.GetOption('depth'),
-                                  name)
+                                  name, clientProfile)
     except faultType, e:
         print "Failed to create VenueVNC session: ",
         if e.faultstring == 'Method Not Found':
