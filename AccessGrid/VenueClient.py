@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.268 2006-01-19 20:12:38 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.269 2006-01-19 20:43:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.268 2006-01-19 20:12:38 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.269 2006-01-19 20:43:18 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -101,7 +101,7 @@ class VenueClient:
     """    
     ServiceType = '_venueclient._tcp'
     
-    def __init__(self, profile=None, pnode=0, port=0, progressCB=None,
+    def __init__(self, profile=None, pnode=None, port=0, progressCB=None,
                  app=None):
         """
         This client class is used on shared and personal nodes.
@@ -123,8 +123,11 @@ class VenueClient:
        
         self.defaultNodeServiceUri = self.preferences.GetPreference(Preferences.NODE_URL) 
 
-        if pnode == 0:
+        if pnode is None:
             pnode = int(self.preferences.GetPreference(Preferences.STARTUP_MEDIA))
+            self.isPersonalNode = pnode
+        else:
+            # user specified a command-line value, so honor it
             self.isPersonalNode = pnode
 
         self.hostname = self.app.GetHostname()
@@ -352,7 +355,11 @@ class VenueClient:
             try:
                 prefs = self.app.GetPreferences()
                 defaultConfig = prefs.GetDefaultNodeConfig()
-                self.nodeService.LoadConfiguration(defaultConfig)
+                if defaultConfig:
+                    log.debug('Loading default node configuration: %s', defaultConfig)
+                    self.nodeService.LoadConfiguration(defaultConfig)
+                else:
+                    log.debug('Null default node configuration, not loading')
 
             except:
                 log.exception("Error loading default configuration")
@@ -723,133 +730,123 @@ class VenueClient:
     #
     
     def __EnterVenue(self,URL):
-            #
-            # Enter the venue
-            #
-            self.venueUri = str(URL)
-            self.__venueProxy = VenueIW(URL) #, tracefile=sys.stdout)
+        #
+        # Enter the venue
+        #
+        self.venueUri = str(URL)
+        self.__venueProxy = VenueIW(URL) #, tracefile=sys.stdout)
 
-            log.debug("EnterVenue: Invoke venue enter")
-            self.profile.connectionId = self.__venueProxy.Enter( self.profile )
-            
-            """
-            evtLocation = ('',-1)
+        log.debug("EnterVenue: Invoke Venue.Enter")
+        self.profile.connectionId = self.__venueProxy.Enter( self.profile )
+        log.debug('after Venue.Enter')
+    
+        log.debug("EnterVenue: Invoke Venue.getstate")
+        state = self.__venueProxy.GetState()
+        log.debug("EnterVenue: done Venue.getstate")
 
-            a = ["state"]
-            venueStateDict = self.__venueProxy.GetProperty(a)
-            uniqueId = "" ; vname = "" ; description=""; uri = ""
-            for entry in venueStateDict.entries:
-                if entry.key == "venueid":
-                    uniqueId = entry.value
-                elif entry.key == "name":
-                    vname = entry.value
-                elif entry.key == "description":
-                    description = entry.value
-                elif entry.key == "uri":
-                    uri = entry.value
-                elif entry.key == "eventLocationStr":
-                    # convert back from string to tuple until we can
-                    #   pass tuples here
-                    evtLocation = entry.value.split(":")
-                    if len(evtLocation) > 1:
-                        evtLocation = (str(evtLocation[0]), int(evtLocation[1]))
-                    else:
-                        evtLocation = ('',-1)
-                elif entry.key == "clients":
-                    clients = entry.value
-                    for c in clients:
-                        print type(c), c
-            self.venueState = VenueState(uniqueId=uniqueId, name=vname, description=description, uri=uri, connections="", clients=[], data=[], eventLocation=evtLocation, textLocation="", applications=[], services=[])
-            """
-                    
-            state = self.__venueProxy.GetState()
-            # tuple of two different types doesn't serialize easily.
-            evtLocation = state.eventLocation.split(":")
-            if len(evtLocation) > 1:
-                evtLocation = (str(evtLocation[0]), int(evtLocation[1]))
+        evtLocation = state.eventLocation.split(":")
+        if len(evtLocation) > 1:
+            evtLocation = (str(evtLocation[0]), int(evtLocation[1]))
 
-            self.textLocation = state.textLocation.split(":")
-          
-            if len(self.textLocation) > 1:
-                self.textLocation = (str(self.textLocation[0]), int(self.textLocation[1]))
+        self.textLocation = state.textLocation.split(":")
+    
+        if len(self.textLocation) > 1:
+            self.textLocation = (str(self.textLocation[0]), int(self.textLocation[1]))
 
-            self.dataStoreUploadUrl = state.dataLocation
-                            
-            # next line needed needed until zsi can handle dictionaries.
-            self.venueState = VenueState(uniqueId=state.uniqueId, name=state.name, description=state.description, uri=state.uri, connections=state.connections, clients=state.clients, data=state.data, eventLocation=evtLocation, textLocation=state.textLocation, dataLocation = state.dataLocation, applications=state.applications, services=state.services)
+        self.dataStoreUploadUrl = state.dataLocation
+                        
+        # next line needed until zsi can handle dictionaries.
+        self.venueState = VenueState(uniqueId=state.uniqueId, name=state.name, description=state.description, uri=state.uri, connections=state.connections, clients=state.clients, data=state.data, eventLocation=evtLocation, textLocation=state.textLocation, dataLocation = state.dataLocation, applications=state.applications, services=state.services)
+    
+        # Retreive stream descriptions
+        if len(self.capabilities) > 0:
+            self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.profile.connectionId,
+                                                                          self.capabilities)                                                                         
+        self.venueUri = URL
+
+        log.debug("Setting isInVenue flag.")
+    
+        # Handle the remaining Enter-related tasks in a separate thread
+        threading.Thread(target=self.DoPostEnter,args=[evtLocation],
+                         name='VenueClient.DoPostEnter').start()
+
+        # Finally, set the flag that we are in a venue
+        self.isInVenue = 1
 
 
-            # Retreive stream descriptions
-            if len(self.capabilities) > 0:
-                self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.profile.connectionId,
-                                                                              self.capabilities)                                                                         
-            self.venueUri = URL
+    def DoPostEnter(self,evtLocation):
+        # Create event client
+        coherenceCallbacks = {
+            Event.ENTER: self.AddUserEvent,
+            Event.EXIT: self.RemoveUserEvent,
+            Event.MODIFY_USER: self.ModifyUserEvent,
+            Event.ADD_DATA: self.AddDataEvent,
+            Event.UPDATE_DATA: self.UpdateDataEvent,
+            Event.REMOVE_DATA: self.RemoveDataEvent,
+            Event.ADD_SERVICE: self.AddServiceEvent,
+            Event.UPDATE_SERVICE: self.UpdateServiceEvent,
+            Event.REMOVE_SERVICE: self.RemoveServiceEvent,
+            Event.ADD_APPLICATION: self.AddApplicationEvent,
+            Event.UPDATE_APPLICATION: self.UpdateApplicationEvent,
+            Event.REMOVE_APPLICATION: self.RemoveApplicationEvent,
+            Event.ADD_CONNECTION: self.AddConnectionEvent,
+            Event.REMOVE_CONNECTION: self.RemoveConnectionEvent,
+            Event.SET_CONNECTIONS: self.SetConnectionsEvent,
+            Event.ADD_STREAM: self.AddStreamEvent,
+            Event.MODIFY_STREAM: self.ModifyStreamEvent,
+            Event.REMOVE_STREAM: self.RemoveStreamEvent,
+            Event.OPEN_APP: self.OpenAppEvent
+            }
 
-            #
-            # Create the event client
-            #
+        self.eventClient = VenueEventClient(evtLocation, 
+                                       self.profile.connectionId,
+                                       self.venueState.GetUniqueId())
+                                       
+        for e in coherenceCallbacks.keys():
+            self.eventClient.RegisterEventCallback(e, coherenceCallbacks[e])
+        self.eventClient.Start()
         
-            coherenceCallbacks = {
-                Event.ENTER: self.AddUserEvent,
-                Event.EXIT: self.RemoveUserEvent,
-                Event.MODIFY_USER: self.ModifyUserEvent,
-                Event.ADD_DATA: self.AddDataEvent,
-                Event.UPDATE_DATA: self.UpdateDataEvent,
-                Event.REMOVE_DATA: self.RemoveDataEvent,
-                Event.ADD_SERVICE: self.AddServiceEvent,
-                Event.UPDATE_SERVICE: self.UpdateServiceEvent,
-                Event.REMOVE_SERVICE: self.RemoveServiceEvent,
-                Event.ADD_APPLICATION: self.AddApplicationEvent,
-                Event.UPDATE_APPLICATION: self.UpdateApplicationEvent,
-                Event.REMOVE_APPLICATION: self.RemoveApplicationEvent,
-                Event.ADD_CONNECTION: self.AddConnectionEvent,
-                Event.REMOVE_CONNECTION: self.RemoveConnectionEvent,
-                Event.SET_CONNECTIONS: self.SetConnectionsEvent,
-                Event.ADD_STREAM: self.AddStreamEvent,
-                Event.MODIFY_STREAM: self.ModifyStreamEvent,
-                Event.REMOVE_STREAM: self.RemoveStreamEvent,
-                Event.OPEN_APP: self.OpenAppEvent
-                }
+        # Start sending heartbeats
+        self.Heartbeat()
 
-            self.Heartbeat()
+        # Create text client
+        try:    
+            if self.textLocation:
+                self.__StartJabber(self.textLocation)
+        except Exception,e:
+            log.exception("EnterVenue.__StartJabber failed")
 
-            #evtLocation = self.__venueProxy.GetEventServiceLocation()
-                      
-            # Create event client
-            self.eventClient = VenueEventClient(evtLocation, 
-                                           self.profile.connectionId,
-                                           self.venueState.GetUniqueId())
-                                           
-            for e in coherenceCallbacks.keys():
-                self.eventClient.RegisterEventCallback(e, coherenceCallbacks[e])
+        # Create the beacon client
+        if int(self.preferences.GetPreference(Preferences.BEACON)):
+            self.StartBeacon()
+
+        # 
+        # Update the node service with stream descriptions
+        #
+
+        try:
+            self.UpdateNodeService()
+        except NetworkLocationNotFound, e:
+            log.debug("UpdateNodeService: Couldn't update stream with transport/provider info")
+            if self.transport == 'unicast':
+                self.warningString += '\nConnection to unicast bridge %s failed. Select other bridge.'%(self.currentBridge.name)
+            else:
+                self.warningString += '\nError connecting media tools.'
+        except Exception, e:
+            # This is a non fatal error, users should be notified
+            # but still enter the venue
+            log.exception("EnterVenue: Error updating node service")
+
+        # Cache profiles from venue.
+        try:
+            log.debug("Updating client profile cache.")
+            clients = self.venueState.clients
+            for client in clients.values():
+                self.UpdateProfileCache(client)
+        except Exception, e:
+            log.exception("Unable to update client profile cache.")
                 
-            self.eventClient.Start()
-            #self.eventClient.Send("connect", self.profile.connectionId)
-        
-            log.debug("Setting isInVenue flag.")
-
-            # Finally, set the flag that we are in a venue
-            self.isInVenue = 1
-
-
-            # 
-            # Update the node service with stream descriptions
-            #
-            
-            try:
-                self.UpdateNodeService()
-            except NetworkLocationNotFound, e:
-                log.debug("UpdateNodeService: Couldn't update stream with transport/provider info")
-                if self.transport == 'unicast':
-                    self.warningString += '\nConnection to unicast bridge %s failed. Select other bridge.'%(self.currentBridge.name)
-                else:
-                    self.warningString += '\nError connecting media tools.'
-            except Exception, e:
-                # This is a non fatal error, users should be notified
-                # but still enter the venue
-                log.exception("EnterVenue: Error updating node service")
-           
-           
+     
 
     def StopBeacon(self):
         ''' Stop the beacon client'''
@@ -951,30 +948,15 @@ class VenueClient:
             log.exception("EnterVenue: Exception getting capabilities")
             errorInNode = 1
 
-            
-
-       #     # This is a non fatal error, users should be notified
-       #     # but still enter the venue
-       #     log.info("EnterVenue: Error getting node capabilities")
-       #     errorInNode = 1
-            
         try:
             # Enter the venue
+            log.debug('calling __EnterVenue')
             self.__EnterVenue(URL)
+            log.debug('after __EnterVenue')
 
-            # Cache profiles from venue.
-            try:
-                log.debug("Updating client profile cache.")
-                clients = self.venueState.clients
-                for client in clients.values():
-                    self.UpdateProfileCache(client)
-            except Exception, e:
-                log.exception("Unable to update client profile cache.")
-                
             # Return a string of warnings that can be displayed to the user
             if errorInNode:
                 self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences->Manage My Node..." from the main menu'
-
         except Exception, e:
             log.exception("EnterVenue: failed")
             enterSuccess = 0
@@ -989,17 +971,6 @@ class VenueClient:
                 s.EnterVenue(URL, self.warningString, enterSuccess)
             except:
                 log.exception("Exception in observer")
-
-        # Create text client
-        try:
-            if self.textLocation:
-                self.__StartJabber(self.textLocation)
-        except Exception,e:
-            log.exception("EnterVenue.__StartJabber failed")
-             
-        # Create the beacon client
-        if int(self.preferences.GetPreference(Preferences.BEACON)):
-            self.StartBeacon()
 
         return self.warningString
 
