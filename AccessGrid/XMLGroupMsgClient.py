@@ -3,7 +3,7 @@
 # Name:        XMLGroupMsgClient.py
 # Purpose:     A group messaging service xml layer.
 # Created:     2005/09/09
-# RCS-ID:      $Id: XMLGroupMsgClient.py,v 1.3 2006-01-10 23:28:41 eolson Exp $
+# RCS-ID:      $Id: XMLGroupMsgClient.py,v 1.4 2006-01-19 20:51:22 eolson Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,18 +16,6 @@ from StringIO import StringIO
 import AccessGrid.hosting.ZSI # registers AccessGrid types
 from GroupMsgClientBase import GroupMsgClientBase
 
-try:
-    # Use 4suite to speedup xml parsing 
-    from Ft.Xml.Domlette import NonvalidatingReaderBase
-    class DomletteReader(NonvalidatingReaderBase):
-        '''Used with ZSI.parse.ParsedSoap
-        '''
-        fromString = NonvalidatingReaderBase.parseString
-        fromStream = NonvalidatingReaderBase.parseStream
-    defaultReaderClass = NonvalidatingReaderBase
-except:
-    defaultReaderClass = None
- 
 
 class XMLGroupMsgClient(GroupMsgClientBase):
     def __init__(self, location, privateId, channel, groupMsgClientClassList=[GroupMsgClient]):
@@ -52,6 +40,6 @@ class XMLGroupMsgClient(GroupMsgClientBase):
 
     def _Deserialize(self, xml):
         # Doc/lit
-        ps = ParsedSoap(xml, readerClass=defaultReaderClass, keepdom=False)
+        ps = ParsedSoap(xml, readerClass=None, keepdom=False)
         return TC.AnyElement(aname="any", minOccurs=0, maxOccurs=1, nillable=False, processContents="lax").parse(ps.body_root, ps)
 
