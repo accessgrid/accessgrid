@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.55 2006-01-13 18:55:12 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.56 2006-01-19 18:56:07 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.55 2006-01-13 18:55:12 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.56 2006-01-19 18:56:07 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -296,7 +296,7 @@ def SignalHandler(signum, frame, service):
     """
     service.Shutdown()
 
-def RunService(service,serviceInterface):
+def RunService(service,serviceInterface,unusedCompatabilityArg=None):
     import signal, time
     from AccessGrid.hosting import SecureServer, InsecureServer
     from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
@@ -320,8 +320,6 @@ def RunService(service,serviceInterface):
     log = svc.GetLog()
     Log.SetDefaultLevel(serviceName, Log.DEBUG)   
 
-    log.debug("options = %s", str(sys.argv))
-    
     # Get options
     port = svc.GetOption("port")
     serviceManagerUri = svc.GetOption('serviceManagerUri')
