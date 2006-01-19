@@ -26,16 +26,15 @@ if sys.platform == 'win32':
     copyExe = 'copy'
     build = build_win
 elif sys.platform in ['linux2','darwin','freebsd5']:
-    VIC_EXE = os.path.join(TARGETDIR,'src','libuclmmbase.a')
+    TARGET = os.path.join(TARGETDIR,'src','libuclmmbase.a')
     copyExe = 'cp -p'
     build = build_linux
 else:
     raise Exception, 'Unsupported platform: ' + sys.platform
     
 # Build if necessary
-#if not os.path.exists(TARGET):
-#    build(TARGETDIR)
-build(TARGETDIR)
+if not os.path.exists(TARGET):
+   build(TARGETDIR)
 
 if os.path.exists(TARGET):
     copyCmd = "%s %s %s" % (copyExe, TARGET, DEST)
