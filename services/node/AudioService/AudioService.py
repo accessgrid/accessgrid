@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.7 2006-01-18 22:44:24 lefvert Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.8 2006-01-19 20:17:05 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -26,42 +26,33 @@ class AudioService( AGService ):
     def __init__( self ):
         AGService.__init__( self )
 
-          self.capabilities = [ Capability( Capability.CONSUMER,
+        self.capabilities = [ Capability( Capability.CONSUMER,
                                           Capability.AUDIO,
-                                          "L16",
-                                          16000),
+                                          "L16",16000,self.id),
                               Capability( Capability.CONSUMER,
                                           Capability.AUDIO,
-                                          "L16",
-                                          8000),
+                                          "L16",8000,self.id),
                               Capability( Capability.CONSUMER,
                                           Capability.AUDIO,
-                                          "L8",
-                                          16000),
+                                          "L8",16000, self.id),
                               Capability( Capability.CONSUMER,
                                           Capability.AUDIO,
-                                          "L8",
-                                          8000),
+                                          "L8",8000, self.id),
                                Capability( Capability.CONSUMER,
                                           Capability.AUDIO,
-                                          "PCMU",
-                                          16000),
+                                           "PCMU", 16000, self.id),
                               Capability( Capability.CONSUMER,
                                           Capability.AUDIO,
-                                          "PCMU",
-                                          8000),
+                                          "PCMU",8000, self.id),
                               Capability( Capability.CONSUMER,
                                           Capability.AUDIO,
-                                          "GSM",
-                                          16000),
+                                          "GSM",16000, self.id),
                               Capability( Capability.CONSUMER,
                                           Capability.AUDIO,
-                                          "GSM",
-                                          8000),
+                                          "GSM",8000, self.id),
                               Capability( Capability.PRODUCER,
                                           Capability.AUDIO,
-                                          "L16",
-                                          16000)]
+                                          "L16",16000, self.id)]
         
         if Platform.IsWindows():
             rat = "rat.exe"

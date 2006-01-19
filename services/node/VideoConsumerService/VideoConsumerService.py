@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.4 2006-01-18 22:44:36 lefvert Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.5 2006-01-19 20:17:17 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,11 +23,10 @@ class VideoConsumerService( AGService ):
 
     def __init__( self ):
         AGService.__init__( self )
-
         self.capabilities = [ Capability( Capability.CONSUMER,
                                           Capability.VIDEO,
                                           "H261",
-                                          90000) ]
+                                          90000, self.id) ]
 
         if IsWindows():
             vic = "vic.exe"
