@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.259 2006-01-18 20:24:49 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.260 2006-01-19 20:12:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.259 2006-01-18 20:24:49 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.260 2006-01-19 20:12:38 lefvert Exp $"
 
 import sys
 import time
@@ -733,7 +733,66 @@ class Venue:
 #             del self.clientDisconnectOK[privateId]
 #         else:
 #             self.RemoveUser(privateId)
+ 
+    def __GetMatchingStream(self, capabilities):
+        '''
+        Get streams that matches the capabilities of a service
+        '''
+        serviceProducerCaps = filter(lambda x: x.role == Capability.PRODUCER, capabilities)
+        serviceConsumerCaps = filter(lambda x: x.role == Capability.CONSUMER, capabilities)
+        streams = self.streamList.GetStreams()
+        matchingStreams = []
 
+        for s in streams:
+            streamProducerCaps = filter(lambda x: x.role == Capability.PRODUCER, s.capability)
+            streamConsumerCaps = filter(lambda x: x.role == Capability.CONSUMER, s.capability)
+          
+            streamConsumerMatch = 0
+            serviceConsumerMatch = 0
+
+            # Compare stream producer capabilities to
+            # service consumer capabilities
+            for cap in streamProducerCaps:
+                for ccap in serviceConsumerCaps:
+                    if ccap.matches(cap):
+                        # found matching service consumer
+                        serviceConsumerMatch = 1
+
+            if len(streamProducerCaps)==0 or len(serviceConsumerCaps) == 0:
+                serviceConsumerMatch = 1
+
+            # Compare service producer capabilities
+            # to stream consumer capabilities
+            for cap in serviceProducerCaps:
+                for ccap in streamConsumerCaps:
+                    if ccap.matches(cap):
+                        streamConsumerMatch = 1
+
+            if len(serviceProducerCaps)==0 or len(streamConsumerCaps) == 0:
+                streamConsumerMatch = 1
+
+            # If all producers found a matching consumer,
+            # the stream matches
+            if serviceConsumerMatch and streamConsumerMatch:
+                matchingStreams.append(s)
+
+        # Just return the first stream that matches
+        if len(matchingStreams)>0:
+            return matchingStreams[0]
+        else:
+            return None
+
+    def __AddCapabilitiesToStream(self, stream, capabilities):
+        match = 0
+        for cap in capabilities:
+            for c in stream.capability:
+                if c.matches(cap):
+                    match = 1
+            if match:
+                caps = stream.capability
+                caps.append(cap)
+                stream.capability = caps
+            
     def NegotiateCapabilities(self, privateId, capabilities):
         """
         This method takes node capabilitis and finds a set of streams that
@@ -753,126 +812,63 @@ class Venue:
                
         streamDescriptions = []
 
-        #
-        # Compare user's producer capabilities with existing stream
-        # description capabilities. New producer capabilities are added
-        # to the stream descriptions, and an event is emitted to alert
-        # current participants about the new stream
-        #
+        # group service capabilities together
+        services = {}
+        for c in capabilities:
+            if services.has_key(c.serviceId):
+                caps = services[c.serviceId]
+                caps.append(c)
+                services[c.serviceId] = caps
+            else:
+                services[c.serviceId] = [c]
+
+        # For each service, find a stream that matches
+        streams = None
+        matchesExistingStream = 0
+        mismatchedServices = []
+        
+        for serviceId in services.keys():
+            stream = self.__GetMatchingStream(services[serviceId])
+            nrOfProducers = filter(lambda x: x.role == Capability.PRODUCER, capabilities)
+            
+            # If matching stream is found, add capabilities to the stream
+            if stream:
+                self.__AddCapabilitiesToStream(stream, services[serviceId])
                 
-        for clientCapability in capabilities:
-            if clientCapability.role == Capability.PRODUCER:
-                matchesExistingStream = 0
-                     
-                # add user as producer of all existing streams that match
-                for stream in self.streamList.GetStreams():
-                    if stream.capability.matches( clientCapability ):
-                        streamDesc = stream
-                        self.streamList.AddStreamProducer( privateId,
-                                                           streamDesc )
-                        streamDescriptions.append( streamDesc )
-                        matchesExistingStream = 1
-                        log.debug("added user as producer of existent stream")
+                # If the service has producer capabilities, add user as producer
+                if len(nrOfProducers)>0:
+                    self.streamList.AddStreamProducer(privateId,
+                                                      stream)
+                
+                log.debug("added user as producer of existent stream")
+            else:
+                matchingStreams = 0
+                # Check if network service can resolve mismatch
+                #matchingStreams = self.networkServicesManager.ResolveMismatch(
+                #    self.streamList.GetStreams(), mismatchedServices)
+                         
+                #for streamList, producer in matchingStreams:
+                #    for s in streamList:
+                #        if not self.streamList.FindStreamByDescription(s):
+                #            # Make new stream available for other clients.
+                #            self.streamList.AddStream(s)
+                #            streamDescriptions.append(s)
+                #            # Also add a new producer of the stream.
+                #            self.streamList.AddStreamProducer( producer, s)
 
-                # add user as producer of new stream
-                if not matchesExistingStream:
-                    capability = Capability( clientCapability.role,
-                                             clientCapability.type )
-                    capability.parms = clientCapability.parms
-
-                    # Add new capability as xml document.
-                    if hasattr(clientCapability, 'xml') and clientCapability.xml:
-                        n = ServiceCapability.CreateServiceCapability(clientCapability.xml)
-                        capability.xml = n.ToXML()
-
+                if not matchingStreams:
+                    # Create new stream
                     addr = self.AllocateMulticastLocation()
                     streamDesc = StreamDescription( self.name,
-                                                    addr,
-                                                    capability, 
+                                                    addr, services[serviceId], 
                                                     self.encryptMedia, 
-                                                    self.encryptionKey,
-                                                    0)
+                                                    self.encryptionKey,0)
                     log.debug("added user as producer of non-existent stream")
                     self.streamList.AddStreamProducer( privateId,
                                                        streamDesc )
-                    streamDescriptions.append( streamDesc )
 
-                    # Distribute event announcing new stream
-                    #self.eventClient.Send(Event.ADD_STREAM, streamDesc)
-                   
-        # Compare user's consumer capabilities with existing stream
-        # description capabilities. The user will receive a list of
-        # compatible stream descriptions
-        clientConsumerCapTypes = []
-        newCapabilities = []
-        mismatchedStreams = []
-                     
-        for capability in capabilities:
-            if capability.role == Capability.CONSUMER:
-                clientConsumerCapTypes.append( capability.type )
-
-                # Store new capabilities to check with new streams
-                if hasattr(capability, 'xml') and capability.xml:
-                    newCapabilities.append(capability)
-
-        for stream in self.streamList.GetStreams():
-            if stream.capability.type in clientConsumerCapTypes:
-                if stream not in streamDescriptions:
-                    streamDescriptions.append( stream )
-                       
-        # Additional Check!
-        # Find mismatches in new capabilities. The streams might already
-        # be added to the streamDescriptions list, so remove them from the list
-        # and send them to the network service manager for resolution.
-
-        resolveMismatch = 1
-        
-        for s in self.streamList.GetStreams():
-            match = 0
-            # If stream has new capability
-            if hasattr(s.capability, 'xml') and s.capability.xml:
-
-                # Check for matches for new consumer capabilities
-                sCap = ServiceCapability.CreateServiceCapability(s.capability.xml)
-                for c in newCapabilities:
-                    cCap = ServiceCapability.CreateServiceCapability(c.xml)
-                    
-                    if sCap.Matches(cCap):
-                        match = 1
-                        resolveMismatch = 0
-                        mismatchedStreams = []
-                                                                                                 
-                if not match:
-                    # Append to the list of mismatched streams.
-                    mismatchedStreams.append(s)
-
-                    # The stream does not match so remove it from
-                    # the list of stream descriptions.
-                    for stream in streamDescriptions:
-                        if s.id == stream.id:
-                            streamDescriptions.remove(stream)
-
-        log.debug('Number of mismatched streams %s'%len(mismatchedStreams))
-
-        # Use network services to resolve mismatches.
-        if len(mismatchedStreams)>0 and resolveMismatch:
-            log.debug('Resolve mismatch')
-            
-            matchingStreams = self.networkServicesManager.ResolveMismatch(
-                mismatchedStreams, capabilities)
-           
-            for streamList, producer in matchingStreams:
-                for s in streamList:
-                    c = ServiceCapability.CreateServiceCapability(s.capability.xml)
-                
-                    if not self.streamList.FindStreamByDescription(s):
-                        # Make new stream available for other clients.
-                        self.streamList.AddStream(s)
-                        streamDescriptions.append(s)
-                        # Also add a new producer of the stream.
-                        self.streamList.AddStreamProducer( producer, s)
-                        
-        return streamDescriptions
+        # return all available streams
+        return  self.streamList.GetStreams()
 
     def FindConnection(self, cid):
         if self.clients.has_key(cid):

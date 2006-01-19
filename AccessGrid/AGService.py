@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.56 2006-01-19 18:56:07 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.57 2006-01-19 20:12:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.56 2006-01-19 18:56:07 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.57 2006-01-19 20:12:38 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -57,6 +57,7 @@ class AGService:
         self.enabled = 1
         self.running = 1
         self.packageFile = 0
+        self.id = GUID()
         
         self.processManager = ProcessManager()
         
@@ -173,9 +174,9 @@ class AGService:
         Set the StreamDescription
         """
         try:
-            self.log.info("SetStream: %s %s %s" % (streamDescription.capability.type, 
-                                       streamDescription.location.host,   
-                                       streamDescription.location.port) )
+            self.log.info("SetStream: %s %s %s" % (streamDescription.capability, 
+                                                   streamDescription.location.host,   
+                                                   streamDescription.location.port) )
 
             # Detect trivial re-configuration
             if self.streamDescription and \
@@ -186,11 +187,18 @@ class AGService:
                 # bail out
                 self.log.info("SetStream: ignoring trivial re-configuration")
                 return 1
+            
+            # each service capability has to be present in the stream.
+            for cap in self.capabilities:
+                match = 0
+                for c in streamDescription.capability:
+                    if c.matches(cap):
+                        match = 1
+                if not match:
+                    return 0
 
+            self.streamDescription = streamDescription
 
-            m = map( lambda cap:cap.type, self.capabilities )
-            if streamDescription.capability.type in m:
-               self.streamDescription = streamDescription
         except:
             self.log.exception("Exception in SetStream ")
             raise Exception("AGService.SetStream failed : " + str(sys.exc_value) )
@@ -254,11 +262,13 @@ class AGService:
         return self.serviceManagerUri
         
     def GetDescription(self):
-        return AGServiceDescription(self.name,
-                                    self.uri,
-                                    self.capabilities,
-                                    self.GetResource(),
-                                    self.packageFile)
+        r = AGServiceDescription(self.name,
+                                 self.uri,
+                                 self.capabilities,
+                                 self.GetResource(),
+                                 self.packageFile)
+                
+        return r
 
     def SetUri(self,uri):
         self.uri = uri
@@ -345,11 +355,12 @@ def RunService(service,serviceInterface,unusedCompatabilityArg=None):
     url = server.FindURLForObject(service)
     log.info("Starting Service URI: %s", url)
     print "Starting Service URI: %s" % url
+
     
     # Set service data
     service.SetServiceManagerUrl(serviceManagerUri)
     service.SetUri(url)
-    
+
     # Register with the calling service manager
     if serviceManagerUri:
         log.debug("Registering with service manager; url=%s", serviceManagerUri)
@@ -357,6 +368,8 @@ def RunService(service,serviceInterface,unusedCompatabilityArg=None):
         AGServiceManagerIW(serviceManagerUri).RegisterService(token,url)
     else:
         log.info("Service Manager does not exist for service %s"%(url))
+
+    
 
     # Register the signal handler so we can shut down cleanly
     # lambda is used to pass the service instance to the 

@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.88 2006-01-18 22:48:25 lefvert Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.89 2006-01-19 20:12:38 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.88 2006-01-18 22:48:25 lefvert Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.89 2006-01-19 20:12:38 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -299,22 +299,23 @@ class Capability:
     VIDEO = "video"
     TEXT  = "text"
 
-    def __init__( self, role=None, type=None, codec=None, rate=None, channels = 1):
+    def __init__( self, role=None, type=None, codec=None, rate=None, serviceId = None, channels = 1):
         self.role = role # consumer/producer
         self.type = type # audio/video/other
         self.codec = codec # according to mime type
         self.rate = rate # RTP clock rate
         self.channels = channels
+        self.serviceId = serviceId 
         
     def __repr__(self):
-        string = "%s, %s, %s, %s, %s" % (self.role, self.type, self.codec, str(self.rate), str(self.channels))
+        string = "%s, %s, %s, %s, %s, %s" % (self.role, self.type, self.serviceId, self.codec, str(self.rate), str(self.channels))
         return string
 
     def matches( self, capability ):
-        if (self.type != capability.type and
-            self.codec != capability.codec and
-            self.channels != capability.channels and
-            self.rate != capability.rate):
+        if (str(self.type) != str(capability.type) or
+            str(self.codec) != str(capability.codec) or
+            int(self.channels) != int(capability.channels) or
+            int(self.rate) != int(capability.rate)):
             # type mismatch
             return 0
 

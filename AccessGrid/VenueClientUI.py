@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.146 2006-01-13 22:10:57 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.147 2006-01-19 20:12:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.146 2006-01-13 22:10:57 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.147 2006-01-19 20:12:38 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -5050,7 +5050,7 @@ class VenuePropertiesDialog(wxDialog):
                 else:
                     self.list.SetStringItem(j, 2, str(''))
 
-                self.list.SetStringItem(j, 3, str(stream.capability.type +
+                self.list.SetStringItem(j, 3, str(stream.capability[0].type +
                                                   " (" +location.type+")"))
                 if stream.static:
                     self.list.SetStringItem(j, 4, 'static')

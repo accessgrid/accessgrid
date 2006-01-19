@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.100 2006-01-13 16:38:47 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.101 2006-01-19 20:12:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.100 2006-01-13 16:38:47 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.101 2006-01-19 20:12:38 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -23,6 +23,7 @@ from AccessGrid import Log
 from AccessGrid import Version
 from AccessGrid.Toolkit import Service
 from AccessGrid.hosting import Client
+from AccessGrid.NetworkLocation import ProviderProfile
 from AccessGrid.Descriptions import AGServiceDescription
 from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
@@ -76,7 +77,7 @@ class AGNodeService:
                                                        self.__BrowseCB)
         self.serviceBrowser.Start()
 
-        self.streamDescriptionList = dict()
+        self.streamDescriptionList = []
         
         self.uri = 0
 
@@ -225,11 +226,10 @@ class AGNodeService:
         exceptionText = ""
 
         # Save the stream descriptions
-        self.streamDescriptionList = dict()
+        self.streamDescriptionList = [] 
         for streamDescription in streamDescriptionList:
-            self.streamDescriptionList[streamDescription.capability.type] = \
-                                                  streamDescription
-
+            self.streamDescriptionList.append(streamDescription)
+        
         # Send the streams to the services
         services = self.GetServices()
         for service in services:
@@ -244,8 +244,7 @@ class AGNodeService:
     
     def AddStream( self, streamDescription ):
         log.info("NodeService.AddStream")
-        self.streamDescriptionList[streamDescription.capability.type] = \
-                                                  streamDescription
+        self.streamDescriptionList.append(streamDescription)
 
         # Send the streams to the services
         services = self.GetServices()
@@ -257,9 +256,11 @@ class AGNodeService:
 
         log.info("NodeService.RemoveStream")
         # Remove the stream from the list
-        if self.streamDescriptionList.has_key(
-            streamDescription.capability.type ):
-            del self.streamDescriptionList[streamDescription.capability.type]
+
+        for s in self.streamDescriptionList:
+            if (s.location.host == streamDescription.location.host and
+                s.location.port == streamDescription.location.port):
+                del self.streamDescriptionList[streamDescription.capability.type]
 
         # Stop services using that stream's media type
         # (er, not yet)
@@ -677,21 +678,29 @@ class AGNodeService:
         log.info("NodeService.__SendStreamsToService")
         failedSends = ""
         
-        serviceCapabilities = map(lambda cap: cap.type, 
-            AGServiceIW( serviceUri ).GetCapabilities() )
+        serviceCapabilities = AGServiceIW( serviceUri ).GetCapabilities()
         log.debug("service capabilities: %s", str(serviceCapabilities))
-        for streamDescription in self.streamDescriptionList.values():
-            try:    
-                log.debug("capability type: %s", streamDescription.capability.type)
-                if streamDescription.capability.type in serviceCapabilities:
-                    log.info("Sending stream (type=%s) to service: %s", 
-                                streamDescription.capability.type,
-                                serviceUri )
-                    AGServiceIW( serviceUri ).SetStream( streamDescription )
+        for streamDescription in self.streamDescriptionList:
+            try:
+                #log.debug("capability type: %s", streamDescription.capability[0].type)
+                
+                # each service capability has to be present in the stream.
+                for cap in serviceCapabilities:
+                    match = 0
+                    for c in streamDescription.capability:
+                        if c.matches(cap):
+                            match = 1
+                    if match:
+                        log.info("Sending stream (type=%s) to service: %s", 
+                                 streamDescription.capability,
+                                 serviceUri )
+                        
+                        AGServiceIW( serviceUri ).SetStream( streamDescription )
+                        return
             except:
                 log.exception("Exception in AGNodeService.__SendStreamsToService.")
-                failedSends += "Error updating %s %s\n" % \
-                    ( streamDescription.capability.type, streamDescription.capability.role )
+                failedSends += "Error updating %s\n" % \
+                               ( streamDescription.capability)
 
         if len(failedSends):
             raise SetStreamException(failedSends)

@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.267 2006-01-04 18:57:06 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.268 2006-01-19 20:12:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.267 2006-01-04 18:57:06 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.268 2006-01-19 20:12:38 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -185,8 +185,8 @@ class VenueClient:
         self.beaconLocation = None
 
         # Create beacon capability
-        self.beaconCapabilities = [Capability(Capability.PRODUCER, "Beacon"),
-                                   Capability(Capability.CONSUMER, "Beacon")]
+        self.beaconCapabilities = [Capability(Capability.PRODUCER, "Beacon", "ANY", 0, 1),
+                                   Capability(Capability.CONSUMER, "Beacon", "ANY", 0, 1)]
       
     def __LoadBridges(self):
         '''
@@ -867,8 +867,9 @@ class VenueClient:
             
             # Get beacon location
             for s in self.streamDescList:
-                if s.capability.type == "Beacon":
-                    self.beaconLocation = s.location
+                for cap in s.capability:
+                    if cap.type == "Beacon":
+                        self.beaconLocation = s.location
 
             # Create beacon
             if self.beaconLocation:
