@@ -71,6 +71,11 @@ mkdir etc/AccessGrid/Services
 mkdir etc/AccessGrid/PackageCache
 mkdir etc/AccessGrid/Logs
 
+# TEMPORARY links for AG2,AG3
+#
+ln -s AccessGrid etc/AccessGrid3
+(cd lib/${python}/site-packages && ln -s AccessGrid3/AccessGrid .)
+
 # Create a usr dir, and move dirs thereunder
 mkdir usr
 mv share usr/share
@@ -117,9 +122,6 @@ chmod +x ${buildroot}/install/AccessGrid-Postinstall.py
 cat <<EOF > ${buildroot}/install/doinst.sh
 #!/bin/sh
 
-. /etc/profile.d/globus.sh
-install/AccessGrid-Postinstall.py
-
 agpm.py --post-install
 VNCEXE=/etc/AccessGrid/SharedApplications/VenueVNC/vncviewer
 if [ -f ${VNCEXE} ]; then
@@ -150,7 +152,7 @@ chmod 0644 ${buildroot}/install/slack-desc
 # Make the package
 #
 cd ${buildroot}
-/sbin/makepkg -c n -l y ${here}/${pkgname}
+/sbin/makepkg -c n -l y -p ${here}/${pkgname}
 cd ${here}
 
 
