@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.206 2006-01-19 20:57:33 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.207 2006-01-20 23:32:06 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.206 2006-01-19 20:57:33 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.207 2006-01-20 23:32:06 eolson Exp $"
 
 
 # Standard stuff
@@ -775,6 +775,11 @@ class VenueServer:
         The AddVenue method takes a venue description and creates a new
         Venue Object, then makes it available from this Venue Server.
         """
+
+        # create an event channel for this venue.
+        # channel id is the same as venue id.
+        self.eventService.CreateChannel(venueDesc.id)
+
         # Create a new Venue object pass it the server
         # Usually the venueDesc will not have Role information 
         #   and defaults will be used.
@@ -782,9 +787,6 @@ class VenueServer:
         venue = Venue(self, venueDesc.name, venueDesc.description,
                       self.dataStorageLocation, venueDesc.id )
 
-        # create an event channel for this venue.
-        # channel id is the same as venue id.
-        self.eventService.CreateChannel(venue.GetId())
         self.UpdateService(self.eventService.GetDescription())
 
         # Make sure new venue knows about server's external role manager.
