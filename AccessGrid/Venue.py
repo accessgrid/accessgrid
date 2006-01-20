@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.260 2006-01-19 20:12:38 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.261 2006-01-20 23:46:39 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.260 2006-01-19 20:12:38 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.261 2006-01-20 23:46:39 eolson Exp $"
 
 import sys
 import time
@@ -64,7 +64,7 @@ from AccessGrid.interfaces.AccessGrid_Types import www_accessgrid_org_v3_0 as AG
 from AccessGrid.interfaces.Venue_interface import Venue as VenueI
 from AccessGrid.interfaces.Venue_client import VenueIW
 from AccessGrid.interfaces.SharedApplication_interface import SharedApplication as SharedApplicationI
-from AccessGrid.VenueEventClient import VenueEventClient
+from AccessGrid.InProcessVenueEventClient import InProcessVenueEventClient
 
 log = Log.GetLogger(Log.VenueServer)
 
@@ -461,7 +461,7 @@ class Venue:
         self.cache = ClientProfileCache(self.profileCachePath)
 
         # Start the event client.
-        self.eventClient = VenueEventClient(self.GetEventServiceLocation(), 
+        self.eventClient = InProcessVenueEventClient(self.server.eventService, 
                                        self.GetId(),
                                        self.GetId())
         self.eventClient.Start()
@@ -1972,10 +1972,12 @@ class Venue:
         # grab the description, and update the universe with it
         appDesc = app.AsApplicationDescription()
 
-        self.eventClient.Send( Event.ADD_APPLICATION, appDesc)
+        try:
+            self.eventClient.Send( Event.ADD_APPLICATION, appDesc)
+        except Exception, e:
+            log.exception("Failed to send app creation event")
         log.debug("CreateApplication: Created id=%s handle=%s",
                   appDesc.id, appDesc.uri)
-              
         return appDesc
 
     def UpdateApplication(self, appDescStruct):
