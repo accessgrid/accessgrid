@@ -9,10 +9,7 @@ import os
 import sys
 import base64
 
-from AccessGrid.hosting import Client
-
 from AccessGrid import Events
-from AccessGrid import EventClient
 from AccessGrid import Toolkit
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.Platform import IsWindows,IsLinux,IsOSX,IsFreeBSD5
@@ -20,8 +17,8 @@ from AccessGrid import DataStore
 from AccessGrid import Platform
 from AccessGrid.GUID import GUID
 from AccessGrid.Toolkit import CmdlineApplication
-
 from AccessGrid.ClientProfile import ClientProfile
+from AccessGrid.SharedApplication import SharedApplicationIW
 
 from AccessGrid import Log
 log = Log.GetLogger("VenueVNCClient")
@@ -29,23 +26,23 @@ log = Log.GetLogger("VenueVNCClient")
 class vncSharedAppClient:
     """
     """
-    def __init__( self, appUrl ):
+    def __init__( self, appUrl, clientProfile ):
 
         self.appUrl = appUrl
 
-        self.venueProxy = Client.SecureHandle(self.appUrl).GetProxy()
+        self.appProxy=SharedApplicationIW(self.appUrl)
         print( "Application URL: %s" %(self.appUrl) )
-        #print( "Application URL Valid? " + self.venueProxy.isValid( ) )
+        #print( "Application URL Valid? " + self.appProxy.isValid( ) )
         # Join the application
         #  ** NEW METHOD **
-        (self.publicId, self.privateId) = self.venueProxy.Join()
+        (self.publicId, self.privateId) = self.appProxy.Join(clientProfile)
         #  ** OLD METHOD **
-        #self.privateId=self.venueProxy.Join(ClientProfile('./profile'))
+        #self.privateId=self.appProxy.Join(ClientProfile('./profile'))
 
         #
         # Retrieve the channel id
         #
-        (self.channelId, eventServiceLocation ) = self.venueProxy.GetDataChannel(self.privateId)
+        (self.channelId, address, port ) = self.appProxy.GetDataChannel(self.privateId)
 
         # 
         # Subscribe to the event channel
@@ -61,11 +58,11 @@ class vncSharedAppClient:
         #self.eventClient.RegisterCallback("view", self.ViewCallback )
 
         # Get the connection state and print it
-        self.vncContact = self.venueProxy.GetData(self.privateId, "VNC_Contact");
-        self.vncGeometry = self.venueProxy.GetData(self.privateId, "VNC_Geometry");
-        self.vncDepth = self.venueProxy.GetData(self.privateId, "VNC_Depth");
+        self.vncContact = self.appProxy.GetData(self.privateId, "VNC_Contact");
+        self.vncGeometry = self.appProxy.GetData(self.privateId, "VNC_Geometry");
+        self.vncDepth = self.appProxy.GetData(self.privateId, "VNC_Depth");
         # Read password from app object
-        encoded_pwd = self.venueProxy.GetData(self.privateId, "VNC_Pwd")
+        encoded_pwd = self.appProxy.GetData(self.privateId, "VNC_Pwd")
 
         print "VNC Server at %s (%s, %s-bits):"%(self.vncContact,self.vncGeometry,self.vncDepth);
         self.passwdFilename=os.path.join(UserConfig.instance().GetTempDir(), ("passwd-" + str(GUID()) + ".vnc"))
@@ -115,4 +112,7 @@ if __name__ == "__main__":
 
     appUrl = sys.argv[1]
 
-    sb = vncSharedAppClient( appUrl )
+    clientProfileFile = os.path.join(UserConfig.instance().GetConfigDir(),
+                                     "profile")
+    clientProfile = ClientProfile(clientProfileFile)
+    sb = vncSharedAppClient( appUrl, clientProfile )
