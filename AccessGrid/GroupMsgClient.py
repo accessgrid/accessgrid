@@ -3,7 +3,7 @@
 # Name:        GroupMsgClient.py
 # Purpose:     A Group Messaging service client.
 # Created:     2005/09/09
-# RCS-ID:      $Id: GroupMsgClient.py,v 1.3 2006-01-09 22:30:33 eolson Exp $
+# RCS-ID:      $Id: GroupMsgClient.py,v 1.4 2006-01-23 17:20:00 turam Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,7 +17,6 @@ from twisted.internet.protocol import ClientFactory
 from twisted.protocols.basic import Int32StringReceiver
 from GroupMsgDefines import GroupDoesNotExistException, NotConnectedException, UnspecifiedErrorException, IncompatibleVersionException, UnpackUByte, ERROR, ServerUnableToSendException, ClientNotInGroupException, GeneralReceivedErrorException
 import sys, time
-import threading
 
 class GroupMsgClientProtocol(Int32StringReceiver):
     def connectionMade(self):
@@ -119,7 +118,7 @@ class GroupMsgClientFactory(ClientFactory):
 
     def clientConnectionFailed(self, connector, reason):
         log.error('connection failed: %s', reason.getErrorMessage())
-        raise ClientConnectionFailed
+        raise ClientConnectionFailed(reason)
 
     def clientConnectionLost(self, connector, reason):
         if self.measurePerformance:
@@ -223,7 +222,7 @@ class TestMessages:
     def __init__(self, gmc=None, numMsgs=None, multipleClients=False):
         self.msgData = "1234567890123"
         if numMsgs == None:
-            self.numExpectedMsgs = numMsgsDefault
+            self.numExpectedMsgs = TestMessages.numMsgsDefault
         else:
             self.numExpectedMsgs = numMsgs
         self.numMessagesReceived = 0
