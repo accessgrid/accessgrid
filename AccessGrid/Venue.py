@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.262 2006-01-23 17:27:00 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.263 2006-01-23 20:47:44 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.262 2006-01-23 17:27:00 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.263 2006-01-23 20:47:44 turam Exp $"
 
 import sys
 import time
@@ -55,7 +55,7 @@ from AccessGrid.interfaces.AccessGrid_Types import www_accessgrid_org_v3_0 as AG
 from AccessGrid.interfaces.Venue_interface import Venue as VenueI
 from AccessGrid.interfaces.Venue_client import VenueIW
 from AccessGrid.interfaces.SharedApplication_interface import SharedApplication as SharedApplicationI
-from AccessGrid.InProcessVenueEventClient import InProcessVenueEventClient
+from AccessGrid.VenueEventClient import VenueEventClient
 
 log = Log.GetLogger(Log.VenueServer)
 
@@ -452,7 +452,7 @@ class Venue:
         self.cache = ClientProfileCache(self.profileCachePath)
 
         # Start the event client.
-        self.eventClient = InProcessVenueEventClient(self.server.eventService, 
+        self.eventClient = VenueEventClient(self.GetEventServiceLocation(), 
                                        self.GetId(),
                                        self.GetId())
         self.eventClient.Start()
