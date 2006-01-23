@@ -63,7 +63,7 @@ class AGNetworkService:
         service from the command line.
         '''
         # Create the service interface.
-         if not soapI:
+        if not soapI:
             soapInterface = AGNetworkServiceI(service)
         else:
             soapInterface = soapI
@@ -216,26 +216,6 @@ class AGNetworkService:
         nsd.id = str(GUID())
         return nsd
 
-class AGNetworkServiceI(SOAPInterface):
-    def __init__(self, impl):
-        SOAPInterface.__init__(self, impl)
-        
-    def _authorize(self, *args, **kw):
-        return 1
-    
-    def Transform(self, streamList):
-        streams = []
-        for stream in streamList:
-            streams.append(CreateStreamDescription(stream))
-            
-        return self.impl.Transform(streams)
-
-    def StopTransform(self, streamList):
-        streams = []
-        for stream in streamList:
-            streams.append(CreateStreamDescription(stream))
-            
-        return self.impl.StopTransform(streams)
 
         
 if __name__ == "__main__":
