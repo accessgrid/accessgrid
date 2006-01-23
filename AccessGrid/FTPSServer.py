@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 # Standard Python library
-import os
 import sys
 import threading
 import urlparse

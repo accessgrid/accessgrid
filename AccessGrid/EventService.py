@@ -3,12 +3,10 @@
 # Name:        EventService.py
 # Purpose:     A secure version of the EventService.
 # Created:     2006/01/10
-# RCS-ID:      $Id: EventService.py,v 1.31 2006-01-19 23:30:38 eolson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.32 2006-01-23 06:56:13 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
-
-import sys
 
 from SecureGroupMsgService import SecureGroupMsgService
 from InsecureEventService import BaseEventService
