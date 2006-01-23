@@ -2,22 +2,20 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.101 2006-01-19 20:12:38 lefvert Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.102 2006-01-23 06:51:21 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.101 2006-01-19 20:12:38 lefvert Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.102 2006-01-23 06:51:21 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
 import sys
 import string
 import ConfigParser
-import shutil
-import urlparse
 
 from AccessGrid import Log
 from AccessGrid import Version
@@ -32,14 +30,6 @@ from AccessGrid.Descriptions import ResourceDescription
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.AGParameter import ValueParameter
 from AccessGrid.Descriptions import NodeConfigDescription
-from AccessGrid.Descriptions import CreateAGServiceManagerDescription
-from AccessGrid.Descriptions import CreateAGServiceDescription
-from AccessGrid.Descriptions import CreateCapability
-from AccessGrid.Descriptions import CreateResourceDescription
-from AccessGrid.Descriptions import CreateClientProfile
-from AccessGrid.Descriptions import CreateStreamDescription
-from AccessGrid.Descriptions import CreateParameter
-from AccessGrid.Descriptions import CreateNodeConfigDescription
 from AccessGrid import ServiceDiscovery
 from AccessGrid.AGServiceManager import AGServiceManager
 
@@ -105,7 +95,7 @@ class AGNodeService:
             log.info("set ns url")
             AGServiceManagerIW( serviceManagerUrl ).SetNodeServiceUrl(self.uri)
             log.info("done setting ns url")
-        except Exception, e:
+        except Exception:
                 log.exception("Failed to add service manager %s", serviceManagerUrl)
                 raise
         except:
@@ -277,6 +267,7 @@ class AGNodeService:
                 self.packageName = None
                 self.resource = None
                 self.parameters = None
+                
 
         # Read config file
         if config.type == NodeConfigDescription.SYSTEM:
@@ -392,9 +383,6 @@ class AGNodeService:
                 log.exception("Exception removing services from Service Manager")
                 exceptionText += "Couldn't remove services from Service Manager: %s" %(serviceManager.name)
 
-            servicePackages = serviceManagerProxy.GetServicePackageDescriptions()
-            
-                
             #
             # Add Service to Service Manager
             #
@@ -410,20 +398,6 @@ class AGNodeService:
                                                                                             service.parameters,
                                                                                             prefs.GetProfile())
                     
-                    #serviceProxy = AGServiceIW(serviceDesc.uri)
-                    
-                    # Set the resource
-                    #if service.resource:
-                    #    serviceProxy.SetResource(service.resource)
-                    
-                    # Set the configuration
-                    #if service.parameters:
-                    #    serviceProxy.SetConfiguration(service.parameters)
-                    
-                    # Set the identity to be used by the service
-                    #prefs = self.app.GetPreferences()
-                    #serviceProxy.SetIdentity(prefs.GetProfile() )
-                                            
                 except:
                     log.exception("Exception adding service %s" % (service.packageName))
                     exceptionText += "Couldn't add service %s" % (service.packageName)
