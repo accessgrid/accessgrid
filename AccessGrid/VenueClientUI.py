@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.148 2006-01-19 20:48:46 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.149 2006-01-23 21:39:37 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.148 2006-01-19 20:48:46 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.149 2006-01-23 21:39:37 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -374,9 +374,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.preferences.Check(self.ID_USE_UNICAST, not index)
         self.bridgeSubmenu = wxMenu()
 
-        # If unicast is initially selected, create bridge menu
-        if not index:
-            self.__CreateBridgeMenu()
+        # Create bridge menu, so individual bridges are selectable from the start
+        self.__CreateBridgeMenu()
                        
         self.preferences.AppendMenu(self.ID_BRIDGES, "Bridges", self.bridgeSubmenu)
         self.preferences.AppendSeparator()
@@ -489,6 +488,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.bridgeSubmenu.DeleteItem(i)
 
         bList = self.bridges.values()
+        
+        if not bList:
+            id = wxNewId()
+            self.bridgeSubmenu.Append(id,'No bridges available')
+            self.bridgeSubmenu.Enable(id, false)
+            return
 
         # sort the bridge list
         bList.sort(lambda x,y: cmp(x.rank, y.rank))
@@ -525,6 +530,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
              
         # Use current bridge
         try:
+            # - uncheck multicast item
+            self.preferences.Check( self.ID_USE_UNICAST, 1)
+
+            # - use that bridge
             self.controller.UseUnicastCB(bridgeDescription)
         except:
             log.exception("Connection to bridge %s failed"%(bridgeDescription.name))
@@ -1065,6 +1074,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                       "Use Unicast")
 
         self.__CreateBridgeMenu()
+        if len(self.bridges.values())<1:
+            self.Warn("No unicast bridge is currently available.", "Use Unicast")
         
         
         #transportList = self.venueClient.GetTransportList()
