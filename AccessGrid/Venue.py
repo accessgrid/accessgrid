@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.261 2006-01-20 23:46:39 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.262 2006-01-23 17:27:00 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.261 2006-01-20 23:46:39 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.262 2006-01-23 17:27:00 turam Exp $"
 
 import sys
 import time
@@ -34,15 +34,7 @@ from AccessGrid import DataStore
 from AccessGrid import NetService
 from AccessGrid.Descriptions import Capability
 from AccessGrid.SharedApplication import SharedApplication
-from AccessGrid.Descriptions import CreateClientProfile
-from AccessGrid.Descriptions import CreateStreamDescription
-from AccessGrid.Descriptions import CreateConnectionDescription
-from AccessGrid.Descriptions import CreateDataDescription
-from AccessGrid.Descriptions import CreateServiceDescription
-from AccessGrid.Descriptions import CreateApplicationDescription
-from AccessGrid.Descriptions import CreateAGNetworkServiceDescription
 from AccessGrid.Descriptions import StreamDescription
-from AccessGrid.Descriptions import CreateNetworkLocation
 from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
 from AccessGrid.Descriptions import DataDescription, VenueState
@@ -53,7 +45,6 @@ from AccessGrid.GUID import GUID
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.Events import Event, DisconnectEvent
 from AccessGrid.Events import ClientExitingEvent
-from AccessGrid.Events import MarshalledEvent
 from AccessGrid.Utilities import AllocateEncryptionKey, ServerLock
 from AccessGrid.hosting import PathFromURL
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
@@ -1151,13 +1142,12 @@ class Venue:
 
         return clientProfile.connectionId
 
-    def RegisterNetworkService(self, networkServiceDescription):
+    def RegisterNetworkService(self, nsd):
         """
         Registers a network service with the venue.
         
         @Param networkServiceDescription: A network service description.
         """
-        nsd = CreateAGNetworkServiceDescription(networkServiceDescription)
         log.debug('register network service %s'%nsd)
         try:
             self.networkServicesManager.RegisterService(nsd)
@@ -1167,13 +1157,12 @@ class Venue:
             log.exception('Venue.RegisterNetworkService: Failed')
             raise Exception, 'Venue.RegisterNetworkService: Failed'
            
-    def UnRegisterNetworkService(self, networkServiceDescription):
+    def UnRegisterNetworkService(self, nsd):
         """
         Removes a network service from the venue
         
         @Param networkServiceDescription: A network service description.*
         """
-        nsd = CreateAGNetworkServiceDescription(networkServiceDescription)
         try:
             self.networkServicesManager.UnRegisterService(nsd)
             self.streamList.RemoveProducer(nsd.uri)
@@ -1980,7 +1969,7 @@ class Venue:
                   appDesc.id, appDesc.uri)
         return appDesc
 
-    def UpdateApplication(self, appDescStruct):
+    def UpdateApplication(self, applicationDesc):
         """
         Update application.
 
@@ -1996,12 +1985,6 @@ class Venue:
              
         if not self.applications.has_key(appDescStruct.id):
             raise ApplicationNotFound
-
-        try:
-            applicationDesc = CreateApplicationDescription(appDescStruct)
-        except:
-            log.exception("UpdateApplication: Bad application description.")
-            raise BadApplicationDescription
 
         appImpl = self.applications[applicationDesc.id]
         appImpl.name = applicationDesc.name
