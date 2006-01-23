@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service with an AccessGrid
 #                 VenueServerServiceInterface.
 # Created:     2005/09/09
-# RCS-ID:      $Id: InsecureEventService.py,v 1.2 2006-01-19 23:30:38 eolson Exp $
+# RCS-ID:      $Id: InsecureEventService.py,v 1.3 2006-01-23 17:21:29 turam Exp $
 # Copyright:   (c) 2005, 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -66,10 +66,6 @@ class BaseEventService:
 InsecureEventService = BaseEventService
 
 def main():
-    for arg in sys.argv:
-        if arg.startswith("--perf"):
-            showPerformance = True
-
     eventService = InsecureEventService(name="test", description="atest", id="testId", type="event", location=('localhost',8002))
     eventService.CreateChannel("Test")
     eventService.Start()

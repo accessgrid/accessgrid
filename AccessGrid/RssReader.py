@@ -2,7 +2,7 @@
 # Name:        RssReader.py
 # Purpose:     An RSS reader for meeting feeds
 # Created:     2005/10/19
-# RCS-ID:      $Id: RssReader.py,v 1.5 2005-12-22 07:56:23 turam Exp $
+# RCS-ID:      $Id: RssReader.py,v 1.6 2006-01-23 17:25:07 turam Exp $
 # Copyright:   (c) 2005
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,6 @@ with the option of adding observers to get notification of changes
 
 import threading
 import calendar
-import logging
 
 import feedparser
 
@@ -52,9 +51,7 @@ def strtimeToSecs(strtime):
     sec = 0
     if len(time_parts) > 2:
         sec = int(time_parts[2])
-    
-    tz = parts[4]
-    
+        
     time_tuple = (year,mon,day,hour,min,sec,-1,-1,-1)
     
     time_secs = calendar.timegm(time_tuple)
@@ -161,7 +158,7 @@ class RssReader:
     
 class ReaderObserver:
     def UpdateRss(self,url,d,date):
-        print 'got update for', url
+        print 'got update:', url,d,date
         
     def Error(self,err):
         print 'got error:', err

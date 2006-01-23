@@ -1,8 +1,4 @@
 
-from ZSI.writer import SoapWriter
-from ZSI.parse import ParsedSoap
-from AccessGrid.interfaces.AccessGrid_Types import www_accessgrid_org_v3_0
-
 class VenueServerServiceDescription:
     '''
     Describes a venue server service.
@@ -100,54 +96,6 @@ class VenueServerServiceInterface:
         A tuple of (host, port)
         '''
         raise UnimplementedException
-
-class VenueServerServiceBasic(VenueServerServiceInterface):
-    '''
-    A basic implementation of a VenueServerService. This class 
-    has methods for handling channels. 
-    '''
-    def __init__(self, name, description, id, type, location):
-        self.name = name
-        self.description = description
-        self.id = id
-        self.type = type
-        self.location = location
-        self.channels = {}
-
-    def Start(self):
-        log.error("VenueServerService.Start: This method should only be called from sub class.")
-       
-    def GetId(self):
-        return self.id
-       
-    def GetDescription(self):
-        return VenueServerServiceDescription(self.id, self.name,
-                                             self.description, self.type,
-                                             self.location, self.GetChannelNames())
-
-    def GetChannelNames(self):
-        return self.channels.keys()
-        
-    def CreateChannel(self, channelId):
-        channel = Channel(channelId)
-        self.channels[channelId] = channel
-                       
-    def DestroyChannel(self, channelId):
-        del self.channels[channelId]
-
-    def GetChannel(self, channelId):
-        channel = None
-        if self.channels.has_key(channelId):
-            channel = self.channels[channelId]
-
-        return channel
-
-    def HasChannel(self, channelId):
-        channel = self.channels.has_key(channelId)
-        return channel
-
-    def GetLocation(self):
-        return self.location
 
 class Channel:
     '''

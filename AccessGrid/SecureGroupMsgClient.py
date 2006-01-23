@@ -3,7 +3,7 @@
 # Name:        SecureGroupMsgClient.py
 # Purpose:     A Secure Group Messaging service client.
 # Created:     2005/10/10
-# RCS-ID:      $Id: SecureGroupMsgClient.py,v 1.2 2006-01-09 22:32:27 eolson Exp $
+# RCS-ID:      $Id: SecureGroupMsgClient.py,v 1.3 2006-01-23 17:25:18 turam Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -40,11 +40,10 @@ def testMain(location, privateId, channel="Test", msgLength=13, numMsgs=1000, mu
 def main():
     location = ('localhost',7002)
     privateId = "some_id"
-    groupName = "Test"
-    numMsgs = 1000
-    msgLength = 1000
 
     """
+    groupName = "Test"
+    msgLength = 1000
     gmc = SecureGroupMsgClient(location, privateId, channel=groupName)
     gmc.measurePerformance = True
 

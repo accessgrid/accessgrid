@@ -2,18 +2,17 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.110 2006-01-19 18:58:17 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.111 2006-01-23 17:26:23 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.110 2006-01-19 18:58:17 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.111 2006-01-23 17:26:23 turam Exp $"
 
 # Standard imports
 import os
 import sys
-import md5
 from optparse import OptionParser, Option
 import time
 
@@ -626,75 +625,6 @@ class Service(AppBase):
                            help="Specify a service profile.")
         self.AddCmdLineOption(profileOption)
 
-#     def _CheckRequestedCert(self, dn):
-#         """
-#         Check to see if we have a cert with this dn; if we do not,
-#         check to see if there's a request pending for it. If there is,
-#         install. Otherwise just return.
-
-#         @param dn: Distinguished name of identity to check for.
-        
-#         """
-
-#         certMgr = self.certificateManager
-#         repo = self.certificateManager.GetCertificateRepository()
-
-#         certs = repo.FindCertificatesWithSubject(dn)
-#         validCerts = filter(lambda a: not a.IsExpired(), certs)
-
-#         if len(validCerts) > 0:
-#             return
-
-#         # No certs found, see if we have a request for this one.
-#         pending = certMgr.GetPendingRequests()
-
-#         reqs = filter(lambda a: str(a[0].GetSubject()) == dn, pending)
-#         if len(reqs) == 0:
-#             self.log.info("No requests found")
-#             return
-
-#         if len(reqs) > 1:
-#             self.log.warn("Multiple requests found, just picking one")
-            
-#         request, token, server, created = reqs[0]
-
-#         self.log.info("Found request at %s", server)
-
-#         # Check status. Note that if a proxy is required, we
-#         # may not be using it. However, underlying library might
-#         # set it up if the environment requires it.
-#         status = certMgr.CheckRequestedCertificate(request, token, server)
-#         success, certText = status
-#         if not success:
-#             # Nope, not ready.
-#             self.log.info("Certificate not ready: %s", certText)
-#             return
-
-#         # Success! we can install the cert.
-#         certhash = md5.new(certText).hexdigest()
-#         tempfile = os.path.join(UserConfig.instance().GetTempDir(), 
-# 				"%s.pem" % (certhash))
-
-#         try:
-#             try:
-#                 fh = open(tempfile, "w")
-#                 fh.write(certText)
-#                 fh.close()
-
-#                 impCert = certMgr.ImportRequestedCertificate(tempfile)
-
-#                 self.log.info("Successfully imported certificate for %s", 
-#                               str(impCert.GetSubject()))
-
-#             except CertificateRepository.RepoInvalidCertificate, e:
-#                 msg = e[0]
-#                 self.log.warn("The import of your approved certificate failed: %s", msg)
-
-#             except Exception, e:
-#                 self.log.exception("The import of your approved certificate failed")
-
-#         finally:
-#             os.unlink(tempfile)
 
     # This method implements the initialization strategy outlined
     # in AGEP-0112
