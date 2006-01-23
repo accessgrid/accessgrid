@@ -88,6 +88,7 @@ def FTPSDownloadFile(url,destination,
         fl = file(destination,'wb')
         callback = lambda data,size=siz,fp=fl: cb(data,size,fp)
         lin = f.retrbinary('retr %s' % pathtofile,callback)
+        log.debug(lin)
 
         # transfer finished; close up
         if progressCB:
@@ -170,7 +171,8 @@ def FTPSUploadFile(localfile,url,
         
         # upload the file
         remotefile = os.path.split(localfile)[-1]
-        f.storbinary('stor %s' % remotefile, fl)
+        lin = f.storbinary('stor %s' % remotefile, fl)
+        log.debug(lin)
         
         if progressCB:
             try:
