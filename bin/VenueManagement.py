@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.164 2006-01-13 22:10:34 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.165 2006-01-23 17:44:26 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.164 2006-01-13 22:10:34 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.165 2006-01-23 17:44:26 turam Exp $"
 
 # Standard imports
 import sys
@@ -31,7 +31,7 @@ from wxPython.lib.imagebrowser import *
 
 # Access Grid imports
 from AccessGrid.Descriptions import StreamDescription, ConnectionDescription
-from AccessGrid.Descriptions import VenueDescription, CreateVenueDescription
+from AccessGrid.Descriptions import VenueDescription
 from AccessGrid.Descriptions import Capability
 from AccessGrid.Security.CertificateManager import CertificateManager
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
@@ -568,8 +568,8 @@ class VenueServerAddress(wxPanel):
                         wxDefaultSize, wxNO_BORDER)
         self.application = application
         self.addressLabel =  wxStaticText(self, -1,'Venue Server Address:')
-        self.defaultServer = 'https://localhost/VenueServer'
-        self.serverList = ['https://localhost/VenueServer']
+        self.defaultServer = 'https://localhost:8000/VenueServer'
+        self.serverList = ['https://localhost:8000/VenueServer']
         self.addressText = wxComboBox(self, self.ID_ADDRESS,
                                       self.defaultServer,
                                       choices = self.serverList,
@@ -1448,7 +1448,7 @@ class VenueParamFrame(wxDialog):
                                             int(sap.GetVideoTtl()))
             staticVideoCap = Capability(Capability.PRODUCER, Capability.VIDEO)
             streams.append(StreamDescription(venueName,
-                                                  svml, staticVideoCap,
+                                                  svml, [staticVideoCap],
                                                   0, None, 1))
             # Static Audio
             saml = MulticastNetworkLocation(sap.GetAudioAddress(),
@@ -1456,7 +1456,7 @@ class VenueParamFrame(wxDialog):
                                             int(sap.GetAudioTtl()))
             staticAudioCap = Capability(Capability.PRODUCER, Capability.AUDIO)
             streams.append(StreamDescription(venueName,
-                                                  saml, staticAudioCap,
+                                                  saml, [staticAudioCap],
                                                   0, None, 1))
 
         # Get Encryption
@@ -1475,6 +1475,181 @@ class VenueParamFrame(wxDialog):
         return (self.generalPanel.Validate() and
                 self.staticAddressingPanel.Validate())
                      
+class AddVenueFrame(VenueParamFrame):
+    def __init__(self, parent, id, title, venueList, application):
+        VenueParamFrame.__init__(self, parent, id, title, application)
+        #self.authorizationPanel.Hide()
+        self.SetSize(wxSize(600, 470))
+        self.SetLabel('Add Venue')
+        self.application.SetCurrentVenue(None)
+        self.generalPanel.LoadLocalVenues()
+        self.encryptionPanel.genKeyButton.Hide()
+        self.encryptionPanel.ClickEncryptionButton(None,
+                                                   self.application.encrypt)
+        EVT_BUTTON (self.okButton, wxID_OK, self.OnOK)
+        self.ShowModal()
+
+    def OnOK (self, event):
+        wxBeginBusyCursor()
+
+        if (VenueParamFrame.Validate(self)): #and 
+            #self.staticAddressingPanel.Validate() and 
+            #self.generalPanel.Validate()):)
+            self.Ok()
+            try:
+                log.debug("AddVenueFrame.OnOk: Add venue.")
+                self.parent.AddVenue(self.venue)
+            except Exception, e:
+                #if e.faultstring == "NotAuthorized":
+                #    text = "You are not a server administrator and are not authorized to add venues to this server.\n"
+                #    MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+                #    log.info("AddVenueFrame.OnOK: Not authorized to add venue to server.")
+                #else:
+                log.exception("AddVenueFrame.OnOk: Could not add venue")
+                text = "Could not add venue %s" %self.venue.name
+                ErrorDialog(None, text, "Add Venue Error",
+                            logFile = VENUE_MANAGEMENT_LOG)
+            except:
+                log.exception("AddVenueFrame.OnOk: Could not add venue")
+                text = "Could not add venue %s" %self.venue.name
+                ErrorDialog(None, text, "Add Venue Error",
+                            logFile = VENUE_MANAGEMENT_LOG)
+                
+            if self.generalPanel.defaultVenue.IsChecked():
+                try:
+                    # Set this venue as default venue for this server.
+                    self.parent.SetDefaultVenue(self.venue)
+                except:
+                    log.exception("AddVenueFrame.OnOk: SetDefaultVenue failed")
+                    
+            self.Hide()
+        wxEndBusyCursor()
+
+
+class ModifyVenueFrame(VenueParamFrame):
+    def __init__(self, parent, id, title, venueList, application):
+        VenueParamFrame.__init__(self, parent, id, title, application)
+        wxBeginBusyCursor()
+        self.SetSize(wxSize(600, 470))
+        self.SetLabel('Modify Venue')
+        
+        self.__loadCurrentVenueInfo(venueList)
+        self.generalPanel.LoadLocalVenues()
+
+        # Connect to authorization manager.
+        #self.noteBook.AddPage(self.authorizationPanel, "Security")
+
+        #self.authorizationPanel.ConnectToAuthManager(self.venue.uri)
+        #self.authorizationPanel.Hide()
+        
+        wxEndBusyCursor()
+
+        EVT_BUTTON (self.okButton, wxID_OK, self.OnOK)
+        self.ShowModal()
+
+    def OnOK (self, event):
+        wxBeginBusyCursor()
+        if(VenueParamFrame.Validate(self)):
+            #if(self.staticAddressingPanel.Validate()):
+            if 1:
+#FIXME - This is obviously an immediately-before-release fix;
+#        it needs to be resolved corectly
+                venueUri = self.venue.uri
+                id = self.venue.id
+                self.Ok()
+                self.venue.uri = venueUri
+                self.venue.id = id
+                print 'venue = ', self.venue, self.venue.streams
+                try:
+                    log.debug("ModifyVenueFrame.OnOk: Modify venue")
+                    self.parent.ModifyVenue(self.venue)
+                    #self.authorizationPanel.Apply()
+                    
+                except Exception, e:
+                    log.exception("ModifyVenueFrame.OnOk: Modify venue failed")
+                    text = "Could not modify venue %s" %self.venue.name
+                    if hasattr(e, "string"):
+                        text = text + "\n%s" % e.faultstring
+                    ErrorDialog(None, text, "Modify Venue Error",
+                                logFile = VENUE_MANAGEMENT_LOG)
+
+                if self.generalPanel.defaultVenue.IsChecked():
+                    try:
+                        # Set this venue as default venue for this server.
+                        self.parent.SetDefaultVenue(self.venue)
+                    except:
+                        # Modify venues should work even if SetVenueRoles fail
+                        log.exception("ModifyVenueFrame.OnOk: SetDefaultVenue failed")
+
+                # Send security info to authorization manager,
+                #self.authorizationPanel.Apply(event)
+                                       
+                self.Hide()
+
+        wxEndBusyCursor()
+
+    def __loadCurrentVenueInfo(self, venueList):
+        item = venueList.GetSelection()
+        self.venue = venueList.GetClientData(item)
+
+        # Get the real venue description
+        defaultId = Toolkit.GetDefaultApplication().GetCertificateManager().GetDefaultIdentity()
+        transdict = {}
+        if defaultId:
+            transdict = {"cert_file":defaultId.GetPath(),
+                         "key_file":defaultId.GetKeyPath()}
+        venueProxy = VenueIW(self.venue.uri,transdict=transdict)
+        self.venue = venueProxy.AsVenueDescription()
+        
+        self.generalPanel.title.AppendText(self.venue.name)
+        self.generalPanel.description.AppendText(self.venue.description)
+
+        log.debug("ModifyVenueFrame.__loadCurrentVenueInfo: Get venue information")
+        self.application.SetCurrentVenue(self.venue)
+
+        try:
+            # Set this venue as default venue for this server.
+            url = self.application.server.GetDefaultVenue()
+            if self.venue.uri == url:
+                self.generalPanel.defaultVenue.Enable(0)
+            else:
+                self.generalPanel.defaultVenue.Enable(1)
+          
+        except:
+            log.exception("ModifyVenueFrame.__loadCurrentVenueInfo: SetDefaultVenue failed")
+
+        if(self.venue.encryptMedia):
+            log.debug("ModifyVenueFrame.__loadCurrentVenueInfo: We have a key %s" % self.venue.encryptionKey)
+            self.encryptionPanel.ClickEncryptionButton(None, true)
+            self.encryptionPanel.keyCtrl.SetValue(self.venue.encryptionKey)
+        else:
+            log.debug("ModifyVenueFrame.__loadCurrentVenueInfo: Key is None")
+            self.encryptionPanel.ClickEncryptionButton(None, false)
+
+        for e in self.venue.connections:
+            self.generalPanel.exits.Append(e.name, e)
+            
+        if(len(self.venue.streams)==0):
+            log.debug("ModifyVenueFrame.__loadCurrentVenueInfo: No static streams to load")
+            self.staticAddressingPanel.panel.Enable(false)
+            self.staticAddressingPanel.staticAddressingButton.SetValue(false)
+        elif(len(self.venue.streams)>2):
+            log.exception("ModifyVenueFrame.__loadCurrentVenueInfo: Venue returned more than 2 static streams")
+          
+        else:
+            self.staticAddressingPanel.panel.Enable(true)
+            self.staticAddressingPanel.staticAddressingButton.SetValue(true)
+            self.staticAddressingPanel.genAddrButton.Enable(true)
+            for stream in self.venue.streams:
+                if(stream.capability[0].type == Capability.VIDEO):
+                    sl = stream.location
+                    self.staticAddressingPanel.SetStaticVideo(sl.host, sl.port,
+                                                              sl.ttl)
+                elif(stream.capability[0].type == Capability.AUDIO):
+                    sl = stream.location
+                    self.staticAddressingPanel.SetStaticAudio(sl.host, sl.port,
+                                                              sl.ttl)
+
 class GeneralPanel(wxPanel):
     ID_TRANSFER = wxNewId()
     ID_LOAD = wxNewId()
@@ -2081,179 +2256,6 @@ class StaticAddressingValidator(wxPyValidator):
         return true # Prevent wxDialog from complaining.
 
 
-class AddVenueFrame(VenueParamFrame):
-    def __init__(self, parent, id, title, venueList, application):
-        VenueParamFrame.__init__(self, parent, id, title, application)
-        #self.authorizationPanel.Hide()
-        self.SetSize(wxSize(600, 470))
-        self.SetLabel('Add Venue')
-        self.application.SetCurrentVenue(None)
-        self.generalPanel.LoadLocalVenues()
-        self.encryptionPanel.genKeyButton.Hide()
-        self.encryptionPanel.ClickEncryptionButton(None,
-                                                   self.application.encrypt)
-        EVT_BUTTON (self.okButton, wxID_OK, self.OnOK)
-        self.ShowModal()
-
-    def OnOK (self, event):
-        wxBeginBusyCursor()
-
-        if (VenueParamFrame.Validate(self)): #and 
-            #self.staticAddressingPanel.Validate() and 
-            #self.generalPanel.Validate()):)
-            self.Ok()
-            try:
-                log.debug("AddVenueFrame.OnOk: Add venue.")
-                self.parent.AddVenue(self.venue)
-            except Exception, e:
-                #if e.faultstring == "NotAuthorized":
-                #    text = "You are not a server administrator and are not authorized to add venues to this server.\n"
-                #    MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
-                #    log.info("AddVenueFrame.OnOK: Not authorized to add venue to server.")
-                #else:
-                log.exception("AddVenueFrame.OnOk: Could not add venue")
-                text = "Could not add venue %s" %self.venue.name
-                ErrorDialog(None, text, "Add Venue Error",
-                            logFile = VENUE_MANAGEMENT_LOG)
-            except:
-                log.exception("AddVenueFrame.OnOk: Could not add venue")
-                text = "Could not add venue %s" %self.venue.name
-                ErrorDialog(None, text, "Add Venue Error",
-                            logFile = VENUE_MANAGEMENT_LOG)
-                
-            if self.generalPanel.defaultVenue.IsChecked():
-                try:
-                    # Set this venue as default venue for this server.
-                    self.parent.SetDefaultVenue(self.venue)
-                except:
-                    log.exception("AddVenueFrame.OnOk: SetDefaultVenue failed")
-                    
-            self.Hide()
-        wxEndBusyCursor()
-
-
-class ModifyVenueFrame(VenueParamFrame):
-    def __init__(self, parent, id, title, venueList, application):
-        VenueParamFrame.__init__(self, parent, id, title, application)
-        wxBeginBusyCursor()
-        self.SetSize(wxSize(600, 470))
-        self.SetLabel('Modify Venue')
-        
-        self.__loadCurrentVenueInfo(venueList)
-        self.generalPanel.LoadLocalVenues()
-
-        # Connect to authorization manager.
-        #self.noteBook.AddPage(self.authorizationPanel, "Security")
-
-        #self.authorizationPanel.ConnectToAuthManager(self.venue.uri)
-        #self.authorizationPanel.Hide()
-        
-        wxEndBusyCursor()
-
-        EVT_BUTTON (self.okButton, wxID_OK, self.OnOK)
-        self.ShowModal()
-
-    def OnOK (self, event):
-        wxBeginBusyCursor()
-        if(VenueParamFrame.Validate(self)):
-            #if(self.staticAddressingPanel.Validate()):
-            if 1:
-#FIXME - This is obviously an immediately-before-release fix;
-#        it needs to be resolved corectly
-                venueUri = self.venue.uri
-                id = self.venue.id
-                self.Ok()
-                self.venue.uri = venueUri
-                self.venue.id = id
-                try:
-                    log.debug("ModifyVenueFrame.OnOk: Modify venue")
-                    self.parent.ModifyVenue(self.venue)
-                    #self.authorizationPanel.Apply()
-                    
-                except Exception, e:
-                    log.exception("ModifyVenueFrame.OnOk: Modify venue failed")
-                    text = "Could not modify venue %s" %self.venue.name
-                    if hasattr(e, "string"):
-                        text = text + "\n%s" % e.faultstring
-                    ErrorDialog(None, text, "Modify Venue Error",
-                                logFile = VENUE_MANAGEMENT_LOG)
-
-                if self.generalPanel.defaultVenue.IsChecked():
-                    try:
-                        # Set this venue as default venue for this server.
-                        self.parent.SetDefaultVenue(self.venue)
-                    except:
-                        # Modify venues should work even if SetVenueRoles fail
-                        log.exception("ModifyVenueFrame.OnOk: SetDefaultVenue failed")
-
-                # Send security info to authorization manager,
-                #self.authorizationPanel.Apply(event)
-                                       
-                self.Hide()
-
-        wxEndBusyCursor()
-
-    def __loadCurrentVenueInfo(self, venueList):
-        item = venueList.GetSelection()
-        self.venue = venueList.GetClientData(item)
-
-        # Get the real venue description
-        defaultId = Toolkit.GetDefaultApplication().GetCertificateManager().GetDefaultIdentity()
-        transdict = {}
-        if defaultId:
-            transdict = {"cert_file":defaultId.GetPath(),
-                         "key_file":defaultId.GetKeyPath()}
-        venueProxy = VenueIW(self.venue.uri,transdict=transdict)
-        self.venue = venueProxy.AsVenueDescription()
-        
-        self.generalPanel.title.AppendText(self.venue.name)
-        self.generalPanel.description.AppendText(self.venue.description)
-
-        log.debug("ModifyVenueFrame.__loadCurrentVenueInfo: Get venue information")
-        self.application.SetCurrentVenue(self.venue)
-
-        try:
-            # Set this venue as default venue for this server.
-            url = self.application.server.GetDefaultVenue()
-            if self.venue.uri == url:
-                self.generalPanel.defaultVenue.Enable(0)
-            else:
-                self.generalPanel.defaultVenue.Enable(1)
-          
-        except:
-            log.exception("ModifyVenueFrame.__loadCurrentVenueInfo: SetDefaultVenue failed")
-
-        if(self.venue.encryptMedia):
-            log.debug("ModifyVenueFrame.__loadCurrentVenueInfo: We have a key %s" % self.venue.encryptionKey)
-            self.encryptionPanel.ClickEncryptionButton(None, true)
-            self.encryptionPanel.keyCtrl.SetValue(self.venue.encryptionKey)
-        else:
-            log.debug("ModifyVenueFrame.__loadCurrentVenueInfo: Key is None")
-            self.encryptionPanel.ClickEncryptionButton(None, false)
-
-        for e in self.venue.connections:
-            self.generalPanel.exits.Append(e.name, e)
-            
-        if(len(self.venue.streams)==0):
-            log.debug("ModifyVenueFrame.__loadCurrentVenueInfo: No static streams to load")
-            self.staticAddressingPanel.panel.Enable(false)
-            self.staticAddressingPanel.staticAddressingButton.SetValue(false)
-        elif(len(self.venue.streams)>2):
-            log.exception("ModifyVenueFrame.__loadCurrentVenueInfo: Venue returned more than 2 static streams")
-          
-        else:
-            self.staticAddressingPanel.panel.Enable(true)
-            self.staticAddressingPanel.staticAddressingButton.SetValue(true)
-            self.staticAddressingPanel.genAddrButton.Enable(true)
-            for stream in self.venue.streams:
-                if(stream.capability.type == Capability.VIDEO):
-                    sl = stream.location
-                    self.staticAddressingPanel.SetStaticVideo(sl.host, sl.port,
-                                                              sl.ttl)
-                elif(stream.capability.type == Capability.AUDIO):
-                    sl = stream.location
-                    self.staticAddressingPanel.SetStaticAudio(sl.host, sl.port,
-                                                              sl.ttl)
 
 class RenameExitDialog(wxDialog):
     def __init__(self, parent, id, title, oldName, oldUrl):
