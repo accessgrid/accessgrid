@@ -70,45 +70,39 @@ def getIPAddress(host=None):
 _getGUID_counter=0              # extra safeguard against double numbers
 _getGUID_lock=getLockObject()
 
-if os.name=='java':
-        def getGUID():
-                # Jython uses java's own ID routine used by RMI
-                import java.rmi.dgc
-                return java.rmi.dgc.VMID().toString().replace(':','-')
-else:
-        import socket, binascii
-        def getGUID():
-                # Generate readable GUID string.
-                # The GUID is constructed as follows: hexlified string of
-                # AAAAAAAA-AAAABBBB-BBBBBBBB-BBCCCCCC  (a 128-bit number in hex)
-                # where A=network address, B=timestamp, C=random. 
-                # The 128 bit number is returned as a string of 16 8-bits characters.
-                # For A: should use the machine's MAC ethernet address, but there is no
-                # portable way to get it... use the IP address + 2 bytes process id.
+import socket, binascii
+def getGUID():
+        # Generate readable GUID string.
+        # The GUID is constructed as follows: hexlified string of
+        # AAAAAAAA-AAAABBBB-BBBBBBBB-BBCCCCCC  (a 128-bit number in hex)
+        # where A=network address, B=timestamp, C=random. 
+        # The 128 bit number is returned as a string of 16 8-bits characters.
+        # For A: should use the machine's MAC ethernet address, but there is no
+        # portable way to get it... use the IP address + 2 bytes process id.
 
-                ip=getIPAddress()
-                if ip:
-                        networkAddrStr=binascii.hexlify(socket.inet_aton(ip))+"%04x" % os.getpid()
-                else:
-                        # can't get IP address... use another value, like our Python id() and PID
-                        try:
-                                ip=os.getpid()
-                        except:
-                                ip=0
-                        ip += id(getGUID)
-                        networkAddrStr = "%08lx%04x" % (ip, os.getpid())
+        ip=getIPAddress()
+        if ip:
+                networkAddrStr=binascii.hexlify(socket.inet_aton(ip))+"%04x" % os.getpid()
+        else:
+                # can't get IP address... use another value, like our Python id() and PID
+                try:
+                        ip=os.getpid()
+                except:
+                        ip=0
+                ip += id(getGUID)
+                networkAddrStr = "%08lx%04x" % (ip, os.getpid())
 
-                _getGUID_lock.acquire()  # cannot generate multiple GUIDs at once
-                global _getGUID_counter
-                t1=time.time()*100 +_getGUID_counter
-                _getGUID_counter+=1
-                _getGUID_lock.release()
-                t2=int((t1*time.clock())%sys.maxint) & 0xffffff
-                t1=int(t1%sys.maxint)
-                timestamp = (long(t1) << 24) | t2
-                r2=(random.randint(0,sys.maxint/2)>>4) & 0xffff
-                r3=(random.randint(0,sys.maxint/2)>>5) & 0xff
-                return networkAddrStr+'%014x%06x' % (timestamp, (r2<<8)|r3 )
+        _getGUID_lock.acquire()  # cannot generate multiple GUIDs at once
+        global _getGUID_counter
+        t1=time.time()*100 +_getGUID_counter
+        _getGUID_counter+=1
+        _getGUID_lock.release()
+        t2=int((t1*time.clock())%sys.maxint) & 0xffffff
+        t1=int(t1%sys.maxint)
+        timestamp = (long(t1) << 24) | t2
+        r2=(random.randint(0,sys.maxint/2)>>4) & 0xffff
+        r3=(random.randint(0,sys.maxint/2)>>5) & 0xff
+        return networkAddrStr+'%014x%06x' % (timestamp, (r2<<8)|r3 )
 
 GUID = getGUID
 
