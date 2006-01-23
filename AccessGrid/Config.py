@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.37 2006-01-16 23:11:53 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.38 2006-01-23 06:54:33 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.37 2006-01-16 23:11:53 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.38 2006-01-23 06:54:33 turam Exp $"
 
 import os
 import sys
@@ -102,11 +102,14 @@ class AGTkConfig:
     def GetVersion(self):
         return self.version
 
+    def GetBaseDir(self):
+        raise Exception, "This method is abstract and should be overridden by subclasses."
+
     def GetInstallDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+        raise Exception, "This method is abstract and should be overridden by subclasses."
 
     #def GetDocDir(self):
-    #    raise Exception, "This should not be called directly, but through a subclass."
+    #    raise Exception, "This method is abstract and should be overridden by subclasses."
 
     def GetConfigDir(self):
         self.configDir = os.path.join(self.GetBaseDir(), "Config")
@@ -364,7 +367,7 @@ class UserConfig:
         return self.bridgesFilename
 
     def GetBaseDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+        raise Exception, "This method is abstract and should be overridden by subclasses."
 
     def GetLogDir(self):
     
@@ -387,7 +390,7 @@ class UserConfig:
         return str(self.logDir)
 
     def GetTempDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+        raise Exception, "This method is abstract and should be overridden by subclasses."
     
     def GetConfigDir(self):
     
@@ -518,21 +521,21 @@ class SystemConfig:
         """
         Get the name of the user
         """
-        raise Exception, "This should not be called directly, but through a subclass."
+        raise Exception, "This method is abstract and should be overridden by subclasses."
 
         
     def EnumerateInterfaces(self):
         """
         Enumerate network interfaces
         """
-        raise Exception, "This should not be called directly, but through a subclass."
+        raise Exception, "This method is abstract and should be overridden by subclasses."
         
     
     def GetTempDir(self):
         """
         Get the path to the system temp directory.
         """
-        raise Exception, "This should not be called directly, but through a subclass."
+        raise Exception, "This method is abstract and should be overridden by subclasses."
 
     def SetHostname(self):
         envHostname = os.getenv("AG_HOSTNAME")
@@ -594,7 +597,7 @@ class SystemConfig:
         """
         Retrieve local HTTP proxy settings.
         """
-        err_str = "This should not be called directly, but through a subclass."
+        err_str = "This method is abstract and should be overridden by subclasses."
         raise Exception(err_str)
 
     def GetFileSystemFreeSpace(self, path):
@@ -602,7 +605,7 @@ class SystemConfig:
         Retrieve the amount of free space on the file system the path is
         housed on.
         """
-        err_str = "This should not be called directly, but through a subclass."
+        err_str = "This method is abstract and should be overridden by subclasses."
         raise Exception(err_str)
 
     def _GetSNTPTime(self, server, timeout=0.3):
@@ -801,7 +804,7 @@ class SystemConfig:
         """
         This call enables or disables an applications access via a firewall.
         """
-        err_str = "This should not be called directly, but through a subclass."
+        err_str = "This method is abstract and should be overridden by subclasses."
         raise Exception(err_str)
 
 class MimeConfig:
@@ -817,11 +820,11 @@ class MimeConfig:
         MimeConfig.theMimeConfigInstance = self
     
     def GetMimeType(self,extension = None):
-        raise Exception, "This should not be called directly, but through a subclass."
+        raise Exception, "This method is abstract and should be overridden by subclasses."
 
     def GetMimeCommands(self,mimeType = None, ext = None):
-        raise Exception, "This should not be called directly, but through a subclass."
+        raise Exception, "This method is abstract and should be overridden by subclasses."
 
     def RegisterMimeType(self, mimeType, extension, fileType, description,
                          cmds):
-        raise Exception, "This should not be called directly, but through a subclass."
+        raise Exception, "This method is abstract and should be overridden by subclasses."
