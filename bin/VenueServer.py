@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.70 2005-11-11 18:45:00 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.71 2006-01-23 17:44:53 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.70 2005-11-11 18:45:00 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.71 2006-01-23 17:44:53 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -119,16 +119,6 @@ def main():
     # We start the execution
     server.RunInThread()
 
-    """
-    # We run in a stupid loop so there is still a main thread
-    # We might be able to simply join the hostingEnvironmentThread, but
-    # we have to be able to catch signals.
-    while server.IsRunning():
-        try:
-            time.sleep(0.5)
-        except IOError, e:
-            log.info("Sleep interrupted, exiting.")
-    """
     reactor.run()
              
     log.debug("After main loop!")
