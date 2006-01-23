@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.57 2006-01-19 20:12:38 lefvert Exp $
+# RCS-ID:      $Id: AGService.py,v 1.58 2006-01-23 06:52:17 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.57 2006-01-19 20:12:38 lefvert Exp $"
+__revision__ = "$Id: AGService.py,v 1.58 2006-01-23 06:52:17 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -24,12 +24,6 @@ from AccessGrid.Platform import IsWindows, IsLinux, IsOSX
 from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Descriptions import StreamDescription
-from AccessGrid.Descriptions import CreateResourceDescription
-from AccessGrid.Descriptions import CreateStreamDescription
-from AccessGrid.Descriptions import CreateCapability
-from AccessGrid.Descriptions import CreateClientProfile
-from AccessGrid.Descriptions import CreateParameter
-from AccessGrid.Descriptions import CreateAGServiceDescription
 from AccessGrid.Descriptions import AGServiceDescription
 
 from AccessGrid.interfaces.AGService_client import AGServiceIW
@@ -87,7 +81,7 @@ class AGService:
                 fd = ctx.connection.fileno()
                 old = fcntl.fcntl(fd, fcntl.F_GETFD)
                 fcntl.fcntl(fd, fcntl.F_SETFD, old | fcntl.FD_CLOEXEC)
-        except ImportError:
+        except (ImportError,KeyError):
             pass
 
         # if started, stop
@@ -324,6 +318,9 @@ def RunService(service,serviceInterface,unusedCompatabilityArg=None):
     svc.AddCmdLineOption(Option("-t", "--token", type="string", dest="token",
                         default=None, metavar="TOKEN",
                         help="Token to pass to service manager when registering"))
+    svc.AddCmdLineOption(Option("--test", action='store_true', dest="test",
+                        default=None, metavar="TEST",
+                        help="Test service and then exit"))
 
 
     svc.Initialize(serviceName)
@@ -333,6 +330,16 @@ def RunService(service,serviceInterface,unusedCompatabilityArg=None):
     # Get options
     port = svc.GetOption("port")
     serviceManagerUri = svc.GetOption('serviceManagerUri')
+    test = svc.GetOption('test')
+    
+    if test:
+        from AccessGrid.NetworkLocation import MulticastNetworkLocation
+        stream = StreamDescription('test stream',
+                                   MulticastNetworkLocation('224.2.2.2',20000,1))
+        stream.capability = service.capabilities
+        service.SetStream(stream)
+        service.Start()
+        return
     
     # Create the server
     hostname = Service.instance().GetHostname()
