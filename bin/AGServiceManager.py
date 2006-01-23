@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.59 2006-01-10 23:17:17 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.60 2006-01-23 17:36:41 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,6 +16,7 @@ from optparse import Option
 from AccessGrid import Log
 from AccessGrid.hosting import SecureServer, InsecureServer
 from AccessGrid.Toolkit import Service
+from AccessGrid import Toolkit
 from AccessGrid.Platform import IsLinux
 from AccessGrid.Platform.Config import AGTkConfig, SystemConfig
 from AccessGrid.AGServiceManager import AGServiceManager
@@ -66,7 +67,7 @@ def main():
     
     # Initialize the application
     try:
-        args = app.Initialize(Log.ServiceManager)
+        app.Initialize(Log.ServiceManager)
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
@@ -81,7 +82,8 @@ def main():
     # Create the hosting environment
     hostname = app.GetHostname()
     if app.GetOption("secure"):
-        server = SecureServer((hostname, port))
+        context = Toolkit.GetDefaultApplication().GetContext()
+        server = SecureServer((hostname, port), context)
     else:
         server = InsecureServer((hostname, port))
 
@@ -130,7 +132,7 @@ def main():
 
     # Advertise the service
     try:
-        sp = ServiceDiscovery.Publisher(hostname,AGServiceManager.ServiceType,
+        ServiceDiscovery.Publisher(hostname,AGServiceManager.ServiceType,
                                         url,port=port)
         if app.GetOption('nodeService'):
             ServiceDiscovery.Publisher(hostname,AGNodeService.ServiceType,
