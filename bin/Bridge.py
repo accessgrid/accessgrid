@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.7 2005-12-22 22:04:46 turam Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.8 2006-01-23 17:38:48 turam Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -56,7 +56,7 @@ class QuickBridgeServer:
             uport = self.bridgeFactory.addressAllocator.AllocatePort(even=True)
         else:
             uport = self.bridgeFactory.addressAllocator.AllocatePortInRange(even=True, portBase=self.portMin, portMax=self.portMax)
-        bridge = self.bridgeFactory.CreateBridge(id=mnl["id"], maddr=mnl["host"],
+        self.bridgeFactory.CreateBridge(id=mnl["id"], maddr=mnl["host"],
                     mport=mnl["port"], mttl=mnl["ttl"], uaddr=uaddr, uport=uport)
         networkLocation = UnicastNetworkLocation(host=uaddr, port=uport)
         networkLocation.profile = self.providerProfile
@@ -112,7 +112,7 @@ def main():
     defaultListenPort = 20000
     defaultQbexec="/usr/bin/QuickBridge"
     # maxConnections? , maxBridges?, recycleTimeout?
-    from optparse import OptionParser 
+
     parser = OptionParser()
     parser.add_option("-p", "--listenPort", dest="listenPort", default=defaultListenPort, help="Port to listen on.", type="int")
     parser.add_option("-u", "--registryUrl", dest="registryUrl", default=None, help="Url to the registry.  Bridge will register with it.")
