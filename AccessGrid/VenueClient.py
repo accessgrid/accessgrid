@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.269 2006-01-19 20:43:18 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.270 2006-01-23 17:27:28 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.269 2006-01-19 20:43:18 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.270 2006-01-23 17:27:28 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -43,12 +43,6 @@ from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent
 from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache, InvalidProfileException
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
 from AccessGrid.Descriptions import DataDescription, ConnectionDescription
-from AccessGrid.Descriptions import CreateDataDescription, CreateVenueState
-from AccessGrid.Descriptions import CreateConnectionDescription
-from AccessGrid.Descriptions import CreateClientProfile
-from AccessGrid.Descriptions import CreateServiceDescription
-from AccessGrid.Descriptions import CreateApplicationDescription
-from AccessGrid.Descriptions import CreateStreamDescription
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.interfaces.AuthorizationManager_client import AuthorizationManagerIW
 from AccessGrid.AGNodeService import AGNodeService
@@ -1520,142 +1514,4 @@ def GetVenueClientUrls():
     nlist.reverse()
 
     return nlist[0:4]
-
-class VenueClientI(SOAPInterface):
-    def __init__(self, impl):
-        SOAPInterface.__init__(self, impl)
-        
-    def _authorize(self, *args, **kw):
-        return 1
-    
-    def EnterVenue(self, url):
-        return self.impl.EnterVenue(url)
-        
-    def ExitVenue(self):
-        self.impl.ExitVenue()
-
-    def GetDataStoreInformation(self):
-        r = self.impl.GetDataStoreInformation()
-        return r
-
-    def GetVenueData(self):
-        dl = self.impl.GetVenueData()
-        return dl
-
-    def GetUsers(self):
-        profileStructList = self.impl.GetUsers()
-        
-        profileList = list()
-        for profileStruct in profileStructList:
-            profileList.append(CreateClientProfile(profileStruct))
-        return profileList
-        
-    def GetServices(self):
-        serviceStructList = self.impl.GetServices()
-        
-        serviceList = list()
-        for serviceStruct in serviceStructList:
-            serviceList.append(CreateServiceDescription(serviceStruct))
-        return serviceList
-        
-    def GetApplications(self):
-        appStructList = self.impl.GetApplications()
-        
-        appList = list()
-        for appStruct in appStructList:
-            appList.append(CreateApplicationDescription(appStruct))
-        return appList
-        
-    def GetConnections(self):
-        connStructList = self.impl.GetConnections()
-        
-        connList = list()
-        for connStruct in connStructList:
-            connList.append(CreateConnectionDescription(connStruct))
-        return connList
-        
-    def GetVenueURL(self):
-        return self.impl.GetVenueURL()
-        
-    def GetClientProfile(self):
-        profileStruct = self.impl.GetProfile()
-        profile = CreateClientProfile(profileStruct)
-        return profile
-        
-    def GetNodeServiceURL(self):
-        return self.impl.GetNodeServiceURL()
-        
-    def GetStreams(self):
-        return self.impl.GetStreams()
-    
-
-class VenueClientIW(SOAPIWrapper):
-    def __init__(self, url=None):
-        SOAPIWrapper.__init__(self, url)
-
-    def EnterVenue(self, url):
-        return self.proxy.EnterVenue(url)
-
-    def GetDataStoreInformation(self):
-        r = self.proxy.GetDataStoreInformation()
-        return r
-
-    def GetVenueData(self):
-        dataStructList = self.proxy.GetVenueData()
-        
-        dataList = list()
-        for dataStruct in dataStructList:
-            dataList.append(CreateDataDescription(dataStruct))
-        return dataList
-        
-    def GetUsers(self):
-        profileStructList = self.proxy.GetUsers()
-        
-        profileList = list()
-        for profileStruct in profileStructList:
-            profileList.append(CreateClientProfile(profileStruct))
-        return profileList
-        
-    def GetServices(self):
-        serviceStructList = self.proxy.GetServices()
-        
-        serviceList = list()
-        for serviceStruct in serviceStructList:
-            serviceList.append(CreateServiceDescription(serviceStruct))
-        return serviceList
-        
-    def GetApplications(self):
-        appStructList = self.proxy.GetApplications()
-        
-        appList = list()
-        for appStruct in appStructList:
-            appList.append(CreateApplicationDescription(appStruct))
-        return appList
-        
-    def GetConnections(self):
-        connStructList = self.proxy.GetConnections()
-        
-        connList = list()
-        for connStruct in connStructList:
-            connList.append(CreateConnectionDescription(connStruct))
-        return connList
-        
-    def GetVenueURL(self):
-        return self.proxy.GetVenueURL()
-        
-    def GetClientProfile(self):
-        profileStruct = self.proxy.GetClientProfile()
-        profile = CreateClientProfile(profileStruct)
-        return profile
-        
-    def GetNodeServiceURL(self):
-        return self.proxy.GetNodeServiceURL()
-        
-    def GetStreams(self):
-        streamStructList = self.proxy.GetStreams()
-        
-        streamList = list()
-        for streamStruct in streamStructList:
-            streamList.append(CreateStreamDescription(streamStruct))
-        return streamList
 
