@@ -23,26 +23,26 @@ class BridgeCache:
         
         # Parse config dict and create bridge descriptions
         for key in config.keys():
-            id = key.split(".")[0]
+            bridgeid = key.split(".")[0]
             val = key.split(".")[1]
 
-            if not bridges.has_key(id):
-                bridges[id] = BridgeDescription(id, "", "", "", "", "")
+            if not bridges.has_key(bridgeid):
+                bridges[bridgeid] = BridgeDescription(bridgeid, "", "", "", "", "")
                          
             if val == "name":
-                bridges[id].name = config[key]
+                bridges[bridgeid].name = config[key]
             elif val == "host":
-                bridges[id].host = config[key]
+                bridges[bridgeid].host = config[key]
             elif val == "port":
-                bridges[id].port = config[key]
+                bridges[bridgeid].port = config[key]
             elif val == "serverType":
-                bridges[id].serverType = config[key]
+                bridges[bridgeid].serverType = config[key]
             elif val == "description":
-                bridges[id].description = config[key]
+                bridges[bridgeid].description = config[key]
             elif val == "status":
-                bridges[id].status = config[key]
+                bridges[bridgeid].status = config[key]
             elif val == "rank":
-                bridges[id].rank = int(config[key])
+                bridges[bridgeid].rank = int(config[key])
 
         for b in bridges.values():
             self.bridges.append(b)
