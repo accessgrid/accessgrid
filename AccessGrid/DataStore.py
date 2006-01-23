@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.94 2005-12-21 19:07:32 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.95 2006-01-23 06:55:26 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.94 2005-12-21 19:07:32 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.95 2006-01-23 06:55:26 turam Exp $"
 
 import os
 import time
@@ -23,7 +23,7 @@ import stat
 from AccessGrid import Log
 import AccessGrid.GUID
 from AccessGrid.Platform.Config import SystemConfig
-from AccessGrid.Descriptions import DataDescription, CreateDataDescription
+from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Events import Event
 
 from AccessGrid import FTPSClient,FTPSServer
@@ -743,13 +743,11 @@ class DataStore:
     def GetDescription(self, filename):
         return self.dataDescContainer.GetData(filename)
 
-    def SetDescription(self, filename, descriptionStruct):
+    def SetDescription(self, filename, description):
         """
         Given a data description and a filename,
         set the data description if the file exists
         """
-
-        description = CreateDataDescription(descriptionStruct)
 
         path = os.path.join(self.pathname, filename)
         if os.path.exists(path):
