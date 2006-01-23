@@ -3,7 +3,7 @@
 # Name:        XMLGroupMsgClient.py
 # Purpose:     A group messaging service xml layer.
 # Created:     2005/09/09
-# RCS-ID:      $Id: XMLGroupMsgClient.py,v 1.4 2006-01-19 20:51:22 eolson Exp $
+# RCS-ID:      $Id: XMLGroupMsgClient.py,v 1.5 2006-01-23 17:29:29 turam Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,6 @@
 from GroupMsgClient import GroupMsgClient
 import ZSI
 from ZSI.parse import ParsedSoap
-from ZSI import TC
 from StringIO import StringIO
 import AccessGrid.hosting.ZSI # registers AccessGrid types
 from GroupMsgClientBase import GroupMsgClientBase
@@ -41,5 +40,5 @@ class XMLGroupMsgClient(GroupMsgClientBase):
     def _Deserialize(self, xml):
         # Doc/lit
         ps = ParsedSoap(xml, readerClass=None, keepdom=False)
-        return TC.AnyElement(aname="any", minOccurs=0, maxOccurs=1, nillable=False, processContents="lax").parse(ps.body_root, ps)
+        return ZSI.TC.AnyElement(aname="any", minOccurs=0, maxOccurs=1, nillable=False, processContents="lax").parse(ps.body_root, ps)
 
