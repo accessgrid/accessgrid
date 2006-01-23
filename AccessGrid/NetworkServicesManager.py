@@ -1,6 +1,6 @@
 import xml.dom.minidom
 from AccessGrid.ServiceCapability import ServiceCapability
-from AccessGrid.AGNetworkServiceIW import AGNetworkServiceIW
+#from AccessGrid.AGNetworkServiceIW import AGNetworkServiceIW
 from AccessGrid import Log
 
 class NetworkServicesManager:
@@ -120,7 +120,7 @@ class NetworkServicesManager:
             # streams -> net service -> net service -> net service -> streams
             for service in netServices:
                 self.log.debug('ResolveMismatch: Call transform method for services running at %s'%service.uri)
-                netServiceProxy = AGNetworkServiceIW(service.uri)
+                #netServiceProxy = AGNetworkServiceIW(service.uri)
 
                 try:
                     streams = netServiceProxy.Transform(streams)
