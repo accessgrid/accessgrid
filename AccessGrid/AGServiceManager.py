@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.92 2006-01-17 18:48:26 lefvert Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.93 2006-01-23 06:53:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.92 2006-01-17 18:48:26 lefvert Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.93 2006-01-23 06:53:09 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -106,7 +106,7 @@ class AGServiceManager:
         # prevent SOAP socket from being inherited by child processes
         # which we're about to spawn
         try:
-            import posix
+            import posix # will fail on non-posix systems, which don't need this patch
             import fcntl
             from ZSI.ServiceContainer import GetSOAPContext
             ctx = GetSOAPContext()
@@ -353,11 +353,10 @@ class AGServiceManager:
         if '.' not in sys.path:
             sys.path.insert(0,'.')
         mod = __import__(servicePackage.name)
-    
+        
         # instantiate the service object
-        instantiation = 'mod.%s()' % (servicePackage.inlineClass,)
-        log.debug("Instantiating service object: %s", instantiation)
-        serviceObj = eval(instantiation)
+        serviceClass = getattr(mod,servicePackage.name)
+        serviceObj = serviceClass()
     
         # instantiate the interface object
         serviceObjI = AGServiceI(serviceObj)
@@ -437,8 +436,6 @@ class AGServiceManager:
 
 if __name__ == "__main__":
 
-    from AccessGrid import Toolkit
-    
     a = Toolkit.CmdlineApplication()
     a.Initialize('test')
     tc = a.GetToolkitConfig()
