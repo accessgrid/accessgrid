@@ -14,7 +14,6 @@ import select
 import time
 import socket
 import struct
-import sys
 
 from AccessGrid import Log
 

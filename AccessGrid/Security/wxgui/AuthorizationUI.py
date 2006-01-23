@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.33 2005-11-02 23:19:45 eolson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.34 2006-01-23 17:30:54 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.33 2005-11-02 23:19:45 eolson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.34 2006-01-23 17:30:54 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -29,7 +29,6 @@ from AccessGrid.Platform import IsWindows,IsOSX
 from AccessGrid.ClientProfile import ClientProfileCache
 from AccessGrid.interfaces.AuthorizationManager_client import AuthorizationManagerIW
 from AccessGrid.Venue import VenueIW
-from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Security.X509Subject import X509Subject    
 from AccessGrid.Security.Role import Role, DefaultIdentityNotRemovable
 from AccessGrid.Security.Action import Action 
@@ -202,8 +201,7 @@ class AuthorizationUIPanel(wxPanel):
             # Test if self.baseUrl really is a venue url...for now use try except.
             self.venue = VenueIW(self.baseUrl)
             
-#             for p in self.venue.GetCachedProfiles():
-#                 profile = CreateClientProfile(p)
+#             for profile in self.venue.GetCachedProfiles():
 #                 dn = profile.GetDistinguishedName()
 #                 if dn:
 #                     cachedDns.append(dn)
