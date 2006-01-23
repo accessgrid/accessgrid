@@ -3,7 +3,7 @@
 # Name:        GroupMsgService.py
 # Purpose:     A Group Messaging service server.
 # Created:     2005/09/09
-# RCS-ID:      $Id: GroupMsgService.py,v 1.2 2005-09-28 20:20:07 eolson Exp $
+# RCS-ID:      $Id: GroupMsgService.py,v 1.3 2006-01-23 17:20:59 turam Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,7 +20,6 @@ from twisted.internet.protocol import Protocol, ServerFactory
 from twisted.protocols.basic import Int32StringReceiver
 from twisted.internet import reactor
 from GroupMsgDefines import GroupDoesNotExistException, NotConnectedException, PackUByte, ERROR, ClientNotInGroupException
-from VenueServerService import VenueServerServiceInterface
 
 class GroupMsgServiceProtocol(Int32StringReceiver):
     protocolVersion = 1
@@ -115,7 +114,7 @@ class GroupMsgServiceFactory(ServerFactory):
         self.groups[id] = list()
 
     def removeGroup(self, id):
-        if not self.hasGroup(self, id):
+        if not self.hasGroup(id):
             raise GroupDoesNotExistException
         for connection in self.groups[id]:
             self.removeConnection(connection)
