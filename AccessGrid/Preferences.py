@@ -1,6 +1,4 @@
-import cPickle
 import os
-import copy
 
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig
 from AccessGrid import Log
@@ -8,8 +6,10 @@ from AccessGrid.Platform import IsWindows, IsOSX
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
+from AccessGrid.Descriptions import NodeConfigDescription
 from AccessGrid.GUID import GUID
 from AccessGrid.BridgeCache import BridgeCache
+from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 
 log = Log.GetLogger(Log.VenueClient)
 
@@ -22,6 +22,7 @@ class Preferences:
     RECONNECT_TIMEOUT = "reconnectTimeout"
     STARTUP_MEDIA = "startupMedia"
     NODE_URL = "defaultNodeServiceUrl"
+    NODE_BUILTIN = "nodeBuiltin"
     NODE_CONFIG = "defaultNodeConfig"
     NODE_CONFIG_TYPE = "user"
     MULTICAST = "multicast"
@@ -44,7 +45,7 @@ class Preferences:
         objects and are saved to separate config file, for example
         client profile.
         '''
-
+        
         self.preferences = {}
         
         # Default preferences
@@ -52,9 +53,10 @@ class Preferences:
                          self.MAX_RECONNECT : 3,
                          self.RECONNECT_TIMEOUT : 10,
                          self.STARTUP_MEDIA: 1,
-                         self.NODE_URL: "http://localhost:11000/NodeService",
-                         self.NODE_CONFIG_TYPE : "",
-                         self.NODE_CONFIG: "",
+                         self.NODE_BUILTIN: "1",
+                         self.NODE_URL: "",
+                         self.NODE_CONFIG_TYPE : NodeConfigDescription.SYSTEM,
+                         self.NODE_CONFIG: "default",
                          self.MULTICAST: 1,
                          self.BEACON: 1,
                          self.LOG_TO_CMD: 0,
@@ -91,6 +93,11 @@ class Preferences:
         self.config = UserConfig.instance(initIfNeeded=0)
         self.__bridges = {} # Stores current bridges to display in UI
         self.LoadPreferences()
+        
+        self.venueClient = None
+        
+    def SetVenueClient(self,venueClient):
+        self.venueClient = venueClient
      
     def GetPreference(self, preference):
         '''
@@ -225,16 +232,18 @@ class Preferences:
         ** Returns **
         *configs* list of node configurations [string]
         '''
-        from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
-        
-        # Retreive from node service; not stored in preferences.
+        if self.GetPreference(self.NODE_BUILTIN):
+            nodeService = self.venueClient.builtInNodeService
+        else:
+            nodeServiceUrl = self.GetPreference(self.NODE_URL)
+            nodeService = AGNodeServiceIW(nodeServiceUrl)
+
         configs = []
         try:
-            nservice = AGNodeServiceIW(self.GetPreference(self.NODE_URL))
-            configs = nservice.GetConfigurations() 
+            configs = nodeService.GetConfigurations() 
         except:
-            log.exception("Preferences:GetNodeConfigs: Failed to get node service configurations.")
-                               
+            log.exception('Failed to retrieve node configurations')
+              
         return configs
 
     def SetProfile(self, profile):

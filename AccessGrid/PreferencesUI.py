@@ -106,6 +106,8 @@ class PreferencesDialog(wxDialog):
                                        self.nodePanel.GetVideo())
         self.preferences.SetPreference(Preferences.ENABLE_AUDIO,
                                         self.nodePanel.GetAudio())
+        self.preferences.SetPreference(Preferences.NODE_BUILTIN,
+                                       self.nodePanel.GetNodeBuiltIn())
         self.preferences.SetPreference(Preferences.NODE_URL,
                                        self.nodePanel.GetDefaultNodeUrl())
 
@@ -215,7 +217,7 @@ class PreferencesDialog(wxDialog):
             self.preferencesWindow.SetSize(wxSize(width, -1))
 
         self.__Layout()
-                                 
+        
     def __Layout(self):
         '''
         Fix ui layout
@@ -249,17 +251,20 @@ class PreferencesDialog(wxDialog):
 
         self.SetSizer(mainSizer)
         self.Layout()
-
+        
 class NodePanel(wxPanel):
     def __init__(self, parent, id, preferences):
         wxPanel.__init__(self, parent, id)
+        self.preferences = preferences
         self.Centre()
 
         self.nodeText = wxStaticText(self, -1, "Node")
         self.nodeLine = wxStaticLine(self, -1)
         self.mediaButton = wxCheckBox(self, wxNewId(), "  Launch node services on startup ")
-        self.nodeUrlText = wxStaticText(self, -1, "Node service URL")
-        self.nodeUrlCtrl = wxTextCtrl(self, -1, "httptest", size = wxSize(250, -1))
+        self.nodeUrlText = wxStaticText(self, -1, "Node service")
+        self.nodeBuiltInCheckbox = wxRadioButton(self,wxNewId(),'Built-in', style=wxRB_GROUP)
+        self.nodeExternalCheckbox = wxRadioButton(self,wxNewId(),'External')
+        self.nodeUrlCtrl = wxTextCtrl(self, -1, "", size = wxSize(250, -1))
         self.nodeConfigText = wxStaticText(self, -1, "Node configuration")
         self.nodeConfigRefresh = wxButton(self,-1,'Refresh')
         self.mediaText = wxStaticText(self, -1, "Media")
@@ -276,42 +281,62 @@ class NodePanel(wxPanel):
             self.mediaText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
 
         self.mediaButton.SetValue(int(preferences.GetPreference(Preferences.STARTUP_MEDIA)))
-        self.nodeUrlCtrl.SetValue(preferences.GetPreference(Preferences.NODE_URL))
+        nodeBuiltin = int(preferences.GetPreference(Preferences.NODE_BUILTIN))
+        self.nodeBuiltInCheckbox.SetValue(nodeBuiltin)
+        self.nodeExternalCheckbox.SetValue(not nodeBuiltin)
+        
+        nodeUrl = preferences.GetPreference(Preferences.NODE_URL)
+        self.nodeUrlCtrl.SetValue(nodeUrl)
+        if  nodeBuiltin:
+            self.nodeBuiltInCheckbox.SetValue(true)
+            self.nodeUrlCtrl.SetEditable(false)
+        else:
+            self.nodeExternalCheckbox.SetValue(true)
+            self.nodeUrlCtrl.SetEditable(true)
+            
         self.audioButton.SetValue(int(preferences.GetPreference(Preferences.ENABLE_AUDIO)))
         self.displayButton.SetValue(int(preferences.GetPreference(Preferences.ENABLE_DISPLAY)))
         self.videoButton.SetValue(int(preferences.GetPreference(Preferences.ENABLE_VIDEO)))
 
-        default = ""
-        try:
-            selections = map(lambda c:c.name + " ("+c.type+")", preferences.GetNodeConfigs())
-            defaultNodeName = preferences.GetPreference(Preferences.NODE_CONFIG)
-            defaultNodeType = preferences.GetPreference(Preferences.NODE_CONFIG_TYPE)
-            
-            self.configMap = {}
-            
-            for config in preferences.GetNodeConfigs():
-                self.configMap[config.name + " ("+config.type +")"] = config
-
-            log.debug("default node config: %s", default)
-            log.debug("node configs: %s", str(selections))
-        except:
-            log.exception("Preferences:NodePanel: Failed to load node service configurations.")
-            selections = ["No configurations, run node service"]
-                    
+        self.configMap = {}
         self.nodeConfigCtrl = wxChoice(self, wxNewId(),
-                                         choices = selections,
                                        size = wxSize(235, -1))
+                                       
+        self.OnRefresh()
 
-        self.nodeConfigCtrl.SetSelection(0)
+        # Set events
+        EVT_RADIOBUTTON(self,self.nodeBuiltInCheckbox.GetId(),self.OnNodeBuiltIn)
+        EVT_RADIOBUTTON(self,self.nodeExternalCheckbox.GetId(),self.OnNodeExternal)
         EVT_TEXT_ENTER(self,self.nodeUrlCtrl.GetId(),self.OnRefresh)
         EVT_BUTTON(self,self.nodeConfigRefresh.GetId(),self.OnRefresh)
         self.__Layout()
+        
+    def OnNodeBuiltIn(self,event):
+        self.nodeUrlCtrl.SetEditable( not event.Checked() )
 
-    def OnRefresh(self,event):
-        nodeConfigs = AGNodeServiceIW(self.nodeUrlCtrl.GetValue()).GetConfigurations()
+    def OnNodeExternal(self,event):
+        self.nodeUrlCtrl.SetEditable( event.Checked() )
+
+    def OnRefresh(self,event=None):
+        self.nodeConfigCtrl.Clear()
+        if self.nodeBuiltInCheckbox.GetValue():
+            if not self.preferences.venueClient:
+                return
+            nodeService = self.preferences.venueClient.builtInNodeService
+        else:
+            nodeService = AGNodeServiceIW(self.nodeUrlCtrl.GetValue())
+        nodeConfigs = nodeService.GetConfigurations()
         for nodeConfig in nodeConfigs:
-            self.nodeConfigCtrl.Append(nodeConfig.name)
+            self.nodeConfigCtrl.Append('%s (%s)' % (nodeConfig.name, nodeConfig.type))
+            self.configMap[nodeConfig.name + " ("+nodeConfig.type +")"] = nodeConfig
+            
         self.nodeConfigCtrl.SetSelection(0)
+
+    def GetNodeBuiltIn(self):
+        if self.nodeBuiltInCheckbox.GetValue():
+            return 1
+        
+        return 0
 
     def GetDefaultNodeUrl(self):
         return self.nodeUrlCtrl.GetValue()
@@ -357,8 +382,12 @@ class NodePanel(wxPanel):
         sizer.Add(sizer2, 0, wxEXPAND)
 
         gridSizer = wxFlexGridSizer(0, 2, 5, 5)
+        gridSizer2 = wxFlexGridSizer(3, 1, 5, 5)
         gridSizer.Add(self.nodeUrlText, 0, wxALL, 5)
-        gridSizer.Add(self.nodeUrlCtrl)
+        gridSizer2.Add(self.nodeBuiltInCheckbox)
+        gridSizer2.Add(self.nodeExternalCheckbox)
+        gridSizer2.Add(self.nodeUrlCtrl)
+        gridSizer.Add(gridSizer2)
         sizer.Add(gridSizer, 0, wxALL, 5)
                 
         sizer.Add(self.mediaButton, 0, wxALL|wxEXPAND, 10)
