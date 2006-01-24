@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.97 2006-01-13 16:37:12 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.98 2006-01-24 21:56:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.97 2006-01-13 16:37:12 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.98 2006-01-24 21:56:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -628,19 +628,6 @@ class NodeManagementClientFrame(wxFrame):
             # Get correct config name
             if configMap.has_key:
                 conf = configMap[conf].name
-
-            try:
-                if self.nodeServiceHandle.NeedMigrateNodeConfig(conf):
-                    text ="%s should be migrated to %s; do you want to do this now?" % (conf,Version.GetVersion())
-                    dlg = wxMessageDialog(self, text, "Confirm",
-                                          style = wxICON_INFORMATION | wxOK | wxCANCEL)
-                    ret = dlg.ShowModal()
-                    dlg.Destroy()
-                    if ret == wxID_OK:
-                        self.nodeServiceHandle.MigrateNodeConfig(conf)
-            except:
-                log.exception("Exception migrating node config")
-
 
             config = None
             for c in configs:
