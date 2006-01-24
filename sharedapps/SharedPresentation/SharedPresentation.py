@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.36 2005-07-27 22:32:30 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.37 2006-01-24 22:26:25 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,6 +19,13 @@ import Queue
 import shutil
 
 from wxPython.wx import *
+
+try:
+    from twisted.internet import threadedselectreactor
+    threadedselectreactor.install()
+except:
+    pass
+from twisted.internet import reactor
 
 from AccessGrid import Platform
 from AccessGrid import Log
@@ -153,6 +160,7 @@ class PowerPointViewer:
                 self.presentation.Close()
         except:
             print 'can not close presentation....continue anyway'
+            self.log.exception('can not close presentation....continue anyway')
                 
         # Exit the powerpoint application, but only if 
         # it was opened by the viewer
@@ -170,6 +178,7 @@ class PowerPointViewer:
                 self.presentation.Close()
         except:
             print 'can not close previous presentation...continue anyway'
+            self.log.exception('can not close presentation....continue anyway')
         # Open a new presentation and keep a reference to it in self.presentation
         
         self.presentation = self.ppt.Presentations.Open(file)
@@ -235,7 +244,7 @@ class PowerPointViewer:
 if sys.platform == Platform.WIN:
     # If we're on Windows we try to use the python/COM interface to PowerPoint
     defaultViewer = PowerPointViewer
-elif sys.platform == Platform.LINUX:
+elif sys.platform == Platform.LINUX or sys.platform == Platform.FREEBSD5:
     # On Linux the best choice is probably Open/Star Office
     defaultViewer = ImpressViewer
 else:
@@ -274,6 +283,8 @@ class SharedPresentationFrame(wxFrame):
         self.syncCallback = noOp
         self.exitCallback = noOp
         self.localUploadCallback = noOp
+
+        reactor.interleave(wxCallAfter)
 
         #
         # Create UI controls
@@ -386,100 +397,143 @@ class SharedPresentationFrame(wxFrame):
         """
         Callback for clicking on combobox for slides
         """
-        # Load list of presentation slides from venue to combobox
-        self.updateVenueFileList()
+        try:
+            # Load list of presentation slides from venue to combobox
+            self.updateVenueFileList()
 
-        # Skip event to preserve normal behaviour of the combobox 
-        event.Skip()
+            # Skip event to preserve normal behaviour of the combobox 
+            event.Skip()
+        except:
+            self.log.exception("ComboCB")
+            MessageDialog(self, "An error occurred when clicking on the combo box.", "Combo Box Error")
 
     def PrevSlideCB(self,event):
         """
         Callback for "previous" button
         """
-        self.prevCallback()
+        try:
+            self.prevCallback()
+        except:
+            self.log.exception("PrevSlideCB")
+            MessageDialog(self, "An error occurred going to the previous slide.", "Previous Slide Error")
 
     def NextSlideCB(self,event):
         """
         Callback for "next" button
         """
-        self.nextCallback()
+        try:
+            self.nextCallback()
+        except:
+            self.log.exception("NextSlideCB")
+            MessageDialog(self, "An error occurred going to the next slide.", "Next Slide Error")
 
     def GotoSlideNumCB(self,event):
         """
         Callback for "enter" presses in the slide number text field
         """
-        if self.masterCheckBox.IsChecked():
-            slideNum = int(self.slideNumText.GetValue())
-            self.gotoCallback(slideNum)
+        try:
+            if self.masterCheckBox.IsChecked():
+                slideNum = int(self.slideNumText.GetValue())
+                self.gotoCallback(slideNum)
+        except:
+            self.log.exception("GotoSlideNumCB")
+            MessageDialog(self, "An error occurred going to a slide number.", "Goto Slide Number Error")
 
     def MasterCB(self,event):
         """
         Callback for "master" checkbox
         """
-        flag = self.masterCheckBox.IsChecked()
-        self.masterCallback(flag)
+        try:
+            flag = self.masterCheckBox.IsChecked()
+            self.masterCallback(flag)
+        except:
+            self.log.exception("MasterCB")
+            MessageDialog(self, "An error occurred when toggling the master checkbox.", "Master Checkbox Error")
 
     def OpenCB(self,event):
         """
         Callback for "enter" presses in the slide URL text field
         """
                 
-        if self.masterCheckBox.IsChecked():
-            # Get slide url from text field
-            slidesUrl = self.slidesCombo.GetValue()
+        try:
+            if self.masterCheckBox.IsChecked():
+                # Get slide url from text field
+                slidesUrl = self.slidesCombo.GetValue()
            
-            # Call the load callback
-            try:
-                self.loadCallback(slidesUrl)
-            except:
-                self.log.exception('SharedPresentation.OpenCB: Can not load presentation %s'%(slidesUrl))
-                wxCallAfter(self.ShowMessage,"Can not load presentation %s"%slidesUrl, "Notification")
+                # Call the load callback
+                try:
+                    self.loadCallback(slidesUrl)
+                except:
+                    self.log.exception('SharedPresentation.OpenCB: Can not load presentation %s'%(slidesUrl))
+                    wxCallAfter(self.ShowMessage,"Can not load presentation %s"%slidesUrl, "Notification")
+        except:
+            self.log.exception("OpenCB")
+            MessageDialog(self, "An error occurred when opening a url.", "Open Error")
 
     def SyncCB(self,event):
         """
         Callback for "sync" menu item
         """
-        self.syncCallback()
+        try:
+            self.syncCallback()
+        except:
+            self.log.exception("SyncCB")
+            MessageDialog(self, "An error occurred when syncing.", "Sync Error")
 
     def LocalUploadCB(self,event):
         """
         Callback for "LocalUpload" menu item
         """
-        dlg = wxFileDialog(self, "Choose a file to upload:", style = wxOPEN | wxMULTIPLE)
+        try:
+            dlg = wxFileDialog(self, "Choose a file to upload:", style = wxOPEN | wxMULTIPLE)
 
-        if dlg.ShowModal() == wxID_OK:
-            files = dlg.GetPaths()
-            self.log.debug("SharedPresentation.LocalUploadCB:%s " %str(files))
+            if dlg.ShowModal() == wxID_OK:
+                files = dlg.GetPaths()
+                self.log.debug("SharedPresentation.LocalUploadCB:%s " %str(files))
 
-            # To display an individual error message, upload each file separately. 
-            for file in files:
-                try:
-                    self.localUploadCallback([file])
-                except:
-                    self.log.exception("Can not upload file %s to data store"%file)
-                    wxCallAfter(self.ShowMessage, "Can not upload presentation %s"%file, "Notification")
+                # To display an individual error message, upload each file separately. 
+                for file in files:
+                    try:
+                        self.localUploadCallback([file])
+                    except:
+                        self.log.exception("Can not upload file %s to data store"%file)
+                        wxCallAfter(self.ShowMessage, "Can not upload presentation %s"%file, "Notification")
                     
-            self.updateVenueFileList()
+                self.updateVenueFileList()
+        except:
+            self.log.exception("LocalUploadCB")
+            MessageDialog(self, "An error occurred when attempting a local upload.", "Local Upload Error")
 
     def ClearSlidesCB(self,event):
         """
         Callback for "clear slides" menu item
         """
-        self.closeCallback()
+        try:
+            self.closeCallback()
+        except:
+            self.log.exception("ClearSlidesCB")
+            MessageDialog(self, "An error occurred when clearing slides.", "Clear Slides Error")
 
     def ExitCB(self,event):
         """
         Callback for 'Exit' menu item
         """
-        self.exitCallback()
+        try:
+            self.exitCallback()
+        except:
+            self.log.exception("ExitCB")
 
     def OpenInstructionsCB(self, event):
         """
         Callback for 'Instructions' help menu item
         """
-        info =  "If you want to be the leader of this session, select the master check box below.\nAll presentation files located in the data area of this venue are now available here.\nChoose a file from these available slides or enter the URL address of your presentation.\nClick the Load button to open the presentation. \n\nNote: Please, only use this controller window to change slides."
+        try:
+            info =  "If you want to be the leader of this session, select the master check box below.\nAll presentation files located in the data area of this venue are now available here.\nChoose a file from these available slides or enter the URL address of your presentation.\nClick the Load button to open the presentation. \n\nNote: Please, only use this controller window to change slides."
         
-        MessageDialog(self, info, "Instructions")
+            MessageDialog(self, info, "Instructions")
+        except:
+            self.log.exception("ClearSlidesCB")
+            MessageDialog(self, "An error occurred showing the application's intructions.", "Intructions Error")
         
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #
@@ -533,6 +587,7 @@ class SharedPresentationFrame(wxFrame):
         """
         This method is used to set the "master" checkbox
         """
+        self.log.warn("MASTER CHECKBOX")
         self.masterCheckBox.SetValue(flag)
 
         self.slideNumText.SetEditable(flag)
@@ -834,7 +889,7 @@ class SharedPresentation:
             try:
                 self.methodDict[event](data)
             except:
-                #self.log.exception("EXCEPTION PROCESSING EVENT")
+                self.log.exception("EXCEPTION PROCESSING EVENT")
                 print 'exception processing event'
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1258,7 +1313,7 @@ class SharedPresentation:
         try:
             self.controller.frame.Destroy()
         except:
-            self.log.exception("Exception destroying controller. This happens when using the x button in the top right corner. Not critical.")
+            self.log.warn("Exception destroying controller. This happens when using the x button in the top right corner. Not critical.")
         
         # Get rid of the controller
         self.controller = None
@@ -1466,7 +1521,7 @@ class SharedPresentation:
         # Check i presentation still exists.
 
         # Set the slide URL in the UI
-        if len(self.presentation) != 0:
+        if self.presentation and len(self.presentation) != 0:
             self.log.debug("Got presentation: %s", self.presentation)
             if self.presentation[:6] == "https:":
                 # Remove datastore prefix on local url in UI since master checks
