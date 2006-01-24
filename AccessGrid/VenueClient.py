@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.271 2006-01-23 21:39:37 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.272 2006-01-24 20:59:51 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.271 2006-01-23 21:39:37 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.272 2006-01-24 20:59:51 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -106,6 +106,7 @@ class VenueClient:
         self.userConf = UserConfig.instance()
         self.isPersonalNode = pnode
         self.nodeService = None
+        self.builtInNodeService = None
               
         if app is not None:
             self.app = app
@@ -113,10 +114,9 @@ class VenueClient:
             self.app = Application()
 
         self.preferences = self.app.GetPreferences()
+        self.preferences.SetVenueClient(self)
         self.profile = self.preferences.GetProfile()
        
-        self.defaultNodeServiceUri = self.preferences.GetPreference(Preferences.NODE_URL) 
-
         if pnode is None:
             pnode = int(self.preferences.GetPreference(Preferences.STARTUP_MEDIA))
             self.isPersonalNode = pnode
@@ -126,8 +126,6 @@ class VenueClient:
 
         self.hostname = self.app.GetHostname()
         self.capabilities = []
-        self.nodeServiceUri = self.defaultNodeServiceUri
-        self.SetNodeUrl(self.nodeServiceUri)
         self.homeVenue = None
         self.houseKeeper = Scheduler()
         self.heartBeatTimer = None
@@ -140,6 +138,14 @@ class VenueClient:
 
         self.__StartWebService(pnode, port)
         self.__InitVenueData()
+        
+        # Set nodeservice based on preferences
+        if self.preferences.GetPreference(Preferences.NODE_BUILTIN):
+            self.nodeServiceUri = self.builtInNodeServiceUri
+            self.nodeService = self.builtInNodeService
+        else:
+            self.nodeServiceUri = self.preferences.GetPreference(Preferences.NODE_URL) 
+            self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
 
         self.isInVenue = 0
         self.isIdentitySet = 0
@@ -315,26 +321,28 @@ class VenueClient:
             from AccessGrid.interfaces.AGServiceManager_interface import AGServiceManager as AGServiceManagerI
             self.sm = AGServiceManager(self.server, self.app)
             smi = AGServiceManagerI(impl=self.sm,auth_method_name=None)
-            uri = self.server.RegisterObject(smi, path="/ServiceManager")
+            smuri = self.server.RegisterObject(smi, path="/ServiceManager")
             
-            self.sm.SetUri(uri)
+            self.sm.SetUri(smuri)
             log.debug("__StartWebService: service manager: %s",
-                      uri)
+                      smuri)
             try:
                 threading.Thread(target = ServiceDiscovery.Publisher,
                                 args=(self.hostname,AGServiceManager.ServiceType,
-                                            uri,port)).start()
+                                            smuri,port)).start()
             except:
                 log.exception("Couldn't publish node service advertisement")
 
             from AccessGrid.AGNodeService import AGNodeService
             from AccessGrid.interfaces.AGNodeService_interface import AGNodeService as AGNodeServiceI
-            ns = self.nodeService = AGNodeService(self.app)
+            ns = self.builtInNodeService = AGNodeService(self.app)
             nsi = AGNodeServiceI(impl=ns,auth_method_name=None)
-            uri = self.server.RegisterObject(nsi, path="/NodeService")
+            nsuri = self.builtInNodeServiceUri = self.server.RegisterObject(nsi, path="/NodeService")
             log.debug("__StartWebService: node service: %s",
-                      uri)
-            self.SetNodeUrl(uri)
+                      nsuri)
+            self.builtInNodeServiceUri = nsuri
+            
+            self.builtInNodeService.serviceManagers[smuri] = self.sm
             
             try:
                 threading.Thread(target = ServiceDiscovery.Publisher,
@@ -351,7 +359,7 @@ class VenueClient:
                 defaultConfig = prefs.GetDefaultNodeConfig()
                 if defaultConfig:
                     log.debug('Loading default node configuration: %s', defaultConfig)
-                    self.nodeService.LoadConfiguration(defaultConfig)
+                    self.builtInNodeService.LoadConfiguration(defaultConfig)
                 else:
                     log.debug('Null default node configuration, not loading')
 
@@ -1356,15 +1364,6 @@ class VenueClient:
         log.debug("SetNodeUrl: Set node service url:  %s" %url)
         self.nodeServiceUri = url
         
-        if url.find(self.hostname) >=0:
-            pass
-#             if not self.nodeService:
-#                 self.nodeService = AGNodeService(self.app)
-#                 self.nodeService.SetUri(url)   
-        else:
-            self.nodeService = AGNodeServiceIW(url)
-            
-             
         # assume that when the node service uri changes, the node service
         # needs identity info
         self.isIdentitySet = 0
