@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.272 2006-01-24 20:59:51 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.273 2006-01-24 22:20:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.272 2006-01-24 20:59:51 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.273 2006-01-24 22:20:10 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -146,6 +146,18 @@ class VenueClient:
         else:
             self.nodeServiceUri = self.preferences.GetPreference(Preferences.NODE_URL) 
             self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
+
+        try:
+            prefs = self.app.GetPreferences()
+            defaultConfig = prefs.GetDefaultNodeConfig()
+            if defaultConfig:
+                log.debug('Loading default node configuration: %s', defaultConfig)
+                self.nodeService.LoadConfiguration(defaultConfig)
+            else:
+                log.debug('Null default node configuration, not loading')
+
+        except:
+            log.exception("Error loading default configuration")
 
         self.isInVenue = 0
         self.isIdentitySet = 0
@@ -353,19 +365,6 @@ class VenueClient:
                 
         self.server.RunInThread()
 
-        if pnode:
-            try:
-                prefs = self.app.GetPreferences()
-                defaultConfig = prefs.GetDefaultNodeConfig()
-                if defaultConfig:
-                    log.debug('Loading default node configuration: %s', defaultConfig)
-                    self.builtInNodeService.LoadConfiguration(defaultConfig)
-                else:
-                    log.debug('Null default node configuration, not loading')
-
-            except:
-                log.exception("Error loading default configuration")
-            
         # Save the location of the venue client url
         # for other apps to communicate with the venue client
         self.urlFile = os.path.join(UserConfig.instance().GetTempDir(),
