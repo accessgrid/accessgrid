@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.208 2006-01-23 17:28:31 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.209 2006-01-24 20:51:30 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.208 2006-01-23 17:28:31 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.209 2006-01-24 20:51:30 turam Exp $"
 
 
 # Standard stuff
@@ -549,7 +549,7 @@ class VenueServer:
                         
                         cap = Capability(capability[0], capability[1])
 
-                        sd = StreamDescription(name, loc, cap, 
+                        sd = StreamDescription(name, loc, [cap], 
                                                encryptionFlag,
                                                encryptionKey, 1)
                         sl.append(sd)
