@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.94 2006-01-24 22:02:30 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.95 2006-01-24 22:21:15 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.94 2006-01-24 22:02:30 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.95 2006-01-24 22:21:15 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -82,8 +82,10 @@ class AGServiceManager:
         servicePackages =  self.GetServicePackageDescriptions()
         
         for s in servicePackages:
-            if s.packageFile.endswith(name):
+            servicePackageFile = os.path.split(s.packageFile)[-1]
+            if servicePackageFile == name:
                 servicePackage = s
+                break
                 
         if not servicePackage:
             raise Exception("No service package found for specified name",
@@ -100,8 +102,7 @@ class AGServiceManager:
         
         servicePackage = \
             self.GetServicePackage(servicePackageDesc.GetPackageFile())
-
-                  
+            
         # prevent SOAP socket from being inherited by child processes
         # which we're about to spawn
         try:
@@ -141,12 +142,7 @@ class AGServiceManager:
         os.chdir(servicePath) 
         
         # Start the service  
-        if servicePackage.inlineClass:
-            print "* * Service package inlining is disabled * * "
-        if 0 and servicePackage.inlineClass:
-            serviceUrl,pid = self.__AddInlineService(servicePackage)
-        else:
-            serviceUrl,pid = self.__ExecuteService(servicePackage)
+        serviceUrl,pid = self.__ExecuteService(servicePackage)
             
         # Set the package name in the service
         AGServiceIW(serviceUrl).SetPackageFile(servicePackage.packageFile, resource, config, identity)
@@ -291,7 +287,6 @@ class AGServiceManager:
                     servicePkg = self.GetServicePackage(os.path.join(self.servicesDir,f))
                     servicePackages.append(servicePkg)
                 except Exception, e:
-                    print "exception", e
                     log.exception("Invalid service package: %s", f)
                     invalidServicePackages += 1
                     
