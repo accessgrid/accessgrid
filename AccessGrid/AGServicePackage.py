@@ -3,13 +3,13 @@
 # Purpose:     
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: AGServicePackage.py,v 1.3 2005-05-12 21:14:42 turam Exp $
+# RCS-ID:      $Id: AGServicePackage.py,v 1.4 2006-01-24 18:06:55 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AGServicePackage.py,v 1.3 2005-05-12 21:14:42 turam Exp $"
+__revision__ = "$Id: AGServicePackage.py,v 1.4 2006-01-24 18:06:55 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -20,7 +20,6 @@ import StringIO
 import ConfigParser
 
 from AccessGrid import Log
-from AccessGrid.ServiceCapability import ServiceCapability
 from AccessGrid.Descriptions import AGServicePackageDescription
 
 log = Log.GetLogger("AGServicePackage")
@@ -125,14 +124,19 @@ class AGServicePackage:
                 try:
                     # create subdirs if needed
                     pathparts = string.split(filename, '/')
+                    
                     if len(pathparts) > 1:
                         temp_dir = str(path)
                         for i in range(len(pathparts) - 1):
+                            log.info("this is temp dir: %s"%(temp_dir))
+                            log.info("this is pathparts: %s"%(pathparts))
                             temp_dir = os.path.join(temp_dir, pathparts[i])
-                        #print "Creating dir if needed:", temp_dir
+                        
                         if not os.access(temp_dir, os.F_OK):
-                            os.makedirs(temp_dir)
-
+                            try:
+                                os.makedirs(temp_dir)
+                            except:
+                                log.exception("Failed to make temp dir %s"%(temp_dir))
                     destfilename = os.path.join(path,filename)
 
                     # Extract the file
@@ -155,7 +159,7 @@ class AGServicePackage:
                     #s = os.stat(destfilename)
                     #print "%s mode %d" % (destfilename, s[0])
                 except:
-                    log.exception("Error extracting file %s", filename)
+                    log.exception("Error extracting file %s"%(filename))
 
             zf.close()
         except zipfile.BadZipfile:
