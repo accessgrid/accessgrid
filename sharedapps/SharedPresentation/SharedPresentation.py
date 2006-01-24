@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.37 2006-01-24 22:26:25 eolson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.38 2006-01-24 23:59:16 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -981,7 +981,7 @@ class SharedPresentation:
             # Set the master in the venue
             self.sharedAppClient.SetData(SharedPresKey.MASTER, publicId)
             # Send event
-            self.sharedAppClient.SendEvent(SharedPresEvent.MASTER, (publicId, publicId))
+            self.sharedAppClient.SendEvent(SharedPresEvent.MASTER, publicId)
             
             try:
                 self.sharedAppClient.SetParticipantStatus("master")
@@ -997,7 +997,7 @@ class SharedPresentation:
                 self.sharedAppClient.SetData(SharedPresKey.MASTER, "")
 
                 # Send event
-                self.sharedAppClient.SendEvent(SharedPresEvent.MASTER, (publicId, ""))
+                self.sharedAppClient.SendEvent(SharedPresEvent.MASTER, "")
 
                 try:
                     self.sharedAppClient.SetParticipantStatus("connected")
@@ -1061,10 +1061,10 @@ class SharedPresentation:
             self.log.debug("got my own event; skip")
             return
 
-        if self.masterId == event.data[0]:
+        if self.masterId == event.GetSenderId():
             # We put the passed in event on the event queue
             try:
-                self.eventQueue.put([SharedPresEvent.NEXT, event.GetData()])
+                self.eventQueue.put([SharedPresEvent.NEXT, (event.GetSenderId(), event.GetData()) ])
             except Queue.Full:
                 self.log.debug("Dropping event, event Queue full!")
 
@@ -1079,10 +1079,10 @@ class SharedPresentation:
             self.log.debug( "got my own event; skip")
             return
 
-        if self.masterId == event.GetData()[0]:
+        if self.masterId == event.GetSenderId():
             # We put the passed in event on the event queue
             try:
-                self.eventQueue.put([SharedPresEvent.PREV, event.GetData()])
+                self.eventQueue.put([SharedPresEvent.PREV, (event.GetSenderId(), event.GetData()) ])
             except Queue.Full:
                 self.log.debug("Dropping event, event Queue full!")
         
@@ -1097,10 +1097,10 @@ class SharedPresentation:
             self.log.debug( "got my own event; skip")
             return
 
-        if self.masterId == event.GetData()[0]:
+        if self.masterId == event.GetSenderId():
             # We put the passed in event on the event queue
             try:
-                self.eventQueue.put([SharedPresEvent.GOTO, event.GetData()[1]])
+                self.eventQueue.put([SharedPresEvent.GOTO, event.GetData()])
             except Full:
                 self.log.debug("Dropping event, event Queue full!")
         
@@ -1115,10 +1115,10 @@ class SharedPresentation:
             self.log.debug( "got my own event; skip")
             return
 
-        if self.masterId == event.GetData()[0]:
+        if self.masterId == event.GetSenderId():
             # We put the passed in event on the event queue
             try:
-                self.eventQueue.put([SharedPresEvent.LOAD, event.GetData()])
+                self.eventQueue.put([SharedPresEvent.LOAD, (event.GetSenderId(), event.GetData()) ])
             except Full:
                 self.log.debug("Dropping event, event Queue full!")
 
@@ -1132,7 +1132,7 @@ class SharedPresentation:
 
         # We put the passed in event on the event queue
         try:
-            self.eventQueue.put([SharedPresEvent.MASTER, event.GetData()])
+            self.eventQueue.put([SharedPresEvent.MASTER, (event.GetSenderId(), event.GetData()) ])
         except Full:
             self.log.debug("Dropping event, event Queue full!")
 
@@ -1194,6 +1194,7 @@ class SharedPresentation:
         """
         This is the _real_ load presentation method that tells the viewer
         to load the specified presentation.
+        data is a tuple of (senderId, url)
         """
         self.log.debug("Method LoadPresentation called; url=(%s)", data[1])
 
@@ -1257,6 +1258,7 @@ class SharedPresentation:
     def SetMaster(self, data):
         """
         This method sets the master of the presentation.
+        data is a tuple of (senderId, masterid) 
         """
         self.log.debug("Method SetMaster called")
 
@@ -1370,7 +1372,7 @@ class SharedPresentation:
 
                 # Send the next event to other app users
                 publicId = self.sharedAppClient.GetPublicId()
-                self.sharedAppClient.SendEvent(SharedPresEvent.NEXT,(publicId, None))
+                self.sharedAppClient.SendEvent(SharedPresEvent.NEXT, None)
         else:
             wxCallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
             self.log.debug("No presentation loaded!")
@@ -1415,7 +1417,7 @@ class SharedPresentation:
 
                 # We send the event, which is wrapped in an Event instance
                 publicId = self.sharedAppClient.GetPublicId()
-                self.sharedAppClient.SendEvent(SharedPresEvent.PREV, (publicId, None))
+                self.sharedAppClient.SendEvent(SharedPresEvent.PREV, None)
 
                 self.log.debug("slide %d step %d", self.slideNum, self.stepNum)
 
@@ -1441,7 +1443,7 @@ class SharedPresentation:
 
                 # Send event
                 publicId = self.sharedAppClient.GetPublicId()
-                self.sharedAppClient.SendEvent(SharedPresEvent.GOTO, (publicId, self.slideNum))
+                self.sharedAppClient.SendEvent(SharedPresEvent.GOTO, self.slideNum)
                 
         else:
             wxCallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
@@ -1503,7 +1505,7 @@ class SharedPresentation:
         
         # Send event
         publicId = self.sharedAppClient.GetPublicId()
-        self.sharedAppClient.SendEvent(SharedPresEvent.LOAD,(publicId, slidesUrl))
+        self.sharedAppClient.SendEvent(SharedPresEvent.LOAD, slidesUrl)
                                     
         self.SendMaster(true)
 
