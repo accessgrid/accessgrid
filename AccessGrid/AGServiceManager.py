@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.93 2006-01-23 06:53:09 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.94 2006-01-24 22:02:30 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.93 2006-01-23 06:53:09 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.94 2006-01-24 22:02:30 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -82,7 +82,6 @@ class AGServiceManager:
         servicePackages =  self.GetServicePackageDescriptions()
         
         for s in servicePackages:
-            print "name = ", name, "s = ", s.packageFile
             if s.packageFile.endswith(name):
                 servicePackage = s
                 
