@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.102 2006-01-23 06:51:21 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.103 2006-01-24 21:45:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.102 2006-01-23 06:51:21 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.103 2006-01-24 21:45:09 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -30,7 +30,6 @@ from AccessGrid.Descriptions import ResourceDescription
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.AGParameter import ValueParameter
 from AccessGrid.Descriptions import NodeConfigDescription
-from AccessGrid import ServiceDiscovery
 from AccessGrid.AGServiceManager import AGServiceManager
 
 from AccessGrid.interfaces.AGNodeService_interface import AGNodeService as AGNodeServiceI
@@ -63,10 +62,6 @@ class AGNodeService:
         self.userNodeConfigDir = self.app.GetUserConfig().GetNodeConfigDir()
         self.servicesDir = self.app.GetToolkitConfig().GetNodeServicesDir()
         
-        self.serviceBrowser = ServiceDiscovery.Browser(AGServiceManager.ServiceType,
-                                                       self.__BrowseCB)
-        self.serviceBrowser.Start()
-
         self.streamDescriptionList = []
         
         self.uri = 0
@@ -361,15 +356,6 @@ class AGNodeService:
             #
             # Skip unreachable service managers
             
-            #try:
-            #    serviceManagerProxy.IsValid()
-            #except:
-            #    self.serviceManagers[serviceManager.uri] = None
-            #    log.info("AddServiceManager: Invalid service manager url (%s)"
-            #             % serviceManager.uri)
-            #    exceptionText += "Couldn't reach service manager: %s" % serviceManager.name
-            #    continue
-
             # Add service manager to list
             self.serviceManagers[serviceManager.uri] = serviceManager
 
@@ -405,80 +391,6 @@ class AGNodeService:
         if len(exceptionText):
             raise Exception(exceptionText)
 
-    def NeedMigrateNodeConfig(self,config):
-        log.info("NodeService.StoreConfiguration")
-        if config.type == NodeConfigDescription.SYSTEM:
-            configFile = os.path.join(self.sysNodeConfigDir, config.name)
-        else:
-            configFile = os.path.join(self.userNodeConfigDir, config.name)
-
-        ret = 0
-        
-        f = file(configFile,'r')
-        firstLine = f.readline()
-        f.close()
-        if firstLine.startswith('# AGTk 2.3'):
-            log.debug("Node config %s already migrated; not migrating", config.name)
-            return 0
-
-        cp = ConfigParser.ConfigParser()
-        cp.read(configFile)
-        for section in cp.sections():
-            if section.startswith('servicemanager'):
-                url = cp.get(section,'url')
-                name = cp.get(section,'name')
-                
-                if url.find('12000') >= 0:
-                    ret = 1
-                    break
-                if name.find('12000') >= 0:
-                    ret = 1
-                    break
-        return ret
-                
-    def MigrateNodeConfig(self,config):
-        log.info("NodeService.StoreConfiguration")
-
-        if config.type == NodeConfigDescription.SYSTEM:
-            configFile = os.path.join(self.sysNodeConfigDir, config.name)
-        else:
-            configFile = os.path.join(self.userNodeConfigDir, config.name)
-
-        # do migration
-        wasMigrated = 0
-        
-        cp = ConfigParser.ConfigParser()
-        cp.read(configFile)
-        for section in cp.sections():
-            if section.startswith('servicemanager'):
-                url = cp.get(section,'url')
-                name = cp.get(section,'name')
-                
-                if url.find('12000') >= 0:
-                    url = url.replace('12000','11000')
-                    cp.set(section,'url',url)
-                    wasMigrated = 1
-                if name.find('12000') >= 0:
-                    name = name.replace('12000','11000')
-                    cp.set(section,'name',name)
-                    wasMigrated = 1
-
-        if wasMigrated:
-            log.info("Migrating node config %s", config.name)
-            
-            orgConfigFile = configFile + ".org"
-            log.info("Original node config moved to %s", orgConfigFile)
-            os.rename(configFile,orgConfigFile)
-            
-            # write file
-            f = file(configFile,'w')
-            f.write("# AGTk %s node configuration\n" % (Version.GetVersion()))
-            cp.write(f)
-            f.close()
-        else:
-            log.info("Migration unnecessary")
-            
-                    
 
     def StoreConfiguration( self, config ):
         """
@@ -630,7 +542,7 @@ class AGNodeService:
         return capabilities
 
     def Stop(self):
-        self.serviceBrowser.Stop()
+        pass
         
     def SetUri(self,uri):
         self.uri = uri
@@ -680,15 +592,6 @@ class AGNodeService:
             raise SetStreamException(failedSends)
 
 
-
-    def __BrowseCB(self,type,name,uri=None):
-        if type == ServiceDiscovery.Browser.ADD:
-            #print "Found service manager at uri ", uri
-            if uri in self.serviceManagers.keys() and self.serviceManagers[uri] == None:
-                smDesc = AGServiceManagerIW(uri).GetDescription()
-                print "   adding service"
-                AGServiceManagerIW(uri).AddServiceByName('AudioService.zip')
-            
 
     def IsValid(self):
         return 1
