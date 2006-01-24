@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.53 2005-12-21 19:07:32 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.54 2006-01-24 20:51:05 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.53 2005-12-21 19:07:32 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.54 2006-01-24 20:51:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -667,6 +667,8 @@ class VenueClientController:
 
         # Update node url
         self.__venueClient.SetNodeUrl(preferences.GetPreference(Preferences.NODE_URL))
+        if preferences.GetPreference(Preferences.NODE_BUILTIN):
+            self.__venueClient.nodeService = self.__venueClient.builtInNodeService
         
        
         if int(preferences.GetPreference(Preferences.MULTICAST)):
