@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.149 2006-01-23 21:39:37 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.150 2006-01-24 21:55:32 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.149 2006-01-23 21:39:37 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.150 2006-01-24 21:55:32 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1180,21 +1180,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         except:
             self.gui.Error("Error enabling/disabling audio", "Error enabling/disabling audio")
 
-    def SetNodeUrlCB(self, event = None):
-        nodeUrl = None
-        setNodeUrlDialog = UrlDialog(self, -1, "Set node service URL", \
-                                     self.venueClient.GetNodeServiceUri(), 
-                                     "Please, specify node service URL")
-
-        if setNodeUrlDialog.ShowModal() == wxID_OK:
-            nodeUrl = setNodeUrlDialog.address.GetValue()
-            try:
-                self.controller.SetNodeUrlCB(nodeUrl)
-            except:
-                self.Error("Error setting node url", "Set Node Url Error")
-       
-        setNodeUrlDialog.Destroy()
-        
     def ManageNodeCB(self, event):
         #if not self.app.certificateManager.HaveValidProxy():
         #        self.app.certificateManager.CreateProxy()
