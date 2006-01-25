@@ -5,6 +5,7 @@ import urllib
 import os
 import sys
 
+from AccessGrid import Log
 from AccessGrid.Platform import IsWindows, IsOSX, IsLinux
 from AccessGrid.Descriptions import BridgeDescription
 from AccessGrid.BridgeCache import BridgeCache
@@ -16,6 +17,7 @@ class RegistryClient:
         self.registryPeers = None
         self.bridges = None
         self.bridgeCache = BridgeCache()
+        self.log = Log.GetLogger('RegistryClient')
        
     def _connectToRegistry(self):
         if not self.registryPeers:
@@ -28,15 +30,16 @@ class RegistryClient:
             host = r.split(':')[0]
             if self.PingHost(host) > -1:
                 try:
-                    self.serverProxy = xmlrpclib.ServerProxy("http://" + r)
+                    url = "http://"+r 
+                    self.serverProxy = xmlrpclib.ServerProxy("http://"+r)
                     foundServer = 1
                     break
                 except Exception,e:
-                    print 'exception:', e
+                    self.log.exception("Failed to connect to registry %s"%(r))
             
         if not foundServer:
             # Throw exception!
-            print '============= no registry peers reachable'
+            self.log.info("No bridge registry peers reachable")
    
     def RegisterBridge(self, registeredServerInfo):
         self._connectToRegistry()
@@ -105,11 +108,8 @@ class RegistryClient:
                 desc.rank = pingVal
                 bridgeDescriptions.append(desc)
             except Exception,e:
-                #
-                # log exception
-                #
-                print 'exception:', e
-                    
+                self.log.exception("Failed to ping bridge %s"%(desc.name))
+                                   
     def _readPeerList(self,url):
         if url.startswith("file://"):
             filename = url[7:]
@@ -145,11 +145,11 @@ class RegistryClient:
             ret = self._execCmd(cmd)
             
             if ret.find('unknown host')>-1:
-                print "Ping: Host %s not found"%(host)
+                self.log.info("Ping: Host %s not found"%(host))
                 raise "Ping: Host %s not found"%(host)
 
             if ret.find('100%')>-1:
-                print "Ping: Host %s timed out"%(host)
+                self.log.info("Ping: Host %s timed out"%(host))
                 raise "Ping: Host %s timed out"%(host)
         
             # Find average round trip time
@@ -164,12 +164,12 @@ class RegistryClient:
             ret = self._execCmd(cmd)
             
             if ret.find('could not find')>-1:
-                print "Ping: Host %s not found"%(host)
+                self.log.info("Ping: Host %s not found"%(host))
                 raise "Ping: Host %s not found"%(host)
 
             # windows times out automatically
             if ret.find('timed out')>-1:
-                print "Ping: Host %s timed out"%(host)
+                self.log.info("Ping: Host %s timed out"%(host))
                 raise "Ping: Host %s timed out"%(host)
             
             # Find average round trip time
