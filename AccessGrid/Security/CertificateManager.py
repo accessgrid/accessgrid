@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.47 2006-01-09 20:12:41 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.48 2006-01-25 20:41:49 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.47 2006-01-09 20:12:41 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.48 2006-01-25 20:41:49 turam Exp $"
 
 import re
 import os
@@ -48,6 +48,7 @@ from AccessGrid import Utilities
 from AccessGrid.Security import CertificateRepository
 from AccessGrid.Security import CRSClient
 from AccessGrid import Platform
+from AccessGrid.Platform.Config import SystemConfig
 
 log = Log.GetLogger(Log.CertificateManager)
 
@@ -230,7 +231,69 @@ class CertificateManager(object):
             log.exception("repo already exists")
             raise Exception, "Received RepoAlreadyExists exception after we determined that it didn't actually exist"
 
-        #self.InitRepoFromGlobus(self.certRepo)
+        self.ImportCACertificates()
+
+    def ImportCACertificates(self):
+        sysConfDir = SystemConfig.instance().GetConfigDir()
+        caDir = os.path.join(sysConfDir,'CAcertificates')
+        log.debug("Initializing from %s", caDir)
+
+
+        #
+        # Now handle the CA certs.
+        #
+        
+        if caDir is not None:
+            try:
+                files = os.listdir(caDir)
+            except:
+                self.GetUserInterface().ReportError("Error reading CA certificate directory\n" +
+                                                    caDir + "\n" +
+                                                    "You will have to import trusted CA certificates later.")
+                files = []
+
+            #
+            # Extract the files from the caDir that match OpenSSL's
+            # 8-character dot index format.
+            #
+            regexp = re.compile(r"^[\da-fA-F]{8}\.\d$")
+            possibleCertFiles = filter(lambda f, r = regexp: r.search(f), files)
+
+            for f in possibleCertFiles:
+
+                path = os.path.join(caDir, f);
+                log.info("%s might be a cert" % (path))
+                
+                # Check for existence of signing policy
+                certbasename = f.split('.')[0]
+                signingPolicyFile = '%s.signing_policy' % (certbasename,)
+                signingPath = os.path.join(caDir,signingPolicyFile)
+                if not os.path.isfile(signingPath):
+                    log.info("Not importing CA cert %s; couldn't find signing policy file %s",
+                             f,signingPath)
+                    continue
+                    
+                try:
+                
+                    # Import the certificate
+                    desc = self.ImportCACertificatePEM(self.certRepo, path)
+                except:
+                    log.exception('import of ca cert failed')
+                    
+                try:
+                    
+                    #
+                    # Copy the signing policy file
+                    #
+                    shutil.copyfile(signingPath,
+                                        desc.GetFilePath("signing_policy"))
+                    
+                    log.info("Imported cert as %s.0", desc.GetSubject().get_hash())
+                    
+                except:
+                    # print "Failure to import ", path
+                    log.exception("failure importing %s", path)
+
 
     def ImportRequestedCertificate(self, userCert):
         repo = self.GetCertificateRepository()
