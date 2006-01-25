@@ -1,13 +1,14 @@
-from AccessGrid.ServiceCapability import ServiceCapability
 from AccessGrid.Descriptions import AGNetworkServiceDescription
 from AccessGrid.Toolkit import CmdlineApplication
 from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
-from AccessGrid.hosting import SecureServer
-from AccessGrid.Venue import VenueIW
-from AccessGrid.AGNetworkServiceIW import AGNetworkServiceIW
-from AccessGrid.VenueServer import VenueServerIW
-from AccessGrid.Descriptions import CreateStreamDescription
+from AccessGrid.hosting import SecureServer, InsecureServer
+from AccessGrid.Descriptions import Capability
+
+from AccessGrid.interfaces.Venue_client import VenueIW
+from AccessGrid.interfaces.VenueServer_client import VenueServerIW
+from AccessGrid.interfaces.AGNetworkService_client import AGNetworkServiceIW
+from AccessGrid.interfaces.AGNetworkService_interface import AGNetworkService as AGNetworkServiceI
 from AccessGrid.GUID import GUID
 
 from optparse import Option
@@ -52,8 +53,7 @@ class AGNetworkService:
                                          dest="venueServerUrl",
                                          help="Register with all venues at server located at this url."))
                                          
-        self.inCapabilities = []
-        self.outCapabilities = []
+        self.capabilities = []
 
     def Start(self, service, soapI = None):
         '''
@@ -74,10 +74,13 @@ class AGNetworkService:
         # Register signal handling for clean shutdown of service.
         signal.signal(signal.SIGINT, self.StopSignalLoop)
         signal.signal(signal.SIGTERM, self.StopSignalLoop)
-        
+
+        soapInterface.impl = service
+        soapInterface.auth_method_name = None    
+                
         # Start soap service.
         port = NetworkAddressAllocator().AllocatePort()
-        self.server = SecureServer((self.app.GetHostname(), port))
+        self.server = InsecureServer((self.app.GetHostname(), port))
         self.url = self.server.RegisterObject(soapInterface, path='/AGNetworkService')
             
         # Start the execution
@@ -104,14 +107,14 @@ class AGNetworkService:
                     self.venueProxies[url].UnRegisterNetworkService(nsd)
                 except:
                     self.log.exception("AGNetworkService.Stop: UnregisterNetworkService with venue %s failed for %s"
-                                       %(url, nsd.ToString()))
+                                       %(url, nsd.name))
 
         # Stop soap service.
         try:
-            self.server.Stop()
             self.flag = 0
+            self.server.Stop()
         except:
-            self.log.exception("AGNetworkService.Stop: Stop soap server failed %s")
+            self.log.exception("AGNetworkService.Stop: Stop soap server failed")
                         
     def StartSignalLoop(self):
         '''
@@ -155,7 +158,7 @@ class AGNetworkService:
                 self.venueProxies[url].RegisterNetworkService(nsd)
                 self.log.debug("AGNetworkService.Register: Register with venue %s" %(url))
             except:
-                self.log.exception("AGNetworkService.Register: RegisterNetworkService with venue %s failed for %s"%(url, nsd.ToString()))
+                self.log.exception("AGNetworkService.Register: RegisterNetworkService with venue %s failed for %s"%(url, nsd))
     
 
     def RegisterWithVenueServer(self, url):
@@ -181,8 +184,8 @@ class AGNetworkService:
         
         # Create a NetworkServiceDescription and register with the venue. 
         for url in urls:
-            nsd = AGNetworkServiceDescription(self.name, self.description, self.url, self.venueProxies.keys(),
-                                              self.inCapabilities, self.outCapabilities, self.version)
+            nsd = AGNetworkServiceDescription(self.name, self.description, self.url,
+                                              self.capabilities, self.version)
             try:
                 if self.venueProxies.has_key(url):
                     self.venueProxies[url].UnRegisterNetworkService(nsd)
@@ -210,9 +213,8 @@ class AGNetworkService:
 
 
     def CreateDescription(self):
-        nsd = AGNetworkServiceDescription(self.name, self.description, self.url, self.mimeType,
-                                          self.extension, self.inCapabilities, self.outCapabilities,
-                                          self.version, self.visible)
+        nsd = AGNetworkServiceDescription(self.name, self.description, self.url, self.capabilities,
+                                          self.version)
         nsd.id = str(GUID())
         return nsd
 
@@ -227,14 +229,14 @@ if __name__ == "__main__":
         def __init__(self, name):
             AGNetworkService.__init__(self, name, 'Convert from 16kHz to 8kHz', '1.0')
             # Create in and out capabilities.
-            config = {ServiceCapability.DEVICE_SAMPLE_RATE:'16000'}
-            n1 = ServiceCapability(name, 'transform', 'audio', config)
-            
-            config = {ServiceCapability.DEVICE_SAMPLE_RATE:'8000'}
-            n2 = ServiceCapability(name, 'transform', 'audio', config)
-            
-            self.inCapabilities = [n1.ToXML()]
-            self.outCapabilities = [n2.ToXML()]
+            self.capabilities = [Capability( Capability.CONSUMER,
+                                               Capability.VIDEO,
+                                               "JPEG",
+                                               90000, self.id),
+                                 Capability( Capability.PRODUCER,
+                                             Capability.VIDEO,
+                                             "JPEG",
+                                             90000, self.id)]
 
             # Start the service.
             self.Start(self)
@@ -250,8 +252,8 @@ if __name__ == "__main__":
 
     # Test venue soap interface.
     vProxy = VenueIW('https://localhost:8000/Venues/default')
-    nsd = AGNetworkServiceDescription(service.name, service.description, service.url, 'urls',
-                                              service.inCapabilities, service.outCapabilities, service.version)
+    nsd = AGNetworkServiceDescription(service.name, service.description, service.url,
+                                              service.capabilities, service.version)
             
     vProxy.RegisterNetworkService(nsd)
     services = vProxy.GetNetworkServices()
