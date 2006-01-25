@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.264 2006-01-24 18:58:51 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.265 2006-01-25 23:59:24 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.264 2006-01-24 18:58:51 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.265 2006-01-25 23:59:24 lefvert Exp $"
 
 import sys
 import time
@@ -22,7 +22,6 @@ import socket
 import os.path
 
 from AccessGrid import Log
-from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.Toolkit import Service
 
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
@@ -49,7 +48,6 @@ from AccessGrid.Utilities import AllocateEncryptionKey, ServerLock
 from AccessGrid.hosting import PathFromURL
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.ClientProfile import ClientProfileCache, InvalidProfileException
-from AccessGrid.ServiceCapability import ServiceCapability
 from AccessGrid.NetworkServicesManager import NetworkServicesManager
 from AccessGrid.interfaces.AccessGrid_Types import www_accessgrid_org_v3_0 as AGTypes
 from AccessGrid.interfaces.Venue_interface import Venue as VenueI
@@ -833,22 +831,23 @@ class Venue:
                 
                 log.debug("added user as producer of existent stream")
             else:
-                matchingStreams = 0
                 # Check if network service can resolve mismatch
-                #matchingStreams = self.networkServicesManager.ResolveMismatch(
-                #    self.streamList.GetStreams(), mismatchedServices)
-                         
-                #for streamList, producer in matchingStreams:
-                #    for s in streamList:
-                #        if not self.streamList.FindStreamByDescription(s):
-                #            # Make new stream available for other clients.
-                #            self.streamList.AddStream(s)
-                #            streamDescriptions.append(s)
-                #            # Also add a new producer of the stream.
-                #            self.streamList.AddStreamProducer( producer, s)
+                matchingStreams = []
+                streams = self.streamList.GetStreams()
+                if streams:
+                    matchingStreams = self.networkServicesManager.ResolveMismatch(
+                        streams , services[serviceId])
 
+                for streamList, producer in matchingStreams:
+                    for s in streamList:
+                        if not self.streamList.FindStreamByDescription(s):
+                            # Make new stream available for other clients.
+                            self.streamList.AddStream(s)
+                            # Also add a new producer of the stream.
+                            self.streamList.AddStreamProducer( producer, s)
+                      
+                # Create new stream
                 if not matchingStreams:
-                    # Create new stream
                     addr = self.AllocateMulticastLocation()
                     streamDesc = StreamDescription( self.name,
                                                     addr, services[serviceId], 
@@ -1148,10 +1147,10 @@ class Venue:
         
         @Param networkServiceDescription: A network service description.
         """
-        log.debug('register network service %s'%nsd)
+        log.debug('register network service %s'%nsd.name)
         try:
             self.networkServicesManager.RegisterService(nsd)
-            self.eventClient.Send(Event.ADD_SERVICE, nsd)
+            #self.eventClient.Send(Event.ADD_SERVICE, nsd)
           
         except:
             log.exception('Venue.RegisterNetworkService: Failed')
@@ -1166,7 +1165,7 @@ class Venue:
         try:
             self.networkServicesManager.UnRegisterService(nsd)
             self.streamList.RemoveProducer(nsd.uri)
-            self.eventClient.Send(Event.REMOVE_SERVICE, nsd)
+            #self.eventClient.Send(Event.REMOVE_SERVICE, nsd)
           
         except:
             log.exception('Venue.UnRegisterNetworkService: Failed')

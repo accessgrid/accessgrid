@@ -1,7 +1,6 @@
-import xml.dom.minidom
-from AccessGrid.ServiceCapability import ServiceCapability
-#from AccessGrid.AGNetworkServiceIW import AGNetworkServiceIW
 from AccessGrid import Log
+from AccessGrid.interfaces.AGNetworkService_client import AGNetworkServiceIW
+from AccessGrid.Descriptions import Capability
 
 class NetworkServicesManager:
     '''
@@ -40,7 +39,7 @@ class NetworkServicesManager:
             raise Exception, 'A service at url %s is already present, failed to add service.'%nsd.uri
         
         self.log.debug('RegisterService: Register network service %s'
-                       %nsd.ToString())
+                       %nsd.name)
         self.__services[nsd.uri] = nsd
         
         return nsd
@@ -63,7 +62,7 @@ class NetworkServicesManager:
         if self.__services.has_key(nid):
 
             self.log.debug('UnRegisterService: Unregister service %s'
-                           %networkServiceDescription.ToString())
+                           %networkServiceDescription.name)
             del self.__services[nid]
         else:
             self.log.exception('UnRegisterService: Service %s is already unregistered'
@@ -120,16 +119,17 @@ class NetworkServicesManager:
             # streams -> net service -> net service -> net service -> streams
             for service in netServices:
                 self.log.debug('ResolveMismatch: Call transform method for services running at %s'%service.uri)
-                #netServiceProxy = AGNetworkServiceIW(service.uri)
+                netServiceProxy = AGNetworkServiceIW(service.uri)
 
                 try:
                     streams = netServiceProxy.Transform(streams)
                 except:
-                    self.log.exception('ResolveMismatch: Transform for service %s failed'%service.ToString())
+                    self.log.exception('ResolveMismatch: Transform for service %s failed'%service)
                     streams = []
         
             # Add new streams to list
-            matchedStreams.append((streams, service.uri))
+            if len(streams)>0:
+                matchedStreams.append((streams, service.uri))
 
         return matchedStreams
           
@@ -157,7 +157,7 @@ class NetworkServiceMatcher:
     def __MatchInCapabilities(self, stream, services):
         '''
         For a given stream, find network services that have matching
-        in capabilities.
+        consumer capabilities.
 
         ** Arguments **
         
@@ -170,20 +170,24 @@ class NetworkServiceMatcher:
         '''
         
         matchingServices = []
-
-        streamCap = ServiceCapability.CreateServiceCapability(stream.capability.xml)
-                
+        streamProducerCaps = filter(lambda x: x.role == Capability.PRODUCER, stream.capability)
+                      
         # Create a list of all services that matches this stream.
         for service in services:
-            for cap in service.inCapabilities:
-                serviceCap = ServiceCapability.CreateServiceCapability(cap)
-        
-                if streamCap.Matches(serviceCap):
-                    
-                    # Do not add the same service twice
-                    if service not in matchingServices:
-                        matchingServices.append(service)
-                        
+            netServiceConsumerCaps =  filter(lambda x: x.role == Capability.CONSUMER, service.capabilities)
+            serviceMatch = 1
+            for streamCap in streamProducerCaps:
+                match = 0
+                for cap in netServiceConsumerCaps :
+                    if streamCap.matches(cap):
+                        match = 1
+                if not match:
+                    serviceMatch = 0
+                    break
+            if (service not in matchingServices) and serviceMatch:
+                # Do not add the same service twice
+                matchingServices.append(service)
+                  
         return matchingServices
 
     def __MatchOutCapabilities(self, services, capabilities):
@@ -203,20 +207,24 @@ class NetworkServiceMatcher:
         '''
         
         matchingServices = []
+        nodeConsumerCaps =  filter(lambda x: x.role == Capability.CONSUMER, capabilities)
         
         for service in services:
-            for cap in service.outCapabilities:
-                serviceCap = ServiceCapability.CreateServiceCapability(cap)
-                             
-                for capability in capabilities:
-                    myCap = ServiceCapability.CreateServiceCapability(capability.xml)
-
+            netServiceProducerCaps = filter(lambda x: x.role == Capability.PRODUCER, service.capabilities)
+            serviceMatch = 1
+            for capability in nodeConsumerCaps:
+                match = 0
+                for serviceCap in netServiceProducerCaps:
                     # Match network service out capability with the node capability.
-                    if serviceCap.Matches(myCap):
-
-                        # Do not add the same service twice. 
-                        if service not in matchingServices:
-                            matchingServices.append(service)
+                    if serviceCap.matches(capability):
+                        match = 1
+                if not match:
+                    serviceMatch = 0
+                    break
+                
+            # Do not add the same service twice. 
+            if (service not in matchingServices) and serviceMatch:
+                matchingServices.append(service)
 
         return matchingServices
 
@@ -239,12 +247,9 @@ class NetworkServiceMatcher:
         * streamServiceList* A list containing tuple objects ([stream],[service])
         that associates a set of streams with a chain of network services.
         '''
-        # Check client preferences mismatch
-        # If client preference does not match any of my consumer
-        # capabilities; ignore that preference.
-
+        
         # Check for service capability mismatch
-
+        
         if not capabilities:
             self.log.exception('NetworkServiceMatcher.Match: Capability parameter is None.')
             raise Exception, 'NetworkServiceMatcher.Match: Capability parameter is None.'
@@ -257,11 +262,13 @@ class NetworkServiceMatcher:
 
         for stream in streams:
 
-            # Find network services that have matching in capabilities.
+            # Find network services that have matching consumer capabilities compared to stream
+            # producer capabilities.
             matchingServices = self.__MatchInCapabilities(stream, services)
 
-            # From all network services that have matching in capabilities,
-            # find those that also have matching out capabilities
+            # From all network services that have matching consumer capabilities,
+            # find those that also have matching producer capabilities compared to node
+            # consumer capabilities.
             completeMatches = self.__MatchOutCapabilities(matchingServices, capabilities)
 
             # For now, use the first network service that has a complete match.
@@ -283,9 +290,6 @@ if __name__ == "__main__":
         def __init__(self):
             self.uri = "fakeUri"
             
-        def ToString(self):
-            return "fake service"
-
     class FakeCapability:
         def __init__(self):
             pass

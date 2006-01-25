@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.91 2006-01-25 07:46:23 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.92 2006-01-25 23:59:05 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.91 2006-01-25 07:46:23 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.92 2006-01-25 23:59:05 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -401,34 +401,15 @@ class AGServicePackageDescription:
         return self.resourceNeeded
 
 class AGNetworkServiceDescription(ObjectDescription):
-    def __init__(self, name, description, uri, mimeType, extension,
-                 inCapabilities, outCapabilities, version, visible):
+    def __init__(self, name, description, uri,
+                 capabilities, version):
         ObjectDescription.__init__(self, name)
         self.name = name
         self.description = description
         self.uri = uri
-        self.mimeType = mimeType
-        self.extension = extension
         self.version = version
-        self.visible = visible
-        
-        self.inCapabilities = inCapabilities
-        self.outCapabilities = outCapabilities
-    
-    def ToString(self):
-        s = 'Name: %s, \nDescription %s, \nVersion %s, \nMimetype %s, \nExtension %s' %(self.name, self.description, self.version, self.mimeType, self.extension)
-
-        s = s + '\nIn Capabilities'
-        for cap in self.inCapabilities:
-            s = s + cap + '\n'
-
-        if self.outCapabilities:
-            s = s+ '\nOut Capabilities'
-            for cap in self.outCapabilities:
-                s = s + cap + '\n'
-
-        return s
-       
+        self.capabilities = capabilities
+               
 class AppParticipantDescription:
     def __init__(self, appId='', clientProfile=None, status=''):
         self.appId = appId
