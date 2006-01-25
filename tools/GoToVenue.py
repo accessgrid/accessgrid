@@ -18,7 +18,7 @@ specified on the command line.
 This program assumes the file is a ConfigParser compatible file with
 the following format:
 
-files should be named with the .vv2d suffix, such as: <venueid>.vv2d,
+files should be named with the .vv3d suffix, such as: <venueid>.vv3d,
 and should contain:
 
 [description]
