@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.54 2006-01-24 20:51:05 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.55 2006-01-25 00:34:17 eolson Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.54 2006-01-24 20:51:05 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.55 2006-01-25 00:34:17 eolson Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -1153,6 +1153,7 @@ class VenueClientController:
         namedVars['appUrl'] = objDesc.uri
         namedVars['localFilePath'] = localFilePath
         namedVars['venueUrl'] = self.__venueClient.GetVenue()
+        namedVars['connectionId'] = self.__venueClient.GetConnectionId()
         
         # We're doing some icky munging to make our lives easier
         # We're only doing this for a single occurance of a windows
