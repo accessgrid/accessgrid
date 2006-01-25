@@ -33,7 +33,7 @@ Here is a linux example of how to setup and run from a fresh cvs
 checkout.  There is very little difference on windows.
 
 To get the code, we'll checkout the files from cvs.  Instructions are here:
-http://www-unix.mcs.anl.gov/fl/research/accessgrid/software/cvs/index.html
+http://www.mcs.anl.gov/fl/research/accessgrid/software/cvs.html
 If you have already checked out a copy of the code, you can use that instead.
   > cvs co AccessGrid
 
@@ -56,7 +56,7 @@ created:
 Now you should be able to run the VenueClient (personalNode mode shown).
   > python VenueClient.py --personalNode
 
-. Note that to use node services (VideoConsumerService, AudioSrevice etc.), you need to install
+. Note that to use node services (VideoConsumerService, AudioService etc.), you need to install
 ones from a released distribution or build their dependencies (such as vic and rat) and package
 them (packaging/makeServicePackages).
 
