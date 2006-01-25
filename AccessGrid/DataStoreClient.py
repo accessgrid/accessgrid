@@ -2,13 +2,13 @@
 # Name:        DataStoreClient.py
 # Purpose:     
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.26 2005-05-31 22:25:55 lefvert Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.27 2006-01-25 22:20:19 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.26 2005-05-31 22:25:55 lefvert Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.27 2006-01-25 22:20:19 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -29,7 +29,7 @@ log = Log.GetLogger(Log.DataStoreClient)
 class FileNotFound(Exception):
     pass
 
-def GetVenueDataStore(venueURL):
+def GetVenueDataStore(venueURL, connectionId):
     """
     Return the default venue datastore for the given venue URL.
     """
@@ -51,7 +51,7 @@ def GetVenueDataStore(venueURL):
     upload = ds[0]
     store = ds[1]
 
-    dsc = DataStoreClient(upload, venueURL)
+    dsc = DataStoreClient(upload, venueURL, connectionId)
 
     return dsc
 
@@ -225,10 +225,11 @@ class DataStoreClient:
     file listing methods.
     """
 
-    def __init__(self, uploadURL, venueUrl):
+    def __init__(self, uploadURL, venueUrl, connectionId=None):
         self.venueUrl = venueUrl
         self.uploadURL = uploadURL
         self.venueProxy = VenueIW(venueUrl) #Client.SecureHandle(venueUrl).GetProxy()
+        self.connectionId = connectionId
         self.LoadData()
 
     def LoadData(self):
@@ -291,7 +292,9 @@ class DataStoreClient:
             data = self.dataIndex[filename]
             url = data.uri
             my_identity = str(Application.instance().GetDefaultSubject())
-            DataStore.HTTPDownloadFile(my_identity, url, localFile, data.size, data.checksum)
+            user=str(url.split('/')[-2])
+            passw=str(self.connectionId)
+            DataStore.DownloadFile(my_identity, url, localFile, data.size, data.checksum, user, passw)
         else:
             raise FileNotFound
 
@@ -303,7 +306,9 @@ class DataStoreClient:
         try:
             #log.debug("Upload %s to %s", localFile, self.uploadURL)
             my_identity = str(Application.instance().GetDefaultSubject())
-            DataStore.HTTPUploadFiles(my_identity, self.uploadURL, [localFile], None)
+            user=str(self.uploadURL.split('/')[-1])
+            passw=str(self.connectionId)
+            DataStore.UploadFiles(my_identity, self.uploadURL, [localFile], user, passw)
         except DataStore.UploadFailed, e:
             #rc, errlist = e.args[0]
             #for err in errlist:
@@ -563,6 +568,7 @@ class RemoteFileObj:
 
 
 if __name__ == "__main__":
+    Application.instance().Initialize("DataStoreClient")
 
     def testData(vurl):
 
