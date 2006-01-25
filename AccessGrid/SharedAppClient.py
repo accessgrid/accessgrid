@@ -1,7 +1,6 @@
 import os
 
 from AccessGrid import Log
-#from AccessGrid.EventClient import EventClient
 from AccessGrid.Events import Event
 from AccessGrid.VenueEventClient import VenueEventClient
 from AccessGrid.ClientProfile import ClientProfile
@@ -181,7 +180,6 @@ class SharedAppClient:
 
         *data* Data associated with this event 
         '''
-        pass
 #        evt = Event(eventType, self.__channelId, data)
         self.eventClient.Send(eventType, data)
         
@@ -294,14 +292,10 @@ class SharedAppClient:
 
         try:
             state = self.__appProxy.GetState(self.__privateId)
-        except Client.MethodNotFound:
-            self.log.exception("SharedAppClient.GetApplicationState: Failed to get application state")
-            raise Exception, "The server you are connecting to is running old software. This method is not implemented in that version." 
+            return state
         except:
-            self.log.exception("SharedAppClient.GetApplicationState: Failed to get state")
-            raise Exception, "Failed to get application state" 
-
-        return state
+            self.log.exception("SharedAppClient.GetApplicationState: Failed to get state.")
+            raise
 
     def GetApplicationID(self):
         '''
