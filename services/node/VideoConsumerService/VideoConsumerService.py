@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.5 2006-01-19 20:17:17 lefvert Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.6 2006-01-25 09:05:23 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -127,6 +127,9 @@ class VideoConsumerService( AGService ):
 
             # This is a consumer, so disable device selection in vic
             options.append('-XrecvOnly=1')
+            
+            # Set drop time to something reasonable
+            options.append('-XsiteDropTime=5')
                     
             # Add address/port options (these must occur last; don't
             # add options beyond here)

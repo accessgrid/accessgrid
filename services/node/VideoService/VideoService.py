@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.10 2006-01-19 20:17:36 lefvert Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.11 2006-01-25 09:04:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -328,6 +328,9 @@ class VideoService( AGService ):
                 options.append( "-K" )
                 options.append( self.streamDescription.encryptionKey )
                 
+            # Set drop time to something reasonable
+            options.append('-XsiteDropTime=5')
+                    
             # Check whether the network location has a "type" attribute
             # Note: this condition is only to maintain compatibility between
             # older venue servers creating network locations without this attribute
