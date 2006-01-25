@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.66 2006-01-16 23:12:14 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.67 2006-01-25 22:18:49 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.66 2006-01-16 23:12:14 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.67 2006-01-25 22:18:49 turam Exp $"
 
 import os
 import socket
@@ -546,6 +546,25 @@ class SystemConfig(Config.SystemConfig):
                                           "Environment",
                                           win32con.SMTO_NORMAL, 1000)
         return ret
+
+    def SetProcessorAffinity(self):
+        try:
+            import win32api, win32process
+
+            # get number of processors
+            systemInfo = win32api.GetSystemInfo()
+            numprocs = systemInfo[5]
+
+            # if multiple procs, set processor affinity to the first
+            # this sets proc affinity for children also, so vic will get this
+            # (vic is ill-behaved on multiproc machines)
+            if numprocs > 1:
+                log.info("Found %d processors; setting affinity",numprocs)
+                cp = win32api.GetCurrentProcess()
+                win32process.SetProcessAffinityMask(cp, 1)
+
+        except Exception,e:
+            log.exception("Exception setting processor affinity")
 
 class MimeConfig(Config.MimeConfig):
     """
