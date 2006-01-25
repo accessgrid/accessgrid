@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.38 2006-01-24 23:59:16 eolson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.39 2006-01-25 22:53:25 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -50,7 +50,7 @@ from AccessGrid.Toolkit import WXGUIApplication
 #from AccessGrid import DataStore
 from AccessGrid.SharedAppClient import SharedAppClient
 from AccessGrid.DataStoreClient import GetVenueDataStore
-from AccessGrid.hosting import Client
+from AccessGrid.interfaces.Venue_client import VenueIW
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.UIUtilities import MessageDialog
@@ -587,7 +587,6 @@ class SharedPresentationFrame(wxFrame):
         """
         This method is used to set the "master" checkbox
         """
-        self.log.warn("MASTER CHECKBOX")
         self.masterCheckBox.SetValue(flag)
 
         self.slideNumText.SetEditable(flag)
@@ -739,7 +738,7 @@ class SharedPresentation:
     appDescription = "A shared presentation is a set of slides that someone presents to share an idea, plan, or activity with a group."
     appMimetype = "application/x-ag-shared-presentation"
     
-    def __init__(self, url, venueUrl=None, appName = 'SharedPresentation'):
+    def __init__(self, url, venueUrl=None, appName = 'SharedPresentation', connectionId=None):
         """
         This is the contructor for the Shared Presentation.
         """
@@ -754,6 +753,7 @@ class SharedPresentation:
         # Initialize state in the shared presentation
         self.url = url
         self.venueUrl = venueUrl
+        self.connectionId = connectionId
        
         self.eventQueue = Queue.Queue(5)
         self.running = 0
@@ -960,7 +960,7 @@ class SharedPresentation:
             if path[:5] != "http:":
                 try:
                     # Default to loading from venue now.
-                    dsc = GetVenueDataStore(self.venueUrl)
+                    dsc = GetVenueDataStore(self.venueUrl, self.connectionId)
                     fileData = dsc.GetFileData(path)
                     path = fileData.uri
                 except:
@@ -1200,19 +1200,20 @@ class SharedPresentation:
 
         slidesUrl = data[1]
         
-        # If the slides URL begins with https, retrieve the slides
+        # If the slides URL begins with ftps, retrieve the slides
         # from the venue data store
        
-        if slidesUrl.startswith("https"):
+        if slidesUrl.startswith("ftps"):
             tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation.ppt")
             # Make sure filename is not currently open
             if tmpFile == self.viewer.openFile:
                 tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation2.ppt")
            
             try:
-                ds = GetVenueDataStore(self.venueUrl)
+                ds = GetVenueDataStore(self.venueUrl, self.connectionId)
+                # Since we assume ftps means a datastore url, we ignore much
+                # of it. We could verify the file url matches the datastore.
                 ds.Download(slidesUrl, tmpFile)
-                #DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
                 self.viewer.LoadPresentation(tmpFile)
             except:
                 self.log.exception("Can not load presentation %s"%slidesUrl)
@@ -1227,7 +1228,7 @@ class SharedPresentation:
                 wxCallAfter(self.controller.ShowMessage,
                             "Can not load presentation %s." %slidesUrl, "Notification")
               
-        if slidesUrl[:6] == "https:":
+        if slidesUrl[:6] == "ftps:":
             # Remove datastore prefix on local url in UI since master checks
             #  if file is in venue and sends full datastore url if it is.
             short_filename = self.stripDatastorePrefix(slidesUrl)
@@ -1241,12 +1242,12 @@ class SharedPresentation:
         self.stepNum = 0
         
     def stripDatastorePrefix(self, url):
-        vproxy = Client.SecureHandle(self.venueUrl).GetProxy()
+        vproxy = VenueIW(self.venueUrl)
         ds = vproxy.GetDataStoreInformation()
         ds_prefix = str(ds[0])
         url_beginning = url[:len(ds_prefix)]
         # If it starts with the prefix ds[1], return just the ending.
-        if ds_prefix == url_beginning and ds_prefix[:6] == "https:":
+        if ds_prefix == url_beginning and ds_prefix[:6] == "ftps:":
             # Get url without datastore ds_prefix, +1 is for extra "/" 
             short_url = url[len(ds_prefix)+1:]
             #print "url stripped to:", short_url
@@ -1458,18 +1459,20 @@ class SharedPresentation:
         """
         self.log.debug("Method LocalLoad called; slidesUrl=(%s)", slidesUrl)
 
-        # If the slides URL begins with https, retrieve the slides
-        # from the venue data store
-        if slidesUrl.startswith("https"):
+        # If the slides URL begins with ftps, retrieve the slides
+        # from the venue data store.
+        if slidesUrl.startswith("ftps"):
             tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation.ppt")
             # If current filename is in use, use slightly different name.
             if tmpFile == self.viewer.openFile:
                 tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation2.ppt")
            
             try:
-                ds = GetVenueDataStore(self.venueUrl)
-                ds.Download(slidesUrl, tmpFile)
-                #DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
+                ds = GetVenueDataStore(self.venueUrl, self.connectionId)
+                # Since we assume ftps means a datastore url, we ignore much
+                # of it. We could verify the file url matches the datastore.
+                filename = slidesUrl.split('/')[-1]
+                ds.Download(filename, tmpFile)
                 self.viewer.LoadPresentation(tmpFile)
                
             except:
@@ -1525,7 +1528,7 @@ class SharedPresentation:
         # Set the slide URL in the UI
         if self.presentation and len(self.presentation) != 0:
             self.log.debug("Got presentation: %s", self.presentation)
-            if self.presentation[:6] == "https:":
+            if self.presentation[:6] == "ftps:":
                 # Remove datastore prefix on local url in UI since master checks
                 #  if file is in venue and sends full datastore url if it is.
                 short_presentation = self.stripDatastorePrefix(self.presentation)
@@ -1555,17 +1558,19 @@ class SharedPresentation:
             # Retrieve the master
             self.masterId = self.sharedAppClient.GetData(SharedPresKey.MASTER)
 
-            # If the slides URL begins with https, retrieve the slides
+            # If the slides URL begins with ftps, retrieve the slides
             # from the venue data store
-            if self.presentation.startswith("https"):
+            if self.presentation.startswith("ftps"):
                 tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation.ppt")
                 # If tmpFile name is in use, use a different name.
                 if tmpFile == self.viewer.openFile:
                     tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation2.ppt")
                 try:
-                    ds = GetVenueDataStore(self.venueUrl)
-                    ds.UploadFile(self.presentation, tmpFile)
-                    #DataStore.GSIHTTPDownloadFile(self.presentation, tmpFile, None, None )
+                    ds = GetVenueDataStore(self.venueUrl, self.connectionId)
+                    # Since we assume ftps means a datastore url, we ignore much
+                    # of it. We could verify the file url matches the datastore.
+                    filename = self.presentation.split('/')[-1]
+                    ds.Download(filename, tmpFile)
                     self.viewer.LoadPresentation(tmpFile)
                 except:
                     errorFlag = 1
@@ -1603,12 +1608,12 @@ class SharedPresentation:
         wxCallAfter(self.controller.SetMaster, false)
 
     def LocalUpload(self, filenames):
-        dsc = GetVenueDataStore(self.venueUrl)
+        dsc = GetVenueDataStore(self.venueUrl, self.connectionId)
         for filename in filenames:
             dsc.Upload(filename)
             
     def QueryVenueFiles(self, file_query="*"):
-        dsc = GetVenueDataStore(self.venueUrl)
+        dsc = GetVenueDataStore(self.venueUrl, self.connectionId)
         if type(file_query) == type(""):
             filenames = dsc.QueryMatchingFiles(file_query)
         elif type(file_query) == type([]):
@@ -1637,6 +1642,7 @@ def Usage():
     """
     print "%s:" % sys.argv[0]
     print "    -a|--applicationURL : <url to application in venue>"
+    print "    -c|--connectionId : <VenueClient's connectionId>"
     print "    -d|--data : <url to data in venue>"
     print "    -h|--help : print usage"
     print "    -i|--information : <print information about this application>"
@@ -1656,6 +1662,7 @@ if __name__ == "__main__":
     venueURL = None
     appURL = None
     venueDataUrl = None
+    connectionid = None
     name = "SharedPresentation"
     debug = 0
 
@@ -1671,9 +1678,9 @@ if __name__ == "__main__":
     # Here we parse command line options
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "d:v:a:l:ih",
+        opts, args = getopt.getopt(sys.argv[1:], "d:v:a:l:c:ih",
                                    ["venueURL=", "applicationURL=",
-                                    "information=", 
+                                    "information=", "connectionId=",
                                     "data=", "debug", "help"])
     except getopt.GetoptError:
         Usage()
@@ -1684,6 +1691,8 @@ if __name__ == "__main__":
             venueURL = a
         elif o in ("-a", "--applicationURL"):
             appURL = a
+        elif o in ("-c", "--connectionId"):
+            connectionId = a
         elif o in ("-i", "--information"):
             print "App Name: %s" % SharedPresentation.appName
             print "App Description: %s" % SharedPresentation.appDescription
@@ -1715,7 +1724,7 @@ if __name__ == "__main__":
 
    
     # This is all that really matters!
-    presentation = SharedPresentation(appURL, venueURL, name)
+    presentation = SharedPresentation(appURL, venueURL, name, connectionId=connectionId)
 
     if venueDataUrl:
         presentation.OpenVenueData(venueDataUrl)
