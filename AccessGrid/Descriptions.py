@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.90 2006-01-23 06:55:59 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.91 2006-01-25 07:46:23 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.90 2006-01-23 06:55:59 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.91 2006-01-25 07:46:23 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -364,7 +364,7 @@ class StreamDescription( ObjectDescription ):
        if self.encryptionFlag:
            string += "encryptionKey : %s\n" % self.encryptionKey
        string += "location : %s\n" % self.location
-       string += "capability : %s\n" % self.capability
+       string += "capability : %s\n" % self.capability[0].type
 
        return string
    
