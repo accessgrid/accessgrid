@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.93 2006-01-19 04:34:34 willing Exp $
+# RCS-ID:      $Id: setup.py,v 1.94 2006-01-25 09:22:24 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -69,7 +69,7 @@ linux_data = [('etc/AccessGrid/Config',
                 ]
                ),
               ('etc/AccessGrid/Config/nodeConfig',
-               [r"packaging/config/defaultLinux",
+               [r"packaging/config/default",
                 ]
                ),
               ('etc/AccessGrid/Config/CAcertificates',
@@ -170,7 +170,7 @@ mac_scripts = [ r"bin/VenueServer.py",
 
 mac_data =    [ 
               ('Config/nodeConfig',
-               [r"packaging/config/defaultMac",
+               [r"packaging/config/default",
                 ]
                ),
               ('Config/CAcertificates',
