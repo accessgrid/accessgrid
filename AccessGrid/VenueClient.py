@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.273 2006-01-24 22:20:10 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.274 2006-01-25 07:57:11 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.273 2006-01-24 22:20:10 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.274 2006-01-25 07:57:11 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -107,6 +107,7 @@ class VenueClient:
         self.isPersonalNode = pnode
         self.nodeService = None
         self.builtInNodeService = None
+        self.builtInNodeServiceUri = ""
               
         if app is not None:
             self.app = app
@@ -762,7 +763,7 @@ class VenueClient:
         # Retreive stream descriptions
         if len(self.capabilities) > 0:
             self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.profile.connectionId,
-                                                                          self.capabilities)                                                                         
+                                                                          self.capabilities) 
         self.venueUri = URL
 
         log.debug("Setting isInVenue flag.")
