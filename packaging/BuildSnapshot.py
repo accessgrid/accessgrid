@@ -131,8 +131,7 @@ if not options.nocheckout:
 # Get the version via popen
 #
 try:
-    cmd = "%s %s" % (sys.executable, os.path.join(BuildDir, "AccessGrid",
-                                                  "Version.py"))
+    cmd = "%s %s" % (sys.executable, os.path.join(BuildDir, "AccessGrid", "Version.py"))
     po = os.popen(cmd)
 except IOError:
     print "Error getting AGTk Version."
@@ -211,7 +210,8 @@ elif sys.platform == 'darwin':
     os.chdir(td)
 
 # Build the UCL common library
-cmd = "%s %s" % (sys.executable, "BuildCommon.py")
+cmd = "%s %s %s %s" % (sys.executable, "BuildCommon.py", SourceDir, DestDir)
+print cmd
 os.system(cmd)
 
 # Build the other python modules
