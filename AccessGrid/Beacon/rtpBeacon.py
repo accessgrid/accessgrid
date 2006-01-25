@@ -7,7 +7,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeacon.py,v 1.5 2006-01-19 19:30:29 turam Exp $
+# RCS-ID:      $Id: rtpBeacon.py,v 1.6 2006-01-25 22:18:13 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ RTP (a plain text string as it were). Then the normal RTP statistics
 communicated via RTCP are used to track the performance of the group.
 """
 
-__revision__ = "$Id: rtpBeacon.py,v 1.5 2006-01-19 19:30:29 turam Exp $"
+__revision__ = "$Id: rtpBeacon.py,v 1.6 2006-01-25 22:18:13 turam Exp $"
 
 import os, sys, signal, optparse, time, random, threading, copy
 import logging, logging.handlers
@@ -45,6 +45,9 @@ class Beacon:
        
     def Start(self):
         ''' Start the beacon '''
+        self.__sdes = {} # key ssrc, value sdes
+        self.__sources = [] # ordered list of source numbers
+
         self.__rtpbeacon = RTPBeacon(config=self.__config)
         self.__rtpbeacon.Start()
         self.__rtpbeacon.sensor.handlerDict[3] = self.ProcessSDES
@@ -107,10 +110,10 @@ class Beacon:
         self.__RemoveSource(session,event.ssrc)
     
     def __RemoveSource(self,session,ssrc):
-        if event.ssrc in self.__sources:
-            self.__sources.remove(event.ssrc)
-        if event.ssrc in self.__sdes:
-            self.__sdes.remove(event.ssrc)
+        if ssrc in self.__sources:
+            self.__sources.remove(ssrc)
+        if ssrc in self.__sdes.keys():
+            del self.__sdes[ssrc]
             
                 
 if __name__ == "__main__":
