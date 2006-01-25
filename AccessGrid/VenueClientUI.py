@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.150 2006-01-24 21:55:32 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.151 2006-01-25 09:09:44 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.150 2006-01-24 21:55:32 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.151 2006-01-25 09:09:44 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2794,17 +2794,9 @@ class NavigationPanel(wxPanel):
         self.app = app
         self.parent = parent
 
-        self.displayMenu = wxMenu()
-        self.displayMenu.Append(self.ID_EXITS,"Show Exits",
-                                "Show exits to this venue")
-        self.displayMenu.Append(self.ID_MY_VENUES,"Show My Venues",
-                                "Show all venues you have saved in the My Venues menu")
-        self.displayMenu.Append(self.ID_ALL,"Show All Venues",
-                                "Show all venues on this server")
         
         EVT_LEFT_DCLICK(self.tree, self.OnDoubleClick)
         EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
-        EVT_RIGHT_DOWN(self.tree, self.OnRightDown)
         EVT_MENU(self, self.ID_EXITS, self.OnExitsMenu)
         EVT_MENU(self, self.ID_MY_VENUES, self.OnMyVenuesMenu)
         EVT_MENU(self, self.ID_ALL, self.OnAllMenu)
@@ -2826,13 +2818,6 @@ class NavigationPanel(wxPanel):
     def OnAllMenu(self, event):
         self.UpdateView(Preferences.ALL_VENUES)
 
-    def OnRightDown(self, event):
-        self.x = event.GetX()
-        self.y = event.GetY()
-               
-        self.PopupMenu(self.displayMenu,
-                       wxPoint(self.x, self.y))
-        
   
     def OnDoubleClick(self, event):
         '''
