@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.274 2006-01-25 07:57:11 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.275 2006-01-25 20:04:43 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.274 2006-01-25 07:57:11 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.275 2006-01-25 20:04:43 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -217,10 +217,12 @@ class VenueClient:
                 bridgeList = self.registryClient.LookupBridge(10)
                 for b in bridgeList:
                     self.bridges[b.guid] = b
+                    
             except:
                 log.exception("__LoadBridges: Can not connect to bridge registry %s ", self.registryUrl)
         
         prefs = self.app.GetPreferences()
+        prefs.SetBridges(self.bridges)
 
         if self.bridges:
             # Set current bridge
