@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.275 2006-01-25 20:04:43 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.276 2006-01-25 22:21:38 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.275 2006-01-25 20:04:43 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.276 2006-01-25 22:21:38 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -239,10 +239,6 @@ class VenueClient:
                         self.currentBridge = b
                         break
                 
-    def __McastStatusCB(self,obj):
-        for s in self.observers:
-            s.UpdateMulticastStatus(obj.GetStatus())
-
     ##########################################################################
     #
     # Private Methods
@@ -864,8 +860,6 @@ class VenueClient:
         ''' Create and start the beacon client listening to beaconLocation '''
 
         try:
-            self.beacon = None
-            
             # Get beacon location
             for s in self.streamDescList:
                 for cap in s.capability:
@@ -874,12 +868,13 @@ class VenueClient:
 
             # Create beacon
             if self.beaconLocation:
-                self.beacon = Beacon()
+                if self.beacon == None:
+                    self.beacon = Beacon()
                 self.beacon.SetConfigData('user', self.profile.name)
                 self.beacon.SetConfigData('groupAddress',
-                                          str(self.beaconLocation.host))#'233.4.200.19')##
+                                          str(self.beaconLocation.host))
                 self.beacon.SetConfigData('groupPort',
-                                          str(self.beaconLocation.port)) #'10002')##
+                                          str(self.beaconLocation.port))
                 log.info("VenueClient.StartBeacon: Address %s/%s"
                          %(self.beaconLocation.host, self.beaconLocation.port))
                 self.beacon.Start()
@@ -1131,12 +1126,7 @@ class VenueClient:
             # If no unicast network location was found, connect to the bridge to retreive one.
             if self.currentBridge:
 
-                #if str(self.currentBridge.serverType) == QUICKBRIDGE_TYPE:
                 qbc = QuickBridgeClient(self.currentBridge.host, self.currentBridge.port)
-                #elif self.currentBridge.type == UMTP_TYPE:
-                #    qbc = UmtpBridgeClient(self.currentBridge.host, self.currentBridge.port)
-                #else:
-                #    log.warn("VenueClient.UpdateStream: current bridge type invalid %s"%(self.currentBridge.serverType))
 
                 try:
                     stream.location = qbc.JoinBridge(stream.networkLocations[0])
