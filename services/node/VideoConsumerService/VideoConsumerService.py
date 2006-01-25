@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.6 2006-01-25 09:05:23 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.7 2006-01-25 09:12:10 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -40,6 +40,12 @@ class VideoConsumerService( AGService ):
 
         # Set configuration parameters
         pass
+
+        if IsWindows():
+            try:
+                SystemConfig.instance().SetProcessorAffinity()
+            except:
+                self.log.exception("Exception setting processor affinity")
 
     def __SetRTPDefaults(self, profile):
         """
