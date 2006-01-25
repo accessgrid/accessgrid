@@ -4,6 +4,16 @@
         elementFormDefault="qualified" 
 	attributeFormDefault="unqualified">
    
+   <xs:complexType name="AGNetworkServiceDescription">
+      <xs:sequence>
+        <xs:element name="name" type="xs:string"/>
+	<xs:element name="description" type="xs:string"/>
+        <xs:element name="uri" type="xs:string"/>
+     	<xs:element name="version" type="xs:string"/>
+	<xs:element name="capabilities" minOccurs="0" maxOccurs="unbounded" type = "tns:Capability"/>
+      </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="NetworkLocation">
       <xs:sequence>
         <xs:element name="id" type="xs:string"/>

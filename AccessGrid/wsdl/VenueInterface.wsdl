@@ -37,6 +37,31 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="RegisterNetworkServiceRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="netDescription" type="agtk:AGNetworkServiceDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="RegisterNetworkServiceResponse">
+            <xsd:complexType>
+            </xsd:complexType>       
+          </xsd:element>
+
+
+          <xsd:element name="UnRegisterNetworkServiceRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="netDescription" type="agtk:AGNetworkServiceDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="UnRegisterNetworkServiceResponse">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
           <xsd:element name="GetStateRequest">
             <xsd:complexType>
             </xsd:complexType>
@@ -405,6 +430,18 @@
     <message name="ExitRequest">
 	<part name="parameters" element="agtkv:ExitRequest"/>
     </message>
+    <message name="RegisterNetworkServiceRequest">
+	<part name="parameters" element="agtkv:RegisterNetworkServiceRequest"/>
+    </message>
+    <message name="RegisterNetworkServiceResponse">
+	<part name="parameters" element="agtkv:RegisterNetworkServiceResponse"/>
+    </message>
+    <message name="UnRegisterNetworkServiceRequest">
+	<part name="parameters" element="agtkv:UnRegisterNetworkServiceRequest"/>
+    </message>
+    <message name="UnRegisterNetworkServiceResponse">
+	<part name="parameters" element="agtkv:UnRegisterNetworkServiceResponse"/>
+    </message>
     <message name="GetStateRequest">
 	<part name="parameters" element="agtkv:GetStateRequest"/>
     </message>
@@ -554,6 +591,14 @@
 	<operation name="Enter">
 	    <input message="agtkv:EnterRequest"/>
 	    <output message="agtkv:EnterResponse"/>
+	</operation>
+	<operation name="RegisterNetworkService">
+	    <input message="agtkv:RegisterNetworkServiceRequest"/>
+	    <output message="agtkv:RegisterNetworkServiceResponse"/>
+	</operation>
+	<operation name="UnRegisterNetworkService">
+	    <input message="agtkv:UnRegisterNetworkServiceRequest"/>
+	    <output message="agtkv:UnRegisterNetworkServiceResponse"/>
 	</operation>
 	<operation name="Exit">
 	    <input message="agtkv:ExitRequest"/>
