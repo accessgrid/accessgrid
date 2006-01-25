@@ -195,8 +195,8 @@ class Preferences:
             log.exception("Preferences.LoadPreferences: open file io error")
 
         # Load bridges separately
-        #for b in self.bridgeCache.GetBridges():
-        #    self.__bridges[b.guid] = b
+        for b in self.bridgeCache.GetBridges():
+            self.__bridges[b.guid] = b
     
     def ResetPreferences(self):
         '''
