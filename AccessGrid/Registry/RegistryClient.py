@@ -7,14 +7,20 @@ import sys
 
 from AccessGrid.Platform import IsWindows, IsOSX, IsLinux
 from AccessGrid.Descriptions import BridgeDescription
+from AccessGrid.BridgeCache import BridgeCache
 
 class RegistryClient:
     def __init__(self, url):
         self.url = url
         self.serverProxy = None
-        self.registryPeers = self._readPeerList(url=self.url)
-        #self.sortedRegistryPeers = self._getSortedRegistryPeers()
-
+        self.registryPeers = None
+        self.bridges = None
+        self.bridgeCache = BridgeCache()
+       
+    def _connectToRegistry(self):
+        if not self.registryPeers:
+            self.registryPeers = self._readPeerList(url=self.url)
+         
         # Connect to the first reachable register according to ping
         foundServer = 0
 
@@ -33,6 +39,7 @@ class RegistryClient:
             print '============= no registry peers reachable'
    
     def RegisterBridge(self, registeredServerInfo):
+        self._connectToRegistry()
         return self.serverProxy.RegisterBridge(registeredServerInfo)
 
     def PingHost(self, host):
@@ -41,37 +48,46 @@ class RegistryClient:
             return pingVal
         except:
             return -1
-                 
-    def LookupBridge(self, maxToReturn=10, sort = False):
+                    
+    def LookupBridge(self, maxToReturn=10):
         '''
-        Query registry for a list of bridges
+        Query registry for a list of bridges. If user cache exists it
+        is used instead of a network query.
 
         @keyword maxToReturn: number of bridges to return, default 10
         @type maxToReturn: int
-        @keyword sort: if True, sort based on ping values.
-        @type sort: boolean
         @return: command output
         @rtype: string
         '''
-
-        bridges = []
-        self.bridges = []
-         
-        bridges = self.serverProxy.LookupBridge()
-       
-        # Create real bridge descriptions
-        for b in bridges:
-            desc = BridgeDescription(b["guid"], b["name"], b["host"],
-                                     b["port"], b["serverType"],
-                                     b["description"])
-            self.bridges.append(desc)
-                
-        if sort:
-            return self._getSortedBridges(maxToReturn)
+        if self.bridges:
+            # We have bridges, return
+            return self.bridges[0:maxToReturn]
         else:
-            return self.bridges
+            # Get bridges from cache on local file
+            self.bridges = self.bridgeCache.GetBridges()
+                    
+        if not self.bridges:
+            # If the cache does not exist, query registry
+            self._connectToRegistry()
+            bridges = self.serverProxy.LookupBridge()
+            self.bridges = []
+                       
+            # Create real bridge descriptions
+            for b in bridges:
+                desc = BridgeDescription(b["guid"], b["name"], b["host"],
+                                         b["port"], b["serverType"],
+                                         b["description"])
+                self.bridges.append(desc)
 
-    def _getSortedBridges(self, maxToReturn):
+            # Sort the bridges
+            self._sortBridges(maxToReturn)
+                        
+            # Store bridges in cache
+            self.bridgeCache.StoreBridges(self.bridges)
+                       
+        return self.bridges
+            
+    def _sortBridges(self, maxToReturn):
         '''
         Sort a list of bridges based on ping values. Bridges
         that can not be reached will be ignored.
@@ -82,67 +98,18 @@ class RegistryClient:
         @rtype: [AccessGrid.Descriptions.BridgeDescription]
         '''
         bridgeDescriptions = []
-        pingValsDict = {}
-                      
+                         
         for desc in self.bridges[0:maxToReturn]:
             try:
                 pingVal = self._ping(desc.host)
-                pingValsDict[desc] = pingVal
-                #print desc.name, desc.host, pingVal
-              
+                desc.rank = pingVal
+                bridgeDescriptions.append(desc)
             except Exception,e:
                 #
                 # log exception
                 #
                 print 'exception:', e
-
-        # Sort bridges based on ping values
-        values = pingValsDict.values()          
-        values.sort()
-               
-        for val in values:
-            for key in pingValsDict.keys():
-                if val == pingValsDict[key]:
-                    bridgeDescriptions.append(key)
-                    del pingValsDict[key]
                     
-        return bridgeDescriptions
-
-               
-    def _getSortedRegistryPeers(self, maxToReturn=5):
-        # TODO, ping (and cache) and sort registries.
-        selection = self.registryPeers[:maxToReturn]
-        print len(selection)
-        sortedSelection = []
-        pingValsDict = {}
-        
-        for registry in selection:
-            #try:
-            print registry
-            pingVal = self._ping(registry.split(':')[0])
-            pingValsDict[registry] = pingVal
-                
-            #except:
-            #    # TODO, retry with other nodes on failure?
-            #    print '=========== can not reach registry'
-            #    #
-            #    # log exception
-            #    #
-            #    pass
-
-        # Sort registries based on ping values
-        values = pingValsDict.values()          
-        values.sort()
-               
-        for val in values:
-            for key in pingValsDict.keys():
-                if val == pingValsDict[key]:
-                    sortedSelection.append(key)
-                    del pingValsDict[key]
-
-        print len(sortedSelection)
-        return sortedSelection
-
     def _readPeerList(self,url):
         if url.startswith("file://"):
             filename = url[7:]
@@ -241,7 +208,7 @@ if __name__=="__main__":
     rc.RegisterBridge(info)
     
     # Lookup a bridge using the RegistryClient
-    bridgeDescList = rc.LookupBridge(sort=1)
+    bridgeDescList = rc.LookupBridge()
     for b in bridgeDescList:
-        print b.name, b.host, b.port, b.description
+        print 'name: '+b.name+'host '+b.host+"port: "+b.port
         
