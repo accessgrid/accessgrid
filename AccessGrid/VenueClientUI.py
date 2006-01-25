@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.151 2006-01-25 09:09:44 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.152 2006-01-25 22:19:32 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.151 2006-01-25 09:09:44 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.152 2006-01-25 22:19:32 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -221,7 +221,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         #self.SetDropTarget(DesktopDropTarget(self))
 
         # Build RSS reader
-        self.updateDuration = 3600
+        self.updateDuration = 1800
         rssUrlList = self._LoadFeeds()
         try:
             self.reader = RssReader(rssUrlList,self.updateDuration,[self],log=log)
