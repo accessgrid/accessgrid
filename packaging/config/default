@@ -1,0 +1,23 @@
+# AGTk 3.0 node configuration
+[node]
+servicemanagers = servicemanager0 
+
+[servicemanager0]
+url = http://localhost:11000/ServiceManager
+services = service0 service1 
+name = localhost:11000
+
+[service0]
+packageName = AudioService.zip
+serviceConfig = serviceconfig0
+
+[serviceconfig0]
+Silence Suppression = Off
+Output Gain = 50
+Force AC97 = False
+Talk = Off
+Input Gain = 50
+
+[service1]
+packageName = VideoConsumerService.zip
+
