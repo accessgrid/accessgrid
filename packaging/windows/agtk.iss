@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.109 2006-01-17 16:02:33 lefvert Exp $
+; RCS-ID: $Id: agtk.iss,v 1.110 2006-01-25 09:24:33 turam Exp $
 ;
 
 ; Set externally
@@ -203,20 +203,3 @@ Name: {app}\SharedApplications
 Name: {app}\Services
 Name: {app}\NodeServices
 
-[INI]
-Filename: {app}\config\nodeConfig\defaultWindows; Section: node; Key: servicemanagers; String: servicemanager0
-Filename: {app}\config\nodeConfig\defaultWindows; Section: service1; Key: packagename; String: VideoConsumerService.zip
-Filename: {app}\config\nodeConfig\defaultWindows; Section: service1; Key: resource; String: None
-Filename: {app}\config\nodeConfig\defaultWindows; Section: service1; Key: executable; String: {app}\bin\vic.exe
-Filename: {app}\config\nodeConfig\defaultWindows; Section: service1; Key: serviceconfig; String: serviceconfig1
-Filename: {app}\config\nodeConfig\defaultWindows; Section: service0; Key: packagename; String: AudioService.zip
-Filename: {app}\config\nodeConfig\defaultWindows; Section: service0; Key: resource; String: None
-Filename: {app}\config\nodeConfig\defaultWindows; Section: service0; Key: executable; String: {app}\bin\rat.exe
-Filename: {app}\config\nodeConfig\defaultWindows; Section: service0; Key: serviceconfig; String: serviceconfig0
-Filename: {app}\config\nodeConfig\defaultWindows; Section: servicemanager0; Key: url; String: https://localhost:11000/ServiceManager
-Filename: {app}\config\nodeConfig\defaultWindows; Section: servicemanager0; Key: services; String: service0 service1
-Filename: {app}\config\nodeConfig\defaultWindows; Section: servicemanager0; Key: name; String: localhost:11000
-Filename: {app}\config\nodeConfig\defaultWindows; Section: serviceconfig1; Key: ";key"; String: value
-Filename: {app}\config\nodeConfig\defaultWindows; Section: serviceconfig0; Key: ";key"; String: value
-
-Filename: {app}\config\AGNodeService.cfg; Section: Node Configuration; Key: defaultNodeConfiguration; String: defaultWindows
