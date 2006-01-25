@@ -1,7 +1,7 @@
 
 		    The Access Grid Toolkit (AGTk)
 			
-			       2004-08-25
+			       2006-01-25
 				
 	    http://www.mcs.anl.gov/fl/research/accessgrid
 	    
@@ -25,32 +25,27 @@ Users of the Access Grid seeking to collaborate can share audio, video
 and text with the basic toolkit. The experience is much like
 traditional videoconferencing except that it's multipoint, multistream
 video, with hands-free, echo-free, full-duplex audio. Additionally,
-the basic AGTk provides data sharing mechanisms for users to either
-put data into the Virtual Venue, or carry it around with them on their
-Workspace Dock. All of the audio, video, text, and file transfer are
-done via standards based GSI/OpenSSL communication.
+the basic AGTk provides data sharing mechanisms for users to store
+data in the Virtual Venue. 
 
 . For Developers
 
 Developers wishing to contribute to the Access Grid Project or the
 Access Grid Toolkit should get familiar with the source code and the
-tools (pyGlobus, GT2.X), and then decide what part of the AGTk to work
-on. Information on where to contribute to the development can be found
-at http://www.mcs.anl.gov/fl/research/accessgrid/software/developers/areas.html.
+tools, and then decide what part of the AGTk to work on. 
 
 . For Service Providers
 
 Individuals wishing to provide AGTk Services, should first host some
-Virtual Venues through a Virtual Venue Server. Information on how to
-run a Virtual Venue Server can be found in the INSTALL file.
+Virtual Venues through a Virtual Venue Server. 
 
 OBTAINING THE TOOLKIT
 
 Downloading the latest snapshot of the toolkit from
-http://www.mcs.anl.gov/fl/research/accessgrid/software/releases/index.html
+http://www.mcs.anl.gov/fl/research/accessgrid/software/download.html
 
 CVS Access is available, information can be found at
-http://www.mcs.anl.gov/fl/research/accessgrid/software/cvs/index.html
+http://www.mcs.anl.gov/fl/research/accessgrid/software/cvs.html
 
 INSTALLATION
 
@@ -58,14 +53,14 @@ Please see the INSTALL file for the appropriate platform and OS.
 
 BUG REPORTING
 
-Please reports bugs using the Bugzilla interface found at
+Please report bugs using the Bugzilla interface found at
 http://bugzilla.mcs.anl.gov/accessgrid.
 
 DOCUMENTATION
 
 In addition to the included documentation, more documentation can be
 found on the Futures Laboratory Access Grid Toolkit web pages
-(http://www.mcs.anl.gov/fl/research/accessgrid/documentation/index.html).
+http://www.mcs.anl.gov/fl/research/accessgrid/documentation/index.html.
 
 MAILING LISTS
 
@@ -102,6 +97,7 @@ Groups and Institutions
 
 - The pyGlobus CoG Project
       http://www-itg.lbl.gov/gtg/projects/pyGlobus/
+
 - The European Access Grid Project
       http://euroag.accessgrid.org/
 
