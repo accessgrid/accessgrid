@@ -171,9 +171,9 @@ class RegistryClient:
             
             # time out after 10 sec
             if IsOSX():
-                cmd = 'ping -o -t 10 %s'%(host)
+                cmd = 'ping -o -t 1 %s'%(host)
             else:
-                cmd = 'ping -c 1 -w 10 %s'%(host)
+                cmd = 'ping -c 1 -w 1 %s'%(host)
 
             ret = self._execCmd(cmd)
             
@@ -211,7 +211,6 @@ class RegistryClient:
             val = ret.split('=')[1]
             val = filter(lambda x: x.isdigit(), val)
 
-        self.file.close()
         return val
        
     def _execCmd(self, cmd):
@@ -223,8 +222,12 @@ class RegistryClient:
         @return: command output
         @rtype: string
         '''
-        self.file = os.popen(cmd, 'r')
-        ret = self.file.read()
+        ret = ''
+        try:
+            f = os.popen(cmd, 'r')
+            ret = f.read()
+        finally:
+            f.close()
         return ret
 
 
