@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.165 2006-01-23 17:44:26 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.166 2006-01-25 08:08:49 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.165 2006-01-23 17:44:26 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.166 2006-01-25 08:08:49 turam Exp $"
 
 # Standard imports
 import sys
@@ -48,6 +48,7 @@ from AccessGrid.Venue import VenueIW
 from AccessGrid import Toolkit
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig
 from AccessGrid.Platform import IsWindows, IsOSX
+from AccessGrid.GUID import GUID
 
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
 
@@ -1446,17 +1447,45 @@ class VenueParamFrame(wxDialog):
             svml = MulticastNetworkLocation(sap.GetVideoAddress(),
                                             int(sap.GetVideoPort()),
                                             int(sap.GetVideoTtl()))
-            staticVideoCap = Capability(Capability.PRODUCER, Capability.VIDEO)
+            strid = GUID()
+            staticVideoCap =  [ Capability( Capability.CONSUMER,
+                                          Capability.VIDEO,
+                                          "H261",
+                                          90000, strid)]
             streams.append(StreamDescription(venueName,
-                                                  svml, [staticVideoCap],
+                                                  svml, staticVideoCap,
                                                   0, None, 1))
             # Static Audio
             saml = MulticastNetworkLocation(sap.GetAudioAddress(),
                                             int(sap.GetAudioPort()),
                                             int(sap.GetAudioTtl()))
-            staticAudioCap = Capability(Capability.PRODUCER, Capability.AUDIO)
+            strid = GUID()
+            staticAudioCap =  [ Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                          "L16",16000,strid),
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                          "L16",8000,strid),
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                          "L8",16000, strid),
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                          "L8",8000, strid),
+                               Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                           "PCMU", 16000, strid),
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                          "PCMU",8000, strid),
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                          "GSM",16000, strid),
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                          "GSM",8000, strid)]
             streams.append(StreamDescription(venueName,
-                                                  saml, [staticAudioCap],
+                                                  saml, staticAudioCap,
                                                   0, None, 1))
 
         # Get Encryption
