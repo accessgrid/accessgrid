@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.209 2006-01-24 20:51:30 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.210 2006-01-25 08:08:03 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.209 2006-01-24 20:51:30 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.210 2006-01-25 08:08:03 turam Exp $"
 
 
 # Standard stuff
@@ -536,8 +536,6 @@ class VenueServer:
 
                         locationAttrs = string.split(cp.get(s, 'location'),
                                                      " ")
-                        capability = string.split(cp.get(s, 'capability'), ' ')
-
                         locationType = locationAttrs[0]
                         if locationType == MulticastNetworkLocation.TYPE:
                             (addr,port,ttl) = locationAttrs[1:]
@@ -547,9 +545,46 @@ class VenueServer:
                             (addr,port) = locationAttrs[1:]
                             loc = UnicastNetworkLocation(addr, int(port))
                         
-                        cap = Capability(capability[0], capability[1])
+                        # Build up capability list for audio/video stream types
+                        # Note:  This is temporary hard-coding; 
+                        capabilityType = cp.get(s, 'capability')
+                        capsList = []
+                        if capabilityType == 'audio':
+                            strid = GUID()
+                            capsList = [ Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                          "L16",16000,strid),
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                          "L16",8000,strid),
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                          "L8",16000, strid),
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                          "L8",8000, strid),
+                               Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                           "PCMU", 16000, strid),
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                          "PCMU",8000, strid),
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                          "GSM",16000, strid),
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
+                                          "GSM",8000, strid)]
+                        elif capabilityType == 'video':
+                            strid = GUID()
+                            capsList = [ Capability( Capability.CONSUMER,
+                                          Capability.VIDEO,
+                                          "H261",
+                                          90000, strid)]
+                        else:
+                            capsList = [ Capability(type=capabilityType)]
 
-                        sd = StreamDescription(name, loc, [cap], 
+                        sd = StreamDescription(name, loc, capsList, 
                                                encryptionFlag,
                                                encryptionKey, 1)
                         sl.append(sd)
@@ -715,10 +750,6 @@ class VenueServer:
         state that is lost (the longer the time between checkpoints, the more
         that can be lost).
         """
-
-        #
-        # Seconds from now is NOT working!
-        #
 
         # Don't checkpoint if we are already
         if not self.checkpointing:
