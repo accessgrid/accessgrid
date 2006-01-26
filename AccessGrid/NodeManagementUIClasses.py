@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.99 2006-01-26 05:43:12 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.100 2006-01-26 20:34:58 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.99 2006-01-26 05:43:12 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.100 2006-01-26 20:34:58 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -186,10 +186,21 @@ class StoreConfigDialog(wxDialog):
                           wxDEFAULT_DIALOG_STYLE)
 
         # Create a display name - config map
+        sysConfigs = []
+        userConfigs = []
         self.configs = {}
         for c in choices:
-            displayName = c.name+" ("+c.type+")"
+            displayName = str(c.name+" ("+c.type+")")
             self.configs[displayName] = c
+            
+            if c.type == 'system':
+                sysConfigs.append(displayName)
+            elif c.type == 'user':
+                userConfigs.append(displayName)
+                
+        sysConfigs.sort()
+        userConfigs.sort()
+        displayNames = sysConfigs + userConfigs
             
         # Set up sizers
         gridSizer = wxFlexGridSizer(5, 1, 5, 5)
@@ -203,7 +214,7 @@ class StoreConfigDialog(wxDialog):
 
         # Create config list label and listctrl
         configLabel = wxStaticText(self,-1,"Configuration name")
-        self.configList = wxListBox(self,wxNewId(), style=wxLB_SINGLE, choices=self.configs.keys())
+        self.configList = wxListBox(self,wxNewId(), style=wxLB_SINGLE, choices=displayNames)
         gridSizer.Add( configLabel, 1 )
         gridSizer.Add( self.configList, 0, wxEXPAND )
         EVT_LISTBOX(self, self.configList.GetId(), self.__ListItemSelectedCallback)
@@ -249,7 +260,7 @@ class StoreConfigDialog(wxDialog):
 
         # If system config is selected, check the system button
         c = None
-        if self.configs.has_key(name):
+        if self.configs.has_key(event.GetString()):
             c = self.configs[event.GetString()]
             
             if c.type == NodeConfigDescription.SYSTEM:
@@ -615,13 +626,24 @@ class NodeManagementClientFrame(wxFrame):
         configs = self.nodeServiceHandle.GetConfigurations()
 
         # Map display name to configurations
+        sysConfigs = []
+        userConfigs = []
         configMap = {}
         for c in configs:
             displayName = c.name+" ("+c.type+")"
             configMap[displayName] = c
+            
+            if c.type == 'system':
+                sysConfigs.append(displayName)
+            elif c.type == 'user':
+                userConfigs.append(displayName)
+
+        sysConfigs.sort()
+        userConfigs.sort()
+        displayNames = sysConfigs + userConfigs
 
         d = wxSingleChoiceDialog( self, "Select a configuration file to load", 
-                                  "Load Configuration Dialog", configMap.keys())
+                                  "Load Configuration Dialog", displayNames)
         ret = d.ShowModal()
 
         if ret == wxID_OK:
@@ -905,9 +927,6 @@ class NodeManagementClientFrame(wxFrame):
                 serviceDescription = AGServiceManagerIW(serviceManager.uri).AddService( serviceToAdd,
                                                                                         None, [],
                                                                                         self.app.GetPreferences().GetProfile())
-                
-                # Set identity
-                #AGServiceIW(serviceDescription.uri).SetIdentity(self.app.GetPreferences().GetProfile())
                 
                 # Configure resource
                 if serviceToAdd.resourceNeeded:
