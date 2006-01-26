@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.11 2006-01-19 20:17:26 lefvert Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.12 2006-01-26 07:07:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -404,8 +404,43 @@ class VideoProducerService( AGService ):
             self.resources = self.osxGetResources()
 
     def osxGetResources(self):
-        log.info("osxGetResources not yet implemented")
-        return []
+        
+        # deviceList['Mac OS X'] = ['Mac OS X']
+        osxVGrabScanExe = os.path.join(AGTkConfig.instance().GetBinDir(),
+                                  'osx-vgrabber-scan')
+        if os.path.exists(osxVGrabScanExe):
+            try:
+                log.info("Using osx-vgrabber-scan to get devices")
+                log.debug("osx-vgrabber-scan = %s", osxVGrabScanExe)
+                f = os.popen(osxVGrabScanExe,'r')
+                filelines = f.readlines()
+                f.close()
+
+                log.debug("filelines = %s", filelines)
+
+                for line in filelines:
+                    splitLine = line.strip().split(',')
+                    if len(splitLine) > 1:
+                        portList = splitLine[1:]
+                        device = splitLine[0]
+                        deviceList[device] = portList
+                        log.info("%s has ports: %s", device, portList)
+                    else:
+                        log.info("%s: no suitable input ports found", device)
+
+            except:
+                log.exception("osx vgrabber device scan failed")
+
+        # Create resource objects
+        resourceList = list()
+        for device,portList in deviceList.items():
+            try:
+                resourceList.append((device,portList))
+            except Exception, e:
+                self.log.exception("Unable to add video resource to list. device: " + device + "  portlist: " + portList)
+        
+        return resourceList
+
 
     def linuxGetResources(self):
         # V4L video_capability struct defined in linux/videodev.h :
