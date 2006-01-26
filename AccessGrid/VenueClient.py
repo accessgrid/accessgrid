@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.277 2006-01-26 00:02:21 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.278 2006-01-26 08:38:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.277 2006-01-26 00:02:21 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.278 2006-01-26 08:38:25 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -353,7 +353,9 @@ class VenueClient:
                       nsuri)
             self.builtInNodeServiceUri = nsuri
             
-            self.builtInNodeService.serviceManagers[smuri] = self.sm
+            smdesc = self.sm.GetDescription()
+            smdesc.builtin = 1
+            self.builtInNodeService.serviceManagers[smuri] = smdesc
             
             try:
                 threading.Thread(target = ServiceDiscovery.Publisher,
