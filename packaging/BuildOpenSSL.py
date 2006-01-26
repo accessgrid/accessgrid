@@ -1,5 +1,7 @@
 import sys, os
 
+DEST=sys.argv[1]
+
 def BuildLinux():
     os.system("./config")
     os.system("make")
@@ -14,6 +16,16 @@ def BuildWindows():
 
     ntPath = os.path.join(os.getcwd(), 'ms', 'nt.mak')
     os.system('nmake -f %s' %ntPath)
+
+    out32dllPath = os.path.join(os.getcwd(), "out32dll")
+
+    cmd = "copy %s %s" % (os.path.join(out32dllPath, "ssleay32.dll"),
+                        os.path.join(DEST,'install'))
+    os.system(cmd)
+    
+    cmd = "copy %s %s" % (os.path.join(out32dllPath, "libeay32.dll"),
+                        os.path.join(DEST,'install'))
+    os.system(cmd)
     
 def BuildDarwin():
     pass

@@ -189,7 +189,7 @@ os.environ['PYTHONPATH'] = nppath
 #os.chdir(StartDir)
 
 if sys.platform != 'darwin':
-    cmd = "%s %s" % (sys.executable, "BuildOpenSSL.py")
+    cmd = "%s %s %s" % (sys.executable, "BuildOpenSSL.py", DestDir)
     os.system(cmd)
 
 if sys.platform == 'win32':
