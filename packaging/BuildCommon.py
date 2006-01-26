@@ -14,7 +14,7 @@ TARGETDIR = os.path.join(SOURCE,'common')
 
 def build_win(dir):
     p = os.path.join(dir, "common.2003.sln")
-    os.system('devenv %s /rebuild "Debug"' % (p,))
+    os.system('devenv %s /rebuild "Release"' % (p,))
     
 def build_linux(dir):
     os.chdir(dir)
@@ -22,7 +22,7 @@ def build_linux(dir):
 
 # Set plat-specific bits
 if sys.platform == 'win32':
-    TARGET = os.path.join(TARGETDIR,'src','Debug','uclmm.lib')
+    TARGET = os.path.join(TARGETDIR,'src','Release','uclmm.lib')
     copyExe = 'copy'
     build = build_win
 elif sys.platform in ['linux2','darwin','freebsd5']:
