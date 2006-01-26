@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.92 2006-01-25 23:59:05 lefvert Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.93 2006-01-26 08:38:52 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.92 2006-01-25 23:59:05 lefvert Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.93 2006-01-26 08:38:52 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -372,6 +372,7 @@ class AGServiceManagerDescription:
     def __init__( self, name="", uri="" ):
         self.name = name
         self.uri = uri
+        self.builtin = 0
 
 class AGServiceDescription:
     def __init__( self, name="", uri="", capabilities=[], resource="", packageFile=""):
