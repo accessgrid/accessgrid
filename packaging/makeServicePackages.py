@@ -121,10 +121,14 @@ for service in services:
         fileList = f.readlines()
         f.close()
     
+        serviceDir = os.getcwd()
+        # We're in the service subdirectory.  Move out one directory to find the executable files to include.
+        os.chdir("..")
         for f in fileList:
             f = f.strip()
             if os.path.isfile(f):
                 zf.write(f)
+        os.chdir(serviceDir)
 
     zf.close()
 

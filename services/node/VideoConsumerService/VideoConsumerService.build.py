@@ -58,7 +58,7 @@ if needBuild:
 
 # Write the service manifest
 f = open('VideoConsumerService.manifest','w')
-f.write(os.path.join(servicesDir, VIC_EXE) + '\n')
+f.write(VIC_EXE + '\n')
 f.close()
 
 
