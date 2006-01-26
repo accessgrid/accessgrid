@@ -3,9 +3,10 @@
 servicemanagers = servicemanager0 
 
 [servicemanager0]
-url = http://localhost:11000/ServiceManager
+url = 
 services = service0 service1 
-name = localhost:11000
+name = 
+builtin = 1
 
 [service0]
 packageName = AudioService.zip
