@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.276 2006-01-25 22:21:38 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.277 2006-01-26 00:02:21 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.276 2006-01-25 22:21:38 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.277 2006-01-26 00:02:21 eolson Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -1477,6 +1477,9 @@ class VenueClient:
 
     def GetBeacon(self):
         return self.beacon
+
+    def GetConnectionId(self):
+        return self.profile.connectionId
     
     
 
