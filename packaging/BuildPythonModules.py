@@ -62,7 +62,7 @@ else:
     SetupModule("pyOpenSSL", SOURCE, DEST)
 
 print "*********** Building bajjer\n"
-SetupModule("bajjer-0.2.3", SOURCE, DEST)
+SetupModule("Bajjer-0.2.4prerlease", SOURCE, DEST)
 
 print "*********** Building feedparser\n"
 SetupModule("feedparser", SOURCE, DEST)
