@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.152 2006-01-25 22:19:32 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.153 2006-01-26 18:50:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.152 2006-01-25 22:19:32 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.153 2006-01-26 18:50:27 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -54,7 +54,8 @@ from AccessGrid.VenueClient import DisconnectError
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
 from AccessGrid.Beacon.rtpBeaconUI import BeaconFrame
-from AccessGrid.RssReader import RssReader,strtimeToSecs        
+from AccessGrid.RssReader import RssReader,strtimeToSecs  
+from AccessGrid.interfaces.Venue_client import VenueIW      
 
 try:
     import win32api
@@ -626,6 +627,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                     return
 
                 self.beaconFrame = BeaconFrame(self, log, beacon)
+                self.beaconFrame.CenterOnParent()
         
     def __SetProperties(self):
         self.SetTitle("Venue Client")
@@ -1605,8 +1607,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.SetStatusText("Trying to enter venue at %s" % (venueUrl,))
 
             # Enter in a thread so UI gets responsive immediately
-#             upload_thread = threading.Thread(target = self.controller.EnterVenueCB, args = [venueUrl])
-#             upload_thread.start()
             self.controller.EnterVenueCB(venueUrl)
             
             # Check if unicast option is set in preferences.
@@ -2840,6 +2840,7 @@ class NavigationPanel(wxPanel):
         '''
         Called when user clicks the tree
         '''
+        
         self.x = event.GetX()
         self.y = event.GetY()
         exits = None
@@ -2861,7 +2862,7 @@ class NavigationPanel(wxPanel):
 
         exits = None
         if venue:
-            exits = self.app.controller.GetVenueConnections(venue.uri)
+            exits = VenueIW(venue.uri).GetConnections()
         else:
             # If we did not get click on a venue, ignore
             return
