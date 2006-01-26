@@ -33,8 +33,10 @@ if not os.path.exists(initFile):
 
 # FIXME: this call shouldn't need the server wsdl to create the AccessGrid_Types.py
 command = w2pyExec + " -f %s -e -o %s -t AccessGrid_Types --simple-naming -m AccessGrid.wsdl.SchemaToPyTypeMap" % ( os.path.join(srcPath, "VenueServerBinding.wsdl"), dstPath)
+
 if not options.quiet:
     print "* ", command
+
 os.system(command)
 
 wsdlList =  [
@@ -44,6 +46,7 @@ wsdlList =  [
             [ 'AG_ServiceManager_Types', 'AGServiceManagerBinding.wsdl' ],
             [ 'AG_NodeService_Types', 'AGNodeServiceBinding.wsdl' ],
             [ 'AG_Service_Types', 'AGServiceBinding.wsdl' ],
+            [ 'AG_NetworkService_Types', 'AGNetworkServiceBinding.wsdl' ],
             [ 'AG_SharedApplication_Types', 'SharedApplicationBinding.wsdl' ],
             [ 'AG_AuthorizationManager_Types', 'AuthorizationManagerBinding.wsdl' ],
             ]

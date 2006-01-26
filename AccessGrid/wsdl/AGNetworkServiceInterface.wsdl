@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  xmlns:agnets="http://www.accessgrid.org/v3.0/agnetworkservice"
+  targetNamespace="http://www.accessgrid.org/v3.0/agnetworkservice">
+
+      <types>
+      <schema targetNamespace="http://www.accessgrid.org/v3.0/agnetworkservice" 
+              elementFormDefault="qualified" 
+	      attributeFormDefault="unqualified" 
+              xmlns="http://www.w3.org/2001/XMLSchema">
+
+           <xsd:element name="TransformRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="streamDescription" type="agtk:StreamDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="TransformResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element minOccurs="0" maxOccurs="unbounded" name="streamDescription" type="agtk:StreamDescription" />
+               </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="StopTransformRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="streamDescription" type="agtk:StreamDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="StopTransformResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element minOccurs="0" maxOccurs="unbounded" name="streamDescription" type="agtk:StreamDescription" />
+               </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+      </schema>
+      </types>
+
+
+    <message name="TransformRequest">
+	<part name="parameters" element="agnets:TransformRequest"/>
+    </message>
+    <message name="TransformResponse">
+	<part name="parameters" element="agnets:TransformResponse"/>
+    </message>
+    <message name="StopTransformRequest">
+	<part name="parameters" element="agnets:StopTransformRequest"/>
+    </message>
+    <message name="StopTransformResponse">
+	<part name="parameters" element="agnets:StopTransformResponse"/>
+    </message>
+
+    <portType name="AGNetworkService">
+    <operation name="Transform">
+        <input message="agnets:TransformRequest"/>
+        <output message="agnets:TransformResponse"/>
+    </operation>
+    <operation name="StopTransform">
+        <input message="agnets:StopTransformRequest"/>
+        <output message="agnets:StopTransformResponse"/>
+    </operation>
+    </portType>
+
+</definitions>
+
