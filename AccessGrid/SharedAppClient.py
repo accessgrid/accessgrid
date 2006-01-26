@@ -1,4 +1,5 @@
 import os
+import types
 
 from AccessGrid import Log
 from AccessGrid.Events import Event
@@ -83,6 +84,11 @@ class SharedAppClient:
         
         *appServiceUrl* location of application service.
         '''
+
+        # A check for moving from 2.x to 3.x since venueIW.CreateApplication()
+        #   returns an app description instead of an app url like it used to.
+        if type(appServiceUrl) == types.InstanceType and appServiceUrl.__class__.__name__.endswith("ApplicationDescription"):
+            raise Exception("Join expects an App url, not an App Description")
       
         self.__appUrl = appServiceUrl
         
