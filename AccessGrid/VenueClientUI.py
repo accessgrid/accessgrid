@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.153 2006-01-26 18:50:27 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.154 2006-01-26 20:20:35 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.153 2006-01-26 18:50:27 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.154 2006-01-26 20:20:35 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1367,7 +1367,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     # Support for scheduler integration
     #
     def AddScheduleCB(self,event):
-        defaultRssUrl = 'http://www.mcs.anl.gov/~turam/rss2.cgi'
+        defaultRssUrl = 'http://www.mcs.anl.gov/fl/research/accessgrid/anl.rss'
         rssUrl = wxGetTextFromUser('Specify RSS URL of schedule to add',
                                    'Add Schedule',
                                    defaultRssUrl,
