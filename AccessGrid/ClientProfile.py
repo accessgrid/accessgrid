@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.45 2005-05-19 18:40:10 lefvert Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.46 2006-01-26 20:17:01 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.45 2005-05-19 18:40:10 lefvert Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.46 2006-01-26 20:17:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -65,7 +65,7 @@ class ClientProfile:
         'ClientProfile.location' : '<Insert Postal Address Here>',
         'ClientProfile.techsupportinfo':'',
         'ClientProfile.venueclienturl' : '',
-        'ClientProfile.home' : 'https://vv2.mcs.anl.gov:9000/Venues/default'
+        'ClientProfile.home' : 'https://vv3.mcs.anl.gov:8000/Venues/default'
         }
 
     USER = "user"
