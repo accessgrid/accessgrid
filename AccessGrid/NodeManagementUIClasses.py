@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.98 2006-01-24 21:56:01 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.99 2006-01-26 05:43:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.98 2006-01-24 21:56:01 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.99 2006-01-26 05:43:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -20,7 +20,7 @@ from wxPython.wx import *
 from wxPython.lib.dialogs import wxMultipleChoiceDialog
 from wxPython.gizmos import wxTreeListCtrl
 
-# AG2 imports
+# AG imports
 from AccessGrid import Log
 from AccessGrid import icons
 from AccessGrid import Platform
@@ -119,6 +119,8 @@ class ServiceChoiceDialog(wxDialog):
         self.browser = ServiceDiscovery.Browser(serviceType,self.BrowseCallback)
         self.browser.Start()
         
+        self.hostname = SystemConfig.instance().GetHostname()
+        
 
     def BrowseCallback(self,op,serviceName,url=None):
         if self.exists.isSet() and op == ServiceDiscovery.Browser.ADD:
@@ -128,8 +130,12 @@ class ServiceChoiceDialog(wxDialog):
         if self.comboBoxCtrl.FindString(url) == wxNOT_FOUND:
             self.comboBoxCtrl.Append(url)
             
-            # Set the field value, if it's not set
-            if not self.comboBoxCtrl.GetValue():
+            val = self.comboBoxCtrl.GetValue()
+            # if the combobox doesn't have a value set, use this one
+            if not val:
+                self.comboBoxCtrl.SetValue(url)
+            # if the found service is local, use it instead of existing one
+            elif (val.find(self.hostname) == -1 and url.find(self.hostname) >= 0):
                 self.comboBoxCtrl.SetValue(url)
 
     def GetValue(self):
