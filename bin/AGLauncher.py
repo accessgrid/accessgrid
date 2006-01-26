@@ -89,7 +89,7 @@ class LauncherFrame(wxFrame):
         self.mainButtonList=[];
         self.mainButtonActions=[];
         self.mainButtonList.append(wxButton(self,self.BUTTON_VC_ID,"Venue Client"));
-        self.mainButtonActions.append([self.RunPython,"%s/bin/VenueClient.py"%(agtk_location),['--personalNode=1']]);
+        self.mainButtonActions.append([self.RunPython,"%s/bin/VenueClient.py"%(agtk_location),[]]);
         for button in self.mainButtonList:
             button.Show(false);
         
@@ -144,7 +144,7 @@ class LauncherFrame(wxFrame):
         self.debugButtonList=[];
         self.debugButtonActions=[];
         self.debugButtonList.append(wxButton(self,self.BUTTON_VCD_ID,"Venue Client (Debug)"));
-        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/VenueClient.py"%(agtk_location),["-d",'--personalNode=1']]);
+        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/VenueClient.py"%(agtk_location),["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_CMD_ID,"Certificate Management (Debug)"));
         self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/CertificateManager.py"%(agtk_location),["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_NSD_ID,"Node Service (Debug)"));

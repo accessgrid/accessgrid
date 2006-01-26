@@ -3,7 +3,7 @@
 Encoding=UTF-8
 Name=Venue Client (Personal Node)
 Type=Application
-Exec=VenueClient.py --personalNode
+Exec=VenueClient.py 
 Icon=/usr/share/AccessGrid/ag.ico
 #DocPath=kalarm/index.html
 Terminal=0

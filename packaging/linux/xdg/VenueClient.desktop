@@ -2,7 +2,7 @@
 Name=Venue Client
 Comment=Run the venue client software
 TryExec=VenueClient.py
-Exec=VenueClient.py --personalNode
+Exec=VenueClient.py 
 Icon=/usr/share/AccessGrid/ag.ico
 Terminal=false
 Type=Application

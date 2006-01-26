@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Venue Client (Personal Node)
 Comment=Access Grid Venue Client (Personal Node Configuration)
-Exec=VenueClient.py --personalNode
+Exec=VenueClient.py 
 Icon=/usr/share/AccessGrid/ag.ico
 Terminal=0
 Type=Application
