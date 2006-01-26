@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.114 2006-01-26 20:17:04 lefvert Exp $
+; RCS-ID: $Id: agtk.iss,v 1.115 2006-01-26 22:20:06 lefvert Exp $
 ;
 
 ; Set externally
@@ -58,7 +58,7 @@ AppID=2CD98D2E-F3D2-438E-91F7-D74860A70959
 MinVersion=0,5.0.2195
 LicenseFile=COPYING.txt
 DisableDirPage=false
-DefaultGroupName={#AppName} {#AppDirName}
+DefaultGroupName={#AppName} {#DirName}
 DefaultDirName={pf}\{#AppNameShort}-{#DirName}
 UsePreviousAppDir=false
 UserInfoPage=false
