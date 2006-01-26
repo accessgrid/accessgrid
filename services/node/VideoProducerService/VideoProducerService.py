@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.12 2006-01-26 07:07:07 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.13 2006-01-26 21:12:21 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -406,30 +406,32 @@ class VideoProducerService( AGService ):
     def osxGetResources(self):
         
         # deviceList['Mac OS X'] = ['Mac OS X']
+        deviceList = dict()
         osxVGrabScanExe = os.path.join(AGTkConfig.instance().GetBinDir(),
                                   'osx-vgrabber-scan')
         if os.path.exists(osxVGrabScanExe):
             try:
-                log.info("Using osx-vgrabber-scan to get devices")
-                log.debug("osx-vgrabber-scan = %s", osxVGrabScanExe)
+                self.log.info("Using osx-vgrabber-scan to get devices")
+                self.log.debug("osx-vgrabber-scan = %s", osxVGrabScanExe)
                 f = os.popen(osxVGrabScanExe,'r')
                 filelines = f.readlines()
                 f.close()
 
-                log.debug("filelines = %s", filelines)
+                self.log.debug("filelines = %s", filelines)
 
                 for line in filelines:
+                
                     splitLine = line.strip().split(',')
                     if len(splitLine) > 1:
                         portList = splitLine[1:]
                         device = splitLine[0]
                         deviceList[device] = portList
-                        log.info("%s has ports: %s", device, portList)
+                        self.log.info("%s has ports: %s", device, portList)
                     else:
-                        log.info("%s: no suitable input ports found", device)
+                        self.log.info("%s: no suitable input ports found", device)
 
             except:
-                log.exception("osx vgrabber device scan failed")
+                self.log.exception("osx vgrabber device scan failed")
 
         # Create resource objects
         resourceList = list()
