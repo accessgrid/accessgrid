@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.103 2006-01-24 21:45:09 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.104 2006-01-26 20:32:17 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.103 2006-01-24 21:45:09 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.104 2006-01-26 20:32:17 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -297,6 +297,7 @@ class AGNodeService:
                 #
                 serviceManager = AGServiceManagerDescription( configParser.get( serviceManagerSection, "name" ), 
                                                               configParser.get( serviceManagerSection, "url" ) )
+                serviceManager.builtin = configParser.getint(serviceManagerSection,'builtin')
 
                 #
                 # Extract Service List
@@ -347,24 +348,31 @@ class AGNodeService:
         #
         # Add service managers and services
         #
-        self.serviceManagers = dict()
+        # - reset sm list, preserving builtin service manager if exists
+        builtinsmlist = filter( lambda x: x.builtin, self.serviceManagers.values())
+        if builtinsmlist:
+            builtinsm = builtinsmlist[0]
+            self.serviceManagers = { builtinsm.uri:builtinsm}
+        else:
+            self.serviceManagers = dict()
         for serviceManager, serviceList in serviceManagerList:
 
+            if serviceManager.builtin:
+                log.debug('using builtin service manager at %s', builtinsm.uri)
+                serviceManager.uri = builtinsm.uri
+            else:
+                # Add service manager to list
+                log.debug('using external service manager at %s', serviceManager.uri)
+                self.serviceManagers[serviceManager.uri] = serviceManager
             
-            serviceManagerProxy = AGServiceManagerIW(serviceManager.uri)
+            serviceManagerObj = AGServiceManagerIW(serviceManager.uri)
 
             #
-            # Skip unreachable service managers
-            
-            # Add service manager to list
-            self.serviceManagers[serviceManager.uri] = serviceManager
-
-            #
-            # Remove all services from service manager
+            # Remove services from service manager
             #
          
             try:
-                serviceManagerProxy.RemoveServices()
+                serviceManagerObj.RemoveServices()
             except:
                 log.exception("Exception removing services from Service Manager")
                 exceptionText += "Couldn't remove services from Service Manager: %s" %(serviceManager.name)
@@ -379,10 +387,10 @@ class AGNodeService:
                     
                     # Actually add the service to the servicemgr
                     # and set resources, parameters, and identity
-                    serviceDesc = AGServiceManagerIW( serviceManager.uri ).AddServiceByName(service.packageName,
-                                                                                            service.resource,
-                                                                                            service.parameters,
-                                                                                            prefs.GetProfile())
+                    serviceDesc = serviceManagerObj.AddServiceByName(service.packageName,
+                                                                     service.resource,
+                                                                     service.parameters,
+                                                                     prefs.GetProfile())
                     
                 except:
                     log.exception("Exception adding service %s" % (service.packageName))
@@ -422,7 +430,7 @@ class AGNodeService:
 
             node_servicemanagers = ""
 
-            for serviceManager in self.serviceManagers.values():
+            for key,serviceManager in self.serviceManagers.items():
                 servicemanager_services = ""
 
                 #
@@ -431,8 +439,13 @@ class AGNodeService:
                 serviceManagerSection = 'servicemanager%d' % numServiceManagers
                 configParser.add_section( serviceManagerSection )
                 node_servicemanagers += serviceManagerSection + " "
-                configParser.set( serviceManagerSection, "name", serviceManager.name )
-                configParser.set( serviceManagerSection, "url", serviceManager.uri )
+                configParser.set( serviceManagerSection, 'builtin', serviceManager.builtin )
+                if serviceManager.builtin:
+                    configParser.set( serviceManagerSection, "name", '' )
+                    configParser.set( serviceManagerSection, "url", '' )
+                else:
+                    configParser.set( serviceManagerSection, "name", serviceManager.name )
+                    configParser.set( serviceManagerSection, "url", key )
                 
                 services = AGServiceManagerIW( serviceManager.uri ).GetServices()
 
