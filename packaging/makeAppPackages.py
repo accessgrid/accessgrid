@@ -41,7 +41,12 @@ else:
 if 'CVS' in things:
     things.remove('CVS')
 
-
+# Do not ship shared pdf or shared question tool
+if 'SharedPDF' in things:
+    things.remove('SharedPDF')
+if 'SharedQuestionTool' in things:
+    things.remove('SharedQuestionTool')    
+    
 for thing in things:
     Desc = None
     adir = os.path.join(inputDir, thing)
