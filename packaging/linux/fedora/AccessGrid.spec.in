@@ -13,13 +13,7 @@
 %define buildroot	%{_builddir}/AccessGrid-%{version}
 %define debug_package	%{nil}
 
-# Optik is included with Python 2.3, so only require it for older pythons
-%define require_optik %(python -c 'import sys ; print (int(float(sys.version[:3]) < 2.3))')
- 
 %define pyver %(python -c 'import sys ; print sys.version[:3]')
-
-%define has_fc1_appmenu_file %([ -f /etc/X11/desktop-menus/applications.menu ] && echo 1 || echo 0)
-
 
 #
 # The following defines the AccessGrid rpm
@@ -44,12 +38,6 @@ Requires:	python-twisted  >= 2.1.0
 Requires:	python-ZSI >= 2.0
 Requires:	PyXML >= 0.8.3
 Requires:	vnc-server
-%if %{require_optik}
-Requires:	python-optik >= 1.4.1
-%endif
-%if %{has_fc1_appmenu_file}
-Requires:	patch
-%endif
 BuildRequires:	m2crypto
 BuildRequires:	python-bajjer
 BuildRequires:	python-bonjour
@@ -148,13 +136,8 @@ python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}
 # - Install the Gnome/KDE menu items
 %defattr(-,root,root)
 %{xdg_data_dirs}/applications/%{name}
-%if %{has_fc1_appmenu_file}
-  %{xdg_data_dirs}/desktop-menu-files/*
-  %{xdg_data_dirs}/desktop-menu-patches/*
-%else
-  %{xdg_config_dirs}/menus/applications-merged/*
-  %{xdg_data_dirs}/desktop-directories/*
-%endif
+%{xdg_config_dirs}/menus/applications-merged/*
+%{xdg_data_dirs}/desktop-directories/*
 
 #
 # AccessGrid package postinstall commands
@@ -168,18 +151,6 @@ rm -rf /etc/AccessGrid/SharedApplications/Shared_Question_Tool
 rm -rf /etc/AccessGrid/SharedApplications/VenueVNC
 agpm.py --post-install 2>&1 > /dev/null
 
-%if %{has_fc1_appmenu_file}
-  # patch /etc/X11/desktop-menus/applications.menu to add an AccessGrid menu
-  APPMENU_PATCH=%{xdg_data_dirs}/desktop-menu-patches/AccessGrid-menu.patch
-
-  cd /
-  patch -p0 -N -t -l -s --dry-run 2>&1 > /dev/null < $APPMENU_PATCH
-
-  if [ "$?" == 0 ]; then
-      patch -p0 -N -t -l -s < $APPMENU_PATCH
-  fi
-%endif
-
 #
 # AccessGrid package pre-uninstall
 #
@@ -192,18 +163,6 @@ if [ $1 = 0 ]; then
   rm -rf /etc/AccessGrid/SharedApplications/Shared_Presentation
   rm -rf /etc/AccessGrid/SharedApplications/Shared_Question_Tool
   rm -rf /etc/AccessGrid/SharedApplications/VenueVNC
-
-%if %{has_fc1_appmenu_file}
-  # remove AccessGrid menu from /etc/X11/desktop-menus/applications.menu
-  APPMENU_PATCH=%{xdg_data_dirs}/desktop-menu-patches/AccessGrid-menu.patch
-
-  cd /
-  patch -p0 -N -t -l -s -R --dry-run 2>&1 > /dev/null < $APPMENU_PATCH
-
-  if [ "$?" == 0 ]; then
-      patch -p0 -N -t -l -s -R < $APPMENU_PATCH
-  fi
-%endif
 fi
 
 #
@@ -220,6 +179,10 @@ rm -rf %{buildroot}
 #
 
 %changelog
+
+* Fri Jan 27 2005 Douglas Kosovic <douglask@itee.uq.edu.au>
+- Updated to AG3
+- Removed FC1 workarounds as FC1 is no longer supported
 
 * Mon Nov 22 2004 Douglas Kosovic <douglask@itee.uq.edu.au>
 - Added PyXML 0.8.3 dependency needed for VenueServer on RH9 and RHEL3
