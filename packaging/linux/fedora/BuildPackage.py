@@ -98,18 +98,6 @@ else:
     os.system(cmd)
 
 #
-# Build globus rpm      
-# 
-os.chdir(StartDir) 
-installedRPM = commands.getoutput("/bin/rpm -q --queryformat='%{VERSION}%{ARCH}' globus-accessgrid")
-toBeBuiltRPM = commands.getoutput("/bin/rpm -q --queryformat='%{VERSION}' --specfile globus-accessgrid.spec")
-toBeBuiltRPM += BuildArch
-if (installedRPM != toBeBuiltRPM) :
-    cmd = "rpmbuild --target=%s -ba globus-accessgrid.spec" % (BuildArch,)
-    print "cmd = ", cmd     
-    os.system(cmd)      
-
-#
 # Build AccessGrid rpms
 #
 print "** Building AccessGrid RPMs"
