@@ -4,11 +4,11 @@
 # Purpose:     Basic python xmlrpc server with minor modifications.  Also
 #                includes an async xmlrpc server.
 # Created:     2005/12/16
-# RCS-ID:      $Id: AGXMLRPCServer.py,v 1.2 2006-01-11 16:31:49 eolson Exp $
+# RCS-ID:      $Id: AGXMLRPCServer.py,v 1.3 2006-01-27 17:26:52 eolson Exp $
 # Copyright:   (c) 2005,2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
-__revision__ = "$Id: AGXMLRPCServer.py,v 1.2 2006-01-11 16:31:49 eolson Exp $"
+__revision__ = "$Id: AGXMLRPCServer.py,v 1.3 2006-01-27 17:26:52 eolson Exp $"
 
 from DocXMLRPCServer import DocXMLRPCServer 
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler, SimpleXMLRPCDispatcher
@@ -64,4 +64,7 @@ class AsyncAGXMLRPCServer(AGXMLRPCServer):
                 self.running = False
             except:
                 traceback.print_exc()
+
+    def stop(self):
+        self.running = False
 

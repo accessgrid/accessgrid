@@ -161,6 +161,9 @@ class RegistryPeerXMLRPC(RegistryBase):
         self.ConnectToRegistries()
         self.requestServer.run()
 
+    def Stop(self):
+        self.requestServer.stop()
+
 RegistryPeer=RegistryPeerXMLRPC
 
 
