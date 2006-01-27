@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.50 2006-01-27 21:12:33 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.51 2006-01-27 21:29:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.50 2006-01-27 21:12:33 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.51 2006-01-27 21:29:07 turam Exp $"
 
 import re
 import os
@@ -49,6 +49,7 @@ from AccessGrid.Security import CertificateRepository
 from AccessGrid.Security import CRSClient
 from AccessGrid import Platform
 from AccessGrid.Platform.Config import AGTkConfig
+from AccessGrid import Toolkit
 
 log = Log.GetLogger(Log.CertificateManager)
 
@@ -247,7 +248,8 @@ class CertificateManager(object):
             try:
                 files = os.listdir(caDir)
             except:
-                self.GetUserInterface().ReportError("Error reading CA certificate directory\n" +
+                certMgrUI = Toolkit.GetDefaultApplication().GetCertificateManagerUI()
+                certMgrUI.ReportError("Error reading CA certificate directory\n" +
                                                     caDir + "\n" +
                                                     "You will have to import trusted CA certificates later.")
                 files = []
@@ -307,7 +309,8 @@ class CertificateManager(object):
 
         if defID is None:
             self.SetDefaultIdentity(impCert)
-            self.GetUserInterface().InitEnvironment()
+            certMgrUI = Toolkit.GetDefaultApplication().GetCertificateManagerUI()
+            certMgrUI.InitEnvironment()
         
         repo.NotifyObservers()
         return impCert
@@ -1079,7 +1082,8 @@ if __name__ == "__main__":
                                             r"v\venueServer_key.pem", None)
         
         if 0:
-            passphraseCB = cm.GetUserInterface().GetPassphraseCallback("DOE cert", "")
+            certMgrUI = Toolkit.GetDefaultApplication().GetCertificateManagerUI()
+            passphraseCB = certMgrUI.GetPassphraseCallback("DOE cert", "")
             x = cm.ImportIdentityCertificatePEM(cm.certRepo,
                                                 r"\temp\doe.pem",
                                                 r"\temp\doe.pem", passphraseCB)
