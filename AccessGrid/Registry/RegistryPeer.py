@@ -93,7 +93,7 @@ class RegistryBase(RegistryInterface):
             expirationTime = self.registeredBridges[key][1]
             if now > expirationTime:
                 print "removing bridge:", key
-                log.info("removing bridge: %s" % key)
+                #log.info("removing bridge: %s" % key)
                 bridgesToRemove.append(key)
         for bridge in bridgesToRemove:
             self.registeredBridges.pop(bridge)
