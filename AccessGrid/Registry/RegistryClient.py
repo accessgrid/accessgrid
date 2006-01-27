@@ -65,9 +65,9 @@ class RegistryClient:
         if self.bridges:
             # We have bridges, return
             return self.bridges[0:maxToReturn]
-        else:
-            # Get bridges from cache on local file
-            self.bridges = self.bridgeCache.GetBridges()
+        #else:
+        #    # Get bridges from cache on local file
+        #    self.bridges = self.bridgeCache.GetBridges()
                     
         if not self.bridges:
             # If the cache does not exist, query registry
