@@ -140,11 +140,6 @@
             </xsd:complexType>
           </xsd:element>
 
-          <xsd:element name="RemoveServiceResponse">
-            <xsd:complexType>
-            </xsd:complexType>
-          </xsd:element>
-
           <xsd:element name="RemoveServicesRequest">
             <xsd:complexType>
             </xsd:complexType>
@@ -257,9 +252,6 @@
     <message name="RemoveServiceRequest">
 	<part name="parameters" element="agtksm:RemoveServiceRequest"/>
     </message>
-    <message name="RemoveServiceResponse">
-	<part name="parameters" element="agtksm:RemoveServiceResponse"/>
-    </message>
     <message name="RemoveServicesRequest">
 	<part name="parameters" element="agtksm:RemoveServicesRequest"/>
     </message>
@@ -328,7 +320,6 @@
     </operation>
     <operation name="RemoveService">
         <input message="agtksm:RemoveServiceRequest"/>
-        <output message="agtksm:RemoveServiceResponse"/>
     </operation>
     <operation name="RemoveServices">
         <input message="agtksm:RemoveServicesRequest"/>
