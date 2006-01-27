@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.116 2006-01-27 17:50:16 lefvert Exp $
+; RCS-ID: $Id: agtk.iss,v 1.117 2006-01-27 22:57:23 lefvert Exp $
 ;
 
 ; Set externally
@@ -127,6 +127,7 @@ Source: config\nodeConfig\default; DestDir: {app}\config\nodeConfig
 Source: install\agicons.exe; DestDir: {app}\install
 Source: install\msvcr70.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 Source: install\msvcr71.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
+Source: install\msvcr71d.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 Source: install\ssleay32.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 Source: install\libeay32.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 ; end system files
@@ -188,7 +189,7 @@ DirExists=The directory:%n%n%1%n%nalready exists and appears to have an {#AppNam
 WelcomeLabel2=This will install the {#AppName} {#AppVersion} {#VersionInformation} on your computer.%n%nIt is strongly recommended that you uninstall any previous version of the {#AppName} 3 before continuing.%n%nIt is also strongly recommended that you close all other applications you have running before continuing with this installation.%n%nThese steps will help prevent any conflicts during the installation process.
 
 [Run]
-Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Description: Install shared apps system wide.; Flags: runhidden; Parameters: {app}\bin\runag.py agpm.py -s --post-install; WorkingDir: {app}\bin
+Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Description: Install shared apps system wide.; Flags: runhidden; Parameters: runag.py agpm.py -s --post-install; WorkingDir: {app}\bin
 
 [UninstallDelete]
 Name: {app}; Type: filesandordirs
