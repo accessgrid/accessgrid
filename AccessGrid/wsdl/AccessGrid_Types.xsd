@@ -146,7 +146,7 @@
 	<xs:element minOccurs="0" maxOccurs="1" name="id" type="xs:string" />
 	<xs:element minOccurs="0" maxOccurs="1" name="mimeType" type="xs:string" />
         <xs:element minOccurs="0" maxOccurs="1" name="uri" type="xs:string" />
-        <xs:element minOccurs="0" maxOccurs="unbounded" name="data" type="agtk:AppDataDescription" />
+        <xs:element minOccurs="0" maxOccurs="unbounded" name="data" type="tns:AppDataDescription" />
       </xs:sequence>
     </xs:complexType>
 
@@ -217,7 +217,7 @@
         <xs:element name="name" type="xs:string"/>
         <xs:element name="uri" type="xs:string"/>
         <xs:element name="capabilities" minOccurs="0" maxOccurs="unbounded" type="tns:Capability"/>
-        <xs:element name="resource" nillable="true" type="agtk:ResourceDescription"/>
+        <xs:element name="resource" nillable="true" type="tns:ResourceDescription"/>
         <xs:element name="packageFile" type="xs:string"/>
       </xs:sequence>
     </xs:complexType>
