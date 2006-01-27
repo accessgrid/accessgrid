@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.39 2006-01-25 22:53:25 eolson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.40 2006-01-27 20:25:22 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,14 +19,6 @@ import Queue
 import shutil
 
 from wxPython.wx import *
-
-try:
-    from twisted.internet import threadedselectreactor
-    threadedselectreactor.install()
-except:
-    pass
-from twisted.internet import reactor
-
 from AccessGrid import Platform
 from AccessGrid import Log
 
@@ -283,8 +275,6 @@ class SharedPresentationFrame(wxFrame):
         self.syncCallback = noOp
         self.exitCallback = noOp
         self.localUploadCallback = noOp
-
-        reactor.interleave(wxCallAfter)
 
         #
         # Create UI controls
@@ -1641,6 +1631,7 @@ def Usage():
     Standard usage information for users.
     """
     print "%s:" % sys.argv[0]
+    print "    -a|--venueURL : <url to venue>"
     print "    -a|--applicationURL : <url to application in venue>"
     print "    -c|--connectionId : <VenueClient's connectionId>"
     print "    -d|--data : <url to data in venue>"
@@ -1662,7 +1653,7 @@ if __name__ == "__main__":
     venueURL = None
     appURL = None
     venueDataUrl = None
-    connectionid = None
+    connectionId = None
     name = "SharedPresentation"
     debug = 0
 
