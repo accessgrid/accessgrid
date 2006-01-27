@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.13 2006-01-27 00:15:20 eolson Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.14 2006-01-27 20:59:03 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -86,15 +86,6 @@ def OnOff(onOffVal):
     elif onOffVal == "Off":
         return "false"
     raise Exception,"OnOff value neither On nor Off: %s" % onOffVal
-
-class VideoResourceDescription(ResourceDescription):
-    def __init__(self,name,ports=[]):
-        ResourceDescription.__init__(self,name)
-        self.ports = ports
-    def SetPorts(self,ports):
-        self.ports = ports
-    def GetPorts(self):
-        return self.ports      
 
 class VideoService( AGService ):
 
@@ -395,13 +386,9 @@ class VideoService( AGService ):
         """
 
         self.log.info("VideoService.SetResource : %s" % resource.name )
-        foundResource = 0
         for r in self.resources:
-            if r.name == resource.name:
+            if r[0] == resource.name:
                 self.resource = r
-                foundResource = 1
-        if not foundResource:
-            raise Exception("Unknown resource %s" % (resource.name))
 
         # Find the config element that refers to "port"
         try:
@@ -414,12 +401,14 @@ class VideoService( AGService ):
         # that we have multiple possible values for "port"
         # If self.port is valid, keep it instead of setting the default value.
         if (( isinstance(self.port, TextParameter) or isinstance(self.port, ValueParameter) ) 
-                and self.port.value != "" and self.port.value in self.resource.ports):
+              and self.port.value != "" and self.port.value in self.resource[1]):
             self.port = OptionSetParameter( "Port", self.port.value,
-                                                         self.resource.ports )
+                                                         self.resource[1] )
         else:
-            self.port = OptionSetParameter( "Port", self.resource.ports[0],
-                                                         self.resource.ports )
+            self.port = OptionSetParameter( "Port", self.resource[1][0],
+                                                         self.resource[1] )
+
+        self.log.info('port = %s', self.port.value)
 
         # Replace or append the "port" element
         if found:
@@ -440,7 +429,9 @@ class VideoService( AGService ):
         self.__SetRTPDefaults(profile)
 
     def GetResources(self):
-        return self.resources
+        ret = map(lambda x: ResourceDescription(x[0]) , self.resources)
+        self.log.info('resources: %s', ret)
+        return ret
         
     def __GetResources(self):
     
@@ -454,6 +445,7 @@ class VideoService( AGService ):
     def osxGetResources(self):
         
         # deviceList['Mac OS X'] = ['Mac OS X']
+        deviceList = dict()
         osxVGrabScanExe = os.path.join(AGTkConfig.instance().GetBinDir(),
                                   'osx-vgrabber-scan')
         if os.path.exists(osxVGrabScanExe):
@@ -582,7 +574,7 @@ class VideoService( AGService ):
         resourceList = list()
         for device,portList in deviceList.items():
             try:
-                resourceList.append(VideoResourceDescription(device,portList))
+                resourceList.append((device,portList))
             except Exception, e:
                 self.log.exception("Unable to add video resource to list. device: " + device + "  portlist: " + str(portList))
         
@@ -666,7 +658,7 @@ class VideoService( AGService ):
     
         resourceList = list()
         for d in deviceList:
-            resourceList.append(VideoResourceDescription(d,['external-in']))
+            resourceList.append((d,['external-in']))
         return resourceList
 
 
