@@ -171,12 +171,11 @@ class CertRequestWrapper:
         
         path = certMgr.GetCertificatePath(impCert)
 
-        print "Got path: ", path
         last = path[-1]
         if last.GetSubject().get_der() == last.GetIssuer().get_der():
-            print "Have full path"
+            pass#print "Have full path"
         else:
-            print "Missing component: ", last.GetIssuer()
+            #print "Missing component: ", last.GetIssuer()
 
             proxyEnabled, proxyHost, proxyPort = self.browser.GetProxyInfo()
             if proxyEnabled:
@@ -198,7 +197,7 @@ class CertRequestWrapper:
                 log.exception("Could not retrieve ca certs")
 
             if caCerts:
-                print "Got ca: ", caCerts
+                #print "Got ca: ", caCerts
 
                 for caCert, signingPolicy in caCerts:
                     #
@@ -241,11 +240,11 @@ class CertRequestWrapper:
                             impCa = certMgr.ImportCACertificatePEM(
                                 certMgr.GetCertificateRepository(), tmp)
                             os.unlink(tmp)
-                            print "Imported cert ", impCa, impCa.GetSubject()
+                            #print "Imported cert ", impCa, impCa.GetSubject()
 
                             if signingPolicy != "":
                                 spPath = impCa.GetFilePath("signing_policy")
-                                print "sp path is ", spPath
+                                #print "sp path is ", spPath
                                 if spPath:
                                     fh = open(spPath, "w")
                                     fh.write(signingPolicy)
@@ -256,7 +255,7 @@ class CertRequestWrapper:
                             
 
             else:
-                print "Didn't get, need a dialog here"
+                pass#print "Didn't get, need a dialog here"
             
     def CheckPrivateKey(self):
         """
@@ -546,7 +545,7 @@ class CertificateStatusBrowser(CertificateBrowserBase):
     
     def _FormatCert(self, cert):
 
-        print "Format ", cert
+        #print "Format ", cert
         return cert, cert.Format()
 
     def _getListColumns(self):
