@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.48 2006-01-25 20:41:49 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.49 2006-01-27 19:13:43 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.48 2006-01-25 20:41:49 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.49 2006-01-27 19:13:43 turam Exp $"
 
 import re
 import os
@@ -234,7 +234,7 @@ class CertificateManager(object):
         self.ImportCACertificates()
 
     def ImportCACertificates(self):
-        sysConfDir = SystemConfig.instance().GetConfigDir()
+        sysConfDir = AGTkConfig.instance().GetConfigDir()
         caDir = os.path.join(sysConfDir,'CAcertificates')
         log.debug("Initializing from %s", caDir)
 
