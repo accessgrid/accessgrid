@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.155 2006-01-27 01:37:17 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.156 2006-01-27 23:08:25 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.155 2006-01-27 01:37:17 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.156 2006-01-27 23:08:25 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3688,11 +3688,6 @@ class ContentListPanel(wxPanel):
         EVT_MENU(self, id, lambda event: self.parent.MonitorAppCB(item))
 
         # - Application Monitor
-        id = wxNewId()
-        menu.Append(id, "Manage Roles...", 
-                    "Manage application authorization.")
-        EVT_MENU(self, id, lambda event: self.parent.ModifyAppRolesCB(item))
-
         menu.AppendSeparator()
         
         # Add properties
