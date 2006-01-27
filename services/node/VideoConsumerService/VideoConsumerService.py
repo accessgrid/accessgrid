@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.7 2006-01-25 09:12:10 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.8 2006-01-27 22:25:23 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ from AccessGrid import Toolkit
 from AccessGrid.Descriptions import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
-from AccessGrid.Platform import IsWindows, IsLinux
+from AccessGrid.Platform import IsWindows, IsLinux, IsFreeBSD5, IsOSX
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
@@ -55,7 +55,7 @@ class VideoConsumerService( AGService ):
             self.log.exception("Invalid profile (None)")
             raise Exception, "Can't set RTP Defaults without a valid profile."
 
-        if IsLinux():
+        if IsLinux() or IsOSX() or IsFreeBSD5:
             try:
                 rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
                 rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
