@@ -75,6 +75,7 @@ class Preferences:
         categories = Log.GetCategories()
         for category in categories:
             self.default[category] = Log.DEBUG
+        self.default[Log.RTPSensor] = Log.CRITICAL
 
         # Use the already implemented parts of
         # client profile. Save client profile
