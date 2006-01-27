@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.14 2006-01-27 20:59:03 eolson Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.15 2006-01-27 21:11:40 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -243,13 +243,13 @@ class VideoService( AGService ):
             if self.resource == "None":
                 vicDevice = "None"
             else:
-                vicDevice = self.resource.name
+                vicDevice = self.resource[0]
                 vicDevice = vicDevice.replace("[","\[")
                 vicDevice = vicDevice.replace("]","\]")
 
             if IsWindows():
                 try:
-                    self.MapWinDevice(self.resource.name)
+                    self.MapWinDevice(self.resource[0])
                 except:
                     self.log.exception("Exception mapping device")
 
@@ -378,7 +378,10 @@ class VideoService( AGService ):
             self.Start()
             
     def GetResource(self):
-        return self.resource
+        if self.resource:
+            return ResourceDescription(self.resource[0])
+        else:
+            return ResourceDescription('')
 
     def SetResource( self, resource ):
         """
