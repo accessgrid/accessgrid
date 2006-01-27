@@ -5,13 +5,21 @@ import sys
 import getopt
 
 from wxPython.wx import *
-from wxPython.iewin import *
+import wx.lib.iewin as  iewin
 
 from AccessGrid.SharedAppClient import SharedAppClient
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid import icons
 from AccessGrid.Toolkit import WXGUIApplication
+
+try:
+    from twisted.internet import threadedselectreactor
+    threadedselectreactor.install()
+except:
+    pass
+from twisted.internet import reactor
+    
     
 class WebBrowser(wxPanel):
     """
@@ -36,6 +44,7 @@ class WebBrowser(wxPanel):
         # Pages whose completion we need to ignore.  This is because
         #  the events don't tell us which events are for the main page.
         self.ignoreComplete = []
+        reactor.interleave(wxCallAfter)
 
     def add_navigation_callback(self, listener):
         self.navigation_callbacks.append(listener)
@@ -82,23 +91,22 @@ class WebBrowser(wxPanel):
         # Now we can set up the browser widget
         #
 
-        self.ie = wxIEHtmlWin(self, -1, style = wxNO_FULL_REPAINT_ON_RESIZE)
+        self.ie = iewin.IEHtmlWindow(self, -1, style = wxNO_FULL_REPAINT_ON_RESIZE)
         sizer.Add(self.ie, 1, wxEXPAND)
 
         # Hook up the event handlers for the IE window
-        EVT_MSHTML_BEFORENAVIGATE2(self, -1, self.OnBeforeNavigate2)
-        EVT_MSHTML_NEWWINDOW2(self, -1, self.OnNewWindow2)
-        EVT_MSHTML_DOCUMENTCOMPLETE(self, -1, self.OnDocumentComplete)
+        iewin.EVT_BeforeNavigate2(self, -1, self.OnBeforeNavigate2)
+        iewin.EVT_NewWindow2(self, -1, self.OnNewWindow2)
+        iewin.EVT_DocumentComplete(self, -1, self.OnDocumentComplete)
         # EVT_MSHTML_STATUSTEXTCHANGE(self, -1, self.OnStatusTextChange)
-        EVT_MSHTML_TITLECHANGE(self, -1, self.OnTitleChange)
-
+        iewin.EVT_TitleChange(self, -1, self.OnTitleChange)
 
         self.SetSizer(sizer)
         self.SetAutoLayout(1)
         self.Layout()
 
     def OnBeforeNavigate2(self, event):
-        url = event.GetText1()
+        url = event.URL
 
         if self.just_received_navigate:
             if url != self.docLoading:
@@ -123,19 +131,19 @@ class WebBrowser(wxPanel):
             map(lambda a: a(url), self.navigation_callbacks)
 
     def OnNewWindow2(self, event):
-        message = "On new window: " +event.GetText1()
+        message = "On new window: " +event.URL
         self.log.debug(message)
         event.Veto() # don't allow it
 
     def OnDocumentComplete(self, event):
-        message = "OnDocumentComplete: " + event.GetText1()
+        message = "OnDocumentComplete: " + event.URL
         self.log.debug(message)
-        self.current = event.GetText1()
+        self.current = event.URL
 
         # Check if we are finishing the main document or not.
-        if event.GetText1() not in self.ignoreComplete:
+        if event.URL not in self.ignoreComplete:
             
-            if event.GetText1() == "about:blank" and self.docLoading != "about:blank":
+            if event.URL == "about:blank" and self.docLoading != "about:blank":
                 # This case happens at startup.
                 self.log.debug("Ignoring DocComplete for first about:blank")
             else:
@@ -145,12 +153,12 @@ class WebBrowser(wxPanel):
                 #   pages) or a user clicking on a url.
                 self.log.debug("Finished loading.")
                 self.just_received_navigate = 0
-                self.current = event.GetText1()
+                self.current = event.URL
                 self.location.SetValue(self.current)
                 while len(self.ignoreComplete) > 0:
                     self.ignoreComplete.pop()
         else:
-            message = "Ignoring DocComplete for ", event.GetText1()
+            message = "Ignoring DocComplete for ", event.URL
             self.just_received_navigate = 0
             self.log.debug(message)
 
@@ -161,13 +169,13 @@ class WebBrowser(wxPanel):
         self.just_received_navigate = 0
 
     def OnTitleChange(self, event):
-        self.log.debug("titlechange: " + event.GetText1())
+        self.log.debug("titlechange: " + event.GetString())
         if self.frame:
-            self.frame.SetTitle(self.title_base + ' -- ' + event.GetText1())
+            self.frame.SetTitle(self.title_base + ' -- ' + event.GetString())
 
     def OnStatusTextChange(self, event):
         if self.frame:
-            self.frame.SetStatusText(event.GetText1())
+            self.frame.SetStatusText(event.URL)
 
     def OnBack(self, event):
         self.ie.GoBack()
@@ -282,7 +290,7 @@ class SharedBrowser( wxApp ):
         '''
         # Send out the event, including our public ID in the message.
         publicId = self.sharedAppClient.GetPublicId()
-        self.sharedAppClient.SendEvent("browse", ( publicId, data ) )
+        self.sharedAppClient.SendEvent("browse", data)
         # Store the URL in the application service in the venue
         self.sharedAppClient.SetData("url", data)
         
@@ -294,7 +302,8 @@ class SharedBrowser( wxApp ):
         """
 
         # Determine if the sender of the event is this component or not.
-        (senderId, url) = event.data
+        url = event.data
+        senderId = event.GetSenderId()
         if senderId == self.sharedAppClient.GetPublicId():
             self.log.debug("Ignoring"+url+"from myself ")
         else:
