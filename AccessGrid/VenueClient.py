@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.278 2006-01-26 08:38:25 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.279 2006-01-27 21:07:21 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.278 2006-01-26 08:38:25 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.279 2006-01-27 21:07:21 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -117,6 +117,7 @@ class VenueClient:
         self.preferences = self.app.GetPreferences()
         self.preferences.SetVenueClient(self)
         self.profile = self.preferences.GetProfile()
+        self.profileChanged = 0
        
         if pnode is None:
             pnode = int(self.preferences.GetPreference(Preferences.STARTUP_MEDIA))
@@ -1088,6 +1089,18 @@ class VenueClient:
         log.debug("UpdateNodeService: Method UpdateNodeService called")
         exc = None
 
+        if self.profileChanged:
+            log.debug('UpdateNodeService: profile has changed, updating services')
+            services = self.nodeService.GetServices()
+            for service in services:
+                try:
+                    AGServiceIW(service.uri).SetIdentity(self.profile)
+                except:
+                    log.info('failed to update %s with profile', service.name)
+            self.profileChanged = 0
+        else:
+            log.debug('profile has not changed, not updating services')
+
         # If unicast is selected, load bridge information from registry
         if self.GetTransport() == "unicast":
             self.__LoadBridges()
@@ -1101,7 +1114,7 @@ class VenueClient:
             self.nodeService.SetStreams( self.streamDescList )
         except:
             log.exception("Error setting streams")
-
+            
         # Raise exception if occurred
         if exc:
             raise exc
@@ -1194,7 +1207,17 @@ class VenueClient:
         return venues
 
     def UpdateClientProfile(self,profile):
-        self.__venueProxy.UpdateClientProfile(profile)
+        log.debug('VenueClient.UpdateClientProfile')
+        self.profileChanged = 1
+        if self.__venueClient.GetVenue() != None:
+            log.debug("Update client profile in venue")
+
+            try:
+                self.__venueProxy.UpdateClientProfile(profile)
+            except:
+                log.exception("Error occured when trying to update profile")
+        else:
+            log.debug("Can not update client profile in venue - not connected")
         
     def CreateApplication(self, appName, appDescription, appMimeType):
         self.__venueProxy.CreateApplication(appName,appDescription,appMimeType)

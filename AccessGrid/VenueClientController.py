@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.55 2006-01-25 00:34:17 eolson Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.56 2006-01-27 21:07:21 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.55 2006-01-25 00:34:17 eolson Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.56 2006-01-27 21:07:21 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -636,18 +636,10 @@ class VenueClientController:
         # Save the profile locally
         self.__venueClient.SaveProfile()
 
-        # Update client profile in venue
-        if self.__venueClient.GetVenue() != None:
-            log.debug("Update client profile in venue")
-
-            try:
-                self.__venueClient.UpdateClientProfile(profile)
-            except:
-                log.exception("bin.VenueClient::ChangeProfile: Error occured when trying to update profile")
-                # User does not need to know about this. The profile info got saved locally anyhow.                
-                #self.gui.Error("Your profile could not be changed", "Change Profile Error")
-        else:
-            log.debug("Can not update client profile in venue - not connected")
+        try:
+            self.__venueClient.UpdateClientProfile(profile)
+        except:
+            log.exception("bin.VenueClient::ChangeProfile: Error occured when trying to update profile")
 
     #
     # Preferences
