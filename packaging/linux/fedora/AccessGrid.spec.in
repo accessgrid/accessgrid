@@ -3,7 +3,7 @@
 # spec file. If you see %{variable_name} this is where it's assigned
 #
 %define	name		AccessGrid
-%define version		2.4
+%define version		3.0
 %define release		RELEASE
 %define	prefix		/usr
 %define sysconfdir	/etc/%{name}/Config
@@ -12,11 +12,6 @@
 %define xdg_data_dirs	%{sharedir}
 %define buildroot	%{_builddir}/AccessGrid-%{version}
 %define debug_package	%{nil}
-
-%ifarch ppc
-%define _libdir          /usr/lib
-%endif
-
 
 # Optik is included with Python 2.3, so only require it for older pythons
 %define require_optik %(python -c 'import sys ; print (int(float(sys.version[:3]) < 2.3))')
@@ -41,7 +36,12 @@ Vendor:		Argonne National Laboratory
 Source:		%{name}-%{version}-%{release}.tar.gz
 BuildRoot:	%{buildroot}
 Requires:	wxPython
-Requires:	globus-accessgrid
+Requires:	m2crypto >= 0.15
+Requires:	python-bajjer
+Requires:	python-bonjour
+Requires:	python-feedparser
+Requires:	python-twisted  >= 2.1.0
+Requires:	python-ZSI >= 2.0
 Requires:	PyXML >= 0.8.3
 Requires:	vnc-server
 %if %{require_optik}
@@ -50,7 +50,12 @@ Requires:	python-optik >= 1.4.1
 %if %{has_fc1_appmenu_file}
 Requires:	patch
 %endif
-BuildRequires:	globus-accessgrid
+BuildRequires:	m2crypto
+BuildRequires:	python-bajjer
+BuildRequires:	python-bonjour
+BuildRequires:	python-feedparser
+BuildRequires:	python-twisted >= 2.1.0
+BuildRequires:	python-ZSI >= 2.0
 BuildRequires:	wxPython
 
 %description
@@ -95,7 +100,6 @@ mv lib usr/lib
 mv bin usr/bin
 
 # compile python modules
-. /etc/profile.d/globus.sh
 python -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}/python%{pyver}",10,"%{_libdir}/python%{pyver}", 1)'
 python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}/python%{pyver}",10,"%{_libdir}/python%{pyver}")'
 
@@ -110,8 +114,6 @@ python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}
 %defattr(-,root,root)
 %{_libdir}/python%{pyver}/site-packages/*
 /etc/AccessGrid
-/etc/init.d/agns
-/etc/init.d/agsm
 %{sharedir}/%{name}/ag.ico
 %{sharedir}/%{name}/ag-ellipse.png
 %defattr(0755,root,root)
@@ -139,11 +141,9 @@ python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}
 %{prefix}/bin/VenueManagement.py
 %{prefix}/bin/VenueServer.py
 #
-# - Install the python BridgeServer implementation
 # - Install the QuickBridge executable
 #
 %defattr(0755,root,root)
-%{prefix}/bin/BridgeServer.py
 %{prefix}/bin/QuickBridge
 # - Install the Gnome/KDE menu items
 %defattr(-,root,root)
@@ -167,7 +167,6 @@ rm -rf /etc/AccessGrid/SharedApplications/Shared_Presentation
 rm -rf /etc/AccessGrid/SharedApplications/Shared_Question_Tool
 rm -rf /etc/AccessGrid/SharedApplications/VenueVNC
 agpm.py --post-install 2>&1 > /dev/null
-chmod a+x /etc/AccessGrid/SharedApplications/VenueVNC/vncviewer
 
 %if %{has_fc1_appmenu_file}
   # patch /etc/X11/desktop-menus/applications.menu to add an AccessGrid menu
