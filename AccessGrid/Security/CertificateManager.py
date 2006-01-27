@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.49 2006-01-27 19:13:43 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.50 2006-01-27 21:12:33 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.49 2006-01-27 19:13:43 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.50 2006-01-27 21:12:33 turam Exp $"
 
 import re
 import os
@@ -48,7 +48,7 @@ from AccessGrid import Utilities
 from AccessGrid.Security import CertificateRepository
 from AccessGrid.Security import CRSClient
 from AccessGrid import Platform
-from AccessGrid.Platform.Config import SystemConfig
+from AccessGrid.Platform.Config import AGTkConfig
 
 log = Log.GetLogger(Log.CertificateManager)
 
