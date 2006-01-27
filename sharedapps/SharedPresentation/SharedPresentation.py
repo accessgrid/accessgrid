@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.40 2006-01-27 20:25:22 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.41 2006-01-27 23:46:45 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -21,6 +21,13 @@ import shutil
 from wxPython.wx import *
 from AccessGrid import Platform
 from AccessGrid import Log
+
+try:
+    from twisted.internet import threadedselectreactor
+    threadedselectreactor.install()
+except:
+    pass
+from twisted.internet import reactor
 
 if sys.platform == Platform.WIN:
     # Win 32 COM interfaces that we use
@@ -95,6 +102,7 @@ class PowerPointViewer:
         from win32com.client import gencache
         import pythoncom
         pythoncom.CoInitialize()
+     
        
         try:
             gencache.EnsureModule('{91493440-5A91-11CF-8700-00AA0060263B}', 0, 2, 6)
@@ -275,7 +283,7 @@ class SharedPresentationFrame(wxFrame):
         self.syncCallback = noOp
         self.exitCallback = noOp
         self.localUploadCallback = noOp
-
+        reactor.interleave(wxCallAfter)
         #
         # Create UI controls
         #

@@ -12,6 +12,13 @@ from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid import icons
 from AccessGrid.Toolkit import WXGUIApplication
+
+try:
+    from twisted.internet import threadedselectreactor
+    threadedselectreactor.install()
+except:
+    pass
+from twisted.internet import reactor
     
 class WebBrowser(wxPanel):
     """
@@ -36,7 +43,7 @@ class WebBrowser(wxPanel):
         # Pages whose completion we need to ignore.  This is because
         #  the events don't tell us which events are for the main page.
         self.ignoreComplete = []
-      
+       
 
     def add_navigation_callback(self, listener):
         self.navigation_callbacks.append(listener)
@@ -235,7 +242,7 @@ class SharedBrowser( wxApp ):
         for UI display. 
         '''
         wxApp.__init__(self, False)
-        
+        reactor.interleave(wxCallAfter)
         # Create shared application client        
         self.sharedAppClient = SharedAppClient(name)
         self.log = self.sharedAppClient.InitLogging()
