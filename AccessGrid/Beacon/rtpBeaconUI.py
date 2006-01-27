@@ -6,12 +6,12 @@
 # Author:      Thomas Uram, Susanne Lefvert
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeaconUI.py,v 1.6 2006-01-18 22:50:33 turam Exp $
+# RCS-ID:      $Id: rtpBeaconUI.py,v 1.7 2006-01-27 19:10:56 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
 
-__revision__ = "$Id: rtpBeaconUI.py,v 1.6 2006-01-18 22:50:33 turam Exp $"
+__revision__ = "$Id: rtpBeaconUI.py,v 1.7 2006-01-27 19:10:56 turam Exp $"
 
 from wxPython.wx import *
 from wxPython.grid import *
@@ -25,8 +25,8 @@ import time
 
 
 class BeaconFrame(wxFrame):
-    def __init__(self, parent, log, beacon):
-        wxFrame.__init__(self, parent, -1, "RTP Beacon View", size=(400,300))
+    def __init__(self, parent, log, beacon, **args):
+        wxFrame.__init__(self, parent, -1, "RTP Beacon View", size=(400,300), **args)
         self.log = log
         self.beacon = beacon
         
@@ -71,7 +71,6 @@ class BeaconFrame(wxFrame):
        
         # Layout
         self.__Layout()
-        self.Show(True)
 
         # Start update thread
         self.updateThread = threading.Thread(target=self.ChangeValuesThread)
