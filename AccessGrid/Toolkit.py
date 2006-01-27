@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.112 2006-01-25 22:16:33 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.113 2006-01-27 19:30:31 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.112 2006-01-25 22:16:33 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.113 2006-01-27 19:30:31 eolson Exp $"
 
 # Standard imports
 import os
@@ -117,6 +117,9 @@ class AppBase:
        At the first sign of any problems it raises exceptions and exits.
        """
        self.name = name
+       self._categoriesToLog = Log.GetDefaultLoggers()
+       if Log.RTPSensor in self._categoriesToLog:
+           self._categoriesToLog.remove(Log.RTPSensor)
 
        # 1. Process Command Line Arguments
        argvResult = self.ProcessArgs(args=args)
@@ -167,9 +170,8 @@ class AppBase:
                                         self.options.numlogfiles)
                                         
            fh.setFormatter(Log.GetFormatter())
-           self.fhLoggerLevels = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
+           self.fhLoggerLevels = Log.HandleLoggers(fh, self._categoriesToLog)
            self.fhLoggerLevels.SetLevel(Log.DEBUG)
-           self.fhLoggerLevels.SetLevel(Log.WARN, Log.RTPSensor)
            self.loggerLevels = self.fhLoggerLevels
 
            # Send the log in memory to stream (debug) or file handler.
@@ -305,7 +307,7 @@ class AppBase:
 
        if self.options.debug or int(self.preferences.GetPreference(Preferences.LOG_TO_CMD)):
            self.streamLoggerLevels = Log.HandleLoggers(Log.defStreamHandler,
-                                           Log.GetDefaultLoggers())
+                                           self._categoriesToLog)
            self.streamLoggerLevels.SetLevel(Log.DEBUG)
            # When in debug mode, we'll make the stream the primary handler.
            self.loggerLevels = self.streamLoggerLevels
