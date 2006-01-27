@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.154 2006-01-26 20:20:35 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.155 2006-01-27 01:37:17 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.154 2006-01-26 20:20:35 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.155 2006-01-27 01:37:17 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -625,9 +625,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
                     self.OnExit()
                     return
-
-                self.beaconFrame = BeaconFrame(self, log, beacon)
-                self.beaconFrame.CenterOnParent()
+                
+                parent_pos = self.GetPosition()
+                parent_siz = self.GetSize()
+                pos = ( parent_pos[0] + parent_siz[0] / 2, parent_pos[1] + parent_siz[1] / 2)
+                self.beaconFrame = BeaconFrame(self, log, beacon, pos=pos)
+                self.beaconFrame.Show(true)
         
     def __SetProperties(self):
         self.SetTitle("Venue Client")
