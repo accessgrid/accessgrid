@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.156 2006-01-27 23:08:25 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.157 2006-01-28 00:17:11 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.156 2006-01-27 23:08:25 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.157 2006-01-28 00:17:11 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -214,7 +214,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.ag_url = "http://www.accessgrid.org/"
         self.flag_url = "http://www.mcs.anl.gov/fl/research/accessgrid"
         self.fl_url = "http://www.mcs.anl.gov/fl/"
-        self.bugzilla_url = "http://bugzilla.mcs.anl.gov/AccessGrid"
+        self.bugzilla_url = "http://bugzilla.mcs.anl.gov/accessgrid"
 
         reactor.interleave(wxCallAfter)
 
