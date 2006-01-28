@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.8 2006-01-19 20:17:05 lefvert Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.9 2006-01-28 02:15:17 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,6 +20,7 @@ from AccessGrid.AGParameter import RangeParameter
 from AccessGrid import Platform
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
+from AccessGrid.Platform.ProcessManager import ProcessManager
 
 class AudioService( AGService ):
 
@@ -93,6 +94,9 @@ class AudioService( AGService ):
             # note: the forceOSSAC97 attribute will only exist for the above platforms
             self.forceOSSAC97 = OptionSetParameter( "Force AC97", "False", ["True", "False"] )
             self.configuration.append(self.forceOSSAC97)
+
+        if Platform.IsOSX():
+            self._x11Started = False
 
     def __SetRTPDefaults(self, profile):
         """
@@ -220,7 +224,10 @@ class AudioService( AGService ):
                         self.log.error("X11 not found in %s" % x11Path)
                     else:
                         self.log.info("starting X11")
+
                         os.system(x11Path + " &")
+                        #self._x11ProcessManager = ProcessManager()
+                        #self._x11ProcessManager.StartProcess(x11Path, [], detached=1)
                         # wait until the X server starts or x seconds pass
                         connected = 0
                         timePassed = 0
@@ -230,15 +237,18 @@ class AudioService( AGService ):
                             timePassed += 1
                             try:
                                 sock2.connect( ("localhost", 6000) )
+                                #print "sock2:", sock.getsockname(), sock.fileno()
                             except:
                                 pass    # failed to connect to x server so far
                             else:
                                 connected = 1  # x server is up
+                                self._x11Started = True
                         if connected:
                             self.log.info("X11 started successfully")
                         if timePassed >= 10:
                             self.log.warning("Timed out waiting for X11 to start")
-                        sock2.close()
+                        #sock2.close()
+                        sock2.shutdown(2)
                 sock.close()
             except:
                 self.log.exception("Error in X11 init code")
@@ -338,6 +348,12 @@ class AudioService( AGService ):
         except:
             self.log.exception("Exception in AGService.Stop ")
             raise Exception("AGService.Stop failed : ", str( sys.exc_value ) )
+
+    def Shutdown(self):
+        AGService.Shutdown(self)
+        if Platform.IsOSX():
+            if self._x11Started == True:
+                os.system("killall -9 X11") 
 
     def SetStream( self, streamDescription ):
         """
