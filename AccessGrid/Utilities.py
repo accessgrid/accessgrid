@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.81 2005-10-23 07:42:14 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.82 2006-01-28 00:23:51 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.81 2005-10-23 07:42:14 turam Exp $"
+__revision__ = "$Id: Utilities.py,v 1.82 2006-01-28 00:23:51 lefvert Exp $"
 
 import os
 import string
@@ -28,7 +28,7 @@ import re
 from AccessGrid import Log
 log = Log.GetLogger(Log.Utilities)
 
-from AccessGrid.Version import GetVersion
+from AccessGrid.Version import GetVersion, GetStatus
 from AccessGrid import Platform
 from AccessGrid.Platform import Config
 
@@ -95,7 +95,8 @@ def SaveConfig(fileName, config, separator="."):
     except IOError:
         print "Couldn't open file for writing, database mods lost."
         return
-    
+
+  
     outFile.write("# AGTk %s\n" % (GetVersion()))
 
     cp.write(outFile)
@@ -199,7 +200,7 @@ def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
 
     args['Bugzilla_login'] = bugzilla_login
     args['Bugzilla_password'] = bugzilla_password
-    args['version'] = str(GetVersion())
+    args['version'] = str(GetVersion()) + " "+GetStatus()     
     args['rep_platform'] = "Other"
     
     #
