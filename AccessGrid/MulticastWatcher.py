@@ -2,7 +2,7 @@
 # Name:        MulticastWatcher.py
 # Purpose:     Class to watch a multicast address for traffic and report status
 # Created:     2005/06/06
-# RCS-ID:      $Id: MulticastWatcher.py,v 1.7 2006-01-04 18:56:21 turam Exp $
+# RCS-ID:      $Id: MulticastWatcher.py,v 1.8 2006-01-30 22:47:00 turam Exp $
 # Copyright:   (c) 2005
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ MulticastWatcher has two modes:
   the (user-configurable) timeout
 
 """
-__revision__ = "$Id: MulticastWatcher.py,v 1.7 2006-01-04 18:56:21 turam Exp $"
+__revision__ = "$Id: MulticastWatcher.py,v 1.8 2006-01-30 22:47:00 turam Exp $"
 
 import socket, threading, string, struct
 import time
@@ -72,27 +72,31 @@ class MulticastWatcher:
         self.statusChangeCB = statusChangeCB
         self.timeout = timeout
         
-        self.sock = openmcastsock(self.host,self.port)
-        
         self.mcastStatus = threading.Event()
         self.mcastStatus.clear()
         
         self.lastRecvTime = 0
         
         self.running = threading.Event()
+        self.sock = openmcastsock(self.host,self.port)
         
     def Start(self):
         self.running.set()
         self.listeningThread = threading.Thread(target=self.Listen,
-                                                name=self.__class__)
+                                            name=self.__class__)
         self.listeningThread.start()
         
     def Stop(self):
         self.running.clear()
+        self.sock.close()
+        self.sock = None
         
     def Listen(self):
         while self.running.isSet():
+	  try:
             self.__Listen()
+	  except Exception,e:
+	    print 'exception ', e
         
     def __Listen(self):
             fdList = select.select([self.sock.fileno()],[],[],self.timeout)
@@ -123,7 +127,10 @@ class MulticastWatcher:
     def GetStatus(self):
         # If not running, listen once to get current state
         if not self.running.isSet():
+            self.sock = openmcastsock(self.host,self.port)
             self.__Listen()
+            self.sock.close()
+            self.sock = None
         return self.mcastStatus.isSet()
 
 
