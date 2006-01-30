@@ -91,6 +91,9 @@ mv bin usr/bin
 python -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}/python%{pyver}",10,"%{_libdir}/python%{pyver}", 1)'
 python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}/python%{pyver}",10,"%{_libdir}/python%{pyver}")'
 
+# symlink workarounds
+(cd etc; ln -s AccessGrid AccessGrid3)
+(cd .%{_libdir}/python%{pyver}/site-packages; ln -s AccessGrid3/AccessGrid AccessGrid)
 
 #
 # Define the files that are to go into the AccessGrid package
@@ -102,6 +105,7 @@ python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}
 %defattr(-,root,root)
 %{_libdir}/python%{pyver}/site-packages/*
 /etc/AccessGrid
+/etc/AccessGrid3
 %{sharedir}/%{name}/ag.ico
 %{sharedir}/%{name}/ag-ellipse.png
 %defattr(0755,root,root)
@@ -133,6 +137,7 @@ python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}
 #
 %defattr(0755,root,root)
 %{prefix}/bin/QuickBridge
+%{prefix}/bin/Bridge.py
 # - Install the Gnome/KDE menu items
 %defattr(-,root,root)
 %{xdg_data_dirs}/applications/%{name}
