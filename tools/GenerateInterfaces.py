@@ -5,6 +5,8 @@ from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("-q", "--quiet", dest="quiet", action="store_true",
                   default=False, help="Run with minimal output.")
+parser.add_option("-m", "--with-modules", dest="modules", 
+                  default=None, help="Generate interfaces for the specified comma-separated list of modules (only a subset of the Binding.wsdl name is required to match).")
 options, args = parser.parse_args()
 
 if sys.platform == "win32":
@@ -67,5 +69,15 @@ def Generate(typesModule,wsdlFile,dstPath):
     os.system(command)
 
 
-for typesMod,wsdlFile in wsdlList:
+if options.modules:
+    targets = options.modules.split(',')
+    subWsdlList = []
+    for w in wsdlList:
+        for t in targets:
+            if w[1].find(t) >= 0:
+                subWsdlList.append(w)
+else:
+    subWsdlList = wsdlList
+
+for typesMod,wsdlFile in subWsdlList:
     Generate(typesMod,os.path.join(srcPath,wsdlFile),dstPath)
