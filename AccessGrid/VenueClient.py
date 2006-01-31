@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.279 2006-01-27 21:07:21 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.280 2006-01-31 22:20:35 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.279 2006-01-27 21:07:21 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.280 2006-01-31 22:20:35 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -106,6 +106,7 @@ class VenueClient:
         self.userConf = UserConfig.instance()
         self.isPersonalNode = pnode
         self.nodeService = None
+        self.dataStoreUploadUrl = None
         self.builtInNodeService = None
         self.builtInNodeServiceUri = ""
               
@@ -1362,6 +1363,9 @@ class VenueClient:
         
     def GetChatLocation(self):
         return self.chatLocation
+        
+    def GetClientProfile(self):
+        return self.preferences.GetProfile()
 
     #
     # NodeService Info
