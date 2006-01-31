@@ -54,8 +54,8 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
-    <operation name="GetDataStoreInformation">
-	    <soap:operation soapAction="urn:#GetDataStoreInformation"/>
+    <operation name="GetDataStoreUploadUrl">
+	    <soap:operation soapAction="urn:#GetDataStoreUploadUrl"/>
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>
@@ -65,15 +65,6 @@
 	</operation>
     <operation name="GetNodeServiceURL">
 	    <soap:operation soapAction="urn:#GetNodeServiceURL"/>
-	    <input>
-		<soap:body use="literal"/> 
-	    </input>
-	    <output>
-		<soap:body use="literal"/> 
-	    </output>
-	</operation>
-    <operation name="GetPersonalData">
-	    <soap:operation soapAction="urn:#GetPersonalData"/>
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>
