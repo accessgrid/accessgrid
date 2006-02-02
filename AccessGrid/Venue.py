@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.266 2006-01-28 00:52:50 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.267 2006-02-02 09:39:05 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.266 2006-01-28 00:52:50 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.267 2006-02-02 09:39:05 turam Exp $"
 
 import sys
 import time
@@ -537,11 +537,8 @@ class Venue:
             string += "applications : %s\n" % alist
        
         # List of services
-
-        log.warning("services not being persisted yet")
-        #servlist = ":".join(map(lambda service: service.GetId(),
-        #                        self.server.services.values()))
-        servlist = []
+        servlist = ":".join(map(lambda service: service.GetId(),
+                                self.services.values()))
 
         if len(servlist):
             string += "services: %s\n" % servlist
@@ -682,8 +679,6 @@ class Venue:
         """
         now_sec = time.time()
 
-        #log.debug("Calling Cleanup Clients: %d", now_sec)
-
         users_to_remove = []
         netservices_to_remove = []
 
@@ -699,30 +694,6 @@ class Venue:
                           connId, now_sec)
                 self.RemoveNetworkService(connId)
 
-#     def EventServiceDisconnect(self, event):
-#         """
-#         This is an Event handler for Disconnect events. This keeps the
-#         Venue cleaned up by removing users that disconnect.
-
-#         **Arguments:**
-
-#         *privateId* The private id of the user disconnecting.
-#         """
-#         privateId = event.data
-#         log.debug("VenueServer: Got Client disconnect for %s venue=%s", privateId, event.venue)
-#         if event.venue != self.uniqueId:
-#             log.info("EventServiceDisconnect: Received client disconnect for a different venue %s", event.venue)
-
-#         #
-#         # We don't lock here; RemoveUser handles the locking.
-#         #
-
-#         if privateId in self.clientDisconnectOK and self.clientDisconnectOK[privateId]:
-#             log.debug("Got disconnect, but I'm okay")
-#             del self.clientDisconnectOK[privateId]
-#         else:
-#             self.RemoveUser(privateId)
- 
     def __GetMatchingStream(self, capabilities):
         '''
         Get streams that matches the capabilities of a service
@@ -878,12 +849,14 @@ class Venue:
         if conn is not None:
             if requestedTimeout == 0:
                 t_mod = self.maxTimeout
-            elif requestedTimeout < self.maxTimeout:
+            elif requestedTimeout <= self.maxTimeout:
                 t_mod = requestedTimeout
             else:
                 t_mod = self.maxTimeout
 
+            # Set timeout for client
             conn.SetTimeout(now_sec + t_mod)
+            
             return t_mod
         else:
             return -1
