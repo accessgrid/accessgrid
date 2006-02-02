@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.36 2006-01-24 18:58:51 eolson Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.37 2006-02-02 23:26:39 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.36 2006-01-24 18:58:51 eolson Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.37 2006-02-02 23:26:39 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -189,10 +189,8 @@ class SharedApplication:
         """
         Shut down the applications before it is destroyed.
         """
-
-        for channel in self.channels:
-            self.eventService.DestroyChannel(channel)
-
+        self.eventClient.Stop()
+       
     def GetState(self, private_token):
         """
         Return the state of this application, used in the rollup of
