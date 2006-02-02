@@ -9,13 +9,7 @@ from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.hosting import Client
 from AccessGrid.interfaces.SharedApplication_client import SharedApplicationIW
 
-from wxPython.wx import wxCallAfter
-try:
-    from twisted.internet import threadedselectreactor
-    threadedselectreactor.install()
-except:
-    pass
-from twisted.internet import reactor
+
 
 class SharedAppClient:
     '''
@@ -33,7 +27,6 @@ class SharedAppClient:
         
         *appName* The name of the application. 
          '''
-
         self.__publicId = None
         self.__privateId = None
         self.__channelId = None
@@ -45,7 +38,7 @@ class SharedAppClient:
         self.__callbackTable = []
 
         self.eventClient = None
-        reactor.interleave(wxCallAfter)
+       
         
     def InitLogging(self, debug = 0, log = None):
         """
@@ -110,7 +103,7 @@ class SharedAppClient:
             # Join the application object with your client profile
             (self.__publicId, self.__privateId) = self.__appProxy.Join(clientProfile)
         except:
-            self.log.exception("SharedAppClient.Join failed: %s",
+            self.log.exception("SharedAppClient.Join failed: %s"%
                                self.__appUrl)
         try:
             # Retrieve data/event channel id
