@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.280 2006-01-31 22:20:35 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.281 2006-02-02 09:40:44 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.280 2006-01-31 22:20:35 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.281 2006-02-02 09:40:44 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -198,7 +198,10 @@ class VenueClient:
         self.jabber = JabberClient()
         self.textLocation = None
         
-        self.multicastWatcher = MulticastWatcher()
+        try:
+            self.multicastWatcher = MulticastWatcher()
+        except:
+            self.multicastWatcher = None
        
         self.beaconLocation = None
 
@@ -1502,7 +1505,9 @@ class VenueClient:
         
         
     def GetMulticastStatus(self):
-        return self.multicastWatcher.GetStatus()
+        if self.multicastWatcher:
+            return self.multicastWatcher.GetStatus()
+        return 0
 
     def GetBeacon(self):
         return self.beacon
