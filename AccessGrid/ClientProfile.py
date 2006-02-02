@@ -6,15 +6,16 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.46 2006-01-26 20:17:01 turam Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.47 2006-02-02 09:37:34 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.46 2006-01-26 20:17:01 turam Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.47 2006-02-02 09:37:34 turam Exp $"
 __docformat__ = "restructuredtext en"
 
+import time
 import os
 import ConfigParser
 import string
@@ -65,7 +66,8 @@ class ClientProfile:
         'ClientProfile.location' : '<Insert Postal Address Here>',
         'ClientProfile.techsupportinfo':'',
         'ClientProfile.venueclienturl' : '',
-        'ClientProfile.home' : 'https://vv3.mcs.anl.gov:8000/Venues/default'
+        'ClientProfile.home' : 'https://vv3.mcs.anl.gov:8000/Venues/default',
+        'ClientProfile.gmtoffset' : 0
         }
 
     USER = "user"
@@ -87,6 +89,10 @@ class ClientProfile:
         self.distinguishedName = ''
         self.techSupportInfo = ''
         self.connectionId = ''
+        if time.daylight:
+            self.gmtoffset = time.altzone
+        else:
+            self.gmtoffset = time.timezone
 
         if profileFile != None and os.path.exists(profileFile):
             self.Load(self.profileFile)
@@ -184,8 +190,7 @@ class ClientProfile:
         for x in self.profile.keys():
             (section, option) = string.split(x, '.')
             if (section != ClientProfile.configSection and
-                section != string.lower(ClientProfile.configSection)
-                or option not in ClientProfile.validOptions):
+                section != string.lower(ClientProfile.configSection)):
                 log.error('ClientProfile.CheckProfile: Check profile failed for section: %s option: %s'%(section, option))
                 return 0
         return 1
@@ -263,6 +268,9 @@ class ClientProfile:
 
     def GetHomeVenue(self):
         return self.homeVenue
+        
+    def GetGmtOffset(self):
+        return self.gmtoffset
 
     def InformationMatches(self, obj):
         """
@@ -283,7 +291,6 @@ class ClientProfile:
             #  self.fileType == obj.fileType
             #  self.publicId == obj.publicId
             #  self.privateId == obj.privateId
-            #  self.capabilities == obj.capabilites 
             #  self.distinguishedName == obj.distinguishedName 
             #  self.venueClientURL == obj.venueClientURL and \
             if self.profileType == obj.profileType and \
