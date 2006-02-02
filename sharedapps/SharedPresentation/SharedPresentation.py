@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.41 2006-01-27 23:46:45 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.42 2006-02-02 21:03:43 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,9 @@ try:
     threadedselectreactor.install()
 except:
     pass
+
 from twisted.internet import reactor
+
 
 if sys.platform == Platform.WIN:
     # Win 32 COM interfaces that we use
@@ -172,6 +174,7 @@ class PowerPointViewer:
         This method opens a file and starts the viewing of it.
         """
 
+        print '---------- load presentation'
         # Close existing presentation
         try:
             if self.presentation:
@@ -183,6 +186,7 @@ class PowerPointViewer:
         
         self.presentation = self.ppt.Presentations.Open(file)
         self.lastSlide = self.presentation.Slides.Count
+        print '================== set open file to ', file
         self.openFile = file
         
         # Start viewing the slides in a window
@@ -308,7 +312,6 @@ class SharedPresentationFrame(wxFrame):
       
         # - Create main panel
         self.panel = wxPanel(self, -1, size = wxSize(320, 140))
-        
         # - Create main sizer 
         mainSizer = wxBoxSizer(wxVERTICAL)
         self.SetSizer(mainSizer)
@@ -325,7 +328,7 @@ class SharedPresentationFrame(wxFrame):
         sizer.Add( self.masterCheckBox, 0, wxEXPAND | wxALL, 5)
 
         # - Create sizer for remaining ctrls
-        staticBoxSizer = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
+        staticBoxSizer = wxBoxSizer(wxVERTICAL)
         gridSizer = wxFlexGridSizer(2, 3, 5, 5)
         gridSizer.AddGrowableCol(1)
         staticBoxSizer.Add(gridSizer, 0, wxEXPAND)
@@ -747,6 +750,9 @@ class SharedPresentation:
         self.log = self.sharedAppClient.InitLogging()
 
         self.controller = UIController(0, self.log)
+
+        # Necessary for UI applications that sends event messages
+        reactor.interleave(wxCallAfter)
         
         # Initialize state in the shared presentation
         self.url = url
@@ -881,15 +887,14 @@ class SharedPresentation:
 
             # Pull the next event out of the queue
             (event, data) = self.eventQueue.get(1)
-            self.log.debug("Got Event: %s %s", event, str(data))
+            self.log.debug("Got Event: %s %s"%(event, str(data)))
 
             # Invoke the matching method, passing the data
             try:
                 self.methodDict[event](data)
             except:
-                self.log.exception("EXCEPTION PROCESSING EVENT")
-                print 'exception processing event'
-
+                self.log.exception("EXCEPTION PROCESSING EVENT %s"%data)
+                
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #
     # Methods registered as callbacks with the UI
@@ -925,7 +930,7 @@ class SharedPresentation:
         This method handles GOTO events from the UI.
         The event is only sent if the local user is the "master"
         """
-        self.log.debug("Method SendGoto called; slidenum=(%d)", slideNum)
+        self.log.debug("Method SendGoto called; slidenum=(%d)"%slideNum)
 
         # Check if slideNum is greater than max slide
                 
@@ -971,7 +976,7 @@ class SharedPresentation:
         """
         This method handles clicks on the MASTER checkbox
         """
-        #self.log.debug("Method SendMaster called; flag=(%d)", flag)
+        self.log.debug("Method SendMaster called; flag=(%d)"%flag)
         publicId = self.sharedAppClient.GetPublicId()
 
         if flag:
@@ -1177,7 +1182,7 @@ class SharedPresentation:
         This is the _real_ goto slide method that tells the viewer to move
         to the specified slide.
         """
-        self.log.debug("Method GoToSlide called; slidenum=(%d)", slideNum)
+        self.log.debug("Method GoToSlide called; slidenum=(%d)"%int(slideNum))
 
         # Call the viewers GotoSlide method
         if self.viewer != None:
@@ -1194,7 +1199,7 @@ class SharedPresentation:
         to load the specified presentation.
         data is a tuple of (senderId, url)
         """
-        self.log.debug("Method LoadPresentation called; url=(%s)", data[1])
+        self.log.debug("Method LoadPresentation called; url=(%s)"%data[1])
 
         slidesUrl = data[1]
         
@@ -1371,7 +1376,7 @@ class SharedPresentation:
 
                 # Send the next event to other app users
                 publicId = self.sharedAppClient.GetPublicId()
-                self.sharedAppClient.SendEvent(SharedPresEvent.NEXT, None)
+                self.sharedAppClient.SendEvent(SharedPresEvent.NEXT, "")
         else:
             wxCallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
             self.log.debug("No presentation loaded!")
@@ -1416,9 +1421,9 @@ class SharedPresentation:
 
                 # We send the event, which is wrapped in an Event instance
                 publicId = self.sharedAppClient.GetPublicId()
-                self.sharedAppClient.SendEvent(SharedPresEvent.PREV, None)
+                self.sharedAppClient.SendEvent(SharedPresEvent.PREV, "")
 
-                self.log.debug("slide %d step %d", self.slideNum, self.stepNum)
+                self.log.debug("slide %d step %d"%(self.slideNum, self.stepNum))
 
         else:
             wxCallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
@@ -1430,7 +1435,7 @@ class SharedPresentation:
         This is the _real_ goto slide method that tells the viewer to goto
         the specified slide.
         """
-        self.log.debug("Method LocalGoto called; slidenum=(%d)", slideNum)
+        self.log.debug("Method LocalGoto called; slidenum=(%d)"%slideNum)
         # Call the viewers GotoSlide method
         if self.viewer != None and self.viewer.win != None:
             if slideNum > 0 and slideNum <= self.viewer.GetLastSlide():
@@ -1455,7 +1460,7 @@ class SharedPresentation:
         This is the _real_ goto slide method that tells the viewer to move
         to the next slide.
         """
-        self.log.debug("Method LocalLoad called; slidesUrl=(%s)", slidesUrl)
+        self.log.debug("Method LocalLoad called; slidesUrl=(%s)"%slidesUrl)
 
         # If the slides URL begins with ftps, retrieve the slides
         # from the venue data store.
@@ -1525,7 +1530,7 @@ class SharedPresentation:
 
         # Set the slide URL in the UI
         if self.presentation and len(self.presentation) != 0:
-            self.log.debug("Got presentation: %s", self.presentation)
+            self.log.debug("Got presentation: %s"%self.presentation)
             if self.presentation[:6] == "ftps:":
                 # Remove datastore prefix on local url in UI since master checks
                 #  if file is in venue and sends full datastore url if it is.
@@ -1536,7 +1541,7 @@ class SharedPresentation:
                 wxCallAfter( self.controller.SetSlides, self.presentation)
                                 
             # Retrieve the current slide
-            self.slideNum = self.sharedAppClient.GetData(SharedPresKey.SLIDENUM)
+            self.slideNum = int(self.sharedAppClient.GetData(SharedPresKey.SLIDENUM))
             # If it's a string, convert it to an integer
             if type(self.slideNum) == type(""):
                 if len(self.slideNum) < 1:
@@ -1545,7 +1550,7 @@ class SharedPresentation:
                     self.slideNum = int(self.slideNum)
 
             # Retrieve the current step number
-            self.stepNum = self.sharedAppClient.GetData(SharedPresKey.STEPNUM)
+            self.stepNum = int(self.sharedAppClient.GetData(SharedPresKey.STEPNUM))
             # If it's a string, convert it to an integer
             if type(self.stepNum) == type(""):
                 if len(self.stepNum) < 1:
@@ -1599,7 +1604,7 @@ class SharedPresentation:
         if self.slideNum == '':
             self.slideNum = 1
         else:
-            self.log.debug("Got slide num: %d", self.slideNum)
+            self.log.debug("Got slide num: %d"%self.slideNum)
             wxCallAfter(self.controller.SetSlideNum, '%s' % self.slideNum)
 
         # Set the master in the UI
