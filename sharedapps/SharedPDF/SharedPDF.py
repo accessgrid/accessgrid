@@ -4,8 +4,8 @@
 #
 # Author:      Susanne Lefvert
 #
-# Created:     $Date: 2005-05-31 21:59:59 $
-# RCS-ID:      $Id: SharedPDF.py,v 1.5 2005-05-31 21:59:59 lefvert Exp $
+# Created:     $Date: 2006-02-04 00:04:36 $
+# RCS-ID:      $Id: SharedPDF.py,v 1.6 2006-02-04 00:04:36 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,6 +15,15 @@ from wxPython.wx import *
 
 if wxPlatform == '__WXMSW__':
     from wx.lib.pdfwin import PDFWindow
+
+
+try:
+    from twisted.internet import threadedselectreactor
+    threadedselectreactor.install()
+except:
+    pass
+
+from twisted.internet import reactor
 
 # AGTk imports
 from AccessGrid.Toolkit import WXGUIApplication
@@ -38,9 +47,11 @@ class PdfViewer(wxPanel):
     the defined pdf activex class provided by wxPython.
     '''
     
-    def __init__(self, parent, name, appUrl, venueUrl):
+    def __init__(self, parent, name, appUrl, venueUrl, connectionId):
         wxPanel.__init__(self, parent, -1)
 
+        reactor.interleave(wxCallAfter)
+        
         # Create ActiveX interface to adobe acrobate reader
         self.pdf = PDFWindow(self)
         
@@ -70,21 +81,22 @@ class PdfViewer(wxPanel):
         self.sharedAppClient.RegisterEventCallback("changePage", self.ChangePageCallback)
 
         # Create data store interface
-        self.dataStoreClient = GetVenueDataStore(venueUrl)
+        self.dataStoreClient = GetVenueDataStore(venueUrl, connectionId)
 
         self.file = None
         self.pageNr = 1
         
         # Get current state
-        self.file = self.sharedAppClient.GetData("file")
-        self.pageNr = self.sharedAppClient.GetData("page")
+        self.file = str(self.sharedAppClient.GetData("file"))
+        self.pageNr = int(self.sharedAppClient.GetData("page"))
+        if not self.pageNr:
+            self.pageNr = 1
 
         if self.file:
             try:
-                self.pageNr = int(self.pageNr)
                 self.dataStoreClient.Download(self.file, "tmp")
                 self.pdf.LoadFile("tmp")
-                self.pdf.setCurrentPage(self.pageNr)
+                self.pdf.setCurrentPage( int(self.pageNr))
             except:
                 self.log.exception("PdfViewer.__init__: Download failed %s"%(self.file))
 
@@ -124,7 +136,8 @@ class PdfViewer(wxPanel):
                     self.sharedAppClient.SetData("page", self.pageNr)
                     
                     # Send event
-                    self.sharedAppClient.SendEvent("openFile", (self.id, self.file, self.pageNr))
+                    self.sharedAppClient.SendEvent("openFile", self.file)
+                    self.sharedAppClient.SendEvent("changePage",  str(self.pageNr))
                                        
                 wxEndBusyCursor()
           
@@ -132,11 +145,9 @@ class PdfViewer(wxPanel):
         '''
         Invoked when user clicks the previous button.
         '''
-
-        
         self.pageNr = self.pageNr - 1
         self.pdf.setCurrentPage(self.pageNr)
-        self.sharedAppClient.SendEvent("changePage", (self.id, self.pageNr))
+        self.sharedAppClient.SendEvent("changePage", str(self.pageNr))
         self.sharedAppClient.SetData("page", self.pageNr)
 
     def OnNextPageButton(self, event):
@@ -145,7 +156,7 @@ class PdfViewer(wxPanel):
         '''
         self.pageNr = self.pageNr + 1
         self.pdf.setCurrentPage(self.pageNr)
-        self.sharedAppClient.SendEvent("changePage", (self.id, self.pageNr))
+        self.sharedAppClient.SendEvent("changePage", str(self.pageNr))
         self.sharedAppClient.SetData("page", self.pageNr)
 
     def OnExit(self, event):
@@ -162,8 +173,9 @@ class PdfViewer(wxPanel):
         '''
         Invoked when a open event is received.
         '''
-        id, self.file, self.pageNr = event.GetData()
-
+        self.file = str(event.GetData())
+        id = event.GetSenderId()
+        
         # Ignore my own events
         if self.id != id:
 	    try:
@@ -173,7 +185,7 @@ class PdfViewer(wxPanel):
     	
 	    wxBeginBusyCursor()
             wxCallAfter(self.pdf.LoadFile, "tmp")
-            wxCallAfter(self.pdf.setCurrentPage, self.pageNr)
+            #wxCallAfter(self.pdf.setCurrentPage, self.pageNr)
             wxCallAfter(self.Refresh)
             wxEndBusyCursor()
 	              
@@ -181,11 +193,12 @@ class PdfViewer(wxPanel):
         '''
         Invoked when a changePage event is received.
         '''
-        id, self.pageNr = event.GetData()
-      
+       
+        id = event.GetSenderId()
         # Ignore my own events
         if self.id != id:
-            wxCallAfter(self.pdf.setCurrentPage, self.pageNr)        
+            self.pageNr = int(event.GetData())
+            wxCallAfter(self.pdf.setCurrentPage, int(self.pageNr))        
             wxCallAfter(self.Refresh)
                
     def __Layout(self):
@@ -337,17 +350,20 @@ if __name__ == '__main__':
                        help="Specify a venue url on the command line")
     testOption = Option("-t", "--testMode", dest="test", action="store_true",
                         default=None, help="Automatically create application session in venue")
-
+    connectionIdOption = Option("-i", "--connectionId", dest="connectionId", default=None,
+                                help="Add connection id")
+    app.AddCmdLineOption(connectionIdOption)
     app.AddCmdLineOption(appurlOption)
     app.AddCmdLineOption(venueurlOption)
     app.AddCmdLineOption(testOption)
+
     name = "SharedPDF"
     app.Initialize(name)
 
     appUrl = app.GetOption("appUrl")
     venueUrl = app.GetOption("venueUrl")
     test = app.GetOption("test")
-
+    conId = app.GetOption("connectionId")
     if test:
         from AccessGrid.Venue import VenueIW
         # Create an application session in the venue
@@ -372,7 +388,7 @@ if __name__ == '__main__':
         # Create the UI
         mainFrame = wxFrame(None, -1, name, size = wxSize(600, 600))
         mainFrame.SetIcon(icons.getAGIconIcon())
-        viewer = PdfViewer(mainFrame, name, appUrl, venueUrl)
+        viewer = PdfViewer(mainFrame, name, appUrl, venueUrl, conId)
 
         # Start the UI main loop
         mainFrame.Show()
