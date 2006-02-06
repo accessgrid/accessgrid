@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.9 2005-07-29 21:09:09 eolson Exp $
+ * $Id: QuickBridge.c,v 1.10 2006-02-06 22:23:43 turam Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -595,6 +595,7 @@ Session *setup_session(Ports ucport,Ports mcport,u_long multicastaddress,u_char 
 	Session *s;
 	int i;
 	u_char do_loopback;
+    char *one = "1";
 
 	/* check values */
 	if( multicastaddress == -1 ){
@@ -692,6 +693,13 @@ Session *setup_session(Ports ucport,Ports mcport,u_long multicastaddress,u_char 
 					perror("can't open mcfd socket!");
 					exit(1);
 				}
+                
+				/* allow multiple processes to bind to this multicast group */
+				if (setsockopt(s->mcfd[i], SOL_SOCKET, SO_REUSEADDR, \
+				    one, sizeof(one)) < 0){
+				        perror("can't set reusaddr on multicast socket");
+				}
+
 				if (bind(s->mcfd[i], (struct sockaddr *) &s->mcaddr[i], sizeof(s->mcaddr[i])) < 0) {
 						perror("can't bind mcaddr to socket!");
 						exit(1);
@@ -699,6 +707,7 @@ Session *setup_session(Ports ucport,Ports mcport,u_long multicastaddress,u_char 
 #ifdef WIN32
 				s->mcaddr[i].sin_addr.s_addr = multicastaddress;
 #endif /* WIN32 */
+
 
 					/*now set multicast socket TTL option*/
 					/*setsocketopt (int filedescriptor, int level, in optname),*/
