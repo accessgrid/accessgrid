@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.166 2006-01-25 08:08:49 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.167 2006-02-08 19:52:49 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.166 2006-01-25 08:08:49 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.167 2006-02-08 19:52:49 turam Exp $"
 
 # Standard imports
 import sys
@@ -725,7 +725,6 @@ class VenueProfilePanel(wxPanel):
         self.description.SetBackgroundColour(self.GetBackgroundColour())
         self.url.SetBackgroundColour(self.GetBackgroundColour())
         self.description.Enable(true)
-        self.__hideFields()
         self.__doLayout()
         EVT_SIZE(self, self.__onSize)
 
