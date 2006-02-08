@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.157 2006-01-28 00:17:11 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.158 2006-02-08 19:47:54 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.157 2006-01-28 00:17:11 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.158 2006-02-08 19:47:54 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -49,7 +49,7 @@ from AccessGrid.Utilities import SubmitBug
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.AppMonitor import AppMonitor
 from AccessGrid.Venue import ServiceAlreadyPresent
-from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError
+from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError, NoServices
 from AccessGrid.VenueClient import DisconnectError
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
@@ -599,14 +599,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         EVT_TOOL(self,self.audioToolId,self.EnableAudioCB)
         EVT_TOOL(self,self.displayToolId,self.EnableDisplayCB)
         EVT_TOOL(self,self.videoToolId,self.EnableVideoCB)
+        EVT_TOOL(self,self.configNodeToolId,self.ManageNodeCB)
 
     def OnMulticast(self, event):
 
         pref = self.venueClient.GetPreferences()
-
-        if not self.venueClient.GetMulticastStatus():
-            self.Notify("You do not have multicast enabled. \nPlease contact your network administrator.", "Show Multicast Connectivity")
-        elif not self.venueClient.IsInVenue():
+        if not self.venueClient.IsInVenue():
              self.Notify("You must be connected to a venue to see\nmulticast connectivity to other participants.", "Show Multicast Connectivity")
         elif not int(pref.GetPreference(Preferences.BEACON)):
             self.Notify("You have beacon set to disabled.\nYou can enable it in the network panel in your preferences.", "Show Multicast Connectivity")
@@ -695,16 +693,37 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # create toolbar
         self.toolbar = self.CreateToolBar()
+
         self.networkToolId = 1
-        multicastBitmap = icons.getNoMulticastBitmap()
-        self.toolbar.AddTool(self.networkToolId,multicastBitmap ,shortHelpString='Multicast Status',longHelpString='Display multicast status')
+        self.toolbar.AddTool(self.networkToolId,
+                             icons.getNoMulticastBitmap() ,
+                             shortHelpString='Multicast Status',
+                             longHelpString='Display multicast status')
+                             
         self.toolbar.AddSeparator()
         self.audioToolId = 2
-        self.toolbar.AddCheckTool(self.audioToolId,icons.getAudioBitmap() ,shortHelp='Audio',longHelp='Enable/disable audio sending and receiving')
+        self.toolbar.AddCheckTool(self.audioToolId,
+                                  icons.getAudioBitmap(),
+                                  icons.getAudioDisabledBitmap(),
+                                  shortHelp='Audio',
+                                  longHelp='Enable/disable audio sending and receiving')
         self.displayToolId = 3
-        self.toolbar.AddCheckTool(self.displayToolId,icons.getDisplayBitmap() ,shortHelp='Video Display',longHelp='Enable/disable video receiving')
+        self.toolbar.AddCheckTool(self.displayToolId,
+                                  icons.getDisplayBitmap(),
+                                  icons.getDisplayDisabledBitmap(),
+                                  shortHelp='Video Display',
+                                  longHelp='Enable/disable video receiving')
         self.videoToolId = 4
-        self.toolbar.AddCheckTool(self.videoToolId,icons.getCameraBitmap(),shortHelp='Video Capture',longHelp='Enable/disable video sending')
+        self.toolbar.AddCheckTool(self.videoToolId, 
+                                  icons.getCameraBitmap(),
+                                  icons.getCameraDisabledBitmap(),
+                                  shortHelp='Video Capture',
+                                  longHelp='Enable/disable video sending')
+        self.configNodeToolId = 27
+        self.toolbar.AddTool(self.configNodeToolId,
+                             icons.getConfigureBitmap() ,
+                             shortHelpString='Configure services',
+                             longHelpString='Configure services for audio, video, etc.')
         self.toolbar.Realize()
         
         audioFlag = self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_AUDIO)
@@ -1083,73 +1102,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.Warn("No unicast bridge is currently available.", "Use Unicast")
         
         
-        #transportList = self.venueClient.GetTransportList()
-        #if 'unicast' not in transportList:
-        #    self.preferences.Check(self.ID_USE_MULTICAST, true)
-        #    self.preferences.Check(self.ID_USE_UNICAST, false)
-        #    self.Warn("No unicast bridge is currently available in this venue.",
-        #              "Use Unicast")
-        #    return
-
-        # Get current provider
-        #provider = self.venueClient.GetProvider()
-
-        # Use the provider
-
-        # This is where I get the provider...
-        #self.controller.UseUnicastCB(provider)
-        
-        
-        """
-        transportList = self.venueClient.GetTransportList()
-        if 'unicast' not in transportList:
-            self.preferences.Check(self.ID_USE_MULTICAST, true)
-            self.preferences.Check(self.ID_USE_UNICAST, false)
-            self.Warn("No unicast bridge is currently available in this venue.",
-                       "Use Unicast")
-            return
-
-        # Get a list of providers
-        providerList = self.venueClient.GetNetworkLocationProviders()
-        providerNameLocList = map( lambda provider: provider.name + "/" + provider.location,
-                                   providerList )
-
-        # Present the list to the user
-        dialog = wxSingleChoiceDialog( self, "Select bridge", 
-                                             "Bridge Dialog", 
-                                             providerNameLocList )
-
-        currentProvider = self.venueClient.GetProvider()
-        if currentProvider:
-            currentProviderString = currentProvider.name + "/" + currentProvider.location
-            try:
-                index = providerNameLocList.index(currentProviderString)
-                if index >= 0:
-                    dialog.SetSelection(index)
-            except ValueError:
-                pass
-
-        ret = dialog.ShowModal()
-        if ret == wxID_OK:
-            # Get the selected provider
-            index = dialog.GetSelection()
-            selectedProvider = providerList[index]
-            try:
-                self.controller.UseUnicastCB(selectedProvider)
-            except NetworkLocationNotFound:
-                # Report the error to the user
-                text="Stream information for selected bridge not found; reverting to previous selection"
-                self.Error(text, "Use Unicast Error")
-            except:
-                self.Error("Error switching to selected bridge; reverting to previous selection", "Use Unicast Error")
-                
-        else:
-            # Set the menu checkbox appropriately
-            transport = self.venueClient.GetTransport()
-            self.SetTransport(transport)
-           """
-
-                
     def EnableDisplayCB(self,event):
         # ensure that toggle and menu item are in sync
         enabledFlag = event.IsChecked()
@@ -3004,9 +2956,6 @@ class ContentListPanel(wxPanel):
         imageList = wxImageList(imageSize,imageSize)
 
         bm = icons.getBulletBitmap()
-        i = bm.ConvertToImage()
-        i.Rescale(imageSize,imageSize)
-        bm = i.ConvertToBitmap()
         self.bullet = imageList.Add(bm)
                 
         bm = icons.getDefaultParticipantBitmap()
@@ -4130,7 +4079,7 @@ class StatusBar(wxStatusBar):
         self.sizeChanged = False
         self.parent = parent
         EVT_SIZE(self, self.OnSize)
-
+        
         self.progress = wxGauge(self, wxNewId(), 100,
                                 style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
         self.progress.SetValue(True)
