@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.63 2006-01-16 23:12:32 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.64 2006-02-08 21:19:48 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.63 2006-01-16 23:12:32 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.64 2006-02-08 21:19:48 turam Exp $"
 
 import sys
 import os
@@ -24,8 +24,14 @@ import resource
 from AccessGrid import Log
 from AccessGrid import Config
 
-from AccessGrid.Platform import AGTK_USER, AGTK_LOCATION
+from AccessGrid.Platform import AGTK_USER, AGTK_LOCATION, IsOSX, IsLinux, IsFreeBSD5
 from AccessGrid.Version import GetVersion
+
+if IsLinux() or IsFreeBSD5():
+    import fcntl
+    import struct
+    import glob
+
 
 log = Log.GetLogger(Log.Platform)
 Log.SetDefaultLevel(Log.Platform, Log.INFO)
@@ -285,6 +291,145 @@ class SystemConfig(Config.SystemConfig):
         """
         return None
         
+    if IsOSX():
+        # OSX implementation
+        def GetResources(self):
+
+            # deviceList['Mac OS X'] = ['Mac OS X']
+            deviceList = dict()
+            osxVGrabScanExe = os.path.join(AGTkConfig.instance().GetBinDir(),
+                                      'osx-vgrabber-scan')
+            if os.path.exists(osxVGrabScanExe):
+                try:
+                    log.info("Using osx-vgrabber-scan to get devices")
+                    log.debug("osx-vgrabber-scan = %s", osxVGrabScanExe)
+                    f = os.popen(osxVGrabScanExe,'r')
+                    filelines = f.readlines()
+                    f.close()
+
+                    log.debug("filelines = %s", filelines)
+
+                    for line in filelines:
+
+                        splitLine = line.strip().split(',')
+                        if len(splitLine) > 1:
+                            portList = splitLine[1:]
+                            device = splitLine[0]
+                            deviceList[device] = portList
+                            log.info("%s has ports: %s", device, portList)
+                        else:
+                            log.info("%s: no suitable input ports found", device)
+
+                except:
+                    log.exception("osx vgrabber device scan failed")
+
+            # Create resource objects
+            resourceList = list()
+            for device,portList in deviceList.items():
+                try:
+                    resourceList.append((device,portList))
+                except Exception, e:
+                    log.exception("Unable to add video resource to list. device: " + device + "  portlist: " + portList)
+
+            return resourceList
+    elif IsLinux() or IsFreeBSD5():
+        # Linux implementation
+        def GetResources(self):
+            # V4L video_capability struct defined in linux/videodev.h :
+            #   struct video_capability {
+            #     char name[32];
+            #     int type;
+            #     int channels;   # Num channels
+            #     int audios;     # Num audio devices
+            #     int maxwidth;   # Supported width
+            #     int maxheight;  # and height
+            #     int minwidth;   # Supported width
+            #     int minheight;  # and height
+            #   };
+            VIDIOCGCAP_FMT = "32siiiiiii"   # video_capability struct format string
+            VIDIOCGCAP     = -2143521279    # 0x803C7601
+
+            # V4L video_channel struct defined in linux/videodev.h :
+            #   struct video_channel {
+            #     int channel;
+            #     char name[32];
+            #     int tuners;
+            #     __u32 flags;
+            #     __u16 type;
+            #     __u16 norm;
+            #   };
+            VIDIOCGCHAN_FMT = "i32siIHH"   # video_channel struct format string
+            VIDIOCGCHAN     = -1070565886  # 0xC0307602
+
+            VID_TYPE_CAPTURE = 0x1 # V4L device can capture capability flag
+
+            # Determine ports for devices
+            deviceList = dict()
+            for device in glob.glob("/dev/video[0-9]*"):
+                if os.path.isdir(device):
+                    continue
+
+                fd = None
+                try:
+                    fd = os.open(device, os.O_RDWR)
+                except Exception, e:
+                    log.info("open: %s", e)
+                    continue
+
+                desc = ""; capType = 0; numPorts = 0
+                try:
+                    cap = struct.pack(VIDIOCGCAP_FMT, "", 0, 0, 0, 0, 0, 0, 0);
+                    r = fcntl.ioctl(fd, VIDIOCGCAP, cap)
+                    (desc, capType, numPorts, x, x, x, x, x) = struct.unpack(VIDIOCGCAP_FMT, r)
+                    desc.replace("\x00", "")
+                except Exception, e:
+                    log.info("ioctl %s VIDIOCGCAP: %s", device, e)
+                    os.close(fd)
+                    continue
+
+                log.info("V4L %s description: %s", device, desc)
+
+                if not (capType & VID_TYPE_CAPTURE):
+                    os.close(fd)
+                    log.info("V4L %s: device can not capture", device)
+                    continue
+
+                portList = []
+                for i in range(numPorts):
+                    port = ""
+                    try:
+                        chan = struct.pack(VIDIOCGCHAN_FMT, i, "", 0, 0, 0, 0);
+                        r = fcntl.ioctl(fd, VIDIOCGCHAN, chan)
+                        port = struct.unpack(VIDIOCGCHAN_FMT, r)[1]
+                    except Exception, e:
+                        log.info("ioctl %s VIDIOCGCHAN: %s", device, e)
+                        os.close(fd)
+                        continue
+                    portList.append(port.replace("\x00", ""))
+
+                os.close(fd)
+
+                if len(portList) > 0:
+                    deviceList[device] = portList
+                    log.info("V4L %s has ports: %s", device, portList)
+                else:
+                    log.info("V4L %s: no suitable input ports found", device)
+
+
+            # Force x11 onto the list
+            deviceList['x11'] = ['x11']
+
+            # Create resource objects
+            resourceList = list()
+            for device,portList in deviceList.items():
+                try:
+                    resourceList.append((device,portList))
+                except Exception, e:
+                    log.exception("Unable to add video resource to list. device: " + device + "  portlist: " + portList)
+
+            return resourceList
+
+
 class MimeConfig(Config.MimeConfig):
     """
     The MimeConfig object encapsulates in single object the management
