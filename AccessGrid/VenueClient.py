@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.281 2006-02-02 09:40:44 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.282 2006-02-08 19:36:53 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.281 2006-02-02 09:40:44 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.282 2006-02-08 19:36:53 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -82,6 +82,10 @@ class NetworkLocationNotFound(Exception):
     pass
 
 class DisconnectError(Exception):
+    pass
+
+
+class NoServices(Exception):
     pass
 
 log = Log.GetLogger(Log.VenueClient)
@@ -942,17 +946,27 @@ class VenueClient:
         errorInNode = 0
 
         try:
-            self.profile.capabilities = self.nodeService.GetCapabilities()
-            self.capabilities = self.profile.capabilities
-            
+            self.capabilities = self.nodeService.GetCapabilities()
             if not self.capabilities:
                 self.capabilities = []
             
-            self.capabilities = self.capabilities + self.beaconCapabilities 
+            self.capabilities += self.beaconCapabilities 
             
         except:
             log.exception("EnterVenue: Exception getting capabilities")
             errorInNode = 1
+           
+        # Set media and beacon indicators in client profile based on capabilities
+        for c in self.capabilities:
+            if c.type == 'video':
+                if c.role == 'producer':
+                    self.profile.video = 1
+                if c.role == 'consumer':
+                    self.profile.display = 1
+            if c.type == 'audio':
+                self.profile.audio = 1
+            if c.type == 'Beacon' and int(self.preferences.GetPreference(Preferences.BEACON)):
+                self.profile.beacon = 1
 
         try:
             # Enter the venue
@@ -1408,6 +1422,10 @@ class VenueClient:
                         break
         except:
             log.info("Error enabling video")
+            
+        self.profile.display = int(enableFlag)
+        
+        self.__venueProxy.UpdateClientProfile(self.profile)
         
     def SetVideoEnabled(self,enableFlag):
         try:
@@ -1417,14 +1435,23 @@ class VenueClient:
                     if cap.type == 'video' and cap.role == 'producer':
                         AGServiceIW(service.uri).SetEnabled(enableFlag)
                         break
+            
         except:
             log.exception("Error enabling video")
+            
+        self.profile.video = int(enableFlag)
+        
+        self.__venueProxy.UpdateClientProfile(self.profile)
         
     def SetAudioEnabled(self,enableFlag):
         try:
             self.nodeService.SetServiceEnabledByMediaType("audio",enableFlag)
         except:
             log.info("Error enabling audio")
+            
+        self.profile.audio = int(enableFlag)
+
+        self.__venueProxy.UpdateClientProfile(self.profile)
 
     #
     # User Info
@@ -1490,16 +1517,7 @@ class VenueClient:
 
         except Exception:
         
-            log.exception("Error retrieving admin list; possibly old server")
-            try:
-                # Try legacy method (2.1.2 and earlier)
-                log.info("Trying legacy method for getting admin list")
-                prox = Client.SecureHandle(self.venueUri).GetProxy()
-                roleNameList = prox.DetermineSubjectRoles()
-                if "Venue.Administrators" in roleNameList :        
-                    isVenueAdministrator = 1
-            except Exception:
-                log.exception("Error retrieving admin list using legacy method")
+            log.exception("Error retrieving admin list")
                 
         return isVenueAdministrator
         
