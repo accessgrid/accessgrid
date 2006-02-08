@@ -311,6 +311,7 @@ class NodePanel(wxPanel):
         EVT_BUTTON(self,self.nodeConfigRefresh.GetId(),self.OnRefresh)
         self.__Layout()
         
+        
     def OnNodeBuiltIn(self,event):
         self.nodeUrlCtrl.SetEditable( not event.Checked() )
 
@@ -319,18 +320,30 @@ class NodePanel(wxPanel):
 
     def OnRefresh(self,event=None):
         self.nodeConfigCtrl.Clear()
+        
+        # Find node service to call
         if self.nodeBuiltInCheckbox.GetValue():
             if not self.preferences.venueClient:
                 return
             nodeService = self.preferences.venueClient.builtInNodeService
         else:
             nodeService = AGNodeServiceIW(self.nodeUrlCtrl.GetValue())
+            
+        # Get node configurations
+        defaultNodeConfigName = self.preferences.GetPreference(Preferences.NODE_CONFIG)
+        defaultNodeConfigString = ""
         nodeConfigs = nodeService.GetConfigurations()
         for nodeConfig in nodeConfigs:
             self.nodeConfigCtrl.Append('%s (%s)' % (nodeConfig.name, nodeConfig.type))
-            self.configMap[nodeConfig.name + " ("+nodeConfig.type +")"] = nodeConfig
-            
-        self.nodeConfigCtrl.SetSelection(0)
+            nodeConfigString = nodeConfig.name + " ("+nodeConfig.type +")"
+            self.configMap[nodeConfigString] = nodeConfig
+            if defaultNodeConfigName == nodeConfig.name:
+                defaultNodeConfigString = nodeConfigString
+
+        if defaultNodeConfigString:
+            self.nodeConfigCtrl.SetStringSelection(defaultNodeConfigString)
+        # if default node config not found, don't select one
+        #self.nodeConfigCtrl.SetSelection(0)
 
     def GetNodeBuiltIn(self):
         if self.nodeBuiltInCheckbox.GetValue():
