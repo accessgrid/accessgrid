@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.100 2006-01-26 20:34:58 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.101 2006-02-08 19:33:47 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.100 2006-01-26 20:34:58 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.101 2006-02-08 19:33:47 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -729,6 +729,7 @@ class NodeManagementClientFrame(wxFrame):
                 if isDefault:
                     prefs = self.app.GetPreferences()
                     prefs.SetPreference(Preferences.NODE_CONFIG,configName)
+                    prefs.StorePreferences()
                     
                 wxEndBusyCursor()
 
