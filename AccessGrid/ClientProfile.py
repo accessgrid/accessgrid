@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.47 2006-02-02 09:37:34 turam Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.48 2006-02-08 19:33:19 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.47 2006-02-02 09:37:34 turam Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.48 2006-02-08 19:33:19 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -67,7 +67,11 @@ class ClientProfile:
         'ClientProfile.techsupportinfo':'',
         'ClientProfile.venueclienturl' : '',
         'ClientProfile.home' : 'https://vv3.mcs.anl.gov:8000/Venues/default',
-        'ClientProfile.gmtoffset' : 0
+        'ClientProfile.gmtoffset' : 0,
+        'ClientProfile.beacon' : 0,
+        'ClientProfile.video' : 0,
+        'ClientProfile.audio' : 0,
+        'ClientProfile.display' : 0,
         }
 
     USER = "user"
@@ -93,6 +97,8 @@ class ClientProfile:
             self.gmtoffset = time.altzone
         else:
             self.gmtoffset = time.timezone
+        self.beacon = 0
+        self.video = self.audio = self.display = 0
 
         if profileFile != None and os.path.exists(profileFile):
             self.Load(self.profileFile)
@@ -271,6 +277,18 @@ class ClientProfile:
         
     def GetGmtOffset(self):
         return self.gmtoffset
+        
+    def GetBeaconState(self):
+        return self.beacon
+        
+    def GetVideoState(self):
+        return self.video
+        
+    def GetAudioState(self):
+        return self.audio
+        
+    def GetDisplayState(self):
+        return self.display
 
     def InformationMatches(self, obj):
         """
