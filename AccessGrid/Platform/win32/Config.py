@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.67 2006-01-25 22:18:49 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.68 2006-02-08 21:18:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.67 2006-01-25 22:18:49 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.68 2006-02-08 21:18:50 turam Exp $"
 
 import os
 import socket
@@ -565,6 +565,91 @@ class SystemConfig(Config.SystemConfig):
 
         except Exception,e:
             log.exception("Exception setting processor affinity")
+            
+    def GetResources(self):
+            
+        deviceList = list()
+        
+        try:
+            # scan for vfw devices
+            scanexe = os.path.join(AGTkConfig.instance().GetBinDir(),
+                                      'vfwscan.exe')
+        
+            if os.path.exists(scanexe):
+                scanexe = win32api.GetShortPathName(scanexe)
+                try:
+                    log.info("Using vfwscan to get devices")
+                    log.debug("vfwscanexe = %s", scanexe)
+                    f = os.popen(scanexe,'r')
+                    filelines = f.readlines()
+                    f.close()
+
+                    log.debug("vfwscan filelines = %s", filelines)
+
+                    devices = map( lambda d: d.strip(), filelines)
+                    deviceList += devices
+                except:
+                    log.exception("vfw device scan failed")
+
+            else:
+                log.info("%s does not exist"%(scanexe))
+                
+            
+            # scan for wdm devices
+            scanexe = os.path.join(AGTkConfig.instance().GetBinDir(),
+                                      'wdmscan.exe')
+            if os.path.exists(scanexe):
+                scanexe = win32api.GetShortPathName(scanexe)
+                try:
+                    log.info("Using wdmscan to get devices")
+                    log.debug("wdmscanexe = %s", scanexe)
+                    f = os.popen(scanexe,'r')
+                    filelines = f.readlines()
+                    f.close()
+
+                    log.debug("wdmscan filelines = %s", filelines)
+
+                    devices = map( lambda d: d.strip(), filelines)
+                    deviceList += devices
+                except:
+                    log.exception("wdm device scan failed")
+
+            else:
+                log.info("%s does not exist"%(scanexe))
+                            
+            if not len(deviceList):
+                log.info("Retrieving devices from registry")
+                
+                # Get the name of the video key in the registry
+                key = "SYSTEM\\ControlSet001\\Control\\MediaResources\\msvideo"
+                videoKey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key)
+
+                # Get the number of subkeys (devices) in the key
+                (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(videoKey)
+
+                for i in range(nSubKeys):
+                    # Open the key
+                    sVal = _winreg.EnumKey(videoKey, 0)
+                    sKey = _winreg.OpenKey(videoKey, sVal)
+                    (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(sKey)
+
+                    # Find the device name among the key's values
+                    for i in range(0, nValues):
+                        (vName, vData, vType) = _winreg.EnumValue(sKey, i)
+                        if vName == "FriendlyName":
+                            deviceList.append(vData)
+                    
+            log.info("GetResources: %s", deviceList)
+
+        except Exception:
+            log.exception("Exception getting video devices")
+            raise
+    
+        resourceList = list()
+        for d in deviceList:
+            resourceList.append((d,['external-in']))
+        return resourceList
+
 
 class MimeConfig(Config.MimeConfig):
     """
