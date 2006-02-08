@@ -7,7 +7,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeacon.py,v 1.6 2006-01-25 22:18:13 turam Exp $
+# RCS-ID:      $Id: rtpBeacon.py,v 1.7 2006-02-08 16:23:38 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ RTP (a plain text string as it were). Then the normal RTP statistics
 communicated via RTCP are used to track the performance of the group.
 """
 
-__revision__ = "$Id: rtpBeacon.py,v 1.6 2006-01-25 22:18:13 turam Exp $"
+__revision__ = "$Id: rtpBeacon.py,v 1.7 2006-02-08 16:23:38 turam Exp $"
 
 import os, sys, signal, optparse, time, random, threading, copy
 import logging, logging.handlers
@@ -164,6 +164,7 @@ if __name__ == "__main__":
     # Create the user interface
     app = wxPySimpleApp()
     frame = BeaconFrame(None, log, beacon)
+    frame.Show(1)
     app.MainLoop()
 
     beacon.Stop()
