@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.117 2006-01-27 22:57:23 lefvert Exp $
+; RCS-ID: $Id: agtk.iss,v 1.118 2006-02-08 18:11:51 lefvert Exp $
 ;
 
 ; Set externally
@@ -54,7 +54,7 @@ AppPublisher=Futures Laboratory / Argonne National Laboratory
 AppPublisherURL=http://www.mcs.anl.gov/fl
 AppSupportURL=http://bugzilla.mcs.anl.gov/accessgrid
 AppUpdatesURL=http://www.mcs.anl.gov/fl/research/accessgrid
-AppID=2CD98D2E-F3D2-438E-91F7-D74860A70959
+AppID=2CD98D2E-F3D2-438E-91F7-D74860A70953
 MinVersion=0,5.0.2195
 LicenseFile=COPYING.txt
 DisableDirPage=false
