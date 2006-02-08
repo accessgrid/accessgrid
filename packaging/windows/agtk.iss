@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.118 2006-02-08 18:11:51 lefvert Exp $
+; RCS-ID: $Id: agtk.iss,v 1.119 2006-02-08 23:06:32 lefvert Exp $
 ;
 
 ; Set externally
@@ -92,7 +92,18 @@ Compression=lzma
 
 [Files]
 ; The Python Modules
-Source: Lib\site-packages\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\_xmlplus\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\_xmlplus; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\AccessGrid3\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\AccessGrid3; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\feedparser.py; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\ZSI\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\ZSI; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\zope\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\zope; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\OpenSSL_AG\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\OpenSSL_AG; Flags: recursesubdirs overwritereadonly restartreplace uninsneveruninstall
+Source: Lib\site-packages\M2Crypto\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\M2Crypto; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\twisted\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\twisted; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\bonjour\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\bonjour; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\common\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\common; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\elementtree\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\elementtree; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\gov\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\gov; Flags: recursesubdirs overwritereadonly restartreplace
 
 ; Documentation
 ; Source: doc\Developer\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
@@ -160,9 +171,9 @@ Name: {commondesktop}\Access Grid Venue Client; Filename: {reg:HKLM\Software\Pyt
 Name: {group}\Manage Certificates; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\CertificateManager.py"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe
 
 [Registry]
-Root: HKLM; Subkey: SOFTWARE\{#AppName}; ValueType: none; Flags: uninsdeletekey
-Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersion}; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
-Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersion}; ValueType: expandsz; ValueName: VersionInformation; ValueData: {#VersionInformation}; Flags: uninsdeletekey
+Root: HKLM; Subkey: SOFTWARE\{#AppName} {#DirName}; ValueType: none; Flags: uninsdeletekey
+Root: HKLM; Subkey: SOFTWARE\{#AppName} {#DirName}\{#AppVersion}; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
+Root: HKLM; Subkey: SOFTWARE\{#AppName} {#DirName}\{#AppVersion}; ValueType: expandsz; ValueName: VersionInformation; ValueData: {#VersionInformation}; Flags: uninsdeletekey
 Root: HKCR; Subkey: MIME\Database\Content Type\application/x-ag-venueclient; ValueType: string; ValueName: Extension; ValueData: .vv3d
 Root: HKCR; Subkey: .vv3d; ValueType: string; ValueData: x-ag-venueclient; Flags: uninsdeletekey
 Root: HKCR; Subkey: .vv3d; ValueType: string; ValueName: Content Type; ValueData: application/x-ag-venueclient; Flags: uninsdeletekey
@@ -196,16 +207,16 @@ Name: {app}; Type: filesandordirs
 Name: {app}\bin\*.dat; Type: files
 Name: {app}\bin\*.cfg; Type: files
 Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\AccessGrid3; Type: filesandordirs
-Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\OpenSSL_AG; Type: filesandordirs
-Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\common; Type: files
-Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\elementtree; Type: files
-Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\feedparser; Type: files
-Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\gov; Type: files
-Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\twisted; Type: files
-Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\zope; Type: files
-Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\ZSI; Type: files
-Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\_xmlplus; Type: files
-Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\bonjour; Type: files
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\common; Type: filesandordirs
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\elementtree; Type: filesandordirs
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\feedparser; Type: filesandordirs
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\gov; Type: filesandordirs
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\twisted; Type: filesandordirs
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\zope; Type: filesandordirs
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\M2Crypto; Type: filesandordirs
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\ZSI; Type: filesandordirs
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\_xmlplus; Type: filesandordirs
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\bonjour; Type: filesandordirs
 
 [Dirs]
 Name: {app}\config\nodeConfig
