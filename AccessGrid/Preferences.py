@@ -181,6 +181,11 @@ class Preferences:
 
                 if category == "Preferences":
                     self.preferences[pref] = preferences[p]
+
+            # Add any default preferences that are missing
+            for key in self.default:
+                if not self.preferences.has_key(key):
+                    self.preferences[key] = self.default[key]
              
         except:
             log.exception("Preferences.LoadPreferences: open file error")
