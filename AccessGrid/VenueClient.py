@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.282 2006-02-08 19:36:53 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.283 2006-02-09 19:24:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.282 2006-02-08 19:36:53 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.283 2006-02-09 19:24:07 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -1196,7 +1196,7 @@ class VenueClient:
         try:
             self.cache.updateProfile(profile)
         except InvalidProfileException:
-            log.info("UpdateProfileCache: InvalidProfile when storing a venue user's profile in the cache.")
+            log.exception("UpdateProfileCache: InvalidProfile when storing a venue user's profile in the cache.")
             
     #
     # Venue calls
@@ -1440,19 +1440,26 @@ class VenueClient:
             log.exception("Error enabling video")
             
         self.profile.video = int(enableFlag)
-        
-        self.__venueProxy.UpdateClientProfile(self.profile)
-        
+
+        if self.__venueProxy:
+            try:
+                self.__venueProxy.UpdateClientProfile(self.profile)
+            except:
+                log.exception("VenueClient.SetVideoEnabled: Failed to update client profile %s"%self.profile)
+            
     def SetAudioEnabled(self,enableFlag):
         try:
             self.nodeService.SetServiceEnabledByMediaType("audio",enableFlag)
         except:
-            log.info("Error enabling audio")
+            log.info("VenueClient.SetAudioEnabled: Error enabling audio")
             
         self.profile.audio = int(enableFlag)
 
-        self.__venueProxy.UpdateClientProfile(self.profile)
-
+        if self.__venueProxy:
+            try:
+                self.__venueProxy.UpdateClientProfile(self.profile)
+            except:
+                log.exception("VenueClient.SetAudioEnabled: Failed to update client profile %s"%self.profile)
     #
     # User Info
     #
