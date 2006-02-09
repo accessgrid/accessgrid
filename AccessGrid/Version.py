@@ -5,21 +5,21 @@
 # Author:      Eric Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Version.py,v 1.14 2006-01-27 21:46:33 lefvert Exp $
+# RCS-ID:      $Id: Version.py,v 1.15 2006-02-09 16:52:25 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Version.py,v 1.14 2006-01-27 21:46:33 lefvert Exp $"
+__revision__ = "$Id: Version.py,v 1.15 2006-02-09 16:52:25 lefvert Exp $"
 
 # Call GetVersion() to get AGTK version information.
 MAJOR_VERSION = 3 
 MINOR_VERSION = 0
-POINT_VERSION = 0
-STATUS = "beta 1"
+POINT_VERSION = 1
+STATUS = "beta 2"
 
-BUILD_NUMBER = 1
+BUILD_NUMBER = 2
 
 class Version:
     """
