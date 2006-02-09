@@ -105,6 +105,19 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="GetResourcesRequest">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetResourcesResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="resources" type="agtk:ResourceDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
           <xsd:element name="IsValidRequest">
             <xsd:complexType>
             </xsd:complexType>
@@ -237,6 +250,12 @@
     <message name="GetServicesResponse">
 	<part name="parameters" element="agtksm:GetServicesResponse"/>
     </message>
+    <message name="GetResourcesRequest">
+	<part name="parameters" element="agtksm:GetResourcesRequest"/>
+    </message>
+    <message name="GetResourcesResponse">
+	<part name="parameters" element="agtksm:GetResourcesResponse"/>
+    </message>
     <message name="IsValidRequest">
 	<part name="parameters" element="agtksm:IsValidRequest"/>
     </message>
@@ -309,6 +328,10 @@
     <operation name="GetServices">
         <input message="agtksm:GetServicesRequest"/>
         <output message="agtksm:GetServicesResponse"/>
+    </operation>
+    <operation name="GetResources">
+        <input message="agtksm:GetResourcesRequest"/>
+        <output message="agtksm:GetResourcesResponse"/>
     </operation>
     <operation name="IsValid">
         <input message="agtksm:IsValidRequest"/>
