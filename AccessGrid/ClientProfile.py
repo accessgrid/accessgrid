@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.48 2006-02-08 19:33:19 turam Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.49 2006-02-09 19:14:36 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.48 2006-02-08 19:33:19 turam Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.49 2006-02-09 19:14:36 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -338,29 +338,23 @@ class ClientProfileCache:
             os.mkdir (self.cachePath)
 
     def updateProfile(self, profile):
-        if not profile.GetDistinguishedName():
-            raise InvalidProfileException
-            return
+        dnFlag = 0
+        if(profile.GetDistinguishedName()):
+            dnFlag = 1
 
-        # Create a filename to store profile in the cache.
-        # Hash is almost always unique.  If there ever is 
-        #   a filename collision, it's not the end of the 
-        #   world, only the most recent profile gets cached.
-        hsh = md5.new(profile.GetDistinguishedName())
-        short_filename = hsh.hexdigest()
-        filename = os.path.join(self.cachePath, short_filename)
-
+        filename = os.path.join(self.cachePath, profile.GetPublicId())
+        
         # If profile in cache, load it and see if it's different
         if os.path.exists( filename ):
             old_profile = ClientProfile(filename)
             if not profile.InformationMatches(old_profile):
                 # Save profile if it is different than cached profile.
-                profile.Save(filename, saveDnDetails=1)
+                profile.Save(filename, saveDnDetails=dnFlag)
         else:
             # create directory in case it was removed while app was running.
             if not os.path.exists(self.cachePath):
                 os.mkdir(self.cachePath)
-            profile.Save(filename, saveDnDetails=1)
+            profile.Save(filename, saveDnDetails=dnFlag)
 
     def loadProfileFromDN(self, distinguished_name):
         hsh = md5.new(distinguished_name)
