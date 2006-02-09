@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.283 2006-02-09 19:24:07 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.284 2006-02-09 20:08:56 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.283 2006-02-09 19:24:07 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.284 2006-02-09 20:08:56 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -1227,7 +1227,7 @@ class VenueClient:
     def UpdateClientProfile(self,profile):
         log.debug('VenueClient.UpdateClientProfile')
         self.profileChanged = 1
-        if self.__venueClient.GetVenue() != None:
+        if self.GetVenue() != None:
             log.debug("Update client profile in venue")
 
             try:
