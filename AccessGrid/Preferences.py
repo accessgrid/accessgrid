@@ -24,7 +24,7 @@ class Preferences:
     NODE_URL = "defaultNodeServiceUrl"
     NODE_BUILTIN = "nodeBuiltin"
     NODE_CONFIG = "defaultNodeConfig"
-    NODE_CONFIG_TYPE = "user"
+    NODE_CONFIG_TYPE = "defaultNodeConfigType"
     MULTICAST = "multicast"
     BEACON = "beacon"
     LOG_TO_CMD = "logToCmd"
