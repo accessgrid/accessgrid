@@ -3,7 +3,7 @@
 # Name:        GroupMsgService.py
 # Purpose:     A Group Messaging service server.
 # Created:     2005/09/09
-# RCS-ID:      $Id: GroupMsgService.py,v 1.3 2006-01-23 17:20:59 turam Exp $
+# RCS-ID:      $Id: GroupMsgService.py,v 1.4 2006-02-10 05:24:47 turam Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ from GroupMsgDefines import GroupDoesNotExistException, NotConnectedException, P
 class GroupMsgServiceProtocol(Int32StringReceiver):
     protocolVersion = 1
     protocolIteration = 0 # to identify updates
-
+    
     def __init__(self):
         self.groups = {}
         self.connections = {}
@@ -39,23 +39,36 @@ class GroupMsgServiceProtocol(Int32StringReceiver):
         sentOk = self.factory.sendGroupMessage(connection, data)
         if sentOk == False:
             if not self.factory.connectionHasGroup(connection):
-                # new connection, so data is groupId
-                groupId = data
+                # Client is not in any group; treat data as connect string
+                # parse connection string:  grouplen,groupid,connectionlen,connectionid
+                
                 try:
-                    self.factory.addConnection(connection, groupId)
+                    if len(data) == 32:
+                        # do beta1 compatibility handling
+                        groupId = data
+                        connectionId = GUID()
+                        log.info('beta1 compat: group=%s  conn=%s' % (groupId, connectionId))
+                    else:
+                        grouplen = int(data[:2])
+                        groupId = data[2:grouplen+2]
+                        connectionlen = int(data[grouplen+2:grouplen+4])
+                        connectionId = data[grouplen+4:grouplen+4+connectionlen]
+                        log.info('beta2+: groupid,connectionid' % (grouplen,groupId,connectionlen,connectionId))
+                    self.factory.addConnection(connection, groupId, connectionId)
                 except GroupDoesNotExistException:
                     self.sendError(ERROR.NO_SUCH_GROUP)
+                    self.transport.loseConnection()
+                except:
+                    log.exception('Exception in group msg service connect')
+                    self.sendError(ERROR.UNKNOWN)
                     self.transport.loseConnection()
                         
                 self.sendConnectResponse(connectionId=connection.connectionId)
                 #print "Wrote version 1 response ack"
-                assert True==self.factory.connectionHasGroup(connection)
-            elif not self.factory.connectionHasGroup(connection):
-                self.sendError(ERROR.CLIENT_NOT_IN_GROUP)
-                self.transport.loseConnection()
+                #assert True==self.factory.connectionHasGroup(connection)
             else:
-                # Existing connection.  Unable to send for 
-                #   unspecified reason.
+                # Existing connection.  Unable to send for unspecified reason.
+                log.debug('Client in group, but send failed')
                 self.sendError(ERROR.SERVER_UNABLE_TO_SEND)
                 self.transport.loseConnection()
 
@@ -83,11 +96,10 @@ class GroupMsgServiceFactory(ServerFactory):
 
     def connectionMade(self, connection):
         # Setup a connection id for each connection
-        id = GUID()
-        connection.connectionId = id
+        connection.connectionId = GUID()
         # add connection to list, but it has no group yet
-        self.connections[id] = (connection, None)
-        log.info("connectionMade %s:%s id:%s", connection.getPeer().host, connection.getPeer().port, connection.connectionId)
+        self.connections[connection.connectionId] = (connection, None)
+        log.info("connectionMade %s:%s", connection.getPeer().host, connection.getPeer().port)
 
     def hasGroup(self, groupName):
         return id in self.groups.keys()
@@ -123,14 +135,14 @@ class GroupMsgServiceFactory(ServerFactory):
     def getGroupNames(self):
         return self.groups.keys()
 
-    def addConnection(self, connection, groupName):
+    def addConnection(self, connection, groupName, connectionId):
         '''
         returns connectionId
         '''
         if not groupName in self.groups.keys():
             raise GroupDoesNotExistException
         # note the group in the connection's infomartion
-        self.connections[connection.connectionId] = (connection, groupName)
+        self.connections[connection.connectionId] = (connection, groupName, connectionId)
         # add the connection to the group's infomartion
         self.groups[groupName].append(connection)
         assert self.connectionHasGroup(connection)
@@ -138,19 +150,17 @@ class GroupMsgServiceFactory(ServerFactory):
 
     def removeConnection(self, connection):
         connectionId = connection.connectionId
-        connectionTuple = self.connections.pop(connectionId)
-        groupName = connectionTuple[1]
-        self.groups[groupName].remove(connection)
-        log.info("removedConnection %s:%s id:%s", connection.getPeer().host, connection.getPeer().port, connection.connectionId)
+        if self.connections.has_key(connectionId):
+            connectionTuple = self.connections.pop(connectionId)
+            groupName = connectionTuple[1]
+            self.groups[groupName].remove(connection)
+            log.info("removedConnection %s:%s id:%s", connection.getPeer().host, connection.getPeer().port, connection.connectionId)
 
     def sendGroupMessage(self, connection, data):
         groupName = self.connections[connection.connectionId][1]
         if None == groupName:
             return False  # user doesn't have a group yet
 
-        #connectionTuple = self.connections[connection.connectionId]
-        #groupName = connectionTuple[1]
-        #for conn in self.groups[groupName]:
         for conn in self.groups[groupName]:
             conn.write(struct.pack("!i",len(data))+data) # sendString Int32
         return True
