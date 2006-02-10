@@ -3,7 +3,7 @@
 # Name:        SecureGroupMsgClient.py
 # Purpose:     A Secure Group Messaging service client.
 # Created:     2005/10/10
-# RCS-ID:      $Id: InProcessGroupMsgClient.py,v 1.1 2006-01-24 17:18:19 eolson Exp $
+# RCS-ID:      $Id: InProcessGroupMsgClient.py,v 1.2 2006-02-10 05:16:50 turam Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -26,6 +26,7 @@ class DummyConnectionInt32String:
         self.address = DummyAddress()
         self.receiveCallback = receiveCallback
         self.parent = parent
+        self.connectionId = None
 
     def write(self, recvd_strng):
         # simply decode the string and call the receive callback.
@@ -53,9 +54,10 @@ class InProcessGroupMsgClient:
         self.lostConnectionCallback = None
         self.madeConnectionCallback = None
         self.connection = DummyConnectionInt32String(self, self.Receive)
+        self.connection.connectionId = privateId
 
         self.eventService.factory.connectionMade(self.connection)
-        self.eventService.factory.addConnection(self.connection, groupId)
+        self.eventService.factory.addConnection(self.connection, groupId, privateId)
 
     def Start(self):
         self.madeConnectionCallback()
