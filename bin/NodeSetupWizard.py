@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.49 2005-11-04 14:10:15 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.50 2006-02-10 08:40:10 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -11,6 +11,7 @@
 import os
 import string
 import sys
+import urlparse
 
 # Imports for user interface
 from wxPython.wx import *
@@ -22,12 +23,12 @@ from AccessGrid import Log
 from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid import icons
+from AccessGrid.Preferences import Preferences
 
 from AccessGrid.Platform import IsWindows
 
-from AccessGrid.AGNodeService import AGNodeService #, AGNodeServiceI
+from AccessGrid.AGNodeService import AGNodeService, WriteNodeConfig
 from AccessGrid.interfaces.AGNodeService_interface import AGNodeService as AGNodeServiceI
-#from AccessGrid.AGNodeService import AGNodeServiceIW
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.hosting import SecureServer, InsecureServer
 from AccessGrid.AGParameter import ValueParameter
@@ -39,14 +40,25 @@ from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.UIUtilities import ProgressDialog
 
 from AccessGrid.interfaces.AGService_client import AGServiceIW
-#from AccessGrid.AGService import AGServiceIW
-from AccessGrid.AGServiceManager import AGServiceManager#, AGServiceManagerI
-from AccessGrid.interfaces.AGServiceManager_interface import AGServiceManager as AGServiceManagerI
 
+from AccessGrid.AGServiceManager import AGServiceManager
+from AccessGrid.interfaces.AGServiceManager_interface import AGServiceManager as AGServiceManagerI
 from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
-#from AccessGrid.AGServiceManager import AGServiceManagerIW
+
+from AccessGrid.ServiceDiscovery import Browser, Publisher
+
+browser = None
+services = None
 
 log = Log.GetLogger(Log.NodeSetupWizard)
+
+def HostnameFromServiceName(serviceName):
+    hostname = serviceName
+    parts = serviceName.split('(')
+    hostname = parts[0]
+    hostname = hostname.strip()
+    return hostname
+    
 
 class ServiceUnavailableException(Exception):
     pass
@@ -120,6 +132,26 @@ class NodeSetupWizard(wxWizard):
         
         progress.UpdateOneStep("Initializing the Node Setup Wizard.")
         
+        # Start the node service which will store the configuration
+        try:
+            progress.UpdateOneStep("Start the node service.")
+            self.nodeClient.StartNodeService()
+        except:
+            log.exception("NodeSetupWizard.__init__: Can not start node service")
+            dlg = wxMessageDialog(None, "Do you want to clear the node service that is already running? (not recommended if you currently are participating in a meeting).", "Warning", style = wxOK | wxCANCEL | wxICON_INFORMATION)
+            if not dlg.ShowModal() == wxID_OK:
+                dlg.Destroy()
+                return
+            else:
+                log.info("NodeSetupWizard.__init__: Try connect to already running service")
+                try:
+                    self.nodeClient.ConnectToNodeService()
+                except:
+                    log.exception("NodeSetupWizard.__init__:Can not connect to node service")
+                    ErrorDialog(self, "Can not start Node Setup Wizard.",
+                                "Error", logFile = NODE_SETUP_WIZARD_LOG)
+                    return
+        
         self.page1 = WelcomeWindow(self, "Welcome to the Node Setup Wizard")
         self.page2 = VideoCaptureWindow(self, self.nodeClient,
                                         "Video Capture Machine")
@@ -147,26 +179,6 @@ class NodeSetupWizard(wxWizard):
         self.page5.SetPrev(self.page4)
         self.page6.SetPrev(self.page5)
 
-        # Start the node service which will store the configuration
-        try:
-            progress.UpdateOneStep("Start the node service.")
-            self.nodeClient.StartNodeService()
-        except:
-            log.exception("NodeSetupWizard.__init__: Can not start node service")
-            dlg = wxMessageDialog(None, "Do you want to clear the node service that is already running. \nNot recommended if you currently are participating in a meeting.", "Warning", style = wxOK | wxCANCEL | wxICON_INFORMATION)
-            if not dlg.ShowModal() == wxID_OK:
-                dlg.Destroy()
-                return
-            else:
-                log.info("NodeSetupWizard.__init__: Try connect to already running service")
-                try:
-                    self.nodeClient.ConnectToNodeService()
-                except:
-                    log.exception("NodeSetupWizard.__init__:Can not connect to node service")
-                    ErrorDialog(self, "Can not start Node Setup Wizard.",
-                                "Error", logFile = NODE_SETUP_WIZARD_LOG)
-                    return
-        
         # Run the wizard
         progress.UpdateOneStep("Open wizard.")
         progress.Destroy()
@@ -186,18 +198,20 @@ class NodeSetupWizard(wxWizard):
         direction = event.GetDirection()
         page = event.GetPage()
         forward = 1
-              
+        
+        print ' 222 = ', self.page2.machineCtrl.GetValue()
+        
         # Show users configuration in last page
         if isinstance(page.GetNext(), ConfigWindow):
             p = self.page2
-            page.GetNext().SetVideoC(p.machineCtrl.GetValue(),
+            page.GetNext().SetVideoC(HostnameFromServiceName(p.machineCtrl.GetValue()),
                                      p.portCtrl.GetValue(), p.checkBox.GetValue(),
                                      self.page3.GetCameraPorts())
             p = self.page4
-            page.GetNext().SetVideoD(p.machineCtrl.GetValue(),
+            page.GetNext().SetVideoD(HostnameFromServiceName(p.machineCtrl.GetValue()),
                                      p.portCtrl.GetValue(), p.checkBox.GetValue())
             p = self.page5
-            page.GetNext().SetAudio(p.machineCtrl.GetValue(),
+            page.GetNext().SetAudio(HostnameFromServiceName(p.machineCtrl.GetValue()),
                                     p.portCtrl.GetValue(), p.checkBox.GetValue())
 
         # Check to see if values are entered correctly
@@ -213,7 +227,7 @@ class WelcomeWindow(TitledPage):
     '''
     def __init__(self, parent, title):
         TitledPage.__init__(self, parent, title)
-        self.info = wxStaticText(self, -1, "This wizard will help you setup and test your Node. The node is your configuration of machines \ncontrolling cameras, speakers, and microphones.")
+        self.info = wxStaticText(self, -1, "This wizard will help you setup and test your Node. The node is your configuration of machines \ncontrolling the display, cameras, speakers, and microphones.")
         self.beforeText = wxStaticText(self, -1,"Before continuing:")
         self.beforeText.SetFont(wxFont(wxNORMAL_FONT.GetPointSize(), wxNORMAL, wxNORMAL, wxBOLD))
         self.beforeText2 =  wxStaticText(self, -1,
@@ -239,6 +253,7 @@ class VideoCaptureWindow(TitledPage):
     '''
     Wizard page that contains fields for setting video capture machine
     '''
+    #global browser, services
     def __init__(self, parent, nodeClient, title):
         TitledPage.__init__(self, parent, title)
         self.parent = parent
@@ -249,7 +264,14 @@ class VideoCaptureWindow(TitledPage):
         self.MACHINE_ID = wxNewId()
         self.PORT_ID =  wxNewId()
         self.BUTTON_ID = wxNewId()
-        self.machineCtrl = wxTextCtrl(self, self.MACHINE_ID)
+        self.services = browser.GetServices()
+        hostnames = self.services.keys()
+        if nodeClient.app.GetHostname() in hostnames:
+            hostnameToSelect = nodeClient.app.GetHostname()
+        else:
+            hostnameToSelect = hostnames[0]
+        self.machineCtrl = wxComboBox(self, self.MACHINE_ID, choices=hostnames)
+        self.machineCtrl.SetValue(hostnameToSelect)
         self.portCtrl = wxTextCtrl(self, self.PORT_ID, "11000")
         self.CHECK_ID = wxNewId()
         self.checkBox = wxCheckBox(self, self.CHECK_ID, "I do not want to use a video capture machine (you will not be able to send video).")
@@ -265,9 +287,20 @@ class VideoCaptureWindow(TitledPage):
     def __SetEvents(self):
         ''' Set the events '''
         EVT_TEXT(self.machineCtrl, self.MACHINE_ID, self.EnterText)
+        EVT_COMBOBOX(self.machineCtrl, self.MACHINE_ID, self.OnSelect)
         EVT_TEXT(self.portCtrl, self.PORT_ID, self.EnterText)
         EVT_CHECKBOX(self, self.CHECK_ID, self.CheckBoxEvent)
   
+    def OnSelect(self,event):
+        selectedHostname = self.machineCtrl.GetValue()
+        if selectedHostname in self.services.keys():
+            url = self.services[selectedHostname]
+            hostport = urlparse.urlparse(url)[1]
+            parts = hostport.split(':')
+            if len(parts) > 1:
+                port = parts[1]
+                self.portCtrl.SetValue(port)
+        
     def EnterText(self, event):
         '''
         Is called whever the user enters text in a text control
@@ -296,8 +329,9 @@ class VideoCaptureWindow(TitledPage):
 
         # Verify access to machine
         try:
-            self.nodeClient.CheckServiceManager(self.machineCtrl.GetValue(),
-                                                   self.portCtrl.GetValue())
+            hostname = HostnameFromServiceName(self.machineCtrl.GetValue())
+            self.nodeClient.CheckServiceManager(hostname,
+                                                self.portCtrl.GetValue())
             self.canConnect = true
         except:
             log.exception("VideoCaptureWindow.Validate: Check service manager failed")
@@ -306,7 +340,7 @@ class VideoCaptureWindow(TitledPage):
         if self.canConnect:
             cards = []
             try:
-                cards = self.nodeClient.GetCaptureCards(self.machineCtrl.GetValue(), self.portCtrl.GetValue())
+                cards = self.nodeClient.GetCaptureCards(hostname, self.portCtrl.GetValue())
             except:
                 log.exception("VideoCaptureWindow.Validate: Can not get capture cards from service manager")
                 ErrorDialog(self, "Could not find your installed video capture cards.", "Error",
@@ -380,7 +414,7 @@ class VideoCaptureWindow2(TitledPage):
         self.scrolledWindow = wxScrolledWindow(self, -1, size = wxSize(100,100), style = wxSIMPLE_BORDER)
         self.scrolledWindow.SetScrollbars(0,20,15,8)
         self.text = wxStaticText(self, -1, "Choose appropriate camera settings from the drop down boxes below. If the camera settings \nare wrong, your video might show up blue or black and white.")
-        self.text2 = wxStaticText(self, -1, "Installed cameras")
+        self.text2 = wxStaticText(self, -1, "Installed capture devices")
         self.text2.SetFont(wxFont(wxNORMAL_FONT.GetPointSize(), wxNORMAL, wxNORMAL, wxBOLD))
         
         self.scrolledWindow.SetBackgroundColour('white')
@@ -396,7 +430,7 @@ class VideoCaptureWindow2(TitledPage):
         ''' returns a dictionary with capture card as key and selected port option as value.'''
         for widget in self.widgets:
             cameraText, portWidget = widget
-            self.cameraPorts[cameraText.GetLabel()] = portWidget.GetValue()
+            self.cameraPorts[cameraText.GetLabel()] = ''
                 
         return self.cameraPorts
         
@@ -404,9 +438,12 @@ class VideoCaptureWindow2(TitledPage):
         '''
         Adds installed cameras and their port options to the page
         '''
+        
+        self.scrolledWindow.DestroyChildren()
+        
         self.cameras = cardList
         nrOfCameras = len(self.cameras)
-             
+        
         if self.gridSizer:
             # Remove old camera texts and camera options
             for widget in self.widgets:
@@ -431,20 +468,12 @@ class VideoCaptureWindow2(TitledPage):
         i = 0
         # Add camera widgets
         for camera in self.cameras:
-            cameraText = wxStaticText(self.scrolledWindow, -1, self.cameras[i].resource)
+            cameraText = wxStaticText(self.scrolledWindow, -1, self.cameras[i].name)
             ports = []
 
-            # Fill in camera port options in drop down box
-            for port in self.cameras[i].portTypes:
-                ports.append(port)
-            i = i + 1
-            cameraOption = wxComboBox(self.scrolledWindow, -1, style = wxLB_SORT, size = wxSize(100, 50), 
-                                      choices = ports, value = ports[0])
-
             # Save widgets so we can delete them later
-            self.widgets.append((cameraText, cameraOption))          
+            self.widgets.append((cameraText, ''))          
             self.gridSizer.Add(cameraText, 0, wxALIGN_CENTER)
-            self.gridSizer.Add(cameraOption, 0, wxEXPAND)
                 
         self.gridSizer.AddGrowableCol(1)
         self.scrolledWindow.Layout()
@@ -484,7 +513,15 @@ class VideoDisplayWindow(TitledPage):
         self.MACHINE_ID = wxNewId()
         self.PORT_ID =  wxNewId()
         self.CHECK_ID = wxNewId()
-        self.machineCtrl = wxTextCtrl(self, self.MACHINE_ID)
+        self.services = browser.GetServices()
+        hostnames = self.services.keys()
+        if nodeClient.app.GetHostname() in hostnames:
+            hostnameToSelect = nodeClient.app.GetHostname()
+        else:
+            hostnameToSelect = hostnames[0]
+        self.machineCtrl = wxComboBox(self, self.MACHINE_ID, choices=hostnames,
+                                    name=hostnameToSelect)
+        self.machineCtrl.SetValue(hostnameToSelect)
         self.portCtrl = wxTextCtrl(self, self.PORT_ID, "11000")
         self.checkBox = wxCheckBox(self, self.CHECK_ID,
                                    "I do not want to use a video display machine (you will not be able to see video).")
@@ -498,7 +535,7 @@ class VideoDisplayWindow(TitledPage):
         self.Layout()
     
     def __SetEvents(self):
-        EVT_TEXT(self.machineCtrl, self.MACHINE_ID, self.EnterText)
+        EVT_COMBOBOX(self.machineCtrl, self.MACHINE_ID, self.OnSelect)
         EVT_TEXT(self.portCtrl, self.PORT_ID, self.EnterText)
         EVT_CHECKBOX(self, self.CHECK_ID, self.CheckBoxEvent)
 
@@ -507,6 +544,16 @@ class VideoDisplayWindow(TitledPage):
         This method is called when user enters text in a text control
         '''   
         self.canConnect = None
+        
+    def OnSelect(self,event):
+        selectedHostname = self.machineCtrl.GetValue()
+        if selectedHostname in self.services.keys():
+            url = self.services[selectedHostname]
+            hostport = urlparse.urlparse(url)[1]
+            parts = hostport.split(':')
+            if len(parts) > 1:
+                port = parts[1]
+                self.portCtrl.SetValue(port)
         
     def GetValidity(self):
         '''
@@ -526,6 +573,7 @@ class VideoDisplayWindow(TitledPage):
         # Verify access to machine
         wxBeginBusyCursor()
         try:
+            hostname = HostnameFromServiceName(self.machineCtrl.GetValue())
             self.nodeClient.CheckServiceManager(self.machineCtrl.GetValue(), self.portCtrl.GetValue())
             self.canConnect = true
             
@@ -593,7 +641,15 @@ class AudioWindow(TitledPage):
         self.MACHINE_ID = wxNewId()
         self.PORT_ID =  wxNewId()
         self.CHECK_ID = wxNewId()
-        self.machineCtrl = wxTextCtrl(self, self.MACHINE_ID)
+        self.services = browser.GetServices()
+        hostnames = self.services.keys()
+        if nodeClient.app.GetHostname() in hostnames:
+            hostnameToSelect = nodeClient.app.GetHostname()
+        else:
+            hostnameToSelect = hostnames[0]
+        self.machineCtrl = wxComboBox(self, self.MACHINE_ID, choices=hostnames,
+                                    name=hostnameToSelect)
+        self.machineCtrl.SetValue(hostnameToSelect)
         self.portCtrl = wxTextCtrl(self, self.PORT_ID, "11000")
         self.checkBox = wxCheckBox(self, self.CHECK_ID,
                                    "I do not want to use an audio machine (you will not be able to hear or send audio).")
@@ -603,6 +659,7 @@ class AudioWindow(TitledPage):
 
     def __SetEvents(self):
         EVT_TEXT(self.machineCtrl, self.MACHINE_ID, self.EnterText)
+        EVT_COMBOBOX(self.machineCtrl, self.MACHINE_ID, self.OnSelect)
         EVT_TEXT(self.portCtrl, self.PORT_ID , self.EnterText)
         EVT_CHECKBOX(self, self.CHECK_ID, self.CheckBoxEvent)
 
@@ -611,6 +668,16 @@ class AudioWindow(TitledPage):
         This method is called when a user enters text in a text control
         '''   
         self.canConnect = None
+        
+    def OnSelect(self,event):
+        selectedHostname = self.machineCtrl.GetValue()
+        if selectedHostname in self.services.keys():
+            url = self.services[selectedHostname]
+            hostport = urlparse.urlparse(url)[1]
+            parts = hostport.split(':')
+            if len(parts) > 1:
+                port = parts[1]
+                self.portCtrl.SetValue(port)
         
     def GetValidity(self):
         '''
@@ -629,7 +696,9 @@ class AudioWindow(TitledPage):
         
         wxBeginBusyCursor()
         try:
-            self.nodeClient.CheckServiceManager(self.machineCtrl.GetValue(), self.portCtrl.GetValue())
+            hostname = HostnameFromServiceName(self.machineCtrl.GetValue())
+            port = self.portCtrl.GetValue()
+            self.nodeClient.CheckServiceManager(self.machineCtrl.GetValue(), port)
             self.canConnect = true
         except:
             log.exception("AudioWindow.Validate: Service manager is not started")
@@ -640,7 +709,7 @@ class AudioWindow(TitledPage):
         if self.canConnect:
             return true
         else:
-            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
+            MessageDialog(self, "Could not connect. Is a service manager running\nat %s:%s?" % (hostname,port),  
                           style = wxICON_ERROR|wxOK)
             return false
     
@@ -771,90 +840,8 @@ class ConfigWindow(TitledPage):
             dlg.Destroy()
             wxEndBusyCursor()
             return false
-                              
-        if self.videoCaptUrl:
-            log.info("Adding video capture service manager: %s", self.videoCaptUrl)
-            text = self.videoCaptMachine+":"+self.videoCaptPort
-            try:
-                # Add video capture service manager
-                self.nodeClient.AddServiceManager(text, self.videoCaptUrl)
-
-            except:
-                # We still want to continue even if a service manager is already present
-                log.exception("ConfigWindow.Validate: Could not add service manager for video capture")
-                pass
-
-            try:
-                # Add video producer services
-                log.debug("ConfigWindow.Validate: Add video producer")
-                self.nodeClient.AddService( self.videoCaptUrl, "VideoProducerService", self.cameraPorts)
-                
-            except ServiceUnavailableException:
-                
-                log.exception("ConfigWindow.Validate: Could not add service to video capture machine.")
-                errors = errors + "No services supporting video capture are installed.\nThe video capture machine is not added to the configuration.\n\n"
-                
-            except:
-                log.exception("ConfigWindow.Validate: Could not add service to video capture machine.")
-                errors = errors + "The video capture machine could not be added to the configuration. An error occured..\n\n"
-                
-        if self.videoDispUrl:
-            if self.videoDispUrl != self.videoCaptUrl:
-                log.info("Adding video display service manager: %s", self.videoDispUrl)
-                try:
-                    # Add video display service manager
-                    text = self.videoDispMachine+":"+self.videoDispPort
-                    self.nodeClient.AddServiceManager(text, self.videoDispUrl)
-                except:
-                    # We still want to continue even if a service manager is already present
-                    log.exception("ConfigWindow.Validate: Could not add service manager for video display")
-                    pass
-            else:
-                log.info("Not adding video display service manager; already added (%s)", self.videoDispUrl)
-
-            try:
-                # Add video display service
-                log.debug("ConfigWindow.Validate: Add video display service")
-                self.nodeClient.AddService(self.videoDispUrl, "VideoConsumerService")
-                
-            except ServiceUnavailableException:
-                log.exception("ConfigWindow.Validate: Could not add service to video display machine.")
-                errors = errors +"No services supporting video display are installed. \nThe video display machine is not added to the configuration.\n\n"
-                
-            except:
-                log.exception("ConfigWindow.Validate: Could not add service to video display machine.")
-                errors = errors + "The video display machine could not be added to the configuration. An error occured.\n\n"
-                              
-        if self.audioUrl:
             
-            if self.audioUrl != self.videoDispUrl and self.audioUrl != self.videoCaptUrl:
-                log.info("Adding audio service manager: %s", self.audioUrl)
-                try:
-                    # Add audio service manager
-                    text = self.audioMachine+":"+self.audioPort
-                    self.nodeClient.AddServiceManager(text, self.audioUrl)
-                except:
-                    # We still want to continue even if a service manager is already present
-                    log.exception("ConfigWindow.Validate: Could not add service manager for audio")
-                    pass
-            else:
-                log.info("Not adding audio service manager; already added (%s)", self.audioUrl)
-
-            try:
-                # Add audio service
-                log.debug("ConfigWindow.Validate: Add audio service")
-                self.nodeClient.AddService(self.audioUrl, "AudioService")
-                
-            except ServiceUnavailableException:
-                log.exception("ConfigWindow.Validate: Could not add service to audio machine.")
-                errors = errors + "No services supporting audio are installed. \nThe audio machine is not added to the configuration.\n\n"
-            except:
-                log.exception("ConfigWindow.Validate: Could not add service to audio machine")
-                errors = errors + "The audio machine could not be added to the configuration. An error occured.\n\n"
-                   
-       
-        self.name = self.configNameCtrl.GetValue()
-
+            
         configs = []
 
         # Get known configurations from the Node Service
@@ -874,35 +861,48 @@ class ConfigWindow(TitledPage):
                 wxEndBusyCursor()
                 # User does not want to overwrite.
                 return false
+                
+        # Build up config to send to writer
+        config = {}
+        if self.videoCaptUrl and self.cameraPorts:
+            for capture in self.cameraPorts.keys():
+                service = [ 'VideoProducerService.zip', capture, [] ]
+                if self.videoCaptUrl in config.keys():
+                    config[self.videoCaptUrl].append( service )
+                else:
+                    config[self.videoCaptUrl] = [ service ]
+        if self.videoDispUrl:
+            service = [ 'VideoConsumerService.zip', None, [] ]
+            if self.videoDispUrl in config.keys():
+                config[self.videoDispUrl].append(service)
+            else:
+                config[self.videoDispUrl] = [ service ]
+        if self.audioUrl:
+            service = [ 'AudioService.zip', None, [] ]
+            if self.audioUrl in config.keys():
+                config[self.audioUrl].append(service)
+            else:
+                config[self.audioUrl] = [ service ]
+            
+        # Write the node config file
+        WriteNodeConfig(configName,config)
 
-        # Save configuration
-        try:
-            self.nodeClient.GetNodeService().StoreConfiguration(self.name)
-        except:
-            log.exception("ConfigWindow.Validate: Could not store node configuration.")
-            errors = errors + "The configuration could not be saved. Error occured.\n\n"
-            
-            
         # Set configuration as default
         setAsDefault = self.checkBox.GetValue()
         if setAsDefault:
-             
-            try:
-                self.nodeClient.GetNodeService().SetDefaultConfiguration(self.name)
-            except:
-                log.exception("ConfigWindow.Validate: Could not set default configuration.")
-                errors = errors + "The configuration could not be set as default. Error occured.\n\n"
-
+            prefs = self.nodeClient.app.GetPreferences()
+            prefs.SetPreference(Preferences.NODE_CONFIG,configName)
+            prefs.SetPreference(Preferences.NODE_CONFIG_TYPE,'user')
+            prefs.StorePreferences()
     
         if errors != "":
             ErrorDialog(self, errors, "Error", logFile = NODE_SETUP_WIZARD_LOG)
         else:
-            messageText = "New configuration written to " + self.name
+            messageText = "New configuration written to " + configName
             if setAsDefault:
                 messageText += "\nand set as default node configuration"
             MessageDialog(self, messageText,  
                           style = wxICON_INFORMATION|wxOK)
-
      
         wxEndBusyCursor()
         return true
@@ -1017,18 +1017,32 @@ class NodeClient:
         #        
         self.nodeService = AGNodeService(self.app)
         nsi = AGNodeServiceI(self.nodeService)
-        url = self.server.RegisterObject(nsi, path="/NodeService")
-        self.node = AGNodeServiceIW(url)
-        log.info("Started node service: %s", url)
+        nsi.impl = self.nodeService
+        nsurl = self.server.RegisterObject(nsi, path="/NodeService")
+        self.node = AGNodeServiceIW(nsurl)
+        log.info("Started node service: %s", nsurl)
         
         #
         # Start a service manager
         #
         self.serviceManager = AGServiceManager(self.server,self.app)
         smi = AGServiceManagerI(self.serviceManager)
-        url = self.server.RegisterObject(smi, path="/ServiceManager")
-        self.serviceManagerIW = AGServiceManagerIW(url)
-        log.info("Started service manager: %s", url)
+        smi.impl = self.serviceManager
+        smurl = self.server.RegisterObject(smi, path="/ServiceManager")
+        self.serviceManagerIW = AGServiceManagerIW(smurl)
+        log.info("Started service manager: %s", smurl)
+        
+        try:
+            Publisher(hostname,AGServiceManager.ServiceType,
+                                            smurl,port=port)
+        except:
+            log.exception('Error advertising service manager')
+        try:
+            Publisher(hostname,AGNodeService.ServiceType,
+                                       nsurl,port=port)
+        except:
+            log.exception('Error advertising node service')
+
         
         self.server.RunInThread()
         
@@ -1048,13 +1062,15 @@ class NodeClient:
    
     def AddServiceManager(self, name, url):
         ''' Adds a service manager to the node service'''
-        self.node.AddServiceManager(AGServiceManagerDescription(name, url))
+        self.node.AddServiceManager(url)
    
     def AddService(self, serviceManagerUrl, type, data = None):
         serviceAvailable = None
+        
+        serviceManager = AGServiceManagerIW(serviceManagerUrl)
 
         # Check if we have a video producer service installed
-        serviceList = AGServiceManagerIW(serviceManagerUrl).GetAvailableServices()
+        serviceList = serviceManager.GetServicePackageDescriptions()
         for service in serviceList:
             if service.name == type:
                 serviceAvailable = service
@@ -1067,15 +1083,15 @@ class NodeClient:
                     log.debug("NodeClient.AddService: Video Producer Service %s %s %s" %
                                 (serviceAvailable.servicePackageFile, 
                                  serviceManagerUrl, captureCard))
-                    serviceDesc = self.node.AddService(serviceAvailable,
-                                                       serviceManagerUrl, captureCard, None)
+                    serviceDesc = serviceManager.AddServiceByName(serviceAvailable.name,
+                                                                  captureCard)
 
                     # Get service configuration
                     conf = AGServiceIW(serviceDesc.uri).GetConfiguration()
                                                                                 
                     # Set camera port type
                     if data and data.has_key(captureCard.resource):
-                        conf.append(ValueParameter("port", data[captureCard.resource]))
+                        conf.append(ValueParameter("port", data[captureCard.name]))
                         AGServiceIW(serviceDesc.uri).SetConfiguration(conf)
 
             else: # Video consumer or audio
@@ -1117,8 +1133,7 @@ class NodeClient:
             return []
 
         for resource in resourceList:
-            if resource.role == 'producer' and resource.type == 'video':
-                self.cameraList.append(resource)
+            self.cameraList.append(resource)
 
         return self.cameraList
 
@@ -1130,6 +1145,10 @@ class NodeClient:
         return self.node.GetConfigurations()
 
 def main():
+    global browser
+
+    browser = Browser(AGServiceManager.ServiceType)
+    browser.Start()
 
     # Create the wxpython app
     wxapp = wxPySimpleApp()
@@ -1156,6 +1175,8 @@ def main():
 
     startupDialog.UpdateOneStep("Initializing the Node Setup Wizard.")
     nodeSetupWizard = NodeSetupWizard(None, debug, startupDialog, app)
+    
+    browser.Stop()
        
 # The main block
 if __name__ == "__main__":
