@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.104 2006-01-26 20:32:17 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.105 2006-02-10 08:02:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.104 2006-01-26 20:32:17 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.105 2006-02-10 08:02:25 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -31,6 +31,7 @@ from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.AGParameter import ValueParameter
 from AccessGrid.Descriptions import NodeConfigDescription
 from AccessGrid.AGServiceManager import AGServiceManager
+from AccessGrid.Platform.Config import UserConfig, SystemConfig
 
 from AccessGrid.interfaces.AGNodeService_interface import AGNodeService as AGNodeServiceI
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
@@ -40,6 +41,123 @@ log = Log.GetLogger(Log.NodeService)
 class SetStreamException(Exception): pass
 class ServiceManagerAlreadyExists(Exception): pass
 class ServiceManagerNotFound(Exception): pass
+
+def WriteNodeConfig(configName,config):
+    """
+    Writes the given node config to the given node config name
+
+    A 'config' is a dictionary
+
+        keys:   service manager urls
+        values: [ [servicename, resource name, serviceconfig], ... ]
+
+        serviceconfig should be a list of name,value pairs
+    """
+    userNodeConfigDir = UserConfig.instance().GetNodeConfigDir()
+    fileName = os.path.join(userNodeConfigDir, configName)
+    hostname = SystemConfig.instance().GetHostname()
+
+    # Catch inability to write config file
+    if((not os.path.exists(userNodeConfigDir)) or
+       (not os.access(userNodeConfigDir,os.W_OK)) or
+       (os.path.exists(fileName) and not os.access(fileName, os.W_OK) )):
+        log.exception("Can't write config file %s" % (fileName))
+        raise Exception("Can't write config file %s" % (fileName))
+
+
+
+    numServiceManagers = 0
+    numServices = 0
+    node_servicemanagers = ''
+
+    configParser = ConfigParser.ConfigParser()
+    configParser.optionxform = str
+    for key in config.keys(): 
+
+        builtin = 0
+        url = key          
+        name = url
+        
+        servicemanager_services = ''
+
+        #
+        # Create Service Manager section
+        #
+        serviceManagerSection = 'servicemanager%d' % numServiceManagers
+        configParser.add_section( serviceManagerSection )
+        node_servicemanagers += serviceManagerSection + " "
+        if url.find(hostname) >= 0:
+            builtin = 1
+        else:
+            builtin = 0
+        configParser.set( serviceManagerSection, 'builtin', builtin )
+        if builtin:
+            configParser.set( serviceManagerSection, "name", '' )
+            configParser.set( serviceManagerSection, "url", '' )
+        else:
+            configParser.set( serviceManagerSection, "name", name )
+            configParser.set( serviceManagerSection, "url", url )
+
+        services = config[key]
+
+        if not services:
+            services = []
+
+        for service in services:
+
+            serviceName,resourceName,serviceConfig = service
+
+            serviceSection = 'service%d' % numServices
+            configParser.add_section( serviceSection )
+
+            # 
+            # Create Resource section
+            #
+
+            if resourceName:
+                log.debug('Storing resource: %s', resourceName)
+                resourceSection = 'resource%d' % numServices
+                configParser.add_section( resourceSection )
+                configParser.set( resourceSection, "name",
+                                  resourceName )
+                configParser.set( serviceSection, "resource",
+                                  resourceSection )
+            else:
+                log.debug('No resource specified')
+
+            # 
+            # Create Service Config section
+            #
+
+            if serviceConfig:
+                serviceConfigSection = 'serviceconfig%d' % numServices
+                configParser.set( serviceSection, "serviceConfig", serviceConfigSection )
+                configParser.add_section( serviceConfigSection )
+                for k,v in serviceConfig:
+                    configParser.set( serviceConfigSection, k, v )
+
+
+            #
+            # Create Service section
+            #
+            servicemanager_services += serviceSection + " "
+            configParser.set( serviceSection, "packageName", serviceName )
+
+            numServices += 1
+
+        configParser.set( serviceManagerSection, "services", servicemanager_services )
+        numServiceManagers += 1
+
+    configParser.add_section('node')
+    configParser.set('node', "servicemanagers", node_servicemanagers )
+
+    #
+    # Write config file
+    #
+    fp = open( fileName, "w" )
+    fp.write("# AGTk %s node configuration\n" % (Version.GetVersion()))
+    configParser.write(fp)
+    fp.close()
 
 
 class AGNodeService:
