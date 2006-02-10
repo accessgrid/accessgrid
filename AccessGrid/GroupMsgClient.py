@@ -3,7 +3,7 @@
 # Name:        GroupMsgClient.py
 # Purpose:     A Group Messaging service client.
 # Created:     2005/09/09
-# RCS-ID:      $Id: GroupMsgClient.py,v 1.4 2006-01-23 17:20:00 turam Exp $
+# RCS-ID:      $Id: GroupMsgClient.py,v 1.5 2006-02-10 05:19:29 turam Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -77,7 +77,8 @@ class GroupMsgClientFactory(ClientFactory):
         self.measurePerformance = False
 
     def startHandshake(self, connection):
-        connection.sendString(str(self.group))
+        connectString = '%02d%s%02d%s' % (len(str(self.group)),str(self.group),len(str(self.connectionId)),str(self.connectionId))
+        connection.sendString(connectString)
         self.startedSending = False
         self.connection = connection
 
@@ -108,7 +109,6 @@ class GroupMsgClientFactory(ClientFactory):
         self.group = group
 
     def clientConnectionMade(self, connectionId):
-        self.setConnectionId(connectionId)
         log.info("Connected.  Connection ID: %s", self.connectionId)
         self.startedSending = True
         self.timeStart = time.time()
@@ -140,6 +140,7 @@ class GroupMsgClient:
         self.location = location
         self.channelId = channel
         self.factory = GroupMsgClientFactory()
+        self.factory.setConnectionId(privateId)
         self.factory.setGroup(channel)
         self.factory.setReceiveCallback(self.Receive)
         self.factory.setLostConnectionCallback(self.LostConnection)
