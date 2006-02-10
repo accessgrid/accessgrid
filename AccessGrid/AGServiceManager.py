@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.95 2006-01-24 22:21:15 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.96 2006-02-10 06:04:35 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.95 2006-01-24 22:21:15 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.96 2006-02-10 06:04:35 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -28,7 +28,7 @@ from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid.AGServicePackage import AGServicePackage
 from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
-from AccessGrid.Descriptions import AGServiceManagerDescription
+from AccessGrid.Descriptions import AGServiceManagerDescription, ResourceDescription
 from AccessGrid.interfaces.AGService_interface import AGService as AGServiceI
 from AccessGrid.interfaces.AGService_client import AGServiceIW
 
@@ -298,6 +298,15 @@ class AGServiceManager:
     def GetServicePackage(self,servicePackageFile):
         return AGServicePackage(os.path.join(self.servicesDir,servicePackageFile))
         
+    def GetResources(self):
+        print 'AGServiceManager.GetResources'
+        f = file('/tmp/qwe','w')
+        f.write('qweqweqwe')
+        f.close()
+        resources = SystemConfig.instance().GetResources()
+        print 'resources = ', resources
+        ret = map(lambda x: ResourceDescription(x[0]) , resources)
+        return ret
 
     ####################
     ## INTERNAL methods
