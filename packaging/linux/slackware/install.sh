@@ -19,15 +19,6 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
-# Has xawtv been installed? (need v4lctl)
-# Maybe we could just look for v4lctl, rather than the whole lot?
-#
-XAWTV=`ls /var/adm/packages | grep xawtv`
-if [ ! $? -eq 0 ]; then
-    echo "Can't find xawtv package installed"
-    echo "Please install xawtv package, before running this script again"
-    exit 2
-fi
 
 # Has wxMozilla been installed?
 # Needed for SharedBrowser application
@@ -148,31 +139,6 @@ echo ""
 # Any weird stuff for Shared apps?
 #
 
-#
-# Install XDG menu stuff
-#
-echo ""
-echo "***********************************************"
-echo "Install AG Menus "
-echo "***********************************************"
-here=`pwd`
-APPSMENU_PATCH=${here}/applications-all-users.vfolder-info.diff
-
-if [ ! -r ${APPSMENU_PATCH} ]; then
-  echo "No patch file found"
-  exit 1
-fi
-
-cd /etc/gnome-vfs-2.0/vfolders
-
-patch -p0 -N -t -l -s --dry-run 2>&1 > /dev/null < ${APPSMENU_PATCH}
-if [ $? -eq 0 ]; then
-  echo "Patching \"Applications\" menu"
-  patch -p0 -N -t -l -s  2>&1 > /dev/null < ${APPSMENU_PATCH}
-else
-  echo "Patch won't apply cleanly."
-  echo "Perhaps the \"Applications\" menu was patched by a previous installation? "
-fi
 
 echo ""
 echo "Installation finished."

@@ -3,10 +3,10 @@
 # spec file. If you see %{variable_name} this is where it's assigned
 #
 name=AccessGrid
-version=3.0
+version=VERSION
 release=RELEASE
 prefix=/usr
-sysconfdir=etc/${name}/Config
+sysconfdir=etc/${name}3/Config
 sharedir=${prefix}/share
 gnomedir=${sharedir}/gnome/apps
 kdedir=${sharedir}/applnk
@@ -56,25 +56,25 @@ rm -rf ${buildroot}/share/applnk
 mkdir -p ${buildroot}/share/AccessGrid
 cp -a ${here}/../ag-ellipse.png ${buildroot}/share/AccessGrid/
 mkdir -p ${buildroot}/etc/xdg/menus/applications-merged
-cp ${xdgfiles}/AccessGrid.menu ${buildroot}/etc/xdg/menus/applications-merged/
+cp ${xdgfiles}/AccessGrid3.menu ${buildroot}/etc/xdg/menus/applications-merged/
 mkdir -p ${buildroot}/share/desktop-directories
-cp -a ${xdgfiles}/*.directory ${buildroot}/share/desktop-directories/
+cp -a ${xdgfiles}/*3*.directory ${buildroot}/share/desktop-directories/
 mkdir -p ${buildroot}/share/applications/AccessGrid
-cp -a ${xdgfiles}/*.desktop ${buildroot}/share/applications/AccessGrid/
+cp -a ${xdgfiles}/*3*.desktop ${buildroot}/share/applications/AccessGrid/
 
 # Move node services and shared apps into etc 
 #
 cd ${buildroot}
-mv NodeServices etc/AccessGrid
-mv SharedApplications etc/AccessGrid/
-mkdir etc/AccessGrid/Services
-mkdir etc/AccessGrid/PackageCache
-mkdir etc/AccessGrid/Logs
+mv NodeServices etc/AccessGrid3
+mv SharedApplications etc/AccessGrid3/
+mkdir -p etc/AccessGrid3/Services
+mkdir -p etc/AccessGrid3/PackageCache
+mkdir -p etc/AccessGrid3/Logs
 
 # TEMPORARY links for AG2,AG3
 #
-ln -s AccessGrid etc/AccessGrid3
-(cd lib/${python}/site-packages && ln -s AccessGrid3/AccessGrid .)
+#ln -s AccessGrid etc/AccessGrid3
+#(cd lib/${python}/site-packages && ln -s AccessGrid3/AccessGrid .)
 
 # Create a usr dir, and move dirs thereunder
 mkdir usr
@@ -122,8 +122,8 @@ chmod +x ${buildroot}/install/AccessGrid-Postinstall.py
 cat <<EOF > ${buildroot}/install/doinst.sh
 #!/bin/sh
 
-agpm.py --post-install
-VNCEXE=/etc/AccessGrid/SharedApplications/VenueVNC/vncviewer
+agpm3.py --post-install
+VNCEXE=/etc/AccessGrid3/SharedApplications/VenueVNC/vncviewer
 if [ -f ${VNCEXE} ]; then
     chmod a+x ${VNCEXE}
 fi
@@ -158,5 +158,5 @@ cd ${here}
 
 
 #%clean
-[ -n "${buildroot}" -a "${buildroot}" != / ] && rm -rf ${buildroot}
+#[ -n "${buildroot}" -a "${buildroot}" != / ] && rm -rf ${buildroot}
 

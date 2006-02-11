@@ -23,7 +23,7 @@ parser.add_option("--verbose", action="store_true", dest="verbose",
                   default=0,
                   help="A flag that indicates to build verbosely.")
 parser.add_option("-p", "--pythonversion", dest="pyver",
-                  metavar="PYTHONVERSION", default="2.3",
+                  metavar="PYTHONVERSION", default="2.4",
                   help="Which version of python to build the installer for.")
 
 options, args = parser.parse_args()
@@ -60,12 +60,11 @@ print "** Building AccessGrid RPMs"
 os.chdir(DestDir)
 tar_dst_filename = "AccessGrid-%s-%s.tar.gz" % (version,metainfo)
 
-# Set the release number in Slack.build-ag
-# Also set the python version
+# Set the version, release number and python version in Slack.build-ag
 os.chdir(StartDir)
 spec_in = 'Slack.build-ag.in'
 spec_out = 'Slack.build-ag'
-cmd = 'sed -e s/RELEASE/%s/ -e s/pythonPYVER/python%s/ %s > %s' % (metainfo,pyver,spec_in,spec_out)
+cmd = 'sed -e s/VERSION/%s/ -e s/RELEASE/%s/ -e s/pythonPYVER/python%s/ %s > %s' % (version, metainfo, pyver, spec_in, spec_out)
 os.system(cmd)
 
 # Copy ALSA devices setup script
