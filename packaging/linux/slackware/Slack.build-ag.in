@@ -124,8 +124,8 @@ cat <<EOF > ${buildroot}/install/doinst.sh
 
 agpm3.py --post-install
 VNCEXE=/etc/AccessGrid3/SharedApplications/VenueVNC/vncviewer
-if [ -f ${VNCEXE} ]; then
-    chmod a+x ${VNCEXE}
+if [ -f \${VNCEXE} ]; then
+    chmod a+x \${VNCEXE}
 fi
 
 EOF
