@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.9 2006-01-28 02:15:17 eolson Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.10 2006-02-13 21:08:16 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -70,8 +70,6 @@ class AudioService( AGService ):
         self.rat_media = os.path.join(os.getcwd(), ratmedia) 
         self.rat_ui = os.path.join(os.getcwd(), ratui)
         self.rat_kill = os.path.join(os.getcwd(), ratkill)
-
-        self.executable = os.path.join(os.getcwd(), rat)
 
         # Turn off firewall for this app
         self.sysConf = SystemConfig.instance()
@@ -208,52 +206,10 @@ class AudioService( AGService ):
 
     def Start( self ):
         """Start service"""
-
         if sys.platform=='darwin':
-            # Detect of X11 is started or not, and start it if necessary.
-            try:
-                import socket
-                sock = socket.socket()
-
-                try:
-                    sock.connect( ("localhost", 6000) )
-                    self.log.info("X11 already started")
-                except:
-                    x11Path = "/Applications/Utilities/X11.app/Contents/MacOS/X11"
-                    if not os.path.exists(x11Path):
-                        self.log.error("X11 not found in %s" % x11Path)
-                    else:
-                        self.log.info("starting X11")
-
-                        os.system(x11Path + " &")
-                        #self._x11ProcessManager = ProcessManager()
-                        #self._x11ProcessManager.StartProcess(x11Path, [], detached=1)
-                        # wait until the X server starts or x seconds pass
-                        connected = 0
-                        timePassed = 0
-                        sock2 = socket.socket()
-                        while not connected and timePassed < 10:
-                            time.sleep(1)
-                            timePassed += 1
-                            try:
-                                sock2.connect( ("localhost", 6000) )
-                                #print "sock2:", sock.getsockname(), sock.fileno()
-                            except:
-                                pass    # failed to connect to x server so far
-                            else:
-                                connected = 1  # x server is up
-                                self._x11Started = True
-                        if connected:
-                            self.log.info("X11 started successfully")
-                        if timePassed >= 10:
-                            self.log.warning("Timed out waiting for X11 to start")
-                        #sock2.close()
-                        sock2.shutdown(2)
-                sock.close()
-            except:
-                self.log.exception("Error in X11 init code")
-
-            self.log.info("Finished checks for X11")
+            os.system("/usr/bin/open -a X11")
+            time.sleep(2)
+            self.log.info("Finished starting X11")
 
         try:
             # Initialize environment for rat
@@ -351,9 +307,6 @@ class AudioService( AGService ):
 
     def Shutdown(self):
         AGService.Shutdown(self)
-        if Platform.IsOSX():
-            if self._x11Started == True:
-                os.system("killall -9 X11") 
 
     def SetStream( self, streamDescription ):
         """
