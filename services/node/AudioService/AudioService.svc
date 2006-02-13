@@ -3,7 +3,7 @@ executable = AudioService.py
 name = AudioService
 capabilities = Capability1 Capability2
 platform = neutral
-version = 3.0
+version = 3.1
 description = Rat-based audio service
 
 [Capability2]
