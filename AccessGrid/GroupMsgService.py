@@ -3,7 +3,7 @@
 # Name:        GroupMsgService.py
 # Purpose:     A Group Messaging service server.
 # Created:     2005/09/09
-# RCS-ID:      $Id: GroupMsgService.py,v 1.4 2006-02-10 05:24:47 turam Exp $
+# RCS-ID:      $Id: GroupMsgService.py,v 1.5 2006-02-13 17:24:20 turam Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -53,7 +53,7 @@ class GroupMsgServiceProtocol(Int32StringReceiver):
                         groupId = data[2:grouplen+2]
                         connectionlen = int(data[grouplen+2:grouplen+4])
                         connectionId = data[grouplen+4:grouplen+4+connectionlen]
-                        log.info('beta2+: groupid,connectionid' % (grouplen,groupId,connectionlen,connectionId))
+                        log.info('beta2+: groupid=%s; connectionid=%s' % (groupId,connectionId))
                     self.factory.addConnection(connection, groupId, connectionId)
                 except GroupDoesNotExistException:
                     self.sendError(ERROR.NO_SUCH_GROUP)
