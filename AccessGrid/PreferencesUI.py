@@ -72,7 +72,7 @@ class PreferencesDialog(wxDialog):
         
         EVT_SASH_DRAGGED(self.sideWindow, self.ID_WINDOW_LEFT, self.__OnSashDrag)
         EVT_TREE_SEL_CHANGED(self, self.sideTree.GetId(), self.OnSelect)
-                       
+                              
         self.__Layout()
         self.__InitTree()
 
@@ -198,7 +198,7 @@ class PreferencesDialog(wxDialog):
         Called when window is resized.
         '''
         self.__Layout()
-
+         
     def __OnSashDrag(self, event):
         '''
         Called when sash panel is moved, resizes sash windows accordingly.
@@ -225,29 +225,29 @@ class PreferencesDialog(wxDialog):
         mainSizer = wxBoxSizer(wxVERTICAL)
         
         sizer = wxBoxSizer(wxHORIZONTAL)
-        sizer.Add(self.sideWindow,0,wxEXPAND)
-        sizer.Add(self.preferencesWindow,1,wxEXPAND)
+        sizer.Add(self.sideWindow,1,wxEXPAND)
+        sizer.Add(self.preferencesWindow,3,wxEXPAND)
 
         mainSizer.Add(sizer, 1, wxEXPAND)
-        prefBox = wxBoxSizer(wxHORIZONTAL)
-        self.preferencesWindow.SetSizer(prefBox)
-       
-        prefBox.Add(self.currentPanel, 1, wxEXPAND)
-
+        
         prefPanelBox = wxBoxSizer(wxVERTICAL)
         self.preferencesPanel.SetSizer(prefPanelBox)
         prefPanelBox.Add(self.title, 0, wxEXPAND)
         prefPanelBox.Add(self.currentPanel, 1, wxEXPAND|wxTOP, 5)
 
+        prefBox = wxBoxSizer(wxHORIZONTAL)
+        self.preferencesWindow.SetSizer(prefBox)
+        prefBox.Add(self.preferencesPanel, 1, wxEXPAND)
+        
         buttonSizer = wxBoxSizer(wxHORIZONTAL)
         buttonSizer.Add(self.okButton, 0, wxRIGHT | wxALIGN_CENTER, 5)
         buttonSizer.Add(self.cancelButton, 0, wxALIGN_CENTER)
 
         mainSizer.Add(buttonSizer, 0, wxALL| wxALIGN_CENTER, 5)
 
-        w,h = self.preferencesWindow.GetSizeTuple()
-        if self.currentPanel.GetSizer():
-            self.currentPanel.GetSizer().SetDimension(0,0,w,h)
+        #w,h = self.preferencesWindow.GetSizeTuple()
+        #if self.currentPanel.GetSizer():
+        #    self.currentPanel.GetSizer().SetDimension(0,0,w,h)
 
         self.SetSizer(mainSizer)
         self.Layout()
@@ -333,6 +333,7 @@ class NodePanel(wxPanel):
             
         # Get node configurations
         defaultNodeConfigName = self.preferences.GetPreference(Preferences.NODE_CONFIG)
+        
         defaultNodeConfigString = ""
 
         nodeConfigs = nodeService.GetConfigurations()
@@ -342,7 +343,7 @@ class NodePanel(wxPanel):
             self.configMap[nodeConfigString] = nodeConfig
             if defaultNodeConfigName == nodeConfig.name:
                 defaultNodeConfigString = nodeConfigString
-
+            
         if defaultNodeConfigString:
             self.nodeConfigCtrl.SetStringSelection(defaultNodeConfigString)
         # if default node config not found, don't select one
