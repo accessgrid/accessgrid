@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.82 2006-01-28 00:23:51 lefvert Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.83 2006-02-13 21:18:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.82 2006-01-28 00:23:51 lefvert Exp $"
+__revision__ = "$Id: Utilities.py,v 1.83 2006-02-13 21:18:07 lefvert Exp $"
 
 import os
 import string
@@ -227,7 +227,7 @@ def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
     args['bug_severity'] = "normal"
     args['bug_status'] = "NEW"
     args['assigned_to'] = ""
-    args['cc'] = "lefvert@mcs.anl.gov"   # email to be cc'd
+    args['cc'] = "turam@mcs.anl.gov"   # email to be cc'd
     args['bug_file_loc'] = "http://"
     
     
