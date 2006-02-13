@@ -72,7 +72,8 @@ class PreferencesDialog(wxDialog):
         
         EVT_SASH_DRAGGED(self.sideWindow, self.ID_WINDOW_LEFT, self.__OnSashDrag)
         EVT_TREE_SEL_CHANGED(self, self.sideTree.GetId(), self.OnSelect)
-                              
+        EVT_SIZE(self, self.__OnSize)
+
         self.__Layout()
         self.__InitTree()
 
@@ -197,8 +198,16 @@ class PreferencesDialog(wxDialog):
         '''
         Called when window is resized.
         '''
+        #
+        # Work around a suspected wx bug. Get the size of the sideWindow and
+        # reset it after the layout is updated. Without this code, the sash
+        # gradually shifts right when the window is sized, regardless of
+        # of whether the width increases or decreases.
+        #
+        width, height = self.sideWindow.GetSize()
         self.__Layout()
-         
+        self.sideWindow.SetSize((width, -1))
+        
     def __OnSashDrag(self, event):
         '''
         Called when sash panel is moved, resizes sash windows accordingly.
@@ -225,8 +234,8 @@ class PreferencesDialog(wxDialog):
         mainSizer = wxBoxSizer(wxVERTICAL)
         
         sizer = wxBoxSizer(wxHORIZONTAL)
-        sizer.Add(self.sideWindow,1,wxEXPAND)
-        sizer.Add(self.preferencesWindow,3,wxEXPAND)
+        sizer.Add(self.sideWindow,0,wxEXPAND)
+        sizer.Add(self.preferencesWindow,1,wxEXPAND)
 
         mainSizer.Add(sizer, 1, wxEXPAND)
         
