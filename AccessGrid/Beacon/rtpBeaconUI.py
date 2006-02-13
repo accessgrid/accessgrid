@@ -6,12 +6,12 @@
 # Author:      Thomas Uram, Susanne Lefvert
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeaconUI.py,v 1.7 2006-01-27 19:10:56 turam Exp $
+# RCS-ID:      $Id: rtpBeaconUI.py,v 1.8 2006-02-13 15:04:03 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
 
-__revision__ = "$Id: rtpBeaconUI.py,v 1.7 2006-01-27 19:10:56 turam Exp $"
+__revision__ = "$Id: rtpBeaconUI.py,v 1.8 2006-02-13 15:04:03 turam Exp $"
 
 from wxPython.wx import *
 from wxPython.grid import *
