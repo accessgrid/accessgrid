@@ -6,12 +6,12 @@
 # Author:      Thomas Uram, Susanne Lefvert
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeaconUI.py,v 1.8 2006-02-13 15:04:03 turam Exp $
+# RCS-ID:      $Id: rtpBeaconUI.py,v 1.9 2006-02-13 15:05:06 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
 
-__revision__ = "$Id: rtpBeaconUI.py,v 1.8 2006-02-13 15:04:03 turam Exp $"
+__revision__ = "$Id: rtpBeaconUI.py,v 1.9 2006-02-13 15:05:06 turam Exp $"
 
 from wxPython.wx import *
 from wxPython.grid import *
@@ -114,7 +114,7 @@ class BeaconFrame(wxFrame):
             
             # Resize grid as needed
             numRows = self.grid.GetNumberRows()
-            if numRows > len(sources):
+            if numRows > len(sources) and numRows > 1:
                 self.grid.DeleteCols(numRows - len(sources))
                 self.grid.DeleteRows(numRows - len(sources))
             elif numRows < len(sources):
@@ -165,6 +165,6 @@ class BeaconFrame(wxFrame):
                 rowNr += 1
 
             wxCallAfter(self.Refresh)
-            time.sleep(2)
           except Exception,e:
             self.log.exception('Exception updating beacon ui')
+          time.sleep(2)
