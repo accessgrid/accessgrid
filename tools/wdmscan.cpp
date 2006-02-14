@@ -32,10 +32,16 @@ DirectShowScanner::DirectShowScanner() {
    IPropertyBag *pPropBag = 0;
    VARIANT      varName;
 
+   if( pDevEnum == 0 )
+	   return;
+   
    // Get an enumerator over video capture filters
    hr = pDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, 0);
    //showErrorMessage(hr);
 
+   if( pEnum == 0 )
+	   return;
+ 
    // Get the capture filter for each device installed, up to NUM_DEVS devices
    for( devNum=0; devNum < NUM_DEVS; ++devNum) {
       if ( pEnum->Next(1, &pMoniker, NULL) == S_OK ) {
