@@ -1,9 +1,9 @@
-{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf100
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf230
 {\fonttbl\f0\fswiss\fcharset77 Arial-BoldMT;\f1\fswiss\fcharset77 Arial-BoldItalicMT;\f2\froman\fcharset77 Times-Roman;
-\f3\froman\fcharset77 TimesNewRomanPSMT;\f4\fnil\fcharset77 LastResort;\f5\fmodern\fcharset77 CourierNewPSMT;
-\f6\fswiss\fcharset77 Helvetica;\f7\fnil\fcharset77 Monaco;}
-{\colortbl;\red255\green255\blue255;\red0\green0\blue128;}
-\margl1440\margr1440\margb720\margt720\vieww17560\viewh17060\viewkind0
+\f3\froman\fcharset77 TimesNewRomanPSMT;\f4\fnil\fcharset77 LastResort;\f5\fnil\fcharset77 Monaco;
+\f6\fmodern\fcharset77 CourierNewPSMT;\f7\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\margb720\margt720\vieww16140\viewh17000\viewkind0
 \deftab720
 \pard\pardeftab720\sb240\sa60\qc
 
@@ -34,11 +34,11 @@
 \f2 \
 \
 
-\f3 At this time, the mac/BuildPackage.py script just creates the src.tar.gz file and calls the next level BuildPackage.py script.  Alternate distributions can be specified with the \'d4\'d1dist\'d5 option to BuildSnapshot.py:
+\f3 At this time, the mac/BuildPackage.py script just creates the src.tar.gz file and calls the next level BuildPackage.py script.
 \f2 \
 \
 
-\f3 	python BuildSnapshot.py [--dist <distName>]
+\f3 	python BuildSnapshot.py
 \f2 \
 \
 \
@@ -56,124 +56,25 @@
 \pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
 
 \f4 \cf0 \uc0\u61623 
-\f3 Obtain OSX 10.3
-\f2 \
+\f5  
+\f3 Obtain OSX 10.4\
 
 \f4 \uc0\u61623 
-\f3 Install 4Suite		{\field{\*\fldinst{HYPERLINK "http://sourceforge.net/projects/foursuite/"}}{\fldrslt \cf2 \ul \ulc2 http://sourceforge.net/projects/foursuite/}}     \uc0\u8232 	(4Suite is for automatic tests.  Installation may fail on OSX \'d0 this is not critical)
-\f2 \
+\f5  
+\f3 Install Swig 1.3.24\
 
 \f4 \uc0\u61623 
-\f3 Install epydoc (for generating developer documentation from the python source)
-\f2 \
-\pard\pardeftab720\li2520\fi360\ri0\ql\qnatural
-{\field{\*\fldinst{HYPERLINK "http://sourceforge.net/project/showfiles.php?group_id=32455"}}{\fldrslt 
-\f3 \cf2 \ul \ulc2 http://sourceforge.net/project/showfiles.php?group_id=32455}}
-\f3  
-\f2 \
+\f3  Build and install ZSI to the local machine so it can be used in the build process:\
+\pard\pardeftab720\li360\ri0\ql\qnatural
+
+\f6 \cf0    o (to retrieve the source; refer to the the section below)
+\f3 \
+
+\f6    o cd zsi\
+   o python setup.py install\
 \pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
 
-\f4 \cf0 \uc0\u61623 
-\f3 Install GPT3.0.1 and Globus Toolkit 3.0.2
-\f2 \
-\pard\pardeftab720\li2160\fi720\ri0\ql\qnatural
-
-\f3 \cf0 http://www.globus.org/toolkit/downloads/3.0
-\f2 \
-\pard\pardeftab720\li1440\fi-360\ri0\ql\qnatural
-
-\f5 \cf0 o
-\f3 Make sure there are no leftover gpt or globus directories in your PATH.
-\f2 \
-
-\f5 o
-\f3 Retrieve the \'d2GPT Source Installation Package\'d3
-\f2 \
-
-\f5 o
-\f3 Extract the source tarball gt3.0.2-source-installer.tar.gz\
-	* In the resulting folder, replace one of the files with the file at the following url:  \
-	
-\f6 http://www-unix.mcs.anl.gov/fl/research/accessgrid/software/required/source/globus-data-management-client-2.4.3-src_bundle.tar.gz\
-
-\f3 	This file includes a patch to prevent sockets from hanging the VenueServer.
-\f2 \
-
-\f5 o
-\f3 In the gt3.0.2-source-installer directory, extract the GPT source gpt-3.0.1-src.tar.gz
-\f2 \
-
-\f5 o
-\f3 Set the GPT_LOCATION environment variable to /path/to/build/dir/gpt
-\f2 \
-
-\f5 o
-\f3 In the gpt-3.0.1 directory, build GPT and run the postinstall script:
-\f2 \
-\pard\pardeftab720\li2160\fi-360\ri0\ql\qnatural
-
-\f4 \cf0 \uc0\u61607 
-\f3 ./build_gpt
-\f2 \
-\pard\pardeftab720\li1440\fi-360\ri0\ql\qnatural
-
-\f5 \cf0 o
-\f3  Build the globus data management bundle:
-\f2 \
-\pard\pardeftab720\li2160\fi-360\ri0\ql\qnatural
-
-\f4 \cf0 \uc0\u61607 
-\f3 Change to the gt3.0.2-source-installer directory.
-\f2 \
-
-\f4 \uc0\u61607 
-\f3 Set the GLOBUS_LOCATION environment variable to /path/to/build/dir/globus
-\f2 \
-
-\f4 \uc0\u61607 
-\f3 Clear your LD_LIBRARY_PATH of any old globus directories.
-\f2 \
-
-\f4 \uc0\u61607 
-\f3 Build:  $\{GPT_LOCATION\}/sbin/gpt-build globus-data-management-client-2.4.3-src_bundle.tar.gz gcc32dbgpthr\uc0\u8232 After attempting to build once, perform the following modifications to allow the build to work:
-\f2 \
-\pard\pardeftab720\li2880\fi-360\ri0\ql\qnatural
-
-\f4 \cf0 \uc0\u61623 
-\f3 In $GLOBUS_LOCATION/sbin/libtool-$FLAVOR
-\f2 \
-\pard\pardeftab720\li2880\ri0\ql\qnatural
-
-\f3 \cf0 Change: allow_undefined_flag="-flat_namespace -undefined suppress"
-\f2 \
-
-\f3 To:  allow_undefined_flag="-undefined dynamic_lookup"
-\f2 \
-\pard\pardeftab720\li2880\fi-360\ri0\ql\qnatural
-
-\f4 \cf0 \uc0\u61623 
-\f3 Set env var: MACOSX_DEPLOYMENT_TARGET=10.3
-\f2 \
-
-\f4 \uc0\u61623 
-\f3 In $GLOBUS_LOCATION/libexec/globus-build-$FLAVOR.sh
-\f2 \
-\pard\pardeftab720\li2880\ri0\ql\qnatural
-
-\f3 \cf0 use the following line for CPPFLAGS:
-\f2 \
-
-\f3 CPPFLAGS=" -I<yourglobusdir>/include -I<yourglobusdir>/include/gcc32dbgpthr -no-cpp-precomp -DHAVE_NETDB_H -DHAVE_SYS_SOCKET_H -DBIND_8_COMPAT"
-\f2 \
-
-\f3 Note: This correctly removes all occurances of /sw/*, either -I or -L and -traditional-cpp.\
-\pard\pardeftab720\li2160\fi-360\ri0\ql\qnatural
-
-\f4 \cf0 \uc0\u61607 
-\f3 $\{GPT_LOCATION\}/sbin/gpt-postinstall
-\f2 \
-\pard\pardeftab720\li2880\ri0\ql\qnatural
-\cf0 \
+\f2 \cf0 \
 \pard\tx0\pardeftab720\li720\fi-360\ri0\sb240\sa60\ql\qnatural
 
 \f1\i\b\fs28 \cf0 c)Retrieve sources\
@@ -201,8 +102,10 @@
 \f2 \
 \pard\pardeftab720\li1440\fi-360\ri0\ql\qnatural
 
-\f5 \cf0 o
-\f3 CVSROOT: :pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl
+\f6 \cf0 o export 
+\f3 CVSROOT=:pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl\
+
+\f6 o cvs co ag-dist-mac
 \f2 \
 \pard\pardeftab720\fi720\ri0\ql\qnatural
 
@@ -210,15 +113,19 @@
 \f2 \
 \pard\pardeftab720\li1440\fi-360\ri0\ql\qnatural
 
-\f5 \cf0 o
+\f6 \cf0 o 
 \f3 ag-packaging
 \f2 \
 
-\f5 o
+\f6 o 
 \f3 pyOpenSSL
 \f2 \
 \pard\pardeftab720\li360\ri0\ql\qnatural
-\cf0 \
+\cf0 	Also checkout "common":\
+	     
+\f6 o cvs co common
+\f2 \
+\
 \pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
 
 \f4 \cf0 \uc0\u61623 
@@ -229,36 +136,55 @@
 \pard\pardeftab720\li1080\fi-360\ri0\ql\qnatural
 
 \f4 \cf0 \uc0\u61623 
-\f3 Copy the gt3.0.2-source-installer directory (from above) to the build directory
-\f2 \
-
-\f4 \uc0\u61623 
-\f3 fpconst-0.7.0 http://research.warnes.net/~warnes/fpconst
-\f2 \
-
-\f4 \uc0\u61623 
-\f3 SOAPpy-0.11.4		http://pywebsvcs.sourceforge.net
-\f2 \
-\pard\pardeftab720\li1800\fi-360\ri0\ql\qnatural
-
-\f5 \cf0 o
-\f3 Apply the one-line patch to SOAPpy (remove a %s from Server.py line 337).
-\f2 \
-\pard\pardeftab720\li1080\fi-360\ri0\ql\qnatural
-
-\f4 \cf0 \uc0\u61623 
-\f3 pyGlobus 2.4\uc0\u8232 Download pyGlobus from either the latest AccessGrid release tarball or from the \'d2Download GTG Software\'d3 link on the pyGlobus main page: \'d2pyGlobus for gt-2.4.x\'d3\u8232 We currently only build the io, security, and util modules.\
-
-\f4 \uc0\u61623 
-\f7  
+\f5  
 \f3 Download ucl rat sources from cvs:\
 
 \f2 	http://www-mice.cs.ucl.ac.uk/multimedia/software/documentation/cvsanon.html\
+            [set CVSROOT with the value on the webpage above]\
+            mkdir ucl\
+            cd ucl\
+            cvs co tcl-8.0 tk-8.0 common rat\
 
 \f4 \uc0\u61623 
-\f7  
-\f3 Download openmash vic sources:\
-	http://www.openmash.org/developers/cvs/index.html\
+\f5  
+\f3 Download ag vic sources:\
+	CVSROOT: :pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl\
+	cvs co -r osx-aqua ag-media\
+
+\f4 \uc0\u61623 
+\f5  
+\f7  pyxml 0.8.3+ (http://sourceforge.net/project/showfiles.php?group_id=6473)\
+
+\f4 \uc0\u61623 
+\f5  
+\f7  twisted.internet 2.1.0 (http://twistedmatrix.com/projects/core/)\
+
+\f4 \uc0\u61623 
+\f5  
+\f7  zope.interface 3.0.1 (http://www.zope.org/Products/ZopeInterface)\
+
+\f4 \uc0\u61623 
+\f5  
+\f7  bajjer 0.2.4\
+
+\f4 \uc0\u61623 
+\f5  
+\f7  m2crypto 0.15 (http://wiki.osafoundation.org/bin/view/Projects/MeTooCrypto) ( edit setup.py to point to openssl )
+\f3 \
+
+\f4 \uc0\u61623 
+\f5  
+\f7   feedparser 3.3 (http://directory.fsf.org/livecomm/misc/feedparser.html)\
+
+\f4 \uc0\u61623 
+\f5  
+\f7  zsi (cvs: http://pywebsvcs.sourceforge.net/)\
+
+\f4 \uc0\u61623 
+\f5  
+\f7  bonjour-py (http://www-unix.mcs.anl.gov/fl/research/accessgrid/bonjour-py)\
+
+\f3 	\
 \pard\tx0\pardeftab720\li720\fi-360\ri0\sb240\sa60\ql\qnatural
 
 \f1\i\b\fs28 \cf0 d)Build packages\
@@ -268,11 +194,59 @@
 \pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
 
 \f4 \cf0 \uc0\u61623 
-\f3 Set the AGBUILDROOT environment variable to it
+\f3  Build AG Vic:\
+\pard\pardeftab720\li360\ri0\ql\qnatural
+
+\f2 \cf0  	 
+\f6 o cd ag-media
+\f2 \
+ 	 
+\f6 o ./build-vic\
+\pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3  Build UCL Rat:\
+\pard\pardeftab720\li360\ri0\ql\qnatural
+
+\f2 \cf0  	 
+\f6 o cd ucl
+\f2 \
+ 	 
+\f6 o cd common; ./configure; make; cd ..\
+   o cd tcl-8.0/unix; ./configure; make; cd ..\
+   o cd tk-8.0/unix; ./configure; make; cd ..\
+   o Copy rat-kill.c from ag-media/rat to ucl/rat\
+   o Add the following two lines to ucl/rat/Makefile \
+        $(RATVER)-kill: rat-kill.o\
+        	$(CC) $(CFLAGS) rat-kill.o $(COMMON_LIB) $(LIBS) -o $(RATVER)-kill\
+   o Insert $(RATVER)-kill into the "all:" in ucl/rat/Makefile\
+		all: version.h sdr2.plugin.S02.audio.rtp.-.$(RATVER) $(RATVER).spec $(RATVER) $(RATVER)-ui $(RATVER)-media $(RATVER)-kill rat Makefile\
+   o Add the third line below to the ucl/rat/Makefile:\
+        @$\{ECHO\} "Generating rat shell script"\
+        @$\{ECHO\} "#!/bin/sh" > $@\
+        @$\{ECHO\} "export DISPLAY=:0.0" >> $@\
+   o cd rat; ./configure; make\
+\
+\pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3  Build AG Common:\
+\pard\pardeftab720\li360\ri0\ql\qnatural
+
+\f6 \cf0    o cd common\
+   o ./configure\
+   o make
+\f2 \
+\pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
+\cf0 \
+\pard\pardeftab720\li360\ri0\ql\qnatural
+
+\f4 \cf0 \uc0\u61623 
+\f3 Set the AGBUILDROOT environment variable to the build directory you create above.
 \f2 \
 \pard\pardeftab720\li1440\fi-360\ri0\ql\qnatural
 
-\f5 \cf0 o
+\f6 \cf0 o 
 \f3 export AGBUILDROOT=/path/to/build/dir
 \f2 \
 \pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
@@ -286,17 +260,16 @@
 \f2 \
 
 \f4 \uc0\u61623 
-\f3 To build from CVS:
+\f3 To build from CVS code:
 \f2 \
 \pard\pardeftab720\li360\ri0\ql\qnatural
 \cf0 \
 \pard\pardeftab720\li1440\ri0\ql\qnatural
 
-\f3 \cf0 sudo python BuildSnapshot.py [--dist <distName>]
+\f3 \cf0 python BuildSnapshot.py [--meta=<metaName>]
 \f2 \
-\
 
-\f3 Towards the end of the build process, follow the instructions the build script gives you on using the PackageManager and Disk Utility programs.
+\f3 Example: python BuildSnapshot.py --meta="3.x beta" --verbose
 \f2 \
 \
 \pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
@@ -306,7 +279,7 @@
 \f2 \
 \pard\pardeftab720\li720\fi720\ri0\ql\qnatural
 
-\f3 \cf0 sudo python BuildSnapshot.py  --no-checkout
+\f3 \cf0 python BuildSnapshot.py  --no-checkout
 \f2 \
 \pard\pardeftab720\li2880\fi720\ri0\ql\qnatural
 
@@ -325,14 +298,6 @@
 
 \f4 \uc0\u61623 
 \f3 Build the AccessGrid python module
-\f2 \
-
-\f4 \uc0\u61623 
-\f3 Run tests
-\f2 \
-
-\f4 \uc0\u61623 
-\f3 Generate epydoc documentation
 \f2 \
 
 \f4 \uc0\u61623 
