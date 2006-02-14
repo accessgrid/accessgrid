@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.285 2006-02-14 16:04:54 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.286 2006-02-14 18:10:30 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.285 2006-02-14 16:04:54 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.286 2006-02-14 18:10:30 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -893,7 +893,7 @@ class VenueClient:
                          %(self.beaconLocation.host, self.beaconLocation.port))
                 self.beacon.Start()
             else:
-                log.info('No beacon location, not starting beacon client'
+                log.info('No beacon location, not starting beacon client')
                               
         except:
             log.exception("VenueClient.StartBeacon failed")
@@ -951,7 +951,8 @@ class VenueClient:
         errorInNode = 0
 
         try:
-            self.capabilities = self.nodeService.GetCapabilities()
+            if self.nodeService:
+                self.capabilities = self.nodeService.GetCapabilities()
             if not self.capabilities:
                 self.capabilities = []
             
@@ -1134,7 +1135,8 @@ class VenueClient:
         # Send streams to the node service
         try:
             log.debug("Setting node service streams")
-            self.nodeService.SetStreams( self.streamDescList )
+            if self.nodeService:
+                self.nodeService.SetStreams( self.streamDescList )
         except:
             log.exception("Error setting streams")
             
