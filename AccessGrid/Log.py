@@ -129,6 +129,10 @@ VenueClientUI = "VenueClientUI"
 VenueServer = "VenueServer"
 EventClient = "EventClient"
 Logging = "Logging"
+
+# Dependency modules
+Bajjer = "bajjer"
+
 # Not Used by default
 Usage = "Usage"
 
@@ -220,7 +224,15 @@ def GetUsageFormatter():
 # Does NOT Need to include all components and can be empty.
 # Will optimize if needed.
 
-_categoryNames=[AGService, AppMonitor, AuthorizationUI, BridgeServer , CertificateManager , CertificateRepository , CertificateManagerWXGUI , CertificateRequestTool , CertReqService , CRSClient , DataStoreClient , DataStore , DataService , EventService , GroupMsgClient, GroupMsgService, ProcessManager , NodeManagementUIClasses , NodeSetupWizard , NodeService , Security , ProxyGen , ServiceManager , SharedApplication , TextClient , SimpleTextProcessor , TextConnection , TextService , Toolkit , Types , Utilities , VenueManagement , VenueClient , VenueClientController , VenueClientUIClasses , VenueClientUI , VenueServer , EventClient , RTPSensor, RTPBeacon, Logging, Usage]
+_categoryNames=[AGService, AppMonitor, AuthorizationUI, BridgeServer , CertificateManager ,
+                CertificateRepository , CertificateManagerWXGUI , CertificateRequestTool , 
+                CertReqService , CRSClient , DataStoreClient , DataStore , DataService , 
+                EventService , GroupMsgClient, GroupMsgService, ProcessManager , 
+                NodeManagementUIClasses , NodeSetupWizard , NodeService , Security , 
+                ProxyGen , ServiceManager , SharedApplication , TextClient , SimpleTextProcessor , 
+                TextConnection , TextService , Toolkit , Types , Utilities , VenueManagement , 
+                VenueClient , VenueClientController , VenueClientUIClasses , VenueClientUI , 
+                VenueServer , EventClient , RTPSensor, RTPBeacon, Logging, Usage, Bajjer]
 
 def GetCategories():
     return _categoryNames
