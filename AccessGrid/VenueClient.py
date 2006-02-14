@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.284 2006-02-09 20:08:56 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.285 2006-02-14 16:04:54 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.284 2006-02-09 20:08:56 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.285 2006-02-14 16:04:54 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -876,6 +876,9 @@ class VenueClient:
                 for cap in s.capability:
                     if cap.type == "Beacon":
                         self.beaconLocation = s.location
+                        for netloc in s.networkLocations:
+                            if self.transport == netloc.GetType():
+                                self.beaconLocation = netloc
 
             # Create beacon
             if self.beaconLocation:
@@ -889,6 +892,8 @@ class VenueClient:
                 log.info("VenueClient.StartBeacon: Address %s/%s"
                          %(self.beaconLocation.host, self.beaconLocation.port))
                 self.beacon.Start()
+            else:
+                log.info('No beacon location, not starting beacon client'
                               
         except:
             log.exception("VenueClient.StartBeacon failed")
@@ -950,11 +955,11 @@ class VenueClient:
             if not self.capabilities:
                 self.capabilities = []
             
-            self.capabilities += self.beaconCapabilities 
             
         except:
             log.exception("EnterVenue: Exception getting capabilities")
             errorInNode = 1
+        self.capabilities += self.beaconCapabilities 
            
         # Set media and beacon indicators in client profile based on capabilities
         for c in self.capabilities:
@@ -1119,13 +1124,13 @@ class VenueClient:
         else:
             log.debug('profile has not changed, not updating services')
 
-        # If unicast is selected, load bridge information from registry
-        if self.GetTransport() == "unicast":
-            self.__LoadBridges()
-            
-        for stream in self.streamDescList:
-            self.UpdateStream(stream)
-            
+#         # If unicast is selected, load bridge information from registry
+#         if self.GetTransport() == "unicast":
+#             self.__LoadBridges()
+#             
+#         for stream in self.streamDescList:
+#             self.UpdateStream(stream)
+#             
         # Send streams to the node service
         try:
             log.debug("Setting node service streams")
@@ -1492,6 +1497,25 @@ class VenueClient:
         ''' Select bridge to use for unicast connections '''
         self.currentBridge = bridgeDescription
         
+        # If unicast is selected, load bridge information from registry
+        if self.GetTransport() == "unicast":
+            self.__LoadBridges()
+            
+        # Update the streams for new transport
+        # (and find the beacon stream, along the way)
+        for stream in self.streamDescList:
+            print 'before UpdateStream:', stream.networkLocations
+            self.UpdateStream(stream)
+            print 'after UpdateStream:', stream.networkLocations
+
+        # Restart the beacon so the new transport is used
+        if self.beaconLocation and self.beacon:
+            # stop the beacon
+            self.StopBeacon()
+            
+            # start the beacon
+            self.StartBeacon()
+
     def SetTransport(self,transport):
         ''' Set transport used, either multicast or unicast '''
         self.transport = transport
