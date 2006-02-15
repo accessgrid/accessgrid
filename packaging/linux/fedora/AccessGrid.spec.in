@@ -29,7 +29,7 @@ URL:		http://www.accessgrid.org
 Vendor:		Argonne National Laboratory
 Source:		%{name}-%{version}-%{release}.tar.gz
 BuildRoot:	%{buildroot}
-Requires:	wxPython
+Requires:	wxPython2.6-gtk2-unicode
 Requires:	m2crypto >= 0.15
 Requires:	python-bajjer
 Requires:	python-bonjour
@@ -68,12 +68,16 @@ Access Grid.
 
 %install
 # Move node services and shared apps into etc 
-mv NodeServices etc/AccessGrid
-mv SharedApplications etc/AccessGrid
+mv etc/AccessGrid etc/AccessGrid3
+mv NodeServices etc/AccessGrid3
+mv SharedApplications etc/AccessGrid3
 rm -f share/applications/AccessGrid/DevelopersDocumentation.desktop
-mkdir etc/AccessGrid/Services
-mkdir etc/AccessGrid/PackageCache
-mkdir etc/AccessGrid/Logs
+rm -f share/applications/AccessGrid/VenueClient-PersonalNode.desktop
+rm -f share/applications/AccessGrid/NodeService*.desktop
+rm libuclmmbase.a
+mkdir etc/AccessGrid3/Services
+mkdir etc/AccessGrid3/PackageCache
+mkdir etc/AccessGrid3/Logs
 
 # Create a usr dir, and move dirs thereunder
 mkdir usr
@@ -91,8 +95,7 @@ mv bin usr/bin
 python -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}/python%{pyver}",10,"%{_libdir}/python%{pyver}", 1)'
 python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}/python%{pyver}",10,"%{_libdir}/python%{pyver}")'
 
-# symlink workarounds
-(cd etc; ln -s AccessGrid AccessGrid3)
+# temp symlink workaround
 (cd .%{_libdir}/python%{pyver}/site-packages; ln -s AccessGrid3/AccessGrid AccessGrid)
 
 #
@@ -149,12 +152,12 @@ python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}
 #
 
 %post
-rm -f /etc/AccessGrid/Config/ApplicationDatabase
-rm -rf /etc/AccessGrid/SharedApplications/Shared_Browser
-rm -rf /etc/AccessGrid/SharedApplications/Shared_Presentation
-rm -rf /etc/AccessGrid/SharedApplications/Shared_Question_Tool
-rm -rf /etc/AccessGrid/SharedApplications/VenueVNC
-agpm.py --post-install 2>&1 > /dev/null
+rm -f /etc/AccessGrid3/Config/ApplicationDatabase
+rm -rf /etc/AccessGrid3/SharedApplications/Shared_Browser
+rm -rf /etc/AccessGrid3/SharedApplications/Shared_Presentation
+rm -rf /etc/AccessGrid3/SharedApplications/Shared_Question_Tool
+rm -rf /etc/AccessGrid3/SharedApplications/VenueVNC
+(agpm.py --post-install > /dev/null 2>&1 | exit 0)
 
 #
 # AccessGrid package pre-uninstall
