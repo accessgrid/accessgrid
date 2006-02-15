@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.56 2006-01-27 21:07:21 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.57 2006-02-15 21:34:36 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.56 2006-01-27 21:07:21 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.57 2006-02-15 21:34:36 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -221,17 +221,16 @@ class VenueClientController:
         **Arguments:**
         
         """
-        
         #if not provider or not isinstance(provider,ProviderProfile):
         #    raise ValueError
 
         #oldProvider = self.__venueClient.GetProvider()
-        oldBridge = self.__venueClient.GetCurrentBridge()
-        oldTransport = self.__venueClient.GetTransport()
+        #oldBridge = self.__venueClient.GetCurrentBridge()
+        #oldTransport = self.__venueClient.GetTransport()
 
         # Set the transport in the venue client and update the node service
-        self.__venueClient.SetCurrentBridge(bridge)
         self.__venueClient.SetTransport("unicast")
+        self.__venueClient.SetCurrentBridge(bridge)
         self.__venueClient.UpdateNodeService()
         
     def EnableDisplayCB(self,enableFlag):

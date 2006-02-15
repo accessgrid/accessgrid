@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.159 2006-02-14 16:05:27 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.160 2006-02-15 21:34:36 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.159 2006-02-14 16:05:27 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.160 2006-02-15 21:34:36 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -520,8 +520,16 @@ class VenueClientUI(VenueClientObserver, wxFrame):
            
                 
     def CheckBridgeCB(self, event, menuid, bridgeDescription):
+      
+
         # Uncheck all items except the checked one
         items = self.bridgeSubmenu.GetMenuItems()
+
+        # If selecting the already selected bridge, ignore
+        for i in items:
+            if i.GetId() == menuid and not self.menubar.IsChecked(menuid):
+                self.bridgeSubmenu.Check(menuid, 1)
+                return
 
         for i in items:
             if i.GetId() != menuid:
@@ -843,22 +851,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ##########################################################################
     #
     # Pure UI Methods
-        
-    def __Layout(self):
-        subBox=wxBoxSizer(wxHORIZONTAL)
-        subBox.Add(self.venueListPanel,0,wxEXPAND)
-        subBox.Add(self.contentListPanel,1,wxEXPAND)
-              
-        mainBox=wxBoxSizer(wxVERTICAL)
-        mainBox.Add(self.venueAddressBar,0,wxEXPAND)
-        mainBox.Add(subBox,1,wxEXPAND)
-        
-        self.venueListPanel.SetSashVisible(wxSASH_RIGHT, TRUE)
-              
-        self.SetSizer(mainBox)
-        self.Show(1)
-        self.Layout()
-    
+            
     def UpdateLayout(self, panel, size):
         panel.SetDefaultSize(size)
         wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
@@ -1072,6 +1065,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         try:
             self.controller.UseMulticastCB()
             #self.menubar.Enable(self.ID_BRIDGES, false)
+
+            # Disable all bridge items
+            for child in self.bridgeSubmenu.GetMenuItems():
+                self.menubar.Check(child.GetId(), false)
+
             self.preferences.Check(self.ID_USE_MULTICAST, true)
             self.preferences.Check(self.ID_USE_UNICAST, false)
                     
@@ -1088,7 +1086,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # Get current bridge
         currentBridge = self.venueClient.GetCurrentBridge()
-
+                
         # Use current bridge
         try:
             self.controller.UseUnicastCB(currentBridge)

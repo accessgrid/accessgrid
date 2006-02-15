@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.286 2006-02-14 18:10:30 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.287 2006-02-15 21:34:36 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.286 2006-02-14 18:10:30 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.287 2006-02-15 21:34:36 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -118,7 +118,7 @@ class VenueClient:
             self.app = app
         else:
             self.app = Application()
-
+            
         self.preferences = self.app.GetPreferences()
         self.preferences.SetVenueClient(self)
         self.profile = self.preferences.GetProfile()
@@ -137,13 +137,9 @@ class VenueClient:
         self.houseKeeper = Scheduler()
         self.heartBeatTimer = None
         self.heartBeatTimeout = 10
-
        
-        if progressCB: 
-            if pnode:   progressCB("Starting personal node.")
-            else:       progressCB("Starting web service.")
-
         self.__StartWebService(pnode, port)
+        
         self.__InitVenueData()
         
         # Set nodeservice based on preferences
@@ -157,6 +153,7 @@ class VenueClient:
         try:
             prefs = self.app.GetPreferences()
             defaultConfig = prefs.GetDefaultNodeConfig()
+                
             if defaultConfig:
                 log.debug('Loading default node configuration: %s', defaultConfig)
                 self.nodeService.LoadConfiguration(defaultConfig)
@@ -178,8 +175,9 @@ class VenueClient:
         if int(self.preferences.GetPreference(Preferences.MULTICAST)):   
             self.transport = "multicast"
         else:
-            if progressCB: progressCB("Connecting to bridges")
+           
             self.transport = "unicast"
+
         self.__LoadBridges()
                     
         self.observers = []
@@ -198,10 +196,10 @@ class VenueClient:
         self.profileCachePath = os.path.join(self.userConf.GetConfigDir(),
                                              self.profileCachePrefix)
         self.cache = ClientProfileCache(self.profileCachePath)
-        
+
         self.jabber = JabberClient()
         self.textLocation = None
-        
+
         try:
             self.multicastWatcher = MulticastWatcher()
         except:
@@ -212,7 +210,7 @@ class VenueClient:
         # Create beacon capability
         self.beaconCapabilities = [Capability(Capability.PRODUCER, "Beacon", "ANY", 0, 1),
                                    Capability(Capability.CONSUMER, "Beacon", "ANY", 0, 1)]
-      
+            
     def __LoadBridges(self):
         '''
         Gets bridge information from bridge registry. Sets current
@@ -1109,7 +1107,6 @@ class VenueClient:
         """
         Send venue streams to the node service
         """
-
         log.debug("UpdateNodeService: Method UpdateNodeService called")
         exc = None
 
@@ -1136,6 +1133,8 @@ class VenueClient:
         try:
             log.debug("Setting node service streams")
             if self.nodeService:
+                for stream in self.streamDescList:
+                    self.UpdateStream(stream)
                 self.nodeService.SetStreams( self.streamDescList )
         except:
             log.exception("Error setting streams")
@@ -1161,7 +1160,8 @@ class VenueClient:
                   netloc.profile.name == self.currentBridge.name):
                 stream.location = netloc
                 found = 1
-            
+                
+                        
         if not found and self.transport == "unicast":
             # If no unicast network location was found, connect to the bridge to retreive one.
             if self.currentBridge:
@@ -1171,7 +1171,7 @@ class VenueClient:
                 try:
                     stream.location = qbc.JoinBridge(stream.networkLocations[0])
                     stream.networkLocations.append(stream.location)
-                   
+                  
                 except:
                     log.exception("VenueClient.UpdateStream: Failed to connect to bridge %s"%(self.currentBridge.name))
                     raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
@@ -1505,11 +1505,10 @@ class VenueClient:
             
         # Update the streams for new transport
         # (and find the beacon stream, along the way)
-        for stream in self.streamDescList:
-            print 'before UpdateStream:', stream.networkLocations
-            self.UpdateStream(stream)
-            print 'after UpdateStream:', stream.networkLocations
 
+        for stream in self.streamDescList:
+            self.UpdateStream(stream)
+            
         # Restart the beacon so the new transport is used
         if self.beaconLocation and self.beacon:
             # stop the beacon
