@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.160 2006-02-15 21:34:36 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.161 2006-02-15 21:42:49 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.160 2006-02-15 21:34:36 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.161 2006-02-15 21:42:49 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -509,7 +509,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             else:
                 self.bridgeSubmenu.Enable(id, false)
 
-            if self.currentBridge and b.guid == self.currentBridge.guid:
+            if (self.currentBridge and b.guid == self.currentBridge.guid
+                and self.venueClient.GetTransport()=="unicast"):
                 self.bridgeSubmenu.Check(id, 1)
                 
             EVT_MENU(self, id, lambda evt,
