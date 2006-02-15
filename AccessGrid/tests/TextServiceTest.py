@@ -1,11 +1,11 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #-----------------------------------------------------------------------------# Name:        EventServiceTest.py
 # Purpose:     Test for text client and service.
 #
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: TextServiceTest.py,v 1.3 2004-03-10 23:17:09 eolson Exp $
+# RCS-ID:      $Id: TextServiceTest.py,v 1.4 2006-02-15 03:46:34 douglask Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------

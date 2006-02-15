@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #----------------------------------------------------------------------------
 # Name:        rtpbeacon.py
 # Purpose:     This program runs as a service to provide multicast
@@ -7,7 +7,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeacon.py,v 1.7 2006-02-08 16:23:38 turam Exp $
+# RCS-ID:      $Id: rtpBeacon.py,v 1.8 2006-02-15 03:46:34 douglask Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ RTP (a plain text string as it were). Then the normal RTP statistics
 communicated via RTCP are used to track the performance of the group.
 """
 
-__revision__ = "$Id: rtpBeacon.py,v 1.7 2006-02-08 16:23:38 turam Exp $"
+__revision__ = "$Id: rtpBeacon.py,v 1.8 2006-02-15 03:46:34 douglask Exp $"
 
 import os, sys, signal, optparse, time, random, threading, copy
 import logging, logging.handlers

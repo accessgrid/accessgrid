@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        DataStoreTest.py
 # Purpose:     Test for data store.
@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: DataStoreTest.py,v 1.2 2004-03-10 23:17:09 eolson Exp $
+# RCS-ID:      $Id: DataStoreTest.py,v 1.3 2006-02-15 03:46:34 douglask Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------

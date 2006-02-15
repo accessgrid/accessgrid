@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #----------------------------------------------------------------------------
 # Name:        rtpBeaconUI.py
 # Purpose:     User interface for the beacon 
@@ -6,12 +6,12 @@
 # Author:      Thomas Uram, Susanne Lefvert
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeaconUI.py,v 1.9 2006-02-13 15:05:06 turam Exp $
+# RCS-ID:      $Id: rtpBeaconUI.py,v 1.10 2006-02-15 03:46:34 douglask Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
 
-__revision__ = "$Id: rtpBeaconUI.py,v 1.9 2006-02-13 15:05:06 turam Exp $"
+__revision__ = "$Id: rtpBeaconUI.py,v 1.10 2006-02-15 03:46:34 douglask Exp $"
 
 from wxPython.wx import *
 from wxPython.grid import *
