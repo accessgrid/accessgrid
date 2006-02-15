@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.8 2006-01-27 22:25:23 eolson Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.9 2006-02-15 16:47:03 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -55,7 +55,7 @@ class VideoConsumerService( AGService ):
             self.log.exception("Invalid profile (None)")
             raise Exception, "Can't set RTP Defaults without a valid profile."
 
-        if IsLinux() or IsOSX() or IsFreeBSD5:
+        if IsLinux() or IsOSX() or IsFreeBSD5():
             try:
                 rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
                 rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
