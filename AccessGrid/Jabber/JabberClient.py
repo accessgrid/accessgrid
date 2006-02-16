@@ -52,6 +52,7 @@ class JabberClient:
     def SendMessage(self, text):
         log.debug("currentRoom inside sendMessage(): '%s'" %self.currentRoomId)
         sent = 0
+        
         if self.currentRoomId == '':
             log.error("No venue is selected")
             return sent
@@ -61,7 +62,7 @@ class JabberClient:
             self._stream.message(self.currentRoomId, string.strip(text), msg_type="groupchat") 
             sent = 1
         except Exception, E:
-            print "Error:", E
+            # print "Error:", E
             log.exception(E)
             sent = 0
         return sent
@@ -105,18 +106,21 @@ class JabberClient:
                     pass
                 else:
                     self.roomLocked = 0
-                    speaker = string.split(sender, '/')
+                    index = sender.find('/')
+                    speaker = sender[index+1:]
                     
                     if len(speaker)<2:
-                        log.debug(speaker[0] + ": " + message)
+                        log.debug(speaker[0:index] + ": " + message)
                     else:
-                        self.jabberPanel.OutputText(speaker[1] + ": ", message)
+                        self.jabberPanel.OutputText(speaker + ": ", message)
             else:
-                speaker = string.split(str(sender), '/')
+                index = sender.find('/')
+                speaker = sender[index+1:]
+               
                 if len(speaker)<2:
-                    log.debug(speaker[0] + ": " + message)
+                    log.debug(speaker[0:index] + ": " + message)
                 else:
-                    self.jabberPanel.OutputText(speaker[1] + ": ", message)
+                    self.jabberPanel.OutputText(speaker + ": ", message)
 
     def PresenceCB(self, prs_stanza):
         """Called when a presence is recieved"""
