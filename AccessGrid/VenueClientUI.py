@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.162 2006-02-17 20:35:10 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.163 2006-02-17 20:47:12 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.162 2006-02-17 20:35:10 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.163 2006-02-17 20:47:12 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2707,7 +2707,7 @@ class VenueListPanel(wxSashLayoutWindow):
 
         self.SetSizer(venueListPanelSizer)
         w,h = self.GetSizeTuple()
-        self.GetSizer().SetDimension(5,5,w-10,h-10)
+        self.GetSizer().SetDimension(5,5,w-10,h-7)
 
     def Hide(self):
         currentHeight = self.GetSize().GetHeight()
@@ -2898,7 +2898,7 @@ class NavigationPanel(wxPanel):
         self.SetSizer(sizer)
 
         w,h = self.GetSizeTuple()
-        self.GetSizer().SetDimension(5,5,w-10,h-10)
+        self.GetSizer().SetDimension(0,0,w,h)
         
 
 #############################################################################
