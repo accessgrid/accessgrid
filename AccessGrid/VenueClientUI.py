@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.161 2006-02-15 21:42:49 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.162 2006-02-17 20:35:10 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.161 2006-02-15 21:42:49 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.162 2006-02-17 20:35:10 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -187,7 +187,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         wxFrame.__init__(self, NULL, -1, "")
         self.__BuildUI(app)
-        self.SetSize(wxSize(400, 500))
+        self.SetSize(wxSize(400, 600))
         
         self.__SetMcastStatus(self.venueClient.GetMulticastStatus())
         
@@ -684,7 +684,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.venueAddressBar.SetSashVisible(wxSASH_BOTTOM, True)
 
         self.textClientPanel = TextPanelSash(self, self.ID_WINDOW_BOTTOM)
-        self.textClientPanel.SetDefaultSize((1000, 100))
+        self.textClientPanel.SetDefaultSize((1000, 200))
         self.textClientPanel.SetOrientation(wxLAYOUT_HORIZONTAL)
         self.textClientPanel.SetAlignment(wxLAYOUT_BOTTOM)
         self.textClientPanel.SetSashVisible(wxSASH_TOP, True)
@@ -3876,7 +3876,7 @@ class JabberClientPanel(wxPanel):
         *name* Statement to put in front of message (for example; "You say,").
         *message* The actual message.
         '''
-        
+               
         # Event message
         if name == None:
             # Add time to event message
