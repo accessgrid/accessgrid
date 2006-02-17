@@ -109,7 +109,7 @@ class JabberClient:
                     index = sender.find('/')
                     speaker = sender[index+1:]
                     
-                    if len(speaker)<2:
+                    if index ==-1:
                         log.debug(speaker[0:index] + ": " + message)
                     else:
                         self.jabberPanel.OutputText(speaker + ": ", message)
@@ -117,7 +117,7 @@ class JabberClient:
                 index = sender.find('/')
                 speaker = sender[index+1:]
                
-                if len(speaker)<2:
+                if index==-1:
                     log.debug(speaker[0:index] + ": " + message)
                 else:
                     self.jabberPanel.OutputText(speaker + ": ", message)
