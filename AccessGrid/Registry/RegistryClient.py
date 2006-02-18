@@ -107,7 +107,7 @@ class RegistryClient:
                 pingVal = self._ping(desc.host)
                 desc.rank = pingVal
                 bridgeDescriptions.append(desc)
-            except Exception,e:
+            except:
                 self.log.exception("Failed to ping bridge %s"%(desc.name))
                                    
     def _readPeerList(self,url):
@@ -146,11 +146,11 @@ class RegistryClient:
             
             if ret.find('unknown host')>-1:
                 self.log.info("Ping: Host %s not found"%(host))
-                raise "Ping: Host %s not found"%(host)
+                raise Exception, "Ping: Host %s not found"%(host)
 
             if ret.find('100%')>-1:
                 self.log.info("Ping: Host %s timed out"%(host))
-                raise "Ping: Host %s timed out"%(host)
+                raise Exception, "Ping: Host %s timed out"%(host)
         
             # Find average round trip time
             i = ret.find('time')
@@ -165,12 +165,12 @@ class RegistryClient:
             
             if ret.find('could not find')>-1:
                 self.log.info("Ping: Host %s not found"%(host))
-                raise "Ping: Host %s not found"%(host)
+                raise Exception, "Ping: Host %s not found"%(host)
 
             # windows times out automatically
             if ret.find('timed out')>-1:
                 self.log.info("Ping: Host %s timed out"%(host))
-                raise "Ping: Host %s timed out"%(host)
+                raise Exception, "Ping: Host %s timed out"%(host)
             
             # Find average round trip time
             a = ret.find('Average')
@@ -203,12 +203,13 @@ if __name__=="__main__":
     from AccessGrid.GUID import GUID
     from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
 
+    # Disable bridge registration so we can just test the registry client
     # Register a bridge using the RegistryClient
-    info = BridgeDescription(guid=GUID(), name="defaultName", host="localhost", port="9999", serverType=QUICKBRIDGE_TYPE, description="")
-    rc.RegisterBridge(info)
+    #info = BridgeDescription(guid=GUID(), name="defaultName", host="localhost", port="9999", serverType=QUICKBRIDGE_TYPE, description="")
+    #rc.RegisterBridge(info)
     
     # Lookup a bridge using the RegistryClient
     bridgeDescList = rc.LookupBridge()
     for b in bridgeDescList:
-        print 'name: '+b.name+'host '+b.host+"port: "+b.port
+        print 'name: '+b.name+'host '+b.host+"port: "+str(b.port)
         
