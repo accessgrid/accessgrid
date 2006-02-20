@@ -26,6 +26,8 @@ class JabberClient:
         self.name = None
         self.resource = None
         self.roomLocked = 0
+        
+        self.presenceCB = None
        
     def Connect(self, host, port):
         log.info("Connecting to Jabber Server '%s' ..." % host)
@@ -78,11 +80,18 @@ class JabberClient:
             #req.x_ = (stanza.External(util.Namespaces.Muc.muc),)
 
         self._stream.write(req)
+        
+    def SendNameChange(self,name):
+        presence = stanza.Presence()
+        presence.from_ = self.currentRoomId + '/' + self.name
+        presence.to_ = self.currentRoomId + '/' + name
+        self._stream.write(presence) 
+        self.name = name
 
     def MessageCB(self, msg_stanza):
         message = msg_stanza.body_
         sender  = msg_stanza.from_ 
-
+        
         if not message == '':
             if self.roomLocked:
                 if string.find(message,'This room is locked') > -1:
@@ -135,6 +144,9 @@ class JabberClient:
         elif prs_type == 'unavailable':
             log.debug("%s is unavailable (%s / %s)" %
                       (who, prs_stanza.show_ , prs_stanza.status_ ))
+                      
+        if self.presenceCB:
+            self.presenceCB(who,prs_type)
     
     def IqCB(self, iq_stanza):
         self.errorCode = ''
@@ -167,3 +179,7 @@ class JabberClient:
 
     def __NextRand(self):
         return random.randint(start, end)
+        
+        
+    def SetPresenceCB(self,presenceCB):
+        self.presenceCB = presenceCB
