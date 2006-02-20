@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.163 2006-02-17 20:47:12 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.164 2006-02-20 18:49:22 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.163 2006-02-17 20:47:12 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.164 2006-02-20 18:49:22 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -35,7 +35,7 @@ Log.SetDefaultLevel(Log.VenueClientUI, Log.WARN)
 
 from AccessGrid import icons
 from AccessGrid import Toolkit
-from AccessGrid.Platform import IsWindows, IsOSX, Config
+from AccessGrid.Platform import IsWindows, IsOSX, Config, IsLinux, IsFreeBSD5
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.ClientProfile import *
@@ -235,6 +235,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             log.exception('Error constructing RSS reader')
             
         self.beaconFrame = None
+        
+        self.isDisplayEnabled = true
+        self.isVideoEnabled = true
+        self.isAudioEnabled = true
        
         
     ############################################################################
@@ -398,8 +402,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         videoFlag = self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_VIDEO)
         self.preferences.Check(self.ID_ENABLE_VIDEO, int(videoFlag))
         
-        self.preferences.Append(self.ID_MYNODE_MANAGE, "&Manage My Node...",
-                                "Configure your node")
+        self.preferences.Append(self.ID_MYNODE_MANAGE, "&Configure node services...",
+                                "Configure node services for audio, video, ...")
         self.preferences.AppendSeparator()
         self.preferences.Append(self.ID_PREFERENCES, "&Preferences...")
         self.menubar.Append(self.preferences, "&Tools")
@@ -460,8 +464,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
        
         self.meMenu.Append(self.ID_ME_PROFILE,"View Profile...",\
                                            "View participant's profile information")
-        #self.meMenu.Append(self.ID_ME_DATA,"Add personal data...",\
-        #                                   "Add data you can bring to other venues")
        
             
         self.participantMenu = wxMenu()
@@ -592,7 +594,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # Popup Menu Events
         EVT_MENU(self, self.ID_ME_PROFILE, self.EditProfileCB)
-        #EVT_MENU(self, self.ID_ME_DATA, self.AddPersonalDataCB)
         EVT_MENU(self, self.ID_PARTICIPANT_PROFILE, self.ViewProfileCB)
 
         # UI Events
@@ -605,10 +606,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         EVT_SIZE(self, self.__OnSize)
         
         EVT_TOOL(self,self.networkToolId,self.OnMulticast)
-        EVT_TOOL(self,self.audioToolId,self.EnableAudioCB)
-        EVT_TOOL(self,self.displayToolId,self.EnableDisplayCB)
-        EVT_TOOL(self,self.videoToolId,self.EnableVideoCB)
+        EVT_BUTTON(self,self.audioToolId,self.EnableAudioCB)
+        EVT_BUTTON(self,self.displayToolId,self.EnableDisplayCB)
+        EVT_BUTTON(self,self.videoToolId,self.EnableVideoCB)
         EVT_TOOL(self,self.configNodeToolId,self.ManageNodeCB)
+        
 
     def OnMulticast(self, event):
 
@@ -710,45 +712,57 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                              longHelpString='Display multicast status')
                              
         self.toolbar.AddSeparator()
-        self.audioToolId = 2
-        self.toolbar.AddCheckTool(self.audioToolId,
-                                  icons.getAudioBitmap(),
-                                  icons.getAudioDisabledBitmap(),
-                                  shortHelp='Audio',
-                                  longHelp='Enable/disable audio sending and receiving')
+        
+        toolsize = self.toolbar.GetToolSize()
+        if IsLinux() or IsFreeBSD5():
+            toolsize = (25,25)
+        
+        
+        # - create the audio toolbar button  
+        self.isAudioEnabled = int(self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_AUDIO))
+        if self.isAudioEnabled:
+            bitmap = icons.getAudioBitmap()
+        else:
+            bitmap = icons.getAudioDisabledBitmap()
+        self.audioToolId = 2       
+        self.audioButton = wxBitmapButton(self.toolbar,self.audioToolId,bitmap,style=wxNO_BORDER,size=toolsize)
+        self.toolbar.AddControl(self.audioButton)
+
+        # - create the display toolbar button         
+        self.isDisplayEnabled = int(self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_DISPLAY))
+        if self.isDisplayEnabled:
+            bitmap = icons.getDisplayBitmap()
+        else:
+            bitmap = icons.getDisplayDisabledBitmap()
         self.displayToolId = 3
-        self.toolbar.AddCheckTool(self.displayToolId,
-                                  icons.getDisplayBitmap(),
-                                  icons.getDisplayDisabledBitmap(),
-                                  shortHelp='Video Display',
-                                  longHelp='Enable/disable video receiving')
+        self.displayButton = wxBitmapButton(self.toolbar,self.displayToolId,bitmap,style=wxNO_BORDER,size=toolsize)
+        self.toolbar.AddControl(self.displayButton)
+
+        # - create the video toolbar button         
+        self.isVideoEnabled = int(self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_VIDEO))
+        if self.isVideoEnabled:
+            bitmap = icons.getCameraBitmap()
+        else:
+            bitmap = icons.getCameraDisabledBitmap()
         self.videoToolId = 4
-        self.toolbar.AddCheckTool(self.videoToolId, 
-                                  icons.getCameraBitmap(),
-                                  icons.getCameraDisabledBitmap(),
-                                  shortHelp='Video Capture',
-                                  longHelp='Enable/disable video sending')
-        self.configNodeToolId = 27
+        self.videoButton = wxBitmapButton(self.toolbar,self.videoToolId,bitmap,style=wxNO_BORDER,size=toolsize)
+        self.toolbar.AddControl(self.videoButton)
+
+        self.configNodeToolId = 10
         self.toolbar.AddTool(self.configNodeToolId,
                              icons.getConfigureBitmap() ,
-                             shortHelpString='Configure services',
-                             longHelpString='Configure services for audio, video, etc.')
+                             shortHelpString='Configure node services',
+                             longHelpString='Configure node services for audio, video, ...')
+                    
         self.toolbar.Realize()
         
-        audioFlag = self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_AUDIO)
-        self.toolbar.ToggleTool(self.audioToolId,int(audioFlag))
-        displayFlag = self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_DISPLAY)
-        self.toolbar.ToggleTool(self.displayToolId,int(displayFlag))
-        videoFlag = self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_VIDEO)
-        self.toolbar.ToggleTool(self.videoToolId,int(videoFlag))
-
-
         self.__SetStatusbar()
         self.__SetMenubar(app)
         self.__SetProperties()
         self.__SetEvents()
         self.__LoadMyVenues()
 
+    
     def __OnSashDrag(self, event):
         if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
             return
@@ -1037,6 +1051,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     #
     
     def EditProfileCB(self, event = None):
+    
         profile = None
         p = self.venueClient.GetPreferences()
         
@@ -1103,38 +1118,56 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
     def EnableDisplayCB(self,event):
         # ensure that toggle and menu item are in sync
-        enabledFlag = event.IsChecked()
+        self.isDisplayEnabled = not self.isDisplayEnabled
+        enabledFlag = self.isDisplayEnabled
         self.preferences.Check(self.ID_ENABLE_DISPLAY,enabledFlag)
-        self.toolbar.ToggleTool(self.displayToolId,enabledFlag)
+        if enabledFlag:
+            self.displayButton.SetBitmapLabel(icons.getDisplayBitmap())
+        else:
+            self.displayButton.SetBitmapLabel(icons.getDisplayDisabledBitmap())
                 
         try:
             self.controller.EnableDisplayCB(enabledFlag)
+        except NoServices:
+            pass#print 'no display service found, would you like to add one?'
         except:
-            self.gui.Error("Error enabling/disabling video display", "Error enabling/disabling video display")
+            self.Error("Error enabling/disabling video display", "Error enabling/disabling video display")
             
     def EnableVideoCB(self,event):
         # ensure that toggle and menu item are in sync
-        enabledFlag = event.IsChecked()
+        self.isVideoEnabled = not self.isVideoEnabled
+        enabledFlag = self.isVideoEnabled
         self.preferences.Check(self.ID_ENABLE_VIDEO,enabledFlag)
-        self.toolbar.ToggleTool(self.videoToolId,enabledFlag)
+        if enabledFlag:
+            self.videoButton.SetBitmapLabel(icons.getCameraBitmap())
+        else:
+            self.videoButton.SetBitmapLabel(icons.getCameraDisabledBitmap())
                 
         try:
             self.controller.EnableVideoCB(enabledFlag)
+        except NoServices:
+            pass#print 'no video service found, would you like to add one?'
         except:
-            self.gui.Error("Error enabling/disabling video capture", "Error enabling/disabling video capture")
+            self.Error("Error enabling/disabling video capture", "Error enabling/disabling video capture")
             
 
     def EnableAudioCB(self,event):
     
         # ensure that toggle and menu item are in sync
-        enabledFlag = event.IsChecked()
+        self.isAudioEnabled = not self.isAudioEnabled
+        enabledFlag = self.isAudioEnabled
         self.preferences.Check(self.ID_ENABLE_AUDIO,enabledFlag)
-        self.toolbar.ToggleTool(self.audioToolId,enabledFlag)
+        if enabledFlag:
+            self.audioButton.SetBitmapLabel(icons.getAudioBitmap())
+        else:
+            self.audioButton.SetBitmapLabel(icons.getAudioDisabledBitmap())
                         
         try:
             self.controller.EnableAudioCB(enabledFlag)
+        except NoServices:
+            pass#print 'no audio service found, would you like to add one?'
         except:
-            self.gui.Error("Error enabling/disabling audio", "Error enabling/disabling audio")
+            self.Error("Error enabling/disabling audio", "Error enabling/disabling audio")
 
     def ManageNodeCB(self, event):
         #if not self.app.certificateManager.HaveValidProxy():
