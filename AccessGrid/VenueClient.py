@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.288 2006-02-20 07:13:27 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.289 2006-02-20 18:45:13 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.288 2006-02-20 07:13:27 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.289 2006-02-20 18:45:13 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -1430,9 +1430,6 @@ class VenueClient:
         except:
             log.info("Error enabling video")
             
-        self.profile.display = int(enableFlag)
-        
-        self.__venueProxy.UpdateClientProfile(self.profile)
         
     def SetVideoEnabled(self,enableFlag):
         try:
@@ -1446,27 +1443,12 @@ class VenueClient:
         except:
             log.exception("Error enabling video")
             
-        self.profile.video = int(enableFlag)
-
-        if self.__venueProxy:
-            try:
-                self.__venueProxy.UpdateClientProfile(self.profile)
-            except:
-                log.exception("VenueClient.SetVideoEnabled: Failed to update client profile %s"%self.profile)
-            
     def SetAudioEnabled(self,enableFlag):
         try:
             self.nodeService.SetServiceEnabledByMediaType("audio",enableFlag)
         except:
             log.info("VenueClient.SetAudioEnabled: Error enabling audio")
             
-        self.profile.audio = int(enableFlag)
-
-        if self.__venueProxy:
-            try:
-                self.__venueProxy.UpdateClientProfile(self.profile)
-            except:
-                log.exception("VenueClient.SetAudioEnabled: Failed to update client profile %s"%self.profile)
     #
     # User Info
     #
