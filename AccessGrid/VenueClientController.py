@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.57 2006-02-15 21:34:36 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.58 2006-02-20 18:47:01 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.57 2006-02-15 21:34:36 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.58 2006-02-20 18:47:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -240,10 +240,7 @@ class VenueClientController:
         **Arguments:**
         
         """
-        try:
-            self.__venueClient.SetVideoDisplayEnabled(enableFlag)
-        except:
-            log.exception("Couldn't enable/disable video display")
+        self.__venueClient.SetVideoDisplayEnabled(enableFlag)
 
     def EnableVideoCB(self,enableFlag):
         """
@@ -252,10 +249,7 @@ class VenueClientController:
         **Arguments:**
         
         """
-        try:
-            self.__venueClient.SetVideoEnabled(enableFlag)
-        except:
-            log.exception("Couldn't enable/disable video capture")
+        self.__venueClient.SetVideoEnabled(enableFlag)
 
     def EnableAudioCB(self,enableFlag):
         """
@@ -264,10 +258,7 @@ class VenueClientController:
         **Arguments:**
         
         """
-        try:
-            self.__venueClient.SetAudioEnabled(enableFlag)
-        except:
-            log.exception("Couldn't enable/disable video")
+        self.__venueClient.SetAudioEnabled(enableFlag)
     
     def SetNodeUrlCB(self,nodeUrl):
         """
@@ -683,6 +674,8 @@ class VenueClientController:
         # Update client profile in venue
         if self.__venueClient.GetVenue() != None:
             log.debug("Update client profile in venue")
+            
+            self.__venueClient.jabber.SendNameChange(preferences.GetProfile().name)
 
             try:
                 self.__venueClient.UpdateClientProfile(preferences.GetProfile())
