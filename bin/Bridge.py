@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.8 2006-01-23 17:38:48 turam Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.9 2006-02-20 20:01:47 turam Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -35,13 +35,6 @@ class QuickBridgeServer:
         self._RegisterRemoteFunctions()
         self.registryClient = RegistryClient(url=registryUrl)
         hostname = SystemConfig.instance().GetHostname()
-        self.portRange = portRange
-        if portRange == None:
-            self.portMin = None
-            self.portMax = None
-        else:
-            self.portMin = self.portRange[0]
-            self.portMax = self.portRange[1]
         self.bridgeDescription = BridgeDescription(guid=GUID(), name=name, host=hostname, port=self.listenPort, serverType=QUICKBRIDGE_TYPE, description="")
         self._RegisterWithRegistry()
         self.running = False
@@ -52,13 +45,9 @@ class QuickBridgeServer:
     def JoinBridge(self,multicastNetworkLocation):
         mnl = multicastNetworkLocation
         uaddr = SystemConfig.instance().GetHostname()
-        if self.portRange == None:
-            uport = self.bridgeFactory.addressAllocator.AllocatePort(even=True)
-        else:
-            uport = self.bridgeFactory.addressAllocator.AllocatePortInRange(even=True, portBase=self.portMin, portMax=self.portMax)
-        self.bridgeFactory.CreateBridge(id=mnl["id"], maddr=mnl["host"],
-                    mport=mnl["port"], mttl=mnl["ttl"], uaddr=uaddr, uport=uport)
-        networkLocation = UnicastNetworkLocation(host=uaddr, port=uport)
+        retBridge = self.bridgeFactory.CreateBridge(id=mnl["id"], maddr=mnl["host"],
+                    mport=mnl["port"], mttl=mnl["ttl"], uaddr=uaddr,uport=None)
+        networkLocation = UnicastNetworkLocation(host=retBridge.uaddr, port=retBridge.uport)
         networkLocation.profile = self.providerProfile
         networkLocation.id = GUID()
         networkLocation.privateId = GUID()
