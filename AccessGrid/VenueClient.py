@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.287 2006-02-15 21:34:36 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.288 2006-02-20 07:13:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.287 2006-02-15 21:34:36 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.288 2006-02-20 07:13:27 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -1473,6 +1473,7 @@ class VenueClient:
 
     def SaveProfile(self):
         self.preferences.SetProfile(self.profile)
+        self.jabber.SendNameChange(self.profile.name)
         self.preferences.StorePreferences()
     
     def SavePreferences(self):
