@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.164 2006-02-20 18:49:22 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.165 2006-02-21 05:58:04 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.164 2006-02-20 18:49:22 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.165 2006-02-21 05:58:04 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1654,8 +1654,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.Notify("Please, select the data you want to open", "Open Data")
               
     def SaveDataCB(self, event):
-        log.debug("VenueClientFrame.SaveData: Save data")
         data = self.GetSelectedItem()
+        log.debug("VenueClientFrame.SaveData: Save data: %s", data)
         if(data != None and isinstance(data, DataDescription)):
             name = data.name
             path = self.SelectFile("Specify name for file", name)
@@ -3137,6 +3137,11 @@ class ContentListPanel(wxPanel):
     def AddData(self, dataDescription):
         #if venue data
         if(dataDescription.type == 'None' or dataDescription.type == None):
+        
+            # replace http-encoded spaces with spaces;
+            # this should be done elsewhere, but is done here for now
+            data.uri = data.uri.replace('%20',' ')
+            
             dataId = self.tree.AppendItem(self.data, dataDescription.name,
                                       self.defaultDataId, self.defaultDataId)
             self.tree.SetItemData(dataId, wxTreeItemData(dataDescription)) 
