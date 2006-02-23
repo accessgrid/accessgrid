@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.166 2006-02-23 19:18:27 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.167 2006-02-23 19:35:49 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.166 2006-02-23 19:18:27 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.167 2006-02-23 19:35:49 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3140,7 +3140,7 @@ class ContentListPanel(wxPanel):
         
             # replace http-encoded spaces with spaces;
             # this should be done elsewhere, but is done here for now
-            data.uri = data.uri.replace('%20',' ')
+            dataDescription.uri = dataDescription.uri.replace('%20',' ')
             
             dataId = self.tree.AppendItem(self.data, dataDescription.name,
                                       self.defaultDataId, self.defaultDataId)
