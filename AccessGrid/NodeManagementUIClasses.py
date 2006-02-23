@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.102 2006-02-10 08:04:27 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.103 2006-02-23 18:04:33 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.102 2006-02-10 08:04:27 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.103 2006-02-23 18:04:33 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -615,7 +615,8 @@ class NodeManagementClientFrame(wxFrame):
 
         # Get proxy to the node service, if the url validates
         self.nodeServiceHandle = nodeService
-        if self.nodeServiceHandle.IsValid():
+
+        if self.nodeServiceHandle and self.nodeServiceHandle.IsValid():
             self.SetStatusText("Connected",1)
             self.EnableMenus(true)
       
@@ -755,7 +756,7 @@ class NodeManagementClientFrame(wxFrame):
         selections = self.GetSelectedItems()
         selectionUrls = []
         if len(selections)>0:
-          selectionUrls = map( lambda x: x.uri, selections)
+            selectionUrls = map( lambda x: x.uri, selections)
 
         self.serviceManagers = self.nodeServiceHandle.GetServiceManagers()
 
@@ -763,39 +764,39 @@ class NodeManagementClientFrame(wxFrame):
         self.tree.DeleteAllItems()
         root = self.tree.AddRoot("")    
         if self.serviceManagers:
-          for serviceManager in self.serviceManagers:
-            name = urlparse.urlsplit(serviceManager.uri)[1]
-            sm = self.tree.AppendItem(root,name)
-            self.tree.SetItemImage(sm, self.smImage,which=wxTreeItemIcon_Normal)
-            self.tree.SetItemImage(sm, self.smImage, which=wxTreeItemIcon_Expanded)
-            self.tree.SetItemData(sm,wxTreeItemData(serviceManager))
-            services = AGServiceManagerIW( serviceManager.uri ).GetServices()
+            for serviceManager in self.serviceManagers:
+                name = urlparse.urlsplit(serviceManager.uri)[1]
+                sm = self.tree.AppendItem(root,name)
+                self.tree.SetItemImage(sm, self.smImage,which=wxTreeItemIcon_Normal)
+                self.tree.SetItemImage(sm, self.smImage, which=wxTreeItemIcon_Expanded)
+                self.tree.SetItemData(sm,wxTreeItemData(serviceManager))
+                services = AGServiceManagerIW( serviceManager.uri ).GetServices()
                         
-            if services: 
-              for service in services:
-                s = self.tree.AppendItem(sm,service.name)
-                self.tree.SetItemImage(s, self.svcImage, which = wxTreeItemIcon_Normal)
-                self.tree.SetItemData(s,wxTreeItemData(service))
-                resource = AGServiceIW(service.uri).GetResource()
-                if resource:
-                    self.tree.SetItemText(s,resource.name,1)
-                if AGServiceIW( service.uri ).GetEnabled():
-                    status = "Enabled"
+                if services: 
+                    for service in services:
+                        s = self.tree.AppendItem(sm,service.name)
+                        self.tree.SetItemImage(s, self.svcImage, which = wxTreeItemIcon_Normal)
+                        self.tree.SetItemData(s,wxTreeItemData(service))
+                        resource = AGServiceIW(service.uri).GetResource()
+                        if resource:
+                            self.tree.SetItemText(s,resource.name,1)
+                        if AGServiceIW( service.uri ).GetEnabled():
+                            status = "Enabled"
+                        else:
+                            status = "Disabled"
+                        self.tree.SetItemText(s,status,2)
+                
+                        if service.uri in selectionUrls:
+                            self.tree.SelectItem(s)
+                
+                    self.tree.Expand(sm)
                 else:
-                    status = "Disabled"
-                self.tree.SetItemText(s,status,2)
-                
-                if service.uri in selectionUrls:
-                    self.tree.SelectItem(s)
-                
-              self.tree.Expand(sm)
-            else:
-              s = self.tree.AppendItem(sm,'No services')
-              self.tree.Collapse(sm)
+                    s = self.tree.AppendItem(sm,'No services')
+                    self.tree.Collapse(sm)
             
-            if serviceManager.uri in selectionUrls:
-                self.tree.SelectItem(sm)
-        self.tree.Expand(root)
+                if serviceManager.uri in selectionUrls:
+                    self.tree.SelectItem(sm)
+            self.tree.Expand(root)
     
     ############################
     ## HOST menu
@@ -1071,9 +1072,7 @@ class NodeManagementClientFrame(wxFrame):
                     sm = self.tree.GetItemData(smItem).GetData()
                     AGServiceManagerIW( sm.uri ).RemoveService( obj )
                     self.tree.Delete(s)
-                    selections.remove(s)
-
-            # Update the service list
+                                       
             self.UpdateUI()
         finally:
             wxEndBusyCursor()

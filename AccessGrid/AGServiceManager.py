@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.96 2006-02-10 06:04:35 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.97 2006-02-23 18:04:33 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.96 2006-02-10 06:04:35 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.97 2006-02-23 18:04:33 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -162,40 +162,38 @@ class AGServiceManager:
 
         exc = None
         pid = None
-
+        
         try:
 
             #
             # Find service to stop using uri
             #
+            
             for key in self.services.keys():
                 service = self.services[key]
                 if service.uri == serviceToRemove.uri:
-
                     pid = key
                     try:
+                        #
+                        # Remove service from list
+                        #
+                        if pid and self.services.has_key(pid):
+                            del self.services[pid]
                         AGServiceIW( service.uri ).Shutdown()
+                       
                     except:
-                        log.exception("Error shutting down service %s", service.name)
+                        log.exception("Error shutting down service %s", serviceToRemove.name)
 
                     if 1: # not service.inlineClass:
-
                         #
                         # Kill service
                         #
                         self.processManager.TerminateProcess(pid)
-
                     break
 
         except:
             log.exception("Exception removing service %s", serviceToRemove.name)
             exc = sys.exc_value
-
-        #
-        # Remove service from list
-        #
-        if pid:
-            del self.services[pid]
 
         # raise exception now, if one occurred
         if exc:
@@ -299,12 +297,10 @@ class AGServiceManager:
         return AGServicePackage(os.path.join(self.servicesDir,servicePackageFile))
         
     def GetResources(self):
-        print 'AGServiceManager.GetResources'
         f = file('/tmp/qwe','w')
         f.write('qweqweqwe')
         f.close()
         resources = SystemConfig.instance().GetResources()
-        print 'resources = ', resources
         ret = map(lambda x: ResourceDescription(x[0]) , resources)
         return ret
 
