@@ -123,6 +123,23 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="UpdateApplicationRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="appDescription" type="agtk:ApplicationDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="UpdateApplicationResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="appDescription" type="agtk:ApplicationDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+
           <xsd:element name="DestroyApplicationRequest">
             <xsd:complexType>
               <xsd:sequence>
@@ -466,6 +483,12 @@
     <message name="CreateApplicationResponse">
 	<part name="parameters" element="agtkv:CreateApplicationResponse"/>
     </message>
+    <message name="UpdateApplicationRequest">
+	<part name="parameters" element="agtkv:UpdateApplicationRequest"/>
+    </message>
+    <message name="UpdateApplicationResponse">
+	<part name="parameters" element="agtkv:UpdateApplicationResponse"/>
+    </message>
     <message name="DestroyApplicationRequest">
 	<part name="parameters" element="agtkv:DestroyApplicationRequest"/>
     </message>
@@ -618,6 +641,10 @@
 	<operation name="CreateApplication">
 	    <input message="agtkv:CreateApplicationRequest"/>
 	    <output message="agtkv:CreateApplicationResponse"/>
+	</operation>
+	<operation name="UpdateApplication">
+	    <input message="agtkv:UpdateApplicationRequest"/>
+	    <output message="agtkv:UpdateApplicationResponse"/>
 	</operation>
 	<operation name="DestroyApplication">
 	    <input message="agtkv:DestroyApplicationRequest"/>
