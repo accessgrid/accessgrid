@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.267 2006-02-02 09:39:05 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.268 2006-02-23 16:38:31 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.267 2006-02-02 09:39:05 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.268 2006-02-23 16:38:31 lefvert Exp $"
 
 import sys
 import time
@@ -1955,8 +1955,7 @@ class Venue:
         *ApplicationNotFound* Raised when an application is not
         found for the application id specified.
         """
-             
-        if not self.applications.has_key(appDescStruct.id):
+        if not self.applications.has_key(applicationDesc.id):
             raise ApplicationNotFound
 
         appImpl = self.applications[applicationDesc.id]
@@ -1989,16 +1988,17 @@ class Venue:
         environment can't unbind the application from the web
         service layer.
         """
-
+        
         # Get the application object
         try:
             app = self.applications[appId]
+
+       
         except KeyError:
             log.exception("DestroyApp: Application not found.")
             raise ApplicationNotFound
 
         # Shut down the application
-        
         app.Shutdown()
 
         # Remove the interface
@@ -2015,7 +2015,7 @@ class Venue:
 
         # Get rid of it for good
         del self.applications[appId]
-
+        
     def GetProperty(self, propertyList):
         pname = (AGTypes, "Dictionary")
         ret_dict = AGTypes.Dictionary_(pname=pname).pyclass ; ret_dict.entries = []
