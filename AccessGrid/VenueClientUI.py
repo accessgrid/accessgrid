@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.165 2006-02-21 05:58:04 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.166 2006-02-23 19:18:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.165 2006-02-21 05:58:04 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.166 2006-02-23 19:18:27 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -4313,8 +4313,6 @@ class ProfileDialog(wxDialog):
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.profile = None
         self.profileTypeBox = None
-        self.dnText = None
-        self.dnTextCtrl = None
         
         self.titleText = wxStaticText(self,-1,"Profile")
         if IsOSX():
@@ -4332,7 +4330,6 @@ class ProfileDialog(wxDialog):
             self.phoneNumberCtrl.SetEditable(false)
             self.locationCtrl.SetEditable(false)
             self.homeVenueCtrl.SetEditable(false)
-            self.dnTextCtrl.SetEditable(false)
         else:
             self.nameCtrl.SetEditable(true)
             self.emailCtrl.SetEditable(true)
@@ -4347,7 +4344,7 @@ class ProfileDialog(wxDialog):
         #box = wxStaticBox(self, -1, "Profile")
         #box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         #sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
-        self.gridSizer = wxFlexGridSizer(0, 2, 5, 5)
+        self.gridSizer = wxFlexGridSizer(0, 2, 4, 5)
         self.gridSizer.Add(self.nameText, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.nameCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.emailText, 0, wxALIGN_LEFT, 0)
@@ -4363,9 +4360,6 @@ class ProfileDialog(wxDialog):
         self.gridSizer.Add(self.profileTypeText, 0, wxALIGN_LEFT, 0)
         if self.profileTypeBox:
             self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND)
-        if self.dnText:
-            self.gridSizer.Add(self.dnText, 0, wxALIGN_LEFT, 0)
-            self.gridSizer.Add(self.dnTextCtrl, 0, wxEXPAND, 0)
             
         self.sizer1.Add(self.titleText,0,wxEXPAND|wxALL,10)
         self.sizer1.Add(self.titleLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
@@ -4430,8 +4424,6 @@ class ProfileDialog(wxDialog):
         #self.profileTypeBox.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 
         #                            0, "verdana"))
         self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
-        self.dnText = wxStaticText(self, -1, "Distinguished name: ")
-        self.dnTextCtrl = wxTextCtrl(self, -1, "")
         self.__Layout()
         
         self.nameCtrl.SetValue(item.name)
@@ -4439,7 +4431,6 @@ class ProfileDialog(wxDialog):
         self.phoneNumberCtrl.SetValue(item.phoneNumber)
         self.locationCtrl.SetValue(item.location)
         self.homeVenueCtrl.SetValue(item.homeVenue)
-        self.dnTextCtrl.SetValue(item.distinguishedName)
                      
         if(item.GetProfileType() == 'user'):
             self.profileTypeBox.SetValue('user')
