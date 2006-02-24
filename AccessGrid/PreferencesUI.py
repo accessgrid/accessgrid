@@ -872,6 +872,7 @@ class NetworkPanel(wxPanel):
         self.list.InsertColumn(3, "Type")
         self.list.InsertColumn(4, "Status")
         self.list.InsertColumn(5, "Distance")
+        self.list.InsertColumn(6, "Port range")
               
         self.list.SetColumnWidth(0, 90)
         self.list.SetColumnWidth(1, 60)
@@ -879,6 +880,7 @@ class NetworkPanel(wxPanel):
         self.list.SetColumnWidth(3, 80)
         self.list.SetColumnWidth(4, 60)
         self.list.SetColumnWidth(5, 60)
+        self.list.SetColumnWidth(6, 60)
                 
         bridgeDict = self.__CreateBridgeMap()
       
@@ -889,6 +891,7 @@ class NetworkPanel(wxPanel):
             self.list.SetStringItem(self.keyMap[index], 3, bridgeDict[index].serverType)
             self.list.SetStringItem(self.keyMap[index], 4, bridgeDict[index].status)
             self.list.SetStringItem(self.keyMap[index], 5, str(bridgeDict[index].rank))
+            self.list.SetStringItem(self.keyMap[index], 6, '%d-%d' % (bridgeDict[index].portMin,bridgeDict[index].portMax))
                         
             data = self.keyMap[bridgeDict[index].guid]
             self.list.SetItemData(self.keyMap[index], data)
