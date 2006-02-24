@@ -85,6 +85,12 @@ class BridgeFactory:
     def SetPortMax(self,portMax):
         log.info("BridgeFactory.SetPortMax %d", portMax)
         self.addressAllocator.SetPortMax(portMax)
+        
+    def GetPortMin(self):
+        return self.addressAllocator.GetPortBase()
+        
+    def GetPortMax(self):
+        return self.addressAllocator.GetPortMax()
 
     def CreateBridge(self,id,maddr,mport,mttl,uaddr,uport):
         """
