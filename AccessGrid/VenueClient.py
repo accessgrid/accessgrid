@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.291 2006-02-20 22:50:40 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.292 2006-02-24 20:55:13 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.291 2006-02-20 22:50:40 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.292 2006-02-24 20:55:13 turam Exp $"
 
 import sys
 import os
@@ -18,6 +18,7 @@ import string
 import threading
 import cPickle
 import time
+import socket
 
 from AccessGrid import Log
 from AccessGrid import DataStore
@@ -980,6 +981,9 @@ class VenueClient:
             # Return a string of warnings that can be displayed to the user
             if errorInNode:
                 self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences->Manage My Node..." from the main menu'
+        except (socket.error,socket.gaierror), e:
+            self.warningString += '\n' + e.args[1]
+            enterSuccess = 0
         except Exception, e:
             log.exception("EnterVenue: failed")
             enterSuccess = 0
@@ -1357,7 +1361,7 @@ class VenueClient:
     
     def GetDataStoreUploadUrl(self):
         return self.dataStoreUploadUrl
-
+        
     #
     # Personal Data
     #
