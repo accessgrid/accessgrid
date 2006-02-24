@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.9 2006-02-20 20:01:47 turam Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.10 2006-02-24 23:16:06 turam Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -35,7 +35,11 @@ class QuickBridgeServer:
         self._RegisterRemoteFunctions()
         self.registryClient = RegistryClient(url=registryUrl)
         hostname = SystemConfig.instance().GetHostname()
-        self.bridgeDescription = BridgeDescription(guid=GUID(), name=name, host=hostname, port=self.listenPort, serverType=QUICKBRIDGE_TYPE, description="")
+        self.bridgeDescription = BridgeDescription(guid=GUID(), name=name, host=hostname, 
+                                                   port=self.listenPort, serverType=QUICKBRIDGE_TYPE, 
+                                                   description="", 
+                                                   portMin=self.bridgeFactory.GetPortBase(),
+                                                   portMax=self.bridgeFactory.GetPortMax())
         self._RegisterWithRegistry()
         self.running = False
 
