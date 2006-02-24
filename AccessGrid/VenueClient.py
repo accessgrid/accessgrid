@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.292 2006-02-24 20:55:13 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.293 2006-02-24 23:09:48 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.292 2006-02-24 20:55:13 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.293 2006-02-24 23:09:48 turam Exp $"
 
 import sys
 import os
@@ -198,6 +198,7 @@ class VenueClient:
         self.cache = ClientProfileCache(self.profileCachePath)
 
         self.jabber = JabberClient()
+        self.jabber.SetPresenceCB(self.JabberPresenceCB)
         self.textLocation = None
 
         try:
@@ -1308,6 +1309,33 @@ class VenueClient:
             # Ignore this until we have authorization in place.
             raise NotAuthorizedError
         
+    def JabberPresenceCB(self,jabbername,presenceType):
+            
+        try:
+            index = jabbername.index('/')
+            username = jabbername[index+1:]
+        except ValueError:
+            username = jabbername
+        except:
+            log.exception('Exception extracting name from jabber username')
+            username = jabbername
+        profile = JabberProfile(username,'user',jabbername)
+        profile = ClientProfile()
+        profile.name = username
+        profile.profileType = 'jabber'
+        profile.connectionId = jabbername
+        profile.email = ''
+        profile.location = ''
+        profile.phoneNumber = ''
+        profile.homeVenue = ''
+        if presenceType == 'available':
+            for s in self.observers:
+                s.AddUser(profile)
+        elif presenceType == 'unavailable':
+            for s in self.observers:
+                s.RemoveUser(profile)
+        
+                                        
     # end Basic Implementation
     #
     ########################################################################
