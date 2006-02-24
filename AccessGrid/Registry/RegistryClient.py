@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+#-----------------------------------------------------------------------------
+# Name:        RegistryClient.py
+# Purpose:     This is the client side of the (bridge) Registry
+# Created:     2006/01/01
+# RCS-ID:      $Id: RegistryClient.py,v 1.15 2006-02-24 23:18:26 turam Exp $
+# Copyright:   (c) 2006
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
 
 import xmlrpclib
 import urllib
@@ -77,9 +85,14 @@ class RegistryClient:
                        
             # Create real bridge descriptions
             for b in bridges:
+                if 'portMin' not in b.keys():
+                    b['portMin'] = 5000
+                    b['portMax'] = 5100
                 desc = BridgeDescription(b["guid"], b["name"], b["host"],
                                          b["port"], b["serverType"],
-                                         b["description"])
+                                         b["description"],
+                                         b["portMin"],
+                                         b["portMax"])
                 self.bridges.append(desc)
 
             # Sort the bridges
