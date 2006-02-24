@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.93 2006-01-26 08:38:52 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.94 2006-02-24 23:15:43 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.93 2006-01-26 08:38:52 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.94 2006-02-24 23:15:43 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -598,12 +598,15 @@ STATUS_ENABLED = "Enabled"
 STATUS_DISABLED = "Disabled"
 
 class BridgeDescription:
-    def __init__(self, guid, name, host, port, serverType, description=""):
+    def __init__(self, guid, name, host, port, serverType, description="",
+                 portMin=None, portMax=None):
         self.guid = guid
         self.name = name
         self.host = host
         self.port = port
         self.serverType = serverType
         self.description = description
+        self.portMin = portMin
+        self.portMax = portMax
         self.status = STATUS_ENABLED
         self.rank = 10 
