@@ -2,13 +2,13 @@
 # Name:        NetworkAddressAllocator.py
 # Purpose:     This class manages multicast address allocation.
 # Created:     2002/12/12
-# RCS-ID:      $Id: NetworkAddressAllocator.py,v 1.7 2005-10-05 20:05:12 lefvert Exp $
+# RCS-ID:      $Id: NetworkAddressAllocator.py,v 1.8 2006-02-24 23:16:58 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetworkAddressAllocator.py,v 1.7 2005-10-05 20:05:12 lefvert Exp $"
+__revision__ = "$Id: NetworkAddressAllocator.py,v 1.8 2006-02-24 23:16:58 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import socket
@@ -50,6 +50,12 @@ class NetworkAddressAllocator:
 
     def SetPortMax(self, portMax):
         self.portMax = portMax
+        
+    def GetPortBase(self):
+        return self.portBase
+        
+    def GetPortMax(self):
+        return self.portMax
 
     def AllocatePort(self, even = 0):
         """
