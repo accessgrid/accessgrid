@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.273 2006-02-23 07:25:32 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.274 2006-02-24 23:58:49 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.273 2006-02-23 07:25:32 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.274 2006-02-24 23:58:49 turam Exp $"
 
 # Standard Imports
 import os
@@ -31,6 +31,7 @@ from AccessGrid.VenueClientController import VenueClientController
 from AccessGrid.VenueClient import VenueClient
 from AccessGrid.UIUtilities import ErrorDialog
 from AccessGrid import icons
+from AccessGrid.Platform import IsOSX,IsWindows
 from twisted.internet import reactor
 
 from M2Crypto import threading as m2threading
@@ -43,8 +44,9 @@ def main():
     # Create the wxpython app
     wxapp = wxPySimpleApp()
 
-    t = wxTaskBarIcon()
-    t.SetIcon(icons.getAGIconIcon())
+    if IsOSX() or IsWindows():
+        t = wxTaskBarIcon()
+        t.SetIcon(icons.getAGIconIcon())
         
     # Init the toolkit with the standard environment.
     app = WXGUIApplication()
