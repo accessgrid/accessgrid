@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.168 2006-02-24 20:53:50 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.169 2006-02-24 23:11:30 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.168 2006-02-24 20:53:50 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.169 2006-02-24 23:11:30 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3082,9 +3082,16 @@ class ContentListPanel(wxPanel):
         
         
     def AddParticipant(self, profile, dataList = []):
+          
+        # Bail out if this is a Jabber profile already in the list      
+        if profile.profileType == 'jabber':
+            currentNames = map(lambda p: self.tree.GetItemText(p),self.participantDict.values())
+            if profile.name in currentNames:
+                return
+        
+        # Determine which image to use for participant
         imageId = None
-                
-        if profile.profileType == "user":
+        if profile.profileType == "user" or profile.profileType == 'jabber':
             imageId =  self.participantId
         elif profile.profileType == "node":
             imageId = self.nodeId
@@ -3094,11 +3101,17 @@ class ContentListPanel(wxPanel):
         log.debug("ContentListPanel.AddParticipant:: AddParticipant %s (called from %s)", 
                   profile.name,
                   (traceback.extract_stack())[-2])
-        
+
+        # Add the participant to the list
         participant = self.tree.AppendItem(self.participants, profile.name, 
                                            imageId, imageId)
         self.tree.SetItemData(participant, wxTreeItemData(profile)) 
+        if profile.profileType == 'jabber':
+            GRAY = wxColour(100,100,100)
+            self.tree.SetItemTextColour(participant,GRAY)
         self.participantDict[profile.connectionId] = participant
+        
+        # Always sort and expand the participant list
         self.tree.SortChildren(self.participants)
         self.tree.Expand(self.participants)
             
@@ -3109,26 +3122,12 @@ class ContentListPanel(wxPanel):
                 log.debug("ContentListPanel.RemoveParticipant: Found participant in tree")
                 id = self.participantDict[profile.connectionId]
 
-                log.debug("ContentListPanel.RemoveParticipant: Remove participants data")
-                self.RemoveParticipantData(id)
-                
                 if id!=None:
                     log.debug("ContentListPanel.RemoveParticipant: Removed participant from tree")
                     self.tree.Delete(id)
 
                 log.debug("ContentListPanel.RemoveParticipant: Delete participant from dictionary")
                 del self.participantDict[profile.connectionId]
-                          
-    def RemoveParticipantData(self, treeId):
-        #
-        # This is weird, does it work?
-        #
-        dataList = self.__GetPersonalDataFromItem(treeId)
-                
-        for data in dataList:
-            dataTreeId = self.personalDataDict[data.id]
-            del self.personalDataDict[data.id]
-            self.tree.Delete(dataTreeId)
                           
     def ModifyParticipant(self, profile):
         log.debug('ContentListPanel.ModifyParticipant: Modify participant')
@@ -4336,12 +4335,16 @@ class ProfileDialog(wxDialog):
             self.phoneNumberCtrl.SetEditable(false)
             self.locationCtrl.SetEditable(false)
             self.homeVenueCtrl.SetEditable(false)
+            if isinstance(self.profileTypeBox,wxTextCtrl):
+                self.profileTypeBox.SetEditable(false)
         else:
             self.nameCtrl.SetEditable(true)
             self.emailCtrl.SetEditable(true)
             self.phoneNumberCtrl.SetEditable(true)
             self.locationCtrl.SetEditable(true)
             self.homeVenueCtrl.SetEditable(true)
+            if isinstance(self.profileTypeBox,wxTextCtrl):
+                self.profileTypeBox.SetEditable(true)
             
         log.debug("VenueClientUI.py: Set editable in successfully dialog")
            
@@ -4405,7 +4408,7 @@ class ProfileDialog(wxDialog):
     def SetProfile(self, profile):
         self.profile = profile
         self.selections = ["user", "node"]
-	self.profileTypeBox = wxComboBox(self, -1, self.selections[0],
+        self.profileTypeBox = wxComboBox(self, -1, self.selections[0],
                                          choices = self.selections, 
                                          style = wxCB_READONLY)
         self.__Layout()
@@ -4438,10 +4441,7 @@ class ProfileDialog(wxDialog):
         self.locationCtrl.SetValue(item.location)
         self.homeVenueCtrl.SetValue(item.homeVenue)
                      
-        if(item.GetProfileType() == 'user'):
-            self.profileTypeBox.SetValue('user')
-        else:
-            self.profileTypeBox.SetValue('node')
+        self.profileTypeBox.SetValue(item.GetProfileType())
             
         self.__SetEditable(false)
         self.cancelButton.Hide()
