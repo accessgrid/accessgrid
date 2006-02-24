@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.167 2006-02-23 19:35:49 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.168 2006-02-24 20:53:50 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.167 2006-02-23 19:35:49 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.168 2006-02-24 20:53:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2414,7 +2414,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 log.debug(warningString)
             else:
                 log.debug("warningString: %s" %warningString)
-                text = "Can not connect to venue located at %s. \n%s Please, try again." % (URL,warningString)
+                text = "Error entering venue" 
+                if warningString:
+                    if warningString == 'No address associated with nodename':
+                        warningString = 'Error locating Venue host; check the hostname'
+                    elif warningString == 'Connection refused':
+                        warningString = 'Error locating Venue host; check the port'   
+                    text += '\n%s' % (warningString,)
                 wxCallAfter(self.Notify, text, "Can not enter venue")
                 wxCallAfter(self.statusbar.SetStatusText, "" )
 
