@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.293 2006-02-24 23:09:48 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.294 2006-02-24 23:34:28 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.293 2006-02-24 23:09:48 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.294 2006-02-24 23:34:28 turam Exp $"
 
 import sys
 import os
@@ -1319,7 +1319,6 @@ class VenueClient:
         except:
             log.exception('Exception extracting name from jabber username')
             username = jabbername
-        profile = JabberProfile(username,'user',jabbername)
         profile = ClientProfile()
         profile.name = username
         profile.profileType = 'jabber'
@@ -1487,6 +1486,8 @@ class VenueClient:
     def SaveProfile(self):
         self.preferences.SetProfile(self.profile)
         self.jabber.SendNameChange(self.profile.name)
+        if self.beacon:
+            self.beacon.SetName(str(self.profile.name))
         self.preferences.StorePreferences()
     
     def SavePreferences(self):
