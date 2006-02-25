@@ -6,12 +6,12 @@
 # Author:      Thomas Uram, Susanne Lefvert
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeaconUI.py,v 1.10 2006-02-15 03:46:34 douglask Exp $
+# RCS-ID:      $Id: rtpBeaconUI.py,v 1.11 2006-02-25 07:27:36 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
 
-__revision__ = "$Id: rtpBeaconUI.py,v 1.10 2006-02-15 03:46:34 douglask Exp $"
+__revision__ = "$Id: rtpBeaconUI.py,v 1.11 2006-02-25 07:27:36 turam Exp $"
 
 from wxPython.wx import *
 from wxPython.grid import *
@@ -115,11 +115,11 @@ class BeaconFrame(wxFrame):
             # Resize grid as needed
             numRows = self.grid.GetNumberRows()
             if numRows > len(sources) and numRows > 1:
-                self.grid.DeleteCols(numRows - len(sources))
-                self.grid.DeleteRows(numRows - len(sources))
+                wxCallAfter(self.grid.DeleteCols,numRows - len(sources))
+                wxCallAfter(self.grid.DeleteRows,numRows - len(sources))
             elif numRows < len(sources):
-                self.grid.AppendCols(len(sources) - numRows )
-                self.grid.AppendRows(len(sources) - numRows )
+                wxCallAfter(self.grid.AppendCols,len(sources) - numRows )
+                wxCallAfter(self.grid.AppendRows,len(sources) - numRows )
             
 
             # Sort the list of sources
@@ -131,9 +131,9 @@ class BeaconFrame(wxFrame):
 
                 sdes = self.beacon.GetSdes(s)
                 if sdes:
-                    self.grid.SetRowLabelValue(rowNr,str(sdes))
+                    wxCallAfter(self.grid.SetRowLabelValue,rowNr,str(sdes))
                 else:
-                    self.grid.SetRowLabelValue(rowNr,str(s))
+                    wxCallAfter(self.grid.SetRowLabelValue,rowNr,str(s))
 
                 # set cell values
                 for o in sources:
