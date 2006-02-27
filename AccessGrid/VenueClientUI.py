@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.169 2006-02-24 23:11:30 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.170 2006-02-27 21:55:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.169 2006-02-24 23:11:30 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.170 2006-02-27 21:55:27 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1170,14 +1170,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.Error("Error enabling/disabling audio", "Error enabling/disabling audio")
 
     def ManageNodeCB(self, event):
-        #if not self.app.certificateManager.HaveValidProxy():
-        #        self.app.certificateManager.CreateProxy()
         
         if self.nodeManagementFrame:
             self.nodeManagementFrame.Raise()
         else:
             self.nodeManagementFrame = NodeManagementClientFrame(self, -1, 
-                                        "Access Grid Node Management")
+                                        "Access Grid Node Management",
+                                        callback=self.OnNodeActivity)
 
             log.debug("VenueClientFrame.ManageNodeCB: open node management")
             log.debug('nodeservice url: %s', self.venueClient.GetNodeService() )
@@ -1782,7 +1781,22 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 self.Notify("Connect to a venue before sending text messages.", "Send Text Error")
         except:
             self.Error("Error sending text","Send Text Error")
-        
+
+
+    #
+    # Node Management hook
+    #
+    def OnNodeActivity(self,action,data=None):
+        if action == 'load_config':
+            log.info('OnNodeActivity: got action: %s', action)
+            self.venueClient.UpdateNodeService()
+        elif action == 'add_service':
+            log.info('OnNodeActivity: got action: %s', action)
+            serviceUri = data
+            self.venueClient.nodeService.SetServiceEnabled(serviceUri,1)
+        else:
+            log.info('OnNodeActivity: got unexpected action: %s', action)
+
 
     # end Core UI Callbacks
     #
