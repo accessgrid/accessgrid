@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.103 2006-02-23 18:04:33 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.104 2006-02-27 04:57:32 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.103 2006-02-23 18:04:33 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.104 2006-02-27 04:57:32 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -111,7 +111,7 @@ class ServiceChoiceDialog(wxDialog):
         x,y = wxGetMousePosition()
         w,h = self.GetSize()
         self.Move( (x-w/2,y-h/2) )
-        #EVT_TEXT_ENTER(self, self.GetId(), self.OnOK)
+        EVT_TEXT_ENTER(self, self.comboBoxCtrl.GetId(), self.OnOK)
 
         self.exists = threading.Event()
         self.exists.set()
@@ -120,6 +120,9 @@ class ServiceChoiceDialog(wxDialog):
         self.browser.Start()
         
         self.hostname = SystemConfig.instance().GetHostname()
+
+    def OnOK(self,event):
+        self.EndModal(wxID_OK)
         
 
     def BrowseCallback(self,op,serviceName,url=None):
