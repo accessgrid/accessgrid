@@ -98,9 +98,9 @@ class LauncherFrame(wxFrame):
         self.docsButtonList.append(wxButton(self,self.BUTTON_README_ID,"Read Me"));
         self.docsButtonActions.append([self.LoadURL,"file://%s/doc/README"%(agtk_location),[]]);
         self.docsButtonList.append(wxButton(self,self.BUTTON_VCM_ID,"Venue Client Manual"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/doc/VenueClientManual/VenueClientManualHTML.htm"%(agtk_location),[]]);
+        self.docsButtonActions.append([self.LoadURL,"http://www.mcs.anl.gov/fl/research/accessgrid/documentation/manuals/VenueClient/3_0",[]]);
         self.docsButtonList.append(wxButton(self,self.BUTTON_VMCM_ID,"Venue Management Manual"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/doc/VenueManagementManual/VenueManagementManualHTML.htm"%(agtk_location),[]]);
+        self.docsButtonActions.append([self.LoadURL,"http://www.mcs.anl.gov/fl/research/accessgrid/documentation/manuals/VenueManagement/3_0",[]]);
         self.docsButtonList.append(wxButton(self,self.BUTTON_LIC_ID,"License"));
         self.docsButtonActions.append([self.LoadURL,"file://%s/COPYING.txt"%(agtk_location),[]]);
         for button in self.docsButtonList:
