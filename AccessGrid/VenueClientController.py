@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.58 2006-02-20 18:47:01 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.59 2006-02-27 20:26:10 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.58 2006-02-20 18:47:01 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.59 2006-02-27 20:26:10 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -1077,11 +1077,31 @@ class VenueClientController:
             else:
                 command = "\"%(localFilePath)s\""
                                  
+        elif isinstance(objDesc, ServiceDescription):
+            # Fix odd commands
+            if IsWindows():
+                if command.find("%1") != -1:
+                    command = command.replace("%1", "")
+                if command.find("%L") != -1:
+                    command = command.replace("%L", "")
+                if command.find("%*") != -1:
+                    command = command.replace("%*", "")
+            else:
+                if command.find("%s") != -1:
+                    command = command.replace("%s", "")
+
+            command = command.strip()
+            
+            if len(command) > 1:
+                if command.find("%") == -1:
+                    command = command+" %(appUrl)s"
+            else:
+                command = "\"%(appUrl)s\""
+            
         else:
             # Get the app dir and go there
             if (isinstance(objDesc, ApplicationDescription) or
-                isinstance(objDesc, AGNetworkServiceDescription) or
-                isinstance(objDesc, ServiceDescription)):
+                isinstance(objDesc, AGNetworkServiceDescription)):
                 name = self.__venueClientApp.GetNameForMimeType(objDesc.mimeType)
                 
                 if name != None:
@@ -1296,19 +1316,17 @@ class VenueClientApp:
     def GetCommands(self,objDesc):
         commandList = None
 
-        if isinstance(objDesc,DataDescription):
-            # Data and Service commands are retrieved from the mime db
-            list = objDesc.name.split('.')
+        if isinstance(objDesc,DataDescription) or isinstance(objDesc,ServiceDescription):
+            splitName = objDesc.name.split('.')
             ext = ""
-            if len(list) == 2:
-                ext = list[1]
-            commandList = self.mimeConfig.GetMimeCommands(ext = ext)
+            
+            if len(splitName) > 1:
+                ext = splitName[-1]
 
-        elif isinstance(objDesc, ServiceDescription):
-            commandList = dict()
-            commandList.update(self.userAppDatabase.GetCommands(objDesc.mimeType))
-            commandList.update(self.systemAppDatabase.GetCommands(objDesc.mimeType))
-           
+            commandList = self.mimeConfig.GetMimeCommands(
+                mimeType = objDesc.mimeType,
+                ext = ext)
+
         elif isinstance(objDesc, AGNetworkServiceDescription):
             commandList = dict()
             commandList.update(self.userAppDatabase.GetCommands(objDesc.mimeType))
