@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.104 2006-02-27 04:57:32 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.105 2006-02-27 21:54:11 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.104 2006-02-27 04:57:32 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.105 2006-02-27 21:54:11 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -74,6 +74,31 @@ ID_HELP_ABOUT = 701
 class ServiceResolveFailed(Exception):  pass
 class ServiceResolveTimeout(Exception): pass
 class UnresolvableService(Exception):   pass
+
+
+
+def BuildNodeServiceUrl(url,defaultproto,defaultport,defaultpath):
+    # - define a mess of regular expressions for matching venue urls
+    hostre = re.compile('^[\w.-]*$')
+    hostportre = re.compile('^[\w.-]*:[\d]*$')
+    protohostre = re.compile('^[\w]*://[\w.-]*$')
+    protohostportre = re.compile('^[\w]*://[\w.-]*:[\d]*$')
+
+    # - check for host only
+    if hostre.match(url):
+        host = url
+        url = '%s://%s:%d/%s' % (defaultproto,host,defaultport,defaultpath)
+    # - check for host:port
+    elif hostportre.match(url):
+        hostport = url
+        url = '%s://%s/%s' % (defaultproto,hostport,defaultpath)
+    elif protohostre.match(url):
+        protohost = url
+        url = '%s:%d/%s' % (protohost,defaultport,defaultpath)
+    elif protohostportre.match(url):
+        protohostport = url
+        url = '%s/%s' % (protohostport,defaultpath)
+    return url
 
 
 class ServiceChoiceDialog(wxDialog):
@@ -436,9 +461,11 @@ class NodeManagementClientFrame(wxFrame):
     """
     The main UI frame for Node Management
     """
-    def __init__(self, parent, ID, title):
+    def __init__(self, parent, ID, title,size=wxSize(450,300),callback=None):
         wxFrame.__init__(self, parent, ID, title,
-                         wxDefaultPosition, wxSize(450, 300))
+                         wxDefaultPosition, size=size)
+                         
+        self.callback = callback
         self.Center()
         self.SetTitle(title)
         self.SetIcon(icons.getAGIconIcon())
@@ -589,12 +616,13 @@ class NodeManagementClientFrame(wxFrame):
         if ret == wxID_OK:
             url = dlg.GetValue()
             dlg.Destroy()
+            
+            url = BuildNodeServiceUrl(url,'https',11000,'NodeService')
+            
             if url not in self.recentNodeServiceList:
                 self.recentNodeServiceList.append(url)
             
             # Attach (or fail)
-            
-            
             wxBeginBusyCursor()
             self.AttachToNode(AGNodeServiceIW(url))
 
@@ -674,6 +702,13 @@ class NodeManagementClientFrame(wxFrame):
                 self.Error("Error loading node configuration %s" % (conf,))
 
             self.UpdateUI()
+            
+            if self.callback:
+                try:
+                    self.callback('load_config')
+                except:
+                    log.exception('exception from registered callback')
+            
             wxEndBusyCursor()
 
     def StoreConfiguration( self, event ):
@@ -818,6 +853,9 @@ class NodeManagementClientFrame(wxFrame):
 
             url = dlg.GetValue()
             dlg.Destroy()
+
+            url = BuildNodeServiceUrl(url,'https',11000,'ServiceManager')
+
             if url not in self.recentServiceManagerList:
                 self.recentServiceManagerList.append(url)
             try:
@@ -966,6 +1004,12 @@ class NodeManagementClientFrame(wxFrame):
                             raise Exception("Unknown resource selected: %s", selectedResourceName)
                     else:
                         log.info("No resources for service")
+                        
+                if self.callback:
+                    try:
+                        self.callback('add_service',serviceDescription.uri)
+                    except:
+                        log.exception('exception from registered callback')
             except:
                 wxEndBusyCursor()
                 log.exception( "Add Service failed:" + serviceToAdd.name)
@@ -973,6 +1017,8 @@ class NodeManagementClientFrame(wxFrame):
                 return
 
             self.UpdateUI()
+            
+            
             wxEndBusyCursor()
 
     def EnableService( self, event=None ):
@@ -1077,6 +1123,7 @@ class NodeManagementClientFrame(wxFrame):
                     self.tree.Delete(s)
                                        
             self.UpdateUI()
+            
         finally:
             wxEndBusyCursor()
             
