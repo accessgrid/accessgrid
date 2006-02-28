@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.71 2006-01-25 21:09:26 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.72 2006-02-28 20:32:56 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.71 2006-01-25 21:09:26 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.72 2006-02-28 20:32:56 eolson Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -42,7 +42,8 @@ class MessageDialog:
 
 class ErrorDialog:
     def __init__(self, frame, text, text2 = "",
-                 style =  wxICON_ERROR |wxYES_NO | wxNO_DEFAULT, logFile = VENUE_CLIENT_LOG):
+                 style =  wxICON_ERROR |wxYES_NO | wxNO_DEFAULT, logFile = VENUE_CLIENT_LOG,
+                 extraBugCommentText=""):
         info = text + "\n\nDo you wish to send an automated error report?"
         errorDialog = wxMessageDialog(frame, info, text2, style)
 
@@ -63,6 +64,8 @@ class ErrorDialog:
                 except:
                     profile = None
                 
+                if len(extraBugCommentText) > 0:
+                    comment = comment + "\n\n----------------\n\n" + extraBugCommentText
                 SubmitBug(comment, profile, email, logFile)
                 bugFeedbackDialog = wxMessageDialog(frame, "Your error report has been sent, thank you.",
                                                     "Error Reported", style = wxOK|wxICON_INFORMATION)
