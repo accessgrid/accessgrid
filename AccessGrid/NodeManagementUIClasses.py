@@ -5,16 +5,17 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.105 2006-02-27 21:54:11 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.106 2006-02-28 20:58:35 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.105 2006-02-27 21:54:11 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.106 2006-02-28 20:58:35 eolson Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
+import re
 
 from wxPython.wx import *
 from wxPython.lib.dialogs import wxMultipleChoiceDialog
