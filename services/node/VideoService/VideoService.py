@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.16 2006-02-08 21:23:03 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.17 2006-02-28 15:26:39 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -307,6 +307,10 @@ class VideoService( AGService ):
             options.append( startupfile )
             options.append( "-C" )
             options.append( str(self.streamname.value) )
+            if IsOSX():
+                if self.transmitOnStart.value:
+                    options.append( "-X")
+                    options.append( "transmitOnStartup=1")
             if self.streamDescription.encryptionFlag != 0:
                 options.append( "-K" )
                 options.append( self.streamDescription.encryptionKey )
