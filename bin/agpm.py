@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.27 2005-10-07 22:44:52 eolson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.28 2006-02-28 21:08:40 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.27 2005-10-07 22:44:52 eolson Exp $"
+__revision__ = "$Id: agpm.py,v 1.28 2006-02-28 21:08:40 eolson Exp $"
 
 import os
 import re
@@ -27,6 +27,17 @@ from AccessGrid.Utilities import LoadConfig
 from AccessGrid.Platform.Config import SystemConfig, AGTkConfig, UserConfig
 
 tempfile.tmpdir = SystemConfig.instance().GetTempDir()
+gUseGui=False
+
+def ShowResult(result, title="Package Manager"):
+    if True == gUseGui:
+        from AccessGrid.UIUtilities import MessageDialog
+        from wxPython.wx import wxPySimpleApp, wxOK, wxICON_INFORMATION
+        try: wxapp = wxPySimpleApp()
+        except: pass
+        dialog = MessageDialog(None, str(result), title, style = wxOK | wxICON_INFORMATION)
+    else:
+        print str(result)
 
 def ProcessArgs():
     doc = """
@@ -77,8 +88,13 @@ def ProcessArgs():
                       dest="wait_for_input", default=0,
                       help="After completing wait for the user to confirm by\
                       pressing a key.")
+    parser.add_option("--gui", action="store_true",
+                      dest="useGui", help="Show if the installation was successful with a GUI dialog.")
                       
     (options, args) = parser.parse_args()
+    if True == options.useGui:
+        global gUseGui
+        gUseGui = True
 
     # Validate arguments
     if not (
@@ -96,7 +112,7 @@ def ProcessArgs():
             or options.unregisterservice
             ):
         parser.print_help()
-        print "Error: no action specified"
+        ShowResult("Error: no action specified")
         sys.exit(1)
     
     if options.sys_install or options.post_install:
@@ -254,13 +270,16 @@ def RegisterAppPackage(appdb, dest, appInfo, commands, workingDir=None,
     if "application.startable" not in appInfo.keys():
         appInfo["application.startable"] = "1"
 
-    appdb.RegisterApplication(appInfo["application.name"],
+    result = appdb.RegisterApplication(appInfo["application.name"],
                               appInfo["application.mimetype"],
                               appInfo["application.extension"],
                               commands, files,
                               workingDir,
                               dstPath=dest,
                               startable=appInfo["application.startable"])
+    if 0==result:
+        "Unable to register application %s" % appInfo["application.name"]
+        sys.exit(1)
 
     # Clean up, remove the temporary directory and files from
     # unpacking the zip file
@@ -268,6 +287,8 @@ def RegisterAppPackage(appdb, dest, appInfo, commands, workingDir=None,
         os.chdir(origDir)
         if workingDir is not None:
             shutil.rmtree(workingDir)
+
+    ShowResult("Successfully installed application %s." % appInfo["application.name"], "Application Installed")
             
             
 def RegisterServicePackage(servicePackage):
@@ -280,11 +301,10 @@ def RegisterServicePackage(servicePackage):
         # Set the permissions correctly
         os.chmod(servicePackagePath,0644)
     except Exception, e:
-        print e
+        ShowResult(str(e))
         return
     
-    print "Registration of service %s complete." % (servicePackageFile,)
-    
+    ShowResult( "Installation of service %s complete." % (servicePackageFile,), "Service Installed")
 
 def UnregisterServicePackage(servicePackageFile):
     tkConf = AGTkConfig.instance()
@@ -292,10 +312,9 @@ def UnregisterServicePackage(servicePackageFile):
     
     try:
         os.remove(servicePackagePath)
-        print "Unregistration of service package %s complete." % (servicePackageFile,)
+        ShowResult( "Unregistration of service package %s complete." % (servicePackageFile,) )
     except Exception, e:
-        print e
-
+        ShowResult( e )
 
 def main():
     """
@@ -337,16 +356,16 @@ def main():
     # Handle command-line errors
     #   
     if options.appfile and not os.path.exists(options.appfile):
-        print "Error: app file does not exist:", options.appfile
+        ShowResult("Error: app file does not exist: %s" % options.appfile )
         sys.exit(1)
     if options.appdir and not os.path.exists(options.appdir):
-        print "Error: dir does not exist:", options.appdir
+        ShowResult("Error: dir does not exist: %s" % options.appdir )
         sys.exit(1)
     if options.apppkg and not os.path.exists(options.apppkg):
-        print "Error: package file does not exist:", options.apppkg
+        ShowResult("Error: package file does not exist: %s" % options.apppkg )
         sys.exit(1)
     if options.appzip and not os.path.exists(options.appzip):
-        print "Error: zip file does not exist:", options.appzip
+        ShowResult("Error: zip file does not exist: %s" % options.appzip)
         sys.exit(1)
         
     #
@@ -363,7 +382,7 @@ def main():
                     isServicePackage = 1
                     break
         except zipfile.BadZipfile,e:
-            print "Error in zipfile %s: %s" % (filename,e.args[0])
+            ShowResult( "Error in zipfile %s: %s" % (filename,e.args[0]))
             sys.exit(1)
             
     
@@ -384,7 +403,7 @@ def main():
         filename=options.appzip or options.apppkg or options.appname
         if options.unregisterservice:
             if not options.appname:
-                print "No service package specified to unregister"
+                ShowResult( "No service package specified to unregister")
                 sys.exit(1)
             if options.verbose:
                 print "Unregistering service package: ", filename
@@ -422,7 +441,7 @@ def main():
                 pkgInfo = PrepPackageFromCmdLine(options)
                 pkgList.append(pkgInfo)
             except Exception, e:
-                print "Error in package file: ", e
+                ShowResult("Error in package file: %s" % e)
 
         for pkg in pkgList:
             appInfo, commands, workingDir, cleanup = pkg
@@ -436,7 +455,7 @@ def main():
             # If we unregister, we do that then exit
             if options.unregister:
                 if not options.appname:
-                    print "No application specified for unregister"
+                    ShowResult( "No application specified for unregister")
                     sys.exit(1)
                 UnregisterAppPackage(appdb, appInfo, options.appname)
             else:
@@ -450,4 +469,19 @@ def main():
             pass
         
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except:
+        # A catch all exception -- ideally all exceptions will be caught before this.
+        import traceback
+        traceback.print_exc()
+        if "--gui" in sys.argv:
+            from AccessGrid.UIUtilities import ErrorDialog
+            from wxPython.wx import wxPySimpleApp, wxOK, wxICON_ERROR
+            ex_class, ex_instance, trace_obj = sys.exc_info()
+            text = traceback.format_exception(ex_class, ex_instance, trace_obj)
+            message = "".join(text)
+            try: wxapp = wxPySimpleApp()
+            except: pass
+            dialog = ErrorDialog(None, "Error running the Package Manager.", "Package Manager Error", extraBugCommentText=message)
+
