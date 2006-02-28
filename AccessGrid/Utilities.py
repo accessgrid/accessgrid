@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.83 2006-02-13 21:18:07 lefvert Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.84 2006-02-28 20:25:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.83 2006-02-13 21:18:07 lefvert Exp $"
+__revision__ = "$Id: Utilities.py,v 1.84 2006-02-28 20:25:07 eolson Exp $"
 
 import os
 import string
@@ -239,8 +239,7 @@ def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
     userConfig = Config.UserConfig.instance()
        
     # Get config information
-    configData =  "\n%s" % Config.UserConfig.instance()
-    configData += "\n%s" % userConfig
+    configData =  "\n%s" % userConfig
     configData += "\n%s\n" % Config.SystemConfig.instance()
 
     # Defaults.
