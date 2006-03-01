@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.72 2006-02-28 20:32:56 eolson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.73 2006-03-01 07:05:34 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.72 2006-02-28 20:32:56 eolson Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.73 2006-03-01 07:05:34 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -175,20 +175,48 @@ class ErrorDialogWithTraceback:
        errorDialog.ShowModal()
        errorDialog.Destroy()
         
-class ProgressDialog(wxProgressDialog):
-    count = 1
+class ProgressDialog(wxFrame):
+    def __init__(self, parent, bmp, max):
+        height = bmp.GetHeight()
+        width = bmp.GetWidth()
+        self.max = max
+        msgHeight = 20
+        gaugeHeight = 15
+        gaugeBorder = 1
+        gaugeWidth = min(300, width - 100)
+        padding = 5
+        frameSize = wxSize(width, height + msgHeight + gaugeHeight + 2*padding)
+        wxFrame.__init__(self, size=frameSize, parent=parent, style=wxSIMPLE_BORDER)
+        self.CenterOnScreen()
+        self.SetBackgroundColour(wxWHITE)
+        
+        wxStaticBitmap(self, -1, bmp, wxPoint(0, 0), wxSize(width, height))
+        self.progressText = wxStaticText(self, -1, "", wxPoint(0, height + padding), 
+                                wxSize(width, msgHeight),
+                                wxALIGN_CENTRE | wxST_NO_AUTORESIZE)
+        self.progressText.SetBackgroundColour(wxWHITE)
+        gaugeBox = wxWindow(self, -1, wxPoint((width - gaugeWidth)/2, height + msgHeight + padding), 
+                        wxSize(gaugeWidth, gaugeHeight))
+        gaugeBox.SetBackgroundColour(wxBLACK)
+        self.gauge = wxGauge(gaugeBox, -1,
+                              range = max,
+                              style = wxGA_HORIZONTAL,#|wxGA_SMOOTH,
+                              pos   = (gaugeBorder, gaugeBorder),
+                              size  = (gaugeWidth - 2 * gaugeBorder,
+                                       gaugeHeight - 2 * gaugeBorder))
+        self.gauge.SetBackgroundColour(wxColour(0xff, 0xff, 0xff))
+        
+    def UpdateGauge(self, text, progress):
+        self.gauge.SetValue(progress)
+        self.progressText.SetLabel(text)
+        wxYield()
 
-    def __init__(self, title, message, maximum):
-        self.message = message
-        wxProgressDialog.__init__(self, title, message, maximum,
-                                  style = wxPD_AUTO_HIDE| wxPD_APP_MODAL)
-            
-    def UpdateOneStep(self, msg=""):
-        if len(msg) > 0:
-            self.Update(self.count, msg)
-        else:
-            self.Update(self.count)
-        self.count = self.count + 1
+    def Destroy(self):
+        self._startup = False
+        self.gauge.SetValue(self.max)
+        wxYield()
+        #time.sleep(.25) #give the user a chance to see the gauge reach 100%
+        wxFrame.Destroy(self)
 
 class AboutDialog(wxDialog):
             
