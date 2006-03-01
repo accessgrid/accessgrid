@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.106 2006-02-28 20:58:35 eolson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.107 2006-03-01 15:46:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.106 2006-02-28 20:58:35 eolson Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.107 2006-03-01 15:46:43 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -1008,7 +1008,7 @@ class NodeManagementClientFrame(wxFrame):
                         
                 if self.callback:
                     try:
-                        self.callback('add_service',serviceDescription.uri)
+                        self.callback('add_service',serviceDescription)
                     except:
                         log.exception('exception from registered callback')
             except:
