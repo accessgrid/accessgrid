@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.294 2006-02-24 23:34:28 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.295 2006-03-01 15:47:51 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.294 2006-02-24 23:34:28 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.295 2006-03-01 15:47:51 turam Exp $"
 
 import sys
 import os
@@ -138,6 +138,7 @@ class VenueClient:
         self.heartBeatTimer = None
         self.heartBeatTimeout = 10
        
+        if progressCB: progressCB("Starting web services",30)
         self.__StartWebService(pnode, port)
         
         self.__InitVenueData()
@@ -155,6 +156,7 @@ class VenueClient:
             defaultConfig = prefs.GetDefaultNodeConfig()
                 
             if defaultConfig:
+                if progressCB: progressCB("Loading media services",40)
                 log.debug('Loading default node configuration: %s', defaultConfig)
                 self.nodeService.LoadConfiguration(defaultConfig)
             else:
@@ -178,6 +180,7 @@ class VenueClient:
            
             self.transport = "unicast"
 
+        if progressCB: progressCB("Loading bridge information",50)
         self.__LoadBridges()
                     
         self.observers = []
@@ -197,6 +200,7 @@ class VenueClient:
                                              self.profileCachePrefix)
         self.cache = ClientProfileCache(self.profileCachePath)
 
+        if progressCB: progressCB("Creating text client",60)
         self.jabber = JabberClient()
         self.jabber.SetPresenceCB(self.JabberPresenceCB)
         self.textLocation = None
@@ -1333,6 +1337,9 @@ class VenueClient:
         elif presenceType == 'unavailable':
             for s in self.observers:
                 s.RemoveUser(profile)
+                
+    def GetEncryptMedia(self):
+        return self.__venueProxy.GetEncryptMedia()
         
                                         
     # end Basic Implementation
