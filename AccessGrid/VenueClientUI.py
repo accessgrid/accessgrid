@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.170 2006-02-27 21:55:27 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.171 2006-03-01 15:52:22 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.170 2006-02-27 21:55:27 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.171 2006-03-01 15:52:22 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -185,6 +185,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.onExitCalled = false
         # State kept so UI can add venue administration options.
         
+        prefs = self.venueClient.GetPreferences()
+        self.isAudioEnabled = int(prefs.GetPreference(Preferences.ENABLE_AUDIO))
+        self.isDisplayEnabled = int(prefs.GetPreference(Preferences.ENABLE_DISPLAY))
+        self.isVideoEnabled = int(prefs.GetPreference(Preferences.ENABLE_VIDEO))
+        self.controller.EnableAudioCB(self.isAudioEnabled)
+        self.controller.EnableDisplayCB(self.isDisplayEnabled)
+        self.controller.EnableVideoCB(self.isVideoEnabled)
+       
         wxFrame.__init__(self, NULL, -1, "")
         self.__BuildUI(app)
         self.SetSize(wxSize(400, 600))
@@ -197,7 +205,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         #
         # Check if profile is created then open venue client
         #
-        profile = self.venueClient.GetPreferences().GetProfile()
+        profile = prefs.GetProfile()
 
         if profile.IsDefault():  # not your profile
             log.debug("the profile is the default profile - open profile dialog")
@@ -236,10 +244,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             
         self.beaconFrame = None
         
-        self.isDisplayEnabled = true
-        self.isVideoEnabled = true
-        self.isAudioEnabled = true
-       
         
     ############################################################################
     # Section Index
@@ -611,7 +615,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         EVT_BUTTON(self,self.videoToolId,self.EnableVideoCB)
         EVT_TOOL(self,self.configNodeToolId,self.ManageNodeCB)
         
-
     def OnMulticast(self, event):
 
         pref = self.venueClient.GetPreferences()
@@ -719,7 +722,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         
         # - create the audio toolbar button  
-        self.isAudioEnabled = int(self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_AUDIO))
         if self.isAudioEnabled:
             bitmap = icons.getAudioBitmap()
         else:
@@ -729,7 +731,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.toolbar.AddControl(self.audioButton)
 
         # - create the display toolbar button         
-        self.isDisplayEnabled = int(self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_DISPLAY))
         if self.isDisplayEnabled:
             bitmap = icons.getDisplayBitmap()
         else:
@@ -739,7 +740,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.toolbar.AddControl(self.displayButton)
 
         # - create the video toolbar button         
-        self.isVideoEnabled = int(self.venueClient.GetPreferences().GetPreference(Preferences.ENABLE_VIDEO))
         if self.isVideoEnabled:
             bitmap = icons.getCameraBitmap()
         else:
@@ -1789,11 +1789,25 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def OnNodeActivity(self,action,data=None):
         if action == 'load_config':
             log.info('OnNodeActivity: got action: %s', action)
+            self.controller.EnableVideoCB(self.isVideoEnabled)
+            self.controller.EnableAudioCB(self.isAudioEnabled)
+            self.controller.EnableDisplayCB(self.isDisplayEnabled)
             self.venueClient.UpdateNodeService()
         elif action == 'add_service':
             log.info('OnNodeActivity: got action: %s', action)
-            serviceUri = data
-            self.venueClient.nodeService.SetServiceEnabled(serviceUri,1)
+            serviceDesc = data
+            capType = serviceDesc.capabilities[0].type
+            enabled = -1
+            if capType == 'video':
+                enabled = self.isVideoEnabled
+            elif capType == 'audio':
+                enabled = self.isAudioEnabled
+            elif capType == 'display':
+                enabled = self.isDisplayEnabled
+            # only set enabled state for well-known services
+            if enabled >= 0:
+                print 'setting enabled = ', enabled, serviceDesc.name
+                self.venueClient.nodeService.SetServiceEnabled(serviceDesc.uri,enabled)
         else:
             log.info('OnNodeActivity: got unexpected action: %s', action)
 
@@ -1816,11 +1830,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                         idList )
         return itemList
 
-    def GetVideoEnabled(self):
-        return self.preferences.IsChecked(self.ID_ENABLE_VIDEO)
-
     def GetAudioEnabled(self):
         return self.preferences.IsChecked(self.ID_ENABLE_AUDIO)
+
+    def GetDisplayEnabled(self):
+        return self.preferences.IsChecked(self.ID_ENABLE_AUDIO)
+
+    def GetVideoEnabled(self):
+        return self.preferences.IsChecked(self.ID_ENABLE_VIDEO)
 
     def GetText(self):
         return self.textClientPanel.GetText()
@@ -2512,9 +2529,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
             wxCallAfter(self.SetVenueUrl, URL)
                                               
-            # log.debug("Add your personal data descriptions to venue")
-            #wxCallAfter(self.statusbar.SetStatusText, "Add your personal data to venue")
-
             # Enable menus
             wxCallAfter(self.__ShowMenu)
             
@@ -4232,9 +4246,7 @@ class StatusBar(wxStatusBar):
         '''
         Make sure objects are positioned correct in the statusbar.
         '''
-        # Mcast status
-        rect = self.GetFieldRect(1)
-
+        
         if self.fields == 2:
             self.__hideProgressUI()
             return
