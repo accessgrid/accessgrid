@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.274 2006-02-24 23:58:49 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.275 2006-03-01 15:45:09 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.274 2006-02-24 23:58:49 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.275 2006-03-01 15:45:09 turam Exp $"
 
 # Standard Imports
 import os
@@ -29,7 +29,7 @@ from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.VenueClientUI import VenueClientUI
 from AccessGrid.VenueClientController import VenueClientController
 from AccessGrid.VenueClient import VenueClient
-from AccessGrid.UIUtilities import ErrorDialog
+from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog
 from AccessGrid import icons
 from AccessGrid.Platform import IsOSX,IsWindows
 from twisted.internet import reactor
@@ -43,6 +43,10 @@ def main():
 
     # Create the wxpython app
     wxapp = wxPySimpleApp()
+    
+    progressDialog = ProgressDialog(None,icons.getAboutBitmap(), 100)
+    progressDialog.UpdateGauge('Starting Venue Client',10)
+    progressDialog.Show(1)
 
     if IsOSX() or IsWindows():
         t = wxTaskBarIcon()
@@ -88,10 +92,13 @@ def main():
         log.exception("Unable to log wx version.")
     
     # Create venue client components
+    progressDialog.UpdateGauge('Creating VenueClient components',20)
     vc = VenueClient(pnode=pnode, port=port,
-                     app=app)
+                     app=app, progressCB=progressDialog.UpdateGauge)
+    progressDialog.UpdateGauge('Creating venue client internals',70)
     vcc = VenueClientController()
     vcc.SetVenueClient(vc)
+    progressDialog.UpdateGauge('Creating venue client user interface',80)
     vcui = VenueClientUI(vc, vcc, app)
 
     # Associate the components with the ui
@@ -100,8 +107,11 @@ def main():
     
     # Enter the specified venue
     if url:
+        progressDialog.UpdateGauge('Entering venue...',90)
         vc.EnterVenue(url)
         
+    progressDialog.UpdateGauge('Finished',100)
+    progressDialog.Destroy()
     # Spin
     wxapp.SetTopWindow(vcui)
     wxapp.MainLoop()
