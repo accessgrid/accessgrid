@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.105 2006-02-10 08:02:25 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.106 2006-03-01 15:46:00 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.105 2006-02-10 08:02:25 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.106 2006-03-01 15:46:00 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -274,10 +274,10 @@ class AGNodeService:
         """
         log.info("NodeService.SetServiceEnabled")
         try:
-            AGServiceIW( serviceUri ).SetEnabled(enabled)
-
             if enabled:
                 self.__SendStreamsToService( serviceUri )
+            AGServiceIW( serviceUri ).SetEnabled(enabled)
+
         except:
             log.exception(serviceUri)
             raise 
