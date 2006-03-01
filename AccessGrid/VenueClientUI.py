@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.172 2006-03-01 15:52:42 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.173 2006-03-01 15:56:38 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.172 2006-03-01 15:52:42 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.173 2006-03-01 15:56:38 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2541,12 +2541,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             # Update the UI
             wxCallAfter(self.AddVenueToHistory, URL)
             
-            lockFlag = 0
-            streams = self.venueClient.GetVenueStreams()
-            if streams:
-                lockFlag = streams[0].encryptionFlag
-            wxCallAfter(self.statusbar.SetLockedStatus,lockFlag)
-            
             log.debug("Entered venue")
             
             #
@@ -4156,9 +4150,6 @@ class StatusBar(wxStatusBar):
         self.parent = parent
         EVT_SIZE(self, self.OnSize)
         
-        self.lockBitmap = wxStaticText(self,-1,"")
-        EVT_LEFT_DOWN(self.lockBitmap,self.OnLeftDown)
-        
         self.progress = wxGauge(self, wxNewId(), 100,
                                 style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
         self.progress.SetValue(True)
@@ -4172,10 +4163,8 @@ class StatusBar(wxStatusBar):
         self.secondFieldWidth = 100
         self.fields = 2
         self.SetFieldsCount(self.fields)
-        self.SetStatusWidths([-1,self.secondFieldWidth,50])
+        self.SetStatusWidths([-1,self.secondFieldWidth])
         self.Reposition()
-        
-        self.locked = 1
 
     def __hideProgressUI(self):
         self.hidden = 1
@@ -4186,44 +4175,6 @@ class StatusBar(wxStatusBar):
         self.hidden = 0
         self.progress.Show()
         self.cancelButton.Show()
-        
-    def OnLeftDown(self,event):
-        title = 'Venue Security Information'
-        if self.locked:
-            info = 'This is a secure venue.  Audio, video, and other streaming media in this venue are '\
-                   'encrypted using the AES algorithm based on a shared encryption '\
-                   'key, available only from the Venue Server.\n\nFor more information about security in the Access Grid, '\
-                   'select the Security item in the Help menu.'
-            self.parent.Notify(info,title)
-        else:
-            info = 'This is an insecure venue.  Audio, video, and other streaming media in this venue are '\
-                   'not encrypted.  Were someone to capture the media streams, '\
-                   'they would be able to directly listen to the audio and view '\
-                   'the video.  You should keep this in mind during your meeting, '\
-                   'and consider moving to a secure venue for confidential '\
-                   'meetings.\n\nFor more information about security in the Access Grid, '\
-                   'select the Security item in the Help menu.'
-            self.parent.Notify(info,title)
-        
-    def SetLockedStatus(self,lockedFlag):
-    
-        self.locked = lockedFlag
-        
-        # Create the bitmap widget if it hasn't been done yet
-        if isinstance(self.lockBitmap,wxStaticText):
-            if lockedFlag:
-                bitmap = icons.getLockBitmap()
-            else:
-                bitmap = icons.getUnlockBitmap()
-            self.lockBitmap = wxStaticBitmap(self,-1,bitmap)
-            self.Reposition()
-            return
-
-        # Adjust the existing bitmap widget
-        if lockedFlag:
-            self.lockBitmap.SetBitmap(icons.getLockBitmap())
-        else:
-            self.lockBitmap.SetBitmap(icons.getUnlockBitmap())
 
     def SetMax(self, value):
         self.max = value
@@ -4231,9 +4182,9 @@ class StatusBar(wxStatusBar):
     def Reset(self):
         self.__cancelFlag = 0
         self.transferDone = 0
-        self.fields = 2
+        self.fields = 3
         self.SetFieldsCount(self.fields)
-        self.SetStatusWidths([-1,50])
+        self.SetStatusWidths([-1,80,60])
         # set the initial position of the progress UI.
         self.Reposition()
 
@@ -4257,7 +4208,7 @@ class StatusBar(wxStatusBar):
             self.SetMessage("Transfer complete")
             self.fields = 2
             self.SetFieldsCount(self.fields)
-            self.SetStatusWidths([-1,50])
+            self.SetStatusWidths([-1,self.secondFieldWidth])
             return 
         
         self.SetMessage(text)
@@ -4282,7 +4233,7 @@ class StatusBar(wxStatusBar):
             self.SetMessage("")
             self.fields = 2
             self.SetFieldsCount(self.fields)
-            self.SetStatusWidths([-1,self.secondFieldWidth,50])
+            self.SetStatusWidths([-1,self.secondFieldWidth])
             self.Refresh()
             
     def OnSize(self, evt):
@@ -4296,9 +4247,6 @@ class StatusBar(wxStatusBar):
         Make sure objects are positioned correct in the statusbar.
         '''
         
-        rect = self.GetFieldRect(1)
-        self.lockBitmap.SetPosition(wxPoint(rect.x+2, rect.y+2))
-
         if self.fields == 2:
             self.__hideProgressUI()
             return
