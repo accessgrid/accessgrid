@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.59 2006-02-27 20:26:10 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.60 2006-03-02 20:57:59 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.59 2006-02-27 20:26:10 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.60 2006-03-02 20:57:59 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -1316,7 +1316,17 @@ class VenueClientApp:
     def GetCommands(self,objDesc):
         commandList = None
 
-        if isinstance(objDesc,DataDescription) or isinstance(objDesc,ServiceDescription):
+        if isinstance(objDesc,DataDescription):
+            splitName = objDesc.name.split('.')
+            ext = ""
+            
+            if len(splitName) > 1:
+                ext = splitName[-1]
+
+            commandList = self.mimeConfig.GetMimeCommands(
+                ext = ext)
+
+        elif isinstance(objDesc,ServiceDescription):
             splitName = objDesc.name.split('.')
             ext = ""
             
