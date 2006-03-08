@@ -119,6 +119,11 @@
 	<xs:element name="distinguishedName" type="xs:string"/>
 	<xs:element name="techSupportInfo" type="xs:string"/>
 	<xs:element name="connectionId" type="xs:string"/>
+	<xs:element name="gmtoffset" minOccurs="0" maxOccurs="1"  type="xs:int"/>
+	<xs:element name="beacon" minOccurs="0" maxOccurs="1"  type="xs:int"/>
+	<xs:element name="audio" minOccurs="0" maxOccurs="1"  type="xs:int"/>
+	<xs:element name="video" minOccurs="0" maxOccurs="1"  type="xs:int"/>
+	<xs:element name="display" minOccurs="0" maxOccurs="1"  type="xs:int"/>
       </xs:sequence>
     </xs:complexType>
 
