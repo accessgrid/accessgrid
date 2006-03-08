@@ -61,11 +61,14 @@ class PreferencesDialog(wxDialog):
                                          self.preferences)
         self.networkPanel = NetworkPanel(self.preferencesPanel, wxNewId(),
                                          self.preferences)
+        self.proxyPanel = ProxyPanel(self.preferencesPanel, wxNewId(),
+                                         self.preferences)
         self.navigationPanel = NavigationPanel(self.preferencesPanel, wxNewId(),
                                                self.preferences)
         self.loggingPanel.Hide()
         self.venueConnectionPanel.Hide()
         self.networkPanel.Hide()
+        self.proxyPanel.Hide()
         self.navigationPanel.Hide()
         self.nodePanel.Hide()
         self.currentPanel = self.loggingPanel
@@ -86,7 +89,7 @@ class PreferencesDialog(wxDialog):
         if self.currentPanel.GetSizer():
             w,h = self.preferencesWindow.GetSizeTuple()
             self.currentPanel.GetSizer().SetDimension(0,0,w,h)
-                   
+
     def GetPreferences(self):
         """
         Returns a preference object reflecting current state in dialog.
@@ -130,6 +133,11 @@ class PreferencesDialog(wxDialog):
         self.preferences.SetBridges(self.networkPanel.GetBridges())
         self.preferences.SetPreference(Preferences.DISPLAY_MODE,
                                        self.navigationPanel.GetDisplayMode())
+        self.preferences.SetPreference(Preferences.PROXY_HOST,
+                                       self.proxyPanel.GetHost())
+        self.preferences.SetPreference(Preferences.PROXY_PORT,
+                                       self.proxyPanel.GetPort())
+
         cDict = self.loggingPanel.GetLogCategories()
         for category in cDict.keys():
             self.preferences.SetPreference(category, cDict[category])
@@ -178,6 +186,8 @@ class PreferencesDialog(wxDialog):
                                                 " Venue Connection")
         self.network = self.sideTree.AppendItem(self.root,
                                                 " Network")
+        self.proxy = self.sideTree.AppendItem(self.root,
+                                                " Proxy")
         self.navigation = self.sideTree.AppendItem(self.root,
                                                 " Navigation")
         self.sideTree.SetItemData(self.profile,
@@ -190,6 +200,8 @@ class PreferencesDialog(wxDialog):
                                   wxTreeItemData(self.venueConnectionPanel))
         self.sideTree.SetItemData(self.network,
                                   wxTreeItemData(self.networkPanel))
+        self.sideTree.SetItemData(self.proxy,
+                                  wxTreeItemData(self.proxyPanel))
         self.sideTree.SetItemData(self.navigation,
                                   wxTreeItemData(self.navigationPanel))
         self.sideTree.SelectItem(self.profile)
@@ -674,7 +686,7 @@ class TextValidator(wxPyValidator):
 
     def TransferFromWindow(self):
         return true # Prevent wxDialog from complaining.
-
+        
 class VenueConnectionPanel(wxPanel):
     def __init__(self, parent, id, preferences):
         wxPanel.__init__(self, parent, id)
@@ -910,7 +922,62 @@ class NetworkPanel(wxPanel):
         sizer.Fit(self)
         self.SetAutoLayout(1)
 
+class ProxyPanel(wxPanel):
+    def __init__(self, parent, id, preferences):
+        wxPanel.__init__(self, parent, id)
+        self.Centre()
+        self.hostText = wxStaticText(self, -1, "Hostname:")
+        self.hostCtrl = wxTextCtrl(self, -1, "")
+        self.portText = wxStaticText(self, -1, "Port:")
+        self.portCtrl = wxTextCtrl(self, -1, "",
+                            validator=PortValidator("Port"))
+       
+        self.titleText = wxStaticText(self, -1, "HTTP Proxy Server")
+        self.titleLine = wxStaticLine(self,-1)
+        self.buttonLine = wxStaticLine(self,-1)
         
+        if IsOSX():
+            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+        else:
+            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+
+        self.SetHost(preferences.GetPreference(Preferences.PROXY_HOST))
+        self.SetPort(preferences.GetPreference(Preferences.PROXY_PORT))
+        
+        self.__Layout()
+
+    def __Layout(self):
+        sizer1 = wxBoxSizer(wxVERTICAL)
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.titleText, 0, wxALL, 5)
+        sizer2.Add(self.titleLine, 1, wxALIGN_CENTER | wxALL, 5)
+        sizer1.Add(sizer2, 0, wxEXPAND)
+        self.gridSizer = wxFlexGridSizer(0, 2, 2, 5)
+        self.gridSizer.Add(self.hostText, 0, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.hostCtrl, 0, wxEXPAND, 0)
+        self.gridSizer.Add(self.portText, 0, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.portCtrl, 0, wxEXPAND, 0)
+
+        self.gridSizer.AddGrowableCol(1)
+        sizer1.Add(self.gridSizer, 1, wxALL|wxEXPAND, 10)
+        self.SetSizer(sizer1)
+        sizer1.Fit(self)
+        self.SetAutoLayout(1)
+        
+        self.Layout()
+        
+    def SetHost(self,host):
+        self.hostCtrl.SetValue(host)
+        
+    def SetPort(self,port):
+        self.portCtrl.SetValue(str(port))
+        
+    def GetHost(self):
+        return self.hostCtrl.GetValue()
+        
+    def GetPort(self):
+        return self.portCtrl.GetValue()
+                
 class NavigationPanel(wxPanel):
     def __init__(self, parent, id, preferences):
         wxPanel.__init__(self, parent, id)
