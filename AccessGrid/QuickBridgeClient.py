@@ -2,7 +2,7 @@
 # Name:        QuickBridgeClient.py
 # Purpose:     Interface to a QuickBridge server.
 # Created:     2005/12/06
-# RCS-ID:      $Id: QuickBridgeClient.py,v 1.3 2005-12-13 20:32:36 lefvert Exp $
+# RCS-ID:      $Id: QuickBridgeClient.py,v 1.4 2006-03-08 20:03:08 turam Exp $
 # Copyright:   (c) 2005-2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,11 +11,22 @@ import xmlrpclib
 from NetworkLocation import MulticastNetworkLocation, UnicastNetworkLocation
 from GUID import GUID
 from BridgeClient import BridgeClient
+from AccessGrid.UrllibTransport import UrllibTransport
 
 class QuickBridgeClient(BridgeClient):
-    def __init__(self, host, port):
+    def __init__(self, host, port, proxyHost=None, proxyPort=None):
         BridgeClient.__init__(self, host, port)
-        self.serverProxy = xmlrpclib.ServerProxy("http://" + host + ":" + str(port))
+        
+        transport = None
+        if proxyHost is not None:
+            if proxyPort is None:
+                proxyURL = "http://%s" % (proxyHost)
+            else:
+                proxyURL = "http://%s:%s" % (proxyHost, proxyPort)
+
+            transport = UrllibTransport(proxyURL)
+        url = "http://%s:%s" % (host,str(port))
+        self.serverProxy = xmlrpclib.ServerProxy(url, transport = transport, verbose = 0)
         self.host = host
         self.port = port
 
@@ -32,12 +43,13 @@ class QuickBridgeClient(BridgeClient):
 
 if __name__=="__main__":
     # Example below.  You should start Bridge.py first.
-    bc = QuickBridgeClient(host="127.0.0.1", port=20000)
+    bc = QuickBridgeClient(host="milton.mcs.anl.gov", port=8030)
     multicastNetworkLocation = MulticastNetworkLocation(host="224.2.2.2", port=9700, ttl=1)
     multicastNetworkLocation.id = GUID()
     multicastNetworkLocation.privateId = GUID()
     multicastNetworkLocation.profile=("","")
     print dir(multicastNetworkLocation)
     print multicastNetworkLocation.__dict__
-    bc.JoinBridge(multicastNetworkLocation)
+    desc = bc.JoinBridge(multicastNetworkLocation)
+    print desc
 
