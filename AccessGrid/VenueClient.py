@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.295 2006-03-01 15:47:51 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.296 2006-03-08 18:09:38 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.295 2006-03-01 15:47:51 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.296 2006-03-08 18:09:38 turam Exp $"
 
 import sys
 import os
@@ -771,7 +771,8 @@ class VenueClient:
                         
         # next line needed until zsi can handle dictionaries.
         self.venueState = VenueState(uniqueId=state.uniqueId, name=state.name, description=state.description, uri=state.uri, connections=state.connections, clients=state.clients, data=state.data, eventLocation=evtLocation, textLocation=state.textLocation, dataLocation = state.dataLocation, applications=state.applications, services=state.services)
-    
+        
+        
         # Retreive stream descriptions
         if len(self.capabilities) > 0:
             self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.profile.connectionId,
@@ -966,6 +967,7 @@ class VenueClient:
         self.capabilities += self.beaconCapabilities 
            
         # Set media and beacon indicators in client profile based on capabilities
+        self.profile.video = self.profile.audio = self.profile.display = self.profile.beacon = 0
         for c in self.capabilities:
             if c.type == 'video':
                 if c.role == 'producer':
