@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.296 2006-03-08 18:09:38 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.297 2006-03-08 20:03:53 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.296 2006-03-08 18:09:38 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.297 2006-03-08 20:03:53 turam Exp $"
 
 import sys
 import os
@@ -1176,7 +1176,10 @@ class VenueClient:
             # If no unicast network location was found, connect to the bridge to retreive one.
             if self.currentBridge:
 
-                qbc = QuickBridgeClient(self.currentBridge.host, self.currentBridge.port)
+                proxyHost = self.preferences.GetPreference(Preferences.PROXY_HOST)
+                proxyPort = self.preferences.GetPreference(Preferences.PROXY_PORT)
+                qbc = QuickBridgeClient(self.currentBridge.host, self.currentBridge.port,
+                                            proxyHost, proxyPort)
 
                 try:
                     stream.location = qbc.JoinBridge(stream.networkLocations[0])
