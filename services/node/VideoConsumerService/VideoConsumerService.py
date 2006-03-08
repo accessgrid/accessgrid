@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.9 2006-02-15 16:47:03 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.10 2006-03-08 20:16:35 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -131,11 +131,15 @@ class VideoConsumerService( AGService ):
             options.append('-XrtpName=%s' % (name,))
             options.append('-XrtpEmail=%s' % (email,))
 
-            # This is a consumer, so disable device selection in vic
+            # Set some tk resources to customize vic
+            # - this is a consumer, so disable device selection in vic
             options.append('-XrecvOnly=1')
-            
-            # Set drop time to something reasonable
+            # - set drop time to something reasonable
             options.append('-XsiteDropTime=5')
+            # - set vic window geometry
+            options.append('-Xgeometry=500x500')
+            # - set number of columns of thumbnails to display
+            options.append('-Xtile=2')
                     
             # Add address/port options (these must occur last; don't
             # add options beyond here)
