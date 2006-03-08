@@ -36,6 +36,8 @@ class Preferences:
     MY_VENUES = "my venues"
     ALL_VENUES = "all venues"
     BRIDGE_REGISTRY = "bridgeRegistry"
+    PROXY_HOST = "proxyHost"
+    PROXY_PORT = "proxyPort"
                 
     def __init__(self):
         '''
@@ -64,7 +66,9 @@ class Preferences:
                          self.ENABLE_VIDEO: 1,
                          self.ENABLE_AUDIO: 1,
                          self.DISPLAY_MODE: self.EXITS,
-                         self.BRIDGE_REGISTRY: "http://www.accessgrid.org/registry/peers.txt"
+                         self.BRIDGE_REGISTRY: "http://www.accessgrid.org/registry/peers.txt",
+                         self.PROXY_HOST: "",
+                         self.PROXY_PORT: "",
                          }
 
         # Set default log levels to Log.DEBUG.
