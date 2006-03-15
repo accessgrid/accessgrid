@@ -929,8 +929,7 @@ class ProxyPanel(wxPanel):
         self.hostText = wxStaticText(self, -1, "Hostname:")
         self.hostCtrl = wxTextCtrl(self, -1, "")
         self.portText = wxStaticText(self, -1, "Port:")
-        self.portCtrl = wxTextCtrl(self, -1, "",
-                            validator=PortValidator("Port"))
+        self.portCtrl = wxTextCtrl(self, -1, "")
        
         self.titleText = wxStaticText(self, -1, "HTTP Proxy Server")
         self.titleLine = wxStaticLine(self,-1)
