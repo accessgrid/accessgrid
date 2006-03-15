@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.10 2006-02-24 23:16:06 turam Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.11 2006-03-15 21:38:32 turam Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -38,7 +38,7 @@ class QuickBridgeServer:
         self.bridgeDescription = BridgeDescription(guid=GUID(), name=name, host=hostname, 
                                                    port=self.listenPort, serverType=QUICKBRIDGE_TYPE, 
                                                    description="", 
-                                                   portMin=self.bridgeFactory.GetPortBase(),
+                                                   portMin=self.bridgeFactory.GetPortMin(),
                                                    portMax=self.bridgeFactory.GetPortMax())
         self._RegisterWithRegistry()
         self.running = False
@@ -104,11 +104,12 @@ def main():
 
     defaultListenPort = 20000
     defaultQbexec="/usr/bin/QuickBridge"
+    defaultRegistryUrl='http://www.accessgrid.org/registry/peers.txt'
     # maxConnections? , maxBridges?, recycleTimeout?
 
     parser = OptionParser()
     parser.add_option("-p", "--listenPort", dest="listenPort", default=defaultListenPort, help="Port to listen on.", type="int")
-    parser.add_option("-u", "--registryUrl", dest="registryUrl", default=None, help="Url to the registry.  Bridge will register with it.")
+    parser.add_option("-u", "--registryUrl", dest="registryUrl", default=defaultRegistryUrl, help="Url to the registry.  Bridge will register with it.")
     parser.add_option("-r", "--portRange", dest="portRange", default=None, help="Minimum and maximum port.", nargs=2, type="int")
     parser.add_option("-q", "--qbexec", dest="qbexec", default=defaultQbexec, help="Location of QuickBridge executable.")
     parser.add_option("-n", "--name", dest="name", default=None, help="Name.")
