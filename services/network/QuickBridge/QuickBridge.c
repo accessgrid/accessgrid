@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.10 2006-02-06 22:23:43 turam Exp $
+ * $Id: QuickBridge.c,v 1.11 2006-03-15 21:47:26 turam Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -340,7 +340,7 @@ void set_acl(char *file){
 }
 
 void print_usage(char * name){
-	printf("usage: %s [-g <multicast-group>|<unicast peer>] [-m mcast port] [-u ucast port] [-t ttl] -n [ Flags for additional session ]\n",name);
+	printf("usage: %s [-g <multicast-group>|<unicast peer>] [-m mcast port] [-u ucast port] [-t ttl] [-i inactivity-timeout (secs)] -n [ Flags for additional session ]\n",name);
 	printf("Any number of additional bridge sessions can be specified by using\nthe -n flag, unspecified values default to that of the previous session\n");
 	printf("\n\nAccess list for dynamic unicast session defined in %s file\nas address netmask pairs\n",ACLFILE);
 }
@@ -795,6 +795,8 @@ int main (int argc, char *argv[])
 	char *progname;
 	char *tmp;
 	int c, arg_err=0;
+    int inactivity_timeout=0;
+    int time_at_last_client=0;
 
 #ifdef _WIN32
 	WORD wVersionRequested = MAKEWORD(2,2);
@@ -855,7 +857,7 @@ int main (int argc, char *argv[])
 	ucport[rtcp]=0;
 	multicastaddress = -1;
 
-	while((c = getopt(argc,argv,"g:t:u:m:d:nl")) != EOF){
+	while((c = getopt(argc,argv,"g:t:u:m:d:i:nl")) != EOF){
 		switch(c) {
 	case 'g':
 		multicastaddress = addr_lookup(optarg);
@@ -883,6 +885,9 @@ int main (int argc, char *argv[])
 		break;
 	case 'd':
 		debugon = atoi(optarg);
+		break;
+	case 'i':
+		inactivity_timeout = atoi(optarg);
 		break;
 	case 'n':
 		s = setup_session(ucport,mcport,multicastaddress,ttl,forward,s);
@@ -1005,6 +1010,13 @@ int main (int argc, char *argv[])
 		if(now - last_time > TIMEOUTSECS) {
 		  timeoutchk(s);
 		  do_group_membership(s);
+          if(s->numunicastmem == 0 && now - time_at_last_client < inactivity_timeout)
+          {
+            /* printf("reached specified timeout and have no clients; exiting\n"); */
+            exit(0);
+          }
+          if(s->numunicastmem > 0)
+              time_at_last_client = now;
 		  
 		  printf("current unicast members are now:\n");
 		  printmembers(s);
