@@ -2,29 +2,17 @@
 # Name:        CRSClient.py
 # Purpose:     Certificate Request Service Client code.
 # Created:     2002/12/12
-# RCS-ID:      $Id: CRSClient.py,v 1.8 2004-09-10 03:58:53 judson Exp $
+# RCS-ID:      $Id: CRSClient.py,v 1.9 2006-03-15 21:35:22 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-"""
-Sample code using a proxy.
 
-
-from xmlrpc_urllib_transport import UrllibTransport
-import os
-os.environ['HTTP_PROXY']= 'http://localhost:3128'
-
-transport = UrllibTransport()
-url = "http://www.mcs.anl.gov/fl/research/accessgrid/ca/agdev/server.cgi"
-proxy = xmlrpclib.ServerProxy(url, transport = transport, verbose=1)
-
-"""
-
-__revision__ = "$Id: CRSClient.py,v 1.8 2004-09-10 03:58:53 judson Exp $"
+__revision__ = "$Id: CRSClient.py,v 1.9 2006-03-15 21:35:22 turam Exp $"
 
 import xmlrpclib
 from AccessGrid import Log
+from AccessGrid.UrllibTransport import UrllibTransport
 
 log = Log.GetLogger(Log.CRSClient)
 
@@ -138,29 +126,6 @@ class CRSClient:
 
         log.debug("retrieved certificate list %s", rval)
         return rval
-
-#
-# The following code is from:
-# http://starship.python.net/crew/jjkunce/python/xmlrpc_urllib_transport.py
-#
-class UrllibTransport(xmlrpclib.Transport):
-	'''Handles an HTTP transaction to an XML-RPC server via urllib
-	(urllib includes proxy-server support)
-	jjk  07/02/99'''
-
-        def __init__(self, proxy):
-            self.proxy = proxy
-
-	def request(self, host, handler, request_body, verbose = None):
-		'''issue XML-RPC request
-		jjk  07/02/99'''
-		import urllib
-		self.verbose = verbose
-                urlopener = urllib.URLopener(proxies = {"http": self.proxy})
-		urlopener.addheaders = [('User-agent', self.user_agent)]
-		# probably should use appropriate 'join' methods instead of 'http://'+host+handler
-		f = urlopener.open('http://'+host+handler, request_body)
-		return(self.parse_response(f))
 
 
 if __name__ == "__main__":
