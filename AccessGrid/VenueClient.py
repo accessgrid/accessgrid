@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.297 2006-03-08 20:03:53 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.298 2006-03-15 17:07:47 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.297 2006-03-08 20:03:53 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.298 2006-03-15 17:07:47 turam Exp $"
 
 import sys
 import os
@@ -1342,6 +1342,9 @@ class VenueClient:
         elif presenceType == 'unavailable':
             for s in self.observers:
                 s.RemoveUser(profile)
+        else:
+            log.info('Presence of unexpected type %s for name %s', presenceType, jabbername)
+            
                 
     def GetEncryptMedia(self):
         return self.__venueProxy.GetEncryptMedia()
