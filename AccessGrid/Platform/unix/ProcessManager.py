@@ -2,13 +2,13 @@
 # Name:        ProcessManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.2 2004-09-09 14:31:23 turam Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.3 2006-03-15 21:30:49 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.2 2004-09-09 14:31:23 turam Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.3 2006-03-15 21:30:49 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import signal
@@ -19,8 +19,24 @@ from AccessGrid import Log
 log = Log.GetLogger(Log.ProcessManager)
 
 class ProcessManager:
-    def __init__(self):
+    def __init__(self,callback=None):
+        self.callback = callback
         self.processes = []
+        signal.signal(signal.SIGCHLD,self.OnSigChild)
+        
+    def OnSigChild(self,num,event):
+        try:
+            ret = os.waitpid(-1,os.WNOHANG)
+            pid = ret[0]
+            if pid:
+                if pid in self.processes:
+                    self.processes.remove(pid)
+                    if self.callback:
+                        self.callback(self,pid)
+                else:
+                    log.info("Got sigchild for unexpected process pid=%d", pid)
+        except:
+            log.exception("Exception in sigchld handler")
 
     def StartProcess(self, command, arglist, detached = 1):
         """
@@ -31,12 +47,12 @@ class ProcessManager:
         """
         arglist = map(lambda a: str(a), arglist)
         arglist.insert(0, str(command))
-
+        
         if detached:
             pid = os.spawnvp(os.P_NOWAIT, command, arglist)
         else:
             pid = os.spawnvp(os.P_WAIT, command, arglist)
-
+            
         self.processes.append(pid)
 
         return pid
