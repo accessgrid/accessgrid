@@ -16,7 +16,7 @@ class BridgeFactory:
         """
         The Bridge class encapsulates execution of the bridge software
         """
-        def __init__(self, qbexec,id, maddr, mport, mttl, uaddr, uport):
+        def __init__(self, qbexec,id, maddr, mport, mttl, uaddr, uport, deathCallback=None):
             self.qbexec = qbexec
             self.id = id
             self.maddr = maddr
@@ -26,7 +26,7 @@ class BridgeFactory:
             self.uport = uport
 
             # Instantiate the process manager
-            self.processManager = ProcessManager()
+            self.processManager = ProcessManager(callback=self.OnBridgeDeath)
 
 
         def Start(self):
@@ -57,6 +57,10 @@ class BridgeFactory:
             """
             log.info("Method Bridge.Stop called")
             self.processManager.TerminateAllProcesses()
+            
+        def OnBridgeDeath(self,pm,pid):
+            if self.deathCallback:
+                self.deathCallback(self,pid)
 
 
     def __init__(self, qbexec, portRange=None, logger=Log.GetLogger("BridgeFactory")):
@@ -123,7 +127,8 @@ class BridgeFactory:
             # Instantiate a new bridge
             log.info("- creating new bridge")
             retBridge = BridgeFactory.Bridge(self.qbexec,id,maddr,mport,
-                                             mttl,uaddr,uport)
+                                             mttl,uaddr,uport,
+                                             self.OnBridgeDeath)
             retBridge.Start()
    
             # Add the bridge to the list of bridges
@@ -152,3 +157,25 @@ class BridgeFactory:
                 log.info("- Refcount zero; stopping and deleting bridge")
                 bridge.Stop()
                 del self.bridges[key]
+                
+    def OnBridgeDeath(self,bridge,pid):
+        key = "%s%d" % (bridge.maddr,bridge.mport)
+        if self.bridges.has_key(key):
+            del self.bridges[key]
+        else:
+            log.warn("Attempt to handle death of bridge which is not known to BridgeFactory (%s/%d)" % (bridge.maddr,bridge.mport))
+
+
+                
+if __name__ == '__main__':
+    
+    
+    import time
+    
+    bf = BridgeFactory('./QuickBridge')
+    b = bf.CreateBridge(1,'224.2.2.4',20302,127,'140.221.34.85',50222)
+    b.Start()
+    
+    
+    while 1:
+        time.sleep(1)
