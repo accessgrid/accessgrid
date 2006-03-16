@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.72 2006-03-16 20:03:46 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.73 2006-03-16 22:32:18 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.72 2006-03-16 20:03:46 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.73 2006-03-16 22:32:18 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -94,12 +94,7 @@ def main():
     
     if app.GetOption("secure"):
         log.info('Running in secure mode')
-        try:
-            context = Toolkit.Service.instance().GetContext()
-        except CertificateManager.NoCertificates:
-            errorMsg = "No certificate is available to start a secure server.  Please import a certificate into your repository (and request one first if necessary) or specify a certificate on the command-line."
-            sys.exit(errorMsg)
-
+        context = Toolkit.Service.instance().GetContext()
         server = SecureServer((hostname, port),
                               context)
     else:
@@ -154,7 +149,14 @@ if __name__ == "__main__":
             log.info(msg)
             log.exception("Socket error")
             print msg
+    except CertificateManager.NoCertificates,e:
+        msg = """No certificate is available to start a secure server.  \n\
+Please run the CertificateManager to request and retrieve \n\
+a certificate before attempting to start the VenueServer again."""
+        print msg
+        log.exception('Attempt to start VenueServer without a certificate')
     except Exception, e:
+        print e
         msg = "Error occurred running server: %s" % (str(e))
         print msg
         log.exception(msg)
