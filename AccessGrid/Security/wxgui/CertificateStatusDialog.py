@@ -109,7 +109,6 @@ class CertificateStatusDialog(wxDialog):
 
     def OnCertSelected(self, event):
         row = event.m_itemIndex
-        print "Selected item ", row
         self.selectedItem = row
 
         if row in self.certStatus:
@@ -124,7 +123,6 @@ class CertificateStatusDialog(wxDialog):
         self.deleteButton.Enable(1)
             
     def OnDeleteRequest(self, event):
-        print "delete, sel is ", self.selectedItem
 
         if self.selectedItem is None:
             return
@@ -141,7 +139,6 @@ class CertificateStatusDialog(wxDialog):
         
     def OnImportCertificate(self, event):
 
-        print "import, sel is ", self.selectedItem
         if self.selectedItem is None:
             return
         
@@ -259,7 +256,6 @@ class CertificateStatusDialog(wxDialog):
         certMgr = Toolkit.Application.instance().GetCertificateManager()
 
         proxyEnabled, proxyHost, proxyPort = self.proxyPanel.GetInfo()
-        print "Check got pinfo ", proxyEnabled, proxyHost, proxyPort
         
         # Check status of certificate requests
         for row in range(0, self.list.GetItemCount()):
@@ -270,8 +266,8 @@ class CertificateStatusDialog(wxDialog):
             reqItem = self.reqList[itemId]
             requestDescriptor, token, server, creationTime = reqItem
 
-            print "Testing request %s server=%s token=%s" % (requestDescriptor,
-                                                             server, token)
+            #print "Testing request %s server=%s token=%s" % (requestDescriptor,
+            #                                                 server, token)
             self.list.SetStringItem(row, 3, "Checking...")
             self.Refresh()
             self.Update()
