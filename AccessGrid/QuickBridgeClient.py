@@ -2,7 +2,7 @@
 # Name:        QuickBridgeClient.py
 # Purpose:     Interface to a QuickBridge server.
 # Created:     2005/12/06
-# RCS-ID:      $Id: QuickBridgeClient.py,v 1.4 2006-03-08 20:03:08 turam Exp $
+# RCS-ID:      $Id: QuickBridgeClient.py,v 1.5 2006-03-16 21:03:41 turam Exp $
 # Copyright:   (c) 2005-2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -40,6 +40,9 @@ class QuickBridgeClient(BridgeClient):
         desc.profile.location = l["profile"]["location"] 
 
         return desc 
+        
+    def GetBridgeInfo(self):
+        return self.serverProxy.GetBridgeInfo()
 
 if __name__=="__main__":
     # Example below.  You should start Bridge.py first.
