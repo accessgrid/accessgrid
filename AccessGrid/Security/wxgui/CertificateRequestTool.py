@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.19 2005-11-11 20:52:20 eolson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.20 2006-03-16 23:51:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -45,9 +45,6 @@ log = Log.GetLogger(Log.CertificateRequestTool)
 #
 
 ServiceTypes = [("Venue Server", "VenueServer"),
-                ("Node Service", "NodeService"),
-                ("Service Manager", "ServiceManager"),
-                ("Bridging Service", "BridgeService"),
                 ("Other", None),
                 ]
                  
@@ -83,9 +80,9 @@ class CertificateRequestTool(wxWizard):
 
         self.page0 = IntroWindow(self, "Welcome to the Certificate Request Wizard", )
         self.page1 = SelectCertWindow(self, "Select Certificate Type")
-        self.idpage = self.page2 = IdentityCertWindow(self, "Enter Your Information")
+        #self.idpage = self.page2 = IdentityCertWindow(self, "Enter Your Information")
         self.servicepage = self.page3 = ServiceCertWindow(self, "Enter Service Information")
-        self.hostpage = self.page4 = HostCertWindow(self, "Enter Host Information")
+        #self.hostpage = self.page4 = HostCertWindow(self, "Enter Host Information")
         self.anonpage = self.page4a = AnonCertWindow(self, "Anonymous Certificate")
         self.submitpage = self.page5 = SubmitReqWindow(self, "Submit Request")
         self.FitToPage(self.page1)
@@ -93,25 +90,26 @@ class CertificateRequestTool(wxWizard):
         self.log.debug("__init__:Set the initial order of the pages")
         
         self.page0.SetNext(self.page1)
-        self.page1.SetNext(self.page2)
-        self.page2.SetNext(self.page5)
+        self.page1.SetNext(self.page3)
+        #self.page2.SetNext(self.page5)
         self.page3.SetNext(self.page5)
-        self.page4.SetNext(self.page5)
+        #self.page4.SetNext(self.page5)
         self.page4a.SetNext(self.page5)
 
-        self.page1.SetPrev(self.page0)
-        self.page2.SetPrev(self.page1)
+        #self.page1.SetPrev(self.page0)
+        #self.page2.SetPrev(self.page1)
         self.page3.SetPrev(self.page1)
-        self.page4.SetPrev(self.page1)
-        self.page5.SetPrev(self.page4)
+        #self.page4.SetPrev(self.page1)
+        self.page4a.SetPrev(self.page1)
+        #self.page5.SetPrev(self.page4)
       
         self.log.debug("__init__:Handle arguments for certificate type")
         
         if certificateType:
             self.maxStep = 3
             if certificateType == "IDENTITY":
-                self.page0.SetNext(self.page2)
-                self.page2.SetPrev(self.page0)
+                #self.page0.SetNext(self.page2)
+                #self.page2.SetPrev(self.page0)
                 self.SetTitle("Request Certificate - Step 1 of %s"
                               %self.maxStep)
                         
@@ -122,8 +120,8 @@ class CertificateRequestTool(wxWizard):
                               %self.maxStep)
                     
             elif certificateType == "HOST":
-                self.page0.SetNext(self.page4)
-                self.page4.SetPrev(self.page0)
+                #self.page0.SetNext(self.page4)
+                #self.page4.SetPrev(self.page0)
                 self.SetTitle("Request Certificate - Step 1 of %s"
                               %self.maxStep)
 
@@ -307,14 +305,14 @@ class SelectCertWindow(TitledPage):
         '''
         TitledPage.__init__(self, parent, title)
         self.text = wxStaticText(self, -1, "Select Certificate Type: ")
-        self.selectionList = ["Identity", "Service", "Anonymous"]
+        self.selectionList = ["Service", "Anonymous"]
         self.selections = wxComboBox(self, -1, self.selectionList[0],
                                      choices = self.selectionList,
                                      style = wxCB_READONLY)
         self.selections.SetValue(self.selectionList[0])
-        self.info = wxStaticText(self, -1, "There are three kinds of certificates:")
-        self.info1 = wxStaticText(self, -1, "Identity Certificate:")
-        self.info2 = wxStaticText(self, -1, "To identify an individual.")
+        self.info = wxStaticText(self, -1, "There are two kinds of certificates:")
+        #self.info1 = wxStaticText(self, -1, "Identity Certificate:")
+        #self.info2 = wxStaticText(self, -1, "To identify an individual.")
         self.info3 = wxStaticText(self, -1, "Service Certificate:")
         self.info4 = wxStaticText(self, -1, "To identify a service.")
         self.info5 = wxStaticText(self, -1, "Anonymous Certificate:")
@@ -336,15 +334,23 @@ class SelectCertWindow(TitledPage):
         next = self.next
         value = self.selections.GetValue()
 
+#         if value == self.selectionList[0]:
+#             next = self.parent.page2
+#             self.parent.page2.SetPrev(self)
+# 
+#         elif value == self.selectionList[1]:
+#             next = self.parent.page3
+#             self.parent.page3.SetPrev(self)
+#             
+#         elif value == self.selectionList[2]:
+#             next = self.parent.page4a
+#             self.parent.page4a.SetPrev(self)
+            
         if value == self.selectionList[0]:
-            next = self.parent.page2
-            self.parent.page2.SetPrev(self)
-
-        elif value == self.selectionList[1]:
             next = self.parent.page3
             self.parent.page3.SetPrev(self)
-            
-        elif value == self.selectionList[2]:
+
+        elif value == self.selectionList[1]:
             next = self.parent.page4a
             self.parent.page4a.SetPrev(self)
             
@@ -357,7 +363,7 @@ class SelectCertWindow(TitledPage):
         if Platform.IsOSX():
             pointSize=12
         
-        self.info1.SetFont(wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD))
+        #self.info1.SetFont(wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD))
         self.info3.SetFont(wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD))
         self.info5.SetFont(wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD))
         
@@ -369,8 +375,8 @@ class SelectCertWindow(TitledPage):
         self.sizer.Add(wxSize(10, 10))
         
         infoSizer = wxFlexGridSizer(3, 2, 6, 6)
-        infoSizer.Add(self.info1, 0, wxCENTER)
-        infoSizer.Add(self.info2, 0, wxEXPAND | wxALIGN_LEFT)
+        #infoSizer.Add(self.info1, 0, wxCENTER)
+        #infoSizer.Add(self.info2, 0, wxEXPAND | wxALIGN_LEFT)
         infoSizer.Add(self.info3, 0, wxCENTER)
         infoSizer.Add(self.info4, 0, wxEXPAND | wxALIGN_LEFT)
         infoSizer.Add(self.info5, 0, wxCENTER)
