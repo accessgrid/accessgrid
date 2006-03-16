@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.71 2006-01-23 17:44:53 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.72 2006-03-16 20:03:46 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.71 2006-01-23 17:44:53 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.72 2006-03-16 20:03:46 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -141,4 +141,21 @@ def main():
     sys.exit(0)
     
 if __name__ == "__main__":
-    main()
+    import socket
+    try:
+        main()
+    except socket.error,e:
+        if e.args[0] == 98:
+            msg = "Network error running server; an application is already running on one of the ports required"
+            log.info(msg)
+            print msg
+        else:
+            msg = "Network error running server; %s" % (e.args[1])
+            log.info(msg)
+            log.exception("Socket error")
+            print msg
+    except Exception, e:
+        msg = "Error occurred running server: %s" % (str(e))
+        print msg
+        log.exception(msg)
+        
