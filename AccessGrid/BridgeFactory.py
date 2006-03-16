@@ -24,6 +24,7 @@ class BridgeFactory:
             self.mttl = mttl
             self.uaddr = uaddr
             self.uport = uport
+            self.deathCallback = deathCallback
 
             # Instantiate the process manager
             self.processManager = ProcessManager(callback=self.OnBridgeDeath)
@@ -47,6 +48,7 @@ class BridgeFactory:
                     "-g", self.maddr,
                     "-m", '%d' % (self.mport,),
                     "-u", '%s' % (str(self.uport),),
+                    "-i", '600', # temporarily hard-coded inactivity timeout
                    ]
             log.info("Starting bridge: %s %s", self.qbexec, str(args))
             self.processManager.StartProcess(self.qbexec,args)
@@ -161,10 +163,16 @@ class BridgeFactory:
     def OnBridgeDeath(self,bridge,pid):
         key = "%s%d" % (bridge.maddr,bridge.mport)
         if self.bridges.has_key(key):
+            log.info("Removing bridge following death of bridge process (%s/%d)",
+                    bridge.maddr, bridge.mport)
             del self.bridges[key]
         else:
             log.warn("Attempt to handle death of bridge which is not known to BridgeFactory (%s/%d)" % (bridge.maddr,bridge.mport))
 
+    def GetBridges(self):
+        # return only the bridge objects themselves, not the
+        # (bridge,refcount) tuples
+        return map( lambda x: x[0], self.bridges.values())
 
                 
 if __name__ == '__main__':
