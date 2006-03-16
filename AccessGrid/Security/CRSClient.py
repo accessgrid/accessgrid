@@ -2,13 +2,13 @@
 # Name:        CRSClient.py
 # Purpose:     Certificate Request Service Client code.
 # Created:     2002/12/12
-# RCS-ID:      $Id: CRSClient.py,v 1.9 2006-03-15 21:35:22 turam Exp $
+# RCS-ID:      $Id: CRSClient.py,v 1.10 2006-03-16 23:50:19 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 
-__revision__ = "$Id: CRSClient.py,v 1.9 2006-03-15 21:35:22 turam Exp $"
+__revision__ = "$Id: CRSClient.py,v 1.10 2006-03-16 23:50:19 turam Exp $"
 
 import xmlrpclib
 from AccessGrid import Log
@@ -39,7 +39,7 @@ class CRSClient:
             else:
                 transport = None
                 
-            self.proxy = xmlrpclib.ServerProxy(url, transport = transport, verbose = 1)
+            self.proxy = xmlrpclib.ServerProxy(url, transport = transport, verbose = 0)
         else:
             raise CRSClientInvalidURL
 
