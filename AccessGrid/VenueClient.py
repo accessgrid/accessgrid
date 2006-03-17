@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.298 2006-03-15 17:07:47 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.299 2006-03-17 20:35:26 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.298 2006-03-15 17:07:47 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.299 2006-03-17 20:35:26 turam Exp $"
 
 import sys
 import os
@@ -203,6 +203,8 @@ class VenueClient:
         if progressCB: progressCB("Creating text client",60)
         self.jabber = JabberClient()
         self.jabber.SetPresenceCB(self.JabberPresenceCB)
+        self.maxJabberNameRetries = 3
+        self.jabberNameRetries = 0
         self.textLocation = None
 
         try:
@@ -906,6 +908,8 @@ class VenueClient:
         jabberHost = textLocation[0]
         jabberPort = textLocation[1]
         
+        self.jabberNameRetries = 0
+        
         if self.jabberHost != jabberHost:
             # Create jabber chat client if necessary
             self.jabber.Connect(jabberHost, jabberPort) 
@@ -1318,8 +1322,16 @@ class VenueClient:
             # Ignore this until we have authorization in place.
             raise NotAuthorizedError
         
-    def JabberPresenceCB(self,jabbername,presenceType):
-            
+    def JabberPresenceCB(self,jabbername,presenceType,presenceStanza):
+
+        if (presenceType == 'error' and presenceStanza.error_e.code_ == "409"
+            and self.jabberNameRetries <= self.maxJabberNameRetries):
+            self.jabberNameRetries += 1
+            self.jabber.name = self.jabber.name + " "
+            self.jabber.to = self.jabber.to + " "
+            self.jabber.SendPresence('available')
+            return
+        
         try:
             index = jabbername.index('/')
             username = jabbername[index+1:]
@@ -1500,6 +1512,7 @@ class VenueClient:
 
     def SaveProfile(self):
         self.preferences.SetProfile(self.profile)
+        self.jabberNameRetries = 0
         self.jabber.SendNameChange(self.profile.name)
         if self.beacon:
             self.beacon.SetName(str(self.profile.name))
