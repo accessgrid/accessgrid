@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.174 2006-03-17 20:37:08 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.175 2006-03-17 21:59:08 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.174 2006-03-17 20:37:08 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.175 2006-03-17 21:59:08 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2795,7 +2795,8 @@ class VenueListPanel(wxSashLayoutWindow):
         self.list.AddVenueDoor(connectionDescription)
 
     def AddConnections(self):
-        if self.GetDisplayMode() == Preferences.EXITS:
+        displayMode = self.GetDisplayMode()
+        if displayMode == Preferences.EXITS or displayMode == Preferences.ALL_VENUES:
             self.list.UpdateView()
         
     def RemoveVenueDoor(self,connectionDescription):
