@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.173 2006-03-01 15:56:38 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.174 2006-03-17 20:37:08 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.173 2006-03-01 15:56:38 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.174 2006-03-17 20:37:08 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3113,9 +3113,21 @@ class ContentListPanel(wxPanel):
           
         # Bail out if this is a Jabber profile already in the list      
         if profile.profileType == 'jabber':
+            name = profile.name.strip()
             currentNames = map(lambda p: self.tree.GetItemText(p),self.participantDict.values())
-            if profile.name in currentNames:
+            if name in currentNames:
                 return
+                
+        # If this is an AG user profile, and a same-named Jabber profile
+        # already exists in the list, replace it (by removing the Jabber entry
+        # and then proceeding with this Add)
+        if profile.profileType == 'user':
+            name = profile.name.strip()
+            foundItems = filter(lambda p: self.tree.GetItemText(p) == name,self.participantDict.values())
+            for item in foundItems:
+                item_profile = self.tree.GetItemData(item).GetData()
+                if item_profile.profileType == 'jabber':
+                    self.tree.Delete(item)
         
         # Determine which image to use for participant
         imageId = None
