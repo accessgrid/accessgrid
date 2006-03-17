@@ -144,9 +144,12 @@ class JabberClient:
         elif prs_type == 'unavailable':
             log.debug("%s is unavailable (%s / %s)" %
                       (who, prs_stanza.show_ , prs_stanza.status_ ))
+        else:
+            log.debug("%s sent presence (%s)" %
+                      (who, prs_stanza ))
                       
         if self.presenceCB:
-            self.presenceCB(who,prs_type)
+            self.presenceCB(who,prs_type,prs_stanza)
     
     def IqCB(self, iq_stanza):
         self.errorCode = ''
