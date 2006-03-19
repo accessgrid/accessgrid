@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.100 2006-01-27 23:01:48 lefvert Exp $
+# RCS-ID:      $Id: setup.py,v 1.101 2006-03-19 23:41:48 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -70,15 +70,15 @@ linux_scripts = [ r"bin/VenueServer.py",
                   r"bin/Bridge.py",
                   ]
 
-linux_data = [('etc/AccessGrid/Config',
+linux_data = [('etc/AccessGrid3/Config',
                [r"packaging/config/AGNodeService.cfg",
                 ]
                ),
-              ('etc/AccessGrid/Config/nodeConfig',
+              ('etc/AccessGrid3/Config/nodeConfig',
                [r"packaging/config/default",
                 ]
                ),
-              ('etc/AccessGrid/Config/CAcertificates',
+              ('etc/AccessGrid3/Config/CAcertificates',
                filter(os.path.isfile, glob.glob('packaging/config/CAcertificates/*')),
                ),
               ('share/AccessGrid',
