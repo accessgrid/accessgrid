@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.210 2006-01-25 08:08:03 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.211 2006-03-19 23:08:28 willing Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.210 2006-01-25 08:08:03 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.211 2006-03-19 23:08:28 willing Exp $"
 
 
 # Standard stuff
@@ -549,7 +549,7 @@ class VenueServer:
                         # Note:  This is temporary hard-coding; 
                         capabilityType = cp.get(s, 'capability')
                         capsList = []
-                        if capabilityType == 'audio':
+                        if capabilityType == 'audio' or capabilityType == 'producer audio':
                             strid = GUID()
                             capsList = [ Capability( Capability.CONSUMER,
                                           Capability.AUDIO,
@@ -575,7 +575,7 @@ class VenueServer:
                               Capability( Capability.CONSUMER,
                                           Capability.AUDIO,
                                           "GSM",8000, strid)]
-                        elif capabilityType == 'video':
+                        elif capabilityType == 'video' or capabilityType == 'producer video':
                             strid = GUID()
                             capsList = [ Capability( Capability.CONSUMER,
                                           Capability.VIDEO,
