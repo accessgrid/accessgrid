@@ -167,6 +167,19 @@ os.system("%s install --prefix=%s --no-compile" % (cmd, DestDir))
 
 os.chdir(s)
 
+# Fix bin/*.py names & pythonpath
+#
+# Maybe extra pythonpath (eppath) could be a command line option?
+eppath = os.path.join('/usr', "lib", "python%s"%(options.pyver,), "site-packages")
+
+cmd = '%s %s %s %s %s' % (sys.executable,
+		    os.path.join(BuildDir, 'packaging', 'linux', 'FixAG3Paths.py'),
+		    os.path.join(DestDir, 'bin'),
+		    eppath,
+		    True)
+print "cmd = ", cmd
+os.system(cmd)
+
 # save the old path
 if os.environ.has_key('PYTHONPATH'):
     oldpath = os.environ['PYTHONPATH']
@@ -235,10 +248,27 @@ if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'free
     cmd = "cp QuickBridge %s" % (os.path.join(DestDir,'bin','QuickBridge'))
     print "cmd = ", cmd
     os.system(cmd)
-
     
 # Change to packaging dir to build packages
 os.chdir(os.path.join(BuildDir,'packaging'))
+
+# Fix service *.py files before they're packaged
+#
+print "Fixing service *.py files before they're packaged"
+services2fix = [
+    os.path.join(BuildDir, 'services', 'node', 'AudioService'),
+    os.path.join(BuildDir, 'services', 'node', 'VideoService'),
+    os.path.join(BuildDir, 'services', 'node', 'VideoConsumerService'),
+    os.path.join(BuildDir, 'services', 'node', 'VideoProducerService')
+    ]
+for d in services2fix:
+    cmd = '%s %s %s %s %s' % (sys.executable,
+			os.path.join(BuildDir, 'packaging', 'linux', 'FixAG3Paths.py'),
+			d,
+			eppath,
+			False)
+    print "cmd = ", cmd
+    os.system(cmd)
 
 # Build service packages
 # makeServicePackages.py AGDIR\services\node DEST\services
@@ -250,6 +280,23 @@ cmd = '%s %s --sourcedir %s --agsourcedir %s --outputdir %s --servicefile %s' % 
                        'servicesToShip')
 print "cmd = ", cmd
 os.system(cmd)
+
+# Fix shared app *.py files before they're packaged
+#
+print "Fixing shared app *.py files before they're packaged"
+pkgs2fix = [
+    os.path.join(BuildDir, 'sharedapps', 'SharedBrowser'),
+    os.path.join(BuildDir, 'sharedapps', 'SharedPresentation'),
+    os.path.join(BuildDir, 'sharedapps', 'VenueVNC'),
+    ]
+for d in pkgs2fix:
+    cmd = '%s %s %s %s %s' % (sys.executable,
+			os.path.join(BuildDir, 'packaging', 'linux', 'FixAG3Paths.py'),
+			d,
+			eppath,
+			False)
+    print "cmd = ", cmd
+    os.system(cmd)
 
 # Build app packages
 # makeAppPackages.py AGDIR\sharedapps DEST\sharedapps
