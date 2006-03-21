@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.94 2006-02-24 23:15:43 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.95 2006-03-21 18:22:08 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.94 2006-02-24 23:15:43 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.95 2006-03-21 18:22:08 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -610,3 +610,18 @@ class BridgeDescription:
         self.portMax = portMax
         self.status = STATUS_ENABLED
         self.rank = 10 
+        
+        
+        
+class BeaconSource:
+    def __init__(self,cname=None,ssrc=None):
+        self.cname = cname
+        self.ssrc = ssrc
+        
+class BeaconSourceData:
+    def __init__(self,ssrc,total_lost,fract_lost,jitter):
+        self.ssrc = ssrc
+        self.total_lost = total_lost
+        self.fract_lost = fract_lost
+        self.jitter = jitter
+        
