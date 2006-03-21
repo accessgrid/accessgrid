@@ -161,6 +161,35 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="GetBeaconSourcesRequest">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetBeaconSourcesResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="sources" type="agtk:BeaconSource" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetBeaconSourceDataRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="ssrc" type="xsd:long" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetBeaconSourceDataResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="sources" type="agtk:BeaconSourceData" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
           <xsd:element name="IsValidRequest">
             <xsd:complexType>
             </xsd:complexType>
@@ -251,6 +280,18 @@
     <message name="GetVenueURLResponse">
 	<part name="parameters" element="agvc:GetVenueURLResponse"/>
     </message>
+    <message name="GetBeaconSourcesRequest">
+	<part name="parameters" element="agvc:GetBeaconSourcesRequest"/>
+    </message>
+    <message name="GetBeaconSourcesResponse">
+	<part name="parameters" element="agvc:GetBeaconSourcesResponse"/>
+    </message>
+    <message name="GetBeaconSourceDataRequest">
+	<part name="parameters" element="agvc:GetBeaconSourceDataRequest"/>
+    </message>
+    <message name="GetBeaconSourceDataResponse">
+	<part name="parameters" element="agvc:GetBeaconSourceDataResponse"/>
+    </message>
     <message name="IsValidRequest">
 	<part name="parameters" element="agvc:IsValidRequest"/>
     </message>
@@ -300,6 +341,14 @@
     <operation name="GetVenueData">
         <input message="agvc:GetVenueDataRequest"/>
         <output message="agvc:GetVenueDataResponse"/>
+    </operation>
+    <operation name="GetBeaconSources">
+        <input message="agvc:GetBeaconSourcesRequest"/>
+        <output message="agvc:GetBeaconSourcesResponse"/>
+    </operation>
+    <operation name="GetBeaconSourceData">
+        <input message="agvc:GetBeaconSourceDataRequest"/>
+        <output message="agvc:GetBeaconSourceDataResponse"/>
     </operation>
     <operation name="GetVenueURL">
         <input message="agvc:GetVenueURLRequest"/>

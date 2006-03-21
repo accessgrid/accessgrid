@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.299 2006-03-17 20:35:26 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.300 2006-03-21 18:24:15 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.299 2006-03-17 20:35:26 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.300 2006-03-21 18:24:15 turam Exp $"
 
 import sys
 import os
@@ -26,6 +26,7 @@ from AccessGrid import hosting
 from AccessGrid.Toolkit import Application, Service
 from AccessGrid.Preferences import Preferences
 from AccessGrid.Descriptions import Capability, STATUS_ENABLED
+from AccessGrid.Descriptions import BeaconSource, BeaconSourceData
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Venue import ServiceAlreadyPresent
@@ -1416,6 +1417,53 @@ class VenueClient:
     def GetDataStoreUploadUrl(self):
         return self.dataStoreUploadUrl
         
+    def GetBeaconSources(self):
+        """
+        Returns a list of beacon hosts.
+        Each list item is {hostname,IPaddress,SSRC}.
+        """
+        
+        if not self.beacon:
+            return []
+            
+        beaconHosts = []
+        sources = self.beacon.GetSources()
+        for s in sources:
+            cname = self.beacon.GetSdesData(s,1)
+            beaconHosts.append(BeaconSource(cname,s))
+            
+        return beaconHosts
+        
+    def GetBeaconSourceData(self,ssrc):
+        """
+        Returns a list of items, each of which is [ssrc,networkStatus]
+        
+        where networkStatus is also a list, with items:
+
+             [Central Loss, Local Loss, Fract Loss, Central RTT, 
+             Local RTT, Central Jitter, Local Jitter ]
+              
+        """
+        ret = []
+        
+        sources = self.beacon.GetSources()
+        
+        # Bail out of the given source is not among known sources
+        if ssrc not in sources:
+            return []
+        
+        # Build up return list
+        for s in sources:
+            rr = self.beacon.GetReport(ssrc,s)
+            if rr:
+                item = BeaconSourceData(s,rr.total_lost,rr.fract_lost,rr.jitter)
+            else:
+                item = BeaconSourceData(s,-1,-1,-1)
+            ret.append(item)
+            
+        return ret
+
+
     #
     # Personal Data
     #
