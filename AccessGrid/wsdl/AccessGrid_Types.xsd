@@ -341,5 +341,21 @@
       </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="BeaconSource">
+      <xs:sequence>
+        <xs:element name = "cname" type = "xs:string"/>
+        <xs:element name = "ssrc" type = "xs:long"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="BeaconSourceData">
+      <xs:sequence>
+        <xs:element name = "ssrc" type = "xs:long"/>
+        <xs:element name = "total_lost" type = "xs:int"/>
+        <xs:element name = "fract_lost" type = "xs:int"/>
+        <xs:element name = "jitter" type = "xs:int"/>
+      </xs:sequence>
+    </xs:complexType>
+
  </xs:schema>
 
