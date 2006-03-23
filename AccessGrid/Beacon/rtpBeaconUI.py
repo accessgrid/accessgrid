@@ -6,12 +6,12 @@
 # Author:      Thomas Uram, Susanne Lefvert
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeaconUI.py,v 1.11 2006-02-25 07:27:36 turam Exp $
+# RCS-ID:      $Id: rtpBeaconUI.py,v 1.12 2006-03-23 22:36:59 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
 
-__revision__ = "$Id: rtpBeaconUI.py,v 1.11 2006-02-25 07:27:36 turam Exp $"
+__revision__ = "$Id: rtpBeaconUI.py,v 1.12 2006-03-23 22:36:59 lefvert Exp $"
 
 from wxPython.wx import *
 from wxPython.grid import *
@@ -33,7 +33,8 @@ class BeaconFrame(wxFrame):
         self.SetIcon(icons.getAGIconIcon())
         self.running = 1
         self.updateThread = None
-        
+
+        self.panel = wxPanel(self, -1)
         
         # Build up the user interface
         self.SetLabel("Multicast Connectivity")
@@ -43,19 +44,23 @@ class BeaconFrame(wxFrame):
         
         # - pulldown for group to monitor (currently only beacon group, later audio/video)
         choices = ['Beacon']
-        self.groupBox = wxChoice(self,-1,choices = choices)
+        self.groupBox = wxChoice(self.panel,-1,choices = choices)
         self.groupBox.SetSelection(0)
         
         # - pulldown for data to display (currently only fract.loss, later delay/jitter/cum.loss)
         choices = ['Fractional Loss']
-        self.dataTypeBox = wxChoice(self,-1,choices = choices)
+        self.dataTypeBox = wxChoice(self.panel,-1,choices = choices)
         self.dataTypeBox.SetSelection(0)
+
+        self.label = wxStaticText(self.panel, -1, "")
         
-        self.topsizer.Add(self.groupBox,0)
-        self.topsizer.Add(self.dataTypeBox,0)
+        self.topsizer.Add(self.groupBox,0, wxALL, 2)
+        self.topsizer.Add(self.dataTypeBox,0, wxALL, 2)
+        self.topsizer.Add(self.label,1, wxEXPAND|wxALL, 2)
         
         # Create the beacon grid
-        self.grid = wxGrid(self,-1)
+        self.grid = wxGrid(self.panel,-1)
+        self.grid.SetToolTip(wxToolTip("test"))
         self.grid.EnableEditing(false)
         self.grid.SetColLabelSize(0)
         self.grid.SetRowLabelAlignment(wxLEFT,wxBOTTOM)
@@ -68,7 +73,8 @@ class BeaconFrame(wxFrame):
         
         # Register event handlers
         EVT_CLOSE(self, self.OnExit)
-       
+        EVT_GRID_CELL_LEFT_CLICK(self.grid, self.OnLeftClick) 
+        
         # Layout
         self.__Layout()
 
@@ -85,10 +91,10 @@ class BeaconFrame(wxFrame):
         '''
         sizer = wxBoxSizer(wxVERTICAL)
         sizer.Add(self.topsizer,0, wxEXPAND)
-        sizer.Add(self.grid, 1, wxEXPAND)
+        sizer.Add(self.grid, 1, wxEXPAND|wxALL, 2)
 
-        self.SetSizer(sizer)
-        self.SetAutoLayout(1)
+        self.panel.SetSizer(sizer)
+        self.panel.SetAutoLayout(1)
 
     def OnExit(self, event):
         '''
@@ -100,6 +106,13 @@ class BeaconFrame(wxFrame):
             self.updateThread.join()
         self.Destroy()
 
+    def OnLeftClick(self, event):
+        row = event.GetRow()
+        col = event.GetCol()
+        sender = self.sources[row-1]
+        receiver = self.sources[col-1]
+        self.label.SetLabel("From "+str(self.beacon.GetSdes(sender))+" to "+str(self.beacon.GetSdes(receiver)))
+        
     def ChangeValuesThread(self):
         '''
         Update UI based on beacon data.
@@ -110,24 +123,23 @@ class BeaconFrame(wxFrame):
             GRAY = wxColour(220,220,220)
        
             # Get snapshot of sources
-            sources = copy.copy(self.beacon.GetSources()) 
+            self.sources = copy.copy(self.beacon.GetSources()) 
             
             # Resize grid as needed
             numRows = self.grid.GetNumberRows()
-            if numRows > len(sources) and numRows > 1:
-                wxCallAfter(self.grid.DeleteCols,numRows - len(sources))
-                wxCallAfter(self.grid.DeleteRows,numRows - len(sources))
-            elif numRows < len(sources):
-                wxCallAfter(self.grid.AppendCols,len(sources) - numRows )
-                wxCallAfter(self.grid.AppendRows,len(sources) - numRows )
+            if numRows > len(self.sources) and numRows > 1:
+                wxCallAfter(self.grid.DeleteCols,numRows - len(self.sources))
+                wxCallAfter(self.grid.DeleteRows,numRows - len(self.sources))
+            elif numRows < len(self.sources):
+                wxCallAfter(self.grid.AppendCols,len(self.sources) - numRows )
+                wxCallAfter(self.grid.AppendRows,len(self.sources) - numRows )
             
-
             # Sort the list of sources
-            sources.sort()
+            self.sources.sort()
             
             # Update the beacon grid
             rowNr = 0
-            for s in sources:
+            for s in self.sources:
 
                 sdes = self.beacon.GetSdes(s)
                 if sdes:
@@ -136,14 +148,14 @@ class BeaconFrame(wxFrame):
                     wxCallAfter(self.grid.SetRowLabelValue,rowNr,str(s))
 
                 # set cell values
-                for o in sources:
+                for o in self.sources:
 
                     # set black colour for same sender
                     if s == o:
                         wxCallAfter(self.grid.SetCellBackgroundColour, rowNr, rowNr, wxBLACK) 
                         continue
 
-                    colNr = sources.index(o)
+                    colNr = self.sources.index(o)
 
                     # get receiver report and add value to grid
                     rr = self.beacon.GetReport(o,s)
