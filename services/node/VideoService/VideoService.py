@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.17 2006-02-28 15:26:39 eolson Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.18 2006-03-23 05:52:25 douglask Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -386,7 +386,7 @@ class VideoService( AGService ):
 
         self.log.info("VideoService.SetResource : %s" % resource.name )
         for r in self.resources:
-            if r[0] == resource.name:
+            if r[0].strip() == resource.name:
                 self.resource = r
 
         # Find the config element that refers to "port"
