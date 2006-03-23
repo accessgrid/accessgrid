@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.119 2006-02-08 23:06:32 lefvert Exp $
+; RCS-ID: $Id: agtk.iss,v 1.120 2006-03-23 17:32:34 lefvert Exp $
 ;
 
 ; Set externally
@@ -167,7 +167,7 @@ Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}; Comment: Uninstall t
 
 Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\VenueClient.py"" --personalNode=1"; WorkingDir: %APPDATA%\AccessGrid; Tasks: quicklaunchicon
 
-Name: {commondesktop}\Access Grid Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\VenueClient.py"" --personalNode=1"; IconFilename: {app}\install\agicons.exe; WorkingDir: %APPDATA%\AccessGrid; Tasks: desktopicon; Comment: Run the Venue Client!
+Name: {commondesktop}\Access Grid 3 Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\VenueClient.py"" --personalNode=1"; IconFilename: {app}\install\agicons.exe; WorkingDir: %APPDATA%\AccessGrid; Tasks: desktopicon; Comment: Run the Venue Client!
 Name: {group}\Manage Certificates; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\CertificateManager.py"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe
 
 [Registry]
