@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.176 2006-03-24 18:25:17 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.177 2006-03-24 19:19:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.176 2006-03-24 18:25:17 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.177 2006-03-24 19:19:25 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -5123,7 +5123,12 @@ class VenuePropertiesDialog(wxDialog):
 
 ############################################################################
 
-
+videoServiceDialogMsg="""
+No video services found; if you want to add one,
+select a host and, thereafter, a device.  To have
+the service load automatically the next time you
+start the Venue Client, you must store the node
+configuration using Tools->Configure node services."""
 class AddVideoServiceDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title)
@@ -5131,7 +5136,7 @@ class AddVideoServiceDialog(wxDialog):
         
         self.hostname = Config.SystemConfig.instance().GetHostname()
                 
-        self.guideText = wxStaticText(self, -1, "No video services found; if you want to add one, \nselect a host and, thereafter, a device.", 
+        self.guideText = wxStaticText(self, -1, videoServiceDialogMsg, 
                                       style=wxALIGN_LEFT)
         self.hostText = wxStaticText(self, -1, "Host:", style=wxALIGN_LEFT)
         self.hostCtrl = wxComboBox(self, -1, "",size=(300,-1))
@@ -5141,6 +5146,77 @@ class AddVideoServiceDialog(wxDialog):
         self.exists = threading.Event()
         self.exists.set()
         
+        self.deviceText = wxStaticText(self, -1, "Device:", style=wxALIGN_LEFT)
+        self.deviceCtrl = wxComboBox(self, -1, "",size=(300,-1))
+        
+        self.okButton = wxButton(self, wxID_OK, "OK")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+
+        EVT_COMBOBOX(self,self.hostCtrl.GetId(),self.OnHostSelect)
+        EVT_TEXT_ENTER(self,self.hostCtrl.GetId(),self.OnHostSelect)
+
+        self.__Layout()
+        
+    def OnHostSelect(self,event=None):
+        url = self.hostCtrl.GetValue()
+        
+        # clear the device list
+        for i in range(self.deviceCtrl.GetCount()):
+            self.deviceCtrl.Delete(0)
+        
+        # populate device list with resources
+        import socket
+        print 'socket timeout : ', socket.getdefaulttimeout()
+        resources = AGServiceManagerIW(url).GetResources()
+        for r in resources:
+            item = self.deviceCtrl.Append(r.name)     
+            self.deviceCtrl.SetClientData(item,r)
+    
+    def BrowseCallback(self,op,serviceName,url=None):
+        if self.exists.isSet() and op == ServiceDiscovery.Browser.ADD:
+            wxCallAfter(self.AddItem,serviceName,url)
+            
+    def AddItem(self,name,url):
+        if self.hostCtrl.FindString(url) == wxNOT_FOUND:
+            self.hostCtrl.Append(url)
+            
+            val = self.hostCtrl.GetValue()
+            # if the combobox doesn't have a value set, use this one
+            if not val:
+                self.hostCtrl.SetValue(url)
+            # if the found service is local, use it instead of existing one
+            elif (val.find(self.hostname) == -1 and url.find(self.hostname) >= 0):
+                self.hostCtrl.SetValue(url)
+            self.OnHostSelect()
+        
+    def __Layout(self):
+        sizer1 = wxBoxSizer(wxVERTICAL)
+        sizer1.Add(self.guideText, 0, wxRIGHT|wxLEFT|wxBOTTOM|wxALIGN_LEFT, 10)
+        gridSizer = wxFlexGridSizer(9, 2, 5, 5)
+        gridSizer.Add(self.hostText, 0, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.hostCtrl, 1, wxEXPAND, 0)
+        gridSizer.Add(self.deviceText, 0, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.deviceCtrl, 1, wxEXPAND, 0)
+        sizer1.Add(gridSizer, 0, wxALL|wxEXPAND, 5)
+
+        sizer3 = wxBoxSizer(wxHORIZONTAL)
+        sizer3.Add(self.okButton, 0, wxALL, 10)
+        sizer3.Add(self.cancelButton, 0, wxALL, 10)
+
+        sizer1.Add(sizer3, 0, wxALIGN_CENTER)
+
+        self.SetSizer(sizer1)
+        sizer1.Fit(self)
+        self.SetAutoLayout(1)
+        
+    def GetValue(self):
+        """
+        Get selected values from dialog
+        
+        Returns:  tuple:  (host url, device resource)
+        """
+        deviceIndex = self.deviceCtrl.GetSelection()
+        return (self.hostCtrl.GetValue(),self.deviceCtrl.GetClientData(deviceIndex))
 
  
 ################################################################################
