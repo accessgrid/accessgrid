@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.300 2006-03-21 18:24:15 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.301 2006-03-24 16:55:29 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.300 2006-03-21 18:24:15 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.301 2006-03-24 16:55:29 turam Exp $"
 
 import sys
 import os
@@ -1526,25 +1526,40 @@ class VenueClient:
 
     def SetVideoDisplayEnabled(self,enableFlag):
         try:
+            found = 0
+            
             serviceList = self.nodeService.GetServices()
             for service in serviceList:
                 for cap in service.capabilities:
                     if cap.type == 'video' and cap.role == 'consumer':
                         AGServiceIW(service.uri).SetEnabled(enableFlag)
-                        break
+                        found = 1
+
+            if not found:
+                raise NoServices
+            
+        except NoServices:
+            raise
         except:
             log.info("Error enabling video")
             
         
     def SetVideoEnabled(self,enableFlag):
         try:
+            found = 0
+            
             serviceList = self.nodeService.GetServices()
             for service in serviceList:
                 for cap in service.capabilities:
                     if cap.type == 'video' and cap.role == 'producer':
                         AGServiceIW(service.uri).SetEnabled(enableFlag)
-                        break
-            
+                        found = 1
+                    
+            if not found:
+                raise NoServices
+
+        except NoServices:
+            raise
         except:
             log.exception("Error enabling video")
             
