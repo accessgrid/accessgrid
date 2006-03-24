@@ -2,7 +2,7 @@
 # Name:        RssReader.py
 # Purpose:     An RSS reader for meeting feeds
 # Created:     2005/10/19
-# RCS-ID:      $Id: RssReader.py,v 1.6 2006-01-23 17:25:07 turam Exp $
+# RCS-ID:      $Id: RssReader.py,v 1.7 2006-03-24 19:16:24 turam Exp $
 # Copyright:   (c) 2005
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,12 +15,13 @@ with the option of adding observers to get notification of changes
 import threading
 import calendar
 
+import socket
+Timeout = socket.getdefaulttimeout()
 import feedparser
 
 # work around apparent bug in socket.setdefaulttimeout,
 # which is used in feedparser
-import socket
-socket.setdefaulttimeout(None)
+socket.setdefaulttimeout(Timeout)
 
 def strtimeToSecs(strtime):
     """
