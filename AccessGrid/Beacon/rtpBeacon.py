@@ -7,7 +7,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeacon.py,v 1.9 2006-02-24 23:36:27 turam Exp $
+# RCS-ID:      $Id: rtpBeacon.py,v 1.10 2006-03-24 19:21:13 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ RTP (a plain text string as it were). Then the normal RTP statistics
 communicated via RTCP are used to track the performance of the group.
 """
 
-__revision__ = "$Id: rtpBeacon.py,v 1.9 2006-02-24 23:36:27 turam Exp $"
+__revision__ = "$Id: rtpBeacon.py,v 1.10 2006-03-24 19:21:13 turam Exp $"
 
 import os, sys, signal, optparse, time, random, threading, copy
 import logging, logging.handlers
@@ -75,11 +75,15 @@ class Beacon:
         return self.__sources
 
     def GetSdes(self, ssrc):
-        ''' Get sdes information for given source '''
+        ''' Get sdes name for given source '''
         if self.__sdes.has_key(ssrc):
             return self.__sdes[ssrc]
         else:
             return None
+            
+    def GetSdesData(self,ssrc,flag):
+        ''' Get specified sdes item for given source '''
+        return self.__rtpbeacon.GetSdes(ssrc,flag)
 
     def GetMySSRC(self):
         ''' Get my ssrc number '''
