@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.175 2006-03-17 21:59:08 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.176 2006-03-24 18:25:17 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.175 2006-03-17 21:59:08 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.176 2006-03-24 18:25:17 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -55,7 +55,9 @@ from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
 from AccessGrid.Beacon.rtpBeaconUI import BeaconFrame
 from AccessGrid.RssReader import RssReader,strtimeToSecs  
-from AccessGrid.interfaces.Venue_client import VenueIW      
+from AccessGrid.interfaces.Venue_client import VenueIW   
+from AccessGrid import ServiceDiscovery   
+from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
 
 try:
     import win32api
@@ -190,8 +192,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.isDisplayEnabled = int(prefs.GetPreference(Preferences.ENABLE_DISPLAY))
         self.isVideoEnabled = int(prefs.GetPreference(Preferences.ENABLE_VIDEO))
         self.controller.EnableAudioCB(self.isAudioEnabled)
-        self.controller.EnableDisplayCB(self.isDisplayEnabled)
-        self.controller.EnableVideoCB(self.isVideoEnabled)
+        try:
+            self.controller.EnableDisplayCB(self.isDisplayEnabled)
+        except:
+            pass
+        try:
+            self.controller.EnableVideoCB(self.isVideoEnabled)
+        except:
+            pass
        
         wxFrame.__init__(self, NULL, -1, "")
         self.__BuildUI(app)
@@ -1146,7 +1154,16 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         try:
             self.controller.EnableVideoCB(enabledFlag)
         except NoServices:
-            pass#print 'no video service found, would you like to add one?'
+            if enabledFlag:
+                d = AddVideoServiceDialog(self,-1,'Add Video Service')
+                ret = d.ShowModal()
+                if ret == wxID_OK:
+                    smUrl,resource = d.GetValue()
+                    p = self.venueClient.GetPreferences()
+                    serviceDesc = AGServiceManagerIW(smUrl).AddServiceByName('VideoProducerService.zip',
+                                                    resource,None,p.GetProfile())
+                    self.venueClient.nodeService.SetServiceEnabled(serviceDesc.uri,1)
+                    
         except:
             self.Error("Error enabling/disabling video capture", "Error enabling/disabling video capture")
             
@@ -1806,7 +1823,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 enabled = self.isDisplayEnabled
             # only set enabled state for well-known services
             if enabled >= 0:
-                print 'setting enabled = ', enabled, serviceDesc.name
                 self.venueClient.nodeService.SetServiceEnabled(serviceDesc.uri,enabled)
         else:
             log.info('OnNodeActivity: got unexpected action: %s', action)
@@ -5105,6 +5121,25 @@ class VenuePropertiesDialog(wxDialog):
         self.SetAutoLayout(1)
         
 
+############################################################################
+
+
+class AddVideoServiceDialog(wxDialog):
+    def __init__(self, parent, id, title):
+        wxDialog.__init__(self, parent, id, title)
+        self.Centre()
+        
+        self.hostname = Config.SystemConfig.instance().GetHostname()
+                
+        self.guideText = wxStaticText(self, -1, "No video services found; if you want to add one, \nselect a host and, thereafter, a device.", 
+                                      style=wxALIGN_LEFT)
+        self.hostText = wxStaticText(self, -1, "Host:", style=wxALIGN_LEFT)
+        self.hostCtrl = wxComboBox(self, -1, "",size=(300,-1))
+        
+        self.browser = ServiceDiscovery.Browser('_servicemanager._tcp', self.BrowseCallback)
+        self.browser.Start()
+        self.exists = threading.Event()
+        self.exists.set()
         
 
  
