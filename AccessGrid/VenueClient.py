@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.301 2006-03-24 16:55:29 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.302 2006-03-25 05:49:05 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.301 2006-03-24 16:55:29 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.302 2006-03-25 05:49:05 turam Exp $"
 
 import sys
 import os
@@ -44,6 +44,7 @@ from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent
 from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache, InvalidProfileException
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
 from AccessGrid.Descriptions import DataDescription, ConnectionDescription
+from AccessGrid.Descriptions import NodeConfigDescription
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.interfaces.AuthorizationManager_client import AuthorizationManagerIW
 from AccessGrid.AGNodeService import AGNodeService
@@ -101,7 +102,7 @@ class VenueClient:
     ServiceType = '_venueclient._tcp'
     
     def __init__(self, profile=None, pnode=None, port=0, progressCB=None,
-                 app=None):
+                 app=None,nodeConfigName=None):
         """
         This client class is used on shared and personal nodes.
         """
@@ -153,18 +154,24 @@ class VenueClient:
             self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
 
         try:
-            prefs = self.app.GetPreferences()
-            defaultConfig = prefs.GetDefaultNodeConfig()
+            if nodeConfigName:
+                # Load specified node configuration
+                nodeConfig = NodeConfigDescription(nodeConfigName,NodeConfigDescription.USER)
                 
-            if defaultConfig:
-                if progressCB: progressCB("Loading media services",40)
-                log.debug('Loading default node configuration: %s', defaultConfig)
-                self.nodeService.LoadConfiguration(defaultConfig)
             else:
-                log.debug('Null default node configuration, not loading')
+                # Load default node configuration
+                prefs = self.app.GetPreferences()
+                nodeConfig = prefs.GetDefaultNodeConfig()
+
+            if nodeConfig:
+                if progressCB: progressCB("Loading node configuration '%s'" % nodeConfig.name,40)
+                log.debug('Loading node configuration: %s', nodeConfig)
+                self.nodeService.LoadConfiguration(nodeConfig)
+            else:
+                log.debug('Null node configuration, not loading')
 
         except:
-            log.exception("Error loading default configuration")
+            log.exception("Error loading node configuration: %s")
 
         self.isInVenue = 0
         self.isIdentitySet = 0
