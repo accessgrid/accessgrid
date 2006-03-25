@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.75 2006-03-25 05:17:40 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.76 2006-03-25 05:22:18 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.75 2006-03-25 05:17:40 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.76 2006-03-25 05:22:18 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -190,7 +190,7 @@ class ProgressDialog(wxFrame):
         self.CenterOnScreen()
         self.SetBackgroundColour(wxWHITE)
         
-        bitmapCtrl = wxStaticBitmap(self, -1, bmp, wxPoint(0, 0), wxSize(width, height))
+        self.bitmapCtrl = wxStaticBitmap(self, -1, bmp, wxPoint(0, 0), wxSize(width, height))
         versionTextCtrl = wxStaticText(self,-1,versionText,
                                     size=wxSize(width,-1),
                                     style = wxALIGN_CENTRE)
@@ -210,7 +210,7 @@ class ProgressDialog(wxFrame):
         #self.gauge.SetBackgroundColour(wxColour(0xff, 0xff, 0xff))
         
         sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add(bitmapCtrl,0)
+        sizer.Add(self.bitmapCtrl,0)
         sizer.Add(versionTextCtrl,0)
         sizer.Add(lineCtrl,0)
         sizer.Add(self.progressText,0,wxTOP,20)
@@ -222,7 +222,7 @@ class ProgressDialog(wxFrame):
     def UpdateGauge(self, text, progress):
         self.gauge.SetValue(progress)
         self.progressText.SetLabel(text)
-        self.bitmap.Update()
+        self.bitmapCtrl.Update()
         wxYield()
 
     def Destroy(self):
