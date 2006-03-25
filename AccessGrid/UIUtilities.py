@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.74 2006-03-24 23:03:26 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.75 2006-03-25 05:17:40 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.74 2006-03-24 23:03:26 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.75 2006-03-25 05:17:40 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -176,7 +176,7 @@ class ErrorDialogWithTraceback:
        errorDialog.Destroy()
         
 class ProgressDialog(wxFrame):
-    def __init__(self, parent, bmp, max):
+    def __init__(self, parent, bmp, max, versionText=""):
         height = bmp.GetHeight()
         width = bmp.GetWidth()
         self.max = max
@@ -185,27 +185,39 @@ class ProgressDialog(wxFrame):
         gaugeBorder = 1
         gaugeWidth = min(300, width - 100)
         padding = 5
-        frameSize = wxSize(width, height + msgHeight + gaugeHeight + 2*padding)
-        wxFrame.__init__(self, size=frameSize, parent=parent, style=wxSIMPLE_BORDER)
+
+        wxFrame.__init__(self, parent=parent, style=wxSIMPLE_BORDER)
         self.CenterOnScreen()
         self.SetBackgroundColour(wxWHITE)
         
-        self.bitmap = wxStaticBitmap(self, -1, bmp, wxPoint(0, 0), wxSize(width, height))
-        self.bitmap.Refresh()
-        self.progressText = wxStaticText(self, -1, "", wxPoint(0, height + padding), 
-                                wxSize(width, msgHeight),
-                                wxALIGN_CENTRE | wxST_NO_AUTORESIZE)
+        bitmapCtrl = wxStaticBitmap(self, -1, bmp, wxPoint(0, 0), wxSize(width, height))
+        versionTextCtrl = wxStaticText(self,-1,versionText,
+                                    size=wxSize(width,-1),
+                                    style = wxALIGN_CENTRE)
+        lineCtrl = wxStaticLine(self,-1,size=wxSize(width,-1))
+        self.progressText = wxStaticText(self, -1, "",  
+                                size=wxSize(width, msgHeight),
+                                style=wxALIGN_CENTRE | wxST_NO_AUTORESIZE)
         self.progressText.SetBackgroundColour(wxWHITE)
-        gaugeBox = wxWindow(self, -1, wxPoint((width - gaugeWidth)/2, height + msgHeight + padding), 
-                        wxSize(gaugeWidth, gaugeHeight))
-        gaugeBox.SetBackgroundColour(wxBLACK)
+        gaugeBox = wxWindow(self, -1, 
+                        size=wxSize(gaugeWidth, gaugeHeight))
+        gaugeBox.SetBackgroundColour(wxWHITE)
         self.gauge = wxGauge(gaugeBox, -1,
                               range = max,
-                              style = wxGA_HORIZONTAL,#|wxGA_SMOOTH,
-                              pos   = (gaugeBorder, gaugeBorder),
+                              style = wxGA_HORIZONTAL|wxGA_SMOOTH,
                               size  = (gaugeWidth - 2 * gaugeBorder,
                                        gaugeHeight - 2 * gaugeBorder))
-        self.gauge.SetBackgroundColour(wxColour(0xff, 0xff, 0xff))
+        #self.gauge.SetBackgroundColour(wxColour(0xff, 0xff, 0xff))
+        
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer.Add(bitmapCtrl,0)
+        sizer.Add(versionTextCtrl,0)
+        sizer.Add(lineCtrl,0)
+        sizer.Add(self.progressText,0,wxTOP,20)
+        sizer.Add(gaugeBox,0,wxALIGN_CENTRE)
+        
+        self.SetSizer(sizer)
+        self.Fit()
         
     def UpdateGauge(self, text, progress):
         self.gauge.SetValue(progress)
