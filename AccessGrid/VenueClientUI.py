@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.178 2006-03-25 06:18:12 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.179 2006-03-25 06:23:32 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.178 2006-03-25 06:18:12 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.179 2006-03-25 06:23:32 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -641,14 +641,15 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         # set status text otherwise
         button = event.GetEventObject()
-        statusText = "hmm"
+        statusText = None
         if button == self.audioButton:
             statusText = "Enable/disable audio"
         elif button == self.videoButton:
             statusText = "Enable/disable video"
         elif button == self.displayButton:
             statusText = "Enable/disable display"
-        self.SetStatusText(statusText)
+        if statusText:
+            self.SetStatusText(statusText)
         
     def OnMulticast(self, event):
 
