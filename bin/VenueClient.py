@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.276 2006-03-25 05:20:06 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.277 2006-03-25 05:49:33 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.276 2006-03-25 05:20:06 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.277 2006-03-25 05:49:33 turam Exp $"
 
 # Standard Imports
 import os
@@ -99,6 +99,7 @@ def main():
     pnode = app.GetOption("pnode")
     url = app.GetOption("url")
     port = app.GetOption("port")
+    nodeConfig = app.GetOption("configfilename")
 
     try:
         import wxPython
@@ -110,7 +111,8 @@ def main():
     # Create venue client components
     progressDialog.UpdateGauge('Creating VenueClient components',20)
     vc = VenueClient(pnode=pnode, port=port,
-                     app=app, progressCB=progressDialog.UpdateGauge)
+                     app=app, progressCB=progressDialog.UpdateGauge,
+                     nodeConfigName=nodeConfig)
     progressDialog.UpdateGauge('Creating venue client internals',70)
     vcc = VenueClientController()
     vcc.SetVenueClient(vc)
