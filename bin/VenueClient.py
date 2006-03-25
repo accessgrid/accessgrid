@@ -3,17 +3,18 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.275 2006-03-01 15:45:09 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.276 2006-03-25 05:20:06 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.275 2006-03-01 15:45:09 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.276 2006-03-25 05:20:06 turam Exp $"
 
 # Standard Imports
 import os
 import sys
+import signal
 
 from optparse import Option
 
@@ -32,19 +33,34 @@ from AccessGrid.VenueClient import VenueClient
 from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog
 from AccessGrid import icons
 from AccessGrid.Platform import IsOSX,IsWindows
+from AccessGrid.Version import GetVersion
 from twisted.internet import reactor
 
 from M2Crypto import threading as m2threading
 
+
+# Signal Handler to block Ctrl-C in shell
+# Ideally, we could shut down cleanly here, but the
+# signal handler doesn't get called until after
+# the next interaction with the UI, which is 
+# very non-intuitive
+def SignalHandler(signum, frame):
+    pass
+
 def main():
+
     log = None
+
+    signal.signal(signal.SIGINT, SignalHandler)
+    signal.signal(signal.SIGTERM, SignalHandler)
 
     m2threading.init()
 
     # Create the wxpython app
-    wxapp = wxPySimpleApp()
+    wxapp = wxPySimpleApp(clearSigInt=0)
     
-    progressDialog = ProgressDialog(None,icons.getAboutBitmap(), 100)
+    versionText = "Version %s" % str(GetVersion())
+    progressDialog = ProgressDialog(None,icons.getSplashBitmap(), 100, versionText)
     progressDialog.UpdateGauge('Starting Venue Client',10)
     progressDialog.Show(1)
 
@@ -114,6 +130,7 @@ def main():
     progressDialog.Destroy()
     # Spin
     wxapp.SetTopWindow(vcui)
+
     wxapp.MainLoop()
     m2threading.cleanup()
 
