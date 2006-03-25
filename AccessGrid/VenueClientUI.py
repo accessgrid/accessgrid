@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.177 2006-03-24 19:19:25 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.178 2006-03-25 06:18:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.177 2006-03-24 19:19:25 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.178 2006-03-25 06:18:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -622,6 +622,33 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         EVT_BUTTON(self,self.displayToolId,self.EnableDisplayCB)
         EVT_BUTTON(self,self.videoToolId,self.EnableVideoCB)
         EVT_TOOL(self,self.configNodeToolId,self.ManageNodeCB)
+        
+        EVT_ENTER_WINDOW(self.audioButton,self.OnButtonFocusChange)
+        EVT_LEAVE_WINDOW(self.audioButton,self.OnButtonFocusChange)
+        EVT_ENTER_WINDOW(self.videoButton,self.OnButtonFocusChange)
+        EVT_LEAVE_WINDOW(self.videoButton,self.OnButtonFocusChange)
+        EVT_ENTER_WINDOW(self.displayButton,self.OnButtonFocusChange)
+        EVT_LEAVE_WINDOW(self.displayButton,self.OnButtonFocusChange)
+        
+    def OnButtonFocusChange(self,event):
+        # make sure button gets highlighted when it has focus
+        event.Skip()
+        
+        # clear status text when leaving button
+        if event.Leaving():
+            self.SetStatusText('')
+            return
+        
+        # set status text otherwise
+        button = event.GetEventObject()
+        statusText = "hmm"
+        if button == self.audioButton:
+            statusText = "Enable/disable audio"
+        elif button == self.videoButton:
+            statusText = "Enable/disable video"
+        elif button == self.displayButton:
+            statusText = "Enable/disable display"
+        self.SetStatusText(statusText)
         
     def OnMulticast(self, event):
 
