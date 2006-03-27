@@ -81,7 +81,10 @@ class JabberClient:
 
         self._stream.write(req)
         
-    def SendNameChange(self,name):
+    def SendNameChange(self, name):
+        if len(self.currentRoomId) < 1:
+            log.debug("Can't SendNameChange - not in venue")
+            return
         presence = stanza.Presence()
         presence.from_ = self.currentRoomId + '/' + self.name
         presence.to_ = self.currentRoomId + '/' + name
