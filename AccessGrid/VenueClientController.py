@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.60 2006-03-02 20:57:59 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.61 2006-03-27 23:02:03 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.60 2006-03-02 20:57:59 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.61 2006-03-27 23:02:03 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -653,15 +653,6 @@ class VenueClientController:
             self.__venueClient.nodeService = self.__venueClient.builtInNodeService
         
        
-        if int(preferences.GetPreference(Preferences.MULTICAST)):
-            self.__venueClient.SetTransport("multicast")
-        else:
-            self.__venueClient.SetTransport("unicast")
-            
-        # Enable video and audio
-        self.EnableVideoCB(int(preferences.GetPreference(Preferences.ENABLE_VIDEO)))
-        self.EnableAudioCB(int(preferences.GetPreference(Preferences.ENABLE_AUDIO)))
-
         # Update navigation panel
         self.gui.UpdateNavigation()
 
