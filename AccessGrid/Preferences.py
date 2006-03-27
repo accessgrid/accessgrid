@@ -17,6 +17,7 @@ class Preferences:
     '''
     Class including accessors to user preferences.
     '''
+    SHUTDOWN_MEDIA = "shutdownMedia"
     RECONNECT = "reconnect"
     MAX_RECONNECT = "maxReconnect"
     RECONNECT_TIMEOUT = "reconnectTimeout"
@@ -51,7 +52,8 @@ class Preferences:
         self.preferences = {}
         
         # Default preferences
-        self.default = { self.RECONNECT : 1,
+        self.default = { self.SHUTDOWN_MEDIA : 0,
+                         self.RECONNECT : 1,
                          self.MAX_RECONNECT : 3,
                          self.RECONNECT_TIMEOUT : 10,
                          self.STARTUP_MEDIA: 1,
