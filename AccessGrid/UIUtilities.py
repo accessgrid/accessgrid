@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.77 2006-03-28 17:55:54 eolson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.78 2006-03-28 19:56:25 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.77 2006-03-28 17:55:54 eolson Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.78 2006-03-28 19:56:25 lefvert Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -191,10 +191,10 @@ class ProgressDialog(wxFrame):
         self.SetBackgroundColour(wxWHITE)
         
         self.bitmapCtrl = wxStaticBitmap(self, -1, bmp, wxPoint(0, 0), wxSize(width, height))
-        versionTextCtrl = wxStaticText(self,-1,versionText,
+        self.versionTextCtrl = wxStaticText(self,-1,versionText,
                                     size=wxSize(width,-1),
                                     style = wxALIGN_CENTRE)
-        lineCtrl = wxStaticLine(self,-1,size=wxSize(width,-1))
+        self.lineCtrl = wxStaticLine(self,-1,size=wxSize(width,-1))
         self.progressText = wxStaticText(self, -1, "",  
                                 size=wxSize(width, msgHeight),
                                 style=wxALIGN_CENTRE | wxST_NO_AUTORESIZE)
@@ -211,9 +211,9 @@ class ProgressDialog(wxFrame):
         
         sizer = wxBoxSizer(wxVERTICAL)
         sizer.Add(self.bitmapCtrl,0)
-        sizer.Add(versionTextCtrl,0)
-        sizer.Add(lineCtrl,0)
-        sizer.Add(self.progressText,0,wxTOP,20)
+        sizer.Add(self.versionTextCtrl,0,wxBOTTOM,10)
+        sizer.Add(self.lineCtrl,0)
+        sizer.Add(self.progressText,0,wxTOP,10)
         sizer.Add(gaugeBox,0,wxALIGN_CENTRE)
         
         self.SetSizer(sizer)
@@ -222,6 +222,8 @@ class ProgressDialog(wxFrame):
     def UpdateGauge(self, text, progress):
         self.gauge.SetValue(progress)
         self.progressText.SetLabel(text)
+        self.lineCtrl.Update()
+        self.versionTextCtrl.Update()
         self.bitmapCtrl.Update()
         wxYield()
 
