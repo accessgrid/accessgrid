@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.49 2006-02-09 19:14:36 lefvert Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.50 2006-03-28 22:35:11 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.49 2006-02-09 19:14:36 lefvert Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.50 2006-03-28 22:35:11 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -43,19 +43,6 @@ class ClientProfile:
 
     configSection = 'ClientProfile'
     
-    validOptions = [
-        'type',
-        'name',
-        'email',
-        'phone',
-        'icon',
-        'id',
-        'location',
-        'venueclienturl',
-        'techsupportinfo',
-        'home',
-        'distinguishedname']
-        
     defaultProfile = {
         'ClientProfile.type' : "user",
         'ClientProfile.name' : '<Insert Name Here>',
@@ -72,6 +59,8 @@ class ClientProfile:
         'ClientProfile.video' : 0,
         'ClientProfile.audio' : 0,
         'ClientProfile.display' : 0,
+        'ClientProfile.lat' : 0,
+        'ClientProfile.long' : 0,
         }
 
     USER = "user"
@@ -99,6 +88,7 @@ class ClientProfile:
             self.gmtoffset = time.timezone
         self.beacon = 0
         self.video = self.audio = self.display = 0
+        self.lat = self.long = 0
 
         if profileFile != None and os.path.exists(profileFile):
             self.Load(self.profileFile)
@@ -150,6 +140,11 @@ class ClientProfile:
         print "Venue Client URL: " + self.venueClientURL
         print "Public ID: " + str(self.publicId)
         print "Home Venue: " + self.homeVenue
+        print "Beacon: " + str(self.beacon)
+        print "Audio: " + str(self.audio)
+        print "Display: " + str(self.display)
+        print "Video: " + str(self.video)
+        print "Location: " + str(self.lat) + " " + str(self.long)
 
     def __str__(self):
         returnVal =  " Profile Type: " + self.profileType \
@@ -289,6 +284,12 @@ class ClientProfile:
         
     def GetDisplayState(self):
         return self.display
+    
+    def GetLat(self):
+        return self.lat
+        
+    def GetLong(self):
+        return self.long
 
     def InformationMatches(self, obj):
         """
