@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.76 2006-03-25 05:22:18 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.77 2006-03-28 17:55:54 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.76 2006-03-25 05:22:18 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.77 2006-03-28 17:55:54 eolson Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -30,7 +30,7 @@ from AccessGrid import icons
 from AccessGrid.Utilities import SubmitBug, VENUE_CLIENT_LOG
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.Version import GetVersion, GetStatus
+from AccessGrid.Version import GetVersion, GetStatus, GetBuildNumber
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig
 from AccessGrid.Platform import Config
 
@@ -235,9 +235,9 @@ class ProgressDialog(wxFrame):
 class AboutDialog(wxDialog):
             
     def __init__(self, parent):
-        version = str(GetVersion()) + " "+GetStatus()     
+        version = str(GetVersion()) + " "+GetStatus() + "  (build %s)" % GetBuildNumber()
         wxDialog.__init__(self, parent, -1, version)
-        bmp = icons.getAboutBitmap()
+        bmp = icons.getSplashBitmap()
         info = "Version: %s \nPlease visit www.accessgrid.org for more information" %version
         self.ReadLicenseFile()
 
@@ -291,33 +291,6 @@ class AboutDialog(wxDialog):
 
         sizer.Fit(self)
         
-        
-class AppSplash(wxSplashScreen):
-    def __init__(self):
-        bmp = icons.getAboutBitmap()
-        
-        wxSplashScreen.__init__(self, bmp,
-                                wxSPLASH_CENTRE_ON_SCREEN|
-                                wxSPLASH_NO_TIMEOUT , 4000, None,
-                                -1, style=wxSIMPLE_BORDER|
-                                wxFRAME_NO_TASKBAR
-                                |wxSTAY_ON_TOP)
-
-        self.info = wxStaticText(self, -1, "Loading Venue Client.")
-        self.__layout()
-        EVT_CLOSE(self, self.OnClose)
-
-    def __layout(self):
-        box = wxBoxSizer(wxHORIZONTAL)
-        box.Add(self.info)
-        
-        self.SetAutoLayout(1)
-        self.SetSizer(box)
-        self.Layout()
-                
-    def OnClose(self, evt):
-        evt.Skip()
-    
 def ProgressDialogTest():
     maxSize = 100
      
