@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.179 2006-03-25 06:23:32 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.180 2006-03-28 21:52:53 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.179 2006-03-25 06:23:32 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.180 2006-03-28 21:52:53 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3073,9 +3073,6 @@ class ContentListPanel(wxPanel):
         self.participantId = imageList.Add(bm)
                
         bm = icons.getDefaultDataBitmap()
-        i = bm.ConvertToImage()
-        i.Rescale(imageSize,imageSize)
-        bm = i.ConvertToBitmap()
         self.defaultDataId = imageList.Add(bm)
         
         bm = icons.getDefaultServiceBitmap()
