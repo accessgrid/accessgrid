@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.277 2006-03-25 05:49:33 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.278 2006-03-28 17:59:10 eolson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.277 2006-03-25 05:49:33 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.278 2006-03-28 17:59:10 eolson Exp $"
 
 # Standard Imports
 import os
@@ -33,7 +33,7 @@ from AccessGrid.VenueClient import VenueClient
 from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog
 from AccessGrid import icons
 from AccessGrid.Platform import IsOSX,IsWindows
-from AccessGrid.Version import GetVersion
+from AccessGrid.Version import GetVersion, GetStatus
 from twisted.internet import reactor
 
 from M2Crypto import threading as m2threading
@@ -59,7 +59,7 @@ def main():
     # Create the wxpython app
     wxapp = wxPySimpleApp(clearSigInt=0)
     
-    versionText = "Version %s" % str(GetVersion())
+    versionText = "Version %s %s" % (str(GetVersion()), str(GetStatus()) )
     progressDialog = ProgressDialog(None,icons.getSplashBitmap(), 100, versionText)
     progressDialog.UpdateGauge('Starting Venue Client',10)
     progressDialog.Show(1)
