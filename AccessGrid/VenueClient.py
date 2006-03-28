@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.302 2006-03-25 05:49:05 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.303 2006-03-28 17:27:06 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.302 2006-03-25 05:49:05 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.303 2006-03-28 17:27:06 turam Exp $"
 
 import sys
 import os
@@ -426,7 +426,7 @@ class VenueClient:
 
             self.nextTimeout = self.__venueProxy.UpdateLifetime(
                 self.profile.connectionId,self.heartBeatTimeout)
-            #log.debug("Next Heartbeat needed before: %d", self.nextTimeout)
+            log.debug("Next Heartbeat needed before: %d", self.nextTimeout)
             
             self.heartBeatTimer = threading.Timer(self.nextTimeout - 5.0,
                                                   self.Heartbeat)
@@ -518,14 +518,13 @@ class VenueClient:
 
         profile = event.GetData()
         
-        # Pre-2.3 server compatability code
-        if not profile.connectionId:
-            profile.connectionId = profile.venueClientURL
-
         # Handle removal of self
         if profile.connectionId == self.profile.connectionId:
+        
+            updateNode = int(self.preferences.GetPreference(Preferences.SHUTDOWN_MEDIA))
+        
             # Get out and stay out
-            self.ExitVenue()
+            self.ExitVenue(updateNode=updateNode)
             for s in self.observers:
                 s.HandleError(DisconnectError())
             return
@@ -1021,7 +1020,6 @@ class VenueClient:
         return self.warningString
 
     def __ExitVenue(self):
-        # Clear the list of personal data requests.
 
         # Cancel the heartbeat
         if self.heartBeatTimer is not None:
@@ -1068,7 +1066,7 @@ class VenueClient:
         self.exiting = 0
         self.exitingLock.release()
         
-    def ExitVenue( self ):
+    def ExitVenue( self,updateNode=1 ):
         """
         ExitVenue removes this client from the specified venue.
         """
@@ -1111,12 +1109,13 @@ class VenueClient:
             #log.exception("ExitVenue: Can not send client exiting event to event client")
         
         # Stop the node services
-        try:
-            log.info("ExitVenue: Stopping node services")
-            self.nodeService.StopServices()
-   
-        except Exception:
-            log.info("ExitVenue: Error stopping node services")
+        if updateNode:
+            try:
+                log.info("ExitVenue: Stopping node services")
+                self.nodeService.StopServices()
+
+            except Exception:
+                log.info("ExitVenue: Error stopping node services")
             
         self.__ExitVenue()
 
