@@ -693,11 +693,14 @@ class VenueConnectionPanel(wxPanel):
         self.Centre()
         self.titleText = wxStaticText(self, -1, "Recovery")
         self.titleLine = wxStaticLine(self, -1)
-        self.reconnectButton = wxCheckBox(self, wxNewId(), "  Allow automatic reconnection to venues ")
+        self.shutdownMediaButton = wxCheckBox(self, wxNewId(), "  Shut down media tools on removal from Venue")
+        self.reconnectButton = wxCheckBox(self, wxNewId(), "  Reconnect to venue automatically")
         self.maxText = wxStaticText(self, -1, "Recovery attempts ")
         self.maxReconnect = wx.lib.intctrl.IntCtrl(self, -1, 3, size = wxSize(30, -1))
         self.timeoutText = wxStaticText(self, -1, "Recovery timeout (seconds) ")
         self.timeout = wx.lib.intctrl.IntCtrl(self, -1, 10, size = wxSize(30, -1)) 
+        shutdownMedia = int(preferences.GetPreference(Preferences.SHUTDOWN_MEDIA))
+        self.shutdownMediaButton.SetValue(shutdownMedia)
         reconnect = int(preferences.GetPreference(Preferences.RECONNECT))
         self.reconnectButton.SetValue(reconnect)
         self.maxReconnect.SetValue(int(preferences.GetPreference(Preferences.MAX_RECONNECT)))
@@ -739,6 +742,7 @@ class VenueConnectionPanel(wxPanel):
         sizer2.Add(self.titleText, 0, wxALL, 5)#,0,wxEXPAND|wxALL,10)
         sizer2.Add(self.titleLine, 1, wxALIGN_CENTER | wxALL, 5)
         sizer.Add(sizer2, 0, wxEXPAND)
+        sizer.Add(self.shutdownMediaButton, 0, wxALL|wxEXPAND, 10)
         sizer.Add(self.reconnectButton, 0, wxALL|wxEXPAND, 10)
 
         gridSizer = wxGridSizer(0, 2, 5, 5)
@@ -768,8 +772,9 @@ class NetworkPanel(wxPanel):
         self.beaconButton = wxCheckBox(self, wxNewId(), "  Run beacon ")
         
         self.beaconButton.SetValue(int(preferences.GetPreference(Preferences.BEACON)))
+        self.listHelpText = wxStaticText(self,-1,'Right-click a bridge to enable or disable it')
         self.__InitList()
-
+        
         EVT_RIGHT_DOWN(self.list, self.OnRightDown)
         EVT_RIGHT_UP(self.list, self.OnRightClick)
                                       
@@ -779,7 +784,7 @@ class NetworkPanel(wxPanel):
             self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
                                 
         self.__Layout()
-    
+        
     def OnRightDown(self, event):
         """
         Invoked when user righ-click an item in the list
@@ -892,7 +897,7 @@ class NetworkPanel(wxPanel):
         self.list.SetColumnWidth(3, 80)
         self.list.SetColumnWidth(4, 60)
         self.list.SetColumnWidth(5, 60)
-        self.list.SetColumnWidth(6, 60)
+        self.list.SetColumnWidth(6, 90)
                 
         bridgeDict = self.__CreateBridgeMap()
       
@@ -916,6 +921,7 @@ class NetworkPanel(wxPanel):
         sizer.Add(sizer2, 0, wxEXPAND)
         sizer.Add(self.beaconButton, 0, wxALL|wxEXPAND, 10)
         sizer.Add(self.multicastButton, 0, wxALL|wxEXPAND, 10)
+        sizer.Add(self.listHelpText, 0, wxALL|wxEXPAND, 10)
         sizer.Add(self.list, 1, wxALL|wxEXPAND, 10)
         
         self.SetSizer(sizer)
