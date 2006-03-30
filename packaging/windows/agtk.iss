@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.120 2006-03-23 17:32:34 lefvert Exp $
+; RCS-ID: $Id: agtk.iss,v 1.121 2006-03-30 21:06:14 lefvert Exp $
 ;
 
 ; Set externally
@@ -139,8 +139,13 @@ Source: install\agicons.exe; DestDir: {app}\install
 Source: install\msvcr70.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 Source: install\msvcr71.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 Source: install\msvcr71d.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
-Source: install\ssleay32.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
-Source: install\libeay32.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
+;Source: install\ssleay32.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
+;Source: install\libeay32.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
+Source: install\ssleay32.dll; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\M2Crypto; 
+Source: install\libeay32.dll; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\M2Crypto; 
+Source: install\ssleay32.dll; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\OpenSSL_AG; 
+Source: install\libeay32.dll; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\OpenSSL_AG; 
+
 ; end system files
 
 [Icons]
