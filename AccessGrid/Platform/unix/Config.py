@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.65 2006-02-20 18:50:20 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.66 2006-03-31 06:01:33 douglask Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.65 2006-02-20 18:50:20 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.66 2006-03-31 06:01:33 douglask Exp $"
 
 import sys
 import os
@@ -616,7 +616,7 @@ Type=MimeType
 Patterns=%s
 MimeType=%s
 Comment=%s
-            """ % (str(GetVersion()), "*" + extension, mimeType, description) 
+""" % (str(GetVersion()), "*" + extension, mimeType, description) 
             #   ("2.2", "*.agpkg", "application/x-ag-pkg", "Access Grid Package")
 
             kdeAppInfo="""[Desktop Entry]
@@ -631,7 +631,7 @@ Type=Application
 MimeType=%s
 Name=%s
 Comment=%s
-            """ % (str(GetVersion()), cmd[1], mimeType, cmd[0], cmd[2])
+""" % (str(GetVersion()), cmd[1], mimeType, cmd[0], cmd[2])
             #    ("2.2", "/usr/bin/agpm.py", "application/x-ag-pkg", "Access Grid Package Manager" or "agpm.py", comment)
 
 
