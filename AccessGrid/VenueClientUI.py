@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.180 2006-03-28 21:52:53 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.181 2006-04-04 21:55:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.180 2006-03-28 21:52:53 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.181 2006-04-04 21:55:20 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1842,12 +1842,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             log.info('OnNodeActivity: got action: %s', action)
             serviceDesc = data
             capType = serviceDesc.capabilities[0].type
+            capRole = serviceDesc.capabilities[0].role
             enabled = -1
-            if capType == 'video':
+            if capType == 'video' and capRole == 'producer':
                 enabled = self.isVideoEnabled
             elif capType == 'audio':
                 enabled = self.isAudioEnabled
-            elif capType == 'display':
+            elif capType == 'video' and capRole == 'consumer':
                 enabled = self.isDisplayEnabled
             # only set enabled state for well-known services
             if enabled >= 0:
