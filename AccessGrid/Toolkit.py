@@ -2,19 +2,22 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.115 2006-01-27 21:40:55 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.116 2006-04-05 16:18:21 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.115 2006-01-27 21:40:55 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.116 2006-04-05 16:18:21 turam Exp $"
 
 # Standard imports
 import os
 import sys
 from optparse import OptionParser, Option
 import time
+import socket
+socket.setdefaulttimeout(5)
+print 'def timeout ', socket.getdefaulttimeout()
 
 # AGTk imports
 from AccessGrid import Log
@@ -558,7 +561,7 @@ class WXGUIApplication(Application):
         if not IsWindows():
             agpmFile = os.path.join(AGTkConfig.instance().GetBinDir(),
                                     "agpm.py")
-            agpmCmd = agpmFile + " --package %f"
+            agpmCmd = agpmFile + " --gui --package %f"
             MimeConfig.instance().RegisterMimeType(
                 "application/x-ag-pkg",
                 ".agpkg", "agpkg file",
