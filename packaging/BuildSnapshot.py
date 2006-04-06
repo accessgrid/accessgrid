@@ -278,7 +278,16 @@ cmd = '%s %s --sourcedir %s --agsourcedir %s --outputdir %s --servicefile %s' % 
                        BuildDir,
                        os.path.join(DestDir,"NodeServices"),
                        'servicesToShip')
-print "cmd = ", cmd
+print "\n********** cmd = ", cmd
+os.system(cmd)
+
+# copy media tools to bin directory
+cmd = '%s %s %s %s'%(sys.executable, 'BuildRat.py', SourceDir, os.path.join(DestDir,"bin"))
+print "\n ********* cmd = ",cmd
+os.system(cmd)
+
+cmd = '%s %s %s %s'%(sys.executable, 'BuildVic.py', SourceDir, os.path.join(DestDir,"bin"))
+print "\n ********* cmd = ",cmd
 os.system(cmd)
 
 # Fix shared app *.py files before they're packaged
