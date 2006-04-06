@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.122 2006-04-05 16:15:35 turam Exp $
+; RCS-ID: $Id: agtk.iss,v 1.123 2006-04-06 22:00:14 lefvert Exp $
 ;
 
 ; Set externally
@@ -117,13 +117,13 @@ Source: README; DestDir: {app}; Flags: isreadme; DestName: README.txt
 
 ; Program Files
 Source: bin\*.*; DestDir: {app}\bin
-Source: bin\GoToVenue.py; DestDir: {app}\bin; DestName: GoToVenue.pyw
+Source: bin\GoToVenue3.py; DestDir: {app}\bin; DestName: GoToVenue3.pyw
 
 ; Special short cuts to invoke without the python console
 
-Source: bin\CertificateRequestTool.py; DestDir: {app}\bin; DestName: CertificateRequestTool.pyw
-Source: bin\NodeManagement.py; DestDir: {app}\bin; DestName: NodeManagement.pyw
-Source: bin\NodeSetupWizard.py; DestDir: {app}\bin; DestName: NodeSetupWizard.pyw
+Source: bin\CertificateRequestTool3.py; DestDir: {app}\bin; DestName: CertificateRequestTool3.pyw
+Source: bin\NodeManagement3.py; DestDir: {app}\bin; DestName: NodeManagement3.pyw
+Source: bin\NodeSetupWizard3.py; DestDir: {app}\bin; DestName: NodeSetupWizard3.pyw
 
 ; Service packages
 Source: NodeServices\*.zip; DestDir: {app}\NodeServices
@@ -150,30 +150,30 @@ Source: install\libeay32.dll; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#
 
 [Icons]
 Name: {group}\View README; Filename: {app}\README.txt; Flags: createonlyiffileexists; Comment: Read the ReadMe.
-Name: {group}\Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\VenueClient.py"" --personalNode=1"; IconFilename: {app}\install\agicons.exe; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the venue client software.
-Name: {group}\Venue Client (Debug Mode); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\VenueClient.py"" -d --personalNode=1"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the venue client in debugging mode.
-Name: {group}\Venue Management Tool; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\VenueManagement.py"""; WorkingDir: %APPDATA%\AccessGrid; Comment: Manage venue servers.
-Name: {group}\Request a Certificate; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\CertificateRequestTool.pyw"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe
+Name: {group}\Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\VenueClient3.py"" --personalNode=1"; IconFilename: {app}\install\agicons.exe; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the venue client software.
+Name: {group}\Venue Client (Debug Mode); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\VenueClient3.py"" -d --personalNode=1"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the venue client in debugging mode.
+Name: {group}\Venue Management Tool; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\VenueManagement3.py"""; WorkingDir: %APPDATA%\AccessGrid; Comment: Manage venue servers.
+Name: {group}\Request a Certificate; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\CertificateRequestTool3.pyw"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe
 
-Name: {group}\Configure\Node Setup Wizard; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\NodeSetupWizard.pyw"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe; Comment: Run the AG Node Configuration Wizard
-Name: {group}\Configure\Node Management; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\NodeManagement.pyw"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe; Comment: Configure an AG node
+Name: {group}\Configure\Node Setup Wizard; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\NodeSetupWizard3.pyw"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe; Comment: Run the AG Node Configuration Wizard
+Name: {group}\Configure\Node Management; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\NodeManagement3.pyw"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe; Comment: Configure an AG node
 
-Name: {group}\Services\Venue Server (Debug); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\VenueServer.py"" --debug"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the venue server software in debugging mode.
-Name: {group}\Services\Venue Server; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\VenueServer.py"" --debug"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the venue server software in debugging mode.
-Name: {group}\Services\Service Manager (Debug); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\AGServiceManager.py"" --debug"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the service manager software in debugging mode.
-Name: {group}\Services\Service Manager; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\AGServiceManager.py"" --debug"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the venue service manager in debugging mode.
-Name: {group}\Services\Node Service (Debug); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\AGServiceManager.py"" -n --debug"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the node service software in debugging mode.
-Name: {group}\Services\Node Service; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\AGServiceManager.py"" -n"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the node service software in debugging mode.
+Name: {group}\Services\Venue Server (Debug); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\VenueServer3.py"" --debug"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the venue server software in debugging mode.
+Name: {group}\Services\Venue Server; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\VenueServer3.py"" --debug"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the venue server software in debugging mode.
+Name: {group}\Services\Service Manager (Debug); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\AGServiceManager3.py"" --debug"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the service manager software in debugging mode.
+Name: {group}\Services\Service Manager; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\AGServiceManager3.py"" --debug"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the venue service manager in debugging mode.
+Name: {group}\Services\Node Service (Debug); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\AGServiceManager3.py"" -n --debug"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the node service software in debugging mode.
+Name: {group}\Services\Node Service; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\AGServiceManager3.py"" -n"; WorkingDir: %APPDATA%\AccessGrid; Comment: Run the node service software in debugging mode.
 
 Name: {group}\Documentation\View License; IconFilename: {app}\install\agicons.exe; Filename: {app}\COPYING.txt; Comment: Read the software license under which the AGTk is distributed
 ; Name: {group}\Documentation\Developers Documentation; Filename: {app}\doc\Developer\index.html; Comment: epydoc-generated documentation for developers.
 
 Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}; Comment: Uninstall the Access Grid Toolkit.
 
-Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\VenueClient.py"" --personalNode=1"; WorkingDir: %APPDATA%\AccessGrid; Tasks: quicklaunchicon
+Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\VenueClient3.py"" --personalNode=1"; WorkingDir: %APPDATA%\AccessGrid; Tasks: quicklaunchicon
 
-Name: {commondesktop}\Access Grid 3 Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\VenueClient.py"" --personalNode=1"; IconFilename: {app}\install\agicons.exe; WorkingDir: %APPDATA%\AccessGrid; Tasks: desktopicon; Comment: Run the Venue Client!
-Name: {group}\Manage Certificates; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag.py"" ""{app}\bin\CertificateManager.py"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe
+Name: {commondesktop}\Access Grid 3 Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\VenueClient3.py"" --personalNode=1"; IconFilename: {app}\install\agicons.exe; WorkingDir: %APPDATA%\AccessGrid; Tasks: desktopicon; Comment: Run the Venue Client!
+Name: {group}\Manage Certificates; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\CertificateManager3.py"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe
 
 [Registry]
 Root: HKLM; Subkey: SOFTWARE\{#AppName} {#DirName}; ValueType: none; Flags: uninsdeletekey
@@ -186,7 +186,7 @@ Root: HKCR; Subkey: x-ag-venueclient; ValueType: dword; ValueName: EditFlags; Va
 Root: HKCR; Subkey: x-ag-venueclient; ValueType: dword; ValueName: BrowserFlags; ValueData: 00000008; Flags: uninsdeletekey
 Root: HKCR; Subkey: x-ag-venueclient; ValueType: string; ValueData: Access Grid Virtual Venue Description; Flags: uninsdeletekey
 Root: HKCR; Subkey: x-ag-venueclient\shell; ValueType: string; ValueData: Open; Flags: uninsdeletekey
-Root: HKCR; Subkey: x-ag-venueclient\shell\Open\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe"" ""{app}\bin\runag.py"" ""{app}\bin\GoToVenue.py"" --file ""%1"""; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag-venueclient\shell\Open\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe"" ""{app}\bin\runag3.py"" ""{app}\bin\GoToVenue3.py"" --file ""%1"""; Flags: uninsdeletekey
 
 Root: HKCR; Subkey: .agpkg; ValueType: string; ValueData: x-ag-pkg; Flags: uninsdeletekey
 Root: HKCR; Subkey: .agpkg; ValueType: string; ValueName: Content Type; ValueData: application/x-ag-pkg; Flags: uninsdeletekey
@@ -194,7 +194,7 @@ Root: HKCR; Subkey: x-ag-pkg; ValueType: dword; ValueName: EditFlags; ValueData:
 Root: HKCR; Subkey: x-ag-pkg; ValueType: dword; ValueName: BrowserFlags; ValueData: 00000008; Flags: uninsdeletekey
 Root: HKCR; Subkey: x-ag-pkg; ValueType: string; ValueData: Access Grid Package; Flags: uninsdeletekey
 Root: HKCR; Subkey: x-ag-pkg\shell; ValueType: string; ValueData: Open; Flags: uninsdeletekey
-Root: HKCR; Subkey: x-ag-pkg\shell\Open\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe"" ""{app}\bin\runag.py"" ""{app}\bin\agpm.py"" --gui --package ""%1"""; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag-pkg\shell\Open\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe"" ""{app}\bin\runag3.py"" ""{app}\bin\agpm3.py"" --gui --package ""%1"""; Flags: uninsdeletekey
 
 [Tasks]
 Name: desktopicon; Description: Create &Desktop Icons; GroupDescription: Additional icons:
@@ -205,7 +205,7 @@ DirExists=The directory:%n%n%1%n%nalready exists and appears to have an {#AppNam
 WelcomeLabel2=This will install the {#AppName} {#AppVersion} {#VersionInformation} on your computer.%n%nIt is strongly recommended that you uninstall any previous version of the {#AppName} 3 before continuing.%n%nIt is also strongly recommended that you close all other applications you have running before continuing with this installation.%n%nThese steps will help prevent any conflicts during the installation process.
 
 [Run]
-Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Description: Install shared apps system wide.; Flags: runhidden; Parameters: runag.py agpm.py -s --post-install; WorkingDir: {app}\bin
+Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Description: Install shared apps system wide.; Flags: runhidden; Parameters: runag3.py agpm3.py -s --post-install; WorkingDir: {app}\bin
 
 [UninstallDelete]
 Name: {app}; Type: filesandordirs
