@@ -11,6 +11,7 @@
         <xs:element name="uri" type="xs:string"/>
      	<xs:element name="version" type="xs:string"/>
 	<xs:element name="capabilities" minOccurs="0" maxOccurs="unbounded" type = "tns:Capability"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -22,6 +23,7 @@
         <xs:element name="port" type="xs:int"/>
 	<xs:element name="type" type="xs:string"/>
         <xs:element name="profile" nillable="true" type="tns:ProviderProfile"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -29,6 +31,7 @@
       <xs:sequence>
         <xs:element name="name" nillable="true" type="xs:string"/>
         <xs:element name="location" nillable="true" type="xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -40,6 +43,7 @@
         <xs:element name="port" type="xs:int"/>
 	<xs:element name="type" type="xs:string"/>
         <xs:element name="profile" nillable="true" type="tns:ProviderProfile"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -52,6 +56,7 @@
 	<xs:element name="type" type="xs:string"/>
         <xs:element name="profile" nillable="true" type="tns:ProviderProfile"/>
         <xs:element name="ttl" type="xs:int"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -75,6 +80,7 @@
         <xs:element name = "name" type = "xs:string"/>
         <xs:element name = "description" type = "xs:string"/>
         <xs:element name = "uri" type = "xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -89,6 +95,7 @@
         <xs:element name = "encryptionKey" nillable="true" type = "xs:string"/>
         <xs:element name = "static" type = "xs:boolean"/>
         <xs:element name = "networkLocations" minOccurs="0" maxOccurs="unbounded" type = "xs:anyType"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -102,6 +109,7 @@
 	<xs:element name="encryptionKey" type="xs:string" nillable="true"/>
 	<xs:element name="connections" minOccurs="0" maxOccurs="unbounded" type="tns:ConnectionDescription"/>
         <xs:element name="streams" minOccurs="0" maxOccurs="unbounded" type="tns:StreamDescription"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 	
@@ -119,13 +127,14 @@
 	<xs:element name="distinguishedName" type="xs:string"/>
 	<xs:element name="techSupportInfo" type="xs:string"/>
 	<xs:element name="connectionId" type="xs:string"/>
-	<xs:element name="gmtoffset" minOccurs="0" maxOccurs="1"  type="xs:int"/>
-	<xs:element name="beacon" minOccurs="0" maxOccurs="1"  type="xs:int"/>
-	<xs:element name="audio" minOccurs="0" maxOccurs="1"  type="xs:int"/>
-	<xs:element name="video" minOccurs="0" maxOccurs="1"  type="xs:int"/>
-	<xs:element name="display" minOccurs="0" maxOccurs="1"  type="xs:int"/>
-	<xs:element name="lat" minOccurs="0" maxOccurs="1"  type="xs:float"/>
-	<xs:element name="long" minOccurs="0" maxOccurs="1"  type="xs:float"/>
+	<xs:element name="gmtoffset" type="xs:int"/>
+	<xs:element name="beacon" type="xs:int"/>
+	<xs:element name="audio" type="xs:int"/>
+	<xs:element name="video" type="xs:int"/>
+	<xs:element name="display" type="xs:int"/>
+	<xs:element name="lat" type="xs:float"/>
+	<xs:element name="long" type="xs:float"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -143,6 +152,7 @@
         <xs:element name="clients" minOccurs="0" maxOccurs="unbounded" type="tns:ClientProfile"/>
         <xs:element name="data" minOccurs="0" maxOccurs="unbounded" type="tns:DataDescription"/>
         <xs:element name="applications" minOccurs="0" maxOccurs="unbounded" type="tns:ApplicationDescription"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -154,6 +164,7 @@
 	<xs:element minOccurs="0" maxOccurs="1" name="mimeType" type="xs:string" />
         <xs:element minOccurs="0" maxOccurs="1" name="uri" type="xs:string" />
         <xs:element minOccurs="0" maxOccurs="unbounded" name="data" type="tns:AppDataDescription" />
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -165,6 +176,7 @@
         <xs:element name="rate" nillable="true" type="xs:int"/>
         <xs:element name="serviceId" nillable="true" type="xs:string"/>
         <xs:element name="channels" nillable="true" type="xs:int"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -175,6 +187,7 @@
         <xs:element name="description" type="xs:string"/>
         <xs:element name="uri" type="xs:string"/>
         <xs:element name="mimeType" type="xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
  
@@ -183,6 +196,7 @@
         <xs:element name="appId" type="xs:string"/>
         <xs:element name="key" type="xs:string"/>
         <xs:element name="value" type="xs:string"/> 
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
     
@@ -194,6 +208,7 @@
         <xs:element name="description" type="xs:string"/>
         <xs:element name="uri" type="xs:string"/>
         <xs:element name="mimeType" type="xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -209,6 +224,7 @@
         <xs:element name="owner" nillable="true" type="xs:string"/>
         <xs:element name="type" nillable="true" type="xs:string"/>
         <xs:element name="lastModified" nillable="true" type="xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -226,6 +242,7 @@
         <xs:element name="capabilities" minOccurs="0" maxOccurs="unbounded" type="tns:Capability"/>
         <xs:element name="resource" nillable="true" type="tns:ResourceDescription"/>
         <xs:element name="packageFile" type="xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -235,6 +252,7 @@
         <xs:element name = "description" type = "xs:string"/>
         <xs:element name = "packageFile" type = "xs:string"/>
         <xs:element name = "resourceNeeded" type = "xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -242,6 +260,7 @@
       <xs:sequence>
         <xs:element name = "name" type = "xs:string"/>
         <xs:element name = "uri" type = "xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -249,6 +268,7 @@
       <xs:sequence>
         <xs:element name = "name" type = "xs:string"/>
         <xs:element name = "type" type = "xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -257,6 +277,7 @@
         <xs:element name = "appId" type = "xs:string"/>
         <xs:element name = "clientProfile" nillable="true" type = "tns:ClientProfile"/>
         <xs:element name = "status" type = "xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -265,6 +286,7 @@
         <xs:element name = "name" type = "xs:string"/>
         <xs:element name = "value" type = "xs:string"/>
         <xs:element name = "type" type = "xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -273,6 +295,7 @@
         <xs:element name = "name" type = "xs:string"/>
         <xs:element name = "value" type = "xs:string"/>
         <xs:element name = "type" type = "xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -283,6 +306,7 @@
         <xs:element name = "type" type = "xs:string"/>
         <xs:element name = "low" type = "xs:int"/>
         <xs:element name = "high" type = "xs:int"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
     
@@ -292,6 +316,7 @@
         <xs:element name = "value" type = "xs:string"/>
         <xs:element name = "type" type = "xs:string"/>
       	<xs:element name = "options" minOccurs="0" maxOccurs="unbounded" type = "xs:any"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -301,12 +326,14 @@
         <xs:element name = "senderId" type = "xs:string"/>
         <xs:element name = "data" type = "xs:anyType"/>
         <xs:element name = "eventType" type = "xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="ResourceDescription">
       <xs:sequence>
         <xs:element name = "name" type = "xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -315,6 +342,7 @@
         <xs:element name = "name" type = "xs:string"/>
         <xs:element name = "subjects" minOccurs="0" maxOccurs="unbounded" type = "xs:any"/>
       	<xs:element name = "requireDefaultId" type = "xs:int"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -322,6 +350,7 @@
       <xs:sequence>
         <xs:element name = "name" type = "xs:string"/>
       	<xs:element name = "roles" minOccurs="0" maxOccurs="unbounded" type = "tns:Role"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -331,6 +360,7 @@
         <xs:element name = "auth_type" type = "xs:string"/>
         <xs:element name = "auth_data" type = "xs:string"/>
       	<xs:element name = "id" type = "xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -340,6 +370,7 @@
         <xs:element name = "auth_type" type = "xs:string"/>
         <xs:element name = "auth_data" type = "xs:string"/>
       	<xs:element name = "id" type = "xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -347,6 +378,7 @@
       <xs:sequence>
         <xs:element name = "cname" type = "xs:string"/>
         <xs:element name = "ssrc" type = "xs:long"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -356,6 +388,7 @@
         <xs:element name = "total_lost" type = "xs:int"/>
         <xs:element name = "fract_lost" type = "xs:int"/>
         <xs:element name = "jitter" type = "xs:int"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
