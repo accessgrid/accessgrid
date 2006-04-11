@@ -199,8 +199,8 @@ class vncServer:
                     # default is the same as tight vnc's default, but use mwm
                     # instead of twm if it is available 
                     windowmanager = "twm"
-                    if os.path.exists("/usr/X11R6/bin/mwm"):
-                        windowmanager = "/usr/X11R6/bin/mwm" 
+                    if os.path.exists("/usr/X11R6/bin/mwm") or os.path.exists("/usr/bin/mwm"):
+                        windowmanager = "mwm" 
                     defaultStartup= "#!/bin/sh\n\n" +     \
                         "#xrdb $HOME/.Xresources\n" +     \
                         "xsetroot -solid grey\n" +        \
