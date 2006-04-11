@@ -2,7 +2,7 @@
 # Name:        AuthorizationManager.py
 # Purpose:     The class that does the authorization work.
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.36 2006-01-23 17:30:26 turam Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.37 2006-04-11 17:55:11 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.36 2006-01-23 17:30:26 turam Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.37 2006-04-11 17:55:11 turam Exp $"
 
 # External Imports
 import os
@@ -202,7 +202,7 @@ class AuthorizationManager:
         action = MethodAction(action)
         
         # this gets us all the roles for this action
-        rolelist = self.GetRoles(action=action)
+        rolelist = self.GetRolesForAction(action)
         
         if subject == None:
             if self.IsIdentificationRequired():
@@ -269,38 +269,62 @@ class AuthorizationManager:
                 del self.actions[i]
             i = i + 1
         
-    def GetActions(self, inSubject=None, inRole=None):
+    def GetActions(self):
+        """
+        Get a list of actions, perhaps for a subject or a role.
+
+        @return: a list of actions
+        @rtype: [AccessGrid.Security.Action]
+        """
+        
+        # Just return the list of actions
+        actionlist = self.actions
+        print 'returning actionlist ', actionlist
+        for a in actionlist:
+            print str(a)
+            for r in a.roles:
+                print ' ',str(r)
+                for s in r.subjects:
+                    print '   ', str(s)
+        return actionlist[:]
+        
+    def GetActionsForSubject(self, inSubject):
         """
         Get a list of actions, perhaps for a subject or a role.
 
         @param subjectName: name of subject to get the actions for
-        @param roleName: name of role to get actions for
         @type subject: string
+        @return: a list of actions
+        @rtype: [AccessGrid.Security.Action]
+        """
+        
+        # Return the list of actions for this subject
+        actionlist = list()
+        roles = self.GetRolesForSubject(inSubject.name)
+        for r in roles:
+            for a in self.actions:
+                if a.HasRole(r.name) and a not in actionlist:
+                    actionlist.append(a)
+
+        return actionlist[:]
+        
+    def GetActionsForRole(self, inRole):
+        """
+        Get a list of actions, perhaps for a subject or a role.
+
+        @param roleName: name of role to get actions for
         @type role: string
         @return: a list of actions
         @rtype: [AccessGrid.Security.Action]
         """
         
-        if inSubject == None and inRole == None:
-            # Just return the list of actions
-            actionlist = self.actions
-        elif inSubject != None and inRole == None:
-            # Return the list of actions for this subject
-            actionlist = list()
-            roles = self.GetRolesForSubject(inSubject.name)
-            for r in roles:
-                for a in self.actions:
-                    if a.HasRole(r.name) and a not in actionlist:
-                        actionlist.append(a)
-        elif inSubject == None and inRole != None:
-            # Return the list of actions for this role
-            actionlist = list()
-            for a in self.actions:
-                if a.HasRole(inRole.name) and a not in actionlist:
-                    actionlist.append(a)
-        else:
-            raise Exception("GetActions called with both a subject and a role")
+        # Return the list of actions for this role
+        actionlist = list()
+        for a in self.actions:
+            if a.HasRole(inRole.name) and a not in actionlist:
+                actionlist.append(a)
 
+        print 'returning actionlist ', actionlist
         return actionlist[:]
         
     def FindAction(self, actionName):
@@ -421,25 +445,31 @@ class AuthorizationManager:
             except RoleAlreadyPresent:
                 log.info("Tried to add role that already exists %s", r)
         
-    def GetRoles(self, action=None):
+    def GetRoles(self):
         """
         Get the list of Roles, optionally the roles associated with an action.
 
-        @keyword action: Action to retrieve roles for, None if not set
+        @return: list of roles 
+        @rtype: AccessGrid.Security.Role 
+        """
+        rolelist = self.roles
+        return rolelist
+
+    def GetRolesForAction(self, action):
+        """
+        Get the list of Roles, optionally the roles associated with an action.
+
+        @param action: Action to retrieve roles for
         @type action: AccessGrid.Security.Action 
         @return: list of roles 
         @rtype: AccessGrid.Security.Role 
         """
-        if action == None:
-            rolelist = self.roles
-        else:
+        foundAction = self.FindAction(action.GetName())
 
-            foundAction = self.FindAction(action.GetName())
-
-            if not foundAction:
-                return []
-                             
-            rolelist = foundAction.GetRoles()
+        if not foundAction:
+            return []
+                         
+        rolelist = foundAction.GetRoles()
 
         return rolelist
 
@@ -670,7 +700,10 @@ class AuthorizationManager:
 
     ListSubjects = GetSubjects
     ListRoles = GetRoles
+    ListRolesForSubject = GetRolesForSubject
     ListActions = GetActions
+    ListActionsForRole = GetActionsForRole
+    ListActionsForSubject = GetActionsForSubject
     GetPolicy = ToXML
     ListRolesInAction = GetRoles
         
@@ -757,12 +790,12 @@ if __name__ == "__main__":
 
     print '\n---------------------'
     print '---------- get actions for TestList1, should be Action1 '
-    for a in authManager.GetActions(subjectName = "TestList1"):
+    for a in authManager.GetActionsForSubject("TestList1"):
         print a.name
 
     print '\n-------------------'
     print '------------ get actions for admins, should be Action2'
-    for a in authManager.GetActions(roleName = "Administrators"):
+    for a in authManager.GetActionsForRole("Administrators"):
         print a.name
 
     print '\n -------------------'
@@ -849,11 +882,11 @@ if __name__ == "__main__":
     Show3(am)
           
     print '\n\n******* this should print TestAction'
-    for ac in am.ListActions(subject = s):
+    for ac in am.ListActionsForSubject(s):
         print ac.name
 
     print '\n\n******* this should print TestAction'
-    for ac in am.ListActions(role = r):
+    for ac in am.ListActionsForRole(r):
         print ac.name
 
     print '\n\n******* this should print TestRole, TestRole2'
