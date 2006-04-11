@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: X509Subject.py,v 1.10 2005-11-01 18:40:40 turam Exp $
+# RCS-ID:      $Id: X509Subject.py,v 1.11 2006-04-11 17:51:44 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ Subjects are the basic security handle on entities that want to be a
 part of the security environment.
 """
 
-__revision__ = "$Id: X509Subject.py,v 1.10 2005-11-01 18:40:40 turam Exp $"
+__revision__ = "$Id: X509Subject.py,v 1.11 2006-04-11 17:51:44 turam Exp $"
 
 # external imports
 from OpenSSL_AG.crypto import X509NameType
@@ -49,7 +49,7 @@ class X509Subject(Subject):
         """
         
         # manipulate the subject if necessary
-        if not name.startswith('/'):
+        if name and not name.startswith('/'):
             name = '/' + '/'.join(name.split(', '))
         
         Subject.__init__(self, name, self.AUTH_TYPE, auth_data)
