@@ -177,17 +177,45 @@
 
           <xsd:element name="ListActionsRequest">
             <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="1" maxOccurs="1" name="subject" type="agtk:X509Subject" nillable="true"/>
-                <xsd:element minOccurs="1" maxOccurs="1" name="role" type="agtk:Role" nillable="true"/>
-              </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="ListActionsResponse">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="actionList" type="agtk:Action" />
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="actionList" type="agtk:Action" nillable="true" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ListActionsForSubjectRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="subject" type="agtk:X509Subject" nillable="true"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ListActionsForSubjectResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="actionList" type="agtk:Action" nillable="true" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ListActionsForRoleRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="role" type="agtk:Role" nillable="true"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ListActionsForRoleResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="actionList" type="agtk:Action" nillable="true" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -198,6 +226,22 @@
           </xsd:element>
 
           <xsd:element name="ListRolesResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="roleList" type="agtk:Role" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ListRolesForSubjectRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="subject" type="agtk:X509Subject" nillable="true"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="ListRolesForSubjectResponse">
             <xsd:complexType>
               <xsd:sequence>
                 <xsd:element minOccurs="0" maxOccurs="unbounded" name="roleList" type="agtk:Role" />
