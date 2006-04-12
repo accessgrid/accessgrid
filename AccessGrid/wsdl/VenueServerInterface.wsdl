@@ -181,13 +181,10 @@
             </xsd:complexType>
           </xsd:element>
 
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
           <xsd:element name="SetDefaultVenueRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element inOccurs="0" maxOccurs="1" name="venueId" type="xsd:string"/>
+                <xsd:element minOccurs="0" maxOccurs="1" name="venueId" type="xsd:string"/>
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
