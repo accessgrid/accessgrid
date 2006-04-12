@@ -18,7 +18,7 @@
           <xsd:element name="EnterRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="clientProfile" type="agtk:ClientProfile" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="clientProfile" type="agtk:ClientProfile" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -32,7 +32,7 @@
           <xsd:element name="ExitRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="connectionId" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="connectionId" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -40,7 +40,7 @@
           <xsd:element name="RegisterNetworkServiceRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="netDescription" type="agtk:AGNetworkServiceDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="netDescription" type="agtk:AGNetworkServiceDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -53,7 +53,7 @@
           <xsd:element name="UnRegisterNetworkServiceRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="netDescription" type="agtk:AGNetworkServiceDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="netDescription" type="agtk:AGNetworkServiceDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -91,8 +91,8 @@
           <xsd:element name="NegotiateCapabilitiesRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="connectionId" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="capabilities" type="agtk:Capability" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="connectionId" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="unbounded" name="capabilities" type="agtk:Capability" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -108,9 +108,9 @@
           <xsd:element name="CreateApplicationRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="appName" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="appDescription" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="appMimeType" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="appName" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="appDescription" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="appMimeType" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -126,7 +126,7 @@
           <xsd:element name="UpdateApplicationRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="appDescription" type="agtk:ApplicationDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="appDescription" type="agtk:ApplicationDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -143,7 +143,7 @@
           <xsd:element name="DestroyApplicationRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="appId" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="appId" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -164,7 +164,7 @@
           <xsd:element name="RecycleMulticastLocationRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="multicastLocation" type="agtk:MulticastNetworkLocation" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="multicastLocation" type="agtk:MulticastNetworkLocation" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -172,8 +172,8 @@
           <xsd:element name="AddNetworkLocationToStreamRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="streamId" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="location" type="agtk:NetworkLocation" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="streamId" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="location" type="agtk:NetworkLocation" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -210,7 +210,7 @@
           <xsd:element name="ImportPolicyRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="policy" type="agtk:AuthorizationPolicy" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="policy" type="agtk:AuthorizationPolicy" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -231,8 +231,8 @@
           <xsd:element name="UpdateLifetimeRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="connectionId" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="requestedTimeout" type="xsd:float"/>
+                <xsd:element minOccurs="1" maxOccurs="1" name="connectionId" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="requestedTimeout" type="xsd:float"/>
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -241,38 +241,6 @@
             <xsd:complexType>
               <xsd:sequence>
                 <xsd:element minOccurs="0" maxOccurs="1" name="timeout" type="xsd:float" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-
-          <xsd:element name="GetPropertyRequest">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="propertyNameList" type="xsd:string" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-
-          <xsd:element name="GetPropertyResponse">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="propertyDict" type="agtk:Dictionary" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-
-          <xsd:element name="SetPropertyRequest">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="propertyDict" type="agtk:Dictionary" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-
-          <xsd:element name="SetPropertyResponse">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="propertyDict" type="agtk:Dictionary" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -293,7 +261,7 @@
           <xsd:element name="SetConnectionsRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="connections" type="agtk:ConnectionDescription" />
+                <xsd:element minOccurs="1" maxOccurs="unbounded" name="connections" type="agtk:ConnectionDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -319,7 +287,7 @@
           <xsd:element name="UpdateDataRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="dataDesc" type="agtk:DataDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="dataDesc" type="agtk:DataDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -335,7 +303,7 @@
           <xsd:element name="RemoveDataRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="dataDesc" type="agtk:DataDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="dataDesc" type="agtk:DataDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -364,7 +332,7 @@
           <xsd:element name="AddServiceRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="serviceDesc" type="agtk:ServiceDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="serviceDesc" type="agtk:ServiceDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -380,7 +348,7 @@
           <xsd:element name="RemoveServiceRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="serviceDesc" type="agtk:ServiceDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="serviceDesc" type="agtk:ServiceDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -396,7 +364,7 @@
           <xsd:element name="UpdateServiceRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="serviceDesc" type="agtk:ServiceDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="serviceDesc" type="agtk:ServiceDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -412,7 +380,7 @@
           <xsd:element name="UpdateClientProfileRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="clientProfile" type="agtk:ClientProfile" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="clientProfile" type="agtk:ClientProfile" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>

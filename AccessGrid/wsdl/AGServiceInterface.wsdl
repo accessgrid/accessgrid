@@ -161,7 +161,7 @@
           <xsd:element name="SetEnabledRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="enabledFlag" type="xsd:integer" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="enabledFlag" type="xsd:integer" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -174,7 +174,7 @@
           <xsd:element name="SetIdentityRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="profile" type="agtk:ClientProfile" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="profile" type="agtk:ClientProfile" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -203,7 +203,7 @@
           <xsd:element name="SetResourceRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" nillable="true" name="resource" type="agtk:ResourceDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" nillable="true" name="resource" type="agtk:ResourceDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -216,7 +216,7 @@
           <xsd:element name="SetServiceManagerUrlRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="serviceManagerUrl" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="serviceManagerUrl" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -229,7 +229,7 @@
           <xsd:element name="SetStreamRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="streamDescription" type="agtk:StreamDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="streamDescription" type="agtk:StreamDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>

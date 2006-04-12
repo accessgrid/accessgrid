@@ -18,7 +18,7 @@
           <xsd:element name="GetComponentsRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="privateToken" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -34,8 +34,8 @@
           <xsd:element name="GetDataRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="key" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="key" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -51,8 +51,8 @@
 	  <xsd:element name="RemoveDataRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="key" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="key" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -65,7 +65,7 @@
           <xsd:element name="GetDataChannelRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="privateToken" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -83,7 +83,7 @@
           <xsd:element name="GetDataKeysRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="privateToken" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -112,7 +112,7 @@
           <xsd:element name="GetParticipantsRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="privateToken" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -128,7 +128,7 @@
           <xsd:element name="GetStateRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="privateToken" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -144,7 +144,7 @@
           <xsd:element name="GetVenueURLRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="privateToken" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -160,7 +160,7 @@
           <xsd:element name="JoinRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="clientProfile" type="agtk:ClientProfile" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="clientProfile" type="agtk:ClientProfile" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -177,7 +177,7 @@
           <xsd:element name="LeaveRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="privateToken" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -193,9 +193,9 @@
           <xsd:element name="SetDataRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="key" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="value" type="xsd:anyType" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="key" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="value" type="xsd:anyType" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -208,8 +208,8 @@
           <xsd:element name="SetParticipantProfileRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="profile" type="agtk:ClientProfile" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="profile" type="agtk:ClientProfile" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -222,8 +222,8 @@
           <xsd:element name="SetParticipantStatusRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="privateToken" type="xsd:string" />
-                <xsd:element minOccurs="0" maxOccurs="1" name="status" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="privateToken" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="status" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>

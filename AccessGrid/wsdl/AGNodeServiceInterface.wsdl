@@ -18,7 +18,7 @@
           <xsd:element name="AddServiceManagerRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="serviceManagerUrl" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="serviceManagerUrl" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -31,7 +31,7 @@
           <xsd:element name="AddStreamRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="agtk:StreamDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="argname" type="agtk:StreamDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -109,7 +109,7 @@
           <xsd:element name="LoadConfigurationRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="nodeConfig" type="agtk:NodeConfigDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="nodeConfig" type="agtk:NodeConfigDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -122,7 +122,7 @@
           <xsd:element name="MigrateNodeConfigRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="nodeConfig" type="agtk:NodeConfigDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="nodeConfig" type="agtk:NodeConfigDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -135,7 +135,7 @@
           <xsd:element name="NeedMigrateNodeConfigRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="agtk:NodeConfigDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="argname" type="agtk:NodeConfigDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -151,7 +151,7 @@
           <xsd:element name="RemoveServiceManagerRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="serviceManagerUrl" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="serviceManagerUrl" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -164,7 +164,7 @@
           <xsd:element name="RemoveStreamRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="agtk:StreamDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="argname" type="agtk:StreamDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -177,7 +177,7 @@
           <xsd:element name="SetServiceEnabledRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="enabledFlag" type="xsd:integer" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="enabledFlag" type="xsd:integer" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -190,7 +190,8 @@
           <xsd:element name="SetServiceEnabledByMediaTypeRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="mediaType" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="enableFlag" type="xsd:integer" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -226,7 +227,7 @@
           <xsd:element name="StoreConfigurationRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="nodeConfig" type="agtk:NodeConfigDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="nodeConfig" type="agtk:NodeConfigDescription" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>

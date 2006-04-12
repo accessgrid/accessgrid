@@ -18,7 +18,7 @@
           <xsd:element name="EnterVenueRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="url" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="url" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
@@ -177,7 +177,7 @@
           <xsd:element name="GetBeaconSourceDataRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="ssrc" type="xsd:long" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="ssrc" type="xsd:long" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
