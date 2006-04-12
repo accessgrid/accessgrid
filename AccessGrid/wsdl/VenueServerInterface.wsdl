@@ -321,18 +321,6 @@
     <message name="GetVenuesResponse">
 	<part name="parameters" element="agtkvs:GetVenuesResponse"/>
     </message>
-    <message name="GetPropertyRequest">
-	<part name="parameters" element="agtkvs:GetPropertyRequest"/>
-    </message>
-    <message name="GetPropertyResponse">
-	<part name="parameters" element="agtkvs:GetPropertyResponse"/>
-    </message>
-    <message name="SetPropertyRequest">
-	<part name="parameters" element="agtkvs:SetPropertyRequest"/>
-    </message>
-    <message name="SetPropertyResponse">
-	<part name="parameters" element="agtkvs:SetPropertyResponse"/>
-    </message>
     <message name="SetDefaultVenueRequest">
 	<part name="parameters" element="agtkvs:SetDefaultVenueRequest"/>
     </message>
@@ -413,14 +401,6 @@
 	<operation name="RemoveVenue">
 	    <input message="agtkvs:RemoveVenueRequest"/>
 	    <output message="agtkvs:RemoveVenueResponse"/>
-	</operation>
-	<operation name="GetProperty">
-	    <input message="agtkvs:GetPropertyRequest"/>
-	    <output message="agtkvs:GetPropertyResponse"/>
-	</operation>
-	<operation name="SetProperty">
-	    <input message="agtkvs:SetPropertyRequest"/>
-            <output message="agtkvs:SetPropertyResponse"/>
 	</operation>
 	<operation name="SetDefaultVenue">
 	    <input message="agtkvs:SetDefaultVenueRequest"/>

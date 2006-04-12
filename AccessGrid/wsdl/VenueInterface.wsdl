@@ -499,18 +499,6 @@
     <message name="UpdateLifetimeResponse">
 	<part name="parameters" element="agtkv:UpdateLifetimeResponse"/>
     </message>
-    <message name="GetPropertyRequest">
-	<part name="parameters" element="agtkv:GetPropertyRequest"/>
-    </message>
-    <message name="GetPropertyResponse">
-	<part name="parameters" element="agtkv:GetPropertyResponse"/>
-    </message>
-    <message name="SetPropertyRequest">
-	<part name="parameters" element="agtkv:SetPropertyResponse"/>
-    </message>
-    <message name="SetPropertyResponse">
-	<part name="parameters" element="agtkv:SetPropertyResponse"/>
-    </message>
     <message name="GetConnectionsRequest">
 	<part name="parameters" element="agtkv:GetConnectionsRequest"/>
     </message>
@@ -645,14 +633,6 @@
 	<operation name="UpdateLifetime">
 	    <input message="agtkv:UpdateLifetimeRequest"/>
 	    <output message="agtkv:UpdateLifetimeResponse"/>
-	</operation>
-	<operation name="GetProperty">
-	    <input message="agtkv:GetPropertyRequest"/>
-	    <output message="agtkv:GetPropertyResponse"/>
-	</operation>
-	<operation name="SetProperty">
-	    <input message="agtkv:SetPropertyRequest"/>
-            <output message="agtkv:SetPropertyResponse"/>
 	</operation>
 	<operation name="SetConnections">
 	    <input message="agtkv:SetConnectionsRequest"/>
