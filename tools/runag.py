@@ -1,8 +1,14 @@
+
 import sys
 import os
 
+import _winreg
+
 # define install path of ag module
-installpath = 'c:\python23\lib\site-packages\AccessGrid3'
+key = "Software\Python\PythonCore\%s\InstallPath"%sys.version[:3]
+pythonKey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key)
+installpath, valuetype = _winreg.QueryValueEx(pythonKey, "")
+installpath = os.path.join(installpath,'lib','site-packages','AccessGrid3')
 
 # reset AGTK_LOCATION env variable
 os.environ['AGTK_LOCATION'] = ''
