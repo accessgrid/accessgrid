@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.181 2006-04-04 21:55:20 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.182 2006-04-13 15:47:17 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.181 2006-04-04 21:55:20 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.182 2006-04-13 15:47:17 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3703,7 +3703,7 @@ class ContentListPanel(wxPanel):
      
         # Get the commands for this app type
         commands = self.parent.GetCommands(item)
-
+              
         log.info("Got commands: (%s) %s" % (item.mimeType, str(commands)))
         
         #
@@ -5052,13 +5052,13 @@ class VenuePropertiesDialog(wxDialog):
         self.list.InsertColumn(2, "TTL")
         self.list.InsertColumn(3, "Purpose")
         self.list.InsertColumn(4, "Type")
-        self.list.InsertColumn(5, "EncryptionKey")
+        self.list.InsertColumn(5, "Encryption Key")
 
         self.list.SetColumnWidth(0, 100)
-        self.list.SetColumnWidth(1, 80)
-        self.list.SetColumnWidth(2, 80)
+        self.list.SetColumnWidth(1, 50)
+        self.list.SetColumnWidth(2, 50)
         self.list.SetColumnWidth(3, 100)
-        self.list.SetColumnWidth(4, 100)
+        self.list.SetColumnWidth(4, 80)
         self.list.SetColumnWidth(5, 100)
         
         self.textLocationLabel = wxStaticText(self,-1,'Text Location')
@@ -5123,19 +5123,19 @@ class VenuePropertiesDialog(wxDialog):
         #sizer = wxStaticBoxSizer(box, wxVERTICAL)
         mainSizer.Add(self.titleText,0,wxEXPAND|wxALL,10)
         mainSizer.Add(self.titleLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
-        mainSizer.Add(self.streamListLabel,0)
+        mainSizer.Add(self.streamListLabel,0, wxLEFT|wxTOP, 10)
         mainSizer.Add(self.list, 1, wxEXPAND| wxALL, 10)
         
         # text location 
         horsizer = wxBoxSizer(wxHORIZONTAL)
-        horsizer.Add(self.textLocationLabel,0)
-        horsizer.Add(self.textLocationText,1,wxEXPAND)
+        horsizer.Add(self.textLocationLabel,0, wxALL, 10)
+        horsizer.Add(self.textLocationText,1, wxRIGHT|wxTOP|wxBOTTOM, 10)
         mainSizer.Add(horsizer,0,wxEXPAND)
         
         # data location
         horsizer = wxBoxSizer(wxHORIZONTAL)
-        horsizer.Add(self.dataLocationLabel,0)
-        horsizer.Add(self.dataLocationText,1,wxEXPAND)
+        horsizer.Add(self.dataLocationLabel,0, wxALL, 10)
+        horsizer.Add(self.dataLocationText,1, wxRIGHT|wxTOP|wxBOTTOM, 10)
         mainSizer.Add(horsizer,0,wxEXPAND)
         
         mainSizer.Add(self.buttonLine,0,wxEXPAND|wxLEFT|wxRIGHT,5)
@@ -5192,7 +5192,7 @@ class AddVideoServiceDialog(wxDialog):
         
         # populate device list with resources
         import socket
-        print 'socket timeout : ', socket.getdefaulttimeout()
+        #print 'socket timeout : ', socket.getdefaulttimeout()
         resources = AGServiceManagerIW(url).GetResources()
         for r in resources:
             item = self.deviceCtrl.Append(r.name)     
