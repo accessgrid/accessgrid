@@ -160,7 +160,7 @@
           <xsd:element name="JoinRequest">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element minOccurs="1" maxOccurs="1" name="clientProfile" type="agtk:ClientProfile" />
+                <xsd:element minOccurs="1" maxOccurs="1" name="clientProfile" type="agtk:ClientProfile" nillable="true" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
