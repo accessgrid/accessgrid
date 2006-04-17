@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.16 2006-03-23 05:52:26 douglask Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.17 2006-04-17 22:02:08 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -280,6 +280,10 @@ class VideoProducerService( AGService ):
             if self.streamDescription.encryptionFlag != 0:
                 options.append( "-K" )
                 options.append( self.streamDescription.encryptionKey )
+                
+            if self.profile:
+                options.append("-X")
+                options.append("site=%s" % self.profile.publicId)
                 
             # Check whether the network location has a "type" attribute
             # Note: this condition is only to maintain compatibility between

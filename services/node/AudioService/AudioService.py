@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.10 2006-02-13 21:08:16 eolson Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.11 2006-04-17 22:02:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -242,6 +242,12 @@ class AudioService( AGService ):
                 else:
                     options.append(self.streamDescription.name)
             options.append( "-f" )
+            
+            # pass public id as site id
+            if self.profile:
+                options.append("-S")
+                options.append(self.profile.publicId)
+
             if sys.platform == "darwin":
                 options.append( "L16-8K-Mono" ) # prevent mac mash converter
             else:                               # issues (at least on this G5).
