@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.279 2006-04-18 17:42:18 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.280 2006-04-18 17:42:48 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.279 2006-04-18 17:42:18 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.280 2006-04-18 17:42:48 turam Exp $"
 
 # Standard Imports
 import os
@@ -64,7 +64,7 @@ def main():
     progressDialog.Show(1)
     progressDialog.UpdateGauge('Starting Venue Client',10)
 
-    if IsOSX() or IsWindows():
+    if IsOSX():
         t = wxTaskBarIcon()
         t.SetIcon(icons.getAGIconIcon())
         
