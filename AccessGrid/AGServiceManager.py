@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.97 2006-02-23 18:04:33 lefvert Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.98 2006-04-18 17:47:14 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.97 2006-02-23 18:04:33 lefvert Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.98 2006-04-18 17:47:14 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -297,9 +297,6 @@ class AGServiceManager:
         return AGServicePackage(os.path.join(self.servicesDir,servicePackageFile))
         
     def GetResources(self):
-        f = file('/tmp/qwe','w')
-        f.write('qweqweqwe')
-        f.close()
         resources = SystemConfig.instance().GetResources()
         ret = map(lambda x: ResourceDescription(x[0]) , resources)
         return ret
