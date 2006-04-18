@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.15 2006-02-24 23:18:26 turam Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.16 2006-04-18 15:58:32 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -224,5 +224,5 @@ if __name__=="__main__":
     # Lookup a bridge using the RegistryClient
     bridgeDescList = rc.LookupBridge()
     for b in bridgeDescList:
-        print 'name: '+b.name+'host '+b.host+"port: "+str(b.port)
+        print 'name: '+b.name+'  host: '+b.host+"  port: "+str(b.port)
         
