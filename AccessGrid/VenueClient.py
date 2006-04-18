@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.303 2006-03-28 17:27:06 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.304 2006-04-18 16:43:51 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.303 2006-03-28 17:27:06 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.304 2006-04-18 16:43:51 turam Exp $"
 
 import sys
 import os
@@ -426,7 +426,7 @@ class VenueClient:
 
             self.nextTimeout = self.__venueProxy.UpdateLifetime(
                 self.profile.connectionId,self.heartBeatTimeout)
-            log.debug("Next Heartbeat needed before: %d", self.nextTimeout)
+            #log.debug("Next Heartbeat needed before: %d", self.nextTimeout)
             
             self.heartBeatTimer = threading.Timer(self.nextTimeout - 5.0,
                                                   self.Heartbeat)
