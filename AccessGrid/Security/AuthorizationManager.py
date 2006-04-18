@@ -2,7 +2,7 @@
 # Name:        AuthorizationManager.py
 # Purpose:     The class that does the authorization work.
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.37 2006-04-11 17:55:11 turam Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.38 2006-04-18 16:33:26 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.37 2006-04-11 17:55:11 turam Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.38 2006-04-18 16:33:26 turam Exp $"
 
 # External Imports
 import os
@@ -279,13 +279,6 @@ class AuthorizationManager:
         
         # Just return the list of actions
         actionlist = self.actions
-        print 'returning actionlist ', actionlist
-        for a in actionlist:
-            print str(a)
-            for r in a.roles:
-                print ' ',str(r)
-                for s in r.subjects:
-                    print '   ', str(s)
         return actionlist[:]
         
     def GetActionsForSubject(self, inSubject):
