@@ -5,17 +5,18 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.107 2006-03-01 15:46:43 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.108 2006-04-18 23:05:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.107 2006-03-01 15:46:43 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.108 2006-04-18 23:05:23 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
 import re
+import socket
 
 from wxPython.wx import *
 from wxPython.lib.dialogs import wxMultipleChoiceDialog
@@ -862,6 +863,9 @@ class NodeManagementClientFrame(wxFrame):
             try:
                 wxBeginBusyCursor()
                 self.nodeServiceHandle.AddServiceManager( url )
+            except (socket.gaierror,socket.error),e:
+                log.exception("Exception in AddHost")
+                self.Error("Can not add service manager to node service:\n%s"%(e.args[1]))
             except:
                 log.exception("Exception in AddHost")
                 self.Error("Can not add service manager to node service.")
