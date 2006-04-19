@@ -2,13 +2,13 @@
 # Name:        ProcessManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.3 2006-03-15 21:30:49 turam Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.4 2006-04-19 16:36:01 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.3 2006-03-15 21:30:49 turam Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.4 2006-04-19 16:36:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import signal
@@ -25,6 +25,8 @@ class ProcessManager:
         signal.signal(signal.SIGCHLD,self.OnSigChild)
         
     def OnSigChild(self,num,event):
+        if not self.processes:
+            return
         try:
             ret = os.waitpid(-1,os.WNOHANG)
             pid = ret[0]
