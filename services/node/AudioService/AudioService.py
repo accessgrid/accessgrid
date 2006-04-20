@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.11 2006-04-17 22:02:07 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.12 2006-04-20 17:07:20 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -95,6 +95,8 @@ class AudioService( AGService ):
 
         if Platform.IsOSX():
             self._x11Started = False
+
+        self.profile = None
 
     def __SetRTPDefaults(self, profile):
         """
@@ -241,12 +243,13 @@ class AudioService( AGService ):
                     options.append( stream_description_no_spaces )
                 else:
                     options.append(self.streamDescription.name)
-            options.append( "-f" )
             
             # pass public id as site id
             if self.profile:
                 options.append("-S")
                 options.append(self.profile.publicId)
+
+            options.append( "-f" )
 
             if sys.platform == "darwin":
                 options.append( "L16-8K-Mono" ) # prevent mac mash converter
@@ -341,6 +344,7 @@ class AudioService( AGService ):
         """
         self.log.info("SetIdentity: %s %s", profile.name, profile.email)
         self.__SetRTPDefaults( profile )
+        self.profile = profile
 
 if __name__ == '__main__':
 
