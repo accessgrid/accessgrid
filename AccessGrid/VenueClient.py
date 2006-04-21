@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.304 2006-04-18 16:43:51 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.305 2006-04-21 17:51:34 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.304 2006-04-18 16:43:51 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.305 2006-04-21 17:51:34 turam Exp $"
 
 import sys
 import os
@@ -940,7 +940,6 @@ class VenueClient:
         server = str(self.venueState.uri).split('/')[2].split(":")[0]
         currentRoom = self.venueState.name.replace(" ", "-")
         currentRoom = currentRoom+"("+server+")"
-        self.chatLocation = currentRoom
         
         # Create conference host
         conferenceHost = "conference"
@@ -949,6 +948,7 @@ class VenueClient:
         for i in range(len(domain)):
             conferenceHost = conferenceHost + '.' + domain[i]
 
+        self.chatLocation = "%s@%s" % (currentRoom,conferenceHost)
         self.jabber.SetChatRoom(currentRoom, conferenceHost)
         self.jabber.SendPresence('available')
                                         
