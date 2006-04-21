@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.34 2006-01-23 17:30:54 turam Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.35 2006-04-21 15:55:49 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.34 2006-01-23 17:30:54 turam Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.35 2006-04-21 15:55:49 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -231,7 +231,7 @@ class AuthorizationUIPanel(wxPanel):
         '''
         Add roles and people to tree.
         '''
-        imageList = wxImageList(19,19)
+        imageList = wxImageList(22,22)
         self.bulletId = imageList.Add(icons.getBulletBitmap())
         self.participantId = imageList.Add(icons.getDefaultParticipantBitmap())
         self.tree.AssignImageList(imageList)
