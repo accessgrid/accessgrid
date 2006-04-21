@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.13 2006-04-21 16:19:55 turam Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.14 2006-04-21 16:21:56 turam Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -31,7 +31,9 @@ class QuickBridgeServer:
         self.bridgeFactory = BridgeFactory(qbexec=qbexec, portRange=portRange, logger=log)
         self.providerProfile = ProviderProfile(name, location)
         self.listenPort = listenPort
-        self.listeningServer = AsyncAGXMLRPCServer( ("", listenPort), intervalSecs=1, callback=self.MaintenanceCallback )
+        self.listeningServer = AsyncAGXMLRPCServer( ("", listenPort), intervalSecs=1, 
+                                                    callback=self.MaintenanceCallback,
+                                                    logRequests=0)
         self._RegisterRemoteFunctions()
         self.registryClient = RegistryClient(url=registryUrl)
         hostname = SystemConfig.instance().GetHostname()
