@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.50 2006-02-10 08:40:10 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.51 2006-04-21 20:58:05 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1034,12 +1034,14 @@ class NodeClient:
         
         try:
             Publisher(hostname,AGServiceManager.ServiceType,
-                                            smurl,port=port)
+                                            smurl,hostname=hostname,
+                                            port=port)
         except:
             log.exception('Error advertising service manager')
         try:
             Publisher(hostname,AGNodeService.ServiceType,
-                                       nsurl,port=port)
+                                       nsurl,hostname=hostname,
+                                       port=port)
         except:
             log.exception('Error advertising node service')
 

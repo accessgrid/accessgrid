@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.305 2006-04-21 17:51:34 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.306 2006-04-21 20:58:49 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.305 2006-04-21 17:51:34 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.306 2006-04-21 20:58:49 turam Exp $"
 
 import sys
 import os
@@ -340,7 +340,7 @@ class VenueClient:
         try:
             threading.Thread(target = ServiceDiscovery.Publisher,
                             args = (self.hostname,VenueClient.ServiceType,
-                                        uri,port)).start()
+                                        uri,self.hostname,port)).start()
         except:
             log.exception("Couldn't publish node service advertisement")
 
@@ -362,7 +362,7 @@ class VenueClient:
             try:
                 threading.Thread(target = ServiceDiscovery.Publisher,
                                 args=(self.hostname,AGServiceManager.ServiceType,
-                                            smuri,port)).start()
+                                            smuri,self.hostname,port)).start()
             except:
                 log.exception("Couldn't publish node service advertisement")
 
@@ -382,7 +382,7 @@ class VenueClient:
             try:
                 threading.Thread(target = ServiceDiscovery.Publisher,
                                 args = (self.hostname,AGNodeService.ServiceType,
-                                            uri,port)).start()
+                                            uri,self.hostname,port)).start()
             except:
                 log.exception("Couldn't publish node service advertisement")
                 

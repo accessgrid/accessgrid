@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.61 2006-01-26 08:42:52 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.62 2006-04-21 20:58:05 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -138,10 +138,10 @@ def main():
     # Advertise the service
     try:
         ServiceDiscovery.Publisher(hostname,AGServiceManager.ServiceType,
-                                        url,port=port)
+                                        url,hostname=hostname,port=port)
         if app.GetOption('nodeService'):
             ServiceDiscovery.Publisher(hostname,AGNodeService.ServiceType,
-                                       nsurl,port=port)
+                                       nsurl,hostname=hostname,port=port)
     except:
         log.exception("Failure advertising service")
     
