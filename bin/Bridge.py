@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.12 2006-03-16 21:01:32 turam Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.13 2006-04-21 16:19:55 turam Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -49,6 +49,7 @@ class QuickBridgeServer:
 
     def JoinBridge(self,multicastNetworkLocation):
         mnl = multicastNetworkLocation
+        log.info("Bridge request: mcast %s %s" % (mnl["host"],str(mnl["port"])))
         uaddr = SystemConfig.instance().GetHostname()
         retBridge = self.bridgeFactory.CreateBridge(id=mnl["id"], maddr=mnl["host"],
                     mport=mnl["port"], mttl=mnl["ttl"], uaddr=uaddr,uport=None)
