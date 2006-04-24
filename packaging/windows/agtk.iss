@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.124 2006-04-20 21:35:17 turam Exp $
+; RCS-ID: $Id: agtk.iss,v 1.125 2006-04-24 18:33:25 turam Exp $
 ;
 
 ; Set externally
@@ -170,10 +170,10 @@ Name: {group}\Documentation\View License; IconFilename: {app}\install\ag.ico; Fi
 
 Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}; Comment: Uninstall the Access Grid Toolkit.
 
-Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\VenueClient3.py"" --personalNode=1"; WorkingDir: %APPDATA%\AccessGrid; Tasks: quicklaunchicon
+Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\install\ag.ico; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\VenueClient3.py"" --personalNode=1"; WorkingDir: %APPDATA%\AccessGrid; Tasks: quicklaunchicon
 
-Name: {commondesktop}\Access Grid 3 Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\VenueClient3.py"" --personalNode=1"; IconFilename: {app}\install\agicons.exe; WorkingDir: %APPDATA%\AccessGrid; Tasks: desktopicon; Comment: Run the Venue Client!
-Name: {group}\Manage Certificates; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\CertificateManager3.py"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe
+Name: {commondesktop}\Access Grid 3 Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\VenueClient3.py"" --personalNode=1"; IconFilename: {app}\install\ag.ico; WorkingDir: %APPDATA%\AccessGrid; Tasks: desktopicon; Comment: Run the Venue Client!
+Name: {group}\Manage Certificates; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\runag3.py"" ""{app}\bin\CertificateManager3.py"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\ag.ico
 
 [Registry]
 Root: HKLM; Subkey: SOFTWARE\{#AppName} {#DirName}; ValueType: none; Flags: uninsdeletekey
