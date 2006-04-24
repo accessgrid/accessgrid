@@ -172,13 +172,14 @@ os.chdir(s)
 # Maybe extra pythonpath (eppath) could be a command line option?
 eppath = os.path.join('/usr', "lib", "python%s"%(options.pyver,), "site-packages")
 
-cmd = '%s %s %s %s %s' % (sys.executable,
-		    os.path.join(BuildDir, 'packaging', 'linux', 'FixAG3Paths.py'),
-		    os.path.join(DestDir, 'bin'),
-		    eppath,
-		    True)
-print "cmd = ", cmd
-os.system(cmd)
+if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5':
+    cmd = '%s %s %s %s %s' % (sys.executable,
+                              os.path.join(BuildDir, 'packaging', 'linux', 'FixAG3Paths.py'),
+                              os.path.join(DestDir, 'bin'),
+                              eppath,
+                              True)
+    print "cmd = ", cmd
+    os.system(cmd)
 
 # save the old path
 if os.environ.has_key('PYTHONPATH'):
