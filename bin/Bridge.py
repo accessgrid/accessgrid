@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.14 2006-04-21 16:21:56 turam Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.15 2006-04-25 19:21:39 turam Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -127,7 +127,7 @@ def main():
     parser = OptionParser()
     parser.add_option("-p", "--listenPort", dest="listenPort", default=defaultListenPort, help="Port to listen on.", type="int")
     parser.add_option("-u", "--registryUrl", dest="registryUrl", default=defaultRegistryUrl, help="Url to the registry.  Bridge will register with it.")
-    parser.add_option("-r", "--portRange", dest="portRange", default=None, help="Minimum and maximum port.", nargs=2, type="int")
+    parser.add_option("-r", "--portRange", dest="portRange", default=[50000,52000], help="Minimum and maximum port, space-separated.", nargs=2, type="int")
     parser.add_option("-q", "--qbexec", dest="qbexec", default=defaultQbexec, help="Location of QuickBridge executable.")
     parser.add_option("-n", "--name", dest="name", default=None, help="Name.")
     parser.add_option("-l", "--location", dest="location", default=None, help="Location.")
@@ -158,7 +158,7 @@ def main():
         print 'Error: No registry url specified'
         parser.print_help()
         sys.exit(-1)
-
+        
     """
     # Signal handler to catch signals and shutdown
     def SignalHandler(signum, frame):
