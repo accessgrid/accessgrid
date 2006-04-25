@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.12 2006-04-20 17:07:20 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.13 2006-04-25 17:20:53 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -245,7 +245,8 @@ class AudioService( AGService ):
                     options.append(self.streamDescription.name)
             
             # pass public id as site id
-            if self.profile:
+            if self.profile and not Platform.IsOSX():
+                # site id not supported in UCL rat yet, which is used on macs.
                 options.append("-S")
                 options.append(self.profile.publicId)
 
