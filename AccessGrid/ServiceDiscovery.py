@@ -49,7 +49,7 @@ try:
 
     class BonjourPublisher:
 
-        def __init__(self,serviceName,regtype,url,hostname=None,port=9999):
+        def __init__(self,serviceName,regtype,url,hostname="",port=9999):
         
             if port == 0:
                 raise PublisherError('Service registered with invalid port %d' % (port,))
