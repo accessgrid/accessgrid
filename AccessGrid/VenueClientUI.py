@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.182 2006-04-13 15:47:17 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.183 2006-04-26 17:14:37 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.182 2006-04-13 15:47:17 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.183 2006-04-26 17:14:37 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -5064,10 +5064,12 @@ class VenuePropertiesDialog(wxDialog):
         self.textLocationLabel = wxStaticText(self,-1,'Text Location')
         self.textLocationText = wxTextCtrl(self,-1,
                                         self.venueClient.GetChatLocation())
+        self.textLocationText.SetEditable(false)
         
         self.dataLocationLabel = wxStaticText(self,-1,'Data Location')
         self.dataLocationText = wxTextCtrl(self,-1,
                                         self.venueClient.venueState.GetDataLocation())
+        self.dataLocationText.SetEditable(false)
 
         self.okButton = wxButton(self, wxID_OK, "Ok")
         
