@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.308 2006-04-27 16:30:55 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.309 2006-04-27 16:48:35 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.308 2006-04-27 16:30:55 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.309 2006-04-27 16:48:35 turam Exp $"
 
 import sys
 import os
@@ -345,8 +345,8 @@ class VenueClient:
         uri = self.server.RegisterObject(vci, path='/VenueClient')
         try:
             threading.Thread(target = ServiceDiscovery.Publisher,
-                             args = (self.hostname,VenueClient.ServiceType,
-                                     uri,port=port)).start()
+                            args = (self.hostname,VenueClient.ServiceType,
+                                        uri,port)).start()
         except:
             log.exception("Couldn't publish node service advertisement")
 
@@ -367,8 +367,8 @@ class VenueClient:
                       smuri)
             try:
                 threading.Thread(target = ServiceDiscovery.Publisher,
-                                 args=(self.hostname,AGServiceManager.ServiceType,
-                                       smuri,port=port)).start()
+                                args=(self.hostname,AGServiceManager.ServiceType,
+                                            smuri,port)).start()
             except:
                 log.exception("Couldn't publish node service advertisement")
 
@@ -388,7 +388,7 @@ class VenueClient:
             try:
                 threading.Thread(target = ServiceDiscovery.Publisher,
                                 args = (self.hostname,AGNodeService.ServiceType,
-                                        uri,port=port)).start()
+                                            uri,port)).start()
             except:
                 log.exception("Couldn't publish node service advertisement")
                 
