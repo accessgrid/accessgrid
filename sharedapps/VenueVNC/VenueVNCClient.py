@@ -87,7 +87,7 @@ class vncSharedAppClient:
             else:
                 execString='vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)                
         elif IsLinux() or IsFreeBSD5():
-            try:
+            if os.path.exists("/usr/local/bin/vncviewer") or os.path.exists("/usr/bin/vncviewer"):
 		execString='vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
             else:
 		execString='chmod +x ./vncviewer; ./vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
