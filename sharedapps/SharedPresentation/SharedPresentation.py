@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.42 2006-02-02 21:03:43 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.43 2006-04-27 20:13:43 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -184,6 +184,7 @@ class PowerPointViewer:
             self.log.exception('can not close presentation....continue anyway')
         # Open a new presentation and keep a reference to it in self.presentation
         
+        file.replace("%20", " ")
         self.presentation = self.ppt.Presentations.Open(file)
         self.lastSlide = self.presentation.Slides.Count
         print '================== set open file to ', file
@@ -455,12 +456,13 @@ class SharedPresentationFrame(wxFrame):
         """
         Callback for "enter" presses in the slide URL text field
         """
-                
+        slidesUrl = slidesUrl.replace("%20", " ")
+        
         try:
             if self.masterCheckBox.IsChecked():
                 # Get slide url from text field
                 slidesUrl = self.slidesCombo.GetValue()
-           
+                
                 # Call the load callback
                 try:
                     self.loadCallback(slidesUrl)
@@ -956,6 +958,7 @@ class SharedPresentation:
         This method handles LOAD events from the UI.
         The event is only sent if the local user is the 'master'
         """
+        path = path.replace("%20", " ")
         self.log.debug("Method SendLoad called; path=(%s)", path)
 
         if self.masterId == self.sharedAppClient.GetPublicId():
@@ -1202,7 +1205,7 @@ class SharedPresentation:
         self.log.debug("Method LoadPresentation called; url=(%s)"%data[1])
 
         slidesUrl = data[1]
-        
+        slidesUrl = slidesUrl.replace("%20", " ")
         # If the slides URL begins with ftps, retrieve the slides
         # from the venue data store
        
@@ -1461,7 +1464,7 @@ class SharedPresentation:
         to the next slide.
         """
         self.log.debug("Method LocalLoad called; slidesUrl=(%s)"%slidesUrl)
-
+        slidesUrl = slidesUrl.replace("%20", " ")
         # If the slides URL begins with ftps, retrieve the slides
         # from the venue data store.
         if slidesUrl.startswith("ftps"):
@@ -1525,6 +1528,7 @@ class SharedPresentation:
 
         # Retrieve the current presentation
         self.presentation = self.sharedAppClient.GetData(SharedPresKey.SLIDEURL)
+        self.presentation.replace("%20", " ")
         errorFlag = false
         # Check i presentation still exists.
 
