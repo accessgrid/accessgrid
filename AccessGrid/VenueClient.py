@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.307 2006-04-26 21:29:13 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.308 2006-04-27 16:30:55 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.307 2006-04-26 21:29:13 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.308 2006-04-27 16:30:55 lefvert Exp $"
 
 import sys
 import os
@@ -146,7 +146,13 @@ class VenueClient:
         self.__InitVenueData()
         
         # Set nodeservice based on preferences
-        if self.preferences.GetPreference(Preferences.NODE_BUILTIN):
+        try:
+            builtin = int(self.preferences.GetPreference(Preferences.NODE_BUILTIN))
+        except Exception, e:
+            log.exception('preference NODE_BUILTIN is not an int: %s' % e)
+            builtin = True
+            
+        if builtin:
             self.nodeServiceUri = self.builtInNodeServiceUri
             self.nodeService = self.builtInNodeService
         else:
@@ -339,8 +345,8 @@ class VenueClient:
         uri = self.server.RegisterObject(vci, path='/VenueClient')
         try:
             threading.Thread(target = ServiceDiscovery.Publisher,
-                            args = (self.hostname,VenueClient.ServiceType,
-                                        uri,port=port)).start()
+                             args = (self.hostname,VenueClient.ServiceType,
+                                     uri,port=port)).start()
         except:
             log.exception("Couldn't publish node service advertisement")
 
@@ -361,8 +367,8 @@ class VenueClient:
                       smuri)
             try:
                 threading.Thread(target = ServiceDiscovery.Publisher,
-                                args=(self.hostname,AGServiceManager.ServiceType,
-                                            smuri,port=port)).start()
+                                 args=(self.hostname,AGServiceManager.ServiceType,
+                                       smuri,port=port)).start()
             except:
                 log.exception("Couldn't publish node service advertisement")
 
@@ -382,7 +388,7 @@ class VenueClient:
             try:
                 threading.Thread(target = ServiceDiscovery.Publisher,
                                 args = (self.hostname,AGNodeService.ServiceType,
-                                            uri,port=port)).start()
+                                        uri,port=port)).start()
             except:
                 log.exception("Couldn't publish node service advertisement")
                 
@@ -1519,6 +1525,7 @@ class VenueClient:
         
         log.debug("SetNodeUrl: Set node service url:  %s" %url)
         self.nodeServiceUri = url
+        self.nodeService = AGNodeServiceIW(url)
         
         # assume that when the node service uri changes, the node service
         # needs identity info
@@ -1573,7 +1580,7 @@ class VenueClient:
         try:
             self.nodeService.SetServiceEnabledByMediaType("audio",enableFlag)
         except:
-            log.info("VenueClient.SetAudioEnabled: Error enabling audio")
+            log.exception("VenueClient.SetAudioEnabled: Error enabling audio")
             
     #
     # User Info

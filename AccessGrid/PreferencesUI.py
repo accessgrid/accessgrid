@@ -348,16 +348,23 @@ class NodePanel(wxPanel):
                 return
             nodeService = self.preferences.venueClient.builtInNodeService
         else:
-            nodeService = AGNodeServiceIW(self.nodeUrlCtrl.GetValue())
-        if not nodeService:
-            return
-            
+            nodeServiceURL = self.nodeUrlCtrl.GetValue()
+            if len(nodeServiceURL):
+                nodeService = AGNodeServiceIW(self.nodeUrlCtrl.GetValue())
+            else:
+                return
+        
         # Get node configurations
         defaultNodeConfigName = self.preferences.GetPreference(Preferences.NODE_CONFIG)
         
         defaultNodeConfigString = ""
 
-        nodeConfigs = nodeService.GetConfigurations()
+        try:
+            nodeConfigs = nodeService.GetConfigurations()
+        except:
+            log.exception("Failed to retreive node configurations")
+            nodeConfigs = []
+
         for nodeConfig in nodeConfigs:
             self.nodeConfigCtrl.Append('%s (%s)' % (nodeConfig.name, nodeConfig.type))
             nodeConfigString = nodeConfig.name + " ("+nodeConfig.type +")"
