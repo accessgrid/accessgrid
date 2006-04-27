@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.52 2006-04-26 21:28:53 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.53 2006-04-27 16:49:36 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -46,6 +46,7 @@ from AccessGrid.interfaces.AGServiceManager_interface import AGServiceManager as
 from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
 
 from AccessGrid.ServiceDiscovery import Browser, Publisher
+from AccessGrid.Version import GetVersion, GetStatus
 
 browser = None
 services = None
@@ -130,11 +131,9 @@ class NodeSetupWizard(wxWizard):
         self.SetPageSize(wxSize(510, 350))
         self.nodeClient = NodeClient(app)
         
-        progress.UpdateOneStep("Initializing the Node Setup Wizard.")
-        
         # Start the node service which will store the configuration
         try:
-            progress.UpdateOneStep("Start the node service.")
+            progress.UpdateGauge("Start the node service.",50)
             self.nodeClient.StartNodeService()
         except:
             log.exception("NodeSetupWizard.__init__: Can not start node service")
@@ -180,7 +179,7 @@ class NodeSetupWizard(wxWizard):
         self.page6.SetPrev(self.page5)
 
         # Run the wizard
-        progress.UpdateOneStep("Open wizard.")
+        progress.UpdateGauge("Open wizard.",75)
         progress.Destroy()
         
         self.RunWizard(self.page1)
@@ -1035,13 +1034,13 @@ class NodeClient:
         try:
             Publisher(hostname,AGServiceManager.ServiceType,
                                             smurl,
-                                            port=port)
+                                            port)
         except:
             log.exception('Error advertising service manager')
         try:
             Publisher(hostname,AGNodeService.ServiceType,
                                        nsurl,
-                                       port=port)
+                                       port)
         except:
             log.exception('Error advertising node service')
 
@@ -1170,12 +1169,13 @@ def main():
     
 
     # Create a progress dialog
-    startupDialog = ProgressDialog("Starting Node Setup Wizard...", "Initializing AccessGrid Toolkit", 5)
+    versionText = "Version %s %s" % (str(GetVersion()), str(GetStatus()) )
+    startupDialog = ProgressDialog(None,icons.getSplashBitmap(), 100, versionText)
     startupDialog.Show()
         
     debug = app.GetDebugLevel()
 
-    startupDialog.UpdateOneStep("Initializing the Node Setup Wizard.")
+    startupDialog.UpdateGauge("Initializing the Node Setup Wizard.",25)
     nodeSetupWizard = NodeSetupWizard(None, debug, startupDialog, app)
     
     browser.Stop()
