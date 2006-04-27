@@ -86,13 +86,14 @@ class vncSharedAppClient:
                 execString='vncviewer -shared -scale 1/2 -passwd %s %s'%(self.passwdFilename,self.vncContact)
             else:
                 execString='vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)                
-        elif IsLinux():
-            execString='chmod +x ./vncviewer; ./vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
+        elif IsLinux() or IsFreeBSD5():
+            try:
+		execString='vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
+            else:
+		execString='chmod +x ./vncviewer; ./vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
         elif IsOSX():
             vncviewer='/Applications/Chicken\ of\ the\ VNC.app/Contents/MacOS/Chicken\ of\ the\ VNC'
             execString='%s --PasswordFile %s %s' % (vncviewer,self.passwdFilename,self.vncContact)
-        elif IsFreeBSD5():
-            execString='chmod +x ./vncviewer; ./vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
         else:
             raise Exception("Unsupported platform")
         print "About the execute: %s"%(execString)
