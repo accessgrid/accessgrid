@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.211 2006-03-19 23:08:28 willing Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.212 2006-04-28 19:34:42 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.211 2006-03-19 23:08:28 willing Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.212 2006-04-28 19:34:42 turam Exp $"
 
 
 # Standard stuff
@@ -415,10 +415,8 @@ class VenueServer:
                 action = action.split('#')[-1]
                 return self.authManager.IsAuthorized(subject, action)
         except:
-            log.exception("Exception in Venue.authorize")
-            print "Exception in Venue.authorize; allowing call by default; should disallow for release"
-            return 1
-            #return 0
+            log.exception("Exception in VenueServer.authorize; rejecting authorization")
+            return 0
     
 
     def dataActivityCB(self,cmd,pathfile):

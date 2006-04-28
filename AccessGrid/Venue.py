@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.268 2006-02-23 16:38:31 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.269 2006-04-28 19:34:42 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.268 2006-02-23 16:38:31 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.269 2006-04-28 19:34:42 turam Exp $"
 
 import sys
 import time
@@ -290,10 +290,8 @@ class Venue:
                     
                 return 0
         except:
-            log.exception("Exception in Venue.authorize")
-            print "Exception in Venue.authorize; allowing call by default; should disallow for release"
-            return 1
-            #return 0
+            log.exception("Exception in Venue.authorize; rejecting authorization")
+            return 0
     
     def __init__(self, server, name, description, dataStoreLocation,
                  oid=None):
