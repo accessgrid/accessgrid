@@ -10,6 +10,25 @@
 #-----------------------------------------------------------------------------    
 import sys, os
 import time
+import glob
+
+# Find OO installation (since each distro seem to need its own location!)
+# needed to be able to import uno later on.
+# Maybe this should be inside an IsLinux(), but we're probably only here
+# if running Linux anyway.
+#
+# Add potential locations into OO_locations
+OO_locations = [
+    '/usr/lib/openoffice.org*/program',
+    '/usr/lib/ooo-2*/program',
+    '/opt/openoffice.org*/program',
+]
+
+for p in OO_locations:
+    OO_pgm_path = glob.glob(p)
+    if len(OO_pgm_path) > 0:
+	sys.path.insert(0, OO_pgm_path[0])
+	break
 
 # bootstrap uno component context       
 import uno
