@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.309 2006-04-27 16:48:35 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.310 2006-04-28 13:48:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.309 2006-04-27 16:48:35 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.310 2006-04-28 13:48:38 lefvert Exp $"
 
 import sys
 import os
@@ -238,6 +238,7 @@ class VenueClient:
         bridge to the first one in the sorted list. Also, check preferences
         to see if any of the retreived bridges are disabled.
         '''
+        
         if not self.currentBridge:
             # Get bridges from registry
             try:
@@ -245,7 +246,7 @@ class VenueClient:
                 bridgeList = self.registryClient.LookupBridge(10)
                 for b in bridgeList:
                     self.bridges[b.guid] = b
-                    
+              
             except:
                 log.exception("__LoadBridges: Can not connect to bridge registry %s ", self.registryUrl)
         
@@ -258,7 +259,7 @@ class VenueClient:
                 bList = self.bridges.values()
                 
                 # sort the bridge list
-                bList.sort(lambda x,y: cmp(x.rank, y.rank))
+                bList.sort(lambda x,y: cmp(int(x.rank), int(y.rank)))
 
                 # connect to first pingable bridge in sorted list
                 for b in bList:
@@ -367,8 +368,8 @@ class VenueClient:
                       smuri)
             try:
                 threading.Thread(target = ServiceDiscovery.Publisher,
-                                args=(self.hostname,AGServiceManager.ServiceType,
-                                            smuri,port)).start()
+                                 args=(self.hostname,AGServiceManager.ServiceType,
+                                       smuri,port)).start()
             except:
                 log.exception("Couldn't publish node service advertisement")
 
@@ -388,7 +389,7 @@ class VenueClient:
             try:
                 threading.Thread(target = ServiceDiscovery.Publisher,
                                 args = (self.hostname,AGNodeService.ServiceType,
-                                            uri,port)).start()
+                                        uri,port)).start()
             except:
                 log.exception("Couldn't publish node service advertisement")
                 
