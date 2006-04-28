@@ -118,19 +118,6 @@
             </xsd:complexType>
           </xsd:element>
 
-          <xsd:element name="IsValidRequest">
-            <xsd:complexType>
-            </xsd:complexType>
-          </xsd:element>
-
-          <xsd:element name="IsValidResponse">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="argname" type="xsd:integer" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-
           <xsd:element name="RegisterServiceRequest">
             <xsd:complexType>
               <xsd:sequence>
@@ -214,6 +201,18 @@
             </xsd:complexType>
           </xsd:element>
 
+  	  <xsd:element name="GetVersionRequest">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetVersionResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="version" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
 
       </schema>
       </types>
@@ -309,6 +308,12 @@
     <message name="IsValidResponse">
 	<part name="parameters" element="agtksm:IsValidResponse"/>
     </message>
+    <message name="GetVersionRequest">
+	<part name="parameters" element="agtksm:GetVersionRequest"/>
+    </message>
+    <message name="GetVersionResponse">
+	<part name="parameters" element="agtksm:GetVersionResponse"/>
+    </message>
 
       
       
@@ -373,6 +378,10 @@
         <input message="agtksm:IsValidRequest"/>
         <output message="agtksm:IsValidResponse"/>
     </operation>
+	<operation name="GetVersion">
+	    <input message="agtksm:GetVersionRequest"/>
+	    <output message="agtksm:GetVersionResponse"/>
+	</operation>
     </portType>
 
 </definitions>

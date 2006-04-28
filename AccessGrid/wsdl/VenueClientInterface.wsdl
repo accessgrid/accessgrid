@@ -203,6 +203,19 @@
             </xsd:complexType>
           </xsd:element>
 
+  	  <xsd:element name="GetVersionRequest">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetVersionResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="version" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
       </schema>
       </types>
 
@@ -298,6 +311,12 @@
     <message name="IsValidResponse">
 	<part name="parameters" element="agvc:IsValidResponse"/>
     </message>
+    <message name="GetVersionRequest">
+	<part name="parameters" element="agvc:GetVersionRequest"/>
+    </message>
+    <message name="GetVersionResponse">
+	<part name="parameters" element="agvc:GetVersionResponse"/>
+    </message>
 
 
 
@@ -358,6 +377,10 @@
         <input message="agvc:IsValidRequest"/>
         <output message="agvc:IsValidResponse"/>
     </operation>
+	<operation name="GetVersion">
+	    <input message="agvc:GetVersionRequest"/>
+	    <output message="agvc:GetVersionResponse"/>
+	</operation>
     </portType>
 
 </definitions>

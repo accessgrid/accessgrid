@@ -246,7 +246,20 @@
             </xsd:complexType>
           </xsd:element> 
 
-      </schema>
+  	  <xsd:element name="GetVersionRequest">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetVersionResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="version" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+     </schema>
     </types>
 
     <message name="CheckpointRequest">
@@ -351,6 +364,12 @@
     <message name="SetEncryptAllMediaResponse">
 	<part name="parameters" element="agtkvs:SetEncryptAllMediaResponse"/>
     </message>
+    <message name="GetVersionRequest">
+	<part name="parameters" element="agtkvs:GetVersionRequest"/>
+    </message>
+    <message name="GetVersionResponse">
+	<part name="parameters" element="agtkvs:GetVersionResponse"/>
+    </message>
 
 
     <portType name="VenueServer">
@@ -421,6 +440,10 @@
 	<operation name="SetEncryptAllMedia">
 	    <input message="agtkvs:SetEncryptAllMediaRequest"/>
 	    <output message="agtkvs:SetEncryptAllMediaResponse"/>
+	</operation>
+	<operation name="GetVersion">
+	    <input message="agtkvs:GetVersionRequest"/>
+	    <output message="agtkvs:GetVersionResponse"/>
 	</operation>
     </portType>
 

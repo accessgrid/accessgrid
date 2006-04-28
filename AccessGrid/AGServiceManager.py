@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.98 2006-04-18 17:47:14 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.99 2006-04-28 20:52:48 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.98 2006-04-18 17:47:14 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.99 2006-04-28 20:52:48 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -22,6 +22,7 @@ import ConfigParser
 from AccessGrid import Log
 from AccessGrid.GUID import GUID
 from AccessGrid import Toolkit
+from AccessGrid import Version
 from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
@@ -427,7 +428,8 @@ class AGServiceManager:
     def IsValid(self):
         return 1
 
-
+    def GetVersion(self):
+        return Version.GetVersion()
 
 
 if __name__ == "__main__":

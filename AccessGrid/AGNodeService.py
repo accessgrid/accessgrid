@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.106 2006-03-01 15:46:00 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.107 2006-04-28 20:52:48 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.106 2006-03-01 15:46:00 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.107 2006-04-28 20:52:48 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -727,4 +727,5 @@ class AGNodeService:
     def IsValid(self):
         return 1
 
-
+    def GetVersion(self):   
+        return Version.GetVersion()

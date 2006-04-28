@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.212 2006-04-28 19:34:42 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.213 2006-04-28 20:52:48 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.212 2006-04-28 19:34:42 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.213 2006-04-28 20:52:48 turam Exp $"
 
 
 # Standard stuff
@@ -175,8 +175,8 @@ class VenueServer:
 
         log.debug("VenueServer initializing authorization manager.")
 
-	# report
-	self.report = None
+        # report
+        self.report = None
 
         # Initialize Auth stuff
         self.authManager = AuthorizationManager()
@@ -354,7 +354,7 @@ class VenueServer:
                                              Role.Administrators)
 
         # Methods you can call without being an admin
-        defaultActionNames = ["GetVenues"]
+        defaultActionNames = ["GetVenues","GetVersion"]
 
         for actionName in defaultActionNames:
             self.authManager.AddRoleToAction(Action.Action(actionName),
@@ -1291,4 +1291,8 @@ class VenueServer:
                             
     def GetServices(self):
         return self.services.values()
+        
+    def GetVersion(self):
+        return Version.GetVersion()
+        
 

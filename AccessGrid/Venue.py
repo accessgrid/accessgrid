@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.269 2006-04-28 19:34:42 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.270 2006-04-28 20:52:48 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.269 2006-04-28 19:34:42 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.270 2006-04-28 20:52:48 turam Exp $"
 
 import sys
 import time
@@ -54,6 +54,7 @@ from AccessGrid.interfaces.Venue_interface import Venue as VenueI
 from AccessGrid.interfaces.Venue_client import VenueIW
 from AccessGrid.interfaces.SharedApplication_interface import SharedApplication as SharedApplicationI
 from AccessGrid.InProcessVenueEventClient import InProcessVenueEventClient
+from AccessGrid import Version
 
 log = Log.GetLogger(Log.VenueServer)
 
@@ -350,6 +351,7 @@ class Venue:
                                         "AllocateMulticastLocation",
                                         "RecycleMulticastLocation",
                                         "GetState",
+                                        "GetVersion"
                                         ]
         # Methods in Venue IW that are not default to everybody:
         #   "Shutdown", "SetEncryptMedia", "RegenerateEncryptionKeys",
@@ -2078,6 +2080,10 @@ class Venue:
                 pass
 
         return ret_dict
+        
+        
+    def GetVersion(self):
+        return Version.GetVersion()
 
 class StreamDescriptionList:
     """

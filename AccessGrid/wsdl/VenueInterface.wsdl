@@ -403,6 +403,19 @@
             </xsd:complexType>
           </xsd:element>
 
+  	  <xsd:element name="GetVersionRequest">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetVersionResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="version" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
       </schema>
     </types>
 
@@ -565,6 +578,12 @@
     <message name="GetDataStoreInformationResponse">
 	<part name="parameters" element="agtkv:GetDataStoreInformationResponse"/>
     </message>
+    <message name="GetVersionRequest">
+	<part name="parameters" element="agtkv:GetVersionRequest"/>
+    </message>
+    <message name="GetVersionResponse">
+	<part name="parameters" element="agtkv:GetVersionResponse"/>
+    </message>
 
     <portType name="Venue">
 	<operation name="Enter">
@@ -677,6 +696,10 @@
 	<operation name="GetDataStoreInformation">
 	    <input message="agtkv:GetDataStoreInformationRequest"/>
 	    <output message="agtkv:GetDataStoreInformationResponse"/>
+	</operation>
+	<operation name="GetVersion">
+	    <input message="agtkv:GetVersionRequest"/>
+	    <output message="agtkv:GetVersionResponse"/>
 	</operation>
     </portType>
 

@@ -264,6 +264,15 @@
 	    </output>
 	</operation>
 
+        <operation name="GetVersion">
+	    <soap:operation soapAction="urn:#GetVersion"/>
+            <input>
+		<soap:body use="literal"/> 
+	    </input>
+            <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
     </binding>
 
     <service name="Venue">
