@@ -89,7 +89,10 @@ class LauncherFrame(wxFrame):
         self.mainButtonList=[];
         self.mainButtonActions=[];
         self.mainButtonList.append(wxButton(self,self.BUTTON_VC_ID,"Venue Client"));
-        self.mainButtonActions.append([self.RunPython,"%s/bin/VenueClient.py"%(agtk_location),[]]);
+        venueClientPath = "%s/bin/VenueClient3.py"%(agtk_location)
+        if not os.path.exists("%s/bin/VenueClient3.py"%(agtk_location)) and os.path.exists("%s/bin/VenueClient.py"%(agtk_location)):
+            venueClientPath = "%s/bin/VenueClient.py"%(agtk_location)
+        self.mainButtonActions.append([self.RunPython,venueClientPath,[]]);
         for button in self.mainButtonList:
             button.Show(false);
         
@@ -109,15 +112,24 @@ class LauncherFrame(wxFrame):
         self.configButtonList=[];
         self.configButtonActions=[];
         self.configButtonList.append(wxButton(self,self.BUTTON_NM_ID,"Node Management"));
-        self.configButtonActions.append([self.RunPython,"%s/bin/NodeManagement.py"%(agtk_location),[]]);
+        nodeManagementPath = "%s/bin/NodeManagement3.py"%(agtk_location)
+        if not os.path.exists("%s/bin/NodeManagement3.py"%(agtk_location)) and os.path.exists("%s/bin/NodeManagement.py"%(agtk_location)):
+            nodeManagementPath = "%s/bin/NodeManagement.py"%(agtk_location)
+        self.configButtonActions.append([self.RunPython,nodeManagementPath,[]]);
         self.configButtonList.append(wxButton(self,self.BUTTON_VM_ID,"Venue Management"));
         self.configButtonActions.append([self.RunPython,"%s/bin/VenueManagement.py"%(agtk_location),[]]);
         self.configButtonList.append(wxButton(self,self.BUTTON_NSW_ID,"Node Setup Wizard"));
-        self.configButtonActions.append([self.RunPython,"%s/bin/NodeSetupWizard.py"%(agtk_location),[]]);
+        nodeSetupWizardPath = "%s/bin/NodeSetupWizard3.py"%(agtk_location)
+        if not os.path.exists("%s/bin/NodeSetupWizard3.py"%(agtk_location)) and os.path.exists("%s/bin/NodeSetupWizard.py"%(agtk_location)):
+            nodeSetupWizardPath = "%s/bin/NodeSetupWizard.py"%(agtk_location)
+        self.configButtonActions.append([self.RunPython,nodeSetupWizardPath,[]]);
         #self.configButtonList.append(wxButton(self,self.BUTTON_CRW_ID,"Certificate Request Wizard"));
         #self.configButtonActions.append([self.RunPython,"%s/bin/CertificateRequestTool.py"%(agtk_location),[]]);
         self.configButtonList.append(wxButton(self,self.BUTTON_CM_ID,"Certificate Management"));
-        self.configButtonActions.append([self.RunPython,"%s/bin/CertificateManager.py"%(agtk_location),[]]);
+        certManagerPath = "%s/bin/CertificateManager3.py"%(agtk_location)
+        if not os.path.exists("%s/bin/CertificateManager3.py"%(agtk_location)) and os.path.exists("%s/bin/CertificateManager.py"%(agtk_location)):
+            certManagerPath = "%s/bin/CertificateManager.py"%(agtk_location)
+        self.configButtonActions.append([self.RunPython,certManagerPath,[]]);
         for button in self.configButtonList:
             button.Show(false);
 
@@ -127,26 +139,32 @@ class LauncherFrame(wxFrame):
         if IsOSX():
             self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit3.app/Contents/MacOS/runns.sh"]]);
         else:
-            self.serviceButtonActions.append([self.RunPython,"%s/bin/AGServiceManager.py"%(agtk_location),["-n"]]);
+            serviceManagerPath = "%s/bin/AGServiceManager3.py"%(agtk_location)
+            if not os.path.exists("%s/bin/AGServiceManager3.py"%(agtk_location)) and os.path.exists("%s/bin/AGServiceManager.py"%(agtk_location)):
+                serviceManagerPath = "%s/bin/AGServiceManager.py"%(agtk_location)
+            self.serviceButtonActions.append([self.RunPython,serviceManagerPath,["-n"]]);
         self.serviceButtonList.append(wxButton(self,self.BUTTON_SM_ID,"Service Manager"));
         if IsOSX():
             self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit3.app/Contents/MacOS/runsm.sh"]]);
         else:
-            self.serviceButtonActions.append([self.RunPython,"%s/bin/AGServiceManager.py"%(agtk_location),[]]);
+            self.serviceButtonActions.append([self.RunPython,serviceManagerPath,[]]);
         self.serviceButtonList.append(wxButton(self,self.BUTTON_VS_ID,"Venue Server"));
         if IsOSX():
             self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit3.app/Contents/MacOS/runvs.sh"]]);
         else:
-            self.serviceButtonActions.append([self.RunPython,"%s/bin/VenueServer.py"%(agtk_location),[]]);
+            venueserverPath = "%s/bin/VenueServer3.py"%(agtk_location)
+            if not os.path.exists("%s/bin/VenueServer3.py"%(agtk_location)) and os.path.exists("%s/bin/VenueServer.py"%(agtk_location)):
+                venueserverPath = "%s/bin/VenueServer.py"%(agtk_location)
+            self.serviceButtonActions.append([self.RunPython,venueserverPath,[]]);
         for button in self.serviceButtonList:
             button.Show(false);
         
         self.debugButtonList=[];
         self.debugButtonActions=[];
         self.debugButtonList.append(wxButton(self,self.BUTTON_VCD_ID,"Venue Client (Debug)"));
-        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/VenueClient.py"%(agtk_location),["-d"]]);
+        self.debugButtonActions.append([self.RunPythonDebug,venueClientPath,["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_CMD_ID,"Certificate Management (Debug)"));
-        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/CertificateManager.py"%(agtk_location),["-d"]]);
+        self.debugButtonActions.append([self.RunPythonDebug,certManagerPath,["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_NSD_ID,"Node Service (Debug)"));
         self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/AGNodeService.py"%(agtk_location),["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_SMD_ID,"Service Manager (Debug)"));
