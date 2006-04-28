@@ -8,5 +8,5 @@ if test -n $WX26PATH; then
     export PYTHONPATH=$PYTHONPATH:$WX26PATH ;
 fi
 
-pythonw "$AGTK_LOCATION/bin/AGLauncher.py" "$AGTK_LOCATION" $*
+pythonw "$AGTK_LOCATION/bin/AGLauncher3.py" "$AGTK_LOCATION" $*
 
