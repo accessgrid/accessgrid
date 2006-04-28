@@ -117,7 +117,10 @@ class LauncherFrame(wxFrame):
             nodeManagementPath = "%s/bin/NodeManagement.py"%(agtk_location)
         self.configButtonActions.append([self.RunPython,nodeManagementPath,[]]);
         self.configButtonList.append(wxButton(self,self.BUTTON_VM_ID,"Venue Management"));
-        self.configButtonActions.append([self.RunPython,"%s/bin/VenueManagement.py"%(agtk_location),[]]);
+        venueManagementPath = "%s/bin/VenueManagement3.py"%(agtk_location)
+        if not os.path.exists("%s/bin/VenueManagement3.py"%(agtk_location)) and os.path.exists("%s/bin/VenueManagement.py"%(agtk_location)):
+            venueManagementPath = "%s/bin/VenueManagement.py"%(agtk_location)
+        self.configButtonActions.append([self.RunPython,venueManagementPath,[]]);
         self.configButtonList.append(wxButton(self,self.BUTTON_NSW_ID,"Node Setup Wizard"));
         nodeSetupWizardPath = "%s/bin/NodeSetupWizard3.py"%(agtk_location)
         if not os.path.exists("%s/bin/NodeSetupWizard3.py"%(agtk_location)) and os.path.exists("%s/bin/NodeSetupWizard.py"%(agtk_location)):
