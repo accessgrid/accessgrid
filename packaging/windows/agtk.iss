@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.127 2006-04-24 21:37:13 turam Exp $
+; RCS-ID: $Id: agtk.iss,v 1.128 2006-04-28 19:27:43 eolson Exp $
 ;
 
 ; Set externally
@@ -129,7 +129,7 @@ Source: bin\NodeSetupWizard3.py; DestDir: {app}\bin; DestName: NodeSetupWizard3.
 Source: NodeServices\*.zip; DestDir: {app}\NodeServices
 
 ; Shared Application packages
-Source: SharedApplications\*.agpkg; DestDir: {app}\SharedApplications
+Source: SharedApplications\*.agpkg3; DestDir: {app}\SharedApplications
 
 ; Default node configuration
 Source: config\nodeConfig\default; DestDir: {app}\config\nodeConfig
@@ -188,13 +188,13 @@ Root: HKCR; Subkey: x-ag-venueclient; ValueType: string; ValueData: Access Grid 
 Root: HKCR; Subkey: x-ag-venueclient\shell; ValueType: string; ValueData: Open; Flags: uninsdeletekey
 Root: HKCR; Subkey: x-ag-venueclient\shell\Open\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe"" ""{app}\bin\runag3.py"" ""{app}\bin\GoToVenue3.py"" --file ""%1"""; Flags: uninsdeletekey
 
-Root: HKCR; Subkey: .agpkg; ValueType: string; ValueData: x-ag-pkg; Flags: uninsdeletekey
-Root: HKCR; Subkey: .agpkg; ValueType: string; ValueName: Content Type; ValueData: application/x-ag-pkg; Flags: uninsdeletekey
-Root: HKCR; Subkey: x-ag-pkg; ValueType: dword; ValueName: EditFlags; ValueData: 00010000; Flags: uninsdeletekey
-Root: HKCR; Subkey: x-ag-pkg; ValueType: dword; ValueName: BrowserFlags; ValueData: 00000008; Flags: uninsdeletekey
-Root: HKCR; Subkey: x-ag-pkg; ValueType: string; ValueData: Access Grid Package; Flags: uninsdeletekey
-Root: HKCR; Subkey: x-ag-pkg\shell; ValueType: string; ValueData: Open; Flags: uninsdeletekey
-Root: HKCR; Subkey: x-ag-pkg\shell\Open\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe"" ""{app}\bin\runag3.py"" ""{app}\bin\agpm3.py"" --gui --package ""%1"""; Flags: uninsdeletekey
+Root: HKCR; Subkey: .agpkg3; ValueType: string; ValueData: x-ag3-pkg; Flags: uninsdeletekey
+Root: HKCR; Subkey: .agpkg3; ValueType: string; ValueName: Content Type; ValueData: application/x-ag3-pkg; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag3-pkg; ValueType: dword; ValueName: EditFlags; ValueData: 00010000; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag3-pkg; ValueType: dword; ValueName: BrowserFlags; ValueData: 00000008; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag3-pkg; ValueType: string; ValueData: Access Grid Package; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag3-pkg\shell; ValueType: string; ValueData: Open; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag3-pkg\shell\Open\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe"" ""{app}\bin\runag3.py"" ""{app}\bin\agpm3.py"" --gui --package ""%1"""; Flags: uninsdeletekey
 
 [Tasks]
 Name: desktopicon; Description: Create &Desktop Icons; GroupDescription: Additional icons:

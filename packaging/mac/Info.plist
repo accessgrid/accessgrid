@@ -39,7 +39,7 @@
                 <dict>  
                         <key>CFBundleTypeExtensions</key>
                         <array>
-                                <string>agpkg</string>
+                                <string>agpkg3</string>
                         </array>
                         <key>CFBundleTypeIconFile</key>
                         <string>document.icns</string>
@@ -57,7 +57,7 @@
         <array>
             <dict>
                 <key>UTTypeIdentifier</key>
-                <string>edu.uchicago.AccessGrid.agpkg</string>
+                <string>edu.uchicago.AccessGrid.agpkg3</string>
                 <key>UTTypeDescription</key>
                 <string>Access Grid Package</string>
                 <key>UTTypeIconFile</key>
@@ -68,10 +68,10 @@
                     <string>AGPK</string>
                     <key>public.filename-extension</key>
                     <array>
-                        <string>agpkg</string>
+                        <string>agpkg3</string>
                     </array>
                     <key>public.mime-type</key>
-                    <string>application/x-ag-pkg</string>
+                    <string>application/x-ag3-pkg</string>
                 </dict>
             </dict>
         </array>

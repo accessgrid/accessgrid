@@ -362,13 +362,13 @@ if __name__ == '__main__':
         ArgvCollector().mainloop()
 
     # Check to see if this was launched to handle an agpkg file.
-    if ".agpkg" in str(sys.argv).lower():
+    if ".agpkg" in str(sys.argv).lower(): # also finds agpkg3 files
         pp = wxPySimpleApp();
         for arg in sys.argv:
-            if ".agpkg" in str(arg).lower():
+            if ".agpkg" in str(arg).lower(): # also finds agpkg3 files
                 # Register an agpkg
                 pkgFile = arg
-                cmd = os.path.join(basePath, "bin", "agpm.py") + " --package %s" % str(pkgFile)
+                cmd = os.path.join(basePath, "bin", "agpm3.py") + " --package %s" % str(pkgFile)
                 os.system(cmd)
     else:
 

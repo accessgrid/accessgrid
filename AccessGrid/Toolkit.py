@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.117 2006-04-13 20:16:58 lefvert Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.118 2006-04-28 19:27:43 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.117 2006-04-13 20:16:58 lefvert Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.118 2006-04-28 19:27:43 eolson Exp $"
 
 # Standard imports
 import os
@@ -558,13 +558,13 @@ class WXGUIApplication(Application):
         # Register .agpkg mime type
         if not IsWindows():
             agpmFile = os.path.join(AGTkConfig.instance().GetBinDir(),
-                                    "agpm.py")
+                                    "agpm3.py")
             agpmCmd = agpmFile + " --gui --package %f"
             MimeConfig.instance().RegisterMimeType(
-                "application/x-ag-pkg",
-                ".agpkg", "agpkg file",
+                "application/x-ag3-pkg",
+                ".agpkg3", "agpkg file",
                 "Access Grid Package",
-                [ ("agpm.py", agpmCmd, "open") ] )
+                [ ("agpm3.py", agpmCmd, "open") ] )
 
         # Register .vv3d
         if not IsWindows():

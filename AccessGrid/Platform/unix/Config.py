@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.66 2006-03-31 06:01:33 douglask Exp $
+# RCS-ID:      $Id: Config.py,v 1.67 2006-04-28 19:27:43 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.66 2006-03-31 06:01:33 douglask Exp $"
+__revision__ = "$Id: Config.py,v 1.67 2006-04-28 19:27:43 eolson Exp $"
 
 import sys
 import os
@@ -569,7 +569,7 @@ class MimeConfig(Config.MimeConfig):
         example: [ (verb,command,commandDesc), ...  ]
 
         Written with this use case example:
-        RegisterMimeType("application/x-ag-pkg", ".agpkg", "agpkg file", "Access Grid Package", ["agpm.py", "/usr/bin/agpm.py --wait-for-input --package", ""])
+        RegisterMimeType("application/x-ag3-pkg", ".agpkg3", "agpkg3 file", "Access Grid 3 Package", ["agpm3.py", "/usr/bin/agpm3.py --wait-for-input --package", ""])
         
         ----
         """
@@ -617,7 +617,7 @@ Patterns=%s
 MimeType=%s
 Comment=%s
 """ % (str(GetVersion()), "*" + extension, mimeType, description) 
-            #   ("2.2", "*.agpkg", "application/x-ag-pkg", "Access Grid Package")
+            #   ("2.2", "*.agpkg", "application/x-ag3-pkg", "Access Grid 3 Package")
 
             kdeAppInfo="""[Desktop Entry]
 Version=%s
@@ -632,7 +632,7 @@ MimeType=%s
 Name=%s
 Comment=%s
 """ % (str(GetVersion()), cmd[1], mimeType, cmd[0], cmd[2])
-            #    ("2.2", "/usr/bin/agpm.py", "application/x-ag-pkg", "Access Grid Package Manager" or "agpm.py", comment)
+            #    ("2.2", "/usr/bin/agpm3.py", "application/x-ag3-pkg", "Access Grid 3 Package Manager" or "agpm3.py", comment)
 
 
         # --- GNOME BASE INFORMATION ---
@@ -647,7 +647,7 @@ Comment=%s
         name=%s
         mime_types=%s
         """ % (defAppId, cmd[1].strip("%f"), defAppId, mimeType)
-        #  %("agpm.py", "/usr/bin/agpm.py", "agpm.py", application/x-ag-pkg")
+        #  %("agpm3.py", "/usr/bin/agpm3.py", "agpm3.py", application/x-ag3-pkg")
 
         gnomeKeyInfo = """
 %s
@@ -661,10 +661,10 @@ Comment=%s
         short_list_application_user_additions=%s
         use_category_default=no
         """ % (mimeType, defAppId, description, defAppId)
-        #     ("x-ag-pkg", "agpm.py", "Access Grid Package", "agpm.py")
+        #     ("x-ag3-pkg", "agpm3.py", "Access Grid 3 Package", "agpm3.py")
 
         gnomeMimeInfo="%s\n        ext: %s\n" % (mimeType, short_extension)  
-        #                                       ("x-ag-pkg", "agpkg")
+        #                                       ("x-ag3-pkg", "agpkg")
 
 
         # --- KDE USER REGISTRATION ---
