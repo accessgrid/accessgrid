@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.311 2006-04-28 20:52:48 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.312 2006-04-28 21:55:27 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.311 2006-04-28 20:52:48 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.312 2006-04-28 21:55:27 lefvert Exp $"
 
 import sys
 import os
@@ -1162,8 +1162,8 @@ class VenueClient:
         try:
             log.debug("Setting node service streams")
             if self.nodeService:
-                for stream in self.streamDescList:
-                    self.UpdateStream(stream)
+                #for stream in self.streamDescList:
+                #    self.UpdateStream(stream)
                 self.nodeService.SetStreams( self.streamDescList )
         except:
             log.exception("Error setting streams")
@@ -1177,7 +1177,7 @@ class VenueClient:
         Apply selections of transport and netloc provider to the given stream.
         """
         found = 0
-     
+               
         # Check streams if they have a network location
         for netloc in stream.networkLocations:
             # If transport is multicast, use the location
@@ -1189,12 +1189,12 @@ class VenueClient:
                   netloc.profile.name == self.currentBridge.name):
                 stream.location = netloc
                 found = 1
-                
-                        
+                                    
         if not found and self.transport == "unicast":
-            # If no unicast network location was found, connect to the bridge to retreive one.
+            # If no unicast network location was found, connect to
+            # the bridge to retreive one.
             if self.currentBridge:
-
+                
                 proxyHost = self.preferences.GetPreference(Preferences.PROXY_HOST)
                 proxyPort = self.preferences.GetPreference(Preferences.PROXY_PORT)
                 qbc = QuickBridgeClient(self.currentBridge.host, self.currentBridge.port,

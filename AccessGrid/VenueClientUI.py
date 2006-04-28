@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.183 2006-04-26 17:14:37 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.184 2006-04-28 21:55:27 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.183 2006-04-26 17:14:37 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.184 2006-04-28 21:55:27 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -5091,8 +5091,9 @@ class VenuePropertiesDialog(wxDialog):
 
         j = 0
         for stream in streamList:
-            for location in stream.networkLocations:
-            
+            locations = filter(lambda x: x.GetType() == self.venueClient.GetTransport(),
+                               stream.networkLocations)
+            for location in locations:
                 self.list.InsertStringItem(j, 'item')
                 self.list.SetStringItem(j, 0, str(location.host))
                 self.list.SetStringItem(j, 1, str(location.port))
