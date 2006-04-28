@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.43 2006-04-27 20:13:43 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.44 2006-04-28 13:36:28 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -456,13 +456,13 @@ class SharedPresentationFrame(wxFrame):
         """
         Callback for "enter" presses in the slide URL text field
         """
-        slidesUrl = slidesUrl.replace("%20", " ")
-        
+    
         try:
             if self.masterCheckBox.IsChecked():
                 # Get slide url from text field
                 slidesUrl = self.slidesCombo.GetValue()
-                
+                slidesUrl = slidesUrl.replace("%20", " ")
+                                
                 # Call the load callback
                 try:
                     self.loadCallback(slidesUrl)
@@ -1528,12 +1528,12 @@ class SharedPresentation:
 
         # Retrieve the current presentation
         self.presentation = self.sharedAppClient.GetData(SharedPresKey.SLIDEURL)
-        self.presentation.replace("%20", " ")
         errorFlag = false
         # Check i presentation still exists.
 
         # Set the slide URL in the UI
         if self.presentation and len(self.presentation) != 0:
+            self.presentation.replace("%20", " ")
             self.log.debug("Got presentation: %s"%self.presentation)
             if self.presentation[:6] == "ftps:":
                 # Remove datastore prefix on local url in UI since master checks
