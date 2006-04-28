@@ -44,8 +44,21 @@ class _Browser:
 
 log = Log.GetLogger('ServiceDiscovery')
 
+haveAvahi = False
+haveBonjour = False
 try:
-    import bonjour
+    import avahi
+    haveAvahi = True
+except ImportError,e:
+    try:
+        import bonjour
+        haveBonjour = True
+    except ImportError,e:
+        log.info("Failed to import bonjour; service discovery disabled")
+        Publisher = _Publisher
+        Browser = _Browser
+
+if haveBonjour :
 
     class BonjourPublisher:
 
@@ -228,10 +241,121 @@ try:
             
     Publisher = BonjourPublisher
     Browser = BonjourBrowser
-except ImportError,e:
-    log.info("Failed to import bonjour; service discovery disabled")
-    Publisher = _Publisher
-    Browser = _Browser
+
+
+if haveAvahi:
+    import os, subprocess, signal, dbus
+
+    class AvahiPublisher:
+
+        def __init__(self,serviceName,regtype,url,port=9999):
+
+            if port == 0:
+                raise PublisherError('Service registered with invalid port %d' % (port,))
+
+            # Create a text record
+            txtRecordTxt = 'url=' + url
+            txtRecord = avahi.string_array_to_txt_array([txtRecordTxt])
+
+            bus = dbus.SystemBus()
+            server = dbus.Interface(bus.get_object(avahi.DBUS_NAME, avahi.DBUS_PATH_SERVER),
+                                    avahi.DBUS_INTERFACE_SERVER)
+            self.group = dbus.Interface(bus.get_object(avahi.DBUS_NAME, server.EntryGroupNew()),
+                                        avahi.DBUS_INTERFACE_ENTRY_GROUP)
+
+            self.registerFlag = 0
+            self.group.AddService(avahi.IF_UNSPEC,
+                                  avahi.PROTO_UNSPEC,
+                                  dbus.UInt32(0),
+                                  serviceName,
+                                  regtype,
+                                  'local.',
+                                  "",
+                                  dbus.UInt16(port),
+                                  txtRecord)
+            self.group.Commit()
+            self.registerFlag = 1
+
+        def Stop(self):
+            if not self.group is None:
+                self.group.Free()
+
+        def IsRegistered(self):
+            return self.registerFlag
+
+
+    class AvahiBrowser:
+
+        ADD = 1
+        DELETE = 2
+
+        def __init__(self,serviceType, browseCallback=None):
+            """
+
+            browseCallback: a function to be called on changes to the 
+                            browsed services.  
+            """
+            self.serviceType = serviceType
+            self.browseCallback = browseCallback
+            self.serviceUrls = dict()
+            self.lock = threading.Lock()
+
+        def __NewService(self, serviceName, url):
+            self.lock.acquire()
+            self.serviceUrls[serviceName] = url
+            self.lock.release()
+
+            # Call callback (to signal add), if registered
+            if self.browseCallback:
+                self.browseCallback(self.ADD, serviceName,url)
+
+        def __RemoveService(self, serviceName):
+            self.lock.acquire()
+            del self.serviceUrls[serviceName]
+            self.lock.release()
+
+            # Call callback (if registered) to signal delete
+            if self.browseCallback:
+                self.browseCallback(self.DELETE, serviceName)
+
+        def Start(self):
+            t = threading.Thread(target=self.Run,name=self.__class__)
+            t.start()
+
+        def Run(self):
+            self.running = 1
+
+            self.subproc = subprocess.Popen(["/usr/bin/ag-avahi-discover.py", self.serviceType],
+                                            bufsize=1, stdout=subprocess.PIPE, close_fds=True)
+            # Loop
+            while self.subproc.poll() == None and self.IsRunning():
+                line = self.subproc.stdout.readline().strip()
+                if not line :
+                    break
+                if line[0] == '+' :
+                    txtparts = line.split('=')
+                    if txtparts and len(txtparts) > 1:
+                        self.__NewService(txtparts[0][1:], txtparts[1])
+                elif line[0] == '-' :
+                    self.__RemoveService(line[1:])
+
+        def Stop(self):
+            os.kill(self.subproc.pid, signal.SIGHUP)
+            self.running = 0
+
+        def IsRunning(self):
+            return self.running
+
+        def GetServices(self):
+            self.lock.acquire()
+            urls = self.serviceUrls
+            self.lock.release()
+            return urls
+            
+            
+    Publisher = AvahiPublisher
+    Browser = AvahiBrowser
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
