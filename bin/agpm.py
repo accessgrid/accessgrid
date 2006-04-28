@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.28 2006-02-28 21:08:40 eolson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.29 2006-04-28 15:06:56 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.28 2006-02-28 21:08:40 eolson Exp $"
+__revision__ = "$Id: agpm.py,v 1.29 2006-04-28 15:06:56 turam Exp $"
 
 import os
 import re
@@ -471,6 +471,8 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+    except SystemExit:
+        pass
     except:
         # A catch all exception -- ideally all exceptions will be caught before this.
         import traceback
