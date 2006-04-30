@@ -71,14 +71,10 @@ mkdir -p etc/AccessGrid3/Services
 mkdir -p etc/AccessGrid3/PackageCache
 mkdir -p etc/AccessGrid3/Logs
 
-# TEMPORARY links for AG2,AG3
-#
-#ln -s AccessGrid etc/AccessGrid3
-#(cd lib/${python}/site-packages && ln -s AccessGrid3/AccessGrid .)
-
 # Create a usr dir, and move dirs thereunder
 mkdir usr
 mv share usr/share
+mv usr/share/doc/AccessGrid usr/share/doc/AccessGrid-${version}
 mv lib usr/lib
 mv bin usr/bin
 
