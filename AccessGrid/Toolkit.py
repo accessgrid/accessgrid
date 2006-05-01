@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.118 2006-04-28 19:27:43 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.119 2006-05-01 20:54:50 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.118 2006-04-28 19:27:43 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.119 2006-05-01 20:54:50 eolson Exp $"
 
 # Standard imports
 import os
@@ -569,7 +569,7 @@ class WXGUIApplication(Application):
         # Register .vv3d
         if not IsWindows():
             vcFile = os.path.join(AGTkConfig.instance().GetBinDir(),
-                                  "GoToVenue.py")
+                                  "GoToVenue3.py")
             vcCmd = vcFile + " --file %f"
             MimeConfig.instance().RegisterMimeType(
                 "application/x-ag-venueclient",
