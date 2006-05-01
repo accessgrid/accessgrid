@@ -111,7 +111,7 @@ except:
 sharedAppDir = os.path.join(DestDir, "SharedApplications")
 sharedAppsToRemove = ["SharedBrowser", "SharedPresentation", "SharedPDF", "SharedQuestionTool"]
 for appName in sharedAppsToRemove:
-    for ext in [".agpkg", ".zip"]:
+    for ext in [".agpkg", ".zip", ".agpkg3"]:
         appPath = os.path.join(sharedAppDir, appName + ext)
         if os.path.exists(appPath):
             os.remove(appPath)
