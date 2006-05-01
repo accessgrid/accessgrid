@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.67 2006-04-28 19:27:43 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.68 2006-05-01 22:51:36 willing Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.67 2006-04-28 19:27:43 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.68 2006-05-01 22:51:36 willing Exp $"
 
 import sys
 import os
@@ -92,12 +92,12 @@ class AGTkConfig(Config.AGTkConfig):
         binDir = os.path.join(self.GetInstallDir(), "bin")
         return binDir
 
-    #def GetDocDir(self):
-    #    if sys.platform == 'darwin':
-    #        self.docDir = os.path.join(self.GetInstallDir(), "doc")
-    #    else:
-    #        self.docDir = os.path.join(self.GetInstallDir(), "share", "doc",
-    #                                   "AccessGrid", "Documentation")
+    def GetDocDir(self):
+        if sys.platform == 'darwin':
+            self.docDir = os.path.join(self.GetInstallDir(), "doc")
+        else:
+            self.docDir = os.path.join(self.GetInstallDir(), "share", "doc",
+                                       "AccessGrid-" + str(GetVersion()))
     #    # Check dir and make it if needed.
     #    if self.initIfNeeded:
     #        if self.docDir is not None and \
@@ -109,7 +109,7 @@ class AGTkConfig(Config.AGTkConfig):
     #    #if self.docDir is not None and not os.path.exists(self.docDir):
     #    #    raise Exception, "AGTkConfig: doc dir does not exist."
     #
-    #        return self.docDir
+            return self.docDir
 
 class UserConfig(Config.UserConfig):
     """
