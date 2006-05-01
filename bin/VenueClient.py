@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.280 2006-04-18 17:42:48 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.281 2006-05-01 21:06:35 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.280 2006-04-18 17:42:48 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.281 2006-05-01 21:06:35 turam Exp $"
 
 # Standard Imports
 import os
@@ -19,18 +19,18 @@ import signal
 from optparse import Option
 
 # GUI related imports
-from wxPython.wx import wxPySimpleApp, wxTaskBarIcon
+from wxPython.wx import wxPySimpleApp, wxTaskBarIcon, wxICON_ERROR
 from twisted.internet import threadedselectreactor
 threadedselectreactor.install()
 
 # Our imports
-from AccessGrid.Toolkit import WXGUIApplication
+from AccessGrid.Toolkit import WXGUIApplication, MissingDependencyError
 from AccessGrid import Log
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.VenueClientUI import VenueClientUI
 from AccessGrid.VenueClientController import VenueClientController
 from AccessGrid.VenueClient import VenueClient
-from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog
+from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog, MessageDialog
 from AccessGrid import icons
 from AccessGrid.Platform import IsOSX,IsWindows
 from AccessGrid.Version import GetVersion, GetStatus
@@ -89,9 +89,25 @@ def main():
     # Try to initialize
     try:
         args = app.Initialize("VenueClient")
+    except MissingDependencyError, e:
+        if e.args[0] == 'SSL':
+	        msg = "The installed version of Python has no SSL support.  Check that you\n"\
+                    "have installed Python from python.org, or ensure SSL support by\n"\
+                    "some other means."
+        else:
+            msg = "The following dependency software is required, but not available:\n\t%s\n"\
+                    "Please satisfy this dependency and restart the software"
+            msg = msg % e.args[0]
+        MessageDialog(None,msg, "Initialization Error",
+                      style=wxICON_ERROR )
+        sys.exit(-1)
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
+        MessageDialog(None,
+                      "The following error occurred during initialization:\n\n\t%s %s" % (e.__class__.__name__,e), 
+                      "Initialization Error",
+                      style=wxICON_ERROR )
         sys.exit(-1)
         
     # Get the log
