@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.78 2006-03-28 19:56:25 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.79 2006-05-01 22:50:07 willing Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.78 2006-03-28 19:56:25 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.79 2006-05-01 22:50:07 willing Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -267,7 +267,7 @@ class AboutDialog(wxDialog):
         Read COPYING.txt file from shared document directory.
         '''
         config = AGTkConfig.instance()
-        path = os.path.join(config.GetInstallDir(), 'COPYING.txt')
+        path = os.path.join(config.GetDocDir(), 'COPYING.txt')
         licenseFile = file(os.path.normpath(path))
         self.licenseText = licenseFile.read() 
         licenseFile.close()
