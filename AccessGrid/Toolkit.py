@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.119 2006-05-01 20:54:50 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.120 2006-05-01 21:05:49 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.119 2006-05-01 20:54:50 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.120 2006-05-01 21:05:49 turam Exp $"
 
 # Standard imports
 import os
@@ -27,6 +27,8 @@ from AccessGrid.ServiceProfile import ServiceProfile
 from AccessGrid.Version import GetVersion
 from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.wsdl import SchemaToPyTypeMap
+
+class MissingDependencyError(Exception): pass
 
 class AppBase:
     """
@@ -183,6 +185,8 @@ class AppBase:
 
        self.__SetLogPreference()
 
+       self.CheckDependencies()
+
        # Check if machine clock is synchronized.
        # - Disabled for 3.0: clock-sync is important when using proxy certs, which we're not
        #self.__CheckForInvalidClock()  
@@ -191,6 +195,10 @@ class AppBase:
            
        return argvResult
        
+    def CheckDependencies(self):
+        if not hasattr(socket,'ssl'):
+            raise MissingDependencyError("SSL")
+	
     def GetPassphrase(self,verifyFlag=0,prompt1="Enter the passphrase to your private key.", prompt2='Verify passphrase:'):
 
         # note: verifyFlag is unused
