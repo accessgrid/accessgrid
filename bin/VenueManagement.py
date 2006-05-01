@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.167 2006-02-08 19:52:49 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.168 2006-05-01 21:12:27 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.167 2006-02-08 19:52:49 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.168 2006-05-01 21:12:27 turam Exp $"
 
 # Standard imports
 import sys
@@ -46,6 +46,7 @@ from AccessGrid.hosting import Client
 from AccessGrid.interfaces.VenueServer_client import VenueServerIW
 from AccessGrid.Venue import VenueIW
 from AccessGrid import Toolkit
+from AccessGrid.Toolkit import MissingDependencyError
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig
 from AccessGrid.Platform import IsWindows, IsOSX
 from AccessGrid.GUID import GUID
@@ -100,7 +101,6 @@ class VenueManagementClient(wxApp):
         
         self.__doLayout()
         self.__setMenuBar()
-        self.__setProperties()
         self.__setEvents()
         self.__loadMyServers()
         self.EnableMenu(0)
@@ -112,7 +112,31 @@ class VenueManagementClient(wxApp):
                            help="URL of venue to enter on startup.")
         self.app.AddCmdLineOption(urlOption)
 
-        self.app.Initialize("VenueManagement")
+        try:
+            self.app.Initialize("VenueManagement")
+        except MissingDependencyError, e:
+            if e.args[0] == 'SSL':
+	            msg = "The installed version of Python has no SSL support.  Check that you\n"\
+                        "have installed Python from python.org, or ensure SSL support by\n"\
+                        "some other means."
+            else:
+                msg = "The following dependency software is required, but not available:\n\t%s\n"\
+                        "Please satisfy this dependency and restart the software"
+                msg = msg % e.args[0]
+            MessageDialog(None,msg, "Initialization Error",
+                          style=wxICON_ERROR )
+            sys.exit(-1)
+        except Exception, e:
+            print "Toolkit Initialization failed, exiting."
+            print " Initialization Error: ", e
+            MessageDialog(None,
+                          "The following error occurred during initialization:\n\n\t%s %s" % (e.__class__.__name__,e), 
+                          "Initialization Error",
+                          style=wxICON_ERROR )
+            sys.exit(-1)
+            
+            
+        self.__setProperties()
         
         self.certmgr = self.app.GetCertificateManager()
         c = self.app.GetContext()

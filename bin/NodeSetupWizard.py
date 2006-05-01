@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.53 2006-04-27 16:49:36 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.54 2006-05-01 21:15:29 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ from wxPython.wizard import *
 # Agtk specific imports
 from AccessGrid.Toolkit import WXGUIApplication, CmdlineApplication
 from AccessGrid import Log
-from AccessGrid.Toolkit import Service
+from AccessGrid.Toolkit import Service, MissingDependencyError
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid import icons
 from AccessGrid.Preferences import Preferences
@@ -1161,9 +1161,25 @@ def main():
   
     try:
         app.Initialize("NodeSetupWizard")
+    except MissingDependencyError, e:
+        if e.args[0] == 'SSL':
+	        msg = "The installed version of Python has no SSL support.  Check that you\n"\
+                    "have installed Python from python.org, or ensure SSL support by\n"\
+                    "some other means."
+        else:
+            msg = "The following dependency software is required, but not available:\n\t%s\n"\
+                    "Please satisfy this dependency and restart the software"
+            msg = msg % e.args[0]
+        MessageDialog(None,msg, "Initialization Error",
+                      style=wxICON_ERROR )
+        sys.exit(-1)
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
+        MessageDialog(None,
+                      "The following error occurred during initialization:\n\n\t%s %s" % (e.__class__.__name__,e), 
+                      "Initialization Error",
+                      style=wxICON_ERROR )
         sys.exit(-1)
 
     
