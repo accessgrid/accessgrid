@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.64 2006-04-27 16:49:00 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.65 2006-05-01 21:45:05 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ from optparse import Option
 # Our imports
 from AccessGrid import Log
 from AccessGrid.hosting import SecureServer, InsecureServer
-from AccessGrid.Toolkit import Service
+from AccessGrid.Toolkit import Service, MissingDependencyError
 from AccessGrid import Toolkit
 from AccessGrid.Platform import IsLinux
 from AccessGrid.Platform.Config import AGTkConfig, SystemConfig
@@ -68,6 +68,10 @@ def main():
     # Initialize the application
     try:
         app.Initialize(Log.ServiceManager)
+    except MissingDependencyError, e:
+        print "Toolkit Initialization failed, exiting."
+        print " Initialization Error: Missing Dependency: ", e
+        sys.exit(-1)
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e

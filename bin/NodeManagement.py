@@ -3,7 +3,7 @@
 # Name:        NodeManagement.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.30 2006-01-09 20:16:14 turam Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.31 2006-05-01 21:44:42 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -13,8 +13,9 @@ import sys
 from wxPython.wx import *
 
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
-from AccessGrid.Toolkit import WXGUIApplication
+from AccessGrid.Toolkit import WXGUIApplication, MissingDependencyError
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
+from AccessGrid.UIUtilities import MessageDialog
 
 log = None
 app = None
@@ -44,6 +45,7 @@ class MyApp(wxApp):
         self.SetTopWindow(frame)
 
         return true
+        
 
 def main():
     global log
@@ -53,17 +55,31 @@ def main():
 
     app = WXGUIApplication()
 
+    nodeMgmtApp = MyApp(0)
     try:
         app.Initialize("NodeManagement")
+    except MissingDependencyError, e:
+        if e.args[0] == 'SSL':
+	        msg = "The installed version of Python has no SSL support.  Check that you\n"\
+                    "have installed Python from python.org, or ensure SSL support by\n"\
+                    "some other means."
+        else:
+            msg = "The following dependency software is required, but not available:\n\t%s\n"\
+                    "Please satisfy this dependency and restart the software"
+            msg = msg % e.args[0]
+        MessageDialog(None,msg, "Initialization Error",
+                      style=wxICON_ERROR )
+        sys.exit(-1)
     except Exception, e:
-        print "Toolkit initialization failed."
+        print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
+        MessageDialog(None,
+                      "The following error occurred during initialization:\n\n\t%s %s" % (e.__class__.__name__,e), 
+                      "Initialization Error",
+                      style=wxICON_ERROR )
         sys.exit(-1)
 
-    
     log = app.GetLog()
-    
-    nodeMgmtApp = MyApp(0)
     
     nodeMgmtApp.MainLoop()
 

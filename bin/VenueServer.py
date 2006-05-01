@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.73 2006-03-16 22:32:18 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.74 2006-05-01 21:46:28 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.73 2006-03-16 22:32:18 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.74 2006-05-01 21:46:28 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -26,7 +26,7 @@ from optparse import Option
 from twisted.internet import threadedselectreactor
 threadedselectreactor.install()
 from twisted.internet import reactor
-from AccessGrid.Toolkit import Service
+from AccessGrid.Toolkit import Service, MissingDependencyError
 from AccessGrid.VenueServer import VenueServer
 from AccessGrid import Log
 from AccessGrid.Platform.Config import SystemConfig
@@ -79,6 +79,10 @@ def main():
     # Try to initialize
     try:
         args = app.Initialize("VenueServer")
+    except MissingDependencyError, e:
+        print "Toolkit Initialization failed, exiting."
+        print " Initialization Error: Missing Dependency: ", e
+        sys.exit(-1)
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
@@ -155,6 +159,8 @@ Please run the CertificateManager to request and retrieve \n\
 a certificate before attempting to start the VenueServer again."""
         print msg
         log.exception('Attempt to start VenueServer without a certificate')
+    except SystemExit, e:
+        pass
     except Exception, e:
         print e
         msg = "Error occurred running server: %s" % (str(e))
