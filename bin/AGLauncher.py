@@ -371,7 +371,7 @@ if __name__ == '__main__':
             if ".agpkg" in str(arg).lower(): # also finds agpkg3 files
                 # Register an agpkg
                 pkgFile = arg
-                cmd = os.path.join(basePath, "bin", "agpm3.py") + " --package %s" % str(pkgFile)
+                cmd = os.path.join(basePath, "bin", "agpm3.py") + " --gui --package %s" % str(pkgFile)
                 os.system(cmd)
     else:
 
