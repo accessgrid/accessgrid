@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.95 2006-01-23 06:55:26 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.96 2006-05-01 14:45:46 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.95 2006-01-23 06:55:26 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.96 2006-05-01 14:45:46 lefvert Exp $"
 
 import os
 import time
@@ -783,6 +783,7 @@ def DownloadFile(identity, download_url, destination, size, checksum,
                      user=None,passw=None,progressCB = None):
     log.info("DownloadFile: url %s file %s", download_url,destination)
     try:
+        download_url = download_url.replace("%20"," ")
         ret = _DownloadFile(download_url,destination,user=user,passw=passw,progressCB=progressCB)
     except FTPSClient.UserCancelled:
         raise UserCancelled(download_url)
