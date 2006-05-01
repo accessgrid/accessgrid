@@ -14,8 +14,12 @@ Python (2.3)
 win32all (ver 154+)
 wxPython (2.6+)
 
+Note: Use wxPython (2.5) if you will be running the AGTk 2.4 
+Shared Browser
+
 Note:  ActiveState Python does not include SSL support, so cannot be
 used without undesirable patching.
+
 
 Reporting Bugs and Feature Requests
 ===================================
