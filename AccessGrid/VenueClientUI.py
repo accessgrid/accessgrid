@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.184 2006-04-28 21:55:27 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.185 2006-05-02 14:42:15 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.184 2006-04-28 21:55:27 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.185 2006-05-02 14:42:15 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -5170,8 +5170,6 @@ class AddVideoServiceDialog(wxDialog):
         self.hostText = wxStaticText(self, -1, "Host:", style=wxALIGN_LEFT)
         self.hostCtrl = wxComboBox(self, -1, "",size=(300,-1))
         
-        self.browser = ServiceDiscovery.Browser('_servicemanager._tcp', self.BrowseCallback)
-        self.browser.Start()
         self.exists = threading.Event()
         self.exists.set()
         
@@ -5180,6 +5178,9 @@ class AddVideoServiceDialog(wxDialog):
         
         self.okButton = wxButton(self, wxID_OK, "OK")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+
+        self.browser = ServiceDiscovery.Browser('_servicemanager._tcp', self.BrowseCallback)
+        self.browser.Start()
 
         EVT_COMBOBOX(self,self.hostCtrl.GetId(),self.OnHostSelect)
         EVT_TEXT_ENTER(self,self.hostCtrl.GetId(),self.OnHostSelect)
