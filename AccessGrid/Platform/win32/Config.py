@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.70 2006-05-02 15:24:29 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.71 2006-05-02 15:50:09 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.70 2006-05-02 15:24:29 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.71 2006-05-02 15:50:09 lefvert Exp $"
 
 import os
 import socket
@@ -40,8 +40,7 @@ class AGTkConfig(Config.AGTkConfig):
     """
     
     AGTkRegBaseKey = "SOFTWARE\Access Grid Toolkit 3\%s" % GetVersion()
-    print '\n\n\n++++++++++++++++++++++++++',AGTkRegBaseKey
-        
+          
     def instance(initIfNeeded=0):
         if AGTkConfig.theAGTkConfigInstance == None:
             AGTkConfig(initIfNeeded)
