@@ -245,6 +245,7 @@ if haveBonjour :
 
 if haveAvahi:
     import os, subprocess, signal, dbus
+    from AccessGrid.Platform.Config import AGTkConfig
 
     class AvahiPublisher:
 
@@ -324,8 +325,9 @@ if haveAvahi:
 
         def Run(self):
             self.running = 1
-
-            self.subproc = subprocess.Popen(["/usr/bin/ag-avahi-discover.py", self.serviceType],
+            avahiDiscoverExe = os.path.join(AGTkConfig.instance().GetBinDir(),
+                                            'ag-avahi-discover3.py')
+            self.subproc = subprocess.Popen([avahiDiscoverExe, self.serviceType],
                                             bufsize=1, stdout=subprocess.PIPE, close_fds=True)
             # Loop
             while self.subproc.poll() == None and self.IsRunning():
