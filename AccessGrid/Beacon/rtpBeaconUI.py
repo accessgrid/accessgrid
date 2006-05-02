@@ -6,12 +6,12 @@
 # Author:      Thomas Uram, Susanne Lefvert
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeaconUI.py,v 1.12 2006-03-23 22:36:59 lefvert Exp $
+# RCS-ID:      $Id: rtpBeaconUI.py,v 1.13 2006-05-02 21:49:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
 
-__revision__ = "$Id: rtpBeaconUI.py,v 1.12 2006-03-23 22:36:59 lefvert Exp $"
+__revision__ = "$Id: rtpBeaconUI.py,v 1.13 2006-05-02 21:49:12 turam Exp $"
 
 from wxPython.wx import *
 from wxPython.grid import *
@@ -109,8 +109,8 @@ class BeaconFrame(wxFrame):
     def OnLeftClick(self, event):
         row = event.GetRow()
         col = event.GetCol()
-        sender = self.sources[row-1]
-        receiver = self.sources[col-1]
+        sender = self.sources[col]
+        receiver = self.sources[row]
         self.label.SetLabel("From "+str(self.beacon.GetSdes(sender))+" to "+str(self.beacon.GetSdes(receiver)))
         
     def ChangeValuesThread(self):
