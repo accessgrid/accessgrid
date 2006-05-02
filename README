@@ -26,13 +26,25 @@ and text with the basic toolkit. The experience is much like
 traditional videoconferencing except that it's multipoint, multistream
 video, with hands-free, echo-free, full-duplex audio. Additionally,
 the basic AGTk provides data sharing mechanisms for users to store
-data in the Virtual Venue. 
+data in the Virtual Venue, and to share applications using mechanisms
+provided by the Venue Server, including shared presentation viewing
+and shared web browsing.
+
 
 . For Developers
 
 Developers wishing to contribute to the Access Grid Project or the
 Access Grid Toolkit should get familiar with the source code and the
-tools, and then decide what part of the AGTk to work on. 
+tools, and then decide what part of the AGTk to work on.  Developer
+documentation is available at:
+
+http://www.mcs.anl.gov/fl/research/accessgrid/software/developer.html
+
+Also, the ag-dev mailing list is a great place to discuss development
+work.  Subscription information is online here:
+
+http://www.mcs.anl.gov/fl/research/accessgrid/about/maillist.html
+
 
 . For Service Providers
 
@@ -151,5 +163,3 @@ Individuals
 - Stephen P. Booth
 - Tom Coffin
 - Wesley Miaw
-
-If we've overlooked someone, please let us know.
