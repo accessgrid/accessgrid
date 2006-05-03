@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.17 2006-04-17 22:02:08 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.18 2006-05-03 17:21:56 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -274,9 +274,8 @@ class VideoProducerService( AGService ):
             options.append( "-C" )
             options.append( str(self.streamname.value) )
             if IsOSX():
-                if self.transmitOnStart.value:
-                    options.append( "-X")
-                    options.append( "transmitOnStartup=1")
+                options.append( "-X")
+                options.append( "transmitOnStartup=1")
             if self.streamDescription.encryptionFlag != 0:
                 options.append( "-K" )
                 options.append( self.streamDescription.encryptionKey )
