@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 
 import sys, os, time
 from optparse import OptionParser
@@ -47,7 +47,7 @@ print "pyver = ", pyver
 TmpDir = os.tmpnam()
 if not os.path.exists(TmpDir):
     os.mkdir(TmpDir)
-RpmDir = os.path.join(TmpDir,"AccessGrid-%s-%s" % (version,metainfo))
+RpmDir = os.path.join(TmpDir,"AccessGrid-%s-%s" % (version, metainfo))
 if not os.path.exists(RpmDir):
     os.mkdir(RpmDir)
 StartDir = os.getcwd()
@@ -58,13 +58,13 @@ StartDir = os.getcwd()
 print "** Building AccessGrid RPMs"
 # - build the targz file name for the AG packages
 os.chdir(DestDir)
-tar_dst_filename = "AccessGrid-%s-%s.tar.gz" % (version,metainfo)
+tar_dst_filename = "AccessGrid-%s-%s.tar.gz" % (version, metainfo)
 
 # Set the version, release number and python version in Slack.build-ag
 os.chdir(StartDir)
 spec_in = 'Slack.build-ag.in'
 spec_out = 'Slack.build-ag'
-cmd = 'sed -e s/VERSION/%s/ -e s/RELEASE/%s/ -e s/pythonPYVER/python%s/ %s > %s' % (version, metainfo, pyver, spec_in, spec_out)
+cmd = 'sed -e s/VERSION/%s/ -e s/RELEASE/%s/ -e s/PYVER/%s/ %s > %s' % (version, metainfo, pyver, spec_in, spec_out)
 os.system(cmd)
 
 # Copy ALSA devices setup script
@@ -78,14 +78,16 @@ print "cmd = ", cmd
 os.system(cmd)
 
 # - copy the rpms to the dist dir
+# pkgname format is set in Slack.build-ag.in
+pkgname = "AccessGrid-%s-%s.tgz" % (version, metainfo)
 print "** Copying RPMs to the RPM directory **"
-cmd = "cp AccessGrid-%s-i486-%s.tgz %s" % (version,metainfo,RpmDir)
+cmd = "cp %s %s" % (pkgname, RpmDir)
 print "cmd = ", cmd
 os.system(cmd)
 
 # Now that the AccessGrid pkg has been copied to the "RpmDir" for packaging,
 # remove it from here
-cmd = "rm -f AccessGrid-%s-i486-%s.tgz" % (version,metainfo)
+cmd = "rm -f %s" % (pkgname)
 os.system(cmd)
 
 #
@@ -93,7 +95,7 @@ os.system(cmd)
 #
 installsh_in = os.path.join(BuildDir,'packaging','linux','slackware','install.sh')
 installsh_out = os.path.join(RpmDir,'install.sh')
-cmd = 'sed -e s/AG_VER=VER/AG_VER=\\"%s-i486-%s\\"/ -e s/pythonPYVER/python%s/ %s > %s' % (version,metainfo,pyver,installsh_in,installsh_out)
+cmd = 'sed -e s/AG_VER=VER/AG_VER=\\"%s-%s\\"/ -e s/pythonPYVER/python%s/ %s > %s' % (version, metainfo, pyver, installsh_in, installsh_out)
 print "cmd = ", cmd
 os.system(cmd)
 os.chmod(installsh_out,0755)
@@ -110,10 +112,10 @@ os.system(cmd)
 # Create the targz file including the rpms and install script
 #
 print "Creating the AccessGrid install bundle"
-targzfile = 'AccessGrid-%s-%s.tar.gz' % (version,metainfo)
+targzfile = 'AccessGrid-%s-%s-install.tar.gz' % (version, metainfo)
 targzpath=os.path.join(SourceDir,targzfile)
 os.chdir(TmpDir)
-cmd = "tar czf %s AccessGrid-%s-%s" % (targzpath,version,metainfo)
+cmd = "tar czf %s AccessGrid-%s-%s" % (targzpath, version, metainfo)
 print "cmd = ", cmd
 os.system(cmd)
 

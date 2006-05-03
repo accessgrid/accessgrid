@@ -13,7 +13,8 @@ kdedir=${sharedir}/applnk
 buildroot=/var/tmp/${name}-${version}
 debug_package=${nil}
 
-python=pythonPYVER
+pyver=PYVER
+python=python${pyver}
 arch=${arch:-i486}
 here=`pwd`
 if [ $# -lt 1 ]; then
@@ -21,7 +22,7 @@ if [ $# -lt 1 ]; then
   exit 4
 fi
 srcdir=${1}
-pkgname=${name}-${version}-${arch}-${release}.tgz
+pkgname=${name}-${version}-${release}.tgz
 xdgfiles=${here}/../xdg
 
 
