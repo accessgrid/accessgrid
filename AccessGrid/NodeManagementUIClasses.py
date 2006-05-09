@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.108 2006-04-18 23:05:23 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.109 2006-05-09 16:25:28 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.108 2006-04-18 23:05:23 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.109 2006-05-09 16:25:28 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -105,7 +105,8 @@ def BuildNodeServiceUrl(url,defaultproto,defaultport,defaultpath):
 
 class ServiceChoiceDialog(wxDialog):
     def __init__(self, parent, id, title, choices, serviceType, size=wxSize(450,130) ):
-
+    
+    
         wxDialog.__init__(self, parent, id, title, style =
                           wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER,
                           size=size)
@@ -619,7 +620,7 @@ class NodeManagementClientFrame(wxFrame):
             url = dlg.GetValue()
             dlg.Destroy()
             
-            url = BuildNodeServiceUrl(url,'https',11000,'NodeService')
+            url = BuildNodeServiceUrl(url,'http',11000,'NodeService')
             
             if url not in self.recentNodeServiceList:
                 self.recentNodeServiceList.append(url)
@@ -856,7 +857,7 @@ class NodeManagementClientFrame(wxFrame):
             url = dlg.GetValue()
             dlg.Destroy()
 
-            url = BuildNodeServiceUrl(url,'https',11000,'ServiceManager')
+            url = BuildNodeServiceUrl(url,'http',11000,'ServiceManager')
 
             if url not in self.recentServiceManagerList:
                 self.recentServiceManagerList.append(url)
