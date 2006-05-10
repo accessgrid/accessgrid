@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.84 2006-02-28 20:25:07 eolson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.85 2006-05-10 18:38:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.84 2006-02-28 20:25:07 eolson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.85 2006-05-10 18:38:46 turam Exp $"
 
 import os
 import string
@@ -502,4 +502,29 @@ def IsExecFileAvailable(file, path=None):
 if __name__ == "__main__":
     SubmitBug("This is just a test for the Bug Reporting Tool", None,
               "",logFile=NO_LOG)
+
+
+def BuildServiceUrl(url,defaultproto,defaultport,defaultpath):
+    # - define a mess of regular expressions for matching venue urls
+    hostre = re.compile('^[\w.-]*$')
+    hostportre = re.compile('^[\w.-]*:[\d]*$')
+    protohostre = re.compile('^[\w]*://[\w.-]*$')
+    protohostportre = re.compile('^[\w]*://[\w.-]*:[\d]*$')
+
+    # - check for host only
+    if hostre.match(url):
+        host = url
+        url = '%s://%s:%d/%s' % (defaultproto,host,defaultport,defaultpath)
+    # - check for host:port
+    elif hostportre.match(url):
+        hostport = url
+        url = '%s://%s/%s' % (defaultproto,hostport,defaultpath)
+    elif protohostre.match(url):
+        protohost = url
+        url = '%s:%d/%s' % (protohost,defaultport,defaultpath)
+    elif protohostportre.match(url):
+        protohostport = url
+        url = '%s/%s' % (protohostport,defaultpath)
+    return url
+
 
