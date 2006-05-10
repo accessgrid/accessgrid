@@ -4,8 +4,9 @@ description = Vic-based video service to send video to multicast address
 capabilities = Capability1
 executable = VideoProducerService.py
 platform = neutral
-version = 3.2
+version = 3.3
 
 [Capability1]
 role = producer
 type = video
+
