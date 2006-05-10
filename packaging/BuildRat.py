@@ -33,6 +33,10 @@ def build_win(dir):
 def build_linux(dir):
     os.chdir(dir)
     os.system('./rat-build')
+    
+def build_freebsd(dir):
+    os.chdir(dir)
+    os.system('./rat-build-freebsd')
 
 
 # Set plat-specific bits
@@ -53,6 +57,15 @@ elif sys.platform == 'linux2':
                  os.path.join(dir,'rat-4.2.22-kill') ]
     copyExe = 'cp'
     build = build_linux
+elif sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
+    dir = os.path.join(RATDIR,'rat')
+    ratFiles = [ os.path.join(dir,'rat'),
+                 os.path.join(dir,'rat-4.2.22'),
+                 os.path.join(dir,'rat-4.2.22-media'),
+                 os.path.join(dir,'rat-4.2.22-ui'),
+                 os.path.join(dir,'rat-4.2.22-kill') ]
+    copyExe = 'cp'
+    build = build_freebsd
 else:
     raise Exception, 'Unsupported platform: ' + sys.platform
     

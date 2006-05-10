@@ -24,7 +24,7 @@ def build_darwin(dir):
     os.chdir(dir)
     os.system('./vic-build')
 
-def build_freebsd5(dir):
+def build_freebsd(dir):
     os.chdir(dir)
     os.system('./vic-build-freebsd')
 
@@ -42,10 +42,10 @@ elif sys.platform == 'darwin':
     VIC_EXE = os.path.join(VICDIR,'vic','vic')
     copyExe = 'cp -p'
     build = build_darwin
-elif sys.platform == 'freebsd5':
+elif sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
     VIC_EXE = os.path.join(VICDIR,'vic','vic')
     copyExe = 'cp'
-    build = build_freebsd5
+    build = build_freebsd
 else:
     raise Exception, 'Unsupported platform: ' + sys.platform
     

@@ -25,7 +25,7 @@ if sys.platform == 'win32':
     TARGET = os.path.join(TARGETDIR,'src','Debug','uclmm.lib')
     copyExe = 'copy'
     build = build_win
-elif sys.platform in ['linux2','darwin','freebsd5']:
+elif sys.platform in ['linux2','darwin','freebsd5', 'freebsd6']:
     TARGET = os.path.join(TARGETDIR,'src','libuclmmbase.a')
     copyExe = 'cp -p'
     build = build_linux

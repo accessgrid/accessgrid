@@ -19,7 +19,7 @@ if sys.platform == 'win32':
     VIC_EXE = 'vic.exe'
     vicFiles = [VIC_EXE]
     copyExe = 'copy'
-elif sys.platform == 'linux2' or sys.platform == 'freebsd5':
+elif sys.platform == 'linux2' or sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
     VIC_EXE = 'vic'
     vicFiles = [VIC_EXE]
     copyExe = 'cp'

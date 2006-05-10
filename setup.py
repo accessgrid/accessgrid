@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.103 2006-05-01 01:46:07 douglask Exp $
+# RCS-ID:      $Id: setup.py,v 1.104 2006-05-10 01:35:39 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -231,7 +231,7 @@ packages = ['AccessGrid3.AccessGrid',
 if sys.platform == 'win32':
     packages.append('AccessGrid3.AccessGrid.Platform.win32')
 
-if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5':
+if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
     packages.append('AccessGrid3.AccessGrid.Platform.unix')
 
 setup (

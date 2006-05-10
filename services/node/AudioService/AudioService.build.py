@@ -18,7 +18,7 @@ if sys.platform == 'win32':
                  'ratui.exe',
                  'rat-kill.exe' ]
     copyExe = 'copy'
-elif sys.platform == 'linux2' or sys.platform == 'freebsd5':
+elif sys.platform == 'linux2' or sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
     ratFiles = [ 'rat',
                  'rat-4.2.22',
                  'rat-4.2.22-media',
