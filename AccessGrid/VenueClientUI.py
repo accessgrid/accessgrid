@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.187 2006-05-10 18:42:09 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.188 2006-05-10 21:20:21 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.187 2006-05-10 18:42:09 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.188 2006-05-10 21:20:21 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1185,9 +1185,22 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 if ret == wxID_OK:
                     smUrl,resource = d.GetValue()
                     p = self.venueClient.GetPreferences()
+                    
+                    # Add the service to the service manager
                     serviceDesc = AGServiceManagerIW(smUrl).AddServiceByName('VideoProducerService.zip',
                                                     resource,None,p.GetProfile())
                     self.venueClient.nodeService.SetServiceEnabled(serviceDesc.uri,1)
+                                                    
+                    # Add the service manager to the service
+                    serviceManagers = self.venueClient.nodeService.GetServiceManagers()
+                    found = 0
+                    for s in serviceManagers:
+                        if s.uri == smUrl:
+                            found = 1
+                            break
+                    if not found:
+                        log.debug("Adding service manager")
+                        self.venueClient.nodeService.AddServiceManager(smUrl)
                     
         except:
             self.Error("Error enabling/disabling video capture", "Error enabling/disabling video capture")
