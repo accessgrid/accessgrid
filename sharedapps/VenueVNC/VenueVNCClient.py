@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        VenueVNCClient.py
 # RCS-ID:      
@@ -12,7 +12,7 @@ import base64
 from AccessGrid import Events
 from AccessGrid import Toolkit
 from AccessGrid.Platform.Config import UserConfig
-from AccessGrid.Platform import IsWindows,IsLinux,IsOSX,IsFreeBSD5
+from AccessGrid.Platform import IsWindows,IsLinux,IsOSX,IsFreeBSD
 from AccessGrid import DataStore
 from AccessGrid import Platform
 from AccessGrid.GUID import GUID
@@ -86,7 +86,7 @@ class vncSharedAppClient:
                 execString='vncviewer -shared -scale 1/2 -passwd %s %s'%(self.passwdFilename,self.vncContact)
             else:
                 execString='vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)                
-        elif IsLinux() or IsFreeBSD5():
+        elif IsLinux() or IsFreeBSD():
             if os.path.exists("/usr/local/bin/vncviewer") or os.path.exists("/usr/bin/vncviewer"):
 		execString='vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
             else:
@@ -117,3 +117,4 @@ if __name__ == "__main__":
                                      "profile")
     clientProfile = ClientProfile(clientProfileFile)
     sb = vncSharedAppClient( appUrl, clientProfile )
+

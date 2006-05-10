@@ -37,7 +37,7 @@ from optparse import Option
 from AccessGrid import Events
 from AccessGrid import Toolkit
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
-from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD5
+from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD
 from AccessGrid import DataStore
 from AccessGrid.GUID import GUID
 from AccessGrid.DataStoreClient import GetVenueDataStore
@@ -49,7 +49,7 @@ from AccessGrid.SharedApplication import SharedApplicationIW
 from AccessGrid.ClientProfile import ClientProfile
 
 from SOAPpy import faultType
-if IsLinux() or IsFreeBSD5():
+if IsLinux() or IsFreeBSD():
     import commands
 
 log = None
@@ -75,7 +75,7 @@ class vncServer:
             self.contactString="%s"%(hostname,)
         elif IsOSX():
             self.contactString="%s"%(hostname,)
-        elif IsLinux() or IsFreeBSD5():
+        elif IsLinux() or IsFreeBSD():
             self.contactString="%s%s"%(hostname,displayID)
             
         self.displayID=displayID
@@ -359,7 +359,7 @@ if __name__ == "__main__":
         elif IsLinux():
             expectedPath = '/usr/bin'
             exe = 'Xvnc'
-        elif IsFreeBSD5():
+        elif IsFreeBSD():
             expectedPath = '/usr/X11R6/bin'
             exe = 'Xvnc'
         vncserverexe = None

@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.185 2006-05-02 14:42:15 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.186 2006-05-10 01:30:03 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.185 2006-05-02 14:42:15 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.186 2006-05-10 01:30:03 willing Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -35,7 +35,7 @@ Log.SetDefaultLevel(Log.VenueClientUI, Log.WARN)
 
 from AccessGrid import icons
 from AccessGrid import Toolkit
-from AccessGrid.Platform import IsWindows, IsOSX, Config, IsLinux, IsFreeBSD5
+from AccessGrid.Platform import IsWindows, IsOSX, Config, IsLinux, IsFreeBSD
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.ClientProfile import *
@@ -753,7 +753,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.toolbar.AddSeparator()
         
         toolsize = self.toolbar.GetToolSize()
-        if IsLinux() or IsFreeBSD5():
+        if IsLinux() or IsFreeBSD():
             toolsize = (25,25)
         
         

@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.18 2006-05-03 17:21:56 eolson Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.19 2006-05-10 01:30:04 willing Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ from AccessGrid import Toolkit
 from AccessGrid.Descriptions import Capability, ResourceDescription
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
-from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD5
+from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
@@ -124,7 +124,7 @@ class VideoProducerService( AGService ):
             self.log.exception("Invalid profile (None)")
             raise Exception, "Can't set RTP Defaults without a valid profile."
 
-        if IsLinux() or IsOSX() or IsFreeBSD5():
+        if IsLinux() or IsOSX() or IsFreeBSD():
             try:
                 rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
                 rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \

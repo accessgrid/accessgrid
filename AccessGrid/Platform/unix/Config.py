@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.68 2006-05-01 22:51:36 willing Exp $
+# RCS-ID:      $Id: Config.py,v 1.69 2006-05-10 01:30:04 willing Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.68 2006-05-01 22:51:36 willing Exp $"
+__revision__ = "$Id: Config.py,v 1.69 2006-05-10 01:30:04 willing Exp $"
 
 import sys
 import os
@@ -24,10 +24,10 @@ import resource
 from AccessGrid import Log
 from AccessGrid import Config
 
-from AccessGrid.Platform import AGTK_USER, AGTK_LOCATION, IsOSX, IsLinux, IsFreeBSD5
+from AccessGrid.Platform import AGTK_USER, AGTK_LOCATION, IsOSX, IsLinux, IsFreeBSD
 from AccessGrid.Version import GetVersion
 
-if IsLinux() or IsFreeBSD5():
+if IsLinux() or IsFreeBSD():
     import fcntl
     import struct
     import glob
@@ -332,7 +332,7 @@ class SystemConfig(Config.SystemConfig):
                     log.exception("Unable to add video resource to list. device: " + device + "  portlist: " + portList)
 
             return resourceList
-    elif IsLinux() or IsFreeBSD5():
+    elif IsLinux() or IsFreeBSD():
         # Linux implementation
         def GetResources(self):
             # V4L video_capability struct defined in linux/videodev.h :

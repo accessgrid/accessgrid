@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.13 2006-04-25 17:20:53 eolson Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.14 2006-05-10 01:30:04 willing Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -88,7 +88,7 @@ class AudioService( AGService ):
         self.configuration.append(self.outputGain)
         self.configuration.append(self.silenceSuppression)
 
-        if Platform.isLinux() or Platform.isFreeBSD5():
+        if Platform.isLinux() or Platform.isFreeBSD():
             # note: the forceOSSAC97 attribute will only exist for the above platforms
             self.forceOSSAC97 = OptionSetParameter( "Force AC97", "False", ["True", "False"] )
             self.configuration.append(self.forceOSSAC97)
@@ -106,7 +106,7 @@ class AudioService( AGService ):
             self.log.exception("Invalid profile (None)")
             raise Exception, "Can't set RTP Defaults without a valid profile."
 
-        if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5':
+        if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
             try:
                 rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
                 rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
@@ -169,7 +169,7 @@ class AudioService( AGService ):
             except:
                 self.log.exception("Couldn't put rat defaults in registry.")
 
-        elif Platform.isLinux() or Platform.isOSX() or Platform.isFreeBSD5():
+        elif Platform.isLinux() or Platform.isOSX() or Platform.isFreeBSD():
 
             ratDefaultsFile = os.path.join(os.environ["HOME"],".RATdefaults")
             ratDefaults = dict()
@@ -217,7 +217,7 @@ class AudioService( AGService ):
             # Initialize environment for rat
             self.WriteRatDefaults()
 
-            if Platform.isLinux() or Platform.isFreeBSD5():
+            if Platform.isLinux() or Platform.isFreeBSD():
                 # note: the forceOSSAC97 attribute will only exist for the above platforms
                 if self.forceOSSAC97.value == "True":
   	                self.log.info("Setting OSS_IS_AC97 = 1")
