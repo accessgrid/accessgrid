@@ -403,18 +403,31 @@
             </xsd:complexType>
           </xsd:element>
 
-  	  <xsd:element name="GetVersionRequest">
+  	    <xsd:element name="GetVersionRequest">
             <xsd:complexType>
             </xsd:complexType>
-          </xsd:element>
+        </xsd:element>
 
-          <xsd:element name="GetVersionResponse">
+        <xsd:element name="GetVersionResponse">
             <xsd:complexType>
               <xsd:sequence>
                 <xsd:element minOccurs="1" maxOccurs="1" name="version" type="xsd:string" />
               </xsd:sequence>
             </xsd:complexType>
-          </xsd:element>
+        </xsd:element>
+
+  	    <xsd:element name="GetStreamsRequest">
+            <xsd:complexType>
+            </xsd:complexType>
+        </xsd:element>
+
+        <xsd:element name="GetStreamsResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="streams" type="agtk:StreamDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+        </xsd:element>
 
       </schema>
     </types>
@@ -584,6 +597,12 @@
     <message name="GetVersionResponse">
 	<part name="parameters" element="agtkv:GetVersionResponse"/>
     </message>
+    <message name="GetStreamsRequest">
+	<part name="parameters" element="agtkv:GetStreamsRequest"/>
+    </message>
+    <message name="GetStreamsResponse">
+	<part name="parameters" element="agtkv:GetStreamsResponse"/>
+    </message>
 
     <portType name="Venue">
 	<operation name="Enter">
@@ -700,6 +719,10 @@
 	<operation name="GetVersion">
 	    <input message="agtkv:GetVersionRequest"/>
 	    <output message="agtkv:GetVersionResponse"/>
+	</operation>
+	<operation name="GetStreams">
+	    <input message="agtkv:GetStreamsRequest"/>
+	    <output message="agtkv:GetStreamsResponse"/>
 	</operation>
     </portType>
 
