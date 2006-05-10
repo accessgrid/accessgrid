@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.314 2006-05-05 02:41:07 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.315 2006-05-10 18:01:36 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.314 2006-05-05 02:41:07 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.315 2006-05-10 18:01:36 turam Exp $"
 
 import sys
 import os
@@ -240,6 +240,8 @@ class VenueClient:
         to see if any of the retreived bridges are disabled.
         '''
         
+        log.debug('get bridges from registry')
+        
         if not self.currentBridge:
             # Get bridges from registry
             try:
@@ -250,9 +252,14 @@ class VenueClient:
               
             except:
                 log.exception("__LoadBridges: Can not connect to bridge registry %s ", self.registryUrl)
-        
+
+
+        log.debug('set bridges in prefs')
+                
         prefs = self.app.GetPreferences()
         prefs.SetBridges(self.bridges)
+
+        log.debug('connect to bridge')
 
         if self.bridges:
             # Set current bridge
@@ -268,6 +275,8 @@ class VenueClient:
                         self.registryClient.PingHost(b.host) > -1):
                         self.currentBridge = b
                         break
+                        
+        log.debug('exiting loadbridges')
                 
     ##########################################################################
     #
@@ -1151,19 +1160,10 @@ class VenueClient:
         else:
             log.debug('profile has not changed, not updating services')
 
-#         # If unicast is selected, load bridge information from registry
-#         if self.GetTransport() == "unicast":
-#             self.__LoadBridges()
-#             
-#         for stream in self.streamDescList:
-#             self.UpdateStream(stream)
-#             
         # Send streams to the node service
         try:
             log.debug("Setting node service streams")
             if self.nodeService:
-                for stream in self.streamDescList:
-                    self.UpdateStream(stream)
                 self.nodeService.SetStreams( self.streamDescList )
         except:
             log.exception("Error setting streams")
@@ -1171,6 +1171,18 @@ class VenueClient:
         # Raise exception if occurred
         if exc:
             raise exc
+            
+    def UpdateStreams(self):
+        for stream in self.streamDescList:
+            self.UpdateStream(stream)
+
+        # Restart the beacon so the new transport is used
+        if self.beaconLocation and self.beacon:
+            # stop the beacon
+            self.StopBeacon()
+            
+            # start the beacon
+            self.StartBeacon()
 
     def UpdateStream(self,stream):
         """
@@ -1624,20 +1636,6 @@ class VenueClient:
         if self.GetTransport() == "unicast":
             self.__LoadBridges()
             
-        # Update the streams for new transport
-        # (and find the beacon stream, along the way)
-
-        for stream in self.streamDescList:
-            self.UpdateStream(stream)
-            
-        # Restart the beacon so the new transport is used
-        if self.beaconLocation and self.beacon:
-            # stop the beacon
-            self.StopBeacon()
-            
-            # start the beacon
-            self.StartBeacon()
-
     def SetTransport(self,transport):
         ''' Set transport used, either multicast or unicast '''
         self.transport = transport
