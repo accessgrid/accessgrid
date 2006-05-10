@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.95 2006-03-21 18:22:08 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.96 2006-05-10 21:27:02 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.95 2006-03-21 18:22:08 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.96 2006-05-10 21:27:02 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -609,7 +609,7 @@ class BridgeDescription:
         self.portMin = portMin
         self.portMax = portMax
         self.status = STATUS_ENABLED
-        self.rank = 10 
+        self.rank = 1000
         
         
         
