@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.16 2006-04-18 15:58:32 turam Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.17 2006-05-10 20:41:29 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -96,7 +96,7 @@ class RegistryClient:
                 self.bridges.append(desc)
 
             # Sort the bridges
-            self._sortBridges(maxToReturn)
+            self.bridges = self._sortBridges(maxToReturn)
                         
             # Store bridges in cache
             self.bridgeCache.StoreBridges(self.bridges)
@@ -121,7 +121,9 @@ class RegistryClient:
                 desc.rank = pingVal
                 bridgeDescriptions.append(desc)
             except:
-                self.log.exception("Failed to ping bridge %s"%(desc.name))
+                self.log.exception("Failed to ping bridge %s (%s:%s)"%(desc.name,desc.host,str(desc.port)))
+                
+        return bridgeDescriptions
                                    
     def _readPeerList(self,url):
         if url.startswith("file://"):
