@@ -2,13 +2,13 @@
 # Name:        ProcessManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.10 2006-03-15 21:31:25 turam Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.11 2006-05-10 20:34:14 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.10 2006-03-15 21:31:25 turam Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.11 2006-05-10 20:34:14 turam Exp $"
 
 import win32api
 import win32con
@@ -19,11 +19,12 @@ from AccessGrid import Log
 log = Log.GetLogger(Log.ProcessManager)
 
 class ProcessManager:
-    def __init__(self,callback=None):
-        if callback:
-            log.warn('ProcessManager callback not yet implemented on Windows')
+    def __init__(self):
         self.processes = []
         self.threadid = dict()
+        
+    def WaitForChildren(self,callback):
+        log.warn('ProcessManager callback not yet implemented on Windows')
 
     def StartProcess(self, command, arglist, detached = 1, maxWait = 20):
         """
