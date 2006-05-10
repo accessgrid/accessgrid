@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.61 2006-03-27 23:02:03 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.62 2006-05-10 18:07:45 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.61 2006-03-27 23:02:03 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.62 2006-05-10 18:07:45 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -207,8 +207,10 @@ class VenueClientController:
         **Arguments:**
         
         """
+        log.debug("UseMulticastCB called")
         try:
             self.__venueClient.SetTransport("multicast")
+            self.__venueClient.UpdateStreams()
             self.__venueClient.UpdateNodeService()
         except NetworkLocationNotFound:
             log.exception("Multicast streams not found")
@@ -221,16 +223,13 @@ class VenueClientController:
         **Arguments:**
         
         """
-        #if not provider or not isinstance(provider,ProviderProfile):
-        #    raise ValueError
 
-        #oldProvider = self.__venueClient.GetProvider()
-        #oldBridge = self.__venueClient.GetCurrentBridge()
-        #oldTransport = self.__venueClient.GetTransport()
-
+        log.debug("UseUnicastCB called: bridge=%s (%s:%s)", bridge.name,bridge.host,str(bridge.port))
+    
         # Set the transport in the venue client and update the node service
         self.__venueClient.SetTransport("unicast")
         self.__venueClient.SetCurrentBridge(bridge)
+        self.__venueClient.UpdateStreams()
         self.__venueClient.UpdateNodeService()
         
     def EnableDisplayCB(self,enableFlag):
