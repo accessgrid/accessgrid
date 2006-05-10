@@ -81,8 +81,8 @@ class RegistryBase(RegistryInterface):
         if localPeerAddr not in registryPeers:
             raise Exception ("Error: this peer " + localPeerAddr + " is not listed in the master list.  The current registry requires all peers to know about each other.")
         registryPeers.remove(localPeerAddr)
-        print "localPeer:", localPeerAddr
-        print "otherPeers:", registryPeers
+        #print "localPeer:", localPeerAddr
+        #print "otherPeers:", registryPeers
 
         self.registryPeers = []
 
