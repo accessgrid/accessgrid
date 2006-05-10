@@ -27,7 +27,8 @@ class BridgeFactory:
             self.deathCallback = deathCallback
 
             # Instantiate the process manager
-            self.processManager = ProcessManager(callback=self.OnBridgeDeath)
+            self.processManager = ProcessManager()
+            self.processManager.WaitForChildren(self.OnBridgeDeath)
 
 
         def Start(self):
