@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.186 2006-05-10 01:30:03 willing Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.187 2006-05-10 18:42:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.186 2006-05-10 01:30:03 willing Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.187 2006-05-10 18:42:09 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -45,7 +45,7 @@ from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
 from AccessGrid.Descriptions import ApplicationDescription, VenueDescription
 from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIDialog
-from AccessGrid.Utilities import SubmitBug
+from AccessGrid.Utilities import SubmitBug, BuildServiceUrl
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.AppMonitor import AppMonitor
 from AccessGrid.Venue import ServiceAlreadyPresent
@@ -550,8 +550,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             if i.GetId() != menuid:
                 self.bridgeSubmenu.Check(i.GetId(), 0)
         
-        self.venueClient.SetCurrentBridge(bridgeDescription)
-             
         # Use current bridge
         try:
             # - uncheck multicast item
@@ -1035,7 +1033,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         """
         Displays venue properties dialog.
         """
-        streams = self.venueClient.GetVenueStreams()
         venuePropertiesDialog = VenuePropertiesDialog(self, -1,
                                                       'Venue Properties', self.venueClient)
         #venuePropertiesDialog.PopulateList(streams)
@@ -5091,31 +5088,30 @@ class VenuePropertiesDialog(wxDialog):
 
         j = 0
         for stream in streamList:
-            locations = filter(lambda x: x.GetType() == self.venueClient.GetTransport(),
-                               stream.networkLocations)
-            for location in locations:
-                self.list.InsertStringItem(j, 'item')
-                self.list.SetStringItem(j, 0, str(location.host))
-                self.list.SetStringItem(j, 1, str(location.port))
-                if hasattr(stream.location, 'ttl'):
-                    self.list.SetStringItem(j, 2, str(location.ttl))
-                else:
-                    self.list.SetStringItem(j, 2, str(''))
+            location = stream.location
+        
+            self.list.InsertStringItem(j, 'item')
+            self.list.SetStringItem(j, 0, str(location.host))
+            self.list.SetStringItem(j, 1, str(location.port))
+            if hasattr(stream.location, 'ttl'):
+                self.list.SetStringItem(j, 2, str(location.ttl))
+            else:
+                self.list.SetStringItem(j, 2, str(''))
 
-                self.list.SetStringItem(j, 3, str(stream.capability[0].type +
-                                                  " (" +location.type+")"))
-                if stream.static:
-                    self.list.SetStringItem(j, 4, 'static')
-                else:
-                    self.list.SetStringItem(j, 4, 'dynamic')
-                    
-                if stream.encryptionFlag:
-                    self.list.SetStringItem(j, 5, stream.encryptionKey)
-                else:
-                    self.list.SetStringItem(j, 5, '-')
+            self.list.SetStringItem(j, 3, str(stream.capability[0].type +
+                                              " (" +location.type+")"))
+            if stream.static:
+                self.list.SetStringItem(j, 4, 'static')
+            else:
+                self.list.SetStringItem(j, 4, 'dynamic')
                 
-                j = j + 1
-                
+            if stream.encryptionFlag:
+                self.list.SetStringItem(j, 5, stream.encryptionKey)
+            else:
+                self.list.SetStringItem(j, 5, '-')
+        
+            j = j + 1
+        
     def __Layout(self):
         '''
         Handle UI layout.
@@ -5189,14 +5185,16 @@ class AddVideoServiceDialog(wxDialog):
         
     def OnHostSelect(self,event=None):
         url = self.hostCtrl.GetValue()
-        
+        newurl = BuildServiceUrl(url,'http',11000,'ServiceManager')
+        if url != newurl:
+            self.hostCtrl.SetValue(newurl)
+            url = newurl
+
         # clear the device list
         for i in range(self.deviceCtrl.GetCount()):
             self.deviceCtrl.Delete(0)
         
         # populate device list with resources
-        import socket
-        #print 'socket timeout : ', socket.getdefaulttimeout()
         resources = AGServiceManagerIW(url).GetResources()
         for r in resources:
             item = self.deviceCtrl.Append(r.name)     
