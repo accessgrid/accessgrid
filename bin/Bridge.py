@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.15 2006-04-25 19:21:39 turam Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.16 2006-05-10 20:31:00 turam Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -180,6 +180,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-# Example: Expects you have started a RegistryPeer.py so it can register somewhere.
-#      Once started, QuickBridgeClient.py should be able to request/join this bridge.
-# Sample osx commandline 2005/12/06:  python Bridge.py  --name=yorgle --location=Argonne --registryUrl=../tests/localhost_registry_nodes.txt --qbexec=/Applications/AccessGridToolkit.app/Contents/Resources/bin/QuickBridge
+# Sample commandline:  python Bridge.py  --name=yorgle --location=Argonne
