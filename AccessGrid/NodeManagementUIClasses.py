@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.109 2006-05-09 16:25:28 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.110 2006-05-10 18:39:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.109 2006-05-09 16:25:28 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.110 2006-05-10 18:39:09 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -42,6 +42,7 @@ from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
 from AccessGrid.interfaces.AGService_client import AGServiceIW
 from AccessGrid import Version
 from AccessGrid.Preferences import Preferences
+from AccessGrid.Utilities import BuildServiceUrl
 
 from AccessGrid import ServiceDiscovery
 
@@ -78,29 +79,6 @@ class ServiceResolveTimeout(Exception): pass
 class UnresolvableService(Exception):   pass
 
 
-
-def BuildNodeServiceUrl(url,defaultproto,defaultport,defaultpath):
-    # - define a mess of regular expressions for matching venue urls
-    hostre = re.compile('^[\w.-]*$')
-    hostportre = re.compile('^[\w.-]*:[\d]*$')
-    protohostre = re.compile('^[\w]*://[\w.-]*$')
-    protohostportre = re.compile('^[\w]*://[\w.-]*:[\d]*$')
-
-    # - check for host only
-    if hostre.match(url):
-        host = url
-        url = '%s://%s:%d/%s' % (defaultproto,host,defaultport,defaultpath)
-    # - check for host:port
-    elif hostportre.match(url):
-        hostport = url
-        url = '%s://%s/%s' % (defaultproto,hostport,defaultpath)
-    elif protohostre.match(url):
-        protohost = url
-        url = '%s:%d/%s' % (protohost,defaultport,defaultpath)
-    elif protohostportre.match(url):
-        protohostport = url
-        url = '%s/%s' % (protohostport,defaultpath)
-    return url
 
 
 class ServiceChoiceDialog(wxDialog):
@@ -620,7 +598,7 @@ class NodeManagementClientFrame(wxFrame):
             url = dlg.GetValue()
             dlg.Destroy()
             
-            url = BuildNodeServiceUrl(url,'http',11000,'NodeService')
+            url = BuildServiceUrl(url,'http',11000,'NodeService')
             
             if url not in self.recentNodeServiceList:
                 self.recentNodeServiceList.append(url)
@@ -857,7 +835,7 @@ class NodeManagementClientFrame(wxFrame):
             url = dlg.GetValue()
             dlg.Destroy()
 
-            url = BuildNodeServiceUrl(url,'http',11000,'ServiceManager')
+            url = BuildServiceUrl(url,'http',11000,'ServiceManager')
 
             if url not in self.recentServiceManagerList:
                 self.recentServiceManagerList.append(url)
