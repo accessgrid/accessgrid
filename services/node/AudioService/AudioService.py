@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.14 2006-05-10 01:30:04 willing Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.15 2006-05-11 23:13:12 willing Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -236,7 +236,7 @@ class AudioService( AGService ):
             if self.streamDescription.name and \
                    len(self.streamDescription.name.strip()) > 0:
                 options.append( "-C" )
-                if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5':
+                if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
                     # Rat doesn't like spaces in linux command line arguments.
                     stream_description_no_spaces = string.replace(
                         self.streamDescription.name, " ", "_")
