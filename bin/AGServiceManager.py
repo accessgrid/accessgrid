@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.65 2006-05-01 21:45:05 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.66 2006-05-11 22:14:43 willing Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -17,7 +17,7 @@ from AccessGrid import Log
 from AccessGrid.hosting import SecureServer, InsecureServer
 from AccessGrid.Toolkit import Service, MissingDependencyError
 from AccessGrid import Toolkit
-from AccessGrid.Platform import IsLinux
+from AccessGrid.Platform import IsLinux, IsFreeBSD
 from AccessGrid.Platform.Config import AGTkConfig, SystemConfig
 from AccessGrid.AGServiceManager import AGServiceManager
 from AccessGrid.interfaces.AGServiceManager_interface import AGServiceManager as AGServiceManagerI
@@ -119,7 +119,7 @@ def main():
     # Register the signal handler so we can shut down cleanly
     signal.signal(signal.SIGINT, SignalHandler)
 
-    if IsLinux():
+    if IsLinux() or IsFreeBSD():
         signal.signal(signal.SIGHUP, SignalHandler)
 
     # Start the service

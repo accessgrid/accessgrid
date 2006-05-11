@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.17 2006-05-10 20:41:29 turam Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.18 2006-05-11 22:14:43 willing Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ import os
 import sys
 
 from AccessGrid import Log
-from AccessGrid.Platform import IsWindows, IsOSX, IsLinux
+from AccessGrid.Platform import IsWindows, IsOSX, IsLinux, IsFreeBSD
 from AccessGrid.Descriptions import BridgeDescription
 from AccessGrid.BridgeCache import BridgeCache
 
@@ -147,7 +147,7 @@ class RegistryClient:
         @rtype: string
         '''
         
-        if IsOSX() or IsLinux():
+        if IsOSX() or IsLinux() or IsFreeBSD():
             # osx and linux ping command have the
             # same output format
             
