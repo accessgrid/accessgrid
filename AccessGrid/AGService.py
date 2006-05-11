@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.58 2006-01-23 06:52:17 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.59 2006-05-11 04:58:24 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.58 2006-01-23 06:52:17 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.59 2006-05-11 04:58:24 willing Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -20,7 +20,7 @@ from AccessGrid import Log
 
 from AccessGrid.GUID import GUID
 from AccessGrid.AGParameter import *
-from AccessGrid.Platform import IsWindows, IsLinux, IsOSX
+from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD
 from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Descriptions import StreamDescription
@@ -109,7 +109,7 @@ class AGService:
         if IsWindows():
            # windows : do nothing special to force stop; it's forced anyway
            AGService.Stop(self)
-        elif IsLinux() or IsOSX():
+        elif IsLinux() or IsOSX() or IsFreeBSD():
            # linux : kill, instead of terminating
            self.started = 0
            self.processManager.KillAllProcesses()
