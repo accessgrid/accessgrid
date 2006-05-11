@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.69 2006-05-10 01:30:04 willing Exp $
+# RCS-ID:      $Id: Config.py,v 1.70 2006-05-11 02:49:25 willing Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.69 2006-05-10 01:30:04 willing Exp $"
+__revision__ = "$Id: Config.py,v 1.70 2006-05-11 02:49:25 willing Exp $"
 
 import sys
 import os
@@ -332,7 +332,46 @@ class SystemConfig(Config.SystemConfig):
                     log.exception("Unable to add video resource to list. device: " + device + "  portlist: " + portList)
 
             return resourceList
-    elif IsLinux() or IsFreeBSD():
+
+    elif IsFreeBSD():
+        def GetResources(self):
+            # Determine ports for devices
+            deviceList = dict()
+            for device in glob.glob("/dev/bktr[0-9]*"):
+                if os.path.isdir(device):
+                    continue
+
+                fd = None
+                try:
+                    fd = os.open(device, os.O_RDONLY)
+                except Exception, e:
+                    log.info("open: %s", e)
+                    continue
+
+                portList = ["RCA", "Port-1", "Port-2", "Port-3", "S-Video", "RGB"]
+
+                os.close(fd)
+
+                if len(portList) > 0:
+                    deviceList[device] = portList
+                    log.info("FreeBSD: %s has ports: %s", device, portList)
+                else:
+                    log.info("FreeBSD: %s: no suitable input ports found", device)
+
+            # Force x11 onto the list
+            deviceList['x11'] = ['x11']
+
+            # Create resource objects
+            resourceList = list()
+            for device,portList in deviceList.items():
+                try:
+                    resourceList.append([device,portList])
+                except Exception, e:
+                    log.exception("Unable to add video resource to list. device: " + device + "  portlist: " + portList)
+
+            return resourceList
+
+    elif IsLinux():
         # Linux implementation
         def GetResources(self):
             # V4L video_capability struct defined in linux/videodev.h :
