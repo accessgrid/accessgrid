@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.315 2006-05-10 18:01:36 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.316 2006-05-12 17:38:02 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.315 2006-05-10 18:01:36 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.316 2006-05-12 17:38:02 turam Exp $"
 
 import sys
 import os
@@ -139,7 +139,6 @@ class VenueClient:
         self.homeVenue = None
         self.houseKeeper = Scheduler()
         self.heartBeatTimer = None
-        self.heartBeatTimeout = 10
        
         if progressCB: progressCB("Starting web services",30)
         self.__StartWebService(pnode, port)
@@ -436,23 +435,37 @@ class VenueClient:
         return self.server.FindURLForObject(self)
         
     def Heartbeat(self):
+
+        nextTimeout = 30
         try:
-            #log.debug("Calling Heartbeat, time now: %d", time.time())
+            log.debug("Calling Heartbeat, time now: %d", time.time())
             if self.heartBeatTimer is not None:
                 self.heartBeatTimer.cancel()
 
-            self.nextTimeout = self.__venueProxy.UpdateLifetime(
-                self.profile.connectionId,self.heartBeatTimeout)
-            #log.debug("Next Heartbeat needed before: %d", self.nextTimeout)
+            # Note:  heartbeat timeout is a dummy argument for now;
+            #        remove it when 3.0 servers are no longer a concern
+            dummyClientTimeout = 30
+            nextTimeout = self.__venueProxy.UpdateLifetime(
+                self.profile.connectionId,dummyClientTimeout)
+                
+            ##
+            ## CODE TO ACCOMMODATE 3.0 SERVER TIMEOUTS
+            ## REMOVE WHEN 3.0 SERVER COMPAT IS NOT A CONCERN
+            # 3.0 servers will return a 15-second timeout; we try
+            # to accommodate them by sending a heartbeat after 5 
+            # seconds, which is now considered too often
+            if nextTimeout == 15:
+                nextTimeout = 5
+                
+            log.debug("Next Heartbeat needed before: %d", nextTimeout)
             
-            self.heartBeatTimer = threading.Timer(self.nextTimeout - 5.0,
-                                                  self.Heartbeat)
-            self.heartBeatTimer.start()
-                
         except Exception, e:
-            log.exception("Error sending heartbeat, reconnecting.")
-            #self.__Reconnect()
+            log.exception("Error sending heartbeat")
                 
+        self.heartBeatTimer = threading.Timer(nextTimeout,
+                                              self.Heartbeat)
+        self.heartBeatTimer.start()
+
     def __Reconnect(self):
     
         """
