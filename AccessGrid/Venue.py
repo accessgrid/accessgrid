@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.270 2006-04-28 20:52:48 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.271 2006-05-12 17:36:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.270 2006-04-28 20:52:48 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.271 2006-05-12 17:36:16 turam Exp $"
 
 import sys
 import time
@@ -380,7 +380,7 @@ class Venue:
             self.encryptionKey = None
         self.simpleLock = ServerLock("venue")
         self.clientDisconnectOK = {}
-        self.maxTimeout = 15.0
+        self.maxTimeout = 120.0
         
         self.connections = list()
         self.applications = dict()
@@ -679,18 +679,18 @@ class Venue:
         """
         now_sec = time.time()
 
-        users_to_remove = []
-        netservices_to_remove = []
+        log.debug("CleanupClients: now=%d", now_sec)
 
         for connId in self.clients.keys():
+            log.debug("CleanupClients: client %s %s timeout=%d", connId, self.clients[connId].GetClientProfile().name,
+                        self.clients[connId].GetTimeout())
             if self.clients[connId].CheckTimeout(now_sec):
-                log.debug("Removing user %s at %d (Timed Out)",
-                          connId, now_sec)
+                log.info("  Removing user %s %s (Timed Out)", connId, self.clients[connId].GetClientProfile().name)
                 self.RemoveUser(connId)
                 
         for connId in self.netServices.keys():
             if self.netServices[connId][1] > now_sec:
-                log.debug("Removing network service %s at %d (Timed Out)",
+                log.info("Removing network service %s at %d (Timed Out)",
                           connId, now_sec)
                 self.RemoveNetworkService(connId)
 
@@ -843,23 +843,22 @@ class Venue:
     def UpdateLifetime(self, cid, requestedTimeout=0):
         """
         """
-        now_sec = time.time()
         conn = self.FindConnection(cid)
-
         if conn is not None:
-            if requestedTimeout == 0:
-                t_mod = self.maxTimeout
-            elif requestedTimeout <= self.maxTimeout:
-                t_mod = requestedTimeout
-            else:
-                t_mod = self.maxTimeout
-
-            # Set timeout for client
-            conn.SetTimeout(now_sec + t_mod)
+        
+            # Require the client to send another message before the timeout
+            conn.SetTimeout(time.time() + self.maxTimeout)
             
-            return t_mod
+            # Tell the client to send a message well before the timeout
+            clientNextHeartbeat = .3*self.maxTimeout;
+            log.debug("UpdateLifetime: %s %s ; next heartbeat by %d", 
+                      conn.profile.connectionId, conn.profile.name,
+                      clientNextHeartbeat)
+            return clientNextHeartbeat
         else:
+            log.debug("UpdateLifetime: connection not found: cid=%s", cid)
             return -1
+
 
     def AllocateMulticastLocation(self):
         """
