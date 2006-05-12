@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.18 2006-05-11 22:14:43 willing Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.19 2006-05-12 01:05:56 willing Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -152,7 +152,7 @@ class RegistryClient:
             # same output format
             
             # time out after 10 sec
-            if IsOSX():
+            if IsOSX() or IsFreeBSD():
                 cmd = 'ping -o -t 1 %s'%(host)
             else:
                 cmd = 'ping -c 1 -w 1 %s'%(host)
