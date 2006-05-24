@@ -19,6 +19,9 @@ class RegistryInterface:
     def LookupBridge(self, maxToReturn=None):
         pass
 
+    def Ping(self, data): # Returns whatever data was sent, likely the time sent.
+        return data
+
     # Peer Interface
     def PeerUpdate(self, data):
         pass
@@ -149,6 +152,7 @@ class RegistryPeerXMLRPC(RegistryBase):
     def _RegisterFunctions(self):
         self.requestServer.register_function(self.LookupBridge, "LookupBridge")
         self.requestServer.register_function(self.RegisterBridge, "RegisterBridge")
+        self.requestServer.register_function(self.Ping, "Ping")
 
     def RegisterBridge(self, bridgeDescription):
         print "Registering bridge:", bridgeDescription["host"], bridgeDescription["port"]

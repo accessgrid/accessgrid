@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.16 2006-05-10 20:31:00 turam Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.17 2006-05-24 23:35:31 eolson Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -48,6 +48,7 @@ class QuickBridgeServer:
     def _RegisterRemoteFunctions(self):
         self.listeningServer.register_function(self.JoinBridge, "JoinBridge")
         self.listeningServer.register_function(self.GetBridgeInfo, "GetBridgeInfo")
+        self.listeningServer.register_function(self.Ping, "Ping")
 
     def JoinBridge(self,multicastNetworkLocation):
         mnl = multicastNetworkLocation
@@ -73,6 +74,9 @@ class QuickBridgeServer:
                           }
             ret.append(bridgedata)
         return ret
+
+    def Ping(self, data):
+        return data
 
     def _RegisterWithRegistry(self):
         self.validSecs = self.registryClient.RegisterBridge(self.bridgeDescription)
