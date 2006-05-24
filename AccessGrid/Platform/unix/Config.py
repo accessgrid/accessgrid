@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.70 2006-05-11 02:49:25 willing Exp $
+# RCS-ID:      $Id: Config.py,v 1.71 2006-05-24 16:26:02 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.70 2006-05-11 02:49:25 willing Exp $"
+__revision__ = "$Id: Config.py,v 1.71 2006-05-24 16:26:02 turam Exp $"
 
 import sys
 import os
@@ -109,7 +109,7 @@ class AGTkConfig(Config.AGTkConfig):
     #    #if self.docDir is not None and not os.path.exists(self.docDir):
     #    #    raise Exception, "AGTkConfig: doc dir does not exist."
     #
-            return self.docDir
+        return self.docDir
 
 class UserConfig(Config.UserConfig):
     """
