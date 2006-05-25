@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.19 2006-05-12 01:05:56 willing Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.20 2006-05-25 00:05:47 eolson Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,6 +12,7 @@ import xmlrpclib
 import urllib
 import os
 import sys
+import time
 
 from AccessGrid import Log
 from AccessGrid.Platform import IsWindows, IsOSX, IsLinux, IsFreeBSD
@@ -35,23 +36,56 @@ class RegistryClient:
         foundServer = 0
 
         for r in self.registryPeers:
-            host = r.split(':')[0]
-            if self.PingHost(host) > -1:
-                try:
-                    url = "http://"+r 
-                    self.serverProxy = xmlrpclib.ServerProxy("http://"+r)
+            try:
+                tmpServerProxy = xmlrpclib.ServerProxy("http://"+r)
+                if self.PingRegistryPeer(tmpServerProxy) > -1:
+                    self.serverProxy = tmpServerProxy
                     foundServer = 1
                     break
-                except Exception,e:
-                    self.log.exception("Failed to connect to registry %s"%(r))
+            except Exception,e:
+                import traceback
+                traceback.print_exc()
+                self.log.exception("Failed to connect to registry %s"%(r))
             
         if not foundServer:
             # Throw exception!
             self.log.info("No bridge registry peers reachable")
+            #raise Exception("No bridge registry peers reachable")
    
     def RegisterBridge(self, registeredServerInfo):
         self._connectToRegistry()
         return self.serverProxy.RegisterBridge(registeredServerInfo)
+
+    def PingRegistryPeer(self, serverProxy):
+        try:
+            startTime = serverProxy.Ping(time.time())
+            roundTripTime = time.time() - startTime
+            #print "RoundTrip:", roundTripTime
+            return roundTripTime
+        except:
+            import traceback
+            traceback.print_exc()
+            return -1
+
+    def PingBridgeService(self, bridgeProxy):
+        try:
+            try: # Temporary try/except until all Bridges have the "Ping" method
+                startTime = bridgeProxy.Ping(time.time())
+                roundTripTime = time.time() - startTime
+                #print "RoundTrip:", roundTripTime
+                return roundTripTime
+            except Exception, e:  # Temporary until all Bridges have the "Ping" method
+                if 'method "Ping" is not supported' in e.faultString:
+                    print "Using deprecated ping",
+                    print "for older bridge interface:", bridgeProxy._ServerProxy__host
+                    host = bridgeProxy._ServerProxy__host.split(":")[0]
+                    return self.PingHost(host)
+                else:
+                    raise
+        except:
+            import traceback
+            traceback.print_exc()
+            return -1
 
     def PingHost(self, host):
         try:
@@ -117,8 +151,11 @@ class RegistryClient:
                          
         for desc in self.bridges[0:maxToReturn]:
             try:
-                pingVal = self._ping(desc.host)
-                desc.rank = pingVal
+                pingVal = self.PingBridgeService(xmlrpclib.ServerProxy("http://%s:%s" % (desc.host, desc.port)))
+                if pingVal > 0:
+                    desc.rank = pingVal
+                else:
+                    desc.rank = 100000
                 bridgeDescriptions.append(desc)
             except:
                 self.log.exception("Failed to ping bridge %s (%s:%s)"%(desc.name,desc.host,str(desc.port)))
@@ -226,5 +263,5 @@ if __name__=="__main__":
     # Lookup a bridge using the RegistryClient
     bridgeDescList = rc.LookupBridge()
     for b in bridgeDescList:
-        print 'name: '+b.name+'  host: '+b.host+"  port: "+str(b.port)
+        print 'name: '+b.name+'  host: '+b.host+"  port: "+str(b.port) +"  dist:"+str(b.rank)
         
