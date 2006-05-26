@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.188 2006-05-10 21:20:21 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.189 2006-05-26 17:40:14 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.188 2006-05-10 21:20:21 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.189 2006-05-26 17:40:14 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -232,7 +232,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.fl_url = "http://www.mcs.anl.gov/fl/"
         self.bugzilla_url = "http://bugzilla.mcs.anl.gov/accessgrid"
 
-        reactor.interleave(wxCallAfter)
+        reactor.interleave(wxCallAfter,installSignalHandlers=0)
 
         # Make sure data can be dragged from tree to the desktop.
         #self.SetDropTarget(DesktopDropTarget(self))
@@ -5212,6 +5212,8 @@ class AddVideoServiceDialog(wxDialog):
         for r in resources:
             item = self.deviceCtrl.Append(r.name)     
             self.deviceCtrl.SetClientData(item,r)
+        if resources:
+            self.deviceCtrl.SetValue(resources[0].name)
     
     def BrowseCallback(self,op,serviceName,url=None):
         if self.exists.isSet() and op == ServiceDiscovery.Browser.ADD:
