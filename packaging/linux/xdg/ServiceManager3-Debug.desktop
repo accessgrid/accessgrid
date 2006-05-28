@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Service Manager (Debug)
+Comment=Run the service manager software in debug mode
+TryExec=AGServiceManager3.py
+Exec=/bin/sh -c "AGServiceManager3.py -d; sleep 2"
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=true
+Type=Application
+Encoding=UTF-8
+Categories=X-Access-Grid3-Services;

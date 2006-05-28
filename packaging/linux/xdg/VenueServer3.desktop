@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Venue Server
+Comment=Run the venue server software
+TryExec=VenueServer3.py
+Exec=VenueServer3.py
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=false
+Type=Application
+Encoding=UTF-8
+Categories=X-Access-Grid3-Services;

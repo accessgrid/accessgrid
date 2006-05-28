@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Node Setup Wizard
+Comment=Run the AG Node Configuration Wizard
+TryExec=NodeSetupWizard3.py
+Exec=NodeSetupWizard3.py
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=false
+Type=Application
+Encoding=UTF-8
+Categories=X-Access-Grid3-Configure;

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Certificate Request Tool
+Comment=Request a certificate
+TryExec=CertificateRequestTool3.py
+Exec=CertificateRequestTool3.py
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=false
+Type=Application
+Encoding=UTF-8
+Categories=X-Access-Grid3-Base;
