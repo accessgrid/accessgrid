@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.72 2006-05-28 23:12:21 willing Exp $
+# RCS-ID:      $Id: Config.py,v 1.73 2006-05-30 01:19:46 willing Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.72 2006-05-28 23:12:21 willing Exp $"
+__revision__ = "$Id: Config.py,v 1.73 2006-05-30 01:19:46 willing Exp $"
 
 import sys
 import os
@@ -77,7 +77,10 @@ class AGTkConfig(Config.AGTkConfig):
         try:
             self.installDir = os.environ[AGTK_LOCATION]
         except:
-            self.installDir = "/usr"
+            if IsFreeBSD():
+                self.installDir = "/usr/local"
+            else:
+                self.installDir = "/usr"
 
         # Check dir and make it if needed.
         if self.initIfNeeded:
