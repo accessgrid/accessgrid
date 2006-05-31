@@ -1,0 +1,10 @@
+lib/python2.4/site-packages/OpenSSL_AG/SSL.so
+lib/python2.4/site-packages/OpenSSL_AG/__init__.py
+lib/python2.4/site-packages/OpenSSL_AG/__init__.pyc
+lib/python2.4/site-packages/OpenSSL_AG/__init__.pyo
+lib/python2.4/site-packages/OpenSSL_AG/crypto.so
+lib/python2.4/site-packages/OpenSSL_AG/rand.so
+lib/python2.4/site-packages/OpenSSL_AG/tsafe.py
+lib/python2.4/site-packages/OpenSSL_AG/tsafe.pyc
+lib/python2.4/site-packages/OpenSSL_AG/tsafe.pyo
+@dirrm lib/python2.4/site-packages/OpenSSL_AG

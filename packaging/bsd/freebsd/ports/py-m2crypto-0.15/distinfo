@@ -1,0 +1,6 @@
+MD5 (python/m2crypto-0.15.zip) = 3c5c037466b2774cf2294061995cffdf
+SHA256 (python/m2crypto-0.15.zip) = f5bba11176d1c2a75f45619fb5a85e5e7881d19aa13f7eaa4f1d04379a03c80e
+SIZE (python/m2crypto-0.15.zip) = 1500615
+MD5 (python/patch-SWIG-_m2crypto_wrap.c) = e00681da3291196e9bffcd3ed7ceb80c
+SHA256 (python/patch-SWIG-_m2crypto_wrap.c) = 4ca400c59fbac453297c414c763b6759cfa12343cd62541c893fec1005db0b9b
+SIZE (python/patch-SWIG-_m2crypto_wrap.c) = 502

@@ -1,0 +1,4 @@
+CKW 24/5/2006
+Need to change the way setuporig.py calls ../configure/make - at
+the moment it is executed for any call of the port's make command
+

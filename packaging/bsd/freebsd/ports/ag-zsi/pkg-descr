@@ -1,0 +1,7 @@
+ZSI, the Zolera SOAP Infrastructure, is a pure-Python module that
+provides an implementation of SOAP messaging, as described in SOAP 1.1
+Specification (see http://www.w3.org/TR/soap).  It can also be used to
+build applications using SOAP Messages with Attachments (see
+http://www.w3.org/TR/SOAP-attachments).  ZSI is intended to make it
+easier to write web services in Python.
+

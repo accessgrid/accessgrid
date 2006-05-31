@@ -1,0 +1,82 @@
+lib/python2.4/site-packages/elementtree/ElementInclude.py
+lib/python2.4/site-packages/elementtree/ElementInclude.pyc
+lib/python2.4/site-packages/elementtree/ElementInclude.pyo
+lib/python2.4/site-packages/elementtree/ElementPath.py
+lib/python2.4/site-packages/elementtree/ElementPath.pyc
+lib/python2.4/site-packages/elementtree/ElementPath.pyo
+lib/python2.4/site-packages/elementtree/ElementTree.py
+lib/python2.4/site-packages/elementtree/ElementTree.pyc
+lib/python2.4/site-packages/elementtree/ElementTree.pyo
+lib/python2.4/site-packages/elementtree/HTMLTreeBuilder.py
+lib/python2.4/site-packages/elementtree/HTMLTreeBuilder.pyc
+lib/python2.4/site-packages/elementtree/HTMLTreeBuilder.pyo
+lib/python2.4/site-packages/elementtree/SgmlopXMLTreeBuilder.py
+lib/python2.4/site-packages/elementtree/SgmlopXMLTreeBuilder.pyc
+lib/python2.4/site-packages/elementtree/SgmlopXMLTreeBuilder.pyo
+lib/python2.4/site-packages/elementtree/SimpleXMLTreeBuilder.py
+lib/python2.4/site-packages/elementtree/SimpleXMLTreeBuilder.pyc
+lib/python2.4/site-packages/elementtree/SimpleXMLTreeBuilder.pyo
+lib/python2.4/site-packages/elementtree/SimpleXMLWriter.py
+lib/python2.4/site-packages/elementtree/SimpleXMLWriter.pyc
+lib/python2.4/site-packages/elementtree/SimpleXMLWriter.pyo
+lib/python2.4/site-packages/elementtree/TidyHTMLTreeBuilder.py
+lib/python2.4/site-packages/elementtree/TidyHTMLTreeBuilder.pyc
+lib/python2.4/site-packages/elementtree/TidyHTMLTreeBuilder.pyo
+lib/python2.4/site-packages/elementtree/TidyTools.py
+lib/python2.4/site-packages/elementtree/TidyTools.pyc
+lib/python2.4/site-packages/elementtree/TidyTools.pyo
+lib/python2.4/site-packages/elementtree/XMLTreeBuilder.py
+lib/python2.4/site-packages/elementtree/XMLTreeBuilder.pyc
+lib/python2.4/site-packages/elementtree/XMLTreeBuilder.pyo
+lib/python2.4/site-packages/elementtree/__init__.py
+lib/python2.4/site-packages/elementtree/__init__.pyc
+lib/python2.4/site-packages/elementtree/__init__.pyo
+lib/python2.4/site-packages/gov/__init__.py
+lib/python2.4/site-packages/gov/__init__.pyc
+lib/python2.4/site-packages/gov/__init__.pyo
+lib/python2.4/site-packages/gov/lbl/__init__.py
+lib/python2.4/site-packages/gov/lbl/__init__.pyc
+lib/python2.4/site-packages/gov/lbl/__init__.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/__init__.py
+lib/python2.4/site-packages/gov/lbl/dsd/__init__.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/__init__.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/__init__.py
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/__init__.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/__init__.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/auth.py
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/auth.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/auth.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/io.py
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/io.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/io.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/roster.py
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/roster.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/roster.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/serialize.py
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/serialize.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/serialize.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/ssl.py
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/ssl.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/ssl.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/stanza.py
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/stanza.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/stanza.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/stream.py
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/stream.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/stream.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/util.py
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/util.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/util.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/xutil.py
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/xutil.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/xutil.pyo
+share/bajjer/etc/logging.cfg
+@dirrm share/nls/en_US.US-ASCII
+@dirrm share/nls/POSIX
+@dirrm share/bajjer/etc
+@dirrm share/bajjer
+@dirrm lib/python2.4/site-packages/gov/lbl/dsd/bajjer
+@dirrm lib/python2.4/site-packages/gov/lbl/dsd
+@dirrm lib/python2.4/site-packages/gov/lbl
+@dirrm lib/python2.4/site-packages/gov
+@dirrm lib/python2.4/site-packages/elementtree

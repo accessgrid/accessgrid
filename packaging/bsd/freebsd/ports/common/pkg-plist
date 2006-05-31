@@ -1,0 +1,18 @@
+bin/rtpbeacon.py
+lib/python2.4/site-packages/common/RTPBeacon.py
+lib/python2.4/site-packages/common/RTPBeacon.pyc
+lib/python2.4/site-packages/common/RTPBeacon.pyo
+lib/python2.4/site-packages/common/RTPSensor.py
+lib/python2.4/site-packages/common/RTPSensor.pyc
+lib/python2.4/site-packages/common/RTPSensor.pyo
+lib/python2.4/site-packages/common/__init__.py
+lib/python2.4/site-packages/common/__init__.pyc
+lib/python2.4/site-packages/common/__init__.pyo
+lib/python2.4/site-packages/common/_common.so
+lib/python2.4/site-packages/common/common.py
+lib/python2.4/site-packages/common/common.pyc
+lib/python2.4/site-packages/common/common.pyo
+lib/python2.4/site-packages/common/scheduler.py
+lib/python2.4/site-packages/common/scheduler.pyc
+lib/python2.4/site-packages/common/scheduler.pyo
+@dirrm lib/python2.4/site-packages/common

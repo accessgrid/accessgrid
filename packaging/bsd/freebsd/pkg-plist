@@ -1,0 +1,305 @@
+bin/AGServiceManager3.py
+bin/Bridge3.py
+bin/CertificateRequestTool3.py
+bin/GoToVenue3.py
+bin/NodeManagement3.py
+bin/NodeSetupWizard3.py
+bin/VenueClient3.py
+bin/VenueManagement3.py
+bin/VenueServer3.py
+bin/VenueVNCServer3.py
+bin/ag-avahi-discover3.py
+bin/agpm3.py
+bin/certmgr3.py
+etc/AccessGrid3/Config/AGNodeService.cfg
+etc/AccessGrid3/Config/CAcertificates/1c3f2ca8.0
+etc/AccessGrid3/Config/CAcertificates/1c3f2ca8.signing_policy
+etc/AccessGrid3/Config/CAcertificates/45cc9e80.0
+etc/AccessGrid3/Config/CAcertificates/45cc9e80.signing_policy
+etc/AccessGrid3/Config/CAcertificates/d1b603c3.0
+etc/AccessGrid3/Config/CAcertificates/d1b603c3.signing_policy
+etc/AccessGrid3/Config/CAcertificates/f18fa857.0
+etc/AccessGrid3/Config/CAcertificates/f18fa857.signing_policy
+etc/AccessGrid3/Config/nodeConfig/default
+etc/AccessGrid3/NodeServices/AudioService.zip
+etc/AccessGrid3/NodeServices/VideoConsumerService.zip
+etc/AccessGrid3/NodeServices/VideoProducerService.zip
+etc/AccessGrid3/NodeServices/VideoService.zip
+etc/AccessGrid3/SharedApplications/SharedBrowser.agpkg3
+etc/AccessGrid3/SharedApplications/SharedBrowser.zip
+etc/AccessGrid3/SharedApplications/SharedPresentation.agpkg3
+etc/AccessGrid3/SharedApplications/SharedPresentation.zip
+etc/AccessGrid3/SharedApplications/VenueVNC.agpkg3
+etc/AccessGrid3/SharedApplications/VenueVNC.zip
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/AGNetworkService.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/AGNodeService.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/AGParameter.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/AGService.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/AGServiceManager.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/AGServicePackage.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/AGXMLRPCServer.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/AppDb.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/AppMonitor.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Beacon/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Beacon/rtpBeacon.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Beacon/rtpBeaconUI.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/BridgeCache.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/BridgeClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/BridgeFactory.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/ClientProfile.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Config.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/DataStore.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/DataStoreClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/DataStoreClientUI.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Descriptions.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/EventService.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Events.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/FTPS/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/FTPS/counter.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/FTPS/filesys.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/FTPS/ftp_server.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/FTPS/ftps_server.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/FTPS/logger.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/FTPS/m_syslog.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/FTPS/producers.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/FTPS/status_handler.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/FTPSClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/FTPSServer.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/GUID.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/GroupMsgClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/GroupMsgClientBase.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/GroupMsgDefines.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/GroupMsgService.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/InProcessGroupMsgClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/InProcessVenueEventClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/InsecureEventService.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/InsecureVenueEventClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Jabber/JabberClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Jabber/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Log.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/MulticastAddressAllocator.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/MulticastWatcher.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/NetService.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/NetUtilities.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/NetworkAddressAllocator.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/NetworkLocation.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/NetworkServicesManager.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/NodeManagementUIClasses.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/PickleGroupMsgClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Platform/Config.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Platform/ProcessManager.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Platform/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Platform/unix/Config.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Platform/unix/ProcessManager.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Platform/unix/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Preferences.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/PreferencesUI.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/ProcessManager.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/QuickBridgeClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Registry/RegistryClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Registry/RegistryPeer.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Registry/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/RssReader.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/SecureGroupMsgClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/SecureGroupMsgService.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/Action.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/AuthorizationManager.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/CRSClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/CertificateManager.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/CertificateRepository.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/Role.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/Subject.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/Utilities.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/X509Subject.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/AuthorizationUI.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/CABrowser.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/CertificateBrowserBase.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/CertificateManagerDialog.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/CertificateManagerWXGUI.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/CertificateRequestTool.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/CertificateRequestViewer.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/CertificateStatusBrowser.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/CertificateStatusDialog.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/CertificateViewer.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/HTTPProxyConfigPanel.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/IdentityBrowser.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/ImportCACertDialog.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/ImportExportUtils.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/ImportIdentityCertDialog.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/ProxyBrowser.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/ServiceCapability.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/ServiceDiscovery.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/ServiceProfile.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/SharedAppClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/SharedApplication.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Toolkit.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/UIUtilities.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/UrllibTransport.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Utilities.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Venue.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/VenueClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/VenueClientController.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/VenueClientObserver.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/VenueClientUI.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/VenueEventClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/VenueServer.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/VenueServerService.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/Version.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/XMLGroupMsgClient.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/hosting/SOAPInterface.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/hosting/SOAPpy/Client.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/hosting/SOAPpy/Server.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/hosting/SOAPpy/Tools.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/hosting/SOAPpy/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/hosting/ZSI/Client.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/hosting/ZSI/Server.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/hosting/ZSI/ServiceContainer.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/hosting/ZSI/Tools.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/hosting/ZSI/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/hosting/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/icons.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AGNetworkService_client.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AGNetworkService_interface.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AGNetworkService_messages.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AGNodeService_client.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AGNodeService_interface.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AGNodeService_messages.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AGServiceManager_client.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AGServiceManager_interface.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AGServiceManager_messages.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AGService_client.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AGService_interface.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AGService_messages.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AG_AuthorizationManager_Types.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AG_NetworkService_Types.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AG_NodeService_Types.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AG_ServiceManager_Types.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AG_Service_Types.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AG_SharedApplication_Types.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AG_VenueClient_Types.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AG_VenueServer_Types.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AG_Venue_Types.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AccessGrid_Types.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AuthorizationManager_client.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AuthorizationManager_interface.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/AuthorizationManager_messages.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/SharedApplication_client.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/SharedApplication_interface.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/SharedApplication_messages.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/VenueClient_client.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/VenueClient_interface.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/VenueClient_messages.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/VenueServer_client.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/VenueServer_interface.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/VenueServer_messages.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/Venue_client.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/Venue_interface.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/Venue_messages.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/scheduler.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/test_venueserver.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/test_venueserver_client.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/ClientProfileTest.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/CreateCertTest.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/Cyclops.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/DataStoreTest.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/EventServiceTest.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/TextServiceTest.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/VenueClientTest.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/VenueServerTest.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/ZSIExceptionTest.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/detectors.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/shared_www_text.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/test_Apps.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/test_EnterExit.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/test_NodeService.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/test_ServiceVersion.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/test_VenueClientIW.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/test_datastore_get.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/test_datastore_put.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/wsdl/SchemaToPyTypeMap.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/wsdl/__init__.py
+lib/python2.4/site-packages/AccessGrid3/AccessGrid/wsdl/generate.py
+share/AccessGrid/ag-ellipse.png
+share/AccessGrid/ag.ico
+share/AccessGrid/xdg/AccessGrid-Base.directory
+share/AccessGrid/xdg/AccessGrid-Configure.directory
+share/AccessGrid/xdg/AccessGrid-Documentation.directory
+share/AccessGrid/xdg/AccessGrid-Services.directory
+share/AccessGrid/xdg/AccessGrid.menu
+share/AccessGrid/xdg/AccessGrid3-Base.directory
+share/AccessGrid/xdg/AccessGrid3-Configure.directory
+share/AccessGrid/xdg/AccessGrid3-Documentation.directory
+share/AccessGrid/xdg/AccessGrid3-Services.directory
+share/AccessGrid/xdg/AccessGrid3.menu
+share/AccessGrid/xdg/CVS/Entries
+share/AccessGrid/xdg/CVS/Repository
+share/AccessGrid/xdg/CVS/Root
+share/AccessGrid/xdg/CertificateRequestTool.desktop
+share/AccessGrid/xdg/CertificateRequestTool3.desktop
+share/AccessGrid/xdg/DevelopersDocumentation.desktop
+share/AccessGrid/xdg/License.desktop
+share/AccessGrid/xdg/NodeManagement.desktop
+share/AccessGrid/xdg/NodeManagement3.desktop
+share/AccessGrid/xdg/NodeService-Debug.desktop
+share/AccessGrid/xdg/NodeService.desktop
+share/AccessGrid/xdg/NodeSetupWizard.desktop
+share/AccessGrid/xdg/NodeSetupWizard3.desktop
+share/AccessGrid/xdg/Readme.desktop
+share/AccessGrid/xdg/ServiceManager-Debug.desktop
+share/AccessGrid/xdg/ServiceManager.desktop
+share/AccessGrid/xdg/ServiceManager3-Debug.desktop
+share/AccessGrid/xdg/ServiceManager3.desktop
+share/AccessGrid/xdg/VenueClient-Debug.desktop
+share/AccessGrid/xdg/VenueClient-PersonalNode.desktop
+share/AccessGrid/xdg/VenueClient.desktop
+share/AccessGrid/xdg/VenueClient3-Debug.desktop
+share/AccessGrid/xdg/VenueClient3.desktop
+share/AccessGrid/xdg/VenueClientManual.desktop
+share/AccessGrid/xdg/VenueManagement.desktop
+share/AccessGrid/xdg/VenueManagement3.desktop
+share/AccessGrid/xdg/VenueManagementManual.desktop
+share/AccessGrid/xdg/VenueServer-Debug.desktop
+share/AccessGrid/xdg/VenueServer.desktop
+share/AccessGrid/xdg/VenueServer3-Debug.desktop
+share/AccessGrid/xdg/VenueServer3.desktop
+share/doc/AccessGrid/COPYING.txt
+share/doc/AccessGrid/ChangeLog
+share/doc/AccessGrid/Install.LINUX
+share/doc/AccessGrid/README
+share/doc/AccessGrid/README-developers
+share/doc/AccessGrid/TODO
+share/doc/AccessGrid/VERSION
+@dirrm share/doc/AccessGrid
+@dirrm share/AccessGrid/xdg/CVS
+@dirrm share/AccessGrid/xdg
+@dirrm share/AccessGrid
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/wsdl
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/interfaces
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/hosting/ZSI
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/hosting/SOAPpy
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/hosting
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security/wxgui
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/Security
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/Registry
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/Platform/unix
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/Platform
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/Jabber
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/FTPS
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/Beacon
+@dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid
+@dirrm lib/python2.4/site-packages/AccessGrid3
+@dirrm etc/AccessGrid3/SharedApplications
+@dirrm etc/AccessGrid3/Services
+@dirrm etc/AccessGrid3/PackageCache
+@dirrm etc/AccessGrid3/NodeServices
+@dirrm etc/AccessGrid3/Logs
+@dirrm etc/AccessGrid3/Config/nodeConfig
+@dirrm etc/AccessGrid3/Config/CAcertificates
+@dirrm etc/AccessGrid3/Config
+@dirrm etc/AccessGrid3
