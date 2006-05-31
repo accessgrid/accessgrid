@@ -18,13 +18,14 @@ USE_PYTHON=	yes
 
 NO_INSTALL_MANPAGES=	1
 
-RUN_DEPENDS=	${PREFIX}/lib/python2.4/site-packages/_bsddb.so:${PORTSDIR}/databases/py-bsddb	\
+#RUN_DEPENDS=	${PREFIX}/lib/python2.4/site-packages/_bsddb.so:${PORTSDIR}/databases/py-bsddb	\
+RUN_DEPENDS=	pkg/py24-bsddb>=2.4.3:${PORTSDIR}/databases/py-bsddb	\
 	avahi>=0.6.10_3:${PORTSDIR}/net/avahi	\
 	py24-feedparser>=4.1_2:${PORTSDIR}/textproc/py-feedparser	\
 	ag-zsi-devel>=0.1:ports/ag-zsi	\
 	py24-Bajjer-devel>=0.2.4:ports/bajjer	\
 	py24-m2crypto>=0.15:ports/py-m2crypto-0.15	\
-	pyOpenSSL-0.5.1:ports/py-openssl	\
+	pyOpenSSL>=0.5.1:ports/py-openssl	\
 	common>=0.1:ports/common
 
 
@@ -37,7 +38,7 @@ do-build:
 
 do-install:
 	@(	\
-	mv ${WRKDIR}/dist-* ${WRKDIR}/dist && cd ${WRKDIR}/dist;	\
+	if [ ! -d ${WRKDIR}/dist ]; then mv ${WRKDIR}/dist-* ${WRKDIR}/dist; fi; cd ${WRKDIR}/dist;	\
 	${INSTALL_SCRIPT} bin/* ${PREFIX}/bin; \
 	cp -R lib/ ${PREFIX}/lib;	\
 	rm -rf share/applnk share/gnome;\
