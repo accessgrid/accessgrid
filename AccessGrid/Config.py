@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.38 2006-01-23 06:54:33 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.39 2006-06-01 07:46:18 braitmai Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.38 2006-01-23 06:54:33 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.39 2006-06-01 07:46:18 braitmai Exp $"
 
 import os
 import sys
@@ -756,6 +756,9 @@ class SystemConfig:
 	# print >> sys.stderr, "found ifconfig ", ifconfig
 
 	try:
+	    # Setting language to english output
+	    # for ifconfig output parsing
+	    os.environ["LANG"] = "C"
 	    fh = os.popen(ifconfig+ " " + interface_name, "r")
 	except:
 	    print >> sys.stderr, "Could not run ", ifconfig
