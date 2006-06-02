@@ -60,8 +60,8 @@ mkdir -p ${buildroot}/etc/xdg/menus/applications-merged
 cp ${xdgfiles}/AccessGrid3.menu ${buildroot}/etc/xdg/menus/applications-merged/
 mkdir -p ${buildroot}/share/desktop-directories
 cp -a ${xdgfiles}/*3*.directory ${buildroot}/share/desktop-directories/
-mkdir -p ${buildroot}/share/applications/AccessGrid
-cp -a ${xdgfiles}/*3*.desktop ${buildroot}/share/applications/AccessGrid/
+mkdir -p ${buildroot}/share/applications
+cp -a ${xdgfiles}/*3*.desktop ${buildroot}/share/applications/
 
 # Move node services and shared apps into etc 
 #
