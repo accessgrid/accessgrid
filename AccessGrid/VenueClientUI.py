@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.189 2006-05-26 17:40:14 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.190 2006-06-02 15:36:06 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.189 2006-05-26 17:40:14 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.190 2006-06-02 15:36:06 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -818,17 +818,17 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         elif eID == self.ID_WINDOW_TOP:
             height = event.GetDragRect().height
             self.venueAddressBar.SetDefaultSize(wxSize(1000, height))
-	
-	elif eID == self.ID_WINDOW_BOTTOM:
-	    height = event.GetDragRect().height
+        
+        elif eID == self.ID_WINDOW_BOTTOM:
+            height = event.GetDragRect().height
 
             # Avoid covering text area
-	    if height < 50:
-		height = 50
-	    self.textClientPanel.SetDefaultSize(wxSize(1000, height))
+            if height < 50:
+                height = 50
+            self.textClientPanel.SetDefaultSize(wxSize(1000, height))
 
-	wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
-	self.contentListPanel.Refresh()
+        wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
+        self.contentListPanel.Refresh()
                          
     def __OnSize(self, event = None):
         wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
@@ -2885,7 +2885,7 @@ class NavigationPanel(wxPanel):
 
     def __OnSize(self, event):
         self.__Layout()
-	
+        
     def OnExitsMenu(self, event):
         self.UpdateView(Preferences.EXITS)
         
@@ -3867,9 +3867,9 @@ class TextPanelSash(wxSashLayoutWindow):
     
     def __init__(self, parent, id):
         wxSashLayoutWindow.__init__(self, parent, id)
-	self.parent = parent
-	self.textClientPanel = JabberClientPanel(self, -1)#wxPanel(self, -1)
-	EVT_SIZE(self, self.__OnSize)
+        self.parent = parent
+        self.textClientPanel = JabberClientPanel(self, -1)#wxPanel(self, -1)
+        EVT_SIZE(self, self.__OnSize)
         self.__Layout()
 
     #def GetText(self):
@@ -3903,26 +3903,26 @@ class JabberClientPanel(wxPanel):
     def __init__(self, parent, id):
         wxPanel.__init__(self, parent, id)
         self.sashWindow = wxSashLayoutWindow(
-	    self, self.ID_WINDOW_TOP, wxDefaultPosition, (200, 30), 
-	    wxNO_BORDER)
-	
+            self, self.ID_WINDOW_TOP, wxDefaultPosition, (200, 30), 
+            wxNO_BORDER)
+        
         self.sashWindow.SetDefaultSize((1000, 60))
         self.sashWindow.SetOrientation(wxLAYOUT_HORIZONTAL)
         self.sashWindow.SetAlignment(wxLAYOUT_TOP)
-	self.sashWindow.SetSashVisible(wxSASH_BOTTOM, True)
+        self.sashWindow.SetSashVisible(wxSASH_BOTTOM, True)
 
         self.outputPanel = wxPanel(self.sashWindow, -1)
-	self.textOutput = wxTextCtrl(self.outputPanel, wxNewId(), "",
+        self.textOutput = wxTextCtrl(self.outputPanel, wxNewId(), "",
                                      style= wxTE_MULTILINE | wxTE_READONLY |
                                      wxTE_RICH|wxTE_AUTO_URL) 
-       	self.app = parent.parent
+        self.app = parent.parent
         self.panel = wxPanel(self, -1)
         self.display = wxButton(self.panel, self.ID_BUTTON, "Display",
                                 style = wxBU_EXACTFIT)
-	self.textInput = wxTextCtrl(self.panel, wxNewId(), "",
+        self.textInput = wxTextCtrl(self.panel, wxNewId(), "",
                                     size = wxSize(-1, 25),
                                     style= wxTE_MULTILINE)
-	self.panelHeight = None
+        self.panelHeight = None
 
 
         self.parent = parent
@@ -3935,52 +3935,52 @@ class JabberClientPanel(wxPanel):
         EVT_CHAR(self.textInput, self.TestEnter) 
         EVT_BUTTON(self, self.ID_BUTTON, self.LocalInput)
         EVT_SIZE(self, self.__OnSize)
-	EVT_SASH_DRAGGED(self, self.ID_WINDOW_TOP, 
-			 self.__OnSashDrag)
+        EVT_SASH_DRAGGED(self, self.ID_WINDOW_TOP, 
+                         self.__OnSashDrag)
         self.Show(true)
 
         self.app.venueClient.jabber.SetPanel(self)
 
     def __OnSashDrag(self, event):
-	eID = event.GetId()
-	
-	maxHeight = self.GetSize().height
-	
+        eID = event.GetId()
+        
+        maxHeight = self.GetSize().height
+        
         if eID == self.ID_WINDOW_TOP:
-	    h =  event.GetDragRect().height
-	    # Do not cover output
-	    
-	    if h < 10:
-		h = 10
-	    
-	    # Do not minimize input
-	    if maxHeight - h < 25:
-		h = maxHeight - 25
-	    self.sashWindow.SetDefaultSize(wxSize(1000, h))
-	    self.outputPanel.SetSize(wxSize(1000, h-5))
+            h =  event.GetDragRect().height
+            # Do not cover output
+            
+            if h < 10:
+                h = 10
+            
+            # Do not minimize input
+            if maxHeight - h < 25:
+                h = maxHeight - 25
+            self.sashWindow.SetDefaultSize(wxSize(1000, h))
+            self.outputPanel.SetSize(wxSize(1000, h-5))
     
-	wxLayoutAlgorithm().LayoutWindow(self, self.panel)
-	self.panel.Refresh()
-	self.panelHeight = self.panel.GetSize().height
+        wxLayoutAlgorithm().LayoutWindow(self, self.panel)
+        self.panel.Refresh()
+        self.panelHeight = self.panel.GetSize().height
 
         #self.__Layout()
 
     def __OnSize(self, event):
-	# Keep input constant
-	newHeight = event.GetSize().height
-	if not self.panelHeight:
-	    self.panelHeight = self.panel.GetSize().height
+        # Keep input constant
+        newHeight = event.GetSize().height
+        if not self.panelHeight:
+            self.panelHeight = self.panel.GetSize().height
 
-	# Do not keep input constant if it is higher
-	# than output.
-	if newHeight >= self.panelHeight:
-	    sashHeight = newHeight - self.panelHeight
-	else:
-	    sashHeight = newHeight
-	
-	self.sashWindow.SetDefaultSize(wxSize(1000, sashHeight))
-	self.outputPanel.SetSize(wxSize(1000, sashHeight-5))
-	wxLayoutAlgorithm().LayoutWindow(self, self.panel)
+        # Do not keep input constant if it is higher
+        # than output.
+        if newHeight >= self.panelHeight:
+            sashHeight = newHeight - self.panelHeight
+        else:
+            sashHeight = newHeight
+        
+        self.sashWindow.SetDefaultSize(wxSize(1000, sashHeight))
+        self.outputPanel.SetSize(wxSize(1000, sashHeight-5))
+        wxLayoutAlgorithm().LayoutWindow(self, self.panel)
              
     def __DoLayout(self):
         '''
@@ -3992,7 +3992,7 @@ class JabberClientPanel(wxPanel):
         box.Add(self.display, 0, wxALIGN_CENTER |wxALL, 2)
 
         self.panel.SetSizer(box)
-	box.Fit(self.panel)
+        box.Fit(self.panel)
         self.panel.SetAutoLayout(1)
 
         box2 = wxBoxSizer(wxHORIZONTAL)
@@ -4953,7 +4953,7 @@ class ApplicationPropertiesDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title,
                           style = wxDEFAULT_DIALOG_STYLE | 
-			  wxRESIZE_BORDER)
+                          wxRESIZE_BORDER)
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
         self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,-1))
