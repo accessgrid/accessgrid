@@ -2,13 +2,13 @@
 # Name:        MulticastAddressAllocator.py
 # Purpose:     This class manages multicast address allocation.
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.20 2005-02-11 21:21:24 turam Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.21 2006-06-05 07:59:02 douglask Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: MulticastAddressAllocator.py,v 1.20 2005-02-11 21:21:24 turam Exp $"
+__revision__ = "$Id: MulticastAddressAllocator.py,v 1.21 2006-06-05 07:59:02 douglask Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -58,7 +58,7 @@ class MulticastAddressAllocator(NetworkAddressAllocator):
 
     def _CalcAddressMask(self):
         # Calculate address mask in host-independent fashion
-        arr = array.array('l',[~((1<<(32-self.addressMaskSize))-1)])
+        arr = array.array('i',[~((1<<(32-self.addressMaskSize))-1)])
         arr.byteswap()
         self.addressMask = arr[0]
         
