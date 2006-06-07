@@ -86,8 +86,13 @@ class vncSharedAppClient:
                 execString='vncviewer -shared -scale 1/2 -passwd %s %s'%(self.passwdFilename,self.vncContact)
             else:
                 execString='vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)                
-        elif IsLinux() or IsFreeBSD():
+        elif IsLinux():
             if os.path.exists("/usr/local/bin/vncviewer") or os.path.exists("/usr/bin/vncviewer"):
+		execString='vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
+            else:
+		execString='chmod +x ./vncviewer; ./vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
+        elif IsFreeBSD():
+            if os.path.exists("/usr/local/bin/vncviewer") or os.path.exists("/usr/X11R6/bin/vncviewer"):
 		execString='vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
             else:
 		execString='chmod +x ./vncviewer; ./vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
