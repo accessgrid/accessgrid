@@ -1,0 +1,77 @@
+
+here=`pwd`
+WRKDIR=${here}/work
+if [ $# -eq 1 ]; then
+  ARCHBASE="$1"
+else
+  ARCHBASE="AccessGrid"
+fi
+
+archivedirs="
+AccessGrid
+ag-media
+"
+
+cd ${WRKDIR}
+if [ $? -ne 0 ]; then
+  echo "Can't cd to ${WRKDIR}. Exiting now!"
+  exit 1
+fi
+
+for i in ${archivedirs}
+do
+  if [ ! -d ${i} ]; then
+    echo "${i} doesn't exist. Exiting now!"
+    exit 2
+  fi
+done
+
+# Restore patched files
+#
+(cd AccessGrid && cat ${here}/files/patch-packaging-BuildSnapshot.py |patch -R)
+(cd AccessGrid && cat ${here}/files/patch-sharedapps-SharedBrowser-SharedBrowser.py |patch -R)
+
+
+# Clean ag-media
+#
+(cd ag-media/common && gmake distclean)
+(cd ag-media/tcl-8.0/unix && gmake distclean)
+(cd ag-media/tk-8.0/unix && gmake distclean)
+(cd ag-media/rat && gmake distclean)
+(cd ag-media/vic && gmake realclean)
+find ag-media/ -type f -name "*.[ao]" | xargs rm -f
+
+# Delete additional python path elements (added during build phase)
+#
+echo "Cleaning PYTHONPATH additions from *.py files"
+TMPLIST=pylist
+find AccessGrid/ -type f -name "*.py" >${TMPLIST}
+for f in `cat ${TMPLIST}`
+do
+  sed -i "-XXX" -n -e "/sys.path.insert(0, \'\/usr/d" $f
+  mv ${f}-XXX ${f}
+done
+rm -f ${TMPLIST}
+
+# Delete various executables
+#
+echo "Cleaning vic && rat executables"
+rm -f AccessGrid/services/node/rat*
+rm -f AccessGrid/services/node/vic
+
+# Delete packaged services & shared apps
+#
+echo "Deleting packaged services & shared apps"
+find AccessGrid/ -type f -name "*.zip" | xargs rm -f
+find AccessGrid/ -type f -name "*.agpkg*" | xargs rm -f
+
+# Delete CVS directories
+#
+echo "Removing CVS directories"
+find . -type d -name CVS |xargs rm -rf
+
+# Create the archive
+#
+echo "Creating tar archive"
+tar -zcvf ${ARCHBASE}.src.tar.gz AccessGrid ag-media
+

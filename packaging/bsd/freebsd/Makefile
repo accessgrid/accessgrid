@@ -18,15 +18,19 @@ USE_PYTHON=	yes
 
 NO_INSTALL_MANPAGES=	1
 
-#RUN_DEPENDS=	${PREFIX}/lib/python2.4/site-packages/_bsddb.so:${PORTSDIR}/databases/py-bsddb	\
-RUN_DEPENDS=	pkg/py24-bsddb>=2.4.3:${PORTSDIR}/databases/py-bsddb	\
+RUN_DEPENDS=	py24-wxPython>=2.6.3.2:${PORTSDIR}/x11-toolkits/py-wxPython26 \
+	py24-twistedCore>=2.2:${PORTSDIR}/devel/py-twistedCore \
+	py24-bsddb>=2.4.3:${PORTSDIR}/databases/py-bsddb	\
 	avahi>=0.6.10_3:${PORTSDIR}/net/avahi	\
+	py24-avahi>=0.6.10:${PORTSDIR}/net/py-avahi	\
+	py24-dbus>=0.61:${PORTSDIR}/devel/py-dbus	\
 	py24-feedparser>=4.1_2:${PORTSDIR}/textproc/py-feedparser	\
 	ag-zsi-devel>=0.1:ports/ag-zsi	\
 	py24-Bajjer-devel>=0.2.4:ports/bajjer	\
 	py24-m2crypto>=0.15:ports/py-m2crypto-0.15	\
 	pyOpenSSL>=0.5.1:ports/py-openssl	\
-	common>=0.1:ports/common
+	common>=0.1:ports/common	\
+	wxmozilla>=0.5.6_1:ports/wxmozilla
 
 
 WRKSRC=		${WRKDIR}/AccessGrid

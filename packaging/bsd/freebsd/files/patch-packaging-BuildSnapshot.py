@@ -1,5 +1,5 @@
---- packaging/BuildSnapshot.py.orig	Mon May 29 09:06:12 2006
-+++ packaging/BuildSnapshot.py	Wed May 31 12:34:35 2006
+--- packaging/BuildSnapshot.py.orig	Wed Jun  7 10:13:48 2006
++++ packaging/BuildSnapshot.py	Wed Jun  7 10:14:24 2006
 @@ -317,27 +317,6 @@
  os.system(cmd)
  

@@ -71,8 +71,6 @@ lib/python2.4/site-packages/gov/lbl/dsd/bajjer/xutil.py
 lib/python2.4/site-packages/gov/lbl/dsd/bajjer/xutil.pyc
 lib/python2.4/site-packages/gov/lbl/dsd/bajjer/xutil.pyo
 share/bajjer/etc/logging.cfg
-@dirrm share/nls/en_US.US-ASCII
-@dirrm share/nls/POSIX
 @dirrm share/bajjer/etc
 @dirrm share/bajjer
 @dirrm lib/python2.4/site-packages/gov/lbl/dsd/bajjer
