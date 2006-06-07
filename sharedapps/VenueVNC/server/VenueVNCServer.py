@@ -162,7 +162,7 @@ class vncServer:
                 p = self.processManager.StartProcess(self.vncserverexe,args)
                 log.debug("  pid = %s" % (p,))
 
-            elif IsLinux():
+            elif IsLinux() or IsFreeBSD():
                 # Add entry in the xauthority file similar to the way
                 #     vncserver does.
                 cookie = commands.getoutput("/usr/bin/mcookie")
