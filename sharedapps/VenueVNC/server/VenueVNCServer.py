@@ -48,7 +48,6 @@ from AccessGrid.SharedApplication import SharedApplicationIW
 
 from AccessGrid.ClientProfile import ClientProfile
 
-from SOAPpy import faultType
 if IsLinux() or IsFreeBSD():
     import commands
 
@@ -394,14 +393,6 @@ if __name__ == "__main__":
                                   app.GetOption('geometry'),
                                   app.GetOption('depth'),
                                   name, clientProfile)
-    except faultType, e:
-        print "Failed to create VenueVNC session: ",
-        if e.faultstring == 'Method Not Found':
-            print "Bad venue url"
-        sys.stdout.flush()
-        os._exit(1)
-        
-        os._exit(1)
     except Exception, e:
         log.exception("Failure starting VenueVNC session")
         print "Failure starting VenueVNC session (see VenueVNCServer.log for more details)"
