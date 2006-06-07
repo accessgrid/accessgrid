@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.105 2006-05-30 03:09:30 willing Exp $
+# RCS-ID:      $Id: setup.py,v 1.106 2006-06-07 02:34:23 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -69,6 +69,9 @@ linux_scripts = [ r"bin/VenueServer.py",
                   r"bin/certmgr.py",
                   r"bin/agpm.py",
                   r"bin/Bridge.py",
+                  r"tools/GoToVenue.py",
+                  r"tools/ag-avahi-discover.py",
+                  r"sharedapps/VenueVNC/server/VenueVNCServer.py",
                   ]
 
 linux_data = [('etc/AccessGrid3/Config',
@@ -159,7 +162,6 @@ linux_data = [('etc/AccessGrid3/Config',
                 "ChangeLog"
                 ]
                ),
-              ('bin', [r"tools/GoToVenue.py", r"tools/ag-avahi-discover.py", r"sharedapps/VenueVNC/server/VenueVNCServer.py"]),
               ]
 
 mac_scripts = [ r"bin/VenueServer.py", 
