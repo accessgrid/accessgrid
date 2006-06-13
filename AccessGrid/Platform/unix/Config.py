@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.73 2006-05-30 01:19:46 willing Exp $
+# RCS-ID:      $Id: Config.py,v 1.74 2006-06-13 05:09:38 douglask Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.73 2006-05-30 01:19:46 willing Exp $"
+__revision__ = "$Id: Config.py,v 1.74 2006-06-13 05:09:38 douglask Exp $"
 
 import sys
 import os
@@ -392,7 +392,10 @@ class SystemConfig(Config.SystemConfig):
             #     int minheight;  # and height
             #   };
             VIDIOCGCAP_FMT = "32siiiiiii"   # video_capability struct format string
-            VIDIOCGCAP     = -2143521279    # 0x803C7601
+            if sys.byteorder == "little":
+                VIDIOCGCAP     = -2143521279    # 0x803C7601
+            else:
+                VIDIOCGCAP     = 0x403c7601
 
             # V4L video_channel struct defined in linux/videodev.h :
             #   struct video_channel {
