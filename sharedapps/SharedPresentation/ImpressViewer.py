@@ -22,6 +22,7 @@ OO_locations = [
     '/usr/lib/openoffice.org*/program',
     '/usr/lib/ooo-2*/program',
     '/opt/openoffice.org*/program',
+    '/usr/local/openoffice.org*/program',
 ]
 
 for p in OO_locations:
@@ -104,6 +105,8 @@ class ImpressViewer:
                 oo_bin = "ooffice"
             elif iscommand("soffice"):
                 oo_bin = "soffice"
+            elif iscommand("openoffice.org"):
+                oo_bin = "openoffice.org"
             else :
                 # local file to help find the OpenOffice directory
                 import GetPaths
