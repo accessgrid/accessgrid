@@ -44,16 +44,15 @@ StartDir = os.getcwd()
 d,agsourcedir = os.path.split(BuildDir)
 distDirs = [agsourcedir,
             "ag-media",
-            "pyxml",
-            "pyOpenSSL",
-            "zsi",
             ]
+distDirStr = " ".join(distDirs)
 
 #
 # Create the targz from the source dir
 #
 os.chdir(StartDir)
-targz = os.path.join(SourceDir, "AccessGrid-%s-%s.src.tar.gz" % (version,metainfo))
+#targz = os.path.join(SourceDir, "AccessGrid-%s-%s.src.tar.gz" % (version,metainfo))
+targz = os.path.join(SourceDir, "AccessGrid-%s.src.tar.gz" % (version))
 cmd = "tar cvzhf %s --directory %s %s" % (targz, SourceDir, distDirStr)
 print "cmd = ", cmd
 os.system(cmd)
