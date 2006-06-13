@@ -3,6 +3,7 @@ X11BASE=/usr/X11R6
 
 case "$2" in
   "DEINSTALL")
+    # Menu stuff
     rm -f ${LOCALBASE}/share/AccessGrid/xdg/*.orig
     rm -rf ${X11BASE}/share/applications/AccessGrid
     rm -rf ${X11BASE}/share/desktop-directories/*3*
@@ -15,11 +16,14 @@ case "$2" in
     if [ -d ${mergedir} -a `ls ${mergedir}|wc -l` -eq 0 ]; then
       rmdir ${mergedir}
     fi
+    # Shared Apps
+    rm -f ${LOCALBASE}/etc/AccessGrid3/Config/ApplicationDatabase
+    find ${LOCALBASE}/etc/AccessGrid3/SharedApplications/* -type d |xargs rm -rf
     ;;
   "POST-DEINSTALL")
-    rm -f ${LOCALBASE}/etc/AccessGrid3/Services
-    rm -f ${LOCALBASE}/etc/AccessGrid3/PackageCache
-    rm -f ${LOCALBASE}/etc/AccessGrid3/Logs
+    rm -rf ${LOCALBASE}/etc/AccessGrid3/Logs
+    rm -rf ${LOCALBASE}/etc/AccessGrid3/Services
+    rm -rf ${LOCALBASE}/etc/AccessGrid3/PackageCache
     ;;
 esac
 
