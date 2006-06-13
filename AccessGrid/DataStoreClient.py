@@ -2,13 +2,13 @@
 # Name:        DataStoreClient.py
 # Purpose:     
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.27 2006-01-25 22:20:19 eolson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.28 2006-06-13 16:19:41 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.27 2006-01-25 22:20:19 eolson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.28 2006-06-13 16:19:41 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -570,19 +570,13 @@ class RemoteFileObj:
 if __name__ == "__main__":
     Application.instance().Initialize("DataStoreClient")
 
-    def testData(vurl):
+    def testData(vurl,connectionId):
 
-        dsc = GetVenueDataStore(vurl)
+        dsc = GetVenueDataStore(vurl,connectionId)
 
         sh = DataStoreShell(dsc)
         sh.run()
         
-        # ppt = dsc.QueryMatchingFiles("*.ppt")
-        # print "Ppt: ", ppt
-
-        # dsc.Download(ppt[0], "\\temp\\foo.ppt")
-        # dsc.Upload("\\temp\\foo.ppt")
-
     hdlr = Log.StreamHandler()
     hdlr.setLevel(Log.ERROR)
     Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
@@ -591,9 +585,6 @@ if __name__ == "__main__":
         hdlr.setLevel(Log.DEBUG)
         del sys.argv[1]
         
-
-    if len(sys.argv) < 2:
-        url = "https://localhost:8000/Venues/default"
-    else:
-        url = sys.argv[1]
-    testData(url)
+    url = sys.argv[1]
+    connectionId = sys.argv[2]
+    testData(url,connectionId)
