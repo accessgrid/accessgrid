@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.44 2006-04-28 13:36:28 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.45 2006-06-13 22:19:49 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -249,7 +249,7 @@ class PowerPointViewer:
 if sys.platform == Platform.WIN:
     # If we're on Windows we try to use the python/COM interface to PowerPoint
     defaultViewer = PowerPointViewer
-elif sys.platform == Platform.LINUX or sys.platform == Platform.FREEBSD5:
+elif sys.platform == Platform.LINUX or sys.platform == Platform.FREEBSD5 or sys.platform == Platform.FREEBSD6:
     # On Linux the best choice is probably Open/Star Office
     defaultViewer = ImpressViewer
 else:
