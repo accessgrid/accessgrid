@@ -12,7 +12,7 @@
 #
 # Has wxPythonGTK been installed?
 #
-WXPYGTK=`ls /var/adm/packages | grep wxPythonGTK2`
+WXPYGTK=`ls /var/adm/packages | grep wxPython`
 if [ ! $? -eq 0 ]; then
     echo "Can't find wxPythonGTK2 package installed"
     echo "Please install wxPythonGTK package, before running this script again"
@@ -23,7 +23,7 @@ fi
 # Has wxMozilla been installed?
 # Needed for SharedBrowser application
 #
-WXMOZ=`ls /var/adm/packages | grep wxMozilla`
+WXMOZ=`ls /var/adm/packages | grep -i wxMozilla`
 if [ ! $? -eq 0 ]; then
     echo "Can't find wxMozilla package installed"
     echo "Please install wxMozilla package, before running this script again"
@@ -139,6 +139,9 @@ echo ""
 # Any weird stuff for Shared apps?
 #
 
+# Restart gnome panel to make new Access Grid menu appear immediately
+#
+kill -10 `/sbin/pidof gnome-panel` >/dev/null 2>&1
 
 echo ""
 echo "Installation finished."
