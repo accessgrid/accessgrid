@@ -1,0 +1,11 @@
+--- ../../configure.orig	Sat Jun 17 15:43:29 2006
++++ ../../configure	Sat Jun 17 15:42:15 2006
+@@ -2524,7 +2524,7 @@
+ # GCC-specific warning flags
+ if test "$GCC" = yes
+ then
+-        CFLAGS="$CFLAGS -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations"
++        CFLAGS="$CFLAGS -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -fPIC"
+ fi
+ 
+ ###############################################################################
