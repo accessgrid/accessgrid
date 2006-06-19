@@ -31,6 +31,7 @@ DirectShowScanner::DirectShowScanner() {
    IMoniker     *pMoniker = 0;
    IPropertyBag *pPropBag = 0;
    VARIANT      varName;
+   CLSID		clsid;
 
    if( pDevEnum == 0 )
 	   return;
@@ -61,15 +62,12 @@ DirectShowScanner::DirectShowScanner() {
 
          //debug_msg("DirectShowScanner::DirectShowScanner():  found nameBuf/FriendlyName=%s\n", nameBuf);
 
-		 printf("%s\n", nameBuf);
-
-         // needs work, but don't add drivers that look like VFW drivers - msp
-         if( (strstr(nameBuf, "VFW") == NULL) ) {
-            //hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void **)(pCaptureFilter+devNum));
-            //showErrorMessage(hr);
-
-            //debug_msg("capture filter bound ok= %d\n", hr);
-            // devs_[devNum] = new DirectShowDevice(strdup(nameBuf), pCaptureFilter[devNum]);
+		 IBaseFilter *pCap = NULL;
+		 hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&pCap);
+		 pCap->GetClassID(&clsid);
+		 if (!IsEqualGUID(clsid,CLSID_VfwCapture))
+		 {
+			printf("%s\n", nameBuf);
          } else {
             //fprintf(stderr,"discarding an apparent VFW device= %s\n", nameBuf);
          }
