@@ -23,7 +23,7 @@ GNU_CONFIGURE=	yes
 USE_GNOME=	gnomehack gnometarget
 USE_GECKO=	mozilla
 WXGTK_CONFIG?=	${X11BASE}/bin/wxgtk2-2.6-config
-CONFIGURE_ARGS=	--with-wx-config=${WXGTK_CONFIG} --enable-python CPPFLAGS=-I/usr/local/include
+CONFIGURE_ARGS=	--with-wx-config=${WXGTK_CONFIG} --enable-python CPPFLAGS=-I/usr/local/include/wx-2.6
 INSTALLS_SHLIB=	yes
 
 CONFLICTS=	wxmozilla-0.5.{3-5}*
