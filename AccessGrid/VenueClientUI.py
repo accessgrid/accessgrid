@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.190 2006-06-02 15:36:06 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.191 2006-06-23 21:34:31 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.190 2006-06-02 15:36:06 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.191 2006-06-23 21:34:31 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -615,40 +615,46 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                                self.ID_WINDOW_BOTTOM, self.__OnSashDrag)
         EVT_SIZE(self, self.__OnSize)
         
-        EVT_TOOL(self,self.networkToolId,self.OnMulticast)
-        EVT_BUTTON(self,self.audioToolId,self.EnableAudioCB)
-        EVT_BUTTON(self,self.displayToolId,self.EnableDisplayCB)
-        EVT_BUTTON(self,self.videoToolId,self.EnableVideoCB)
-        EVT_TOOL(self,self.configNodeToolId,self.ManageNodeCB)
+        EVT_BUTTON(self,self.networkButton.GetId(),self.OnMulticast)
+        EVT_BUTTON(self,self.audioButton.GetId(),self.EnableAudioCB)
+        EVT_BUTTON(self,self.displayButton.GetId(),self.EnableDisplayCB)
+        EVT_BUTTON(self,self.videoButton.GetId(),self.EnableVideoCB)
+        EVT_BUTTON(self,self.configNodeButton.GetId(),self.ManageNodeCB)
         
-        EVT_ENTER_WINDOW(self.audioButton,self.OnButtonFocusChange)
-        EVT_LEAVE_WINDOW(self.audioButton,self.OnButtonFocusChange)
-        EVT_ENTER_WINDOW(self.videoButton,self.OnButtonFocusChange)
-        EVT_LEAVE_WINDOW(self.videoButton,self.OnButtonFocusChange)
-        EVT_ENTER_WINDOW(self.displayButton,self.OnButtonFocusChange)
-        EVT_LEAVE_WINDOW(self.displayButton,self.OnButtonFocusChange)
-        
+        buttons = [ self.networkButton, self.audioButton, self.videoButton, 
+                    self.displayButton, self.configNodeButton ]
+        for button in buttons:
+            EVT_ENTER_WINDOW(button,self.OnButtonFocusChange)
+            EVT_LEAVE_WINDOW(button,self.OnButtonFocusChange)
+
     def OnButtonFocusChange(self,event):
         # make sure button gets highlighted when it has focus
         event.Skip()
         
         # clear status text when leaving button
-        if event.Leaving():
+        if isinstance(event,wxMouseEvent) and event.Leaving():
             self.SetStatusText('')
             return
         
         # set status text otherwise
-        button = event.GetEventObject()
         statusText = None
-        if button == self.audioButton:
+        button = event.GetEventObject()
+        if button == self.networkButton:
+            statusText = "View multicast connectivity"
+        elif button == self.audioButton:
             statusText = "Enable/disable audio"
         elif button == self.videoButton:
             statusText = "Enable/disable video"
         elif button == self.displayButton:
             statusText = "Enable/disable display"
+        elif button == self.configNodeButton:
+            statusText = "Configure node services"
         if statusText:
-            self.SetStatusText(statusText)
-        
+            if IsWindows():
+                self.SetStatusTextDelayed(statusText,0.1)
+            else:
+                self.SetStatusText(statusText)
+
     def OnMulticast(self, event):
 
         pref = self.venueClient.GetPreferences()
@@ -741,18 +747,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # create toolbar
         self.toolbar = self.CreateToolBar()
-
-        self.networkToolId = 1
-        self.toolbar.AddTool(self.networkToolId,
-                             icons.getNoMulticastBitmap() ,
-                             shortHelpString='Multicast Status',
-                             longHelpString='Display multicast status')
-                             
-        self.toolbar.AddSeparator()
+        self.toolbar.SetToolPacking(3)
+        toolsize = (25,25)
         
-        toolsize = self.toolbar.GetToolSize()
-        if IsLinux() or IsFreeBSD():
-            toolsize = (25,25)
+        bitmap = icons.getNoMulticastBitmap()
+        self.networkButton = wxBitmapButton(self.toolbar,-1,bitmap,size=toolsize)
+        self.networkButton.SetToolTip(wxToolTip('View multicast connectivity'))
+        self.toolbar.AddControl(self.networkButton)
+        self.toolbar.AddSeparator()
         
         
         # - create the audio toolbar button  
@@ -760,8 +762,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             bitmap = icons.getAudioBitmap()
         else:
             bitmap = icons.getAudioDisabledBitmap()
-        self.audioToolId = 2       
-        self.audioButton = wxBitmapButton(self.toolbar,self.audioToolId,bitmap,style=wxNO_BORDER,size=toolsize)
+        self.audioButton = wxBitmapButton(self.toolbar,-1,bitmap,size=toolsize)
+        self.audioButton.SetToolTip(wxToolTip('Enable/disable audio'))
         self.toolbar.AddControl(self.audioButton)
 
         # - create the display toolbar button         
@@ -769,8 +771,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             bitmap = icons.getDisplayBitmap()
         else:
             bitmap = icons.getDisplayDisabledBitmap()
-        self.displayToolId = 3
-        self.displayButton = wxBitmapButton(self.toolbar,self.displayToolId,bitmap,style=wxNO_BORDER,size=toolsize)
+        self.displayButton = wxBitmapButton(self.toolbar,-1,bitmap,size=toolsize)
+        self.displayButton.SetToolTip(wxToolTip('Enable/disable display'))
         self.toolbar.AddControl(self.displayButton)
 
         # - create the video toolbar button         
@@ -778,16 +780,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             bitmap = icons.getCameraBitmap()
         else:
             bitmap = icons.getCameraDisabledBitmap()
-        self.videoToolId = 4
-        self.videoButton = wxBitmapButton(self.toolbar,self.videoToolId,bitmap,style=wxNO_BORDER,size=toolsize)
+        self.videoButton = wxBitmapButton(self.toolbar,-1,bitmap,size=toolsize)
+        self.videoButton.SetToolTip(wxToolTip('Enable/disable video'))
         self.toolbar.AddControl(self.videoButton)
 
-        self.configNodeToolId = 10
-        self.toolbar.AddTool(self.configNodeToolId,
-                             icons.getConfigureBitmap() ,
-                             shortHelpString='Configure node services',
-                             longHelpString='Configure node services for audio, video, ...')
-                    
+        bitmap = icons.getConfigureBitmap()
+        self.configNodeButton = wxBitmapButton(self.toolbar,-1,bitmap,size=toolsize)
+        self.configNodeButton.SetToolTip(wxToolTip('Configure node services'))
+        self.toolbar.AddControl(self.configNodeButton)
         self.toolbar.Realize()
         
         self.__SetStatusbar()
@@ -2032,6 +2032,17 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def SetStatusText(self,text):
         self.statusbar.SetStatusText(text,0)
 
+    def SetStatusTextDelayed(self,text,delay):
+        """
+        SetStatusTextDelayed performs the same function as SetStatusText, with a
+        couple variations:
+        - sleeps for the specified time first
+        - calls SetStatusText using wxCallAfter, since the call will be made from a
+          thread other than the primary.
+        """
+        time.sleep(delay)
+        wxCallAfter(self.statusbar.SetStatusText,text,0)
+
     def GoBackCB(self):
         """
         This method is called when the user wants to go back to last visited venue
@@ -2182,14 +2193,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         if bool:
             bitmap = icons.getMulticastBitmap()
             shortHelp = 'Multicast available'
-            longHelp = 'Click to display beacon grid'
         else:
             bitmap = icons.getNoMulticastBitmap()
             shortHelp = 'Multicast not available'
-            longHelp = 'You currently have no multicast connectivity'
-        self.toolbar.DeleteTool(self.networkToolId)
-        self.toolbar.InsertTool(0,self.networkToolId,bitmap ,shortHelpString=shortHelp,
-                                longHelpString=longHelp)
+        self.networkButton.SetBitmapLabel(bitmap)
+        self.networkButton.SetToolTip(wxToolTip(shortHelp))
         self.toolbar.Realize()
         
     def AddUser(self, profile):
