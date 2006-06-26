@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.30 2006-04-28 19:27:43 eolson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.31 2006-06-26 18:33:40 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.30 2006-04-28 19:27:43 eolson Exp $"
+__revision__ = "$Id: agpm.py,v 1.31 2006-06-26 18:33:40 turam Exp $"
 
 import os
 import re
@@ -176,7 +176,10 @@ def ProcessAppFile(appFile):
                 cmd = appInfo[key]
                 # If the named argument python is used, replace it
                 if cmd.find("%(python)s") != -1:
-                    cmd = cmd.replace("%(python)s", sys.executable)
+                    if sys.platform == 'darwin':
+                        cmd = cmd.replace("%(python)s", '/usr/bin/pythonw')
+                    else:
+                        cmd = cmd.replace("%(python)s", sys.executable)
                 commands[verb] = cmd
     return appInfo, commands
 
