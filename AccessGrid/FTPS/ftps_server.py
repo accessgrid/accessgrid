@@ -2,7 +2,7 @@
 
 Copyright (c) 1999-2004 Ng Pheng Siong. All rights reserved."""
 
-_RCS_id='$Id: ftps_server.py,v 1.7 2005-12-21 23:41:45 turam Exp $'
+_RCS_id='$Id: ftps_server.py,v 1.8 2006-06-28 20:40:05 turam Exp $'
 
 # Python
 import socket, string, sys, time
@@ -439,8 +439,11 @@ class tls_xmit_channel(nbio_ftp_tls_actor, ftp_server.xmit_channel):
     def handle_read(self):
         """Handle a read event: either continue with TLS negotiation
         or let the application handle this event."""
+        self.tls_neg_ok()
+        """
         if self.tls_neg_ok():
             ftp_server.xmit_channel.handle_read(self) 
+        """
 
     def handle_write(self):
         """Handle a write event: either continue with TLS negotiation
