@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.191 2006-06-23 21:34:31 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.192 2006-06-29 13:45:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.191 2006-06-23 21:34:31 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.192 2006-06-29 13:45:46 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1415,8 +1415,15 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                                    parent=self)
         
         if rssUrl:
-            # Add feed to reader
-            self.reader.AddFeed(rssUrl)
+            try:
+                # Add feed to reader
+                self.reader.AddFeed(rssUrl)
+            except KeyError:
+                msg = ( "An error occurred while reading the schedule feed.\n"+
+                        "Please verify the schedule address and try again.\n" +
+                        "If problems persist, contact the schedule provider." )
+                self.Warn(msg, "Add Schedule Error")
+                return
 
             # Persist feed
             self._SaveFeeds()
