@@ -15,6 +15,7 @@
 import sys, os, time
 from optparse import OptionParser
 from distutils.spawn import find_executable
+from distutils.sysconfig import get_python_lib
 
 if not os.environ.has_key('AGBUILDROOT'):
     print "AGBUILDROOT environment variable must be set"
@@ -170,7 +171,7 @@ os.chdir(s)
 # Fix bin/*.py names & pythonpath
 #
 # Maybe extra pythonpath (eppath) could be a command line option?
-eppath = os.path.join("%s"%(sys.prefix), "lib", "python%s"%(options.pyver), "site-packages")
+eppath = get_python_lib()
 
 cmd = '%s %s %s %s %s' % (sys.executable,
                           os.path.join(BuildDir, 'packaging', 'linux', 'FixAG3Paths.py'),
