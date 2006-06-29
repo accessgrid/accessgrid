@@ -19,7 +19,9 @@ import glob
 #
 # Add potential locations into OO_locations
 OO_locations = [
+    '/usr/lib64/openoffice.org*/program',
     '/usr/lib/openoffice.org*/program',
+    '/usr/lib64/ooo-2*/program',
     '/usr/lib/ooo-2*/program',
     '/opt/openoffice.org*/program',
     '/usr/local/openoffice.org*/program',
