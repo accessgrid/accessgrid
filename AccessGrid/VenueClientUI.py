@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.192 2006-06-29 13:45:46 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.193 2006-06-29 13:47:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.192 2006-06-29 13:45:46 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.193 2006-06-29 13:47:27 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -542,13 +542,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # If selecting the already selected bridge, ignore
         for i in items:
-            if i.GetId() == menuid and not self.menubar.IsChecked(menuid):
+            if i.GetId() == menuid and i.GetKind() == wxITEM_CHECK and not self.menubar.IsChecked(menuid):
                 self.bridgeSubmenu.Check(menuid, 1)
                 return
 
         for i in items:
             if i.GetId() != menuid:
-                self.bridgeSubmenu.Check(i.GetId(), 0)
+                if i.GetKind() == wxITEM_CHECK:
+                    self.bridgeSubmenu.Check(i.GetId(), 0)
         
         # Use current bridge
         try:
@@ -1117,7 +1118,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
             # Disable all bridge items
             for child in self.bridgeSubmenu.GetMenuItems():
-                self.menubar.Check(child.GetId(), false)
+                if child.GetKind() == wxITEM_CHECK:
+                    self.bridgeSubmenu.Check(child.GetId(), false)
 
             self.preferences.Check(self.ID_USE_MULTICAST, true)
             self.preferences.Check(self.ID_USE_UNICAST, false)
@@ -1135,6 +1137,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # Get current bridge
         currentBridge = self.venueClient.GetCurrentBridge()
+        
+        if currentBridge == None and not len(self.venueClient.GetBridges()):
+            self.Warn("No bridges currently available!", "Use Unicast")
+            return
                 
         # Use current bridge
         try:
