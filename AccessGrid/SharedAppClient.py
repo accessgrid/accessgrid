@@ -118,7 +118,7 @@ class SharedAppClient:
                     
         # Subscribe to the data/event channel
         self.eventClient = VenueEventClient((eventhost, eventport), 
-                                       self.__privateId,
+                                       self.__publicId,
                                        self.__channelId)
         self.RegisterEventCallback(Event.APP_SET_DATA, self.__ReceiveDataUpdate)
         self.eventClient.Start()
