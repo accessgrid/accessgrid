@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.45 2006-06-13 22:19:49 willing Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.46 2006-06-30 20:09:29 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -935,7 +935,6 @@ class SharedPresentation:
         self.log.debug("Method SendGoto called; slidenum=(%d)"%slideNum)
 
         # Check if slideNum is greater than max slide
-                
         if not self.viewer or not self.viewer.win:
             self.controller.ShowMessage("No slides are loaded.", "Notification")
             return
@@ -962,17 +961,6 @@ class SharedPresentation:
         self.log.debug("Method SendLoad called; path=(%s)", path)
 
         if self.masterId == self.sharedAppClient.GetPublicId():
-            # Put the event on the queue
-            if path[:5] != "http:":
-                try:
-                    # Default to loading from venue now.
-                    dsc = GetVenueDataStore(self.venueUrl, self.connectionId)
-                    fileData = dsc.GetFileData(path)
-                    path = fileData.uri
-                except:
-                    self.log.exception("Unable to get file from venue.")
-                    raise "Unable to get file from venue."
-
             self.eventQueue.put([SharedPresEvent.LOCAL_LOAD,path])
 
     def SendMaster(self, flag):
@@ -985,6 +973,7 @@ class SharedPresentation:
         if flag:
             # Local user wants to become master
             # Set the master in the venue
+            self.log.debug("Sending master event with id %s", publicId)
             self.sharedAppClient.SetData(SharedPresKey.MASTER, publicId)
             # Send event
             self.sharedAppClient.SendEvent(SharedPresEvent.MASTER, publicId)
@@ -1000,10 +989,10 @@ class SharedPresentation:
                 self.log.debug(" Set master to empty")
 
                 # Let's set the master in the venue
-                self.sharedAppClient.SetData(SharedPresKey.MASTER, "")
+                self.sharedAppClient.SetData(SharedPresKey.MASTER, "no master")
 
                 # Send event
-                self.sharedAppClient.SendEvent(SharedPresEvent.MASTER, "")
+                self.sharedAppClient.SendEvent(SharedPresEvent.MASTER, "no master")
 
                 try:
                     self.sharedAppClient.SetParticipantStatus("connected")
@@ -1162,6 +1151,7 @@ class SharedPresentation:
         # Call the viewers Next method
         if self.viewer != None:
             self.viewer.Next()
+            wxCallAfter(self.controller.SetSlideNum,self.viewer.GetSlideNum())
         else:
             wxCallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
             self.log.debug("No presentation loaded")
@@ -1176,6 +1166,7 @@ class SharedPresentation:
         # Call the viewers Previous method
         if self.viewer != None:
             self.viewer.Previous()
+            wxCallAfter(self.controller.SetSlideNum,self.viewer.GetSlideNum())
         else:
             wxCallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
             self.log.debug("No presentation loaded!")
@@ -1206,10 +1197,15 @@ class SharedPresentation:
 
         slidesUrl = data[1]
         slidesUrl = slidesUrl.replace("%20", " ")
-        # If the slides URL begins with ftps, retrieve the slides
-        # from the venue data store
-       
-        if slidesUrl.startswith("ftps"):
+        # If the slides URL does not begin with http, assume
+        # the slides reside in the venue data store
+        if not slidesUrl.startswith('http'):
+            ##
+            ## FIXME:
+            ## Should use the real name of the file, and download it to 
+            ## a 'Received Files' directory instead of temp so user can
+            ## find it in the future
+            ##
             tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation.ppt")
             # Make sure filename is not currently open
             if tmpFile == self.viewer.openFile:
@@ -1277,6 +1273,7 @@ class SharedPresentation:
                 self.log.exception("SharedPresentation:__init__: Failed to set participant status, old server?")
 
         # Store the master's public id locally
+        self.log.debug("Setting master id to %s", data[1])
         self.masterId = data[1]
 
         # Update the controller accordingly
@@ -1321,8 +1318,10 @@ class SharedPresentation:
         # Destroy controller
         try:
             self.controller.frame.Destroy()
+        except wxPyDeadObjectError:
+            self.log.info("Exception destroying controller. This happens when using the x button in the top right corner. Not critical.")
         except:
-            self.log.warn("Exception destroying controller. This happens when using the x button in the top right corner. Not critical.")
+            self.log.exception("Exception destroy controller.")
         
         # Get rid of the controller
         self.controller = None
@@ -1378,7 +1377,6 @@ class SharedPresentation:
                 self.sharedAppClient.SetData(SharedPresKey.STEPNUM, self.stepNum)
 
                 # Send the next event to other app users
-                publicId = self.sharedAppClient.GetPublicId()
                 self.sharedAppClient.SendEvent(SharedPresEvent.NEXT, "")
         else:
             wxCallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
@@ -1423,7 +1421,6 @@ class SharedPresentation:
                 self.sharedAppClient.SetData(SharedPresKey.STEPNUM, self.stepNum)
 
                 # We send the event, which is wrapped in an Event instance
-                publicId = self.sharedAppClient.GetPublicId()
                 self.sharedAppClient.SendEvent(SharedPresEvent.PREV, "")
 
                 self.log.debug("slide %d step %d"%(self.slideNum, self.stepNum))
@@ -1449,7 +1446,6 @@ class SharedPresentation:
                 self.sharedAppClient.SetData(SharedPresKey.STEPNUM, self.stepNum)
 
                 # Send event
-                publicId = self.sharedAppClient.GetPublicId()
                 self.sharedAppClient.SendEvent(SharedPresEvent.GOTO, self.slideNum)
                 
         else:
@@ -1457,7 +1453,7 @@ class SharedPresentation:
             self.log.debug("No presentation loaded!")
 
         wxCallAfter(self.controller.SetSlideNum, slideNum)
-
+    
     def LocalLoad(self, slidesUrl):
         """
         This is the _real_ goto slide method that tells the viewer to move
@@ -1465,9 +1461,9 @@ class SharedPresentation:
         """
         self.log.debug("Method LocalLoad called; slidesUrl=(%s)"%slidesUrl)
         slidesUrl = slidesUrl.replace("%20", " ")
-        # If the slides URL begins with ftps, retrieve the slides
-        # from the venue data store.
-        if slidesUrl.startswith("ftps"):
+        # If the slides URL does not begin with 'http', assume the
+        # slides reside in the venue data store
+        if not slidesUrl.startswith('http:'):
             tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation.ppt")
             # If current filename is in use, use slightly different name.
             if tmpFile == self.viewer.openFile:
@@ -1513,7 +1509,6 @@ class SharedPresentation:
         self.sharedAppClient.SetData(SharedPresKey.STEPNUM, self.stepNum)
         
         # Send event
-        publicId = self.sharedAppClient.GetPublicId()
         self.sharedAppClient.SendEvent(SharedPresEvent.LOAD, slidesUrl)
                                     
         self.SendMaster(true)
@@ -1535,14 +1530,7 @@ class SharedPresentation:
         if self.presentation and len(self.presentation) != 0:
             self.presentation.replace("%20", " ")
             self.log.debug("Got presentation: %s"%self.presentation)
-            if self.presentation[:6] == "ftps:":
-                # Remove datastore prefix on local url in UI since master checks
-                #  if file is in venue and sends full datastore url if it is.
-                short_presentation = self.stripDatastorePrefix(self.presentation)
-                wxCallAfter( self.controller.SetSlides, short_presentation)
-                #self.controller.SetSlides(self.presentation)
-            else:
-                wxCallAfter( self.controller.SetSlides, self.presentation)
+            wxCallAfter( self.controller.SetSlides, self.presentation)
                                 
             # Retrieve the current slide
             self.slideNum = int(self.sharedAppClient.GetData(SharedPresKey.SLIDENUM))
@@ -1565,9 +1553,9 @@ class SharedPresentation:
             # Retrieve the master
             self.masterId = self.sharedAppClient.GetData(SharedPresKey.MASTER)
 
-            # If the slides URL begins with ftps, retrieve the slides
-            # from the venue data store
-            if self.presentation.startswith("ftps"):
+            # If the slides URL does not begin with 'http', assume the slides
+            # reside in the venue data store
+            if not self.presentation.startswith("http:"):
                 tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation.ppt")
                 # If tmpFile name is in use, use a different name.
                 if tmpFile == self.viewer.openFile:
@@ -1745,27 +1733,4 @@ if __name__ == "__main__":
     # This should be something like:
     #sys.exit(0)
     os._exit(0)
-
-    # Stress Test
-    #import threading
-    #import time
-
-    #s = SharedAppClient("test")
-    #s.Join(appURL)
-    #publicId = s.GetPublicId()
-
-    #def SendEvents():
-    #    time.sleep(10)
-    #    s.SendEvent(SharedPresEvent.MASTER, (publicId, publicId))
-    #    print 'send next event'
-    #    s.SendEvent(SharedPresEvent.NEXT,(publicId, None))
-    #    s.SendEvent(SharedPresEvent.NEXT,(publicId, None))
-    #    s.SendEvent(SharedPresEvent.PREV,(publicId, None))
-    #    s.SendEvent(SharedPresEvent.PREV,(publicId, None))
-        
-    #thread = threading.Thread(target = SendEvents)
-    #thread.start()
-    
-    #presentation.Start()
-    #os._exit(0)
 
