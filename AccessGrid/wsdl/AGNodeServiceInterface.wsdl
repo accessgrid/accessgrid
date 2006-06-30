@@ -358,12 +358,6 @@
     <message name="StoreConfigurationResponse">
 	<part name="parameters" element="agns:StoreConfigurationResponse"/>
     </message>
-    <message name="IsValidRequest">
-	<part name="parameters" element="agns:IsValidRequest"/>
-    </message>
-    <message name="IsValidResponse">
-	<part name="parameters" element="agns:IsValidResponse"/>
-    </message>
     <message name="GetVersionRequest">
 	<part name="parameters" element="agns:GetVersionRequest"/>
     </message>
@@ -441,10 +435,6 @@
     <operation name="StoreConfiguration">
         <input message="agns:StoreConfigurationRequest"/>
         <output message="agns:StoreConfigurationResponse"/>
-    </operation>
-    <operation name="IsValid">
-        <input message="agns:IsValidRequest"/>
-        <output message="agns:IsValidResponse"/>
     </operation>
 	<operation name="GetVersion">
 	    <input message="agns:GetVersionRequest"/>

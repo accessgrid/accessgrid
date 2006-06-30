@@ -302,12 +302,6 @@
     <message name="StopServicesResponse">
 	<part name="parameters" element="agtksm:StopServicesResponse"/>
     </message>
-    <message name="IsValidRequest">
-	<part name="parameters" element="agtksm:IsValidRequest"/>
-    </message>
-    <message name="IsValidResponse">
-	<part name="parameters" element="agtksm:IsValidResponse"/>
-    </message>
     <message name="GetVersionRequest">
 	<part name="parameters" element="agtksm:GetVersionRequest"/>
     </message>
@@ -373,10 +367,6 @@
     <operation name="StopServices">
         <input message="agtksm:StopServicesRequest"/>
         <output message="agtksm:StopServicesResponse"/>
-    </operation>
-    <operation name="IsValid">
-        <input message="agtksm:IsValidRequest"/>
-        <output message="agtksm:IsValidResponse"/>
     </operation>
 	<operation name="GetVersion">
 	    <input message="agtksm:GetVersionRequest"/>
