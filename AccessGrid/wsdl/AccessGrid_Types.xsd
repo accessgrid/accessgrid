@@ -177,6 +177,16 @@
       </xs:sequence>
     </xs:complexType>
  
+    <xs:complexType name="ApplicationCmdDescription">
+      <xs:sequence>
+        <xs:element name="appDesc" type="tns:ApplicationDescription"/>
+        <xs:element name="verb" nillable="true" type="xs:string"/>
+        <xs:element name="cmd" nillable="true" type="xs:string"/>
+        <xs:element name="profile" type="tns:ClientProfile"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="AppDataDescription">
       <xs:sequence>
         <xs:element name="appId" type="xs:string"/>

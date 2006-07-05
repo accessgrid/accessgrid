@@ -4,6 +4,7 @@ mapping = {
     "ClientProfile" : ("AccessGrid.ClientProfile", "ClientProfile"),
     "ConnectionDescription" : ("AccessGrid.Descriptions", "ConnectionDescription"),
     "ApplicationDescription" : ("AccessGrid.Descriptions", "ApplicationDescription"),
+    "ApplicationCmdDescription" : ("AccessGrid.Descriptions", "ApplicationCmdDescription"),
     "AppDataDescription" : ("AccessGrid.Descriptions", "AppDataDescription"),
     "ServiceDescription" : ("AccessGrid.Descriptions", "ServiceDescription"),
     "DataDescription" : ("AccessGrid.Descriptions", "DataDescription"),
