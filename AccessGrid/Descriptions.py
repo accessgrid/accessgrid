@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.96 2006-05-10 21:27:02 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.97 2006-07-05 17:04:16 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.96 2006-05-10 21:27:02 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.97 2006-07-05 17:04:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -255,7 +255,7 @@ class ServiceDescription(ObjectDescription):
         return string
 
 class ApplicationCmdDescription:
-    def __init__(self, appDesc, verb, cmd, senderProfile):   
+    def __init__(self, appDesc=None, verb=None, cmd=None, senderProfile=None):   
         self.appDesc = appDesc
         self.verb = verb
         self.command = cmd
