@@ -3,7 +3,7 @@
 # Name:        GroupMsgService.py
 # Purpose:     A Group Messaging service server.
 # Created:     2005/09/09
-# RCS-ID:      $Id: GroupMsgService.py,v 1.5 2006-02-13 17:24:20 turam Exp $
+# RCS-ID:      $Id: GroupMsgService.py,v 1.6 2006-07-07 18:29:40 turam Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -162,7 +162,10 @@ class GroupMsgServiceFactory(ServerFactory):
             return False  # user doesn't have a group yet
 
         for conn in self.groups[groupName]:
-            conn.write(struct.pack("!i",len(data))+data) # sendString Int32
+            try:
+                conn.write(struct.pack("!i",len(data))+data) # sendString Int32
+            except:
+                log.exception("Error sending message to connection %s", str(conn))
         return True
 
 class GroupMsgService:
