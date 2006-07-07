@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.193 2006-06-29 13:47:27 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.194 2006-07-07 19:42:36 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.193 2006-06-29 13:47:27 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.194 2006-07-07 19:42:36 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1341,19 +1341,17 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         except:
             self.Error("Error setting default venue", "Set Default Venue Error")
 
-    def AddToMyVenuesCB(self, event):
-        url = ""
-        name = ""
-        myVenuesDict = self.controller.GetMyVenues()
+    def AddToMyVenuesCB(self, event=None, url=None, name=None):
        
-        if self.venueClient.IsInVenue():
-            url = self.venueClient.GetVenue()
-            name = self.venueClient.GetVenueName()
-                          
-            if not url:
-                url = ""
-                name = ""
-     
+        if url==None and name==None:
+            # use current venue
+            if self.venueClient.IsInVenue():
+                url = self.venueClient.GetVenue()
+                name = self.venueClient.GetVenueName()
+
+                if not url:
+                    url = ""
+                    name = ""
         
         # Venue url not in list
         # - Prompt for name and validate
@@ -1364,6 +1362,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             venueUrl = dialog.GetUrl()
         dialog.Destroy()
 
+        myVenuesDict = self.controller.GetMyVenues()
         if venueName:
             addVenue = 1
             if myVenuesDict.has_key(venueName):
@@ -2895,6 +2894,7 @@ class NavigationPanel(wxPanel):
         
         EVT_LEFT_DCLICK(self.tree, self.OnDoubleClick)
         EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
+        EVT_RIGHT_DOWN(self.tree, self.OnRightDown)
         EVT_MENU(self, self.ID_EXITS, self.OnExitsMenu)
         EVT_MENU(self, self.ID_MY_VENUES, self.OnMyVenuesMenu)
         EVT_MENU(self, self.ID_ALL, self.OnAllMenu)
@@ -2903,6 +2903,11 @@ class NavigationPanel(wxPanel):
         self.root = self.tree.AddRoot("ROOT")
         self.UpdateView()
         self.__Layout()
+        
+        self.menu = wxMenu()
+        self.addToMyVenuesId = wxNewId()
+        self.menu.Append(self.addToMyVenuesId,'Add to My Venues')
+        EVT_MENU(self.menu,self.addToMyVenuesId,self.__OnAddToMyVenues)
 
     def __OnSize(self, event):
         self.__Layout()
@@ -2915,7 +2920,12 @@ class NavigationPanel(wxPanel):
         
     def OnAllMenu(self, event):
         self.UpdateView(Preferences.ALL_VENUES)
-
+        
+    def __OnAddToMyVenues(self,event):
+        itemId = self.tree.GetSelection()
+        venue = self.tree.GetPyData(itemId)
+        self.app.AddToMyVenuesCB(url=venue.uri,name=venue.name)
+        
   
     def OnDoubleClick(self, event):
         '''
@@ -2947,7 +2957,11 @@ class NavigationPanel(wxPanel):
 
         # Check to see if the click hit the twist button
         
-        if not treeId.IsOk() or not(flag & wxTREE_HITTEST_ONITEMBUTTON):
+        if not treeId.IsOk():
+            return
+            
+        if not(flag & wxTREE_HITTEST_ONITEMBUTTON):
+            self.tree.SelectItem(treeId)
             return
 
         child, cookie = self.tree.GetFirstChild(treeId)
@@ -2980,6 +2994,28 @@ class NavigationPanel(wxPanel):
                        
         event.Skip()
                                
+    def OnRightDown(self, event):
+        '''
+        Called when user clicks the tree
+        '''
+        
+        self.x = event.GetX()
+        self.y = event.GetY()
+        exits = None
+
+        treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
+
+        # Check to see if the click hit the twist button
+        
+        if not treeId.IsOk():
+            return
+            
+        if not(flag & wxTREE_HITTEST_ONITEMBUTTON):
+            self.tree.SelectItem(treeId)
+        
+        self.tree.PopupMenu(self.menu)
+
+
     def AddVenueDoor(self, venue):
         '''
         Add a new entry in the list of venues.
