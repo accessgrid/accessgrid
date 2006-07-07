@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.35 2006-04-21 15:55:49 turam Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.36 2006-07-07 19:56:05 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.35 2006-04-21 15:55:49 turam Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.36 2006-07-07 19:56:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -813,7 +813,7 @@ class AuthorizationUIPanel(wxPanel):
                 
                 
             # Insert subject in tree
-            index = self.roleToTreeIdDict[activeRole]
+            index = self.roleToTreeIdDict[activeRole.GetName()]
             subjectId = self.tree.AppendItem(index, subject.GetCN(),
                                              self.participantId, self.participantId)
             self.tree.SetItemData(subjectId, wxTreeItemData(subject))
