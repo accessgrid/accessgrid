@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.316 2006-05-12 17:38:02 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.317 2006-07-13 20:33:41 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.316 2006-05-12 17:38:02 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.317 2006-07-13 20:33:41 turam Exp $"
 
 import sys
 import os
@@ -448,6 +448,11 @@ class VenueClient:
             nextTimeout = self.__venueProxy.UpdateLifetime(
                 self.profile.connectionId,dummyClientTimeout)
                 
+            if nextTimeout == -1:
+                # server doesn't recognize client anymore; stop sending heartbeats
+                log.info("VenueServer returned error on UpdateLifetime; stopping heartbeats")
+                return
+                
             ##
             ## CODE TO ACCOMMODATE 3.0 SERVER TIMEOUTS
             ## REMOVE WHEN 3.0 SERVER COMPAT IS NOT A CONCERN
@@ -457,10 +462,10 @@ class VenueClient:
             if nextTimeout == 15:
                 nextTimeout = 5
                 
-            log.debug("Next Heartbeat needed before: %d", nextTimeout)
+            log.debug("Next Heartbeat needed within %ds", nextTimeout)
             
         except Exception, e:
-            log.exception("Error sending heartbeat")
+            log.exception("Error sending heartbeat; next heartbeat in %ds", nextTimeout)
                 
         self.heartBeatTimer = threading.Timer(nextTimeout,
                                               self.Heartbeat)
