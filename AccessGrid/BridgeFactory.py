@@ -16,7 +16,7 @@ class BridgeFactory:
         """
         The Bridge class encapsulates execution of the bridge software
         """
-        def __init__(self, qbexec,id, maddr, mport, mttl, uaddr, uport, deathCallback=None):
+        def __init__(self, qbexec,id, maddr, mport, mttl, uaddr, uport, processManager, deathCallback=None):
             self.qbexec = qbexec
             self.id = id
             self.maddr = maddr
@@ -24,12 +24,9 @@ class BridgeFactory:
             self.mttl = mttl
             self.uaddr = uaddr
             self.uport = uport
+            self.processManager = processManager
             self.deathCallback = deathCallback
-
-            # Instantiate the process manager
-            self.processManager = ProcessManager()
-            self.processManager.WaitForChildren(self.OnBridgeDeath)
-
+            
 
         def Start(self):
             """
@@ -52,8 +49,9 @@ class BridgeFactory:
                     "-i", '600', # temporarily hard-coded inactivity timeout
                    ]
             log.info("Starting bridge: %s %s", self.qbexec, str(args))
-            self.processManager.StartProcess(self.qbexec,args)
-
+            pid = self.processManager.StartProcess(self.qbexec,args)
+            return pid
+            
         def Stop(self):
             """
             Stop stops the bridge, terminating bridge processes
@@ -73,6 +71,10 @@ class BridgeFactory:
         log = logger
 
         self.bridges = dict()
+        self.processManager = ProcessManager()
+        self.processManager.WaitForChildren(self.OnBridgeDeath)
+        
+        self.bridgesByPid = {}
 
         self.addressAllocator = NetworkAddressAllocator()
         
@@ -131,12 +133,15 @@ class BridgeFactory:
             log.info("- creating new bridge")
             retBridge = BridgeFactory.Bridge(self.qbexec,id,maddr,mport,
                                              mttl,uaddr,uport,
+                                             self.processManager,
                                              self.OnBridgeDeath)
-            retBridge.Start()
+            pid = retBridge.Start()
    
             # Add the bridge to the list of bridges
             key = "%s%s" % (retBridge.maddr,retBridge.mport)
             self.bridges[key] = (retBridge,1)
+            
+            self.bridgesByPid[pid] = retBridge
 
         return retBridge
 
@@ -161,14 +166,29 @@ class BridgeFactory:
                 bridge.Stop()
                 del self.bridges[key]
                 
-    def OnBridgeDeath(self,bridge,pid):
+    def OnBridgeDeath(self,pm,pid):
+        bridge = None
+        if pid in self.bridgesByPid.keys():
+            bridge = self.bridgesByPid[pid]
+            
+        if not bridge:
+            log.warn("Bridge for pid %d not found" % (pid,))
+            return
+            
+        log.info("Removing bridge following death of bridge process (%s/%d)",
+                bridge.maddr, bridge.mport)
         key = "%s%d" % (bridge.maddr,bridge.mport)
         if self.bridges.has_key(key):
-            log.info("Removing bridge following death of bridge process (%s/%d)",
-                    bridge.maddr, bridge.mport)
             del self.bridges[key]
         else:
             log.warn("Attempt to handle death of bridge which is not known to BridgeFactory (%s/%d)" % (bridge.maddr,bridge.mport))
+
+        try:    
+            del self.bridgesByPid[pid]
+        except KeyError:
+            log.warn("Attempt to handle death of bridge which is not known to BridgeFactory")
+        except:
+            log.exception("Exception removing bridge from bridgelist")
 
     def GetBridges(self):
         # return only the bridge objects themselves, not the
