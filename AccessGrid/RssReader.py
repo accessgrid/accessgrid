@@ -2,7 +2,7 @@
 # Name:        RssReader.py
 # Purpose:     An RSS reader for meeting feeds
 # Created:     2005/10/19
-# RCS-ID:      $Id: RssReader.py,v 1.7 2006-03-24 19:16:24 turam Exp $
+# RCS-ID:      $Id: RssReader.py,v 1.8 2006-07-13 15:03:56 turam Exp $
 # Copyright:   (c) 2005
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -88,6 +88,9 @@ class RssReader:
         
     def _ProcessUrl(self,rssUrl):
         
+        if self.log: 
+            self.log.debug('Retrieving rss: %s', rssUrl)
+
         d = feedparser.parse(rssUrl)
         channelTime = d['feed']['modified']
         docDate = strtimeToSecs(channelTime)
