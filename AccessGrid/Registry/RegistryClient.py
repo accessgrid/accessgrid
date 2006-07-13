@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.21 2006-06-26 17:55:16 eolson Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.22 2006-07-13 20:49:43 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -43,8 +43,6 @@ class RegistryClient:
                     foundServer = 1
                     break
             except Exception,e:
-                import traceback
-                traceback.print_exc()
                 self.log.exception("Failed to connect to registry %s"%(r))
             
         if not foundServer:
@@ -57,15 +55,10 @@ class RegistryClient:
         return self.serverProxy.RegisterBridge(registeredServerInfo)
 
     def PingRegistryPeer(self, serverProxy):
-        try:
-            startTime = serverProxy.Ping(time.time())
-            roundTripTime = time.time() - startTime
-            #print "RoundTrip:", roundTripTime
-            return roundTripTime
-        except:
-            import traceback
-            traceback.print_exc()
-            return -1
+        startTime = serverProxy.Ping(time.time())
+        roundTripTime = time.time() - startTime
+        #print "RoundTrip:", roundTripTime
+        return roundTripTime
 
     def PingBridgeService(self, bridgeProxy):
         try:
