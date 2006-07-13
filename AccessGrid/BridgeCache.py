@@ -43,6 +43,10 @@ class BridgeCache:
                 bridges[bridgeid].status = config[key]
             elif val == "rank":
                 bridges[bridgeid].rank = int(config[key])
+            elif val == "portMin":
+                bridges[bridgeid].portMin = int(config[key])
+            elif val == "portMax":
+                bridges[bridgeid].portMax = int(config[key])
 
         for b in bridges.values():
             self.bridges.append(b)
@@ -63,5 +67,7 @@ class BridgeCache:
             tempDict[""+b.guid+".description"]= b.description
             tempDict[""+b.guid+".status"]= b.status
             tempDict[""+b.guid+".rank"]= int(b.rank)
+            tempDict[""+b.guid+".portMin"]= int(b.portMin)
+            tempDict[""+b.guid+".portMax"]= int(b.portMax)
         
         SaveConfig(self.config.GetBridges(), tempDict)
