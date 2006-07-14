@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.16 2006-07-14 14:58:21 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.17 2006-07-14 15:00:13 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -215,7 +215,10 @@ class AudioService( AGService ):
 
         try:
             # Initialize environment for rat
-            self.__SetRTPDefaults(self.profile)
+            try:
+                self.__SetRTPDefaults(self.profile)
+            except:
+                self.log.exception("Error setting RTP defaults")
             self.WriteRatDefaults()
 
             if Platform.isLinux() or Platform.isFreeBSD():
