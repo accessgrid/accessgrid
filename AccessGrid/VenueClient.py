@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.317 2006-07-13 20:33:41 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.318 2006-07-14 16:42:58 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.317 2006-07-13 20:33:41 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.318 2006-07-14 16:42:58 turam Exp $"
 
 import sys
 import os
@@ -125,7 +125,6 @@ class VenueClient:
         self.preferences = self.app.GetPreferences()
         self.preferences.SetVenueClient(self)
         self.profile = self.preferences.GetProfile()
-        self.profileChanged = 0
        
         if pnode is None:
             pnode = int(self.preferences.GetPreference(Preferences.STARTUP_MEDIA))
@@ -884,6 +883,10 @@ class VenueClient:
         #
 
         try:
+            # Ensure that streams are using the intended addresses (multicast or a particular bridge)
+            self.UpdateStreams()
+
+            # Update node with those streams
             self.UpdateNodeService()
         except NetworkLocationNotFound, e:
             log.debug("UpdateNodeService: Couldn't update stream with transport/provider info")
@@ -932,6 +935,12 @@ class VenueClient:
             if self.beaconLocation:
                 if self.beacon == None:
                     self.beacon = Beacon()
+                elif(self.beacon.GetConfigData('groupAddress') != self.beaconLocation.host or
+                     self.beacon.GetConfigData('groupPort') != self.beaconLocation.port):
+                    # Beacon reconfig; stop running beacon
+                    log.info("Beacon being reconfigured, stopping running beacon")
+                    self.beacon.Stop()
+
                 self.beacon.SetConfigData('user', self.profile.name)
                 self.beacon.SetConfigData('groupAddress',
                                           str(self.beaconLocation.host))
@@ -1166,18 +1175,6 @@ class VenueClient:
         log.debug("UpdateNodeService: Method UpdateNodeService called")
         exc = None
 
-        if self.profileChanged:
-            log.debug('UpdateNodeService: profile has changed, updating services')
-            services = self.nodeService.GetServices()
-            for service in services:
-                try:
-                    AGServiceIW(service.uri).SetIdentity(self.profile)
-                except:
-                    log.info('failed to update %s with profile', service.name)
-            self.profileChanged = 0
-        else:
-            log.debug('profile has not changed, not updating services')
-
         # Send streams to the node service
         try:
             log.debug("Setting node service streams")
@@ -1189,6 +1186,14 @@ class VenueClient:
         # Raise exception if occurred
         if exc:
             raise exc
+
+    def UpdateServiceClientProfile(self,profile):
+        services = self.nodeService.GetServices()
+        for service in services:
+            try:
+                AGServiceIW(service.uri).SetIdentity(self.profile)
+            except:
+                log.exception('failed to update %s with profile', service.name)
             
     def UpdateStreams(self):
         for stream in self.streamDescList:
@@ -1207,16 +1212,13 @@ class VenueClient:
         Apply selections of transport and netloc provider to the given stream.
         """
         found = 0
+
+        log.info("In UpdateStream: transport=%s", self.transport)
                
         # Check streams if they have a network location
         for netloc in stream.networkLocations:
             # If transport is multicast, use the location
             if self.transport == "multicast" and netloc.GetType() == self.transport:
-                stream.location = netloc
-                found = 1
-            # If transport is unicast, use location if provider matches
-            elif (self.transport == "unicast" and netloc.GetType() == self.transport and
-                  netloc.profile.name == self.currentBridge.name):
                 stream.location = netloc
                 found = 1
                                     
@@ -1232,6 +1234,7 @@ class VenueClient:
 
                 try:
                     stream.location = qbc.JoinBridge(stream.networkLocations[0])
+                    log.debug("Got location from bridge: %s", stream.location)
                     stream.networkLocations.append(stream.location)
                   
                 except:
@@ -1295,7 +1298,10 @@ class VenueClient:
 
     def UpdateClientProfile(self,profile):
         log.debug('VenueClient.UpdateClientProfile')
-        self.profileChanged = 1
+        try:
+            self.UpdateServiceClientProfile(profile)
+        except:
+            log.exception("Error occurred updating profile used by services")
         if self.GetVenue() != None:
             log.debug("Update client profile in venue")
 
