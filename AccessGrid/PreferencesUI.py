@@ -27,7 +27,7 @@ class PreferencesDialog(wxDialog):
         '''
         wxDialog.__init__(self, parent, id, title,
                           style = wxRESIZE_BORDER | wxDEFAULT_DIALOG_STYLE,
-                          size = wxSize(550, 350))
+                          size = wxSize(650, 420))
         self.Centre()
        
       
@@ -144,6 +144,8 @@ class PreferencesDialog(wxDialog):
 
         p = self.profilePanel.GetNewProfile()
         self.preferences.SetProfile(p)
+
+        self.preferences.SetBridges(self.networkPanel.GetBridges())
 
         return self.preferences
             
@@ -770,8 +772,8 @@ class NetworkPanel(wxPanel):
         self.titleText = wxStaticText(self, -1, "Multicast")
         self.titleLine = wxStaticLine(self, -1)
         self.multicastButton = wxCheckBox(self, wxNewId(), "  Use unicast ")
-        self.counter = 0
         self.keyMap = {}
+        self.selected = None
 
         self.bridges = preferences.GetBridges()
         self.multicastButton.SetValue(not int(preferences.GetPreference(Preferences.MULTICAST)))
@@ -870,10 +872,11 @@ class NetworkPanel(wxPanel):
         # Create key map for item data in list ctrl
         # List ctrl can unfortunately not add anything other
         # than int as item data.
+        counter = 0
         values = self.bridges.values()
         for b in values:
-            self.keyMap[b.guid] = self.counter
-            self.counter = self.counter + 1
+            self.keyMap[b.guid] = counter
+            counter += 1
                 
         return self.bridges
 
@@ -888,7 +891,7 @@ class NetworkPanel(wxPanel):
                 return b
        
     def __InitList(self):
-        self.list = wxListCtrl(self, wxNewId(),style=wxLC_REPORT)
+        self.list = wxListCtrl(self, wxNewId(),style=wxLC_REPORT|wxLC_SINGLE_SEL)
 
         self.list.InsertColumn(0, "Bridge")
         self.list.InsertColumn(1, "Host")
@@ -907,7 +910,7 @@ class NetworkPanel(wxPanel):
         self.list.SetColumnWidth(6, 90)
                 
         bridgeDict = self.__CreateBridgeMap()
-      
+
         for index in bridgeDict.keys():
             self.list.InsertStringItem(self.keyMap[index], bridgeDict[index].name)
             self.list.SetStringItem(self.keyMap[index], 1, bridgeDict[index].host)
