@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.31 2006-06-26 18:33:40 turam Exp $
+# RCS-ID:      $Id: agpm.py,v 1.32 2006-07-17 18:12:40 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.31 2006-06-26 18:33:40 turam Exp $"
+__revision__ = "$Id: agpm.py,v 1.32 2006-07-17 18:12:40 turam Exp $"
 
 import os
 import re
@@ -28,6 +28,9 @@ from AccessGrid.Platform.Config import SystemConfig, AGTkConfig, UserConfig
 
 tempfile.tmpdir = SystemConfig.instance().GetTempDir()
 gUseGui=False
+
+class InvalidApplicationDescription(Exception):
+    pass
 
 def ShowResult(result, title="Package Manager"):
     if True == gUseGui:
@@ -256,6 +259,11 @@ def UnregisterAppPackage(appdb, appInfo, name):
 
 def RegisterAppPackage(appdb, dest, appInfo, commands, workingDir=None,
                     cleanup=0):
+
+    # some error checking upfront
+    if not appInfo['application.extension']:
+        raise InvalidApplicationDescription('no extension given')
+                   
     origDir = os.getcwd()
 
     # Otherwise we go through and do the registration stuff...
@@ -446,24 +454,40 @@ def main():
             except Exception, e:
                 ShowResult("Error in package file: %s" % e)
 
+        excList = []
+
         for pkg in pkgList:
-            appInfo, commands, workingDir, cleanup = pkg
+            try:
+                appInfo, commands, workingDir, cleanup = pkg
 
-            if options.verbose:
-                print "Name: %s" % appInfo["application.name"]
-                print "Mime Type: %s" % appInfo["application.mimetype"]
-                print "Extension: %s" % appInfo["application.extension"]
-                print "From: %s" % workingDir
+                if options.verbose:
+                    print "Name: %s" % appInfo["application.name"]
+                    print "Mime Type: %s" % appInfo["application.mimetype"]
+                    print "Extension: %s" % appInfo["application.extension"]
+                    print "From: %s" % workingDir
 
-            # If we unregister, we do that then exit
-            if options.unregister:
-                if not options.appname:
-                    ShowResult( "No application specified for unregister")
-                    sys.exit(1)
-                UnregisterAppPackage(appdb, appInfo, options.appname)
-            else:
-                RegisterAppPackage(appdb, dest, appInfo, commands,
-                                workingDir, cleanup)
+                # If we unregister, we do that then exit
+                if options.unregister:
+                    if not options.appname:
+                        ShowResult( "No application specified for unregister")
+                        sys.exit(1)
+                    UnregisterAppPackage(appdb, appInfo, options.appname)
+                else:
+                    raise Exception('something bad happened')
+                    RegisterAppPackage(appdb, dest, appInfo, commands,
+                                    workingDir, cleanup)
+            except InvalidApplicationDescription,e:
+                msg = '%s %s: Invalid application description: %s\n' % (pkg, appInfo["application.name"],str(e))
+                excList.append(msg)
+            except Exception,e:
+                msg = '%s: %s: %s\n' % (appInfo["application.name"], str(e.__class__), str(e))
+                excList.append(msg)
+
+        if excList:
+            msg = "The following errors occurred during application installation:\n\n"
+            for e in excList:
+                msg += e
+            ShowResult(msg)
     
     if options.wait_for_input:
         try:
