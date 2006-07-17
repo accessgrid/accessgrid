@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.62 2006-05-10 18:07:45 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.63 2006-07-17 14:57:12 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.62 2006-05-10 18:07:45 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.63 2006-07-17 14:57:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -26,6 +26,7 @@ from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Descriptions import ServiceDescription, DataDescription
 from AccessGrid.Descriptions import ApplicationDescription, AGNetworkServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription, ApplicationCmdDescription
+from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
 from AccessGrid.NetworkLocation import ProviderProfile
 from AccessGrid.Platform.Config import UserConfig, MimeConfig, AGTkConfig
 from AccessGrid.Platform import IsWindows, Config
@@ -37,6 +38,12 @@ from AccessGrid.interfaces.VenueServer_client import VenueServerIW
 log = Log.GetLogger(Log.VenueClientController)
 
 class NotAuthorizedError(Exception):
+    pass
+
+class NoAvailableBridges(Exception):
+    pass
+
+class NoEnabledBridges(Exception):
     pass
 
 class VenueClientController:
@@ -216,7 +223,7 @@ class VenueClientController:
             log.exception("Multicast streams not found")
             raise
 
-    def UseUnicastCB(self, bridge):
+    def UseUnicastCB(self):
         """
         This method 
 
@@ -224,7 +231,58 @@ class VenueClientController:
         
         """
 
-        log.debug("UseUnicastCB called: bridge=%s (%s:%s)", bridge.name,bridge.host,str(bridge.port))
+        log.debug("UseUnicastCB called")
+
+        # Get the list of bridges
+        bridgeList = self.__venueClient.GetBridges()
+        bridgeList = bridgeList.values()
+
+        # Check for no bridges available
+        if len(bridgeList) == 0:
+            raise NoAvailableBridges
+
+        # Filter out disabled bridges
+        bridgeList = filter( lambda b: b.status == STATUS_ENABLED, bridgeList )
+
+        # Check if any bridges are left
+        if len(bridgeList) == 0:
+            raise NoEnabledBridges
+    
+        # Set the transport in the venue client and update the node service
+        self.__venueClient.SetTransport("unicast")
+
+        for b in bridgeList:
+            log.info('bridge: %s', b.name)
+
+        # Loop over bridges trying to connect
+        bridged = 0
+        bridgeIndex = 0
+        while not bridged and bridgeIndex < len(bridgeList):
+            try:
+                bridge = bridgeList[bridgeIndex]
+                log.info("Trying bridge: %s", bridge.name)
+                self.__venueClient.SetCurrentBridge(bridge)
+                self.__venueClient.UpdateStreams()
+                self.__venueClient.UpdateNodeService()
+                bridged = 1
+            except:
+                log.exception("Failure accessing bridge %s", bridge.name)
+                bridgeIndex += 1
+
+        log.debug("Done with bridge loop: bridged=%d bridge=%s", bridged, bridge.name)
+
+        if not bridged:
+            raise Exception("Failed to connect to any available unicast bridge")
+
+    def UseBridgeCB(self, bridge):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
+
+        log.debug("UseBridgeCB called: bridge=%s (%s:%s)", bridge.name,bridge.host,str(bridge.port))
     
         # Set the transport in the venue client and update the node service
         self.__venueClient.SetTransport("unicast")
