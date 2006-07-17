@@ -42,7 +42,7 @@ class BridgeCache:
             elif val == "status":
                 bridges[bridgeid].status = config[key]
             elif val == "rank":
-                bridges[bridgeid].rank = int(config[key])
+                bridges[bridgeid].rank = float(config[key])
             elif val == "portMin":
                 bridges[bridgeid].portMin = int(config[key])
             elif val == "portMax":
@@ -66,7 +66,7 @@ class BridgeCache:
             tempDict[""+b.guid+".serverType"] = b.serverType
             tempDict[""+b.guid+".description"]= b.description
             tempDict[""+b.guid+".status"]= b.status
-            tempDict[""+b.guid+".rank"]= int(b.rank)
+            tempDict[""+b.guid+".rank"]= b.rank
             tempDict[""+b.guid+".portMin"]= int(b.portMin)
             tempDict[""+b.guid+".portMax"]= int(b.portMax)
         
