@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.318 2006-07-14 16:42:58 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.319 2006-07-17 14:59:53 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.318 2006-07-14 16:42:58 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.319 2006-07-17 14:59:53 turam Exp $"
 
 import sys
 import os
@@ -247,7 +247,7 @@ class VenueClient:
                 bridgeList = self.registryClient.LookupBridge(10)
                 for b in bridgeList:
                     self.bridges[b.guid] = b
-              
+
             except:
                 log.exception("__LoadBridges: Can not connect to bridge registry %s ", self.registryUrl)
 
@@ -259,23 +259,28 @@ class VenueClient:
 
         log.debug('connect to bridge')
 
-        if self.bridges:
-            # Set current bridge
-            if not self.currentBridge:
-                bList = self.bridges.values()
-                
-                # sort the bridge list
-                bList.sort(lambda x,y: cmp(int(x.rank), int(y.rank)))
-
-                # connect to first pingable bridge in sorted list
-                for b in bList:
-                    if (b.status == STATUS_ENABLED and
-                        self.registryClient.PingHost(b.host) > -1):
-                        self.currentBridge = b
-                        break
-                        
+        self.currentBridge = self.FindBridge(self.bridges.values())
+        
         log.debug('exiting loadbridges')
+
+
+    def FindBridge(self, bridgeList):
+
+        retBridge = None
                 
+        # sort the bridge list
+        bridgeList.sort(lambda x,y: cmp(int(x.rank), int(y.rank)))
+
+        # use first pingable bridge in sorted list
+        for b in bridgeList:
+            if (b.status == STATUS_ENABLED and
+                self.registryClient.PingHost(b.host) > -1):
+                retBridge = b
+                break
+
+        return retBridge
+                        
+
     ##########################################################################
     #
     # Private Methods
@@ -1226,7 +1231,15 @@ class VenueClient:
             # If no unicast network location was found, connect to
             # the bridge to retreive one.
             if self.currentBridge:
-                
+
+
+                if self.currentBridge.status != STATUS_ENABLED:
+                    log.info("Current bridge %s is disabled by user, searching for other bridge", self.currentBridge.name)
+                    self.currentBridge = self.FindBridge(self.bridges.values())
+                    if not self.currentBridge:
+                        raise NetworkLocationNotFound("transport=%s"%(self.transport,))
+                    log.info("Using new bridge %s", self.currentBridge.name)
+
                 proxyHost = self.preferences.GetPreference(Preferences.PROXY_HOST)
                 proxyPort = self.preferences.GetPreference(Preferences.PROXY_PORT)
                 qbc = QuickBridgeClient(self.currentBridge.host, self.currentBridge.port,
@@ -1656,10 +1669,6 @@ class VenueClient:
         ''' Select bridge to use for unicast connections '''
         self.currentBridge = bridgeDescription
         
-        # If unicast is selected, load bridge information from registry
-        if self.GetTransport() == "unicast":
-            self.__LoadBridges()
-            
     def SetTransport(self,transport):
         ''' Set transport used, either multicast or unicast '''
         self.transport = transport
