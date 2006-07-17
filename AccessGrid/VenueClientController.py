@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.63 2006-07-17 14:57:12 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.64 2006-07-17 16:50:30 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.63 2006-07-17 14:57:12 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.64 2006-07-17 16:50:30 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -735,6 +735,16 @@ class VenueClientController:
         else:
             log.debug("Can not update client profile in venue - not connected")
 
+        # Update bridges
+        bDict = preferences.GetBridges()
+        bridges = self.__venueClient.GetBridges()
+        
+        for id in bDict.keys():
+            if bridges.has_key(id):
+                    bridges[id].status = bDict[id].status
+        self.__venueClient.SetBridges(bridges)
+
+
     # 
     # Venue Data Access
     #
@@ -1065,6 +1075,7 @@ class VenueClientController:
         to join a shared application session.
         '''
         # Distribute event to all participants so they can join.
+        log.info("startallcmd: %s %s %s", objDesc, verb, cmd)
         data = ApplicationCmdDescription(objDesc, verb, cmd, self.__venueClient.GetPreferences().GetProfile())
         self.__venueClient.SendEvent(Events.Event.OPEN_APP, data)
                         
