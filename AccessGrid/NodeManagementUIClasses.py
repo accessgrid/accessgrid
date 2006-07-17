@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.110 2006-05-10 18:39:09 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.111 2006-07-17 19:08:24 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.110 2006-05-10 18:39:09 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.111 2006-07-17 19:08:24 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -815,6 +815,10 @@ class NodeManagementClientFrame(wxFrame):
             
                 if serviceManager.uri in selectionUrls:
                     self.tree.SelectItem(sm)
+                    
+                if not self.tree.GetSelections():
+                    self.SelectDefault()
+
             self.tree.Expand(root)
     
     ############################
@@ -861,7 +865,7 @@ class NodeManagementClientFrame(wxFrame):
         Remove a host from the node service
         """
         
-        selections = self.GetSelectedServiceManagers()
+        selections = self.GetSelectedServiceManagers(includeImplicit=1)
 
         # Require a service manager to be selected
         if len(selections) == 0:
@@ -904,7 +908,7 @@ class NodeManagementClientFrame(wxFrame):
         Add a service to the node service
         """
         
-        selections = self.GetSelectedServiceManagers()
+        selections = self.GetSelectedServiceManagers(includeImplicit=1)
 
         # Require a single host to be selected
         if len(selections) == 0:
@@ -1282,9 +1286,23 @@ class NodeManagementClientFrame(wxFrame):
             
         return retList
         
-    def GetSelectedServiceManagers(self):
-        return self.GetSelectedItems(AGServiceManagerDescription)
+    def GetSelectedServiceManagers(self,includeImplicit=0):
+        retSel = []
+        selections = self.tree.GetSelections()
+        for s in selections:
+            obj = self.tree.GetItemData(s).GetData()
+            if isinstance(obj,AGServiceManagerDescription):
+                sm = self.tree.GetItemData(s).GetData()
+                if sm not in retSel:
+                    retSel.append(sm)
+            elif includeImplicit and isinstance(obj,AGServiceDescription):
+                smItem = self.tree.GetItemParent(s)
+                sm = self.tree.GetItemData(smItem).GetData()
+                if sm not in retSel:
+                    retSel.append(sm)
 
+        return retSel
+        
     def GetSelectedServices(self):
         return self.GetSelectedItems(AGServiceDescription)
         
@@ -1311,7 +1329,11 @@ class NodeManagementClientFrame(wxFrame):
                 
         for item in itemsToRemove:
             self.tree.Delete(item)
-            
+
+    def SelectDefault(self):
+        rootItem = self.tree.GetRootItem()
+        firstChild,cookie = self.tree.GetFirstChild(rootItem)
+        self.tree.SelectItem(firstChild)
 
 
 if __name__ == "__main__":
