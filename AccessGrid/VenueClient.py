@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.319 2006-07-17 14:59:53 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.320 2006-07-17 16:49:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.319 2006-07-17 14:59:53 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.320 2006-07-17 16:49:18 turam Exp $"
 
 import sys
 import os
@@ -237,7 +237,6 @@ class VenueClient:
         bridge to the first one in the sorted list. Also, check preferences
         to see if any of the retreived bridges are disabled.
         '''
-        
         log.debug('get bridges from registry')
         
         if not self.currentBridge:
@@ -255,6 +254,10 @@ class VenueClient:
         log.debug('set bridges in prefs')
                 
         prefs = self.app.GetPreferences()
+        prefsbridges = prefs.GetBridges()
+        for k in self.bridges.keys():
+            if prefsbridges.has_key(k):
+                self.bridges[k].status = prefsbridges[k].status
         prefs.SetBridges(self.bridges)
 
         log.debug('connect to bridge')
@@ -1647,6 +1650,7 @@ class VenueClient:
     
     def SavePreferences(self):
         self.preferences.StorePreferences()
+        self.SetBridges(self.preferences.GetBridges())
         
     def GetPreferences(self):
         return self.preferences
