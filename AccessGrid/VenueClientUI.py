@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.194 2006-07-07 19:42:36 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.195 2006-07-17 14:55:08 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.194 2006-07-07 19:42:36 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.195 2006-07-17 14:55:08 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -51,6 +51,7 @@ from AccessGrid.AppMonitor import AppMonitor
 from AccessGrid.Venue import ServiceAlreadyPresent
 from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError, NoServices
 from AccessGrid.VenueClient import DisconnectError
+from AccessGrid.VenueClientController import NoAvailableBridges, NoEnabledBridges
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
 from AccessGrid.Beacon.rtpBeaconUI import BeaconFrame
@@ -546,21 +547,23 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 self.bridgeSubmenu.Check(menuid, 1)
                 return
 
-        for i in items:
-            if i.GetId() != menuid:
-                if i.GetKind() == wxITEM_CHECK:
-                    self.bridgeSubmenu.Check(i.GetId(), 0)
-        
         # Use current bridge
         try:
+            # - use that bridge
+            self.controller.UseBridgeCB(bridgeDescription)
+
             # - uncheck multicast item
             self.preferences.Check( self.ID_USE_UNICAST, 1)
 
-            # - use that bridge
-            self.controller.UseUnicastCB(bridgeDescription)
+            # - check the selected bridge item
+            for i in items:
+                if i.GetId() != menuid:
+                    if i.GetKind() == wxITEM_CHECK:
+                        self.bridgeSubmenu.Check(i.GetId(), 0)
+        
         except:
             log.exception("Connection to bridge %s failed"%(bridgeDescription.name))
-
+            self.bridgeSubmenu.Check(menuid, 0)
             self.Notify("Connection to bridge %s failed. \nPlease use a different bridge."%(bridgeDescription.name),
                         "Bridge Connection")
                         
@@ -878,11 +881,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         This method is called when someone wants to invite you to join a shared
         application session.
         '''
+        log.debug('In VenueClientUI.__OpenApplication')
         
         if self.venueClient.GetPreferences().GetProfile().GetPublicId() == appCmdDesc.profile.GetPublicId():
             # I wanted to open the application client so don't pop up a message dialog.
+            log.debug('Received my own invitation to join application, joining...')
             ret = wxID_OK
         else:
+            log.debug('Received invitation to join application, prompting...')
             # Ask everyone else if they want to open the application client.
             text = '%s would like to invite you to a shared application session (%s). Do you wish to join?'%(appCmdDesc.profile.name, appCmdDesc.appDesc.name)
             dlg = wxMessageDialog(self, text, 'Join Shared Application Session', style = wxOK|wxCANCEL)
@@ -890,6 +896,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # Open the client
         if ret == wxID_OK:
+            log.debug('Joining shared application')
             self.controller.StartCmd(appCmdDesc.appDesc, appCmdDesc.verb, appCmdDesc.command)
                     
         
@@ -1131,28 +1138,30 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
 
     def UseUnicastCB(self,event=None):
-        #self.menubar.Enable(self.ID_BRIDGES, true)
         self.preferences.Check(self.ID_USE_MULTICAST, false)
         self.preferences.Check(self.ID_USE_UNICAST, true)
 
-        # Get current bridge
-        currentBridge = self.venueClient.GetCurrentBridge()
-        
-        if currentBridge == None and not len(self.venueClient.GetBridges()):
-            self.Warn("No bridges currently available!", "Use Unicast")
-            return
-                
-        # Use current bridge
+        # Switch to unicast
         try:
-            self.controller.UseUnicastCB(currentBridge)
-        except:
-            log.exception("Failed to connect to bridge %s"%(currentBridge.name))
-            self.Warn("Failed to connect to bridge %s."%(currentBridge.name),
+            self.controller.UseUnicastCB()
+
+        except NoAvailableBridges:
+            self.Warn("No bridges are currently available")
+            self.preferences.Check( self.ID_USE_MULTICAST, true)
+            return
+        except NoEnabledBridges:
+            self.Warn("Bridges are available, but they are disabled in preferences.\nEnable bridges in preferences and try again.")
+            self.preferences.Check( self.ID_USE_MULTICAST, true)
+            return
+        except Exception,e:
+            log.exception("Error trying to use unicast")
+            self.preferences.Check( self.ID_USE_MULTICAST, true)
+            self.venueClient.SetCurrentBridge(None)
+            self.Warn("Failed to connect to any available bridge.",
                       "Use Unicast")
+            return
 
         self.__CreateBridgeMenu()
-        if len(self.bridges.values())<1:
-            self.Warn("No unicast bridge is currently available.", "Use Unicast")
         
         
     def EnableDisplayCB(self,event):
@@ -1287,19 +1296,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             p = preferencesDialog.GetPreferences()
                        
             try:
-                oldTransport = self.venueClient.GetTransport()
                 self.controller.ChangePreferences(p)
 
-                # Check for unicast preference.
-                currentTransport = self.venueClient.GetTransport()
-       
-                if (currentTransport == "unicast" and
-                    currentTransport != oldTransport):
-                    self.UseUnicastCB()
-                elif (currentTransport == "multicast" and
-                      currentTransport != oldTransport):
-                    self.UseMulticastCB()
-               
                 # Check for disabled bridge preferences
                 bDict = p.GetBridges()
                 bridges = self.venueClient.GetBridges()
@@ -2026,14 +2024,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             return 1
         return 0
 
-    def Notify(self,text,title):
+    def Notify(self,text,title="Notification"):
     
         wxCallAfter(self.__Notify,text,title)
 
-    def Warn(self,text,title):
+    def Warn(self,text,title="Warning"):
         wxCallAfter(self.__Warn,text,title)
 
-    def Error(self,text,title):
+    def Error(self,text,title="Error"):
         log.exception("Error")
         ErrorDialog(None, text, title)
 
