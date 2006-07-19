@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.64 2006-07-17 16:50:30 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.65 2006-07-19 15:41:59 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.64 2006-07-17 16:50:30 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.65 2006-07-19 15:41:59 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -1123,6 +1123,14 @@ class VenueClientController:
                     command = command.replace("%L", "")
                 if command.find("%*") != -1:
                     command = command.replace("%*", "")
+
+                # expand environment variables
+                matches = re.findall('\%[a-zA-Z]*\%',command)
+                for m in matches:
+                    envvar = m.strip('%')
+                    if os.environ.has_key(envvar):
+                        command = command.replace(m,os.environ[envvar])
+
             else:
                 if command.find("%s") != -1:
                     command = command.replace("%s", "")
@@ -1145,6 +1153,14 @@ class VenueClientController:
                     command = command.replace("%L", "")
                 if command.find("%*") != -1:
                     command = command.replace("%*", "")
+
+                # expand environment variables
+                matches = re.findall('\%[a-zA-Z]*\%',command)
+                for m in matches:
+                    envvar = m.strip('%')
+                    if os.environ.has_key(envvar):
+                        command = command.replace(m,os.environ[envvar])
+
             else:
                 if command.find("%s") != -1:
                     command = command.replace("%s", "")
