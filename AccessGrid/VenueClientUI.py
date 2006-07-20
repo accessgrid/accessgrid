@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.195 2006-07-17 14:55:08 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.196 2006-07-20 22:09:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.195 2006-07-17 14:55:08 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.196 2006-07-20 22:09:09 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -142,6 +142,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_USE_MULTICAST = wxNewId()
     ID_USE_UNICAST = wxNewId()
     ID_BRIDGES = wxNewId()
+    ID_CONFIGS = wxNewId()
+    ID_CONFIG_BUTTON = wxNewId()
     ID_MYNODE_MANAGE = wxNewId()
     ID_PREFERENCES = wxNewId()
     ID_MYVENUE_ADD = wxNewId()
@@ -175,6 +177,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.app = app
         self.bridges = None
         self.bridgeKeyMap = {}
+        self.currentConfig = 'default'
         self.venueClient = venueClient
         self.controller = controller
 
@@ -185,6 +188,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.textClientPanel = None
         self.myVenuesDict = {}
         self.myVenuesMenuIds = {}
+
+        self.myConfigurationsDict = {}
+        self.myConfigurationsMenuIds = {}
+	
         self.onExitCalled = false
         # State kept so UI can add venue administration options.
         
@@ -391,6 +398,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.preferences.Check(self.ID_USE_MULTICAST, index)
         self.preferences.Check(self.ID_USE_UNICAST, not index)
         self.bridgeSubmenu = wxMenu()
+	
+        self.configSubmenu = wxMenu()
 
         # Create bridge menu, so individual bridges are selectable from the start
         self.__CreateBridgeMenu()
@@ -398,6 +407,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.preferences.AppendMenu(self.ID_BRIDGES, "Bridges", self.bridgeSubmenu)
         self.preferences.AppendSeparator()
         
+        # Configurations Submenu
+        self.preferences.AppendMenu(self.ID_CONFIGS, "Configurations", self.configSubmenu)
+        self.preferences.AppendSeparator()
+	
         # - enable display/video/audio
         self.preferences.AppendCheckItem(self.ID_ENABLE_AUDIO, "Enable Audio",
                                          "Enable/disable audio for your node")
@@ -441,7 +454,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                              "Update subscribed schedules periodically")
         self.navigation.Check(self.ID_TIMED_UPDATE,1) # timed update on by default
 
-        self.menubar.Append(self.navigation, "Navigation")
+        self.menubar.Append(self.navigation, "&Navigation")
         
         self.help = wxMenu()
         self.help.Append(self.ID_HELP_MANUAL, "Venue Client &Manual",
@@ -490,6 +503,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.serviceHeadingMenu = wxMenu()
         self.serviceHeadingMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
                                 "Add service to the venue")
+                                
+        self.configButtonMenu = wxMenu()
 
         # Do not enable menus until connected
         self.__HideMenu()
@@ -624,6 +639,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         EVT_BUTTON(self,self.displayButton.GetId(),self.EnableDisplayCB)
         EVT_BUTTON(self,self.videoButton.GetId(),self.EnableVideoCB)
         EVT_BUTTON(self,self.configNodeButton.GetId(),self.ManageNodeCB)
+        EVT_LEFT_DOWN(self.configButton,self.OnConfigButton)
         
         buttons = [ self.networkButton, self.audioButton, self.videoButton, 
                     self.displayButton, self.configNodeButton ]
@@ -717,6 +733,22 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.navigation.Insert(self.myVenuesPos,ID, name, text)
             EVT_MENU(self, ID, self.GoToMenuAddressCB)
                         
+    
+    # Code for displaying the list of configurations in the Configurations menu
+    
+    def __LoadMyConfigurations(self):
+
+        configs = self.venueClient.GetNodeConfigurations()
+        
+        for configuration in configs:
+            ID = wxNewId()
+            configName = configuration.name
+            self.configSubmenu.Append(ID, configName)
+            self.configButtonMenu.Append(ID, configName)
+            self.myConfigurationsMenuIds[ID] = configName
+            self.myConfigurationsDict[configName] = configuration
+            EVT_MENU(self, ID, self.LoadNodeConfig)
+
 
     def __BuildUI(self, app):
         
@@ -792,6 +824,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.configNodeButton = wxBitmapButton(self.toolbar,-1,bitmap,size=toolsize)
         self.configNodeButton.SetToolTip(wxToolTip('Configure node services'))
         self.toolbar.AddControl(self.configNodeButton)
+
+        self.configButton = wxButton(self.toolbar, self.ID_CONFIG_BUTTON, 
+                                     self.currentConfig, wxDefaultPosition)
+                                     #wxSize(100, 21))
+        self.toolbar.AddControl(self.configButton)
+
+
         self.toolbar.Realize()
         
         self.__SetStatusbar()
@@ -799,7 +838,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.__SetProperties()
         self.__SetEvents()
         self.__LoadMyVenues()
+        self.__LoadMyConfigurations()
 
+    def OnConfigButton(self,event):
+        self.configButton.PopupMenu(self.configSubmenu,(0,0))
     
     def __OnSashDrag(self, event):
         if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
@@ -1407,6 +1449,32 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.SetVenueUrl(venueUrl)
         self.EnterVenueCB(venueUrl)
 
+	
+    # Code for loading the configurations from the Configurations menu
+
+    def LoadNodeConfig(self, event):
+        ID = event.GetId()	
+        configName = self.myConfigurationsMenuIds[ID]
+	
+        configs = self.venueClient.GetNodeConfigurations()
+        for c in configs:
+            if configName == c.name:
+                configuration = c
+	try:
+            self.venueClient.LoadNodeConfiguration(configuration)
+            self.currentConfig = configuration
+            
+            self.configButton.SetLabel(configName)
+            self.configButton.Fit()
+            self.configButton.SetToolTip(wxToolTip(configName))
+        except:
+            log.exception("NodeManagementClientFrame.LoadConfiguration: Error loading configuration")
+
+        try:
+            self.OnNodeActivity('load_config')
+        except:
+            log.exception("Exception updating node")
+    
     # 
     # Support for scheduler integration
     #
@@ -1854,9 +1922,18 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def OnNodeActivity(self,action,data=None):
         if action == 'load_config':
             log.info('OnNodeActivity: got action: %s', action)
-            self.controller.EnableVideoCB(self.isVideoEnabled)
-            self.controller.EnableAudioCB(self.isAudioEnabled)
-            self.controller.EnableDisplayCB(self.isDisplayEnabled)
+            try:
+                self.controller.EnableVideoCB(self.isVideoEnabled)
+            except NoServices:
+                pass
+            try:
+                self.controller.EnableAudioCB(self.isAudioEnabled)
+            except NoServices:
+                pass
+            try:
+                self.controller.EnableDisplayCB(self.isDisplayEnabled)
+            except NoServices:
+                pass
             self.venueClient.UpdateNodeService()
         elif action == 'add_service':
             log.info('OnNodeActivity: got action: %s', action)
