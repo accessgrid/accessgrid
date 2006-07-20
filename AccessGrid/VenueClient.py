@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.320 2006-07-17 16:49:18 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.321 2006-07-20 21:59:35 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.320 2006-07-17 16:49:18 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.321 2006-07-20 21:59:35 turam Exp $"
 
 import sys
 import os
@@ -30,7 +30,7 @@ from AccessGrid.Descriptions import Capability, STATUS_ENABLED
 from AccessGrid.Descriptions import BeaconSource, BeaconSourceData
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
-from AccessGrid.Venue import ServiceAlreadyPresent
+from AccessGrid.Venue import ServiceAlreadyPresent, CertificateRequired
 from AccessGrid.interfaces.Venue_client import VenueIW
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.hosting import InsecureServer, SecureServer
@@ -1054,12 +1054,17 @@ class VenueClient:
         except (socket.error,socket.gaierror), e:
             self.warningString += '\n' + e.args[1]
             enterSuccess = 0
+        except HostingException,e:
+            enterSuccess = 0
+            mod,klass = GetHostingExceptionModuleAndClassName(e)
+            if klass == "CertificateRequired":
+                self.warningString += "A certificate is required for entry into this Venue,\nand this version of the software does not support\nthe use of certificates with the Venue Client.\nUpgrade to the next version of the Access Grid\nsoftware before trying to enter this Venue."
+            else:
+                log.exception('"EnterVenue: failed with hosting exception')
+                #self.warningString += 'exception: %s:%s' % (str(mod),str(klass))
         except Exception, e:
             log.exception("EnterVenue: failed")
             enterSuccess = 0
-            # put error in warningString, in redesign will be raised
-            # to UI as exception.
-
             #self.warningString = str(e.faultstring)
 
         for s in self.observers:
