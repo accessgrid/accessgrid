@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.321 2006-07-20 21:59:35 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.322 2006-07-20 22:01:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.321 2006-07-20 21:59:35 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.322 2006-07-20 22:01:01 turam Exp $"
 
 import sys
 import os
@@ -60,6 +60,8 @@ from AccessGrid.GUID import GUID
 from AccessGrid.Jabber.JabberClient import JabberClient
 
 from AccessGrid.interfaces.AGService_client import AGServiceIW
+from AccessGrid.hosting import HostingException
+from AccessGrid.hosting import GetHostingExceptionModuleAndClassName
 
 try:
     from AccessGrid.Beacon.rtpBeacon import Beacon
