@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.271 2006-05-12 17:36:16 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.272 2006-07-20 21:57:47 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.271 2006-05-12 17:36:16 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.272 2006-07-20 21:57:47 turam Exp $"
 
 import sys
 import time
@@ -193,6 +193,9 @@ class ClientNotFound(Exception):
     of active clients.
     """
     pass
+    
+class CertificateRequired(Exception): pass
+
 
 class VenueClientState:
     """
