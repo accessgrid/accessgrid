@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys
+import socket
 from AccessGrid.Toolkit import CmdlineApplication
 from AccessGrid.interfaces.Venue_client import VenueIW
 
@@ -13,12 +14,13 @@ app.Initialize("ServiceTest")
 try:
     url = sys.argv[1]
 except:
-    url = "https://localhost:8000/Venues/defaul" # last letter is missing so an exception is raised
+    url = "https://localhost:8000/Venues/defa" # last letter is missing so an exception is raised
 
 proxy = VenueIW(url)
 
 try:
-    print "Description:?", proxy.AsVenueDescription()
+    desc = proxy.AsVenueDescription()
+    print "Description:?", desc
 except HostingException, e:
     #print e
     print "++++"
@@ -34,6 +36,13 @@ except HostingException, e:
         print "caught reraised NoSuchService exception"
     except Exception, e:
         print "caught reraised exception (did not match exception explicitly)" + str(e.__class__), e
+except socket.error, e:
+    print "Socket error:", e
+    try:
+        if 111 == e.args[0]:
+            print "Unable to run this test.  Make sure the host, port, and protocol (i.e. https://localhost:8000) are correct in the following url:", url
+    except:
+        pass
 except Exception, e:
     print "Didn't catch:", e
     print "HostingException", HostingException
