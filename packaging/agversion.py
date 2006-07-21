@@ -3,13 +3,13 @@
 # Name:        agversion.py
 # Purpose:     Support AccessGrid module version selection
 # Created:     2006/07/21
-# RCS-ID:      $Id: agversion.py,v 1.1 2006-07-21 17:04:14 turam Exp $
+# RCS-ID:      $Id: agversion.py,v 1.2 2006-07-21 20:02:59 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: agversion.py,v 1.1 2006-07-21 17:04:14 turam Exp $"
+__revision__ = "$Id: agversion.py,v 1.2 2006-07-21 20:02:59 turam Exp $"
 
 import sys
 import os
@@ -19,11 +19,11 @@ class VersionError(Exception):
 
 def select(ver):
 
-    # If we get here then this is the first time wxversion is used, 
-    # ensure that wxPython hasn't been imported yet.
+    # refuse to execute select if AccessGrid module has already been imported
     if sys.modules.has_key('AccessGrid'):
         raise VersionError("agversion.select() must be called before AccessGrid is imported")
 
+    # establish platform-specific AccessGrid module path
     if sys.platform in ['win32']:
 
         import _winreg
@@ -39,8 +39,13 @@ def select(ver):
     elif sys.platform in ['linux2','freebsd5','freebsd6']:
         installpath = '%s/lib/python%s/site-packages/AccessGrid%s' % (sys.prefix,sys.version[:3],ver)
 
-    
+    # confirm that the path exists
     if not os.path.exists(installpath):
         raise VersionError('Requested version (%s) of AccessGrid not found' % ver)
 
-    sys.path.insert(0,installpath)
+    # modify the environment
+    if os.environ.has_key('PYTHONPATH'):
+        os.environ['PYTHONPATH'] = os.pathsep.join([installpath, os.environ['PYTHONPATH']])
+    else:
+        os.environ['PYTHONPATH'] = installpath
+
