@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.106 2006-06-07 02:34:23 willing Exp $
+# RCS-ID:      $Id: setup.py,v 1.107 2006-07-21 19:41:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -256,8 +256,10 @@ functionality of the Access Grid.
     #
     # Package list -- These files end up in $PYTHON\lib\site-packages
     #
-    package_dir = {"AccessGrid3.AccessGrid" : "AccessGrid"},
+    package_dir = {"AccessGrid3.AccessGrid" : "AccessGrid",
+                   '':'packaging'},
     packages = packages,
+    py_modules = [ 'agversion' ],
 
     #
     # Script list -- these are command line tools and programs
