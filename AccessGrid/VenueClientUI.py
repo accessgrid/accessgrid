@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.196 2006-07-20 22:09:09 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.197 2006-07-21 15:46:36 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.196 2006-07-20 22:09:09 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.197 2006-07-21 15:46:36 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -504,8 +504,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.serviceHeadingMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
                                 "Add service to the venue")
                                 
-        self.configButtonMenu = wxMenu()
-
         # Do not enable menus until connected
         self.__HideMenu()
 
@@ -639,7 +637,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         EVT_BUTTON(self,self.displayButton.GetId(),self.EnableDisplayCB)
         EVT_BUTTON(self,self.videoButton.GetId(),self.EnableVideoCB)
         EVT_BUTTON(self,self.configNodeButton.GetId(),self.ManageNodeCB)
-        EVT_LEFT_DOWN(self.configButton,self.OnConfigButton)
         
         buttons = [ self.networkButton, self.audioButton, self.videoButton, 
                     self.displayButton, self.configNodeButton ]
@@ -744,7 +741,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             ID = wxNewId()
             configName = configuration.name
             self.configSubmenu.Append(ID, configName)
-            self.configButtonMenu.Append(ID, configName)
             self.myConfigurationsMenuIds[ID] = configName
             self.myConfigurationsDict[configName] = configuration
             EVT_MENU(self, ID, self.LoadNodeConfig)
@@ -825,12 +821,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.configNodeButton.SetToolTip(wxToolTip('Configure node services'))
         self.toolbar.AddControl(self.configNodeButton)
 
-        self.configButton = wxButton(self.toolbar, self.ID_CONFIG_BUTTON, 
-                                     self.currentConfig, wxDefaultPosition)
-                                     #wxSize(100, 21))
-        self.toolbar.AddControl(self.configButton)
-
-
         self.toolbar.Realize()
         
         self.__SetStatusbar()
@@ -840,9 +830,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.__LoadMyVenues()
         self.__LoadMyConfigurations()
 
-    def OnConfigButton(self,event):
-        self.configButton.PopupMenu(self.configSubmenu,(0,0))
-    
     def __OnSashDrag(self, event):
         if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
             return
@@ -1464,9 +1451,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.venueClient.LoadNodeConfiguration(configuration)
             self.currentConfig = configuration
             
-            self.configButton.SetLabel(configName)
-            self.configButton.Fit()
-            self.configButton.SetToolTip(wxToolTip(configName))
         except:
             log.exception("NodeManagementClientFrame.LoadConfiguration: Error loading configuration")
 
