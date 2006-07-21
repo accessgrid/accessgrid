@@ -21,7 +21,8 @@ else:
     renameFile =  argv[3].startswith('True')
 
 here = os.getcwd()
-line_to_insert = 'sys.path.insert' + '(0, \'' + os.path.join(eppath, 'AccessGrid3') + '\')\n'
+#line_to_insert = 'sys.path.insert' + '(0, \'' + os.path.join(eppath, 'AccessGrid3') + '\')\n'
+line_to_insert = 'import agversion\nagversion.select(3)\n'
 #eppath = '/usr/lib/python2.4/site-packages'
 
 def fixAG3paths(dir):
