@@ -174,7 +174,7 @@ os.chdir(s)
 eppath = get_python_lib()
 
 cmd = '%s %s %s %s %s' % (sys.executable,
-                          os.path.join(BuildDir, 'packaging', 'linux', 'FixAG3Paths.py'),
+                          os.path.join(BuildDir, 'packaging', 'FixAG3Paths.py'),
                           os.path.join(DestDir, 'bin'),
                           eppath,
                           True)
@@ -264,7 +264,7 @@ services2fix = [
     ]
 for d in services2fix:
     cmd = '%s %s %s %s %s' % (sys.executable,
-			os.path.join(BuildDir, 'packaging', 'linux', 'FixAG3Paths.py'),
+			os.path.join(BuildDir, 'packaging', 'FixAG3Paths.py'),
 			d,
 			eppath,
 			False)
@@ -301,7 +301,7 @@ pkgs2fix = [
     ]
 for d in pkgs2fix:
     cmd = '%s %s %s %s %s' % (sys.executable,
-			os.path.join(BuildDir, 'packaging', 'linux', 'FixAG3Paths.py'),
+			os.path.join(BuildDir, 'packaging', 'FixAG3Paths.py'),
 			d,
 			eppath,
 			False)
