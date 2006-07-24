@@ -1,5 +1,14 @@
---- AccessGrid/hosting/ZSI/Server.py.socket_error	2005-10-20 05:34:18.000000000 +1000
-+++ AccessGrid/hosting/ZSI/Server.py	2006-06-26 18:06:26.000000000 +1000
+--- AccessGrid/hosting/ZSI/Server.py.orig	Thu Oct 20 05:34:18 2005
++++ AccessGrid/hosting/ZSI/Server.py	Mon Jul 24 12:28:13 2006
+@@ -21,7 +21,7 @@
+ 
+ from AccessGrid import Log
+ log = Log.GetLogger(Log.Hosting)
+-import select
++import select, socket
+ 
+ def GetSOAPContext():
+     return None
 @@ -66,6 +66,10 @@
                  r,w,e = select.select([self._server.socket], [], [], pause)
                  if r:
