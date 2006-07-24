@@ -11,6 +11,12 @@ bin/VenueVNCServer3.py
 bin/ag-avahi-discover3.py
 bin/agpm3.py
 bin/certmgr3.py
+bin/rat
+bin/rat-4.2.22
+bin/rat-4.2.22-media
+bin/rat-4.2.22-ui
+bin/rat-kill
+bin/vic
 etc/AccessGrid3/Config/AGNodeService.cfg
 etc/AccessGrid3/Config/CAcertificates/1c3f2ca8.0
 etc/AccessGrid3/Config/CAcertificates/1c3f2ca8.signing_policy
@@ -224,21 +230,6 @@ lib/python2.4/site-packages/AccessGrid3/AccessGrid/tests/test_datastore_put.py
 lib/python2.4/site-packages/AccessGrid3/AccessGrid/wsdl/SchemaToPyTypeMap.py
 lib/python2.4/site-packages/AccessGrid3/AccessGrid/wsdl/__init__.py
 lib/python2.4/site-packages/AccessGrid3/AccessGrid/wsdl/generate.py
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/Platform/unix/__init__.pyc
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/Platform/unix/Config.pyc
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/Platform/unix/ProcessManager.pyc
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/Platform/__init__.pyc
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/Platform/Config.pyc
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/__init__.pyc
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/AppDb.pyc
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/Log.pyc
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/Config.pyc
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/Version.pyc
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/Utilities.pyc
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/Descriptions.pyc
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/GUID.pyc
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/NetworkLocation.pyc
-lib/python2.4/site-packages/AccessGrid3/AccessGrid/ClientProfile.pyc
 share/AccessGrid/ag-ellipse.png
 share/AccessGrid/ag.ico
 share/AccessGrid/xdg/AccessGrid-Base.directory
@@ -251,9 +242,6 @@ share/AccessGrid/xdg/AccessGrid3-Configure.directory
 share/AccessGrid/xdg/AccessGrid3-Documentation.directory
 share/AccessGrid/xdg/AccessGrid3-Services.directory
 share/AccessGrid/xdg/AccessGrid3.menu
-share/AccessGrid/xdg/CVS/Entries
-share/AccessGrid/xdg/CVS/Repository
-share/AccessGrid/xdg/CVS/Root
 share/AccessGrid/xdg/CertificateRequestTool.desktop
 share/AccessGrid/xdg/CertificateRequestTool3.desktop
 share/AccessGrid/xdg/DevelopersDocumentation.desktop
@@ -289,8 +277,9 @@ share/doc/AccessGrid/README
 share/doc/AccessGrid/README-developers
 share/doc/AccessGrid/TODO
 share/doc/AccessGrid/VERSION
+@dirrm share/nls/en_US.US-ASCII
+@dirrm share/nls/POSIX
 @dirrm share/doc/AccessGrid
-@dirrm share/AccessGrid/xdg/CVS
 @dirrm share/AccessGrid/xdg
 @dirrm share/AccessGrid
 @dirrm lib/python2.4/site-packages/AccessGrid3/AccessGrid/wsdl

@@ -22,7 +22,7 @@ case "$2" in
     mkdir -p ${PKG_PREFIX}/etc/AccessGrid3/Logs
 
     # install Shared apps
-    ${PKG_PREFIX}/bin/agpm3.py --post-install
+#    ${PKG_PREFIX}/bin/agpm3.py --post-install
     ;;
   *)
     echo "Unknown Install cycle"

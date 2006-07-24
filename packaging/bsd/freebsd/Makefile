@@ -5,7 +5,7 @@
 #
 
 PORTNAME=	AccessGrid
-PORTVERSION=	3.0.1
+PORTVERSION=	3.0.2
 CATEGORIES=	net
 MASTER_SITES=	http://www.vislab.uq.edu.au/ag3/freebsd/distfiles/
 DISTNAME=	${PORTNAME}-${PORTVERSION}
