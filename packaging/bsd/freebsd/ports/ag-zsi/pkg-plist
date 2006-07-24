@@ -66,6 +66,18 @@ lib/python2.4/site-packages/ZSI/parse.pyo
 lib/python2.4/site-packages/ZSI/resolvers.py
 lib/python2.4/site-packages/ZSI/resolvers.pyc
 lib/python2.4/site-packages/ZSI/resolvers.pyo
+lib/python2.4/site-packages/ZSI/twisted/WSresource.py
+lib/python2.4/site-packages/ZSI/twisted/WSresource.pyc
+lib/python2.4/site-packages/ZSI/twisted/WSresource.pyo
+lib/python2.4/site-packages/ZSI/twisted/WSsecurity.py
+lib/python2.4/site-packages/ZSI/twisted/WSsecurity.pyc
+lib/python2.4/site-packages/ZSI/twisted/WSsecurity.pyo
+lib/python2.4/site-packages/ZSI/twisted/__init__.py
+lib/python2.4/site-packages/ZSI/twisted/__init__.pyc
+lib/python2.4/site-packages/ZSI/twisted/__init__.pyo
+lib/python2.4/site-packages/ZSI/twisted/client.py
+lib/python2.4/site-packages/ZSI/twisted/client.pyc
+lib/python2.4/site-packages/ZSI/twisted/client.pyo
 lib/python2.4/site-packages/ZSI/typeinterpreter.py
 lib/python2.4/site-packages/ZSI/typeinterpreter.pyc
 lib/python2.4/site-packages/ZSI/typeinterpreter.pyo
@@ -105,6 +117,9 @@ lib/python2.4/site-packages/ZSI/wstools/c14n.pyo
 lib/python2.4/site-packages/ZSI/wstools/logging.py
 lib/python2.4/site-packages/ZSI/wstools/logging.pyc
 lib/python2.4/site-packages/ZSI/wstools/logging.pyo
+@dirrm share/nls/en_US.US-ASCII
+@dirrm share/nls/POSIX
 @dirrm lib/python2.4/site-packages/ZSI/wstools
+@dirrm lib/python2.4/site-packages/ZSI/twisted
 @dirrm lib/python2.4/site-packages/ZSI/generate
 @dirrm lib/python2.4/site-packages/ZSI
