@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.324 2006-07-25 16:05:40 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.325 2006-07-25 17:14:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.324 2006-07-25 16:05:40 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.325 2006-07-25 17:14:10 turam Exp $"
 
 import sys
 import os
@@ -274,7 +274,7 @@ class VenueClient:
         retBridge = None
                 
         # sort the bridge list
-        bridgeList.sort(lambda x,y: cmp(int(x.rank), int(y.rank)))
+        bridgeList.sort(lambda x,y: cmp(x.rank, y.rank))
 
         # use first pingable bridge in sorted list
         for b in bridgeList:
