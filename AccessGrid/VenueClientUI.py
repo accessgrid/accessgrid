@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.197 2006-07-21 15:46:36 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.198 2006-07-25 16:04:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.197 2006-07-21 15:46:36 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.198 2006-07-25 16:04:23 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1712,12 +1712,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             # Enter in a thread so UI gets responsive immediately
             self.controller.EnterVenueCB(venueUrl)
             
-            # Check if unicast option is set in preferences.
-            currentTransport = self.venueClient.GetTransport()
-           
-            if currentTransport == "unicast":
-                self.UseUnicastCB()
-                             
             wxEndBusyCursor()
         except:
             wxEndBusyCursor()
