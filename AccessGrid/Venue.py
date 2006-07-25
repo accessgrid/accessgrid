@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.272 2006-07-20 21:57:47 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.273 2006-07-25 21:27:02 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.272 2006-07-20 21:57:47 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.273 2006-07-25 21:27:02 turam Exp $"
 
 import sys
 import time
@@ -685,18 +685,24 @@ class Venue:
         log.debug("CleanupClients: now=%d", now_sec)
 
         for connId in self.clients.keys():
-            log.debug("CleanupClients: client %s %s timeout=%d", connId, self.clients[connId].GetClientProfile().name,
-                        self.clients[connId].GetTimeout())
-            if self.clients[connId].CheckTimeout(now_sec):
-                log.info("  Removing user %s %s (Timed Out)", connId, self.clients[connId].GetClientProfile().name)
-                self.RemoveUser(connId)
+            try:
+                log.debug("CleanupClients: client %s %s timeout=%d", connId, self.clients[connId].GetClientProfile().name,
+                            self.clients[connId].GetTimeout())
+                if self.clients[connId].CheckTimeout(now_sec):
+                    log.info("  Removing user %s %s (Timed Out)", connId, self.clients[connId].GetClientProfile().name)
+                    self.RemoveUser(connId)
+            except:
+                log.exception('Error removing client with connId=%s', connId)
                 
         for connId in self.netServices.keys():
-            if self.netServices[connId][1] > now_sec:
-                log.info("Removing network service %s at %d (Timed Out)",
-                          connId, now_sec)
-                self.RemoveNetworkService(connId)
-
+            try:
+                if self.netServices[connId][1] > now_sec:
+                    log.info("Removing network service %s at %d (Timed Out)",
+                              connId, now_sec)
+                    self.RemoveNetworkService(connId)
+            except:
+                log.exception('Error removing netService with connId=%s', connId)
+                
     def __GetMatchingStream(self, capabilities):
         '''
         Get streams that matches the capabilities of a service
@@ -910,30 +916,6 @@ class Venue:
         privateId = str(GUID())
 
         return privateId
-
-    def FindUserByProfile(self, profile):
-        """
-        Find out if a given client is in the venue from their client profile.
-        If they are, return their private id, if not, return None.
-
-        **Arguments:**
-
-        *profile* The client profile of the user being searched for.
-
-        **Returns:**
-
-        *privateId* if the user is found
-
-        *None* if the user is not found
-
-        """
-        for privateId in self.clients.keys():
-            vclient = self.clients[privateId]
-
-            if vclient.GetPublicId() == profile.publicId:
-                return privateId
-
-        return None
 
     def RemoveUser(self, privateId):
         """
@@ -1563,14 +1545,22 @@ class Venue:
         """
         log.debug("Called Venue Exit on %s", privateId)
 
-        if not self.clients.has_key( privateId ):
-            log.exception("Exit: User not found!")
-            usage_log.info("\"Exit\",\"%s\",\"%s\",\"%s\"", 0, self.name, self.uniqueId)
-            raise ClientNotFound
-        else:
-            usage_log.info("\"Exit\",\"%s\",\"%s\",\"%s\"", self.clients[privateId].GetClientProfile().GetDistinguishedName(), self.name, self.uniqueId)
+        self.clientsBeingRemovedLock.acquire()
+        try:
+            if not self.clients.has_key( privateId ):
+                log.exception("Exit: User not found!")
+                usage_log.info("\"Exit\",\"%s\",\"%s\",\"%s\"", 0, self.name, self.uniqueId)
+                raise ClientNotFound
+            else:
+                usage_log.info("\"Exit\",\"%s\",\"%s\",\"%s\"", self.clients[privateId].GetClientProfile().GetDistinguishedName(), self.name, self.uniqueId)
 
-        self.RemoveUser(privateId)
+            self.RemoveUser(privateId)
+        except:
+            log.exception('Error in Venue.Exit; privateId=%s', privateId)
+    
+        
+        self.clientsBeingRemovedLock.release()
+
 
     def UpdateClientProfile(self, clientProfile):
         """
@@ -1586,13 +1576,19 @@ class Venue:
         """
         log.debug("Called UpdateClientProfile on %s " %clientProfile.name)
 
-        for connectionId in self.clients.keys():
-            vclient = self.clients[connectionId]
-            if vclient.GetPublicId() == clientProfile.publicId:
-                vclient.UpdateClientProfile(clientProfile)
-                #vclient.UpdateAccessTime()
+        self.clientsBeingRemovedLock.acquire()
+        try:
+            for connectionId in self.clients.keys():
+                vclient = self.clients[connectionId]
+                if vclient.GetPublicId() == clientProfile.publicId:
+                    vclient.UpdateClientProfile(clientProfile)
+                    #vclient.UpdateAccessTime()
 
-        self.eventClient.Send(Event.MODIFY_USER, clientProfile)
+            self.eventClient.Send(Event.MODIFY_USER, clientProfile)
+        except:
+            log.exception('Error updating client profile')
+        
+        self.clientsBeingRemovedLock.release()
               
     def AddNetworkLocationToStream(self, privateId, streamId, networkLocation):
         """
