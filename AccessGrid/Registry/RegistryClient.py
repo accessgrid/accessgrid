@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.22 2006-07-13 20:49:43 turam Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.23 2006-07-25 17:10:00 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -222,6 +222,7 @@ class RegistryClient:
             ret = ret[a:]
             val = ret.split('=')[1]
             val = filter(lambda x: x.isdigit(), val)
+            val = float(val)
 
         return val
        
