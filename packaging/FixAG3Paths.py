@@ -28,39 +28,39 @@ line_to_insert = 'import agversion\nagversion.select(3)\n'
 def fixAG3paths(dir):
     os.chdir(dir)
     for infilename in os.listdir(os.getcwd()):
-	if infilename.endswith('.py') and not infilename.endswith('3.py') and not infilename.endswith('build.py'):
-	    print "=> ", infilename
-	    outfilename = infilename[:-3] + '3' + '.py'
-	    print "=> ", outfilename
-	    infile = open(infilename, 'r')
-	    outfile = open(outfilename, 'w')
-	    done = False
-	    line_inserted = False
-	    while not done:
-		line = infile.readline()
-		# Don't modify a previously fixed file
-		if len(line) > 0 and line.startswith(line_to_insert):
-		    line_inserted = True
-		if len(line) == 0:
-		    done = True
-		else:
-		    if not line_inserted and line.find('AccessGrid') > 4:
-			outfile.write(line_to_insert)
-			line_inserted = True
-		    outfile.write(line)
+        if infilename.endswith('.py') and not infilename.endswith('3.py') and not infilename.endswith('build.py'):
+            print "=> ", infilename
+            outfilename = infilename[:-3] + '3' + '.py'
+            print "=> ", outfilename
+            infile = open(infilename, 'r')
+            outfile = open(outfilename, 'w')
+            done = False
+            line_inserted = False
+            while not done:
+                line = infile.readline()
+                # Don't modify a previously fixed file
+                if len(line) > 0 and line.startswith(line_to_insert):
+                    line_inserted = True
+                if len(line) == 0:
+                    done = True
+                else:
+                    if not line_inserted and line.find('AccessGrid') > 4:
+                        outfile.write(line_to_insert)
+                        line_inserted = True
+                    outfile.write(line)
 
-	    infile.close()
-	    outfile.close()
+            infile.close()
+            outfile.close()
 
-	    os.chmod(outfilename, 0755)
+            os.chmod(outfilename, 0755)
 
-	    # renameFile => we want a new file name (with a '3' in it), so erase the original file
-	    if renameFile:
-		print "ERASING: ", infilename
-		os.remove(infilename)
-	    else:
-		print "REPLACING original file: ", infilename
-		os.rename(outfilename, infilename)
+            # renameFile => we want a new file name (with a '3' in it), so erase the original file
+            if renameFile:
+                print "ERASING: ", infilename
+                os.remove(infilename)
+            else:
+                print "REPLACING original file: ", infilename
+                os.rename(outfilename, infilename)
 
     os.chdir(here)
 
