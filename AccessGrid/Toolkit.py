@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.120 2006-05-01 21:05:49 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.121 2006-07-26 16:06:33 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.120 2006-05-01 21:05:49 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.121 2006-07-26 16:06:33 turam Exp $"
 
 # Standard imports
 import os
@@ -100,6 +100,8 @@ class AppBase:
        self.agtkConfig = None
        self.systemConfig = SystemConfig.instance()
        self.log = None
+       self.loggerLevels = None
+       self.fhLoggerLevels = None
        
        self._certificateManager = None
        self._certMgrUI = None
