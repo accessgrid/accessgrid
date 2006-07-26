@@ -163,8 +163,16 @@ os.chdir(BuildDir)
 
 cmd = "%s %s" % (sys.executable, "setup.py")
 for c in ["clean", "build"]:
-    os.system("%s %s" % (cmd, c))
-os.system("%s install --prefix=%s --no-compile" % (cmd, DestDir))
+    buildcmd = '%s %s' % (cmd,c)
+    ret = os.system(buildcmd)
+    if ret:
+        print '%s failed with %d; exiting' % (buildcmd,ret)
+        sys.exit(1)
+buildcmd="%s install --prefix=%s --no-compile" % (cmd, DestDir)
+ret = os.system(buildcmd)
+if ret:
+    print '%s failed with %d; exiting' % (buildcmd,ret)
+    sys.exit(1)
 
 os.chdir(s)
 
@@ -179,7 +187,10 @@ cmd = '%s %s %s %s %s' % (sys.executable,
                           eppath,
                           True)
 print "cmd = ", cmd
-os.system(cmd)
+ret = os.system(cmd)
+if ret:
+    print '%s failed with %d; exiting' % (cmd,ret)
+    sys.exit(1)
 
 # save the old path
 if os.environ.has_key('PYTHONPATH'):
@@ -200,19 +211,29 @@ else:
 os.environ['PYTHONPATH'] = nppath
 
 # Build stuff that needs to be built for modules to work
-#os.chdir(StartDir)
+os.chdir(StartDir)
 
 if sys.platform != 'darwin':
-    cmd = "%s %s %s" % (sys.executable, "BuildOpenSSL.py", DestDir)
-    os.system(cmd)
+    buildcmd = "BuildOpenSSL.py"
+    cmd = "%s %s %s" % (sys.executable, buildcmd, DestDir)
+    ret = os.system(cmd)
+    if ret:
+        print '%s failed with %d; exiting' % (cmd,ret)
+        sys.exit(1)
 
 if sys.platform == 'win32':
     td = os.getcwd()
     os.chdir(os.path.join(BuildDir, "tools"))
     cmd = "%s %s" % ("MakeVfwScan.bat", DestDir)
-    os.system(cmd)
+    ret = os.system(cmd)
+    if ret:
+        print '%s failed with %d; exiting' % (cmd,ret)
+        sys.exit(1)
     cmd = "%s %s" % ("MakeWdmScan.bat", DestDir)
-    os.system(cmd)
+    ret = os.system(cmd)
+    if ret:
+        print '%s failed with %d; exiting' % (cmd,ret)
+        sys.exit(1)
     os.chdir(td)
 
 elif sys.platform == 'darwin':
@@ -220,18 +241,29 @@ elif sys.platform == 'darwin':
     td = os.getcwd()
     os.chdir(os.path.join(BuildDir, "tools"))
     cmd = "%s %s" % ("./MakeOsxVGrabberScan.py", os.path.join(DestDir, 'bin') )
-    os.system(cmd)
+    ret = os.system(cmd)
+    if ret:
+        print '%s failed with %d; exiting' % (cmd,ret)
+        sys.exit(1)
     os.chdir(td)
 
 # Build the UCL common library
 cmd = "%s %s %s %s" % (sys.executable, "BuildCommon.py", SourceDir, DestDir)
 print cmd
-os.system(cmd)
+ret = os.system(cmd)
+if ret:
+    print '%s failed with %d; exiting' % (cmd,ret)
+    sys.exit(1)
+
 
 # Build the other python modules
 cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
                           BuildDir, DestDir)
-os.system(cmd)
+ret = os.system(cmd)
+if ret:
+    print '%s failed with %d; exiting' % (cmd,ret)
+    sys.exit(1)
+
 
 # put the old python path back
 if oldpath is not None:
@@ -244,11 +276,18 @@ if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'free
     os.chdir(os.path.join(BuildDir,'services','network','QuickBridge'))
     cmd = "gcc -O -o QuickBridge QuickBridge.c"
     print "cmd = ", cmd
-    os.system(cmd)
+    ret = os.system(cmd)
+    if ret:
+        print '%s failed with %d; exiting' % (cmd,ret)
+        sys.exit(1)
+
 
     cmd = "cp QuickBridge %s" % (os.path.join(DestDir,'bin','QuickBridge'))
     print "cmd = ", cmd
-    os.system(cmd)
+    ret = os.system(cmd)
+    if ret:
+        print '%s failed with %d; exiting' % (cmd,ret)
+        sys.exit(1)
     
 # Change to packaging dir to build packages
 os.chdir(os.path.join(BuildDir,'packaging'))
@@ -269,7 +308,11 @@ for d in services2fix:
 			eppath,
 			False)
     print "cmd = ", cmd
-    os.system(cmd)
+    ret = os.system(cmd)
+    if ret:
+        print '%s failed with %d; exiting' % (cmd,ret)
+        sys.exit(1)
+
 
 # Build service packages
 # makeServicePackages.py AGDIR\services\node DEST\services
@@ -280,16 +323,27 @@ cmd = '%s %s --sourcedir %s --agsourcedir %s --outputdir %s --servicefile %s' % 
                        os.path.join(DestDir,"NodeServices"),
                        'servicesToShip')
 print "\n********** cmd = ", cmd
-os.system(cmd)
+ret = os.system(cmd)
+if ret:
+    print '%s failed with %d; exiting' % (cmd,ret)
+    sys.exit(1)
+
 
 # copy media tools to bin directory
 cmd = '%s %s %s %s'%(sys.executable, 'BuildRat.py', SourceDir, os.path.join(DestDir,"bin"))
 print "\n ********* cmd = ",cmd
-os.system(cmd)
+ret = os.system(cmd)
+if ret:
+    print '%s failed with %d; exiting' % (cmd,ret)
+    sys.exit(1)
+
 
 cmd = '%s %s %s %s'%(sys.executable, 'BuildVic.py', SourceDir, os.path.join(DestDir,"bin"))
 print "\n ********* cmd = ",cmd
-os.system(cmd)
+ret = os.system(cmd)
+if ret:
+    print '%s failed with %d; exiting' % (cmd,ret)
+    sys.exit(1)
 
 # Fix shared app *.py files before they're packaged
 #
@@ -306,7 +360,10 @@ for d in pkgs2fix:
 			eppath,
 			False)
     print "cmd = ", cmd
-    os.system(cmd)
+    ret = os.system(cmd)
+    if ret:
+        print '%s failed with %d; exiting' % (cmd,ret)
+        sys.exit(1)
 
 # Build app packages
 # makeAppPackages.py AGDIR\sharedapps DEST\sharedapps
@@ -315,7 +372,10 @@ cmd = '%s %s %s %s' % (sys.executable,
                        os.path.join(BuildDir,"sharedapps"),
                        os.path.join(DestDir, "SharedApplications"))
 print "cmd = ", cmd
-os.system(cmd)
+ret = os.system(cmd)
+if ret:
+    print '%s failed with %d; exiting' % (cmd,ret)
+    sys.exit(1)
 
 file_list = os.listdir(SourceDir)
 
@@ -335,7 +395,10 @@ if bdir is not None:
         if sys.platform == 'linux2' or sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
             cmd += ' --dist %s' % (options.dist,)
         print "cmd = ", cmd
-        os.system(cmd)
+        ret = os.system(cmd)
+        if ret:
+            print '%s failed with %d; exiting' % (cmd,ret)
+            sys.exit(1)
     else:
         print "No directory (%s) found." % NextDir
 
