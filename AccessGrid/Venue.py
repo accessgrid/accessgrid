@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.273 2006-07-25 21:27:02 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.274 2006-07-26 15:13:57 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.273 2006-07-25 21:27:02 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.274 2006-07-26 15:13:57 turam Exp $"
 
 import sys
 import time
@@ -683,16 +683,30 @@ class Venue:
         now_sec = time.time()
 
         log.debug("CleanupClients: now=%d", now_sec)
+        
+        self.clientsBeingRemovedLock.acquire()
 
+        # Look for users to remove
+        clientsToRemove = []
         for connId in self.clients.keys():
             try:
                 log.debug("CleanupClients: client %s %s timeout=%d", connId, self.clients[connId].GetClientProfile().name,
                             self.clients[connId].GetTimeout())
                 if self.clients[connId].CheckTimeout(now_sec):
-                    log.info("  Removing user %s %s (Timed Out)", connId, self.clients[connId].GetClientProfile().name)
-                    self.RemoveUser(connId)
+                    log.info("  User %s %s will be removed (Timed Out)", connId, self.clients[connId].GetClientProfile().name)
+                    clientsToRemove.append(connId)
             except:
                 log.exception('Error removing client with connId=%s', connId)
+
+        self.clientsBeingRemovedLock.release()
+        
+        # Actually remove users
+        for connId in clientsToRemove:
+            try:
+                self.RemoveUser(connId)
+            except:
+                log.exception("Error removing user; connId=%s", connId)
+                
                 
         for connId in self.netServices.keys():
             try:
@@ -1553,13 +1567,15 @@ class Venue:
                 raise ClientNotFound
             else:
                 usage_log.info("\"Exit\",\"%s\",\"%s\",\"%s\"", self.clients[privateId].GetClientProfile().GetDistinguishedName(), self.name, self.uniqueId)
+        except:
+            log.exception("Error in usage logging")
+            
+        self.clientsBeingRemovedLock.release()
 
+        try:
             self.RemoveUser(privateId)
         except:
             log.exception('Error in Venue.Exit; privateId=%s', privateId)
-    
-        
-        self.clientsBeingRemovedLock.release()
 
 
     def UpdateClientProfile(self, clientProfile):
