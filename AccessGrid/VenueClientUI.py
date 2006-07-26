@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.198 2006-07-25 16:04:23 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.199 2006-07-26 15:56:56 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.198 2006-07-25 16:04:23 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.199 2006-07-26 15:56:56 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -177,7 +177,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.app = app
         self.bridges = None
         self.bridgeKeyMap = {}
-        self.currentConfig = 'default'
         self.venueClient = venueClient
         self.controller = controller
 
@@ -208,6 +207,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.controller.EnableVideoCB(self.isVideoEnabled)
         except:
             pass
+
+        self.currentConfig = None
+        prefNodeConfigName = prefs.GetPreference(Preferences.NODE_CONFIG)
+        for c in self.venueClient.GetNodeConfigurations():
+            if c.name == prefNodeConfigName:
+                self.currentConfig = c
        
         wxFrame.__init__(self, NULL, -1, "")
         self.__BuildUI(app)
@@ -735,16 +740,22 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     
     def __LoadMyConfigurations(self):
 
+        # Remove all the config menu items
+        items = self.configSubmenu.GetMenuItems()
+        map(lambda item: self.configSubmenu.Destroy(item), items)
+
+        # Build up the list of menu items 
         configs = self.venueClient.GetNodeConfigurations()
-        
         for configuration in configs:
             ID = wxNewId()
             configName = configuration.name
-            self.configSubmenu.Append(ID, configName)
+            self.configSubmenu.AppendRadioItem(ID, configName)
             self.myConfigurationsMenuIds[ID] = configName
             self.myConfigurationsDict[configName] = configuration
             EVT_MENU(self, ID, self.LoadNodeConfig)
 
+            if configuration.name == self.currentConfig.name:
+                self.configSubmenu.Check(ID,1)
 
     def __BuildUI(self, app):
         
@@ -1440,14 +1451,17 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     # Code for loading the configurations from the Configurations menu
 
     def LoadNodeConfig(self, event):
+
+        wxBeginBusyCursor()
+
         ID = event.GetId()	
         configName = self.myConfigurationsMenuIds[ID]
-	
+    
         configs = self.venueClient.GetNodeConfigurations()
         for c in configs:
             if configName == c.name:
                 configuration = c
-	try:
+        try:
             self.venueClient.LoadNodeConfiguration(configuration)
             self.currentConfig = configuration
             
@@ -1459,6 +1473,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         except:
             log.exception("Exception updating node")
     
+        wxEndBusyCursor()
+
     # 
     # Support for scheduler integration
     #
@@ -1928,6 +1944,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             # only set enabled state for well-known services
             if enabled >= 0:
                 self.venueClient.nodeService.SetServiceEnabled(serviceDesc.uri,enabled)
+        elif action == 'store_config':
+            self.__LoadMyConfigurations()
         else:
             log.info('OnNodeActivity: got unexpected action: %s', action)
 
