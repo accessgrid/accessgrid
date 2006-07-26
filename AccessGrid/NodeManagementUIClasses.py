@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.111 2006-07-17 19:08:24 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.112 2006-07-26 15:58:04 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.111 2006-07-17 19:08:24 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.112 2006-07-26 15:58:04 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -751,6 +751,12 @@ class NodeManagementClientFrame(wxFrame):
                     prefs.SetPreference(Preferences.NODE_CONFIG,configName)
                     prefs.SetPreference(Preferences.NODE_CONFIG_TYPE,config.type)
                     prefs.StorePreferences()
+
+                if self.callback:
+                    try:
+                        self.callback('store_config')
+                    except:
+                        log.exception('exception from registered callback')
                     
                 wxEndBusyCursor()
 
