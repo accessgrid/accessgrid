@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.199 2006-07-26 15:56:56 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.200 2006-07-27 21:16:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.199 2006-07-26 15:56:56 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.200 2006-07-27 21:16:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -742,7 +742,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # Remove all the config menu items
         items = self.configSubmenu.GetMenuItems()
-        map(lambda item: self.configSubmenu.Destroy(item), items)
+        map(lambda item: self.configSubmenu.Delete(item.GetId()), items)
 
         # Build up the list of menu items 
         configs = self.venueClient.GetNodeConfigurations()
