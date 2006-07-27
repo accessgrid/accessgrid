@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.65 2006-07-19 15:41:59 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.66 2006-07-27 19:02:19 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.65 2006-07-19 15:41:59 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.66 2006-07-27 19:02:19 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -248,6 +248,9 @@ class VenueClientController:
         if len(bridgeList) == 0:
             raise NoEnabledBridges
     
+        # Sort the bridge list
+        bridgeList.sort(lambda x,y: cmp(x.rank, y.rank))
+
         # Set the transport in the venue client and update the node service
         self.__venueClient.SetTransport("unicast")
 
