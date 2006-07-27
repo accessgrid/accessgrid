@@ -60,6 +60,8 @@ def fixAG3paths(dir):
                 os.remove(infilename)
             else:
                 print "REPLACING original file: ", infilename
+                if os.path.exists(infilename):
+                    os.remove(infilename)
                 os.rename(outfilename, infilename)
 
     os.chdir(here)
