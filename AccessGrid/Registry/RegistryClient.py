@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.23 2006-07-25 17:10:00 turam Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.24 2006-07-27 14:40:20 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -69,15 +69,14 @@ class RegistryClient:
                 return roundTripTime
             except xmlrpclib.Fault, e:  # Temporary until all Bridges have the "Ping" method
                 if 'method "Ping" is not supported' in e.faultString:
-                    print "Using deprecated ping",
-                    print "for older bridge interface:", bridgeProxy._ServerProxy__host
+                    self.log.info('Using deprecated ping for older bridge interface to %s',
+                                  bridgeProxy._ServerProxy__host)
                     host = bridgeProxy._ServerProxy__host.split(":")[0]
                     return self.PingHost(host)
                 else:
                     raise
         except:
-            import traceback
-            traceback.print_exc()
+            self.log.exception('Exception pinging bridge')
             return -1
 
     def PingHost(self, host):
