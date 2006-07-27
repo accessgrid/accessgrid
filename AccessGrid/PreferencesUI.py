@@ -775,7 +775,10 @@ class NetworkPanel(wxPanel):
         self.keyMap = {}
         self.selected = None
 
-        self.bridges = preferences.GetBridges()
+        bridgeDict = preferences.GetBridges()
+        self.bridges = bridgeDict.values()
+        self.bridges.sort(lambda x,y: cmp(x.rank,y.rank))
+
         self.multicastButton.SetValue(not int(preferences.GetPreference(Preferences.MULTICAST)))
 
         self.beaconButton = wxCheckBox(self, wxNewId(), "  Run beacon ")
@@ -820,10 +823,7 @@ class NetworkPanel(wxPanel):
         self.menu.AppendCheckItem(self.enableId, "Enabled")
 
         # Check the actual item to see if it is enabled or not
-        intId = self.list.GetItemData(self.selected)
-        selectedItemId = self.__GetGUID(intId)
-        selectedItem = self.__GetBridge(selectedItemId)
-
+        selectedItem = self.bridges[self.selected]
         if selectedItem.status == STATUS_ENABLED:
             self.menu.Check(self.enableId, 1)
         else: 
@@ -839,19 +839,20 @@ class NetworkPanel(wxPanel):
         enableFlag = event.IsChecked()
         self.menu.Check(self.enableId, enableFlag)
 
-        intId = self.list.GetItemData(self.selected)
-        selectedItemId = self.__GetGUID(intId)
-        selectedItem = self.__GetBridge(selectedItemId)
+        selectedItem = self.bridges[self.selected]
         if enableFlag:
             selectedItem.status= STATUS_ENABLED
         else:
             selectedItem.status = STATUS_DISABLED
 
         self.list.SetStringItem(self.selected, 4, selectedItem.status)
-        self.bridges[selectedItemId].status = selectedItem.status
+        self.bridges[self.selected].status = selectedItem.status
 
     def GetBridges(self):
-        return self.bridges
+        retBridges = {}
+        for b in self.bridges:
+            retBridges[b.guid] = b
+        return retBridges
                                     
     def GetMulticast(self):
         if self.multicastButton.IsChecked():
@@ -865,31 +866,6 @@ class NetworkPanel(wxPanel):
         else:
             return 0
 
-    def __CreateBridgeMap(self):
-        '''
-        Get bridges from the registry
-        '''
-        # Create key map for item data in list ctrl
-        # List ctrl can unfortunately not add anything other
-        # than int as item data.
-        counter = 0
-        values = self.bridges.values()
-        for b in values:
-            self.keyMap[b.guid] = counter
-            counter += 1
-                
-        return self.bridges
-
-    def __GetGUID(self, intKey):
-        for guid in self.keyMap.keys():
-            if self.keyMap[guid] == intKey:
-                return guid
-    
-    def __GetBridge(self, id):
-        for b in self.bridges.values():
-            if b.guid == str(id):
-                return b
-       
     def __InitList(self):
         self.list = wxListCtrl(self, wxNewId(),style=wxLC_REPORT|wxLC_SINGLE_SEL)
 
@@ -909,19 +885,14 @@ class NetworkPanel(wxPanel):
         self.list.SetColumnWidth(5, 60)
         self.list.SetColumnWidth(6, 90)
                 
-        bridgeDict = self.__CreateBridgeMap()
-
-        for index in bridgeDict.keys():
-            self.list.InsertStringItem(self.keyMap[index], bridgeDict[index].name)
-            self.list.SetStringItem(self.keyMap[index], 1, bridgeDict[index].host)
-            self.list.SetStringItem(self.keyMap[index], 2, str(bridgeDict[index].port))
-            self.list.SetStringItem(self.keyMap[index], 3, bridgeDict[index].serverType)
-            self.list.SetStringItem(self.keyMap[index], 4, bridgeDict[index].status)
-            self.list.SetStringItem(self.keyMap[index], 5, str(bridgeDict[index].rank))
-            self.list.SetStringItem(self.keyMap[index], 6, '%d-%d' % (bridgeDict[index].portMin,bridgeDict[index].portMax))
-                        
-            data = self.keyMap[bridgeDict[index].guid]
-            self.list.SetItemData(self.keyMap[index], data)
+        for index in range(len(self.bridges)):
+            self.list.InsertStringItem(index, self.bridges[index].name)
+            self.list.SetStringItem(index, 1, self.bridges[index].host)
+            self.list.SetStringItem(index, 2, str(self.bridges[index].port))
+            self.list.SetStringItem(index, 3, self.bridges[index].serverType)
+            self.list.SetStringItem(index, 4, self.bridges[index].status)
+            self.list.SetStringItem(index, 5, str(self.bridges[index].rank))
+            self.list.SetStringItem(index, 6, '%d-%d' % (self.bridges[index].portMin,self.bridges[index].portMax))
           
     def __Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
