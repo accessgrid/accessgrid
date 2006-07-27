@@ -40,7 +40,9 @@ except WindowsError:
     
     # If still not found, try default path:
     innopath = r"\Program Files\ISTool 4"
+    innopath = r"\Program Files\Inno Setup 5"
     inno_compiler = os.path.join(innopath, "iscc.exe")
+    
 
 if options.verbose:
     if os.path.exists(inno_compiler):
@@ -54,8 +56,8 @@ if options.verbose:
 
 # Add quotes around command.
 
-iscc_cmd = "%s agtk.iss /dAppVersion=\"%s\" /dVersionInformation=\"%s\" \
-            /dSourceDir=\"%s\" /dBuildDir=\"%s\" /dPythonSubVersion=\"%s\"" % \
+iscc_cmd = "\"\"%s\" agtk.iss /dAppVersion=\"%s\" /dVersionInformation=\"%s\" \
+            /dSourceDir=\"%s\" /dBuildDir=\"%s\" /dPythonSubVersion=\"%s\"\"" % \
             (inno_compiler, options.version,
              options.metainfo.replace(' ', '_'), 
              options.sourcedir, options.destdir, options.pyver.split('.')[1])
