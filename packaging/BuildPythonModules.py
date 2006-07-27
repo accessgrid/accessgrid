@@ -22,13 +22,23 @@ PYVER=sys.version[:3]
 #
 def SetupModule(modName, source, dest, morebuildopts=[]):
     os.chdir(os.path.join(source,modName))
-    os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","clean","--all")
+    ret = os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","clean","--all")
+    if ret:
+        print 'Clean of Python module %s failed' % modName
+        sys.exit(1)
 
     buildopts = [ sys.executable, 'setup.py','build'] + morebuildopts
-    os.spawnv(os.P_WAIT,sys.executable,buildopts)
+    ret = os.spawnv(os.P_WAIT,sys.executable,buildopts)
+    if ret:
+        print 'Build of Python module %s failed' % modName
+        sys.exit(1)
 
     installopts = [sys.executable, 'setup.py','install','--prefix=%s'%(dest,),'--no-compile'] + morebuildopts
-    os.spawnv(os.P_WAIT,sys.executable,installopts)
+    ret = os.spawnv(os.P_WAIT,sys.executable,installopts)
+    if ret:
+        print 'Install of Python module %s failed' % modName
+        sys.exit(1)
+
 
 
 #
@@ -54,10 +64,20 @@ if sys.platform == 'win32':
     os.chdir(os.path.join(SOURCE,"pyOpenSSL"))
     os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","clean","--all")
     sslp = os.path.join(SOURCE, "openssl-0.9.7g")
-    os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","build_ext","-I%s"%(os.path.join(sslp,"inc32")),"-L%s"%(os.path.join(sslp, "out32dll")))
-    os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","build")
-    os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","install",
+    ret = os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","build_ext","-I%s"%(os.path.join(sslp,"inc32")),"-L%s"%(os.path.join(sslp, "out32dll")))
+    if ret:
+        print 'Command failed; exiting' % (cmd,ret)
+        sys.exit(1)
+
+    ret = os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","build")
+    if ret:
+        print 'Command failed; exiting' % (cmd,ret)
+        sys.exit(1)
+    ret = os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","install",
               "--prefix=%s"%(DEST,), "--no-compile")
+    if ret:
+        print 'Command failed; exiting' % (cmd,ret)
+        sys.exit(1)
 else:
     SetupModule("pyOpenSSL", SOURCE, DEST)
 
@@ -80,7 +100,7 @@ print "*********** Building m2crypto\n"
 SetupModule("m2crypto-0.15", SOURCE, DEST)
 
 print "*********** Building twisted\n"
-SetupModule("Twisted-2.1.0", SOURCE, DEST)
+SetupModule("Twisted-2.2.0", SOURCE, DEST)
 
 print "*********** Building bonjour-py\n"
 SetupModule("bonjour-py-0.1", SOURCE, DEST)
