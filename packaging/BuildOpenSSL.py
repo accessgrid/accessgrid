@@ -14,7 +14,7 @@ def BuildWindows():
     masmPath = os.path.join(os.getcwd(), 'ms', 'do_masm.bat')
     os.system(masmPath)
 
-    ntPath = os.path.join(os.getcwd(), 'ms', 'nt.mak')
+    ntPath = os.path.join(os.getcwd(), 'ms', 'ntdll.mak')
     os.system('nmake -f %s' %ntPath)
 
     out32dllPath = os.path.join(os.getcwd(), "out32dll")
