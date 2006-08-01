@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.17 2006-07-14 15:00:13 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.18 2006-08-01 22:01:32 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -181,8 +181,11 @@ class AudioService( AGService ):
                 for line in lines:
                     line = line.strip()
                     if line:
-                        k,v = line.split(':',1)
-                        ratDefaults[k] = v
+                        try:
+                            k,v = line.split(':',1)
+                            ratDefaults[k] = v
+                        except:
+                            self.log.exception('Error processing rat defaults line: %s', line)
                 f.close()
 
             # Update settings
