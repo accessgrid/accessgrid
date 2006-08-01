@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.200 2006-07-27 21:16:12 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.201 2006-08-01 13:48:11 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.200 2006-07-27 21:16:12 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.201 2006-08-01 13:48:11 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -745,18 +745,28 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         map(lambda item: self.configSubmenu.Delete(item.GetId()), items)
 
         # Build up the list of menu items 
-        configs = self.venueClient.GetNodeConfigurations()
-        for configuration in configs:
-            ID = wxNewId()
-            configName = configuration.name
-            self.configSubmenu.AppendRadioItem(ID, configName)
-            self.myConfigurationsMenuIds[ID] = configName
-            self.myConfigurationsDict[configName] = configuration
-            EVT_MENU(self, ID, self.LoadNodeConfig)
+        try:
+            configs = self.venueClient.GetNodeConfigurations()
+            for configuration in configs:
+                ID = wxNewId()
+                configName = configuration.name
+                self.configSubmenu.AppendRadioItem(ID, configName)
+                self.myConfigurationsMenuIds[ID] = configName
+                self.myConfigurationsDict[configName] = configuration
+                EVT_MENU(self, ID, self.LoadNodeConfig)
 
-            if configuration.name == self.currentConfig.name:
-                self.configSubmenu.Check(ID,1)
-
+                if configuration.name == self.currentConfig.name:
+                    self.configSubmenu.Check(ID,1)
+        except Exception,e:
+            if str(e).find('where is the radio group start item') >= 0:
+                # Log and workaround wx bug that occurs when rebuilding
+                # a menu that has only radio items
+                log.info("Handling wx error: %s", str(e))
+                item = self.configSubmenu.AppendSeparator()
+                self.__LoadMyConfigurations()
+            else:
+                log.exception("Error building configurations menu")
+            
     def __BuildUI(self, app):
         
         self.Centre()
