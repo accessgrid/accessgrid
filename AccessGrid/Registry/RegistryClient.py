@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.24 2006-07-27 14:40:20 turam Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.25 2006-08-01 21:54:41 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -64,8 +64,8 @@ class RegistryClient:
         try:
             try: # Temporary try/except until all Bridges have the "Ping" method
                 startTime = bridgeProxy.Ping(time.time())
+                #print "RoundTrip:", time.time(), startTime
                 roundTripTime = time.time() - startTime
-                #print "RoundTrip:", roundTripTime
                 return roundTripTime
             except xmlrpclib.Fault, e:  # Temporary until all Bridges have the "Ping" method
                 if 'method "Ping" is not supported' in e.faultString:
@@ -144,7 +144,7 @@ class RegistryClient:
         for desc in self.bridges[0:maxToReturn]:
             try:
                 pingVal = self.PingBridgeService(xmlrpclib.ServerProxy("http://%s:%s" % (desc.host, desc.port)))
-                if pingVal > 0:
+                if pingVal >= 0.0:
                     desc.rank = pingVal
                 else:
                     desc.rank = 100000
@@ -255,6 +255,7 @@ if __name__=="__main__":
     
     # Lookup a bridge using the RegistryClient
     bridgeDescList = rc.LookupBridge()
+    bridgeDescList.sort(lambda x,y: cmp(x.rank,y.rank))
     for b in bridgeDescList:
         print 'name: '+b.name+'  host: '+b.host+"  port: "+str(b.port) +"  dist:"+str(b.rank)
         
