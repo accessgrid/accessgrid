@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.107 2006-04-28 20:52:48 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.108 2006-08-02 14:20:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.107 2006-04-28 20:52:48 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.108 2006-08-02 14:20:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -338,8 +338,8 @@ class AGNodeService:
         for service in services:
             try:
                 self.__SendStreamsToService( service.uri )
-            except SetStreamException:
-                raise
+            except Exception,e:
+                exceptionText += str(e) + "\n"
 
         if len(exceptionText):
             raise SetStreamException(exceptionText)
