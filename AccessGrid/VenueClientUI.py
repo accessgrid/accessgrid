@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.201 2006-08-01 13:48:11 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.202 2006-08-02 17:49:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.201 2006-08-01 13:48:11 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.202 2006-08-02 17:49:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -5351,7 +5351,7 @@ class AddVideoServiceDialog(wxDialog):
             item = self.deviceCtrl.Append(r.name)     
             self.deviceCtrl.SetClientData(item,r)
         if resources:
-            self.deviceCtrl.SetValue(resources[0].name)
+            self.deviceCtrl.SetSelection(0)
     
     def BrowseCallback(self,op,serviceName,url=None):
         if self.exists.isSet() and op == ServiceDiscovery.Browser.ADD:
