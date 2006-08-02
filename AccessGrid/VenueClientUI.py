@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.202 2006-08-02 17:49:01 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.203 2006-08-02 19:04:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.202 2006-08-02 17:49:01 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.203 2006-08-02 19:04:18 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -5335,7 +5335,10 @@ class AddVideoServiceDialog(wxDialog):
         self.__Layout()
         
     def OnHostSelect(self,event=None):
-        url = self.hostCtrl.GetValue()
+        if event:
+            url = event.GetString()
+        else:
+            url = self.hostCtrl.GetValue()
         newurl = BuildServiceUrl(url,'http',11000,'ServiceManager')
         if url != newurl:
             self.hostCtrl.SetValue(newurl)
