@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.203 2006-08-02 19:04:18 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.204 2006-08-02 19:58:34 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.203 2006-08-02 19:04:18 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.204 2006-08-02 19:58:34 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -744,29 +744,27 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         items = self.configSubmenu.GetMenuItems()
         map(lambda item: self.configSubmenu.Delete(item.GetId()), items)
 
-        # Build up the list of menu items 
-        try:
-            configs = self.venueClient.GetNodeConfigurations()
-            for configuration in configs:
-                ID = wxNewId()
-                configName = configuration.name
-                self.configSubmenu.AppendRadioItem(ID, configName)
-                self.myConfigurationsMenuIds[ID] = configName
-                self.myConfigurationsDict[configName] = configuration
-                EVT_MENU(self, ID, self.LoadNodeConfig)
+        # Work around wx assertion (bug) that occurs when rebuilding
+        # menus that contain only radio items (would be better to work
+        # around it only when it occurs, but GTK prints to the console
+        # when the problem occurs)
+        itemId = wxNewId()
+        self.configSubmenu.Append(itemId,"")
+        self.configSubmenu.Delete(itemId)
 
-                if configuration.name == self.currentConfig.name:
-                    self.configSubmenu.Check(ID,1)
-        except Exception,e:
-            if str(e).find('where is the radio group start item') >= 0:
-                # Log and workaround wx bug that occurs when rebuilding
-                # a menu that has only radio items
-                log.info("Handling wx error: %s", str(e))
-                item = self.configSubmenu.AppendSeparator()
-                self.__LoadMyConfigurations()
-            else:
-                log.exception("Error building configurations menu")
-            
+        # Build up the list of menu items 
+        configs = self.venueClient.GetNodeConfigurations()
+        for configuration in configs:
+            ID = wxNewId()
+            configName = configuration.name
+            self.configSubmenu.AppendRadioItem(ID, configName)
+            self.myConfigurationsMenuIds[ID] = configName
+            self.myConfigurationsDict[configName] = configuration
+            EVT_MENU(self, ID, self.LoadNodeConfig)
+
+            if configuration.name == self.currentConfig.name:
+                self.configSubmenu.Check(ID,1)
+        
     def __BuildUI(self, app):
         
         self.Centre()
