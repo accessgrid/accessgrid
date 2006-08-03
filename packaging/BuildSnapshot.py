@@ -259,6 +259,8 @@ if ret:
 # Build the other python modules
 cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
                           BuildDir, DestDir)
+if options.verbose:
+    print "Building python modules with the command:", cmd
 ret = os.system(cmd)
 if ret:
     print '%s failed with %d; exiting' % (cmd,ret)
@@ -330,7 +332,10 @@ if ret:
 
 
 # copy media tools to bin directory
-cmd = '%s %s %s %s'%(sys.executable, 'BuildRat.py', SourceDir, os.path.join(DestDir,"bin"))
+if sys.platform == 'darwin':
+    cmd = '%s %s %s %s'%(sys.executable, 'BuildUclRat.py', SourceDir, os.path.join(DestDir,"bin"))
+else:
+    cmd = '%s %s %s %s'%(sys.executable, 'BuildRat.py', SourceDir, os.path.join(DestDir,"bin"))
 print "\n ********* cmd = ",cmd
 ret = os.system(cmd)
 if ret:

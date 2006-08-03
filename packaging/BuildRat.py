@@ -66,6 +66,8 @@ elif sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
                  os.path.join(dir,'rat-4.2.22-kill') ]
     copyExe = 'cp'
     build = build_freebsd
+elif sys.platform == 'darwin':
+    raise Exception, 'Unsupported platform: ' + sys.platform + ".  BuildUclRat.py should be used on OSX instead."
 else:
     raise Exception, 'Unsupported platform: ' + sys.platform
     
