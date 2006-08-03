@@ -100,7 +100,7 @@ print "*********** Building m2crypto\n"
 SetupModule("m2crypto-0.15", SOURCE, DEST)
 
 print "*********** Building twisted\n"
-SetupModule("Twisted-2.2.0", SOURCE, DEST)
+SetupModule("Twisted-2.1.0", SOURCE, DEST)
 
 print "*********** Building bonjour-py\n"
 SetupModule("bonjour-py-0.1", SOURCE, DEST)
