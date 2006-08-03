@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.204 2006-08-02 19:58:34 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.205 2006-08-03 13:55:08 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.204 2006-08-02 19:58:34 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.205 2006-08-03 13:55:08 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -762,8 +762,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.myConfigurationsDict[configName] = configuration
             EVT_MENU(self, ID, self.LoadNodeConfig)
 
-            if configuration.name == self.currentConfig.name:
-                self.configSubmenu.Check(ID,1)
+            if (None != configuration) and (None != self.currentConfig):
+                if configuration.name == self.currentConfig.name:
+                    self.configSubmenu.Check(ID,1)
         
     def __BuildUI(self, app):
         
