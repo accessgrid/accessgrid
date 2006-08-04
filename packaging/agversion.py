@@ -3,16 +3,17 @@
 # Name:        agversion.py
 # Purpose:     Support AccessGrid module version selection
 # Created:     2006/07/21
-# RCS-ID:      $Id: agversion.py,v 1.4 2006-08-04 15:02:11 turam Exp $
+# RCS-ID:      $Id: agversion.py,v 1.5 2006-08-04 15:04:32 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: agversion.py,v 1.4 2006-08-04 15:02:11 turam Exp $"
+__revision__ = "$Id: agversion.py,v 1.5 2006-08-04 15:04:32 turam Exp $"
 
 import sys
 import os
+from distutils.sysconfig import get_python_lib 
 
 class VersionError(Exception):
     pass
@@ -35,9 +36,8 @@ def select(ver):
 
     elif sys.platform in ['darwin']:
         installpath = '/Applications/AccessGridToolkit3.app/Contents/Resources/lib/python%s/site-packages/AccessGrid%s' % (sys.version[:3],ver)
-
     elif sys.platform in ['linux2','freebsd5','freebsd6']:
-        installpath = '%s/lib/python%s/site-packages/AccessGrid%s' % (sys.prefix,sys.version[:3],ver)
+        installpath = '%s/AccessGrid%s' % (get_python_lib(),ver) 
 
     # confirm that the path exists
     if not os.path.exists(installpath):
