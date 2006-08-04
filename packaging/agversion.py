@@ -3,13 +3,13 @@
 # Name:        agversion.py
 # Purpose:     Support AccessGrid module version selection
 # Created:     2006/07/21
-# RCS-ID:      $Id: agversion.py,v 1.3 2006-07-21 20:20:02 turam Exp $
+# RCS-ID:      $Id: agversion.py,v 1.4 2006-08-04 15:02:11 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: agversion.py,v 1.3 2006-07-21 20:20:02 turam Exp $"
+__revision__ = "$Id: agversion.py,v 1.4 2006-08-04 15:02:11 turam Exp $"
 
 import sys
 import os
@@ -50,7 +50,3 @@ def select(ver):
     else:
         os.environ['PYTHONPATH'] = installpath
         
-    # reset AGTK_LOCATION, too, since it will affect execution
-    if os.environ.has_key('AGTK_LOCATION'):
-        os.environ['AGTK_LOCATION'] = ''
-
