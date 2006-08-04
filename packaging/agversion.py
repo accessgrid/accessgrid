@@ -3,13 +3,13 @@
 # Name:        agversion.py
 # Purpose:     Support AccessGrid module version selection
 # Created:     2006/07/21
-# RCS-ID:      $Id: agversion.py,v 1.5 2006-08-04 15:04:32 turam Exp $
+# RCS-ID:      $Id: agversion.py,v 1.6 2006-08-04 16:08:32 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: agversion.py,v 1.5 2006-08-04 15:04:32 turam Exp $"
+__revision__ = "$Id: agversion.py,v 1.6 2006-08-04 16:08:32 turam Exp $"
 
 import sys
 import os
@@ -19,10 +19,6 @@ class VersionError(Exception):
     pass
 
 def select(ver):
-
-    # refuse to execute select if AccessGrid module has already been imported
-    if sys.modules.has_key('AccessGrid'):
-        raise VersionError("agversion.select() must be called before AccessGrid is imported")
 
     # establish platform-specific AccessGrid module path
     if sys.platform in ['win32']:
