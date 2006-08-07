@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.85 2006-05-10 18:38:46 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.86 2006-08-07 20:37:40 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.85 2006-05-10 18:38:46 turam Exp $"
+__revision__ = "$Id: Utilities.py,v 1.86 2006-08-07 20:37:40 turam Exp $"
 
 import os
 import string
@@ -200,7 +200,7 @@ def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
 
     args['Bugzilla_login'] = bugzilla_login
     args['Bugzilla_password'] = bugzilla_password
-    args['version'] = str(GetVersion()) + " "+GetStatus()     
+    args['version'] = str(GetVersion())    
     args['rep_platform'] = "Other"
     
     #
