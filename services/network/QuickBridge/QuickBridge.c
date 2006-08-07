@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.12 2006-03-16 06:58:13 turam Exp $
+ * $Id: QuickBridge.c,v 1.13 2006-08-07 22:40:54 turam Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -797,9 +797,7 @@ int main (int argc, char *argv[])
 	int c, arg_err=0;
     int inactivity_timeout=0;
     time_t time_at_last_client;
-
-    time(&time_at_last_client);
-
+    
 #ifdef _WIN32
 	WORD wVersionRequested = MAKEWORD(2,2);
 	WSADATA wsaData;
@@ -808,6 +806,8 @@ int main (int argc, char *argv[])
 		exit(0);
 	}
 #endif
+
+    time(&time_at_last_client);
 
 	/* 
 	 * don't want this as a command line flag as we want the array
