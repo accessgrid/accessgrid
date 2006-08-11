@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.97 2006-07-05 17:04:16 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.98 2006-08-11 15:00:16 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.97 2006-07-05 17:04:16 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.98 2006-08-11 15:00:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -298,7 +298,7 @@ class Capability:
     VIDEO = "video"
     TEXT  = "text"
 
-    def __init__( self, role=None, type=None, codec=None, rate=None, serviceId = None, channels = 1):
+    def __init__( self, role=None, type=None, codec=None, rate=0, serviceId = None, channels = 1):
         self.role = role # consumer/producer
         self.type = type # audio/video/other
         self.codec = codec # according to mime type
