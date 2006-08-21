@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.99 2006-04-28 20:52:48 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.100 2006-08-21 19:17:42 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.99 2006-04-28 20:52:48 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.100 2006-08-21 19:17:42 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -281,7 +281,7 @@ class AGServiceManager:
 
         files = os.listdir(self.servicesDir)
         for f in files:
-            if f.endswith('.zip'):
+            if f.endswith('.zip') or f.endswith('.agpkg') or f.endswith('.agpkg3'):
                 try:
                     servicePkg = self.GetServicePackage(os.path.join(self.servicesDir,f))
                     servicePackages.append(servicePkg)
