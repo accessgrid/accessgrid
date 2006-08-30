@@ -153,9 +153,9 @@ class BridgeServerTestCase(unittest.TestCase):
         RemoveStreams(venue)
     
         # Add static stream to venue
-        streamDesc = StreamDescription('static test stream',
+        streamDesc = StreamDescription3('static test stream',
                             MulticastNetworkLocation('224.2.2.2',20000,127),
-                            Capability('producer','test'),
+                            Capability3('producer','test'),
                             0,None,
                             1)
         venue.AddStream(streamDesc)

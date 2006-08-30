@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/17/12
-# RCS-ID:      $Id: test_VenueServer.py,v 1.8 2004-03-05 21:46:27 judson Exp $
+# RCS-ID:      $Id: test_VenueServer.py,v 1.9 2006-08-30 08:27:16 braitmai Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -58,9 +58,9 @@ conn2 = ConnectionDescription("Outside", "The outside one.", outsideDesc.uri)
 Client.Handle( insideDesc.uri ).GetProxy().SetConnections( [conn2] )
 
 # add some data to each venue
-dataDescription = DataDescription("sample.data")
+dataDescription = DataDescription3("sample.data")
 Client.Handle( outsideDesc.uri ).GetProxy().AddData( dataDescription )
-dataDescription = DataDescription("moreSample.data")
+dataDescription = DataDescription3("moreSample.data")
 Client.Handle( outsideDesc.uri ).GetProxy().AddData( dataDescription )
 
 

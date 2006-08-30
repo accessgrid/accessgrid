@@ -55,11 +55,11 @@ class VenueServerTestCase(unittest.TestCase):
 
     def testAddVenue(self):
         global venueServer
-        venueServer.AddVenue(VenueDescription("unittestVenue2", "venue for unittest"));
+        venueServer.AddVenue(VenueDescription3("unittestVenue2", "venue for unittest"));
 
     def testRemoveVenue(self):
         global venueServer
-        rvenue = VenueDescription("unittestVenue3", "venue for unittest")
+        rvenue = VenueDescription3("unittestVenue3", "venue for unittest")
         rvenue.uri = venueServer.AddVenue(rvenue)
         venueRemoved = 0
         venueDescList = venueServer.GetVenues()
@@ -106,7 +106,7 @@ class VenueServerTestCase(unittest.TestCase):
         venueServer = VenueServer()
         venueServer.SetStorageLocation("testData")
         # A venue for testing
-        venue1 = VenueDescription("unittestVenue1", "venue for unittest")
+        venue1 = VenueDescription3("unittestVenue1", "venue for unittest")
         venue1.uri = "LocalVenueServer/default1"
         venueServer.AddVenue(venue1)
 
