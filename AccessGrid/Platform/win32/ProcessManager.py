@@ -2,13 +2,13 @@
 # Name:        ProcessManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.11 2006-05-10 20:34:14 turam Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.12 2006-08-30 08:23:38 braitmai Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.11 2006-05-10 20:34:14 turam Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.12 2006-08-30 08:23:38 braitmai Exp $"
 
 import win32api
 import win32con
@@ -44,7 +44,7 @@ class ProcessManager:
         @type arglist: list of strings
         @type detached: integer
         """
-        cmdline = command
+        cmdline = '"' + command + '"'
         for arg in arglist:
             arg = str(arg)
             if arg.find(" ") != -1:

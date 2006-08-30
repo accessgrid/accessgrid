@@ -15,7 +15,7 @@ if __name__ == '__main__':
     print "Checkpoint result: ", msg.result
 
     avr = AddVenueRequest()
-    vd = AGTk_types.VenueDescription()
+    vd = AGTk_types.VenueDescription3()
     vd.id = ""
     vd.uri = ""
     vd.name = "Test"

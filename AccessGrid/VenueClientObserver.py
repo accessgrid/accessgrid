@@ -10,7 +10,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClientObserver.py,v 1.5 2005-06-06 21:32:29 turam Exp $"
+__revision__ = "$Id: VenueClientObserver.py,v 1.6 2006-08-30 08:23:37 braitmai Exp $"
 
 class VenueClientObserver:
 
@@ -27,6 +27,9 @@ class VenueClientObserver:
     # Data Methods
     def AddData(self, dataDescription):
         raise Exception("VenueClientObserver.AddData not implemented")
+    
+    def AddDir(self, dataDescription):
+        raise Exception("VenueClientObserver.AddDir not implemented")
 
     def RemoveData(self, dataDescription):
         raise Exception("VenueClientObserver.RemoveData not implemented")

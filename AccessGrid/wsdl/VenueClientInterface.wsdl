@@ -108,7 +108,7 @@
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
-
+  
           <xsd:element name="GetStreamsRequest">
             <xsd:complexType>
             </xsd:complexType>
@@ -122,6 +122,20 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="GetStreams3Request">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetStreams3Response">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="streamDescriptionList" type="agtk:StreamDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+	  
           <xsd:element name="GetUsersRequest">
             <xsd:complexType>
             </xsd:complexType>
@@ -148,6 +162,20 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="GetVenueData3Request">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetVenueData3Response">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="dataDescriptionList" type="agtk:DataDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+	  
           <xsd:element name="GetVenueURLRequest">
             <xsd:complexType>
             </xsd:complexType>
@@ -269,11 +297,23 @@
     <message name="GetServicesResponse">
 	<part name="parameters" element="agvc:GetServicesResponse"/>
     </message>
+    <message name="GetServices3Request">
+	<part name="parameters" element="agvc:GetServices3Request"/>
+    </message>
+    <message name="GetServices3Response">
+	<part name="parameters" element="agvc:GetServices3Response"/>
+    </message>
     <message name="GetStreamsRequest">
 	<part name="parameters" element="agvc:GetStreamsRequest"/>
     </message>
     <message name="GetStreamsResponse">
 	<part name="parameters" element="agvc:GetStreamsResponse"/>
+    </message>
+    <message name="GetStreams3Request">
+	<part name="parameters" element="agvc:GetStreams3Request"/>
+    </message>
+    <message name="GetStreams3Response">
+	<part name="parameters" element="agvc:GetStreams3Response"/>
     </message>
     <message name="GetUsersRequest">
 	<part name="parameters" element="agvc:GetUsersRequest"/>
@@ -286,6 +326,12 @@
     </message>
     <message name="GetVenueDataResponse">
 	<part name="parameters" element="agvc:GetVenueDataResponse"/>
+    </message>
+    <message name="GetVenueData3Request">
+	<part name="parameters" element="agvc:GetVenueData3Request"/>
+    </message>
+    <message name="GetVenueData3Response">
+	<part name="parameters" element="agvc:GetVenueData3Response"/>
     </message>
     <message name="GetVenueURLRequest">
 	<part name="parameters" element="agvc:GetVenueURLRequest"/>
@@ -349,9 +395,17 @@
         <input message="agvc:GetServicesRequest"/>
         <output message="agvc:GetServicesResponse"/>
     </operation>
+    <operation name="GetServices3">
+        <input message="agvc:GetServices3Request"/>
+        <output message="agvc:GetServices3Response"/>
+    </operation>
     <operation name="GetStreams">
         <input message="agvc:GetStreamsRequest"/>
         <output message="agvc:GetStreamsResponse"/>
+    </operation>
+    <operation name="GetStreams3">
+        <input message="agvc:GetStreams3Request"/>
+        <output message="agvc:GetStreams3Response"/>
     </operation>
     <operation name="GetUsers">
         <input message="agvc:GetUsersRequest"/>
@@ -360,6 +414,10 @@
     <operation name="GetVenueData">
         <input message="agvc:GetVenueDataRequest"/>
         <output message="agvc:GetVenueDataResponse"/>
+    </operation>
+    <operation name="GetVenueData3">
+        <input message="agvc:GetVenueData3Request"/>
+        <output message="agvc:GetVenueData3Response"/>
     </operation>
     <operation name="GetBeaconSources">
         <input message="agvc:GetBeaconSourcesRequest"/>

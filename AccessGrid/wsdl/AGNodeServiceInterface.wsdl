@@ -34,9 +34,24 @@
                 <xsd:element minOccurs="1" maxOccurs="1" name="argname" type="agtk:StreamDescription" />
               </xsd:sequence>
             </xsd:complexType>
-          </xsd:element>
+    	  </xsd:element>
 
           <xsd:element name="AddStreamResponse">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+
+          <xsd:element name="AddStream3Request">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="argname" type="agtk:StreamDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+
+          <xsd:element name="AddStream3Response">
             <xsd:complexType>
             </xsd:complexType>
           </xsd:element>
@@ -52,7 +67,21 @@
                 <xsd:element minOccurs="0" maxOccurs="unbounded" name="capabilities" type="agtk:Capability" />
               </xsd:sequence>
             </xsd:complexType>
+	  </xsd:element>
+
+          <xsd:element name="GetCapabilities3Request">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
+
+          <xsd:element name="GetCapabilities3Response">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="capabilities" type="agtk:Capability3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
 
           <xsd:element name="GetConfigurationsRequest">
             <xsd:complexType>
@@ -91,7 +120,22 @@
                 <xsd:element minOccurs="0" maxOccurs="unbounded" name="serviceList" type="agtk:AGServiceDescription" />
               </xsd:sequence>
             </xsd:complexType>
+    	  </xsd:element>
+
+
+          <xsd:element name="GetServices3Request">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
+
+          <xsd:element name="GetServices3Response">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="serviceList" type="agtk:AGServiceDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
 
           <xsd:element name="IsValidRequest">
             <xsd:complexType>
@@ -172,6 +216,19 @@
           <xsd:element name="RemoveStreamResponse">
             <xsd:complexType>
             </xsd:complexType>
+	  </xsd:element>
+
+	  <xsd:element name="RemoveStream3Request">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="argname" type="agtk:StreamDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveStream3Response">
+            <xsd:complexType>
+            </xsd:complexType>
           </xsd:element>
 
           <xsd:element name="SetServiceEnabledRequest">
@@ -210,6 +267,19 @@
           </xsd:element>
 
           <xsd:element name="SetStreamsResponse">
+            <xsd:complexType>
+            </xsd:complexType>
+	  </xsd:element>
+
+	  <xsd:element name="SetStreams3Request">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="streamDescriptionList" type="agtk:StreamDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="SetStreams3Response">
             <xsd:complexType>
             </xsd:complexType>
           </xsd:element>
@@ -268,11 +338,23 @@
     <message name="AddStreamResponse">
 	<part name="parameters" element="agns:AddStreamResponse"/>
     </message>
+    <message name="AddStream3Request">
+	<part name="parameters" element="agns:AddStream3Request"/>
+    </message>
+    <message name="AddStream3Response">
+	<part name="parameters" element="agns:AddStream3Response"/>
+    </message>
     <message name="GetCapabilitiesRequest">
 	<part name="parameters" element="agns:GetCapabilitiesRequest"/>
     </message>
     <message name="GetCapabilitiesResponse">
 	<part name="parameters" element="agns:GetCapabilitiesResponse"/>
+    </message>
+    <message name="GetCapabilities3Request">
+	<part name="parameters" element="agns:GetCapabilities3Request"/>
+    </message>
+    <message name="GetCapabilities3Response">
+	<part name="parameters" element="agns:GetCapabilities3Response"/>
     </message>
     <message name="GetConfigurationsRequest">
 	<part name="parameters" element="agns:GetConfigurationsRequest"/>
@@ -291,6 +373,12 @@
     </message>
     <message name="GetServicesResponse">
 	<part name="parameters" element="agns:GetServicesResponse"/>
+    </message>
+    <message name="GetServices3Request">
+	<part name="parameters" element="agns:GetServices3Request"/>
+    </message>
+    <message name="GetServices3Response">
+	<part name="parameters" element="agns:GetServices3Response"/>
     </message>
     <message name="IsValidRequest">
 	<part name="parameters" element="agns:IsValidRequest"/>
@@ -328,6 +416,12 @@
     <message name="RemoveStreamResponse">
 	<part name="parameters" element="agns:RemoveStreamResponse"/>
     </message>
+    <message name="RemoveStream3Request">
+	<part name="parameters" element="agns:RemoveStream3Request"/>
+    </message>
+    <message name="RemoveStream3Response">
+	<part name="parameters" element="agns:RemoveStream3Response"/>
+    </message>
     <message name="SetServiceEnabledRequest">
 	<part name="parameters" element="agns:SetServiceEnabledRequest"/>
     </message>
@@ -345,6 +439,12 @@
     </message>
     <message name="SetStreamsResponse">
 	<part name="parameters" element="agns:SetStreamsResponse"/>
+    </message>
+    <message name="SetStreams3Request">
+	<part name="parameters" element="agns:SetStreams3Request"/>
+    </message>
+    <message name="SetStreams3Response">
+	<part name="parameters" element="agns:SetStreams3Response"/>
     </message>
     <message name="StopServicesRequest">
 	<part name="parameters" element="agns:StopServicesRequest"/>
@@ -376,9 +476,17 @@
         <input message="agns:AddStreamRequest"/>
         <output message="agns:AddStreamResponse"/>
     </operation>
+    <operation name="AddStream3">
+        <input message="agns:AddStream3Request"/>
+        <output message="agns:AddStream3Response"/>
+    </operation>
     <operation name="GetCapabilities">
         <input message="agns:GetCapabilitiesRequest"/>
         <output message="agns:GetCapabilitiesResponse"/>
+    </operation>
+     <operation name="GetCapabilities3">
+        <input message="agns:GetCapabilities3Request"/>
+        <output message="agns:GetCapabilities3Response"/>
     </operation>
     <operation name="GetConfigurations">
         <input message="agns:GetConfigurationsRequest"/>
@@ -391,6 +499,10 @@
     <operation name="GetServices">
         <input message="agns:GetServicesRequest"/>
         <output message="agns:GetServicesResponse"/>
+    </operation>
+    <operation name="GetServices3">
+        <input message="agns:GetServices3Request"/>
+        <output message="agns:GetServices3Response"/>
     </operation>
     <operation name="IsValid">
         <input message="agns:IsValidRequest"/>
@@ -416,6 +528,10 @@
         <input message="agns:RemoveStreamRequest"/>
         <output message="agns:RemoveStreamResponse"/>
     </operation>
+    <operation name="RemoveStream3">
+        <input message="agns:RemoveStream3Request"/>
+        <output message="agns:RemoveStream3Response"/>
+    </operation>
     <operation name="SetServiceEnabled">
         <input message="agns:SetServiceEnabledRequest"/>
         <output message="agns:SetServiceEnabledResponse"/>
@@ -427,6 +543,10 @@
     <operation name="SetStreams">
         <input message="agns:SetStreamsRequest"/>
         <output message="agns:SetStreamsResponse"/>
+    </operation>
+    <operation name="SetStreams3">
+        <input message="agns:SetStreams3Request"/>
+        <output message="agns:SetStreams3Response"/>
     </operation>
     <operation name="StopServices">
         <input message="agns:StopServicesRequest"/>

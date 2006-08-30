@@ -26,7 +26,17 @@
 	    <output>
 		<soap:body use="literal"/> 
 	    </output>
+    </operation>
+        <operation name="GetCapabilities3">
+	    <soap:operation soapAction="urn:#GetCapabilities3"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
 	</operation>
+
     <operation name="GetConfiguration">
 	    <soap:operation soapAction="urn:#GetConfiguration"/>
 	    <input>
@@ -44,7 +54,17 @@
 	    <output>
 		<soap:body use="literal"/> 
 	    </output>
+    </operation>
+        <operation name="GetDescription3">
+	    <soap:operation soapAction="urn:#GetDescription3"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
 	</operation>
+
     <operation name="GetEnabled">
 	    <soap:operation soapAction="urn:#GetEnabled"/>
 	    <input>
@@ -170,7 +190,17 @@
 	    <output>
 		<soap:body use="literal"/> 
 	    </output>
+    </operation>
+        <operation name="SetStream3">
+	    <soap:operation soapAction="urn:#SetStream3"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
 	</operation>
+
     <operation name="Shutdown">
 	    <soap:operation soapAction="urn:#Shutdown"/>
 	    <input>

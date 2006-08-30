@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.205 2006-08-03 13:55:08 eolson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.206 2006-08-30 08:23:37 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.205 2006-08-03 13:55:08 eolson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.206 2006-08-30 08:23:37 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -41,9 +41,10 @@ from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.ClientProfile import *
 from AccessGrid.Preferences import Preferences
 from AccessGrid.PreferencesUI import PreferencesDialog
-from AccessGrid.Descriptions import DataDescription, ServiceDescription
+from AccessGrid.Descriptions import DataDescription, ServiceDescription, DataDescription3
 from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
-from AccessGrid.Descriptions import ApplicationDescription, VenueDescription
+from AccessGrid.Descriptions import DirectoryDescription, FileDescription
+from AccessGrid.Descriptions import ApplicationDescription, VenueDescription, VenueDescription3
 from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIDialog
 from AccessGrid.Utilities import SubmitBug, BuildServiceUrl
 from AccessGrid.VenueClientObserver import VenueClientObserver
@@ -127,6 +128,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_WINDOW_BOTTOM2 = wxNewId()
     ID_VENUE_DATA = wxNewId()
     ID_VENUE_DATA_ADD = wxNewId()
+    #Added by NA2-HPCE
+    #Added new Id for Directory adding event
+    ID_VENUE_DIR_ADD = wxNewId()
+    ID_VENUE_DIR_UPLOAD = wxNewId()
+    
+    #ZSI:HO
+    ID_VENUE_DIR_SIZE = wxNewId()
+    #***************************************
     ID_VENUE_ADMINISTRATE_VENUE_ROLES = wxNewId()
     ID_VENUE_SERVICE = wxNewId() 
     ID_VENUE_SERVICE_ADD = wxNewId()
@@ -337,6 +346,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.SetStatusBar(self.statusbar)
         self.statusbar.SetToolTipString("Statusbar")   
     
+    #Modified by NA2-HPCE
     def __SetMenubar(self, app):
         self.SetMenuBar(self.menubar)
 
@@ -505,10 +515,26 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.dataHeadingMenu.Append(self.ID_VENUE_DATA_ADD,"Add...",
                                    "Add data to the venue")
 
+                           
+
+
+
+	#Added by NA2-HPCE
+	self.dataHeadingMenu.Append(self.ID_VENUE_DIR_ADD,"Add directory...",
+	  		            "Add directory into file storage")
+	self.dataHeadingMenu.Append(self.ID_VENUE_DIR_UPLOAD,"Upload a directory...",
+	  		            "Upload a complete directory into file storage")
+
+	#ZSI:HO
+	self.dataHeadingMenu.Append(self.ID_VENUE_DIR_SIZE,"Get data storage size",
+	  		            "retrieves the data storage size")	
+	self.dataHeadingMenu.Enable(self.ID_VENUE_DIR_SIZE, True) #Not yet implemented, therefore greyed out
+	
+	
+	self.dataHeadingMenu.Enable(self.ID_VENUE_DIR_UPLOAD, False) #Not yet implemented, therefore greyed out
         self.serviceHeadingMenu = wxMenu()
         self.serviceHeadingMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
                                 "Add service to the venue")
-                                
         # Do not enable menus until connected
         self.__HideMenu()
 
@@ -589,6 +615,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     
         # Venue Menu
         EVT_MENU(self, self.ID_VENUE_DATA_ADD, self.AddDataCB)
+	#Added by NA2-HPCE
+	EVT_MENU(self, self.ID_VENUE_DIR_ADD, self.AddDirCB)
+	EVT_MENU(self, self.ID_VENUE_DIR_UPLOAD, self.UploadDirCB)
+	
+	#ZSI:HO
+	EVT_MENU(self, self.ID_VENUE_DIR_SIZE, self.GetSizeCB)
+	#*********************************************************
         EVT_MENU(self, self.ID_VENUE_SERVICE_ADD, self.AddServiceCB)
         EVT_MENU(self, self.ID_VENUE_SAVE_TEXT, self.SaveTextCB)
         EVT_MENU(self, self.ID_VENUE_PROPERTIES, self.OpenVenuePropertiesCB)
@@ -973,7 +1006,204 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     #
     # Venue Menu
     #
+    
+    #ZSI:HO
+    def GetSizeCB(self, event=None):
+	size = self.__venueProxy.GetDataSize() 
+	message = "Size of data store in KB: " + str(size)
+	log.debug(message)
+	wxMessageBox(message, "Size of data store", wxOK);
+    
 
+    #Added by NA2-HPCE
+    def AddDirCB(self, event = None, dirList =[]):
+	
+	#Retrieve selected data description element
+	dirDesc = self.contentListPanel.selectedTreeItem
+	dirDescName = self.contentListPanel.selectedTreeItemText
+	
+	noServerDir = True
+	
+	#self.__venueProxy.HDDump()
+
+	name = None
+	desc = None
+	dirList =[]
+	
+	dlgDirName = wxTextEntryDialog(self, "Enter the name of the directory! Please only use letters and numbers!","Directory name", "directory", wxOK | wxCANCEL)
+	retVal = dlgDirName.ShowModal()
+	if retVal == wxID_OK:
+	    name = dlgDirName.GetValue()
+	    desc = name + " is a directory"
+	    
+	    dirList.append(name)	    
+	    
+	    	    
+	    	
+	    #retrieve data descriptions datacontainer
+	    if (dirDesc == None):
+		#We are at the top level nothing above, so we add
+		#the directory to the initial dataDescCont of the
+		#DataStore
+		try:
+		    self.__venueProxy.AddDir(name, desc, 1, 0) 
+		    noServerDir = False
+		except:
+		    noServerDir =True
+    
+	    else:
+		if dirDesc.IsOfType(DataDescription.TYPE_DIR):
+		    #Add DirectoryDescription to container of selected Description
+		    #Set Properties of Description
+		    #Add dialog here
+		    try:
+			log.debug("AddDir in %s",dirDesc.GetName())
+			self.__venueProxy.AddDir(name, desc, dirDesc.GetLevel()+1, dirDesc.GetId()) 
+			noServerDir = False
+		    except:
+			noServerDir = True
+		    
+		else:
+		    #This case should never happen
+		    log.error("Selected a directory, but appears as a file internally!")
+		
+	    if noServerDir:
+		self.Notify("Creation of directories is not supported on server-side", "No directory service available!")
+	else:
+	    #Name entry has been canceled
+	    pass
+	
+	return
+    
+    """
+    Added by NA2-HPCE
+    Deprecated and yet unused code
+    Needs to be redone for AG3
+    """
+    def RecursiveDataAdd(self, parent, dir, level):
+	    
+	files = listdir(dir)
+	filesToAdd = []
+	filesWaiting = False
+	noServerDir = False
+	curDirDesc = None
+    
+	    
+	for file in files:
+	    curDirDesc = None
+	    if not os.path.isdir(dir+ os.path.sep + file):
+		#add directory
+		filesWaiting = True
+		filesToAdd.append(dir + os.path.sep + file)
+	    else:
+		    
+		#add file to current directory
+		    
+		if not file.find("tt2") == -1: 
+		    raise Exception
+			
+		#create new directory
+		locDirectoryDescription = DirectoryDescription(file)
+		locDirectoryDescription.SetObjectType(DataDescription.TYPE_DIR)
+		locDirectoryDescription.SetDescription("")
+    
+		locDirectoryDescription.SetLevel(level)
+		path = dir + os.path.sep + file
+		    
+		if not parent == None:
+		    locDirectoryDescription.SetParentId(parent.GetId())
+		else:    
+		    locDirectoryDescription.SetParentId(-1)   
+		
+		#do recursive file add to currently created directory
+		if (not self.__venueProxy == None):
+		    try:
+			if parent == None:
+			    self.__venueProxy.AddRootDir(locDirectoryDescription)
+			    time.sleep(2)
+			else:
+			    self.__venueProxy.SetCurDataDescCont(parent.GetId())
+			    time.sleep(2)
+			    
+			self.__venueProxy.AddDir(locDirectoryDescription)
+			time.sleep(2)
+			
+			noServerDir = False
+		    except:
+			noServerDir = True
+			pass
+			
+					    
+		curDirDesc = locDirectoryDescription
+		self.RecursiveDataAdd(curDirDesc, path, level + 1)
+					
+	if noServerDir:
+	    self.Notify("Creation of directories is not supported on server-side", "No directory service available!")
+	    return
+		    
+	if filesWaiting:
+	    if not parent == None:
+		#add to given directory in data store
+		self.__venueProxy.SetCurDataDescCont(parent.GetId())
+		time.sleep(2)
+		
+	    else:
+		self.__venueProxy.SetCurDataDescCont(-1)
+		time.sleep(2)
+		
+	    self.controller.AddDataCB(filesToAdd)
+	    
+	try:
+	    self.__venueProxy.HDDump()
+	except:
+	    log.debug("Dump failed!!!!!!!!")
+		
+    
+    #Added by NA2-HPCE    
+    def DecideDragDropType(self, x, y, fileList):
+	item  = None
+	treeId, flag = self.contentListPanel.tree.HitTest(wxPoint(x, y))
+		      
+        if(treeId.IsOk()):
+            item = self.contentListPanel.tree.GetItemData(treeId).GetData()
+	
+	for entry in fileList:
+	    if not item == None:
+		self.RecursiveDataAdd(item,entry,item.GetLevel())
+	    else:
+		self.RecursiveDataAdd(None,entry,0)
+    
+
+    """
+    Added by NA2-HPCE    
+    Yet unused code
+    Needs to be redone for AG3
+    """
+    def UploadDirCB(self, event = None, dirList =[]):
+	#contains nothing so far and does nothing so far
+
+	#Retrieve selected data description element
+	dirDesc = self.contentListPanel.selectedTreeItem
+	dirDescName = self.contentListPanel.selectedTreeItemText
+	
+	
+	noServerDir = True
+
+	name = None
+	desc = None
+	
+	dlgLoadDir = wxDirDialog(self,"Choose a directory to upload!")
+	if (dlgLoadDir.ShowModal() == wxID_OK):
+	    strDirToUpload = dlgLoadDir.GetPath()
+	else:
+	    return
+	
+	if not dirDesc == None:
+	    self.RecursiveDataAdd(dirDesc,strDirToUpload,dirDesc.GetLevel()+1)
+	else:
+	    self.RecursiveDataAdd(dirDesc,strDirToUpload,1)
+    
+    #Modified by NA2-HPCE
     def AddDataCB(self, event = None, fileList = []):
     
         #
@@ -981,6 +1211,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # then there isn't a data upload service available.
         #
         log.debug("In VenueClientController.AddDataCB")
+	
+	dirDesc = self.contentListPanel.selectedTreeItem
+	dirDescName = self.contentListPanel.selectedTreeItemText
 
         uploadUrl = self.venueClient.GetDataStoreUploadUrl()
         log.debug("VenueClientUI.AddDataCB: Trying to upload to '%s'" % (uploadUrl))
@@ -1044,13 +1277,26 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                     filesToAdd.append(filepath)
 
             #
-            # Upload the files
+            # Upload the files, the server directory which is the last parameter is for now
+	    # empty until the mechanisms are available to determine the server directory
+	    # where the file should be added.
             #
+	    if dirDesc == None:
+		serverPath=""
+	    else:
+		serverPath = dirDesc.GetURI()
+		
+	    log.debug("AddDataCB: URI of parent is %s", serverPath)
+	    
             try:
-                self.controller.AddDataCB(filesToAdd)
+		if len(filesToAdd) != 0:
+		    self.controller.AddDataCB(filesToAdd, serverPath) #empty server directory
             except:
                 log.exception("Error adding data")
                 self.Error("The data could not be added", "Add Data Error")
+		
+    
+  
 
     def AddServiceCB(self, event):
         addServiceDialog = ServicePropertiesDialog(self, -1,
@@ -1791,7 +2037,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def SaveDataCB(self, event):
         data = self.GetSelectedItem()
         log.debug("VenueClientFrame.SaveData: Save data: %s", data)
-        if(data != None and isinstance(data, DataDescription)):
+        if(data != None and isinstance(data, DataDescription3)):
             name = data.name
             path = self.SelectFile("Specify name for file", name)
             if path:
@@ -1801,9 +2047,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
     def RemoveDataCB(self, event):
         itemList = self.GetSelectedItems()
+	parentItem = self.contentListPanel.GetItemData(self.contentListPanel.curItemId)
         if itemList:
             for item in itemList:
-                if(item != None and isinstance(item, DataDescription)):
+                if(item != None and isinstance(item, DataDescription3)):
                     text ="Are you sure you want to delete "+ item.name + "?"
                     if self.Prompt(text, "Confirmation"):
                         try:
@@ -1817,6 +2064,37 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                             self.Error("The file could not be removed", "Remove Files Error")
         else:
             self.Notify("Please, select the data you want to delete", "No file selected")
+	    
+    #Added by NA2-HPCE
+    def RemoveDirCB(self, event):
+	#Implement removal of directories here
+        
+        treeparent = self.contentListPanel.parent_item
+        itemList = self.GetSelectedItems()
+	
+        if itemList:
+            for item in itemList:
+                if(item != None and item.IsOfType(DataDescription3.TYPE_DIR)):
+                    text ="Are you sure you want to delete "+ item.name + "?"
+                    if self.Prompt(text, "Confirmation"):
+			#check for files in directory
+			
+			
+			#when all files are deleted, delete directory
+                        try:
+			    if (not self.__venueProxy == None):		    
+				self.__venueProxy.RemoveDir(item)
+				
+                        except NotAuthorizedError:
+                            log.info("bin.VenueClient::RemoveData: Not authorized to remove data")
+                            self.Notify("You are not authorized to remove the file", 
+                                        "Remove Personal Files")        
+                        #except:
+                            #log.exception("bin.VenueClient::RemoveData: Error occured when trying to remove data")
+                            #self.Error("The file could not be removed", "Remove Files Error")
+			    
+        else:
+            self.Notify("Please, select the data or directory you want to delete", "No file selected")
         
     def UpdateDataCB(self,dataDesc):
         try:
@@ -1997,6 +2275,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     #
     # General Implementation
     
+    #Added by NA2-HPCE
+    def SetVenueProxy(self, proxy):
+	self.__venueProxy = proxy
+	self.contentListPanel.SetVenueProxy(proxy)
 
     #
     # Upload Files Methods
@@ -2357,9 +2639,38 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             # Personal data is handled in VenueClientUIClasses to find out 
             # who the data belongs to
             pass
+	
+	#Retrieveing dataDescription with newer WSDL description so all
+	#required data is contained
+	dataDescription = self.__venueProxy.GetDescById(dataDescription.GetId())
 
         log.debug("EVENT - Add data: %s" %(dataDescription.name))
         wxCallAfter(self.contentListPanel.AddData, dataDescription)
+	
+    #Added by NA2-HPCE
+    def AddDir(self, dataDescription):
+        """
+        This method is called every time new directories are added to the venue.
+        Appropriate gui updates are made in client.
+        
+        **Arguments:**
+        
+        *dataDescription* The DataDescription representing data that got 
+                          added to the venue
+        """
+
+        if dataDescription.GetObjectType() == DataDescription3.TYPE_DIR:
+            wxCallAfter(self.statusbar.SetStatusText, "Directory '%s' has been added to venue" 
+                        %dataDescription.name)
+            
+            # Just change venuestate for venue data.
+        else:
+            # Personal data is handled in VenueClientUIClasses to find out 
+            # who the data belongs to
+            pass
+
+        log.debug("EVENT - Add dir: %s" %(dataDescription.name))
+        wxCallAfter(self.contentListPanel.AddDir, dataDescription)
 
     def UpdateData(self, dataDescription):
         """
@@ -2371,6 +2682,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         *dataDescription* The DataDescription representing data that got updated 
                           in the venue
         """
+	
+	#Retrieveing dataDescription with newer WSDL description so all
+	#required data is contained
+	dataDescription = self.__venueProxy.GetDescById(dataDescription.GetId())
         
         log.debug("EVENT - Update data: %s" %(dataDescription.name))
         wxCallAfter(self.contentListPanel.UpdateData, dataDescription)
@@ -2395,11 +2710,35 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             # Personal data is handled in VenueClientUIClasses to find out who the data belongs to
             pass
         
+	#Retrieveing dataDescription with newer WSDL description so all
+	#required data is contained
+	try:
+	    dataDescription = self.__venueProxy.GetDescById(dataDescription.GetId())
+	except:
+	    pass
+	       
         wxCallAfter(self.statusbar.SetStatusText, 
                     "File '%s' has been removed from the venue" 
                     %dataDescription.name)
         log.debug("EVENT - Remove data: %s" %(dataDescription.name))
         wxCallAfter(self.contentListPanel.RemoveData, dataDescription)
+	
+    def RemoveDir(self, dataId):
+        """
+        This method is called every time data is removed from the venue.
+        Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *dataDescription* The DataDescription representing data that was removed 
+                          from the venue
+        """
+       
+        wxCallAfter(self.statusbar.SetStatusText, 
+                    "Directory has been removed from the venue")
+        log.debug("EVENT - Remove dir: %s" %(dataId))
+        wxCallAfter(self.contentListPanel.RemoveDir, dataId)
+
 
     def AddService(self, serviceDescription):
         """
@@ -2571,6 +2910,23 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         shared application session.
         '''
         wxCallAfter(self.__OpenApplication, appCmdDesc)
+	
+    def EnvSort(self, item1, item2):
+	log.debug("Level of Item 1:", item1.GetLevel())
+	log.debug("Level of Item 2:", item2.GetLevel())
+	if int(item1.GetLevel()) == -2:
+	    return 1
+	if int(item2.GetLevel()) == -2:
+	    return -1
+	if item1.GetLevel() < item2.GetLevel():
+	    log.debug("Item1 Is higher hierarchy")
+	    return -1
+	elif item1.GetLevel() == item2.GetLevel():
+	    log.debug("Item1 Is same hierarchy")
+	    return 0
+	else:
+	    log.debug("Item1 Is lower hierarchy")
+	    return 1
 
     def EnterVenue(self, URL, warningString="", enterSuccess=1):
         """
@@ -2650,12 +3006,23 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 # log.debug("   %s" %(client.name))
 
             # Load data
-            # log.debug("Add data")
+            log.debug("Load Venue data store data")
             wxCallAfter(self.statusbar.SetStatusText, "Load data")
-            for data in venueState.data.values():
-                wxCallAfter(self.contentListPanel.AddData, data)
+	    log.debug("Amount of entries: %s", len(venueState.data.values()))
+	    datalist = venueState.data.values()
+	    sortFunc = self.EnvSort
+	    datalist.sort(sortFunc)
+            for data in datalist:
+		if data.GetObjectType() == DataDescription3.TYPE_FILE:
+		    log.debug("Found file data!")
+		    wxCallAfter(self.contentListPanel.AddData, data)
+		else:
+		    log.debug("Found dir data!")
+		    log.debug("Parent is set to %s", data.GetParentId())
+		    wxCallAfter(self.contentListPanel.AddDir, data)
                 # log.debug("   %s" %(data.name))
 
+	    log.debug("Data loaded!")
             # Load services
             # log.debug("Add service")
             wxCallAfter(self.statusbar.SetStatusText,
@@ -3023,6 +3390,43 @@ class NavigationPanel(wxPanel):
         venue = self.tree.GetPyData(treeId)
         self.app.controller.EnterVenueCB(venue.uri)
         wxEndBusyCursor()
+
+    def OnRightDown(self, event):
+	"""
+	Called when user right clicks the tree to retrieve information on the next venue
+	"""
+	print "Entered right-click!"
+	self.x = event.GetX()
+	self.y = event.GetY()
+
+	treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
+
+	# Check to see if the click hit the twist button
+        
+        #if not treeId.IsOk() or not(flag & wxTREE_HITTEST_ONITEMBUTTON):
+	#    print "Exit handler!"
+        #    return
+
+	wxBeginBusyCursor()
+	venue = self.tree.GetPyData(treeId)
+	wxEndBusyCursor()
+	
+	localVenueProxy = VenueIW(venue.uri)
+	venueState = localVenueProxy.GetState()
+	
+	message = "Name: " + venueState.description.name
+	message = "Description: " + venueState.description
+	#for stream in venueDesc.streams
+	#    message = Stream: stream.name + stream.capability.type
+    
+	
+	headline = "Information for venue: " + self.tree.GetPyData(treeId).name
+
+	wxMessageBox(message, headline,wxOK)
+
+	
+	
+	
                 
     def OnLeftDown(self, event):
         '''
@@ -3124,7 +3528,7 @@ class NavigationPanel(wxPanel):
             myVenues = self.app.controller.GetMyVenues()
             venues = []
             for venue in myVenues.keys():
-                cd = VenueDescription(name = venue, uri = myVenues[venue])
+                cd = VenueDescription3(name = venue, uri = myVenues[venue])
                 venues.append(cd)
 
             self.parent.viewSelector.SetValue("My Venues")
@@ -3180,6 +3584,7 @@ class ContentListPanel(wxPanel):
     SERVICES_HEADING = 'Services'
     APPLICATIONS_HEADING = 'Application Sessions'
     
+    #Modified by NA2-HPCE
     def __init__(self, parent):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, 
                          wxSize(225, 300), style = wxSUNKEN_BORDER)
@@ -3191,6 +3596,14 @@ class ContentListPanel(wxPanel):
         self.personalDataDict = {}
         self.temporaryDataDict = {}
         self.parent = parent
+	#Added by NA2-HPCE
+	self.selectedTreeItem = None
+	self.selectedTreeItemText = None
+	self.selectedTwig = None
+	self.parent_item = None
+	self.curItemId = None
+	self.curTwig=None
+	self.recursionCount = 0
 
         self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
                                wxDefaultSize, style = wxTR_HAS_BUTTONS |
@@ -3369,20 +3782,94 @@ class ContentListPanel(wxPanel):
         self.RemoveParticipant(profile)
         self.AddParticipant(profile, personalData)
 
+    #Modified by NA2-HPCE
     def AddData(self, dataDescription):
         #if venue data
+        #if(dataDescription.type == 'None' or dataDescription.type == None):
+            #dataId = self.tree.AppendItem(self.data, dataDescription.name,
+                                      #self.defaultDataId, self.defaultDataId)
+            #self.tree.SetItemData(dataId, wxTreeItemData(dataDescription)) 
+            #self.dataDict[dataDescription.id] = dataId
+            #self.tree.SortChildren(self.data)
+            #self.tree.Refresh()
+	    
+	    
+	log.debug("ContentListPanel.AddData: profile.type = %s" %dataDescription.GetObjectType())
+	log.debug("Id of DataDescription: %s", dataDescription.GetId())
+	
+	#Added by NA2-HPCE
+	# Quite a dirty hack
+	# Check if it is a Directory and if so
+	# call the fitting AddDir() method
+	# This is just to make sure Directories are handled properly
+	# Normally the AddDir() should be called directly
+	# by event flow.
+	if dataDescription.IsOfType(DataDescription3.TYPE_DIR):
+	    self.AddDir(dataDescription)
+	    return
+	
+
+        #if venue data
         if(dataDescription.type == 'None' or dataDescription.type == None):
-        
+            log.debug("ContentListPanel.AddData: This is venue data")
+	        
+	    try:
+	        locKey = dataDescription.GetParentId()
+	    except:
+		log.error("Your version of AccessGrid is not capable of the hierarchical data structure support!")
+		return
+            
             # replace http-encoded spaces with spaces;
             # this should be done elsewhere, but is done here for now
-            dataDescription.uri = dataDescription.uri.replace('%20',' ')
+	    if not dataDescription.uri == None:
+		dataDescription.uri = dataDescription.uri.replace('%20',' ')
             
-            dataId = self.tree.AppendItem(self.data, dataDescription.name,
-                                      self.defaultDataId, self.defaultDataId)
+            log.debug("Search for parent of file: %s", dataDescription.GetName())
+	    self.GetValidTreeEntry(locKey)
+
+	    self.selectedTwig = self.curTwig
+	    if self.selectedTwig == None:
+		name = ":-(  %s  )-: " %dataDescription.name
+		dataId = self.tree.AppendItem(self.data, name,self.defaultDataId, self.defaultDataId)
+		self.selectedTwig = self.data
+	    else:	
+		dataId = self.tree.AppendItem(self.selectedTwig, dataDescription.name, self.defaultDataId, self.defaultDataId)
+		
             self.tree.SetItemData(dataId, wxTreeItemData(dataDescription)) 
             self.dataDict[dataDescription.id] = dataId
             self.tree.SortChildren(self.data)
             self.tree.Refresh()
+            self.tree.Expand(self.data)
+	    
+    #Added by NA2-HPCE
+    def AddDir(self, dataDescription):
+        log.debug("ContentListPanel.AddDir: profile.type = %s" %dataDescription.GetObjectType())
+	log.debug("Id of DirDecsription %s ", dataDescription.GetId())
+
+        #if venue data
+        log.debug("ContentListPanel.AddDir: This is venue data")
+	log.debug("Search for parent of directory: %s", dataDescription.GetName())
+	self.GetValidTreeEntry(dataDescription.GetParentId())
+	self.selectedTwig = self.curTwig
+	log.debug("Twig to add %s -dir to is",dataDescription.GetName())
+	if self.selectedTwig == None:
+	    name = ":-(  %s  )-: " %dataDescription.name
+	    dataId = self.tree.AppendItem(self.data, name,
+				      self.bullet, self.bullet)
+	    self.selectedTwig = self.data
+	else:
+	    dataId = self.tree.AppendItem(self.selectedTwig, dataDescription.name,
+					  self.bullet, self.bullet)
+	    
+	treeItem = wxTreeItemData(dataDescription)
+        self.tree.SetItemData(dataId, treeItem) 
+	colour = wxTheColourDatabase.FindColour("NAVY")
+	self.tree.SetItemTextColour(dataId, colour)
+        self.dataDict[dataDescription.id] = dataId
+	self.tree.SetItemBold(dataId)
+	self.tree.SortChildren(self.selectedTwig)
+        self.tree.Refresh()
+        self.tree.Expand(self.data)	
             
        
     def UpdateData(self, dataDescription):
@@ -3413,6 +3900,24 @@ class ContentListPanel(wxPanel):
 
         else:
             log.info("ContentListPanel.RemoveData: No key matches, can not remove data")
+           
+        if(id != None):
+            self.tree.Delete(id)
+	
+	#Added by NA2-HPCE    
+    def RemoveDir(self, data):
+        #if venue data
+	id = None
+        
+        if(self.dataDict.has_key(data.id)):
+            # venue data
+            log.debug("ContentListPanel.RemoveDir: Remove venue directory")
+	    id = self.dataDict[data.id]
+            del self.dataDict[data.id]
+            
+
+        else:
+            log.info("ContentListPanel.RemoveDir: No key matches, can not remove data")
            
         if(id != None):
             self.tree.Delete(id)
@@ -3476,12 +3981,12 @@ class ContentListPanel(wxPanel):
         self.Layout()
 
     def OnSize(self, event):
-        self.__Layout()
+	self.__Layout()
         #w,h = self.GetClientSizeTuple()
         #self.tree.SetDimensions(0, 0, w, h)
         
     def OnKeyDown(self, event):
-        key = event.GetKeyCode()
+	key = event.GetKeyCode()
       
         if key == WXK_DELETE:
             treeIdList = self.tree.GetSelections()
@@ -3502,7 +4007,7 @@ class ContentListPanel(wxPanel):
 
 
     def OnSelect(self, event):
-        pass
+	pass
         #
         # Due to a bug in wxPython, we need a root item to be able to display
         # twist buttons correctly.  If the root item is selected, the ui looks
@@ -3516,7 +4021,7 @@ class ContentListPanel(wxPanel):
         #        self.tree.SelectItem(self.participants)
 
     def OnBeginDrag(self, event):
-        '''
+	'''
         Called when a tree item is being dragged.
         '''
         
@@ -3531,24 +4036,28 @@ class ContentListPanel(wxPanel):
         dropSource.SetData(dropData)
 
         dropSource.DoDragDrop(wxDrag_AllowMove)
-                                
+    
+    #Modified by NA2-HPCE                            
     def OnExpand(self, event):
-        treeId = event.GetItem()
+	treeId = event.GetItem()
         item = self.tree.GetItemData(treeId).GetData()
 
         if item:
-            try:
-                dataDescriptionList = self.parent.GetPersonalData(item)
-                          
-                if dataDescriptionList:
-                    for data in dataDescriptionList:
-                        self.AddData(data)
-            except:
-                log.exception("ContentListPanel.OnExpand: Could not get personal data.")
-                MessageDialog(None, "%s's data could not be retrieved."%item.name)
+	    if not isinstance(item, DataDescription3):
+		try:
+		    dataDescriptionList = self.parent.GetPersonalData(item)
+			      
+		    if dataDescriptionList:
+			for data in dataDescriptionList:
+			    self.AddData(data)
+		except:
+		    log.exception("ContentListPanel.OnExpand: Could not get personal data.")
+		    MessageDialog(None, "%s's data could not be retrieved."%item.name)
+	    else:
+		pass
                 
     def OnDoubleClick(self, event):
-        mimeConfig = Config.MimeConfig.instance()
+	mimeConfig = Config.MimeConfig.instance()
         self.x = event.GetX()
         self.y = event.GetY()
         treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
@@ -3574,22 +4083,29 @@ class ContentListPanel(wxPanel):
                     self.parent.StartCmd(item,verb='Open')
                 else:
                     # Handle items with no 'Open' action
-                    if(isinstance(item,DataDescription) or 
+                    if(isinstance(item,DataDescription3) or 
                        isinstance(item,ServiceDescription)):
                         self.FindUnregistered(item)
                     else:
                         # Notify user of no application client
                         self.parent.Notify("You have no client for this Shared Application.", 
                                     "Notification")
-                
+    
+    #Modified by NA2-HPCE            
     def OnRightClick(self, event):
-        self.x = event.GetX()
+	self.x = event.GetX()
         self.y = event.GetY()
 
         if self.parent.GetVenue() == None:
             return
         
         treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
+	item = self.tree.GetItemData(treeId).GetData()
+	text = self.tree.GetItemText(treeId)
+	self.curItemId = treeId
+	self.selectedTwig = treeId
+	self.selectedTreeItem = item
+	self.selectedTreeItemText = text
       
         if(treeId.IsOk()):
 
@@ -3626,7 +4142,7 @@ class ContentListPanel(wxPanel):
                 menu = self.BuildAppMenu(item)
                 self.PopupMenu(menu, wxPoint(self.x, self.y))
 
-            elif isinstance(item, DataDescription):
+            elif isinstance(item, DataDescription3):
                 menu = self.BuildDataMenu(event, item)
                 self.PopupMenu(menu, wxPoint(self.x,self.y))
                 parent = self.tree.GetItemParent(treeId)
@@ -3642,7 +4158,12 @@ class ContentListPanel(wxPanel):
                     log.debug("ContentListPanel.OnRightClick: This is a user")
                     self.PopupMenu(self.parent.participantMenu,
                                    wxPoint(self.x, self.y))
-                                   
+                 
+    #Added by NA2-HPCE
+    def SetVenueProxy(self, proxy):
+	self.__venueProxy = proxy    
+    
+    #Modified by NA2-HPCE
     def BuildDataMenu(self, event, item):
         """
         Programmatically build a menu based on the mime based verb
@@ -3663,45 +4184,72 @@ class ContentListPanel(wxPanel):
         # Build the menu
         # 
         menu = wxMenu()
+	
+	if item.GetObjectType() == DataDescription3.TYPE_DIR:
+	    # Code for creation of context menu for adding directories and files
+	     # - Add data
+	    id = wxNewId()
+	    menu.Append(id, "Add data", "Add data to this directory")
+	    EVT_MENU(self, id, lambda event: self.parent.AddDataCB(event))
+	    
 
-        # - Open
-        id = wxNewId()
-        menu.Append(id, "Open", "Open this data.")
-        if commands != None and commands.has_key('Open'):
-            EVT_MENU(self, id, lambda event,
-                     cmd=commands['Open'], itm=item: 
-                     self.parent.StartCmd(itm, verb='Open'))
-        else:
-            EVT_MENU(self, id, lambda event,
-                     itm=item: self.FindUnregistered(itm))
+	    # - Add directory
+	    id = wxNewId()
+	    menu.Append(id, "Add new directory", "Add directory to this directory")
+	    EVT_MENU(self, id, lambda event: self.parent.AddDirCB(event))
+	    
+	    # - Add directory
+	    id = wxNewId()
+	    menu.Append(id, "Upload directory", "Upload complete directory to this directory")
+	    menu.Enable(id, False)
+	    EVT_MENU(self, id, lambda event: self.parent.UploadDirCB(event))
+	    
+	    # - Delete directory
+	    id = wxNewId()
+	    menu.Append(id, "Delete", "Delete this directory with all contents")
+	    EVT_MENU(self, id, lambda event: self.parent.RemoveDirCB(event))
+	    
+			    
+	else:
 
-        # - Save
-        id = wxNewId()
-        menu.Append(id, "Save", "Save this item locally.")
-        EVT_MENU(self, id, lambda event: self.parent.SaveDataCB(event))
-        
-        # - Delete
-        id = wxNewId()
-        menu.Append(id, "Delete", "Delete this data from the venue.")
-        EVT_MENU(self, id, lambda event: self.parent.RemoveDataCB(event))
-
-        # - type-specific commands
-        if commands != None:
-            for key in commands.keys():
-                if key != 'Open':
-                    id = wxNewId()
-                    menu.Append(id, string.capwords(key))
-                    EVT_MENU(self, id, lambda event,
-                             verb=key, itm=item: 
-                             self.parent.StartCmd(itm, verb=verb))
-
-        menu.AppendSeparator()
-
-        # - Properties
-        id = wxNewId()
-        menu.Append(id, "Properties", "View the details of this data.")
-        EVT_MENU(self, id, lambda event, item=item:
-                 self.LookAtProperties(item))
+	    # - Open
+	    id = wxNewId()
+	    menu.Append(id, "Open", "Open this data.")
+	    if commands != None and commands.has_key('Open'):
+		EVT_MENU(self, id, lambda event,
+			 cmd=commands['Open'], itm=item: 
+			 self.parent.StartCmd(itm, verb='Open'))
+	    else:
+		EVT_MENU(self, id, lambda event,
+			 itm=item: self.FindUnregistered(itm))
+    
+	    # - Save
+	    id = wxNewId()
+	    menu.Append(id, "Save", "Save this item locally.")
+	    EVT_MENU(self, id, lambda event: self.parent.SaveDataCB(event))
+	    
+	    # - Delete
+	    id = wxNewId()
+	    menu.Append(id, "Delete", "Delete this data from the venue.")
+	    EVT_MENU(self, id, lambda event: self.parent.RemoveDataCB(event))
+    
+	    # - type-specific commands
+	    if commands != None:
+		for key in commands.keys():
+		    if key != 'Open':
+			id = wxNewId()
+			menu.Append(id, string.capwords(key))
+			EVT_MENU(self, id, lambda event,
+				 verb=key, itm=item: 
+				 self.parent.StartCmd(itm, verb=verb))
+    
+	    menu.AppendSeparator()
+    
+	    # - Properties
+	    id = wxNewId()
+	    menu.Append(id, "Properties", "View the details of this data.")
+	    EVT_MENU(self, id, lambda event, item=item:
+		     self.LookAtProperties(item))
 
         return menu
 
@@ -3995,6 +4543,85 @@ class ContentListPanel(wxPanel):
 
     def SetDropTarget(self,dropTarget):
         self.tree.SetDropTarget(dropTarget)
+	
+    #Added by NA2-HPCE
+    def GetValidTreeEntry(self, key):
+	log.debug('Search for parent with ID %s', key)
+	self.curTwig = None
+	try:
+	    if key == '-1' or int(key) == -1:
+		log.debug("Parent TreeItem is Data root!")
+		self.curTwig = self.data
+		return
+	except ValueError:
+	    pass
+	try:
+            log.debug("Parent TreeItem is not the root!")
+	    self.treeroot = self.data
+	    fn = self.KeyCompare
+	    if self.traverse(self.treeroot,fn,key) == False:
+		log.error("Error during data traversal!")
+	except:
+	    log.exception("GetValidTreeEntry failed!")
+	    pass
+	
+	log.debug("Found tree item for insertion is %s", self.treeroot)
+	
+    #Added by NA2-HPCE	
+    def traverse(self, traverseroot, function, key, cookie=0):
+	""" recursivly walk tree control """
+        # step in subtree if there are items or ...
+	self.recursionCount = self.recursionCount + 1
+        if self.tree.ItemHasChildren(traverseroot):
+	    firstchild, cookie = self.tree.GetFirstChild(traverseroot)
+	    #log.debug("ChildTraverse:Calling KeyCompare with key = %s",key)
+	    if not function(key, firstchild):
+		self.traverse(firstchild, function, key, cookie)
+	    else:
+		log.debug("Exited traverse! Level: %s", self.recursionCount)
+		self.recursionCount = self.recursionCount -1
+		return True
+		
+
+	# ... loop siblings
+	# if there are no siblings, child is a invalid tree item
+	# we have to catch that case by a exception block
+	try:
+	    child = self.tree.GetNextSibling(traverseroot)
+	    if child:
+		#log.debug("Siblingloop:Calling KeyCompare with key = %s",key)
+		if not function(key, child):
+		    self.traverse(child, function, key, cookie)
+		else:
+		    log.debug("Exited traverse! Level: %s", self.recursionCount)
+		    self.recursionCount = self.recursionCount -1
+		    return True
+	except:
+	    log.debug("Didn't find a matching data description object!")
+	    return False
+
+	log.debug("Exited traverse! Level: %s", self.recursionCount)
+	self.recursionCount = self.recursionCount -1
+	
+     #Added by NA2-HPCE
+    def KeyCompare(self, key, childdata):
+	try:
+	    fc_dataobject = self.tree.GetItemData(childdata).GetData()
+	    if not fc_dataobject == None:
+		#log.debug("Directory or Filename: %s", fc_dataobject.GetName())
+		log.debug("Keys to compare: %s = %s", key, fc_dataobject.GetId())
+		if key == fc_dataobject.GetId():
+		    self.curTwig = childdata
+		    log.debug("KeyCompare: Determined wxTree twig: %s", childdata)
+		    log.debug("Keys are equal!")
+		    return true 
+		else:
+		    #log.debug("Keys are unequal!")
+		    return false
+	    else:
+		return false
+	except:
+	    log.exception("Error in Key comparision method for hierarchical data structure!")
 
 #########################################################################
 #
@@ -5411,8 +6038,10 @@ class DataDropTarget(wxFileDropTarget):
         self.do = wxFileDataObject()
         self.SetDataObject(self.do)
     
+    #Modified by NA2-HPCE
     def OnDropFiles(self, x, y, files):
-        self.app.AddDataCB(fileList = files)
+        #self.app.AddDataCB(fileList = files)
+	self.app.DecideDragDropType(x,y,fileList = files)
 
 class DesktopDropTarget(wxFileDropTarget):
     def __init__(self, application):
@@ -5430,6 +6059,31 @@ class DesktopDropTarget(wxFileDropTarget):
     def OnDropFiles(self, x, y, files):
         print 'on drop files ', files[0]
         #self.app.AddDataToDesktop(fileList = files)
+	
+    #Added by NA2-HPCE
+    def EnvSort(item1, item2):
+	"""
+	Sorting method designed for sorting DataDescriptions arriving from 
+	VenueServer in order fo their hierarchy level, so that lowest level
+	entries are sorted first. This is necessary to first create the directories
+	for files of lower hierarchy levels.
+	
+	"""
+	log.debug("Level of Item 1:", item1.GetLevel())
+	log.debug("Level of Item 2:", item2.GetLevel())
+	if int(item1.GetLevel()) == -2:
+	    return 1
+	if int(item2.GetLevel()) == -2:
+	    return -1
+	if item1.GetLevel() < item2.GetLevel():
+	    log.debug("Item1 Is higher hierarchy")
+	    return -1
+	elif item1.GetLevel() == item2.GetLevel():
+	    log.debug("Item1 Is same hierarchy")
+	    return 0
+	else:
+	    log.debug("Item1 Is lower hierarchy")
+	    return 1
 
 
 if __name__ == "__main__":

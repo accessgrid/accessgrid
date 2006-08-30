@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.325 2006-07-25 17:14:10 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.326 2006-08-30 08:23:37 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.325 2006-07-25 17:14:10 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.326 2006-08-30 08:23:37 braitmai Exp $"
 
 import sys
 import os
@@ -26,7 +26,7 @@ from AccessGrid import hosting
 from AccessGrid import Version
 from AccessGrid.Toolkit import Application, Service
 from AccessGrid.Preferences import Preferences
-from AccessGrid.Descriptions import Capability, STATUS_ENABLED
+from AccessGrid.Descriptions import Capability, STATUS_ENABLED, Capability3
 from AccessGrid.Descriptions import BeaconSource, BeaconSourceData
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
@@ -44,13 +44,13 @@ from AccessGrid.Events import DisconnectEvent, ClientExitingEvent
 from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent
 from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache, InvalidProfileException
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
-from AccessGrid.Descriptions import DataDescription, ConnectionDescription
+from AccessGrid.Descriptions import DataDescription, DataDescription3, DirectoryDescription, FileDescription, ConnectionDescription
 from AccessGrid.Descriptions import NodeConfigDescription
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.interfaces.AuthorizationManager_client import AuthorizationManagerIW
 from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid import ServiceDiscovery
-from AccessGrid.Descriptions import VenueState
+from AccessGrid.Descriptions import VenueState, VenueState3
 from AccessGrid.MulticastWatcher import MulticastWatcher
 from AccessGrid.Registry.RegistryClient import RegistryClient
 from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE, UMTP_TYPE
@@ -230,8 +230,8 @@ class VenueClient:
         self.beaconLocation = None
 
         # Create beacon capability
-        self.beaconCapabilities = [Capability(Capability.PRODUCER, "Beacon", "ANY", 0, 1),
-                                   Capability(Capability.CONSUMER, "Beacon", "ANY", 0, 1)]
+        self.beaconCapabilities = [Capability3(Capability3.PRODUCER, "Beacon", "ANY", 0, 1),
+                                   Capability3(Capability3.CONSUMER, "Beacon", "ANY", 0, 1)]
             
     def __LoadBridges(self):
         '''
@@ -602,6 +602,65 @@ class VenueClient:
                       
         for s in self.observers:
             s.AddData(data)
+            
+    #Added by NA2-HPCE
+    def AddDirEvent(self, event):
+        log.debug("AddDirEvent:Entered AddDirEvent!")
+        data = event.GetData()
+        
+        log.debug("AddDirEvent:Got data: %s", data)
+        
+        dataDesc = self.__venueProxy.GetDescById(data)
+        log.debug("Determined DirectoryDescription: %s", dataDesc)
+        
+        locData = DirectoryDescription(dataDesc.name)
+        locData.id = dataDesc.id
+        locData.parentId = dataDesc.parentId
+        locData.description = dataDesc.description
+        locData.Level = dataDesc.Level
+        locData.location = dataDesc.location
+        locData.objectType = dataDesc.objectType
+        locData.owner = dataDesc.owner
+        locData.status = dataDesc.status
+        locData.uri = dataDesc.uri
+        locData.type = dataDesc.type
+        
+            
+        #Update observers
+        if dataDesc == None:
+            log.error("No matching DataDescription found!")
+            return
+        
+        log.debug("AddDirEvent: Remaining entry: %s", locData.name)
+        self.venueState.data[locData.id] = locData
+        
+        for s in self.observers:
+            log.debug("Observer to handle event: %s", s)
+            s.AddDir(locData)
+
+    def RemoveDirEvent(self, event):
+        log.debug("RemoveDirEvent:Entered RemoveDirEvent!")
+        data = event.GetData()
+        
+        #for item in data.dataContainer:
+            #self.venueState.RemoveData(item)
+        
+        #We need to update to correct and current venueState from the server
+        #There is no way around it.
+        tempVenueState = self.__venueProxy.GetState3()
+        self.venueState.data.clear()
+        
+        #workaround for converting list into dict()
+	log.debug("Rebuilding venueState data list")
+        for item in tempVenueState.data:
+	    log.debug("Adding item: %s", item.id)
+            self.venueState.data[item.id] = item
+        
+        
+        for s in self.observers:
+            log.debug("Observer to handle event: %s", s)
+            s.RemoveDir(data)
+
 
     def UpdateDataEvent(self, event):
         log.debug("UpdateDataEvent: Got Update Data Event")
@@ -618,7 +677,9 @@ class VenueClient:
     def RemoveDataEvent(self, event):
         log.debug("RemoveDataEvent: Got Remove Data Event")
         data = event.GetData()
-
+        
+        log.debug("RemoveDataEvent: Data type is: %s", data.type)
+	log.debug("RemoveDataEvent: Data is: %s", data)
         if data.type == "None" or data.type == None:
             # Venue data gets removed from venue state
             self.venueState.RemoveData(data)
@@ -792,10 +853,15 @@ class VenueClient:
         
         self.observers.append(observer)
         
+    #Added by NA2-HPCE
+    def SetVCUI(self, vcui):
+        self.__venueClientUI = vcui
+        
     #
     # Enter/Exit
     #
     
+    #Modified by NA2-HPCE
     def __EnterVenue(self,URL):
         #
         # Enter the venue
@@ -803,12 +869,56 @@ class VenueClient:
         self.venueUri = str(URL)
         self.__venueProxy = VenueIW(URL) #, tracefile=sys.stdout)
 
+        if not self.__venueClientUI == None:
+            self.__venueClientUI.SetVenueProxy(self.__venueProxy)
+
+        log.debug("EnterVenue: Invoke venue enter")
+        self.profile.connectionId = self.__venueProxy.Enter( self.profile )
+            
+        """
+        evtLocation = ('',-1)
+
+        a = ["state"]
+        venueStateDict = self.__venueProxy.GetProperty(a)
+        uniqueId = "" ; vname = "" ; description=""; uri = ""
+        for entry in venueStateDict.entries:
+            if entry.key == "venueid":
+                uniqueId = entry.value
+            elif entry.key == "name":
+                vname = entry.value
+            elif entry.key == "description":
+                description = entry.value
+            elif entry.key == "uri":
+                uri = entry.value
+            elif entry.key == "eventLocationStr":
+                # convert back from string to tuple until we can
+                #   pass tuples here
+                evtLocation = entry.value.split(":")
+                if len(evtLocation) > 1:
+                    evtLocation = (str(evtLocation[0]), int(evtLocation[1]))
+                else:
+                    evtLocation = ('',-1)
+            elif entry.key == "clients":
+                clients = entry.value
+                for c in clients:
+                    print type(c), c
+        self.venueState = VenueState(uniqueId=uniqueId, name=vname, description=description, uri=uri, connections="", clients=[], data=[], eventLocation=evtLocation, textLocation="", applications=[], services=[])
+        """
+                    
+        state = self.__venueProxy.GetState3()
+        
+               
+        # tuple of two different types doesn't serialize easily.
+        evtLocation = state.eventLocation.split(":")
+        if len(evtLocation) > 1:
+            evtLocation = (str(evtLocation[0]), int(evtLocation[1]))
+
         log.debug("EnterVenue: Invoke Venue.Enter")
         self.profile.connectionId = self.__venueProxy.Enter( self.profile )
         log.debug('after Venue.Enter')
     
         log.debug("EnterVenue: Invoke Venue.getstate")
-        state = self.__venueProxy.GetState()
+        state = self.__venueProxy.GetState3()
         log.debug("EnterVenue: done Venue.getstate")
 
         evtLocation = state.eventLocation.split(":")
@@ -828,7 +938,7 @@ class VenueClient:
         
         # Retreive stream descriptions
         if len(self.capabilities) > 0:
-            self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.profile.connectionId,
+            self.streamDescList = self.__venueProxy.NegotiateCapabilities3(self.profile.connectionId,
                                                                           self.capabilities) 
         self.venueUri = URL
 
@@ -849,8 +959,10 @@ class VenueClient:
             Event.EXIT: self.RemoveUserEvent,
             Event.MODIFY_USER: self.ModifyUserEvent,
             Event.ADD_DATA: self.AddDataEvent,
+            Event.ADD_DIR: self.AddDirEvent,
             Event.UPDATE_DATA: self.UpdateDataEvent,
             Event.REMOVE_DATA: self.RemoveDataEvent,
+            Event.REMOVE_DIR: self.RemoveDirEvent,
             Event.ADD_SERVICE: self.AddServiceEvent,
             Event.UPDATE_SERVICE: self.UpdateServiceEvent,
             Event.REMOVE_SERVICE: self.RemoveServiceEvent,
@@ -933,21 +1045,21 @@ class VenueClient:
 
         try:
             # Get beacon location
-            for s in self.streamDescList:
+	    for s in self.streamDescList:
                 for cap in s.capability:
                     if cap.type == "Beacon":
-                        self.beaconLocation = s.location
+		        self.beaconLocation = s.location
                         for netloc in s.networkLocations:
                             if self.transport == netloc.GetType():
                                 self.beaconLocation = netloc
 
             # Create beacon
             if self.beaconLocation:
-                if self.beacon == None:
-                    self.beacon = Beacon()
+		if self.beacon == None:
+		    self.beacon = Beacon()
                 elif(self.beacon.GetConfigData('groupAddress') != self.beaconLocation.host or
                      self.beacon.GetConfigData('groupPort') != self.beaconLocation.port):
-                    # Beacon reconfig; stop running beacon
+		    # Beacon reconfig; stop running beacon
                     log.info("Beacon being reconfigured, stopping running beacon")
                     self.beacon.Stop()
 
@@ -960,10 +1072,10 @@ class VenueClient:
                          %(self.beaconLocation.host, self.beaconLocation.port))
                 self.beacon.Start()
             else:
-                log.info('No beacon location, not starting beacon client')
+		log.info('No beacon location, not starting beacon client')
                               
         except:
-            log.exception("VenueClient.StartBeacon failed")
+	    log.exception("VenueClient.StartBeacon failed")
                    
     def __StartJabber(self, textLocation):
         jabberHost = textLocation[0]
@@ -1203,7 +1315,7 @@ class VenueClient:
             raise exc
 
     def UpdateServiceClientProfile(self,profile):
-        services = self.nodeService.GetServices()
+        services = self.nodeService.GetServices3()
         for service in services:
             try:
                 AGServiceIW(service.uri).SetIdentity(self.profile)
@@ -1212,7 +1324,7 @@ class VenueClient:
             
     def UpdateStreams(self):
         for stream in self.streamDescList:
-            self.UpdateStream(stream)
+	    self.UpdateStream(stream)
 
         # Restart the beacon so the new transport is used
         if self.beaconLocation and self.beacon:
@@ -1387,9 +1499,31 @@ class VenueClient:
     
         if data.type == None or data.type == 'None':
             # Venue data
-            self.__venueProxy.RemoveData(data)
+            self.__venueProxy.RemoveData3(data)
             
             
+        else:
+            # Ignore this until we have authorization in place.
+            raise NotAuthorizedError
+        
+    #Added NA2-HPCE
+    def RemoveDir(self, data):
+        """
+        This method removes a directory from the venue. If the data is personal, this method
+        also removes the data from the personal data storage.
+        
+        **Arguments:**
+        
+        *data* The DataDescription we want to remove from vnue
+        """
+        log.debug("Remove data: %s from venue" %data.name)
+
+        dataList = []
+        dataList.append(data)
+    
+        if data.type == None or data.type == 'None':
+            # Venue data
+            self.__venueProxy.RemoveDir(data)           
         else:
             # Ignore this until we have authorization in place.
             raise NotAuthorizedError
@@ -1400,7 +1534,7 @@ class VenueClient:
         if data.type == None or data.type == 'None':
             # Venue data
             try:
-                self.__venueProxy.UpdateData(data)
+                self.__venueProxy.UpdateData3(data)
             except:
                 log.exception("Error updating data")
                 raise
@@ -1615,7 +1749,7 @@ class VenueClient:
         try:
             found = 0
             
-            serviceList = self.nodeService.GetServices()
+            serviceList = self.nodeService.GetServices3()
             for service in serviceList:
                 for cap in service.capabilities:
                     if cap.type == 'video' and cap.role == 'consumer':
@@ -1635,7 +1769,7 @@ class VenueClient:
         try:
             found = 0
             
-            serviceList = self.nodeService.GetServices()
+            serviceList = self.nodeService.GetServices3()
             for service in serviceList:
                 for cap in service.capabilities:
                     if cap.type == 'video' and cap.role == 'producer':

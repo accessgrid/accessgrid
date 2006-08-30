@@ -49,6 +49,19 @@
             </xsd:complexType>       
           </xsd:element>
 
+          <xsd:element name="RegisterNetworkService3Request">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="netDescription" type="agtk:AGNetworkServiceDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="RegisterNetworkService3Response">
+            <xsd:complexType>
+            </xsd:complexType>       
+          </xsd:element>
+
+	  
 
           <xsd:element name="UnRegisterNetworkServiceRequest">
             <xsd:complexType>
@@ -62,6 +75,19 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="UnRegisterNetworkService3Request">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="netDescription" type="agtk:AGNetworkServiceDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="UnRegisterNetworkService3Response">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+	  
           <xsd:element name="GetStateRequest">
             <xsd:complexType>
             </xsd:complexType>
@@ -75,11 +101,25 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="GetState3Request">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetState3Response">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="state" type="agtk:VenueState3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+
 	 <xsd:element name="AsVenueDescriptionRequest">
             <xsd:complexType>
             </xsd:complexType>
          </xsd:element>
-
+	 
           <xsd:element name="AsVenueDescriptionResponse">
             <xsd:complexType>
               <xsd:sequence>
@@ -88,6 +128,20 @@
             </xsd:complexType>
           </xsd:element>
 
+	 <xsd:element name="AsVenueDescription3Request">
+            <xsd:complexType>
+            </xsd:complexType>
+         </xsd:element>
+	 
+          <xsd:element name="AsVenueDescription3Response">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="venueDescription" type="agtk:VenueDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+	  
           <xsd:element name="NegotiateCapabilitiesRequest">
             <xsd:complexType>
               <xsd:sequence>
@@ -103,7 +157,25 @@
                 <xsd:element minOccurs="0" maxOccurs="unbounded" name="streams" type="agtk:StreamDescription" />
               </xsd:sequence>
             </xsd:complexType>
+	  </xsd:element>
+
+          <xsd:element name="NegotiateCapabilities3Request">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="connectionId" type="xsd:string" />
+                <xsd:element minOccurs="1" maxOccurs="unbounded" name="capabilities" type="agtk:Capability3" />
+              </xsd:sequence>
+            </xsd:complexType>
           </xsd:element>
+
+          <xsd:element name="NegotiateCapabilities3Response">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="streams" type="agtk:StreamDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
 
           <xsd:element name="CreateApplicationRequest">
             <xsd:complexType>
@@ -300,6 +372,23 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="UpdateData3Request">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="dataDesc" type="agtk:DataDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="UpdateData3Response">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="dataDesc" type="agtk:DataDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+
           <xsd:element name="RemoveDataRequest">
             <xsd:complexType>
               <xsd:sequence>
@@ -316,6 +405,23 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="RemoveData3Request">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="dataDesc" type="agtk:DataDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveData3Response">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="dataDesc" type="agtk:DataDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+
 	  <xsd:element name="GetDataDescriptionsRequest">
             <xsd:complexType>
             </xsd:complexType>
@@ -329,6 +435,20 @@
             </xsd:complexType>
           </xsd:element>
 
+	  <xsd:element name="GetDataDescriptions3Request">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+	  <xsd:element name="GetDataDescriptions3Response">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="dataDescriptions" type="agtk:DataDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+	  
           <xsd:element name="AddServiceRequest">
             <xsd:complexType>
               <xsd:sequence>
@@ -345,6 +465,9 @@
             </xsd:complexType>
           </xsd:element>
 
+
+
+	  
           <xsd:element name="RemoveServiceRequest">
             <xsd:complexType>
               <xsd:sequence>
@@ -360,7 +483,7 @@
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
-
+	  
           <xsd:element name="UpdateServiceRequest">
             <xsd:complexType>
               <xsd:sequence>
@@ -402,6 +525,21 @@
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
+    
+	  <xsd:element name="AddDirRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+		      <xsd:element  minOccurs="1" maxOccurs="1" name="name" type="xsd:string" />
+		      <xsd:element  minOccurs="1" maxOccurs="1" name="desc" type="xsd:string" />
+		      <xsd:element  minOccurs="1" maxOccurs="1" name="level" type="xsd:string" />
+                      <xsd:element  minOccurs="1" maxOccurs="1" name="parentUID" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+	 </xsd:element>
+	 <xsd:element name="AddDirResponse">
+	    <xsd:complexType>
+	    </xsd:complexType>
+         </xsd:element>
 
   	    <xsd:element name="GetVersionRequest">
             <xsd:complexType>
@@ -416,7 +554,7 @@
             </xsd:complexType>
         </xsd:element>
 
-  	    <xsd:element name="GetStreamsRequest">
+        <xsd:element name="GetStreamsRequest">
             <xsd:complexType>
             </xsd:complexType>
         </xsd:element>
@@ -429,6 +567,71 @@
             </xsd:complexType>
         </xsd:element>
 
+        <xsd:element name="GetStreams3Request">
+            <xsd:complexType>
+            </xsd:complexType>
+        </xsd:element>
+
+        <xsd:element name="GetStreams3Response">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="streams" type="agtk:StreamDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+        </xsd:element>
+
+	
+        <xsd:element name="HDDumpRequest">
+            <xsd:complexType>
+            </xsd:complexType>
+	 </xsd:element>
+
+	 <xsd:element name="HDDumpResponse">
+	    <xsd:complexType>
+	    </xsd:complexType>
+         </xsd:element>
+	 
+	 
+	  <xsd:element name="GetDescByIdRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+		      <xsd:element  minOccurs="1" maxOccurs="1" name="id" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+	 </xsd:element>
+	 
+	 <xsd:element name="GetDescByIdResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+		      <xsd:element  minOccurs="1" maxOccurs="1" name="DirectoryDescription" type="agtk:DirectoryDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+	 </xsd:element>
+	 
+	 <xsd:element name="RemoveDirRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+		      <xsd:element minOccurs="1" maxOccurs="1" name="data" type="agtk:DirectoryDescription" />
+              </xsd:sequence>
+            </xsd:complexType>
+	 </xsd:element>
+	 
+	 <xsd:element name="RemoveDirResponse">
+            <xsd:complexType>
+            </xsd:complexType>
+         </xsd:element>
+	 <xsd:element name="GetDataSizeRequest">
+            <xsd:complexType>
+            </xsd:complexType>
+	 </xsd:element>
+	 
+	 <xsd:element name="GetDataSizeResponse">
+	    <xsd:complexType>
+	    	<xsd:sequence>
+			<xsd:element minOccurs="1" maxOccurs="1" name="size" type="xsd:int" />	 
+		</xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
       </schema>
     </types>
 
@@ -447,17 +650,37 @@
     <message name="RegisterNetworkServiceResponse">
 	<part name="parameters" element="agtkv:RegisterNetworkServiceResponse"/>
     </message>
+    <message name="RegisterNetworkService3Request">
+	<part name="parameters" element="agtkv:RegisterNetworkService3Request"/>
+    </message>
+    <message name="RegisterNetworkService3Response">
+	<part name="parameters" element="agtkv:RegisterNetworkService3Response"/>
+    </message>
+
     <message name="UnRegisterNetworkServiceRequest">
 	<part name="parameters" element="agtkv:UnRegisterNetworkServiceRequest"/>
     </message>
     <message name="UnRegisterNetworkServiceResponse">
 	<part name="parameters" element="agtkv:UnRegisterNetworkServiceResponse"/>
     </message>
+    <message name="UnRegisterNetworkService3Request">
+	<part name="parameters" element="agtkv:UnRegisterNetworkService3Request"/>
+    </message>
+    <message name="UnRegisterNetworkService3Response">
+	<part name="parameters" element="agtkv:UnRegisterNetworkService3Response"/>
+    </message>
+
     <message name="GetStateRequest">
 	<part name="parameters" element="agtkv:GetStateRequest"/>
     </message>
     <message name="GetStateResponse">
 	<part name="parameters" element="agtkv:GetStateResponse"/>
+    </message>
+    <message name="GetState3Request">
+	<part name="parameters" element="agtkv:GetState3Request"/>
+    </message>
+    <message name="GetState3Response">
+	<part name="parameters" element="agtkv:GetState3Response"/>
     </message>
     <message name="AsVenueDescriptionRequest">
 	<part name="parameters" element="agtkv:AsVenueDescriptionRequest"/>
@@ -465,11 +688,23 @@
     <message name="AsVenueDescriptionResponse">
 	<part name="parameters" element="agtkv:AsVenueDescriptionResponse"/>
     </message>
+    <message name="AsVenueDescription3Request">
+	<part name="parameters" element="agtkv:AsVenueDescription3Request"/>
+    </message>
+    <message name="AsVenueDescription3Response">
+	<part name="parameters" element="agtkv:AsVenueDescription3Response"/>
+    </message>
     <message name="NegotiateCapabilitiesRequest">
 	<part name="parameters" element="agtkv:NegotiateCapabilitiesRequest"/>
     </message>
     <message name="NegotiateCapabilitiesResponse">
 	<part name="parameters" element="agtkv:NegotiateCapabilitiesResponse"/>
+    </message>
+    <message name="NegotiateCapabilities3Request">
+	<part name="parameters" element="agtkv:NegotiateCapabilities3Request"/>
+    </message>
+    <message name="NegotiateCapabilities3Response">
+	<part name="parameters" element="agtkv:NegotiateCapabilities3Response"/>
     </message>
     <message name="CreateApplicationRequest">
 	<part name="parameters" element="agtkv:CreateApplicationRequest"/>
@@ -549,17 +784,35 @@
     <message name="UpdateDataResponse">
 	<part name="parameters" element="agtkv:UpdateDataResponse"/>
     </message>
+    <message name="UpdateData3Request">
+	<part name="parameters" element="agtkv:UpdateData3Request"/>
+    </message>
+    <message name="UpdateData3Response">
+	<part name="parameters" element="agtkv:UpdateData3Response"/>
+    </message>
     <message name="RemoveDataRequest">
 	<part name="parameters" element="agtkv:RemoveDataRequest"/>
     </message>
     <message name="RemoveDataResponse">
 	<part name="parameters" element="agtkv:RemoveDataResponse"/>
     </message>
+    <message name="RemoveData3Request">
+	<part name="parameters" element="agtkv:RemoveData3Request"/>
+    </message>
+    <message name="RemoveData3Response">
+	<part name="parameters" element="agtkv:RemoveData3Response"/>
+    </message>
     <message name="GetDataDescriptionsRequest">
 	<part name="parameters" element="agtkv:GetDataDescriptionsRequest"/>
     </message>
     <message name="GetDataDescriptionsResponse">
 	<part name="parameters" element="agtkv:GetDataDescriptionsResponse"/>
+    </message>
+    <message name="GetDataDescriptions3Request">
+	<part name="parameters" element="agtkv:GetDataDescriptions3Request"/>
+    </message>
+    <message name="GetDataDescriptions3Response">
+	<part name="parameters" element="agtkv:GetDataDescriptions3Response"/>
     </message>
     <message name="AddServiceRequest">
 	<part name="parameters" element="agtkv:AddServiceRequest"/>
@@ -594,8 +847,26 @@
     <message name="GetVersionRequest">
 	<part name="parameters" element="agtkv:GetVersionRequest"/>
     </message>
+    <message name="AddDirRequest">
+	<part name="parameters" element="agtkv:AddDirRequest"/>
+    </message>
     <message name="GetVersionResponse">
 	<part name="parameters" element="agtkv:GetVersionResponse"/>
+	</message>
+	<message name="AddDirResponse">
+	<part name="parameters" element="agtkv:AddDirResponse"/>
+    </message>
+    <message name="HDDumpRequest">
+	<part name="parameters" element="agtkv:HDDumpRequest"/>
+    </message>
+    <message name="HDDumpResponse">
+	<part name="parameters" element="agtkv:HDDumpResponse"/>
+    </message>
+    <message name="GetDescByIdRequest">
+	<part name="parameters" element="agtkv:GetDescByIdRequest"/>
+    </message>
+    <message name="GetDescByIdResponse">
+	<part name="parameters" element="agtkv:GetDescByIdResponse"/>
     </message>
     <message name="GetStreamsRequest">
 	<part name="parameters" element="agtkv:GetStreamsRequest"/>
@@ -603,6 +874,25 @@
     <message name="GetStreamsResponse">
 	<part name="parameters" element="agtkv:GetStreamsResponse"/>
     </message>
+    <message name="GetStreams3Request">
+	<part name="parameters" element="agtkv:GetStreams3Request"/>
+    </message>
+    <message name="GetStreams3Response">
+	<part name="parameters" element="agtkv:GetStreams3Response"/>
+    </message>
+    <message name="RemoveDirRequest">
+	<part name="parameters" element="agtkv:RemoveDirRequest"/>
+    </message>
+    <message name="RemoveDirResponse">
+        <part name="parameters" element="agtkv:RemoveDirResponse"/>
+    </message>
+    <message name="GetDataSizeRequest">
+	<part name="parameters" element="agtkv:GetDataSizeRequest"/>
+    </message>
+    <message name="GetDataSizeResponse">
+        <part name="parameters" element="agtkv:GetDataSizeResponse"/>
+    </message>
+
 
     <portType name="Venue">
 	<operation name="Enter">
@@ -613,9 +903,17 @@
 	    <input message="agtkv:RegisterNetworkServiceRequest"/>
 	    <output message="agtkv:RegisterNetworkServiceResponse"/>
 	</operation>
+	<operation name="RegisterNetworkService3">
+	    <input message="agtkv:RegisterNetworkService3Request"/>
+	    <output message="agtkv:RegisterNetworkService3Response"/>
+	</operation>
 	<operation name="UnRegisterNetworkService">
 	    <input message="agtkv:UnRegisterNetworkServiceRequest"/>
 	    <output message="agtkv:UnRegisterNetworkServiceResponse"/>
+        </operation>
+    	<operation name="UnRegisterNetworkService3">
+	    <input message="agtkv:UnRegisterNetworkService3Request"/>
+	    <output message="agtkv:UnRegisterNetworkService3Response"/>
 	</operation>
 	<operation name="Exit">
 	    <input message="agtkv:ExitRequest"/>
@@ -624,13 +922,25 @@
 	    <input message="agtkv:GetStateRequest"/>
 	    <output message="agtkv:GetStateResponse"/>
 	</operation>
+	<operation name="GetState3">
+	    <input message="agtkv:GetState3Request"/>
+	    <output message="agtkv:GetState3Response"/>
+	</operation>
 	<operation name="AsVenueDescription">
 	    <input message="agtkv:AsVenueDescriptionRequest"/>
 	    <output message="agtkv:AsVenueDescriptionResponse"/>
+        </operation>
+    	<operation name="AsVenueDescription3">
+	    <input message="agtkv:AsVenueDescription3Request"/>
+	    <output message="agtkv:AsVenueDescription3Response"/>
 	</operation>
 	<operation name="NegotiateCapabilities">
 	    <input message="agtkv:NegotiateCapabilitiesRequest"/>
 	    <output message="agtkv:NegotiateCapabilitiesResponse"/>
+ 	</operation>
+    	<operation name="NegotiateCapabilities3">
+	    <input message="agtkv:NegotiateCapabilities3Request"/>
+	    <output message="agtkv:NegotiateCapabilities3Response"/>
 	</operation>
 	<operation name="CreateApplication">
 	    <input message="agtkv:CreateApplicationRequest"/>
@@ -688,13 +998,25 @@
 	    <input message="agtkv:UpdateDataRequest"/>
             <output message="agtkv:UpdateDataResponse"/>
 	</operation>
+	<operation name="UpdateData3">
+	    <input message="agtkv:UpdateData3Request"/>
+            <output message="agtkv:UpdateData3Response"/>
+	</operation>
 	<operation name="RemoveData">
 	    <input message="agtkv:RemoveDataRequest"/>
             <output message="agtkv:RemoveDataResponse"/>
+        </operation>
+	<operation name="RemoveData3">
+	    <input message="agtkv:RemoveData3Request"/>
+            <output message="agtkv:RemoveData3Response"/>
 	</operation>
-	<operation name="GetDataDescriptions">
+        <operation name="GetDataDescriptions">
 	    <input message="agtkv:GetDataDescriptionsRequest"/>
             <output message="agtkv:GetDataDescriptionsResponse"/>
+	</operation>
+        <operation name="GetDataDescriptions3">
+	    <input message="agtkv:GetDataDescriptions3Request"/>
+            <output message="agtkv:GetDataDescriptions3Response"/>
 	</operation>
 	<operation name="AddService">
 	    <input message="agtkv:AddServiceRequest"/>
@@ -703,18 +1025,22 @@
 	<operation name="RemoveService">
 	    <input message="agtkv:RemoveServiceRequest"/>
             <output message="agtkv:RemoveServiceResponse"/>
-	</operation>
-	<operation name="UpdateService">
+        </operation>
+    	<operation name="UpdateService">
 	    <input message="agtkv:UpdateServiceRequest"/>
             <output message="agtkv:UpdateServiceResponse"/>
-	</operation>
-	<operation name="UpdateClientProfile">
+        </operation>
+    	<operation name="UpdateClientProfile">
 	    <input message="agtkv:UpdateClientProfileRequest"/>
             <output message="agtkv:UpdateClientProfileResponse"/>
 	</operation>
 	<operation name="GetDataStoreInformation">
 	    <input message="agtkv:GetDataStoreInformationRequest"/>
 	    <output message="agtkv:GetDataStoreInformationResponse"/>
+    	</operation>
+	<operation name="AddDir">
+	    <input message="agtkv:AddDirRequest"/>
+	    <output message="agtkv:AddDirResponse"/>
 	</operation>
 	<operation name="GetVersion">
 	    <input message="agtkv:GetVersionRequest"/>
@@ -724,6 +1050,28 @@
 	    <input message="agtkv:GetStreamsRequest"/>
 	    <output message="agtkv:GetStreamsResponse"/>
 	</operation>
+	<operation name="GetStreams3">
+	    <input message="agtkv:GetStreams3Request"/>
+	    <output message="agtkv:GetStreams3Response"/>
+	</operation>
+	<operation name="HDDump">
+    	    <input message="agtkv:HDDumpRequest"/>
+	    <output message="agtkv:HDDumpResponse"/>
+	</operation>
+	<operation name="GetDescById">
+	    <input message="agtkv:GetDescByIdRequest"/>
+	    <output message="agtkv:GetDescByIdResponse"/>
+	</operation>
+	<operation name="RemoveDir">
+	    <input message="agtkv:RemoveDirRequest"/>
+	    <output message="agtkv:RemoveDirResponse"/>
+        </operation>
+    	<operation name="GetDataSize">
+	    <input message="agtkv:GetDataSizeRequest"/>
+ 	    <output message="agtkv:GetDataSizeResponse"/>
+        </operation>
+
+
     </portType>
 
 </definitions>

@@ -2,13 +2,13 @@
 # Name:        Events.py
 # Purpose:     Event classes for event infrastructure.
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.27 2006-01-23 06:56:30 turam Exp $
+# RCS-ID:      $Id: Events.py,v 1.28 2006-08-30 08:23:37 braitmai Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Events.py,v 1.27 2006-01-23 06:56:30 turam Exp $"
+__revision__ = "$Id: Events.py,v 1.28 2006-08-30 08:23:37 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -20,8 +20,10 @@ class Event:
     EXIT = "Exit"
     MODIFY_USER = "Modify user"
     ADD_DATA = "Add data"
+    ADD_DIR = "Add directory"          # Added new event for client messaging NA2-HPCE
     UPDATE_DATA = "Update data"
     REMOVE_DATA = "Remove data"
+    REMOVE_DIR = "Remove directory"    # Added new event for client messaging NA2-HPCE
     ADD_SERVICE = "Add service"
     UPDATE_SERVICE = "Update service"
     REMOVE_SERVICE = "Remove service"

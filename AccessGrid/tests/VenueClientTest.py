@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientTest.py,v 1.7 2004-03-10 23:17:09 eolson Exp $
+# RCS-ID:      $Id: VenueClientTest.py,v 1.8 2006-08-30 08:23:39 braitmai Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -58,7 +58,7 @@ class VenueClientTest(VenueClient):
         DataStore.GSIHTTPUploadFiles(self.upload_url, file_list, None)
 
         print '\n--------------- REMOVE DATA'
-        data = DataDescription('test_Apps.py')
+        data = DataDescription3('test_Apps.py')
         self.client.RemoveData(data)
 
 #         print '\n--------------- ADD SERVICE'

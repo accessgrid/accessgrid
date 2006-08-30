@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.108 2006-08-02 14:20:12 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.109 2006-08-30 08:23:37 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.108 2006-08-02 14:20:12 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.109 2006-08-30 08:23:37 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -253,7 +253,10 @@ class AGNodeService:
     ####################
 
     def GetServices( self ):
-        """Get list of installed services """
+        """
+	Get list of installed services
+	Method for legacy support for AG 3.0.2. clients
+	"""
         log.info("NodeService.GetServices")
         services = []
         try:
@@ -267,6 +270,23 @@ class AGNodeService:
                             % str( sys.exc_value ) )
 
         return services
+
+    def GetServices3( self ):
+        """Get list of installed services """
+        log.info("NodeService.GetServices3")
+        services = []
+        try:
+            for serviceManager in self.serviceManagers.values():
+                serviceSubset = AGServiceManagerIW(
+                    serviceManager.uri ).GetServices3()
+                services += serviceSubset
+        except:
+            log.exception("Exception in AGNodeService.GetServices3.")
+            raise Exception("AGNodeService.GetServices3 failed: %s" \
+                            % str( sys.exc_value ) )
+
+        return services
+
 
     def SetServiceEnabled(self, serviceUri, enabled):
         """
@@ -287,7 +307,7 @@ class AGNodeService:
         Enable/disable services that handle the given media type
         """
         log.info("NodeService.SetServiceEnabledByMediaType")
-        serviceList = self.GetServices()
+        serviceList = self.GetServices3()
         for service in serviceList:
             serviceMediaTypes = map( lambda cap: cap.type,
                                      service.capabilities )
@@ -312,7 +332,7 @@ class AGNodeService:
             raise Exception(exceptionText)
 
         # Remove the streams
-        self.SetStreams([])
+        self.SetStreams3([])
 
     ####################
     ## CONFIGURATION methods
@@ -323,6 +343,7 @@ class AGNodeService:
         Set streams according to stream descriptions.
         The stream descriptions are applied to the installed services
         according to matching capabilities
+	Method for legacy support for AG 3.0.2. clients
         """
 
         log.info("NodeService.SetStreams")
@@ -344,8 +365,36 @@ class AGNodeService:
         if len(exceptionText):
             raise SetStreamException(exceptionText)
                     
+    def SetStreams3( self, streamDescriptionList ):
+        """
+        Set streams according to stream descriptions.
+        The stream descriptions are applied to the installed services
+        according to matching capabilities
+        """
+
+        log.info("NodeService.SetStreams3")
+        exceptionText = ""
+
+        # Save the stream descriptions
+        self.streamDescriptionList = [] 
+        for streamDescription in streamDescriptionList:
+            self.streamDescriptionList.append(streamDescription)
+        
+        # Send the streams to the services
+        services = self.GetServices3()
+        for service in services:
+            try:
+                self.__SendStreamsToService( service.uri )
+            except Exception,e:
+                exceptionText += str(e) + "\n"
+
+        if len(exceptionText):
+            raise SetStreamException(exceptionText)
     
     def AddStream( self, streamDescription ):
+	"""
+	Method for legacy support for AG 3.0.2. clients
+	"""
         log.info("NodeService.AddStream")
         self.streamDescriptionList.append(streamDescription)
 
@@ -354,8 +403,21 @@ class AGNodeService:
         for service in services:
             self.__SendStreamsToService( service.uri )
 
+    def AddStream3( self, streamDescription ):
+        log.info("NodeService.AddStream3")
+        self.streamDescriptionList.append(streamDescription)
+
+        # Send the streams to the services
+        services = self.GetServices3()
+        for service in services:
+            self.__SendStreamsToService( service.uri )
+
+
 
     def RemoveStream( self, streamDescription ):
+	"""
+	Method for legacy support for AG 3.0.2. clients
+	"""
 
         log.info("NodeService.RemoveStream")
         # Remove the stream from the list
@@ -367,6 +429,20 @@ class AGNodeService:
 
         # Stop services using that stream's media type
         # (er, not yet)
+
+    def RemoveStream3( self, streamDescription ):
+
+        log.info("NodeService.RemoveStream3")
+        # Remove the stream from the list
+
+        for s in self.streamDescriptionList:
+            if (s.location.host == streamDescription.location.host and
+                s.location.port == streamDescription.location.port):
+                del self.streamDescriptionList[streamDescription.capability.type]
+
+        # Stop services using that stream's media type
+        # (er, not yet)
+
 
     def LoadConfiguration( self, config ):
         """
@@ -565,7 +641,7 @@ class AGNodeService:
                     configParser.set( serviceManagerSection, "name", serviceManager.name )
                     configParser.set( serviceManagerSection, "url", key )
                 
-                services = AGServiceManagerIW( serviceManager.uri ).GetServices()
+                services = AGServiceManagerIW( serviceManager.uri ).GetServices3()
 
                 if not services:
                     services = []
@@ -654,7 +730,10 @@ class AGNodeService:
     ####################
 
     def GetCapabilities( self ):
-        """Get list of capabilities"""
+        """
+	Get list of capabilities
+	Method for legacy support for AG 3.0.2. clients
+	"""
         log.info("NodeService.GetCapabilities")
         capabilities = []
         try:
@@ -671,6 +750,26 @@ class AGNodeService:
             raise Exception("AGNodeService.GetCapabilities failed: " + str( sys.exc_value ) )
 
         return capabilities
+
+    def GetCapabilities3( self ):
+        """Get list of capabilities"""
+        log.info("NodeService.GetCapabilities3")
+        capabilities = []
+        try:
+            services = self.GetServices3()
+            for service in services:
+                #capabilitySubset = AGServiceIW( service.uri ).GetCapabilities()
+                capabilitySubset = service.capabilities
+                              
+                for cap in capabilitySubset:
+                    capabilities.append(cap)
+                    
+        except:
+            log.exception("Exception in AGNodeService.GetCapabilities3.")
+            raise Exception("AGNodeService.GetCapabilities3 failed: " + str( sys.exc_value ) )
+
+        return capabilities
+
 
     def Stop(self):
         pass
@@ -695,9 +794,10 @@ class AGNodeService:
         log.info("NodeService.__SendStreamsToService")
         failedSends = ""
         
-        serviceCapabilities = AGServiceIW( serviceUri ).GetCapabilities()
+        serviceCapabilities = AGServiceIW( serviceUri ).GetCapabilities3()
         log.debug("service capabilities: %s", str(serviceCapabilities))
         for streamDescription in self.streamDescriptionList:
+            log.debug("streamDescriptions: %s", str(streamDescription))
             try:
                 #log.debug("capability type: %s", streamDescription.capability[0].type)
                 
@@ -712,8 +812,10 @@ class AGNodeService:
                                  streamDescription.capability,
                                  serviceUri )
                         
-                        AGServiceIW( serviceUri ).SetStream( streamDescription )
+                        AGServiceIW( serviceUri ).SetStream3( streamDescription )
                         return
+                    else:
+                        log.debug("No stream match! Sending no new streams!")
             except:
                 log.exception("Exception in AGNodeService.__SendStreamsToService.")
                 failedSends += "Error updating %s\n" % \

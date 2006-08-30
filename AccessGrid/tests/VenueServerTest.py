@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueServerTest.py,v 1.13 2003-05-23 21:00:36 judson Exp $
+# RCS-ID:      $Id: VenueServerTest.py,v 1.14 2006-08-30 08:23:39 braitmai Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -87,7 +87,7 @@ class VenueServerTest:
         print "\n------------------ INSERT VENUE"
 
         # Make a venue description
-        venue = VenueDescription( "test venue",
+        venue = VenueDescription3( "test venue",
                                   "test venue description")
 
 
@@ -98,14 +98,14 @@ class VenueServerTest:
         # Set Static Video
         venue.streams = []
         svml = MulticastNetworkLocation("224.2.2.2", 24000, 127)
-        staticVideoCap = Capability(Capability.PRODUCER, Capability.VIDEO)
-        venue.streams.append(StreamDescription("Static Video",
+        staticVideoCap = Capability3.PRODUCER, Capability3.VIDEO)
+        venue.streams.append(StreamDescription3("Static Video",
                                                svml, staticVideoCap,
                                                0, None, 1))
         # Set Static Audio
         saml = MulticastNetworkLocation("224.2.2.2", 24002, 127)
-        staticAudioCap = Capability(Capability.PRODUCER, Capability.AUDIO)
-        venue.streams.append(StreamDescription("Static Audio",
+        staticAudioCap = Capability3(Capability3.PRODUCER, Capability3.AUDIO)
+        venue.streams.append(StreamDescription3("Static Audio",
                                                saml, staticAudioCap,
                                                0, None, 1))
 
@@ -237,8 +237,8 @@ class VenueServerTest:
         venue = Client.Handle(uri).get_proxy()
         
         location = MulticastNetworkLocation(videoAddress, videoPort, videoTtl)
-        capability = Capability( Capability.PRODUCER, Capability.VIDEO)
-        videoStreamDescription = StreamDescription( "", location, capability)  
+        capability = Capability3( Capability3.PRODUCER, Capability3.VIDEO)
+        videoStreamDescription = StreamDescription3( "", location, capability)  
         videoStreamDescription.static = 1
         venue.AddStream(videoStreamDescription)
 
@@ -251,8 +251,8 @@ class VenueServerTest:
         print "port: ", audioPort
         print "time to live: ", audioTtl
         location = MulticastNetworkLocation(audioAddress, audioPort, audioTtl)
-        capability = Capability( Capability.PRODUCER, Capability.AUDIO)
-        audioStreamDescription = StreamDescription( "", location, capability)  
+        capability = Capability3( Capability3.PRODUCER, Capability3.AUDIO)
+        audioStreamDescription = StreamDescription3( "", location, capability)  
         audioStreamDescription.static = 1
         venue.AddStream(audioStreamDescription)
 

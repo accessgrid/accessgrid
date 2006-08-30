@@ -35,7 +35,18 @@
 	    <output>
 		<soap:body use="literal"/> 
 	    </output>
-	</operation>
+    </operation>
+
+    <operation name="AddStream3">
+      <soap:operation soapAction="urn:#AddStream3"/>
+        <input>
+  	  <soap:body use="literal"/> 
+	</input>
+      <output>
+        <soap:body use="literal"/> 
+      </output>
+    </operation>
+
     <operation name="GetCapabilities">
 	    <soap:operation soapAction="urn:#GetCapabilities"/>
 	    <input>
@@ -44,7 +55,19 @@
 	    <output>
 		<soap:body use="literal"/> 
 	    </output>
-	</operation>
+    </operation>
+
+    <operation name="GetCapabilities3">
+	    <soap:operation soapAction="urn:#GetCapabilities3"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+    </operation>
+
+    
     <operation name="GetConfigurations">
 	    <soap:operation soapAction="urn:#GetConfigurations"/>
 	    <input>
@@ -71,7 +94,17 @@
 	    <output>
 		<soap:body use="literal"/> 
 	    </output>
-	</operation>
+    </operation>
+    <operation name="GetServices3">
+      <soap:operation soapAction="urn:#GetServices3"/>
+	<input>
+	  <soap:body use="literal"/> 
+	</input>
+	<output>
+	  <soap:body use="literal"/> 
+	</output>
+    </operation>
+
     <operation name="IsValid">
 	    <soap:operation soapAction="urn:#IsValid"/>
 	    <input>
@@ -125,7 +158,18 @@
 	    <output>
 		<soap:body use="literal"/> 
 	    </output>
+    </operation>
+
+        <operation name="RemoveStream3">
+	    <soap:operation soapAction="urn:#RemoveStream3"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
 	</operation>
+
     <operation name="SetServiceEnabled">
 	    <soap:operation soapAction="urn:#SetServiceEnabled"/>
 	    <input>
@@ -152,7 +196,17 @@
 	    <output>
 		<soap:body use="literal"/> 
 	    </output>
+    </operation>
+        <operation name="SetStreams3">
+	    <soap:operation soapAction="urn:#SetStreams3"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
 	</operation>
+
     <operation name="StopServices">
 	    <soap:operation soapAction="urn:#StopServices"/>
 	    <input>

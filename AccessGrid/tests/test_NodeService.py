@@ -72,12 +72,12 @@ for svc in svclist:
 # configure streams
 print "\n------------------ Configure Streams"
 streamDs = []
-streamDs.append( StreamDescription( "test", 
+streamDs.append( StreamDescription3( "test", 
    MulticastNetworkLocation("233.2.171.39",42000,127), 
-   Capability( Capability.CONSUMER, Capability.AUDIO ) ) )
-streamDs.append( StreamDescription( "test", 
+   Capability3( Capability3.CONSUMER, Capability3.AUDIO ) ) )
+streamDs.append( StreamDescription3( "test", 
    MulticastNetworkLocation("233.2.171.39",42002,127), 
-   Capability( Capability.PRODUCER, Capability.VIDEO ) ) )
+   Capability3( Capability3.PRODUCER, Capability3.VIDEO ) ) )
 
 nodesvc.ConfigureStreams( streamDs )
 

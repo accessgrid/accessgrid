@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service client that handles Access Grid
 #                 venue events.
 # Created:     2005/09/09
-# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.2 2006-01-19 23:30:38 eolson Exp $
+# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.3 2006-08-30 08:23:37 braitmai Exp $
 # Copyright:   (c) 2005,2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -60,6 +60,9 @@ class BaseVenueEventClient:
             log.info("BaseVenueEventClient made connection.")
 
     def Send(self, eventType, data):
+        if data == None:
+            log.critical("DataDescription is Null!")
+            print "DataDescription is Null!"
         event = EventDescription(eventType, self.channelId, self.id, data)
         #reactor.callLater(0, self.groupMsgClient.Send, [event])
         self.groupMsgClient.Send(event)

@@ -15,6 +15,18 @@
       </xs:sequence>
     </xs:complexType>
 
+
+    <xs:complexType name="AGNetworkServiceDescription3">
+      <xs:sequence>
+        <xs:element name="name" type="xs:string"/>
+	<xs:element name="description" type="xs:string"/>
+        <xs:element name="uri" type="xs:string"/>
+     	<xs:element name="version" type="xs:string"/>
+	<xs:element name="capabilities" minOccurs="0" maxOccurs="unbounded" type = "tns:Capability3"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="NetworkLocation">
       <xs:sequence>
         <xs:element name="id" type="xs:string"/>
@@ -85,6 +97,22 @@
       </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="StreamDescription3">
+      <xs:sequence>
+        <xs:element name = "id" type = "xs:string"/>
+        <xs:element name = "name" type = "xs:string"/>
+        <xs:element name = "location" type = "xs:anyType"/>
+        <xs:element name = "description" nillable="true" type = "xs:string"/>
+        <xs:element name = "capability" minOccurs="0" maxOccurs="unbounded" type = "tns:Capability3"/>
+        <xs:element name = "encryptionFlag" type = "xs:int"/>
+        <xs:element name = "encryptionKey" nillable="true" type = "xs:string"/>
+        <xs:element name = "static" type = "xs:boolean"/>
+        <xs:element name = "networkLocations" minOccurs="0" maxOccurs="unbounded" type = "xs:anyType"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+
+
     <xs:complexType name="VenueDescription">
       <xs:sequence>
 	<xs:element name="id" type="xs:string"/>
@@ -95,6 +123,21 @@
 	<xs:element name="encryptionKey" type="xs:string" nillable="true"/>
 	<xs:element name="connections" minOccurs="0" maxOccurs="unbounded" type="tns:ConnectionDescription"/>
         <xs:element name="streams" minOccurs="0" maxOccurs="unbounded" type="tns:StreamDescription"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+
+
+    <xs:complexType name="VenueDescription3">
+      <xs:sequence>
+	<xs:element name="id" type="xs:string"/>
+	<xs:element name="uri" type="xs:string" nillable="true"/>
+	<xs:element name="name" type="xs:string"/>
+	<xs:element name="description" type="xs:string"/>
+	<xs:element name="encryptMedia" type="xs:int"/>
+	<xs:element name="encryptionKey" type="xs:string" nillable="true"/>
+	<xs:element name="connections" minOccurs="0" maxOccurs="unbounded" type="tns:ConnectionDescription"/>
+        <xs:element name="streams" minOccurs="0" maxOccurs="unbounded" type="tns:StreamDescription3"/>
         <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
@@ -142,6 +185,25 @@
       </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="VenueState3">
+      <xs:sequence>
+        <xs:element name="uniqueId" type="xs:string"/>
+        <xs:element name="name" type="xs:string"/>
+        <xs:element name="description" type="xs:string"/>
+        <xs:element name="uri" type="xs:string"/>
+        <xs:element name="eventLocation" nillable="true" type="xs:string"/>
+        <xs:element name="textLocation" nillable="true" type="xs:string"/>
+	<xs:element name="dataLocation" nillable="true" type="xs:string"/>
+        <xs:element name="services" minOccurs="0" maxOccurs="unbounded" type="tns:ServiceDescription"/>
+        <xs:element name="connections" minOccurs="0" maxOccurs="unbounded" type="tns:ConnectionDescription"/>
+        <xs:element name="clients" minOccurs="0" maxOccurs="unbounded" type="tns:ClientProfile"/>
+        <xs:element name="data" minOccurs="0" maxOccurs="unbounded" type="tns:DataDescription3"/>
+        <xs:element name="applications" minOccurs="0" maxOccurs="unbounded" type="tns:ApplicationDescription"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+
+
     <xs:complexType name="SharedAppState">
       <xs:sequence>
         <xs:element minOccurs="0" maxOccurs="1" name="name" type="xs:string" />
@@ -151,6 +213,21 @@
         <xs:element minOccurs="0" maxOccurs="1" name="uri" type="xs:string" />
         <xs:element minOccurs="0" maxOccurs="unbounded" name="data" type="tns:AppDataDescription" />
         <xs:any minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Capability3">
+      <xs:sequence>
+        <xs:element name="role" nillable="true" type="xs:string"/>
+        <xs:element name="type" nillable="true" type="xs:string"/>
+        <xs:element name="codec" nillable="true" type="xs:string"/>
+        <xs:element name="rate" nillable="true" type="xs:int"/>
+        <xs:element name="serviceId" nillable="true" type="xs:string"/>
+        <xs:element name="channels" nillable="true" type="xs:int"/>
+	<xs:element name="host" nillable="true" type="xs:string"/>
+	<xs:element name="locationType" nillable="true" type="xs:string"/>
+	<xs:element name="port" nillable="true" type="xs:int"/>
+	<xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -208,6 +285,25 @@
       </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="DataDescription3">
+      <xs:sequence>
+        <xs:element name="id" type="xs:string"/>
+        <xs:element name="name" type="xs:string"/>
+        <xs:element name="description" nillable="true" type="xs:string"/>
+        <xs:element name="uri" nillable="true" type="xs:string"/>
+        <xs:element name="status" nillable="true" type="xs:string"/>
+        <xs:element name="size" nillable="true" type="xs:int"/>
+        <xs:element name="checksum" nillable="true" type="xs:string"/>
+        <xs:element name="owner" nillable="true" type="xs:string"/>
+        <xs:element name="type" nillable="true" type="xs:string"/>
+        <xs:element name="lastModified" nillable="true" type="xs:string"/>
+		<xs:element name="objectType" nillable="true" type="xs:string"/>
+		<xs:element name="Level" nillable="true" type="xs:int"/>
+		<xs:element name="parentId" nillable="true" type="xs:string"/>
+		<xs:any minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+    
     <xs:complexType name="DataDescription">
       <xs:sequence>
         <xs:element name="id" type="xs:string"/>
@@ -223,6 +319,45 @@
         <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
+    
+
+    <xs:complexType name="DirectoryDescription">
+      <xs:sequence>
+        <xs:element name="id" type="xs:string"/>
+        <xs:element name="name" type="xs:string"/>
+        <xs:element name="description" nillable="true" type="xs:string"/>
+        <xs:element name="uri" nillable="true" type="xs:string"/>
+        <xs:element name="status" nillable="true" type="xs:string"/>
+        <xs:element name="size" nillable="true" type="xs:int"/>
+        <xs:element name="checksum" nillable="true" type="xs:string"/>
+        <xs:element name="owner" nillable="true" type="xs:string"/>
+        <xs:element name="type" nillable="true" type="xs:string"/>
+        <xs:element name="lastModified" nillable="true" type="xs:string"/>
+        <xs:element name="parentId" nillable="true" type="xs:string"/>
+	<xs:element name="Level" nillable="true" type="xs:int"/>
+        <xs:element name="location" nillable="true" type="xs:string"/>
+        <xs:element name="dataContainer" nillable="false" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+	<xs:element name="objectType" nillable="true" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+    
+
+    <xs:complexType name="FileDescription">
+      <xs:sequence>
+        <xs:element name="id" type="xs:string"/>
+        <xs:element name="name" type="xs:string"/>
+        <xs:element name="description" nillable="true" type="xs:string"/>
+        <xs:element name="uri" nillable="true" type="xs:string"/>
+        <xs:element name="status" nillable="true" type="xs:string"/>
+        <xs:element name="size" nillable="true" type="xs:int"/>
+        <xs:element name="checksum" nillable="true" type="xs:string"/>
+        <xs:element name="owner" nillable="true" type="xs:string"/>
+        <xs:element name="type" nillable="true" type="xs:string"/>
+        <xs:element name="lastModified" nillable="true" type="xs:string"/>
+	<xs:element name="objectType" nillable="true" type="xs:string"/>
+	<xs:element name="Level" nillable="true" type="xs:int"/>
+      </xs:sequence>
+    </xs:complexType>
 
 
     <xs:complexType name="AuthorizationPolicy">
@@ -236,6 +371,17 @@
         <xs:element name="name" type="xs:string"/>
         <xs:element name="uri" type="xs:string"/>
         <xs:element name="capabilities" minOccurs="0" maxOccurs="unbounded" type="tns:Capability"/>
+        <xs:element name="resource" nillable="true" type="tns:ResourceDescription"/>
+        <xs:element name="packageFile" type="xs:string"/>
+        <xs:any minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="AGServiceDescription3">
+      <xs:sequence>
+        <xs:element name="name" type="xs:string"/>
+        <xs:element name="uri" type="xs:string"/>
+        <xs:element name="capabilities" minOccurs="0" maxOccurs="unbounded" type="tns:Capability3"/>
         <xs:element name="resource" nillable="true" type="tns:ResourceDescription"/>
         <xs:element name="packageFile" type="xs:string"/>
         <xs:any minOccurs="0" maxOccurs="unbounded"/>

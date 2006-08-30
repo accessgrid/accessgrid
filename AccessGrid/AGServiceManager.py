@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.100 2006-08-21 19:17:42 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.101 2006-08-30 08:23:37 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.100 2006-08-21 19:17:42 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.101 2006-08-30 08:23:37 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -78,6 +78,9 @@ class AGServiceManager:
     ####################
     
     def AddServiceByName(self, name, resource = None, config = None, identity = None):
+	"""
+	Method for legacy support for AG 3.0.2. clients
+	"""
     
         servicePackage = None
         servicePackages =  self.GetServicePackageDescriptions()
@@ -93,11 +96,29 @@ class AGServiceManager:
                             name)
                             
         return self.AddService(servicePackage, resource, config, identity)
+
+    def AddServiceByName3(self, name, resource = None, config = None, identity = None):
     
+        servicePackage = None
+        servicePackages =  self.GetServicePackageDescriptions()
+        
+        for s in servicePackages:
+            servicePackageFile = os.path.split(s.packageFile)[-1]
+            if servicePackageFile == name:
+                servicePackage = s
+                break
+                
+        if not servicePackage:
+            raise Exception("No service package found for specified name",
+                            name)
+                            
+        return self.AddService3(servicePackage, resource, config, identity)
+
     
     def AddService( self, servicePackageDesc, resource = None, config = None, identity = None):
         """
         Add a service package to the service manager.  
+	Method for legacy support for AG 3.0.2. clients
         """
         log.info("AGServiceManager.AddService")
         
@@ -156,8 +177,72 @@ class AGServiceManager:
             
         return serviceDescription
 
+    def AddService3( self, servicePackageDesc, resource = None, config = None, identity = None):
+        """
+        Add a service package to the service manager.  
+        """
+        log.info("AGServiceManager.AddService3")
+        
+        servicePackage = \
+            self.GetServicePackage(servicePackageDesc.GetPackageFile())
+            
+        # prevent SOAP socket from being inherited by child processes
+        # which we're about to spawn
+        try:
+            import posix # will fail on non-posix systems, which don't need this patch
+            import fcntl
+            from ZSI.ServiceContainer import GetSOAPContext
+            ctx = GetSOAPContext()
+            if ctx:
+                fd = ctx.connection.fileno()
+                old = fcntl.fcntl(fd, fcntl.F_GETFD)
+                fcntl.fcntl(fd, fcntl.F_SETFD, old | fcntl.FD_CLOEXEC)
+        except ImportError:
+            pass
+
+
+        #
+        # Extract the service package
+        #
+        try:
+            # Create dir for package
+            servicePath = self.__GetServicePath(servicePackage)
+
+            # Only extract package if version is greater than existing service
+            if self.__CheckServiceVersion(servicePath, servicePackage):
+                log.info("Extracting service package to %s", servicePath)
+                
+                # Extract the package
+                servicePackage.Extract(servicePath)
+                
+        except:
+            log.exception("Service Manager failed to extract service implementation %s", 
+                          servicePackage.packageFile)
+            raise Exception("Service Manager failed to extract service implementation")
+            
+        # Change to the services directory to start the process     
+        # Note: services rely on this being true    
+        os.chdir(servicePath) 
+        
+        # Start the service  
+        serviceUrl,pid = self.__ExecuteService(servicePackage)
+            
+        # Set the package name in the service
+        AGServiceIW(serviceUrl).SetPackageFile(servicePackage.packageFile, resource, config, identity)
+
+        # Get the description from the service
+        serviceDescription = AGServiceIW(serviceUrl).GetDescription3()
+
+        # Add service to list of services
+        self.services[pid] = serviceDescription
+            
+        return serviceDescription
+
+
     def RemoveService( self, serviceToRemove ):
-        """Remove a service
+        """
+	Remove a service
+	Method for legacy support for AG 3.0.2. clients
         """
         log.info("AGServiceManager.RemoveService")
 
@@ -200,6 +285,51 @@ class AGServiceManager:
         if exc:
             raise Exception("AGServiceManager.RemoveService failed : ", str( exc ) )
 
+    def RemoveService3( self, serviceToRemove ):
+        """Remove a service
+        """
+        log.info("AGServiceManager.RemoveService3")
+
+        exc = None
+        pid = None
+        
+        try:
+
+            #
+            # Find service to stop using uri
+            #
+            
+            for key in self.services.keys():
+                service = self.services[key]
+                if service.uri == serviceToRemove.uri:
+                    pid = key
+                    try:
+                        #
+                        # Remove service from list
+                        #
+                        if pid and self.services.has_key(pid):
+                            del self.services[pid]
+                        AGServiceIW( service.uri ).Shutdown()
+                       
+                    except:
+                        log.exception("Error shutting down service %s", serviceToRemove.name)
+
+                    if 1: # not service.inlineClass:
+                        #
+                        # Kill service
+                        #
+                        self.processManager.TerminateProcess(pid)
+                    break
+
+        except:
+            log.exception("Exception removing service %s", serviceToRemove.name)
+            exc = sys.exc_value
+
+        # raise exception now, if one occurred
+        if exc:
+            raise Exception("AGServiceManager.RemoveService3 failed : ", str( exc ) )
+
+
 
 
     def RemoveServices( self ):
@@ -208,15 +338,24 @@ class AGServiceManager:
         log.info("AGServiceManager.RemoveServices")
         for service in self.services.values():
             try:
-                self.RemoveService( service )
+                self.RemoveService3( service )
             except Exception:
                 log.exception("Exception in AGServiceManager.RemoveServices; continuing")
 
     def GetServices( self ):
-        """Return list of services
+        """
+	Return list of services
+	Method for legacy support for AG 3.0.2. clients
         """
         log.info("AGServiceManager.GetServices")
         return self.services.values()
+
+    def GetServices3( self ):
+        """Return list of services
+        """
+        log.info("AGServiceManager.GetServices3")
+        return self.services.values()
+
 
     def StopServices( self ):
         """

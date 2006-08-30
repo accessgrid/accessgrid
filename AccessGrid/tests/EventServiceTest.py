@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: EventServiceTest.py,v 1.7 2006-02-15 03:46:34 douglask Exp $
+# RCS-ID:      $Id: EventServiceTest.py,v 1.8 2006-08-30 08:23:38 braitmai Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
@@ -82,10 +82,10 @@ class StartTest:
                 i = 0
         
     def CreateEvents(self):
-        dataDescription = DataDescription("")
+        dataDescription = DataDescription3("")
         profile = ClientProfile()
         service = ServiceDescription("service", "desc", "uri", "mime")
-        stream = StreamDescription("")
+        stream = StreamDescription3("")
         conn = ConnectionDescription("")
         app = ApplicationDescription(1, 'app', 'desc', 'uri', 'mime')
         

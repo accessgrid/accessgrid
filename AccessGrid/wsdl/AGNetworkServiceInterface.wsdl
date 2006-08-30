@@ -21,7 +21,7 @@
                 <xsd:element minOccurs="0" maxOccurs="unbounded" name="streamDescription" type="agtk:StreamDescription" />
               </xsd:sequence>
             </xsd:complexType>
-          </xsd:element>
+	  </xsd:element>
 
           <xsd:element name="TransformResponse">
             <xsd:complexType>
@@ -30,6 +30,23 @@
                </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
+
+          <xsd:element name="Transform3Request">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="streamDescription" type="agtk:StreamDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+	  <xsd:element name="Transform3Response">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element minOccurs="0" maxOccurs="unbounded" name="streamDescription" type="agtk:StreamDescription3" />
+               </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
 
           <xsd:element name="StopTransformRequest">
             <xsd:complexType>
@@ -45,7 +62,24 @@
                   <xsd:element minOccurs="0" maxOccurs="unbounded" name="streamDescription" type="agtk:StreamDescription" />
                </xsd:sequence>
             </xsd:complexType>
+	  </xsd:element>
+
+          <xsd:element name="StopTransform3Request">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="streamDescription" type="agtk:StreamDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
           </xsd:element>
+
+          <xsd:element name="StopTransform3Response">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element minOccurs="0" maxOccurs="unbounded" name="streamDescription" type="agtk:StreamDescription3" />
+               </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
 
       </schema>
       </types>
@@ -64,15 +98,37 @@
 	<part name="parameters" element="agnets:StopTransformResponse"/>
     </message>
 
+    <message name="Transform3Request">
+	<part name="parameters" element="agnets:Transform3Request"/>
+    </message>
+    <message name="Transform3Response">
+	<part name="parameters" element="agnets:Transform3Response"/>
+    </message>
+    <message name="StopTransform3Request">
+	<part name="parameters" element="agnets:StopTransform3Request"/>
+    </message>
+    <message name="StopTransform3Response">
+	<part name="parameters" element="agnets:StopTransform3Response"/>
+    </message>
+
     <portType name="AGNetworkService">
     <operation name="Transform">
         <input message="agnets:TransformRequest"/>
         <output message="agnets:TransformResponse"/>
     </operation>
+    <operation name="Transform3">
+        <input message="agnets:Transform3Request"/>
+        <output message="agnets:Transform3Response"/>
+    </operation>
     <operation name="StopTransform">
         <input message="agnets:StopTransformRequest"/>
         <output message="agnets:StopTransformResponse"/>
     </operation>
+    <operation name="StopTransform3">
+        <input message="agnets:StopTransform3Request"/>
+        <output message="agnets:StopTransform3Response"/>
+    </operation>
+
     </portType>
 
 </definitions>

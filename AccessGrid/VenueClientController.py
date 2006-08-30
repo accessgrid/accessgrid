@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.66 2006-07-27 19:02:19 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.67 2006-08-30 08:23:37 braitmai Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.66 2006-07-27 19:02:19 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.67 2006-08-30 08:23:37 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -23,7 +23,7 @@ from AccessGrid import Log
 from AccessGrid import DataStore
 from AccessGrid.AppDb import AppDb
 from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.Descriptions import ServiceDescription, DataDescription
+from AccessGrid.Descriptions import ServiceDescription, DataDescription, FileDescription, DirectoryDescription, DataDescription3
 from AccessGrid.Descriptions import ApplicationDescription, AGNetworkServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription, ApplicationCmdDescription
 from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
@@ -89,7 +89,8 @@ class VenueClientController:
     #
     # Menu Callbacks
 
-    def AddDataCB(self, fileList):
+    #Modified by NA2-HPCE
+    def AddDataCB(self, fileList, serverDir):
         """
         This method 
 
@@ -100,7 +101,23 @@ class VenueClientController:
         if not fileList or not isinstance(fileList,list):
             raise ValueError
             
-        self.UploadVenueFiles(fileList)
+        self.UploadVenueFiles(fileList, serverDir)
+        
+    #Added by NA2-HPCE
+    def AddDirCB(self, dirList, serverDir):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
+        # Upload if we have a file list
+        if not dirList or not isinstance(dirList,list):
+            raise ValueError
+            
+        self.CreateVenueDir(dirList, serverDir)
+
+
 
     def AddServiceCB(self,serviceDescription):
         """
@@ -391,7 +408,6 @@ class VenueClientController:
         except:
             log.exception("Error setting my venues")
             raise
-            
 
     # Menu Callbacks
     #
@@ -490,7 +506,7 @@ class VenueClientController:
         
         """
         
-        if not data or not isinstance(data,DataDescription):
+        if not data or not isinstance(data,DataDescription3):
             raise ValueError
         
         self.__venueClient.RemoveData(data)
@@ -752,9 +768,13 @@ class VenueClientController:
     # Venue Data Access
     #
 
-    def UploadVenueFiles(self, fileList):
+    #Modified by NA2-HPCE
+    def UploadVenueFiles(self, fileList, serverDir):
         """
         Upload the given files to the venue.
+        
+        Modification: Added parameter for being able to pass along the destination 
+                      directory on the FTP server.
 
         This implementation fires up a separate thread for the actual
         transfer. We want to do this to keep the application live for possible
@@ -790,6 +810,11 @@ class VenueClientController:
 
 
         url = self.__venueClient.GetDataStoreUploadUrl()
+        
+        # Append the destination directory the FTP directory of the data store
+	if not serverDir == "" or not serverDir == None:
+            url = url + "/" + serverDir                       
+        
         method = self.get_ident_and_upload
         ul_args = (url, fileList, progressCB)
 
@@ -803,6 +828,68 @@ class VenueClientController:
         #
         # Dialog dlg will get cleaned up at the end of get_ident_and_upload.
         #
+
+
+    #Added by NA2-HPCE
+    def CreateVenueDir(self, dirList, serverDir):
+        """
+        Upload the given files to the venue.
+        
+        Modification: Added parameter for being able to pass along the destination 
+                      directory on the FTP server.
+
+        This implementation fires up a separate thread for the actual
+        transfer. We want to do this to keep the application live for possible
+        long-term transfers and to allow for live updates of a download status.
+
+        **Arguments:**
+        
+        *fileList* The list of files to upload
+        
+        """
+        log.debug("In VenueClientController.CreateVenueDir")
+        log.debug("  dirList = %s" % str(dirList))
+        
+        # Open the upload files dialog
+        #self.gui.OpenUploadFilesDialog()
+
+        #
+        # Plumbing for getting progress callbacks to the dialog
+        #
+        def progressCB(filename, sent, total, file_done, xfer_done):
+                       
+            if not self.gui.UploadFilesDialogCancelled():
+                self.gui.UpdateUploadFilesDialog(filename, sent, total,file_done, 
+                                                 xfer_done)
+            return self.gui.UploadFilesDialogCancelled()
+
+        #
+        # Create the thread to run the upload.
+        #
+        # Some more plumbing with the local function to get the identity
+        # retrieval in the thread, as it can take a bit the first time.
+        # We use get_ident_and_upload as the body of the thread.
+
+
+        url = self.__venueClient.GetDataStoreUploadUrl()
+        
+        # Append the destination directory the FTP directory of the data store
+        url = url + serverDir                              
+        
+        self.get_ident_and_mkdir(url,dirList)
+        
+        #method = self.get_ident_and_mkdir
+        #ul_args = (url, dirList)
+
+        #log.debug("Have args, creating thread, url: %s, dirs: %s", url, dirList)
+
+        #upload_thread = threading.Thread(target = method, args = ul_args)
+
+        #upload_thread.start()
+        #log.debug("Started thread")
+
+        #
+        # Dialog dlg will get cleaned up at the end of get_ident_and_upload.
 
 
 
@@ -821,16 +908,98 @@ class VenueClientController:
         log.debug("Upload: getting identity")
 
         error_msg = None
+        #try:
+        my_identity = str(Application.instance().GetDefaultSubject())
+        log.debug("Got identity %s" % my_identity)
+        log.debug("get_ident_and_upload: Upload URL %s", uploadUrl)
+        wordArray = uploadUrl.split('/')
+        for word in wordArray:
+            log.debug("Get_ident_and_upload: Word is: %s ", word)
+        user=str(wordArray[3])
+        passw=str(self.__venueClient.profile.connectionId)
+        DataStore.UploadFiles(my_identity, uploadUrl,
+                              fileList, 
+                              user=user,
+                              passw=passw,
+                              progressCB=progressCB)
+
+        #except DataStore.UserCancelled:
+        #    log.info('User cancelled upload of %s', fileList)
+        #except DataStore.FileNotFound, e:
+        #    error_msg = "File not found: %s" % (e[0])
+        #except DataStore.NotAPlainFile, e:
+        #    error_msg = "Not a plain file: %s" % (e[0])
+        #except DataStore.UploadFailed, e:
+        #    error_msg = "Upload failed: %s" % (e)
+        #except Exception, e:
+        #    error_msg = "Upload failed"
+
+        if error_msg is not None:
+            log.exception("bin.VenueClient::get_ident_and_upload: Upload data error")
+            self.gui.Notify(error_msg, "Upload Files Error")
+            
+    #Added by NA2-HPCE
+    def get_ident_and_mkdir(self, uploadUrl, dirList):        
+        """
+        This method creates the specified directory at the given upload destination
+
+        **Arguments:**
+        
+        *uploadUrl* URL to upload destination
+        *directory* directory to be added
+        
+        """
+        log.debug("mkdir: getting identity")
+
+        error_msg = None
+        #try:
+        my_identity = str(Application.instance().GetDefaultSubject())
+        log.debug("Got identity %s" % my_identity)
+        user=str(uploadUrl.split('/')[-1])
+        passwd=str(self.__venueClient.profile.connectionId)
+        DataStore.CreateDir(my_identity, uploadUrl,
+                            dirList, 
+                            user=user,
+                            passwd=passwd)
+
+        #except DataStore.UserCancelled:
+            #log.info('User cancelled upload of %s', fileList)
+        #except DataStore.FileNotFound, e:
+            #error_msg = "File not found: %s" % (e[0])
+        #except DataStore.NotAPlainFile, e:
+            #error_msg = "Not a plain file: %s" % (e[0])
+        #except DataStore.UploadFailed, e:
+            #error_msg = "Upload failed: %s" % (e)
+        #except Exception, e:
+            #error_msg = "Upload failed"
+
+        if error_msg is not None:
+            log.exception("bin.VenueClient::get_ident_and_mkdir: mkdir data error")
+            self.gui.Notify(error_msg, "mkdir Directory Error")
+         
+    #Added by NA2-HPCE
+    def get_ident_and_rmdir(self, uploadUrl, dirList):        
+        """
+        This method removes the specified directory at the given upload destination
+
+        **Arguments:**
+        
+        *uploadUrl* URL to upload destination
+        *directory* directory to be removed
+        
+        """
+        log.debug("rmdir: getting identity")
+
+        error_msg = None
         try:
             my_identity = str(Application.instance().GetDefaultSubject())
             log.debug("Got identity %s" % my_identity)
             user=str(uploadUrl.split('/')[-1])
             passw=str(self.__venueClient.profile.connectionId)
-            DataStore.UploadFiles(my_identity, uploadUrl,
-                                  fileList, 
+            DataStore.CreateDir(my_identity, uploadUrl,
+                                  directory, 
                                   user=user,
-                                  passw=passw,
-                                  progressCB=progressCB)
+                                  passw=passw)
 
         except DataStore.UserCancelled:
             log.info('User cancelled upload of %s', fileList)
@@ -839,13 +1008,15 @@ class VenueClientController:
         except DataStore.NotAPlainFile, e:
             error_msg = "Not a plain file: %s" % (e[0])
         except DataStore.UploadFailed, e:
-            error_msg = "Upload failed: %s" % (e)
+            error_msg = "rmdir failed: %s" % (e)
         except Exception, e:
-            error_msg = "Upload failed"
+            error_msg = "rmdir failed"
 
         if error_msg is not None:
-            log.exception("bin.VenueClient::get_ident_and_upload: Upload data error")
-            self.gui.Notify(error_msg, "Upload Files Error")
+            log.exception("bin.VenueClient::get_ident_and_rmdir: rmdir data error")
+            self.gui.Notify(error_msg, "rmdir Diretory Error")
+
+
 
     def SaveVenueData(self, dataDescription, localPathname):
         """
@@ -1394,7 +1565,7 @@ class VenueClientApp:
     def GetCommands(self,objDesc):
         commandList = None
 
-        if isinstance(objDesc,DataDescription):
+        if isinstance(objDesc,DataDescription3):
             splitName = objDesc.name.split('.')
             ext = ""
             

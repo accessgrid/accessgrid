@@ -34,6 +34,26 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="AddServiceRequest3">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="servicePackage" type="agtk:AGServicePackageDescription" />
+                <xsd:element minOccurs="1" maxOccurs="1" nillable="true" name="resource" type="agtk:ResourceDescription" />
+                <xsd:any processContents='lax' minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element minOccurs="0" maxOccurs="1" name="profile" type="agtk:ClientProfile" />    
+                </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddServiceResponse3">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="serviceDescription" type="agtk:AGServiceDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+
           <xsd:element name="AddServiceByNameRequest">
             <xsd:complexType>
               <xsd:sequence>
@@ -52,6 +72,26 @@
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
+
+          <xsd:element name="AddServiceByNameRequest3">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="name" type="xsd:string" />
+		        <xsd:element minOccurs="1" maxOccurs="1" nillable="true" name="resource" type="agtk:ResourceDescription" />
+                <xsd:any processContents='lax' minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element minOccurs="0" maxOccurs="1" name="profile" type="agtk:ClientProfile" />    
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="AddServiceByNameResponse3">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="serviceDescription" type="agtk:AGServiceDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
 
           <xsd:element name="GetDescriptionRequest">
             <xsd:complexType>
@@ -105,6 +145,20 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="GetServicesRequest3">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="GetServicesResponse3">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="serviceDescription" type="agtk:AGServiceDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+	  
           <xsd:element name="GetResourcesRequest">
             <xsd:complexType>
             </xsd:complexType>
@@ -145,6 +199,20 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="RemoveServiceRequest3">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="serviceDescription" type="agtk:AGServiceDescription3" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RemoveServiceResponse3">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+	  
           <xsd:element name="RemoveServicesRequest">
             <xsd:complexType>
             </xsd:complexType>
@@ -224,11 +292,23 @@
     <message name="AddServiceResponse">
 	<part name="parameters" element="agtksm:AddServiceResponse"/>
     </message>
+    <message name="AddServiceRequest3">
+	<part name="parameters" element="agtksm:AddServiceRequest3"/>
+    </message>
+    <message name="AddServiceResponse3">
+	<part name="parameters" element="agtksm:AddServiceResponse3"/>
+    </message>
     <message name="AddServiceByNameRequest">
 	<part name="parameters" element="agtksm:AddServiceByNameRequest"/>
     </message>
     <message name="AddServiceByNameResponse">
 	<part name="parameters" element="agtksm:AddServiceByNameResponse"/>
+    </message>
+    <message name="AddServiceByNameRequest3">
+	<part name="parameters" element="agtksm:AddServiceByNameRequest3"/>
+    </message>
+    <message name="AddServiceByNameResponse3">
+	<part name="parameters" element="agtksm:AddServiceByNameResponse3"/>
     </message>
     <message name="GetDescriptionRequest">
 	<part name="parameters" element="agtksm:GetDescriptionRequest"/>
@@ -254,6 +334,12 @@
     <message name="GetServicesResponse">
 	<part name="parameters" element="agtksm:GetServicesResponse"/>
     </message>
+    <message name="GetServicesRequest3">
+	<part name="parameters" element="agtksm:GetServicesRequest3"/>
+    </message>
+    <message name="GetServicesResponse3">
+	<part name="parameters" element="agtksm:GetServicesResponse3"/>
+    </message>
     <message name="GetResourcesRequest">
 	<part name="parameters" element="agtksm:GetResourcesRequest"/>
     </message>
@@ -277,6 +363,12 @@
     </message>
     <message name="RemoveServiceResponse">
 	<part name="parameters" element="agtksm:RemoveServiceResponse"/>
+    </message>
+    <message name="RemoveServiceRequest3">
+	<part name="parameters" element="agtksm:RemoveServiceRequest3"/>
+    </message>
+    <message name="RemoveServiceResponse3">
+	<part name="parameters" element="agtksm:RemoveServiceResponse3"/>
     </message>
     <message name="RemoveServicesRequest">
 	<part name="parameters" element="agtksm:RemoveServicesRequest"/>
@@ -316,9 +408,17 @@
         <input message="agtksm:AddServiceRequest"/>
         <output message="agtksm:AddServiceResponse"/>
     </operation>
+    <operation name="AddService3">
+        <input message="agtksm:AddServiceRequest3"/>
+        <output message="agtksm:AddServiceResponse3"/>
+    </operation>
     <operation name="AddServiceByName">
         <input message="agtksm:AddServiceByNameRequest"/>
         <output message="agtksm:AddServiceByNameResponse"/>
+    </operation>
+    <operation name="AddServiceByName3">
+        <input message="agtksm:AddServiceByNameRequest3"/>
+        <output message="agtksm:AddServiceByNameResponse3"/>
     </operation>
     <operation name="GetDescription">
         <input message="agtksm:GetDescriptionRequest"/>
@@ -336,6 +436,10 @@
         <input message="agtksm:GetServicesRequest"/>
         <output message="agtksm:GetServicesResponse"/>
     </operation>
+    <operation name="GetServices3">
+        <input message="agtksm:GetServicesRequest3"/>
+        <output message="agtksm:GetServicesResponse3"/>
+    </operation>
     <operation name="GetResources">
         <input message="agtksm:GetResourcesRequest"/>
         <output message="agtksm:GetResourcesResponse"/>
@@ -351,6 +455,10 @@
     <operation name="RemoveService">
         <input message="agtksm:RemoveServiceRequest"/>
         <output message="agtksm:RemoveServiceResponse"/>
+    </operation>
+    <operation name="RemoveService3">
+        <input message="agtksm:RemoveServiceRequest3"/>
+        <output message="agtksm:RemoveServiceResponse3"/>
     </operation>
     <operation name="RemoveServices">
         <input message="agtksm:RemoveServicesRequest"/>

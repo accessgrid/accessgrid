@@ -229,12 +229,12 @@ if __name__ == "__main__":
         def __init__(self, name):
             AGNetworkService.__init__(self, name, 'Convert from 16kHz to 8kHz', '1.0')
             # Create in and out capabilities.
-            self.capabilities = [Capability( Capability.CONSUMER,
-                                               Capability.VIDEO,
+            self.capabilities = [Capability3( Capability3.CONSUMER,
+                                               Capability3.VIDEO,
                                                "JPEG",
                                                90000, self.id),
-                                 Capability( Capability.PRODUCER,
-                                             Capability.VIDEO,
+                                 Capability3( Capability3.PRODUCER,
+                                             Capability3.VIDEO,
                                              "JPEG",
                                              90000, self.id)]
 
@@ -242,10 +242,24 @@ if __name__ == "__main__":
             self.Start(self)
 
         def StopTransform(self, streamList):
+	    """
+	    Method for legacy support for AG 3.0.2. clients
+	    """
+            return []
+
+	def StopTransform3(self, streamList):
+	    
             return []
                
         def Transform(self, streamList):
+	    """
+	    Method for legacy support for AG 3.0.2. clients
+	    """
             return []
+
+        def Transform3(self, streamList):
+            return []
+
 
     # Create the network service.
     service = FakeService('FakeService')
@@ -273,11 +287,11 @@ if __name__ == "__main__":
     # Test network service soap interface.
     nsProxy = AGNetworkServiceIW(service.url)
 
-    result = nsProxy.Transform([])
-    if not result == []:
+    result = nsProxy.Transform3([])
+    if not result == []
         raise Exception, 'Transform failed'
     
-    result = nsProxy.StopTransform([])
+    result = nsProxy.StopTransform3([])
     if not result == []:
         raise Exception, 'Stop transform failed'
     
