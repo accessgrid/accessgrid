@@ -208,7 +208,7 @@ class CmdProcessor(cmd.Cmd):
         if encryptFlag[0] == 'y':
             encryptKey = raw_input('Encryption key:')
             
-        venueDescription = VenueDescription(venueName,
+        venueDescription = VenueDescription3(venueName,
                                             venueDescription,
                                             (encryptFlag,encryptKey))
         

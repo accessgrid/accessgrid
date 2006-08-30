@@ -6,14 +6,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CreateVenues.py,v 1.3 2005-05-09 22:19:12 eolson Exp $
+# RCS-ID:      $Id: CreateVenues.py,v 1.4 2006-08-30 08:26:50 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This program is used to create venues for the venue server.
 """
-__revision__ = "$Id: CreateVenues.py,v 1.3 2005-05-09 22:19:12 eolson Exp $"
+__revision__ = "$Id: CreateVenues.py,v 1.4 2006-08-30 08:26:50 braitmai Exp $"
 
 import ConfigParser
 import sys
@@ -58,15 +58,15 @@ def main():
     # We do this in two iterations because we need valid URLs for connections
     for sec in config.sections():
         # Build Venue Descriptions
-        vdesc = VenueDescription(config.get(sec, 'name'),
+        vdesc = VenueDescription3(config.get(sec, 'name'),
                               config.get(sec, 'description'))
         vdesc.streams = []
     
         # Static Video
         if config.has_option(sec, 'video'):
             (host, port) = string.split(config.get(sec, 'video'), ':')
-            vcap = Capability(Capability.PRODUCER, Capability.VIDEO)
-            vsd = StreamDescription(vdesc.name, 
+            vcap = Capability3(Capability.PRODUCER, Capability.VIDEO)
+            vsd = StreamDescription3(vdesc.name, 
                                     MulticastNetworkLocation(host.strip(),
                                                              int(port), 
                                                              127),
@@ -76,8 +76,8 @@ def main():
         # Static Audio
         if config.has_option(sec, 'audio'):
             (host, port) = string.split(config.get(sec, 'audio'), ':')
-            acap = Capability(Capability.PRODUCER, Capability.AUDIO)
-            asd = StreamDescription(vdesc.name, 
+            acap = Capability3(Capability3.PRODUCER, Capability3.AUDIO)
+            asd = StreamDescription3(vdesc.name, 
                                     MulticastNetworkLocation(host.strip(),
                                                              int(port), 
                                                              127),
