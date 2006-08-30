@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.97 2006-08-30 08:23:37 braitmai Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.98 2006-08-30 09:09:17 braitmai Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.97 2006-08-30 08:23:37 braitmai Exp $"
+__revision__ = "$Id: DataStore.py,v 1.98 2006-08-30 09:09:17 braitmai Exp $"
 
 import os
 import time
@@ -574,6 +574,8 @@ class DataStore:
 	"""
         filesWithError = ""
 
+
+
         # 
         # Try to remove all files in the list.  If an error occurs, raise a FileNotFound error
         # with a string containing all names of files that couldn't be removed errors.
@@ -587,6 +589,7 @@ class DataStore:
 	self.cbLock.acquire()
 	
         for data in dataDescriptionList:
+
             errorFlag = 0
             
             log.debug("Datastore.RemoveFiles: %s", data.name)
@@ -596,24 +599,25 @@ class DataStore:
 	    #from the server.
 	    #Remove description from global description list
 	    dataDescription = self.descriptionDict[data.id]
-	    if dataDescription.GetParentId() == "-1":
-		del self.descriptionDict[dataDescription.id] 
+	    if not isinstance(dataDescription, DirectoryDescription):
+	    	if dataDescription.GetParentId() == "-1":
+		    del self.descriptionDict[dataDescription.id] 
             
 				
-		#Determine level of file
-	    	parentDD = self.root
+		    #Determine level of file
+	    	    parentDD = self.root
 	    
 		
-		#Create path for deletion of file
-		path = os.path.join(self.pathname, dataDescription.name)
+		    #Create path for deletion of file
+		    path = os.path.join(self.pathname, dataDescription.name)
 		
-		#Perform delete at parent description
-		parentDD.RemoveChild(dataDescription.id)
+		    #Perform delete at parent description
+		    parentDD.RemoveChild(dataDescription.id)
 
-		#Check for valid path
-		if not os.path.exists(path):
-		    errorFlag = 1
-		    log.error("DataStore.RemoveFiles: The path does not exist %s"%path)
+		    #Check for valid path
+		    if not os.path.exists(path):
+		    	errorFlag = 1
+		    	log.error("DataStore.RemoveFiles: The path does not exist %s"%path)
                                 
 		    #Actually remove the file from disk
 		    try:
@@ -622,8 +626,10 @@ class DataStore:
 			log.exception("DataStore.RemoveFiles: raised error")
 			errorFlag = 1
             
-		if errorFlag:
-		    filesWithError = filesWithError + " "+dataDescription.name
+		    if errorFlag:
+		     	filesWithError = filesWithError + " "+dataDescription.name
+	    	else:
+		    filesWithError = filesWithError + " " + dataDescription.name
 	    else:
 		filesWithError = filesWithError + " " + dataDescription.name
 
