@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.168 2006-05-01 21:12:27 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.169 2006-08-30 08:24:40 braitmai Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.168 2006-05-01 21:12:27 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.169 2006-08-30 08:24:40 braitmai Exp $"
 
 # Standard imports
 import sys
@@ -1471,11 +1471,11 @@ class VenueParamFrame(wxDialog):
                                             int(sap.GetVideoPort()),
                                             int(sap.GetVideoTtl()))
             strid = GUID()
-            staticVideoCap =  [ Capability( Capability.CONSUMER,
-                                          Capability.VIDEO,
+            staticVideoCap =  [ Capability3( Capability3.CONSUMER,
+                                          Capability3.VIDEO,
                                           "H261",
                                           90000, strid)]
-            streams.append(StreamDescription(venueName,
+            streams.append(StreamDescription3(venueName,
                                                   svml, staticVideoCap,
                                                   0, None, 1))
             # Static Audio
@@ -1483,31 +1483,31 @@ class VenueParamFrame(wxDialog):
                                             int(sap.GetAudioPort()),
                                             int(sap.GetAudioTtl()))
             strid = GUID()
-            staticAudioCap =  [ Capability( Capability.CONSUMER,
-                                          Capability.AUDIO,
+            staticAudioCap =  [ Capability3( Capability3.CONSUMER,
+                                          Capability3.AUDIO,
                                           "L16",16000,strid),
-                              Capability( Capability.CONSUMER,
-                                          Capability.AUDIO,
+                              Capability3( Capability3.CONSUMER,
+                                          Capability3.AUDIO,
                                           "L16",8000,strid),
-                              Capability( Capability.CONSUMER,
-                                          Capability.AUDIO,
+                              Capability3( Capability3.CONSUMER,
+                                          Capability3.AUDIO,
                                           "L8",16000, strid),
-                              Capability( Capability.CONSUMER,
-                                          Capability.AUDIO,
+                              Capability3( Capability3.CONSUMER,
+                                          Capability3.AUDIO,
                                           "L8",8000, strid),
-                               Capability( Capability.CONSUMER,
-                                          Capability.AUDIO,
+                               Capability3( Capability3.CONSUMER,
+                                          Capability3.AUDIO,
                                            "PCMU", 16000, strid),
-                              Capability( Capability.CONSUMER,
-                                          Capability.AUDIO,
+                              Capability3( Capability3.CONSUMER,
+                                          Capability3.AUDIO,
                                           "PCMU",8000, strid),
-                              Capability( Capability.CONSUMER,
-                                          Capability.AUDIO,
+                              Capability3( Capability3.CONSUMER,
+                                          Capability3.AUDIO,
                                           "GSM",16000, strid),
-                              Capability( Capability.CONSUMER,
-                                          Capability.AUDIO,
+                              Capability3( Capability3.CONSUMER,
+                                          Capability3.AUDIO,
                                           "GSM",8000, strid)]
-            streams.append(StreamDescription(venueName,
+            streams.append(StreamDescription3(venueName,
                                                   saml, staticAudioCap,
                                                   0, None, 1))
 
@@ -1517,7 +1517,7 @@ class VenueParamFrame(wxDialog):
 
         # Make a venue description
         
-        venue = VenueDescription(self.generalPanel.title.GetValue(),
+        venue = VenueDescription3(self.generalPanel.title.GetValue(),
                                  self.generalPanel.description.GetValue(),
                                  encryptTuple, exitsList, streams)
     
@@ -1651,7 +1651,7 @@ class ModifyVenueFrame(VenueParamFrame):
             transdict = {"cert_file":defaultId.GetPath(),
                          "key_file":defaultId.GetKeyPath()}
         venueProxy = VenueIW(self.venue.uri,transdict=transdict)
-        self.venue = venueProxy.AsVenueDescription()
+        self.venue = venueProxy.AsVenueDescription3()
         
         self.generalPanel.title.AppendText(self.venue.name)
         self.generalPanel.description.AppendText(self.venue.description)

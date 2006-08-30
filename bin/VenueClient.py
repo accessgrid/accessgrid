@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.281 2006-05-01 21:06:35 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.282 2006-08-30 08:24:40 braitmai Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.281 2006-05-01 21:06:35 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.282 2006-08-30 08:24:40 braitmai Exp $"
 
 # Standard Imports
 import os
@@ -134,6 +134,7 @@ def main():
     vcc.SetVenueClient(vc)
     progressDialog.UpdateGauge('Creating venue client user interface',80)
     vcui = VenueClientUI(vc, vcc, app)
+    vc.SetVCUI(vcui)
 
     # Associate the components with the ui
     vcc.SetGui(vcui)
