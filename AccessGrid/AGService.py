@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.60 2006-08-30 08:23:37 braitmai Exp $
+# RCS-ID:      $Id: AGService.py,v 1.61 2006-09-01 12:58:34 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.60 2006-08-30 08:23:37 braitmai Exp $"
+__revision__ = "$Id: AGService.py,v 1.61 2006-09-01 12:58:34 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -24,7 +24,7 @@ from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD
 from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Descriptions import StreamDescription
-from AccessGrid.Descriptions import AGServiceDescription
+from AccessGrid.Descriptions import AGServiceDescription3, AGServiceDescription
 
 from AccessGrid.interfaces.AGService_client import AGServiceIW
 from AccessGrid.interfaces.AGService_interface import AGService as AGServiceI
@@ -198,7 +198,7 @@ class AGService:
                         match = 1
                 if not match:
                     return 0
-            if isinstance(StreamDescription):
+            if isinstance(streamDescription, StreamDescription):
                 self.streamDescription = streamDescription
             else:
                 self.log.debug("StreamDescription invalid!")
@@ -313,6 +313,8 @@ class AGService:
 	"""
 	Method for legacy support for AG 3.0.2. clients
 	"""
+	for cp in self.capabilities:
+	    self.log.debug("GetDescription3:Capability in Service %s", cp)
         r = AGServiceDescription(self.name,
                                  self.uri,
                                  self.capabilities,
@@ -322,6 +324,8 @@ class AGService:
         return r
 
     def GetDescription3(self):
+	for cp in self.capabilities:
+	    self.log.debug("GetDescription3:Capability in Service %s", cp)
         r = AGServiceDescription3(self.name,
                                  self.uri,
                                  self.capabilities,

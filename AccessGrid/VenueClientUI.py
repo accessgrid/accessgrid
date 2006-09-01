@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.206 2006-08-30 08:23:37 braitmai Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.207 2006-09-01 12:58:34 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.206 2006-08-30 08:23:37 braitmai Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.207 2006-09-01 12:58:34 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2059,6 +2059,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                             log.info("bin.VenueClient::RemoveData: Not authorized to remove data")
                             self.Notify("You are not authorized to remove the file", 
                                         "Remove Personal Files")        
+			except LegacyCallInvalid:
+                            log.info("bin.VenueClient::RemoveData: Invalid legacy call on non-root data")
+                            self.Notify("You tried to remove data, that is not accesible for AG3.0.2 users in the data stroe structure ", 
+                                        "Remove Files")        
+			except LegacyCallOnDir:
+			    log.info("bin.VenueClient::RemoveData: No delete of directories for AG3.0.2 clients")
+                            self.Notify("You are not to delete directories with an AG3.0.2 client ", 
+                                        "Remove Files")        
                         except:
                             log.exception("bin.VenueClient::RemoveData: Error occured when trying to remove data")
                             self.Error("The file could not be removed", "Remove Files Error")

@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.275 2006-08-30 08:23:37 braitmai Exp $
+# RCS-ID:      $Id: Venue.py,v 1.276 2006-09-01 12:58:34 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.275 2006-08-30 08:23:37 braitmai Exp $"
+__revision__ = "$Id: Venue.py,v 1.276 2006-09-01 12:58:34 braitmai Exp $"
 
 import sys
 import time
@@ -879,6 +879,7 @@ class Venue:
         *capabilities* Node capabilities
         """
         log.debug("negotiate capabilities")
+	
 
         if not self.clients.has_key(privateId):
             raise InvalidVenueState
@@ -888,6 +889,7 @@ class Venue:
         # group service capabilities together
         services = {}
         for c in capabilities:
+	    log.debug("Capability to be processed: %s", c)
             if services.has_key(c.serviceId):
                 caps = services[c.serviceId]
                 caps.append(c)
@@ -902,7 +904,7 @@ class Venue:
         
         for serviceId in services.keys():
             stream = self.__GetMatchingStream(services[serviceId])
-            nrOfProducers = filter(lambda x: x.role == Capability.PRODUCER, capabilities)
+            nrOfProducers = filter(lambda x: x.role == Capability3.PRODUCER, capabilities)
             
             # If matching stream is found, add capabilities to the stream
             if stream:
@@ -944,7 +946,10 @@ class Venue:
 		    
 		    #AG3.0.2 exception block
 		    try:
-		    	if locCap[0].locationType == Capability.PREFERRED_UNICAST:
+			for entry in locCap:
+			    log.debug(" Caps: %s", entry)
+			    
+		    	if locCap[0].locationType == Capability3.PREFERRED_UNICAST:
 			    log.debug("Stream prefers unicast!")
 			    addr = self.AllocateUnicastLocation(locCap[0])
 		    	else:
@@ -2030,7 +2035,8 @@ class Venue:
         # This is venue resident so delete the file
         if(dataDescription.type is None or dataDescription.type == "None"):
 	    log.debug("Entered Event activiation!")
-	    self.dataStore.RemoveFiles([dataDescription])
+	    if self.dataStore.RemoveFiles([dataDescription]):
+		return dataDescription
 	    legacyObject = self.CreateLegacyDataDescription(dataDescription)
             self.eventClient.Send( Event.REMOVE_DATA, legacyObject)
         else:

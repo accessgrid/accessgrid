@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.326 2006-08-30 08:23:37 braitmai Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.327 2006-09-01 12:58:34 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.326 2006-08-30 08:23:37 braitmai Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.327 2006-09-01 12:58:34 braitmai Exp $"
 
 import sys
 import os
@@ -1133,10 +1133,12 @@ class VenueClient:
 
         try:
             if self.nodeService:
-                self.capabilities = self.nodeService.GetCapabilities()
+                self.capabilities = self.nodeService.GetCapabilities3()
             if not self.capabilities:
                 self.capabilities = []
             
+            for cap in self.capabilities:
+		log.debug("Capability on VenueEnter: %s", cap)
             
         except:
             log.exception("EnterVenue: Exception getting capabilities")
@@ -1306,7 +1308,7 @@ class VenueClient:
         try:
             log.debug("Setting node service streams")
             if self.nodeService:
-                self.nodeService.SetStreams( self.streamDescList )
+                self.nodeService.SetStreams3( self.streamDescList )
         except:
             log.exception("Error setting streams")
             

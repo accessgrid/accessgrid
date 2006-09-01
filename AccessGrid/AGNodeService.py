@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.109 2006-08-30 08:23:37 braitmai Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.110 2006-09-01 12:58:34 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.109 2006-08-30 08:23:37 braitmai Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.110 2006-09-01 12:58:34 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -581,7 +581,7 @@ class AGNodeService:
                     
                     # Actually add the service to the servicemgr
                     # and set resources, parameters, and identity
-                    serviceDesc = serviceManagerObj.AddServiceByName(service.packageName,
+                    serviceDesc = serviceManagerObj.AddServiceByName3(service.packageName,
                                                                      service.resource,
                                                                      service.parameters,
                                                                      prefs.GetProfile())

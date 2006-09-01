@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.112 2006-07-26 15:58:04 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.113 2006-09-01 12:58:34 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.112 2006-07-26 15:58:04 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.113 2006-09-01 12:58:34 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -33,7 +33,7 @@ from AccessGrid.hosting import Client
 from AccessGrid.UIUtilities import AboutDialog
 from AccessGrid.AGParameter import ValueParameter, RangeParameter
 from AccessGrid.AGParameter import OptionSetParameter
-from AccessGrid.Descriptions import AGServiceManagerDescription, AGServiceDescription
+from AccessGrid.Descriptions import AGServiceManagerDescription, AGServiceDescription3, AGServiceDescription
 from AccessGrid.Descriptions import NodeConfigDescription
 from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
@@ -795,7 +795,7 @@ class NodeManagementClientFrame(wxFrame):
                 self.tree.SetItemImage(sm, self.smImage,which=wxTreeItemIcon_Normal)
                 self.tree.SetItemImage(sm, self.smImage, which=wxTreeItemIcon_Expanded)
                 self.tree.SetItemData(sm,wxTreeItemData(serviceManager))
-                services = AGServiceManagerIW( serviceManager.uri ).GetServices()
+                services = AGServiceManagerIW( serviceManager.uri ).GetServices3()
                         
                 if services: 
                     for service in services:
@@ -962,7 +962,7 @@ class NodeManagementClientFrame(wxFrame):
                 # Add the service
                 #
                 wxBeginBusyCursor()
-                serviceDescription = AGServiceManagerIW(serviceManager.uri).AddService( serviceToAdd,
+                serviceDescription = AGServiceManagerIW(serviceManager.uri).AddService3( serviceToAdd,
                                                                                         None, [],
                                                                                         self.app.GetPreferences().GetProfile())
                 
@@ -1050,7 +1050,7 @@ class NodeManagementClientFrame(wxFrame):
         """
         Enable all known services
         """
-        services = self.nodeServiceHandle.GetServices()
+        services = self.nodeServiceHandle.GetServices3()
         for service in services:
             self.nodeServiceHandle.SetServiceEnabled(service.uri,1)
 
@@ -1087,7 +1087,7 @@ class NodeManagementClientFrame(wxFrame):
         """
         Disable all known services
         """
-        svcs = self.nodeServiceHandle.GetServices()
+        svcs = self.nodeServiceHandle.GetServices3()
         for svc in svcs:
             self.nodeServiceHandle.SetServiceEnabled(svc.uri,0)
 
@@ -1110,10 +1110,10 @@ class NodeManagementClientFrame(wxFrame):
             # Remove all selected services
             for s in selections:
                 obj = self.tree.GetPyData(s)
-                if isinstance(obj,AGServiceDescription):
+                if isinstance(obj,AGServiceDescription3):
                     smItem = self.tree.GetItemParent(s)
                     sm = self.tree.GetItemData(smItem).GetData()
-                    AGServiceManagerIW( sm.uri ).RemoveService( obj )
+                    AGServiceManagerIW( sm.uri ).RemoveService3( obj )
                     self.tree.Delete(s)
                                        
             self.UpdateUI()
@@ -1127,7 +1127,7 @@ class NodeManagementClientFrame(wxFrame):
             if isinstance(selections[0],AGServiceManagerDescription):
                 item = event.GetItem()
                 self.tree.Toggle(item)
-            elif isinstance(selections[0],AGServiceDescription):
+            elif isinstance(selections[0],AGServiceDescription3):
                 self.ConfigureService(event)
 
     def ConfigureService( self, event=None ):
@@ -1222,7 +1222,7 @@ class NodeManagementClientFrame(wxFrame):
         selection = selections[0]
         if isinstance(selection,AGServiceManagerDescription):
             self.PopupHostMenu(evt)
-        elif isinstance(selection,AGServiceDescription):
+        elif isinstance(selection,AGServiceDescription3):
             self.PopupServiceMenu(evt)
     
     def PopupServiceMenu(self, evt):
@@ -1301,7 +1301,7 @@ class NodeManagementClientFrame(wxFrame):
                 sm = self.tree.GetItemData(s).GetData()
                 if sm not in retSel:
                     retSel.append(sm)
-            elif includeImplicit and isinstance(obj,AGServiceDescription):
+            elif includeImplicit and isinstance(obj,AGServiceDescription3):
                 smItem = self.tree.GetItemParent(s)
                 sm = self.tree.GetItemData(smItem).GetData()
                 if sm not in retSel:
@@ -1310,7 +1310,7 @@ class NodeManagementClientFrame(wxFrame):
         return retSel
         
     def GetSelectedServices(self):
-        return self.GetSelectedItems(AGServiceDescription)
+        return self.GetSelectedItems(AGServiceDescription3)
         
     def RemoveSelectedItems(self):
     
@@ -1320,10 +1320,10 @@ class NodeManagementClientFrame(wxFrame):
         # Remove services first
         for s in selections:
             obj = self.tree.GetPyData(s)
-            if isinstance(obj,AGServiceDescription):
+            if isinstance(obj,AGServiceDescription3):
                 smItem = self.tree.GetItemParent(s)
                 sm = self.tree.GetItemData(smItem).GetData()
-                AGServiceManagerIW( sm.uri ).RemoveService( obj )
+                AGServiceManagerIW( sm.uri ).RemoveService3( obj )
                 itemsToRemove.append(s)
 
         # Remove service managers

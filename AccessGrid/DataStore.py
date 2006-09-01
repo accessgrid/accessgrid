@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.98 2006-08-30 09:09:17 braitmai Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.99 2006-09-01 12:58:34 braitmai Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.98 2006-08-30 09:09:17 braitmai Exp $"
+__revision__ = "$Id: DataStore.py,v 1.99 2006-09-01 12:58:34 braitmai Exp $"
 
 import os
 import time
@@ -38,6 +38,12 @@ class DuplicateFile(Exception):
     pass
 
 class FileNotFound(Exception):
+    pass
+
+class LegacyCallInvalid(Exception):
+    pass
+
+class LegacyCallOnDir(Exception):
     pass
 
 class NotAuthorized(Exception):
@@ -585,6 +591,8 @@ class DataStore:
 	
 
 	#Block with possible long duration; acquire lock
+	legacyCallInvalid = False
+	legacyCallOnDir = False
 
 	self.cbLock.acquire()
 	
@@ -629,17 +637,23 @@ class DataStore:
 		    if errorFlag:
 		     	filesWithError = filesWithError + " "+dataDescription.name
 	    	else:
-		    filesWithError = filesWithError + " " + dataDescription.name
+		    legacyCallInvalid= True
 	    else:
-		filesWithError = filesWithError + " " + dataDescription.name
+		legacyCallOnDir = True
 
 	#Release lock 
 	self.cbLock.release()
                 
 	log.debug("Reached end of RemoveFiles3")
+
+	if legacyCallInvalid or legacyCallOnDir:
+	    return True
+	    #raise NotAuthorized
 	
         if filesWithError:
             raise FileNotFound(filesWithError)
+	
+	return False
 
 
     #Added by NA2-HPCE
