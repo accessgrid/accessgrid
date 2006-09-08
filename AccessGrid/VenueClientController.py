@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.67 2006-08-30 08:23:37 braitmai Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.68 2006-09-08 21:48:08 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.67 2006-08-30 08:23:37 braitmai Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.68 2006-09-08 21:48:08 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -430,7 +430,7 @@ class VenueClientController:
             
         self.__venueClient.EnterVenue(uri)
     
-    def EnterVenueCB(self,venueUrl):
+    def EnterVenueCB(self,venueUrl,withcert=0):
         """
         This method 
 
@@ -449,7 +449,7 @@ class VenueClientController:
 
         # Enter the venue
         log.debug('VenueClientController calling Venue.EnterVenue')
-        self.__venueClient.EnterVenue(venueUrl)
+        self.__venueClient.EnterVenue(venueUrl,withcert)
         log.debug('VenueClientController after Venue.EnterVenue')
     #
     # Data Actions

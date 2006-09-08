@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.327 2006-09-01 12:58:34 braitmai Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.328 2006-09-08 21:47:49 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.327 2006-09-01 12:58:34 braitmai Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.328 2006-09-08 21:47:49 turam Exp $"
 
 import sys
 import os
@@ -867,7 +867,16 @@ class VenueClient:
         # Enter the venue
         #
         self.venueUri = str(URL)
-        self.__venueProxy = VenueIW(URL) #, tracefile=sys.stdout)
+        if withcert:
+            defaultId = self.app.GetCertificateManager().GetDefaultIdentity()
+            transdict = {}
+            if defaultId:
+                transdict = {"cert_file":defaultId.GetPath(),
+                             "key_file":defaultId.GetKeyPath()}
+            print 'using cert and key ', transdict
+            self.__venueProxy = VenueIW(URL,transdict=transdict) #, tracefile=sys.stdout)
+        else:
+            self.__venueProxy = VenueIW(URL) #, tracefile=sys.stdout)
 
         if not self.__venueClientUI == None:
             self.__venueClientUI.SetVenueProxy(self.__venueProxy)
@@ -1118,7 +1127,7 @@ class VenueClient:
         self.jabber.SetChatRoom(currentRoom, conferenceHost)
         self.jabber.SendPresence('available')
                                         
-    def EnterVenue(self, URL):
+    def EnterVenue(self, URL,withcert=0):
         """
         EnterVenue puts this client into the specified venue.
 
@@ -1161,7 +1170,7 @@ class VenueClient:
         try:
             # Enter the venue
             log.debug('calling __EnterVenue')
-            self.__EnterVenue(URL)
+            self.__EnterVenue(URL,withcert)
             log.debug('after __EnterVenue')
 
             # Return a string of warnings that can be displayed to the user
@@ -1174,6 +1183,7 @@ class VenueClient:
             enterSuccess = 0
             mod,klass = GetHostingExceptionModuleAndClassName(e)
             if klass == "CertificateRequired":
+                raise CertificateRequired
                 self.warningString += "A certificate is required for entry into this Venue,\nand this version of the software does not support\nthe use of certificates with the Venue Client.\nUpgrade to the next version of the Access Grid\nsoftware before trying to enter this Venue."
             else:
                 log.exception('"EnterVenue: failed with hosting exception')
