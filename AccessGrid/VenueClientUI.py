@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.207 2006-09-01 12:58:34 braitmai Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.208 2006-09-08 22:00:05 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.207 2006-09-01 12:58:34 braitmai Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.208 2006-09-08 22:00:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -60,7 +60,10 @@ from AccessGrid.RssReader import RssReader,strtimeToSecs
 from AccessGrid.interfaces.Venue_client import VenueIW   
 from AccessGrid import ServiceDiscovery   
 from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
+from AccessGrid.Security.wxgui import CertificateManagerWXGUI
 
+
+from AccessGrid.Venue import CertificateRequired
 try:
     import win32api
 except:
@@ -380,24 +383,24 @@ class VenueClientUI(VenueClientObserver, wxFrame):
               
         self.preferences = wxMenu()
 
-# - Disabled for 3.0: No client-side auth support
-#         #
-#         # Retrieve the cert mgr GUI from the application.
-#         #
-#         self.cmui = None
-#         try:
-#             mgr = app.GetCertificateManager()
-#         except:
-#             log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
-#                            certificate mgr user interface, continuing")
-# 
-#         self.cmui = CertificateManagerWXGUI()
-#         self.cmui.SetCertificateManager(mgr)
-#         certMenu = self.cmui.GetMenu(self)
-#         for item in certMenu.GetMenuItems():
-#             self.preferences.AppendItem(item)
-#         
-#         self.preferences.AppendSeparator()
+        #
+        # Retrieve the cert mgr GUI from the application.
+        #
+        self.cmui = None
+        try:
+            mgr = app.GetCertificateManager()
+        except Exception,e:
+            print 'exception gettin cert mgr', e 
+            log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
+                           certificate mgr user interface, continuing")
+
+        self.cmui = CertificateManagerWXGUI.CertificateManagerWXGUI(mgr)
+        self.cmui.SetCertificateManager(mgr)
+        certMenu = self.cmui.GetMenu(self)
+        for item in certMenu.GetMenuItems():
+            self.preferences.AppendItem(item)
+        
+        self.preferences.AppendSeparator()
 
         # Add node-related entries
         self.preferences.AppendRadioItem(self.ID_USE_MULTICAST, "Use Multicast",
@@ -1978,11 +1981,22 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             # - update the venue url
             self.venueAddressBar.SetAddress(venueUrl)
             
-            self.SetStatusText("Trying to enter venue at %s" % (venueUrl,))
+            self.SetStatusText("Entering venue at %s" % (venueUrl,))
 
             # Enter in a thread so UI gets responsive immediately
             self.controller.EnterVenueCB(venueUrl)
             
+            self.SetStatusText("Entered venue at %s" % (venueUrl,))
+
+            self.statusbar.SetStatusText("",1)
+            wxEndBusyCursor()
+        except CertificateRequired:
+            try:
+                self.usingCert = 1
+                self.controller.EnterVenueCB(venueUrl,withcert=1)
+                self.statusbar.SetStatusText("SECURE",1)
+            except:
+                self.Notify('A certificate is required to enter this Venue, but you do not have one.  Press OK to launch the certificate manager so that you can import or request a certificate, or Cancel to not.')
             wxEndBusyCursor()
         except:
             wxEndBusyCursor()
@@ -4777,7 +4791,7 @@ class JabberClientPanel(wxPanel):
         sizer.Add(self.outputPanel, 1, wxEXPAND)
         self.sashWindow.SetSizer(sizer)
         
-    def __OutputText(self, name, message):
+    def __OutputText(self, name, message, messagetime=None):
         '''
         Prints received text in the text chat.
         **Arguments**
@@ -4785,11 +4799,14 @@ class JabberClientPanel(wxPanel):
         *message* The actual message.
         '''
                
+        # Add time to event message
+        if not messagetime:
+           messagetime = localtime()
+        dateAndTime = strftime("%b %d, %I:%M", messagetime )
+        
         # Event message
         if name == None:
-            # Add time to event message
-            dateAndTime = strftime("%a, %d %b %Y, %H:%M:%S", localtime() )
-            message = message + " ("+dateAndTime+")" 
+            message = '%s: %s' % (dateAndTime,message)
 
             # Events are coloured blue
             self.textOutput.SetDefaultStyle(wxTextAttr(wxBLUE))
@@ -4802,9 +4819,6 @@ class JabberClientPanel(wxPanel):
             self.textOutput.AppendText(message+'\n')
         # Someone is writing a message
         else:
-            # Set names bold
-            pointSize = wxDEFAULT
-
             # Fix for osx
             pointSize = wxNORMAL_FONT.GetPointSize()
 
@@ -4824,6 +4838,8 @@ class JabberClientPanel(wxPanel):
             else:
                 nameText = name
                 messageText = message + '\n'
+                
+            self.textOutput.AppendText(dateAndTime + ': ')
 
             self.textOutput.AppendText(nameText)
           
