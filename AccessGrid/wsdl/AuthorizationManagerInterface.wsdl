@@ -362,6 +362,31 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="RequireIdentificationRequest">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="inputarg" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="RequireIdentificationResponse">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+          
+          <xsd:element name="IsIdentificationRequiredRequest">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="IsIdentificationRequiredResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="outputarg" type="xsd:integer" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
       </schema>
       </types>
 
@@ -496,6 +521,22 @@
 
 
 
+    <message name="RequireIdentificationRequest">
+	<part name="parameters" element="agtkam:RequireIdentificationRequest"/>
+    </message>
+    <message name="RequireIdentificationResponse">
+	<part name="parameters" element="agtkam:RequireIdentificationResponse"/>
+    </message>
+
+
+    <message name="IsIdentificationRequiredRequest">
+	<part name="parameters" element="agtkam:IsIdentificationRequiredRequest"/>
+    </message>
+    <message name="IsIdentificationRequiredResponse">
+	<part name="parameters" element="agtkam:IsIdentificationRequiredResponse"/>
+    </message>
+
+
     <portType name="AuthorizationManager">
     <operation name="AddAction">
         <input message="agtkam:AddActionRequest"/>
@@ -580,6 +621,14 @@
     <operation name="TestImportExport">
         <input message="agtkam:TestImportExportRequest"/>
         <output message="agtkam:TestImportExportResponse"/>
+    </operation>
+    <operation name="RequireIdentification">
+        <input message="agtkam:RequireIdentificationRequest"/>
+        <output message="agtkam:RequireIdentificationResponse"/>
+    </operation>
+    <operation name="IsIdentificationRequired">
+        <input message="agtkam:IsIdentificationRequiredRequest"/>
+        <output message="agtkam:IsIdentificationRequiredResponse"/>
     </operation>
     </portType>
 

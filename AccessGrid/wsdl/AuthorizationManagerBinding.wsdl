@@ -207,6 +207,24 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
+    <operation name="RequireIdentification">
+        <soap:operation soapAction="urn:#RequireIdentification"/>
+        <input>
+            <soap:body use="literal"/> 
+        </input>
+        <output>
+            <soap:body use="literal"/> 
+        </output>
+    </operation>
+    <operation name="IsIdentificationRequired">
+        <soap:operation soapAction="urn:#IsIdentificationRequired"/>
+        <input>
+            <soap:body use="literal"/> 
+        </input>
+        <output>
+            <soap:body use="literal"/> 
+        </output>
+    </operation>
     </binding>
     <service name="AuthorizationManager">
         <port name="AuthorizationManager" binding="agtkam:AuthorizationManager">
