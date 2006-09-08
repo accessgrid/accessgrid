@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.214 2006-08-30 08:23:37 braitmai Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.215 2006-09-08 22:06:00 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.214 2006-08-30 08:23:37 braitmai Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.215 2006-09-08 22:06:00 turam Exp $"
 
 
 # Standard stuff
@@ -157,9 +157,9 @@ class VenueServer:
         self.performanceReportFrequency = 0
         self.authorizationPolicy = None
         self.services = dict()
-	
-	#Added by NA2-HPCE
-	self.dataDescriptionStack = {}
+        
+        #Added by NA2-HPCE
+        self.dataDescriptionStack = {}
         
         # Basic variable initializations
         self.perfFile = None
@@ -423,32 +423,32 @@ class VenueServer:
     
     #Modified by NA2-HPCE
     def dataActivityCB(self,cmd,pathfile):
-	log.debug("dataActivityCB: command = %s", cmd)
-	log.info("dataActivityCB: command = %s", cmd)
-	log.info("dataActivityCB: line = %s ", pathfile)
+        log.debug("dataActivityCB: command = %s", cmd)
+        log.info("dataActivityCB: command = %s", cmd)
+        log.info("dataActivityCB: line = %s ", pathfile)
         if cmd == 'RECV':    
-	    parts = pathfile.split(os.path.sep)
-	    for part in parts:
-		log.debug("dataActivityCB: Pathpart is: %s", part)
-	    venueid = parts[1]
-	    fileList = parts[2:len(parts)]
+            parts = pathfile.split(os.path.sep)
+            for part in parts:
+                log.debug("dataActivityCB: Pathpart is: %s", part)
+            venueid = parts[1]
+            fileList = parts[2:len(parts)]
 
-	    filename = ""
-	    
-	    for file in fileList:
-		filename = filename + file 
-		filename = filename + os.path.sep
+            filename = ""
+            
+            for file in fileList:
+                filename = filename + file 
+                filename = filename + os.path.sep
 
-	    filename = filename.rstrip(os.path.sep)
-	    
-	    log.debug("dataActivityCB: VenueID %s ; Filename: %s",venueid, filename)
-	    
-	    for venue in self.venues:
-		log.debug("dataActivityCB: Venue is: %s", venue)
-	    
-	    log.debug("dataActivityCB: Key existing? %d", self.venues.has_key(venueid))
-	    self.venues[venueid].dataStore.AddFile('',filename)   
-	    
+            filename = filename.rstrip(os.path.sep)
+            
+            log.debug("dataActivityCB: VenueID %s ; Filename: %s",venueid, filename)
+            
+            for venue in self.venues:
+                log.debug("dataActivityCB: Venue is: %s", venue)
+            
+            log.debug("dataActivityCB: Key existing? %d", self.venues.has_key(venueid))
+            self.venues[venueid].dataStore.AddFile('',filename)   
+            
     
     def _InitFromFile(self, config):
         """
@@ -776,7 +776,7 @@ class VenueServer:
         # Don't checkpoint if we are already
         if not self.checkpointing:
             self.checkpointing = 1
-	    log.info("Checkpoint starting at: %s", time.asctime())
+            log.info("Checkpoint starting at: %s", time.asctime())
         else:
             log.info("Checkpointing active; skipping")
             return
@@ -793,11 +793,11 @@ class VenueServer:
                 # a copy of the real list we're going to dump anyway
 
                 try:            
-		    self.simpleLock.acquire()
+                    self.simpleLock.acquire()
                     store.write(self.venues[venuePath].AsINIBlock())
-		    self.simpleLock.release()
+                    self.simpleLock.release()
                 except:
-		    self.simpleLock.release()
+                    self.simpleLock.release()
                     log.exception("Exception Storing Venue!")
                     return 0
 
@@ -827,8 +827,8 @@ class VenueServer:
         """
         The AddVenue method takes a venue description and creates a new
         Venue Object, then makes it available from this Venue Server.
-	
-	Method for legacy support for AG 3.0.2. clients
+        
+        Method for legacy support for AG 3.0.2. clients
         """
 
         # create an event channel for this venue.
@@ -1026,19 +1026,19 @@ class VenueServer:
         return venue.uri
     
     def AddEntryPoint(self, directory, parent, venueid):
-	dataPair = []
-	dataPair.append(parent)
-	dataPair.append(venueid)
-	self.dataDescriptionStack[directory] = dataPair
-	
+        dataPair = []
+        dataPair.append(parent)
+        dataPair.append(venueid)
+        self.dataDescriptionStack[directory] = dataPair
+        
     def RemoveEntryPoint(self, key):
-	del self.dataDescriptionStack[key]
+        del self.dataDescriptionStack[key]
 
     def ModifyVenue(self, oid, venueDesc):   
         """   
         ModifyVenue updates a Venue Description.   
-	
-	Method for legacy support for AG 3.0.2. clients
+        
+        Method for legacy support for AG 3.0.2. clients
         """
         venue = self.venues[oid]
 
@@ -1168,8 +1168,8 @@ class VenueServer:
         """
         GetVenues returns a list of Venues Descriptions for the venues
         hosted by this VenueServer.
-	
-	Method for legacy support for AG 3.0.2. clients
+        
+        Method for legacy support for AG 3.0.2. clients
 
         **Arguments:**
 
