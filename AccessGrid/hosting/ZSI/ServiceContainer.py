@@ -105,6 +105,7 @@ class ServiceContainerBase:
 
 from BaseHTTPServer import HTTPServer
 class ServiceContainer(ServiceContainerBase,HTTPServer):
+    proto = 'http'
     def __init__(self, server_address, services=[], RequestHandlerClass=AGSOAPRequestHandler):
         '''server_address -- 
            RequestHandlerClass -- 
@@ -128,6 +129,7 @@ if haveCryptoLib:
     SSL.Connection.clientPostConnectionCheck = None
     SSL.Connection.serverPostConnectionCheck = None
     class SecureServiceContainer(ServiceContainerBase,SSL.SSLServer):
+        proto = 'https'
         def __init__(self, server_address,context, services=[],RequestHandlerClass=AGSOAPRequestHandler):
             '''server_address -- 
                RequestHandlerClass -- 
@@ -144,7 +146,7 @@ if haveCryptoLib:
 
         def handle_error(self, request=None, client_address=None):
             log.exception(request)
-            SSL.SSLServer.handle_error(self)
+            SSL.SSLServer.handle_error(self,request,client_address)
 
     class ThreadingSecureServiceContainer(SocketServer.ThreadingMixIn,SecureServiceContainer):
         def __init__(self, server_address,context,services=[]):
