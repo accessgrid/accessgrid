@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.276 2006-09-01 12:58:34 braitmai Exp $
+# RCS-ID:      $Id: Venue.py,v 1.277 2006-09-08 21:29:22 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.276 2006-09-01 12:58:34 braitmai Exp $"
+__revision__ = "$Id: Venue.py,v 1.277 2006-09-08 21:29:22 turam Exp $"
 
 import sys
 import time
@@ -279,6 +279,9 @@ class Venue:
                     subject = cert.get_subject().as_text()
                     subject = X509Subject.X509Subject(subject)
                 else:
+                    if self.authManager.IsIdentificationRequired():
+                        raise CertificateRequired
+                        
                     subject = None
                     
                 # Check whether user is authorized to perform this action
@@ -295,6 +298,8 @@ class Venue:
                     return 1
                     
                 return 0
+        except CertificateRequired:
+            raise
         except:
             log.exception("Exception in Venue.authorize; rejecting authorization")
             return 0
@@ -330,6 +335,7 @@ class Venue:
 					"NegotiateCapabilities3",
                                         "GetStaticStreams",
                                         "GetUploadDescriptor",
+                                        "AsVenueDescription",
                                         "GetRolesForSubject",
                                         "CreateApplication",
                                         "UpdateApplication",
@@ -814,6 +820,7 @@ class Venue:
         serviceProducerCaps = filter(lambda x: x.role == Capability.PRODUCER, capabilities)
         serviceConsumerCaps = filter(lambda x: x.role == Capability.CONSUMER, capabilities)
         streams = self.streamList.GetStreams()
+        streams = filter(lambda x: x.capability[0].type == capabilities[0].type, streams)
         matchingStreams = []
 
         for s in streams:
@@ -1972,44 +1979,44 @@ class Venue:
         LEGACY: This is just left here not to change the interface for
         AG2.0 clients. (personal data)
         """
-	legacyObject = self.CreateLegacyDataDescription(dataDescription)
+        legacyObject = self.CreateLegacyDataDescription(dataDescription)
         self.eventClient.Send( Event.ADD_DATA, legacyObject)
 	
 	
     	
     # Added by NA2-HPCE
     def AddRootDir(self, dataDesc):
-	locDataDesc=self.dataStore.AddRootDir(dataDesc)
+        locDataDesc=self.dataStore.AddRootDir(dataDesc)
 	
-	self.server.eventService.Distribute(self.uniqueId,
+        self.server.eventService.Distribute(self.uniqueId,
                                              Event(Event.ADD_DATA,
                                                     self.uniqueId,
                                                     locDataDesc))
 	
     def AddEntryPoint(self, directory, parent):
-	server.AddEntryPoint(directory,parent,self.uniqueId)
+        server.AddEntryPoint(directory,parent,self.uniqueId)
 	    
     
     # Added by NA2-HPCE for debugging
     def HDDump(self):
-	self.dataStore.Dump()
+        self.dataStore.Dump()
 	   
     #Added by NA2-HPCE
     def AddDir(self, name, desc, level, puid):
-	log.debug("CreateDir %s at level %s", name, level)
-	locDataDesc=self.dataStore.AddDir(name, desc, level, puid)
+        log.debug("CreateDir %s at level %s", name, level)
+        locDataDesc=self.dataStore.AddDir(name, desc, level, puid)
 	
-	#self.server.eventService.Distribute(self.uniqueId,
+        #self.server.eventService.Distribute(self.uniqueId,
                                              #Event(Event.ADD_DATA,
                                                     #self.uniqueId,
                                                     #locDataDesc))
 	
-	#Converting to list to work around non-functioning dictionaries
-	#locDataDesc.dataContainer.data = locDataDesc.dataContainer.values()
-	
-	#Send event to clients
-	log.debug("Sending update event for added directory!")
-	self.eventClient.Send(Event.ADD_DIR,locDataDesc.id)
+        #Converting to list to work around non-functioning dictionaries
+        #locDataDesc.dataContainer.data = locDataDesc.dataContainer.values()
+
+        #Send event to clients
+        log.debug("Sending update event for added directory!")
+        self.eventClient.Send(Event.ADD_DIR,locDataDesc.id)
 
     def RemoveData(self, dataDescription):
         """
