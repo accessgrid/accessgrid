@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.328 2006-09-08 21:47:49 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.329 2006-09-11 15:41:59 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.328 2006-09-08 21:47:49 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.329 2006-09-11 15:41:59 turam Exp $"
 
 import sys
 import os
@@ -862,7 +862,7 @@ class VenueClient:
     #
     
     #Modified by NA2-HPCE
-    def __EnterVenue(self,URL):
+    def __EnterVenue(self,URL,withcert=0):
         #
         # Enter the venue
         #
