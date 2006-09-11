@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.208 2006-09-08 22:00:05 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.209 2006-09-11 16:59:37 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.208 2006-09-08 22:00:05 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.209 2006-09-11 16:59:37 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2934,8 +2934,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         wxCallAfter(self.__OpenApplication, appCmdDesc)
 	
     def EnvSort(self, item1, item2):
-	log.debug("Level of Item 1:", item1.GetLevel())
-	log.debug("Level of Item 2:", item2.GetLevel())
+	log.debug("Level of Item 1: %d", item1.GetLevel())
+	log.debug("Level of Item 2: %d", item2.GetLevel())
 	if int(item1.GetLevel()) == -2:
 	    return 1
 	if int(item2.GetLevel()) == -2:
@@ -6093,8 +6093,8 @@ class DesktopDropTarget(wxFileDropTarget):
 	for files of lower hierarchy levels.
 	
 	"""
-	log.debug("Level of Item 1:", item1.GetLevel())
-	log.debug("Level of Item 2:", item2.GetLevel())
+	log.debug("Level of Item 1: %d", item1.GetLevel())
+	log.debug("Level of Item 2: %d", item2.GetLevel())
 	if int(item1.GetLevel()) == -2:
 	    return 1
 	if int(item2.GetLevel()) == -2:
