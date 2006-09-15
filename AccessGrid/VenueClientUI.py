@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.209 2006-09-11 16:59:37 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.210 2006-09-15 22:33:33 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.209 2006-09-11 16:59:37 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.210 2006-09-15 22:33:33 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1983,7 +1983,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             
             self.SetStatusText("Entering venue at %s" % (venueUrl,))
 
-            # Enter in a thread so UI gets responsive immediately
             self.controller.EnterVenueCB(venueUrl)
             
             self.SetStatusText("Entered venue at %s" % (venueUrl,))
@@ -1991,11 +1990,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.statusbar.SetStatusText("",1)
             wxEndBusyCursor()
         except CertificateRequired:
+            log.exception('Certificate required to enter venue')
             try:
                 self.usingCert = 1
                 self.controller.EnterVenueCB(venueUrl,withcert=1)
                 self.statusbar.SetStatusText("SECURE",1)
             except:
+                log.exception("Something went wrong trying to enter with a certificate")
                 self.Notify('A certificate is required to enter this Venue, but you do not have one.  Press OK to launch the certificate manager so that you can import or request a certificate, or Cancel to not.')
             wxEndBusyCursor()
         except:
@@ -3410,7 +3411,7 @@ class NavigationPanel(wxPanel):
 
         wxBeginBusyCursor()
         venue = self.tree.GetPyData(treeId)
-        self.app.controller.EnterVenueCB(venue.uri)
+        self.app.EnterVenueCB(venue.uri)
         wxEndBusyCursor()
 
     def OnRightDown(self, event):
