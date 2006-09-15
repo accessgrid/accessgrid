@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.71 2006-05-02 15:50:09 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.72 2006-09-15 21:34:03 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.71 2006-05-02 15:50:09 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.72 2006-09-15 21:34:03 turam Exp $"
 
 import os
 import socket
@@ -162,6 +162,11 @@ class UserConfig(Config.UserConfig):
 
         return self.tempDir
     
+    def GetProxyFile(self):
+        if not self.proxyFile:
+            self.proxyFile = os.path.join(self.GetTempDir(),
+                                          'proxy')
+        return self.proxyFile
 
 class SystemConfig(Config.SystemConfig):
     """
