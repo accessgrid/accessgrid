@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.51 2006-01-27 21:29:07 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.52 2006-09-15 21:43:44 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.51 2006-01-27 21:29:07 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.52 2006-09-15 21:43:44 turam Exp $"
 
 import re
 import os
@@ -642,6 +642,8 @@ class CertificateManager(object):
         certDesc.SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
 
     def GetDefaultIdentity(self):
+        if not self.defaultIdentity:
+            raise NoCertificates
         return self.defaultIdentity
 
     def GetIdentityCerts(self):
