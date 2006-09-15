@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.36 2006-07-07 19:56:05 turam Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.37 2006-09-15 21:42:58 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.36 2006-07-07 19:56:05 turam Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.37 2006-09-15 21:42:58 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -67,6 +67,9 @@ class AuthorizationUIPanel(wxPanel):
         self.authClient = None
         self.changed = 0
         
+        self.mainSizer = wxBoxSizer(wxVERTICAL)
+        self.SetSizer(self.mainSizer)
+        
         # Create ui componentes
         self.leftSashWindow = wxSashLayoutWindow(self, self.ID_WINDOW_LEFT)
 	self.leftSashWindow.SetDefaultSize((350, 1000))
@@ -105,11 +108,16 @@ class AuthorizationUIPanel(wxPanel):
                
         self.SetSize(wxSize(800,800))
 
+        self.requireCert = wxCheckBox(self.rolePanel,-1,"Require user to present certificate")
+        
+        self.mainSizer.Add(self.leftSashWindow,0,wxEXPAND)    
+
+
         self.__setMenus()
         self.__setEvents()
         self.__Layout()
         
-    def ConnectToAuthManager(self, url):
+    def ConnectToAuthManager(self, authManagerIW):
         '''
         Connects to an authorization manager running at url. After a successful connect,
         roles and actions are displayed in the UI.
@@ -117,31 +125,13 @@ class AuthorizationUIPanel(wxPanel):
         @param url: location of authorization manager SOAP service.
         @type name: string.
         '''
-        authUrl = ''
-        self.baseUrl = url
-        list =  string.split(url, '/')
-        lastString = list[len(list)-1]
-        if lastString == 'Authorization':
-            # Authorization URL
-            authUrl = url
-        else:
-            # Server URL
-            for l in list:
-                if authUrl == '':
-                    authUrl = authUrl + l
-                else:
-                    authUrl = authUrl + '/'+l
-        
-            authUrl = authUrl + '/Authorization'
-                            
-        try:
-            self.authClient = AuthorizationManagerIW(authUrl)
-        except Exception, e:
-            self.log.exception("AuthorizationUIPanel.ConnectToAuthManager:Couldn't get authorization manager at\n%s. Shut down."%(authUrl))
-            MessageDialog(None, "Can not connect.", "Error")
-            return
+        self.authClient = authManagerIW
 
         roles = []
+
+        # Is a certificate required?
+        requireCertFlag = self.authClient.IsIdentificationRequired()
+        self.requireCert.SetValue(requireCertFlag)
 
         # Get roles
         try:
@@ -749,6 +739,9 @@ class AuthorizationUIPanel(wxPanel):
         Set current security configuration of roles and actions in the
         authorization manager.
         '''
+        # - update certificate requirement
+        self.authClient.RequireIdentification(self.requireCert.GetValue())
+
         if not self.changed:
             # Ignore if user didn't change anything 
             return
@@ -1358,11 +1351,11 @@ class AuthorizationUIDialog(wxDialog):
 
         self.__layout()
                
-    def ConnectToAuthManager(self, url):
+    def ConnectToAuthManager(self, authManagerIW):
         '''
         Connect to authorization manager located at url.
         '''
-        self.panel.ConnectToAuthManager(url)
+        self.panel.ConnectToAuthManager(authManagerIW)
 
     def Apply(self):
         '''
