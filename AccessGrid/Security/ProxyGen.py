@@ -2,7 +2,7 @@
 # Name:        ProxyGen.py
 # Purpose:     Proxy Generation utitities.
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.22 2006-09-15 21:36:55 turam Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.23 2006-09-15 22:23:44 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 Proxy certificate generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.22 2006-09-15 21:36:55 turam Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.23 2006-09-15 22:23:44 turam Exp $"
 
 import sys
 import os
@@ -245,12 +245,14 @@ def IsValidProxy(certfile):
     except:
         return 0
         
-    # check expiry
-    now = time.time()
-    if now > c.get_not_after():
-        return 0
-    elif now < c.get_not_before():
-        return 0
+#     # check expiry
+#     now = time.time()
+#     if now > c.get_not_after():
+#         print 'proxy expired'
+#         return 0
+#     elif now < c.get_not_before():
+#         print 'proxy not yet valid'
+#         return 0
     
     
     # appears to be ok
@@ -285,8 +287,10 @@ def GetPassphrase(a):
     
     
 if '__main__' == __name__:
+    proxyFile = 'proxy'
     CreateProxy(None,sys.argv[1],sys.argv[2],
-                '','/tmp/qwe',1024,12)
+                '',proxyFile,1024,12)
+    print IsValidProxy(proxyFile)
                 
 
 
