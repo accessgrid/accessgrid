@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.121 2006-07-26 16:06:33 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.122 2006-09-15 22:28:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.121 2006-07-26 16:06:33 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.122 2006-09-15 22:28:07 turam Exp $"
 
 # Standard imports
 import os
@@ -27,6 +27,8 @@ from AccessGrid.ServiceProfile import ServiceProfile
 from AccessGrid.Version import GetVersion
 from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.wsdl import SchemaToPyTypeMap
+from AccessGrid.Security import ProxyGen
+from AccessGrid.Security import CertificateRepository
 
 class MissingDependencyError(Exception): pass
 
@@ -212,25 +214,40 @@ class AppBase:
             p1 = cb(0)
             self.__passphrase = ''.join(p1)
             return self.__passphrase
-       
+            
     def GetContext(self):
         if not self.__context:
             from M2Crypto import SSL
             self.__context = SSL.Context('sslv23')
             
-            defaultId = self.GetCertificateManager().GetDefaultIdentity()
-            if defaultId == None:
-                from AccessGrid.Security import CertificateManager
-                raise CertificateManager.NoCertificates()
+            id = self.GetCertificateManager().GetDefaultIdentity()
             caDir = self.GetCertificateManager().caDir
-            self.__context.load_cert(defaultId.GetPath(),defaultId.GetKeyPath(),
-                                     callback=self.GetPassphrase)
+            if id.HasEncryptedPrivateKey():
+                # if the private key is encrypted, we need a proxy certificate
+                proxycertfile = self.userConfig.GetProxyFile()
+                if not ProxyGen.IsValidProxy(proxycertfile):
+                    # if a valid proxy cert does not exist, create one
+                    ProxyGen.CreateProxy(self.GetPassphrase,
+                                         id.GetPath(),
+                                         id.GetKeyPath(),
+                                         caDir,
+                                         proxycertfile)
+                id = CertificateRepository.Certificate(proxycertfile)
+            self.__context.load_cert(id.GetPath(),id.GetKeyPath())
             self.__context.load_verify_locations(capath=caDir)
-            self.__context.set_verify(SSL.verify_peer,10)
+            #self.__context.set_verify(SSL.verify_peer,10)
+            # FIXME: Using no-op VerifyCallback temporarily until we can
+            # communicate to openssl to allow proxy certificates
+            self.__context.set_verify(SSL.verify_peer,10,self.VerifyCallback)
             self.__context.set_session_id_ctx('127.0.0.1:8006')
             self.__context.set_cipher_list('LOW:TLSv1:@STRENGTH')
         return self.__context
-
+        
+    def VerifyCallback(self,ok,store):
+        # temporary no-op verification
+        print 'VerifyCallback: ok,store=',ok,store
+        return 1
+        
     def __SetLogPreference(self):
         """
         Set correct log level for each log category according
