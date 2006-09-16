@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.75 2006-08-30 08:24:40 braitmai Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.76 2006-09-16 00:01:52 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.75 2006-08-30 08:24:40 braitmai Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.76 2006-09-16 00:01:52 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -71,7 +71,7 @@ def main():
                         default=8000, metavar="PORT",
                         help="Set the port the service manager should run on.")
     configOption = Option("-v", "--venueconfig", type="string", dest="config",
-                        default="venueserver.cfg", metavar="CONFIG",
+                        default="VenueServer.cfg", metavar="CONFIG",
                         help="Set the config file to use for initialization.")
 
     app.AddCmdLineOption(portOption)
