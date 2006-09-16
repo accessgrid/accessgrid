@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.61 2006-09-01 12:58:34 braitmai Exp $
+# RCS-ID:      $Id: AGService.py,v 1.62 2006-09-16 01:03:13 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.61 2006-09-01 12:58:34 braitmai Exp $"
+__revision__ = "$Id: AGService.py,v 1.62 2006-09-16 01:03:13 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -24,6 +24,7 @@ from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD
 from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Descriptions import StreamDescription
+from AccessGrid.Descriptions import StreamDescription3
 from AccessGrid.Descriptions import AGServiceDescription3, AGServiceDescription
 
 from AccessGrid.interfaces.AGService_client import AGServiceIW
