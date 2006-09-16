@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.169 2006-08-30 08:24:40 braitmai Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.170 2006-09-16 00:05:16 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.169 2006-08-30 08:24:40 braitmai Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.170 2006-09-16 00:05:16 turam Exp $"
 
 # Standard imports
 import sys
@@ -31,8 +31,11 @@ from wxPython.lib.imagebrowser import *
 
 # Access Grid imports
 from AccessGrid.Descriptions import StreamDescription, ConnectionDescription
+from AccessGrid.Descriptions import StreamDescription3, ConnectionDescription
 from AccessGrid.Descriptions import VenueDescription
+from AccessGrid.Descriptions import VenueDescription3
 from AccessGrid.Descriptions import Capability
+from AccessGrid.Descriptions import Capability3
 from AccessGrid.Security.CertificateManager import CertificateManager
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
@@ -52,6 +55,18 @@ from AccessGrid.Platform import IsWindows, IsOSX
 from AccessGrid.GUID import GUID
 
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
+
+# Force ZSI to use the M2Crypto HTTPSConnection as transport
+from ZSI import client
+from M2Crypto import httpslib
+
+class HTTPSConnectionWithClose(httpslib.HTTPSConnection):
+    def close(self):
+        self.sock.close()
+        
+client.Binding.defaultHttpsTransport = HTTPSConnectionWithClose
+
+
 
 log = Log.GetLogger(Log.VenueManagement)
 
@@ -139,8 +154,6 @@ class VenueManagementClient(wxApp):
         self.__setProperties()
         
         self.certmgr = self.app.GetCertificateManager()
-        c = self.app.GetContext()
-        
         venueServerUrl = self.app.GetOption('url')
         if venueServerUrl:
             self.ConnectToServer(venueServerUrl)
@@ -411,6 +424,10 @@ class VenueManagementClient(wxApp):
         self.frame.Destroy()
      
     def ConnectToServer(self, URL):
+        import types
+        if type(URL) == types.UnicodeType:
+            URL = URL.encode('ascii','ignore')
+
         log.debug("VenueManagementClient.ConnectToServer: Connect to server %s" %URL)
         
         #certMgt = Toolkit.Application.instance().GetCertificateManager()
@@ -420,15 +437,13 @@ class VenueManagementClient(wxApp):
         try:
             wxBeginBusyCursor()
             log.debug("VenueManagementClient.ConnectToServer: Connect to server")
-            defaultId = self.certmgr.GetDefaultIdentity()
-            transdict = {}
-            if defaultId:
-                transdict = {"cert_file":defaultId.GetPath(),
-                             "key_file":defaultId.GetKeyPath()}
+            
+            ctx = self.app.GetContext()
+            transdict = {'ssl_context':ctx}
             self.server = VenueServerIW(URL,transdict=transdict)
             log.debug("VenueManagementClient.ConnectToServer: Get venues from server")
             self.venueList = {}
-            #self.server.GetProperty(["test"])
+
             vl = self.server.GetVenues()
             for v in vl:
                 self.venueList[v.uri] = v
@@ -534,11 +549,9 @@ class VenueManagementClient(wxApp):
             log.debug("VenueManagementClient.SetCurrentVenue: Set current venue to: %s, %s" % (str(venue.name),
                                                          str(venue.uri)))
             self.currentVenue = venue
-            defaultId = self.app.GetCertificateManager().GetDefaultIdentity()
-            transdict = {}
-            if defaultId:
-                transdict = {"cert_file":defaultId.GetPath(),
-                             "key_file":defaultId.GetKeyPath()}
+            ctx = self.app.GetContext()
+            transdict = {'ssl_context':ctx}
+            venue.uri = venue.uri.encode('ascii','ignore')
             self.currentVenueClient = VenueIW(venue.uri,transdict=transdict)
 
     def SetVenueEncryption(self, venue, value = 0, key = ''):
@@ -1310,7 +1323,12 @@ class SecurityPanel(wxPanel):
     def OpenSecurityDialog(self, event):
         f = AuthorizationUIDialog(self, -1, "Security", log)
         wxBeginBusyCursor()
-        f.ConnectToAuthManager(self.application.serverUrl)
+        
+        ctx = self.application.app.GetContext()
+        transdict = {'ssl_context':ctx}
+        authManagerUrl = self.application.serverUrl.encode('ascii','ignore') + '/Authorization'
+        authManagerIW = AuthorizationManagerIW(authManagerUrl,transdict=transdict)
+        f.ConnectToAuthManager(authManagerIW)
         wxEndBusyCursor()
         
         if f.ShowModal() == wxID_OK:
@@ -1415,7 +1433,7 @@ class VenueParamFrame(wxDialog):
         self.encryptionPanel = EncryptionPanel(self.noteBook, -1, application)
         self.staticAddressingPanel = StaticAddressingPanel(self.noteBook, -1,
                                                            application)
-        #self.authorizationPanel = AuthorizationUIPanel(self.noteBook, -1, log)
+        self.authorizationPanel = AuthorizationUIPanel(self.noteBook, -1, log)
         
         self.noteBook.AddPage(self.generalPanel, "General")
         self.noteBook.AddPage(self.encryptionPanel, "Encryption")
@@ -1589,9 +1607,13 @@ class ModifyVenueFrame(VenueParamFrame):
         self.generalPanel.LoadLocalVenues()
 
         # Connect to authorization manager.
-        #self.noteBook.AddPage(self.authorizationPanel, "Security")
-
-        #self.authorizationPanel.ConnectToAuthManager(self.venue.uri)
+        self.noteBook.AddPage(self.authorizationPanel, "Security")
+        
+        ctx = self.application.app.GetContext()
+        transdict = {'ssl_context':ctx}
+        authManagerUrl = self.venue.uri.encode('ascii','ignore') + '/Authorization'
+        authManagerIW = AuthorizationManagerIW(authManagerUrl,transdict=transdict)
+        self.authorizationPanel.ConnectToAuthManager(authManagerIW)
         #self.authorizationPanel.Hide()
         
         wxEndBusyCursor()
@@ -1615,7 +1637,7 @@ class ModifyVenueFrame(VenueParamFrame):
                 try:
                     log.debug("ModifyVenueFrame.OnOk: Modify venue")
                     self.parent.ModifyVenue(self.venue)
-                    #self.authorizationPanel.Apply()
+                    self.authorizationPanel.Apply()
                     
                 except Exception, e:
                     log.exception("ModifyVenueFrame.OnOk: Modify venue failed")
@@ -1634,7 +1656,7 @@ class ModifyVenueFrame(VenueParamFrame):
                         log.exception("ModifyVenueFrame.OnOk: SetDefaultVenue failed")
 
                 # Send security info to authorization manager,
-                #self.authorizationPanel.Apply(event)
+                self.authorizationPanel.Apply(event)
                                        
                 self.Hide()
 
@@ -1645,11 +1667,8 @@ class ModifyVenueFrame(VenueParamFrame):
         self.venue = venueList.GetClientData(item)
 
         # Get the real venue description
-        defaultId = Toolkit.GetDefaultApplication().GetCertificateManager().GetDefaultIdentity()
-        transdict = {}
-        if defaultId:
-            transdict = {"cert_file":defaultId.GetPath(),
-                         "key_file":defaultId.GetKeyPath()}
+        ctx = self.application.app.GetContext()
+        transdict = {'ssl_context':ctx}
         venueProxy = VenueIW(self.venue.uri,transdict=transdict)
         self.venue = venueProxy.AsVenueDescription3()
         
@@ -1794,11 +1813,8 @@ class GeneralPanel(wxPanel):
         try:
             wxBeginBusyCursor()
             log.debug("VenueParamFrame.__LoadVenues: Load venues from: %s " % URL)
-            defaultId = Toolkit.GetDefaultApplication().GetCertificateManager().GetDefaultIdentity()
-            transdict = {}
-            if defaultId:
-                transdict = {"cert_file":defaultId.GetPath(),
-                             "key_file":defaultId.GetKeyPath()}
+            ctx = self.application.app.GetContext()
+            transdict = {'ssl_context':ctx}
             server = VenueServerIW(URL,transdict=transdict)
             
             vl = server.GetVenues()
