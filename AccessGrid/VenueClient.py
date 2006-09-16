@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.329 2006-09-11 15:41:59 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.330 2006-09-16 00:49:15 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.329 2006-09-11 15:41:59 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.330 2006-09-16 00:49:15 turam Exp $"
 
 import sys
 import os
@@ -62,6 +62,17 @@ from AccessGrid.Jabber.JabberClient import JabberClient
 from AccessGrid.interfaces.AGService_client import AGServiceIW
 from AccessGrid.hosting import HostingException
 from AccessGrid.hosting import GetHostingExceptionModuleAndClassName
+
+# Force ZSI to use the M2Crypto HTTPSConnection as transport
+from ZSI import client
+from M2Crypto import httpslib
+
+class HTTPSConnectionWithClose(httpslib.HTTPSConnection):
+    def close(self):
+        self.sock.close()
+        
+client.Binding.defaultHttpsTransport = HTTPSConnectionWithClose
+
 
 try:
     from AccessGrid.Beacon.rtpBeacon import Beacon
@@ -651,7 +662,7 @@ class VenueClient:
         self.venueState.data.clear()
         
         #workaround for converting list into dict()
-	log.debug("Rebuilding venueState data list")
+        log.debug("Rebuilding venueState data list")
         for item in tempVenueState.data:
 	    log.debug("Adding item: %s", item.id)
             self.venueState.data[item.id] = item
@@ -861,18 +872,14 @@ class VenueClient:
     # Enter/Exit
     #
     
-    #Modified by NA2-HPCE
     def __EnterVenue(self,URL,withcert=0):
         #
         # Enter the venue
         #
         self.venueUri = str(URL)
         if withcert:
-            defaultId = self.app.GetCertificateManager().GetDefaultIdentity()
-            transdict = {}
-            if defaultId:
-                transdict = {"cert_file":defaultId.GetPath(),
-                             "key_file":defaultId.GetKeyPath()}
+            ctx = self.app.GetContext()
+            transdict = {'ssl_context':ctx}
             print 'using cert and key ', transdict
             self.__venueProxy = VenueIW(URL,transdict=transdict) #, tracefile=sys.stdout)
         else:
@@ -880,47 +887,6 @@ class VenueClient:
 
         if not self.__venueClientUI == None:
             self.__venueClientUI.SetVenueProxy(self.__venueProxy)
-
-        log.debug("EnterVenue: Invoke venue enter")
-        self.profile.connectionId = self.__venueProxy.Enter( self.profile )
-            
-        """
-        evtLocation = ('',-1)
-
-        a = ["state"]
-        venueStateDict = self.__venueProxy.GetProperty(a)
-        uniqueId = "" ; vname = "" ; description=""; uri = ""
-        for entry in venueStateDict.entries:
-            if entry.key == "venueid":
-                uniqueId = entry.value
-            elif entry.key == "name":
-                vname = entry.value
-            elif entry.key == "description":
-                description = entry.value
-            elif entry.key == "uri":
-                uri = entry.value
-            elif entry.key == "eventLocationStr":
-                # convert back from string to tuple until we can
-                #   pass tuples here
-                evtLocation = entry.value.split(":")
-                if len(evtLocation) > 1:
-                    evtLocation = (str(evtLocation[0]), int(evtLocation[1]))
-                else:
-                    evtLocation = ('',-1)
-            elif entry.key == "clients":
-                clients = entry.value
-                for c in clients:
-                    print type(c), c
-        self.venueState = VenueState(uniqueId=uniqueId, name=vname, description=description, uri=uri, connections="", clients=[], data=[], eventLocation=evtLocation, textLocation="", applications=[], services=[])
-        """
-                    
-        state = self.__venueProxy.GetState3()
-        
-               
-        # tuple of two different types doesn't serialize easily.
-        evtLocation = state.eventLocation.split(":")
-        if len(evtLocation) > 1:
-            evtLocation = (str(evtLocation[0]), int(evtLocation[1]))
 
         log.debug("EnterVenue: Invoke Venue.Enter")
         self.profile.connectionId = self.__venueProxy.Enter( self.profile )
