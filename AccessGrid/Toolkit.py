@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.122 2006-09-15 22:28:07 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.123 2006-09-16 00:01:17 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.122 2006-09-15 22:28:07 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.123 2006-09-16 00:01:17 turam Exp $"
 
 # Standard imports
 import os
@@ -220,6 +220,10 @@ class AppBase:
             from M2Crypto import SSL
             self.__context = SSL.Context('sslv23')
             
+            # Hack to allow use of proxy certs, until the necessary 
+            # interface is exposed through M2Crypto
+            os.environ['OPENSSL_ALLOW_PROXY_CERTS'] = '1'
+            
             id = self.GetCertificateManager().GetDefaultIdentity()
             caDir = self.GetCertificateManager().caDir
             if id.HasEncryptedPrivateKey():
@@ -233,19 +237,16 @@ class AppBase:
                                          caDir,
                                          proxycertfile)
                 id = CertificateRepository.Certificate(proxycertfile)
-            self.__context.load_cert(id.GetPath(),id.GetKeyPath())
+            self.__context.load_cert_chain(id.GetPath(),id.GetKeyPath())
             self.__context.load_verify_locations(capath=caDir)
-            #self.__context.set_verify(SSL.verify_peer,10)
-            # FIXME: Using no-op VerifyCallback temporarily until we can
-            # communicate to openssl to allow proxy certificates
-            self.__context.set_verify(SSL.verify_peer,10,self.VerifyCallback)
+            self.__context.set_verify(SSL.verify_peer,10)
             self.__context.set_session_id_ctx('127.0.0.1:8006')
             self.__context.set_cipher_list('LOW:TLSv1:@STRENGTH')
         return self.__context
         
     def VerifyCallback(self,ok,store):
-        # temporary no-op verification
-        print 'VerifyCallback: ok,store=',ok,store
+        # unused, except possibly for debugging
+        print 'VerifyCallback: ok,store=',ok,store.get_current_cert().get_subject().as_text(),store.get_error()
         return 1
         
     def __SetLogPreference(self):
