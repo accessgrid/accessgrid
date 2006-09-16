@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.37 2006-09-15 21:42:58 turam Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.38 2006-09-16 00:07:53 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.37 2006-09-15 21:42:58 turam Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.38 2006-09-16 00:07:53 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -72,16 +72,16 @@ class AuthorizationUIPanel(wxPanel):
         
         # Create ui componentes
         self.leftSashWindow = wxSashLayoutWindow(self, self.ID_WINDOW_LEFT)
-	self.leftSashWindow.SetDefaultSize((350, 1000))
-	self.leftSashWindow.SetOrientation(wxLAYOUT_VERTICAL)
-	self.leftSashWindow.SetAlignment(wxLAYOUT_LEFT)
-	self.leftSashWindow.SetSashVisible(wxSASH_RIGHT, True)
+        self.leftSashWindow.SetDefaultSize((350, 1000))
+        self.leftSashWindow.SetOrientation(wxLAYOUT_VERTICAL)
+        self.leftSashWindow.SetAlignment(wxLAYOUT_LEFT)
+        self.leftSashWindow.SetSashVisible(wxSASH_RIGHT, True)
 
-	self.rolePanel = wxPanel(self.leftSashWindow ,  wxNewId(),
+        self.rolePanel = wxPanel(self.leftSashWindow ,  wxNewId(),
                                  style = wxSUNKEN_BORDER, 
-				 size = wxSize(350, -1))
+                                 size = wxSize(350, -1))
         self.roleTitle = wxStaticText(self.rolePanel, -1, "Roles",
-				      size=wxSize(350,-1), style=wxALIGN_LEFT)
+                      size=wxSize(350,-1), style=wxALIGN_LEFT)
         
         if IsOSX():
             self.roleTitle.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
@@ -91,8 +91,8 @@ class AuthorizationUIPanel(wxPanel):
         self.actionPanel = wxPanel(self,  wxNewId(),
                                    style = wxSUNKEN_BORDER)
         self.actionTitle = wxStaticText(self.actionPanel, -1, "Actions", 
-					size=wxSize(100,-1), 
-					style=wxALIGN_LEFT)
+                    size=wxSize(100,-1), 
+                    style=wxALIGN_LEFT)
         if IsOSX():
             self.actionTitle.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
         else:
@@ -301,15 +301,15 @@ class AuthorizationUIPanel(wxPanel):
         wxLayoutAlgorithm().LayoutWindow(self, self.actionPanel)
         self.actionPanel.Refresh()
         s = self.leftSashWindow.GetSize()
-	self.rolePanel.SetSize(wxSize(s.width-5, s.height))
+        self.rolePanel.SetSize(wxSize(s.width-5, s.height))
                                                 
     def __OnSize(self, event = None):
         '''
         Called when a user resizes the window.
         '''
         wxLayoutAlgorithm().LayoutWindow(self, self.actionPanel)
-	s = self.leftSashWindow.GetSize()
-	self.rolePanel.SetSize(wxSize(s.width-5, s.height))
+        s = self.leftSashWindow.GetSize()
+        self.rolePanel.SetSize(wxSize(s.width-5, s.height))
               
     def __participantInRole(self, roleId, person):
         '''
@@ -412,9 +412,10 @@ class AuthorizationUIPanel(wxPanel):
         mainSizer = wxBoxSizer(wxVERTICAL)
         mainSizer.Add(self.roleTitle,0,wxEXPAND|wxALL,10)
         mainSizer.Add(self.tree,1,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,10)
+        mainSizer.Add(self.requireCert,0,wxEXPAND,10)
         self.rolePanel.SetSizer(mainSizer)
         mainSizer.Fit(self.rolePanel)
-	self.rolePanel.SetAutoLayout(1)
+        self.rolePanel.SetAutoLayout(1)
        
         # Action Panel
         mainSizer2 = wxBoxSizer(wxVERTICAL)
@@ -422,12 +423,12 @@ class AuthorizationUIPanel(wxPanel):
         mainSizer2.Add(self.actionList,1,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,10)
         self.actionPanel.SetSizer(mainSizer2)
         mainSizer2.Fit(self.actionPanel)
-	self.actionPanel.SetAutoLayout(1)
+        self.actionPanel.SetAutoLayout(1)
         
         sizer = wxBoxSizer(wxHORIZONTAL)
         sizer.Add(self.rolePanel, 1, wxEXPAND)
         self.leftSashWindow.SetSizer(sizer)
-	sizer.Fit(self.leftSashWindow)
+        sizer.Fit(self.leftSashWindow)
         
     def Copy(self, event):
         '''
