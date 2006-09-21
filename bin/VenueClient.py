@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.282 2006-08-30 08:24:40 braitmai Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.283 2006-09-21 12:05:36 braitmai Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.282 2006-08-30 08:24:40 braitmai Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.283 2006-09-21 12:05:36 braitmai Exp $"
 
 # Standard Imports
 import os
@@ -91,9 +91,9 @@ def main():
         args = app.Initialize("VenueClient")
     except MissingDependencyError, e:
         if e.args[0] == 'SSL':
-	        msg = "The installed version of Python has no SSL support.  Check that you\n"\
-                    "have installed Python from python.org, or ensure SSL support by\n"\
-                    "some other means."
+            msg = "The installed version of Python has no SSL support.  Check that you\n"\
+                  "have installed Python from python.org, or ensure SSL support by\n"\
+                  "some other means."
         else:
             msg = "The following dependency software is required, but not available:\n\t%s\n"\
                     "Please satisfy this dependency and restart the software"

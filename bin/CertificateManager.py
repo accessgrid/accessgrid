@@ -3,7 +3,7 @@
 # Name:        CertificateManager.py
 # Purpose:     User tool for managing certificates.
 # Created:     2003/08/02
-# RCS-ID:      $Id: CertificateManager.py,v 1.7 2006-05-01 21:44:42 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.8 2006-09-21 12:05:36 braitmai Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -28,9 +28,9 @@ def main():
         app.Initialize("CertificateManager")
     except MissingDependencyError, e:
         if e.args[0] == 'SSL':
-	        msg = "The installed version of Python has no SSL support.  Check that you\n"\
-                    "have installed Python from python.org, or ensure SSL support by\n"\
-                    "some other means."
+            msg = "The installed version of Python has no SSL support.  Check that you\n"\
+                  "have installed Python from python.org, or ensure SSL support by\n"\
+                  "some other means."
         else:
             msg = "The following dependency software is required, but not available:\n\t%s\n"\
                     "Please satisfy this dependency and restart the software"

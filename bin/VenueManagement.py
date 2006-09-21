@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.170 2006-09-16 00:05:16 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.171 2006-09-21 12:05:36 braitmai Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.170 2006-09-16 00:05:16 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.171 2006-09-21 12:05:36 braitmai Exp $"
 
 # Standard imports
 import sys
@@ -131,9 +131,9 @@ class VenueManagementClient(wxApp):
             self.app.Initialize("VenueManagement")
         except MissingDependencyError, e:
             if e.args[0] == 'SSL':
-	            msg = "The installed version of Python has no SSL support.  Check that you\n"\
-                        "have installed Python from python.org, or ensure SSL support by\n"\
-                        "some other means."
+                msg = "The installed version of Python has no SSL support.  Check that you\n"\
+                      "have installed Python from python.org, or ensure SSL support by\n"\
+                      "some other means."
             else:
                 msg = "The following dependency software is required, but not available:\n\t%s\n"\
                         "Please satisfy this dependency and restart the software"

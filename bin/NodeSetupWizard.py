@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.54 2006-05-01 21:15:29 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.55 2006-09-21 12:05:36 braitmai Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1163,9 +1163,9 @@ def main():
         app.Initialize("NodeSetupWizard")
     except MissingDependencyError, e:
         if e.args[0] == 'SSL':
-	        msg = "The installed version of Python has no SSL support.  Check that you\n"\
-                    "have installed Python from python.org, or ensure SSL support by\n"\
-                    "some other means."
+            msg = "The installed version of Python has no SSL support.  Check that you\n"\
+                  "have installed Python from python.org, or ensure SSL support by\n"\
+                  "some other means."
         else:
             msg = "The following dependency software is required, but not available:\n\t%s\n"\
                     "Please satisfy this dependency and restart the software"

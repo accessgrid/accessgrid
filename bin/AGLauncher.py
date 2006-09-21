@@ -22,23 +22,23 @@ class LauncherFrame(wxFrame):
     BUTTON_VM_ID = 3002       # Venue Management
     BUTTON_NSW_ID = 3003      # Node Setup Wizard
     BUTTON_CM_ID = 3004       # Certificate Management
-    #BUTTON_CRW_ID = 3004	  # Certificate Request Wizard
-    BUTTON_SERVICE_ID = 4000 # Configuration
+    #BUTTON_CRW_ID = 3004     # Certificate Request Wizard
+    BUTTON_SERVICE_ID = 4000  # Configuration
     BUTTON_NS_ID = 4001       # Node Service
     BUTTON_SM_ID = 4002       # Service Manager
     BUTTON_VS_ID = 4003       # Venue Server
     BUTTON_DEBUG_ID = 5000  # Debug form of main binaries
     BUTTON_VCD_ID = 5001      # Venue Client Debug
-    BUTTON_CMD_ID = 5002       # Certificate Management
-    BUTTON_NSD_ID = 5003	  # Node Service Debug
+    BUTTON_CMD_ID = 5002      # Certificate Management
+    BUTTON_NSD_ID = 5003      # Node Service Debug
     BUTTON_SMD_ID = 5004      # Service Manager Debug
     BUTTON_VSD_ID = 5005      # Venue Server Debug
-	
+        
     def __init__(self, parent=None, id=-1, title="Access Grid Launcher",agtk_location=None):
         wxFrame.__init__(self,parent,id,title,size=wxSize(400,125),style=wxDEFAULT_FRAME_STYLE&(~wxMAXIMIZE_BOX))
 
-	self.processManager=ProcessManager();
-	self.browser=None;
+        self.processManager=ProcessManager();
+        self.browser=None;
         
         if IsOSX():
             self.mainButton=wxRadioButton(self,self.BUTTON_MAIN_ID,"Main",style=wxRB_GROUP);
@@ -80,8 +80,8 @@ class LauncherFrame(wxFrame):
             self.debugButton=wxToggleButton(self,self.BUTTON_DEBUG_ID,"Debug");
             EVT_TOGGLEBUTTON(self,self.BUTTON_DEBUG_ID,self.OnToggle);
         self.debugButton.SetValue(false)
-	self.debugButton.Disable()
-	self.debugButton.Show(false)
+        self.debugButton.Disable()
+        self.debugButton.Show(false)
         
         if not agtk_location:
             agtk_location=".."
@@ -259,13 +259,13 @@ class LauncherFrame(wxFrame):
             command="python";
         
         print "Run: %s"%(cmd);
-	print "args: ",
-	print args;
+        print "args: ",
+        print args;
         self.processManager.StartProcess(command,[cmd]+args);
     
     def RunPythonDebug(self,cmd,args):
         if IsOSX():
-	    pass;
+            pass;
             #command="/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal";
         elif IsWindows():
             command="start";
@@ -278,8 +278,8 @@ class LauncherFrame(wxFrame):
             command2="";
 
         print "DEBUG: %s"%(cmd);
-	print "args: ",
-	print args;
+        print "args: ",
+        print args;
         if command2:
             self.processManager.StartProcess(command,[command2,cmd]+args);
         else:
@@ -320,17 +320,17 @@ class LauncherFrame(wxFrame):
             buttonSet=[];
         
         menuButtonSizer=wxBoxSizer(wxVERTICAL);
-	menuButtonSizer.Add(wxSize(0,0),1);
+        menuButtonSizer.Add(wxSize(0,0),1);
         menuButtonSizer.Add(self.mainButton,0,wxEXPAND);
-	menuButtonSizer.Add(wxSize(0,0),1);
+        menuButtonSizer.Add(wxSize(0,0),1);
         menuButtonSizer.Add(self.docButton,0,wxEXPAND);
-	menuButtonSizer.Add(wxSize(0,0),1);
+        menuButtonSizer.Add(wxSize(0,0),1);
         menuButtonSizer.Add(self.confButton,0,wxEXPAND);
-	menuButtonSizer.Add(wxSize(0,0),1);
+        menuButtonSizer.Add(wxSize(0,0),1);
         menuButtonSizer.Add(self.servButton,0,wxEXPAND);
-	menuButtonSizer.Add(wxSize(0,0),1);
+        menuButtonSizer.Add(wxSize(0,0),1);
         menuButtonSizer.Add(self.debugButton,0,wxEXPAND);
-	menuButtonSizer.Add(wxSize(0,0),1);
+        menuButtonSizer.Add(wxSize(0,0),1);
         
         submenuButtonSizer=wxBoxSizer(wxVERTICAL);
         submenuButtonSizer.Add(wxSize(0,0),1);

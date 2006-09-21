@@ -9,7 +9,7 @@ from AccessGrid.VenueServer import VenueServerIW
 app = CmdlineApplication()
 
 urlOption = Option("-u", "--url", dest="url", default=None,
-		   help="URL to the server you want to shut down.")
+                   help="URL to the server you want to shut down.")
 
 app.AddCmdLineOption(urlOption)
 
