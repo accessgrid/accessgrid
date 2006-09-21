@@ -2,7 +2,7 @@
 # Name:        QuickBridgeClient.py
 # Purpose:     Interface to a QuickBridge server.
 # Created:     2005/12/06
-# RCS-ID:      $Id: QuickBridgeClient.py,v 1.6 2006-04-04 21:40:55 turam Exp $
+# RCS-ID:      $Id: QuickBridgeClient.py,v 1.7 2006-09-21 16:13:57 turam Exp $
 # Copyright:   (c) 2005-2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,9 +20,9 @@ class QuickBridgeClient(BridgeClient):
         transport = None
         if proxyHost:
             if proxyPort:
-                proxyURL = "http://%s" % (proxyHost)
-            else:
                 proxyURL = "http://%s:%s" % (proxyHost, proxyPort)
+            else:
+                proxyURL = "http://%s" % (proxyHost)
 
             transport = UrllibTransport(proxyURL)
         url = "http://%s:%s" % (host,str(port))
