@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.99 2006-09-01 12:58:34 braitmai Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.100 2006-09-21 12:04:59 braitmai Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.99 2006-09-01 12:58:34 braitmai Exp $"
+__revision__ = "$Id: DataStore.py,v 1.100 2006-09-21 12:04:59 braitmai Exp $"
 
 import os
 import time
@@ -121,7 +121,7 @@ class DataDescriptionContainer:
             return self.data[id]
         else:
             return None
-	
+        
     
     def GetData(self, fileName):
         """
@@ -224,30 +224,30 @@ class DataStore:
         self.pathname = pathname
         self.path = pathname
         self.prefix = prefix
-	log.debug("__init__: Datastore path is %s ", self.path)
+        log.debug("__init__: Datastore path is %s ", self.path)
         self.transfer_engine = transferEngine
         #self.transfer_engine.RegisterPrefix(prefix,self)
 
         self.cbLock = threading.Lock()
         self.transferEngineLock = threading.Lock()
-	#self.dataDescContainer = DataDescriptionContainer()
+        #self.dataDescContainer = DataDescriptionContainer()
         #self.curDDC = self.dataDescContainer
-	#self.curDD = None
-	self.descriptionDict = dict()
+        #self.curDD = None
+        self.descriptionDict = dict()
 
-	#data storage root object
-	self.root = DirectoryDescription("Root")
-	self.root.SetLevel(0)
-	self.root.description ="Root node of data storage"
-	self.root.SetObjectType(DataDescription3.TYPE_DIR)
-	self.root.SetLocation("")
+        #data storage root object
+        self.root = DirectoryDescription("Root")
+        self.root.SetLevel(0)
+        self.root.description ="Root node of data storage"
+        self.root.SetObjectType(DataDescription3.TYPE_DIR)
+        self.root.SetLocation("")
         
         self.__CheckPath()
         self.persistenceFileName = os.path.join(self.path, "DataStore.dat")
-	self.descriptionDict = dict()
+        self.descriptionDict = dict()
         self.LoadPersistentInfo()
-	
-	
+        
+        
 
     def __CheckPath(self):
         if self.path == None or not os.path.exists(self.path):
@@ -266,71 +266,71 @@ class DataStore:
         log.debug ("=================== ENTERED LoadPersistentInfo ==================")
         log.debug("Reading persisted data from: %s", self.persistenceFileName)
         persistentData = []
-	dd = None
-	
-	if pParent==None:
-	    log.debug("Loading a directory in root-dir!")
-	    parent = self.root
-	    level = 0
-	    parentID = "-1"
-	else:
-	    log.debug("Loading a directory in subtree!")
-	    parent = pParent
-	    level = parent.GetLevel()+1
-	    parentID = parent.GetId()
-	
-	log.debug("LoadPersistentInfo: Server Path: %s", self.path)
-	serverPath = self.path + os.path.sep +  parent.GetLocation()   
-	#serverPath = self.path + os.path.sep + parent.GetLocation()
-	    
-	log.debug("Getting file list of %s ", os.curdir +"/"+ serverPath)
-	
+        dd = None
+        
+        if pParent==None:
+            log.debug("Loading a directory in root-dir!")
+            parent = self.root
+            level = 0
+            parentID = "-1"
+        else:
+            log.debug("Loading a directory in subtree!")
+            parent = pParent
+            level = parent.GetLevel()+1
+            parentID = parent.GetId()
+        
+        log.debug("LoadPersistentInfo: Server Path: %s", self.path)
+        serverPath = self.path + os.path.sep +  parent.GetLocation()   
+        #serverPath = self.path + os.path.sep + parent.GetLocation()
+            
+        log.debug("Getting file list of %s ", os.curdir +"/"+ serverPath)
+        
         
         if not os.path.exists(serverPath):
-	    log.debug("Directory doesn't exist on server!")
-	    raise DirectoryNotFound
-	
-	searchPath = os.path.abspath(serverPath)
-	
+            log.debug("Directory doesn't exist on server!")
+            raise DirectoryNotFound
+        
+        searchPath = os.path.abspath(serverPath)
+        
         files = os.listdir(searchPath)
-	log.debug("LOADPERSISTENTINFO: Path to use is %s", searchPath)
+        log.debug("LOADPERSISTENTINFO: Path to use is %s", searchPath)
         if 'DataStore.dat' in files:
             files.remove('DataStore.dat')
         for f in files:   
-	    if os.path.isfile(searchPath+ os.path.sep+f):
-		log.debug("Found file %s !", f)
-		dd = DataDescription3(f)
-		dd.SetId(str(AccessGrid.GUID.GUID()))
-		dd.SetObjectType(DataDescription3.TYPE_FILE)
-		dd.SetLevel(-2)
-		dd.SetParentId(parentID)
-		log.debug("LoadPersistentInfo: Adding file %s to location %s", f, parent.GetLocation())
-	    elif os.path.isdir(searchPath+ os.path.sep+f):
-		log.debug("Found directory %s !" , f)
-		dd = DirectoryDescription(f)
-		dd.SetId(str(AccessGrid.GUID.GUID()))
-		dd.SetObjectType(DataDescription3.TYPE_DIR)
-		dd.SetLevel(level)
-		dd.SetParentId(parentID)
-		if parent.GetLocation() == "":
-		    dd.SetLocation(f)
-		    log.debug("LoadPersistentInfo: Location of dir %s is %s", f, f)
-		else:
-		    dd.SetLocation(parent.GetLocation() + os.path.sep + f)
-		    log.debug("LoadPersistentInfo: Location of dir %s is %s", f, parent.GetLocation() + os.path.sep + f)
-		self.LoadPersistentInfo(dd)
-	    else:
-		log.debug("Type of data not determined for object named %s!", f)
-		return
-		
-		
+            if os.path.isfile(searchPath+ os.path.sep+f):
+                log.debug("Found file %s !", f)
+                dd = DataDescription3(f)
+                dd.SetId(str(AccessGrid.GUID.GUID()))
+                dd.SetObjectType(DataDescription3.TYPE_FILE)
+                dd.SetLevel(-2)
+                dd.SetParentId(parentID)
+                log.debug("LoadPersistentInfo: Adding file %s to location %s", f, parent.GetLocation())
+            elif os.path.isdir(searchPath+ os.path.sep+f):
+                log.debug("Found directory %s !" , f)
+                dd = DirectoryDescription(f)
+                dd.SetId(str(AccessGrid.GUID.GUID()))
+                dd.SetObjectType(DataDescription3.TYPE_DIR)
+                dd.SetLevel(level)
+                dd.SetParentId(parentID)
+                if parent.GetLocation() == "":
+                    dd.SetLocation(f)
+                    log.debug("LoadPersistentInfo: Location of dir %s is %s", f, f)
+                else:
+                    dd.SetLocation(parent.GetLocation() + os.path.sep + f)
+                    log.debug("LoadPersistentInfo: Location of dir %s is %s", f, parent.GetLocation() + os.path.sep + f)
+                self.LoadPersistentInfo(dd)
+            else:
+                log.debug("Type of data not determined for object named %s!", f)
+                return
+                
+                
 #             try:
 #                 dd.SetDescription(cp.get(sec, 'description'))
 #             except ConfigParser.NoOptionError:
 #                 log.info("LoadPersistentVenues: Data has no description")
-	    dd.SetStatus(DataDescription3.STATUS_PRESENT)
-	    stat = os.stat(os.path.join(serverPath,f))
-	    dd.SetSize(stat.st_size)
+            dd.SetStatus(DataDescription3.STATUS_PRESENT)
+            stat = os.stat(os.path.join(serverPath,f))
+            dd.SetSize(stat.st_size)
 #             dd.SetChecksum(cp.get(sec, 'checksum'))
 #             dd.SetOwner(cp.get(sec, 'owner'))
 #             dd.SetType(cp.get(sec, 'type'))
@@ -339,38 +339,38 @@ class DataStore:
 #                 dd.SetLastModified(cp.get(sec, 'lastModified'))
 #             except:
 #                 log.info("LoadPersistentVenues: Data has no last modified date. Probably old DataDescription")
-	    
+            
             path=urlparse.urlparse(serverPath)
-	  		
-	    if dd.GetObjectType() == DataDescription3.TYPE_DIR:
-		if not parent.uri == None:
-		    dd.SetURI(parent.uri + "/" + dd.name)
-		else:
-		    dd.SetURI(dd.name)
-		persistentData.append(dd)				
-	    else:
-		#url = self.GetDownloadDescriptor(path[2]+os.path.sep+dd.name)
-		if parent.GetLocation() == "":
-		    log.debug("LoadPersistentInfo: Filename %s", dd.name)
-		    url = self.GetDownloadDescriptor(dd.name)
-		else:
-		    url = self.GetDownloadDescriptor(parent.GetLocation() + os.path.sep + dd.name)
-		if url != None:
-		    if dd.GetObjectType() == DataDescription3.TYPE_FILE:
-			dd.SetURI(url)
-		    else:
-			dd.SetURI(url + os.path.sep + dd.GetLocation())
-		    # Only load if url not None (means file exists)
-		    persistentData.append(dd)
-		else:
-		    log.info("File " + dd.name + " was not found, so it was not loaded.")
+                        
+            if dd.GetObjectType() == DataDescription3.TYPE_DIR:
+                if not parent.uri == None:
+                    dd.SetURI(parent.uri + "/" + dd.name)
+                else:
+                    dd.SetURI(dd.name)
+                persistentData.append(dd)                               
+            else:
+                #url = self.GetDownloadDescriptor(path[2]+os.path.sep+dd.name)
+                if parent.GetLocation() == "":
+                    log.debug("LoadPersistentInfo: Filename %s", dd.name)
+                    url = self.GetDownloadDescriptor(dd.name)
+                else:
+                    url = self.GetDownloadDescriptor(parent.GetLocation() + os.path.sep + dd.name)
+                if url != None:
+                    if dd.GetObjectType() == DataDescription3.TYPE_FILE:
+                        dd.SetURI(url)
+                    else:
+                        dd.SetURI(url + os.path.sep + dd.GetLocation())
+                    # Only load if url not None (means file exists)
+                    persistentData.append(dd)
+                else:
+                    log.info("File " + dd.name + " was not found, so it was not loaded.")
 
-	for data in persistentData:
-	    log.debug("Adding Description %s ", data.name)
-	    self.descriptionDict[data.GetId()] = data
-	    parent.AddChild(data.GetId())
-	    
-	log.debug ("=================== EXITED LoadPersistentInfo ==================")
+        for data in persistentData:
+            log.debug("Adding Description %s ", data.name)
+            self.descriptionDict[data.GetId()] = data
+            parent.AddChild(data.GetId())
+            
+        log.debug ("=================== EXITED LoadPersistentInfo ==================")
     
                 
     def Shutdown(self):
@@ -419,8 +419,8 @@ class DataStore:
         self.cbLock.acquire()
 
         try:
-	    for data in persistentData:
-		self.descriptionDict[data.GetId()] = data  
+            for data in persistentData:
+                self.descriptionDict[data.GetId()] = data  
         except:
             log.exception("DataStore.LoadPersistentData: Failed")
             
@@ -435,14 +435,14 @@ class DataStore:
             *string* The INI formatted list of DataDescriptions in the DataStore.
         '''
         self.cbLock.acquire()
-	block = ""
+        block = ""
 
-	try:
-	    for item in self.descriptionDict:
-		dataItem = self.GetDescById(item)
-		block += dataItem.AsINIBlock()
-	except:
-	    log.exception("DataStore.AsINIBlock: Failed")
+        try:
+            for item in self.descriptionDict:
+                dataItem = self.GetDescById(item)
+                block += dataItem.AsINIBlock()
+        except:
+            log.exception("DataStore.AsINIBlock: Failed")
 
         self.cbLock.release()   
                 
@@ -451,14 +451,14 @@ class DataStore:
     def GetDataDescriptions3(self):
         '''
         Retreive data in the DataStore as a list of DataDescriptions.
-	This is the new interface method version.
+        This is the new interface method version.
         
         **Returns**
             *dataDescriptionList* A list of DataDescriptions representing data currently in the DataStore
         '''
         self.cbLock.acquire()
         try:
-	    dataDescriptionList = self.descriptionDict.values()
+            dataDescriptionList = self.descriptionDict.values()
         except:
             log.exception("DataStore.GetDataDescription: Failed")
 
@@ -469,14 +469,14 @@ class DataStore:
     def GetDataDescriptions(self):
         '''
         Retreive data in the DataStore as a list of DataDescriptions.
-	Method for legacy support for AG 3.0.2. clients
+        Method for legacy support for AG 3.0.2. clients
         
         **Returns**
             *dataDescriptionList* A list of DataDescriptions representing data currently in the DataStore
         '''
         self.cbLock.acquire()
         try:
-	    dataDescriptionList = self.descriptionDict.values()
+            dataDescriptionList = self.descriptionDict.values()
         except:
             log.exception("DataStore.GetDataDescription: Failed")
 
@@ -502,61 +502,61 @@ class DataStore:
         return fileList
 
     def RemoveFiles3(self, dataDescriptionList):
-	"""
-	Removes the files specified by the DataDescriptions in the given list.
-	This is the new interface method version.
-	"""
+        """
+        Removes the files specified by the DataDescriptions in the given list.
+        This is the new interface method version.
+        """
         filesWithError = ""
 
         # 
         # Try to remove all files in the list.  If an error occurs, raise a FileNotFound error
         # with a string containing all names of files that couldn't be removed errors.
         #
-	for data in self.descriptionDict.values():
-	    log.debug("RemoveFiles: Content of TOC for data storage: %s", data.id)
-	
+        for data in self.descriptionDict.values():
+            log.debug("RemoveFiles: Content of TOC for data storage: %s", data.id)
+        
 
-	#Block with possible long duration; acquire lock
+        #Block with possible long duration; acquire lock
 
-	self.cbLock.acquire()
-	
+        self.cbLock.acquire()
+        
         for data in dataDescriptionList:
             errorFlag = 0
             
             log.debug("Datastore.RemoveFiles: %s", data.name)
-	    log.debug("Datastore.RemoveFiles: data id %s", data.id)
-	    
-	    #Removed due to the fact that AG normally uses RemoveData to eliminate the data 
-	    #from the server.
-	    #Remove description from global description list
-	    del self.descriptionDict[data.id] 
+            log.debug("Datastore.RemoveFiles: data id %s", data.id)
             
-	    log.debug("RemoveFiles: Parent of file is: %s", data.GetParentId())
-		
-	    #Determine level of file
-	    if data.GetParentId() == "-1":
-		parentDD = self.root
-	    else:
-		parentDD = self.descriptionDict[data.GetParentId()]
-	    
-	    log.debug("RemoveFiles: Parent is %s", parentDD.name)
+            #Removed due to the fact that AG normally uses RemoveData to eliminate the data 
+            #from the server.
+            #Remove description from global description list
+            del self.descriptionDict[data.id] 
+            
+            log.debug("RemoveFiles: Parent of file is: %s", data.GetParentId())
+                
+            #Determine level of file
+            if data.GetParentId() == "-1":
+                parentDD = self.root
+            else:
+                parentDD = self.descriptionDict[data.GetParentId()]
+            
+            log.debug("RemoveFiles: Parent is %s", parentDD.name)
 
-	    #Create path for deletion of file
-	    if parentDD == self.root:
-		path = os.path.join(self.pathname, data.name)
-	    else:
-		path = os.path.join(self.pathname, parentDD.GetLocation() + os.path.sep + data.name)
-	    log.debug("RemoveFiles: File location is: %s", path)
-	    
-	    #Perform delete at parent description
-	    parentDD.RemoveChild(data.id)
+            #Create path for deletion of file
+            if parentDD == self.root:
+                path = os.path.join(self.pathname, data.name)
+            else:
+                path = os.path.join(self.pathname, parentDD.GetLocation() + os.path.sep + data.name)
+            log.debug("RemoveFiles: File location is: %s", path)
+            
+            #Perform delete at parent description
+            parentDD.RemoveChild(data.id)
 
-	    #Check for valid path
+            #Check for valid path
             if not os.path.exists(path):
                 errorFlag = 1
                 log.error("DataStore.RemoveFiles: The path does not exist %s"%path)
                                 
-	    #Actually remove the file from disk
+            #Actually remove the file from disk
             try:
                 os.remove(path)
             except:
@@ -566,18 +566,18 @@ class DataStore:
             if errorFlag:
                 filesWithError = filesWithError + " "+data.name
 
-	#Release lock 
-	self.cbLock.release()
+        #Release lock 
+        self.cbLock.release()
                 
-	log.debug("Reached end of RemoveFiles3")
+        log.debug("Reached end of RemoveFiles3")
         if filesWithError:
             raise FileNotFound(filesWithError)
 
     def RemoveFiles(self, dataDescriptionList):
-	"""
-	Removes the files specified by the DataDescriptions in the given list.
-	Method for legacy support for AG 3.0.2. clients
-	"""
+        """
+        Removes the files specified by the DataDescriptions in the given list.
+        Method for legacy support for AG 3.0.2. clients
+        """
         filesWithError = ""
 
 
@@ -586,150 +586,150 @@ class DataStore:
         # Try to remove all files in the list.  If an error occurs, raise a FileNotFound error
         # with a string containing all names of files that couldn't be removed errors.
         #
-	for data in self.descriptionDict.values():
-	    log.debug("RemoveFiles: Content of TOC for data storage: %s", data.id)
-	
+        for data in self.descriptionDict.values():
+            log.debug("RemoveFiles: Content of TOC for data storage: %s", data.id)
+        
 
-	#Block with possible long duration; acquire lock
-	legacyCallInvalid = False
-	legacyCallOnDir = False
+        #Block with possible long duration; acquire lock
+        legacyCallInvalid = False
+        legacyCallOnDir = False
 
-	self.cbLock.acquire()
-	
+        self.cbLock.acquire()
+        
         for data in dataDescriptionList:
 
             errorFlag = 0
             
             log.debug("Datastore.RemoveFiles: %s", data.name)
-	    log.debug("Datastore.RemoveFiles: data id %s", data.id)
-	    
-	    #Removed due to the fact that AG normally uses RemoveData to eliminate the data 
-	    #from the server.
-	    #Remove description from global description list
-	    dataDescription = self.descriptionDict[data.id]
-	    if not isinstance(dataDescription, DirectoryDescription):
-	    	if dataDescription.GetParentId() == "-1":
-		    del self.descriptionDict[dataDescription.id] 
+            log.debug("Datastore.RemoveFiles: data id %s", data.id)
             
-				
-		    #Determine level of file
-	    	    parentDD = self.root
-	    
-		
-		    #Create path for deletion of file
-		    path = os.path.join(self.pathname, dataDescription.name)
-		
-		    #Perform delete at parent description
-		    parentDD.RemoveChild(dataDescription.id)
-
-		    #Check for valid path
-		    if not os.path.exists(path):
-		    	errorFlag = 1
-		    	log.error("DataStore.RemoveFiles: The path does not exist %s"%path)
+            #Removed due to the fact that AG normally uses RemoveData to eliminate the data 
+            #from the server.
+            #Remove description from global description list
+            dataDescription = self.descriptionDict[data.id]
+            if not isinstance(dataDescription, DirectoryDescription):
+                if dataDescription.GetParentId() == "-1":
+                    del self.descriptionDict[dataDescription.id] 
+            
                                 
-		    #Actually remove the file from disk
-		    try:
-			os.remove(path)
-		    except:
-			log.exception("DataStore.RemoveFiles: raised error")
-			errorFlag = 1
+                    #Determine level of file
+                    parentDD = self.root
             
-		    if errorFlag:
-		     	filesWithError = filesWithError + " "+dataDescription.name
-	    	else:
-		    legacyCallInvalid= True
-	    else:
-		legacyCallOnDir = True
-
-	#Release lock 
-	self.cbLock.release()
                 
-	log.debug("Reached end of RemoveFiles3")
+                    #Create path for deletion of file
+                    path = os.path.join(self.pathname, dataDescription.name)
+                
+                    #Perform delete at parent description
+                    parentDD.RemoveChild(dataDescription.id)
 
-	if legacyCallInvalid or legacyCallOnDir:
-	    return True
-	    #raise NotAuthorized
-	
+                    #Check for valid path
+                    if not os.path.exists(path):
+                        errorFlag = 1
+                        log.error("DataStore.RemoveFiles: The path does not exist %s"%path)
+                                
+                    #Actually remove the file from disk
+                    try:
+                        os.remove(path)
+                    except:
+                        log.exception("DataStore.RemoveFiles: raised error")
+                        errorFlag = 1
+            
+                    if errorFlag:
+                        filesWithError = filesWithError + " "+dataDescription.name
+                else:
+                    legacyCallInvalid= True
+            else:
+                legacyCallOnDir = True
+
+        #Release lock 
+        self.cbLock.release()
+                
+        log.debug("Reached end of RemoveFiles3")
+
+        if legacyCallInvalid or legacyCallOnDir:
+            return True
+            #raise NotAuthorized
+        
         if filesWithError:
             raise FileNotFound(filesWithError)
-	
-	return False
+        
+        return False
 
 
     #Added by NA2-HPCE
     def RemoveDir(self, id):
-	"""
-	Removes a directory specified by its DirectoryDescription GUID
-	Possibly subentries of the directory will be also deleted
-	"""
-	filesWithError = ""
+        """
+        Removes a directory specified by its DirectoryDescription GUID
+        Possibly subentries of the directory will be also deleted
+        """
+        filesWithError = ""
 
         # 
         # Try to remove all files in the list.  If an error occurs, raise a FileNotFound error
         # with a string containing all names of files that couldn't be removed errors.
         #
 
-	self.cbLock.acquire()
-	#Get description of directory to be removed                       
+        self.cbLock.acquire()
+        #Get description of directory to be removed                       
         remDir = self.descriptionDict[id]
 
-	#Determine level of directory in hierarchy
-	if remDir.parentId == "-1":
-	    remDirParent = self.root
-	else:
-	    remDirParent = self.descriptionDict[remDir.parentId]
-	
-	log.debug("Datastore.RemoveDirectory: %s", remDir.name)
-		
-	entryList= []
+        #Determine level of directory in hierarchy
+        if remDir.parentId == "-1":
+            remDirParent = self.root
+        else:
+            remDirParent = self.descriptionDict[remDir.parentId]
+        
+        log.debug("Datastore.RemoveDirectory: %s", remDir.name)
+                
+        entryList= []
 
-	log.debug("Entries in dataContainer: %s" , remDir.dataContainer)
+        log.debug("Entries in dataContainer: %s" , remDir.dataContainer)
 
 
-	
-	tempListOfIdsToRemove = []
-	for item in remDir.dataContainer:
-	    tempListOfIdsToRemove.append(item)
+        
+        tempListOfIdsToRemove = []
+        for item in remDir.dataContainer:
+            tempListOfIdsToRemove.append(item)
 
-	self.cbLock.release()
-	
-	for id in tempListOfIdsToRemove:
-	    self.cbLock.acquire()
-	    entry = self.GetDescById(id)
-	    if entry.IsOfType(DataDescription3.TYPE_DIR):
-		#Remove Directory; descend recursively the whole directory subtree
-		log.debug("RemoveDir: Removing subdirectory: %s", entry.name)
-		self.cbLock.release()
-		self.RemoveDir(entry.id)
-	    else:
-		#Remove files if any left in the directory
-		log.debug("RemoveDir: Removing file: %s", entry.name)
-		entryList.append(entry)
-		self.cbLock.release()
-	
-	if len(entryList) != 0:
-	    log.debug("RemoveDir: Number of files to remove: %s", len(entryList))
-	    self.RemoveFiles(entryList)
-	    
-	    #As the removal of data within a possibly non-empty directory
-	    #is not signaled to the clients, the deletion from the global
-	    #list in the DataStore has to be done here
-	    for item in entryList:
-		del self.descriptionDict[item.id]
-	
-	self.cbLock.acquire()
-	#Remove Directory from parent description
-	log.debug("RemoveDir: ID of directory to be romved is: %s", remDir.id)
-	log.debug("RemoveDir: Entry for ID in dictionary is: %s", self.descriptionDict[remDir.id].name)
-	remDirParent.RemoveChild(remDir.id)
-	del self.descriptionDict[remDir.id]
+        self.cbLock.release()
+        
+        for id in tempListOfIdsToRemove:
+            self.cbLock.acquire()
+            entry = self.GetDescById(id)
+            if entry.IsOfType(DataDescription3.TYPE_DIR):
+                #Remove Directory; descend recursively the whole directory subtree
+                log.debug("RemoveDir: Removing subdirectory: %s", entry.name)
+                self.cbLock.release()
+                self.RemoveDir(entry.id)
+            else:
+                #Remove files if any left in the directory
+                log.debug("RemoveDir: Removing file: %s", entry.name)
+                entryList.append(entry)
+                self.cbLock.release()
+        
+        if len(entryList) != 0:
+            log.debug("RemoveDir: Number of files to remove: %s", len(entryList))
+            self.RemoveFiles(entryList)
+            
+            #As the removal of data within a possibly non-empty directory
+            #is not signaled to the clients, the deletion from the global
+            #list in the DataStore has to be done here
+            for item in entryList:
+                del self.descriptionDict[item.id]
+        
+        self.cbLock.acquire()
+        #Remove Directory from parent description
+        log.debug("RemoveDir: ID of directory to be romved is: %s", remDir.id)
+        log.debug("RemoveDir: Entry for ID in dictionary is: %s", self.descriptionDict[remDir.id].name)
+        remDirParent.RemoveChild(remDir.id)
+        del self.descriptionDict[remDir.id]
 
         #Create path for delete command and actually delete directory
-	path = os.path.abspath(self.path + os .path.sep + remDir.location)
-	log.debug(" Removing directory at: %s", path)
-	os.rmdir(path)
-	self.cbLock.release()
-		    
+        path = os.path.abspath(self.path + os .path.sep + remDir.location)
+        log.debug(" Removing directory at: %s", path)
+        os.rmdir(path)
+        self.cbLock.release()
+                    
         
 
     def ModifyData(self, data):
@@ -801,18 +801,18 @@ class DataStore:
         If filename is not present in the datastore, return None.
 
         """
-	log.debug("GetDownLoadDescriptor: Pathname is %s", self.pathname)
-	log.debug("GetDownLoadDescriptor: Filename is %s", filename)
+        log.debug("GetDownLoadDescriptor: Pathname is %s", self.pathname)
+        log.debug("GetDownLoadDescriptor: Filename is %s", filename)
 
         path = os.path.join(self.pathname, filename)
-	
-	log.debug("GetDownLoadDescriptor: Joined Path is %s", path)
-	
-	path = os.path.abspath(path)
+        
+        log.debug("GetDownLoadDescriptor: Joined Path is %s", path)
+        
+        path = os.path.abspath(path)
 
              
         if not os.path.exists(path):
-	    log.error("GetDownLoadDescriptor: File path %s is not existing!", path)
+            log.error("GetDownLoadDescriptor: File path %s is not existing!", path)
             return None
 
         self.transferEngineLock.acquire()
@@ -935,44 +935,44 @@ class DataStore:
     def AddFile(self,identityToken,filename):
     
         url = self.GetDownloadDescriptor(filename)
-	url = urllib.unquote(url) # Keep quoted chars out of the URL used as uri in the descriptions
+        url = urllib.unquote(url) # Keep quoted chars out of the URL used as uri in the descriptions
         
         path = os.path.join(self.pathname,filename)
 
-	log.debug("AddFile: URL to download location is: %s", url)
-	log.debug("AddFile: Path to FTP location of file is: %s", path)
+        log.debug("AddFile: URL to download location is: %s", url)
+        log.debug("AddFile: Path to FTP location of file is: %s", path)
         
-	#split file-path to only name the description after its filename
-	fileList = filename.split(os.path.sep)
-	        
-	if len(fileList) == 1:
-	    parentID = "-1" # direct insertion under root (len(fileList)=1 means only filename with no dir is contained)
-	else:
-	    #insertion in a subdirectory
-	    #Time consuming action, get lock
+        #split file-path to only name the description after its filename
+        fileList = filename.split(os.path.sep)
+                
+        if len(fileList) == 1:
+            parentID = "-1" # direct insertion under root (len(fileList)=1 means only filename with no dir is contained)
+        else:
+            #insertion in a subdirectory
+            #Time consuming action, get lock
             self.cbLock.acquire()
-	    parentID = self.root.Search(self.descriptionDict,fileList[0:len(fileList)-1])
-	    #Unlock
+            parentID = self.root.Search(self.descriptionDict,fileList[0:len(fileList)-1])
+            #Unlock
             self.cbLock.release()
 
-		
-	log.debug("AddFile: Determined parentID is: %s", parentID)
+                
+        log.debug("AddFile: Determined parentID is: %s", parentID)
         
         desc = DataDescription3(fileList[len(fileList)-1]) # Last item in list is the filename
         desc.SetSize(int(os.stat(path)[stat.ST_SIZE]))
         desc.SetStatus(DataDescription3.STATUS_PRESENT)
         desc.SetOwner(identityToken)
-	desc.SetParentId(parentID)
-	desc.SetObjectType(DataDescription3.TYPE_FILE)
-	desc.SetLevel(-2)
+        desc.SetParentId(parentID)
+        desc.SetObjectType(DataDescription3.TYPE_FILE)
+        desc.SetLevel(-2)
         desc.SetURI(url)
-	log.debug("AddFile: URI is %s", url)
+        log.debug("AddFile: URI is %s", url)
         desc.SetLastModified(self.GetTime())
-	
+        
 
 
         if self.GetDescbyName(filename):
-      	    #Perform actual file adding; get lock
+            #Perform actual file adding; get lock
             self.cbLock.acquire()
             desc.SetURI(url)
             self.cbLock.acquire()
@@ -983,31 +983,31 @@ class DataStore:
                 log.exception("DataStore.RemoveData: Failed")
             self.cbLock.release()
         else:
-	    print "Add new file to datastore"
+            print "Add new file to datastore"
             self.cbLock.acquire()
             self.descriptionDict[desc.GetId()] = desc
 
-	    if not desc.GetParentId() == "-1":
-		self.descriptionDict[desc.GetParentId()].GetChildren().append(desc.GetId())
-	    else:
-		self.root.GetChildren().append(desc.GetId())
-		
+            if not desc.GetParentId() == "-1":
+                self.descriptionDict[desc.GetParentId()].GetChildren().append(desc.GetId())
+            else:
+                self.root.GetChildren().append(desc.GetId())
+                
             self.callbackClass.AddData(desc)
             self.cbLock.release()
-	    
+            
     def GetDescbyName(self, name):
-    	"""
-	Retrieves a DataDescription specified by its name property. 
-	"""
+        """
+        Retrieves a DataDescription specified by its name property. 
+        """
 
-	ItemExists = False
-	
-	for item in self.descriptionDict.values():
-	    log.debug("GetDescbyName Name: %s", item.name)
-	    if item.name == name:
-		ItemExists = True
-	                
-	return ItemExists
+        ItemExists = False
+        
+        for item in self.descriptionDict.values():
+            log.debug("GetDescbyName Name: %s", item.name)
+            if item.name == name:
+                ItemExists = True
+                        
+        return ItemExists
 
     def CompleteUpload(self, identityToken, file_info):
         """
@@ -1062,27 +1062,27 @@ class DataStore:
         """
         Create a data description for filename with a state of 'pending' and
         add to the venue.
-	This is the new interface method version.
+        This is the new interface method version.
         """
-	log.debug("AddPendingUpload ENTERED!!!!!!!")
+        log.debug("AddPendingUpload ENTERED!!!!!!!")
 
         desc = FileDescription(filename)
         desc.SetStatus(DataDescription3.STATUS_PENDING)
         #desc.SetOwner(identityToken.dn)
         desc.SetOwner(identityToken)
-	desc.SetLevel(-2) # Files are per definition level = -2 to distinguish from 
-	desc.SetParentID(self.curParentID) # set ID of the parent DataDescription
+        desc.SetLevel(-2) # Files are per definition level = -2 to distinguish from 
+        desc.SetParentID(self.curParentID) # set ID of the parent DataDescription
 
-        	
-	"""
-	Changing code here to allow addign DDs to different hierarchy levels
-	"""
-	if not self.curDDC == None:
-	    self.cbLock.acquire()
-	    self.curDDC.AddData(desc)
-	    self.callbackClass.AddData(desc)
-	    self.cbLock.release()
-	else:
+                
+        """
+        Changing code here to allow addign DDs to different hierarchy levels
+        """
+        if not self.curDDC == None:
+            self.cbLock.acquire()
+            self.curDDC.AddData(desc)
+            self.callbackClass.AddData(desc)
+            self.cbLock.release()
+        else:
             self.cbLock.acquire()
             self.dataDescContainer.AddData(desc)
             self.callbackClass.AddData(desc)
@@ -1094,27 +1094,27 @@ class DataStore:
         """
         Create a data description for filename with a state of 'pending' and
         add to the venue.
-	Method for legacy support for AG 3.0.2. clients
+        Method for legacy support for AG 3.0.2. clients
         """
-	log.debug("AddPendingUpload ENTERED!!!!!!!")
+        log.debug("AddPendingUpload ENTERED!!!!!!!")
 
         desc = FileDescription(filename)
         desc.SetStatus(DataDescription.STATUS_PENDING)
         #desc.SetOwner(identityToken.dn)
         desc.SetOwner(identityToken)
-	desc.SetLevel(-2) # Files are per definition level = -2 to distinguish from 
-	desc.SetParentID(self.curParentID) # set ID of the parent DataDescription
+        desc.SetLevel(-2) # Files are per definition level = -2 to distinguish from 
+        desc.SetParentID(self.curParentID) # set ID of the parent DataDescription
 
-        	
-	"""
-	Changing code here to allow addign DDs to different hierarchy levels
-	"""
-	if not self.curDDC == None:
-	    self.cbLock.acquire()
-	    self.curDDC.AddData(desc)
-	    self.callbackClass.AddData(desc)
-	    self.cbLock.release()
-	else:
+                
+        """
+        Changing code here to allow addign DDs to different hierarchy levels
+        """
+        if not self.curDDC == None:
+            self.cbLock.acquire()
+            self.curDDC.AddData(desc)
+            self.callbackClass.AddData(desc)
+            self.cbLock.release()
+        else:
             self.cbLock.acquire()
             self.dataDescContainer.AddData(desc)
             self.callbackClass.AddData(desc)
@@ -1124,125 +1124,125 @@ class DataStore:
     
     #Added by NA2-HPCE
     def Dump(self, desc=None):
-	"""
-	Dumps the contents of this DataDescContainer and all subsequent containers
-	Used for debugging the data structure of the directory storage on the 
-	venue server.
-	"""
+        """
+        Dumps the contents of this DataDescContainer and all subsequent containers
+        Used for debugging the data structure of the directory storage on the 
+        venue server.
+        """
 
-	if desc == None:
-	    children = self.root.GetChildren()
-	    desc = self.root
-	else:
-	    children = desc.GetChildren() 
-	    
-	log.debug("===========================================================")
-	log.debug("Data hierarchy dump: Level %s",desc.GetLevel())
-	log.debug("- %s : Type: %s : Parent: %s", desc.GetName(), desc.GetObjectType(), desc.GetParentId())
-	
-	for item in children:
-	    newDesc = self.descriptionDict[item]
-	    self.Dump(newDesc)
-	
-	log.debug("===========================================================")
-	
-	
+        if desc == None:
+            children = self.root.GetChildren()
+            desc = self.root
+        else:
+            children = desc.GetChildren() 
+            
+        log.debug("===========================================================")
+        log.debug("Data hierarchy dump: Level %s",desc.GetLevel())
+        log.debug("- %s : Type: %s : Parent: %s", desc.GetName(), desc.GetObjectType(), desc.GetParentId())
+        
+        for item in children:
+            newDesc = self.descriptionDict[item]
+            self.Dump(newDesc)
+        
+        log.debug("===========================================================")
+        
+        
     def DumpDataStack(self):
-	"""
-	Dumps the data in the file data stack to the log file, printing the names
-	of the files and directories
-	
-	Used for local debug only
-	"""
+        """
+        Dumps the data in the file data stack to the log file, printing the names
+        of the files and directories
+        
+        Used for local debug only
+        """
 
-	log.debug("Data Stack Dump")
-	log.debug("===================================================")
-	print "Data Stack Dump"
-	print "==================================================="
+        log.debug("Data Stack Dump")
+        log.debug("===================================================")
+        print "Data Stack Dump"
+        print "==================================================="
     
-	for item in self.descriptionDict:
-	    dataObject = self.GetDescById(item)
-	    if dataObject.IsOfType(DataDescription3.TYPE_DIR):
-		log.debug("Dir - %s", dataObject.GetName())
-		print "Dir - ", dataObject.GetName()
-	    else:
-		log.debug("File - %s", dataObject.GetName())
-		print "File - ", dataObject.GetName()
-	
-	
+        for item in self.descriptionDict:
+            dataObject = self.GetDescById(item)
+            if dataObject.IsOfType(DataDescription3.TYPE_DIR):
+                log.debug("Dir - %s", dataObject.GetName())
+                print "Dir - ", dataObject.GetName()
+            else:
+                log.debug("File - %s", dataObject.GetName())
+                print "File - ", dataObject.GetName()
+        
+        
     #ZSI:HO
     def GetDirSize(self, path):
-	"""
-	Calculates the size of a given directory 
-	"""
+        """
+        Calculates the size of a given directory 
+        """
         size = 0
-	
-	list = os.listdir(path)
-	
-	
-    	for item in list:
-	    checkItem = os.path.join(path,item)
-	    log.debug("Path to check: %s", checkItem)
-	    if os.path.isfile(os.path.abspath(checkItem)):
-		log.debug("Is file!")
-	    	size += os.path.getsize(checkItem)
-	    else:
-		log.debug("Is dir!")    
-		size += self.GetDirSize(os.path.abspath(checkItem))
+        
+        list = os.listdir(path)
+        
+        
+        for item in list:
+            checkItem = os.path.join(path,item)
+            log.debug("Path to check: %s", checkItem)
+            if os.path.isfile(os.path.abspath(checkItem)):
+                log.debug("Is file!")
+                size += os.path.getsize(checkItem)
+            else:
+                log.debug("Is dir!")    
+                size += self.GetDirSize(os.path.abspath(checkItem))
 
-	return size
+        return size
     
     def GetDataSize(self):
-	"""
-	Calculates the overall size of the data store.
-	"""
-	size = self.GetDirSize(os.path.abspath(self.path)) / 1024
-	log.debug("DATASTORE: Data size of path %s is: %s", os.path.abspath(self.path), size)
-	strSize = str(size)
-	log.debug("DATASTORE: String object: %s", strSize)
-	return size
-	
-	
+        """
+        Calculates the overall size of the data store.
+        """
+        size = self.GetDirSize(os.path.abspath(self.path)) / 1024
+        log.debug("DATASTORE: Data size of path %s is: %s", os.path.abspath(self.path), size)
+        strSize = str(size)
+        log.debug("DATASTORE: String object: %s", strSize)
+        return size
+        
+        
     #Added by NA2-HPCE
     def AddDir(self, name, desc, level, parentUID):
-	"""
-	Adds a directory specified by its name, a description and the level in the hierarchy 
-	it should be inserted. The parentUID specifies the GUID of the DataDescription object
-	of the parent of the directory to be added
-	"""
-	locDir = DirectoryDescription(name)
-	locDir.SetStatus(DataDescription3.STATUS_PRESENT)
-	locDir.SetDescription(desc)
-	locDir.SetLevel(level)
-	log.debug("ParentId to be set: %s", parentUID)
-	log.debug("Root is %s", self.root)
-	
-	#Search for parent
-	if parentUID == "0":
-	    log.debug("Found parent to be 0!")
-	    locParent = self.root
-	    locDir.SetParentId(-1)
-	    os.mkdir(self.pathname + "/" + locDir.GetName())
-	    locDir.SetLocation(name)
-	    locDir.SetURI("/" + name)
-	else:
-	    log.debug("Found parent to be <>0!")
-	    locDir.SetParentId(parentUID)
-	    locParent = self.descriptionDict[parentUID]
-	    os.mkdir(self.pathname + "/" + locParent.GetLocation() + "/" + locDir.GetName())
-	    locDir.SetLocation(locParent.GetLocation() + "/" + locDir.GetName())
-	    locDir.SetURI(locParent.GetLocation() + "/" + locDir.GetName())
-	
-	log.debug("URI is %s", locDir.GetURI())
-	    
-	log.debug("Determined parent is %s ", locParent)
-	
-	self.cbLock.acquire()
-	locParent.AddChild(locDir.GetId())
-	self.descriptionDict[locDir.GetId()] = locDir
-	self.cbLock.release()
-		
-	return locDir
+        """
+        Adds a directory specified by its name, a description and the level in the hierarchy 
+        it should be inserted. The parentUID specifies the GUID of the DataDescription object
+        of the parent of the directory to be added
+        """
+        locDir = DirectoryDescription(name)
+        locDir.SetStatus(DataDescription3.STATUS_PRESENT)
+        locDir.SetDescription(desc)
+        locDir.SetLevel(level)
+        log.debug("ParentId to be set: %s", parentUID)
+        log.debug("Root is %s", self.root)
+        
+        #Search for parent
+        if parentUID == "0":
+            log.debug("Found parent to be 0!")
+            locParent = self.root
+            locDir.SetParentId(-1)
+            os.mkdir(self.pathname + "/" + locDir.GetName())
+            locDir.SetLocation(name)
+            locDir.SetURI("/" + name)
+        else:
+            log.debug("Found parent to be <>0!")
+            locDir.SetParentId(parentUID)
+            locParent = self.descriptionDict[parentUID]
+            os.mkdir(self.pathname + "/" + locParent.GetLocation() + "/" + locDir.GetName())
+            locDir.SetLocation(locParent.GetLocation() + "/" + locDir.GetName())
+            locDir.SetURI(locParent.GetLocation() + "/" + locDir.GetName())
+        
+        log.debug("URI is %s", locDir.GetURI())
+            
+        log.debug("Determined parent is %s ", locParent)
+        
+        self.cbLock.acquire()
+        locParent.AddChild(locDir.GetId())
+        self.descriptionDict[locDir.GetId()] = locDir
+        self.cbLock.release()
+                
+        return locDir
 
 
     def CancelPendingUpload(self, filename):
@@ -1272,9 +1272,9 @@ class DataStore:
         self.cbLock.release()
         
     def GetDescription(self, filename):
-	"""
-	Method for legacy support for AG 3.0.2. clients
-	"""
+        """
+        Method for legacy support for AG 3.0.2. clients
+        """
         return self.descriptionDict.GetData(filename) #get description by filename
 
     def GetDescription3(self, filename):
@@ -1284,7 +1284,7 @@ class DataStore:
         """
         Given a data description and a filename,
         set the data description if the file exists
-	Method for legacy support for AG 3.0.2. clients
+        Method for legacy support for AG 3.0.2. clients
         """
 
         path = os.path.join(self.pathname, filename)
@@ -1301,22 +1301,22 @@ class DataStore:
         path = os.path.join(self.pathname, filename)
         if os.path.exists(path):
             description.uri = self.GetDownloadDescriptor(filename)
-            self.descriptionDict[description.GetId()] = description	    
+            self.descriptionDict[description.GetId()] = description         
     
     #Added by NA2-HPCE
     def GetCurDataDesc(self):
-	"""
-	Retrieves the DataDescription currently set as current 
-	DataDescription
-	"""
-	return self.root
+        """
+        Retrieves the DataDescription currently set as current 
+        DataDescription
+        """
+        return self.root
 
     def GetDescById(self,id):
-	"""
-	Retrieves the DataDescription currently set as current 
-	DataDescription
-	"""
-	return self.descriptionDict[id]
+        """
+        Retrieves the DataDescription currently set as current 
+        DataDescription
+        """
+        return self.descriptionDict[id]
 
 
 UploadFile = FTPSClient.FTPSUploadFile

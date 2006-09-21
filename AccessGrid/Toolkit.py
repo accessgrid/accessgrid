@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.123 2006-09-16 00:01:17 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.124 2006-09-21 12:04:59 braitmai Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.123 2006-09-16 00:01:17 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.124 2006-09-21 12:04:59 braitmai Exp $"
 
 # Standard imports
 import os
@@ -202,7 +202,7 @@ class AppBase:
     def CheckDependencies(self):
         if not hasattr(socket,'ssl'):
             raise MissingDependencyError("SSL")
-	
+        
     def GetPassphrase(self,verifyFlag=0,prompt1="Enter the passphrase to your private key.", prompt2='Verify passphrase:'):
 
         # note: verifyFlag is unused

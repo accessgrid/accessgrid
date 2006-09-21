@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.99 2006-08-30 08:23:37 braitmai Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.100 2006-09-21 12:04:59 braitmai Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.99 2006-08-30 08:23:37 braitmai Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.100 2006-09-21 12:04:59 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -189,12 +189,12 @@ class DataDescription3(ObjectDescription):
     
     For the introduction of the new classes and the establishing of the 
     hierarchy new member variables hav ebenn added:
-	
-	objetType: distinguishes between files and directories
-	parentID:  contains the GUID of the description the current
-	           description is attached to.
-	Level:     denotes the level of the data object within the hierarchy
-	           root level starts with 0
+        
+        objetType: distinguishes between files and directories
+        parentID:  contains the GUID of the description the current
+                   description is attached to.
+        Level:     denotes the level of the data object within the hierarchy
+                   root level starts with 0
     
     Thereby directory hierarchies are supported.
     
@@ -287,15 +287,15 @@ class DataDescription3(ObjectDescription):
         string += "type: %s\n" % self.GetType()
         string += 'lastModified: %s\n' % self.GetLastModified()
         string += 'objType: %s\n' % self.GetObjectType()
-	string += 'parent: %s\n' % self.GetParentId()
-	string += 'Level: %s\n' % self.GetLevel()
+        string += 'parent: %s\n' % self.GetParentId()
+        string += 'Level: %s\n' % self.GetLevel()
 
         return string
     
     #Added by NA2-HPCE
     def SetObjectType(self, type):
         self.objectType = type
-	
+        
     #Added by NA2-HPCE
     def GetObjectType(self):
         try:
@@ -354,22 +354,22 @@ class DirectoryDescription(DataDescription3):
         DataDescription3.__init__(self, name)
         
         self.dataContainer = None
-	self.objectType = DataDescription3.TYPE_DIR
-	self.location = ""
-	self.dataContainer = list()
-	#if not dataDescContainer == None:
-	#    self.dataContainer = dataDescContainer
+        self.objectType = DataDescription3.TYPE_DIR
+        self.location = ""
+        self.dataContainer = list()
+        #if not dataDescContainer == None:
+        #    self.dataContainer = dataDescContainer
     
     def GetChildren(self):
-	return self.dataContainer
+        return self.dataContainer
     
     def AddChild(self, id):
-	self.dataContainer.append(id)
+        self.dataContainer.append(id)
         
     def RemoveChild(self, id):
-	for item in self.dataContainer:
-	    if item == id:
-		self.dataContainer.remove(item)
+        for item in self.dataContainer:
+            if item == id:
+                self.dataContainer.remove(item)
     
     def SetDataContainer(self, dataContainer):
         self.dataContainer = dataContainer
@@ -378,35 +378,35 @@ class DirectoryDescription(DataDescription3):
         return self.dataContainer
     
     def SetLocation(self, location):
-	self.location = location
-	self.uri = location
+        self.location = location
+        self.uri = location
     
     def GetLocation(self):
-	return self.location
+        return self.location
     
     def AsINIBlock(self):
-	string = DataDescription.AsINIBlock()
-	string += "status : %s\n" % self.GetLocation()
-	
-	return string
+        string = DataDescription.AsINIBlock()
+        string += "status : %s\n" % self.GetLocation()
+        
+        return string
     def Search(self, directoryDict, pathList):
-	log.debug("Search: Size of pathList: %s", len(pathList))
-	log.debug("Search: Examining path part: %s", pathList[0])
+        log.debug("Search: Size of pathList: %s", len(pathList))
+        log.debug("Search: Examining path part: %s", pathList[0])
 
-	nextDD = None
+        nextDD = None
 
-	for item in directoryDict.values():
-	    if item.name == pathList[len(pathList)-2]:
-		nextDD = item
-		break
-		
-	pathList = pathList[1:len(pathList)]
-	if len(pathList) == 0:
-	    log.debug("Search: Found end of path. ID is: %s", nextDD.GetId())
-	    return nextDD.GetId()
-	else:
-	    log.debug("Search: continue on next recursive path level!")
-	    return nextDD.Search(directoryDict, pathList)
+        for item in directoryDict.values():
+            if item.name == pathList[len(pathList)-2]:
+                nextDD = item
+                break
+                
+        pathList = pathList[1:len(pathList)]
+        if len(pathList) == 0:
+            log.debug("Search: Found end of path. ID is: %s", nextDD.GetId())
+            return nextDD.GetId()
+        else:
+            log.debug("Search: continue on next recursive path level!")
+            return nextDD.Search(directoryDict, pathList)
 
 #Added by NA2-HPCE
 class FileDescription(DataDescription3):
@@ -610,24 +610,24 @@ class Capability3:
         self.rate = rate # RTP clock rate
         self.channels = channels
         self.serviceId = serviceId 
-	self.locationType = "" 	# Secpifies whether to use multicast assigned by Venue or Unicast as specified by service
-	self.port = 0          	# only applicable if used PREFERRED_UNICAST: port of service to use
-	self.host = ""		# only applicable if used PFEFERRED_UNICAST: ip of service to use
-	if self.codec == None:
-	    self.codec=""
-	    
-	if rate == None:
-	    self.rate = 0
-	
+        self.locationType = ""  # Secpifies whether to use multicast assigned by Venue or Unicast as specified by service
+        self.port = 0           # only applicable if used PREFERRED_UNICAST: port of service to use
+        self.host = ""          # only applicable if used PFEFERRED_UNICAST: ip of service to use
+        if self.codec == None:
+            self.codec=""
+            
+        if rate == None:
+            self.rate = 0
+        
     def SetLocationType(self, type):
-	self.locationType = type
+        self.locationType = type
 
     def SetHost(self, host):
-	self.host = host
+        self.host = host
     
     def SetPort(self, port):
-	self.port = port
-	
+        self.port = port
+        
     
         
     def __repr__(self):
@@ -635,17 +635,24 @@ class Capability3:
         return string
 
     def matches( self, capability ):
-	try:
+        print "Capability3"
+        print "Type: ", str(self.type), str(capability.type)
+        print "Codec: ", str(self.codec), str(capability.codec)
+        print "Channels: ", str(self.channels), str(capability.channels)
+        print "Rate: ", str(self.rate), str(capability.rate)
+        try:
             if (str(self.type) != str(capability.type) or
-            	str(self.codec) != str(capability.codec) or
-	        int(self.channels) != int(capability.channels) or
-            	int(self.rate) != int(capability.rate)):
-            	# type mismatch
-            	return 0
-	except:
-	    print "Exception in capability compare!"
+                str(self.codec) != str(capability.codec) or
+                int(self.channels) != int(capability.channels) or
+                int(self.rate) != int(capability.rate)):
+                # type mismatch
+                print "Capabilities do not match!"
+                return 0
+        except:
+            print "Exception in capability compare!"
 
         # capability match
+        print "Capability match!"
         return 1
 
 class Capability:
@@ -674,6 +681,11 @@ class Capability:
         return string
 
     def matches( self, capability ):
+        print "Capability"
+        print "Type: ", str(self.type), str(capability.type)
+        print "Codec: ", str(self.codec), str(capability.codec)
+        print "Channels: ", str(self.channels), str(capability.channels)
+        print "Rate: ", str(self.rate), str(capability.rate)
         if (str(self.type) != str(capability.type) or
             str(self.codec) != str(capability.codec) or
             int(self.channels) != int(capability.channels) or
@@ -799,7 +811,7 @@ class AGServiceDescription:
         self.capabilities = capabilities
         self.resource = resource
         self.packageFile = packageFile
-	
+        
 class AGServiceDescription3:
     def __init__( self, name="", uri="", capabilities=[], resource="", packageFile=""):
         self.name = name
@@ -958,12 +970,12 @@ class VenueState:
 
     #Changed interface to accpet dataDescription Id instead of description
     def RemoveData( self, dataDescriptionId ):
-	#Added exception handling in case of failed call
-	    
-	try:
+        #Added exception handling in case of failed call
+            
+        try:
             del self.data[dataDescriptionId.id]
-	except:
-	    print "Removal of data failed!"
+        except:
+            print "Removal of data failed!"
 
     def GetData(self):
         return self.data.values()
@@ -1084,12 +1096,12 @@ class VenueState3:
 
     #Changed interface to accpet dataDescription Id instead of description
     def RemoveData( self, dataDescriptionId ):
-	#Added exception handling in case of failed call
-	    
-	try:
+        #Added exception handling in case of failed call
+            
+        try:
             del self.data[dataDescriptionId.id]
-	except:
-	    print "Removal of data failed!"
+        except:
+            print "Removal of data failed!"
 
     def GetData(self):
         return self.data.values()

@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.62 2006-09-16 01:03:13 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.63 2006-09-21 12:04:59 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.62 2006-09-16 01:03:13 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.63 2006-09-21 12:04:59 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -53,6 +53,9 @@ class AGService:
         self.running = 1
         self.packageFile = ""
         self.id = GUID()
+	# Variable used by new service with AG3.1 interface to indicate when the server has first been configured
+	# Afterwards relies on streamDescription comparision as with older AG3.0.x services.
+	self.isConfigured = False  
         
         self.processManager = ProcessManager()
         
@@ -118,7 +121,7 @@ class AGService:
     def GetCapabilities( self ):
         """
         Get capabilities
-	Method for legacy support for AG 3.0.2. clients
+        Method for legacy support for AG 3.0.2. clients
         """
         return self.capabilities
 
@@ -174,8 +177,10 @@ class AGService:
     def SetStream( self, streamDescription ):
         """
         Set the StreamDescription
-	Method for legacy support for AG 3.0.2. clients
+        Method for legacy support for AG 3.0.2. clients
         """
+	
+	
         try:
             self.log.info("SetStream: %s %s %s" % (streamDescription.capability, 
                                                    streamDescription.location.host,   
@@ -185,7 +190,7 @@ class AGService:
             if self.streamDescription and \
                 self.streamDescription.location.host == streamDescription.location.host       \
                 and self.streamDescription.location.port == streamDescription.location.port \
-                and self.streamDescription.encryptionKey == streamDescription.encryptionKey:
+                and self.streamDescription.encryptionKey == streamDescription.encryptionKey and self.isConfigured:
                 # configuration with identical stream description;
                 # bail out
                 self.log.info("SetStream: ignoring trivial re-configuration")
@@ -199,10 +204,14 @@ class AGService:
                         match = 1
                 if not match:
                     return 0
-            if isinstance(streamDescription, StreamDescription):
+            if isinstance(streamDescription, StreamDescription) or isinstance(streamDescription, StreamDescription3):
                 self.streamDescription = streamDescription
             else:
-                self.log.debug("StreamDescription invalid!")
+		if streamDescription == None:
+                    self.log.debug("StreamDescription invalid  == None!")
+		else:
+                    self.log.debug("StreamDescription invalid format!")
+		    self.streamDescription = streamDescription
                 
 
         except:
@@ -230,6 +239,8 @@ class AGService:
                 # bail out
                 self.log.info("SetStream3: ignoring trivial re-configuration")
                 return 1
+
+	    self.log.info("SetStream3: new configuration, set everything new!")
             
             # each service capability has to be present in the stream.
             for cap in self.capabilities:
@@ -238,13 +249,18 @@ class AGService:
                     if c.matches(cap):
                         match = 1
                 if not match:
+		    self.log.debug("No match found leave!")
                     return 0
 
-            if isinstance(streamDescription, StreamDescription):
+            if isinstance(streamDescription, StreamDescription3):
+	        self.log.debug("StreamDescription3 okay, assign it to service!")
                 self.streamDescription = streamDescription
             else:
-                self.streamDescription = streamDescription
-                self.log.debug("StreamDescription invalid!")
+		if streamDescription == None:
+                    self.log.debug("StreamDescription3 invalid  == None!")
+		else:
+                    self.log.debug("StreamDescription3 invalid format!")
+		    self.streamDescription = streamDescription
 
         except:
             self.log.exception("Exception in SetStream3 ")
@@ -311,11 +327,11 @@ class AGService:
         return self.serviceManagerUri
         
     def GetDescription(self):
-	"""
-	Method for legacy support for AG 3.0.2. clients
-	"""
-	for cp in self.capabilities:
-	    self.log.debug("GetDescription3:Capability in Service %s", cp)
+        """
+        Method for legacy support for AG 3.0.2. clients
+        """
+        for cp in self.capabilities:
+            self.log.debug("GetDescription3:Capability in Service %s", cp)
         r = AGServiceDescription(self.name,
                                  self.uri,
                                  self.capabilities,
@@ -325,8 +341,8 @@ class AGService:
         return r
 
     def GetDescription3(self):
-	for cp in self.capabilities:
-	    self.log.debug("GetDescription3:Capability in Service %s", cp)
+        for cp in self.capabilities:
+            self.log.debug("GetDescription3:Capability in Service %s", cp)
         r = AGServiceDescription3(self.name,
                                  self.uri,
                                  self.capabilities,

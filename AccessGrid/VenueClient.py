@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.330 2006-09-16 00:49:15 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.331 2006-09-21 12:04:59 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.330 2006-09-16 00:49:15 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.331 2006-09-21 12:04:59 braitmai Exp $"
 
 import sys
 import os
@@ -664,7 +664,7 @@ class VenueClient:
         #workaround for converting list into dict()
         log.debug("Rebuilding venueState data list")
         for item in tempVenueState.data:
-	    log.debug("Adding item: %s", item.id)
+            log.debug("Adding item: %s", item.id)
             self.venueState.data[item.id] = item
         
         
@@ -690,7 +690,7 @@ class VenueClient:
         data = event.GetData()
         
         log.debug("RemoveDataEvent: Data type is: %s", data.type)
-	log.debug("RemoveDataEvent: Data is: %s", data)
+        log.debug("RemoveDataEvent: Data is: %s", data)
         if data.type == "None" or data.type == None:
             # Venue data gets removed from venue state
             self.venueState.RemoveData(data)
@@ -1020,21 +1020,21 @@ class VenueClient:
 
         try:
             # Get beacon location
-	    for s in self.streamDescList:
+            for s in self.streamDescList:
                 for cap in s.capability:
                     if cap.type == "Beacon":
-		        self.beaconLocation = s.location
+                        self.beaconLocation = s.location
                         for netloc in s.networkLocations:
                             if self.transport == netloc.GetType():
                                 self.beaconLocation = netloc
 
             # Create beacon
             if self.beaconLocation:
-		if self.beacon == None:
-		    self.beacon = Beacon()
+                if self.beacon == None:
+                    self.beacon = Beacon()
                 elif(self.beacon.GetConfigData('groupAddress') != self.beaconLocation.host or
                      self.beacon.GetConfigData('groupPort') != self.beaconLocation.port):
-		    # Beacon reconfig; stop running beacon
+                    # Beacon reconfig; stop running beacon
                     log.info("Beacon being reconfigured, stopping running beacon")
                     self.beacon.Stop()
 
@@ -1047,10 +1047,10 @@ class VenueClient:
                          %(self.beaconLocation.host, self.beaconLocation.port))
                 self.beacon.Start()
             else:
-		log.info('No beacon location, not starting beacon client')
+                log.info('No beacon location, not starting beacon client')
                               
         except:
-	    log.exception("VenueClient.StartBeacon failed")
+            log.exception("VenueClient.StartBeacon failed")
                    
     def __StartJabber(self, textLocation):
         jabberHost = textLocation[0]
@@ -1113,7 +1113,7 @@ class VenueClient:
                 self.capabilities = []
             
             for cap in self.capabilities:
-		log.debug("Capability on VenueEnter: %s", cap)
+                log.debug("Capability on VenueEnter: %s", cap)
             
         except:
             log.exception("EnterVenue: Exception getting capabilities")
@@ -1284,6 +1284,8 @@ class VenueClient:
         try:
             log.debug("Setting node service streams")
             if self.nodeService:
+	        for item in self.streamDescList:
+		    log.debug("StreamDescList item %s", item)
                 self.nodeService.SetStreams3( self.streamDescList )
         except:
             log.exception("Error setting streams")
@@ -1302,7 +1304,7 @@ class VenueClient:
             
     def UpdateStreams(self):
         for stream in self.streamDescList:
-	    self.UpdateStream(stream)
+            self.UpdateStream(stream)
 
         # Restart the beacon so the new transport is used
         if self.beaconLocation and self.beacon:
@@ -1382,8 +1384,8 @@ class VenueClient:
             self.cache.updateProfile(profile)
         except InvalidProfileException:
             log.exception("UpdateProfileCache: InvalidProfile when storing a venue user's profile in the cache.")
-	    
-	    
+            
+            
     """
     This method returns the node configurations
     """
@@ -1394,7 +1396,7 @@ class VenueClient:
             return []
     
     def LoadNodeConfiguration(self, configuration):
-	return self.nodeService.LoadConfiguration( configuration )
+        return self.nodeService.LoadConfiguration( configuration )
             
     #
     # Venue calls

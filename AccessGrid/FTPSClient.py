@@ -215,7 +215,7 @@ if __name__ == '__main__':
 
     # set up test
     if sys.platform == 'win32':
-	tmpdir = os.environ['TEMP']
+        tmpdir = os.environ['TEMP']
     elif sys.platform in ['linux2','darwin']:
         tmpdir = '/tmp'
     fileToUpload = 'upload'

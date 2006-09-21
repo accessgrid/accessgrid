@@ -242,19 +242,19 @@ if __name__ == "__main__":
             self.Start(self)
 
         def StopTransform(self, streamList):
-	    """
-	    Method for legacy support for AG 3.0.2. clients
-	    """
+            """
+            Method for legacy support for AG 3.0.2. clients
+            """
             return []
 
-	def StopTransform3(self, streamList):
-	    
+        def StopTransform3(self, streamList):
+            
             return []
                
         def Transform(self, streamList):
-	    """
-	    Method for legacy support for AG 3.0.2. clients
-	    """
+            """
+            Method for legacy support for AG 3.0.2. clients
+            """
             return []
 
         def Transform3(self, streamList):

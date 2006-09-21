@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.277 2006-09-08 21:29:22 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.278 2006-09-21 12:04:59 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.277 2006-09-08 21:29:22 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.278 2006-09-21 12:04:59 braitmai Exp $"
 
 import sys
 import time
@@ -332,7 +332,7 @@ class Venue:
         self.defaultEntryActionNames = ["Enter", "Exit", "GetStreams",
                                         "UpdateLifetime",
                                         "NegotiateCapabilities",
-					"NegotiateCapabilities3",
+                                        "NegotiateCapabilities3",
                                         "GetStaticStreams",
                                         "GetUploadDescriptor",
                                         "AsVenueDescription",
@@ -342,11 +342,11 @@ class Venue:
                                         "DestroyApplication",
                                         "UpdateClientProfile",
                                         "AddService", "RemoveService",
-					"AddService3", "RemoveService3",
+                                        "AddService3", "RemoveService3",
                                         "UpdateService", "GetServices",
-					"UpdateService3", "GetServices3",
+                                        "UpdateService3", "GetServices3",
                                         "AddData", "UpdateData", "RemoveData",
-					"AddData3", "UpdateData3", "RemoveData3",
+                                        "AddData3", "UpdateData3", "RemoveData3",
                                         "GetDataStoreInformation",
                                         "GetDataDescriptions",
                                         "AddNetworkService",
@@ -366,13 +366,13 @@ class Venue:
                                         "AllocateMulticastLocation",
                                         "RecycleMulticastLocation",
                                         "GetState",
-					"GetState3",
+                                        "GetState3",
                                         "AddDir",
-					"GetDescById",
+                                        "GetDescById",
                                         "RemoveDir",
                                         "HDDump",
                                         "GetVersion",
-					"GetDataSize",
+                                        "GetDataSize",
                                         ]
         # Methods in Venue IW that are not default to everybody:
         #   "Shutdown", "SetEncryptMedia", "RegenerateEncryptionKeys",
@@ -611,7 +611,7 @@ class Venue:
         """
         This creates a Venue Description filled in with the data from
         this venue.
-	Method for legacy support for AG 3.0.2. clients
+        Method for legacy support for AG 3.0.2. clients
         """
         desc = VenueDescription(self.name, self.description,
                                 (self.encryptMedia, self.encryptionKey),
@@ -642,14 +642,14 @@ class Venue:
         """
         This creates a Venue State filled in with the data from this
         venue.
-	Method for legacy support for AG 3.0.2. clients
+        Method for legacy support for AG 3.0.2. clients
         """
 
         try:
             dList = self.dataStore.GetDataDescriptions()
-	    log.debug("List of DataDescriptions")
-	    for item in dList:
-		log.debug("%s: %s", item.GetObjectType(), item.GetName())
+            log.debug("List of DataDescriptions")
+            for item in dList:
+                log.debug("%s: %s", item.GetObjectType(), item.GetName())
         except:
             log.exception("Venue::AsVenueState: Failed to get data descrs.")
             dList = []
@@ -682,9 +682,9 @@ class Venue:
 
         try:
             dList = self.dataStore.GetDataDescriptions3()
-	    log.debug("List of DataDescriptions")
-	    for item in dList:
-		log.debug("%s: %s", item.GetObjectType(), item.GetName())
+            log.debug("List of DataDescriptions")
+            for item in dList:
+                log.debug("%s: %s", item.GetObjectType(), item.GetName())
         except:
             log.exception("Venue::AsVenueState3: Failed to get data descrs.")
             dList = []
@@ -711,9 +711,9 @@ class Venue:
 
 
     def GetState(self):
-	"""
-	Method for legacy support for AG 3.0.2. clients
-	"""
+        """
+        Method for legacy support for AG 3.0.2. clients
+        """
         venueState = self.AsVenueState()
         # change to lists until zsi can handle dictionaries.
         venueState.clients = venueState.clients.values()
@@ -726,8 +726,8 @@ class Venue:
         # tuple of different types can't be serialized
         venueState.eventLocation=  ":".join(map(lambda x : str(x), self.GetEventServiceLocation() ))
         venueState.textLocation = ":".join(map(lambda x : str(x), self.GetTextServiceLocation() ))
-	
-	                
+        
+                        
         return venueState
 
     def GetState3(self):
@@ -743,8 +743,8 @@ class Venue:
         # tuple of different types can't be serialized
         venueState.eventLocation=  ":".join(map(lambda x : str(x), self.GetEventServiceLocation() ))
         venueState.textLocation = ":".join(map(lambda x : str(x), self.GetTextServiceLocation() ))
-	
-	                
+        
+                        
         return venueState
 
 
@@ -886,7 +886,7 @@ class Venue:
         *capabilities* Node capabilities
         """
         log.debug("negotiate capabilities")
-	
+        
 
         if not self.clients.has_key(privateId):
             raise InvalidVenueState
@@ -896,7 +896,7 @@ class Venue:
         # group service capabilities together
         services = {}
         for c in capabilities:
-	    log.debug("Capability to be processed: %s", c)
+            log.debug("Capability to be processed: %s", c)
             if services.has_key(c.serviceId):
                 caps = services[c.serviceId]
                 caps.append(c)
@@ -941,34 +941,37 @@ class Venue:
                       
                 # Create new stream
                 if not matchingStreams:
-		    log.debug("Stream doesn't exist create new one!")
-		    locCap = services[serviceId]
-		    log.debug("Stream type: %s!", locCap[0].type)
-			
-		    #Proposed change for determining the correct capability for IP creation
-		    #for item in locCap
-		    #    if item.type == "COVISE":
-		    #        correctCap = item
-		    		    
+                    log.debug("Stream doesn't exist create new one!")
+                    locCap = services[serviceId]
 		    
-		    #AG3.0.2 exception block
-		    try:
-			for entry in locCap:
-			    log.debug(" Caps: %s", entry)
-			    
-		    	if locCap[0].locationType == Capability3.PREFERRED_UNICAST:
-			    log.debug("Stream prefers unicast!")
-			    addr = self.AllocateUnicastLocation(locCap[0])
-		    	else:
-			    log.debug("Stream prefers multicast!")
-			    addr = self.AllocateMulticastLocation()
+		    # Should there be a new stream if there is no producer?
+ 		    # Check added!
+                    log.debug("Stream type: %s!", locCap[0].type)
+                        
+                    #Proposed change for determining the correct capability for IP creation
+                    #for item in locCap
+                    #    if item.type == "COVISE":
+                    #       correctCap = item
+                                    
+                    
+                    #AG3.0.2 exception block
+                    try:
+                        for entry in locCap:
+                            log.debug(" Caps: %s", entry)
+                          
+                        if locCap[0].locationType == Capability3.PREFERRED_UNICAST:
+                            log.debug("Stream prefers unicast!")
+                            addr = self.AllocateUnicastLocation(locCap[0])
+                        else:
+                            log.debug("Stream prefers multicast!")
+                            addr = self.AllocateMulticastLocation()
                     
                         log.debug("Stream address: %s : %s", addr.GetHost(), addr.GetPort())
-		    except:
-			log.debug("AG3.0.2 client! Only multicast address!")
-			addr = self.AllocateMulticastLocation()
-		    
-		    streamDesc = StreamDescription3(self.name,
+                    except:
+                        log.debug("AG3.0.2 client! Only multicast address!")
+                        addr = self.AllocateMulticastLocation()
+                    
+                    streamDesc = StreamDescription3(self.name,
                                                    addr, services[serviceId], 
                                                    self.encryptMedia, 
                                                    self.encryptionKey,0)
@@ -986,7 +989,7 @@ class Venue:
         manager to find The Best Match of all the network services, the
         existing streams, and all the client capabilities.
 
-	Method for legacy support for AG 3.0.2. clients
+        Method for legacy support for AG 3.0.2. clients
         
         **Arguments:**
         
@@ -1089,9 +1092,9 @@ class Venue:
 
     #Added by NA2-HPCE
     def AllocateUnicastLocation(self, capability):
-	"""
+        """
         This method creates a new Unicast Network Location based
-	on the service preferred IP in the capability
+        on the service preferred IP in the capability
 
         **Returns:**
 
@@ -1678,17 +1681,17 @@ class Venue:
         
     #ZSI:HO
     def GetDataSize(self):
-	retVal = self.dataStore.GetDataSize()
-	log.debug("Value in Venue: %s", retVal)
-	return retVal
-	
+        retVal = self.dataStore.GetDataSize()
+        log.debug("Value in Venue: %s", retVal)
+        return retVal
+        
     
     # Added by NA2-HPCE
     def GetCurDataDesc(self):
-	return self.dataStore.GetCurDataDesc()
+        return self.dataStore.GetCurDataDesc()
     
     def GetDescById(self, id):
-	return self.dataStore.GetDescById(id)
+        return self.dataStore.GetDescById(id)
 
     def GetName(self):
         """
@@ -1732,7 +1735,7 @@ class Venue:
 
         # Distribute event announcing new stream
         self.eventClient.Send(Event.ADD_STREAM, inStreamDescription)
-	     
+             
     def RemoveStream(self, inStreamDescription):
         """
         Remove the given stream from the venue
@@ -1760,12 +1763,12 @@ class Venue:
         
         # Distribute event announcing removal of stream
         self.eventClient.Send(Event.REMOVE_STREAM, inStreamDescription)
-	
+        
       
     def GetStreams(self):
         """
         GetStreams returns a list of stream descriptions to the caller.
-	Method for legacy support for AG 3.0.2. clients
+        Method for legacy support for AG 3.0.2. clients
         """
         return self.streamList.GetStreams()
 
@@ -1981,36 +1984,36 @@ class Venue:
         """
         legacyObject = self.CreateLegacyDataDescription(dataDescription)
         self.eventClient.Send( Event.ADD_DATA, legacyObject)
-	
-	
-    	
+        
+        
+        
     # Added by NA2-HPCE
     def AddRootDir(self, dataDesc):
         locDataDesc=self.dataStore.AddRootDir(dataDesc)
-	
+        
         self.server.eventService.Distribute(self.uniqueId,
                                              Event(Event.ADD_DATA,
                                                     self.uniqueId,
                                                     locDataDesc))
-	
+        
     def AddEntryPoint(self, directory, parent):
         server.AddEntryPoint(directory,parent,self.uniqueId)
-	    
+            
     
     # Added by NA2-HPCE for debugging
     def HDDump(self):
         self.dataStore.Dump()
-	   
+           
     #Added by NA2-HPCE
     def AddDir(self, name, desc, level, puid):
         log.debug("CreateDir %s at level %s", name, level)
         locDataDesc=self.dataStore.AddDir(name, desc, level, puid)
-	
+        
         #self.server.eventService.Distribute(self.uniqueId,
                                              #Event(Event.ADD_DATA,
                                                     #self.uniqueId,
                                                     #locDataDesc))
-	
+        
         #Converting to list to work around non-functioning dictionaries
         #locDataDesc.dataContainer.data = locDataDesc.dataContainer.values()
 
@@ -2033,18 +2036,18 @@ class Venue:
 
         *dataDescription* Upon successfully removing the data.
 
-	Method for legacy support for AG 3.0.2. clients
-	
+        Method for legacy support for AG 3.0.2. clients
+        
         """
 
         name = dataDescription.name
 
         # This is venue resident so delete the file
         if(dataDescription.type is None or dataDescription.type == "None"):
-	    log.debug("Entered Event activiation!")
-	    if self.dataStore.RemoveFiles([dataDescription]):
-		return dataDescription
-	    legacyObject = self.CreateLegacyDataDescription(dataDescription)
+            log.debug("Entered Event activiation!")
+            if self.dataStore.RemoveFiles([dataDescription]):
+                return dataDescription
+            legacyObject = self.CreateLegacyDataDescription(dataDescription)
             self.eventClient.Send( Event.REMOVE_DATA, legacyObject)
         else:
             log.info("Venue.RemoveData tried to remove non venue data.")
@@ -2071,12 +2074,12 @@ class Venue:
 
         # This is venue resident so delete the file
         if(dataDescription.type is None or dataDescription.type == "None"):
-	    log.debug("Entered Event activiation!")
-	    self.dataStore.DumpDataStack()
+            log.debug("Entered Event activiation!")
+            self.dataStore.DumpDataStack()
             self.dataStore.RemoveFiles3([dataDescription])
-	    legacyObject = self.CreateLegacyDataDescription(dataDescription)
+            legacyObject = self.CreateLegacyDataDescription(dataDescription)
             self.eventClient.Send(Event.REMOVE_DATA, legacyObject)
-	    self.dataStore.DumpDataStack()
+            self.dataStore.DumpDataStack()
         else:
             log.info("Venue.RemoveData tried to remove non venue data.")
 
@@ -2102,17 +2105,17 @@ class Venue:
         #ame = dataDescription.name
 
         # This is venue resident so delete the file
-	if isinstance(data, DataDescription3):
-	    self.dataStore.RemoveDir(data.id)
-	    log.debug("Send Event - Data: %s", data.id)
-	else:
-	    return 0
+        if isinstance(data, DataDescription3):
+            self.dataStore.RemoveDir(data.id)
+            log.debug("Send Event - Data: %s", data.id)
+        else:
+            return 0
         
-	#Send event to clients
-	
-	self.eventClient.Send(Event.REMOVE_DIR,data)
+        #Send event to clients
+        
+        self.eventClient.Send(Event.REMOVE_DIR,data)
 
-	    
+            
             
         return id
 
@@ -2121,7 +2124,7 @@ class Venue:
         Replace the current description for dataDescription.name with
         this one.
 
-	Method for legacy support for AG 3.0.2. clients
+        Method for legacy support for AG 3.0.2. clients
         """
         #
         # This method is called both from the data store and from clients.
@@ -2130,14 +2133,14 @@ class Venue:
         #
         
         if dataStoreCall:
-	    legacyObject = self.CreateLegacyDataDescription(dataDescription)
+            legacyObject = self.CreateLegacyDataDescription(dataDescription)
             self.eventClient.Send( Event.UPDATE_DATA, legacyObject)
             return
 
         # This is venue resident so modify the file
         if(dataDescription.type is None or dataDescription.type == "None"):
             self.dataStore.ModifyData(dataDescription)
-	    legacyObject = self.CreateLegacyDataDescription(dataDescription)
+            legacyObject = self.CreateLegacyDataDescription(dataDescription)
             self.eventClient.Send( Event.UPDATE_DATA, legacyObject)
 
         else:
@@ -2157,14 +2160,14 @@ class Venue:
         #
         
         if dataStoreCall:
-	    legacyObject = self.CreateLegacyDataDescription(dataDescription)
+            legacyObject = self.CreateLegacyDataDescription(dataDescription)
             self.eventClient.Send( Event.UPDATE_DATA, dataDescription)
             return
 
         # This is venue resident so modify the file
         if(dataDescription.type is None or dataDescription.type == "None"):
             self.dataStore.ModifyData3(dataDescription)
-	    legacyObject = self.CreateLegacyDataDescription(dataDescription)
+            legacyObject = self.CreateLegacyDataDescription(dataDescription)
             self.eventClient.Send( Event.UPDATE_DATA, legacyObject)
 
         else:
@@ -2204,7 +2207,7 @@ class Venue:
 
     def GetDataDescriptions(self):
         """
-	Method for legacy support for AG 3.0.2. clients
+        Method for legacy support for AG 3.0.2. clients
         """
         try:
             dList = self.dataStore.GetDataDescriptions()
@@ -2491,19 +2494,19 @@ class Venue:
         return Version.GetVersion()
     
     def CreateLegacyDataDescription(self, data):
-	legacyObject = DataDescription()
-	legacyObject.SetDescription(data.GetDescription())
-	legacyObject.SetLastModified(data.GetLastModified())
-	legacyObject.SetChecksum(data.GetChecksum())
-	legacyObject.SetId(data.GetId())
-	legacyObject.SetName(data.GetName())
-	legacyObject.SetOwner(data.GetOwner())
-	legacyObject.SetSize(data.GetSize())
-	legacyObject.SetStatus(data.GetStatus())
-	legacyObject.SetType(data.GetType())
-	legacyObject.SetURI(data.GetURI())
-	return legacyObject
-	
+        legacyObject = DataDescription()
+        legacyObject.SetDescription(data.GetDescription())
+        legacyObject.SetLastModified(data.GetLastModified())
+        legacyObject.SetChecksum(data.GetChecksum())
+        legacyObject.SetId(data.GetId())
+        legacyObject.SetName(data.GetName())
+        legacyObject.SetOwner(data.GetOwner())
+        legacyObject.SetSize(data.GetSize())
+        legacyObject.SetStatus(data.GetStatus())
+        legacyObject.SetType(data.GetType())
+        legacyObject.SetURI(data.GetURI())
+        return legacyObject
+        
 
 class StreamDescriptionList:
     """

@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.50 2006-03-28 22:35:11 turam Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.51 2006-09-21 12:04:59 braitmai Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.50 2006-03-28 22:35:11 turam Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.51 2006-09-21 12:04:59 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -98,10 +98,10 @@ class ClientProfile:
             self._SetFromConfig() # Get the values from the config
 
     def Load(self, fileName, loadDnDetails=0):
-	"""
+        """
         loadDnDetails is used by the cache to include the reading
           of a DN when reading from the stored profile.
-	"""
+        """
         profile = ClientProfile.defaultProfile.copy()
         self.profile = LoadConfig(fileName, profile)
 

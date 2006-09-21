@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.101 2006-08-30 08:23:37 braitmai Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.102 2006-09-21 12:04:59 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.101 2006-08-30 08:23:37 braitmai Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.102 2006-09-21 12:04:59 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -78,9 +78,9 @@ class AGServiceManager:
     ####################
     
     def AddServiceByName(self, name, resource = None, config = None, identity = None):
-	"""
-	Method for legacy support for AG 3.0.2. clients
-	"""
+        """
+        Method for legacy support for AG 3.0.2. clients
+        """
     
         servicePackage = None
         servicePackages =  self.GetServicePackageDescriptions()
@@ -118,7 +118,7 @@ class AGServiceManager:
     def AddService( self, servicePackageDesc, resource = None, config = None, identity = None):
         """
         Add a service package to the service manager.  
-	Method for legacy support for AG 3.0.2. clients
+        Method for legacy support for AG 3.0.2. clients
         """
         log.info("AGServiceManager.AddService")
         
@@ -241,8 +241,8 @@ class AGServiceManager:
 
     def RemoveService( self, serviceToRemove ):
         """
-	Remove a service
-	Method for legacy support for AG 3.0.2. clients
+        Remove a service
+        Method for legacy support for AG 3.0.2. clients
         """
         log.info("AGServiceManager.RemoveService")
 
@@ -344,8 +344,8 @@ class AGServiceManager:
 
     def GetServices( self ):
         """
-	Return list of services
-	Method for legacy support for AG 3.0.2. clients
+        Return list of services
+        Method for legacy support for AG 3.0.2. clients
         """
         log.info("AGServiceManager.GetServices")
         return self.services.values()

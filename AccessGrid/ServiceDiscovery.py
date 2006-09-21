@@ -169,7 +169,7 @@ if haveBonjour :
         def __ResolveCallback(self,sdRef,flags,interfaceIndex,
                             errorCode,fullname,hosttarget,
                             port,txtLen,txtRecord,userdata):
-			    
+                            
             # Get service info and add to list
             serviceName = userdata
             parts = struct.unpack('%ds' % (txtLen,),txtRecord[0:txtLen])

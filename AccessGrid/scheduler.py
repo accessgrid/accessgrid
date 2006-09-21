@@ -5,13 +5,13 @@
 # Author:      From the Python Cookbook
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: scheduler.py,v 1.11 2005-12-06 22:59:15 turam Exp $
+# RCS-ID:      $Id: scheduler.py,v 1.12 2006-09-21 12:04:59 braitmai Exp $
 # Copyright:   (c) 2002
 # Licence:     
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: scheduler.py,v 1.11 2005-12-06 22:59:15 turam Exp $"
+__revision__ = "$Id: scheduler.py,v 1.12 2006-09-21 12:04:59 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -22,7 +22,7 @@ class Task( Thread ):
         self._action = action
         self._loopdelay = loopdelay
         self._initdelay = initdelay
-	self._includeRuntime = includeRuntime
+        self._includeRuntime = includeRuntime
         self._running = 1
         self._quitEvent = Event()
         Thread.__init__( self,name=str(self) )
@@ -45,10 +45,10 @@ class Task( Thread ):
             start = time.time()
             self._action()
             self._runtime = self._runtime + self._loopdelay
-	    if self._includeRuntime:
-	        delay = self._runtime - start
-	    else:
-		delay = self._loopdelay
+            if self._includeRuntime:
+                delay = self._runtime - start
+            else:
+                delay = self._loopdelay
             q.wait(delay)
             if q.isSet():
                 return

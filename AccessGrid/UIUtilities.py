@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.79 2006-05-01 22:50:07 willing Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.80 2006-09-21 12:04:59 braitmai Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.79 2006-05-01 22:50:07 willing Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.80 2006-09-21 12:04:59 braitmai Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -896,7 +896,7 @@ class RenameDialog(wxDialog):
     def Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
         sizer1 = wxBoxSizer(wxVERTICAL)
-	sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 10)
+        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 10)
       
         sizer2 = wxBoxSizer(wxHORIZONTAL)
         sizer2.Add(self.nameText, 0)

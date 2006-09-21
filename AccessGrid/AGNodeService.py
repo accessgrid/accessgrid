@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.110 2006-09-01 12:58:34 braitmai Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.111 2006-09-21 12:04:59 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.110 2006-09-01 12:58:34 braitmai Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.111 2006-09-21 12:04:59 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -254,9 +254,9 @@ class AGNodeService:
 
     def GetServices( self ):
         """
-	Get list of installed services
-	Method for legacy support for AG 3.0.2. clients
-	"""
+        Get list of installed services
+        Method for legacy support for AG 3.0.2. clients
+        """
         log.info("NodeService.GetServices")
         services = []
         try:
@@ -343,7 +343,7 @@ class AGNodeService:
         Set streams according to stream descriptions.
         The stream descriptions are applied to the installed services
         according to matching capabilities
-	Method for legacy support for AG 3.0.2. clients
+        Method for legacy support for AG 3.0.2. clients
         """
 
         log.info("NodeService.SetStreams")
@@ -392,9 +392,9 @@ class AGNodeService:
             raise SetStreamException(exceptionText)
     
     def AddStream( self, streamDescription ):
-	"""
-	Method for legacy support for AG 3.0.2. clients
-	"""
+        """
+        Method for legacy support for AG 3.0.2. clients
+        """
         log.info("NodeService.AddStream")
         self.streamDescriptionList.append(streamDescription)
 
@@ -415,9 +415,9 @@ class AGNodeService:
 
 
     def RemoveStream( self, streamDescription ):
-	"""
-	Method for legacy support for AG 3.0.2. clients
-	"""
+        """
+        Method for legacy support for AG 3.0.2. clients
+        """
 
         log.info("NodeService.RemoveStream")
         # Remove the stream from the list
@@ -731,9 +731,9 @@ class AGNodeService:
 
     def GetCapabilities( self ):
         """
-	Get list of capabilities
-	Method for legacy support for AG 3.0.2. clients
-	"""
+        Get list of capabilities
+        Method for legacy support for AG 3.0.2. clients
+        """
         log.info("NodeService.GetCapabilities")
         capabilities = []
         try:
@@ -812,6 +812,7 @@ class AGNodeService:
                                  streamDescription.capability,
                                  serviceUri )
                         
+                        AGServiceIW( serviceUri ).SetStream( streamDescription ) #Legacy call for older servcies
                         AGServiceIW( serviceUri ).SetStream3( streamDescription )
                         return
                     else:
