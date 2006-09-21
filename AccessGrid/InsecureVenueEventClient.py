@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service client that handles Access Grid
 #                 venue events.
 # Created:     2005/09/09
-# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.3 2006-08-30 08:23:37 braitmai Exp $
+# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.4 2006-09-21 17:42:25 turam Exp $
 # Copyright:   (c) 2005,2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -71,13 +71,18 @@ class BaseVenueEventClient:
         eventDesc = event
         if eventDesc.eventType in self.eventCallbacks.keys():
             for callback in self.eventCallbacks[eventDesc.eventType]:
-                callback(eventDesc)
+                try:
+                    callback(eventDesc)
+                except:
+                    log.exception('Exception in event callback %s for event type: %s',
+                                    callback, eventDesc.eventType)
+                                    
 
     def LostConnection(self, connector, reason):
         if self.lostConnectionCallback != None:
             self.lostConnectionCallback(connector, reason)
         else:
-            log.info("BaseVenueEventClient lost connection.")
+            log.info("BaseVenueEventClient lost connection; reason=%s", reason)
 
     def RegisterEventCallback(self, eventType, callback):
         self.eventCallbacks.setdefault(eventType, list())
