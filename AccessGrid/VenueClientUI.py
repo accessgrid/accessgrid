@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.213 2006-10-02 19:15:50 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.214 2006-10-02 21:02:42 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.213 2006-10-02 19:15:50 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.214 2006-10-02 21:02:42 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3712,6 +3712,9 @@ class ContentListPanel(wxPanel):
         bm = icons.getDefaultDataBitmap()
         self.defaultDataId = imageList.Add(bm)
         
+        bm = icons.getFolderBitmap()
+        self.folderId = imageList.Add(bm)
+        
         bm = icons.getDefaultServiceBitmap()
         self.serviceId = imageList.Add(bm)
         self.applicationId = imageList.Add(bm)
@@ -3931,16 +3934,14 @@ class ContentListPanel(wxPanel):
         if self.selectedTwig == None:
             name = ":-(  %s  )-: " %dataDescription.name
             dataId = self.tree.AppendItem(self.data, name,
-                                      self.bullet, self.bullet)
+                                      self.folderId, self.folderId)
             self.selectedTwig = self.data
         else:
             dataId = self.tree.AppendItem(self.selectedTwig, dataDescription.name,
-                                          self.bullet, self.bullet)
+                                          self.folderId, self.folderId)
             
         treeItem = wxTreeItemData(dataDescription)
         self.tree.SetItemData(dataId, treeItem) 
-        colour = wxTheColourDatabase.FindColour("NAVY")
-        self.tree.SetItemTextColour(dataId, colour)
         self.dataDict[dataDescription.id] = dataId
         self.tree.SetItemBold(dataId)
         self.tree.SortChildren(self.selectedTwig)
