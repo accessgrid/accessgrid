@@ -324,7 +324,7 @@ class Plugin(VenueClientObserver):
                     itemCount = itemCount + 1
 
             if itemCount > 0:
-                return wxMenuItem(NULL, -1, name, "", wxITEM_NORMAL, menu)
+                return wxMenuItem(wxMenu(), -1, name, "", wxITEM_NORMAL, menu)
             else:
                 #
                 # Don't want empty menus hanging around so return None in
@@ -356,7 +356,7 @@ class Plugin(VenueClientObserver):
         
         if callable(cb):
             itemid = wxNewId()
-            item = wxMenuItem(NULL, itemid, name, "", wxITEM_NORMAL, NULL)
+            item = wxMenuItem(wxMenu(), itemid, name, "", wxITEM_NORMAL, NULL)
             callback = lambda event, description=name, callback=cb: self.__callback_wrapper(description, callback)
             EVT_MENU(frame, itemid, callback)
 
@@ -367,7 +367,7 @@ class Plugin(VenueClientObserver):
             if not submenu:
                 return None
 
-            return wxMenuItem(NULL, -1, name, "", wxITEM_NORMAL, submenu)
+            return wxMenuItem(wxMenu(), -1, name, "", wxITEM_NORMAL, submenu)
         else:
             log.debug("Expected callback or submenu for second element of tuple.")
             return None
