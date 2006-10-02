@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.34 2006-09-21 12:05:36 braitmai Exp $
+# RCS-ID:      $Id: agpm.py,v 1.35 2006-10-02 19:29:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.34 2006-09-21 12:05:36 braitmai Exp $"
+__revision__ = "$Id: agpm.py,v 1.35 2006-10-02 19:29:43 turam Exp $"
 
 import os
 import re
@@ -23,6 +23,7 @@ import shutil
 from optparse import OptionParser
 
 from AccessGrid.AppDb import AppDb
+from AccessGrid.PluginDb import PluginDb
 from AccessGrid.Utilities import LoadConfig
 from AccessGrid.Platform.Config import SystemConfig, AGTkConfig, UserConfig
 
@@ -60,6 +61,10 @@ def ProcessArgs():
                       dest="unregisterservice", default=0,
           help="Unregister the service, instead of registering it. \
                 Specify service with '-n'. (Requires administrative access)")
+    parser.add_option("--unregister-plugin", action="store_true",
+                      dest="unregisterplugin", default=0,
+          help="Unregister the plugin, instead of registering it. \
+                Specify plugin with '-n'.")
     parser.add_option("-n", "--name", dest="appname",
           help="specify a name other than the default on from the .app file.")
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
@@ -78,6 +83,9 @@ def ProcessArgs():
                       dest="listapps", help="List installed shared apps.")
     parser.add_option("--list-services", action="store_true",
                       dest="listservices", help="List installed node services.")
+    parser.add_option("--list-plugins", action="store_true",
+                      dest="listplugins", help="List installed plugins.")
+    
     parser.add_option("-s", "--system", action="store_true",
                       dest="sys_install", default=0,
                       help="Install the package for all users. \
@@ -111,8 +119,10 @@ def ProcessArgs():
             or options.post_install
             or options.listservices
             or options.listapps
+            or options.listplugins
             or options.unregister
             or options.unregisterservice
+            or options.unregisterplugin
             ):
         parser.print_help()
         ShowResult("Error: no action specified")
@@ -120,12 +130,16 @@ def ProcessArgs():
     
     if options.sys_install or options.post_install:
         appdb = AppDb(path=tkConf.GetConfigDir())
-        dest = tkConf.GetSharedAppDir()
+        plugindb = PluginDb(path=tkConf.GetConfigDir())
+        appdest = tkConf.GetSharedAppDir()
+        plugindest = tkConf.GetPluginDir()
     else:
         appdb = AppDb()
-        dest = UserConfig.instance().GetSharedAppDir()
+        plugindb = PluginDb()
+        appdest = UserConfig.instance().GetSharedAppDir()
+        plugindest = UserConfig.instance().GetPluginDir()
 
-    return options, appdb, dest
+    return options, appdb, plugindb, appdest, plugindest
 
 def UnpackPkg(filename):
     """
@@ -159,6 +173,38 @@ def UnpackPkg(filename):
     
     return (appFile, workingDir)
 
+def UnpackPlugin(filename):
+    """
+    This function takes the name of a zip file and unpacks it returning the
+    directory it unpacked the zip into.
+    """
+    zipArchive = zipfile.ZipFile(filename)
+    # We have to unpack things some where we can use them
+    if hasattr(tempfile, "mkdtemp"):
+        workingDir = tempfile.mkdtemp()
+    else:
+        workingDir = tempfile.mktemp()
+        os.mkdir(workingDir)
+    pluginFile = None
+    for filename in zipArchive.namelist():
+        parts = filename.split('.')
+        if len(parts) == 2 and parts[1] == 'plugin':
+            pluginFile = filename
+        bytes = zipArchive.read(filename)
+        outpath = os.path.join(workingDir, filename)
+        out = file(outpath, "wb")
+        out.write(bytes)
+        out.close()
+        zinfo = zipArchive.getinfo(filename)
+        if zinfo.external_attr == 2179792896:
+            os.chmod(outpath, 0755)
+
+    if pluginFile == None:
+        raise Exception, "Invalid Plugin Application Package."
+
+
+    return (pluginFile, workingDir)
+
 def ProcessAppFile(appFile):
     """
     Process the Application File returning the appinfo and the command
@@ -185,6 +231,18 @@ def ProcessAppFile(appFile):
                         cmd = cmd.replace("%(python)s", sys.executable)
                 commands[verb] = cmd
     return appInfo, commands
+
+def ProcessPluginFile(pluginFile):
+    """
+    Process the Plugin File returning the plugininfo and the command
+    dictionary.
+    """
+    command = None
+
+    # Read in .plugin file
+    pluginInfo = LoadConfig(pluginFile)
+
+    return pluginInfo, command
 
 def PrepPackageFromCmdLine(options):
     cleanup = 0
@@ -225,7 +283,27 @@ def PrepPackageFromCmdLine(options):
         appInfo, commands = ProcessAppFile(appFile)
         
     return appInfo, commands, workingDir, cleanup
-    
+
+def PrepPluginFromCmdLine(options):
+    cleanup = 0
+    workingDir = None
+    pluginFile = None
+    pluginInfo = None
+    command = None
+
+    # specified a .zip or .agpkg file
+    if options.appzip:
+        return PrepPlugin(options.appzip)
+
+    if options.apppkg:
+        return PrepPlugin(options.apppkg)
+
+    if pluginFile is not None and workingDir is not None:
+        pluginFile = os.path.join(workingDir, appFile)
+        pluginInfo, command = ProcessAppFile(appFile)
+
+    return pluginInfo, command, workingDir, cleanup
+
 def PrepPackage(package):
     cleanup = 0
     workingDir = None
@@ -248,6 +326,29 @@ def PrepPackage(package):
         appInfo, commands = ProcessAppFile(appFile)
         
     return appInfo, commands, workingDir, cleanup
+
+def PrepPlugin(package):
+    cleanup = 0
+    workingDir = None
+    pluginInfo = None
+    command = None
+    pluginFile = None
+
+    try:
+        pluginFile, workingDir = UnpackPlugin(package)
+        pluginFile = os.path.join(workingDir, pluginFile)
+        cleanup = 1
+    except Exception:
+        if workingDir is not None:
+            shutil.rmtree(workingDir)
+        raise
+
+    if pluginFile is None:
+        raise Exception, "No valid package specified, exiting."
+    else:
+        pluginInfo, command = ProcessPluginFile(pluginFile)
+
+    return pluginInfo, command, workingDir, cleanup
 
 def UnregisterAppPackage(appdb, appInfo, name):
         if appInfo != None and name == None:
@@ -317,6 +418,67 @@ def RegisterServicePackage(servicePackage):
     
     ShowResult( "Installation of service %s complete." % (servicePackageFile,), "Service Installed")
 
+
+def UnregisterPluginPackage(pluginDb, pluginInfo, name):
+        if pluginInfo != None and name == None:
+            name = appInfo["application.name"]
+        if name != None:
+            pluginDb.UnregisterPlugin(name=name)
+        else:
+            raise Exception, "No such plugin, exiting without doing unregister."
+
+def RegisterPluginPackage(plugindb, dest, pluginInfo, commands, workingDir=None,
+                    cleanup=0):
+    origDir = os.getcwd()
+
+    # Otherwise we go through and do the registration stuff...
+    if workingDir != None and workingDir != '':
+        # Change to the appropriate directory
+        # This won't work for zipfiles
+        os.chdir(workingDir)
+
+    # Register the Plugin
+    files = pluginInfo["plugin.files"]
+    if type(pluginInfo["plugin.files"]) is StringType:
+        files = re.split(r',\s*|\s+', files)
+
+    description = None
+    if pluginInfo.has_key("plugin.description"):
+        description = pluginInfo["plugin.description"]
+
+    command = None
+    if pluginInfo.has_key("plugin.command"):
+        command = pluginInfo["plugin.command"]
+
+    module = None
+    if pluginInfo.has_key("plugin.module"):
+        module = pluginInfo["plugin.module"]
+
+    icon = None
+    if pluginInfo.has_key("plugin.icon"):
+        icon = pluginInfo["plugin.icon"]
+
+    result = plugindb.RegisterPlugin(pluginInfo["plugin.name"],
+                                     description,
+                                     command,
+                                     module,
+                                     icon,
+                                     files,
+                                     workingDir,
+                                     dstPath=dest)
+    if 0==result:
+        ShowResult("Unable to register plugin %s" % appInfo["application.name"])
+        sys.exit(1)
+
+    # Clean up, remove the temporary directory and files from
+    # unpacking the zip file
+    if cleanup:
+        os.chdir(origDir)
+        if workingDir is not None:
+            shutil.rmtree(workingDir)
+
+    ShowResult("Successfully installed plugin %s." % pluginInfo["plugin.name"], "Plugin Installed")
+
 def UnregisterServicePackage(servicePackageFile):
     tkConf = AGTkConfig.instance()
     servicePackagePath = os.path.join(tkConf.GetNodeServicesDir(),servicePackageFile)
@@ -345,7 +507,7 @@ def main():
     # We also have the ability to pass in a zip file that contains a .app
     # file and the other parts of the shared application.
 
-    options, appdb, dest = ProcessArgs()
+    options, appdb, plugindb, appdest, plugindest = ProcessArgs()
 
     #
     # Handle list-only options
@@ -361,7 +523,13 @@ def main():
         for f in files:
             print f
         sys.exit(0)
-        
+
+    if options.listplugins:
+        plugins = plugindb.ListPlugins()
+        import pprint
+        pprint.pprint(plugins)
+        sys.exit(0)
+    
         
     # 
     # Handle command-line errors
@@ -383,6 +551,7 @@ def main():
     # Determine whether it's a service or app package
     #
     isServicePackage = 0
+    isPluginPackage = 0
     if options.appzip or options.apppkg:
         
         try:
@@ -392,6 +561,9 @@ def main():
                 if filename.endswith('.svc'):
                     isServicePackage = 1
                     break
+                elif filename.endswith('.plugin'):
+                    isPluginPackage = 1
+                    break
         except zipfile.BadZipfile,e:
             ShowResult( "Error in zipfile %s: %s" % (filename,e.args[0]))
             sys.exit(1)
@@ -399,6 +571,9 @@ def main():
     
     if options.unregisterservice:
         isServicePackage = 1
+
+    if options.unregisterplugin:
+        isPluginPackage = 1
         
     #
     # Register/Unregister packages
@@ -423,7 +598,37 @@ def main():
             if options.verbose:
                 print "Registering service package: ", filename
             RegisterServicePackage(filename)
-    
+    elif isPluginPackage:
+        # At this point we have an pluginFile and workingDir
+        pluginList = []
+
+        pluginInfo = PrepPluginFromCmdLine(options)
+        pluginList.append(pluginInfo)
+
+        for plugin in pluginList:
+            pluginInfo, command, workingDir, cleanup = plugin
+
+            if options.verbose:
+                print "Name: %s" % pluginInfo["plugin.name"]
+                if pluginInfo.has_key("plugin.description"):
+                    print "Description: %s" % pluginInfo["plugin.description"]
+                if pluginInfo.has_key("plugin.command"):
+                    print "Command: %s" % pluginInfo["plugin.command"]
+                if pluginInfo.has_key("plugin.module"):
+                    print "Module: %s" % pluginInfo["plugin.module"]
+                if pluginInfo.has_key("plugin.icon"):
+                    print "Icon: %s" % pluginInfo["plugin.icon"]
+                print "Working Dir: %s" % workingDir
+
+            # If we unregister, we do that then exit
+            if options.unregisterplugin:
+                if not options.appname:
+                    ShowResult( "No plugin specified for unregister")
+                    sys.exit(1)
+                UnregisterPluginPackage(plugindb, pluginInfo, options.appname)
+            else:
+                RegisterPluginPackage(plugindb, plugindest, pluginInfo,
+                                      command, workingDir, cleanup)        
     else:
     
         #
@@ -473,7 +678,7 @@ def main():
                         sys.exit(1)
                     UnregisterAppPackage(appdb, appInfo, options.appname)
                 else:
-                    RegisterAppPackage(appdb, dest, appInfo, commands,
+                    RegisterAppPackage(appdb, appdest, appInfo, commands,
                                     workingDir, cleanup)
             except InvalidApplicationDescription,e:
                 msg = '%s %s: Invalid application description: %s\n' % (pkg, appInfo["application.name"],str(e))
