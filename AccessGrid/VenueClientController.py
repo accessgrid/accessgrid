@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.69 2006-09-21 12:04:59 braitmai Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.70 2006-10-02 19:15:50 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.69 2006-09-21 12:04:59 braitmai Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.70 2006-10-02 19:15:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -22,10 +22,14 @@ from AccessGrid.Preferences import Preferences
 from AccessGrid import Log
 from AccessGrid import DataStore
 from AccessGrid.AppDb import AppDb
+from AccessGrid.PluginDb import PluginDb
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Descriptions import ServiceDescription, DataDescription, FileDescription, DirectoryDescription, DataDescription3
 from AccessGrid.Descriptions import ApplicationDescription, AGNetworkServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription, ApplicationCmdDescription
+from AccessGrid.Descriptions import PluginDescription
+from AccessGrid.PluginFactory import BuildPlugin
+
 from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
 from AccessGrid.NetworkLocation import ProviderProfile
 from AccessGrid.Platform.Config import UserConfig, MimeConfig, AGTkConfig
@@ -609,6 +613,23 @@ class VenueClientController:
                                                 appDesc.mimeType )
         except:
             log.exception("Error starting application")
+            raise
+
+    def StartPluginCB(self, plugin):
+        """
+        This method starts the specified plugin.
+
+        **Arguments:**
+
+        *plugin* PluginDescription of the plugin to start.
+        """
+        
+        log.debug("Starting plugin")
+        log.debug("  \"%s\"" % plugin.command)
+        try:
+            self.StartCmd(plugin, cmd=plugin.command)
+        except:
+            log.exception("Error starting plugin")
             raise
               
     def RemoveApplicationCB(self,appList):
@@ -1374,6 +1395,26 @@ class VenueClientController:
                 else:
                     self.gui.Notify("You have no client for this Shared Application.", "Notification")
                     return
+            elif isinstance(objDesc, PluginDescription):
+                name = objDesc.name
+
+                if name != None:
+                    pluginName = '_'.join(name.split(' '))
+
+                    if os.access(os.path.join(UserConfig.instance().GetPluginDir(), pluginName),os.R_OK):
+                        pluginDir = os.path.join(UserConfig.instance().GetPluginDir(), pluginName)
+                    elif os.access(os.path.join(AGTkConfig.instance().GetPluginDir(), pluginName), os.R_OK):
+                        pluginDir = os.path.join(AGTkConfig.instance().GetPluginDir(), pluginName)
+                    else:
+                        raise Exception, "Couldn't find plugin %s" % pluginName
+
+                    try:
+                        os.chdir(pluginDir)
+                    except:
+                        log.warn("Couldn't Change dir to plugin directory")
+                        return
+
+                    processManager = self.appProcessManager                
                     
             if IsWindows():
                 if command.find("%1") != -1:
@@ -1406,6 +1447,7 @@ class VenueClientController:
         namedVars['appUrl'] = objDesc.uri
         namedVars['localFilePath'] = localFilePath
         namedVars['venueUrl'] = self.__venueClient.GetVenue()
+        namedVars['venueClientUrl'] = self.__venueClient.GetWebServiceUrl()
         namedVars['connectionId'] = self.__venueClient.GetConnectionId()
         
         # We're doing some icky munging to make our lives easier
@@ -1447,12 +1489,22 @@ class VenueClientController:
     def StopApplications(self):
         self.appProcessManager.TerminateAllProcesses()
 
+    def StopPlugins(self):
+        self.__venueClientApp.StopAllPlugins()
+
     #
     # Other
     #
 
     def GetInstalledApps(self):
         return self.__venueClientApp.GetInstalledApps()
+
+    def GetInstalledPlugins(self):
+        return self.__venueClientApp.GetInstalledPlugins(self.__venueClient,
+                                                         self)
+
+    def GetInstalledPlugin(self, pluginName):
+        return self.__venueClientApp.GetInstalledPlugin(pluginName)
         
     def GetMyVenues(self):
         return self.__venueClientApp.GetMyVenues()
@@ -1485,7 +1537,11 @@ class VenueClientApp:
         # Application Databases
         self.userAppDatabase = AppDb(path=UserConfig.instance().GetConfigDir())
         self.systemAppDatabase = AppDb(path=AGTkConfig.instance().GetConfigDir())
-
+        # Plugin Databases
+        self.userPluginDatabase = PluginDb(path=UserConfig.instance().GetConfigDir())
+        self.systemPluginDatabase = PluginDb(path=AGTkConfig.instance().GetConfigDir())
+        self.loadedPlugins = None
+        
         # Mime Config
         self.mimeConfig = Config.MimeConfig.instance()
 
@@ -1557,7 +1613,46 @@ class VenueClientApp:
                 adm[app.GetName()] = app
                 
         return adm.values()
-        
+
+    #
+    # Plugin Methods
+    #
+
+    def GetInstalledPlugins(self, venueClient, venueClientController, reload = False):
+
+        if reload or not self.loadedPlugins:
+            self.loadedPlugins = {}
+
+            for plugin in self.userPluginDatabase.ListPluginsAsPluginDescriptions():
+                t = BuildPlugin(plugin)
+                if t:
+                    t.Attach(venueClient, venueClientController)
+                    self.loadedPlugins[plugin.GetName()] = t
+
+            for plugin in self.systemPluginDatabase.ListPluginsAsPluginDescriptions():
+                if not loadedPlugins.has_key(plugin.GetName()):
+                    t = self.BuildPlugin(plugin)
+                    if t:
+                        t.Attach(venueClient, venueClientController)
+                        self.loadedPlugins[plugin.GetName()] = t
+
+        if self.loadedPlugins:
+            return self.loadedPlugins.keys()
+        else:
+            return None
+
+    def GetInstalledPlugin(self, name):
+
+        if self.loadedPlugins:
+            if self.loadedPlugins.has_key(name):
+                return self.loadedPlugins[name]
+
+        return None
+
+    def StopAllPlugins(self):
+        if self.loadedPlugins:
+            for plugin in self.loadedPlugins.values():
+                plugin.Stop()
         
     #
     # (Application/Mime) Command Methods

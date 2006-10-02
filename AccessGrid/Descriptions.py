@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.100 2006-09-21 12:04:59 braitmai Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.101 2006-10-02 19:15:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.100 2006-09-21 12:04:59 braitmai Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.101 2006-10-02 19:15:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -583,6 +583,22 @@ class ApplicationDescription(ObjectDescription):
         string += "mimeType : %s\n" % self.mimeType
         string += "startable : %s\n" % self.startable
         
+        return string
+
+class PluginDescription(ObjectDescription):
+    def __init__(self, oid=None, name=None, description="", uri="",
+                 command = "", module="", icon=""):
+        ObjectDescription.__init__(self, name, description, uri, oid = oid)
+        self.command = command
+        self.module = module
+        self.icon = icon
+
+    def AsINIBlock(self):
+        string = ObjectDescription.AsINIBlock(self)
+        string += "command : %s\n" % self.command
+        string += "module : %s\n" % self.module
+        string += "icon : %s\n" % self.icon
+
         return string
 
 class BadApplicationDescription(Exception):

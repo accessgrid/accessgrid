@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.212 2006-09-21 12:04:59 braitmai Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.213 2006-10-02 19:15:50 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.212 2006-09-21 12:04:59 braitmai Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.213 2006-10-02 19:15:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -154,6 +154,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_USE_MULTICAST = wxNewId()
     ID_USE_UNICAST = wxNewId()
     ID_BRIDGES = wxNewId()
+    ID_PLUGINS = wxNewId()
     ID_CONFIGS = wxNewId()
     ID_CONFIG_BUTTON = wxNewId()
     ID_MYNODE_MANAGE = wxNewId()
@@ -181,6 +182,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
     ID_PARTICIPANT_PROFILE = wxNewId()
     ID_ME_PROFILE = wxNewId()
+
+    TOOLSIZE = (25,25)
 
     def __init__(self, venueClient, controller, app):
         sys.stdout = sys.__stdout__
@@ -473,6 +476,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.navigation.Check(self.ID_TIMED_UPDATE,1) # timed update on by default
 
         self.menubar.Append(self.navigation, "&Navigation")
+
+        self.pluginMenu = self.BuildPluginMenu()
+        if self.pluginMenu:
+            self.menubar.Append(self.pluginMenu, "&Plugins")
         
         self.help = wxMenu()
         self.help.Append(self.ID_HELP_MANUAL, "Venue Client &Manual",
@@ -836,10 +843,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # create toolbar
         self.toolbar = self.CreateToolBar()
         self.toolbar.SetToolPacking(3)
-        toolsize = (25,25)
         
         bitmap = icons.getNoMulticastBitmap()
-        self.networkButton = wxBitmapButton(self.toolbar,-1,bitmap,size=toolsize)
+        self.networkButton = wxBitmapButton(self.toolbar,-1,bitmap,size=VenueClientUI.TOOLSIZE)
         self.networkButton.SetToolTip(wxToolTip('View multicast connectivity'))
         self.toolbar.AddControl(self.networkButton)
         self.toolbar.AddSeparator()
@@ -850,7 +856,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             bitmap = icons.getAudioBitmap()
         else:
             bitmap = icons.getAudioDisabledBitmap()
-        self.audioButton = wxBitmapButton(self.toolbar,-1,bitmap,size=toolsize)
+        self.audioButton = wxBitmapButton(self.toolbar,-1,bitmap,size=VenueClientUI.TOOLSIZE)
         self.audioButton.SetToolTip(wxToolTip('Enable/disable audio'))
         self.toolbar.AddControl(self.audioButton)
 
@@ -859,7 +865,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             bitmap = icons.getDisplayBitmap()
         else:
             bitmap = icons.getDisplayDisabledBitmap()
-        self.displayButton = wxBitmapButton(self.toolbar,-1,bitmap,size=toolsize)
+        self.displayButton = wxBitmapButton(self.toolbar,-1,bitmap,size=VenueClientUI.TOOLSIZE)
         self.displayButton.SetToolTip(wxToolTip('Enable/disable display'))
         self.toolbar.AddControl(self.displayButton)
 
@@ -868,12 +874,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             bitmap = icons.getCameraBitmap()
         else:
             bitmap = icons.getCameraDisabledBitmap()
-        self.videoButton = wxBitmapButton(self.toolbar,-1,bitmap,size=toolsize)
+        self.videoButton = wxBitmapButton(self.toolbar,-1,bitmap,size=VenueClientUI.TOOLSIZE)
         self.videoButton.SetToolTip(wxToolTip('Enable/disable video'))
         self.toolbar.AddControl(self.videoButton)
 
         bitmap = icons.getConfigureBitmap()
-        self.configNodeButton = wxBitmapButton(self.toolbar,-1,bitmap,size=toolsize)
+        self.configNodeButton = wxBitmapButton(self.toolbar,-1,bitmap,size=VenueClientUI.TOOLSIZE)
         self.configNodeButton.SetToolTip(wxToolTip('Configure node services'))
         self.toolbar.AddControl(self.configNodeButton)
 
@@ -2208,7 +2214,17 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         except:
             self.Error("Error updating application","Application Update Error")
         
-        
+
+    #
+    # Plugins
+    #
+
+    def StartPluginCB(self, plugin):
+        try:
+            self.controller.StartPluginCB(plugin)
+        except Exception, e:
+            self.Error("Error starting plugin: %s" % e, "Start Plugin Error")
+            
     #
     # Text
     #
@@ -2568,7 +2584,41 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 EVT_MENU(self, appId, callback)
 
         return menu
+
+    def BuildPluginMenu(self, prefix = ""):
         
+        menu = wxMenu()
+        menuItemCount = 0
+
+        pluginList = self.controller.GetInstalledPlugins()
+        if not pluginList:
+            return None
+
+        for pluginName in pluginList:
+
+            log.debug("Setting up plugin: %s." % pluginName)
+
+            plugin = self.controller.GetInstalledPlugin(pluginName)
+            if not plugin:
+                log.debug("Missing plugin %s." % pluginName)
+                continue
+
+            menuItem = plugin.CreateMenu(self)
+            if menuItem:
+                if isinstance(menuItem, wxMenuItem):
+                    menu.AppendItem(menuItem)
+                    menuItemCount = menuItemCount + 1
+                else:
+                    log.exception("Menu item for plugin %s must be a wxMenuItem." % pluginName)
+
+            plugin.CreateToolbar(self, self.toolbar, VenueClientUI.TOOLSIZE)
+            
+        if menuItemCount > 0:
+            return menu
+        else:
+            log.debug("BuildPluginMenu: no plugins with menu items -> menu hidden")
+            return None
+
     def GetPersonalData(self,clientProfile):
         return self.venueClient.GetPersonalData(clientProfile)
 
