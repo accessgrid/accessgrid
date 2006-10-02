@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.26 2006-09-08 22:08:09 turam Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.27 2006-10-02 21:14:04 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,6 +20,7 @@ from AccessGrid import Log
 from AccessGrid.Platform import IsWindows, IsOSX, IsLinux, IsFreeBSD
 from AccessGrid.Descriptions import BridgeDescription
 from AccessGrid.BridgeCache import BridgeCache
+from AccessGrid.Preferences import Preferences
 
 class TimeoutHTTPConnection(httplib.HTTPConnection):
     def __init__(self, host, port=None, strict=None, timeout=0):
@@ -213,8 +214,20 @@ class RegistryClient:
             filename = url[7:]
             f = open(filename, "r")
         else:
-            opener = urllib.FancyURLopener({})
-            f = opener.open(url)
+            preferences = Preferences()
+            proxyHost = preferences.GetPreference(Preferences.PROXY_HOST)
+            proxyPort = preferences.GetPreference(Preferences.PROXY_PORT)
+            proxyURL = None
+            if proxyHost:
+                if proxyPort:
+                    proxyURL = "http://%s:%s" % (proxyHost, proxyPort)
+                else:
+                    proxyURL = "http://%s" % (proxyHost)
+            if proxyURL:
+                proxyList = {'http': proxyURL}
+                f = urllib.urlopen(url, proxies=proxyList)
+            else:
+                f = urllib.urlopen(url)
         contents = f.read()
         f.close()
         registryPeers = contents.split()
@@ -312,4 +325,3 @@ if __name__=="__main__":
     bridgeDescList.sort(lambda x,y: cmp(x.rank,y.rank))
     for b in bridgeDescList:
         print 'name: '+b.name+'  host: '+b.host+"  port: "+str(b.port) +"  dist:"+str(b.rank)
-        
