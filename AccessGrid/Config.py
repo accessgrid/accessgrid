@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.41 2006-09-21 12:04:59 braitmai Exp $
+# RCS-ID:      $Id: Config.py,v 1.42 2006-10-02 19:10:32 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.41 2006-09-21 12:04:59 braitmai Exp $"
+__revision__ = "$Id: Config.py,v 1.42 2006-10-02 19:10:32 turam Exp $"
 
 import os
 import sys
@@ -68,6 +68,7 @@ class AGTkConfig:
         self.nodeServicesDir = None
         self.nodeConfigDir = None
         self.appDir = None
+        self.pluginDir = None
         #self.docDir = None
         
         # Now fill in data
@@ -79,6 +80,7 @@ class AGTkConfig:
         self.GetConfigDir()
         #self.GetDocDir()
         self.GetSharedAppDir()
+        self.GetPluginDir()
         self.GetNodeServicesDir()
         self.GetNodeConfigDir()
         self.GetServicesDir()
@@ -91,6 +93,7 @@ class AGTkConfig:
         tmpstr += "LogDir: %s\n" % self.GetLogDir()
         tmpstr += "ConfigDir: %s\n" % self.GetConfigDir()
         tmpstr += "SharedAppDir: %s\n" % self.GetSharedAppDir()
+        tmpstr += "PluginDir: %s\n" % self.GetPluginDir()
         tmpstr += "NodeServicesDir: %s\n" % self.GetNodeServicesDir()
         tmpstr += "ServicesDir: %s\n" % self.GetServicesDir()
     
@@ -144,6 +147,25 @@ class AGTkConfig:
 
         return str(self.appDir)
 
+    def GetPluginDir(self):
+        if self.pluginDir == None:
+            ucd = self.GetBaseDir()
+            self.pluginDir = os.path.join(ucd, "Plugins")
+            
+        # Check dir and create it if needed.
+        if self.initIfNeeded:
+            if self.pluginDir is not None and not os.path.exists(self.pluginDir):
+                try:
+                    os.mkdir(self.pluginDir)
+                except:
+                    log.exception("Couldn't make plugin dir.")
+
+        # Check the installation
+        if self.pluginDir is not None and not os.path.exists(self.appDir):
+            raise IOError("AGTkConfig: plugin dir does not exist %s." % self.pluginDir)
+
+        return str(self.pluginDir)
+    
     def GetNodeServicesDir(self):
     
         if self.nodeServicesDir == None:
@@ -247,6 +269,7 @@ class UserConfig:
         self.tempDir = None
         self.appDir = None
         self.sharedAppDir = None
+        self.pluginDir = None
         self.nodeServicesDir = None
         self.nodeConfigDir = None
         self.localServicesDir = None
@@ -271,6 +294,10 @@ class UserConfig:
         except:
             print "No Shared App Dir!"
         try:
+            self.GetPluginDir()
+        except:
+            print "No Plugin Dir!"
+        try:
             self.GetNodeConfigDir()
         except:
             print "No Node Config Dir!"
@@ -291,6 +318,7 @@ class UserConfig:
         tmpstr += "Temp Dir: %s\n" % self.GetTempDir()
         tmpstr += "Log Dir: %s\n" % self.GetLogDir()
         tmpstr += "Shared App Dir: %s\n" % self.GetSharedAppDir()
+        tmpstr += "Plugin Dir: %s\n" % self.GetPluginDir()
         tmpstr += "Services Dir: %s\n" % self.GetServicesDir()
         return tmpstr
 
@@ -431,6 +459,23 @@ class UserConfig:
             raise Exception, "AGTkConfig: app dir does not exist %s."%self.appDir
 
         return str(self.appDir)
+
+    def GetPluginDir(self):
+        if self.pluginDir == None:
+            ucd = self.GetBaseDir()
+            self.pluginDir = os.path.join(ucd, "Plugins")
+
+        # Check dir and create it if needed.
+        if self.initIfNeeded:
+            if self.pluginDir is not None and not os.path.exists(self.pluginDir):
+                os.mkdir(self.pluginDir)
+
+        # Check the installation
+        if self.pluginDir is not None and not os.path.exists(self.pluginDir):
+            raise Exception, "UserConfig: plugin dir does not exist %s."%self.pluginDir
+
+        return str(self.pluginDir)
+
 
     def GetLocalServicesDir(self):
         if self.localServicesDir == None:
