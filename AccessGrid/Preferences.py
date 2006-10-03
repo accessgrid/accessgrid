@@ -65,7 +65,7 @@ class Preferences:
                          self.BEACON: 1,
                          self.LOG_TO_CMD: 0,
                          self.ENABLE_DISPLAY: 1,
-                         self.ENABLE_VIDEO: 0,
+                         self.ENABLE_VIDEO: 1,
                          self.ENABLE_AUDIO: 1,
                          self.DISPLAY_MODE: self.EXITS,
                          self.BRIDGE_REGISTRY: "http://www.accessgrid.org/registry/peers.txt",
