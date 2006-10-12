@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.214 2006-10-02 21:02:42 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.215 2006-10-12 13:55:16 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.214 2006-10-02 21:02:42 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.215 2006-10-12 13:55:16 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1551,7 +1551,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.nodeManagementFrame = NodeManagementClientFrame(self, -1, 
                                         "Access Grid Node Management",
                                         callback=self.OnNodeActivity)
-
+            
             log.debug("VenueClientFrame.ManageNodeCB: open node management")
             log.debug('nodeservice url: %s', self.venueClient.GetNodeService() )
 
@@ -2271,6 +2271,17 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             elif capType == 'video' and capRole == 'consumer':
                 enabled = self.isDisplayEnabled
             # only set enabled state for well-known services
+
+            #If NodeManagament has been started from within VenueClient and is already connected to a Venue
+            #then NegotiateCapabilities to make the newly added service known to the server side
+            #UpdateNodeService takes care to update the local NodeService with the new
+            #stream information
+            if not self.venueClient.GetConnectionId() == None:
+               vp = self.venueClient.GetVenueProxy()
+               self.venueClient.streamDescList = vp.NegotiateCapabilities3(self.venueClient.GetConnectionId(), serviceDesc.capabilities)
+               self.venueClient.UpdateNodeService()
+                              
+            
             if enabled >= 0:
                 self.venueClient.nodeService.SetServiceEnabled(serviceDesc.uri,enabled)
         elif action == 'store_config':
