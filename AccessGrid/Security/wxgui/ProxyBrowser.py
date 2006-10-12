@@ -42,8 +42,7 @@ class ProxyBrowser(CertificateBrowserBase):
             b.Enable(0)
 
     def OnCreate(self, event):
-        print "Creating proxy"
-        self.certMgr.CreateProxy()
+        self.certMgr.CreateProxyCertificate()
         self.Load()
 
     def OnDestroy(self, event):
@@ -71,7 +70,13 @@ class ProxyBrowser(CertificateBrowserBase):
         try:
             os.unlink(self.certMgr.GetProxyPath())
         except:
-            log.exception("exception removing proxy certificate");
+            dlg = wxMessageDialog(self,
+                                  "Unable to destroy proxy certificate for " +
+                                  cert.GetShortSubject() + "?",
+                                  "Destroy Error")
+
+            ret = dlg.ShowModal()
+            dlg.Destroy()
 
         self.Load()
 
@@ -112,7 +117,7 @@ class ProxyBrowser(CertificateBrowserBase):
     def _LoadCerts(self):
         proxies = []
         try:
-            proxyCert = self.certMgr.GetGlobusProxyCert()
+            proxyCert = self.certMgr.GetProxyCert()
             proxies.append(proxyCert)
         except:
             pass
