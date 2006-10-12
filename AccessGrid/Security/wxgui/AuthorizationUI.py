@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.38 2006-09-16 00:07:53 turam Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.39 2006-10-12 16:58:35 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.38 2006-09-16 00:07:53 turam Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.39 2006-10-12 16:58:35 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -52,9 +52,10 @@ class AuthorizationUIPanel(wxPanel):
 
     ID_WINDOW_LEFT = wxNewId() 
          
-    def __init__(self, parent, id, log):
+    def __init__(self, parent, id, log, requireCertOption=0):
         wxPanel.__init__(self, parent, id, wxDefaultPosition)
         self.log = log
+        self.requireCertOption = requireCertOption
         self.cacheRole = None
         self.roleToTreeIdDict = dict()
         self.x = -1
@@ -108,7 +109,8 @@ class AuthorizationUIPanel(wxPanel):
                
         self.SetSize(wxSize(800,800))
 
-        self.requireCert = wxCheckBox(self.rolePanel,-1,"Require user to present certificate")
+        if self.requireCertOption:
+            self.requireCert = wxCheckBox(self.rolePanel,-1,"Require user to present certificate")
         
         self.mainSizer.Add(self.leftSashWindow,0,wxEXPAND)    
 
@@ -131,7 +133,8 @@ class AuthorizationUIPanel(wxPanel):
 
         # Is a certificate required?
         requireCertFlag = self.authClient.IsIdentificationRequired()
-        self.requireCert.SetValue(requireCertFlag)
+        if self.requireCertOption:
+            self.requireCert.SetValue(requireCertFlag)
 
         # Get roles
         try:
@@ -412,7 +415,8 @@ class AuthorizationUIPanel(wxPanel):
         mainSizer = wxBoxSizer(wxVERTICAL)
         mainSizer.Add(self.roleTitle,0,wxEXPAND|wxALL,10)
         mainSizer.Add(self.tree,1,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,10)
-        mainSizer.Add(self.requireCert,0,wxEXPAND,10)
+        if self.requireCertOption:
+            mainSizer.Add(self.requireCert,0,wxEXPAND,10)
         self.rolePanel.SetSizer(mainSizer)
         mainSizer.Fit(self.rolePanel)
         self.rolePanel.SetAutoLayout(1)
@@ -741,7 +745,8 @@ class AuthorizationUIPanel(wxPanel):
         authorization manager.
         '''
         # - update certificate requirement
-        self.authClient.RequireIdentification(self.requireCert.GetValue())
+        if self.requireCertOption:
+            self.authClient.RequireIdentification(self.requireCert.GetValue())
 
         if not self.changed:
             # Ignore if user didn't change anything 
@@ -1339,14 +1344,14 @@ class AddPeopleDialog(wxDialog):
             self.list.InsertStringItem(0, item)
 
 class AuthorizationUIDialog(wxDialog):
-    def __init__(self, parent, id, title, log):
+    def __init__(self, parent, id, title, log, requireCertOption=0):
         '''
         Encapsulates an AuthorizationUIPanel object in a dialog. 
         '''
         wxDialog.__init__(self, parent, id, title,
                           size = wxSize(800,300),
                           style=wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
-        self.panel = AuthorizationUIPanel(self, -1, log)
+        self.panel = AuthorizationUIPanel(self, -1, log,requireCertOption)
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
 
