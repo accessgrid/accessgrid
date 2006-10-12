@@ -127,7 +127,8 @@ class ProxyFactory:
     Creates proxies
     """
     def __init__(self, kw={'cert':None,'key':None,'valid':(12,0),
-                           'full':True,'callback':'','bits':512}):
+                           'full':True,'callback':'','bits':512,
+                           'start':0}):
         
         self._usercert = get_usercert(kw['cert']) 
         self._userkey = get_userkey(kw['key'],kw['callback']) 
@@ -136,6 +137,7 @@ class ProxyFactory:
         self._valid = kw['valid'] 
         self._full = kw['full']
         self._bits = kw['bits']
+        self._start = kw['start']
         
     def generate(self): 
         """
@@ -210,7 +212,10 @@ class ProxyFactory:
         """
         not_before = ASN1.ASN1_UTCTIME()
         not_after = ASN1.ASN1_UTCTIME()
-        not_before.set_time(int(time.time())) 
+        if self._start:
+            not_before.set_time(self._start) 
+        else:
+            not_before.set_time(int(time.time())) 
         offset = (self._valid[0] * 3600) + (self._valid[1] * 60)
         not_after.set_time(int(time.time()) + offset )
         self._proxycert.set_not_before(not_before)
@@ -310,7 +315,7 @@ def get_usercert(certfile=None):
     cert = X509.load_cert_bio(bio) 
     return cert
 
-def get_userkey(keyfile=None,callback=None):
+def get_userkey(keyfile=None, callback=None):
     """
     function that returns a X509 instance which 
     is the user cert that is expected to be a ~/.globus/userkey.pem
@@ -322,7 +327,7 @@ def get_userkey(keyfile=None,callback=None):
         keyfile = open(keyfile)
     bio = BIO.File(keyfile)
     if callback:
-        key = RSA.load_key_bio(bio,callback)
+        key = RSA.load_key_bio(bio, callback)
     else:
         key = RSA.load_key_bio(bio)
     return key
