@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.23 2006-01-09 20:10:49 turam Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.24 2006-10-12 18:11:36 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.23 2006-01-09 20:10:49 turam Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.24 2006-10-12 18:11:36 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -27,7 +27,6 @@ import re
 import shutil
 
 
-from OpenSSL_AG import crypto
 from wxPython.wx import *
 from AccessGrid import UIUtilities
 from AccessGrid import Platform
@@ -39,7 +38,7 @@ log = Log.GetLogger(Log.CertificateManagerWXGUI)
 from AccessGrid.Security import CertificateManager
 from AccessGrid.Security import CertificateRepository
 from AccessGrid.Security.CRSClient import CRSClient, CRSClientInvalidURL, CRSClientConnectionFailed
-#from AccessGrid.Security import ProxyGen
+from AccessGrid.Security import ProxyGen
 
 from CertificateRequestTool import CertificateRequestTool
 from CertificateStatusDialog import CertificateStatusDialog
@@ -385,7 +384,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
     def CreateProxy(self):
         """
-        GUI interface for creating a Globus proxy.
+        GUI interface for creating a proxy certificate.
 
         Collect the passphrase, lifetime in hours, and key-size from user.
 
@@ -444,7 +443,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
         while 1:
 
-            ppdlg = PassphraseDialog(None, -1, "Create a globus proxy", ident)
+            ppdlg = PassphraseDialog(None, -1, "Enter the passphrase for your certificate", ident)
             rc = ppdlg.ShowModal()
             if rc != wxID_OK:
                 ppdlg.Destroy()
@@ -467,7 +466,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                 lifetime = int(lifetime)
                 try:
                     wxBeginBusyCursor()
-                    self.certificateManager.CreateProxyCertificate(passphrase, bits, lifetime)
+                    self.certificateManager.CreateProxyCertificate(bits, lifetime)
                 finally:
                     wxEndBusyCursor()
 
