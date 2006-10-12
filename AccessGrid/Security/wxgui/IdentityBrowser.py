@@ -119,9 +119,7 @@ class IdentityBrowser(CertificateBrowserBase):
 
         certType, certFile, privateKeyFile = ret
 
-        if certType == "PKCS12":
-            impCert = ImportExportUtils.ImportPKCS12IdentityCertificate(self.certMgr, certFile)
-        elif certType == "PEM":
+        if certType == "PEM":
             impCert = ImportExportUtils.ImportPEMIdentityCertificate(self.certMgr, certFile, privateKeyFile)
         else:
 
@@ -276,7 +274,6 @@ class IdentityBrowser(CertificateBrowserBase):
             type = "Host"
         else:
             type = "Identity"
-
 
         subj = GetCNFromX509Subject(cert.GetSubject())
         issuer = GetCNFromX509Subject(cert.GetIssuer())

@@ -46,11 +46,6 @@ class ImportIdentityCertDialog(wxDialog):
         PEM. PEM-formatted X509 certificate in certFile.
         privateKey is the file containing the private key. If it's in
         certFile, privateKey = certFile
-
-        PKCS12. PKCS#12-formatted certificate, containing a private key.
-        certFile is the certificate; privateKey is unused (it is part
-        of the pkcs12 file).
-        
         
         Otherwise, returns None.
         """
@@ -111,7 +106,6 @@ or use the Browse button to browse to it.
                                              "Certificate file",
                                              "Certificate file: ",
                                              [("PEM files (*.pem)", "*.pem"),
-                                              ("PKCS12 files (*.p12)", "*.p12"),
                                               ("All files", "*")],
                                              self.OnCertSelect)
         topsizer.Add(self.certWidget, 0, wxEXPAND | wxALL, 3)
@@ -243,17 +237,6 @@ it. The private key may be included in the certificate file.
             name = ",".join(map(lambda a: a[1], cns))
             self.certName.SetLabel(name)
                 
-        elif certType == "PKCS12":
-
-            if cert:
-
-                xcert = cert.get_certificate()
-
-                cns = filter(lambda a: a[0] == "CN",
-                             xcert.get_subject().get_name_components())
-                name = ",".join(map(lambda a: a[1], cns))
-                self.certName.SetLabel(name)
-
         
 
     def ImportFail(self, message):
@@ -410,13 +393,8 @@ it. The private key may be included in the certificate file.
 
         if cert:
 
-            if certType == "PKCS12":
-                xcert = cert.get_certificate()
-            else:
-                xcert = cert
-
             repo = self.certMgr.GetCertificateRepository()
-            matchingCerts = repo.FindCertificatesWithSubject(str(xcert.get_subject()))
+            matchingCerts = repo.FindCertificatesWithSubject(str(cert.get_subject()))
 
             validCerts = filter(lambda a: not a.IsExpired(), matchingCerts)
 
