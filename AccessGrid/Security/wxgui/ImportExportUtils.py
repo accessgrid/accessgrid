@@ -5,12 +5,12 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: ImportExportUtils.py,v 1.5 2006-01-09 20:10:49 turam Exp $
+# RCS-ID:      $Id: ImportExportUtils.py,v 1.6 2006-10-12 18:48:42 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-__revision__ = "$Id: ImportExportUtils.py,v 1.5 2006-01-09 20:10:49 turam Exp $"
+__revision__ = "$Id: ImportExportUtils.py,v 1.6 2006-10-12 18:48:42 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -21,7 +21,6 @@ import os.path
 import re
 import shutil
 
-from OpenSSL_AG import crypto
 from wxPython.wx import *
 
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog, ErrorDialogWithTraceback
@@ -329,8 +328,7 @@ class ExportIDCertDialog(wxDialog):
     def exportIdentityCert(self, cert, certFile, keyFile):
         try:
             fh = open(certFile, "w")
-            fh.write(crypto.dump_certificate(crypto.FILETYPE_PEM,
-                                             cert.cert.cert))
+            fh.write(cert.cert.cert.as_pem())
             
             if keyFile is not None:
                 fh.close()
@@ -363,8 +361,7 @@ class ExportIDCertDialog(wxDialog):
     def exportCACert(self, cert, certFile):
         try:
             fh = open(certFile, "w")
-            fh.write(crypto.dump_certificate(crypto.FILETYPE_PEM,
-                                             cert.cert.cert))
+            fh.write(cert.cert.cert.as_pem())
             fh.close()
         except Exception, e:
             print "Export failed: ", e
@@ -633,8 +630,7 @@ class ExportCACertDialog(wxDialog):
     def exportCACert(self, cert, certFile, spFile):
         try:
             fh = open(certFile, "w")
-            fh.write(crypto.dump_certificate(crypto.FILETYPE_PEM,
-                                             cert.cert.cert))
+            fh.write(cert.cert.cert.as_pem())
             fh.close()
 
             shutil.copyfile(cert.GetFilePath("signing_policy"), spFile)
@@ -646,117 +642,6 @@ class ExportCACertDialog(wxDialog):
     def OnCancel(self, event):
         print "Cancel"
 
-def ImportPKCS12IdentityCertificate(certMgr, pkcsFile):
-    """
-    Import an identity certificate from a PKCS#12 package.
-
-    We might need to prompt the user for a password for the package.
-
-    We do need to prompt for a passphrase for the saved private key.
-
-    Returns a Certificate instance if the import suceeded, or None for failure.
-
-    """
-    
-    mustDecrypt = 0
-
-    try:
-        pkcsText = open(pkcsFile, "rb").read()
-    except IOError, ex:
-        dlg = wxMessageDialog(None,
-                              ("Cannot open certificate file %s:\n" +
-                              str(ex)) % pkcsFile,
-                              "Import failed",
-                              style = wxOK | wxICON_ERROR)
-        dlg.ShowModal()
-        dlg.Destroy()
-        return None
-        
-    try:
-        pkcs = crypto.load_pkcs12(pkcsText)
-
-        #
-        # Success here means we don't have to ask for a passphrase
-        # to open up the pkcs12 bundle.
-        #
-
-    
-    except crypto.Error, e:
-        s = str(e)
-        if s.find("mac verify failure") >= 0:
-            print "cert is encrypted pkcs12"
-            mustDecrypt = 1
-        if s.find("expecting an asn1 sequence") >= 0:
-            dlg = wxMessageDialog(None,
-                                  ("Cannot import certificate file %s:\n" +
-                                  "Not a valid PKCS12 document.") % pkcsFile,
-                                  "Import failed",
-                                  style = wxOK | wxICON_ERROR)
-            dlg.ShowModal()
-            dlg.Destroy()
-            return None
-
-    if mustDecrypt:
-        pwcb = Toolkit.GetDefaultApplication().GetCertificateManagerUI().GetPassphraseCallback("Import passphrase",
-                                                                "Please enter the import passphrase for this PKCS#12 file.")
-
-        while 1:
-
-            pw = pwcb(0)
-
-            try:
-                pkcs = crypto.load_pkcs12(pkcsText, pw)
-                break
-            
-            except crypto.Error, e:
-                #
-                # Wrong password shows up as a "mac verify failure".
-                #
-                # Hunt for it in the stringified exception.
-                #
-                if str(e).find("mac verify failure") >= 0:
-                    dlg = wxMessageDialog(None,
-                                          "Passphrase incorrect.\nTry again?",
-                                          "Passphrase incorrect",
-                                          style = wxYES_NO | wxYES_DEFAULT)
-                    ret = dlg.ShowModal()
-                    dlg.Destroy()
-
-                    if ret == wxID_NO:
-                        return None
-                else:
-                    #
-                    # Some other error. Bail.
-                    #
-                    dlg = wxMessageDialog(None,
-                                          ("Cannot import certificate file %s:\n" +
-                                           str(e)) % pkcsFile,
-                                          "Import failed",
-                                          style = wxOK | wxICON_ERROR)
-                    dlg.ShowModal()
-                    dlg.Destroy()
-                    return None
-
-    print "Have ", pkcs.get_certificate().get_subject()
-
-    #
-    # Import now.
-    #
-
-    try:
-        #
-        # MUST prompt for new password to save this cert with.
-        #
-
-	ppcb = None
-        
-	certMgr.ImportIdentityCertificateX509(certMgr.GetCertificateRepository(),
-                                      pkcs.get_certificate(),
-                                      pkcs.get_privatekey(),
-                                      ppcb)
-
-    except:
-        fail
 
 def ImportPEMIdentityCertificate(certMgr, certFile, keyFile):
     """
