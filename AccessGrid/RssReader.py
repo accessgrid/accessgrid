@@ -2,7 +2,7 @@
 # Name:        RssReader.py
 # Purpose:     An RSS reader for meeting feeds
 # Created:     2005/10/19
-# RCS-ID:      $Id: RssReader.py,v 1.8 2006-07-13 15:03:56 turam Exp $
+# RCS-ID:      $Id: RssReader.py,v 1.9 2006-10-12 16:03:39 turam Exp $
 # Copyright:   (c) 2005
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,6 +18,10 @@ import calendar
 import socket
 Timeout = socket.getdefaulttimeout()
 import feedparser
+import urllib2
+from AccessGrid.Preferences import Preferences
+from AccessGrid import Log
+
 
 # work around apparent bug in socket.setdefaulttimeout,
 # which is used in feedparser
@@ -77,6 +81,7 @@ class RssReader:
         self.updateDuration = updateDuration 
         self.observers = observers
         self.log = log
+        self.preferences = Preferences();
                 
         self.entries = {}
         
@@ -87,11 +92,29 @@ class RssReader:
             self._ProcessUrl(rssUrl)
         
     def _ProcessUrl(self,rssUrl):
-        
         if self.log: 
             self.log.debug('Retrieving rss: %s', rssUrl)
-
-        d = feedparser.parse(rssUrl)
+            
+        if rssUrl.startswith("file://"):
+            rssFile = rssUrl[7:]
+            d = feedparser.parse(rssFile)
+        else:
+            proxyHost = self.preferences.GetPreference(Preferences.PROXY_HOST)
+            proxyPort = self.preferences.GetPreference(Preferences.PROXY_PORT)
+            proxyURL = None
+            if proxyHost:
+                if proxyPort:
+                    proxyURL = "http://%s:%s" % (proxyHost, proxyPort)
+                else:
+                    proxyURL = "http://%s" % (proxyHost)
+            if proxyURL:
+                self.log.debug('Using proxy %s' % (proxyURL))
+                proxyList = {'http':proxyURL}
+                proxy = urllib2.ProxyHandler(proxyList)
+                d = feedparser.parse(rssUrl,handlers = [proxy])
+            else:
+                d = feedparser.parse(rssUrl)
+            
         channelTime = d['feed']['modified']
         docDate = strtimeToSecs(channelTime)
     
@@ -171,7 +194,8 @@ class ReaderObserver:
 if __name__ == '__main__':
     updateDuration = 10          
     rssUrlList = ['http://www.mcs.anl.gov/~turam/rss.cgi',
-                  'http://www.mcs.anl.gov/~turam/agschedule.xml']
+                  'http://www.mcs.anl.gov/~turam/agschedule.xml'
+                  ]
 
     observers = [ReaderObserver()]
     reader = RssReader(rssUrlList,updateDuration,observers)
