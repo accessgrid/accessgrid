@@ -172,7 +172,7 @@ class CertRequestWrapper:
         path = certMgr.GetCertificatePath(impCert)
 
         last = path[-1]
-        if last.GetSubject().get_der() == last.GetIssuer().get_der():
+        if last.GetSubject().as_der() == last.GetIssuer().as_der():
             pass#print "Have full path"
         else:
             #print "Missing component: ", last.GetIssuer()
@@ -217,8 +217,8 @@ class CertRequestWrapper:
 
                     # Predicate that returns true for an unexpired certificate
                     # having a subject name of this CA cert.
-                    pred = lambda c, der = caObj.GetSubject().get_der(): \
-                        c.GetSubject().get_der() == der and not c.IsExpired()
+                    pred = lambda c, der = caObj.GetSubject().as_der(): \
+                        c.GetSubject().as_der() == der and not c.IsExpired()
 
                     # Determine the list of certs with that name.
                     matchingCerts = list(certMgr.GetCertificateRepository().FindCertificates(pred))

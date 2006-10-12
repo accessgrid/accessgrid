@@ -2,7 +2,7 @@
 # Name:        Utilities.py
 # Purpose:     helper code
 # Created:     2003/08/02
-# RCS-ID:      $Id: Utilities.py,v 1.7 2005-10-27 18:58:14 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.8 2006-10-12 18:52:55 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 utility classes and functions.
 """
 
-__revision__ = "$Id: Utilities.py,v 1.7 2005-10-27 18:58:14 turam Exp $"
+__revision__ = "$Id: Utilities.py,v 1.8 2006-10-12 18:52:55 turam Exp $"
 
 def GetCNFromX509Subject(subject):
     """
@@ -22,8 +22,4 @@ def GetCNFromX509Subject(subject):
     """
     
     cn = []
-    for what, val in subject.get_name_components():
-        if what == "CN":
-           cn.append(val)
-    return ", ".join(cn)
-
+    return subject.CN

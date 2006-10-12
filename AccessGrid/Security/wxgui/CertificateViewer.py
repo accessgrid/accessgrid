@@ -94,7 +94,7 @@ class CertificateViewerPanel(wxPanel):
 
         cert = path[0]
 
-        if cert.GetSubject().get_der() == cert.GetIssuer().get_der():
+        if cert.GetSubject().as_der() == cert.GetIssuer().as_der():
             #
             # Root is valid.
             #
