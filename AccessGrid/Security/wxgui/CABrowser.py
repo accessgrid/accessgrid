@@ -138,7 +138,7 @@ class CABrowser(CertificateBrowserBase):
         issuerName = cert.GetIssuer()
         subjStr = GetCNFromX509Subject(subjName)
 
-        if subjName.get_der() == issuerName.get_der():
+        if subjName.as_der() == issuerName.as_der():
             issuerStr = "<self>"
         else:
             issuerStr = GetCNFromX509Subject(issuerName)
