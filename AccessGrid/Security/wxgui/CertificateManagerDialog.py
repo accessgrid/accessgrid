@@ -22,12 +22,11 @@ class CertificateManagerDialog(wxDialog):
         self.notebook = wxNotebook(self, -1)
         sizer.Add(self.notebook, 1, wxEXPAND)
 
-# Disabled for 3.0, which does not use proxy certificates
-#         self.proxyBrowser = ProxyBrowser(self.notebook, -1, self.certMgr)
-#         self.notebook.AddPage(self.proxyBrowser, "Globus proxies")
-
         self.identBrowser = IdentityBrowser(self.notebook, -1, self.certMgr)
         self.notebook.AddPage(self.identBrowser, "Certificates")
+
+        self.proxyBrowser = ProxyBrowser(self.notebook, -1, self.certMgr)
+        self.notebook.AddPage(self.proxyBrowser, "Proxy Certificates")
 
         self.caBrowser = CABrowser(self.notebook, -1, self.certMgr)
         self.notebook.AddPage(self.caBrowser, "Trusted CA Certificates")
