@@ -2,7 +2,7 @@
 # Name:        ProxyGen.py
 # Purpose:     Proxy Generation utitities.
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.23 2006-09-15 22:23:44 turam Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.24 2006-10-13 19:53:37 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 Proxy certificate generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.23 2006-09-15 22:23:44 turam Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.24 2006-10-13 19:53:37 turam Exp $"
 
 import sys
 import os
@@ -84,7 +84,7 @@ proxy_construct_name
 ssl_utils_setup_ssl_ctx""".split()
 
 def CreateProxy(passphrase, certFile, keyFile, certDir,
-                outFile=None, bits=1024, hours=12):
+                outFile=None, bits=1024, hours=12, start=0):
     """
     Create a proxy.
 
@@ -96,20 +96,6 @@ def CreateProxy(passphrase, certFile, keyFile, certDir,
     hours - lifetime (in hours) of generated proxy certificate
     """
 
-#     if not passphrase:
-#         raise InvalidPassphraseException("empty passphrase")
-# 
-    #
-    # Convert from list-of-numbers to a string.
-    #
-    # Replace this when pyOpenSSL fixed to understand lists.
-    #
-
-#     if type(passphrase[0]) == int:
-#         passphrase = "".join(map(lambda a: chr(a), passphrase))
-#     else:
-#         passphrase = "".join(passphrase)
-# 
     try:
         kw = {}
         kw['cert'] = certFile
@@ -118,6 +104,7 @@ def CreateProxy(passphrase, certFile, keyFile, certDir,
         kw['callback'] = passphrase
         kw['full'] = 0
         kw['bits'] = bits
+        kw['start'] = long(time.time() - 3600)
         proxy_factory = proxylib.ProxyFactory(kw)
         proxy_factory.generate()
         proxy_cert = proxy_factory.getproxy()
@@ -127,6 +114,11 @@ def CreateProxy(passphrase, certFile, keyFile, certDir,
         import traceback
         traceback.print_exc()
 
+# 
+# FIXME:  Need to handle exceptions raised by proxylib,
+#         may be able to use globus exceptions as a guide
+#
+#
 #     except sslutilsc.SSLException, e:
 #         #
 #         # The lower-level globus code may fail, raising an SSLException.
@@ -212,6 +204,17 @@ def CreateProxy(passphrase, certFile, keyFile, certDir,
 #         raise GridProxyInitUnknownSSLError(e.args, cert)
 # 
 
+def IsProxyCert(cert):
+    try:
+        ext = cert.get_ext('proxyCertInfo')
+        return 1
+    except LookupError:
+        pass
+    except Exception,e:
+        log.exception('Unexpected exception raised while checking whether cert is a proxy cert')
+
+    return 0
+
 def IsProxyFile(certfile):
     """
     From RFC 3820, section 3.8:
@@ -223,12 +226,8 @@ def IsProxyFile(certfile):
     If a certificate is not a Proxy Certificate, then the proxyCertInfo
     extension MUST be absent.
     """
-    try:
-        c = X509.load_cert(certfile)
-        ext = c.get_ext('proxyCertInfo')
-        return 1
-    except LookupError:
-        return None
+    c = X509.load_cert(certfile)
+    return IsProxyCert(c)
         
 def IsValidProxy(certfile):
 
@@ -236,31 +235,22 @@ def IsValidProxy(certfile):
     if not os.path.isfile(certfile):
         raise 0
         
-    # check if it's even a proxy cert
-    if not IsProxyFile(certfile):
-        return 0
-        
+    # try to load certificate
     try:
         c = X509.load_cert(certfile)
     except:
         return 0
         
-#     # check expiry
-#     now = time.time()
-#     if now > c.get_not_after():
-#         print 'proxy expired'
-#         return 0
-#     elif now < c.get_not_before():
-#         print 'proxy not yet valid'
-#         return 0
-    
+    # check if it's even a proxy cert
+    if not IsProxyCert(c):
+        return 0
+        
+    # check if it has expired (or is not yet valid, which is another possibility)
+    if c.is_expired():
+        return 0
     
     # appears to be ok
     return 1
-
-
-def IsProxy(certObj):
-    return IsProxyFile(certObj.GetPath())
 
 def findCertInArgs(args):
     """
@@ -279,12 +269,6 @@ def findCertInArgs(args):
 
     return data
 
-
-def GetPassphrase(a):
-    print 'password: ',
-    p = raw_input()
-    return p
-    
     
 if '__main__' == __name__:
     proxyFile = 'proxy'
