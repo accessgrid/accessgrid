@@ -2,7 +2,7 @@
 # Name:        AuthorizationManager.py
 # Purpose:     The class that does the authorization work.
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.39 2006-09-14 22:20:52 turam Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.40 2006-10-13 19:54:33 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.39 2006-09-14 22:20:52 turam Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.40 2006-10-13 19:54:33 turam Exp $"
 
 # External Imports
 import os
@@ -230,10 +230,12 @@ class AuthorizationManager:
         return 0
         
     def RequireIdentification(self,boolFlag):
-        log.debug("RequireIdentification: %d", boolFlag)
+        log.debug("RequireIdentification: %s %s", type(boolFlag), boolFlag)
         self.identificationRequired = boolFlag
     
     def IsIdentificationRequired(self):
+        log.debug('IsIdentificationRequired returning %s %s', type(self.identificationRequired),
+                    self.identificationRequired)
         return self.identificationRequired
 
     def AddAction(self, action):
