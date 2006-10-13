@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.20 2006-03-16 23:51:05 turam Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.21 2006-10-13 19:51:56 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -68,7 +68,7 @@ class CertificateRequestTool(wxWizard):
         '''
 
         wizardId =  wxNewId()
-        wxWizard.__init__(self, parent, wizardId,"", wxNullBitmap)
+        wxWizard.__init__(self, parent, wizardId,"", wxNullBitmap, style=wxRESIZE_BORDER)
         global log
         self.log = log
 
@@ -76,13 +76,12 @@ class CertificateRequestTool(wxWizard):
         
         self.step = 1
         self.maxStep = 4
-        self.SetPageSize(wxSize(430, 320))
+        self.SetPageSize(wxSize(500, 450))
 
         self.page0 = IntroWindow(self, "Welcome to the Certificate Request Wizard", )
         self.page1 = SelectCertWindow(self, "Select Certificate Type")
-        #self.idpage = self.page2 = IdentityCertWindow(self, "Enter Your Information")
+        self.idpage = self.page2 = IdentityCertWindow(self, "Enter Your Information")
         self.servicepage = self.page3 = ServiceCertWindow(self, "Enter Service Information")
-        #self.hostpage = self.page4 = HostCertWindow(self, "Enter Host Information")
         self.anonpage = self.page4a = AnonCertWindow(self, "Anonymous Certificate")
         self.submitpage = self.page5 = SubmitReqWindow(self, "Submit Request")
         self.FitToPage(self.page1)
@@ -91,13 +90,13 @@ class CertificateRequestTool(wxWizard):
         
         self.page0.SetNext(self.page1)
         self.page1.SetNext(self.page3)
-        #self.page2.SetNext(self.page5)
+        self.page2.SetNext(self.page5)
         self.page3.SetNext(self.page5)
         #self.page4.SetNext(self.page5)
         self.page4a.SetNext(self.page5)
 
-        #self.page1.SetPrev(self.page0)
-        #self.page2.SetPrev(self.page1)
+        self.page1.SetPrev(self.page0)
+        self.page2.SetPrev(self.page1)
         self.page3.SetPrev(self.page1)
         #self.page4.SetPrev(self.page1)
         self.page4a.SetPrev(self.page1)
@@ -108,8 +107,8 @@ class CertificateRequestTool(wxWizard):
         if certificateType:
             self.maxStep = 3
             if certificateType == "IDENTITY":
-                #self.page0.SetNext(self.page2)
-                #self.page2.SetPrev(self.page0)
+                self.page0.SetNext(self.page2)
+                self.page2.SetPrev(self.page0)
                 self.SetTitle("Request Certificate - Step 1 of %s"
                               %self.maxStep)
                         
@@ -119,12 +118,6 @@ class CertificateRequestTool(wxWizard):
                 self.SetTitle("Request Certificate - Step 1 of %s"
                               %self.maxStep)
                     
-            elif certificateType == "HOST":
-                #self.page0.SetNext(self.page4)
-                #self.page4.SetPrev(self.page0)
-                self.SetTitle("Request Certificate - Step 1 of %s"
-                              %self.maxStep)
-
             elif certificateType == "ANONYMOUS":
                 self.page0.SetNext(self.page4a)
                 self.page4a.SetPrev(self.page0)
@@ -132,7 +125,7 @@ class CertificateRequestTool(wxWizard):
                               %self.maxStep)
             else:
                 self.log.info("__init__:Handle arguments for certificate type")
-                raise Exception("Flag should be either IDENTITY, SERVICE or HOST")
+                raise Exception("Flag should be either IDENTITY, SERVICE or ANONYMOUS")
 
         self.log.debug("__init__:Create the pages")
 
@@ -194,11 +187,6 @@ class CertificateRequestTool(wxWizard):
                         #
                         password = str(password)
                         certInfo = CertificateManager.IdentityCertificateRequestInfo(name, domain, email)
-                        
-                    elif  isinstance(page, HostCertWindow):
-                        host = page.hostCtrl.GetValue()
-                        email = page.emailCtrl.GetValue()
-                        certInfo = CertificateManager.HostCertificateRequestInfo(host, email)
                         
                     elif  isinstance(page, ServiceCertWindow):
                         name = page.serviceCtrl.GetValue()
@@ -305,20 +293,18 @@ class SelectCertWindow(TitledPage):
         '''
         TitledPage.__init__(self, parent, title)
         self.text = wxStaticText(self, -1, "Select Certificate Type: ")
-        self.selectionList = ["Service", "Anonymous"]
+        self.selectionList = ["Service", "Anonymous", "Identity"]
         self.selections = wxComboBox(self, -1, self.selectionList[0],
                                      choices = self.selectionList,
                                      style = wxCB_READONLY)
         self.selections.SetValue(self.selectionList[0])
-        self.info = wxStaticText(self, -1, "There are two kinds of certificates:")
-        #self.info1 = wxStaticText(self, -1, "Identity Certificate:")
-        #self.info2 = wxStaticText(self, -1, "To identify an individual.")
+        self.info = wxStaticText(self, -1, "There are three kinds of certificates:")
+        self.info1 = wxStaticText(self, -1, "Identity Certificate:")
+        self.info2 = wxStaticText(self, -1, "To identify an individual.")
         self.info3 = wxStaticText(self, -1, "Service Certificate:")
         self.info4 = wxStaticText(self, -1, "To identify a service.")
         self.info5 = wxStaticText(self, -1, "Anonymous Certificate:")
         self.info6 = wxStaticText(self, -1, "Allows access but not per-user identification.")
-        # self.info5 = wxStaticText(self, -1, "Host Certificate:")
-        # self.info6 = wxStaticText(self, -1, "To identify a machine.")
         self.parent = parent
         self.__setProperties()
         self.__Layout()
@@ -334,18 +320,6 @@ class SelectCertWindow(TitledPage):
         next = self.next
         value = self.selections.GetValue()
 
-#         if value == self.selectionList[0]:
-#             next = self.parent.page2
-#             self.parent.page2.SetPrev(self)
-# 
-#         elif value == self.selectionList[1]:
-#             next = self.parent.page3
-#             self.parent.page3.SetPrev(self)
-#             
-#         elif value == self.selectionList[2]:
-#             next = self.parent.page4a
-#             self.parent.page4a.SetPrev(self)
-            
         if value == self.selectionList[0]:
             next = self.parent.page3
             self.parent.page3.SetPrev(self)
@@ -353,6 +327,9 @@ class SelectCertWindow(TitledPage):
         elif value == self.selectionList[1]:
             next = self.parent.page4a
             self.parent.page4a.SetPrev(self)
+        elif value == self.selectionList[2]:
+            next = self.parent.page2
+            self.parent.page2.SetPrev(self)
             
         return next
 
@@ -363,7 +340,7 @@ class SelectCertWindow(TitledPage):
         if Platform.IsOSX():
             pointSize=12
         
-        #self.info1.SetFont(wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD))
+        self.info1.SetFont(wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD))
         self.info3.SetFont(wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD))
         self.info5.SetFont(wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD))
         
@@ -375,8 +352,8 @@ class SelectCertWindow(TitledPage):
         self.sizer.Add(wxSize(10, 10))
         
         infoSizer = wxFlexGridSizer(3, 2, 6, 6)
-        #infoSizer.Add(self.info1, 0, wxCENTER)
-        #infoSizer.Add(self.info2, 0, wxEXPAND | wxALIGN_LEFT)
+        infoSizer.Add(self.info1, 0, wxCENTER)
+        infoSizer.Add(self.info2, 0, wxEXPAND | wxALIGN_LEFT)
         infoSizer.Add(self.info3, 0, wxCENTER)
         infoSizer.Add(self.info4, 0, wxEXPAND | wxALIGN_LEFT)
         infoSizer.Add(self.info5, 0, wxCENTER)
@@ -397,14 +374,18 @@ class IdentityCertWindow(TitledPage):
     '''
     def __init__(self, parent, title):
         TitledPage.__init__(self, parent, title)
-        self.text = wxStaticText(self, -1,"""The name fields should contain your first and last name; requests with incomplete
-names may be rejected. The e-mail address will be used for verification; please make sure it is valid.
+        self.text = wxStaticText(self, -1,
+"""The name fields should contain your first and last name; requests with 
+incomplete names may be rejected. The e-mail address will be used for 
+verification; please make sure it is valid.
 
-The domain represents the institution you belong to; it will default to the hostname part
-of your email address.  The domain will be used for verification; please make sure it is valid.
+The domain represents the institution you belong to; it will default to the 
+hostname part of your email address.  The domain will be used for verification; 
+please make sure it is valid.
 
-The passphrase will be used to access your generated certificate after it is created.  You will need to
-remember it: it is not possible to determine the passphrase from the certificate, and it cannot be reset.""")
+The passphrase will be used to access your generated certificate after it is 
+created.  You will need to remember it: it is not possible to determine the 
+passphrase from the certificate, and it cannot be reset.""")
 
         self.firstNameId = wxNewId()
         self.lastNameId = wxNewId()
@@ -868,6 +849,7 @@ class ServiceCertWindow(TitledPage):
                     self.serviceCtrl.SetValue("")
             else:
                 self.serviceCtrl.Enable(0)
+                self.serviceNameText.Clear()
                 self.serviceNameText.Enable(0)
                 if not self.userTyped:
                     self.serviceCtrl.SetValue(self.serviceName)
@@ -926,11 +908,18 @@ class ServiceCertValidator(wxPyValidator):
         '''
         Checks if win has correct parameters.
         '''
+        serviceType = win.serviceDropdown.GetValue()
         name = win.serviceCtrl.GetValue()
         email = win.emailCtrl.GetValue()
         host = win.hostCtrl.GetValue()
+          
+          
+        if serviceType == "":
+            MessageDialog(NULL, "Please select a service type.", style = wxOK | wxICON_INFORMATION)
+            self.helpClass.SetColour(win.serviceDropdown)
+            return false
             
-        if name == "":
+        elif serviceType == "Other" and name == "":
             MessageDialog(NULL, "Please enter service name.", style = wxOK | wxICON_INFORMATION)
             self.helpClass.SetColour(win.serviceCtrl)
             return false
