@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.100 2006-09-21 12:04:59 braitmai Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.101 2006-10-13 21:43:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.100 2006-09-21 12:04:59 braitmai Exp $"
+__revision__ = "$Id: DataStore.py,v 1.101 2006-10-13 21:43:50 turam Exp $"
 
 import os
 import time
@@ -1324,7 +1324,7 @@ _DownloadFile = FTPSClient.FTPSDownloadFile
 
 DataServer = FTPSServer.FTPSServer
 
-def UploadFiles(identity, upload_url, file_list, user=None,passw=None,progressCB=None):
+def UploadFiles(identity, upload_url, file_list, user=None,passw=None,ssl_ctx=None,progressCB=None):
     log.info('UploadFiles: %s %s', upload_url, str(file_list))
     for f in file_list:
         f = str(f)
@@ -1332,7 +1332,8 @@ def UploadFiles(identity, upload_url, file_list, user=None,passw=None,progressCB
         log.debug('UploadFiles: %s %s %s', upload_url,fulluploadurl, str(file_list))
         try:
         
-            UploadFile(f,upload_url,user=user,passw=passw,progressCB=progressCB)
+            UploadFile(f,upload_url,user=user,passw=passw,
+                       ssl_ctx=ssl_ctx,progressCB=progressCB)
         except FTPSClient.UserCancelled:
             raise UserCancelled(f)
     if progressCB:
@@ -1343,11 +1344,12 @@ def UploadFiles(identity, upload_url, file_list, user=None,passw=None,progressCB
 
 
 def DownloadFile(identity, download_url, destination, size, checksum,
-                     user=None,passw=None,progressCB = None):
+                     user=None,passw=None,ssl_ctx=None,progressCB = None):
     log.info("DownloadFile: url %s file %s", download_url,destination)
     try:
         download_url = download_url.replace("%20"," ")
-        ret = _DownloadFile(download_url,destination,user=user,passw=passw,progressCB=progressCB)
+        ret = _DownloadFile(download_url,destination,user=user,passw=passw,
+                            ssl_ctx=ssl_ctx,progressCB=progressCB)
     except FTPSClient.UserCancelled:
         raise UserCancelled(download_url)
         
