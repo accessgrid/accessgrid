@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.52 2006-09-15 21:43:44 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.53 2006-10-13 21:42:10 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.52 2006-09-15 21:43:44 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.53 2006-10-13 21:42:10 turam Exp $"
 
 import re
 import os
@@ -47,9 +47,9 @@ from AccessGrid import Log
 from AccessGrid import Utilities
 from AccessGrid.Security import CertificateRepository
 from AccessGrid.Security import CRSClient
+from AccessGrid.Security import ProxyGen
 from AccessGrid import Platform
-from AccessGrid.Platform.Config import AGTkConfig
-from AccessGrid import Toolkit
+from AccessGrid.Platform.Config import AGTkConfig, UserConfig
 
 log = Log.GetLogger(Log.CertificateManager)
 
@@ -64,6 +64,15 @@ class NoCertificates(Exception):
     pass
 
 class NoDefaultIdentity(Exception):
+    pass
+
+class ProxyExpired(Exception):
+    pass
+
+class NoProxyFound(Exception):
+    pass
+    
+class InvalidProxyFound(Exception):
     pass
 
 class CertificateManager(object):
@@ -117,11 +126,7 @@ class CertificateManager(object):
         
     We will assume that if the repository  is not already present 
     that we've not run this app before and must therefore initialize
-    the repository. It may be the case that the user has run an earlier
-    version of the AG software and therefore has an AG2.0-style certificate
-    repository already in place. We will ignore this, and initialize directly
-    from globus state. It is not likely at this stage of the game that
-    users already have a lot of new state built up in that repository.
+    the repository.
     
     Runtime configuration
     ---------------------
@@ -158,6 +163,7 @@ class CertificateManager(object):
         'useDefaultDN',
         'useCertFile',
         'useKeyFile',
+        'proxyPath'
         ]
 
     def __init__(self, userProfileDir):
@@ -176,6 +182,8 @@ class CertificateManager(object):
         self.useDefaultDN = None
         self.useCertFile = None
         self.useKeyFile = None
+        
+        self.proxyPath = self.GetProxyPath()
 
         # Do some initial sanity checking.
         # user profile directory needs to exist and be writable
@@ -186,7 +194,7 @@ class CertificateManager(object):
 
         if not os.path.isdir(self.userProfileDir) or \
            not os.access(self.userProfileDir, os.R_OK | os.W_OK):
-            raise Exception("User profile directory %s does not exist or is not  writable" \
+            raise Exception("User profile directory %s does not exist or is not writable" \
                             % (self.userProfileDir))
 
 
@@ -211,7 +219,8 @@ class CertificateManager(object):
         # We need to do some sanity checking here (ensure we have at least one
         # identity certificate, for instance)
 
-        self.CheckConfiguration()
+        #self.CheckConfiguration()
+
 
     def InitializeRepository(self):
         """
@@ -248,6 +257,7 @@ class CertificateManager(object):
             try:
                 files = os.listdir(caDir)
             except:
+                from AccessGrid import Toolkit
                 certMgrUI = Toolkit.GetDefaultApplication().GetCertificateManagerUI()
                 certMgrUI.ReportError("Error reading CA certificate directory\n" +
                                                     caDir + "\n" +
@@ -308,6 +318,7 @@ class CertificateManager(object):
         impCert.SetMetadata("AG.CertificateManager.certType", "identity")
 
         if defID is None:
+            from AccessGrid import Toolkit
             self.SetDefaultIdentity(impCert)
             certMgrUI = Toolkit.GetDefaultApplication().GetCertificateManagerUI()
             certMgrUI.InitEnvironment()
@@ -353,13 +364,8 @@ class CertificateManager(object):
                 return "Missing private key"
 
         now = time.time()
-        notbefore = cert.GetNotValidBefore()
-        notafter = cert.GetNotValidAfter()
-
-        if now < notbefore:
-            valid = "Not yet valid"
-        elif now > notafter:
-            valid = "Expired"
+        if cert.IsExpired():
+            valid = 'Expired'
         else:
             # Check the certificate path.
             if self.VerifyCertificatePath(cert):
@@ -380,7 +386,7 @@ class CertificateManager(object):
         checked = {}
         while 1:
             subj = str(c.GetSubject())
-            if c.GetSubject().get_der() == c.GetIssuer().get_der():
+            if c.GetSubject().as_der() == c.GetIssuer().as_der():
                 good = 1
                 break
 
@@ -416,7 +422,7 @@ class CertificateManager(object):
         while 1:
             subj = str(c.GetSubject())
             path.append(c)
-            if c.GetSubject().get_der() == c.GetIssuer().get_der():
+            if c.GetSubject().as_der() == c.GetIssuer().as_der():
                 break
 
             # If we come back to a place we've been before, we're in a cycle
@@ -442,6 +448,41 @@ class CertificateManager(object):
 
     def GetCertificateRepository(self):
         return self.certRepo
+        
+    def HaveValidProxy(self):
+        return ProxyGen.IsValidProxy(self.proxyPath)
+        
+    def GetPassphrase(self,verifyFlag=0,
+                      prompt1="Enter the passphrase to your private key.", 
+                      prompt2='Verify passphrase:'):
+
+        # note: verifyFlag is unused
+        from AccessGrid import Toolkit
+        cb = Toolkit.GetDefaultApplication().GetCertificateManagerUI().GetPassphraseCallback(prompt1,
+                                                                  prompt2)
+        p1 = cb(0)
+        passphrase = ''.join(p1)
+        return passphrase
+            
+    def CreateProxyCertificate(self, bits=1024, hours=12):
+        """
+        Create a proxy.
+        """
+        # Create the proxy cert with a start validity of now-1hour,
+        # and extend the requested validity duration by an hour so
+        # the user still gets what he expects
+        hoursExtended = hours+1
+        start = time.time()-3600
+
+        ident = self.GetDefaultIdentity()
+        ProxyGen.CreateProxy(self.GetPassphrase,
+                             ident.GetPath(),
+                             ident.GetKeyPath(),
+                             self.caDir,
+                             self.proxyPath,
+                             bits,
+                             hoursExtended,
+                             start)
 
     def SetTemporaryDefaultIdentity(self,
                                     useDefaultDN = None,
@@ -546,7 +587,6 @@ class CertificateManager(object):
         if len(validCerts) > 1:
             log.warn("More than one valid cert with dn %s found, choosing one at random.",
                      dn)
-
         self.defaultIdentity = validCerts[0]
 
         log.debug("Loaded identity %s" % self.defaultIdentity.GetVerboseText())
@@ -598,7 +638,7 @@ class CertificateManager(object):
             os.unlink(path)
             
         for c in self.GetCACerts():
-            nameHash = c.GetSubject().get_hash()
+            nameHash = '%08lx' % c.GetSubject().as_hash()
 
             i = 0
             while 1:
@@ -615,14 +655,59 @@ class CertificateManager(object):
                 shutil.copyfile(spath, os.path.join(self.caDir, "%s.signing_policy" % (nameHash)))
 
 
-    def _InitEnvWithCert(self):
+    def GetProxyCert(self):
+        """
+        Perform some exhaustive checks to see if there
+        is a valid proxy in place.
+        """
 
-        log.debug("Initializing environment with unencrypted cert %s",
-                  self.defaultIdentity.GetSubject())
+        #
+        # The basic scheme here is to test for the various possibilities
+        # of *failure* for there to be a valid cert, and raise the appropriate
+        # exception for each. If we get to the end, we're still in the running
+        # and we can set up the environment.
+        #
+        # Doing it this way makes the code more readable than a deeply-nested
+        # set of if-tests that culminate with success down deep in the nesting.
+        # It also makes it easier to add additional tests if necessary.
+        #
 
-        certPath = self.defaultIdentity.GetPath()
-        keyPath = self.defaultIdentity.GetKeyPath()
+        #
+        # Check to see if the proxy file exists.
+        #
+
+        if not os.path.isfile(self.proxyPath):
+            raise NoProxyFound
         
+        #
+        # Check to see if the proxy file is actually a certificate
+        # of some sort.
+        #
+        
+        try:
+            proxyCert = CertificateRepository.Certificate(self.proxyPath,
+                                                          self.proxyPath,
+                                                          repo = self.GetCertificateRepository())
+
+        except:
+        #except crypto.Error:
+            import traceback
+            traceback.print_exc()
+            raise NoProxyFound
+
+        return proxyCert
+
+
+    def GetProxyPath(self):
+        """
+        Determine the path into which the proxy should be installed.
+
+        If identity is not None, it should be a CertificateDescriptor
+        for the identity we're creating a proxy (future support for
+        multiple active identities).
+        """
+        return UserConfig.instance().GetProxyFile()
+
 
     def SetDefaultIdentity(self, certDesc):
         """
