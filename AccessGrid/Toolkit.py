@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.124 2006-09-21 12:04:59 braitmai Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.125 2006-10-13 21:21:01 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.124 2006-09-21 12:04:59 braitmai Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.125 2006-10-13 21:21:01 turam Exp $"
 
 # Standard imports
 import os
@@ -16,6 +16,8 @@ import sys
 from optparse import OptionParser, Option
 import time
 import socket
+
+from M2Crypto import SSL
 
 # AGTk imports
 from AccessGrid import Log
@@ -29,6 +31,7 @@ from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.wsdl import SchemaToPyTypeMap
 from AccessGrid.Security import ProxyGen
 from AccessGrid.Security import CertificateRepository
+from AccessGrid.Security import CertificateManager
 
 class MissingDependencyError(Exception): pass
 
@@ -202,8 +205,9 @@ class AppBase:
     def CheckDependencies(self):
         if not hasattr(socket,'ssl'):
             raise MissingDependencyError("SSL")
-        
-    def GetPassphrase(self,verifyFlag=0,prompt1="Enter the passphrase to your private key.", prompt2='Verify passphrase:'):
+	
+    def GetPassphrase(self,verifyFlag=0,prompt1="Enter the passphrase to your private key.", 
+                      prompt2='Verify passphrase:'):
 
         # note: verifyFlag is unused
         if self.__passphrase:
@@ -216,32 +220,61 @@ class AppBase:
             return self.__passphrase
             
     def GetContext(self):
+        # Hack to allow use of proxy certs, until the necessary 
+        # interface is exposed through M2Crypto
+        os.environ['OPENSSL_ALLOW_PROXY_CERTS'] = '1'
+        
+        certManager = self.GetCertificateManager()
+        caDir = self._certificateManager.caDir
+
+        """
+        Logic here is like so:
+        
+        If we haven't created a context
+            - create one
+        If the default identity has an encrypted private key
+            - If a valid proxy certificate exists
+                - If the current context is not using the proxy cert
+                    - Make it so
+            - Else
+                - Create a proxy certificate
+                - Configure the context to use the proxy certificate
+        Else    
+            - If the current context is not using the default certificate
+                - Make it so
+        """
+        # Create the SSL context if needed
         if not self.__context:
-            from M2Crypto import SSL
             self.__context = SSL.Context('sslv23')
-            
-            # Hack to allow use of proxy certs, until the necessary 
-            # interface is exposed through M2Crypto
-            os.environ['OPENSSL_ALLOW_PROXY_CERTS'] = '1'
-            
-            id = self.GetCertificateManager().GetDefaultIdentity()
-            caDir = self.GetCertificateManager().caDir
-            if id.HasEncryptedPrivateKey():
-                # if the private key is encrypted, we need a proxy certificate
-                proxycertfile = self.userConfig.GetProxyFile()
-                if not ProxyGen.IsValidProxy(proxycertfile):
-                    # if a valid proxy cert does not exist, create one
-                    ProxyGen.CreateProxy(self.GetPassphrase,
-                                         id.GetPath(),
-                                         id.GetKeyPath(),
-                                         caDir,
-                                         proxycertfile)
-                id = CertificateRepository.Certificate(proxycertfile)
-            self.__context.load_cert_chain(id.GetPath(),id.GetKeyPath())
             self.__context.load_verify_locations(capath=caDir)
+            #self.__context.set_verify(SSL.verify_peer,10,self.VerifyCallback)
             self.__context.set_verify(SSL.verify_peer,10)
             self.__context.set_session_id_ctx('127.0.0.1:8006')
             self.__context.set_cipher_list('LOW:TLSv1:@STRENGTH')
+        
+        # if the private key is encrypted, we need a proxy certificate
+        id = self.GetCertificateManager().GetDefaultIdentity()
+        if id.HasEncryptedPrivateKey():
+            # - if a valid proxy does exists, confirm that it's being used
+            if certManager.HaveValidProxy():
+                # Should confirm that proxy is being used by context; 
+                # for now, just force it to be used
+                id = certManager.GetProxyCert()
+                self.log.info('Using proxy certificate: %s %s', id.GetPath(), id.GetKeyPath())
+                self.__context.load_cert_chain(id.GetPath(),id.GetKeyPath())
+            else:
+                # create a proxy and use it
+                certManager.CreateProxyCertificate()
+                id = certManager.GetProxyCert()
+                self.log.info('Using proxy certificate: %s %s', id.GetPath(), id.GetKeyPath())
+                self.__context.load_cert_chain(id.GetPath(),id.GetKeyPath())
+            
+        else:
+            # Should confirm that certificate is being used by context; 
+            # for now, just force it to be used
+            self.log.info('Using unencrypted certificate: %s %s', id.GetPath(), id.GetKeyPath())
+            self.__context.load_cert(id.GetPath(),id.GetKeyPath())
+            
         return self.__context
         
     def VerifyCallback(self,ok,store):
@@ -441,11 +474,11 @@ class AppBase:
 
     def GetCertificateManager(self):
         if self._certificateManager == None:
-            from AccessGrid.Security import CertificateManager
             if self.userConfig == None:
                 raise Exception("No user config dir, Toolkit may not be initialized.")
             configDir = self.userConfig.GetConfigDir()
             self._certificateManager = CertificateManager.CertificateManager(configDir)
+
             self.log.info("Initialized certificate manager.")
             self._certificateManager.InitEnvironment()
         return self._certificateManager
