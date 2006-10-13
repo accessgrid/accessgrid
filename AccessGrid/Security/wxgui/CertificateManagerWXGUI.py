@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.24 2006-10-12 18:11:36 turam Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.25 2006-10-13 19:49:27 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.24 2006-10-12 18:11:36 turam Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.25 2006-10-13 19:49:27 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -529,8 +529,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         #
 
         if crsServerURL is None:
-            crsServerURL = "http://www-unix.mcs.anl.gov/~judson/certReqServer.cgi"
-            
+            crsServerURL = "http://www-unix.mcs.anl.gov/fl/research/accessgrid/ca/agdev/certReqServer.cgi"
         try:
             repo = self.certificateManager.GetCertificateRepository()
 
