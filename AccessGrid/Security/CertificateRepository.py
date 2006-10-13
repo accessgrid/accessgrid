@@ -2,7 +2,7 @@
 # Name:        CertificateRepository.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.23 2004-12-08 16:48:07 judson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.24 2006-10-13 21:29:52 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.23 2004-12-08 16:48:07 judson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.24 2006-10-13 21:29:52 turam Exp $"
 
 from __future__ import generators
 
@@ -48,10 +48,14 @@ import operator
 import cStringIO
 from AccessGrid import Log
 from AccessGrid import Utilities
+from AccessGrid.Security import ProxyGen
 
 log = Log.GetLogger(Log.CertificateRepository)
 
-from OpenSSL_AG import crypto
+from M2Crypto import X509
+from M2Crypto import RSA
+from M2Crypto import EVP
+from M2Crypto import m2
 
 class RepoAlreadyExists(Exception):
     """
@@ -84,16 +88,6 @@ def ClassifyCertificate(path):
     A PEM-formatted cert will have a "BEGIN CERTIFICATE"
     line; if it has a private key included it'll include
     "BEGIN RSA PRIVATE KEY".
-    
-    If it doesn't have those, we can try opening it up as
-    a pkcs12 cert. If it's a pkcs12, but is encrypted,
-    we'll get
-
-    crypto.Error: [('PKCS12 routines', 'PKCS12_parse', 'mac verify failure')]
-
-    If it's not a pkcs file, we'll get
-
-    crypto.Error: [('asn1 encoding routines', 'd2i_PKCS12', 'expecting an asn1 sequence')]
     
     If it's unencrypted, we'll get the actual certificate, and can
     show the name.
@@ -129,27 +123,9 @@ def ClassifyCertificate(path):
     
     if validCert:
         log.info("Found valid cert, validKey=%s", validKey)
-        c = crypto.load_certificate(crypto.FILETYPE_PEM,
-                                    open(path).read())
+        c = X509.load_cert(path)
         return ("PEM", c, not validKey)
 
-    #
-    # Didn't find; try opening as PKCS12.
-    #
-
-    try:
-        pkcs = crypto.load_pkcs12(open(path, "rb").read())
-
-        return ("PKCS12", pkcs, 0)
-    
-    except crypto.Error, e:
-        s = str(e)
-        if s.find("mac verify failure") >= 0:
-            log.info("cert is encrypted pkcs12")
-            return ("PKCS12", None, 0)
-        if s.find("expecting an asn1 sequence") >= 0:
-            return ("Unknown", None, 1)
-        
     return None
 
 def ParseSigningPolicy(policyFH):
@@ -193,6 +169,7 @@ def ConstructSigningPolicy(cert):
     caName = str(cert.GetSubject())
 
     subjs = filter(lambda a: a[0] != "CN", cert.GetSubject().get_name_components())
+    subjs = [cert.GetSubject().CN]
 
     condSubjects = "/".join(map(lambda a: a[0] + "=" + a[1], subjs))
 
@@ -213,8 +190,7 @@ class CertificateRepository:
     # Private key types.
     #
 
-    KEYTYPE_RSA = crypto.TYPE_RSA
-    KEYTYPE_DSA = crypto.TYPE_DSA
+    KEYTYPE_RSA = "RSA"
 
     #
     # Valid name components for cert request DNs. Lowercased
@@ -489,19 +465,21 @@ class CertificateRepository:
 
         try:
             keyText = open(path).read()
-            crypto.load_privatekey(crypto.FILETYPE_PEM, keyText, "")
+            RSA.load_key(path)
 
             # Not encrypted
             self.SetPrivatekeyMetadata(hash, "System.encrypted", "0")
 
-        except crypto.Error:
+        except:# crypto.Error:
             # Encrypted.
             self.SetPrivatekeyMetadata(hash, "System.encrypted", "1")
 
-        except IOError:
-
-            log.info("Couldn't open private key file %s", path)
-            
+# turam: determine exceptions that can be raised by RSA.load_key,
+#       at least in these two cases
+#         except IOError:
+# 
+#             log.info("Couldn't open private key file %s", path)
+#             
 
     def RecoverCert(self, path, recoveryState):
         """
@@ -682,7 +660,7 @@ class CertificateRepository:
             #
             
             try:
-                pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, keyText, "")
+                pkey = RSA.load_key(keyFile)
 
                 #
                 # Success.
@@ -690,7 +668,7 @@ class CertificateRepository:
 
                 passphrase = None
 
-            except crypto.Error:
+            except:# crypto.Error:
 
                 #
                 # We need a passphrase. Get one from the user,
@@ -718,10 +696,10 @@ class CertificateRepository:
                         passphrase = "".join(passphrase)
 
                 try:
-                    pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, keyText,
-                                                  passphrase)
+                    pkey = RSA.load_key(keyFile,passphraseCB)
 
-                except crypto.Error:
+# Determine exceptions that could be raised here and handle individually
+                except:# crypto.Error:
                     log.exception("load error")
                     raise RepoBadPassphrase
 
@@ -770,8 +748,7 @@ class CertificateRepository:
 
         # The certificate wrapper class we use in this module
         # requires that the certificate be loaded from a file.
-        io = cStringIO.StringIO(crypto.dump_certificate(crypto.FILETYPE_PEM,
-                                                        certobj))
+        io = cStringIO.StringIO(certobj.as_pem())
         cert = Certificate(None, certHandle = io)
         io.close()
 
@@ -875,7 +852,7 @@ class CertificateRepository:
         """
         Import the given certificate request into the repository.
 
-        req is an OpenSSL_AG.crypto.X509Req object.
+        req is an M2Crypto.X509.Request object.
 
         The pathname of the imported request will be
         <repo_root>/requests/<modulus_hash>.pem.
@@ -891,7 +868,7 @@ class CertificateRepository:
 
         log.info("_ImportCertificateRequest writing to %s", path)
         fh = open(path, 'w')
-        fh.write(crypto.dump_certificate_request(crypto.FILETYPE_PEM, req))
+        fh.write(req.as_pem())
         fh.close()
 
         return desc
@@ -927,15 +904,15 @@ class CertificateRepository:
 
         # If passwdCB is none, don't encrypt.
         if passwdCB is None:
-            pktext = crypto.dump_privatekey(crypto.FILETYPE_PEM,
-                                            pkey)
+            # Retrieve PEM representation of certificate
+            # (NULL cipher specifies unencrypted private key)
+            pktext = pkey.as_pem(cipher=None)
             self.SetPrivatekeyMetadata(hhash, "System.encrypted", "0")
 
         else:
-            pktext = crypto.dump_privatekey(crypto.FILETYPE_PEM,
-                                            pkey,
-                                            "DES3",
-                                            passwdCB)
+            if type(passwdCB) == str:
+                passwdCB = lambda verify,prompt1="",prompt2="",passwd=passwdCB: passwd
+            pktext = pkey.as_pem(callback = passwdCB)
             self.SetPrivatekeyMetadata(hhash, "System.encrypted", "1")
             
         fh = open(path, 'w')
@@ -1064,11 +1041,10 @@ class CertificateRepository:
         # subject.
         #
 
-        req = crypto.X509Req()
+        req = X509.Request()
         sub = req.get_subject()
-
-        for (k, v) in nameEntries:
-            sub.add(k, v)
+        for (k,v) in nameEntries:
+            setattr(sub,k,v)
 
         #
         # set our extensions.
@@ -1078,27 +1054,25 @@ class CertificateRepository:
             extensions = [("nsCertType", 0, "client,server,objsign,email"),
                           ("basicConstraints", 1, "CA:false")
                           ]
-
-        xextlist = []
+        extStack = X509.X509_Extension_Stack()
         for name, critical, value in extensions:
-            xext = crypto.X509Extension(name, critical, value)
-            xextlist.append(xext)
-        req.add_extensions(xextlist)
+            xext = X509.new_extension(name,value,critical)
+            extStack.push(xext)
+        req.add_extensions(extStack)
 
         #
         # Generate our private key, stash it in the repo,
         # and sign the cert request.
         #
 
-        pkey = crypto.PKey()
-        pkey.generate_key(keyType, bits)
-
+        pkey = EVP.PKey()
+        rsa = RSA.gen_key(bits,65537)
+        pkey.assign_rsa(rsa)
         req.set_pubkey(pkey)
-        req.sign(pkey, messageDigest)
+        req.sign(pkey,messageDigest)
 
-        self._ImportPrivateKey(pkey, passphraseCB)
+        self._ImportPrivateKey(pkey,passphraseCB)
         desc = self._ImportCertificateRequest(req)
-
         return desc
         
     def RemoveCertificateRequest(self, req):
@@ -1190,7 +1164,7 @@ class CertificateRepository:
             if os.path.isfile(path):
 
                 try:
-                    req = crypto.load_certificate_request(crypto.FILETYPE_PEM, open(path).read())
+                    req = X509.load_request(path)
                     desc = CertificateRequestDescriptor(req, self)
                     yield desc
 
@@ -1352,6 +1326,9 @@ class CertificateDescriptor:
 
     def IsHostCert(self):
         return self.cert.IsHostCert()
+        
+    def IsProxyCert(self):
+        return ProxyGen.IsProxyCert(self.cert)
 
 class CertificateRequestDescriptor:
     def __init__(self, req, repo):
@@ -1365,7 +1342,7 @@ class CertificateRequestDescriptor:
     def GetModulus(self):
         key = self.req.get_pubkey()
         return key.get_modulus()
-
+        
     def GetModulusHash(self):
         if self.modulusHash is None:
             m = self.GetModulus()
@@ -1390,7 +1367,7 @@ class CertificateRequestDescriptor:
         Returns the PEM-formatted version of the certificate request.
         """
 
-        return crypto.dump_certificate_request(crypto.FILETYPE_PEM, self.req)
+        return self.req.as_pem()
 
 class Certificate:
     hostCertRE = re.compile(r"^[^\s./]+(\.[^\s./]+)+$")
@@ -1433,7 +1410,7 @@ class Certificate:
             self.certText = fh.read()
             fh.close()
 
-        self.cert = crypto.load_certificate(crypto.FILETYPE_PEM, self.certText)
+        self.cert = X509.load_cert(self.path)
 
 
         #
@@ -1446,7 +1423,7 @@ class Certificate:
             fh = open(keyPath, "r")
             self.keyText = fh.read()
             fh.close()
-
+            
     def GetKeyPath(self):
         #
         # Key path is based on the modulus.
@@ -1457,11 +1434,14 @@ class Certificate:
         if not self.repo:
            return None
 
-        path = os.path.join(self.repo.dir,
+        if self.IsProxyCert():
+            keypath = self.path
+        else:
+            keypath = os.path.join(self.repo.dir,
                             "privatekeys",
                             "%s.pem" % (self.GetModulusHash()))
                             
-        return path
+        return keypath
 
     def GetPath(self):
         return self.path
@@ -1470,10 +1450,7 @@ class Certificate:
         return self.cert.get_subject()
 
     def GetShortSubject(self):
-        cn = []
-        for what, val in self.cert.get_subject().get_name_components():
-            if what == "CN":
-               cn.append(val)
+        cn = [self.cert.get_subject().CN]
         return ", ".join(cn)
 
     def GetIssuer(self):
@@ -1482,7 +1459,7 @@ class Certificate:
     def GetSubjectHash(self):
 
         if self.subjectHash is None:
-            subj = self.cert.get_subject().get_der()
+            subj = self.cert.get_subject().as_der()
             dig = md5.new(subj)
             self.subjectHash = dig.hexdigest()
 
@@ -1491,7 +1468,7 @@ class Certificate:
     def GetIssuerSerialHash(self):
 
         if self.issuerSerialHash is None:
-            issuer = self.cert.get_issuer().get_der()
+            issuer = self.cert.get_issuer().as_der()
             #
             # Get serial number in its 4-byte form
             #
@@ -1505,7 +1482,7 @@ class Certificate:
     def GetModulus(self):
         key = self.cert.get_pubkey()
         return key.get_modulus()
-
+        
     def GetModulusHash(self):
         if self.modulusHash is None:
             m = self.GetModulus()
@@ -1524,11 +1501,10 @@ class Certificate:
 
         """
 
-        cnlist = map(lambda a: a[1], filter(lambda a: a[0] == "CN", self.GetSubject().get_name_components()))
+        cnlist = self.GetSubject().CN
         if len(cnlist) != 1:
             return None
 
-        #print cnlist[0]
         m = self.serviceCertRE.search(cnlist[0])
 
         if m and len(m.groups()) == 2:
@@ -1544,7 +1520,8 @@ class Certificate:
 
         """
 
-        cnlist = map(lambda a: a[1], filter(lambda a: a[0] == "CN", self.GetSubject().get_name_components()))
+        #cnlist = map(lambda a: a[1], filter(lambda a: a[0] == "CN", self.GetSubject().get_name_components()))
+        cnlist = self.GetSubject().CN
         if len(cnlist) != 1:
             return None
 
@@ -1556,13 +1533,16 @@ class Certificate:
         else:
             return None
 
+    def IsProxyCert(self):
+        return ProxyGen.IsProxyFile(self.path)
+
     def WriteCertificate(self, file):
         """
         Write the certificate to the given file.
         """
 
         fh = open(file, "w")
-        fh.write(crypto.dump_certificate(crypto.FILETYPE_PEM, self.cert))
+        fh.write(self.cert.as_pem())
         fh.close()
 
     def _GetMetadataKey(self, key):
@@ -1591,7 +1571,7 @@ class Certificate:
         """
         Return notbefore time as seconds since the epoch
         """
-        notBefore = self.cert.get_not_before()
+        notBefore = str(self.cert.get_not_before())
         sec = utc2time(notBefore)
         return sec
 
@@ -1631,7 +1611,7 @@ class Certificate:
         Returns a tuple (type, fingerprint)
         """
         
-        (ctype, fp) = self.cert.get_fingerprint()
+        ctype,fp = self.cert.get_fingerprint()
         return ctype, string.join(map(lambda a: "%02X" % (a), fp), ":")
 
     def GetVerboseText(self):
@@ -1644,7 +1624,7 @@ class Certificate:
         fmt += "Not valid before: %s\n" % (self.GetNotValidBeforeText())
         fmt += "Not valid after: %s\n" %  (self.GetNotValidAfterText())
 
-        (ctype, fp) = cert.get_fingerprint()
+        ctype,fp = self.GetFingerprint()
         fmt += "%s Fingerprint: %s\n"  % (ctype,
                                           string.join(map(lambda a: "%02X" % (a), fp), ":"))
         fmt += "Certificate location: %s\n" % (self.GetPath(),)
@@ -1668,7 +1648,7 @@ class Certificate:
         fmt += "<b>Not valid before:</b> %s<br>\n" % (self.GetNotValidBeforeText())
         fmt += "<b>Not valid after:</b> %s<br>\n" %  (self.GetNotValidAfterText())
 
-        (ctype, fp) = cert.get_fingerprint()
+        ctype,fp = self.GetFingerprint()
         fmt += "<b>%s Fingerprint:</b> %s<br>\n"  % (ctype,
                                           string.join(map(lambda a: "%02X" % (a), fp), ":"))
         fmt += "<b>Certificate location:</b> %s<br>\n" % (self.GetPath(),)
@@ -1763,7 +1743,7 @@ def utc2time(t):
     by utc2tuple is GMT.
     """
     
-    ttuple = utc2tuple(t)
+    ttuple = time.strptime(str(t), "%b %d %H:%M:%S %Y %Z")
     secs = int(time.mktime(ttuple))
     #
     # Adjust for local timezone.
