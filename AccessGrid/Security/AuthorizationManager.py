@@ -2,7 +2,7 @@
 # Name:        AuthorizationManager.py
 # Purpose:     The class that does the authorization work.
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.40 2006-10-13 19:54:33 turam Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.41 2006-10-14 00:55:16 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.40 2006-10-13 19:54:33 turam Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.41 2006-10-14 00:55:16 turam Exp $"
 
 # External Imports
 import os
@@ -161,6 +161,74 @@ class AuthorizationManager:
             except:
                 # Don't add the action
                 log.exception("AuthManager Import: Add action failed %s."%(a.name))
+               
+    def OverlayPolicy(self, policy):
+        """
+        This method takes a string that is an XML representation of an
+        authorization policy. This policy is parsed and this object is
+        configured to enforce the specified policy.
+
+        @param policy: the policy as a string
+        @type policy: an XML formatted string
+        """
+        # Internal function to create a role
+        def unpackRole(node):
+            sl = list()
+            numSubjs = len(node.childNodes)
+            for s in node.childNodes:
+                s = X509Subject.X509Subject(str(s.attributes["name"].value),
+                                            s.attributes["auth_data"].value)
+                if sl.count(s) == 0:
+                    sl.append(s)
+
+            r = Role(node.attributes["name"].value, sl)
+
+            return(r, numSubjs)
+
+        # Internal function to create an action
+        def unpackAction(node, to):
+            a = MethodAction(str(node.attributes["name"].value))
+            for rn in map(lambda x: x.attributes["name"].value,
+                          node.childNodes):
+                try:
+                    r = to.FindRole(str(rn))
+                    a.AddRole(r)
+                except KeyError:
+                    log.exception("AuthManager Import: Role Not Found.")
+
+            return a
+
+        domP = xml.dom.minidom.parseString(policy)
+        
+        roleElements = domP.getElementsByTagName("Role")
+
+        # Add roles from authorization policy
+        # - if it exists, overwrite it
+        # - if it does not exist, add it
+        for c in roleElements:
+            (r, default) = unpackRole(c)
+            oldr = self.FindRole(str(r.name))
+            if oldr is not None:
+                self.RemoveRole(oldr)
+                self.AddRole(r)
+            else:
+                self.AddRole(r)
+
+        # Add actions from authorization policy
+        # - if it exists, overwrite it
+        # - if it does not exist, add it
+        for c in domP.getElementsByTagName("Action"):
+            a = unpackAction(c, self)
+            olda = self.FindAction(a.GetName())
+            if olda:
+                self.RemoveAction(olda)
+                self.AddAction(a)
+            else:
+                try:
+                    self.AddAction(a)
+                except:
+                    # Don't add the action
+                    log.exception("AuthManager Import: Add action failed %s."%(a.name))
                
     def ToXML(self):
         """
