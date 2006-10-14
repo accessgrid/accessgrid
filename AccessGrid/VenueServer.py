@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.215 2006-09-08 22:06:00 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.216 2006-10-14 00:52:01 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.215 2006-09-08 22:06:00 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.216 2006-10-14 00:52:01 turam Exp $"
 
 
 # Standard stuff
@@ -57,6 +57,8 @@ from AccessGrid.EventService import EventService
 from AccessGrid.VenueServerService import VenueServerServiceDescription
 
 from AccessGrid.Utilities import ServerLock
+from AccessGrid.Security import ProxyGen
+
 
 log = Log.GetLogger(Log.VenueServer)
 
@@ -393,34 +395,66 @@ class VenueServer:
                                                int(self.dataPort) ) )
         print "Default Venue Url: %s" % "/".join([self.hostingEnvironment.GetURLBase(), self.venuePathPrefix, "default"])
 
-    def authorizeDataTransferCB(self,channel,username,password):
-        # for now, allow all data transfers
-        # later, should verify some or all of:
-        # - presence of client-side cert (if required)
-        # - client-side cert validity (if provided)
-        # - username/password (if required) (could be connectionid/privateid)
-        if username in self.venues.keys() and password in self.venues[username].clients.keys():
-            return 1
-        return 0
-
     def authorize(self, auth_info, post, action):
         from ZSI.ServiceContainer import GetSOAPContext
         ctx = GetSOAPContext()
         try:
             if hasattr(ctx.connection,'get_peer_cert'):
                 cert = ctx.connection.get_peer_cert()
-                if cert:
-                    subject = cert.get_subject().as_text()
-                    subject = X509Subject.X509Subject(subject)
-                else:
-                    subject = None
-                    
+                if ProxyGen.IsProxyCert(cert):
+                    cert = ctx.connection.get_peer_cert_chain()[0]
+                subjectStr = cert.get_subject().as_text()
+                subject = X509Subject.X509Subject(subjectStr)
                 action = action.split('#')[-1]
                 return self.authManager.IsAuthorized(subject, action)
         except:
             log.exception("Exception in VenueServer.authorize; rejecting authorization")
-            return 0
+        
+        return 0
     
+    def authorizeDataTransferCB(self,channel,username,password):
+        # consider the following data transfer authorization policy
+        # - if a certificate is provided
+        #   - if the certificate is allowed to transfer files (according to the auth policy)
+        #     - allow the transfer
+        #   - else fail authorization
+        # - else
+        #   - username must indicate the venue
+        #   - password must match a client in the venue
+        log.info('in authorizeDataTransferCB %s %s %s', channel, username, password)
+        
+        # the username given for datatransfers is actually the venueid
+        # the password given for datatransfers is the client connection id
+        venueid = username
+        connectionid = password
+        
+        if venueid in self.venues.keys():
+        
+            if hasattr(channel,'get_peer_cert'):
+                cert = channel.get_peer_cert()
+                certchain = channel.get_peer_cert_chain()
+                if cert:
+                    # check whether cert is authorized for data transfers
+                    # - note that we require a cert in this case for data transfers,
+                    #   even though authorizeCert might allow some actions to be 
+                    #   authorized without a cert.  for data transfers, the user _must_
+                    #   either present a cert, or be in the venue
+                    return self.venues[venueid].authorizeCert(cert,certchain,'TransferData')
+                    
+                else:
+                    # require user to be in the venue
+                    if connectionid in self.venues[venueid].clients.keys():
+                        clientname = self.venues[venueid].clients[connectionid].GetClientProfile().GetName()
+                        venuename = self.venues[venueid].GetName()
+                        log.info('authorizeDataTransferCB: user in venue, authorized %s to transfer files to venue %s', 
+                                 clientname, venuename)
+                        return 1
+
+        else:
+            log.info('authorizeDataTransferCB: invalid venue, rejecting %s %s %s',
+                     channel,username,password)
+        return 0
+
     #Modified by NA2-HPCE
     def dataActivityCB(self,cmd,pathfile):
         log.debug("dataActivityCB: command = %s", cmd)
@@ -631,6 +665,14 @@ class VenueServer:
                 uri = self.AddVenue3(vd, authPolicy)
                 vif = self.hostingEnvironment.FindObjectForURL(uri)
                 v = vif.impl
+                
+                # Deal with identification requirement
+                try:
+                    idRequiredFlag = cp.getint(sec,'identificationRequired')
+                    print 'type id required ', idRequiredFlag
+                    v.authManager.RequireIdentification(idRequiredFlag)
+                except ConfigParser.NoOptionError,e:
+                    log.warn(e)
 
                 # Deal with apps if there are any
                 try:
@@ -868,25 +910,22 @@ class VenueServer:
             # Create an interface
             vi = VenueI(impl=venue, auth_method_name="authorize")
             
-            successfulPolicyImport = False
-            if authPolicy is not None:
+            # Apply the default authorization policy
+            venue.authManager.AddRoles(venue.authManager.GetRequiredRoles())
+            venue.authManager.AddRoles(venue.authManager.GetDefaultRoles())
+            venue._AddDefaultRolesToActions()
+
+            # - default to giving administrators access to all venue actions.
+            for action in venue.authManager.GetActions():
+                venue.authManager.AddRoleToAction(action,
+                                                  Role.Administrators)
+                                                  
+            # Overlay authorization policy from config
+            if authPolicy:
                 try:
-                    venue.ImportAuthorizationPolicy(authPolicy)
-                    successfulPolicyImport = True
+                    venue.OverlayAuthorizationPolicy(authPolicy)
                 except:
                     log.exception("Failed to Import Auth Policy")
-            if successfulPolicyImport == False:
-                # This is a new venue, not from persistence,
-                # so we have to create the policy
-                log.info("Creating new auth policy for the venue.")
-                venue.authManager.AddRoles(venue.authManager.GetRequiredRoles())
-                venue.authManager.AddRoles(venue.authManager.GetDefaultRoles())
-                venue._AddDefaultRolesToActions()
-
-                # Default to giving administrators access to all venue actions.
-                for action in venue.authManager.GetActions():
-                    venue.authManager.AddRoleToAction(action,
-                                                      Role.Administrators)
         
             # This could be done by the server, and probably should be
             subj = self.servicePtr.GetDefaultSubject()
