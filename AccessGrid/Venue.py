@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.278 2006-09-21 12:04:59 braitmai Exp $
+# RCS-ID:      $Id: Venue.py,v 1.279 2006-10-14 00:54:34 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.278 2006-09-21 12:04:59 braitmai Exp $"
+__revision__ = "$Id: Venue.py,v 1.279 2006-10-14 00:54:34 turam Exp $"
 
 import sys
 import time
@@ -57,6 +57,9 @@ from AccessGrid.interfaces.Venue_client import VenueIW
 from AccessGrid.interfaces.SharedApplication_interface import SharedApplication as SharedApplicationI
 from AccessGrid.InProcessVenueEventClient import InProcessVenueEventClient
 from AccessGrid import Version
+from AccessGrid.Security import ProxyGen
+
+from ZSI.ServiceContainer import GetSOAPContext
 
 log = Log.GetLogger(Log.VenueServer)
 
@@ -262,48 +265,6 @@ class Venue:
     """
     
     
-    def authorize(self, auth_info, post, action):
-        from ZSI.ServiceContainer import GetSOAPContext
-        ctx = GetSOAPContext()
-#         print dir(ctx)
-#         print "Container: ", ctx.connection
-#         print "Parsed SOAP: ", ctx.parsedsoap
-#         print "Container: ", ctx.container
-#         print "HTTP Headers:\n", ctx.httpheaders
-#         print "----"
-#         print "XML Data:\n", ctx.xmldata
-        try:
-            if hasattr(ctx.connection,'get_peer_cert'):
-                cert = ctx.connection.get_peer_cert()
-                if cert:
-                    subject = cert.get_subject().as_text()
-                    subject = X509Subject.X509Subject(subject)
-                else:
-                    if self.authManager.IsIdentificationRequired():
-                        raise CertificateRequired
-                        
-                    subject = None
-                    
-                # Check whether user is authorized to perform this action
-                action = action.split('#')[-1]
-                isAuth = self.authManager.IsAuthorized(subject, action) 
-                if isAuth:
-                    return 1
-                
-                # If user is a venueserver admin, allow them to do whatever they 
-                # want to a venue
-                adminRole = self.server.authManager.FindRole('Administrators')
-                admins = self.server.authManager.GetSubjects(adminRole)
-                if subject in admins:
-                    return 1
-                    
-                return 0
-        except CertificateRequired:
-            raise
-        except:
-            log.exception("Exception in Venue.authorize; rejecting authorization")
-            return 0
-    
     def __init__(self, server, name, description, dataStoreLocation,
                  oid=None):
         """
@@ -347,6 +308,7 @@ class Venue:
                                         "UpdateService3", "GetServices3",
                                         "AddData", "UpdateData", "RemoveData",
                                         "AddData3", "UpdateData3", "RemoveData3",
+                                        "TransferData",
                                         "GetDataStoreInformation",
                                         "GetDataDescriptions",
                                         "AddNetworkService",
@@ -491,6 +453,62 @@ class Venue:
                                                   self.uri)
         return retStr
 
+    def authorize(self, auth_info, post, action):
+        ctx = GetSOAPContext()
+#         print dir(ctx)
+#         print "Container: ", ctx.connection
+#         print "Parsed SOAP: ", ctx.parsedsoap
+#         print "Container: ", ctx.container
+#         print "HTTP Headers:\n", ctx.httpheaders
+#         print "----"
+#         print "XML Data:\n", ctx.xmldata
+    
+        if hasattr(ctx.connection,'get_peer_cert'):
+            cert = ctx.connection.get_peer_cert()
+            certchain = ctx.connection.get_peer_cert_chain()
+            return self.authorizeCert(cert,certchain,action)
+        return 0
+                
+    def authorizeCert(self,cert,certchain,action):
+        try:
+            if cert:
+                if ProxyGen.IsProxyCert(cert):
+                    cert = certchain[0]
+                subjectStr = cert.get_subject().as_text()
+                subject = X509Subject.X509Subject(subjectStr)
+            else:
+                if self.authManager.IsIdentificationRequired():
+                    raise CertificateRequired
+
+                subject = None
+                
+            log.info('authorizing subject %s for action %s',
+                        subject,action)
+
+            # Check whether user is authorized to perform this action
+            if action:
+                action = action.split('#')[-1]
+                isAuth = self.authManager.IsAuthorized(subject, action) 
+                if isAuth:
+                    log.info("User %s authorized for action %s", subject, action)
+                    return 1
+
+            # If user is a venueserver admin, allow them to do whatever they 
+            # want to a venue
+            adminRole = self.server.authManager.FindRole('Administrators')
+            admins = self.server.authManager.GetSubjects(adminRole)
+            if subject in admins:
+                log.info("User %s is an administrator, so is authorized for action %s", subject, action)
+                return 1
+
+            log.info("User %s not authorized for action %s", subject, action)
+            return 0
+        except CertificateRequired:
+            raise
+        except:
+            log.exception("Exception in Venue.authorize; rejecting authorization")
+        return 0
+        
     def _AddDefaultRolesToActions(self):
         # Initialize actions with the roles they contain by default.
         log.info("Building auth policy.")
@@ -572,6 +590,8 @@ class Venue:
         policy = re.sub("\r", "<CR>", policy)
         policy = re.sub("\n", "<LF>", policy)
         string += 'authorizationPolicy : %s\n' % policy
+        
+        string += 'identificationRequired : %s\n' % self.authManager.IsIdentificationRequired()
 
         #
         ##  END OF VENUE SECTION
@@ -606,6 +626,17 @@ class Venue:
         @type policy: an XML formatted string
         """
         self.authManager.ImportPolicy(policy)
+
+    def OverlayAuthorizationPolicy(self, policy):
+        """
+        This method takes a string that is an XML representation of an
+        authorization policy. This policy is parsed and this object is
+        configured to enforce the specified policy.
+
+        @param policy: the policy as a string
+        @type policy: an XML formatted string
+        """
+        self.authManager.OverlayPolicy(policy)
 
     def AsVenueDescription(self):
         """
@@ -778,8 +809,6 @@ class Venue:
         """
         now_sec = time.time()
 
-        log.debug("CleanupClients: now=%d", now_sec)
-        
         self.clientsBeingRemovedLock.acquire()
 
         # Look for users to remove
