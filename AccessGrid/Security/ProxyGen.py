@@ -2,7 +2,7 @@
 # Name:        ProxyGen.py
 # Purpose:     Proxy Generation utitities.
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.24 2006-10-13 19:53:37 turam Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.25 2006-10-19 19:55:18 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 Proxy certificate generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.24 2006-10-13 19:53:37 turam Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.25 2006-10-19 19:55:18 turam Exp $"
 
 import sys
 import os
@@ -233,7 +233,7 @@ def IsValidProxy(certfile):
 
     # check whether the file exists
     if not os.path.isfile(certfile):
-        raise 0
+        return 0
         
     # try to load certificate
     try:
