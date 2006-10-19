@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.125 2006-10-13 21:21:01 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.126 2006-10-19 22:10:36 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.125 2006-10-13 21:21:01 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.126 2006-10-19 22:10:36 turam Exp $"
 
 # Standard imports
 import os
@@ -206,19 +206,6 @@ class AppBase:
         if not hasattr(socket,'ssl'):
             raise MissingDependencyError("SSL")
 	
-    def GetPassphrase(self,verifyFlag=0,prompt1="Enter the passphrase to your private key.", 
-                      prompt2='Verify passphrase:'):
-
-        # note: verifyFlag is unused
-        if self.__passphrase:
-            return self.__passphrase
-        else:
-            cb = self.GetCertificateManagerUI().GetPassphraseCallback(prompt1,
-                                                                      prompt2)
-            p1 = cb(0)
-            self.__passphrase = ''.join(p1)
-            return self.__passphrase
-            
     def GetContext(self):
         # Hack to allow use of proxy certs, until the necessary 
         # interface is exposed through M2Crypto
