@@ -3,7 +3,7 @@
 # Name:        SecureGroupMsgClient.py
 # Purpose:     A Secure Group Messaging service client.
 # Created:     2005/10/10
-# RCS-ID:      $Id: SecureGroupMsgClient.py,v 1.3 2006-01-23 17:25:18 turam Exp $
+# RCS-ID:      $Id: SecureGroupMsgClient.py,v 1.4 2006-10-19 22:01:54 turam Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,8 +17,12 @@ class ClientContextFactory:
     """A context factory for SSL clients."""
     isClient = 1
     method = "sslv23"
+    context = None
+    
     def getContext(self):
-        return SSL.Context(self.method)
+        if not self.context:
+            self.context = SSL.Context(self.method)
+        return self.context
 
 
 class SecureGroupMsgClient(GroupMsgClient):
