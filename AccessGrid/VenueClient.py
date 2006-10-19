@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.333 2006-10-12 16:43:23 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.334 2006-10-19 22:09:57 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.333 2006-10-12 16:43:23 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.334 2006-10-19 22:09:57 turam Exp $"
 
 import sys
 import os
@@ -897,7 +897,7 @@ class VenueClient:
         if withcert:
             ctx = self.app.GetContext()
             transdict = {'ssl_context':ctx}
-            print 'using cert and key ', transdict
+            log.info("Using certificate with VenueIW")
             self.__venueProxy = VenueIW(URL,transdict=transdict) #, tracefile=sys.stdout)
         else:
             self.__venueProxy = VenueIW(URL) #, tracefile=sys.stdout)
@@ -970,9 +970,14 @@ class VenueClient:
             Event.OPEN_APP: self.OpenAppEvent
             }
 
+        ssl_ctx = None
+        if self.certRequired:
+            log.info("Using certificate with event client")
+            ssl_ctx = self.app.GetContext()
         self.eventClient = VenueEventClient(evtLocation, 
                                        self.profile.connectionId,
-                                       self.venueState.GetUniqueId())
+                                       self.venueState.GetUniqueId(),
+                                       ssl_ctx=ssl_ctx)
                                        
         for e in coherenceCallbacks.keys():
             self.eventClient.RegisterEventCallback(e, coherenceCallbacks[e])
