@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.216 2006-10-19 20:50:44 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.217 2006-10-19 20:53:08 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.216 2006-10-19 20:50:44 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.217 2006-10-19 20:53:08 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3954,7 +3954,6 @@ class ContentListPanel(wxPanel):
         treeItem = wxTreeItemData(dataDescription)
         self.tree.SetItemData(dataId, treeItem) 
         self.dataDict[dataDescription.id] = dataId
-        self.tree.SetItemBold(dataId)
         self.tree.SortChildren(self.selectedTwig)
         self.tree.Refresh()
         self.tree.Expand(self.data)     
