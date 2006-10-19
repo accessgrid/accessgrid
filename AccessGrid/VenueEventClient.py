@@ -4,7 +4,7 @@
 # Purpose:     A secure group messaging service client that handles Access
 #                 Grid venue events.
 # Created:     2006/01/10
-# RCS-ID:      $Id: VenueEventClient.py,v 1.7 2006-01-19 23:30:38 eolson Exp $
+# RCS-ID:      $Id: VenueEventClient.py,v 1.8 2006-10-19 22:09:04 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,7 +25,10 @@ class SecureVenueEventClient(BaseVenueEventClient):
     '''
     A version of the EventClient that supports encryption.
     '''
-    defaultGroupMsgClientClassList = [XMLGroupMsgClient, SecureGroupMsgClient]
+    def __init__(self, location, privateId, channel, groupMsgClientClassList=None, ssl_ctx=None):
+        SecureGroupMsgClient.ClientContextFactory.context = ssl_ctx
+        BaseVenueEventClient.__init__(self, location, privateId, channel, groupMsgClientClassList)
+    defaultGroupMsgClientClassList = [XMLGroupMsgClient, SecureGroupMsgClient.SecureGroupMsgClient]
 
 
 VenueEventClient = SecureVenueEventClient
