@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.70 2006-10-02 19:15:50 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.71 2006-10-19 22:03:26 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.70 2006-10-02 19:15:50 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.71 2006-10-19 22:03:26 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -833,7 +833,7 @@ class VenueClientController:
         url = self.__venueClient.GetDataStoreUploadUrl()
         
         # Append the destination directory the FTP directory of the data store
-        if not serverDir == "" or not serverDir == None:
+	if not serverDir == "" or not serverDir == None:
             url = url + "/" + serverDir                       
         
         method = self.get_ident_and_upload
@@ -938,10 +938,15 @@ class VenueClientController:
             log.debug("Get_ident_and_upload: Word is: %s ", word)
         user=str(wordArray[3])
         passw=str(self.__venueClient.profile.connectionId)
+        ssl_ctx = None
+        if self.__venueClient.certRequired:
+            log.info("Using certificate to upload file(s)")
+            ssl_ctx = Application.instance().GetContext()
         DataStore.UploadFiles(my_identity, uploadUrl,
                               fileList, 
                               user=user,
                               passw=passw,
+                              ssl_ctx=ssl_ctx,
                               progressCB=progressCB)
 
         #except DataStore.UserCancelled:
@@ -978,10 +983,15 @@ class VenueClientController:
         log.debug("Got identity %s" % my_identity)
         user=str(uploadUrl.split('/')[-1])
         passwd=str(self.__venueClient.profile.connectionId)
+        ssl_ctx = None
+        if self.__venueClient.certRequired:
+            log.info("Using certificate to create venue directory")
+            ssl_ctx = Toolkit.Application.instance().GetContext()
         DataStore.CreateDir(my_identity, uploadUrl,
                             dirList, 
                             user=user,
-                            passwd=passwd)
+                            passwd=passwd,
+                            ssl_ctx=ssl_ctx)
 
         #except DataStore.UserCancelled:
             #log.info('User cancelled upload of %s', fileList)
@@ -1017,10 +1027,15 @@ class VenueClientController:
             log.debug("Got identity %s" % my_identity)
             user=str(uploadUrl.split('/')[-1])
             passw=str(self.__venueClient.profile.connectionId)
+            ssl_ctx = None
+            if self.__venueClient.certRequired:
+                log.info("Using certificate to create venue directory")
+                ssl_ctx = Toolkit.Application.instance().GetContext()
             DataStore.CreateDir(my_identity, uploadUrl,
                                   directory, 
                                   user=user,
-                                  passw=passw)
+                                  passw=passw,
+                                  ssl_ctx=ssl_ctx)
 
         except DataStore.UserCancelled:
             log.info('User cancelled upload of %s', fileList)
@@ -1106,7 +1121,11 @@ class VenueClientController:
 
             # Arguments to pass to get_ident_and_download
             #
-            dl_args = (url, localPathname, size, checksum, progressCB)
+            ssl_ctx = None
+            if self.__venueClient.certRequired:
+                log.info("Using certificate to download file")
+                ssl_ctx = Toolkit.Application.instance().GetContext()
+            dl_args = (url, localPathname, size, checksum, ssl_ctx, progressCB)
                 
             download_thread = threading.Thread(target = self.get_ident_and_download,
                                                args = dl_args)
@@ -1209,10 +1228,15 @@ class VenueClientController:
             my_identity = str(Application.instance().GetDefaultSubject())
             user=str(url.split('/')[-2])
             passw=str(self.__venueClient.profile.connectionId)
+            ssl_ctx = None
+            if self.__venueClient.certRequired:
+                log.info("Using certificate to download file")
+                ssl_ctx = Application.instance().GetContext()
             DataStore.DownloadFile(my_identity, url, local_pathname, size,
                                        checksum, 
                                        user=user,
                                        passw=passw,
+                                       ssl_ctx=ssl_ctx,
                                        progressCB=progressCB)
         except DataStore.UserCancelled:
             log.info('User cancelled download of %s' % (url))
@@ -1241,7 +1265,12 @@ class VenueClientController:
         error_msg = None
         try:
             my_identity = str(Application.instance().GetDefaultSubject())
-            DataStore.UploadFiles(my_identity, uploadUrl, fileList,None)
+            ssl_ctx = None
+            if self.__venueClient.certRequired:
+                log.info("Using certificate to upload file(s)")
+                ssl_ctx = Application.instance().GetContext()
+            DataStore.UploadFiles(my_identity, uploadUrl, fileList,
+                                  ssl_ctx=ssl_ctx)
         except DataStore.FileNotFound, e:
             error_msg = "File not found: %s" % (e[0])
         except DataStore.NotAPlainFile, e:
