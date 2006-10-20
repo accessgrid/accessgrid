@@ -4,7 +4,7 @@
 # Purpose:     A secure group messaging service client that handles Access
 #                 Grid venue events.
 # Created:     2006/01/10
-# RCS-ID:      $Id: VenueEventClient.py,v 1.8 2006-10-19 22:09:04 turam Exp $
+# RCS-ID:      $Id: VenueEventClient.py,v 1.9 2006-10-20 14:26:37 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ except:
     pass
 from AccessGrid.InsecureVenueEventClient import mainWithUI, GenerateRandomString
 from AccessGrid.InsecureVenueEventClient import BaseVenueEventClient, TestMessages
-from AccessGrid.SecureGroupMsgClient import SecureGroupMsgClient
+from AccessGrid import SecureGroupMsgClient
 from AccessGrid.XMLGroupMsgClient import XMLGroupMsgClient
 
 class SecureVenueEventClient(BaseVenueEventClient):
@@ -79,10 +79,10 @@ def main(eventPort=7002):
         groupMsgClientClassList = None # Will use the default for SecureVenueEventClient
     elif format=='xml':
         from AccessGrid.XMLGroupMsgClient import XMLGroupMsgClient
-        groupMsgClientClassList = [XMLGroupMsgClient, SecureGroupMsgClient]
+        groupMsgClientClassList = [XMLGroupMsgClient, SecureGroupMsgClient.SecureGroupMsgClient]
     elif format=='pickle':
         from AccessGrid.PickleGroupMsgClient import PickleGroupMsgClient
-        groupMsgClientClassList = [PickleGroupMsgClient, SecureGroupMsgClient]
+        groupMsgClientClassList = [PickleGroupMsgClient, SecureGroupMsgClient.SecureGroupMsgClient]
     else:
         raise Exception("Unknown format")
 
