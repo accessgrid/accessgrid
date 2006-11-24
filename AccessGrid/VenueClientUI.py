@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.217 2006-10-19 20:53:08 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.218 2006-11-24 13:09:38 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.217 2006-10-19 20:53:08 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.218 2006-11-24 13:09:38 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1061,7 +1061,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                     noServerDir =True
     
             else:
-                if dirDesc.IsOfType(DataDescription.TYPE_DIR):
+                if dirDesc.IsOfType(DataDescription3.TYPE_DIR):
                     #Add DirectoryDescription to container of selected Description
                     #Set Properties of Description
                     #Add dialog here
@@ -2726,10 +2726,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             # Personal data is handled in VenueClientUIClasses to find out 
             # who the data belongs to
             pass
-        
-        #Retrieveing dataDescription with newer WSDL description so all
-        #required data is contained
-        dataDescription = self.__venueProxy.GetDescById(dataDescription.GetId())
 
         log.debug("EVENT - Add data: %s" %(dataDescription.name))
         wxCallAfter(self.contentListPanel.AddData, dataDescription)
@@ -2772,7 +2768,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         #Retrieveing dataDescription with newer WSDL description so all
         #required data is contained
-        dataDescription = self.__venueProxy.GetDescById(dataDescription.GetId())
+        #dataDescription = self.__venueProxy.GetDescById(dataDescription.GetId())
         
         log.debug("EVENT - Update data: %s" %(dataDescription.name))
         wxCallAfter(self.contentListPanel.UpdateData, dataDescription)
@@ -2799,10 +2795,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         #Retrieveing dataDescription with newer WSDL description so all
         #required data is contained
-        try:
-            dataDescription = self.__venueProxy.GetDescById(dataDescription.GetId())
-        except:
-            pass
+        #try:
+        #    dataDescription = self.__venueProxy.GetDescById(dataDescription.GetId())
+        #except:
+        #    pass
                
         wxCallAfter(self.statusbar.SetStatusText, 
                     "File '%s' has been removed from the venue" 

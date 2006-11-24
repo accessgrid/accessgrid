@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.71 2006-10-19 22:03:26 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.72 2006-11-24 13:09:38 braitmai Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.71 2006-10-19 22:03:26 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.72 2006-11-24 13:09:38 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -1125,7 +1125,10 @@ class VenueClientController:
             if self.__venueClient.certRequired:
                 log.info("Using certificate to download file")
                 ssl_ctx = Toolkit.Application.instance().GetContext()
-            dl_args = (url, localPathname, size, checksum, ssl_ctx, progressCB)
+	    # Call uses one argument too much, obviously realted to new certs
+	    # Replacing with old call
+            #dl_args = (url, localPathname, size, checksum, ssl_ctx, progressCB)
+	    dl_args = (url, localPathname, size, checksum, progressCB)
                 
             download_thread = threading.Thread(target = self.get_ident_and_download,
                                                args = dl_args)
@@ -1226,7 +1229,7 @@ class VenueClientController:
         log.debug("Get ident and download")
         try:
             my_identity = str(Application.instance().GetDefaultSubject())
-            user=str(url.split('/')[-2])
+            user=str(url.split('/')[3])
             passw=str(self.__venueClient.profile.connectionId)
             ssl_ctx = None
             if self.__venueClient.certRequired:

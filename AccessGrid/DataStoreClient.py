@@ -2,13 +2,13 @@
 # Name:        DataStoreClient.py
 # Purpose:     
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.28 2006-06-13 16:19:41 turam Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.29 2006-11-24 13:09:38 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.28 2006-06-13 16:19:41 turam Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.29 2006-11-24 13:09:38 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -291,8 +291,9 @@ class DataStoreClient:
         if filename in self.dataIndex:
             data = self.dataIndex[filename]
             url = data.uri
+            print "URL: " , url
             my_identity = str(Application.instance().GetDefaultSubject())
-            user=str(url.split('/')[-2])
+            user=str(url.split('/')[3])
             passw=str(self.connectionId)
             DataStore.DownloadFile(my_identity, url, localFile, data.size, data.checksum, user, passw)
         else:

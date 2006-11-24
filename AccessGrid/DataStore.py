@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.101 2006-10-13 21:43:50 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.102 2006-11-24 13:09:38 braitmai Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.101 2006-10-13 21:43:50 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.102 2006-11-24 13:09:38 braitmai Exp $"
 
 import os
 import time
@@ -474,9 +474,16 @@ class DataStore:
         **Returns**
             *dataDescriptionList* A list of DataDescriptions representing data currently in the DataStore
         '''
+
+        dataDescriptionList = []
+        
         self.cbLock.acquire()
         try:
-            dataDescriptionList = self.descriptionDict.values()
+            log.info("Parsing list of descriptions: %s", self.descriptionDict)
+            for item in self.descriptionDict.values():
+                if item.GetParentId() == '-1' and item.GetObjectType() == DataDescription3.TYPE_FILE:
+                    log.debug("Added an datastore entry!")
+                    dataDescriptionList.append(item)
         except:
             log.exception("DataStore.GetDataDescription: Failed")
 
@@ -709,13 +716,14 @@ class DataStore:
         
         if len(entryList) != 0:
             log.debug("RemoveDir: Number of files to remove: %s", len(entryList))
-            self.RemoveFiles(entryList)
+            self.RemoveFiles3(entryList)
             
             #As the removal of data within a possibly non-empty directory
             #is not signaled to the clients, the deletion from the global
             #list in the DataStore has to be done here
             for item in entryList:
-                del self.descriptionDict[item.id]
+                if self.descriptionDict.has_key(item.id):
+                    del self.descriptionDict[item.id]
         
         self.cbLock.acquire()
         #Remove Directory from parent description
@@ -957,7 +965,7 @@ class DataStore:
 
                 
         log.debug("AddFile: Determined parentID is: %s", parentID)
-        
+                
         desc = DataDescription3(fileList[len(fileList)-1]) # Last item in list is the filename
         desc.SetSize(int(os.stat(path)[stat.ST_SIZE]))
         desc.SetStatus(DataDescription3.STATUS_PRESENT)
@@ -975,7 +983,6 @@ class DataStore:
             #Perform actual file adding; get lock
             self.cbLock.acquire()
             desc.SetURI(url)
-            self.cbLock.acquire()
             try:
                 self.descriptionDict[desc] = desc
                 self.callbackClass.UpdateData(desc, 1)

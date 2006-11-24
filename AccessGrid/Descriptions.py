@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.101 2006-10-02 19:15:50 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.102 2006-11-24 13:09:38 braitmai Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.101 2006-10-02 19:15:50 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.102 2006-11-24 13:09:38 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -1111,11 +1111,11 @@ class VenueState3:
         self.data[dataDescription.id] = dataDescription
 
     #Changed interface to accpet dataDescription Id instead of description
-    def RemoveData( self, dataDescriptionId ):
+    def RemoveData( self, dataDescription ):
         #Added exception handling in case of failed call
             
         try:
-            del self.data[dataDescriptionId.id]
+            del self.data[dataDescription.id]
         except:
             print "Removal of data failed!"
 

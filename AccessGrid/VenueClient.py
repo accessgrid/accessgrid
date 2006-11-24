@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.334 2006-10-19 22:09:57 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.335 2006-11-24 13:09:38 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.334 2006-10-19 22:09:57 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.335 2006-11-24 13:09:38 braitmai Exp $"
 
 import sys
 import os
@@ -622,34 +622,18 @@ class VenueClient:
         data = event.GetData()
         
         log.debug("AddDirEvent:Got data: %s", data)
-        
-        dataDesc = self.__venueProxy.GetDescById(data)
-        log.debug("Determined DirectoryDescription: %s", dataDesc)
-        
-        locData = DirectoryDescription(dataDesc.name)
-        locData.id = dataDesc.id
-        locData.parentId = dataDesc.parentId
-        locData.description = dataDesc.description
-        locData.Level = dataDesc.Level
-        locData.location = dataDesc.location
-        locData.objectType = dataDesc.objectType
-        locData.owner = dataDesc.owner
-        locData.status = dataDesc.status
-        locData.uri = dataDesc.uri
-        locData.type = dataDesc.type
-        
             
         #Update observers
-        if dataDesc == None:
+        if data == None:
             log.error("No matching DataDescription found!")
             return
         
-        log.debug("AddDirEvent: Remaining entry: %s", locData.name)
-        self.venueState.data[locData.id] = locData
+        log.debug("AddDirEvent: Remaining entry: %s", data.name)
+        self.venueState.data[data.id] = data
         
         for s in self.observers:
             log.debug("Observer to handle event: %s", s)
-            s.AddDir(locData)
+            s.AddDir(data)
 
     def RemoveDirEvent(self, event):
         log.debug("RemoveDirEvent:Entered RemoveDirEvent!")
@@ -660,14 +644,14 @@ class VenueClient:
         
         #We need to update to correct and current venueState from the server
         #There is no way around it.
-        tempVenueState = self.__venueProxy.GetState3()
-        self.venueState.data.clear()
+        #tempVenueState = self.__venueProxy.GetState3()
+        self.venueState.RemoveData(data)
         
         #workaround for converting list into dict()
-        log.debug("Rebuilding venueState data list")
-        for item in tempVenueState.data:
-	    log.debug("Adding item: %s", item.id)
-            self.venueState.data[item.id] = item
+        #log.debug("Rebuilding venueState data list")
+        #for item in tempVenueState.data:
+	#    log.debug("Adding item: %s", item.id)
+        #    self.venueState.data[item.id] = item
         
         
         for s in self.observers:

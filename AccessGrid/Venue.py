@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.280 2006-10-19 22:38:49 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.281 2006-11-24 13:09:38 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.280 2006-10-19 22:38:49 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.281 2006-11-24 13:09:38 braitmai Exp $"
 
 import sys
 import time
@@ -2011,7 +2011,10 @@ class Venue:
         AG2.0 clients. (personal data)
         """
         legacyObject = self.CreateLegacyDataDescription(dataDescription)
-        self.eventClient.Send( Event.ADD_DATA, legacyObject)
+        ag3object = dataDescription
+        #self.eventClient.Send( Event.ADD_DATA, legacyObject)
+	log.debug("DataDescription value: %s", dataDescription)
+        self.eventClient.Send( Event.ADD_DATA, ag3object)
         
         
         
@@ -2020,7 +2023,7 @@ class Venue:
         locDataDesc=self.dataStore.AddRootDir(dataDesc)
         
         self.server.eventService.Distribute(self.uniqueId,
-                                             Event(Event.ADD_DATA,
+                                             Event(Event.ADD_DIR,
                                                     self.uniqueId,
                                                     locDataDesc))
         
@@ -2044,10 +2047,13 @@ class Venue:
         
         #Converting to list to work around non-functioning dictionaries
         #locDataDesc.dataContainer.data = locDataDesc.dataContainer.values()
+        log.debug("****************************************************")
+        log.debug("Update Dir-Event: %s",locDataDesc)
+        log.debug("****************************************************")
 
         #Send event to clients
         log.debug("Sending update event for added directory!")
-        self.eventClient.Send(Event.ADD_DIR,locDataDesc.id)
+        self.eventClient.Send(Event.ADD_DIR,locDataDesc)
 
     def RemoveData(self, dataDescription):
         """
@@ -2105,8 +2111,7 @@ class Venue:
             log.debug("Entered Event activiation!")
             self.dataStore.DumpDataStack()
             self.dataStore.RemoveFiles3([dataDescription])
-            legacyObject = self.CreateLegacyDataDescription(dataDescription)
-            self.eventClient.Send(Event.REMOVE_DATA, legacyObject)
+            self.eventClient.Send(Event.REMOVE_DATA, dataDescription)
             self.dataStore.DumpDataStack()
         else:
             log.info("Venue.RemoveData tried to remove non venue data.")
@@ -2188,15 +2193,13 @@ class Venue:
         #
         
         if dataStoreCall:
-            legacyObject = self.CreateLegacyDataDescription(dataDescription)
             self.eventClient.Send( Event.UPDATE_DATA, dataDescription)
             return
 
         # This is venue resident so modify the file
         if(dataDescription.type is None or dataDescription.type == "None"):
             self.dataStore.ModifyData3(dataDescription)
-            legacyObject = self.CreateLegacyDataDescription(dataDescription)
-            self.eventClient.Send( Event.UPDATE_DATA, legacyObject)
+            self.eventClient.Send( Event.UPDATE_DATA, dataDescription)
 
         else:
             log.info("Venue.UpdateData tried to modify non venue data. That should not happen")
