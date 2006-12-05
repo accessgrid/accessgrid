@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.72 2006-11-24 13:09:38 braitmai Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.73 2006-12-05 12:16:03 braitmai Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.72 2006-11-24 13:09:38 braitmai Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.73 2006-12-05 12:16:03 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -833,8 +833,11 @@ class VenueClientController:
         url = self.__venueClient.GetDataStoreUploadUrl()
         
         # Append the destination directory the FTP directory of the data store
-	if not serverDir == "" or not serverDir == None:
-            url = url + "/" + serverDir                       
+	log.debug("Serverpath: %s", serverDir)
+	if not serverDir == "" and not serverDir == None:
+            url = url + "/" 
+            url = url + serverDir
+	    log.debug("-----------------------  Final upload URL: %s ", url)
         
         method = self.get_ident_and_upload
         ul_args = (url, fileList, progressCB)

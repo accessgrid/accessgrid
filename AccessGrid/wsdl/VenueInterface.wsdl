@@ -537,7 +537,10 @@
             </xsd:complexType>
 	 </xsd:element>
 	 <xsd:element name="AddDirResponse">
-	    <xsd:complexType>
+            <xsd:complexType>
+	        <xsd:sequence>		 
+	            <xsd:element  minOccurs="1" maxOccurs="1" name="data" type="agtk:DataDescription3" />
+		</xsd:sequence>
 	    </xsd:complexType>
          </xsd:element>
 

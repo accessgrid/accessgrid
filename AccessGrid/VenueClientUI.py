@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.218 2006-11-24 13:09:38 braitmai Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.219 2006-12-05 12:16:03 braitmai Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.218 2006-11-24 13:09:38 braitmai Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.219 2006-12-05 12:16:03 braitmai Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1091,13 +1091,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     """
     def RecursiveDataAdd(self, parent, dir, level):
             
-        files = listdir(dir)
+        files = os.listdir(dir)
         filesToAdd = []
         filesWaiting = False
         noServerDir = False
         curDirDesc = None
-    
-            
+	
+	log.debug("Starting RecursiveAdd with parent %s", parent) 
+                
         for file in files:
             curDirDesc = None
             if not os.path.isdir(dir+ os.path.sep + file):
@@ -1105,46 +1106,30 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 filesWaiting = True
                 filesToAdd.append(dir + os.path.sep + file)
             else:
+                                           
+                path = os.path.join(dir, file)
                     
-                #add file to current directory
-                    
-                if not file.find("tt2") == -1: 
-                    raise Exception
-                        
-                #create new directory
-                locDirectoryDescription = DirectoryDescription(file)
-                locDirectoryDescription.SetObjectType(DataDescription.TYPE_DIR)
-                locDirectoryDescription.SetDescription("")
-    
-                locDirectoryDescription.SetLevel(level)
-                path = dir + os.path.sep + file
-                    
-                if not parent == None:
-                    locDirectoryDescription.SetParentId(parent.GetId())
-                else:    
-                    locDirectoryDescription.SetParentId(-1)   
+                
                 
                 #do recursive file add to currently created directory
                 if (not self.__venueProxy == None):
-                    try:
-                        if parent == None:
-                            self.__venueProxy.AddRootDir(locDirectoryDescription)
-                            time.sleep(2)
-                        else:
-                            self.__venueProxy.SetCurDataDescCont(parent.GetId())
-                            time.sleep(2)
-                            
-                        self.__venueProxy.AddDir(locDirectoryDescription)
-                        time.sleep(2)
+                    #try:
+                    if parent == None:
+                        locDirectoryDescription=self.__venueProxy.AddDir(file, "",1,0)
+			time.sleep(2)
+                    else:
+                        locDirectoryDescription=self.__venueProxy.AddDir(file,"",parent.GetLevel()+1,parent.GetId())
+			time.sleep(2)                            
+                    
                         
-                        noServerDir = False
-                    except:
-                        noServerDir = True
-                        pass
+                    noServerDir = False
+                    #except:
+                    #    noServerDir = True
+                    #    pass
                         
-                                            
-                curDirDesc = locDirectoryDescription
-                self.RecursiveDataAdd(curDirDesc, path, level + 1)
+                
+		log.debug("Value of directory: %s ", path)
+                self.RecursiveDataAdd(locDirectoryDescription, path, level + 1)
                                         
         if noServerDir:
             self.Notify("Creation of directories is not supported on server-side", "No directory service available!")
@@ -1153,14 +1138,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         if filesWaiting:
             if not parent == None:
                 #add to given directory in data store
-                self.__venueProxy.SetCurDataDescCont(parent.GetId())
-                time.sleep(2)
-                
+		serverPath = parent.GetURI()                
+		log.debug("Parent <> None!")
             else:
-                self.__venueProxy.SetCurDataDescCont(-1)
-                time.sleep(2)
+		serverPath = ""
+		log.debug("Parent == None")
                 
-            self.controller.AddDataCB(filesToAdd)
+	    log.debug("Serverpath: %s", serverPath)
+            self.controller.AddDataCB(filesToAdd, serverPath)
             
         try:
             self.__venueProxy.HDDump()
@@ -4284,7 +4269,7 @@ class ContentListPanel(wxPanel):
             # - Add directory
             id = wxNewId()
             menu.Append(id, "Upload directory", "Upload complete directory to this directory")
-            menu.Enable(id, False)
+            menu.Enable(id, True)
             EVT_MENU(self, id, lambda event: self.parent.UploadDirCB(event))
             
             # - Delete directory
