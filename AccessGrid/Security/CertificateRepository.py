@@ -2,7 +2,7 @@
 # Name:        CertificateRepository.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.24 2006-10-13 21:29:52 turam Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.25 2006-12-09 01:18:27 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.24 2006-10-13 21:29:52 turam Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.25 2006-12-09 01:18:27 turam Exp $"
 
 from __future__ import generators
 
@@ -1269,6 +1269,12 @@ class CertificateDescriptor:
     def GetSubject(self):
         return self.cert.GetSubject()
 
+    def GetSubject(self):
+        return self.cert.GetSubject()
+
+    def GetSubjectHash(self):
+        return self.cert.GetSubjectHash()
+
     def GetVersion(self):
         return self.cert.GetVersion()
 
@@ -1457,7 +1463,6 @@ class Certificate:
         return self.cert.get_issuer()
 
     def GetSubjectHash(self):
-
         if self.subjectHash is None:
             subj = self.cert.get_subject().as_der()
             dig = md5.new(subj)
@@ -1491,7 +1496,22 @@ class Certificate:
         return self.modulusHash
 
     def IsExpired(self):
-        return self.cert.is_expired()
+    
+        isExpired = 0
+        now = time.time()
+        before_time = self.cert.get_not_before()
+        after_time = self.cert.get_not_after()
+        format = '%b %d %H:%M:%S %Y %Z'
+        before_tuple = time.strptime(str(before_time),format)
+        after_tuple = time.strptime(str(after_time), format)
+        before = time.mktime(before_tuple) - time.timezone
+        after = time.mktime(after_tuple) - time.timezone
+        if now < before:
+            isExpired = -1
+        if now > after:
+            isExpired = 1
+            
+        return isExpired
 
     def IsServiceCert(self):
         """
@@ -1610,9 +1630,17 @@ class Certificate:
         """
         Returns a tuple (type, fingerprint)
         """
+        ctype='md5'
+        fp = self.cert.get_fingerprint(ctype)
         
-        ctype,fp = self.cert.get_fingerprint()
-        return ctype, string.join(map(lambda a: "%02X" % (a), fp), ":")
+        # fingerprint is returned as a hex string:
+        # strip off the leading '0x' and the trailing 'L'
+        fp = fp[2:-1]
+        fp_ret = ''
+        for i in range(1+len(fp)/2):
+            fp_ret += fp[i*2:i*2+2] + ':'
+        fp_ret = fp_ret[:-2]
+        return ctype,fp_ret
 
     def GetVerboseText(self):
         fmt = ""
