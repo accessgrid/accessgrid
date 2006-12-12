@@ -26,7 +26,7 @@ class BridgeFactory:
             self.uport = uport
             self.processManager = processManager
             self.deathCallback = deathCallback
-            
+            self.pid = 0
 
         def Start(self):
             """
@@ -46,12 +46,12 @@ class BridgeFactory:
                     "-g", self.maddr,
                     "-m", '%d' % (self.mport,),
                     "-u", '%s' % (str(self.uport),),
-                    "-i", '600', # temporarily hard-coded inactivity timeout
+                    "-i", '10', # temporarily hard-coded inactivity timeout
                    ]
             log.info("Starting bridge: %s %s", self.qbexec, str(args))
-            pid = self.processManager.StartProcess(self.qbexec,args)
-            return pid
-            
+            self.pid = self.processManager.StartProcess(self.qbexec,args)
+            return self.pid
+
         def Stop(self):
             """
             Stop stops the bridge, terminating bridge processes
@@ -59,10 +59,8 @@ class BridgeFactory:
             log.info("Method Bridge.Stop called")
             self.processManager.TerminateAllProcesses()
             
-        def OnBridgeDeath(self,pm,pid):
-            if self.deathCallback:
-                self.deathCallback(self,pid)
-
+        def IsRunning(self):
+            return self.processManager.IsRunning(self.pid)
 
     def __init__(self, qbexec, portRange=None, logger=Log.GetLogger("BridgeFactory")):
         self.qbexec = qbexec
@@ -120,12 +118,15 @@ class BridgeFactory:
         # - Check for an existing bridge with the given multicast addr/port
         for bridge,refcount in self.bridges.values():
             if bridge.maddr == maddr and bridge.mport == mport:
-                log.info("- using existing bridge")
-                retBridge = bridge
-                refcount += 1
-                key = "%s%d" % (maddr,mport)
-                self.bridges[key] = (retBridge,refcount)
-                break
+                if bridge.IsRunning() == 1:
+                    log.info("- using existing bridge")
+                    retBridge = bridge
+                    refcount += 1
+                    key = "%s%d" % (maddr,mport)
+                    self.bridges[key] = (retBridge,refcount)
+                    break
+                else:
+                    self.OnBridgeDeath(self.processManager, self.bridges[key].pid)
 
         # - If bridge does not exist; create one
         if not retBridge:
@@ -164,7 +165,14 @@ class BridgeFactory:
             if refcount == 0:
                 log.info("- Refcount zero; stopping and deleting bridge")
                 bridge.Stop()
-                del self.bridges[key]
+                try:
+                    self.addressAllocator.RecyclePort(bridge.uport)
+                except ValueError:
+                    log.warn('Port has already been recycled')
+                try:
+                    del self.bridges[key]
+                except KeyError:
+                    log.warn('Bridge has already been stopped')
                 
     def OnBridgeDeath(self,pm,pid):
         bridge = None
@@ -179,7 +187,17 @@ class BridgeFactory:
                 bridge.maddr, bridge.mport)
         key = "%s%d" % (bridge.maddr,bridge.mport)
         if self.bridges.has_key(key):
-            del self.bridges[key]
+            log.info("Removing bridge following death of bridge process (%s/%d)",
+                    bridge.maddr, bridge.mport)
+            try:
+                self.addressAllocator.RecyclePort(bridge.uport)
+            except ValueError:
+                log.warn('Port has already been recycled')
+            try:
+                del self.bridges[key]
+            except KeyError:
+                log.warn('Bridge has already been stopped')
+
         else:
             log.warn("Attempt to handle death of bridge which is not known to BridgeFactory (%s/%d)" % (bridge.maddr,bridge.mport))
 
