@@ -5,7 +5,7 @@ import ConfigParser
 from optparse import Option
 
 from AccessGrid.VenueClient import GetVenueClientUrls
-from AccessGrid.VenueClient import VenueClientIW
+from AccessGrid.interfaces.VenueClient_client import VenueClientIW
 from AccessGrid.Platform import isWindows
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.Toolkit import CmdlineApplication
@@ -92,7 +92,7 @@ if not enteredVenue:
 	                       "VenueClient.py")
     else:
         prog = "%s" % os.path.join(app.GetToolkitConfig().GetBinDir(),
-	                       "VenueClient.py")
+	                       "VenueClient3.py")
     os.spawnv(os.P_NOWAIT, sys.executable, (sys.executable, prog,
-                                             "--personalNode", "--url",
+                                             "--personalNode=1", "--url",
                                              venueUrl)) 
