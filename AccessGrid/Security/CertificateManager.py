@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.54 2006-12-09 01:18:27 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.55 2006-12-19 21:42:45 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.54 2006-12-09 01:18:27 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.55 2006-12-19 21:42:45 turam Exp $"
 
 import re
 import os
@@ -639,15 +639,7 @@ class CertificateManager(object):
             
         for c in self.GetCACerts():
         
-            # NOTE:  temporary code!  this should be removed for the 
-            #        3.1 release which will require m2crypto 0.17
-            # m2crypto doesn't have as_hash in 0.16; if the installed
-            # m2 doesn't have this method, skip this
-            #
-            if not hasattr(c.GetSubject(),'as_hash'):
-                continue
-        
-            nameHash = c.GetSubject().as_hash()
+            nameHash = c.GetSubjectNameHash()
 
             i = 0
             while 1:
