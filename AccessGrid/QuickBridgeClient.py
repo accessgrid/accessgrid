@@ -2,16 +2,19 @@
 # Name:        QuickBridgeClient.py
 # Purpose:     Interface to a QuickBridge server.
 # Created:     2005/12/06
-# RCS-ID:      $Id: QuickBridgeClient.py,v 1.7 2006-09-21 16:13:57 turam Exp $
+# RCS-ID:      $Id: QuickBridgeClient.py,v 1.8 2006-12-19 21:50:53 turam Exp $
 # Copyright:   (c) 2005-2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
+import socket
 import xmlrpclib
 from NetworkLocation import MulticastNetworkLocation, UnicastNetworkLocation
 from GUID import GUID
 from BridgeClient import BridgeClient
 from AccessGrid.UrllibTransport import UrllibTransport
+
+class ConnectionError(Exception): pass
 
 class QuickBridgeClient(BridgeClient):
     def __init__(self, host, port, proxyHost=None, proxyPort=None):
@@ -31,7 +34,10 @@ class QuickBridgeClient(BridgeClient):
         self.port = port
 
     def JoinBridge(self, multicastNetworkLocation):
-        l = self.serverProxy.JoinBridge(multicastNetworkLocation)
+        try:
+            l = self.serverProxy.JoinBridge(multicastNetworkLocation)
+        except socket.error,e:
+            raise ConnectionError(e.args)
         desc = UnicastNetworkLocation(l["host"], l["port"])
         desc.type = l["type"]
         desc.privateId = l["privateId"]
@@ -42,7 +48,10 @@ class QuickBridgeClient(BridgeClient):
         return desc 
         
     def GetBridgeInfo(self):
-        return self.serverProxy.GetBridgeInfo()
+        try:
+            return self.serverProxy.GetBridgeInfo()
+        except socket.error,e:
+            raise ConnectionError(e.args)
 
 if __name__=="__main__":
     # Example below.  You should start Bridge.py first.
