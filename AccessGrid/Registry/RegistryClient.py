@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.27 2006-10-02 21:14:04 turam Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.28 2006-12-19 21:47:23 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -90,7 +90,7 @@ class RegistryClient:
         for r in self.registryPeers:
             try:
                 tmpServerProxy = xmlrpclib.ServerProxy("http://"+r,
-                                    transport=TimeoutTransport(1))
+                                    transport=TimeoutTransport(5))
                 if self.PingRegistryPeer(tmpServerProxy) > -1:
                     self.serverProxy = tmpServerProxy
                     foundServer = 1
@@ -131,6 +131,15 @@ class RegistryClient:
         except:
             self.log.exception('Exception pinging bridge')
             return -1
+            
+    def PingBridge(self,desc):
+        pingVal = self.PingBridgeService(
+                        xmlrpclib.ServerProxy("http://%s:%s" % (desc.host, desc.port),
+                            transport=TimeoutTransport(1)) )
+        if pingVal >= 0.0:
+            desc.rank = pingVal
+        else:
+            desc.rank = BridgeDescription.UNREACHABLE
 
     def PingHost(self, host):
         try:
@@ -139,7 +148,7 @@ class RegistryClient:
         except:
             return -1
                     
-    def LookupBridge(self, maxToReturn=10):
+    def LookupBridge(self, maxToReturn=10, rankBridges=1):  # temporarily default to 1 to maintain current behavior
         '''
         Query registry for a list of bridges. If user cache exists it
         is used instead of a network query.
@@ -149,36 +158,26 @@ class RegistryClient:
         @return: command output
         @rtype: string
         '''
-        if self.bridges:
-            # We have bridges, return
-            return self.bridges[0:maxToReturn]
-        #else:
-        #    # Get bridges from cache on local file
-        #    self.bridges = self.bridgeCache.GetBridges()
-                    
-        if not self.bridges:
-            # If the cache does not exist, query registry
-            self._connectToRegistry()
-            bridges = self.serverProxy.LookupBridge()
-            self.bridges = []
-                       
-            # Create real bridge descriptions
-            for b in bridges:
-                if 'portMin' not in b.keys():
-                    b['portMin'] = 5000
-                    b['portMax'] = 5100
-                desc = BridgeDescription(b["guid"], b["name"], b["host"],
-                                         b["port"], b["serverType"],
-                                         b["description"],
-                                         b["portMin"],
-                                         b["portMax"])
-                self.bridges.append(desc)
+        self._connectToRegistry()
+        bridges = self.serverProxy.LookupBridge()
+                   
+        # Create real bridge descriptions
+        self.bridges = []
+        for b in bridges:
+            if 'portMin' not in b.keys():
+                b['portMin'] = 5000
+                b['portMax'] = 5100
+            desc = BridgeDescription(b["guid"], b["name"], b["host"],
+                                     b["port"], b["serverType"],
+                                     b["description"],
+                                     b["portMin"],
+                                     b["portMax"])
+            self.bridges.append(desc)
 
-            # Sort the bridges
+        # Sort the bridges
+        if rankBridges:
             self.bridges = self._sortBridges(maxToReturn)
-                        
-            # Store bridges in cache
-            self.bridgeCache.StoreBridges(self.bridges)
+                    
                        
         return self.bridges
             
@@ -193,16 +192,10 @@ class RegistryClient:
         @rtype: [AccessGrid.Descriptions.BridgeDescription]
         '''
         bridgeDescriptions = []
-                         
+
         for desc in self.bridges[0:maxToReturn]:
             try:
-                pingVal = self.PingBridgeService(
-                                xmlrpclib.ServerProxy("http://%s:%s" % (desc.host, desc.port),
-                                    transport=TimeoutTransport(1)) )
-                if pingVal >= 0.0:
-                    desc.rank = pingVal
-                else:
-                    desc.rank = 100000
+                self.PingBridge(desc)
                 bridgeDescriptions.append(desc)
             except:
                 self.log.exception("Failed to ping bridge %s (%s:%s)"%(desc.name,desc.host,str(desc.port)))
@@ -315,13 +308,14 @@ if __name__=="__main__":
     from AccessGrid.GUID import GUID
     from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
 
-    # Disable bridge registration so we can just test the registry client
-    # Register a bridge using the RegistryClient
-    #info = BridgeDescription(guid=GUID(), name="defaultName", host="localhost", port="9999", serverType=QUICKBRIDGE_TYPE, description="")
-    #rc.RegisterBridge(info)
+    import sys
+    rankBridges = 0
+    if len(sys.argv) > 1:
+        rankBridges = int(sys.argv[1])
 
-    # Lookup a bridge using the RegistryClient
-    bridgeDescList = rc.LookupBridge()
+    # Lookup bridges using the RegistryClient
+    bridgeDescList = rc.LookupBridge(rankBridges=rankBridges)
+    
     bridgeDescList.sort(lambda x,y: cmp(x.rank,y.rank))
     for b in bridgeDescList:
         print 'name: '+b.name+'  host: '+b.host+"  port: "+str(b.port) +"  dist:"+str(b.rank)
