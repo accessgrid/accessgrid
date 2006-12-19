@@ -2,7 +2,7 @@
 # Name:        CertificateRepository.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.25 2006-12-09 01:18:27 turam Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.26 2006-12-19 21:42:28 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.25 2006-12-09 01:18:27 turam Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.26 2006-12-19 21:42:28 turam Exp $"
 
 from __future__ import generators
 
@@ -1275,6 +1275,9 @@ class CertificateDescriptor:
     def GetSubjectHash(self):
         return self.cert.GetSubjectHash()
 
+    def GetSubjectNameHash(self):
+        return self.cert.GetSubjectNameHash()
+
     def GetVersion(self):
         return self.cert.GetVersion()
 
@@ -1469,6 +1472,12 @@ class Certificate:
             self.subjectHash = dig.hexdigest()
 
         return self.subjectHash
+        
+    def GetSubjectNameHash(self):
+        subject = self.cert.get_subject()
+        nameHash = m2.x509_name_hash(subject.x509_name)
+        nameHash = hex(nameHash).strip('0x').lower()
+        return nameHash
 
     def GetIssuerSerialHash(self):
 
@@ -1634,8 +1643,6 @@ class Certificate:
         fp = self.cert.get_fingerprint(ctype)
         
         # fingerprint is returned as a hex string:
-        # strip off the leading '0x' and the trailing 'L'
-        fp = fp[2:-1]
         fp_ret = ''
         for i in range(1+len(fp)/2):
             fp_ret += fp[i*2:i*2+2] + ':'
