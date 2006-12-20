@@ -35,16 +35,6 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
-        <operation name="RegisterNetworkService3">
-	    <soap:operation soapAction="urn:#RegisterNetworkService3"/>
-	    <input>
-		<soap:body use="literal"/> 
-	    </input>
-	    <output>
-		<soap:body use="literal"/> 
-	    </output>
-	</operation>
-
 	<operation name="UnRegisterNetworkService">
 	    <soap:operation soapAction="urn:#UnRegisterNetworkService"/>
 	    <input>
@@ -53,17 +43,7 @@
 	    <output>
 		<soap:body use="literal"/> 
 	    </output>
-    </operation>
-    	<operation name="UnRegisterNetworkService3">
-	    <soap:operation soapAction="urn:#UnRegisterNetworkService3"/>
-	    <input>
-		<soap:body use="literal"/> 
-	    </input>
-	    <output>
-		<soap:body use="literal"/> 
-	    </output>
 	</operation>
-
 	<operation name="Exit">
 	    <soap:operation soapAction="urn:#Exit"/>
 	    <input>
@@ -85,27 +65,8 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
-	<operation name="GetState3">
-	    <soap:operation soapAction="urn:#GetState3"/>
-	    <input>
-		<soap:body use="literal"/> 
-	    </input>
-	    <output>
-		<soap:body use="literal"/> 
-	    </output>
-	</operation>
-
 	<operation name="AsVenueDescription">
 	    <soap:operation soapAction="urn:#AsVenueDescription"/>
-	    <input>
-		<soap:body use="literal"/> 
-	    </input>
-	    <output>
-		<soap:body use="literal"/> 
-	    </output>
-	</operation>
-	<operation name="AsVenueDescription3">
-	    <soap:operation soapAction="urn:#AsVenueDescription3"/>
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>
@@ -123,16 +84,6 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
-    	<operation name="NegotiateCapabilities3">
-	    <soap:operation soapAction="urn:#NegotiateCapabilities3"/>
-	    <input>
-		<soap:body use="literal"/> 
-	    </input>
-	    <output>
-		<soap:body use="literal"/> 
-	    </output>
-	</operation>
-
 	<operation name="CreateApplication">
 	    <soap:operation soapAction="urn:#CreateApplication"/>
 	    <input>
@@ -250,27 +201,9 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
-	<operation name="UpdateData3">
-	    <soap:operation soapAction="urn:#UpdateData3"/>
-	    <input>
-		<soap:body use="literal"/> 
-	    </input>
-	    <output>
-		<soap:body use="literal"/> 
-	    </output>
-	</operation>
 
 	<operation name="RemoveData">
 	    <soap:operation soapAction="urn:#RemoveData"/>
-	    <input>
-		<soap:body use="literal"/> 
-	    </input>
-	    <output>
-		<soap:body use="literal"/> 
-	    </output>
-	</operation>
-	<operation name="RemoveData3">
-	    <soap:operation soapAction="urn:#RemoveData3"/>
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>
@@ -288,16 +221,6 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
-	<operation name="GetDataDescriptions3">
-	    <soap:operation soapAction="urn:#GetDataDescriptions3"/>
-	    <input>
-		<soap:body use="literal"/> 
-	    </input>
-	    <output>
-		<soap:body use="literal"/> 
-	    </output>
-	</operation>
-
 	<operation name="AddService">
 	    <soap:operation soapAction="urn:#AddService"/>
 	    <input>
@@ -380,16 +303,6 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
-    <operation name="GetStreams3">
-	    <soap:operation soapAction="urn:#GetStreams3"/>
-            <input>
-		<soap:body use="literal"/> 
-	    </input>
-            <output>
-		<soap:body use="literal"/> 
-	    </output>
-	</operation>
-
 	<operation name="GetDescById">
 	    <soap:operation soapAction="urn:#GetDescById"/>
 	    <input>

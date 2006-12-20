@@ -41,21 +41,6 @@
             </xsd:complexType>
           </xsd:element>
 
-
-          <xsd:element name="AddStream3Request">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="1" maxOccurs="1" name="argname" type="agtk:StreamDescription3" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-
-
-          <xsd:element name="AddStream3Response">
-            <xsd:complexType>
-            </xsd:complexType>
-          </xsd:element>
-
           <xsd:element name="GetCapabilitiesRequest">
             <xsd:complexType>
             </xsd:complexType>
@@ -68,20 +53,6 @@
               </xsd:sequence>
             </xsd:complexType>
 	  </xsd:element>
-
-          <xsd:element name="GetCapabilities3Request">
-            <xsd:complexType>
-            </xsd:complexType>
-          </xsd:element>
-
-          <xsd:element name="GetCapabilities3Response">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="capabilities" type="agtk:Capability3" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-
 
           <xsd:element name="GetConfigurationsRequest">
             <xsd:complexType>
@@ -121,20 +92,6 @@
               </xsd:sequence>
             </xsd:complexType>
     	  </xsd:element>
-
-
-          <xsd:element name="GetServices3Request">
-            <xsd:complexType>
-            </xsd:complexType>
-          </xsd:element>
-
-          <xsd:element name="GetServices3Response">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="serviceList" type="agtk:AGServiceDescription3" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
 
 
           <xsd:element name="IsValidRequest">
@@ -218,19 +175,6 @@
             </xsd:complexType>
 	  </xsd:element>
 
-	  <xsd:element name="RemoveStream3Request">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="1" maxOccurs="1" name="argname" type="agtk:StreamDescription3" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-
-          <xsd:element name="RemoveStream3Response">
-            <xsd:complexType>
-            </xsd:complexType>
-          </xsd:element>
-
           <xsd:element name="SetServiceEnabledRequest">
             <xsd:complexType>
               <xsd:sequence>
@@ -270,19 +214,6 @@
             <xsd:complexType>
             </xsd:complexType>
 	  </xsd:element>
-
-	  <xsd:element name="SetStreams3Request">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="streamDescriptionList" type="agtk:StreamDescription3" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-
-          <xsd:element name="SetStreams3Response">
-            <xsd:complexType>
-            </xsd:complexType>
-          </xsd:element>
 
           <xsd:element name="StopServicesRequest">
             <xsd:complexType>
@@ -337,12 +268,6 @@
     </message>
     <message name="AddStreamResponse">
 	<part name="parameters" element="agns:AddStreamResponse"/>
-    </message>
-    <message name="AddStream3Request">
-	<part name="parameters" element="agns:AddStream3Request"/>
-    </message>
-    <message name="AddStream3Response">
-	<part name="parameters" element="agns:AddStream3Response"/>
     </message>
     <message name="GetCapabilitiesRequest">
 	<part name="parameters" element="agns:GetCapabilitiesRequest"/>
@@ -475,10 +400,6 @@
     <operation name="AddStream">
         <input message="agns:AddStreamRequest"/>
         <output message="agns:AddStreamResponse"/>
-    </operation>
-    <operation name="AddStream3">
-        <input message="agns:AddStream3Request"/>
-        <output message="agns:AddStream3Response"/>
     </operation>
     <operation name="GetCapabilities">
         <input message="agns:GetCapabilitiesRequest"/>

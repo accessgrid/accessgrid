@@ -90,15 +90,6 @@
 		<soap:body use="literal"/> 
 	    </output>
 	</operation>
-	<operation name="GetStreams3">
-	    <soap:operation soapAction="urn:#GetStreams3"/>
-	    <input>
-		<soap:body use="literal"/> 
-	    </input>
-	    <output>
-		<soap:body use="literal"/> 
-	    </output>
-	</operation>
     <operation name="GetUsers">
 	    <soap:operation soapAction="urn:#GetUsers"/>
 	    <input>
@@ -110,15 +101,6 @@
 	</operation>
     <operation name="GetVenueData">
 	    <soap:operation soapAction="urn:#GetVenueData"/>
-	    <input>
-		<soap:body use="literal"/> 
-	    </input>
-	    <output>
-		<soap:body use="literal"/> 
-	    </output>
-	</operation>
-    <operation name="GetVenueData3">
-	    <soap:operation soapAction="urn:#GetVenueData3"/>
 	    <input>
 		<soap:body use="literal"/> 
 	    </input>

@@ -74,20 +74,6 @@
             </xsd:complexType>
           </xsd:element>
 
-          <xsd:element name="AddVenue3Request">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="1" maxOccurs="1" name="venueDescription" type="agtk:VenueDescription3" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="AddVenue3Response">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="venueURL" type="xsd:anyURI" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
 
 	  
 	   <xsd:element name="ModifyVenueRequest">
@@ -104,21 +90,6 @@
             </xsd:complexType>
           </xsd:element>
 
-	   <xsd:element name="ModifyVenue3Request">
-            <xsd:complexType>
-              <xsd:sequence>
-		 <xsd:element minOccurs="1" maxOccurs="1" name="uri" type="xsd:anyURI" />
-                 <xsd:element minOccurs="1" maxOccurs="1" name="venueDescription" type="agtk:VenueDescription3" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-
-          <xsd:element name="ModifyVenue3Response">
-            <xsd:complexType>
-            </xsd:complexType>
-          </xsd:element>
-
-	  
           <xsd:element name="GetVenueDescriptionsRequest">
             <xsd:complexType>
             </xsd:complexType>
@@ -128,20 +99,6 @@
             <xsd:complexType>
               <xsd:sequence>
                 <xsd:element minOccurs="0" maxOccurs="unbounded" name="venueDescriptionList" type="agtk:VenueDescription" />
-
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-
-          <xsd:element name="GetVenueDescriptions3Request">
-            <xsd:complexType>
-            </xsd:complexType>
-          </xsd:element>
-
-          <xsd:element name="GetVenueDescriptions3Response">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="venueDescriptionList" type="agtk:VenueDescription3" />
 
               </xsd:sequence>
             </xsd:complexType>
@@ -332,35 +289,17 @@
     <message name="AddVenueResponse">
 	<part name="parameters" element="agtkvs:AddVenueResponse"/>
     </message>
-    <message name="AddVenue3Request">
-	<part name="parameters" element="agtkvs:AddVenue3Request"/>
-    </message>
-    <message name="AddVenue3Response">
-	<part name="parameters" element="agtkvs:AddVenue3Response"/>
-    </message>
     <message name="ModifyVenueRequest">
 	<part name="parameters" element="agtkvs:ModifyVenueRequest"/>
     </message>
     <message name="ModifyVenueResponse">
 	<part name="parameters" element="agtkvs:ModifyVenueResponse"/>
     </message>
-    <message name="ModifyVenue3Request">
-	<part name="parameters" element="agtkvs:ModifyVenue3Request"/>
-    </message>
-    <message name="ModifyVenue3Response">
-	<part name="parameters" element="agtkvs:ModifyVenue3Response"/>
-    </message>
     <message name="GetVenueDescriptionsRequest">
 	<part name="parameters" element="agtkvs:GetVenueDescriptionsRequest"/>
     </message>
     <message name="GetVenueDescriptionsResponse">
 	<part name="parameters" element="agtkvs:GetVenueDescriptionsResponse"/>
-    </message>
-    <message name="GetVenueDescriptions3Request">
-	<part name="parameters" element="agtkvs:GetVenueDescriptions3Request"/>
-    </message>
-    <message name="GetVenueDescriptions3Response">
-	<part name="parameters" element="agtkvs:GetVenueDescriptions3Response"/>
     </message>
     <message name="GetDefaultVenueRequest">
 	<part name="parameters" element="agtkvs:GetDefaultVenueRequest"/>
@@ -449,10 +388,6 @@
 	    <input message="agtkvs:GetVenueDescriptionsRequest"/>
 	    <output message="agtkvs:GetVenueDescriptionsResponse"/>
 	</operation>
-	<operation name="GetVenueDescriptions3">
-	    <input message="agtkvs:GetVenueDescriptions3Request"/>
-	    <output message="agtkvs:GetVenueDescriptions3Response"/>
-	</operation>
 	<operation name="GetDefaultVenue">
 	    <input message="agtkvs:GetDefaultVenueRequest"/>
 	    <output message="agtkvs:GetDefaultVenueResponse"/>
@@ -481,17 +416,9 @@
 	    <input message="agtkvs:AddVenueRequest"/>
 	    <output message="agtkvs:AddVenueResponse"/>
 	</operation>
-	<operation name="AddVenue3">
-	    <input message="agtkvs:AddVenue3Request"/>
-	    <output message="agtkvs:AddVenue3Response"/>
-	</operation>
 	<operation name="ModifyVenue">
 	    <input message="agtkvs:ModifyVenueRequest"/>
 	    <output message="agtkvs:ModifyVenueResponse"/>
-	</operation>
-	<operation name="ModifyVenue3">	    
-	    <input message="agtkvs:ModifyVenue3Request"/>
-	    <output message="agtkvs:ModifyVenue3Response"/>
 	</operation>
 	<operation name="RemoveVenue">
 	    <input message="agtkvs:RemoveVenueRequest"/>

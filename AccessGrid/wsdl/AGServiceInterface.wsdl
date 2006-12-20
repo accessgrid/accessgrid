@@ -26,21 +26,7 @@
                 <xsd:element minOccurs="0" maxOccurs="unbounded" name="capabilities" type="agtk:Capability" />
               </xsd:sequence>
             </xsd:complexType>
-    </xsd:element>
-
-        <xsd:element name="GetCapabilities3Request">
-            <xsd:complexType>
-            </xsd:complexType>
           </xsd:element>
-
-          <xsd:element name="GetCapabilities3Response">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="unbounded" name="capabilities" type="agtk:Capability3" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-
 
           <xsd:element name="GetConfigurationRequest">
             <xsd:complexType>
@@ -67,20 +53,6 @@
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
-
-          <xsd:element name="GetDescription3Request">
-            <xsd:complexType>
-            </xsd:complexType>
-          </xsd:element>
-
-          <xsd:element name="GetDescription3Response">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="0" maxOccurs="1" name="description" type="agtk:AGServiceDescription3" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-
 
           <xsd:element name="GetEnabledRequest">
             <xsd:complexType>
@@ -267,20 +239,6 @@
             </xsd:complexType>
           </xsd:element>
 
-          <xsd:element name="SetStream3Request">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element minOccurs="1" maxOccurs="1" name="streamDescription" type="agtk:StreamDescription3" />
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-
-          <xsd:element name="SetStream3Response">
-            <xsd:complexType>
-            </xsd:complexType>
-          </xsd:element>
-
-	  
           <xsd:element name="ShutdownRequest">
             <xsd:complexType>
             </xsd:complexType>
@@ -323,12 +281,6 @@
     <message name="GetCapabilitiesResponse">
 	<part name="parameters" element="agsvc:GetCapabilitiesResponse"/>
     </message>
-    <message name="GetCapabilities3Request">
-	<part name="parameters" element="agsvc:GetCapabilities3Request"/>
-    </message>
-    <message name="GetCapabilities3Response">
-	<part name="parameters" element="agsvc:GetCapabilities3Response"/>
-    </message>
 
     <message name="GetConfigurationRequest">
 	<part name="parameters" element="agsvc:GetConfigurationRequest"/>
@@ -341,12 +293,6 @@
     </message>
     <message name="GetDescriptionResponse">
 	<part name="parameters" element="agsvc:GetDescriptionResponse"/>
-    </message>
-    <message name="GetDescription3Request">
-	<part name="parameters" element="agsvc:GetDescription3Request"/>
-    </message>
-    <message name="GetDescription3Response">
-	<part name="parameters" element="agsvc:GetDescription3Response"/>
     </message>
     <message name="GetEnabledRequest">
 	<part name="parameters" element="agsvc:GetEnabledRequest"/>
@@ -432,12 +378,6 @@
     <message name="SetStreamResponse">
 	<part name="parameters" element="agsvc:SetStreamResponse"/>
     </message>
-    <message name="SetStream3Request">
-	<part name="parameters" element="agsvc:SetStream3Request"/>
-    </message>
-    <message name="SetStream3Response">
-	<part name="parameters" element="agsvc:SetStream3Response"/>
-    </message>
     <message name="ShutdownRequest">
 	<part name="parameters" element="agsvc:ShutdownRequest"/>
     </message>
@@ -464,10 +404,6 @@
         <input message="agsvc:GetCapabilitiesRequest"/>
         <output message="agsvc:GetCapabilitiesResponse"/>
     </operation>
-    <operation name="GetCapabilities3">
-        <input message="agsvc:GetCapabilities3Request"/>
-        <output message="agsvc:GetCapabilities3Response"/>
-    </operation>
     <operation name="GetConfiguration">
         <input message="agsvc:GetConfigurationRequest"/>
         <output message="agsvc:GetConfigurationResponse"/>
@@ -475,10 +411,6 @@
     <operation name="GetDescription">
         <input message="agsvc:GetDescriptionRequest"/>
         <output message="agsvc:GetDescriptionResponse"/>
-    </operation>
-    <operation name="GetDescription3">
-        <input message="agsvc:GetDescription3Request"/>
-        <output message="agsvc:GetDescription3Response"/>
     </operation>
     <operation name="GetEnabled">
         <input message="agsvc:GetEnabledRequest"/>
@@ -535,10 +467,6 @@
     <operation name="SetStream">
         <input message="agsvc:SetStreamRequest"/>
         <output message="agsvc:SetStreamResponse"/>
-    </operation>
-    <operation name="SetStream3">
-        <input message="agsvc:SetStream3Request"/>
-        <output message="agsvc:SetStream3Response"/>
     </operation>
     <operation name="Shutdown">
         <input message="agsvc:ShutdownRequest"/>
