@@ -65,6 +65,7 @@ class PreferencesDialog(wxDialog):
                                          self.preferences)
         self.navigationPanel = NavigationPanel(self.preferencesPanel, wxNewId(),
                                                self.preferences)
+
         self.loggingPanel.Hide()
         self.venueConnectionPanel.Hide()
         self.networkPanel.Hide()
@@ -768,6 +769,7 @@ class VenueConnectionPanel(wxPanel):
 class NetworkPanel(wxPanel):
     def __init__(self, parent, id, preferences):
         wxPanel.__init__(self, parent, id)
+        self.preferences = preferences
         self.Centre()
         self.titleText = wxStaticText(self, -1, "Multicast")
         self.titleLine = wxStaticLine(self, -1)
@@ -777,6 +779,10 @@ class NetworkPanel(wxPanel):
 
         bridgeDict = preferences.GetBridges()
         self.bridges = bridgeDict.values()
+        
+        # make a copy of the bridges, since we modify them in place
+        import copy
+        self.bridges = map( lambda x: copy.copy(x), self.bridges)
         self.bridges.sort(lambda x,y: cmp(x.rank,y.rank))
 
         self.multicastButton.SetValue(not int(preferences.GetPreference(Preferences.MULTICAST)))
@@ -785,10 +791,31 @@ class NetworkPanel(wxPanel):
         
         self.beaconButton.SetValue(int(preferences.GetPreference(Preferences.BEACON)))
         self.listHelpText = wxStaticText(self,-1,'Right-click a bridge to enable or disable it')
+
+
+        self.list = wxListCtrl(self, wxNewId(),style=wxLC_REPORT|wxLC_SINGLE_SEL)
+        self.list.InsertColumn(0, "Bridge")
+        self.list.InsertColumn(1, "Host")
+        self.list.InsertColumn(2, "Port")
+        self.list.InsertColumn(3, "Type")
+        self.list.InsertColumn(4, "Status")
+        self.list.InsertColumn(5, "Distance")
+        self.list.InsertColumn(6, "Port range")
+              
+        self.list.SetColumnWidth(0, 90)
+        self.list.SetColumnWidth(1, 60)
+        self.list.SetColumnWidth(2, 50)
+        self.list.SetColumnWidth(3, 80)
+        self.list.SetColumnWidth(4, 60)
+        self.list.SetColumnWidth(5, 60)
+        self.list.SetColumnWidth(6, 90)
         self.__InitList()
+        
+        self.refreshButton = wxButton(self,-1,'Refresh')
         
         EVT_RIGHT_DOWN(self.list, self.OnRightDown)
         EVT_RIGHT_UP(self.list, self.OnRightClick)
+        EVT_BUTTON(self,self.refreshButton.GetId(), self.OnRefresh)
                                       
         if IsOSX():
             self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
@@ -831,6 +858,22 @@ class NetworkPanel(wxPanel):
 
         self.list.PopupMenu(self.menu, wxPoint(self.x, self.y))
         self.menu.Destroy()
+        
+    def OnRefresh(self,event):
+    
+        wxBeginBusyCursor()
+    
+        try:
+            venueClient = self.preferences.venueClient
+        
+            # Force rescanning of the bridges
+            self.bridges = venueClient.LoadBridges(rankBridges=1)     
+            self.bridges.sort(lambda x,y: cmp(x.rank,y.rank))
+
+            # Refresh the bridge list in the UI
+            self.__InitList()
+        finally:
+            wxEndBusyCursor()
 
     def Enable(self, event):
         '''
@@ -846,7 +889,6 @@ class NetworkPanel(wxPanel):
             selectedItem.status = STATUS_DISABLED
 
         self.list.SetStringItem(self.selected, 4, selectedItem.status)
-        self.bridges[self.selected].status = selectedItem.status
 
     def GetBridges(self):
         retBridges = {}
@@ -867,31 +909,21 @@ class NetworkPanel(wxPanel):
             return 0
 
     def __InitList(self):
-        self.list = wxListCtrl(self, wxNewId(),style=wxLC_REPORT|wxLC_SINGLE_SEL)
 
-        self.list.InsertColumn(0, "Bridge")
-        self.list.InsertColumn(1, "Host")
-        self.list.InsertColumn(2, "Port")
-        self.list.InsertColumn(3, "Type")
-        self.list.InsertColumn(4, "Status")
-        self.list.InsertColumn(5, "Distance")
-        self.list.InsertColumn(6, "Port range")
-              
-        self.list.SetColumnWidth(0, 90)
-        self.list.SetColumnWidth(1, 60)
-        self.list.SetColumnWidth(2, 50)
-        self.list.SetColumnWidth(3, 80)
-        self.list.SetColumnWidth(4, 60)
-        self.list.SetColumnWidth(5, 60)
-        self.list.SetColumnWidth(6, 90)
-                
+        # Clear the list
+        self.list.DeleteAllItems()
+        
+        # Populate the list
         for index in range(len(self.bridges)):
             self.list.InsertStringItem(index, self.bridges[index].name)
             self.list.SetStringItem(index, 1, self.bridges[index].host)
             self.list.SetStringItem(index, 2, str(self.bridges[index].port))
             self.list.SetStringItem(index, 3, self.bridges[index].serverType)
             self.list.SetStringItem(index, 4, self.bridges[index].status)
-            self.list.SetStringItem(index, 5, str(self.bridges[index].rank))
+            if self.bridges[index].rank == BridgeDescription.UNREACHABLE:
+                self.list.SetStringItem(index, 5, "Unreachable")
+            else:
+                self.list.SetStringItem(index, 5, str(self.bridges[index].rank))
             self.list.SetStringItem(index, 6, '%d-%d' % (self.bridges[index].portMin,self.bridges[index].portMax))
           
     def __Layout(self):
@@ -904,6 +936,7 @@ class NetworkPanel(wxPanel):
         sizer.Add(self.multicastButton, 0, wxALL|wxEXPAND, 10)
         sizer.Add(self.listHelpText, 0, wxALL|wxEXPAND, 10)
         sizer.Add(self.list, 1, wxALL|wxEXPAND, 10)
+        sizer.Add(self.refreshButton, 0, wxALL, 10)
         
         self.SetSizer(sizer)
         sizer.Fit(self)
