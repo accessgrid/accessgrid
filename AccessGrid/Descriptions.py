@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.102 2006-11-24 13:09:38 braitmai Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.103 2006-12-20 17:55:46 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.102 2006-11-24 13:09:38 braitmai Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.103 2006-12-20 17:55:46 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -89,97 +89,8 @@ class BadDataDescription(Exception):
     pass
 
 
-class DataDescription(ObjectDescription):
-    """
-    A Data Description represents data within a venue.
-
-    Each description object represents a single file. (We assume that
-    the venue-resident data server does not support directory hierarchies).
-
-    Object for legacy support for AG 3.0.2. clients
-
-    """
-
-    #
-    # Status values
-    #
-
-    STATUS_INVALID = "invalid"
-    STATUS_REFERENCE = "reference"
-    STATUS_PRESENT = "present"
-    STATUS_PENDING = "pending"
-    STATUS_UPLOADING = "uploading"
-   
-    valid_status = [STATUS_INVALID, STATUS_REFERENCE, STATUS_PRESENT,
-                    STATUS_PENDING, STATUS_UPLOADING]
-
-    class InvalidStatus(Exception):
-        pass
-    
-    def __init__(self, name=None):
-        ObjectDescription.__init__(self, name)
-
-        self.status = self.STATUS_INVALID
-        self.size = 0
-        self.checksum = None
-        self.owner = None
-        self.type = None # this is venue data
-        self.lastModified = None
-
-    def SetLastModified(self, date):
-        self.lastModified = date
-
-    def GetLastModified(self):
-        return self.lastModified
-
-    def SetType(self, type):
-        self.type = type
-
-    def GetType(self):
-        return self.type
-
-    def SetStatus(self, status):
-        if status not in self.valid_status:
-            raise self.InvalidStatus(status)
-        self.status = status
-
-    def GetStatus(self):
-        return self.status
-
-    def SetSize(self, size):
-        if type(size) != int and type(size) != long:
-            raise TypeError("Size must be an int.")
-        self.size = size
-
-    def GetSize(self):
-        return self.size
-
-    def SetChecksum(self, checksum):
-        self.checksum = checksum
-
-    def GetChecksum(self):
-        return self.checksum
-
-    def SetOwner(self, owner):
-        self.owner = owner
-
-    def GetOwner(self):
-        return self.owner
-
-    def AsINIBlock(self):
-        string = ObjectDescription.AsINIBlock(self)
-        string += "status : %s\n" % self.GetStatus()
-        string += "size : %d\n" % self.GetSize()
-        string += "checksum : %s\n" % self.GetChecksum()
-        string += "owner: %s\n" % self.GetOwner()
-        string += "type: %s\n" % self.GetType()
-        string += 'lastModified: %s\n' % self.GetLastModified()
-
-        return string
-
-
 #Modified by NA2-HPCE
-class DataDescription3(ObjectDescription):
+class DataDescription(ObjectDescription):
     """
     A Data Description represents data within a venue.
 
@@ -193,7 +104,7 @@ class DataDescription3(ObjectDescription):
         objetType: distinguishes between files and directories
         parentID:  contains the GUID of the description the current
                    description is attached to.
-        Level:     denotes the level of the data object within the hierarchy
+        hierarchyLevel: denotes the level of the data object within the hierarchy
                    root level starts with 0
     
     Thereby directory hierarchies are supported.
@@ -235,7 +146,7 @@ class DataDescription3(ObjectDescription):
         self.lastModified = None
         self.objectType = None # identifies the type of data; see also the constants
         self.parentId = "-1" # parent id of parent of this data object; uninitialized is -1
-        self.Level = -1 # level in the data hierarchy; first level is 0; uninitialized is -1
+        self.hierarchyLevel = -1 # level in the data hierarchy; first level is 0; uninitialized is -1
 
     def SetLastModified(self, date):
         self.lastModified = date
@@ -288,7 +199,7 @@ class DataDescription3(ObjectDescription):
         string += 'lastModified: %s\n' % self.GetLastModified()
         string += 'objType: %s\n' % self.GetObjectType()
         string += 'parent: %s\n' % self.GetParentId()
-        string += 'Level: %s\n' % self.GetLevel()
+        string += 'hierarchyLevel: %s\n' % self.GetLevel()
 
         return string
     
@@ -327,14 +238,15 @@ class DataDescription3(ObjectDescription):
     
     #Added by NA2-HPCE
     def SetLevel(self, level):
-        self.Level = int(level)
+        self.hierarchyLevel = int(level)
     
     #Added by NA2-HPCE
     def GetLevel(self):
-        return self.Level
+        return self.hierarchyLevel
+      
 
 #Added by NA2-HPCE    
-class DirectoryDescription(DataDescription3):
+class DirectoryDescription(DataDescription):
     """
     Data object that describes the directorie properties of 
     directories of the FTP data storage. Its unique DataContainer
@@ -351,10 +263,10 @@ class DirectoryDescription(DataDescription3):
     """
 
     def __init__(self, name=""):
-        DataDescription3.__init__(self, name)
+        DataDescription.__init__(self, name)
         
         self.dataContainer = None
-        self.objectType = DataDescription3.TYPE_DIR
+        self.objectType = DataDescription.TYPE_DIR
         self.location = ""
         self.dataContainer = list()
         #if not dataDescContainer == None:
@@ -409,7 +321,7 @@ class DirectoryDescription(DataDescription3):
             return nextDD.Search(directoryDict, pathList)
 
 #Added by NA2-HPCE
-class FileDescription(DataDescription3):
+class FileDescription(DataDescription):
     """
     This class basically is the replacement for the previous DataDescription
     class. It encapsulates properties of files and maintains the mode of 
@@ -418,8 +330,8 @@ class FileDescription(DataDescription3):
     """
     
     def __init__(self,name):
-        DataDescription3.__init__(self,name)
-        self.objectType = DataDescription3.TYPE_FILE
+        DataDescription.__init__(self,name)
+        self.objectType = DataDescription.TYPE_FILE
 
 class ConnectionDescription(ObjectDescription):
     """
@@ -428,55 +340,8 @@ class ConnectionDescription(ObjectDescription):
     """
     pass    
 
+    
 class VenueDescription(ObjectDescription):
-    """
-    A Venue Description is used to represent a Venue.
-    Object for legacy support for AG 3.0.2. clients
-    """
-    def __init__(self, name=None, description=None, encryptionInfo=(0,''),
-                 connectionList=None, staticStreams=None, oid = None,
-                 uri=None):
-
-        ObjectDescription.__init__(self, name, description, uri, oid)
-        self.streams = list()
-        self.encryptMedia = 0
-        self.encryptionKey = None
-        self.encryptMedia = encryptionInfo[0]
-        
-        if self.encryptMedia:
-            self.encryptionKey = encryptionInfo[1]
-        else:
-            self.encryptionKey = None
-           
-        if connectionList == None:
-            self.connections = []
-        else:
-            self.connections = connectionList
-        if staticStreams == None:
-            self.streams = []
-        else:
-            self.streams = staticStreams
-    
-    def AsINIBlock(self):
-        string = ObjectDescription.AsINIBlock(self)
-        if self.encryptMedia:
-            string += "encryptionKey : %s\n" % self.encryptionKey
-        clist = ":".join(map(lambda conn: conn.GetId(),
-                             self.connections))
-        string += "connections : %s\n" % clist
-        slist = ":".join(map(lambda stream: stream.GetId(),
-                             self.streams))
-        string += "streams : %s\n" % slist
-        string += "\n".join(map(lambda conn: conn.AsINIBlock(),
-                                self.connections))
-        string += "\n".join(map(lambda stream: stream.AsINIBlock(),
-                                self.streams))
-        return string
-
-    def __repr__(self):
-        return self.AsINIBlock()
-    
-class VenueDescription3(ObjectDescription):
     """
     A Venue Description is used to represent a Venue.
     """
@@ -604,7 +469,7 @@ class PluginDescription(ObjectDescription):
 class BadApplicationDescription(Exception):
     pass
         
-class Capability3:
+class Capability:
 
     #role
     PRODUCER = "producer"
@@ -651,11 +516,6 @@ class Capability3:
         return string
 
     def matches( self, capability ):
-        print "Capability3"
-        print "Type: ", str(self.type), str(capability.type)
-        print "Codec: ", str(self.codec), str(capability.codec)
-        print "Channels: ", str(self.channels), str(capability.channels)
-        print "Rate: ", str(self.rate), str(capability.rate)
         try:
             if (str(self.type) != str(capability.type) or
                 str(self.codec) != str(capability.codec) or
@@ -671,49 +531,7 @@ class Capability3:
         print "Capability match!"
         return 1
 
-class Capability:
-
-    """
-    Object for legacy support for AG 3.0.2. clients
-    """
-
-    PRODUCER = "producer"
-    CONSUMER = "consumer"
-
-    AUDIO = "audio"
-    VIDEO = "video"
-    TEXT  = "text"
-
-    def __init__( self, role=None, type=None, codec=None, rate=0, serviceId = None, channels = 1):
-        self.role = role # consumer/producer
-        self.type = type # audio/video/other
-        self.codec = codec # according to mime type
-        self.rate = rate # RTP clock rate
-        self.channels = channels
-        self.serviceId = serviceId 
-        
-    def __repr__(self):
-        string = "%s, %s, %s, %s, %s, %s" % (self.role, self.type, self.serviceId, self.codec, str(self.rate), str(self.channels))
-        return string
-
-    def matches( self, capability ):
-        print "Capability"
-        print "Type: ", str(self.type), str(capability.type)
-        print "Codec: ", str(self.codec), str(capability.codec)
-        print "Channels: ", str(self.channels), str(capability.channels)
-        print "Rate: ", str(self.rate), str(capability.rate)
-        if (str(self.type) != str(capability.type) or
-            str(self.codec) != str(capability.codec) or
-            int(self.channels) != int(capability.channels) or
-            int(self.rate) != int(capability.rate)):
-            # type mismatch
-            return 0
-
-        # capability match
-        return 1
-
-
-class StreamDescription3( ObjectDescription ):
+class StreamDescription(ObjectDescription):
    """A Stream Description represents a stream within a venue"""
    def __init__( self, name=None, 
                  location=0, 
@@ -760,67 +578,14 @@ class StreamDescription3( ObjectDescription ):
 
        return string
 
-class StreamDescription( ObjectDescription ):
-   """
-   A Stream Description represents a stream within a venue
-   Object for legacy support for AG 3.0.2. clients
-   """
-   def __init__( self, name=None, 
-                 location=0, 
-                 capability=0,
-                 encryptionFlag=0, encryptionKey=None,
-                 static=0):
-      ObjectDescription.__init__( self, name, None, None)
-      self.location = location
-      self.capability = capability
-      self.encryptionFlag = encryptionFlag
-      self.encryptionKey = encryptionKey
-      self.static = static
-      self.networkLocations = []
-      
-      if location:
-          self.AddNetworkLocation(location)
-          
-   def AddNetworkLocation(self,networkLocation):
-       """
-       Add the specified network location to the list
-       
-       Note: This method overwrites the network location id 
-             in the incoming network location
-       """
-       networkLocation.id = str(GUID())
-       self.networkLocations.append(networkLocation)
-       return networkLocation.id
-       
-   def RemoveNetworkLocation(self, networkLocationId):
-       """
-       Remove the network location with specified id
-       """
-       for networkLocation in self.networkLocations:
-           if networkLocation.id == networkLocationId:
-               self.networkLocations.remove(networkLocation)
-
-   def AsINIBlock(self):
-       string = ObjectDescription.AsINIBlock(self)
-       string += "encryptionFlag : %s\n" % self.encryptionFlag
-       if self.encryptionFlag:
-           string += "encryptionKey : %s\n" % self.encryptionKey
-       string += "location : %s\n" % self.location
-       string += "capability : %s\n" % self.capability[0].type
-
-       return string
- 
-   
 class AGServiceManagerDescription:
     def __init__( self, name="", uri="" ):
         self.name = name
         self.uri = uri
         self.builtin = 0
 
+        
 class AGServiceDescription:
-    """
-    Object for legacy support for AG 3.0.2. clients
-    """
     def __init__( self, name="", uri="", capabilities=[], resource="", packageFile=""):
         self.name = name
         self.uri = uri
@@ -828,14 +593,6 @@ class AGServiceDescription:
         self.resource = resource
         self.packageFile = packageFile
         
-class AGServiceDescription3:
-    def __init__( self, name="", uri="", capabilities=[], resource="", packageFile=""):
-        self.name = name
-        self.uri = uri
-        self.capabilities = capabilities
-        self.resource = resource
-        self.packageFile = packageFile
-
 class AGServicePackageDescription:
     def __init__(self,name="",description="",packageFile="",resourceNeeded=0):
         self.name = name
@@ -856,19 +613,6 @@ class AGServicePackageDescription:
         return self.resourceNeeded
 
 class AGNetworkServiceDescription(ObjectDescription):
-    """
-    Object for legacy support for AG 3.0.2. clients
-    """
-    def __init__(self, name, description, uri,
-                 capabilities, version):
-        ObjectDescription.__init__(self, name)
-        self.name = name
-        self.description = description
-        self.uri = uri
-        self.version = version
-        self.capabilities = capabilities
-
-class AGNetworkServiceDescription3(ObjectDescription):
     def __init__(self, name, description, uri,
                  capabilities, version):
         ObjectDescription.__init__(self, name)
@@ -903,10 +647,6 @@ class SharedAppState:
             self.data = data
     
 class VenueState:
-    """
-    Object for legacy support for AG 3.0.2. clients
-    """
-
     def __init__( self, uniqueId=None, name=None, description=None, uri=None, connections=[],
                   clients=[], data=[], eventLocation=None, textLocation=None, dataLocation=None,
                   applications=[], services=[]):
@@ -930,136 +670,6 @@ class VenueState:
                 self.connections[connection.uri] = connection
         if clients != None:
             for client in clients:
-                # Pre-2.3 server compatability code
-                if not client.connectionId:
-                    client.connectionId = client.venueClientURL
-
-                self.clients[client.connectionId] = client
-        if data != None:
-            for datum in data:
-                self.data[datum.id] = datum
-        if applications != None:
-            for app in applications:
-                self.applications[app.uri] = app
-        if services != None:
-            for service in services:
-                self.services[service.id] = service
-    def SetUniqueId(self, uniqueId):
-        self.uniqueId = uniqueId
-    def GetUniqueId(self):
-        return self.uniqueId
-    def SetDescription( self, description ):
-        self.description = description
-    def GetDescription( self ):
-        return self.description
-    def SetName( self, name ):
-        self.name = name
-    def GetName( self ):
-        return self.name
-    def SetUri( self, uri ):
-        self.uri = uri
-    def GetUri( self ):
-        return self.uri
-    def AddUser( self, userProfile ):
-        self.clients[userProfile.connectionId] = userProfile
-    def RemoveUser( self, userProfile ):
-        if userProfile.connectionId in self.clients.keys():
-            del self.clients[userProfile.connectionId]
-    def ModifyUser( self, userProfile ):
-        if userProfile.connectionId in self.clients.keys():
-            self.clients[userProfile.connectionId] = userProfile
-    def GetUsers( self ):
-        return self.clients.values()
-    def AddConnection( self, connectionDescription ):
-        self.connections[connectionDescription.uri] = connectionDescription
-    def RemoveConnection( self, connectionDescription ):
-        del self.connections[connectionDescription.uri]
-    def SetConnections( self, connectionList ):
-        for connection in connectionList:
-            self.connections[connection.uri] = connection
-    def GetConnections(self):
-        return self.connections.values()
-    def AddData( self, dataDescription ):
-        self.data[dataDescription.id] = dataDescription
-    def UpdateData( self, dataDescription ):
-        self.data[dataDescription.id] = dataDescription
-
-    #Changed interface to accpet dataDescription Id instead of description
-    def RemoveData( self, dataDescriptionId ):
-        #Added exception handling in case of failed call
-            
-        try:
-            del self.data[dataDescriptionId.id]
-        except:
-            print "Removal of data failed!"
-
-    def GetData(self):
-        return self.data.values()
-    def AddService( self, serviceDescription ):
-        self.services[serviceDescription.id] = serviceDescription
-    def UpdateService(self, serviceDescription):
-        self.services[serviceDescription.id] = serviceDescription            
-    def RemoveService( self, serviceDescription ):
-        if self.services.has_key(serviceDescription.id):
-            del self.services[serviceDescription.id]  
-        else:
-            # Legacy code: Accomodate old (2.1.2 and before) servers,
-            # which allocate a new id when the service description goes
-            # through them.
-            for sid,service in self.services.items():
-                if service.name == serviceDescription.name:
-                    del self.services[sid]
-    def GetServices(self):
-        return self.services.values()
-    def AddApplication( self, applicationDescription ):
-        self.applications[applicationDescription.uri] = applicationDescription
-    def UpdateApplication(self, applicationDescription):
-        self.applications[applicationDescription.uri] = applicationDescription
-    def RemoveApplication( self, applicationDescription ):
-        self.applications[applicationDescription.uri] = applicationDescription
-    def GetApplications(self):
-        return self.applications.values()
-    def SetEventLocation( self, eventLocation ):
-        self.eventLocation = eventLocation
-    def GetEventLocation( self ):
-        return self.eventLocation
-    def SetTextLocation( self, textLocation ):
-        self.textLocation = textLocation
-    def GetTextLocation( self ):
-        return self.textLocation
-    def SetDataLocation( self, dataLocation ):
-        self.dataLocation = dataLocation
-    def GetDataLocation( self ):
-        return self.dataLocation
-
-class VenueState3:
-    def __init__( self, uniqueId=None, name=None, description=None, uri=None, connections=[],
-                  clients=[], data=[], eventLocation=None, textLocation=None, dataLocation=None,
-                  applications=[], services=[]):
-        self.uniqueId = uniqueId
-        self.name = name
-        self.description = description
-        self.uri = uri
-        self.eventLocation = eventLocation
-        self.textLocation = textLocation
-        self.dataLocation = dataLocation
-        self.services = services
-        
-        self.connections = dict()
-        self.clients = dict()
-        self.data = dict()
-        self.applications = dict()
-        self.services = dict()
-        
-        if connections != None:
-            for connection in connections:
-                self.connections[connection.uri] = connection
-        if clients != None:
-            for client in clients:
-                # Pre-2.3 server compatability code
-                if not client.connectionId:
-                    client.connectionId = client.venueClientURL
-
                 self.clients[client.connectionId] = client
         if data != None:
             for datum in data:
@@ -1112,12 +722,10 @@ class VenueState3:
 
     #Changed interface to accpet dataDescription Id instead of description
     def RemoveData( self, dataDescription ):
-        #Added exception handling in case of failed call
-            
         try:
             del self.data[dataDescription.id]
         except:
-            print "Removal of data failed!"
+            log.exception("Failed to remove data")
 
     def GetData(self):
         return self.data.values()
@@ -1203,6 +811,7 @@ STATUS_ENABLED = "Enabled"
 STATUS_DISABLED = "Disabled"
 
 class BridgeDescription:
+    UNREACHABLE = 100000
     def __init__(self, guid, name, host, port, serverType, description="",
                  portMin=None, portMax=None):
         self.guid = guid
@@ -1214,7 +823,7 @@ class BridgeDescription:
         self.portMin = portMin
         self.portMax = portMax
         self.status = STATUS_ENABLED
-        self.rank = 1000
+        self.rank = BridgeDescription.UNREACHABLE
         
         
         

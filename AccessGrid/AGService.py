@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.63 2006-09-21 12:04:59 braitmai Exp $
+# RCS-ID:      $Id: AGService.py,v 1.64 2006-12-20 17:55:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.63 2006-09-21 12:04:59 braitmai Exp $"
+__revision__ = "$Id: AGService.py,v 1.64 2006-12-20 17:55:46 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -24,8 +24,7 @@ from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD
 from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Descriptions import StreamDescription
-from AccessGrid.Descriptions import StreamDescription3
-from AccessGrid.Descriptions import AGServiceDescription3, AGServiceDescription
+from AccessGrid.Descriptions import AGServiceDescription
 
 from AccessGrid.interfaces.AGService_client import AGServiceIW
 from AccessGrid.interfaces.AGService_interface import AGService as AGServiceI
@@ -53,9 +52,9 @@ class AGService:
         self.running = 1
         self.packageFile = ""
         self.id = GUID()
-	# Variable used by new service with AG3.1 interface to indicate when the server has first been configured
-	# Afterwards relies on streamDescription comparision as with older AG3.0.x services.
-	self.isConfigured = False  
+        # Variable used by new service with AG3.1 interface to indicate when the server has first been configured
+        # Afterwards relies on streamDescription comparision as with older AG3.0.x services.
+        self.isConfigured = False  
         
         self.processManager = ProcessManager()
         
@@ -121,13 +120,6 @@ class AGService:
     def GetCapabilities( self ):
         """
         Get capabilities
-        Method for legacy support for AG 3.0.2. clients
-        """
-        return self.capabilities
-
-    def GetCapabilities3( self ):
-        """
-        Get capabilities
         """
         return self.capabilities
 
@@ -173,60 +165,12 @@ class AGService:
         """
         return self.configuration
 
-
     def SetStream( self, streamDescription ):
         """
         Set the StreamDescription
-        Method for legacy support for AG 3.0.2. clients
         """
-	
-	
         try:
             self.log.info("SetStream: %s %s %s" % (streamDescription.capability, 
-                                                   streamDescription.location.host,   
-                                                   streamDescription.location.port) )
-
-            # Detect trivial re-configuration
-            if self.streamDescription and \
-                self.streamDescription.location.host == streamDescription.location.host       \
-                and self.streamDescription.location.port == streamDescription.location.port \
-                and self.streamDescription.encryptionKey == streamDescription.encryptionKey and self.isConfigured:
-                # configuration with identical stream description;
-                # bail out
-                self.log.info("SetStream: ignoring trivial re-configuration")
-                return 1
-            
-            # each service capability has to be present in the stream.
-            for cap in self.capabilities:
-                match = 0
-                for c in streamDescription.capability:
-                    if c.matches(cap):
-                        match = 1
-                if not match:
-                    return 0
-            if isinstance(streamDescription, StreamDescription) or isinstance(streamDescription, StreamDescription3):
-                self.streamDescription = streamDescription
-            else:
-		if streamDescription == None:
-                    self.log.debug("StreamDescription invalid  == None!")
-		else:
-                    self.log.debug("StreamDescription invalid format!")
-		    self.streamDescription = streamDescription
-                
-
-        except:
-            self.log.exception("Exception in SetStream ")
-            raise Exception("AGService.SetStream failed : " + str(sys.exc_value) )
-
-        return 0
-    ConfigureStream = SetStream
-
-    def SetStream3( self, streamDescription ):
-        """
-        Set the StreamDescription
-        """
-        try:
-            self.log.info("SetStream3: %s %s %s" % (streamDescription.capability, 
                                                    streamDescription.location.host,   
                                                    streamDescription.location.port) )
 
@@ -237,10 +181,10 @@ class AGService:
                 and self.streamDescription.encryptionKey == streamDescription.encryptionKey:
                 # configuration with identical stream description;
                 # bail out
-                self.log.info("SetStream3: ignoring trivial re-configuration")
+                self.log.info("SetStream: ignoring trivial re-configuration")
                 return 1
 
-	    self.log.info("SetStream3: new configuration, set everything new!")
+            self.log.info("SetStream: new configuration, set everything new!")
             
             # each service capability has to be present in the stream.
             for cap in self.capabilities:
@@ -252,23 +196,23 @@ class AGService:
 		    self.log.debug("No match found leave!")
                     return 0
 
-            if isinstance(streamDescription, StreamDescription3):
-	        self.log.debug("StreamDescription3 okay, assign it to service!")
+            if isinstance(streamDescription, StreamDescription):
+	        self.log.debug("StreamDescription okay, assign it to service!")
                 self.streamDescription = streamDescription
             else:
 		if streamDescription == None:
-                    self.log.debug("StreamDescription3 invalid  == None!")
+                    self.log.debug("StreamDescription invalid  == None!")
 		else:
-                    self.log.debug("StreamDescription3 invalid format!")
+                    self.log.debug("StreamDescription invalid format!")
 		    self.streamDescription = streamDescription
 
         except:
-            self.log.exception("Exception in SetStream3 ")
-            raise Exception("AGService.SetStream3 failed : " + str(sys.exc_value) )
+            self.log.exception("Exception in SetStream ")
+            raise Exception("AGService.SetStream failed : " + str(sys.exc_value) )
 
         return 0
 
-    ConfigureStream3 = SetStream3
+    ConfigureStream = SetStream
 
 
     def IsStarted( self ):
@@ -327,23 +271,9 @@ class AGService:
         return self.serviceManagerUri
         
     def GetDescription(self):
-        """
-        Method for legacy support for AG 3.0.2. clients
-        """
         for cp in self.capabilities:
-            self.log.debug("GetDescription3:Capability in Service %s", cp)
+            self.log.debug("GetDescription:Capability in Service %s", cp)
         r = AGServiceDescription(self.name,
-                                 self.uri,
-                                 self.capabilities,
-                                 self.GetResource(),
-                                 self.packageFile)
-                
-        return r
-
-    def GetDescription3(self):
-        for cp in self.capabilities:
-            self.log.debug("GetDescription3:Capability in Service %s", cp)
-        r = AGServiceDescription3(self.name,
                                  self.uri,
                                  self.capabilities,
                                  self.GetResource(),
@@ -422,10 +352,10 @@ def RunService(service,serviceInterface,unusedCompatabilityArg=None):
     
     if test:
         from AccessGrid.NetworkLocation import MulticastNetworkLocation
-        stream = StreamDescription3('test stream',
+        stream = StreamDescription('test stream',
                                    MulticastNetworkLocation('224.2.2.2',20000,1))
         stream.capability = service.capabilities
-        service.SetStream3(stream)
+        service.SetStream(stream)
         service.Start()
         return
     

@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.216 2006-10-14 00:52:01 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.217 2006-12-20 17:55:47 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.216 2006-10-14 00:52:01 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.217 2006-12-20 17:55:47 turam Exp $"
 
 
 # Standard stuff
@@ -46,12 +46,12 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.DataStore import DataServer
 from AccessGrid.scheduler import Scheduler
 
-from AccessGrid.Descriptions import ConnectionDescription, StreamDescription, StreamDescription3
-from AccessGrid.Descriptions import DataDescription, VenueDescription, VenueDescription3
+from AccessGrid.Descriptions import ConnectionDescription, StreamDescription
+from AccessGrid.Descriptions import DataDescription, VenueDescription
 from AccessGrid.Descriptions import ServiceDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
-from AccessGrid.Descriptions import Capability, Capability3
+from AccessGrid.Descriptions import Capability
 
 from AccessGrid.EventService import EventService
 from AccessGrid.VenueServerService import VenueServerServiceDescription
@@ -129,7 +129,7 @@ class VenueServer:
         "VenueServer.performanceReportFrequency" : 0
         }
         
-    defaultVenueDesc = VenueDescription3("Venue Server Lobby", """This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid.""")
+    defaultVenueDesc = VenueDescription("Venue Server Lobby", """This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid.""")
 
     def __init__(self, hostEnvironment = None, configFile=None):
         """
@@ -291,7 +291,7 @@ class VenueServer:
             log.debug("Setting default venue.")
         else:
             log.debug("Creating default venue")
-            uri = self.AddVenue3(VenueServer.defaultVenueDesc)
+            uri = self.AddVenue(VenueServer.defaultVenueDesc)
             oid = self.hostingEnvironment.FindObjectForURL(uri).impl.GetId()
             self.defaultVenue = oid
 
@@ -607,38 +607,38 @@ class VenueServer:
                         capsList = []
                         if capabilityType == 'audio' or capabilityType == 'producer audio':
                             strid = GUID()
-                            capsList = [ Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                            capsList = [ Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                           "L16",16000,strid),
-                              Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                           "L16",8000,strid),
-                              Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                           "L8",16000, strid),
-                              Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                           "L8",8000, strid),
-                               Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                               Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                            "PCMU", 16000, strid),
-                              Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                           "PCMU",8000, strid),
-                              Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                           "GSM",16000, strid),
-                              Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                           "GSM",8000, strid)]
                         elif capabilityType == 'video' or capabilityType == 'producer video':
                             strid = GUID()
-                            capsList = [ Capability3( Capability3.CONSUMER,
-                                          Capability3.VIDEO,
+                            capsList = [ Capability( Capability.CONSUMER,
+                                          Capability.VIDEO,
                                           "H261",
                                           90000, strid)]
                         else:
-                            capsList = [ Capability3(type=capabilityType)]
+                            capsList = [ Capability(type=capabilityType)]
 
                         sd = StreamDescription(name, loc, capsList, 
                                                encryptionFlag,
@@ -659,10 +659,10 @@ class VenueServer:
                     authPolicy = None
 
                 # do the real work
-                vd = VenueDescription3(name, desc, (venueEncryptMedia,
+                vd = VenueDescription(name, desc, (venueEncryptMedia,
                                                    venueEncryptionKey),
                                       cl, sl, oid)
-                uri = self.AddVenue3(vd, authPolicy)
+                uri = self.AddVenue(vd, authPolicy)
                 vif = self.hostingEnvironment.FindObjectForURL(uri)
                 v = vif.impl
                 
@@ -869,8 +869,6 @@ class VenueServer:
         """
         The AddVenue method takes a venue description and creates a new
         Venue Object, then makes it available from this Venue Server.
-        
-        Method for legacy support for AG 3.0.2. clients
         """
 
         # create an event channel for this venue.
@@ -910,7 +908,29 @@ class VenueServer:
             # Create an interface
             vi = VenueI(impl=venue, auth_method_name="authorize")
             
+#             successfulPolicyImport = False
+#             if authPolicy is not None:
+#                 try:
+#                     venue.ImportAuthorizationPolicy(authPolicy)
+#                     successfulPolicyImport = True
+#                 except:
+#                     log.exception("Failed to Import Auth Policy")
+#             if successfulPolicyImport == False:
+#                 # This is a new venue, not from persistence,
+#                 # so we have to create the policy
+#                 log.info("Creating new auth policy for the venue.")
+#                 venue.authManager.AddRoles(venue.authManager.GetRequiredRoles())
+#                 venue.authManager.AddRoles(venue.authManager.GetDefaultRoles())
+#                 venue._AddDefaultRolesToActions()
+# 
+#                 # Default to giving administrators access to all venue actions.
+#                 for action in venue.authManager.GetActions():
+#                     venue.authManager.AddRoleToAction(action,
+#                                                       Role.Administrators)
+        
+
             # Apply the default authorization policy
+            log.info("initializing with default policy")
             venue.authManager.AddRoles(venue.authManager.GetRequiredRoles())
             venue.authManager.AddRoles(venue.authManager.GetDefaultRoles())
             venue._AddDefaultRolesToActions()
@@ -921,12 +941,15 @@ class VenueServer:
                                                   Role.Administrators)
                                                   
             # Overlay authorization policy from config
+            log.info("auth policy ? %d", authPolicy=="")
             if authPolicy:
                 try:
                     venue.OverlayAuthorizationPolicy(authPolicy)
                 except:
                     log.exception("Failed to Import Auth Policy")
         
+
+
             # This could be done by the server, and probably should be
             subj = self.servicePtr.GetDefaultSubject()
             
@@ -963,106 +986,6 @@ class VenueServer:
         
         # return the URL to the new venue
         return venue.uri
-
-    def AddVenue3(self, venueDesc, authPolicy = None):
-        """
-        The AddVenue3 method takes a venue description and creates a new
-        Venue Object, then makes it available from this Venue Server.
-        """
-
-        # create an event channel for this venue.
-        # channel id is the same as venue id.
-        self.eventService.CreateChannel(venueDesc.id)
-
-        # Create a new Venue object pass it the server
-        # Usually the venueDesc will not have Role information 
-        #   and defaults will be used.
-
-        venue = Venue(self, venueDesc.name, venueDesc.description,
-                      self.dataStorageLocation, venueDesc.id )
-
-        self.UpdateService(self.eventService.GetDescription())
-
-        # Make sure new venue knows about server's external role manager.
-        venue.SetEncryptMedia(venueDesc.encryptMedia, venueDesc.encryptionKey)
-
-        # Add Connections if there are any
-        venue.SetConnections(venueDesc.connections)
-
-        # Add Streams if there are any
-        for sd in venueDesc.streams:
-            sd.encryptionFlag = venue.encryptMedia
-            sd.encryptionKey = venue.encryptionKey
-            venue.streamList.AddStream(sd)
-
-        # BEGIN Critical Section
-        self.simpleLock.acquire()
-
-        try:
-            
-            # Add the venue to the list of venues
-            oid = venue.GetId()
-            self.venues[oid] = venue
-            
-            # Create an interface
-            vi = VenueI(impl=venue, auth_method_name="authorize")
-            
-            successfulPolicyImport = False
-            if authPolicy is not None:
-                try:
-                    venue.ImportAuthorizationPolicy(authPolicy)
-                    successfulPolicyImport = True
-                except:
-                    log.exception("Failed to Import Auth Policy")
-            if successfulPolicyImport == False:
-                # This is a new venue, not from persistence,
-                # so we have to create the policy
-                log.info("Creating new auth policy for the venue.")
-                venue.authManager.AddRoles(venue.authManager.GetRequiredRoles())
-                venue.authManager.AddRoles(venue.authManager.GetDefaultRoles())
-                venue._AddDefaultRolesToActions()
-
-                # Default to giving administrators access to all venue actions.
-                for action in venue.authManager.GetActions():
-                    venue.authManager.AddRoleToAction(action,
-                                                      Role.Administrators)
-        
-            # This could be done by the server, and probably should be
-            subj = self.servicePtr.GetDefaultSubject()
-            
-            if subj is not None:
-                venue.authManager.AddSubjectToRole(subj,
-                                                   Role.Administrators)
-        
-            #        print "Venue Policy:"
-            #        print venue.authManager.xml.toprettyxml()
-            
-            # Set parent auth mgr to server so administrators cascades?
-            venue.authManager.SetParent(self.authManager)
-            
-            # We have to register this venue as a new service.
-            if(self.hostingEnvironment != None):
-                self.hostingEnvironment.RegisterObject(vi,
-                                                       path=PathFromURL(venue.uri))
-                self.hostingEnvironment.RegisterObject(AuthorizationManagerI(impl=venue.authManager),
-                                                       path=PathFromURL(venue.uri)+"/Authorization")
-
-        except:
-            self.simpleLock.release()
-            log.exception("AddVenue3: Failed.")
-            raise VenueServerException("AddVenue3 Failed!")
-
-        # END Critical Section
-        self.simpleLock.release()
-        
-        # If this is the first venue, set it as the default venue
-        if len(self.venues) == 1 and self.defaultVenue == '':
-            self.SetDefaultVenue(oid)
-
-        venue.authManager.GetActions()
-        
-        # return the URL to the new venue
-        return venue.uri
     
     def AddEntryPoint(self, directory, parent, venueid):
         dataPair = []
@@ -1076,47 +999,6 @@ class VenueServer:
     def ModifyVenue(self, oid, venueDesc):   
         """   
         ModifyVenue updates a Venue Description.   
-        
-        Method for legacy support for AG 3.0.2. clients
-        """
-        venue = self.venues[oid]
-
-        # BEGIN Critical Section
-        self.simpleLock.acquire()
-            
-        try:
-            venue.name = venueDesc.name
-            venue.description = venueDesc.description
-            venue.uri = venueDesc.uri
-            venue.SetEncryptMedia(venueDesc.encryptMedia,
-                                  venueDesc.encryptionKey)
-            
-            venue.SetConnections(venueDesc.connections)
-            
-            current_streams = venue.GetStaticStreams()    
-            for sd in current_streams:
-                venue.RemoveStream(sd)
-
-      
-            for sd in venueDesc.streams:
-                sd.encryptionFlag = venue.encryptMedia
-                sd.encryptionKey = venue.encryptionKey
-                venue.AddStream(sd)
-                
-      
-            self.venues[oid] = venue
-        except:
-            # END Critical Section
-            self.simpleLock.release()
-            log.exception("ModifyVenue: Failed.")
-            raise VenueServerException("ModifyVenue Failed!")
-            
-        # END Critical Section
-        self.simpleLock.release()
-
-    def ModifyVenue3(self, oid, venueDesc):   
-        """   
-        ModifyVenue3 updates a Venue Description.   
         """
         venue = self.venues[oid]
 
@@ -1208,8 +1090,6 @@ class VenueServer:
         GetVenues returns a list of Venues Descriptions for the venues
         hosted by this VenueServer.
         
-        Method for legacy support for AG 3.0.2. clients
-
         **Arguments:**
 
         **Raises:**
@@ -1229,31 +1109,6 @@ class VenueServer:
         except:
             log.exception("GetVenues: GetVenueDescriptions failed!")
             raise VenueServerException("GetVenueDescriptions Failed!")
-
-    def GetVenueDescriptions3(self):
-        """
-        GetVenues returns a list of Venues Descriptions for the venues
-        hosted by this VenueServer.
-
-        **Arguments:**
-
-        **Raises:**
-
-            **VenueServerException** This is raised if there is a
-            problem creating the list of Venue Descriptions.
-
-        **Returns:**
-
-            This returns a list of venue descriptions.
-
-        """
-        try:
-            vdl =  map(lambda venue: venue.AsVenueDescription3(),
-                       self.venues.values())
-            return vdl
-        except:
-            log.exception("GetVenues: GetVenueDescriptions3 failed!")
-            raise VenueServerException("GetVenueDescriptions3 Failed!")
 
 
     def GetVenues(self):

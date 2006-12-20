@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.102 2006-11-24 13:09:38 braitmai Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.103 2006-12-20 17:55:46 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.102 2006-11-24 13:09:38 braitmai Exp $"
+__revision__ = "$Id: DataStore.py,v 1.103 2006-12-20 17:55:46 turam Exp $"
 
 import os
 import time
@@ -25,7 +25,7 @@ import urllib
 from AccessGrid import Log
 import AccessGrid.GUID
 from AccessGrid.Platform.Config import SystemConfig
-from AccessGrid.Descriptions import DataDescription, DirectoryDescription, FileDescription, DataDescription3
+from AccessGrid.Descriptions import DataDescription, DirectoryDescription, FileDescription
 from AccessGrid.Events import Event
 from AccessGrid import FTPSClient,FTPSServer
 
@@ -239,7 +239,7 @@ class DataStore:
         self.root = DirectoryDescription("Root")
         self.root.SetLevel(0)
         self.root.description ="Root node of data storage"
-        self.root.SetObjectType(DataDescription3.TYPE_DIR)
+        self.root.SetObjectType(DataDescription.TYPE_DIR)
         self.root.SetLocation("")
         
         self.__CheckPath()
@@ -299,9 +299,9 @@ class DataStore:
         for f in files:   
             if os.path.isfile(searchPath+ os.path.sep+f):
                 log.debug("Found file %s !", f)
-                dd = DataDescription3(f)
+                dd = DataDescription(f)
                 dd.SetId(str(AccessGrid.GUID.GUID()))
-                dd.SetObjectType(DataDescription3.TYPE_FILE)
+                dd.SetObjectType(DataDescription.TYPE_FILE)
                 dd.SetLevel(-2)
                 dd.SetParentId(parentID)
                 log.debug("LoadPersistentInfo: Adding file %s to location %s", f, parent.GetLocation())
@@ -309,7 +309,7 @@ class DataStore:
                 log.debug("Found directory %s !" , f)
                 dd = DirectoryDescription(f)
                 dd.SetId(str(AccessGrid.GUID.GUID()))
-                dd.SetObjectType(DataDescription3.TYPE_DIR)
+                dd.SetObjectType(DataDescription.TYPE_DIR)
                 dd.SetLevel(level)
                 dd.SetParentId(parentID)
                 if parent.GetLocation() == "":
@@ -328,7 +328,7 @@ class DataStore:
 #                 dd.SetDescription(cp.get(sec, 'description'))
 #             except ConfigParser.NoOptionError:
 #                 log.info("LoadPersistentVenues: Data has no description")
-            dd.SetStatus(DataDescription3.STATUS_PRESENT)
+            dd.SetStatus(DataDescription.STATUS_PRESENT)
             stat = os.stat(os.path.join(serverPath,f))
             dd.SetSize(stat.st_size)
 #             dd.SetChecksum(cp.get(sec, 'checksum'))
@@ -342,7 +342,7 @@ class DataStore:
             
             path=urlparse.urlparse(serverPath)
                         
-            if dd.GetObjectType() == DataDescription3.TYPE_DIR:
+            if dd.GetObjectType() == DataDescription.TYPE_DIR:
                 if not parent.uri == None:
                     dd.SetURI(parent.uri + "/" + dd.name)
                 else:
@@ -356,7 +356,7 @@ class DataStore:
                 else:
                     url = self.GetDownloadDescriptor(parent.GetLocation() + os.path.sep + dd.name)
                 if url != None:
-                    if dd.GetObjectType() == DataDescription3.TYPE_FILE:
+                    if dd.GetObjectType() == DataDescription.TYPE_FILE:
                         dd.SetURI(url)
                     else:
                         dd.SetURI(url + os.path.sep + dd.GetLocation())
@@ -448,7 +448,7 @@ class DataStore:
                 
         return block
 
-    def GetDataDescriptions3(self):
+    def GetDataDescriptions(self):
         '''
         Retreive data in the DataStore as a list of DataDescriptions.
         This is the new interface method version.
@@ -459,31 +459,6 @@ class DataStore:
         self.cbLock.acquire()
         try:
             dataDescriptionList = self.descriptionDict.values()
-        except:
-            log.exception("DataStore.GetDataDescription: Failed")
-
-        self.cbLock.release()
-                
-        return dataDescriptionList
-
-    def GetDataDescriptions(self):
-        '''
-        Retreive data in the DataStore as a list of DataDescriptions.
-        Method for legacy support for AG 3.0.2. clients
-        
-        **Returns**
-            *dataDescriptionList* A list of DataDescriptions representing data currently in the DataStore
-        '''
-
-        dataDescriptionList = []
-        
-        self.cbLock.acquire()
-        try:
-            log.info("Parsing list of descriptions: %s", self.descriptionDict)
-            for item in self.descriptionDict.values():
-                if item.GetParentId() == '-1' and item.GetObjectType() == DataDescription3.TYPE_FILE:
-                    log.debug("Added an datastore entry!")
-                    dataDescriptionList.append(item)
         except:
             log.exception("DataStore.GetDataDescription: Failed")
 
@@ -508,7 +483,7 @@ class DataStore:
 
         return fileList
 
-    def RemoveFiles3(self, dataDescriptionList):
+    def RemoveFiles(self, dataDescriptionList):
         """
         Removes the files specified by the DataDescriptions in the given list.
         This is the new interface method version.
@@ -580,11 +555,19 @@ class DataStore:
         if filesWithError:
             raise FileNotFound(filesWithError)
 
+
+    """
+    # 
+    # turam 
+    # This version of RemoveFiles is temporarily disabled; review for 
+    # content that needs to be included in the /new/ implementation of 
+    # ReviewFiles above
+    #
     def RemoveFiles(self, dataDescriptionList):
-        """
+        #"""
         Removes the files specified by the DataDescriptions in the given list.
         Method for legacy support for AG 3.0.2. clients
-        """
+        #"""
         filesWithError = ""
 
 
@@ -661,6 +644,7 @@ class DataStore:
             raise FileNotFound(filesWithError)
         
         return False
+    """
 
 
     #Added by NA2-HPCE
@@ -703,7 +687,7 @@ class DataStore:
         for id in tempListOfIdsToRemove:
             self.cbLock.acquire()
             entry = self.GetDescById(id)
-            if entry.IsOfType(DataDescription3.TYPE_DIR):
+            if entry.IsOfType(DataDescription.TYPE_DIR):
                 #Remove Directory; descend recursively the whole directory subtree
                 log.debug("RemoveDir: Removing subdirectory: %s", entry.name)
                 self.cbLock.release()
@@ -716,7 +700,7 @@ class DataStore:
         
         if len(entryList) != 0:
             log.debug("RemoveDir: Number of files to remove: %s", len(entryList))
-            self.RemoveFiles3(entryList)
+            self.RemoveFiles(entryList)
             
             #As the removal of data within a possibly non-empty directory
             #is not signaled to the clients, the deletion from the global
@@ -966,12 +950,12 @@ class DataStore:
                 
         log.debug("AddFile: Determined parentID is: %s", parentID)
                 
-        desc = DataDescription3(fileList[len(fileList)-1]) # Last item in list is the filename
+        desc = DataDescription(fileList[len(fileList)-1]) # Last item in list is the filename
         desc.SetSize(int(os.stat(path)[stat.ST_SIZE]))
-        desc.SetStatus(DataDescription3.STATUS_PRESENT)
+        desc.SetStatus(DataDescription.STATUS_PRESENT)
         desc.SetOwner(identityToken)
         desc.SetParentId(parentID)
-        desc.SetObjectType(DataDescription3.TYPE_FILE)
+        desc.SetObjectType(DataDescription.TYPE_FILE)
         desc.SetLevel(-2)
         desc.SetURI(url)
         log.debug("AddFile: URI is %s", url)
@@ -1034,7 +1018,7 @@ class DataStore:
         log.debug("Datastore::CompleteUpload: got desc %s %s", desc, desc.__dict__)
         desc.SetChecksum(file_info['checksum'])
         desc.SetSize(int(file_info['size']))
-        desc.SetStatus(DataDescription3.STATUS_PRESENT)
+        desc.SetStatus(DataDescription.STATUS_PRESENT)
         desc.SetOwner(identityToken)
         desc.SetURI(self.GetDownloadDescriptor(file_info['name']))
         desc.SetLastModified(self.GetTime())
@@ -1065,43 +1049,11 @@ class DataStore:
                 
             self.cbLock.release()
                       
-    def AddPendingUpload3(self, identityToken, filename):
-        """
-        Create a data description for filename with a state of 'pending' and
-        add to the venue.
-        This is the new interface method version.
-        """
-        log.debug("AddPendingUpload ENTERED!!!!!!!")
-
-        desc = FileDescription(filename)
-        desc.SetStatus(DataDescription3.STATUS_PENDING)
-        #desc.SetOwner(identityToken.dn)
-        desc.SetOwner(identityToken)
-        desc.SetLevel(-2) # Files are per definition level = -2 to distinguish from 
-        desc.SetParentID(self.curParentID) # set ID of the parent DataDescription
-
-                
-        """
-        Changing code here to allow addign DDs to different hierarchy levels
-        """
-        if not self.curDDC == None:
-            self.cbLock.acquire()
-            self.curDDC.AddData(desc)
-            self.callbackClass.AddData(desc)
-            self.cbLock.release()
-        else:
-            self.cbLock.acquire()
-            self.dataDescContainer.AddData(desc)
-            self.callbackClass.AddData(desc)
-            self.cbLock.release()
-                                                
-        return desc
-
     def AddPendingUpload(self, identityToken, filename):
         """
         Create a data description for filename with a state of 'pending' and
         add to the venue.
-        Method for legacy support for AG 3.0.2. clients
+        This is the new interface method version.
         """
         log.debug("AddPendingUpload ENTERED!!!!!!!")
 
@@ -1128,7 +1080,7 @@ class DataStore:
             self.cbLock.release()
                                                 
         return desc
-    
+
     #Added by NA2-HPCE
     def Dump(self, desc=None):
         """
@@ -1169,7 +1121,7 @@ class DataStore:
     
         for item in self.descriptionDict:
             dataObject = self.GetDescById(item)
-            if dataObject.IsOfType(DataDescription3.TYPE_DIR):
+            if dataObject.IsOfType(DataDescription.TYPE_DIR):
                 log.debug("Dir - %s", dataObject.GetName())
                 print "Dir - ", dataObject.GetName()
             else:
@@ -1218,7 +1170,7 @@ class DataStore:
         of the parent of the directory to be added
         """
         locDir = DirectoryDescription(name)
-        locDir.SetStatus(DataDescription3.STATUS_PRESENT)
+        locDir.SetStatus(DataDescription.STATUS_PRESENT)
         locDir.SetDescription(desc)
         locDir.SetLevel(level)
         log.debug("ParentId to be set: %s", parentUID)
@@ -1279,27 +1231,9 @@ class DataStore:
         self.cbLock.release()
         
     def GetDescription(self, filename):
-        """
-        Method for legacy support for AG 3.0.2. clients
-        """
-        return self.descriptionDict.GetData(filename) #get description by filename
-
-    def GetDescription3(self, filename):
         return self.descriptionDict.GetData(filename) #get description by filename
 
     def SetDescription(self, filename, description):
-        """
-        Given a data description and a filename,
-        set the data description if the file exists
-        Method for legacy support for AG 3.0.2. clients
-        """
-
-        path = os.path.join(self.pathname, filename)
-        if os.path.exists(path):
-            description.uri = self.GetDownloadDescriptor(filename)
-            self.descriptionDict[description.GetId()] = description
-
-    def SetDescription3(self, filename, description):
         """
         Given a data description and a filename,
         set the data description if the file exists

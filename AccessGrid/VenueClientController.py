@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.73 2006-12-05 12:16:03 braitmai Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.74 2006-12-20 17:55:46 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.73 2006-12-05 12:16:03 braitmai Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.74 2006-12-20 17:55:46 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -24,7 +24,7 @@ from AccessGrid import DataStore
 from AccessGrid.AppDb import AppDb
 from AccessGrid.PluginDb import PluginDb
 from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.Descriptions import ServiceDescription, DataDescription, FileDescription, DirectoryDescription, DataDescription3
+from AccessGrid.Descriptions import ServiceDescription, DataDescription, FileDescription, DirectoryDescription
 from AccessGrid.Descriptions import ApplicationDescription, AGNetworkServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription, ApplicationCmdDescription
 from AccessGrid.Descriptions import PluginDescription
@@ -510,7 +510,7 @@ class VenueClientController:
         
         """
         
-        if not data or not isinstance(data,DataDescription3):
+        if not data or not isinstance(data,DataDescription):
             raise ValueError
         
         self.__venueClient.RemoveData(data)
@@ -1695,7 +1695,7 @@ class VenueClientApp:
     def GetCommands(self,objDesc):
         commandList = None
 
-        if isinstance(objDesc,DataDescription3):
+        if isinstance(objDesc,DataDescription):
             splitName = objDesc.name.split('.')
             ext = ""
             

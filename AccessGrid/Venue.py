@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.282 2006-12-05 12:16:03 braitmai Exp $
+# RCS-ID:      $Id: Venue.py,v 1.283 2006-12-20 17:55:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.282 2006-12-05 12:16:03 braitmai Exp $"
+__revision__ = "$Id: Venue.py,v 1.283 2006-12-20 17:55:46 turam Exp $"
 
 import sys
 import time
@@ -31,14 +31,14 @@ from AccessGrid.Security.Subject import SubjectAlreadyPresent
 
 from AccessGrid import DataStore
 from AccessGrid import NetService
-from AccessGrid.Descriptions import Capability, Capability3
+from AccessGrid.Descriptions import Capability
 from AccessGrid.SharedApplication import SharedApplication
-from AccessGrid.Descriptions import StreamDescription, StreamDescription3
+from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.Descriptions import DirectoryDescription
 from AccessGrid.Descriptions import FileDescription
-from AccessGrid.Descriptions import ConnectionDescription, VenueDescription, VenueDescription3
+from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
-from AccessGrid.Descriptions import DataDescription, VenueState, DataDescription3, VenueState3
+from AccessGrid.Descriptions import DataDescription, VenueState
 from AccessGrid.Descriptions import BadDataDescription, BadServiceDescription
 from AccessGrid.Descriptions import BadApplicationDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation, UnicastNetworkLocation
@@ -293,7 +293,6 @@ class Venue:
         self.defaultEntryActionNames = ["Enter", "Exit", "GetStreams",
                                         "UpdateLifetime",
                                         "NegotiateCapabilities",
-                                        "NegotiateCapabilities3",
                                         "GetStaticStreams",
                                         "GetUploadDescriptor",
                                         "AsVenueDescription",
@@ -303,11 +302,8 @@ class Venue:
                                         "DestroyApplication",
                                         "UpdateClientProfile",
                                         "AddService", "RemoveService",
-                                        "AddService3", "RemoveService3",
                                         "UpdateService", "GetServices",
-                                        "UpdateService3", "GetServices3",
                                         "AddData", "UpdateData", "RemoveData",
-                                        "AddData3", "UpdateData3", "RemoveData3",
                                         "GetDataStoreInformation",
                                         "GetDataDescriptions",
                                         "AddNetworkService",
@@ -316,7 +312,7 @@ class Venue:
                                         "GetCachedProfiles", "AddConnection",
                                         "RemoveConnection", "GetConnections",
                                         "SetConnections", "GetEncryptMedia",
-                                        "GetDescription", "GetDescription3", "GetName",
+                                        "GetDescription", "GetName",
                                         "GetApplication", "GetApplications",
                                         "AddNetworkLocationToStream",
                                         "RemoveNetworkLocationFromStream",
@@ -327,7 +323,6 @@ class Venue:
                                         "AllocateMulticastLocation",
                                         "RecycleMulticastLocation",
                                         "GetState",
-                                        "GetState3",
                                         "AddDir",
                                         "GetDescById",
                                         "RemoveDir",
@@ -641,24 +636,8 @@ class Venue:
         """
         This creates a Venue Description filled in with the data from
         this venue.
-        Method for legacy support for AG 3.0.2. clients
         """
         desc = VenueDescription(self.name, self.description,
-                                (self.encryptMedia, self.encryptionKey),
-                                self.connections,
-                                self.GetStaticStreams(),
-                                self.uniqueId)
-        uri = self.server.MakeVenueURL(self.uniqueId)
-        desc.SetURI(uri)
-
-        return desc
-    
-    def AsVenueDescription3(self):
-        """
-        This creates a Venue Description filled in with the data from
-        this venue.
-        """
-        desc = VenueDescription3(self.name, self.description,
                                 (self.encryptMedia, self.encryptionKey),
                                 self.connections,
                                 self.GetStaticStreams(),
@@ -672,7 +651,6 @@ class Venue:
         """
         This creates a Venue State filled in with the data from this
         venue.
-        Method for legacy support for AG 3.0.2. clients
         """
 
         try:
@@ -704,64 +682,8 @@ class Venue:
                                 self.services.values())
         return venueState
 
-    def AsVenueState3(self):
-        """
-        This creates a Venue State filled in with the data from this
-        venue.
-        """
-
-        try:
-            dList = self.dataStore.GetDataDescriptions3()
-            log.debug("List of DataDescriptions")
-            for item in dList:
-                log.debug("%s: %s", item.GetObjectType(), item.GetName())
-        except:
-            log.exception("Venue::AsVenueState3: Failed to get data descrs.")
-            dList = []
-
-        try:
-            applist = map(lambda x: x.AsApplicationDescription(),
-                          self.applications.values())
-        except:
-            log.exception("Venue::AsVenueState3: Failed to get applications.")
-            applist = []
-            
-        try:
-            clientlist = map(lambda c: c.GetClientProfile(),
-                             self.clients.values())
-        except:
-            log.exception("Venue::AsVenueState3: Failed to get profiles.")
-            clientlist = []
-
-        venueState = VenueState3(self.uniqueId, self.name, self.description,
-                                self.uri, self.connections, clientlist,
-                                dList, None, None, None, applist,
-                                self.services.values())
-        return venueState
-
-
     def GetState(self):
-        """
-        Method for legacy support for AG 3.0.2. clients
-        """
         venueState = self.AsVenueState()
-        # change to lists until zsi can handle dictionaries.
-        venueState.clients = venueState.clients.values()
-        venueState.data = venueState.data.values()
-        venueState.services = venueState.services.values()
-        venueState.applications = venueState.applications.values()
-        venueState.connections = venueState.connections.values()
-        venueState.dataLocation = self.GetUploadDescriptor()
-
-        # tuple of different types can't be serialized
-        venueState.eventLocation=  ":".join(map(lambda x : str(x), self.GetEventServiceLocation() ))
-        venueState.textLocation = ":".join(map(lambda x : str(x), self.GetTextServiceLocation() ))
-        
-                        
-        return venueState
-
-    def GetState3(self):
-        venueState = self.AsVenueState3()
         # change to lists until zsi can handle dictionaries.
         venueState.clients = venueState.clients.values()
         venueState.data = venueState.data.values()
@@ -901,7 +823,7 @@ class Venue:
                 caps.append(cap)
                 stream.capability = caps
             
-    def NegotiateCapabilities3(self, privateId, capabilities):
+    def NegotiateCapabilities(self, privateId, capabilities):
         """
         This method takes node capabilitis and finds a set of streams that
         matches those capabilities.  This method uses the network services
@@ -925,115 +847,6 @@ class Venue:
         services = {}
         for c in capabilities:
             log.debug("Capability to be processed: %s", c)
-            if services.has_key(c.serviceId):
-                caps = services[c.serviceId]
-                caps.append(c)
-                services[c.serviceId] = caps
-            else:
-                services[c.serviceId] = [c]
-
-        # For each service, find a stream that matches
-        streams = None
-        matchesExistingStream = 0
-        mismatchedServices = []
-        
-        for serviceId in services.keys():
-            stream = self.__GetMatchingStream(services[serviceId])
-            nrOfProducers = filter(lambda x: x.role == Capability3.PRODUCER, capabilities)
-            
-            # If matching stream is found, add capabilities to the stream
-            if stream:
-                self.__AddCapabilitiesToStream(stream, services[serviceId])
-                
-                # If the service has producer capabilities, add user as producer
-                if len(nrOfProducers)>0:
-                    self.streamList.AddStreamProducer(privateId,
-                                                      stream)
-                
-                log.debug("added user as producer of existent stream")
-            else:
-                # Check if network service can resolve mismatch
-                matchingStreams = []
-                streams = self.streamList.GetStreams()
-                if streams:
-                    matchingStreams = self.networkServicesManager.ResolveMismatch(
-                        streams , services[serviceId])
-
-                for streamList, producer in matchingStreams:
-                    for s in streamList:
-                        if not self.streamList.FindStreamByDescription(s):
-                            # Make new stream available for other clients.
-                            self.streamList.AddStream3(s)
-                            # Also add a new producer of the stream.
-                            self.streamList.AddStreamProducer( producer, s)
-                      
-                # Create new stream
-                if not matchingStreams:
-                    log.debug("Stream doesn't exist create new one!")
-                    locCap = services[serviceId]
-		    
-		    # Should there be a new stream if there is no producer?
- 		    # Check added!
-                    log.debug("Stream type: %s!", locCap[0].type)
-                        
-                    #Proposed change for determining the correct capability for IP creation
-                    #for item in locCap
-                    #    if item.type == "COVISE":
-                    #       correctCap = item
-                                    
-                    
-                    #AG3.0.2 exception block
-                    try:
-                        for entry in locCap:
-                            log.debug(" Caps: %s", entry)
-                          
-                        if locCap[0].locationType == Capability3.PREFERRED_UNICAST:
-                            log.debug("Stream prefers unicast!")
-                            addr = self.AllocateUnicastLocation(locCap[0])
-                        else:
-                            log.debug("Stream prefers multicast!")
-                            addr = self.AllocateMulticastLocation()
-                    
-                        log.debug("Stream address: %s : %s", addr.GetHost(), addr.GetPort())
-                    except:
-                        log.debug("AG3.0.2 client! Only multicast address!")
-                        addr = self.AllocateMulticastLocation()
-                    
-                    streamDesc = StreamDescription3(self.name,
-                                                   addr, services[serviceId], 
-                                                   self.encryptMedia, 
-                                                   self.encryptionKey,0)
-                    log.debug("added user as producer of non-existent stream")
-                    self.streamList.AddStreamProducer( privateId,
-                                                       streamDesc )
-
-        # return all available streams
-        return  self.streamList.GetStreams()    
-       
-    def NegotiateCapabilities(self, privateId, capabilities):
-        """
-        This method takes node capabilitis and finds a set of streams that
-        matches those capabilities.  This method uses the network services
-        manager to find The Best Match of all the network services, the
-        existing streams, and all the client capabilities.
-
-        Method for legacy support for AG 3.0.2. clients
-        
-        **Arguments:**
-        
-        *privateId* Private id for the node
-        *capabilities* Node capabilities
-        """
-        log.debug("negotiate capabilities")
-
-        if not self.clients.has_key(privateId):
-            raise InvalidVenueState
-               
-        streamDescriptions = []
-
-        # group service capabilities together
-        services = {}
-        for c in capabilities:
             if services.has_key(c.serviceId):
                 caps = services[c.serviceId]
                 caps.append(c)
@@ -1078,18 +891,47 @@ class Venue:
                       
                 # Create new stream
                 if not matchingStreams:
-                    addr = self.AllocateMulticastLocation()
-                    streamDesc = StreamDescription( self.name,
-                                                    addr, services[serviceId], 
-                                                    self.encryptMedia, 
-                                                    self.encryptionKey,0)
+                    log.debug("Stream doesn't exist create new one!")
+                    locCap = services[serviceId]
+		    
+		    # Should there be a new stream if there is no producer?
+ 		    # Check added!
+                    log.debug("Stream type: %s!", locCap[0].type)
+                        
+                    #Proposed change for determining the correct capability for IP creation
+                    #for item in locCap
+                    #    if item.type == "COVISE":
+                    #       correctCap = item
+                                    
+                    
+                    #AG3.0.2 exception block
+                    try:
+                        for entry in locCap:
+                            log.debug(" Caps: %s", entry)
+                          
+                        if locCap[0].locationType == Capability.PREFERRED_UNICAST:
+                            log.debug("Stream prefers unicast!")
+                            addr = self.AllocateUnicastLocation(locCap[0])
+                        else:
+                            log.debug("Stream prefers multicast!")
+                            addr = self.AllocateMulticastLocation()
+                    
+                        log.debug("Stream address: %s : %s", addr.GetHost(), addr.GetPort())
+                    except:
+                        log.exception("AG3.0.2 client! Only multicast address!")
+                        addr = self.AllocateMulticastLocation()
+                    
+                    streamDesc = StreamDescription(self.name,
+                                                   addr, services[serviceId], 
+                                                   self.encryptMedia, 
+                                                   self.encryptionKey,0)
                     log.debug("added user as producer of non-existent stream")
                     self.streamList.AddStreamProducer( privateId,
                                                        streamDesc )
 
         # return all available streams
-        return  self.streamList.GetStreams()
-
+        return  self.streamList.GetStreams()    
+       
     def FindConnection(self, cid):
         if self.clients.has_key(cid):
             return self.clients[cid]
@@ -1323,8 +1165,6 @@ class Venue:
         """
         log.debug("Enter called.")
         # allocate connection-specific id;
-        # this is passed back to 2.3+ clients in the private id, 
-        # which unfortunately lengthens the private id generally
         clientProfile.connectionId = str(GUID())
         log.debug("Enter: Assigning connection id: %s", clientProfile.connectionId)
         # Send this before we set up client state, so that
@@ -1353,7 +1193,7 @@ class Venue:
             log.info("User already in venue users list: %s", dn)
 
         try:
-            state = self.AsVenueState3()
+            state = self.AsVenueState()
             log.debug("state: %s", state)
         except:
             log.exception("Enter: Can't get state.")
@@ -1796,13 +1636,6 @@ class Venue:
     def GetStreams(self):
         """
         GetStreams returns a list of stream descriptions to the caller.
-        Method for legacy support for AG 3.0.2. clients
-        """
-        return self.streamList.GetStreams()
-
-    def GetStreams3(self):
-        """
-        GetStreams returns a list of stream descriptions to the caller.
         """
         return self.streamList.GetStreams()
 
@@ -2012,11 +1845,8 @@ class Venue:
         """
         legacyObject = self.CreateLegacyDataDescription(dataDescription)
         ag3object = dataDescription
-        #self.eventClient.Send( Event.ADD_DATA, legacyObject)
-	log.debug("DataDescription value: %s", dataDescription)
+        log.debug("DataDescription value: %s", dataDescription)
         self.eventClient.Send( Event.ADD_DATA, ag3object)
-        
-        
         
     # Added by NA2-HPCE
     def AddRootDir(self, dataDesc):
@@ -2073,39 +1903,6 @@ class Venue:
         **Returns:**
 
         *dataDescription* Upon successfully removing the data.
-
-        Method for legacy support for AG 3.0.2. clients
-        
-        """
-
-        name = dataDescription.name
-
-        # This is venue resident so delete the file
-        if(dataDescription.type is None or dataDescription.type == "None"):
-            log.debug("Entered Event activiation!")
-            if self.dataStore.RemoveFiles([dataDescription]):
-                return dataDescription
-            legacyObject = self.CreateLegacyDataDescription(dataDescription)
-            self.eventClient.Send( Event.REMOVE_DATA, legacyObject)
-        else:
-            log.info("Venue.RemoveData tried to remove non venue data.")
-
-        return dataDescription
-
-    def RemoveData3(self, dataDescription):
-        """
-        RemoveData removes persistent data from the Virtual Venue.
-        **Arguments:**
-
-        *dataDescription* A real data description.
-
-        **Raises:**
-
-        *DataNotFound* Raised when the data is not found in the Venue.
-
-        **Returns:**
-
-        *dataDescription* Upon successfully removing the data.
         """
 
         name = dataDescription.name
@@ -2114,7 +1911,7 @@ class Venue:
         if(dataDescription.type is None or dataDescription.type == "None"):
             log.debug("Entered Event activiation!")
             self.dataStore.DumpDataStack()
-            self.dataStore.RemoveFiles3([dataDescription])
+            self.dataStore.RemoveFiles([dataDescription])
             self.eventClient.Send(Event.REMOVE_DATA, dataDescription)
             self.dataStore.DumpDataStack()
         else:
@@ -2142,7 +1939,7 @@ class Venue:
         #ame = dataDescription.name
 
         # This is venue resident so delete the file
-        if isinstance(data, DataDescription3):
+        if isinstance(data, DataDescription):
             self.dataStore.RemoveDir(data.id)
             log.debug("Send Event - Data: %s", data.id)
         else:
@@ -2160,35 +1957,6 @@ class Venue:
         """
         Replace the current description for dataDescription.name with
         this one.
-
-        Method for legacy support for AG 3.0.2. clients
-        """
-        #
-        # This method is called both from the data store and from clients.
-        # The data store only wants to distribute an event, while clients
-        # need to modify the actual data store.
-        #
-        
-        if dataStoreCall:
-            legacyObject = self.CreateLegacyDataDescription(dataDescription)
-            self.eventClient.Send( Event.UPDATE_DATA, legacyObject)
-            return
-
-        # This is venue resident so modify the file
-        if(dataDescription.type is None or dataDescription.type == "None"):
-            self.dataStore.ModifyData(dataDescription)
-            legacyObject = self.CreateLegacyDataDescription(dataDescription)
-            self.eventClient.Send( Event.UPDATE_DATA, legacyObject)
-
-        else:
-            log.info("Venue.UpdateData tried to modify non venue data. That should not happen")
-            
-        return dataDescription
-
-    def UpdateData3(self, dataDescription, dataStoreCall = 0):
-        """
-        Replace the current description for dataDescription.name with
-        this one.
         """
         #
         # This method is called both from the data store and from clients.
@@ -2202,7 +1970,7 @@ class Venue:
 
         # This is venue resident so modify the file
         if(dataDescription.type is None or dataDescription.type == "None"):
-            self.dataStore.ModifyData3(dataDescription)
+            self.dataStore.ModifyData(dataDescription)
             self.eventClient.Send( Event.UPDATE_DATA, dataDescription)
 
         else:
@@ -2242,20 +2010,9 @@ class Venue:
 
     def GetDataDescriptions(self):
         """
-        Method for legacy support for AG 3.0.2. clients
         """
         try:
             dList = self.dataStore.GetDataDescriptions()
-            return dList
-        except:
-            log.exception("Venue.GetDataDescriptions.")
-            dList = []
-            raise
-    def GetDataDescriptions3(self):
-        """
-        """
-        try:
-            dList = self.dataStore.GetDataDescriptions3()
             return dList
         except:
             log.exception("Venue.GetDataDescriptions.")
