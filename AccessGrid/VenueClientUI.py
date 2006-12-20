@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.219 2006-12-05 12:16:03 braitmai Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.220 2006-12-20 17:53:56 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.219 2006-12-05 12:16:03 braitmai Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.220 2006-12-20 17:53:56 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -41,10 +41,10 @@ from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.ClientProfile import *
 from AccessGrid.Preferences import Preferences
 from AccessGrid.PreferencesUI import PreferencesDialog
-from AccessGrid.Descriptions import DataDescription, ServiceDescription, DataDescription3
+from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
 from AccessGrid.Descriptions import DirectoryDescription, FileDescription
-from AccessGrid.Descriptions import ApplicationDescription, VenueDescription, VenueDescription3
+from AccessGrid.Descriptions import ApplicationDescription, VenueDescription
 from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIDialog
 from AccessGrid.Utilities import SubmitBug, BuildServiceUrl
 from AccessGrid.VenueClientObserver import VenueClientObserver
@@ -280,6 +280,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             
         self.beaconFrame = None
         
+        self.browser = ServiceDiscovery.Browser('_servicemanager._tcp', self.BrowseCallback)
+        self.browser.Start()
+        self.hosts = {}
+
         
     ############################################################################
     # Section Index
@@ -296,7 +300,77 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     #########################################################################
     #
     # Private Methods
+    
+    """
+    Tools
+        Host1
+            Display
+            Audio (need to detect audio devices first)
+            Camera1
+        Host2
+            Display
+            Audio (need to detect audio devices first)
+            Camera1
+            Camera2
+        Save configuration
+    """
+    
+    def BrowseCallback(self,op,serviceName,url=None):
+        print 'BrowseCallback', op, serviceName, url
+        if op == ServiceDiscovery.Browser.ADD:
+            wxCallAfter(self.AddServiceManager,serviceName,url)
+        elif op == ServiceDiscovery.Browser.DELETE:
+            wxCallAfter(self.RemoveServiceManager,serviceName)
 
+    def AddServiceManager(self,serviceName,url):
+        if serviceName in self.hosts.keys():
+            menu = self.hosts[serviceName]
+        else:
+            menu = wxMenu()
+            serviceManager = AGServiceManagerIW(url)
+            resources = serviceManager.GetResources()
+            for r in resources:
+                # Skip the vfw mapper device to avoid conflicts with
+                # the real wdm device
+                if r.name.startswith('Microsoft WDM Image Capture'):
+                    continue
+                item = menu.AppendCheckItem(wxNewId(),r.name)
+                EVT_MENU(self, item.GetId(), lambda evt,
+                     smurl=url, resource=r: self.AddThatService(evt, smurl, resource))
+                
+            menuid = wxNewId()
+            self.preferences.AppendMenu(menuid,serviceName,menu)
+            self.hosts[serviceName] = menuid
+                
+    def RemoveServiceManager(self,serviceName):
+        if serviceName in self.hosts.keys():
+            self.preferences.Delete(self.hosts[serviceName])
+            del self.hosts[serviceName]
+            
+    def AddThatService(self,event,smurl,resource):
+    
+        if event.IsChecked():
+            p = self.venueClient.GetPreferences()
+
+            # Add the service to the service manager
+            serviceDesc = AGServiceManagerIW(smurl).AddServiceByName('VideoProducerService.zip',
+                                            resource,None,p.GetProfile())
+            self.venueClient.nodeService.SetServiceEnabled(serviceDesc.uri,1)
+
+            # Add the service manager to the service
+            serviceManagers = self.venueClient.nodeService.GetServiceManagers()
+            found = 0
+            for s in serviceManagers:
+                if s.uri == smurl:
+                    found = 1
+                    break
+            if not found:
+                log.debug("Adding service manager")
+                self.venueClient.nodeService.AddServiceManager(smurl)
+        else:
+            print 'should find service using resource %s and remove it' % (resource.name,)
+        
+            
     def __ShowErrorMessage(self, jabber, type):
         if type == 'login':
             title = 'Login Error'
@@ -1061,7 +1135,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                     noServerDir =True
     
             else:
-                if dirDesc.IsOfType(DataDescription3.TYPE_DIR):
+                if dirDesc.IsOfType(DataDescription.TYPE_DIR):
                     #Add DirectoryDescription to container of selected Description
                     #Set Properties of Description
                     #Add dialog here
@@ -1097,7 +1171,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         noServerDir = False
         curDirDesc = None
 	
-	log.debug("Starting RecursiveAdd with parent %s", parent) 
+        log.debug("Starting RecursiveAdd with parent %s", parent) 
                 
         for file in files:
             curDirDesc = None
@@ -2046,7 +2120,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def SaveDataCB(self, event):
         data = self.GetSelectedItem()
         log.debug("VenueClientFrame.SaveData: Save data: %s", data)
-        if(data != None and isinstance(data, DataDescription3)):
+        if(data != None and isinstance(data, DaaDescription)):
             name = data.name
             path = self.SelectFile("Specify name for file", name)
             if path:
@@ -2059,7 +2133,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         parentItem = self.contentListPanel.GetItemData(self.contentListPanel.curItemId)
         if itemList:
             for item in itemList:
-                if(item != None and isinstance(item, DataDescription3)):
+                if(item != None and isinstance(item, DataDescription)):
                     text ="Are you sure you want to delete "+ item.name + "?"
                     if self.Prompt(text, "Confirmation"):
                         try:
@@ -2091,7 +2165,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         if itemList:
             for item in itemList:
-                if(item != None and item.IsOfType(DataDescription3.TYPE_DIR)):
+                if(item != None and item.IsOfType(DataDescription.TYPE_DIR)):
                     text ="Are you sure you want to delete "+ item.name + "?"
                     if self.Prompt(text, "Confirmation"):
                         #check for files in directory
@@ -2727,7 +2801,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                           added to the venue
         """
 
-        if dataDescription.GetObjectType() == DataDescription3.TYPE_DIR:
+        if dataDescription.GetObjectType() == DataDescription.TYPE_DIR:
             wxCallAfter(self.statusbar.SetStatusText, "Directory '%s' has been added to venue" 
                         %dataDescription.name)
             
@@ -3081,13 +3155,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             sortFunc = self.EnvSort
             datalist.sort(sortFunc)
             for data in datalist:
-                if data.GetObjectType() == DataDescription3.TYPE_FILE:
-                    log.debug("Found file data!")
-                    wxCallAfter(self.contentListPanel.AddData, data)
-                else:
+                if data.GetObjectType() == DataDescription.TYPE_DIR:
                     log.debug("Found dir data!")
                     log.debug("Parent is set to %s", data.GetParentId())
                     wxCallAfter(self.contentListPanel.AddDir, data)
+                else:
+                    log.debug("Found file data!")
+                    wxCallAfter(self.contentListPanel.AddData, data)
                 # log.debug("   %s" %(data.name))
 
             log.debug("Data loaded!")
@@ -3596,7 +3670,7 @@ class NavigationPanel(wxPanel):
             myVenues = self.app.controller.GetMyVenues()
             venues = []
             for venue in myVenues.keys():
-                cd = VenueDescription3(name = venue, uri = myVenues[venue])
+                cd = VenueDescription(name = venue, uri = myVenues[venue])
                 venues.append(cd)
 
             self.parent.viewSelector.SetValue("My Venues")
@@ -3875,7 +3949,7 @@ class ContentListPanel(wxPanel):
         # This is just to make sure Directories are handled properly
         # Normally the AddDir() should be called directly
         # by event flow.
-        if dataDescription.IsOfType(DataDescription3.TYPE_DIR):
+        if dataDescription.IsOfType(DataDescription.TYPE_DIR):
             self.AddDir(dataDescription)
             return
         
@@ -4111,7 +4185,7 @@ class ContentListPanel(wxPanel):
         item = self.tree.GetItemData(treeId).GetData()
 
         if item:
-            if not isinstance(item, DataDescription3):
+            if not isinstance(item, DataDescription):
                 try:
                     dataDescriptionList = self.parent.GetPersonalData(item)
                               
@@ -4151,7 +4225,7 @@ class ContentListPanel(wxPanel):
                     self.parent.StartCmd(item,verb='Open')
                 else:
                     # Handle items with no 'Open' action
-                    if(isinstance(item,DataDescription3) or 
+                    if(isinstance(item,DataDescription) or 
                        isinstance(item,ServiceDescription)):
                         self.FindUnregistered(item)
                     else:
@@ -4177,9 +4251,10 @@ class ContentListPanel(wxPanel):
       
         if(treeId.IsOk()):
 
-            if len(self.tree.GetSelections()) <= 1:
-                # Keep selection if more than one item is selected to
-                # enable multiple deletions.
+            # do the right thing in case of Shift or Ctrl (or Cmd)
+            if not event.ShiftDown() and not event.CmdDown():
+                self.tree.UnselectAll()
+            if not self.tree.IsSelected(treeId):
                 self.tree.SelectItem(treeId)
                 
             item = self.tree.GetItemData(treeId).GetData()
@@ -4210,7 +4285,7 @@ class ContentListPanel(wxPanel):
                 menu = self.BuildAppMenu(item)
                 self.PopupMenu(menu, wxPoint(self.x, self.y))
 
-            elif isinstance(item, DataDescription3):
+            elif isinstance(item, DataDescription):
                 menu = self.BuildDataMenu(event, item)
                 self.PopupMenu(menu, wxPoint(self.x,self.y))
                 parent = self.tree.GetItemParent(treeId)
@@ -4253,7 +4328,7 @@ class ContentListPanel(wxPanel):
         # 
         menu = wxMenu()
         
-        if item.GetObjectType() == DataDescription3.TYPE_DIR:
+        if item.GetObjectType() == DataDescription.TYPE_DIR:
             # Code for creation of context menu for adding directories and files
              # - Add data
             id = wxNewId()
@@ -4844,6 +4919,8 @@ class JabberClientPanel(wxPanel):
         *name* Statement to put in front of message (for example; "You say,").
         *message* The actual message.
         '''
+        
+        print '__OutputText = ', name, message, messagetime
                
         # Add time to event message
         if not messagetime:
@@ -4901,7 +4978,7 @@ class JabberClientPanel(wxPanel):
             # wxTE_RICH flag in text output window.
             self.SetRightScroll()
 
-    def OutputText(self, name, message):
+    def OutputText(self, name, message, messageTime=None):
         '''
         Print received text in text chat.
         
@@ -4909,7 +4986,7 @@ class JabberClientPanel(wxPanel):
         *name* Statement to put in front of message (for example; "You say,").
         *message* The actual message.
         '''
-        wxCallAfter(self.__OutputText, name, message)
+        wxCallAfter(self.__OutputText, name, message,messageTime)
 
     def Clear(self):
         self.textOutput.AppendText("CLEAR")
