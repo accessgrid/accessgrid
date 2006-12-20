@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.335 2006-11-24 13:09:38 braitmai Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.336 2006-12-20 17:50:00 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.335 2006-11-24 13:09:38 braitmai Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.336 2006-12-20 17:50:00 turam Exp $"
 
 import sys
 import os
@@ -26,7 +26,7 @@ from AccessGrid import hosting
 from AccessGrid import Version
 from AccessGrid.Toolkit import Application, Service
 from AccessGrid.Preferences import Preferences
-from AccessGrid.Descriptions import Capability, STATUS_ENABLED, Capability3
+from AccessGrid.Descriptions import Capability, STATUS_ENABLED
 from AccessGrid.Descriptions import BeaconSource, BeaconSourceData
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
@@ -44,17 +44,18 @@ from AccessGrid.Events import DisconnectEvent, ClientExitingEvent
 from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent
 from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache, InvalidProfileException
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
-from AccessGrid.Descriptions import DataDescription, DataDescription3, DirectoryDescription, FileDescription, ConnectionDescription
+from AccessGrid.Descriptions import DataDescription, DirectoryDescription, FileDescription, ConnectionDescription
 from AccessGrid.Descriptions import NodeConfigDescription
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.interfaces.AuthorizationManager_client import AuthorizationManagerIW
 from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid import ServiceDiscovery
-from AccessGrid.Descriptions import VenueState, VenueState3
+from AccessGrid.Descriptions import VenueState
 from AccessGrid.MulticastWatcher import MulticastWatcher
 from AccessGrid.Registry.RegistryClient import RegistryClient
 from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE, UMTP_TYPE
-from AccessGrid.QuickBridgeClient import QuickBridgeClient
+from AccessGrid import QuickBridgeClient
+from AccessGrid.BridgeCache import BridgeCache
 
 from AccessGrid.GUID import GUID
 from AccessGrid.Jabber.JabberClient import JabberClient
@@ -129,6 +130,7 @@ class VenueClient:
         self.dataStoreUploadUrl = None
         self.builtInNodeService = None
         self.builtInNodeServiceUri = ""
+        self.bridgeCache = BridgeCache()
         
         self.certRequired = 0
               
@@ -209,7 +211,8 @@ class VenueClient:
             self.transport = "unicast"
 
         if progressCB: progressCB("Loading bridge information",50)
-        self.__LoadBridges()
+        self.LoadBridges(rankBridges=0)
+        self.bridgeCache.StoreBridges(self.bridges.values())
                     
         self.observers = []
 
@@ -243,10 +246,10 @@ class VenueClient:
         self.beaconLocation = None
 
         # Create beacon capability
-        self.beaconCapabilities = [Capability3(Capability3.PRODUCER, "Beacon", "ANY", 0, 1),
-                                   Capability3(Capability3.CONSUMER, "Beacon", "ANY", 0, 1)]
+        self.beaconCapabilities = [Capability(Capability.PRODUCER, "Beacon", "ANY", 0, 1),
+                                   Capability(Capability.CONSUMER, "Beacon", "ANY", 0, 1)]
             
-    def __LoadBridges(self):
+    def LoadBridges(self,rankBridges=1):
         '''
         Gets bridge information from bridge registry. Sets current
         bridge to the first one in the sorted list. Also, check preferences
@@ -254,16 +257,15 @@ class VenueClient:
         '''
         log.debug('get bridges from registry')
         
-        if not self.currentBridge:
-            # Get bridges from registry
-            try:
-                self.registryClient = RegistryClient(url=self.registryUrl)
-                bridgeList = self.registryClient.LookupBridge(10)
-                for b in bridgeList:
-                    self.bridges[b.guid] = b
+        # Get bridges from registry
+        try:
+            self.registryClient = RegistryClient(url=self.registryUrl)
+            bridgeList = self.registryClient.LookupBridge(10,rankBridges=rankBridges)
+            for b in bridgeList:
+                self.bridges[b.guid] = b
 
-            except:
-                log.exception("__LoadBridges: Can not connect to bridge registry %s ", self.registryUrl)
+        except:
+            log.exception("LoadBridges: Can not connect to bridge registry %s ", self.registryUrl)
 
 
         log.debug('set bridges in prefs')
@@ -273,6 +275,13 @@ class VenueClient:
         for k in self.bridges.keys():
             if prefsbridges.has_key(k):
                 self.bridges[k].status = prefsbridges[k].status
+                self.bridges[k].rank = prefsbridges[k].rank
+            else:
+                # we don't know this bridge yet.  if we didn't rank bridges generally,
+                # we still have to rank this one in particular
+                if rankBridges == 0:
+                    self.registryClient.PingBridge(self.bridges[k])
+                    
         prefs.SetBridges(self.bridges)
 
         log.debug('connect to bridge')
@@ -280,6 +289,8 @@ class VenueClient:
         self.currentBridge = self.FindBridge(self.bridges.values())
         
         log.debug('exiting loadbridges')
+        
+        return self.bridges.values()
 
 
     def FindBridge(self, bridgeList):
@@ -562,10 +573,6 @@ class VenueClient:
 
         profile = event.GetData()
         
-        # Pre-2.3 server compatability code
-        if not profile.connectionId:
-            profile.connectionId = profile.venueClientURL
-
         self.venueState.AddUser(profile)
         for s in self.observers:
             s.AddUser(profile)
@@ -595,10 +602,6 @@ class VenueClient:
     def ModifyUserEvent(self, event):
         log.debug("ModifyUserEvent: Got Modify User Event")
         profile = event.GetData()
-
-        # Pre-2.3 server compatability code
-        if not profile.connectionId:
-            profile.connectionId = profile.venueClientURL
 
         self.venueState.ModifyUser(profile)
         for s in self.observers:
@@ -639,20 +642,7 @@ class VenueClient:
         log.debug("RemoveDirEvent:Entered RemoveDirEvent!")
         data = event.GetData()
         
-        #for item in data.dataContainer:
-            #self.venueState.RemoveData(item)
-        
-        #We need to update to correct and current venueState from the server
-        #There is no way around it.
-        #tempVenueState = self.__venueProxy.GetState3()
         self.venueState.RemoveData(data)
-        
-        #workaround for converting list into dict()
-        #log.debug("Rebuilding venueState data list")
-        #for item in tempVenueState.data:
-	#    log.debug("Adding item: %s", item.id)
-        #    self.venueState.data[item.id] = item
-        
         
         for s in self.observers:
             log.debug("Observer to handle event: %s", s)
@@ -894,7 +884,7 @@ class VenueClient:
         log.debug('after Venue.Enter')
     
         log.debug("EnterVenue: Invoke Venue.getstate")
-        state = self.__venueProxy.GetState3()
+        state = self.__venueProxy.GetState()
         log.debug("EnterVenue: done Venue.getstate")
 
         evtLocation = state.eventLocation.split(":")
@@ -914,7 +904,7 @@ class VenueClient:
         
         # Retreive stream descriptions
         if len(self.capabilities) > 0:
-            self.streamDescList = self.__venueProxy.NegotiateCapabilities3(self.profile.connectionId,
+            self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.profile.connectionId,
                                                                           self.capabilities) 
         self.venueUri = URL
 
@@ -1114,7 +1104,7 @@ class VenueClient:
 
         try:
             if self.nodeService:
-                self.capabilities = self.nodeService.GetCapabilities3()
+                self.capabilities = self.nodeService.GetCapabilities()
             if not self.capabilities:
                 self.capabilities = []
             
@@ -1290,7 +1280,7 @@ class VenueClient:
         try:
             log.debug("Setting node service streams")
             if self.nodeService:
-                self.nodeService.SetStreams3( self.streamDescList )
+                self.nodeService.SetStreams( self.streamDescList )
         except:
             log.exception("Error setting streams")
             
@@ -1299,7 +1289,7 @@ class VenueClient:
             raise exc
 
     def UpdateServiceClientProfile(self,profile):
-        services = self.nodeService.GetServices3()
+        services = self.nodeService.GetServices()
         for service in services:
             try:
                 AGServiceIW(service.uri).SetIdentity(self.profile)
@@ -1348,7 +1338,7 @@ class VenueClient:
 
                 proxyHost = self.preferences.GetPreference(Preferences.PROXY_HOST)
                 proxyPort = self.preferences.GetPreference(Preferences.PROXY_PORT)
-                qbc = QuickBridgeClient(self.currentBridge.host, self.currentBridge.port,
+                qbc = QuickBridgeClient.QuickBridgeClient(self.currentBridge.host, self.currentBridge.port,
                                             proxyHost, proxyPort)
 
                 try:
@@ -1356,11 +1346,13 @@ class VenueClient:
                     log.debug("Got location from bridge: %s", stream.location)
                     stream.networkLocations.append(stream.location)
                   
-                except:
+                except QuickBridgeClient.ConnectionError,e:
+                    self.currentBridge.rank = BridgeDescription.UNREACHABLE
+                    self.bridgeCache.StoreBridges()
+                except Exception,e:
                     log.exception("VenueClient.UpdateStream: Failed to connect to bridge %s"%(self.currentBridge.name))
                     raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
                                                   (self.transport, self.currentBridge.name, self.currentBridge.host))
-                                                  
             else:
                 raise NetworkLocationNotFound("transport=%s"%(self.transport))
 
@@ -1483,7 +1475,7 @@ class VenueClient:
     
         if data.type == None or data.type == 'None':
             # Venue data
-            self.__venueProxy.RemoveData3(data)
+            self.__venueProxy.RemoveData(data)
             
             
         else:
@@ -1518,7 +1510,7 @@ class VenueClient:
         if data.type == None or data.type == 'None':
             # Venue data
             try:
-                self.__venueProxy.UpdateData3(data)
+                self.__venueProxy.UpdateData(data)
             except:
                 log.exception("Error updating data")
                 raise
@@ -1733,7 +1725,7 @@ class VenueClient:
         try:
             found = 0
             
-            serviceList = self.nodeService.GetServices3()
+            serviceList = self.nodeService.GetServices()
             for service in serviceList:
                 for cap in service.capabilities:
                     if cap.type == 'video' and cap.role == 'consumer':
@@ -1753,7 +1745,7 @@ class VenueClient:
         try:
             found = 0
             
-            serviceList = self.nodeService.GetServices3()
+            serviceList = self.nodeService.GetServices()
             for service in serviceList:
                 for cap in service.capabilities:
                     if cap.type == 'video' and cap.role == 'producer':
