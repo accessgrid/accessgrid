@@ -46,7 +46,7 @@ class BridgeFactory:
                     "-g", self.maddr,
                     "-m", '%d' % (self.mport,),
                     "-u", '%s' % (str(self.uport),),
-                    "-i", '10', # temporarily hard-coded inactivity timeout
+                    "-i", '600', # temporarily hard-coded inactivity timeout
                    ]
             log.info("Starting bridge: %s %s", self.qbexec, str(args))
             self.pid = self.processManager.StartProcess(self.qbexec,args)
