@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.221 2007-01-03 20:44:15 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.222 2007-01-03 22:46:56 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.221 2007-01-03 20:44:15 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.222 2007-01-03 22:46:56 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -45,6 +45,7 @@ from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
 from AccessGrid.Descriptions import DirectoryDescription, FileDescription
 from AccessGrid.Descriptions import ApplicationDescription, VenueDescription
+from AccessGrid.Descriptions import NodeConfigDescription
 from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIDialog
 from AccessGrid.Utilities import SubmitBug, BuildServiceUrl
 from AccessGrid.VenueClientObserver import VenueClientObserver
@@ -53,7 +54,7 @@ from AccessGrid.Venue import ServiceAlreadyPresent
 from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError, NoServices
 from AccessGrid.VenueClient import DisconnectError
 from AccessGrid.VenueClientController import NoAvailableBridges, NoEnabledBridges
-from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
+from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame, StoreConfigDialog
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
 from AccessGrid.Beacon.rtpBeaconUI import BeaconFrame
 from AccessGrid.RssReader import RssReader,strtimeToSecs  
@@ -156,6 +157,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_BRIDGES = wxNewId()
     ID_PLUGINS = wxNewId()
     ID_CONFIGS = wxNewId()
+    ID_SAVE_CONFIG = wxNewId()
     ID_CONFIG_BUTTON = wxNewId()
     ID_MYNODE_MANAGE = wxNewId()
     ID_PREFERENCES = wxNewId()
@@ -504,6 +506,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         # Configurations Submenu
         self.preferences.AppendMenu(self.ID_CONFIGS, "Configurations", self.configSubmenu)
+        self.preferences.Append(self.ID_SAVE_CONFIG, "Save Configuration...", 
+                                "Save current configuration")
         self.preferences.AppendSeparator()
         
         # - enable display/video/audio
@@ -720,6 +724,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         EVT_MENU(self, self.ID_ENABLE_VIDEO, self.EnableVideoCB)
         EVT_MENU(self, self.ID_ENABLE_AUDIO, self.EnableAudioCB)
 
+        EVT_MENU(self, self.ID_SAVE_CONFIG, self.SaveConfigurationCB)
+        
         EVT_MENU(self, self.ID_MYNODE_MANAGE, self.ManageNodeCB)
         EVT_MENU(self, self.ID_PREFERENCES, self.PreferencesCB)
         
@@ -1602,6 +1608,75 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         except:
             self.Error("Error enabling/disabling audio", "Error enabling/disabling audio")
 
+    def SaveConfigurationCB(self, event):
+        nodeService = self.venueClient.GetNodeService()
+        if not nodeService:
+            self.Notify("Required internal services are unreachable.")
+            return
+            
+        configs = nodeService.GetConfigurations()
+        d = StoreConfigDialog(self,-1,'Store configuration',configs)
+        ret = d.ShowModal()
+    
+        if ret == wxID_OK:
+            ret = d.GetValue()
+            if ret:
+                (configName,isDefault,isSystem) = ret
+                
+                # Handle error cases
+                if len( configName ) == 0:
+                    self.Error( "Invalid config name specified (%s)" % (configName,) )
+                    return
+                     
+                # Confirm overwrite
+                if configName in map(lambda x: x.name, configs): #configs:
+                    text ="Overwrite %s?" % (configName,)
+                    dlg = wxMessageDialog(self, text, "Confirm",
+                                          style = wxICON_INFORMATION | wxOK | wxCANCEL)
+                    ret = dlg.ShowModal()
+                    dlg.Destroy()
+                    if ret != wxID_OK:
+                        return
+
+                config = None
+             
+                for c in configs:
+                    if configName == c.name:
+                        config = c
+
+                if not config:
+                    # Create a new configuration
+                    config = NodeConfigDescription(configName, NodeConfigDescription.USER)
+
+                if isSystem:
+                    config.type = NodeConfigDescription.SYSTEM
+                                    
+                # Store the configuration
+                try:
+                    wxBeginBusyCursor()
+                    nodeService.StoreConfiguration( config )
+                except:
+                    log.exception("Error storing node configuration %s" % (configName,))
+                    self.Error("Error storing node configuration %s" % (configName,))
+
+                try:
+                    # Set the default configuration
+                    if isDefault:
+                        prefs = self.app.GetPreferences()
+                        prefs.SetPreference(Preferences.NODE_CONFIG,configName)
+                        prefs.SetPreference(Preferences.NODE_CONFIG_TYPE,config.type)
+                        prefs.StorePreferences()
+
+                    self.__LoadMyConfigurations()
+                except:
+                    log.exception("Error finalizing node save")
+                    
+                wxEndBusyCursor()
+
+        d.Destroy()
+
+
+
     def ManageNodeCB(self, event):
         
         if self.nodeManagementFrame:
@@ -1612,7 +1687,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                                         callback=self.OnNodeActivity)
             
             log.debug("VenueClientFrame.ManageNodeCB: open node management")
-            log.debug('nodeservice url: %s', self.venueClient.GetNodeService() )
+            log.debug('nodeservice url: %s', self.venueClient.GetNodeServiceUri() )
 
             try:
                 
