@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.220 2006-12-20 17:53:56 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.221 2007-01-03 20:44:15 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.220 2006-12-20 17:53:56 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.221 2007-01-03 20:44:15 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3118,7 +3118,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             #
             # Reflect venue entry in the client
             #
-            wxCallAfter(self.textClientPanel.OutputText, None,
+            wxCallAfter(self.textClientPanel.OutputText, "enter",
                         "-- Entered venue %s" % self.venueClient.GetVenueName())
             wxCallAfter(self.textClientPanel.OutputText, "enter",
                         self.venueClient.GetVenueDescription())
