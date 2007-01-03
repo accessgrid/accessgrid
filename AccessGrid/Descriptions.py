@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.103 2006-12-20 17:55:46 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.104 2007-01-03 21:49:16 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.103 2006-12-20 17:55:46 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.104 2007-01-03 21:49:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -491,11 +491,11 @@ class Capability:
         self.rate = rate # RTP clock rate
         self.channels = channels
         self.serviceId = serviceId 
-        self.locationType = ""  # Secpifies whether to use multicast assigned by Venue or Unicast as specified by service
+        self.locationType = None  # Secpifies whether to use multicast assigned by Venue or Unicast as specified by service
         self.port = 0           # only applicable if used PREFERRED_UNICAST: port of service to use
-        self.host = ""          # only applicable if used PFEFERRED_UNICAST: ip of service to use
+        self.host = None          # only applicable if used PFEFERRED_UNICAST: ip of service to use
         if self.codec == None:
-            self.codec=""
+            self.codec=None
             
         if rate == None:
             self.rate = 0
