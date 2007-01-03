@@ -1,6 +1,7 @@
 from gov.lbl.dsd.bajjer import *
 import string, random
 import time
+import calendar
 import string
 
 from AccessGrid import Log
@@ -12,6 +13,7 @@ Log.SetDefaultLevel('JabberClient', Log.DEBUG)
 # Generating random numbers between:
 start = 100000000
 end   = 999999999 
+
 
 class JabberClient:
 
@@ -132,7 +134,14 @@ class JabberClient:
                 if index==-1:
                     log.debug(speaker[0:index] + ": " + message)
                 else:
-                    self.jabberPanel.OutputText(speaker + ": ", message)
+                    tm = 0
+                    if msg_stanza.x_:
+                        # convert timestamp from Jabber's format to a local time tuple
+                        tm = msg_stanza.x_[0].stamp_
+                        tm = time.strptime(tm,'%Y%m%dT%H:%M:%S')
+                        tm_sec = calendar.timegm(tm)
+                        tm = time.localtime(tm_sec)
+                    self.jabberPanel.OutputText(speaker + ": ", message, tm)
 
     def PresenceCB(self, prs_stanza):
         """Called when a presence is recieved"""
