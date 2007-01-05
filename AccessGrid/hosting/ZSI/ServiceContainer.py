@@ -120,12 +120,47 @@ class ThreadingServiceContainer(SocketServer.ThreadingMixIn,ServiceContainer):
         
 haveCryptoLib = 0
 try:
-    from M2Crypto import SSL
+    from M2Crypto import SSL, Err, m2
     haveCryptoLib = 1
 except:
     pass
     
 if haveCryptoLib:
+    def M2CryptoConnectionAccept(self):
+        """
+        Alternate implementation for M2Crypto.SSL.Connection.accept
+        This implementation sets the read/write timeouts on the socket
+        and checks for an error in the SSL accept.  Any time a
+        client connects to the servers and doesn't finish the 
+        SSL accept negotiations, the server is hung until the client
+        goes away.  Timeouts fix this by only allowing a client to 
+        hang the server for ten seconds.
+        
+        This functionality will be rolled back to the M2Crypto project
+        as soon as possible.  When it appears in an M2Crypto release,
+        we can do away with this patch.
+        """
+        sock, addr = self.socket.accept()
+        ssl = SSL.Connection(self.ctx, sock)
+        t = ssl.get_socket_read_timeout()
+        t.sec = 10
+        ssl.set_socket_read_timeout(t)
+        ssl.set_socket_write_timeout(t)
+        ssl.addr = addr
+        ssl.setup_ssl()
+        ssl.set_accept_state()
+        ret = ssl.accept_ssl()
+        err = m2.ssl_get_error(ssl.ssl,ret)
+        if err != m2.ssl_error_none:
+            ssl.socket.close()
+            raise Err.SSLError(ret,addr)
+        check = getattr(self, 'postConnectionCheck', self.serverPostConnectionCheck)
+        if check is not None:
+            if not check(self.get_peer_cert(), ssl.addr[0]):
+                raise Checker.SSLVerificationError, 'post connection check failed'
+        return ssl, addr
+
+    SSL.Connection.accept = M2CryptoConnectionAccept
     SSL.Connection.clientPostConnectionCheck = None
     SSL.Connection.serverPostConnectionCheck = None
     class SecureServiceContainer(ServiceContainerBase,SSL.SSLServer):
