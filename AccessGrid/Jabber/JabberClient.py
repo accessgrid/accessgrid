@@ -22,6 +22,7 @@ class JabberClient:
         #self._stream = stream.JabberClientStream(host, port=port, use_ssl=True)
         self.currentRoom = ''
         self.currentRoomId = ''
+        self.to = ''
         self._auth_info = None
         self.email = None
         self.jid = None
