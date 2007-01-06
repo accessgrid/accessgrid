@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.222 2007-01-03 22:46:56 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.223 2007-01-06 00:35:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.222 2007-01-03 22:46:56 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.223 2007-01-06 00:35:18 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -318,7 +318,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     """
     
     def BrowseCallback(self,op,serviceName,url=None):
-        print 'BrowseCallback', op, serviceName, url
         if op == ServiceDiscovery.Browser.ADD:
             wxCallAfter(self.AddServiceManager,serviceName,url)
         elif op == ServiceDiscovery.Browser.DELETE:
@@ -469,7 +468,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         try:
             mgr = app.GetCertificateManager()
         except Exception,e:
-            print 'exception gettin cert mgr', e 
             log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
                            certificate mgr user interface, continuing")
 
@@ -3612,7 +3610,6 @@ class NavigationPanel(wxPanel):
         """
         Called when user right clicks the tree to retrieve information on the next venue
         """
-        print "Entered right-click!"
         self.x = event.GetX()
         self.y = event.GetY()
 
@@ -4995,8 +4992,6 @@ class JabberClientPanel(wxPanel):
         *message* The actual message.
         '''
         
-        print '__OutputText = ', name, message, messagetime
-               
         # Add time to event message
         if not messagetime:
            messagetime = localtime()
