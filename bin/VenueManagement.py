@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.171 2006-09-21 12:05:36 braitmai Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.172 2007-01-08 22:54:03 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.171 2006-09-21 12:05:36 braitmai Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.172 2007-01-08 22:54:03 turam Exp $"
 
 # Standard imports
 import sys
@@ -31,11 +31,8 @@ from wxPython.lib.imagebrowser import *
 
 # Access Grid imports
 from AccessGrid.Descriptions import StreamDescription, ConnectionDescription
-from AccessGrid.Descriptions import StreamDescription3, ConnectionDescription
 from AccessGrid.Descriptions import VenueDescription
-from AccessGrid.Descriptions import VenueDescription3
 from AccessGrid.Descriptions import Capability
-from AccessGrid.Descriptions import Capability3
 from AccessGrid.Security.CertificateManager import CertificateManager
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
@@ -1433,7 +1430,7 @@ class VenueParamFrame(wxDialog):
         self.encryptionPanel = EncryptionPanel(self.noteBook, -1, application)
         self.staticAddressingPanel = StaticAddressingPanel(self.noteBook, -1,
                                                            application)
-        self.authorizationPanel = AuthorizationUIPanel(self.noteBook, -1, log)
+        self.authorizationPanel = AuthorizationUIPanel(self.noteBook, -1, log,requireCertOption=1)
         
         self.noteBook.AddPage(self.generalPanel, "General")
         self.noteBook.AddPage(self.encryptionPanel, "Encryption")
@@ -1489,11 +1486,11 @@ class VenueParamFrame(wxDialog):
                                             int(sap.GetVideoPort()),
                                             int(sap.GetVideoTtl()))
             strid = GUID()
-            staticVideoCap =  [ Capability3( Capability3.CONSUMER,
-                                          Capability3.VIDEO,
+            staticVideoCap =  [ Capability( Capability.CONSUMER,
+                                          Capability.VIDEO,
                                           "H261",
                                           90000, strid)]
-            streams.append(StreamDescription3(venueName,
+            streams.append(StreamDescription(venueName,
                                                   svml, staticVideoCap,
                                                   0, None, 1))
             # Static Audio
@@ -1501,31 +1498,31 @@ class VenueParamFrame(wxDialog):
                                             int(sap.GetAudioPort()),
                                             int(sap.GetAudioTtl()))
             strid = GUID()
-            staticAudioCap =  [ Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+            staticAudioCap =  [ Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                           "L16",16000,strid),
-                              Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                           "L16",8000,strid),
-                              Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                           "L8",16000, strid),
-                              Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                           "L8",8000, strid),
-                               Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                               Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                            "PCMU", 16000, strid),
-                              Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                           "PCMU",8000, strid),
-                              Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                           "GSM",16000, strid),
-                              Capability3( Capability3.CONSUMER,
-                                          Capability3.AUDIO,
+                              Capability( Capability.CONSUMER,
+                                          Capability.AUDIO,
                                           "GSM",8000, strid)]
-            streams.append(StreamDescription3(venueName,
+            streams.append(StreamDescription(venueName,
                                                   saml, staticAudioCap,
                                                   0, None, 1))
 
@@ -1535,7 +1532,7 @@ class VenueParamFrame(wxDialog):
 
         # Make a venue description
         
-        venue = VenueDescription3(self.generalPanel.title.GetValue(),
+        venue = VenueDescription(self.generalPanel.title.GetValue(),
                                  self.generalPanel.description.GetValue(),
                                  encryptTuple, exitsList, streams)
     
@@ -1670,7 +1667,7 @@ class ModifyVenueFrame(VenueParamFrame):
         ctx = self.application.app.GetContext()
         transdict = {'ssl_context':ctx}
         venueProxy = VenueIW(self.venue.uri,transdict=transdict)
-        self.venue = venueProxy.AsVenueDescription3()
+        self.venue = venueProxy.AsVenueDescription()
         
         self.generalPanel.title.AppendText(self.venue.name)
         self.generalPanel.description.AppendText(self.venue.description)
