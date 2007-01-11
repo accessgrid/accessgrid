@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.112 2006-12-20 17:55:46 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.113 2007-01-11 23:24:37 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.112 2006-12-20 17:55:46 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.113 2007-01-11 23:24:37 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -295,7 +295,7 @@ class AGNodeService:
             if mediaType in serviceMediaTypes:
                 self.SetServiceEnabled( service.uri, enableFlag)
 
-    def StopServices(self):
+    def StopServices(self,clearStreams=1):
         """
         Stop all services
         """
@@ -313,7 +313,8 @@ class AGNodeService:
             raise Exception(exceptionText)
 
         # Remove the streams
-        self.SetStreams([])
+        if clearStreams:
+            self.SetStreams([])
 
     ####################
     ## CONFIGURATION methods
