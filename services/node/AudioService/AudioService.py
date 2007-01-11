@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.18 2006-08-01 22:01:32 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.19 2007-01-11 18:30:27 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -71,7 +71,6 @@ class AudioService( AGService ):
         self.rat_ui = os.path.join(os.getcwd(), ratui)
         self.rat_kill = os.path.join(os.getcwd(), ratkill)
 
-        # Turn off firewall for this app
         self.sysConf = SystemConfig.instance()
 
         # Set configuration parameters
@@ -92,6 +91,9 @@ class AudioService( AGService ):
             # note: the forceOSSAC97 attribute will only exist for the above platforms
             self.forceOSSAC97 = OptionSetParameter( "Force AC97", "False", ["True", "False"] )
             self.configuration.append(self.forceOSSAC97)
+
+        self.talk = OptionSetParameter( "Use site id", "On", ["On", "Off"] )
+        self.configuration.append(self.useSiteId)
 
         if Platform.IsOSX():
             self._x11Started = False
@@ -252,7 +254,7 @@ class AudioService( AGService ):
                     options.append(self.streamDescription.name)
             
             # pass public id as site id
-            if self.profile and not Platform.IsOSX():
+            if self.useSiteId.value == 'On' and self.profile and not Platform.IsOSX():
                 # site id not supported in UCL rat yet, which is used on macs.
                 options.append("-S")
                 options.append(self.profile.publicId)
