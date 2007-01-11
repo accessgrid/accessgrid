@@ -4,17 +4,18 @@
 # Purpose:     Basic python xmlrpc server with minor modifications.  Also
 #                includes an async xmlrpc server.
 # Created:     2005/12/16
-# RCS-ID:      $Id: AGXMLRPCServer.py,v 1.3 2006-01-27 17:26:52 eolson Exp $
+# RCS-ID:      $Id: AGXMLRPCServer.py,v 1.4 2007-01-11 23:54:52 turam Exp $
 # Copyright:   (c) 2005,2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
-__revision__ = "$Id: AGXMLRPCServer.py,v 1.3 2006-01-27 17:26:52 eolson Exp $"
+__revision__ = "$Id: AGXMLRPCServer.py,v 1.4 2007-01-11 23:54:52 turam Exp $"
 
 from DocXMLRPCServer import DocXMLRPCServer 
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler, SimpleXMLRPCDispatcher
 import BaseHTTPServer
 import socket
 import traceback
+import SocketServer
 
 class AGXMLRPCServer(DocXMLRPCServer):
     def __init__(self, addr, requestHandler=SimpleXMLRPCRequestHandler, logRequests=1):
@@ -23,9 +24,10 @@ class AGXMLRPCServer(DocXMLRPCServer):
 
 class AsyncAGXMLRPCServer(AGXMLRPCServer):
     # Makes a callback at regular intervals.
-    def __init__(self, addr, intervalSecs=1, callback=None, requestHandler=SimpleXMLRPCRequestHandler, logRequests=1):
+    def __init__(self, addr, intervalSecs=1, callback=None, requestHandler=SimpleXMLRPCRequestHandler, logRequests=1,clientTimeout=10):
         self.intervalSecs = intervalSecs
         self.callback = callback
+        self.clientTimeout = clientTimeout
         AGXMLRPCServer.__init__(self, addr, requestHandler=requestHandler, logRequests=logRequests)
 
     def server_bind(self):
@@ -38,7 +40,7 @@ class AsyncAGXMLRPCServer(AGXMLRPCServer):
         while self.running:
             try:
                 sock, addr = self.socket.accept()
-                sock.settimeout(None)
+                sock.settimeout(self.clientTimeout)
                 return (sock, addr)
             except socket.timeout:
                 pass
@@ -68,3 +70,5 @@ class AsyncAGXMLRPCServer(AGXMLRPCServer):
     def stop(self):
         self.running = False
 
+class AsyncAGXMLRPCServerThreaded(SocketServer.ThreadingMixIn,AsyncAGXMLRPCServer):
+    pass
