@@ -217,6 +217,7 @@
 
           <xsd:element name="StopServicesRequest">
             <xsd:complexType>
+                <xsd:element minOccurs="0" name="clearStreams" type="xsd:integer" />
             </xsd:complexType>
           </xsd:element>
 
