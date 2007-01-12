@@ -3,7 +3,7 @@
 # Name:        certmgr.py
 # Purpose:     Command line certificate management tool.
 # Created:     9/10/2003
-# RCS-ID:      $Id: certmgr.py,v 1.15 2005-12-09 22:26:34 eolson Exp $
+# RCS-ID:      $Id: certmgr.py,v 1.16 2007-01-12 21:10:00 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This tool is used on the command line to interact with the users certificate
 environment.
 """
-__revision__ = "$Id: certmgr.py,v 1.15 2005-12-09 22:26:34 eolson Exp $"
+__revision__ = "$Id: certmgr.py,v 1.16 2007-01-12 21:10:00 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -23,8 +23,6 @@ import sys
 import cmd
 
 from optparse import Option
-
-from OpenSSL_AG import crypto
 
 from AccessGrid.Toolkit import CmdlineApplication
 from AccessGrid.Security import CertificateManager
@@ -336,9 +334,7 @@ class CertMgrCmdProcessor(cmd.Cmd):
         """
         try:
             fh = open(certFile, "w")
-            fh.write(crypto.dump_certificate(crypto.FILETYPE_PEM,
-                                             cert.cert.cert))
-
+            fh.write(cert.cert.cert.as_pem())
             if keyFile is not None:
                 fh.close()
 
@@ -365,8 +361,7 @@ class CertMgrCmdProcessor(cmd.Cmd):
         """
         try:
             fh = open(certFile, "w")
-            fh.write(crypto.dump_certificate(crypto.FILETYPE_PEM,
-                                             cert.cert.cert))
+            fh.write(cert.cert.cert.as_pem())
             fh.close()
         except Exception, e:
             print "Export failed: ", e
