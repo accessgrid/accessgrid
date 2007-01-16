@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.103 2006-12-20 17:55:46 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.104 2007-01-16 18:55:13 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.103 2006-12-20 17:55:46 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.104 2007-01-16 18:55:13 turam Exp $"
 
 import os
 import time
@@ -564,10 +564,10 @@ class DataStore:
     # ReviewFiles above
     #
     def RemoveFiles(self, dataDescriptionList):
-        #"""
-        Removes the files specified by the DataDescriptions in the given list.
-        Method for legacy support for AG 3.0.2. clients
-        #"""
+        #
+        #Removes the files specified by the DataDescriptions in the given list.
+        #Method for legacy support for AG 3.0.2. clients
+        #
         filesWithError = ""
 
 
