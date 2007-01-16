@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.19 2007-01-11 18:30:27 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.20 2007-01-16 11:02:55 willing Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -92,7 +92,7 @@ class AudioService( AGService ):
             self.forceOSSAC97 = OptionSetParameter( "Force AC97", "False", ["True", "False"] )
             self.configuration.append(self.forceOSSAC97)
 
-        self.talk = OptionSetParameter( "Use site id", "On", ["On", "Off"] )
+        self.useSiteId = OptionSetParameter( "Use site id", "On", ["On", "Off"] )
         self.configuration.append(self.useSiteId)
 
         if Platform.IsOSX():
