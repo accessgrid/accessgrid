@@ -131,6 +131,8 @@ class PreferencesDialog(wxDialog):
                                        self.networkPanel.GetMulticast())
         self.preferences.SetPreference(Preferences.BEACON,
                                        self.networkPanel.GetBeacon())
+        self.preferences.SetPreference(Preferences.BRIDGE_REGISTRY,
+                                       self.networkPanel.GetRegistry())
         self.preferences.SetBridges(self.networkPanel.GetBridges())
         self.preferences.SetPreference(Preferences.DISPLAY_MODE,
                                        self.navigationPanel.GetDisplayMode())
@@ -812,6 +814,9 @@ class NetworkPanel(wxPanel):
         self.__InitList()
         
         self.refreshButton = wxButton(self,-1,'Refresh')
+        self.registryText = wxStaticText(self, -1, "Bridge Registry:")
+        self.registryCtrl = wxTextCtrl(self, -1, preferences.GetPreference(Preferences.BRIDGE_REGISTRY), size = (350,-1),
+                                   validator = TextValidator("Bridge Registry"))
         
         EVT_RIGHT_DOWN(self.list, self.OnRightDown)
         EVT_RIGHT_UP(self.list, self.OnRightClick)
@@ -908,6 +913,9 @@ class NetworkPanel(wxPanel):
         else:
             return 0
 
+    def GetRegistry(self):
+        return self.registryCtrl.GetValue()
+
     def __InitList(self):
 
         # Clear the list
@@ -934,6 +942,10 @@ class NetworkPanel(wxPanel):
         sizer.Add(sizer2, 0, wxEXPAND)
         sizer.Add(self.beaconButton, 0, wxALL|wxEXPAND, 10)
         sizer.Add(self.multicastButton, 0, wxALL|wxEXPAND, 10)
+        gridSizer = wxFlexGridSizer(0, 2, 5, 5)
+        gridSizer.Add(self.registryText, 0, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.registryCtrl, 0, wxEXPAND, 0)
+        sizer.Add(gridSizer, 0, wxALL|wxEXPAND, 10)
         sizer.Add(self.listHelpText, 0, wxALL|wxEXPAND, 10)
         sizer.Add(self.list, 1, wxALL|wxEXPAND, 10)
         sizer.Add(self.refreshButton, 0, wxALL, 10)
