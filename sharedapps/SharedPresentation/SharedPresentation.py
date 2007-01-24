@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.46 2006-06-30 20:09:29 turam Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.47 2007-01-24 21:28:19 wwjag Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -39,6 +39,8 @@ if sys.platform == Platform.WIN:
     except:
         print "No Windows COM support!"
         sys.exit(1)
+elif sys.platform == Platform.OSX:
+    from MacPPTViewer import MacPPTViewer
 else:
     # An OpenOffice/StarOffice Viewer
     # We will add options to make the viewer selectable if we have
@@ -252,6 +254,9 @@ if sys.platform == Platform.WIN:
 elif sys.platform == Platform.LINUX or sys.platform == Platform.FREEBSD5 or sys.platform == Platform.FREEBSD6:
     # On Linux the best choice is probably Open/Star Office
     defaultViewer = ImpressViewer
+elif sys.platform == Platform.OSX:
+    # If we 're on Mac OSX, we try to use the AppleScript interface to PowerPoint
+    defaultViewer = MacPPTViewer
 else:
     defaultViewer = None
 
