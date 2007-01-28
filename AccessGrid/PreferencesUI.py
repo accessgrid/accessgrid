@@ -9,6 +9,7 @@ from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.GUID import GUID
 from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
 from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
+from AccessGrid.UIUtilities import MessageDialog
 
 from wxPython.wx import *
 from wxPython.gizmos import wxTreeListCtrl
@@ -27,7 +28,7 @@ class PreferencesDialog(wxDialog):
         '''
         wxDialog.__init__(self, parent, id, title,
                           style = wxRESIZE_BORDER | wxDEFAULT_DIALOG_STYLE,
-                          size = wxSize(650, 420))
+                          size = wxSize(720, 576))
         self.Centre()
        
       
@@ -132,7 +133,7 @@ class PreferencesDialog(wxDialog):
         self.preferences.SetPreference(Preferences.BEACON,
                                        self.networkPanel.GetBeacon())
         self.preferences.SetPreference(Preferences.BRIDGE_REGISTRY,
-                                       self.networkPanel.GetRegistry())
+                                       self.networkPanel.GetRegistry(-1))
         self.preferences.SetBridges(self.networkPanel.GetBridges())
         self.preferences.SetPreference(Preferences.DISPLAY_MODE,
                                        self.navigationPanel.GetDisplayMode())
@@ -768,6 +769,185 @@ class VenueConnectionPanel(wxPanel):
         sizer.Fit(self)
         self.SetAutoLayout(1)
 
+class EditBridgeRegistryPanel(wxDialog):
+    def __init__(self, parent, id, preferences):
+        wxDialog.__init__(self, parent, id, 'Edit Bridge Registry URLs',
+                                size = (560, 250),
+                                style=wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+
+        self.parent = parent
+        self.preferences = preferences
+        self.maxRegistries = self.preferences.GetMaxBridgeRegistries()
+        self.permanentRegistries = self.preferences.GetPermanentRegistries()
+
+        if self.permanentRegistries > 0:
+            self.fixedRegistryText = wxStaticText(self, -1, "Fixed: ",
+                             size = wxSize(60, -1),
+                             style=wxALIGN_RIGHT)
+            self.fixedRegistryCtrl = wxTextCtrl(self, -1,
+                             size = wxSize(480, 21*self.permanentRegistries),
+                             style = wxTE_RICH | wxTE_MULTILINE | wxTE_READONLY)
+            self.fixedRegistryCtrl.SetBackgroundColour(self.GetBackgroundColour())
+        self.editableRegistryText = wxStaticText(self, -1, "Editable: ",
+                             size = wxSize(60, -1),
+                             style=wxALIGN_RIGHT)
+        self.editableRegistryCtrl = wxTextCtrl(self, -1,
+                       size = wxSize(480, 19*(self.maxRegistries-self.permanentRegistries)),
+                       style = wxTE_RICH | wxTE_MULTILINE | wxTE_PROCESS_ENTER)
+
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.okButton = wxButton(self, wxID_OK, "OK")
+                                
+        EVT_BUTTON(self, self.cancelButton.GetId(), self.OnCancel)
+        EVT_BUTTON(self, self.okButton.GetId(), self.OnOK)
+        EVT_CHAR(self.editableRegistryCtrl, self.OnChar)
+
+        # Populate with existing registries.
+        # The single registry TextCtrl in the parent has to be split
+        # between fixed and editable TextCtrls here.
+        #
+        for lineNo in range(0,self.maxRegistries):
+            lineNoEntry = self.parent.registryCtrl.GetLineText(lineNo)
+            if self.permanentRegistries > 0:
+                if lineNo < (self.permanentRegistries - 1):
+                    self.fixedRegistryCtrl.AppendText(lineNoEntry + '\n')
+                elif lineNo == (self.permanentRegistries - 1):
+                    self.fixedRegistryCtrl.AppendText(lineNoEntry)
+                elif lineNo < (self.maxRegistries - 1):
+                    self.editableRegistryCtrl.AppendText(lineNoEntry + '\n')
+                elif lineNo == (self.maxRegistries - 1):
+                    self.editableRegistryCtrl.AppendText(lineNoEntry)
+                else:
+                    # Unknown entry index
+                    pass
+            else:
+                if lineNo < (self.maxRegistries - 1):
+                    self.editableRegistryCtrl.AppendText(lineNoEntry + '\n')
+                elif lineNo == (self.maxRegistries - 1):
+                    self.editableRegistryCtrl.AppendText(lineNoEntry)
+                else:
+                    # Unknown entry index
+                    pass
+
+        # Position the InsertionCursor at the end of the first "None" entry
+        # of the editable TextCtrl. If there is no 'None" entry, then position
+        # it at the end of the end of the first entry.
+        #
+        self.foundNone = false
+        for lineNo in range(0, self.editableRegistryCtrl.GetNumberOfLines()):
+            if self.editableRegistryCtrl.GetLineText(lineNo).startswith("None"):
+                self.editableRegistryCtrl.SetInsertionPoint(
+                      self.editableRegistryCtrl.XYToPosition(
+                      self.editableRegistryCtrl.GetLineLength(lineNo), lineNo))
+                self.foundNone = true
+                break
+        if not self.foundNone:
+            self.editableRegistryCtrl.SetInsertionPoint(
+                                self.editableRegistryCtrl.XYToPosition(
+                                self.editableRegistryCtrl.GetLineLength(0), 0))
+        wxCallAfter(self.editableRegistryCtrl.SetFocus)
+
+        self.__Layout()
+        
+
+    def OnCancel(self, event):
+        self.EndModal(wxID_CANCEL)
+
+    def OnOK(self, event):
+        # Remove existing editable entries
+        self.parent.registryCtrl.Remove(
+            self.parent.registryCtrl.XYToPosition(0,self.permanentRegistries),
+            self.parent.registryCtrl.GetLastPosition())
+        # Add replacement entries
+        for lineNo in range(0, self.maxRegistries - self.permanentRegistries):
+            if self.editableRegistryCtrl.GetLineLength(lineNo) == 0:
+                lineNoEntry = 'None'
+            else:
+                lineNoEntry = self.editableRegistryCtrl.GetLineText(lineNo)
+            self.parent.registryCtrl.AppendText(lineNoEntry + '\n')
+        # Remove final '\n'
+        self.parent.registryCtrl.Remove(
+            self.parent.registryCtrl.GetLastPosition()-1,
+            self.parent.registryCtrl.GetLastPosition())
+        self.Validate()
+        self.TransferDataFromWindow()
+        self.EndModal(wxID_OK)
+
+
+    def OnChar(self, event):
+        '''
+        Called on keyboard event in Editable Registries Ctrl.
+        In particular, we want to catch the following keyboard events:
+        1. Return 
+            we don't want to add entries beyond the maximum
+        2. Backspace
+            we don't want to delete whole entries (just characters
+            within an entry)
+        3. Delete
+            allow delete except when it would delete a whole entry
+        '''
+        k = event.GetKeyCode()
+        maxEditableEntries = self.maxRegistries - self.permanentRegistries
+
+        if k == WXK_BACK:
+            # Don't process if insertion point is at beginning of entry
+            # (and would result in reducing number of entries)
+            position = self.editableRegistryCtrl.GetInsertionPoint()
+            (x,y) = self.editableRegistryCtrl.PositionToXY(position)
+            linelength = self.editableRegistryCtrl.GetLineLength(y)
+            if position == self.editableRegistryCtrl.GetLastPosition():
+                if linelength < 0:
+                    pass
+                else:
+                    event.Skip()
+                pass
+            else:
+                if linelength <= 0 or x <= 0:
+                    pass
+                else:
+                    event.Skip()
+        elif k == WXK_RETURN:
+            # Don't process if we'd be adding and extra entry beyond the max
+            # (maybe the test itself isn't needed if we've otherwise caught
+            #  all possibilites of deleting any entries)
+            if self.editableRegistryCtrl.GetNumberOfLines() >= maxEditableEntries:
+                pass
+            else:
+                event.Skip()
+        elif k == WXK_DELETE:
+            # Don't process if we're at the end of any entry
+            position = self.editableRegistryCtrl.GetInsertionPoint()
+            (x,y) = self.editableRegistryCtrl.PositionToXY(position)
+            linelength = self.editableRegistryCtrl.GetLineLength(y)
+            if x == linelength or position == self.editableRegistryCtrl.GetLastPosition():
+                pass
+            else:
+                event.Skip()
+        else:
+            event.Skip()
+
+    def __Layout(self):
+        gridsizer = wxFlexGridSizer(0, 2, 5, 5)
+        if self.permanentRegistries > 0:
+            gridsizer.Add(self.fixedRegistryText, 0, wxEXPAND | wxALL, 0)
+            gridsizer.Add(self.fixedRegistryCtrl, 0, wxEXPAND | wxALL, 0)
+        gridsizer.Add(self.editableRegistryText, 0, wxEXPAND | wxALL, 0)
+        gridsizer.Add(self.editableRegistryCtrl, 0, wxEXPAND | wxALL, 0)
+
+        buttonSizer = wxBoxSizer(wxHORIZONTAL)
+        buttonSizer.Add(self.cancelButton, 0, wxALL, 10)
+        buttonSizer.Add(self.okButton, 0, wxALL, 10)
+
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer.AddSpacer(wxSize(-1,10))
+        sizer.Add(gridsizer, 0, wxALIGN_CENTER)
+        sizer.Add(buttonSizer, 0, wxALIGN_CENTER)
+
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+        
+
 class NetworkPanel(wxPanel):
     def __init__(self, parent, id, preferences):
         wxPanel.__init__(self, parent, id)
@@ -778,6 +958,9 @@ class NetworkPanel(wxPanel):
         self.multicastButton = wxCheckBox(self, wxNewId(), "  Use unicast ")
         self.keyMap = {}
         self.selected = None
+        self.editBridgeRegistryPanel = None
+        self.permanentRegistries = self.preferences.GetPermanentRegistries()
+        self.maxRegistries = self.preferences.GetMaxBridgeRegistries()
 
         bridgeDict = preferences.GetBridges()
         self.bridges = bridgeDict.values()
@@ -792,7 +975,7 @@ class NetworkPanel(wxPanel):
         self.beaconButton = wxCheckBox(self, wxNewId(), "  Run beacon ")
         
         self.beaconButton.SetValue(int(preferences.GetPreference(Preferences.BEACON)))
-        self.listHelpText = wxStaticText(self,-1,'Right-click a bridge to enable or disable it')
+        self.listHelpText = wxStaticText(self,-1,'Right-click a bridge below to enable or disable it')
 
 
         self.list = wxListCtrl(self, wxNewId(),style=wxLC_REPORT|wxLC_SINGLE_SEL)
@@ -814,13 +997,33 @@ class NetworkPanel(wxPanel):
         self.__InitList()
         
         self.refreshButton = wxButton(self,-1,'Refresh')
-        self.registryText = wxStaticText(self, -1, "Bridge Registry:")
-        self.registryCtrl = wxTextCtrl(self, -1, preferences.GetPreference(Preferences.BRIDGE_REGISTRY), size = (350,-1),
-                                   validator = TextValidator("Bridge Registry"))
+        self.registryText = wxStaticText(self, -1, "Bridge Registries:",
+                             size=(120,-1))
+        self.registryCtrl = wxTextCtrl(self, -1, size = (350,-1),
+                             style = wxTE_RICH | wxTE_MULTILINE | wxTE_READONLY)
+        if self.permanentRegistries < self.maxRegistries:
+            self.registryEditButton = wxButton(self, -1, 'Edit')
+        
+        regPrefs = self.preferences.GetPreference(Preferences.BRIDGE_REGISTRY).split('|')
+        registriesAdded = 0
+        for reg in regPrefs:
+            if registriesAdded >= self.maxRegistries:
+                break
+            if len(reg.strip()) < 1:
+                self.registryCtrl.AppendText("None" + "\n")
+            else:
+                self.registryCtrl.AppendText(reg.strip() + "\n")
+            registriesAdded += 1
+        for pad in range (registriesAdded, self.maxRegistries):
+            self.registryCtrl.AppendText("None" + "\n")
+        # Remove final '\n' (which adds an empty line at end of entries)
+        self.registryCtrl.Remove(self.registryCtrl.GetLastPosition()-1,self.registryCtrl.GetLastPosition())
         
         EVT_RIGHT_DOWN(self.list, self.OnRightDown)
         EVT_RIGHT_UP(self.list, self.OnRightClick)
         EVT_BUTTON(self,self.refreshButton.GetId(), self.OnRefresh)
+        if self.permanentRegistries < self.maxRegistries:
+            EVT_BUTTON(self, self.registryEditButton.GetId(), self.OnEdit)
                                       
         if IsOSX():
             self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
@@ -863,7 +1066,7 @@ class NetworkPanel(wxPanel):
 
         self.list.PopupMenu(self.menu, wxPoint(self.x, self.y))
         self.menu.Destroy()
-        
+
     def OnRefresh(self,event):
     
         wxBeginBusyCursor()
@@ -872,6 +1075,7 @@ class NetworkPanel(wxPanel):
             venueClient = self.preferences.venueClient
         
             # Force rescanning of the bridges
+            venueClient.SetupBridgePrefs()
             self.bridges = venueClient.LoadBridges(rankBridges=1)     
             self.bridges.sort(lambda x,y: cmp(x.rank,y.rank))
 
@@ -879,6 +1083,35 @@ class NetworkPanel(wxPanel):
             self.__InitList()
         finally:
             wxEndBusyCursor()
+
+    def OnEdit(self, event):
+        if self.editBridgeRegistryPanel:
+            # Edit panel already open
+            return
+
+        # This _should_ be redundant, since no Edit button should
+        # be available when the condition is true.
+        if self.permanentRegistries >= self.maxRegistries:
+            MessageDialog(NULL, "There are no editable entries")
+            return
+
+
+        self.editBridgeRegistryPanel = EditBridgeRegistryPanel(self,
+                                         wxNewId(), self.preferences)
+
+        if self.editBridgeRegistryPanel.ShowModal() == wxID_OK:
+            log.info("Edited bridge registries OK")
+
+        # The Ctrl is displaying the desired registry prefs, but
+        # we still need to actually set them as preferences.
+        #
+        prefString = ''
+        for regId in range(0, self.maxRegistries):
+            prefString = prefString + "%s | " % self.GetRegistry(regId).strip()
+        prefString = prefString.rstrip(' |')
+        self.preferences.SetPreference(Preferences.BRIDGE_REGISTRY, prefString)
+
+        self.editBridgeRegistryPanel = None
 
     def Enable(self, event):
         '''
@@ -913,8 +1146,18 @@ class NetworkPanel(wxPanel):
         else:
             return 0
 
-    def GetRegistry(self):
-        return self.registryCtrl.GetValue()
+    def GetRegistry(self, regId):
+        if regId < 0:
+            regText = ''
+            for reg in range(0, self.maxRegistries):
+                regText = regText + "%s |" % self.registryCtrl.GetLineText(reg)
+            return regText.rstrip(' |')
+        else:
+            regText = self.registryCtrl.GetLineText(regId)
+            if regText.startswith('None'):
+                return ''
+            else:
+                return regText
 
     def __InitList(self):
 
@@ -942,9 +1185,11 @@ class NetworkPanel(wxPanel):
         sizer.Add(sizer2, 0, wxEXPAND)
         sizer.Add(self.beaconButton, 0, wxALL|wxEXPAND, 10)
         sizer.Add(self.multicastButton, 0, wxALL|wxEXPAND, 10)
-        gridSizer = wxFlexGridSizer(0, 2, 5, 5)
+        gridSizer = wxFlexGridSizer(0, 3, 5, 5)
         gridSizer.Add(self.registryText, 0, wxALIGN_LEFT, 0)
         gridSizer.Add(self.registryCtrl, 0, wxEXPAND, 0)
+        if self.permanentRegistries < self.maxRegistries:
+            gridSizer.Add(self.registryEditButton, 0, wxLEFT, 5)
         sizer.Add(gridSizer, 0, wxALL|wxEXPAND, 10)
         sizer.Add(self.listHelpText, 0, wxALL|wxEXPAND, 10)
         sizer.Add(self.list, 1, wxALL|wxEXPAND, 10)
@@ -953,6 +1198,8 @@ class NetworkPanel(wxPanel):
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(1)
+        
+        self.Layout()
 
 class ProxyPanel(wxPanel):
     def __init__(self, parent, id, preferences):

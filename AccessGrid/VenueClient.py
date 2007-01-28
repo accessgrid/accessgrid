@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.336 2006-12-20 17:50:00 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.337 2007-01-28 04:49:32 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.336 2006-12-20 17:50:00 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.337 2007-01-28 04:49:32 willing Exp $"
 
 import sys
 import os
@@ -19,6 +19,7 @@ import threading
 import cPickle
 import time
 import socket
+import urlparse
 
 from AccessGrid import Log
 from AccessGrid import DataStore
@@ -200,9 +201,7 @@ class VenueClient:
 
         self.streamDescList = []
 
-        self.bridges = {}
-        self.currentBridge = None
-        self.registryUrl = self.preferences.GetPreference(Preferences.BRIDGE_REGISTRY)
+        self.SetupBridgePrefs()
 
         if int(self.preferences.GetPreference(Preferences.MULTICAST)):   
             self.transport = "multicast"
@@ -249,6 +248,24 @@ class VenueClient:
         self.beaconCapabilities = [Capability(Capability.PRODUCER, "Beacon", "ANY", 0, 1),
                                    Capability(Capability.CONSUMER, "Beacon", "ANY", 0, 1)]
             
+    def SetupBridgePrefs(self):
+        self.allowedUrlProtocols = ['file', 'http']
+        self.bridges = {}
+        self.currentBridge = None
+        self.registryUrls = []
+        regPrefs = self.preferences.GetPreference(Preferences.BRIDGE_REGISTRY).split('|')
+        # Opportunity here to test validity of url.
+        for regPrefsEntry in regPrefs:
+            regUrl = regPrefsEntry.strip()
+            parsedUrl = urlparse.urlparse(regUrl)
+            for proto in self.allowedUrlProtocols:
+                protoMatched = False
+                if parsedUrl[0].endswith(proto):
+                    protoMatched = True
+                    continue
+            if protoMatched:
+                self.registryUrls.append(regUrl)
+
     def LoadBridges(self,rankBridges=1):
         '''
         Gets bridge information from bridge registry. Sets current
@@ -258,14 +275,18 @@ class VenueClient:
         log.debug('get bridges from registry')
         
         # Get bridges from registry
-        try:
-            self.registryClient = RegistryClient(url=self.registryUrl)
-            bridgeList = self.registryClient.LookupBridge(10,rankBridges=rankBridges)
-            for b in bridgeList:
-                self.bridges[b.guid] = b
-
-        except:
-            log.exception("LoadBridges: Can not connect to bridge registry %s ", self.registryUrl)
+        for registryUrl in self.registryUrls:
+            try:
+                log.debug("Trying bridge registry: %s" % registryUrl)
+                self.registryClient = RegistryClient(url=registryUrl)
+                if self.registryClient == None:
+		    continue
+                bridgeList = self.registryClient.LookupBridge(10,rankBridges=rankBridges)
+                for b in bridgeList:
+                    self.bridges[b.guid] = b
+    
+            except:
+                log.exception("LoadBridges: Can not connect to bridge registry %s ", registryUrl)
 
 
         log.debug('set bridges in prefs')

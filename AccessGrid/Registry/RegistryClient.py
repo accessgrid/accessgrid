@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.28 2006-12-19 21:47:23 turam Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.29 2007-01-28 04:49:33 willing Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -224,6 +224,11 @@ class RegistryClient:
         contents = f.read()
         f.close()
         registryPeers = contents.split()
+        # Simplistic validation - just want a single peer.
+        # For now, we assume any more than that to be an error
+        # from (e.g.) some sort of error message (or page)
+        if len(registryPeers) > 1:
+            registryPeers = []
         return registryPeers
 
     def _ping(self, host):
