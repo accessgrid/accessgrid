@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.20 2006-05-11 05:14:12 willing Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.21 2007-01-29 23:59:52 willing Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -84,6 +84,7 @@ class VideoService( AGService ):
     encodingOptions = [ "h261" ]
     standardOptions = [ "NTSC", "PAL" ]
     onOffOptions = [ "On", "Off" ]
+    tileOptions = [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ]
 
     def __init__( self ):
         AGService.__init__( self )
@@ -113,6 +114,7 @@ class VideoService( AGService ):
         self.port = TextParameter( "port", "" )
         self.encoding = OptionSetParameter( "Encoding", "h261", VideoService.encodingOptions )
         self.standard = OptionSetParameter( "Standard", "NTSC", VideoService.standardOptions )
+        self.tiles = OptionSetParameter( "Thumbnail Columns", "2", VideoService.tileOptions )
         self.bandwidth = RangeParameter( "Bandwidth", 800, 0, 3072 )
         self.framerate = RangeParameter( "Frame Rate", 24, 1, 30 )
         self.quality = RangeParameter( "Quality", 75, 1, 100 )
@@ -123,6 +125,7 @@ class VideoService( AGService ):
         self.configuration.append( self.port )
         self.configuration.append( self.encoding )
         self.configuration.append( self.standard )
+        self.configuration.append( self.tiles )
         self.configuration.append( self.bandwidth )
         self.configuration.append( self.framerate )
         self.configuration.append (self.quality )
@@ -335,6 +338,9 @@ class VideoService( AGService ):
             options.append( '%s/%d' % ( self.streamDescription.location.host,
                                            self.streamDescription.location.port) )
                                            
+            # Set number of columns to use for thumbnail display
+            options.append("-Xtile=%s" % self.tiles)
+
             # Set the device for vic to use
             os.environ["VIC_DEVICE"] = vicDevice
                                            

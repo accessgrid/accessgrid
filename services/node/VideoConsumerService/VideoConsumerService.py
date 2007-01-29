@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.11 2006-05-10 01:30:04 willing Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.12 2007-01-29 23:59:52 willing Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,6 +20,8 @@ from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
 class VideoConsumerService( AGService ):
+
+    tileOptions = [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ]
 
     def __init__( self ):
         AGService.__init__( self )
@@ -39,7 +41,9 @@ class VideoConsumerService( AGService ):
         self.profile = None
 
         # Set configuration parameters
-        pass
+        self.tiles = OptionSetParameter( "Thumbnail Columns", "2", VideoConsumerService.tileOptions )
+
+        self.configuration.append( self.tiles )
 
         if IsWindows():
             try:
@@ -139,7 +143,7 @@ class VideoConsumerService( AGService ):
             # - set vic window geometry
             options.append('-Xgeometry=500x500')
             # - set number of columns of thumbnails to display
-            options.append('-Xtile=2')
+            options.append('-Xtile=%s' % self.tiles)
                     
             # Add address/port options (these must occur last; don't
             # add options beyond here)
