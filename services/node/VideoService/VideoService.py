@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.21 2007-01-29 23:59:52 willing Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.22 2007-01-30 00:42:03 willing Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -339,7 +339,7 @@ class VideoService( AGService ):
                                            self.streamDescription.location.port) )
                                            
             # Set number of columns to use for thumbnail display
-            options.append("-Xtile=%s" % self.tiles)
+            options.append("-Xtile=%s" % self.tiles.value)
 
             # Set the device for vic to use
             os.environ["VIC_DEVICE"] = vicDevice

@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.12 2007-01-29 23:59:52 willing Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.13 2007-01-30 00:42:03 willing Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -143,7 +143,7 @@ class VideoConsumerService( AGService ):
             # - set vic window geometry
             options.append('-Xgeometry=500x500')
             # - set number of columns of thumbnails to display
-            options.append('-Xtile=%s' % self.tiles)
+            options.append('-Xtile=%s' % self.tiles.value)
                     
             # Add address/port options (these must occur last; don't
             # add options beyond here)
