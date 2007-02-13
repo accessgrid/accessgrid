@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.223 2007-01-06 00:35:18 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.224 2007-02-13 17:00:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.223 2007-01-06 00:35:18 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.224 2007-02-13 17:00:25 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2410,7 +2410,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             #stream information
             if not self.venueClient.GetConnectionId() == None:
                vp = self.venueClient.GetVenueProxy()
-               self.venueClient.streamDescList = vp.NegotiateCapabilities3(self.venueClient.GetConnectionId(), serviceDesc.capabilities)
+               self.venueClient.streamDescList = vp.NegotiateCapabilities(self.venueClient.GetConnectionId(), serviceDesc.capabilities)
                self.venueClient.UpdateNodeService()
                               
             
@@ -2792,6 +2792,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.networkButton.SetBitmapLabel(bitmap)
         self.networkButton.SetToolTip(wxToolTip(shortHelp))
         self.toolbar.Realize()
+        
+    def UpdateMcastStatus(self):
+        self.SetMcastStatus(self.venueClient.GetMulticastStatus())
         
     def AddUser(self, profile):
         """
