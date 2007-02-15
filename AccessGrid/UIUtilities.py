@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.80 2006-09-21 12:04:59 braitmai Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.81 2007-02-15 21:36:24 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.80 2006-09-21 12:04:59 braitmai Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.81 2007-02-15 21:36:24 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -950,6 +950,55 @@ class MyUrlsEditValidator(wxPyValidator):
         # Prevent wxDialog from complaining.
         return true 
         
+class TextDialog(wxDialog):
+    """
+    Dialog to retrieve a text string from the user.
+    """
+    
+    def __init__(self, parent, message, caption, size = wxSize(400,400), text = ""):
+        """
+        Create passphrase dialog.
+
+        @param parent: parent widget
+        @param message: message to show on the dialog.
+        @param caption: string to show in window title.
+        """
+
+        wxDialog.__init__(self, parent, -1, caption,
+                          style = wxDEFAULT_DIALOG_STYLE,
+                          size = size)
+
+        topsizer = wxBoxSizer(wxVERTICAL)
+
+        ts = self.CreateTextSizer(message)
+        topsizer.Add(ts, 0, wxALL, 10)
+
+        self.text = wxTextCtrl(self, -1, value = text, style = wxTE_RICH2, size = wxSize(300, -1))
+        topsizer.Add(self.text, 0, wxEXPAND | wxLEFT | wxRIGHT, 15)
+
+        buttons = self.CreateButtonSizer(wxOK | wxCANCEL)
+        topsizer.Add(buttons, 0, wxCENTRE | wxALL, 10)
+
+        EVT_BUTTON(self, wxID_OK, self.OnOK)
+        EVT_CLOSE(self, self.OnClose)
+        
+        self.text.SetFocus()
+        
+        self.SetSizer(topsizer)
+        self.SetAutoLayout(1)
+        self.Fit()
+
+    def OnClose(self, event):
+        self.FlushChars()
+        self.EndModal(wxID_CANCEL)
+        self.Destroy()
+
+    def OnOK(self, event):
+        self.EndModal(wxID_OK)
+
+    def GetChars(self):
+        return self.text.GetValue()
+
 if __name__ == "__main__":
     app = wxPySimpleApp()
 
