@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.25 2006-10-13 19:49:27 turam Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.26 2007-02-21 22:14:33 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.25 2006-10-13 19:49:27 turam Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.26 2007-02-21 22:14:33 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -977,11 +977,7 @@ class RepositoryBrowser(wxPanel):
         self.GetEventHandler().AddPendingEvent(event)
 
     def __formatNameForGUI(self, name):
-        fmt = ''
-        comps = name.get_name_components()
-        comps.reverse()
-        for id, val in comps:
-            fmt += "%s = %s\n" % (id, val)
+        fmt = name.as_text()
         return fmt
 
     def __formatCertForGUI(self, certObj):
