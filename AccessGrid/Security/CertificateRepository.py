@@ -2,7 +2,7 @@
 # Name:        CertificateRepository.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.26 2006-12-19 21:42:28 turam Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.27 2007-02-21 22:12:16 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.26 2006-12-19 21:42:28 turam Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.27 2007-02-21 22:12:16 turam Exp $"
 
 from __future__ import generators
 
@@ -1549,7 +1549,6 @@ class Certificate:
 
         """
 
-        #cnlist = map(lambda a: a[1], filter(lambda a: a[0] == "CN", self.GetSubject().get_name_components()))
         cnlist = self.GetSubject().CN
         if len(cnlist) != 1:
             return None
