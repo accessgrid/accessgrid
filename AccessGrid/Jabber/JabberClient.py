@@ -31,6 +31,7 @@ class JabberClient:
         self.roomLocked = 0
         
         self.presenceCB = None
+        self._stream = None
        
     def Connect(self, host, port):
         log.info("Connecting to Jabber Server '%s' ..." % host)
@@ -82,7 +83,8 @@ class JabberClient:
             req.x_ = (stanza.External(),)
             #req.x_ = (stanza.External(util.Namespaces.Muc.muc),)
 
-        self._stream.write(req)
+        if self._stream:    
+            self._stream.write(req)
         
     def SendNameChange(self, name):
         if len(self.currentRoomId) < 1:
