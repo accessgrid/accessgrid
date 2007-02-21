@@ -149,7 +149,7 @@ it. The private key may be included in the certificate file.
         #
 
         self.pkCertRadioButton = rb1 = wxRadioButton(self, -1, "Load private key from certificate file", style = wxRB_GROUP)
-	self.pkFileRadioButton = rb2 = wxRadioButton(self, -1,
+        self.pkFileRadioButton = rb2 = wxRadioButton(self, -1,
                                                      "Load private key from separate file")
 
         EVT_RADIOBUTTON(self, rb1.GetId(),
@@ -232,10 +232,7 @@ it. The private key may be included in the certificate file.
         self.certName.SetLabel("")
 
         if certType == "PEM":
-            cns = filter(lambda a: a[0] == "CN",
-                         cert.get_subject().get_name_components())
-            name = ",".join(map(lambda a: a[1], cns))
-            self.certName.SetLabel(name)
+            self.certName.SetLabel(cert.get_subject().CN)
                 
         
 
