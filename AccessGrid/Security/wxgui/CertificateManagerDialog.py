@@ -59,6 +59,42 @@ class CertificateManagerDialog(wxDialog):
             self.Close(1)
 
 
+class CertificateManagerPanel(wxPanel):
+    def __init__(self, parent, id, certMgr, certMgrUI):
+        wxPanel.__init__(self, parent, id, size = wxSize(700, 400))
+
+        self.certMgr = certMgr
+
+        # Toplevel vsizer with a notebook and a hsizer with
+        # window ops buttons.
+        sizer = wxBoxSizer(wxVERTICAL)
+
+        # Build the notebook.
+        self.notebook = wxNotebook(self, -1)
+        sizer.Add(self.notebook, 1, wxEXPAND)
+
+        self.identBrowser = IdentityBrowser(self.notebook, -1, self.certMgr)
+        self.notebook.AddPage(self.identBrowser, "Certificates")
+
+        self.proxyBrowser = ProxyBrowser(self.notebook, -1, self.certMgr)
+        self.notebook.AddPage(self.proxyBrowser, "Proxy Certificates")
+
+        self.caBrowser = CABrowser(self.notebook, -1, self.certMgr)
+        self.notebook.AddPage(self.caBrowser, "Trusted CA Certificates")
+
+        self.statusBrowser = CertificateStatusBrowser(self.notebook, -1, self.certMgr, certMgrUI)
+        self.notebook.AddPage(self.statusBrowser, "Certificate Requests")
+
+        # Default to certificate pane.
+        self.notebook.SetSelection(0)
+
+        hsizer = wxBoxSizer(wxHORIZONTAL)
+        sizer.Add(hsizer, 0)
+
+        self.SetSizer(sizer)
+        self.SetAutoLayout(1)
+
+
 if __name__ == "__main__":
 
     logging.root.setLevel(logging.DEBUG)
