@@ -93,7 +93,7 @@
             <xsd:complexType>
               <xsd:sequence>
                 <xsd:element minOccurs="1" maxOccurs="1" name="connectionId" type="xsd:string" />
-                <xsd:element minOccurs="1" maxOccurs="unbounded" name="capabilities" type="agtk:Capability" />
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="capabilities" type="agtk:Capability" />
               </xsd:sequence>
             </xsd:complexType>
           </xsd:element>
