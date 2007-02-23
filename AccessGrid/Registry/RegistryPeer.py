@@ -6,7 +6,7 @@ import random
 from optparse import OptionParser
 from DocXMLRPCServer import DocXMLRPCServer 
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler, SimpleXMLRPCDispatcher
-from AccessGrid.AGXMLRPCServer import AsyncAGXMLRPCServer
+from AccessGrid.AGXMLRPCServer import AsyncAGXMLRPCServerThreaded
 
 class RegistryInterface:
 
@@ -146,7 +146,7 @@ class RegistryBase(RegistryInterface):
 class RegistryPeerXMLRPC(RegistryBase):
     def __init__(self, port, peerListUrl):
         RegistryBase.__init__(self, port, peerListUrl)
-        self.requestServer = AsyncAGXMLRPCServer( ("", self.port), intervalSecs=1, callback=self._UpdateCallback )
+        self.requestServer = AsyncAGXMLRPCServerThreaded( ("", self.port), intervalSecs=1, callback=self._UpdateCallback )
         self._RegisterFunctions()
 
     def _RegisterFunctions(self):
