@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.74 2006-12-20 17:55:46 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.75 2007-02-23 21:47:36 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.74 2006-12-20 17:55:46 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.75 2007-02-23 21:47:36 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -24,7 +24,7 @@ from AccessGrid import DataStore
 from AccessGrid.AppDb import AppDb
 from AccessGrid.PluginDb import PluginDb
 from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.Descriptions import ServiceDescription, DataDescription, FileDescription, DirectoryDescription
+from AccessGrid.Descriptions import ServiceDescription, DataDescription, FileDescription, DirectoryDescription, BridgeDescription
 from AccessGrid.Descriptions import ApplicationDescription, AGNetworkServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription, ApplicationCmdDescription
 from AccessGrid.Descriptions import PluginDescription
@@ -270,7 +270,8 @@ class VenueClientController:
             raise NoEnabledBridges
     
         # Sort the bridge list
-        bridgeList.sort(lambda x,y: cmp(x.rank, y.rank))
+        orderBridgesByPing = self.__venueClient.preferences.GetPreference(Preferences.ORDER_BRIDGES_BY_PING)
+        bridgeList.sort(lambda x,y: BridgeDescription.sort(x, y, orderBridgesByPing))
 
         # Set the transport in the venue client and update the node service
         self.__venueClient.SetTransport("unicast")

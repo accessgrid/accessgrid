@@ -47,10 +47,12 @@ class BridgeCache:
                 bridges[bridgeid].portMin = int(config[key])
             elif val == "portMax":
                 bridges[bridgeid].portMax = int(config[key])
+            elif val == "userRank":
+                bridges[bridgeid].userRank = float(config[key])
 
         for b in bridges.values():
             self.bridges.append(b)
-
+        
         return self.bridges
                                 
     def StoreBridges(self, bridges):
@@ -64,10 +66,11 @@ class BridgeCache:
             tempDict[""+b.guid+".host"] = b.host
             tempDict[""+b.guid+".port"] = b.port
             tempDict[""+b.guid+".serverType"] = b.serverType
-            tempDict[""+b.guid+".description"]= b.description
-            tempDict[""+b.guid+".status"]= b.status
-            tempDict[""+b.guid+".rank"]= b.rank
-            tempDict[""+b.guid+".portMin"]= int(b.portMin)
-            tempDict[""+b.guid+".portMax"]= int(b.portMax)
+            tempDict[""+b.guid+".description"] = b.description
+            tempDict[""+b.guid+".status"] = b.status
+            tempDict[""+b.guid+".rank"] = b.rank
+            tempDict[""+b.guid+".portMin"] = int(b.portMin)
+            tempDict[""+b.guid+".portMax"] = int(b.portMax)
+            tempDict[""+b.guid+".userRank"]= b.userRank
         
         SaveConfig(self.config.GetBridges(), tempDict)

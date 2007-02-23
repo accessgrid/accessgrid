@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.104 2007-01-03 21:49:16 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.105 2007-02-23 21:47:36 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.104 2007-01-03 21:49:16 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.105 2007-02-23 21:47:36 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -812,6 +812,7 @@ STATUS_DISABLED = "Disabled"
 
 class BridgeDescription:
     UNREACHABLE = 100000
+    UNRANKED = 100000
     def __init__(self, guid, name, host, port, serverType, description="",
                  portMin=None, portMax=None):
         self.guid = guid
@@ -824,7 +825,19 @@ class BridgeDescription:
         self.portMax = portMax
         self.status = STATUS_ENABLED
         self.rank = BridgeDescription.UNREACHABLE
+        self.userRank = BridgeDescription.UNRANKED
+    
+    def GetKey(self):
+        return "%s:%s:%s" % (self.name, self.host, self.port)
         
+    def sort(x, y, orderBridgesByPing=0):
+        if orderBridgesByPing:
+            return cmp(x.rank, y.rank)
+        rank = cmp(x.userRank, y.userRank)
+        if rank == 0:
+            return cmp(x.rank, y.rank)
+        else:
+            return rank
         
         
 class BeaconSource:

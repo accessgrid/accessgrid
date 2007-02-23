@@ -39,6 +39,8 @@ class Preferences:
     BRIDGE_REGISTRY = "bridgeRegistry"
     PROXY_HOST = "proxyHost"
     PROXY_PORT = "proxyPort"
+    BRIDGE_PING_UPDATE_DELAY = "bridgePingUpdateDelay"
+    ORDER_BRIDGES_BY_PING = "orderBridgesByPing"
                 
     def __init__(self):
         '''
@@ -68,9 +70,11 @@ class Preferences:
                          self.ENABLE_VIDEO: 1,
                          self.ENABLE_AUDIO: 1,
                          self.DISPLAY_MODE: self.EXITS,
-                         self.BRIDGE_REGISTRY: "http://www.accessgrid.org/registry/peers.txt | http://www.ap-accessgrid.org/registry/peers.txt",
+                         self.BRIDGE_REGISTRY: "http://www.accessgrid.org/registry/peers.txt",
                          self.PROXY_HOST: "",
                          self.PROXY_PORT: "",
+                         self.BRIDGE_PING_UPDATE_DELAY: 120,
+                         self.ORDER_BRIDGES_BY_PING: 1,
                          }
 
         # Set default log levels to Log.DEBUG.
@@ -87,16 +91,6 @@ class Preferences:
         # client profile. Save client profile
         # to separate profile file.
         self.profile = ClientProfile()
-
-        # How many bridge registries to process.
-        # All except the first permanentRegistries can be user modified
-        # We expect 0 <= permanentRegistries <= maxBridgeRegistries
-        # (but if permanentRegistries == maxBridgeRegistries,
-        #  then we don't show an edit button)
-        self.maxBridgeRegistries = 10
-        self.permanentRegistries = 1
-        if not (0 <= self.permanentRegistries <= self.maxBridgeRegistries):
-            raise Exception, "Preferences __init__:\n0 <= permanentRegistries <= maxBridgeRegistries not satisfied!"
 
         # Use the bridge cache object. Save bridges
         # to separate file
@@ -218,7 +212,7 @@ class Preferences:
 
         # Load bridges separately
         for b in self.bridgeCache.GetBridges():
-            self.__bridges[b.guid] = b
+            self.__bridges[b.GetKey()] = b
     
     def ResetPreferences(self):
         '''
@@ -291,26 +285,4 @@ class Preferences:
         * clientProfile * ClientProfile with your information. 
         '''
         return self.profile
-    
-    def GetMaxBridgeRegistries(self):
-        '''
-        Get the maximum number of bridge registries to process
-
-        **Returns**
-
-        * value * maxBridgeRegistries
-        '''
-        return self.maxBridgeRegistries
-    
-    def GetPermanentRegistries(self):
-        '''
-        Get the number of permanent bridge registries
-        i.e. how many can _not_ be edited
-
-        **Returns**
-
-        * value * permanentRegistries
-        '''
-        return self.permanentRegistries
-
     

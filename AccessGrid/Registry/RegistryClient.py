@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.29 2007-01-28 04:49:33 willing Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.30 2007-02-23 21:47:36 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -148,13 +148,10 @@ class RegistryClient:
         except:
             return -1
                     
-    def LookupBridge(self, maxToReturn=10, rankBridges=1):  # temporarily default to 1 to maintain current behavior
+    def LookupBridge(self):
         '''
-        Query registry for a list of bridges. If user cache exists it
-        is used instead of a network query.
+        Query registry for a list of bridges.
 
-        @keyword maxToReturn: number of bridges to return, default 10
-        @type maxToReturn: int
         @return: command output
         @rtype: string
         '''
@@ -165,42 +162,16 @@ class RegistryClient:
         self.bridges = []
         for b in bridges:
             if 'portMin' not in b.keys():
-                b['portMin'] = 5000
-                b['portMax'] = 5100
+                b['portMin'] = 0
+                b['portMax'] = 0
             desc = BridgeDescription(b["guid"], b["name"], b["host"],
                                      b["port"], b["serverType"],
                                      b["description"],
                                      b["portMin"],
                                      b["portMax"])
             self.bridges.append(desc)
-
-        # Sort the bridges
-        if rankBridges:
-            self.bridges = self._sortBridges(maxToReturn)
-                    
-                       
-        return self.bridges
             
-    def _sortBridges(self, maxToReturn):
-        '''
-        Sort a list of bridges based on ping values. Bridges
-        that can not be reached will be ignored.
-
-        @param maxToReturn number of bridges to return
-        @type maxToReturn int
-        @return: list of sorted bridges
-        @rtype: [AccessGrid.Descriptions.BridgeDescription]
-        '''
-        bridgeDescriptions = []
-
-        for desc in self.bridges[0:maxToReturn]:
-            try:
-                self.PingBridge(desc)
-                bridgeDescriptions.append(desc)
-            except:
-                self.log.exception("Failed to ping bridge %s (%s:%s)"%(desc.name,desc.host,str(desc.port)))
-                
-        return bridgeDescriptions
+        return self.bridges
                                    
     def _readPeerList(self,url):
         if url.startswith("file://"):
@@ -227,8 +198,9 @@ class RegistryClient:
         # Simplistic validation - just want a single peer.
         # For now, we assume any more than that to be an error
         # from (e.g.) some sort of error message (or page)
-        if len(registryPeers) > 1:
-            registryPeers = []
+        # - Removed by AGDR as breaks AGSC bridge registry!
+        #if len(registryPeers) > 1:
+        #    registryPeers = []
         return registryPeers
 
     def _ping(self, host):

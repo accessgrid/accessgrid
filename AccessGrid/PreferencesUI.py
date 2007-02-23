@@ -9,7 +9,7 @@ from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.GUID import GUID
 from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
 from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
-from AccessGrid.UIUtilities import MessageDialog
+from AccessGrid.UIUtilities import MessageDialog, TextDialog
 
 from wxPython.wx import *
 from wxPython.gizmos import wxTreeListCtrl
@@ -135,6 +135,10 @@ class PreferencesDialog(wxDialog):
         self.preferences.SetPreference(Preferences.BRIDGE_REGISTRY,
                                        self.networkPanel.GetRegistry(-1))
         self.preferences.SetBridges(self.networkPanel.GetBridges())
+        self.preferences.SetPreference(Preferences.BRIDGE_PING_UPDATE_DELAY,
+                                       self.networkPanel.GetBridgePingDelay())
+        self.preferences.SetPreference(Preferences.ORDER_BRIDGES_BY_PING,
+                                       self.networkPanel.GetOrderBridgesByPing())
         self.preferences.SetPreference(Preferences.DISPLAY_MODE,
                                        self.navigationPanel.GetDisplayMode())
         self.preferences.SetPreference(Preferences.PROXY_HOST,
@@ -148,8 +152,6 @@ class PreferencesDialog(wxDialog):
 
         p = self.profilePanel.GetNewProfile()
         self.preferences.SetProfile(p)
-
-        self.preferences.SetBridges(self.networkPanel.GetBridges())
 
         return self.preferences
             
@@ -793,7 +795,7 @@ class EditBridgeRegistryPanel(wxDialog):
                              style=wxALIGN_RIGHT)
         self.editableRegistryCtrl = wxTextCtrl(self, -1,
                        size = wxSize(480, 19*(self.maxRegistries-self.permanentRegistries)),
-                       style = wxTE_RICH | wxTE_MULTILINE | wxTE_PROCESS_ENTER)
+                       style = wxTE_RICH | wxTE_MULTILINE)
 
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.okButton = wxButton(self, wxID_OK, "OK")
@@ -949,6 +951,7 @@ class EditBridgeRegistryPanel(wxDialog):
         
 
 class NetworkPanel(wxPanel):
+    
     def __init__(self, parent, id, preferences):
         wxPanel.__init__(self, parent, id)
         self.preferences = preferences
@@ -959,16 +962,17 @@ class NetworkPanel(wxPanel):
         self.keyMap = {}
         self.selected = None
         self.editBridgeRegistryPanel = None
-        self.permanentRegistries = self.preferences.GetPermanentRegistries()
-        self.maxRegistries = self.preferences.GetMaxBridgeRegistries()
-
+        self.bridgePingDelay = self.preferences.GetPreference(Preferences.BRIDGE_PING_UPDATE_DELAY)
+        self.orderBridgesByPing = int(self.preferences.GetPreference(Preferences.ORDER_BRIDGES_BY_PING))
+        self.registries = self.preferences.GetPreference(Preferences.BRIDGE_REGISTRY).split('|')
         bridgeDict = preferences.GetBridges()
         self.bridges = bridgeDict.values()
+        self.regSelected = None
         
         # make a copy of the bridges, since we modify them in place
         import copy
         self.bridges = map( lambda x: copy.copy(x), self.bridges)
-        self.bridges.sort(lambda x,y: cmp(x.rank,y.rank))
+        self.bridges.sort(lambda x,y: BridgeDescription.sort(x, y, self.orderBridgesByPing))
 
         self.multicastButton.SetValue(not int(preferences.GetPreference(Preferences.MULTICAST)))
 
@@ -976,7 +980,11 @@ class NetworkPanel(wxPanel):
         
         self.beaconButton.SetValue(int(preferences.GetPreference(Preferences.BEACON)))
         self.listHelpText = wxStaticText(self,-1,'Right-click a bridge below to enable or disable it')
-
+        
+        self.orderBridgesByPingButton = wxCheckBox(self, wxNewId(), "  Choose Bridge by Ping Time ")
+        self.bridgePingTimeText = wxStaticText(self, -1, "Seconds between Ping Time updates:")
+        self.bridgePingTimeBox = wxTextCtrl(self, -1, str(self.bridgePingDelay), size = wxSize(40, -1));
+        self.orderBridgesByPingButton.SetValue(int(self.orderBridgesByPing))
 
         self.list = wxListCtrl(self, wxNewId(),style=wxLC_REPORT|wxLC_SINGLE_SEL)
         self.list.InsertColumn(0, "Bridge")
@@ -984,7 +992,7 @@ class NetworkPanel(wxPanel):
         self.list.InsertColumn(2, "Port")
         self.list.InsertColumn(3, "Type")
         self.list.InsertColumn(4, "Status")
-        self.list.InsertColumn(5, "Distance")
+        self.list.InsertColumn(5, "Ping Time (s)")
         self.list.InsertColumn(6, "Port range")
               
         self.list.SetColumnWidth(0, 90)
@@ -992,38 +1000,46 @@ class NetworkPanel(wxPanel):
         self.list.SetColumnWidth(2, 50)
         self.list.SetColumnWidth(3, 80)
         self.list.SetColumnWidth(4, 60)
-        self.list.SetColumnWidth(5, 60)
+        self.list.SetColumnWidth(5, 90)
         self.list.SetColumnWidth(6, 90)
         self.__InitList()
         
-        self.refreshButton = wxButton(self,-1,'Refresh')
-        self.registryText = wxStaticText(self, -1, "Bridge Registries:",
-                             size=(120,-1))
-        self.registryCtrl = wxTextCtrl(self, -1, size = (350,-1),
-                             style = wxTE_RICH | wxTE_MULTILINE | wxTE_READONLY)
-        if self.permanentRegistries < self.maxRegistries:
-            self.registryEditButton = wxButton(self, -1, 'Edit')
+        self.updownButton = wxSpinButton(self, wxNewId(), style=wxVERTICAL)
+        self.refreshButton = wxButton(self, -1, 'Find Additional Bridges')
+        self.updatePingButton = wxButton(self, -1, 'Update Ping Times')
+        self.orderByPingButton = wxButton(self, -1, 'Order Bridges by Ping Time')
+        self.purgeCacheButton = wxButton(self, -1, 'Purge Bridge Cache')
+        self.registryText = wxStaticText(self, -1, "Bridge Registries:", size=(120,-1))
+        self.registryList = wxListCtrl(self, wxNewId(), style = wxLC_LIST | wxLC_SINGLE_SEL | wxLC_NO_HEADER)
+        self.addRegistryButton = wxButton(self, wxNewId(), 'Add')
+        self.removeRegistryButton = wxButton(self, wxNewId(), 'Remove')
+        self.editRegistryButton = wxButton(self, wxNewId(), 'Edit')
         
-        regPrefs = self.preferences.GetPreference(Preferences.BRIDGE_REGISTRY).split('|')
-        registriesAdded = 0
-        for reg in regPrefs:
-            if registriesAdded >= self.maxRegistries:
-                break
-            if len(reg.strip()) < 1:
-                self.registryCtrl.AppendText("None" + "\n")
-            else:
-                self.registryCtrl.AppendText(reg.strip() + "\n")
-            registriesAdded += 1
-        for pad in range (registriesAdded, self.maxRegistries):
-            self.registryCtrl.AppendText("None" + "\n")
-        # Remove final '\n' (which adds an empty line at end of entries)
-        self.registryCtrl.Remove(self.registryCtrl.GetLastPosition()-1,self.registryCtrl.GetLastPosition())
+        print(self.preferences.GetPreference(Preferences.BRIDGE_REGISTRY))
+        for index in range(len(self.registries)):
+            print(self.registries[index])
+            self.registryList.InsertStringItem(index, self.registries[index])
+        
+        if self.orderBridgesByPing == 1:
+            self.updatePingButton.Enable(0)
+            self.orderByPingButton.Enable(0)
+            self.updownButton.Enable(0)
         
         EVT_RIGHT_DOWN(self.list, self.OnRightDown)
         EVT_RIGHT_UP(self.list, self.OnRightClick)
-        EVT_BUTTON(self,self.refreshButton.GetId(), self.OnRefresh)
-        if self.permanentRegistries < self.maxRegistries:
-            EVT_BUTTON(self, self.registryEditButton.GetId(), self.OnEdit)
+        EVT_LIST_ITEM_SELECTED(self, self.list.GetId(), self.OnSelect)
+        EVT_BUTTON(self, self.refreshButton.GetId(), self.OnRefresh)
+        EVT_BUTTON(self, self.updatePingButton.GetId(), self.OnUpdatePing)
+        EVT_BUTTON(self, self.orderByPingButton.GetId(), self.OnOrderByPing)
+        EVT_CHECKBOX(self, self.orderBridgesByPingButton.GetId(), self.OnChangeOrderByPing)
+        EVT_SPIN_UP(self, self.updownButton.GetId(), self.MoveUp)
+        EVT_SPIN_DOWN(self, self.updownButton.GetId(), self.MoveDown)
+        EVT_LIST_ITEM_SELECTED(self, self.registryList.GetId(), self.OnSelectReg)
+        EVT_LIST_ITEM_DESELECTED(self, self.registryList.GetId(), self.OnDeselectReg)
+        EVT_BUTTON(self, self.editRegistryButton.GetId(), self.OnEditReg)
+        EVT_BUTTON(self, self.addRegistryButton.GetId(), self.OnAddReg)
+        EVT_BUTTON(self, self.removeRegistryButton.GetId(), self.OnRemoveReg)
+        EVT_BUTTON(self, self.purgeCacheButton.GetId(), self.OnPurgeCache)
                                       
         if IsOSX():
             self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
@@ -1031,6 +1047,69 @@ class NetworkPanel(wxPanel):
             self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
                                 
         self.__Layout()
+    
+    def OnSelectReg(self, event):
+        self.regSelected = event.GetIndex()
+        
+    def OnDeselectReg(self, event):
+        if self.regSelected == event.GetIndex():
+            self.regSelected = None
+            
+    def OnEditReg(self, event):
+        if self.regSelected != None:
+            d = TextDialog(self, "Enter the new URL", "Registry URL", text = self.registries[self.regSelected])
+            if d.ShowModal() == wxID_OK:
+                newreg = d.GetChars()
+                d.Destroy()
+                self.registries[self.regSelected] = newreg
+                self.registryList.SetStringItem(self.regSelected, 0, newreg)
+    
+    def OnRemoveReg(self, event):
+        if self.regSelected != None:
+            d = wxMessageDialog(self, "Are you sure that you want to remove this registry?", "Confirm", wxYES_NO)
+            if d.ShowModal() == wxID_YES:
+                self.registries.pop(self.regSelected)
+                self.registryList.DeleteItem(self.regSelected)
+    
+    def OnAddReg(self, event):
+        d = TextDialog(self, "Enter the new URL", "Registry URL")
+        if d.ShowModal() == wxID_OK:
+            newreg = d.GetChars()
+            d.Destroy()
+            self.registries.append(newreg)
+            self.registryList.InsertStringItem(len(self.registries) - 1, newreg)
+    
+    def OnSelect(self, event):
+        self.selected = event.m_itemIndex
+        
+    def OnChangeOrderByPing(self, event):
+        if self.orderBridgesByPingButton.IsChecked():
+            self.bridges.sort(lambda x,y: BridgeDescription.sort(x, y, 1))
+            self.orderBridgesByPing = 1
+            self.updatePingButton.Enable(0)
+            self.orderByPingButton.Enable(0)
+            self.updownButton.Enable(0)
+        else:
+            self.bridges.sort(lambda x,y: BridgeDescription.sort(x, y, 0))
+            self.orderBridgesByPing = 0
+            self.updatePingButton.Enable(1)
+            self.orderByPingButton.Enable(1)
+            self.updownButton.Enable(1)
+        self.__InitList()
+        
+    def OnOrderByPing(self, event):
+        for b in self.bridges:
+            b.userRank = b.rank
+        self.bridges.sort(lambda x,y: BridgeDescription.sort(x, y, self.orderBridgesByPing))
+        self.__InitList()
+        
+    def OnUpdatePing(self, event):
+        venueClient = self.preferences.venueClient
+        registryClient = venueClient.registryClient
+        if registryClient != None:
+            for b in self.bridges:
+                registryClient.PingBridge(b)
+        self.__InitList()
         
     def OnRightDown(self, event):
         """
@@ -1051,11 +1130,19 @@ class NetworkPanel(wxPanel):
         # only do this part the first time so the events are only bound once
         if not hasattr(self, "enableId"):
             self.enableId = wx.NewId()
+            self.moveupId = wx.NewId()
+            self.movedownId = wx.NewId()
             EVT_MENU(self, self.enableId, self.Enable)
+            EVT_MENU(self, self.moveupId, self.MoveUp)
+            EVT_MENU(self, self.movedownId, self.MoveDown)
             
         # make a menu
         self.menu = wx.Menu()
         self.menu.AppendCheckItem(self.enableId, "Enabled")
+        if self.orderBridgesByPing == 0:
+            self.menu.AppendSeparator()
+            self.menu.Append(self.moveupId, "Move Up")
+            self.menu.Append(self.movedownId, "Move Down")
 
         # Check the actual item to see if it is enabled or not
         selectedItem = self.bridges[self.selected]
@@ -1063,9 +1150,19 @@ class NetworkPanel(wxPanel):
             self.menu.Check(self.enableId, 1)
         else: 
             self.menu.Check(self.enableId, 0)
+        
+        # Disable moving up for top item and down for bottom item
+        if self.selected == 0:
+            self.menu.Enable(self.moveupId, 0)
+        if self.selected == (len(self.bridges) - 1):
+            self.menu.Enable(self.movedownId, 0)
 
         self.list.PopupMenu(self.menu, wxPoint(self.x, self.y))
         self.menu.Destroy()
+    
+    def OnPurgeCache(self, event):
+        self.preferences.SetBridges({})
+        self.OnRefresh(event)
 
     def OnRefresh(self,event):
     
@@ -1076,8 +1173,8 @@ class NetworkPanel(wxPanel):
         
             # Force rescanning of the bridges
             venueClient.SetupBridgePrefs()
-            self.bridges = venueClient.LoadBridges(rankBridges=1)     
-            self.bridges.sort(lambda x,y: cmp(x.rank,y.rank))
+            self.bridges = venueClient.LoadBridges()
+            self.bridges.sort(lambda x,y: BridgeDescription.sort(x, y, self.orderBridgesByPing))
 
             # Refresh the bridge list in the UI
             self.__InitList()
@@ -1122,16 +1219,61 @@ class NetworkPanel(wxPanel):
 
         selectedItem = self.bridges[self.selected]
         if enableFlag:
-            selectedItem.status= STATUS_ENABLED
+            selectedItem.status = STATUS_ENABLED
         else:
             selectedItem.status = STATUS_DISABLED
 
         self.list.SetStringItem(self.selected, 4, selectedItem.status)
+    
+    def SetBridgeListRow(self, index):
+        self.list.SetStringItem(index, 0, self.bridges[index].name)
+        self.list.SetStringItem(index, 1, self.bridges[index].host)
+        self.list.SetStringItem(index, 2, str(self.bridges[index].port))
+        self.list.SetStringItem(index, 3, self.bridges[index].serverType)
+        self.list.SetStringItem(index, 4, self.bridges[index].status)
+        if self.bridges[index].rank == BridgeDescription.UNREACHABLE:
+            self.list.SetStringItem(index, 5, "Unreachable")
+        else:
+            self.list.SetStringItem(index, 5, str(self.bridges[index].rank))
+        self.list.SetStringItem(index, 6, '%d-%d' % (self.bridges[index].portMin,self.bridges[index].portMax))
+        
+    def MoveUp(self, event):
+        if self.selected != None and self.selected > 0:
+            aboveBy1Rank = 0;
+            aboveRank = self.bridges[self.selected - 1].userRank
+            if self.selected > 1:
+                aboveBy1Rank = self.bridges[self.selected - 2].userRank
+            self.bridges[self.selected].userRank = float(aboveBy1Rank + ((aboveRank - aboveBy1Rank) / 2))
+            temp = self.bridges[self.selected - 1]
+            self.bridges[self.selected - 1] = self.bridges[self.selected]
+            self.bridges[self.selected] = temp
+            self.SetBridgeListRow(self.selected - 1)
+            self.SetBridgeListRow(self.selected)
+            self.selected = self.selected - 1
+            self.list.Select(self.selected)
+            self.list.ScrollList(0, -10)
+    
+    def MoveDown(self, event):
+        if self.selected != None and self.selected < (len(self.bridges) - 1):
+            selectedItem = self.bridges[self.selected]
+            belowBy1Rank = 0;
+            belowRank = self.bridges[self.selected + 1].userRank
+            if self.selected < (len(self.bridges) - 2):
+                belowBy1Rank = self.bridges[self.selected + 2].userRank
+            selectedItem.userRank = float(belowRank + ((belowBy1Rank - belowRank) / 2))
+            temp = self.bridges[self.selected + 1]
+            self.bridges[self.selected + 1] = self.bridges[self.selected]
+            self.bridges[self.selected] = temp
+            self.SetBridgeListRow(self.selected + 1)
+            self.SetBridgeListRow(self.selected)
+            self.selected = self.selected + 1
+            self.list.Select(self.selected)
+            self.list.ScrollList(0, 10)
 
     def GetBridges(self):
         retBridges = {}
         for b in self.bridges:
-            retBridges[b.guid] = b
+            retBridges[b.GetKey()] = b
         return retBridges
                                     
     def GetMulticast(self):
@@ -1147,17 +1289,20 @@ class NetworkPanel(wxPanel):
             return 0
 
     def GetRegistry(self, regId):
-        if regId < 0:
-            regText = ''
-            for reg in range(0, self.maxRegistries):
-                regText = regText + "%s |" % self.registryCtrl.GetLineText(reg)
-            return regText.rstrip(' |')
+        return "|".join(self.registries)
+    
+    def GetOrderBridgesByPing(self):
+        if self.orderBridgesByPingButton.IsChecked():
+            return 1
         else:
-            regText = self.registryCtrl.GetLineText(regId)
-            if regText.startswith('None'):
-                return ''
-            else:
-                return regText
+            return 0
+        
+    def GetBridgePingDelay(self):
+        try:
+            return int(self.bridgePingDelayBox.GetText())
+        except:
+            log.debug("Bridge Delay was not an int")
+            return self.bridgePingDelay
 
     def __InitList(self):
 
@@ -1167,15 +1312,7 @@ class NetworkPanel(wxPanel):
         # Populate the list
         for index in range(len(self.bridges)):
             self.list.InsertStringItem(index, self.bridges[index].name)
-            self.list.SetStringItem(index, 1, self.bridges[index].host)
-            self.list.SetStringItem(index, 2, str(self.bridges[index].port))
-            self.list.SetStringItem(index, 3, self.bridges[index].serverType)
-            self.list.SetStringItem(index, 4, self.bridges[index].status)
-            if self.bridges[index].rank == BridgeDescription.UNREACHABLE:
-                self.list.SetStringItem(index, 5, "Unreachable")
-            else:
-                self.list.SetStringItem(index, 5, str(self.bridges[index].rank))
-            self.list.SetStringItem(index, 6, '%d-%d' % (self.bridges[index].portMin,self.bridges[index].portMax))
+            self.SetBridgeListRow(index)
           
     def __Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
@@ -1185,15 +1322,31 @@ class NetworkPanel(wxPanel):
         sizer.Add(sizer2, 0, wxEXPAND)
         sizer.Add(self.beaconButton, 0, wxALL|wxEXPAND, 10)
         sizer.Add(self.multicastButton, 0, wxALL|wxEXPAND, 10)
-        gridSizer = wxFlexGridSizer(0, 3, 5, 5)
-        gridSizer.Add(self.registryText, 0, wxALIGN_LEFT, 0)
-        gridSizer.Add(self.registryCtrl, 0, wxEXPAND, 0)
-        if self.permanentRegistries < self.maxRegistries:
-            gridSizer.Add(self.registryEditButton, 0, wxLEFT, 5)
-        sizer.Add(gridSizer, 0, wxALL|wxEXPAND, 10)
-        sizer.Add(self.listHelpText, 0, wxALL|wxEXPAND, 10)
-        sizer.Add(self.list, 1, wxALL|wxEXPAND, 10)
-        sizer.Add(self.refreshButton, 0, wxALL, 10)
+        sizer.Add(self.orderBridgesByPingButton, 0, wxALL|wxEXPAND, 10)
+        sizerBridgePingTime = wxBoxSizer(wxHORIZONTAL)
+        sizerBridgePingTime.Add(self.bridgePingTimeText, 0, wxRIGHT, 0)
+        sizerBridgePingTime.Add(self.bridgePingTimeBox, 0, wxLEFT, 0)
+        sizer.Add(sizerBridgePingTime, 0, wxALL|wxEXPAND, 10)
+        sizer.Add(self.registryText, 0, wxLEFT|wxRIGHT|wxEXPAND, 10)
+        registrySizer = wxBoxSizer(wxHORIZONTAL)
+        registrySizer.Add(self.registryList, 1, wxEXPAND, 0)
+        registryButtonSizer = wxBoxSizer(wxVERTICAL)
+        registryButtonSizer.Add(self.addRegistryButton, 0, 0, 0)
+        registryButtonSizer.Add(self.removeRegistryButton, 0, wxTOP, 10)
+        registryButtonSizer.Add(self.editRegistryButton, 0, wxTOP, 10)
+        registrySizer.Add(registryButtonSizer, 0, wxLEFT|wxEXPAND, 10)
+        sizer.Add(registrySizer, 0, wxALL|wxEXPAND, 10)
+        sizer.Add(self.listHelpText, 0, wxTOP|wxLEFT|wxRIGHT|wxEXPAND, 10)
+        regControlSizer = wxBoxSizer(wxHORIZONTAL)
+        regControlSizer.Add(self.list, 1, wxALL|wxEXPAND, 0)
+        regControlSizer.Add(self.updownButton, 0, wxLEFT|wxEXPAND, 10)
+        sizer.Add(regControlSizer, 0, wxALL|wxEXPAND, 10)
+        sizerButtons = wxBoxSizer(wxHORIZONTAL)
+        sizerButtons.Add(self.refreshButton, 0, wxLEFT, 10)
+        sizerButtons.Add(self.updatePingButton, 0, wxLEFT, 10)
+        sizerButtons.Add(self.orderByPingButton, 0, wxLEFT, 10)
+        sizerButtons.Add(self.purgeCacheButton, 0, wxLEFT, 10)
+        sizer.Add(sizerButtons, 0, wxBOTTOM|wxEXPAND, 10)
         
         self.SetSizer(sizer)
         sizer.Fit(self)

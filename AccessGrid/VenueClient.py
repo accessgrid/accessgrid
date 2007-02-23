@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.337 2007-01-28 04:49:32 willing Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.338 2007-02-23 21:47:36 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.337 2007-01-28 04:49:32 willing Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.338 2007-02-23 21:47:36 turam Exp $"
 
 import sys
 import os
@@ -28,7 +28,7 @@ from AccessGrid import Version
 from AccessGrid.Toolkit import Application, Service
 from AccessGrid.Preferences import Preferences
 from AccessGrid.Descriptions import Capability, STATUS_ENABLED
-from AccessGrid.Descriptions import BeaconSource, BeaconSourceData
+from AccessGrid.Descriptions import BeaconSource, BeaconSourceData, BridgeDescription
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Venue import ServiceAlreadyPresent, CertificateRequired
@@ -108,6 +108,44 @@ class NoServices(Exception):
 
 log = Log.GetLogger(Log.VenueClient)
 
+class BridgePingThread(threading.Thread):
+    """
+    This is used to keep the bridge ping times up to date
+    """
+    def __init__(self, preferences, registryClient, bridges):
+        self.preferences = preferences
+        self.registryClient = registryClient;
+        self.bridges = bridges
+        self.running = 1
+        self.bridgesDone = 0
+        threading.Thread.__init__ (self)
+    
+    def run(self):
+        self.refreshDelay = int(self.preferences.GetPreference(Preferences.BRIDGE_PING_UPDATE_DELAY))
+        time.sleep(self.refreshDelay)
+        while self.running:
+            log.debug("Updating Bridge Ping Times for %d bridges" % (len(self.bridges)))
+            self.bridgesDone = 0
+            for b in self.bridges:
+                thread = threading.Thread(target=self.PingBridge, args=(b,))
+                thread.start()
+            while self.bridgesDone < len(self.bridges):
+                time.sleep(0.05)
+            bridgeList = {}
+            for b in self.bridges:
+                bridgeList[b.GetKey()] = b
+            self.preferences.SetBridges(bridgeList)
+            self.refreshDelay = int(self.preferences.GetPreference(Preferences.BRIDGE_PING_UPDATE_DELAY))
+            log.debug("Finished Updating Ping Times (waiting %d seconds)" % (self.refreshDelay))
+            time.sleep(self.refreshDelay)
+    
+    def PingBridge(self, b):
+        self.registryClient.PingBridge(b)
+        self.bridgesDone = self.bridgesDone + 1
+    
+    def close(self):
+        self.running = 0
+
 class VenueClient:
     """
     This is the client side object that maintains a stateful
@@ -132,6 +170,7 @@ class VenueClient:
         self.builtInNodeService = None
         self.builtInNodeServiceUri = ""
         self.bridgeCache = BridgeCache()
+        self.bridgePinger = None
         
         self.certRequired = 0
               
@@ -210,7 +249,7 @@ class VenueClient:
             self.transport = "unicast"
 
         if progressCB: progressCB("Loading bridge information",50)
-        self.LoadBridges(rankBridges=0)
+        self.LoadBridges()
         self.bridgeCache.StoreBridges(self.bridges.values())
                     
         self.observers = []
@@ -266,13 +305,18 @@ class VenueClient:
             if protoMatched:
                 self.registryUrls.append(regUrl)
 
-    def LoadBridges(self,rankBridges=1):
+    def LoadBridges(self):
         '''
         Gets bridge information from bridge registry. Sets current
         bridge to the first one in the sorted list. Also, check preferences
         to see if any of the retreived bridges are disabled.
         '''
+        if self.bridgePinger != None:
+            self.bridgePinger.close()
+            self.bridgePinger = None
+        
         log.debug('get bridges from registry')
+        self.bridges = self.preferences.GetBridges()
         
         # Get bridges from registry
         for registryUrl in self.registryUrls:
@@ -280,38 +324,32 @@ class VenueClient:
                 log.debug("Trying bridge registry: %s" % registryUrl)
                 self.registryClient = RegistryClient(url=registryUrl)
                 if self.registryClient == None:
-		    continue
-                bridgeList = self.registryClient.LookupBridge(10,rankBridges=rankBridges)
+                    continue
+                bridgeList = self.registryClient.LookupBridge()
                 for b in bridgeList:
-                    self.bridges[b.guid] = b
+                    if not self.bridges.has_key(b.GetKey()):
+                        self.registryClient.PingBridge(b)
+                        self.bridges[b.GetKey()] = b
     
             except:
                 log.exception("LoadBridges: Can not connect to bridge registry %s ", registryUrl)
-
-
-        log.debug('set bridges in prefs')
-                
-        prefs = self.app.GetPreferences()
-        prefsbridges = prefs.GetBridges()
-        for k in self.bridges.keys():
-            if prefsbridges.has_key(k):
-                self.bridges[k].status = prefsbridges[k].status
-                self.bridges[k].rank = prefsbridges[k].rank
-            else:
-                # we don't know this bridge yet.  if we didn't rank bridges generally,
-                # we still have to rank this one in particular
-                if rankBridges == 0:
-                    self.registryClient.PingBridge(self.bridges[k])
-                    
-        prefs.SetBridges(self.bridges)
+        
+        bridgeList = self.bridges.values()
+        bridgeList.sort(lambda x,y: BridgeDescription.sort(x, y, 0))
+        for index in range(0, len(bridgeList)):
+            bridgeList[index].userRank = float(index + 1)
+        
+        self.preferences.SetBridges(self.bridges)
 
         log.debug('connect to bridge')
 
-        self.currentBridge = self.FindBridge(self.bridges.values())
+        self.currentBridge = self.FindBridge(bridgeList)
         
         log.debug('exiting loadbridges')
+        self.bridgePinger = BridgePingThread(self.preferences, self.registryClient, bridgeList)
+        self.bridgePinger.start()
         
-        return self.bridges.values()
+        return bridgeList
 
 
     def FindBridge(self, bridgeList):
@@ -319,7 +357,8 @@ class VenueClient:
         retBridge = None
                 
         # sort the bridge list
-        bridgeList.sort(lambda x,y: cmp(x.rank, y.rank))
+        orderBridgesByPing = self.preferences.GetPreference(Preferences.ORDER_BRIDGES_BY_PING)
+        bridgeList.sort(lambda x,y: BridgeDescription.sort(x, y, orderBridgesByPing))
 
         # use first pingable bridge in sorted list
         for b in bridgeList:
@@ -1369,7 +1408,6 @@ class VenueClient:
                   
                 except QuickBridgeClient.ConnectionError,e:
                     self.currentBridge.rank = BridgeDescription.UNREACHABLE
-                    self.bridgeCache.StoreBridges()
                 except Exception,e:
                     log.exception("VenueClient.UpdateStream: Failed to connect to bridge %s"%(self.currentBridge.name))
                     raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 

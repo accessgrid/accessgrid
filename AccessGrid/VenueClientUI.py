@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.224 2007-02-13 17:00:25 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.225 2007-02-23 21:49:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.224 2007-02-13 17:00:25 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.225 2007-02-23 21:49:10 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -41,7 +41,7 @@ from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.ClientProfile import *
 from AccessGrid.Preferences import Preferences
 from AccessGrid.PreferencesUI import PreferencesDialog
-from AccessGrid.Descriptions import DataDescription, ServiceDescription
+from AccessGrid.Descriptions import DataDescription, ServiceDescription, BridgeDescription
 from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
 from AccessGrid.Descriptions import DirectoryDescription, FileDescription
 from AccessGrid.Descriptions import ApplicationDescription, VenueDescription
@@ -642,19 +642,20 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             return
 
         # sort the bridge list
-        bList.sort(lambda x,y: cmp(x.rank, y.rank))
+        orderBridgesByPing = self.venueClient.preferences.GetPreference(Preferences.ORDER_BRIDGES_BY_PING)
+        bList.sort(lambda x,y: BridgeDescription.sort(x, y, orderBridgesByPing))
 
         for b in bList:
             id = wxNewId()
             self.bridgeSubmenu.AppendCheckItem(id, b.name)
-            self.bridgeKeyMap[b.guid] = id
+            self.bridgeKeyMap[b.GetKey()] = id
 
             if b.status == STATUS_ENABLED:
                 self.bridgeSubmenu.Enable(id, true)
             else:
                 self.bridgeSubmenu.Enable(id, false)
 
-            if (self.currentBridge and b.guid == self.currentBridge.guid
+            if (self.currentBridge and b.GetKey() == self.currentBridge.GetKey()
                 and self.venueClient.GetTransport()=="unicast"):
                 self.bridgeSubmenu.Check(id, 1)
                 
@@ -1736,24 +1737,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
                 # Check for disabled bridge preferences
                 bDict = p.GetBridges()
-                bridges = self.venueClient.GetBridges()
-                
-                for id in bDict.keys():
-                    if self.bridgeKeyMap.has_key(id):
-                        index = self.bridgeKeyMap[id]
-                        status = true
-                        
-                        if bDict[id].status == STATUS_DISABLED:
-                            status = false
-                                                    
-                        # Update bridge menu
-                        self.bridgeSubmenu.Enable(index, status)
-                        
-                        # Change status for venue client bridges
-                        if bridges.has_key(id):
-                            bridges[id].status = bDict[id].status
-                       
-                self.venueClient.SetBridges(bridges)
+                self.venueClient.SetBridges(bDict)
+                self.__CreateBridgeMenu()
             except:
                 log.exception("Error editing preferences")
                 self.Error("Preferences could not be saved", "Edit Preferences Error")
