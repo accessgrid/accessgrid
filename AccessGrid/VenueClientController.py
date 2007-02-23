@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.75 2007-02-23 21:47:36 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.76 2007-02-23 22:08:05 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.75 2007-02-23 21:47:36 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.76 2007-02-23 22:08:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -784,6 +784,12 @@ class VenueClientController:
             if bridges.has_key(id):
                     bridges[id].status = bDict[id].status
         self.__venueClient.SetBridges(bridges)
+        
+        # Update multicast watcher
+        mcdhost = preferences.GetPreference(Preferences.MULTICAST_DETECT_HOST)
+        mcdport = preferences.GetPreference(Preferences.MULTICAST_DETECT_PORT)
+        self.__venueClient.SetMulticastWatcherHostPort(mcdhost,mcdport)
+        threading.Thread(target=self.gui.UpdateMcastStatus).start()
 
 
     # 

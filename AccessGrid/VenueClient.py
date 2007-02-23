@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.338 2007-02-23 21:47:36 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.339 2007-02-23 22:07:49 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.338 2007-02-23 21:47:36 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.339 2007-02-23 22:07:49 turam Exp $"
 
 import sys
 import os
@@ -277,7 +277,10 @@ class VenueClient:
         self.textLocation = None
 
         try:
-            self.multicastWatcher = MulticastWatcher()
+            mcdhost = self.preferences.GetPreference(Preferences.MULTICAST_DETECT_HOST)
+            mcdport = self.preferences.GetPreference(Preferences.MULTICAST_DETECT_PORT)
+            mcdport = int(mcdport)
+            self.multicastWatcher = MulticastWatcher(mcdhost,mcdport)
         except:
             self.multicastWatcher = None
        
@@ -963,6 +966,7 @@ class VenueClient:
         
         
         # Retreive stream descriptions
+        self.streamDescList = []
         if len(self.capabilities) > 0:
             self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.profile.connectionId,
                                                                           self.capabilities) 
@@ -1165,16 +1169,17 @@ class VenueClient:
         try:
             if self.nodeService:
                 self.capabilities = self.nodeService.GetCapabilities()
-            if not self.capabilities:
-                self.capabilities = []
-            
+                self.capabilities += self.beaconCapabilities 
             for cap in self.capabilities:
 		log.debug("Capability on VenueEnter: %s", cap)
             
         except:
             log.exception("EnterVenue: Exception getting capabilities")
             errorInNode = 1
-        self.capabilities += self.beaconCapabilities 
+            
+        if not self.capabilities:
+            self.capabilities = []
+            self.capabilities += self.beaconCapabilities 
            
         # Set media and beacon indicators in client profile based on capabilities
         self.profile.video = self.profile.audio = self.profile.display = self.profile.beacon = 0
@@ -1203,7 +1208,11 @@ class VenueClient:
             enterSuccess = 0
         except HostingException,e:
             enterSuccess = 0
-            mod,klass = GetHostingExceptionModuleAndClassName(e)
+            log.exception("Hosting exception entering venue")
+            try:
+                mod,klass = GetHostingExceptionModuleAndClassName(e)
+            except Exception:
+                klass = 0
             if klass == "CertificateRequired":
                 raise CertificateRequired
                 self.warningString += "A certificate is required for entry into this Venue,\nand this version of the software does not support\nthe use of certificates with the Venue Client.\nUpgrade to the next version of the Access Grid\nsoftware before trying to enter this Venue."
@@ -1784,12 +1793,13 @@ class VenueClient:
         try:
             found = 0
             
-            serviceList = self.nodeService.GetServices()
-            for service in serviceList:
-                for cap in service.capabilities:
-                    if cap.type == 'video' and cap.role == 'consumer':
-                        AGServiceIW(service.uri).SetEnabled(enableFlag)
-                        found = 1
+            if self.nodeService:
+                serviceList = self.nodeService.GetServices()
+                for service in serviceList:
+                    for cap in service.capabilities:
+                        if cap.type == 'video' and cap.role == 'consumer':
+                            AGServiceIW(service.uri).SetEnabled(enableFlag)
+                            found = 1
 
             if not found:
                 raise NoServices
@@ -1804,13 +1814,14 @@ class VenueClient:
         try:
             found = 0
             
-            serviceList = self.nodeService.GetServices()
-            for service in serviceList:
-                for cap in service.capabilities:
-                    if cap.type == 'video' and cap.role == 'producer':
-                        AGServiceIW(service.uri).SetEnabled(enableFlag)
-                        found = 1
-                    
+            if self.nodeService:
+                serviceList = self.nodeService.GetServices()
+                for service in serviceList:
+                    for cap in service.capabilities:
+                        if cap.type == 'video' and cap.role == 'producer':
+                            AGServiceIW(service.uri).SetEnabled(enableFlag)
+                            found = 1
+
             if not found:
                 raise NoServices
 
@@ -1821,7 +1832,8 @@ class VenueClient:
             
     def SetAudioEnabled(self,enableFlag):
         try:
-            self.nodeService.SetServiceEnabledByMediaType("audio",enableFlag)
+            if self.nodeService:
+                self.nodeService.SetServiceEnabledByMediaType("audio",enableFlag)
         except:
             log.exception("VenueClient.SetAudioEnabled: Error enabling audio")
             
@@ -1913,6 +1925,9 @@ class VenueClient:
     def GetVersion(self):
         return Version.GetVersion()
     
+    def SetMulticastWatcherHostPort(self,host,port):
+        if self.multicastWatcher:
+            self.multicastWatcher.SetHostPort(host,port)
     
 
 # Retrieve a list of urls of (presumably) running venue clients
