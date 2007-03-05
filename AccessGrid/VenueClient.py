@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.339 2007-02-23 22:07:49 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.340 2007-03-05 23:06:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.339 2007-02-23 22:07:49 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.340 2007-03-05 23:06:27 turam Exp $"
 
 import sys
 import os
@@ -1358,12 +1358,13 @@ class VenueClient:
             raise exc
 
     def UpdateServiceClientProfile(self,profile):
-        services = self.nodeService.GetServices()
-        for service in services:
-            try:
-                AGServiceIW(service.uri).SetIdentity(self.profile)
-            except:
-                log.exception('failed to update %s with profile', service.name)
+        if self.nodeService:
+            services = self.nodeService.GetServices()
+            for service in services:
+                try:
+                    AGServiceIW(service.uri).SetIdentity(self.profile)
+                except:
+                    log.exception('failed to update %s with profile', service.name)
             
     def UpdateStreams(self):
         for stream in self.streamDescList:
