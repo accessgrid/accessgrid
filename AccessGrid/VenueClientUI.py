@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.225 2007-02-23 21:49:10 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.226 2007-03-05 23:08:44 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.225 2007-02-23 21:49:10 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.226 2007-03-05 23:08:44 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -461,23 +461,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
               
         self.preferences = wxMenu()
 
-        #
-        # Retrieve the cert mgr GUI from the application.
-        #
-        self.cmui = None
-        try:
-            mgr = app.GetCertificateManager()
-        except Exception,e:
-            log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
-                           certificate mgr user interface, continuing")
-
-        self.cmui = CertificateManagerWXGUI.CertificateManagerWXGUI(mgr)
-        self.cmui.SetCertificateManager(mgr)
-        certMenu = self.cmui.GetMenu(self)
-        for item in certMenu.GetMenuItems():
-            self.preferences.AppendItem(item)
-        
-        self.preferences.AppendSeparator()
 
         # Add node-related entries
         self.preferences.AppendRadioItem(self.ID_USE_MULTICAST, "Use Multicast",
@@ -528,6 +511,23 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.preferences.Append(self.ID_MYNODE_MANAGE, "&Configure node services...",
                                 "Configure node services for audio, video, ...")
         self.preferences.AppendSeparator()
+        
+        #
+        # Retrieve the cert mgr GUI from the application.
+        #
+        self.cmui = None
+        try:
+            mgr = app.GetCertificateManager()
+        except Exception,e:
+            log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
+                           certificate mgr user interface, continuing")
+
+        self.cmui = CertificateManagerWXGUI.CertificateManagerWXGUI(mgr)
+        self.cmui.SetCertificateManager(mgr)
+        certMenu = self.cmui.GetMenu(self)
+        for item in certMenu.GetMenuItems():
+            self.preferences.AppendItem(item)
+        
         self.preferences.Append(self.ID_PREFERENCES, "&Preferences...")
         self.menubar.Append(self.preferences, "&Tools")
         
@@ -3387,6 +3387,7 @@ class VenueAddressBar(wxSashLayoutWindow):
         name = name.replace("&", "&&")
         self.title.SetLabel(name)
         self.titlePanel.SetToolTipString(description)
+        self.parent.SetTitle(name + ' - Venue Client')
         self.__Layout()
 
     def AddChoice(self, url):
