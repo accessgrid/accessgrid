@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.47 2007-01-24 21:28:19 wwjag Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.48 2007-03-05 23:46:30 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,6 +17,7 @@ import getopt
 from threading import Thread
 import Queue
 import shutil
+import time
 
 from wxPython.wx import *
 from AccessGrid import Platform
@@ -58,6 +59,8 @@ from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.UIUtilities import MessageDialog
 from AccessGrid import icons
+from AccessGrid.VenueClient import GetVenueClientUrls
+from AccessGrid.interfaces.VenueClient_client import VenueClientIW
 
 class ViewerSoftwareNotInstalled(Exception):
     pass
@@ -163,7 +166,6 @@ class PowerPointViewer:
             if self.presentation:
                 self.presentation.Close()
         except:
-            print 'can not close presentation....continue anyway'
             self.log.exception('can not close presentation....continue anyway')
                 
         # Exit the powerpoint application, but only if 
@@ -176,20 +178,17 @@ class PowerPointViewer:
         This method opens a file and starts the viewing of it.
         """
 
-        print '---------- load presentation'
         # Close existing presentation
         try:
             if self.presentation:
                 self.presentation.Close()
         except:
-            print 'can not close previous presentation...continue anyway'
             self.log.exception('can not close presentation....continue anyway')
         # Open a new presentation and keep a reference to it in self.presentation
         
         file.replace("%20", " ")
         self.presentation = self.ppt.Presentations.Open(file)
         self.lastSlide = self.presentation.Slides.Count
-        print '================== set open file to ', file
         self.openFile = file
         
         # Start viewing the slides in a window
@@ -847,7 +846,6 @@ class SharedPresentation:
 
         # When the quit event gets processed, the running flag gets cleared
         self.log.debug("Shutting down...")
-        import time
         while self.running:
             print ".",
             time.sleep(1)
@@ -1641,7 +1639,7 @@ def Usage():
     Standard usage information for users.
     """
     print "%s:" % sys.argv[0]
-    print "    -a|--venueURL : <url to venue>"
+    print "    -v|--venueURL : <url to venue>"
     print "    -a|--applicationURL : <url to application in venue>"
     print "    -c|--connectionId : <VenueClient's connectionId>"
     print "    -d|--data : <url to data in venue>"
@@ -1659,6 +1657,9 @@ def Usage():
 
 if __name__ == "__main__":
     
+    import agversion
+    agversion.select(3)
+
     # Initialization of variables
     venueURL = None
     appURL = None
@@ -1666,6 +1667,8 @@ if __name__ == "__main__":
     connectionId = None
     name = "SharedPresentation"
     debug = 0
+    file = None
+    startSession = 0
 
     app = WXGUIApplication()
     init_args = []
@@ -1679,11 +1682,12 @@ if __name__ == "__main__":
     # Here we parse command line options
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "d:v:a:l:c:ih",
+        opts, args = getopt.getopt(sys.argv[1:], "f:d:v:a:l:c:ih",
                                    ["venueURL=", "applicationURL=",
                                     "information=", "connectionId=",
-                                    "data=", "debug", "help"])
-    except getopt.GetoptError:
+                                    "presentationFile=", "data=", 
+                                    "start", "debug", "help"])
+    except getopt.GetoptError,e:
         Usage()
         sys.exit(2)
 
@@ -1701,6 +1705,10 @@ if __name__ == "__main__":
             sys.exit(0)
         elif o in ("-d", "--data"):
             venueDataUrl = a
+        elif o in ('-f','--presentationFile'):
+            presentationFile = a
+        elif o in ("--start"):
+            startSession = 1
         elif o in ("--debug",):
             debug = 1
         elif o in ("-h", "--help"):
@@ -1708,26 +1716,49 @@ if __name__ == "__main__":
             sys.exit(0)
     
     # If we're not passed some url that we can use, bail showing usage
-    if appURL == None and venueURL == None:
+    if appURL == None and venueURL == None and startSession==0:
         Usage()
         sys.exit(0)
 
-    # If we got a venueURL and not an applicationURL
-    # This is only in the example code. When Applications are integrated
-    # with the Venue Client, the application will only be started with
-    # some applicatoin URL (it will never know about the Venue URL)
-    if appURL == None and venueURL != None:
-        venueProxy = Client.SecureHandle(venueURL).get_proxy()
-        appURL = venueProxy.CreateApplication(SharedPresentation.appName,
+    if startSession:
+        vcUrls = GetVenueClientUrls()
+        venueClientUrl = vcUrls[0]
+
+        # - create venue client IW
+        venueClient = VenueClientIW(venueClientUrl)
+
+        # - get venue url from venue client
+        venueURL = venueClient.GetVenueURL()
+
+        # - get profile from venue client
+        clientProfile = venueClient.GetClientProfile()
+        connectionId = clientProfile.connectionId
+
+        venueProxy = VenueIW(venueURL)
+        presentationFilename = os.path.basename(presentationFile)
+
+        appName = SharedPresentation.appName + ' ' + presentationFilename + ', ' + time.asctime()
+
+        app = venueProxy.CreateApplication(appName,
                                               SharedPresentation.appDescription,
                                               SharedPresentation.appMimetype)
-        log.debug("Application URL: %s", appURL)
+        appURL = app.uri
 
    
     # This is all that really matters!
     presentation = SharedPresentation(appURL, venueURL, name, connectionId=connectionId)
 
-    if venueDataUrl:
+    if presentationFile:
+        # upload the given file to the venue
+        dsc = GetVenueDataStore(venueURL, connectionId)
+        dsc.Upload(presentationFile)
+        dsc.LoadData()
+        fdata = dsc.GetFileData(presentationFilename)
+
+        # open the file in this session
+        presentation.OpenVenueData(fdata.uri)
+
+    elif venueDataUrl:
         presentation.OpenVenueData(venueDataUrl)
     else:
         presentation.LoadFromVenue()
