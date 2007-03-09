@@ -54,7 +54,7 @@ created:
       >  env-init.bat
 
 Now you should be able to run the VenueClient (personalNode mode shown).
-  > python VenueClient.py --personalNode
+  > python VenueClient.py --personalNode=1
 
 . Note that to use node services (VideoConsumerService, AudioService etc.), you need to install
 ones from a released distribution or build their dependencies (such as vic and rat) and package
