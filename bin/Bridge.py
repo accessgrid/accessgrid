@@ -3,7 +3,7 @@
 # Name:        Bridge.py
 # Purpose:     Provide a bridging service for venues.
 # Created:     2005/12/06
-# RCS-ID:      $Id: Bridge.py,v 1.17 2006-05-24 23:35:31 eolson Exp $
+# RCS-ID:      $Id: Bridge.py,v 1.18 2007-03-14 16:45:51 turam Exp $
 # Copyright:   (c) 2005-2006
 # License:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ import sys, os
 import time
 from optparse import OptionParser
 from AccessGrid.Registry.RegistryClient import RegistryClient
-from AccessGrid.AGXMLRPCServer import AsyncAGXMLRPCServer
+from AccessGrid.AGXMLRPCServer import AsyncAGXMLRPCServerThreaded
 from AccessGrid.BridgeFactory import BridgeFactory
 from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE, StreamDescription
 from AccessGrid.NetworkLocation import UnicastNetworkLocation, ProviderProfile
@@ -31,7 +31,7 @@ class QuickBridgeServer:
         self.bridgeFactory = BridgeFactory(qbexec=qbexec, portRange=portRange, logger=log)
         self.providerProfile = ProviderProfile(name, location)
         self.listenPort = listenPort
-        self.listeningServer = AsyncAGXMLRPCServer( ("", listenPort), intervalSecs=1, 
+        self.listeningServer = AsyncAGXMLRPCServerThreaded( ("", listenPort), intervalSecs=1, 
                                                     callback=self.MaintenanceCallback,
                                                     logRequests=0)
         self._RegisterRemoteFunctions()
