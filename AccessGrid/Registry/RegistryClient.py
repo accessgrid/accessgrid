@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.30 2007-02-23 21:47:36 turam Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.31 2007-03-14 18:22:25 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -285,13 +285,8 @@ if __name__=="__main__":
     from AccessGrid.GUID import GUID
     from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
 
-    import sys
-    rankBridges = 0
-    if len(sys.argv) > 1:
-        rankBridges = int(sys.argv[1])
-
     # Lookup bridges using the RegistryClient
-    bridgeDescList = rc.LookupBridge(rankBridges=rankBridges)
+    bridgeDescList = rc.LookupBridge()
     
     bridgeDescList.sort(lambda x,y: cmp(x.rank,y.rank))
     for b in bridgeDescList:
