@@ -62,7 +62,7 @@ class PreferencesDialog(wxDialog):
                                          self.preferences)
         self.networkPanel = NetworkPanel(self.preferencesPanel, wxNewId(),
                                          self.preferences)
-        self.proxyPanel = ProxyPanel(self.preferencesPanel, wxNewId(),
+        self.bridgingPanel = BridgingPanel(self.preferencesPanel, wxNewId(),
                                          self.preferences)
         self.navigationPanel = NavigationPanel(self.preferencesPanel, wxNewId(),
                                                self.preferences)
@@ -70,7 +70,7 @@ class PreferencesDialog(wxDialog):
         self.loggingPanel.Hide()
         self.venueConnectionPanel.Hide()
         self.networkPanel.Hide()
-        self.proxyPanel.Hide()
+        self.bridgingPanel.Hide()
         self.navigationPanel.Hide()
         self.nodePanel.Hide()
         self.currentPanel = self.loggingPanel
@@ -128,23 +128,27 @@ class PreferencesDialog(wxDialog):
                                        self.venueConnectionPanel.GetMaxReconnects())
         self.preferences.SetPreference(Preferences.RECONNECT_TIMEOUT,
                                        self.venueConnectionPanel.GetReconnectTimeOut())
-        self.preferences.SetPreference(Preferences.MULTICAST,
-                                       self.networkPanel.GetMulticast())
         self.preferences.SetPreference(Preferences.BEACON,
                                        self.networkPanel.GetBeacon())
+        self.preferences.SetPreference(Preferences.MULTICAST_DETECT_HOST,
+                                       self.networkPanel.GetMulticastDetectionHost())
+        self.preferences.SetPreference(Preferences.MULTICAST_DETECT_PORT,
+                                       self.networkPanel.GetMulticastDetectionPort())
+        self.preferences.SetPreference(Preferences.PROXY_HOST,
+                                       self.networkPanel.GetProxyHost())
+        self.preferences.SetPreference(Preferences.PROXY_PORT,
+                                       self.networkPanel.GetProxyPort())
+        self.preferences.SetPreference(Preferences.MULTICAST,
+                                       self.bridgingPanel.GetMulticast())
         self.preferences.SetPreference(Preferences.BRIDGE_REGISTRY,
-                                       self.networkPanel.GetRegistry(-1))
-        self.preferences.SetBridges(self.networkPanel.GetBridges())
+                                       self.bridgingPanel.GetRegistry(-1))
+        self.preferences.SetBridges(self.bridgingPanel.GetBridges())
         self.preferences.SetPreference(Preferences.BRIDGE_PING_UPDATE_DELAY,
-                                       self.networkPanel.GetBridgePingDelay())
+                                       self.bridgingPanel.GetBridgePingDelay())
         self.preferences.SetPreference(Preferences.ORDER_BRIDGES_BY_PING,
-                                       self.networkPanel.GetOrderBridgesByPing())
+                                       self.bridgingPanel.GetOrderBridgesByPing())
         self.preferences.SetPreference(Preferences.DISPLAY_MODE,
                                        self.navigationPanel.GetDisplayMode())
-        self.preferences.SetPreference(Preferences.PROXY_HOST,
-                                       self.proxyPanel.GetHost())
-        self.preferences.SetPreference(Preferences.PROXY_PORT,
-                                       self.proxyPanel.GetPort())
 
         cDict = self.loggingPanel.GetLogCategories()
         for category in cDict.keys():
@@ -188,16 +192,16 @@ class PreferencesDialog(wxDialog):
                                                 " My Profile")
         self.node = self.sideTree.AppendItem(self.root,
                                                 " My Node")
-        self.logging = self.sideTree.AppendItem(self.root,
-                                                " Logging")
-        self.venueConnection = self.sideTree.AppendItem(self.root,
-                                                " Venue Connection")
         self.network = self.sideTree.AppendItem(self.root,
                                                 " Network")
-        self.proxy = self.sideTree.AppendItem(self.root,
-                                                " Proxy")
+        self.bridging = self.sideTree.AppendItem(self.root,
+                                                " Bridging")
         self.navigation = self.sideTree.AppendItem(self.root,
                                                 " Navigation")
+        self.venueConnection = self.sideTree.AppendItem(self.root,
+                                                " Venue Connection")
+        self.logging = self.sideTree.AppendItem(self.root,
+                                                " Logging")
         self.sideTree.SetItemData(self.profile,
                                   wxTreeItemData(self.profilePanel))
         self.sideTree.SetItemData(self.node,
@@ -208,8 +212,8 @@ class PreferencesDialog(wxDialog):
                                   wxTreeItemData(self.venueConnectionPanel))
         self.sideTree.SetItemData(self.network,
                                   wxTreeItemData(self.networkPanel))
-        self.sideTree.SetItemData(self.proxy,
-                                  wxTreeItemData(self.proxyPanel))
+        self.sideTree.SetItemData(self.bridging,
+                                  wxTreeItemData(self.bridgingPanel))
         self.sideTree.SetItemData(self.navigation,
                                   wxTreeItemData(self.navigationPanel))
         self.sideTree.SelectItem(self.profile)
@@ -364,14 +368,13 @@ class NodePanel(wxPanel):
         
         # Get node configurations
         defaultNodeConfigName = self.preferences.GetPreference(Preferences.NODE_CONFIG)
-        
         defaultNodeConfigString = ""
-
+        nodeConfigs = []
         try:
-            nodeConfigs = nodeService.GetConfigurations()
+            if nodeService:
+                nodeConfigs = nodeService.GetConfigurations()
         except:
             log.exception("Failed to retreive node configurations")
-            nodeConfigs = []
 
         for nodeConfig in nodeConfigs:
             self.nodeConfigCtrl.Append('%s (%s)' % (nodeConfig.name, nodeConfig.type))
@@ -379,7 +382,7 @@ class NodePanel(wxPanel):
             self.configMap[nodeConfigString] = nodeConfig
             if defaultNodeConfigName == nodeConfig.name:
                 defaultNodeConfigString = nodeConfigString
-            
+
         if defaultNodeConfigString:
             self.nodeConfigCtrl.SetStringSelection(defaultNodeConfigString)
         # if default node config not found, don't select one
@@ -956,9 +959,125 @@ class NetworkPanel(wxPanel):
         wxPanel.__init__(self, parent, id)
         self.preferences = preferences
         self.Centre()
-        self.titleText = wxStaticText(self, -1, "Multicast")
+        
+        # multicast detection and monitoring
+        self.titleText = wxStaticText(self, -1, "Multicast detection and monitoring")
         self.titleLine = wxStaticLine(self, -1)
-        self.multicastButton = wxCheckBox(self, wxNewId(), "  Use unicast ")
+        self.keyMap = {}
+        self.selected = None
+        
+        self.beaconButton = wxCheckBox(self, wxNewId(), "  Run integrated multicast beacon client ")
+        self.beaconButton.SetValue(int(preferences.GetPreference(Preferences.BEACON)))
+        
+        self.multicastDetectionLabel = wxStaticText(self,-1,'Detect multicast connectivity using the following multicast group')
+        self.multicastDetectionHostLabel = wxStaticText(self,-1,'Host')
+        self.multicastDetectionHost = wxTextCtrl(self,-1,
+                                        preferences.GetPreference(Preferences.MULTICAST_DETECT_HOST))
+        self.multicastDetectionPortLabel = wxStaticText(self,-1,'Port')
+        self.multicastDetectionPort = wxTextCtrl(self,-1,
+                                        str(preferences.GetPreference(Preferences.MULTICAST_DETECT_PORT)))
+        
+        
+        # proxy configuration                  
+        self.proxyTitleText = wxStaticText(self, -1, "Proxy server configuration")
+        self.proxyTitleLine = wxStaticLine(self, -1)
+        self.hostText = wxStaticText(self, -1, "Host:")
+        self.hostCtrl = wxTextCtrl(self, -1, "")
+        self.portText = wxStaticText(self, -1, "Port:")
+        self.portCtrl = wxTextCtrl(self, -1, "")
+       
+        self.SetProxyHost(preferences.GetPreference(Preferences.PROXY_HOST))
+        self.SetProxyPort(preferences.GetPreference(Preferences.PROXY_PORT))
+        
+        
+        
+        if IsOSX():
+            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+            self.proxyTitleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+        else:
+            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+            self.proxyTitleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+
+        self.__Layout()
+    
+    def __Layout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        
+        # multicast
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.titleText, 0, wxALL, 5)
+        sizer2.Add(self.titleLine, 1, wxALIGN_CENTER | wxALL, 5)
+        sizer.Add(sizer2, 0, wxEXPAND)
+        sizer.Add(self.beaconButton, 0, wxALL|wxEXPAND, 10)
+        sizer.Add(self.multicastDetectionLabel, 0, wxALL|wxEXPAND,10)
+        sizer3 = wxBoxSizer(wxHORIZONTAL)
+        sizer3.Add(self.multicastDetectionHostLabel, 0, wxALL|wxEXPAND,10)
+        sizer3.Add(self.multicastDetectionHost, 1, wxALL|wxEXPAND,10)
+        sizer3.Add(self.multicastDetectionPortLabel, 0, wxALL|wxEXPAND,10)
+        sizer3.Add(self.multicastDetectionPort, 0, wxALL|wxEXPAND,10)
+        sizer.Add(sizer3,0,wxEXPAND)
+        
+        # proxy server configuration
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.proxyTitleText, 0, wxALL, 5)
+        sizer2.Add(self.proxyTitleLine, 1, wxALIGN_CENTER | wxALL, 5)
+        sizer.Add(sizer2, 0, wxEXPAND)
+        sizer3 = wxBoxSizer(wxHORIZONTAL)
+        sizer3.Add(self.hostText, 0, wxALL|wxEXPAND,10)
+        sizer3.Add(self.hostCtrl, 1, wxALL|wxEXPAND,10)
+        sizer3.Add(self.portText, 0, wxALL|wxEXPAND,10)
+        sizer3.Add(self.portCtrl, 0, wxALL|wxEXPAND,10)
+        sizer.Add(sizer3,0,wxEXPAND)
+                
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+        
+        self.Layout()
+
+    def GetBeacon(self):
+        if self.beaconButton.IsChecked():
+            return 1
+        else:
+            return 0
+          
+    def GetMulticastDetectionHost(self):
+        return self.multicastDetectionHost.GetValue()
+        
+    def GetMulticastDetectionPort(self):
+        return int(self.multicastDetectionPort.GetValue())
+        
+    def SetProxyHost(self,host):
+        self.hostCtrl.SetValue(host)
+        
+    def SetProxyPort(self,port):
+        self.portCtrl.SetValue(str(port))
+        
+    def GetProxyHost(self):
+        return self.hostCtrl.GetValue()
+        
+    def GetProxyPort(self):
+        port = self.portCtrl.GetValue()
+        try:
+            return int(port)
+        finally:
+            return 0
+                
+
+
+class BridgingPanel(wxPanel):
+    
+    def __init__(self, parent, id, preferences):
+        wxPanel.__init__(self, parent, id)
+        self.preferences = preferences
+        self.Centre()
+        self.bridgingTitleText = wxStaticText(self, -1, "Bridging")
+        self.bridgingTitleLine = wxStaticLine(self, -1)
+        self.registriesTitleText = wxStaticText(self, -1, "Bridge Registries")
+        self.registriesTitleLine = wxStaticLine(self, -1)
+        self.bridgesTitleText = wxStaticText(self, -1, "Bridges")
+        self.bridgesTitleLine = wxStaticLine(self, -1)
+        self.multicastButton = wxCheckBox(self, wxNewId(), "  Always use unicast bridges instead of multicast ")
         self.keyMap = {}
         self.selected = None
         self.editBridgeRegistryPanel = None
@@ -976,13 +1095,10 @@ class NetworkPanel(wxPanel):
 
         self.multicastButton.SetValue(not int(preferences.GetPreference(Preferences.MULTICAST)))
 
-        self.beaconButton = wxCheckBox(self, wxNewId(), "  Run beacon ")
-        
-        self.beaconButton.SetValue(int(preferences.GetPreference(Preferences.BEACON)))
         self.listHelpText = wxStaticText(self,-1,'Right-click a bridge below to enable or disable it')
         
-        self.orderBridgesByPingButton = wxCheckBox(self, wxNewId(), "  Choose Bridge by Ping Time ")
-        self.bridgePingTimeText = wxStaticText(self, -1, "Seconds between Ping Time updates:")
+        self.orderBridgesByPingButton = wxCheckBox(self, wxNewId(), "  Measure closeness to bridges and use the closest bridge")
+        self.bridgePingTimeText = wxStaticText(self, -1, "How often to measure bridge closeness (seconds):  ")
         self.bridgePingTimeBox = wxTextCtrl(self, -1, str(self.bridgePingDelay), size = wxSize(40, -1));
         self.orderBridgesByPingButton.SetValue(int(self.orderBridgesByPing))
 
@@ -1004,26 +1120,25 @@ class NetworkPanel(wxPanel):
         self.list.SetColumnWidth(6, 90)
         self.__InitList()
         
-        self.updownButton = wxSpinButton(self, wxNewId(), style=wxVERTICAL)
+        self.upButton = wxButton(self, wxNewId(), 'Move Up')
+        self.downButton = wxButton(self, wxNewId(), 'Move Down')
         self.refreshButton = wxButton(self, -1, 'Find Additional Bridges')
         self.updatePingButton = wxButton(self, -1, 'Update Ping Times')
         self.orderByPingButton = wxButton(self, -1, 'Order Bridges by Ping Time')
         self.purgeCacheButton = wxButton(self, -1, 'Purge Bridge Cache')
-        self.registryText = wxStaticText(self, -1, "Bridge Registries:", size=(120,-1))
         self.registryList = wxListCtrl(self, wxNewId(), style = wxLC_LIST | wxLC_SINGLE_SEL | wxLC_NO_HEADER)
         self.addRegistryButton = wxButton(self, wxNewId(), 'Add')
         self.removeRegistryButton = wxButton(self, wxNewId(), 'Remove')
         self.editRegistryButton = wxButton(self, wxNewId(), 'Edit')
         
-        print(self.preferences.GetPreference(Preferences.BRIDGE_REGISTRY))
         for index in range(len(self.registries)):
-            print(self.registries[index])
             self.registryList.InsertStringItem(index, self.registries[index])
         
         if self.orderBridgesByPing == 1:
             self.updatePingButton.Enable(0)
             self.orderByPingButton.Enable(0)
-            self.updownButton.Enable(0)
+            self.upButton.Enable(0)
+            self.downButton.Enable(0)
         
         EVT_RIGHT_DOWN(self.list, self.OnRightDown)
         EVT_RIGHT_UP(self.list, self.OnRightClick)
@@ -1032,8 +1147,8 @@ class NetworkPanel(wxPanel):
         EVT_BUTTON(self, self.updatePingButton.GetId(), self.OnUpdatePing)
         EVT_BUTTON(self, self.orderByPingButton.GetId(), self.OnOrderByPing)
         EVT_CHECKBOX(self, self.orderBridgesByPingButton.GetId(), self.OnChangeOrderByPing)
-        EVT_SPIN_UP(self, self.updownButton.GetId(), self.MoveUp)
-        EVT_SPIN_DOWN(self, self.updownButton.GetId(), self.MoveDown)
+        EVT_BUTTON(self, self.upButton.GetId(), self.MoveUp)
+        EVT_BUTTON(self, self.downButton.GetId(), self.MoveDown)
         EVT_LIST_ITEM_SELECTED(self, self.registryList.GetId(), self.OnSelectReg)
         EVT_LIST_ITEM_DESELECTED(self, self.registryList.GetId(), self.OnDeselectReg)
         EVT_BUTTON(self, self.editRegistryButton.GetId(), self.OnEditReg)
@@ -1042,12 +1157,83 @@ class NetworkPanel(wxPanel):
         EVT_BUTTON(self, self.purgeCacheButton.GetId(), self.OnPurgeCache)
                                       
         if IsOSX():
-            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+            self.bridgingTitleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+            self.registriesTitleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+            self.bridgesTitleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
         else:
-            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+            self.bridgingTitleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+            self.registriesTitleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+            self.bridgesTitleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
                                 
         self.__Layout()
     
+    def __InitList(self):
+
+        # Clear the list
+        self.list.DeleteAllItems()
+        
+        # Populate the list
+        for index in range(len(self.bridges)):
+            self.list.InsertStringItem(index, self.bridges[index].name)
+            self.SetBridgeListRow(index)
+          
+    def __Layout(self):
+    
+        # bridging config
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.bridgingTitleText, 0, wxALL, 5)
+        sizer2.Add(self.bridgingTitleLine, 1, wxALIGN_CENTER | wxALL, 5)
+        sizer.Add(sizer2, 0, wxEXPAND)
+        sizer.Add(self.multicastButton, 0, wxALL|wxEXPAND, 10)
+        
+
+        # bridge registries
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.registriesTitleText, 0, wxALL, 5)
+        sizer2.Add(self.registriesTitleLine, 1, wxALIGN_CENTER | wxALL, 5)
+        sizer.Add(sizer2, 0, wxEXPAND)
+        registrySizer = wxBoxSizer(wxHORIZONTAL)
+        registrySizer.Add(self.registryList, 1, wxEXPAND, 0)
+        registryButtonSizer = wxBoxSizer(wxVERTICAL)
+        registryButtonSizer.Add(self.addRegistryButton, 0, 0, 0)
+        registryButtonSizer.Add(self.removeRegistryButton, 0, wxTOP, 10)
+        registryButtonSizer.Add(self.editRegistryButton, 0, wxTOP, 10)
+        registrySizer.Add(registryButtonSizer, 0, wxLEFT|wxEXPAND, 10)
+        sizer.Add(registrySizer, 0, wxALL|wxEXPAND, 10)
+        
+        # bridges
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.bridgesTitleText, 0, wxALL, 5)
+        sizer2.Add(self.bridgesTitleLine, 1, wxALIGN_CENTER | wxALL, 5)
+        sizer.Add(sizer2, 0, wxEXPAND)
+        sizer.Add(self.orderBridgesByPingButton, 0, wxALL|wxEXPAND, 10)
+        sizerBridgePingTime = wxBoxSizer(wxHORIZONTAL)
+        sizerBridgePingTime.Add(self.bridgePingTimeText, 0, wxRIGHT, 0)
+        sizerBridgePingTime.Add(self.bridgePingTimeBox, 0, wxLEFT, 0)
+        sizer.Add(sizerBridgePingTime, 0, wxALL|wxEXPAND, 10)
+        sizer.Add(self.listHelpText, 0, wxTOP|wxLEFT|wxRIGHT|wxEXPAND, 10)
+        bridgeListSizer = wxBoxSizer(wxHORIZONTAL)
+        bridgeListSizer.Add(self.list, 1, wxALL|wxEXPAND, 0)
+        updownSizer = wxBoxSizer(wxVERTICAL)
+        updownSizer.Add(self.upButton, 0, wxLEFT|wxEXPAND, 10)
+        updownSizer.Add(self.downButton, 0, wxLEFT|wxEXPAND, 10)
+        bridgeListSizer.Add(updownSizer,0,wxLEFT|wxALIGN_CENTER_VERTICAL,10)
+        sizer.Add(bridgeListSizer, 1, wxALL|wxEXPAND, 10)
+        sizerButtons = wxBoxSizer(wxHORIZONTAL)
+        sizerButtons.Add(self.refreshButton, 0, wxLEFT, 10)
+        sizerButtons.Add(self.updatePingButton, 0, wxLEFT, 10)
+        sizerButtons.Add(self.orderByPingButton, 0, wxLEFT, 10)
+        sizerButtons.Add(self.purgeCacheButton, 0, wxLEFT, 10)
+        sizer.Add(sizerButtons, 0, wxBOTTOM|wxEXPAND, 10)
+        
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+        
+        self.Layout()
+
+
     def OnSelectReg(self, event):
         self.regSelected = event.GetIndex()
         
@@ -1088,13 +1274,15 @@ class NetworkPanel(wxPanel):
             self.orderBridgesByPing = 1
             self.updatePingButton.Enable(0)
             self.orderByPingButton.Enable(0)
-            self.updownButton.Enable(0)
+            self.upButton.Enable(0)
+            self.downButton.Enable(0)
         else:
             self.bridges.sort(lambda x,y: BridgeDescription.sort(x, y, 0))
             self.orderBridgesByPing = 0
             self.updatePingButton.Enable(1)
             self.orderByPingButton.Enable(1)
-            self.updownButton.Enable(1)
+            self.upButton.Enable(1)
+            self.downButton.Enable(1)
         self.__InitList()
         
     def OnOrderByPing(self, event):
@@ -1282,12 +1470,6 @@ class NetworkPanel(wxPanel):
         else:
             return 1
 
-    def GetBeacon(self):
-        if self.beaconButton.IsChecked():
-            return 1
-        else:
-            return 0
-
     def GetRegistry(self, regId):
         return "|".join(self.registries)
     
@@ -1304,120 +1486,17 @@ class NetworkPanel(wxPanel):
             log.debug("Bridge Delay was not an int")
             return self.bridgePingDelay
 
-    def __InitList(self):
 
-        # Clear the list
-        self.list.DeleteAllItems()
-        
-        # Populate the list
-        for index in range(len(self.bridges)):
-            self.list.InsertStringItem(index, self.bridges[index].name)
-            self.SetBridgeListRow(index)
-          
-    def __Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.titleText, 0, wxALL, 5)
-        sizer2.Add(self.titleLine, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer.Add(sizer2, 0, wxEXPAND)
-        sizer.Add(self.beaconButton, 0, wxALL|wxEXPAND, 10)
-        sizer.Add(self.multicastButton, 0, wxALL|wxEXPAND, 10)
-        sizer.Add(self.orderBridgesByPingButton, 0, wxALL|wxEXPAND, 10)
-        sizerBridgePingTime = wxBoxSizer(wxHORIZONTAL)
-        sizerBridgePingTime.Add(self.bridgePingTimeText, 0, wxRIGHT, 0)
-        sizerBridgePingTime.Add(self.bridgePingTimeBox, 0, wxLEFT, 0)
-        sizer.Add(sizerBridgePingTime, 0, wxALL|wxEXPAND, 10)
-        sizer.Add(self.registryText, 0, wxLEFT|wxRIGHT|wxEXPAND, 10)
-        registrySizer = wxBoxSizer(wxHORIZONTAL)
-        registrySizer.Add(self.registryList, 1, wxEXPAND, 0)
-        registryButtonSizer = wxBoxSizer(wxVERTICAL)
-        registryButtonSizer.Add(self.addRegistryButton, 0, 0, 0)
-        registryButtonSizer.Add(self.removeRegistryButton, 0, wxTOP, 10)
-        registryButtonSizer.Add(self.editRegistryButton, 0, wxTOP, 10)
-        registrySizer.Add(registryButtonSizer, 0, wxLEFT|wxEXPAND, 10)
-        sizer.Add(registrySizer, 0, wxALL|wxEXPAND, 10)
-        sizer.Add(self.listHelpText, 0, wxTOP|wxLEFT|wxRIGHT|wxEXPAND, 10)
-        regControlSizer = wxBoxSizer(wxHORIZONTAL)
-        regControlSizer.Add(self.list, 1, wxALL|wxEXPAND, 0)
-        regControlSizer.Add(self.updownButton, 0, wxLEFT|wxEXPAND, 10)
-        sizer.Add(regControlSizer, 0, wxALL|wxEXPAND, 10)
-        sizerButtons = wxBoxSizer(wxHORIZONTAL)
-        sizerButtons.Add(self.refreshButton, 0, wxLEFT, 10)
-        sizerButtons.Add(self.updatePingButton, 0, wxLEFT, 10)
-        sizerButtons.Add(self.orderByPingButton, 0, wxLEFT, 10)
-        sizerButtons.Add(self.purgeCacheButton, 0, wxLEFT, 10)
-        sizer.Add(sizerButtons, 0, wxBOTTOM|wxEXPAND, 10)
-        
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.SetAutoLayout(1)
-        
-        self.Layout()
 
-class ProxyPanel(wxPanel):
-    def __init__(self, parent, id, preferences):
-        wxPanel.__init__(self, parent, id)
-        self.Centre()
-        self.hostText = wxStaticText(self, -1, "Hostname:")
-        self.hostCtrl = wxTextCtrl(self, -1, "")
-        self.portText = wxStaticText(self, -1, "Port:")
-        self.portCtrl = wxTextCtrl(self, -1, "")
-       
-        self.titleText = wxStaticText(self, -1, "HTTP Proxy Server")
-        self.titleLine = wxStaticLine(self,-1)
-        self.buttonLine = wxStaticLine(self,-1)
-        
-        if IsOSX():
-            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
-        else:
-            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
-
-        self.SetHost(preferences.GetPreference(Preferences.PROXY_HOST))
-        self.SetPort(preferences.GetPreference(Preferences.PROXY_PORT))
-        
-        self.__Layout()
-
-    def __Layout(self):
-        sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.titleText, 0, wxALL, 5)
-        sizer2.Add(self.titleLine, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer1.Add(sizer2, 0, wxEXPAND)
-        self.gridSizer = wxFlexGridSizer(0, 2, 2, 5)
-        self.gridSizer.Add(self.hostText, 0, wxALIGN_LEFT, 0)
-        self.gridSizer.Add(self.hostCtrl, 0, wxEXPAND, 0)
-        self.gridSizer.Add(self.portText, 0, wxALIGN_LEFT, 0)
-        self.gridSizer.Add(self.portCtrl, 0, wxEXPAND, 0)
-
-        self.gridSizer.AddGrowableCol(1)
-        sizer1.Add(self.gridSizer, 1, wxALL|wxEXPAND, 10)
-        self.SetSizer(sizer1)
-        sizer1.Fit(self)
-        self.SetAutoLayout(1)
-        
-        self.Layout()
-        
-    def SetHost(self,host):
-        self.hostCtrl.SetValue(host)
-        
-    def SetPort(self,port):
-        self.portCtrl.SetValue(str(port))
-        
-    def GetHost(self):
-        return self.hostCtrl.GetValue()
-        
-    def GetPort(self):
-        return self.portCtrl.GetValue()
-                
 class NavigationPanel(wxPanel):
     def __init__(self, parent, id, preferences):
         wxPanel.__init__(self, parent, id)
         self.Centre()
         self.titleText = wxStaticText(self, -1, "Navigation View")
         self.titleLine = wxStaticLine(self, -1)
-        self.exitsButton = wxRadioButton(self, wxNewId(), "  Show Exits ")
-        self.myVenuesButton = wxRadioButton(self, wxNewId(), "  Show My Venues ")
-        self.allVenuesButton = wxRadioButton(self, wxNewId(), "  Show All Venues ")
+        self.exitsButton = wxRadioButton(self, wxNewId(), "  Show exits from the current venue ")
+        self.myVenuesButton = wxRadioButton(self, wxNewId(), "  Show my saved venues")
+        self.allVenuesButton = wxRadioButton(self, wxNewId(), "  Show all venues on the current server")
 
         value = preferences.GetPreference(Preferences.DISPLAY_MODE)
         if value == Preferences.EXITS:
