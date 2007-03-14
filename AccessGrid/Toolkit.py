@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.126 2006-10-19 22:10:36 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.127 2007-03-14 16:54:18 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.126 2006-10-19 22:10:36 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.127 2007-03-14 16:54:18 turam Exp $"
 
 # Standard imports
 import os
@@ -449,7 +449,10 @@ class AppBase:
         return self.userConfig
 
     def GetDefaultSubject(self):
-        ident = self.GetCertificateManager().GetDefaultIdentity()
+        try:
+            ident = self.GetCertificateManager().GetDefaultIdentity()
+        except CertificateManager.NoCertificates:
+            ident = None
 
         if ident is not None:
             from AccessGrid.Security import X509Subject
