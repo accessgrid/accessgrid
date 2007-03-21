@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.226 2007-03-05 23:08:44 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.227 2007-03-21 12:42:57 douglask Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.226 2007-03-05 23:08:44 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.227 2007-03-21 12:42:57 douglask Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -5186,7 +5186,7 @@ class StatusBar(wxStatusBar):
         EVT_SIZE(self, self.OnSize)
         
         self.progress = wxGauge(self, wxNewId(), 100,
-                                style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
+                                style = wxGA_HORIZONTAL | wxGA_SMOOTH)
         self.progress.SetValue(True)
 
         self.cancelButton = wxButton(self, wxNewId(), "Cancel")
