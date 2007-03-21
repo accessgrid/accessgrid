@@ -45,13 +45,39 @@ fileName = app.GetOption("file")
 print "URL: ", venueUrl
 print "FILE: ", fileName
 
-if venueUrl is None and fileName is None:
+"""
+
+    There are four valid command line possibilities:
+
+    GoToVenue3.py --url url 
+    GoToVenue3.py --url url --file fileName (use url)
+    GoToVenue3.py --file fileName
+    GoToVenue3.py Mime-Encoded.vv3d file (from web link)
+ 
+ 
+    Anything else is invalid
+ 
+"""
+
+if venueUrl is not None:
+    #if we have a url specified, try to launch it    
+    pass   
+
+elif fileName is None and len(sys.argv) == 1:
+    #in this case we have no --url, no --file, and no other command line args
+    #invalid - exit
     print "Exiting, no url specified."
     sys.exit(0)
-elif venueUrl is None and fileName is not None:
-    # Read the url from the file
+else:
+    #only 2 valid cases left.
+    #either either --file or mime-encodedfile directly on command line
     config = ConfigParser.ConfigParser()
-    config.readfp(open(fileName))
+
+    if fileName is not None:    
+     config.readfp(open(fileName))
+    else:
+        config.readfp(open(sys.argv[1]))
+
     if config.has_section('description'):
         if config.has_option('description', 'url'):
             venueUrl = config.get('description', 'url')
@@ -61,10 +87,7 @@ elif venueUrl is None and fileName is not None:
     else:
         print "The venue description file is missing the description section."
         sys.exit(-1)
-    
-elif venueUrl is not None and fileName is not None:
-    print "Both url and file were specified, using url..."
-    
+ 
 # Check for the venue client soap server url
 venueClientUrlList = GetVenueClientUrls()
 
@@ -89,10 +112,10 @@ if not enteredVenue:
     print "Launching the venue client..."
     if isWindows():
         prog = "\"%s\"" % os.path.join(app.GetToolkitConfig().GetBinDir(),
-	                       "VenueClient.py")
+	                       "VenueClient3.py")
     else:
         prog = "%s" % os.path.join(app.GetToolkitConfig().GetBinDir(),
 	                       "VenueClient3.py")
     os.spawnv(os.P_NOWAIT, sys.executable, (sys.executable, prog,
-                                             "--personalNode=1", "--url",
-                                             venueUrl)) 
+                                             "--url", venueUrl))
+
