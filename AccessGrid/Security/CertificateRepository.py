@@ -2,7 +2,7 @@
 # Name:        CertificateRepository.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.27 2007-02-21 22:12:16 turam Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.28 2007-03-21 18:22:33 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.27 2007-02-21 22:12:16 turam Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.28 2007-03-21 18:22:33 turam Exp $"
 
 from __future__ import generators
 
@@ -629,7 +629,7 @@ class CertificateRepository:
         the certificate, as that may require a passphrase.
         """
 
-        # Load the cert into a pyOpenSSL data structure.
+        # Load the cert
         cert = Certificate(certFile, keyFile, self)
         path = self._GetCertDirPath(cert)
         # print "Would put cert in dir ", path
@@ -660,7 +660,7 @@ class CertificateRepository:
             #
             
             try:
-                pkey = RSA.load_key(keyFile)
+                pkey = PrivateKey(keyFile)
 
                 #
                 # Success.
@@ -696,7 +696,7 @@ class CertificateRepository:
                         passphrase = "".join(passphrase)
 
                 try:
-                    pkey = RSA.load_key(keyFile,passphraseCB)
+                    pkey = PrivateKey(keyFile,passphraseCB)
 
 # Determine exceptions that could be raised here and handle individually
                 except:# crypto.Error:
@@ -710,8 +710,7 @@ class CertificateRepository:
             # modulus on this private key. Otherwise,
             # they're not a matching pair.
             #
-
-            if pkey.get_modulus() != cert.GetModulus():
+            if pkey.GetModulus() != cert.GetModulus():
                 raise Exception, "Private key does not match certificate"
             else:
                 #print "Modulus match: ", pkey.get_modulus()
@@ -895,7 +894,7 @@ class CertificateRepository:
         # md5 hash of the key's public-key modulus.
         #
 
-        dig = md5.new(pkey.get_modulus())
+        dig = md5.new(pkey.GetModulus())
         hhash = dig.hexdigest()
 
         path = self.GetPrivateKeyPath(hhash)
@@ -1659,8 +1658,7 @@ class Certificate:
         fmt += "Not valid after: %s\n" %  (self.GetNotValidAfterText())
 
         ctype,fp = self.GetFingerprint()
-        fmt += "%s Fingerprint: %s\n"  % (ctype,
-                                          string.join(map(lambda a: "%02X" % (a), fp), ":"))
+        fmt += "%s Fingerprint: %s\n"  % (ctype,fp)
         fmt += "Certificate location: %s\n" % (self.GetPath(),)
         
         pkeyloc = self.GetKeyPath()
@@ -1683,8 +1681,7 @@ class Certificate:
         fmt += "<b>Not valid after:</b> %s<br>\n" %  (self.GetNotValidAfterText())
 
         ctype,fp = self.GetFingerprint()
-        fmt += "<b>%s Fingerprint:</b> %s<br>\n"  % (ctype,
-                                          string.join(map(lambda a: "%02X" % (a), fp), ":"))
+        fmt += "<b>%s Fingerprint:</b> %s<br>\n"  % (ctype,fp)
         fmt += "<b>Certificate location:</b> %s<br>\n" % (self.GetPath(),)
         pkeyloc = self.GetKeyPath()
 
@@ -1692,6 +1689,20 @@ class Certificate:
             fmt += "<b>Private key location:</b> %s<br>\n" % (pkeyloc,)
 
         return fmt
+        
+class PrivateKey:
+    def __init__(self,keyfile,**kw):
+        self.keyfile = keyfile
+        self.key = RSA.load_key(keyfile,**kw)
+        
+    def as_pem(self,**kw):
+        return self.key.as_pem(**kw)
+    
+    def GetModulus(self):
+        # This is messy, yes, but it is the only way with M2Crypto 0.17,
+        # which doesn't provide a way to request a hex-encoded modulus
+        # of the RSA key (such as BN_print, for example).
+        return m2.bn_to_hex(m2.mpi_to_bn(self.key.n))
     
 if __name__ == "__main__":
 
