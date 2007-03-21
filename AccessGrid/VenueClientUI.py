@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.227 2007-03-21 12:42:57 douglask Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.228 2007-03-21 19:34:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.227 2007-03-21 12:42:57 douglask Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.228 2007-03-21 19:34:20 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -282,8 +282,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             
         self.beaconFrame = None
         
+        """
+        # disabled for 3.1 release - turam
         self.browser = ServiceDiscovery.Browser('_servicemanager._tcp', self.BrowseCallback)
         self.browser.Start()
+        """
         self.hosts = {}
 
         
@@ -317,6 +320,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         Save configuration
     """
     
+    """
+    # turam 070320 - disable for 3.1 release
     def BrowseCallback(self,op,serviceName,url=None):
         if op == ServiceDiscovery.Browser.ADD:
             wxCallAfter(self.AddServiceManager,serviceName,url)
@@ -370,7 +375,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 self.venueClient.nodeService.AddServiceManager(smurl)
         else:
             print 'should find service using resource %s and remove it' % (resource.name,)
-        
+    """
             
     def __ShowErrorMessage(self, jabber, type):
         if type == 'login':
