@@ -17,10 +17,6 @@ from optparse import OptionParser
 from distutils.spawn import find_executable
 from distutils.sysconfig import get_python_lib
 
-if not os.environ.has_key('AGBUILDROOT'):
-    print "AGBUILDROOT environment variable must be set"
-    sys.exit(1)
-
 if sys.platform == 'win32' and not os.environ.has_key('MSVC_VERSION'):
     print "MSVC_VERSION environment must be set, or pyOpenSSL will not build correctly."
     sys.exit(1)
@@ -40,11 +36,6 @@ else:
     sys.exit(1)
 
 StartDir=os.getcwd()
-
-# Source Directory
-#  We assume the following software is in this directory:
-#    ag-rat, ag-vic, and AccessGrid
-SourceDir = os.environ['AGBUILDROOT']
 
 # Get the version of python used to run this script
 # and use it as the default 
@@ -84,6 +75,18 @@ options, args = parser.parse_args()
 # Build Name
 #  This is the default name we use for the installer
 BuildTime = time.strftime("%Y%m%d_%H%M%S")
+
+# Source Directory
+#  We assume the following software is in this directory:
+#    ag-rat, ag-vic, and AccessGrid
+if options.sourcedir is not None:
+    SourceDir = options.sourcedir
+    os.environ['AGBUILDROOT'] = SourceDir
+elif not os.environ.has_key('AGBUILDROOT'):
+    print "AGBUILDROOT environment variable must be set (or use --sourcedir)"
+    sys.exit(1)
+else:
+    SourceDir = os.environ['AGBUILDROOT']
 
 # Names for the software
 if options.metainfo is not None:
