@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.82 2007-03-27 21:40:28 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.83 2007-03-27 22:49:57 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.82 2007-03-27 21:40:28 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.83 2007-03-27 22:49:57 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -340,7 +340,8 @@ class FileLocationWidget(wxPanel):
         self.text = wxTextCtrl(self, -1, style = wxTE_PROCESS_ENTER)
         sizer.Add(self.text, 1, wxALIGN_CENTER_VERTICAL)
         EVT_TEXT_ENTER(self, self.text.GetId(), self.OnTextEnter)
-        EVT_KILL_FOCUS(self.text, self.OnTextLoseFocus)
+        if not(IsOSX() and wxVERSION >= (2,5,3,0)):
+            EVT_KILL_FOCUS(self.text, self.OnTextLoseFocus)
         
         b = wxButton(self, -1, "Browse")
         sizer.Add(b, 0)
@@ -351,7 +352,7 @@ class FileLocationWidget(wxPanel):
         self.Fit()
 
     def GetPath(self):
-        return self.path
+        return str(self.text.GetValue())
 
     def OnTextEnter(self, event):
         self.path = self.text.GetValue()
@@ -468,6 +469,8 @@ class SecureTextCtrl(wxTextCtrl):
     def deleteSelection(self, sel):
         del self.chars[sel[0]: sel[1]]
         self.Remove(sel[0], sel[1])
+        if IsOSX() and wxVERSION >= (2,6,0,0):
+            self.SetInsertionPoint(sel[0])
         
     def insertChar(self, k):
         sel = self.GetSelection()
@@ -486,7 +489,13 @@ class SecureTextCtrl(wxTextCtrl):
         k = event.GetKeyCode()
 
         # We only worry about control keys here.
-        if not event.ControlDown():
+        # sigh, special handling for osx/wx2.6
+        controlDown = 0
+        if wxVERSION >= (2,6,0,0):
+            controlDown = event.CmdDown()
+        else:
+            controlDown = event.ControlDown()
+        if not controlDown:
             event.Skip()
             return
         
@@ -515,6 +524,8 @@ class SecureTextCtrl(wxTextCtrl):
                 if pos > 0:
                     del self.chars[pos - 1 : pos]
                     self.Remove(pos - 1, pos)
+                    if IsOSX() and wxVERSION >= (2,6,0,0):
+                        self.SetInsertionPoint(pos-1)
         elif k == WXK_RETURN:
             event.Skip()
             return
@@ -531,6 +542,8 @@ class SecureTextCtrl(wxTextCtrl):
                 if pos < self.GetLastPosition():
                     del self.chars[pos : pos + 1]
                     self.Remove(pos , pos + 1)
+                    if IsOSX() and wxVERSION >= (2,6,0,0):
+                        self.SetInsertionPoint(pos)
         elif k < 127 and k >= 32:
             self.insertChar(k)
                          
@@ -547,6 +560,25 @@ class SecureTextCtrl(wxTextCtrl):
             self.doPaste()
         else:
             event.Skip()
+            
+    def Remove(self,start,end):
+        if IsOSX() and wxVERSION >= (2,6,0,0):
+            # Special handling for wx 2.6, while it's broken
+            val = self.GetValue()
+            newval = val[:start] + val[end:]
+            cursor = self.GetInsertionPoint()
+            self.SetValue(newval)
+        else:
+            wxTextCtrl.Remove(self,start,end)
+        
+    def Replace(self,start,end,text):
+        if IsOSX() and wxVERSION >= (2,6,0,0):
+            # Special handling for wx 2.6, while it's broken
+            val = self.GetValue()
+            newval = val[:start] + text + val[end:]
+            self.SetValue(newval)
+        else:
+            wxTextCtrl.Replace(self,start,end,text)
 
 class PassphraseDialog(wxDialog):
     """
