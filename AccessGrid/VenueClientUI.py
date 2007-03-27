@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.228 2007-03-21 19:34:20 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.229 2007-03-27 20:45:31 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.228 2007-03-21 19:34:20 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.229 2007-03-27 20:45:31 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2511,8 +2511,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     # File Selection Dialog
     #
 
-    def SelectFile(self,text,defaultFile = "", wildcard = "*.*"):
+    def SelectFile(self,text,defaultFile = "", wildcard = None):
         filePath = None
+        if not wildcard:
+            wildcard = '*.' + defaultFile.split('.')[-1]
         dlg = wxFileDialog(self, text, 
                            defaultFile = defaultFile,
                            wildcard = wildcard,
