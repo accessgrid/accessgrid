@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.81 2007-02-15 21:36:24 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.82 2007-03-27 21:40:28 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.81 2007-02-15 21:36:24 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.82 2007-03-27 21:40:28 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -721,7 +721,7 @@ class AddURLBaseDialog(wxDialog):
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.type = type
         self.Centre()
-        info = "Current %s will be added to your list of %ss."%(self.type,self.type)
+        info = "Specify the URL of the %s to add to your list of %ss."%(self.type,self.type)
         self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
         self.addressText = wxStaticText(self, -1, "Name: ", style=wxALIGN_LEFT)
         self.address = wxTextCtrl(self, -1, name, size = wxSize(300,20))
