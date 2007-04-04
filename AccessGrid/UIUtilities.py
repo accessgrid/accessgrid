@@ -2,18 +2,18 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.83 2007-03-27 22:49:57 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.84 2007-04-04 21:28:47 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.83 2007-03-27 22:49:57 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.84 2007-04-04 21:28:47 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
 
-from AccessGrid.Platform import IsWindows
+from AccessGrid.Platform import IsWindows, IsOSX
 import string
 import struct
 import os
