@@ -2,7 +2,7 @@
 # Name:        ProxyGen.py
 # Purpose:     Proxy Generation utitities.
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.25 2006-10-19 19:55:18 turam Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.26 2007-04-04 22:24:58 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 Proxy certificate generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.25 2006-10-19 19:55:18 turam Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.26 2007-04-04 22:24:58 turam Exp $"
 
 import sys
 import os
@@ -23,6 +23,7 @@ import time
 from AccessGrid import Log
 
 from M2Crypto import X509
+from M2Crypto.RSA import RSAError
 import proxylib # lbl proxy generating code
 
 
@@ -110,9 +111,18 @@ def CreateProxy(passphrase, certFile, keyFile, certDir,
         proxy_cert = proxy_factory.getproxy()
         proxy_cert.write(outFile)
 
+
+    except RSAError,e:
+        reason = e[0]
+        if reason == "bad decrypt":
+            raise InvalidPassphraseException(reason)
+        if reason == "bad password read" or reason == "wrong pass phrase":
+            raise InvalidPassphraseException(reason)
+    
     except:
         import traceback
         traceback.print_exc()
+        raise
 
 # 
 # FIXME:  Need to handle exceptions raised by proxylib,
