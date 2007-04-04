@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.21 2006-10-13 19:51:56 turam Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.22 2007-04-04 22:04:51 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -849,7 +849,6 @@ class ServiceCertWindow(TitledPage):
                     self.serviceCtrl.SetValue("")
             else:
                 self.serviceCtrl.Enable(0)
-                self.serviceNameText.Clear()
                 self.serviceNameText.Enable(0)
                 if not self.userTyped:
                     self.serviceCtrl.SetValue(self.serviceName)
