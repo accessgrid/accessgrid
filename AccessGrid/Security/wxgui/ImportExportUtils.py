@@ -5,12 +5,12 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: ImportExportUtils.py,v 1.6 2006-10-12 18:48:42 turam Exp $
+# RCS-ID:      $Id: ImportExportUtils.py,v 1.7 2007-04-04 22:03:43 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-__revision__ = "$Id: ImportExportUtils.py,v 1.6 2006-10-12 18:48:42 turam Exp $"
+__revision__ = "$Id: ImportExportUtils.py,v 1.7 2007-04-04 22:03:43 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -694,7 +694,7 @@ def ImportPEMIdentityCertificate(certMgr, certFile, keyFile):
                               "appropriate CA certificates are imported. At the least,\n" +
                               "the certificate for this CA must be imported:\n" +
                               str(impCert.GetIssuer()) + "\n" +
-                              "It might be found in a file %s.0." % (impCert.GetIssuer().get_hash()),
+                              "It might be found in a file %s.0." % hex(impCert.GetIssuer().as_hash())[2:],
                               "Cannot verify certificate path")
         dlg.ShowModal()
         dlg.Destroy()
