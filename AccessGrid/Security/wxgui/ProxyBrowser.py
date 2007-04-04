@@ -1,6 +1,7 @@
 
 from wxPython.wx import *
 
+from AccessGrid import Toolkit
 from AccessGrid.Security.Utilities import GetCNFromX509Subject
 
 from CertificateBrowserBase import CertificateBrowserBase
@@ -42,7 +43,8 @@ class ProxyBrowser(CertificateBrowserBase):
             b.Enable(0)
 
     def OnCreate(self, event):
-        self.certMgr.CreateProxyCertificate()
+        #self.certMgr.CreateProxyCertificate()
+        Toolkit.GetDefaultApplication().GetCertificateManagerUI().CreateProxy()
         self.Load()
 
     def OnDestroy(self, event):
