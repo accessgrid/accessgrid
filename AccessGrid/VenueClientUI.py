@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.229 2007-03-27 20:45:31 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.230 2007-04-04 22:29:17 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.229 2007-03-27 20:45:31 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.230 2007-04-04 22:29:17 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2183,7 +2183,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def SaveDataCB(self, event):
         data = self.GetSelectedItem()
         log.debug("VenueClientFrame.SaveData: Save data: %s", data)
-        if(data != None and isinstance(data, DaaDescription)):
+        if(data != None and isinstance(data, DataDescription)):
             name = data.name
             path = self.SelectFile("Specify name for file", name)
             if path:
