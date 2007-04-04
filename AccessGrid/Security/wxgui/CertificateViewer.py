@@ -29,15 +29,15 @@ class CertificateViewerPanel(wxPanel):
         # Set up text styles.
         #
 
-        boldFont = wxFont(-1, wxDEFAULT, wxNORMAL, wxBOLD)
+        defaultPoints = self.text.GetFont().GetPointSize()
+        boldFont = wxFont(defaultPoints, wxDEFAULT, wxNORMAL, wxBOLD)
         self.bold = bold = wxTextAttr()
         self.bold.SetFont(boldFont)
 
-        normalFont = wxFont(-1, wxDEFAULT, wxNORMAL, wxNORMAL)
+        normalFont = wxFont(defaultPoints, wxDEFAULT, wxNORMAL, wxNORMAL)
         self.normal = normal = wxTextAttr()
         self.normal.SetFont(normalFont)
 
-        defaultPoints = self.text.GetFont().GetPointSize()
         hdrFont = wxFont(defaultPoints + 4, wxDEFAULT, wxNORMAL, wxBOLD)
         self.hdr = hdr = wxTextAttr()
         self.hdr.SetFont(hdrFont)
