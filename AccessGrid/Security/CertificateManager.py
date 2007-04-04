@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.55 2006-12-19 21:42:45 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.56 2007-04-04 22:25:47 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.55 2006-12-19 21:42:45 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.56 2007-04-04 22:25:47 turam Exp $"
 
 import re
 import os
@@ -464,7 +464,7 @@ class CertificateManager(object):
         passphrase = ''.join(p1)
         return passphrase
             
-    def CreateProxyCertificate(self, bits=1024, hours=12):
+    def CreateProxyCertificate(self, passphrase, bits=1024, hours=12):
         """
         Create a proxy.
         """
@@ -474,8 +474,9 @@ class CertificateManager(object):
         hoursExtended = hours+1
         start = time.time()-3600
 
+        passphrasecb = lambda v,p1='',p2='': passphrase
         ident = self.GetDefaultIdentity()
-        ProxyGen.CreateProxy(self.GetPassphrase,
+        ProxyGen.CreateProxy(passphrasecb,
                              ident.GetPath(),
                              ident.GetKeyPath(),
                              self.caDir,
