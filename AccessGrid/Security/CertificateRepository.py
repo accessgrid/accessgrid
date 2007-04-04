@@ -2,7 +2,7 @@
 # Name:        CertificateRepository.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.28 2007-03-21 18:22:33 turam Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.29 2007-04-04 22:28:36 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.28 2007-03-21 18:22:33 turam Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.29 2007-04-04 22:28:36 turam Exp $"
 
 from __future__ import generators
 
@@ -628,7 +628,7 @@ class CertificateRepository:
         We don't currently inspect the key itself to ensure it matches
         the certificate, as that may require a passphrase.
         """
-
+        
         # Load the cert
         cert = Certificate(certFile, keyFile, self)
         path = self._GetCertDirPath(cert)
@@ -669,6 +669,7 @@ class CertificateRepository:
                 passphrase = None
 
             except:# crypto.Error:
+                log.exception('Exception decrypting private key without passphrase')
 
                 #
                 # We need a passphrase. Get one from the user,
@@ -696,7 +697,8 @@ class CertificateRepository:
                         passphrase = "".join(passphrase)
 
                 try:
-                    pkey = PrivateKey(keyFile,passphraseCB)
+                    cb = lambda v,p1='',p2='': passphrase
+                    pkey = PrivateKey(keyFile,callback=cb)
 
 # Determine exceptions that could be raised here and handle individually
                 except:# crypto.Error:
@@ -894,7 +896,7 @@ class CertificateRepository:
         # md5 hash of the key's public-key modulus.
         #
 
-        dig = md5.new(pkey.GetModulus())
+        dig = md5.new(pkey.get_modulus())
         hhash = dig.hexdigest()
 
         path = self.GetPrivateKeyPath(hhash)
@@ -911,6 +913,7 @@ class CertificateRepository:
         else:
             if type(passwdCB) == str:
                 passwdCB = lambda verify,prompt1="",prompt2="",passwd=passwdCB: passwd
+            log.info("_ImportPrivateKey: passwdCB = %s", passwdCB)
             pktext = pkey.as_pem(callback = passwdCB)
             self.SetPrivatekeyMetadata(hhash, "System.encrypted", "1")
             
@@ -1262,6 +1265,9 @@ class CertificateDescriptor:
     def GetIssuer(self):
         return self.cert.GetIssuer()
 
+    def GetIssuerHash(self):
+        return self.cert.GetIssuerHash()
+
     def GetShortSubject(self):
         return self.cert.GetShortSubject()
 
@@ -1402,6 +1408,7 @@ class Certificate:
         # Cached hash values.
         #
         self.subjectHash = None
+        self.issuerHash = None
         self.issuerSerialHash = None
         self.modulusHash = None
 
@@ -1464,6 +1471,14 @@ class Certificate:
     def GetIssuer(self):
         return self.cert.get_issuer()
 
+    def GetIssuerHash(self):
+        if self.issuerHash is None:
+            subj = self.cert.get_issuer().as_der()
+            dig = md5.new(subj)
+            self.issuerHash = dig.hexdigest()
+
+        return self.issuerHash
+        
     def GetSubjectHash(self):
         if self.subjectHash is None:
             subj = self.cert.get_subject().as_der()
@@ -1691,9 +1706,11 @@ class Certificate:
         return fmt
         
 class PrivateKey:
-    def __init__(self,keyfile,**kw):
+    def __init__(self,keyfile,callback=None,**kw):
         self.keyfile = keyfile
-        self.key = RSA.load_key(keyfile,**kw)
+        if callback is None:
+            callback = lambda v,p1='',p2='': ''
+        self.key = RSA.load_key(keyfile,callback=callback,**kw)
         
     def as_pem(self,**kw):
         return self.key.as_pem(**kw)
@@ -1703,6 +1720,8 @@ class PrivateKey:
         # which doesn't provide a way to request a hex-encoded modulus
         # of the RSA key (such as BN_print, for example).
         return m2.bn_to_hex(m2.mpi_to_bn(self.key.n))
+        
+    get_modulus = GetModulus
     
 if __name__ == "__main__":
 
