@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.73 2007-04-16 16:43:28 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.74 2007-04-16 16:50:55 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.73 2007-04-16 16:43:28 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.74 2007-04-16 16:50:55 turam Exp $"
 
 import os
 import socket
@@ -552,7 +552,7 @@ class SystemConfig(Config.SystemConfig):
                                           win32con.SMTO_NORMAL, 1000)
         return ret
 
-    def SetProcessorAffinity(self,mask):
+    def SetProcessorAffinity(self,mask=1):
         """
         Set the processor affinity for the current process (i.e., select
         which processor(s) the process should run on).  This will affect
@@ -562,7 +562,7 @@ class SystemConfig(Config.SystemConfig):
         
         """"
         try:
-            import win32api, win32process
+            import win32process
 
             # get number of processors
             systemInfo = win32api.GetSystemInfo()
