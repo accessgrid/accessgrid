@@ -2,13 +2,13 @@
 # Name:        ProcessManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.13 2006-10-02 20:34:15 turam Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.14 2007-04-16 19:39:46 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.13 2006-10-02 20:34:15 turam Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.14 2007-04-16 19:39:46 turam Exp $"
 
 import win32api
 import win32con
@@ -177,7 +177,21 @@ class ProcessManager:
         @returns: a list of process id's
         """
         return self.processes
-
+        
+    def IsRunning(self, pid):
+        try: 
+            handle = win32api.OpenProcess(1, 0, pid)
+            return 1
+        except OSError, err:
+            # err 87 ('OpenProcess', 'The parameter is incorrect.') is the 
+            # expected value; others should be logged
+            if err.args[0] != 87:
+                log.exception('Unexpected exception; MUST examine')
+            return 0
+        except:
+            log.exception('Unexpected exception; MUST examine')
+            return 0
+            
 if __name__ == "__main__":
     import time
     mgr = ProcessManager()
