@@ -2,13 +2,13 @@
 # Name:        ProcessManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.5 2006-05-10 20:33:58 turam Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.6 2007-04-16 19:00:11 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.5 2006-05-10 20:33:58 turam Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.6 2007-04-16 19:00:11 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import signal
@@ -29,19 +29,36 @@ class ProcessManager:
         
     def OnSigChild(self,num,event):
         if not self.processes:
+            log.info('OnSigChild:  ---- no processes; returning')
             return
-        try:
-            ret = os.waitpid(-1,os.WNOHANG)
-            pid = ret[0]
-            if pid:
+            
+        while 1:
+            try:
+                ret = os.waitpid(-1,os.WNOHANG)
+            except:
+                log.exception('Exception in waitpid; breaking')
+                break
+        
+            try:
+                pid = ret[0]
+                log.debug('OnSigChild: pid = %d', pid)
+                
+                # break if no process found
+                if not pid:
+                    log.debug('OnSigChild got zero pid; breaking')
+                    break
+                    
                 if pid in self.processes:
                     self.processes.remove(pid)
                     if self.callback:
                         self.callback(self,pid)
                 else:
                     log.info("Got sigchild for unexpected process pid=%d", pid)
-        except:
-            log.exception("Exception in sigchld handler")
+            except:
+                log.exception("Exception in sigchld handler; breaking. [MUST fix]")
+                break
+
+
 
     def StartProcess(self, command, arglist, detached = 1):
         """
@@ -163,6 +180,18 @@ class ProcessManager:
         """
         return self.processes
     
+    def IsRunning(self, pid):
+        """
+        Returns a flag to indicate whether the specified process is running
+        @returns: 0 if process is not running, 1 if it is
+        """
+        try:
+            os.kill(pid, 0)
+            return 1
+        except Exception, err:
+            return 0
+
+            
 if __name__ == "__main__":
     mgr = ProcessManager()
 
