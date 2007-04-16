@@ -2,13 +2,13 @@
 # Name:        ProcessManager.py
 # Purpose:     Interface definitions for ProcessManager
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.7 2004-09-09 22:12:12 turam Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.8 2007-04-16 19:00:44 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.7 2004-09-09 22:12:12 turam Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.8 2007-04-16 19:00:44 turam Exp $"
 
 class ProcessManager:
     def __init__(self):
@@ -75,3 +75,12 @@ class ProcessManager:
         @returns: a list of process id's
         """
         raise Exception, "This should not be called directly, but by a subclass."
+        
+    def IsRunning(self,pid):
+        """
+        Returns a flag to indicate whether the specified process is running
+        @returns: 0 if process is not running, 1 if it is
+        """
+        raise Exception, "This should not be called directly, but by a subclass."
+        
+      
