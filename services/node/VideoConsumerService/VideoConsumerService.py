@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.13 2007-01-30 00:42:03 willing Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.14 2007-04-16 16:44:59 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -42,14 +42,26 @@ class VideoConsumerService( AGService ):
 
         # Set configuration parameters
         self.tiles = OptionSetParameter( "Thumbnail Columns", "2", VideoConsumerService.tileOptions )
-
         self.configuration.append( self.tiles )
 
         if IsWindows():
             try:
-                SystemConfig.instance().SetProcessorAffinity()
+                import win32api
+
+                # get number of processors
+                systemInfo = win32api.GetSystemInfo()
+                numprocs = systemInfo[5]
+                self.allProcsMask = 2**numprocs
+
+                self.procOptions = ['All']
+                for i in range(numprocs):
+                    self.procOptions.append(str(i+1))
+
+                self.processorUsage = OptionSetParameter( "Processor usage", self.procOptions[0], self.procOptions )
+                self.configuration.append( self.processorUsage )
             except:
-                self.log.exception("Exception setting processor affinity")
+                self.log.exception('Error initializing processor usage options')
+
 
     def __SetRTPDefaults(self, profile):
         """
@@ -101,6 +113,20 @@ class VideoConsumerService( AGService ):
     def Start( self ):
         """Start service"""
         try:
+
+            # Set processor affinity (windows only)
+            if IsWindows():
+                try:
+                    if self.processorUsage.value == 'All':
+                        self.log.info('Setting processor affinity to all processors')
+                        SystemConfig.instance().SetProcessorAffinity(self.allProcsMask)
+                    else:
+                        val = 2**int(self.processorUsage.value)
+                        self.log.info('Ssetting processor affinity : use processor %s', self.processorUsage.value)
+                        SystemConfig.instance().SetProcessorAffinity(int(self.processorUsage.value))
+                except:
+                    self.log.exception("Exception setting processor affinity")
+
             # Enable firewall
             self.sysConf.AppFirewallConfig(self.executable, 1)
 
