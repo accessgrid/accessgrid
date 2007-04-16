@@ -2,13 +2,13 @@
 # Name:        ProcessManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.6 2007-04-16 19:00:11 turam Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.7 2007-04-16 19:40:56 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.6 2007-04-16 19:00:11 turam Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.7 2007-04-16 19:40:56 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import signal
@@ -188,7 +188,13 @@ class ProcessManager:
         try:
             os.kill(pid, 0)
             return 1
-        except Exception, err:
+        except OSError, err:
+            # err 3 (no such process) is the expected value; others should be logged
+            if err.args[0] != 3:
+                log.exception('Unexpected exception; MUST examine')
+            return 0
+        except:
+            log.exception('Exception in IsRunning')
             return 0
 
             
