@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.56 2007-04-04 22:25:47 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.57 2007-04-17 15:01:29 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.56 2007-04-04 22:25:47 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.57 2007-04-17 15:01:29 turam Exp $"
 
 import re
 import os
@@ -310,13 +310,17 @@ class CertificateManager(object):
     def ImportRequestedCertificate(self, userCert):
         repo = self.GetCertificateRepository()
 
-        defID = self.GetDefaultIdentity()
         
         impCert = repo.ImportRequestedCertificate(userCert)
         log.debug("imported requested cert %s", impCert.GetSubject())
         
         impCert.SetMetadata("AG.CertificateManager.certType", "identity")
 
+        try:
+            defID = self.GetDefaultIdentity()
+        except NoCertificates:
+            defID = None
+            
         if defID is None:
             from AccessGrid import Toolkit
             self.SetDefaultIdentity(impCert)
