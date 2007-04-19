@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.340 2007-03-05 23:06:27 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.341 2007-04-19 18:57:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.340 2007-03-05 23:06:27 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.341 2007-04-19 18:57:43 turam Exp $"
 
 import sys
 import os
@@ -28,7 +28,8 @@ from AccessGrid import Version
 from AccessGrid.Toolkit import Application, Service
 from AccessGrid.Preferences import Preferences
 from AccessGrid.Descriptions import Capability, STATUS_ENABLED
-from AccessGrid.Descriptions import BeaconSource, BeaconSourceData, BridgeDescription
+from AccessGrid.Descriptions import BeaconSource, BeaconSourceData
+from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE, UMTP_TYPE
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Venue import ServiceAlreadyPresent, CertificateRequired
@@ -54,7 +55,6 @@ from AccessGrid import ServiceDiscovery
 from AccessGrid.Descriptions import VenueState
 from AccessGrid.MulticastWatcher import MulticastWatcher
 from AccessGrid.Registry.RegistryClient import RegistryClient
-from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE, UMTP_TYPE
 from AccessGrid import QuickBridgeClient
 from AccessGrid.BridgeCache import BridgeCache
 
@@ -1031,10 +1031,6 @@ class VenueClient:
         except Exception,e:
             log.exception("EnterVenue.__StartJabber failed")
 
-        # Create the beacon client
-        if int(self.preferences.GetPreference(Preferences.BEACON)):
-            self.StartBeacon()
-
         # 
         # Update the node service with stream descriptions
         #
@@ -1371,7 +1367,8 @@ class VenueClient:
 	    self.UpdateStream(stream)
 
         # Restart the beacon so the new transport is used
-        if self.beaconLocation and self.beacon:
+        if int(self.preferences.GetPreference(Preferences.BEACON)):
+          if self.beaconLocation and self.beacon:
             # stop the beacon
             self.StopBeacon()
             
@@ -1392,12 +1389,15 @@ class VenueClient:
             if self.transport == "multicast" and netloc.GetType() == self.transport:
                 stream.location = netloc
                 found = 1
+	    # If UMTP, use the multicast location
+	    elif self.transport == "unicast" and self.currentBridge.serverType == UMTP_TYPE and netloc.GetType() == "multicast":
+		stream.location = netloc
+		found = 1
                                     
-        if not found and self.transport == "unicast":
+        if not found and self.transport == "unicast" and self.currentBridge.serverType == QUICKBRIDGE_TYPE:
             # If no unicast network location was found, connect to
             # the bridge to retreive one.
             if self.currentBridge:
-
 
                 if self.currentBridge.status != STATUS_ENABLED:
                     log.info("Current bridge %s is disabled by user, searching for other bridge", self.currentBridge.name)
@@ -1443,6 +1443,10 @@ class VenueClient:
             
         if self.beacon:
             self.beacon.Stop()
+
+        log.info('Shutting down jabber client')
+        if self.jabber:
+            self.jabber.Logout()
        
     def UpdateProfileCache(self, profile):
         try:
