@@ -2,7 +2,7 @@
 # Name:        CertificateRepository.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.29 2007-04-04 22:28:36 turam Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.30 2007-04-19 20:45:05 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.29 2007-04-04 22:28:36 turam Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.30 2007-04-19 20:45:05 turam Exp $"
 
 from __future__ import generators
 
@@ -1490,7 +1490,7 @@ class Certificate:
     def GetSubjectNameHash(self):
         subject = self.cert.get_subject()
         nameHash = m2.x509_name_hash(subject.x509_name)
-        nameHash = hex(nameHash).strip('0x').lower()
+        nameHash = hex(nameHash).lstrip('0x').lower()
         return nameHash
 
     def GetIssuerSerialHash(self):
