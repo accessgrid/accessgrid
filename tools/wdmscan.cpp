@@ -5,7 +5,7 @@
 #include <atlconv.h>
 
 
-static int NUM_DEVS = 10;
+static int NUM_DEVS = 20;
 
 
 class DirectShowScanner {
