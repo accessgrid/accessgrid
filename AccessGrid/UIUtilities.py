@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.84 2007-04-04 21:28:47 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.85 2007-04-19 22:14:57 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.84 2007-04-04 21:28:47 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.85 2007-04-19 22:14:57 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -186,7 +186,14 @@ class ProgressDialog(wxFrame):
         gaugeWidth = min(300, width - 100)
         padding = 5
 
-        wxFrame.__init__(self, parent=parent, style=wxSIMPLE_BORDER)
+        wxFrame.__init__(self, parent=parent, title="Starting AccessGrid", style=wxSIMPLE_BORDER)
+        agiconfile = None
+        if IsWindows():
+            agiconfile = os.path.join(AGTkConfig.instance().GetInstallDir(),'install','ag.ico')
+        elif IsLinux() or IsFreeBSD():
+            agiconfile = os.path.join(AGTkConfig.instance().GetInstallDir(),'share','AccessGrid','ag.ico')
+        if agiconfile and os.path.exists(agiconfile):
+            self.SetIcon(wxIcon(agiconfile,wxBITMAP_TYPE_ICO))
         self.CenterOnScreen()
         self.SetBackgroundColour(wxWHITE)
         
