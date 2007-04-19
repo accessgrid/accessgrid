@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.86 2006-08-07 20:37:40 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.87 2007-04-19 15:02:59 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.86 2006-08-07 20:37:40 turam Exp $"
+__revision__ = "$Id: Utilities.py,v 1.87 2007-04-19 15:02:59 turam Exp $"
 
 import os
 import string
@@ -24,6 +24,7 @@ from random import Random
 import urllib
 from threading import Lock, Condition
 import re
+import urlparse
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.Utilities)
@@ -508,23 +509,44 @@ def BuildServiceUrl(url,defaultproto,defaultport,defaultpath):
     # - define a mess of regular expressions for matching venue urls
     hostre = re.compile('^[\w.-]*$')
     hostportre = re.compile('^[\w.-]*:[\d]*$')
+    hostportpathre = re.compile('^[\w.-]*:[\d]*/[\w/]*')
+    hostpathre = re.compile('^[\w.-]*/[\w]*')
     protohostre = re.compile('^[\w]*://[\w.-]*$')
     protohostportre = re.compile('^[\w]*://[\w.-]*:[\d]*$')
+    protohostportpathre = re.compile('^[\w]*://[\w.-]*:[\d]*/[\w]*')
+    protohostpathre = re.compile('^[\w]*://[\w.-^/]*/[\w]*')
 
-    # - check for host only
-    if hostre.match(url):
-        host = url
-        url = '%s://%s:%d/%s' % (defaultproto,host,defaultport,defaultpath)
-    # - check for host:port
-    elif hostportre.match(url):
-        hostport = url
-        url = '%s://%s/%s' % (defaultproto,hostport,defaultpath)
-    elif protohostre.match(url):
-        protohost = url
-        url = '%s:%d/%s' % (protohost,defaultport,defaultpath)
-    elif protohostportre.match(url):
-        protohostport = url
-        url = '%s/%s' % (protohostport,defaultpath)
+    if url.find('//') == -1:
+        # - check for host only
+        if hostre.match(url):
+            host = url
+            url = '%s://%s:%d/%s' % (defaultproto,host,defaultport,defaultpath)
+        # - check for host:port
+        elif hostportre.match(url):
+            hostport = url
+            url = '%s://%s/%s' % (defaultproto,hostport,defaultpath)
+        elif hostportpathre.match(url):
+            url = '%s://%s' % (defaultproto,url)
+        elif hostpathre.match(url):
+            parts = url.split('/')
+            host = parts[0]
+            path = '/'.join(parts[1:])
+            url = '%s://%s:%d/%s' % (defaultproto,host,defaultport,path)
+    else:
+        if protohostre.match(url):
+            protohost = url
+            url = '%s:%d/%s' % (protohost,defaultport,defaultpath)
+        elif protohostportre.match(url):
+            print 'protohostport match'
+            protohostport = url
+            url = '%s/%s' % (protohostport,defaultpath)
+        elif protohostportpathre.match(url):
+            pass
+        elif protohostpathre.match(url):
+            parts = urlparse.urlparse(url)
+            proto = parts[0]
+            host = parts[1]
+            path = parts[2]
+            url = '%s://%s:%d%s' % (proto,host,defaultport,path)
     return url
-
 
