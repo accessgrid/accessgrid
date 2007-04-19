@@ -145,9 +145,10 @@ if haveCryptoLib:
         ssl = SSL.Connection(self.ctx, sock)
 
         # set a 10s timeout on the listening socket
-        t = SSL.timeout(10,0)
-        ssl.set_socket_read_timeout(t)
-        ssl.set_socket_write_timeout(t)
+        if sys.platform not in ['win32']:
+            t = SSL.timeout(10,0)
+            ssl.set_socket_read_timeout(t)
+            ssl.set_socket_write_timeout(t)
 
         ssl.addr = addr
         ssl.setup_ssl()
