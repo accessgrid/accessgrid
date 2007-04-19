@@ -1,3 +1,4 @@
+import sys
 from AccessGrid import Log
 log = Log.GetLogger(Log.Hosting)
 import urlparse
@@ -142,10 +143,12 @@ if haveCryptoLib:
         """
         sock, addr = self.socket.accept()
         ssl = SSL.Connection(self.ctx, sock)
-        t = ssl.get_socket_read_timeout()
-        t.sec = 10
+
+        # set a 10s timeout on the listening socket
+        t = SSL.timeout(10,0)
         ssl.set_socket_read_timeout(t)
         ssl.set_socket_write_timeout(t)
+
         ssl.addr = addr
         ssl.setup_ssl()
         ssl.set_accept_state()
