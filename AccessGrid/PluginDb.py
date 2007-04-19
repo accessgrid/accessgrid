@@ -59,7 +59,7 @@ class PluginDb:
             print sys.exc_info()
             print 'Couldn\'t open Plugin Database: %s' % fileName
 
-        print 'Loaded %s' % fileName
+        #print 'Loaded %s' % fileName
 
     def Save(self, fileName=None):
         if fileName == None:
