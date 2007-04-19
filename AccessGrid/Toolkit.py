@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.127 2007-03-14 16:54:18 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.128 2007-04-19 22:12:33 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.127 2007-03-14 16:54:18 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.128 2007-04-19 22:12:33 turam Exp $"
 
 # Standard imports
 import os
@@ -266,7 +266,7 @@ class AppBase:
         
     def VerifyCallback(self,ok,store):
         # unused, except possibly for debugging
-        print 'VerifyCallback: ok,store=',ok,store.get_current_cert().get_subject().as_text(),store.get_error()
+        self.log.info('VerifyCallback: ok,store=%d %s %s' % (ok,store.get_current_cert().get_subject().as_text(),store.get_error()))
         return 1
         
     def __SetLogPreference(self):
@@ -462,7 +462,7 @@ class AppBase:
 
         return subject
 
-    def GetCertificateManager(self):
+    def GetCertificateManager(self):       
         if self._certificateManager == None:
             if self.userConfig == None:
                 raise Exception("No user config dir, Toolkit may not be initialized.")
