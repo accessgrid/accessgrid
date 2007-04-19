@@ -1,7 +1,7 @@
 import traceback, random
 from AccessGrid.VenueClient import VenueClient
 from AccessGrid.GUID import GUID
-
+import time
 
 def PrintList( listname, thelist ):
     print " ",listname," ------"
@@ -17,27 +17,11 @@ class MyVenueClient(VenueClient):
     update its UI instead of printing the venue state as text.
     """
     def __init__(self, profile, app):
-        VenueClient.__init__(self, profile=profile, app=app)
+        VenueClient.__init__(self, profile=profile, app=app,pnode=0)
+        #self.DoPostEnter = lambda x: 0
        
-    def EnterVenue(self, URL):
-        """
-        Note: Overloaded from VenueClient
-        This method calls the venue client method and then
-        performs its own operations when the client enters a venue.
-        """
-        VenueClient.EnterVenue( self, URL )
-        
-    def ExitVenue(self):
-        """
-        Note: Overloaded from VenueClient
-        This method calls the venue client method and then
-        performs its own operations when the client exits a venue.
-        """
-        VenueClient.ExitVenue( self )
-
     def PrintVenueState( self ):
         print "--- Venue State ---"
-        print " Name: ", self.venueState.name
         print " Description: ", self.venueState.description
         map( lambda listtuple: PrintList( listtuple[0], listtuple[1] ), 
              [ 
@@ -47,7 +31,9 @@ class MyVenueClient(VenueClient):
             ("Services", self.venueState.services.values())
             ]  )
 
+from M2Crypto import threading as m2threading
 def RunClient(*args, **kw):
+    m2threading.init()
     id = kw['id']
     venueUri = kw['url']
     app = kw['app']
@@ -64,10 +50,13 @@ def RunClient(*args, **kw):
         try:
             if verbose:
                 print "Entering Venue: %s" % venueUri
-            client.EnterVenue(venueUri)
-            print "Client %d Entered %s" % (id, client.venueState.name)
+            ret = client.EnterVenue(venueUri)
+            if ret:
+                print '** EnterVenue ret = ', ret
+            print "Client %d Entered %s %d times" % (id, venueUri,i)
         except:
             print traceback.print_exc()
+            continue
         
         if verbose:
             client.PrintVenueState()
@@ -80,6 +69,7 @@ def RunClient(*args, **kw):
                 venueUri = exits[next_index].uri
 
         try:
+            time.sleep(1)
             client.ExitVenue()
             if verbose:
                 print "Exited venue !"
@@ -87,15 +77,18 @@ def RunClient(*args, **kw):
             print traceback.print_exc()
 
     client.Shutdown()
+    m2threading.cleanup()
    
 if __name__ == "__main__":
     import os, sys, threading, time
     from optparse import Option
     from AccessGrid.Toolkit import CmdlineApplication
-    from AccessGrid.VenueServer import VenueServerIW
+    from AccessGrid.interfaces.VenueServer_client import VenueServerIW
     from AccessGrid.ClientProfile import ClientProfile
 
-    verbose = 0
+    m2threading.init()
+
+    verbose =1
     random.seed(time.time())
     
     app = CmdlineApplication()
@@ -120,7 +113,7 @@ if __name__ == "__main__":
        sys.exit(-1)
        
     print "Getting default venue"
-    venueUri = VenueServerIW(app.GetOption("url")).GetDefaultVenue()
+    venueUri = app.GetOption('url')
 
     vcList = list()
 
@@ -132,11 +125,22 @@ if __name__ == "__main__":
                                            'verbose' : verbose })
        client.start()
 
-    while len(threading.enumerate()) > 1:
-        #print "Num Threads: %d" % len(threading.enumerate())
-        #for t in threading.enumerate():
-        #    print t
+    while 1:
+        numdaemonthreads = 0
+        threads = threading.enumerate()
+        numthreads = len(threads)
+        print "Num Threads: ", numthreads
+        for t in threads:
+            print t
+            if t.isDaemon():
+                numdaemonthreads += 1
+
+        # loop until only the main thread and daemon threads remain
+        if numdaemonthreads == numthreads - 1:
+            break
+                
         time.sleep(1.0)
 
+    m2threading.cleanup()
     sys.exit(0)
 
