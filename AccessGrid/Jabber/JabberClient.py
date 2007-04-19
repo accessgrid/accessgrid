@@ -203,4 +203,5 @@ class JabberClient:
         self.presenceCB = presenceCB
         
     def Logout(self):
-        self._stream.close()
+        if self._stream:
+            self._stream.close()
