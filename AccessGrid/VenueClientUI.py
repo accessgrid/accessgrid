@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.230 2007-04-04 22:29:17 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.231 2007-04-19 22:18:37 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.230 2007-04-04 22:29:17 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.231 2007-04-19 22:18:37 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -835,7 +835,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
     def __SetProperties(self):
         self.SetTitle("Venue Client")
-        self.SetIcon(icons.getAGIconIcon())
+        agiconfile = None
+        if IsWindows():
+            agiconfile = os.path.join(Config.AGTkConfig.instance().GetInstallDir(),'install','ag.ico')
+        elif IsLinux() or IsFreeBSD():
+            agiconfile = os.path.join(Config.AGTkConfig.instance().GetInstallDir(),'share','AccessGrid','ag.ico')
+        if agiconfile and os.path.exists(agiconfile):
+            self.SetIcon(wxIcon(agiconfile,wxBITMAP_TYPE_ICO))
         #self.venueListPanel.SetSize(wxSize(160, 300))
         #self.venueAddressBar.SetSize(wxSize(self.GetSize().GetWidth(),65))
         
@@ -1893,16 +1899,19 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.reader.SetUpdateDuration(0)
     
     def UpdateRss(self,url,doc,docDate):
-        menutitle,menu = self._CreateMenu(doc)
-        menuid = wxNewId()
-        self.navigation.AppendMenu(menuid,menutitle,menu)
-        
-        menu.AppendSeparator()
-        
-        # Append remove item
-        removeitemid = wxNewId()
-        menu.Append(removeitemid,'Remove Schedule')
-        EVT_MENU(self,removeitemid,lambda evt,menuid=menuid,url=url: self.RemoveScheduleCB(evt,menuid,url))
+        try:
+            menutitle,menu = self._CreateMenu(doc)
+            menuid = wxNewId()
+            self.navigation.AppendMenu(menuid,menutitle,menu)
+            
+            menu.AppendSeparator()
+            
+            # Append remove item
+            removeitemid = wxNewId()
+            menu.Append(removeitemid,'Remove Schedule')
+            EVT_MENU(self,removeitemid,lambda evt,menuid=menuid,url=url: self.RemoveScheduleCB(evt,menuid,url))
+        except:
+            log.exception("Exception updating schedule")
 
     def _GetFeedConfigFile(self):
         ucd = self.app.GetUserConfig().GetConfigDir()
