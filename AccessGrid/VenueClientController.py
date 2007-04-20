@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.76 2007-02-23 22:08:05 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.77 2007-04-20 19:43:13 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.76 2007-02-23 22:08:05 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.77 2007-04-20 19:43:13 turam Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -764,7 +764,10 @@ class VenueClientController:
         if self.__venueClient.GetVenue() != None:
             log.debug("Update client profile in venue")
             
-            self.__venueClient.jabber.SendNameChange(preferences.GetProfile().name)
+            try:
+                self.__venueClient.jabber.SendNameChange(preferences.GetProfile().name)
+            exception:
+                log.exception('Error sending name change')
 
             try:
                 self.__venueClient.UpdateClientProfile(preferences.GetProfile())
