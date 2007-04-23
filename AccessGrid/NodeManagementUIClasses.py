@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.114 2006-12-20 17:59:55 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.115 2007-04-23 21:52:53 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.114 2006-12-20 17:59:55 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.115 2007-04-23 21:52:53 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -82,7 +82,7 @@ class UnresolvableService(Exception):   pass
 
 
 class ServiceChoiceDialog(wxDialog):
-    def __init__(self, parent, id, title, choices, serviceType, size=wxSize(450,130) ):
+    def __init__(self, parent, id, title, choices, serviceType, text, size=wxSize(450,130) ):
     
     
         wxDialog.__init__(self, parent, id, title, style =
@@ -92,17 +92,13 @@ class ServiceChoiceDialog(wxDialog):
         self.serviceType = serviceType
               
         # Set up sizers
-        gridSizer = wxFlexGridSizer(3, 2, 5, 5)
         sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        #sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxHORIZONTAL)
-        sizer2.Add(gridSizer, 1, wxALL, 10)
-        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
        
-        gridSizer.AddGrowableCol(0)
+        self.text = wxStaticText(self,-1,text)
+        sizer1.Add( self.text,0,border=5,flag=wxALL)
 
         self.comboBoxCtrl = wxComboBox(self,-1, choices=choices)
-        gridSizer.Add( self.comboBoxCtrl, 0, wxEXPAND)
+        sizer1.Add( self.comboBoxCtrl, 0, flag=wxALL|wxEXPAND,border=5)
         
         # Create ok/cancel buttons
         sizer3 = wxBoxSizer(wxHORIZONTAL)
@@ -126,6 +122,8 @@ class ServiceChoiceDialog(wxDialog):
         self.browser.Start()
         
         self.hostname = SystemConfig.instance().GetHostname()
+
+        self.Fit()
 
     def OnOK(self,event):
         self.EndModal(wxID_OK)
@@ -589,7 +587,8 @@ class NodeManagementClientFrame(wxFrame):
 
         dlg = ServiceChoiceDialog(self,-1,'NodeService Dialog',
                                   self.recentNodeServiceList,
-                                  AGNodeService.ServiceType)
+                                  AGNodeService.ServiceType,
+                                  'Select a Node Service URL from the list, or enter the hostname or \nservice URL of the Node Service')
         dlg.Center()
         ret = dlg.ShowModal()
 
@@ -837,7 +836,8 @@ class NodeManagementClientFrame(wxFrame):
 
         dlg = ServiceChoiceDialog(self,-1,'Service Manager Dialog',
                                   self.recentServiceManagerList,
-                                  AGServiceManager.ServiceType)
+                                  AGServiceManager.ServiceType,
+                                  'Select a Service Manager URL from the list, or enter the hostname or \nservice URL of the Service Manager')
         dlg.Center()
         ret = dlg.ShowModal()
         if ret == wxID_OK:
