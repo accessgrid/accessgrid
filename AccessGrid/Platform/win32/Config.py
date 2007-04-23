@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.74 2007-04-16 16:50:55 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.75 2007-04-23 21:53:38 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.74 2007-04-16 16:50:55 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.75 2007-04-23 21:53:38 turam Exp $"
 
 import os
 import socket
@@ -560,7 +560,7 @@ class SystemConfig(Config.SystemConfig):
         
         @param val: The 
         
-        """"
+        """
         try:
             import win32process
 
