@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.172 2007-01-08 22:54:03 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.173 2007-04-23 21:08:06 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.172 2007-01-08 22:54:03 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.173 2007-04-23 21:08:06 turam Exp $"
 
 # Standard imports
 import sys
@@ -1545,7 +1545,6 @@ class VenueParamFrame(wxDialog):
 class AddVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title, venueList, application):
         VenueParamFrame.__init__(self, parent, id, title, application)
-        #self.authorizationPanel.Hide()
         self.SetSize(wxSize(600, 470))
         self.SetLabel('Add Venue')
         self.application.SetCurrentVenue(None)
@@ -1553,6 +1552,10 @@ class AddVenueFrame(VenueParamFrame):
         self.encryptionPanel.genKeyButton.Hide()
         self.encryptionPanel.ClickEncryptionButton(None,
                                                    self.application.encrypt)
+        
+        self.noteBook.AddPage(self.authorizationPanel, "Security")
+        self.authorizationPanel.Disable()
+        
         EVT_BUTTON (self.okButton, wxID_OK, self.OnOK)
         self.ShowModal()
 
