@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.31 2007-03-14 18:22:25 turam Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.32 2007-04-23 23:10:45 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -82,7 +82,11 @@ class RegistryClient:
        
     def _connectToRegistry(self):
         if not self.registryPeers:
-            self.registryPeers = self._readPeerList(url=self.url)
+            try:
+                self.registryPeers = self._readPeerList(url=self.url)
+            except ValueError:
+                self.log.info('Error reading peer list; retrying')
+                self.registryPeers = self._readPeerList(url=self.url)
          
         # Connect to the first reachable register according to ping
         foundServer = 0
@@ -192,6 +196,8 @@ class RegistryClient:
                 f = urllib.urlopen(url, proxies=proxyList)
             else:
                 f = urllib.urlopen(url)
+            if f and f.info().gettype() != 'text/plain':
+                raise ValueError('Registry retrieval returned non-plain text; type=%s', f.info().gettype())
         contents = f.read()
         f.close()
         registryPeers = contents.split()
