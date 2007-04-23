@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.231 2007-04-19 22:18:37 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.232 2007-04-23 21:55:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.231 2007-04-19 22:18:37 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.232 2007-04-23 21:55:46 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1712,10 +1712,15 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             else: # Not right node service uri
                 setNodeUrlDialog = UrlDialog(self, -1, "Set node service URL", \
                                              self.venueClient.GetNodeServiceUri(), 
-                                             "Please, specify node service URL")
+                                             "Enter the hostname of the machine where the Node Service is running, \nor optionally the entire Node Service URL")
 
                 if setNodeUrlDialog.ShowModal() == wxID_OK:
-                    self.venueClient.SetNodeUrl(setNodeUrlDialog.GetValue())
+
+                    url = setNodeUrlDialog.GetValue()
+
+                    url = BuildServiceUrl(url,'http',11000,'NodeService')
+
+                    self.venueClient.SetNodeUrl(url)
 
                     try:
                         self.nodeManagementFrame.AttachToNode( self.venueClient.GetNodeService() )
