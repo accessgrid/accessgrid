@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.28 2007-04-04 22:49:15 turam Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.29 2007-04-24 22:32:04 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.28 2007-04-04 22:49:15 turam Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.29 2007-04-24 22:32:04 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -116,23 +116,6 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
     """
     wxWindows-based user interfact to the certificate mgr.
     """
-
-    def __init__(self, cm):
-        CertificateManager.CertificateManagerUserInterface.__init__(self, cm)
-
-        # Perform a check to see if we're root, if we're not on windows.
-        # Globus behaves badly when run as root.
-
-        if not Platform.IsWindows():
-            if Platform.Config.SystemConfig.instance().GetUsername() == "root":
-                dlg = wxMessageDialog(None,
-                                      "You may have problems running the Access Grid Venue Client\n" +
-                                      "as the root user. We strongly recommend running it only in a\n" +
-                                      "normal user account.",
-                                      "Running as root",
-                                      style = wxOK)
-                dlg.ShowModal()
-                dlg.Destroy()
 
     def GetPassphraseCallback(self, caption, message):
         return lambda rwflag, caption = caption, message = message, self = self: \
