@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.341 2007-04-19 18:57:43 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.342 2007-04-24 16:19:38 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.341 2007-04-19 18:57:43 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.342 2007-04-24 16:19:38 turam Exp $"
 
 import sys
 import os
@@ -1212,9 +1212,6 @@ class VenueClient:
             if klass == "CertificateRequired":
                 raise CertificateRequired
                 self.warningString += "A certificate is required for entry into this Venue,\nand this version of the software does not support\nthe use of certificates with the Venue Client.\nUpgrade to the next version of the Access Grid\nsoftware before trying to enter this Venue."
-            else:
-                log.exception('"EnterVenue: failed with hosting exception')
-                #self.warningString += 'exception: %s:%s' % (str(mod),str(klass))
         except Exception, e:
             log.exception("EnterVenue: failed")
             enterSuccess = 0
