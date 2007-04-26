@@ -2,7 +2,7 @@
 # Name:        Server.py
 # Purpose:     
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.7 2005-10-19 19:34:18 turam Exp $
+# RCS-ID:      $Id: Server.py,v 1.8 2007-04-26 15:35:09 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@ ZSI server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.7 2005-10-19 19:34:18 turam Exp $"
+__revision__ = "$Id: Server.py,v 1.8 2007-04-26 15:35:09 turam Exp $"
 
 # External imports
 import urlparse
@@ -42,6 +42,7 @@ class _Server:
         self._server = server
         self._running = Event()
         self._serving = dict()
+        self._server_thread = None
         
     def IsRunning(self):
         """
@@ -86,8 +87,8 @@ class _Server:
         returns immediately.
         """
 
-        server_thread = Thread(target = self.Run, name="SOAP Server")
-        server_thread.start()
+        self.server_thread = Thread(target = self.Run, name="SOAP Server")
+        self.server_thread.start()
         self._running.wait()
         
     def Stop(self):
@@ -102,6 +103,10 @@ class _Server:
             self._server.server_close()
         except:
             log.exception("server_close() failed")
+
+        if self.server_thread:
+            self.server_thread.join()
+            self.server_thread = None
 
     def GetPort(self):
         """
