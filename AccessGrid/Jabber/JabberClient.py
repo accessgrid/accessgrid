@@ -29,6 +29,7 @@ class JabberClient:
         self.name = None
         self.resource = None
         self.roomLocked = 0
+        self.jabberPanel = None
         
         self.presenceCB = None
         self._stream = None
@@ -51,6 +52,10 @@ class JabberClient:
         self.currentRoom = string.lower(room)
         self.currentRoomId = room + '@' + conferenceServer
         self.to = self.currentRoomId + "/" + self.name
+        
+    def ClearChatRoom(self):
+        self.currentRoom = ''
+        self.currentRoomId = ''
 
     def SetPanel(self, panel):
         self.jabberPanel = panel
@@ -129,7 +134,8 @@ class JabberClient:
                     if index ==-1:
                         log.debug(speaker[0:index] + ": " + message)
                     else:
-                        self.jabberPanel.OutputText(speaker + ": ", message)
+                        if self.jabberPanel:
+                            self.jabberPanel.OutputText(speaker + ": ", message)
             else:
                 index = sender.find('/')
                 speaker = sender[index+1:]
@@ -144,7 +150,8 @@ class JabberClient:
                         tm = time.strptime(tm,'%Y%m%dT%H:%M:%S')
                         tm_sec = calendar.timegm(tm)
                         tm = time.localtime(tm_sec)
-                    self.jabberPanel.OutputText(speaker + ": ", message, tm)
+                    if self.jabberPanel:
+                        self.jabberPanel.OutputText(speaker + ": ", message, tm)
 
     def PresenceCB(self, prs_stanza):
         """Called when a presence is recieved"""
