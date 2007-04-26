@@ -3,7 +3,7 @@
 # Name:        GroupMsgService.py
 # Purpose:     A Group Messaging service server.
 # Created:     2005/09/09
-# RCS-ID:      $Id: GroupMsgService.py,v 1.6 2006-07-07 18:29:40 turam Exp $
+# RCS-ID:      $Id: GroupMsgService.py,v 1.7 2007-04-26 21:29:23 turam Exp $
 # Copyright:   (c) 2005 
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -153,7 +153,8 @@ class GroupMsgServiceFactory(ServerFactory):
         if self.connections.has_key(connectionId):
             connectionTuple = self.connections.pop(connectionId)
             groupName = connectionTuple[1]
-            self.groups[groupName].remove(connection)
+            if self.groups.has_key(groupName):
+                self.groups[groupName].remove(connection)
             log.info("removedConnection %s:%s id:%s", connection.getPeer().host, connection.getPeer().port, connection.connectionId)
 
     def sendGroupMessage(self, connection, data):
