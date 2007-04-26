@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.33 2007-04-25 22:28:02 turam Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.34 2007-04-26 15:31:37 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,6 @@ import urllib
 import os
 import sys
 import time
-import httplib
 import socket
 
 from AccessGrid import Log
@@ -21,58 +20,11 @@ from AccessGrid.Platform import IsWindows, IsOSX, IsLinux, IsFreeBSD
 from AccessGrid.Descriptions import BridgeDescription
 from AccessGrid.BridgeCache import BridgeCache
 from AccessGrid.Preferences import Preferences
+from AccessGrid.UrllibTransport import UrllibTransport, TimeoutTransport
 
-class TimeoutHTTPConnection(httplib.HTTPConnection):
-    def __init__(self, host, port=None, strict=None, timeout=0):
-        httplib.HTTPConnection.__init__(self,host,port,strict)
-        self.timeout = timeout
-    def connect(self):
-        """Connect to the host and port specified in __init__."""
-        msg = "getaddrinfo returns an empty list"
-        for res in socket.getaddrinfo(self.host, self.port, 0,
-                                      socket.SOCK_STREAM):
-            af, socktype, proto, canonname, sa = res
-            try:
-                self.sock = socket.socket(af, socktype, proto)
-                if self.timeout:
-                    self.sock.settimeout(self.timeout)
-                if self.debuglevel > 0:
-                    print "connect: (%s, %s)" % (self.host, self.port)
-                self.sock.connect(sa)
-            except socket.error, msg:
-                if self.debuglevel > 0:
-                    print 'connect fail:', (self.host, self.port)
-                if self.sock:
-                    self.sock.close()
-                self.sock = None
-                continue
-            break
-        if not self.sock:
-            raise socket.error, msg
-            
-class TimeoutHTTP(httplib.HTTP):
-    def __init__(self, host='', port=None, strict=None, timeout=0):
-    
-        # some joker passed 0 explicitly, meaning default port
-        if port == 0:
-            port = None
-
-        # Note that we may pass an empty string as the host; this will throw
-        # an error when we attempt to connect. Presumably, the client code
-        # will call connect before then, with a proper host.
-        self._setup(TimeoutHTTPConnection(host, port, strict, timeout=timeout))
-
-class TimeoutTransport(xmlrpclib.Transport):
-    def __init__(self,timeout):
-        self.timeout = timeout
-    def make_connection(self, host):
-        host, extra_headers, x509 = self.get_host_info(host)
-        httpconn = TimeoutHTTP(host,timeout=self.timeout)
-        return httpconn
-    
 
 class RegistryClient:
-    def __init__(self, url):
+    def __init__(self, url, proxyHost=None, proxyPort=None):
         self.url = url
         self.serverProxy = None
         self.registryPeers = None
@@ -80,6 +32,13 @@ class RegistryClient:
         self.bridgeCache = BridgeCache()
         self.log = Log.GetLogger('RegistryClient')
        
+        self.proxyURL = None
+        if proxyHost:
+            if proxyPort:
+                self.proxyURL = "http://%s:%s" % (proxyHost, proxyPort)
+            else:
+                self.proxyURL = "http://%s" % (proxyHost)
+
     def _connectToRegistry(self):
         if not self.registryPeers:
             try:
@@ -93,8 +52,12 @@ class RegistryClient:
 
         for r in self.registryPeers:
             try:
-                tmpServerProxy = xmlrpclib.ServerProxy("http://"+r,
-                                    transport=TimeoutTransport(5))
+                if self.proxyURL:
+                    tmpServerProxy = xmlrpclib.ServerProxy("http://"+r,
+                                        transport=UrllibTransport(self.proxyURL,timeout=5))
+                else:
+                    tmpServerProxy = xmlrpclib.ServerProxy("http://"+r,
+                                        transport=TimeoutTransport(timeout=5))
                 if self.PingRegistryPeer(tmpServerProxy) > -1:
                     self.serverProxy = tmpServerProxy
                     foundServer = 1
@@ -141,9 +104,13 @@ class RegistryClient:
             return -1
             
     def PingBridge(self,desc):
-        pingVal = self.PingBridgeService(
-                        xmlrpclib.ServerProxy("http://%s:%s" % (desc.host, desc.port),
-                            transport=TimeoutTransport(1)) )
+        if self.proxyURL:
+            proxy = xmlrpclib.ServerProxy("http://%s:%s" % (desc.host, desc.port),
+                                        transport=UrllibTransport(self.proxyURL,timeout=1)) 
+        else:
+            proxy = xmlrpclib.ServerProxy("http://%s:%s" % (desc.host, desc.port),
+                                        transport=TimeoutTransport(timeout=1)) 
+        pingVal = self.PingBridgeService(proxy)
         if pingVal >= 0.0:
             desc.rank = pingVal
         else:
@@ -187,16 +154,8 @@ class RegistryClient:
             f = open(filename, "r")
         else:
             preferences = Preferences()
-            proxyHost = preferences.GetPreference(Preferences.PROXY_HOST)
-            proxyPort = preferences.GetPreference(Preferences.PROXY_PORT)
-            proxyURL = None
-            if proxyHost:
-                if proxyPort:
-                    proxyURL = "http://%s:%s" % (proxyHost, proxyPort)
-                else:
-                    proxyURL = "http://%s" % (proxyHost)
-            if proxyURL:
-                proxyList = {'http': proxyURL}
+            if self.proxyURL:
+                proxyList = {'http': self.proxyURL}
                 f = urllib.urlopen(url, proxies=proxyList)
             else:
                 f = urllib.urlopen(url)
