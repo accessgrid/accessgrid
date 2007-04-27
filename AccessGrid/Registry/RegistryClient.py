@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.34 2007-04-26 15:31:37 turam Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.35 2007-04-27 22:43:59 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -88,18 +88,19 @@ class RegistryClient:
                 #print "RoundTrip:", time.time(), startTime
                 roundTripTime = time.time() - startTime
                 return roundTripTime
-            except xmlrpclib.Fault, e:  # Temporary until all Bridges have the "Ping" method
-                if 'method "Ping" is not supported' in e.faultString:
-                    self.log.info('Using deprecated ping for older bridge interface to %s',
-                                  host)
-                    return self.PingHost(host)
+            except Exception, e: 
+                if 'method "Ping" is not supported' in str(e):
+                    self.log.info('Ping not supported, old bridge, regard as unreachable: %s', host)
+                    return -1
                 else:
                     raise
         except socket.timeout:
             self.log.info('Timeout pinging bridge: %s', host)
+            return -1
         except socket.error,e:
             self.log.info('Socket error pinging bridge: %s %s', host, str(e.args))
-        except:
+            return -1
+        except Exception,e:
             self.log.exception('Exception pinging bridge: %s', host )
             return -1
             
@@ -207,7 +208,7 @@ class RegistryClient:
             ret = ret[i:]
             ret = ret.split('=')[1]
             ret = ret.split()[0]
-            val = float(ret)
+            val = float(ret)/1000
         
         if IsWindows():
             cmd = 'ping -n 1 %s'%(host)
