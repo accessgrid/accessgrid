@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.22 2007-04-04 22:04:51 turam Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.23 2007-04-27 21:14:14 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -807,7 +807,6 @@ class ServiceCertWindow(TitledPage):
         self.serviceNameText = wxStaticText(self, -1, "Service Name:")
         self.serviceCtrl.Enable(0)
         self.serviceNameText.Enable(0)
-        self.emailCtrl = wxTextCtrl(self, self.emailId)
 
         self.serviceName = None
         self.userTyped = 0
@@ -815,6 +814,7 @@ class ServiceCertWindow(TitledPage):
         self.hostName = SystemConfig.instance().GetHostname();
 
         self.hostCtrl = wxTextCtrl(self, self.hostId, self.hostName)
+        self.emailCtrl = wxTextCtrl(self, self.emailId)
 
 
         self.SetValidator(ServiceCertValidator())
