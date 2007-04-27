@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.130 2006-09-12 15:13:42 turam Exp $
+; RCS-ID: $Id: agtk.iss,v 1.131 2007-04-27 23:14:00 turam Exp $
 ;
 
 ; Set externally
@@ -196,6 +196,12 @@ Root: HKCR; Subkey: x-ag3-pkg; ValueType: dword; ValueName: BrowserFlags; ValueD
 Root: HKCR; Subkey: x-ag3-pkg; ValueType: string; ValueData: Access Grid Package; Flags: uninsdeletekey
 Root: HKCR; Subkey: x-ag3-pkg\shell; ValueType: string; ValueData: Open; Flags: uninsdeletekey
 Root: HKCR; Subkey: x-ag3-pkg\shell\Open\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe"" ""{app}\bin\agpm3.py"" --gui --package ""%1"""; Flags: uninsdeletekey
+
+Root: HKCR; Subkey: .ppt; ValueType: string; ValueData: PowerPoint.Show.8; Flags: uninsdeletekey
+;Root: HKCR; Subkey: PowerPoint.Show.8; ValueType: dword; ValueName: EditFlags; ValueData: 00010000; Flags: uninsdeletekey
+;Root: HKCR; Subkey: PowerPoint.Show.8; ValueType: dword; ValueName: BrowserFlags; ValueData: 00000008; Flags: uninsdeletekey
+Root: HKCR; Subkey: PowerPoint.Show.8\shell; ValueType: string; ValueData: Open in Venue; Flags: uninsdeletekey
+Root: HKCR; Subkey: PowerPoint.Show.8\shell\Open in Venue\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe"" ""{app}\SharedApplications\Shared_Presentation\SharedPresentation.py"" --start -f ""%1"""; Flags: uninsdeletekey
 
 [Tasks]
 Name: desktopicon; Description: Create &Desktop Icons; GroupDescription: Additional icons:
