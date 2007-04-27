@@ -95,15 +95,15 @@ enteredVenue = 0
 for venueClientUrl in venueClientUrlList:
     try:
         venueClient = VenueClientIW(venueClientUrl)
-        venueClient._IsValid()
+        venueClient.IsValid()
 
         # Enter the specified venue
         print "Sending venue client to venue..."
         venueClient.EnterVenue(venueUrl)
         enteredVenue = 1
         break
-    except:
-        pass
+    except Exception,e:
+        print 'Exception messaging VenueClient; venueUrl=%s exc=%s' % (venueClientUrl,e)
         enteredVenue = 0
 
 if not enteredVenue:
