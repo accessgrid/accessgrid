@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.343 2007-04-27 22:02:03 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.344 2007-04-27 22:38:44 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.343 2007-04-27 22:02:03 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.344 2007-04-27 22:38:44 turam Exp $"
 
 import sys
 import os
@@ -119,32 +119,53 @@ class BridgePingThread(threading.Thread):
         self.running = 1
         self.bridgesDone = 0
         threading.Thread.__init__ (self)
+        self._running = threading.Event()
+        self.refreshDelay = int(self.preferences.GetPreference(Preferences.BRIDGE_PING_UPDATE_DELAY))
     
     def run(self):
-        self.refreshDelay = int(self.preferences.GetPreference(Preferences.BRIDGE_PING_UPDATE_DELAY))
-        time.sleep(self.refreshDelay)
-        while self.running:
-            log.debug("Updating Bridge Ping Times for %d bridges" % (len(self.bridges)))
-            self.bridgesDone = 0
-            for b in self.bridges:
-                thread = threading.Thread(target=self.PingBridge, args=(b,))
-                thread.start()
-            while self.bridgesDone < len(self.bridges):
-                time.sleep(0.05)
-            bridgeList = {}
-            for b in self.bridges:
-                bridgeList[b.GetKey()] = b
-            self.preferences.SetBridges(bridgeList)
+        self._running.set()
+        while self._running.isSet():    
+
+            # wait for refresh time to expire, but wait incrementally to allow early exit
             self.refreshDelay = int(self.preferences.GetPreference(Preferences.BRIDGE_PING_UPDATE_DELAY))
-            log.debug("Finished Updating Ping Times (waiting %d seconds)" % (self.refreshDelay))
-            time.sleep(self.refreshDelay)
+            t = time.time()
+            while time.time() - t < self.refreshDelay:
+                if not self._running.isSet():
+                    return
+                time.sleep(0.2)
+
+            try:
+                # Ping the bridges to measure distance
+                starttime = time.time()
+                log.debug("Updating Bridge Ping Times for %d bridges" % (len(self.bridges)))
+                for b in self.bridges:
+                    pingstart =time.time()
+                    self.PingBridge(b)
+
+                    # stop pinging immediately if we've been stopped
+                    if not self._running.isSet():
+                        return
+
+                # Update the bridge list in the user preferences
+                bridgeList = {}
+                for b in self.bridges:
+                    bridgeList[b.GetKey()] = b
+                self.preferences.SetBridges(bridgeList)
+
+                log.debug("Finished Updating Ping Times (waiting %d seconds)" % (self.refreshDelay))
+            except: 
+                log.exception('Exception in BridgePingThread; continuing')
+                
+        log.info('BridgePingThread exiting')
     
     def PingBridge(self, b):
-        self.registryClient.PingBridge(b)
-        self.bridgesDone = self.bridgesDone + 1
+        try:
+            self.registryClient.PingBridge(b)
+        except:
+            log.exception('Exception pinging bridge %s', b.host)
     
     def close(self):
-        self.running = 0
+        self._running.clear()
 
 class VenueClient:
     """
@@ -171,6 +192,7 @@ class VenueClient:
         self.builtInNodeServiceUri = ""
         self.bridgeCache = BridgeCache()
         self.bridgePinger = None
+        self.__venueClientUI = None
         
         self.certRequired = 0
               
@@ -329,6 +351,9 @@ class VenueClient:
         bridge to the first one in the sorted list. Also, check preferences
         to see if any of the retreived bridges are disabled.
         '''
+        proxyHost = self.preferences.GetPreference(Preferences.PROXY_HOST)
+        proxyPort = self.preferences.GetPreference(Preferences.PROXY_PORT)
+
         if self.bridgePinger != None:
             self.bridgePinger.close()
             self.bridgePinger = None
@@ -340,7 +365,7 @@ class VenueClient:
         for registryUrl in self.registryUrls:
             try:
                 log.debug("Trying bridge registry: %s" % registryUrl)
-                self.registryClient = RegistryClient(url=registryUrl)
+                self.registryClient = RegistryClient(url=registryUrl,proxyHost=proxyHost,proxyPort=proxyPort)
                 if self.registryClient == None:
                     continue
                 bridgeList = self.registryClient.LookupBridge()
@@ -378,10 +403,9 @@ class VenueClient:
         orderBridgesByPing = self.preferences.GetPreference(Preferences.ORDER_BRIDGES_BY_PING)
         bridgeList.sort(lambda x,y: BridgeDescription.sort(x, y, orderBridgesByPing))
 
-        # use first pingable bridge in sorted list
+        # use first enabled bridge in sorted list
         for b in bridgeList:
-            if (b.status == STATUS_ENABLED and
-                self.registryClient.PingHost(b.host) > -1):
+            if (b.status == STATUS_ENABLED):
                 retBridge = b
                 break
 
@@ -1232,7 +1256,7 @@ class VenueClient:
         except Exception, e:
             log.exception("EnterVenue: failed")
             enterSuccess = 0
-            #self.warningString = str(e.faultstring)
+            self.warningString = str(e.faultstring)
 
         for s in self.observers:
             try:
@@ -1461,6 +1485,11 @@ class VenueClient:
         log.info('Shutting down jabber client')
         if self.jabber:
             self.jabber.Logout()
+            
+        if self.bridgePinger:
+            log.info('Shutting down bridge ping thread')
+            print 'shutting down bridge ping'
+            self.bridgePinger.close()
        
     def UpdateProfileCache(self, profile):
         try:
@@ -1503,8 +1532,7 @@ class VenueClient:
             return ["exits"]
 
     def GetVenueConnections(self, venueUrl):
-        venueProxy = VenueIW(venueUrl)
-        venues =  venueProxy.GetConnections()
+        venues =  self.__venueProxy.GetConnections()
         return venues
 
     def UpdateClientProfile(self,profile):
