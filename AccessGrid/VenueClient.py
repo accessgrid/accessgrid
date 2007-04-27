@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.342 2007-04-24 16:19:38 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.343 2007-04-27 22:02:03 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.342 2007-04-24 16:19:38 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.343 2007-04-27 22:02:03 turam Exp $"
 
 import sys
 import os
@@ -218,7 +218,22 @@ class VenueClient:
         try:
             if nodeConfigName:
                 # Load specified node configuration
-                nodeConfig = NodeConfigDescription(nodeConfigName,NodeConfigDescription.USER)
+                nodeConfigurations = self.nodeService.GetConfigurations()
+                userNodeConfig = None
+                sysNodeConfig = None
+                for n in nodeConfigurations:
+                    if n.name == nodeConfigName:
+                        if n.type == NodeConfigDescription.USER:
+                            userNodeConfig = n
+                        elif n.type == NodeConfigDescription.SYSTEM:
+                            sysNodeConfig = n
+    
+                # Look for the named node config in the user's dir first,
+                # then in the system dir 
+                if userNodeConfig:
+                    nodeConfig = NodeConfigDescription(nodeConfigName,NodeConfigDescription.USER)
+                elif sysNodeConfig:
+                    nodeConfig = NodeConfigDescription(nodeConfigName,NodeConfigDescription.SYSTEM)
                 
             else:
                 # Load default node configuration
@@ -233,7 +248,7 @@ class VenueClient:
                 log.debug('Null node configuration, not loading')
 
         except:
-            log.exception("Error loading node configuration: %s")
+            log.exception("Error loading node configuration: %s", nodeConfigName)
 
         self.isInVenue = 0
         self.isIdentitySet = 0
@@ -1155,7 +1170,8 @@ class VenueClient:
 
         URL : url to the venue
         """
-        log.debug("EnterVenue; url=%s", URL)
+        URL = str(URL)
+        log.debug("EnterVenue; url=%s type=%s", URL,type(URL))
         
         # Initialize a string of warnings that can be displayed to the user.
         self.warningString = ''
@@ -1200,6 +1216,7 @@ class VenueClient:
             if errorInNode:
                 self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences->Manage My Node..." from the main menu'
         except (socket.error,socket.gaierror), e:
+            log.exception('Socket exception entering venue')
             self.warningString += '\n' + e.args[1]
             enterSuccess = 0
         except HostingException,e:
@@ -1931,6 +1948,8 @@ class VenueClient:
         if self.multicastWatcher:
             self.multicastWatcher.SetHostPort(host,port)
     
+    def IsValid(self):
+        return 1
 
 # Retrieve a list of urls of (presumably) running venue clients
 def GetVenueClientUrls():
