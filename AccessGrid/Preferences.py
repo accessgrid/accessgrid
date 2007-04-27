@@ -77,7 +77,7 @@ class Preferences:
                          self.PROXY_PORT: "",
                          self.MULTICAST_DETECT_HOST: "233.4.200.18",
                          self.MULTICAST_DETECT_PORT: 10002,
-                         self.BRIDGE_PING_UPDATE_DELAY: 120,
+                         self.BRIDGE_PING_UPDATE_DELAY: 600,
                          self.ORDER_BRIDGES_BY_PING: 1,
                          }
 
