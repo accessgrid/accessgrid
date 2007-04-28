@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.131 2007-04-27 23:14:00 turam Exp $
+; RCS-ID: $Id: agtk.iss,v 1.132 2007-04-28 00:52:01 turam Exp $
 ;
 
 ; Set externally
@@ -12,9 +12,9 @@
 
 ;#define SourceDir "\software\AccessGrid\build"
 ;#define BuildDir "\software\AccessGrid\build\dist-20040908_130651"
-;#define AppVersion "3.0"
+;#define AppVersion "3.1"
 ;#define VersionInformation "Test Final"
-;#define PythonSubVersion "3"
+;#define PythonSubVersion "4"
 
 #ifndef SourceDir
 #error "SourceDir must be defined to build a package."
@@ -98,7 +98,6 @@ Source: Lib\site-packages\AccessGrid3\*.*; DestDir: {reg:HKLM\Software\Python\Py
 Source: Lib\site-packages\feedparser.py; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages; Flags: recursesubdirs overwritereadonly restartreplace
 Source: Lib\site-packages\ZSI\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\ZSI; Flags: recursesubdirs overwritereadonly restartreplace
 Source: Lib\site-packages\zope\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\zope; Flags: recursesubdirs overwritereadonly restartreplace
-Source: Lib\site-packages\OpenSSL_AG\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\OpenSSL_AG; Flags: recursesubdirs overwritereadonly restartreplace uninsneveruninstall
 Source: Lib\site-packages\M2Crypto\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\M2Crypto; Flags: recursesubdirs overwritereadonly restartreplace
 Source: Lib\site-packages\twisted\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\twisted; Flags: recursesubdirs overwritereadonly restartreplace
 Source: Lib\site-packages\bonjour\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\bonjour; Flags: recursesubdirs overwritereadonly restartreplace
