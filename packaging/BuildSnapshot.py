@@ -18,7 +18,7 @@ from distutils.spawn import find_executable
 from distutils.sysconfig import get_python_lib
 
 if sys.platform == 'win32' and not os.environ.has_key('MSVC_VERSION'):
-    print "MSVC_VERSION environment must be set, or pyOpenSSL will not build correctly."
+    print "MSVC_VERSION environment must be set, or some modules will not build correctly."
     sys.exit(1)
     
 # Build packages according to the command line
@@ -293,7 +293,39 @@ if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'free
     if ret:
         print '%s failed with %d; exiting' % (cmd,ret)
         sys.exit(1)
+elif sys.platform == 'win32':
+    print "Building QuickBridge"
+    os.chdir(os.path.join(BuildDir,'services','network','QuickBridge'))
+
+    # Find the version of visual studio by peering at cl
+    (input, outerr) = os.popen4("cl.exe")
+    usageStr = outerr.readlines()
+    v = map(int, usageStr[0].split()[7].split('.')[:2])
     
+    v = map(int, usageStr[0].split()[7].split('.')[:2])
+
+    proj = None
+    if v[0] == 12:
+        print "Please do not use visual studio 6.0 to build QuickBridge"
+    elif v[0] == 13:
+        if v[1] == 0:
+            proj = "QuickBridge.sln"
+        elif v[1] == 10:
+            proj = "QuickBridge.2003.sln"
+
+    if proj is not None:
+        os.system("devenv %s /rebuild Release" % proj)
+
+    qbexe = os.path.join(os.getcwd(), "Release", "QuickBridge.exe")
+    destDir = os.path.join(DestDir,'bin','QuickBridge.exe')
+    cmd = "copy %s %s" % (qbexe, destDir)
+    print "cmd = ", cmd
+    os.system(cmd)
+    
+
+
+
+
 # Change to packaging dir to build packages
 os.chdir(os.path.join(BuildDir,'packaging'))
 
