@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.344 2007-04-27 22:38:44 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.345 2007-05-02 21:00:47 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.344 2007-04-27 22:38:44 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.345 2007-05-02 21:00:47 turam Exp $"
 
 import sys
 import os
@@ -68,13 +68,7 @@ from AccessGrid.hosting import GetHostingExceptionModuleAndClassName
 # Force ZSI to use the M2Crypto HTTPSConnection as transport
 from ZSI import client
 from M2Crypto import httpslib
-
-class HTTPSConnectionWithClose(httpslib.HTTPSConnection):
-    def close(self):
-        self.sock.close()
-        
-client.Binding.defaultHttpsTransport = HTTPSConnectionWithClose
-
+client.Binding.defaultHttpsTransport = httpslib.HTTPSConnection
 
 try:
     from AccessGrid.Beacon.rtpBeacon import Beacon
