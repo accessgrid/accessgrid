@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.173 2007-04-23 21:08:06 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.174 2007-05-02 22:12:20 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.173 2007-04-23 21:08:06 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.174 2007-05-02 22:12:20 turam Exp $"
 
 # Standard imports
 import sys
@@ -56,14 +56,7 @@ from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
 # Force ZSI to use the M2Crypto HTTPSConnection as transport
 from ZSI import client
 from M2Crypto import httpslib
-
-class HTTPSConnectionWithClose(httpslib.HTTPSConnection):
-    def close(self):
-        self.sock.close()
-        
-client.Binding.defaultHttpsTransport = HTTPSConnectionWithClose
-
-
+client.Binding.defaultHttpsTransport = httpslib.HTTPSConnection
 
 log = Log.GetLogger(Log.VenueManagement)
 
