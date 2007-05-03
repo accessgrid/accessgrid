@@ -2,7 +2,7 @@
 # Name:        UrllibTransport.py
 # Purpose:     Transport class for doing xmlrpc through a proxy server
 # Created:     2006/03/08
-# RCS-ID:      $Id: UrllibTransport.py,v 1.3 2007-04-26 15:30:59 turam Exp $
+# RCS-ID:      $Id: UrllibTransport.py,v 1.4 2007-05-03 21:44:20 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -56,6 +56,8 @@ class TimeoutHTTP(httplib.HTTP):
 
 class TimeoutTransport(xmlrpclib.Transport):
     def __init__(self,timeout):
+        if hasattr(xmlrpclib.Transport,'__init__'):
+            xmlrpclib.Transport.__init__()
         self.timeout = timeout
     def make_connection(self, host):
         host, extra_headers, x509 = self.get_host_info(host)
