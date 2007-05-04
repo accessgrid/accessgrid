@@ -4,13 +4,17 @@
 # Purpose:     A secure group messaging service client that handles Access
 #                 Grid venue events.
 # Created:     2006/01/10
-# RCS-ID:      $Id: InProcessVenueEventClient.py,v 1.1 2006-01-20 23:43:16 eolson Exp $
+# RCS-ID:      $Id: InProcessVenueEventClient.py,v 1.2 2007-05-04 20:29:46 eolson Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import sys
-from twisted.internet import threadedselectreactor
+try:
+    from twisted.internet import threadedselectreactor
+except:
+    from twisted.internet import _threadedselect as threadedselectreactor
+
 try:
     threadedselectreactor.install()
     from twisted.internet import reactor
