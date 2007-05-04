@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.283 2006-09-21 12:05:36 braitmai Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.284 2007-05-04 20:12:55 eolson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.283 2006-09-21 12:05:36 braitmai Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.284 2007-05-04 20:12:55 eolson Exp $"
 
 # Standard Imports
 import os
@@ -20,7 +20,10 @@ from optparse import Option
 
 # GUI related imports
 from wxPython.wx import wxPySimpleApp, wxTaskBarIcon, wxICON_ERROR
-from twisted.internet import threadedselectreactor
+try:
+    from twisted.internet import _threadedselect as threadedselectreactor
+except:
+    from twisted.internet import threadedselectreactor
 threadedselectreactor.install()
 
 # Our imports
