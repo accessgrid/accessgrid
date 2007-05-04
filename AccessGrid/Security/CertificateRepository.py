@@ -2,7 +2,7 @@
 # Name:        CertificateRepository.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.30 2007-04-19 20:45:05 turam Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.31 2007-05-04 20:35:16 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,9 +23,9 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.30 2007-04-19 20:45:05 turam Exp $"
-
 from __future__ import generators
+
+__revision__ = "$Id: CertificateRepository.py,v 1.31 2007-05-04 20:35:16 eolson Exp $"
 
 import re
 import sys
