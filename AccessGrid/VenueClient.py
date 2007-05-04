@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.345 2007-05-02 21:00:47 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.346 2007-05-04 21:58:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.345 2007-05-02 21:00:47 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.346 2007-05-04 21:58:01 turam Exp $"
 
 import sys
 import os
@@ -62,6 +62,7 @@ from AccessGrid.GUID import GUID
 from AccessGrid.Jabber.JabberClient import JabberClient
 
 from AccessGrid.interfaces.AGService_client import AGServiceIW
+from AccessGrid.interfaces.VenueClient_client import VenueClientIW
 from AccessGrid.hosting import HostingException
 from AccessGrid.hosting import GetHostingExceptionModuleAndClassName
 
@@ -1998,4 +1999,16 @@ def GetVenueClientUrls():
     nlist.reverse()
 
     return nlist[0:4]
+
+
+def GetVenueClientIW():
+    venueClientUrlList = GetVenueClientUrls()
+    for venueClientUrl in venueClientUrlList:
+        try:
+            venueClient = VenueClientIW(venueClientUrl)
+            venueClient.IsValid()
+            return venueClient
+        except:
+            pass
+    return None
 
