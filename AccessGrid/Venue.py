@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.283 2006-12-20 17:55:46 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.284 2007-05-04 22:00:03 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.283 2006-12-20 17:55:46 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.284 2007-05-04 22:00:03 turam Exp $"
 
 import sys
 import time
@@ -839,10 +839,8 @@ class Venue:
         
 
         if not self.clients.has_key(privateId):
-            raise InvalidVenueState
+            raise ClientNotFound
                
-        streamDescriptions = []
-
         # group service capabilities together
         services = {}
         for c in capabilities:
@@ -894,8 +892,8 @@ class Venue:
                     log.debug("Stream doesn't exist create new one!")
                     locCap = services[serviceId]
 		    
-		    # Should there be a new stream if there is no producer?
- 		    # Check added!
+		            # Should there be a new stream if there is no producer?
+ 		            # Check added!
                     log.debug("Stream type: %s!", locCap[0].type)
                         
                     #Proposed change for determining the correct capability for IP creation
@@ -925,12 +923,19 @@ class Venue:
                                                    addr, services[serviceId], 
                                                    self.encryptMedia, 
                                                    self.encryptionKey,0)
+                                                   
                     log.debug("added user as producer of non-existent stream")
                     self.streamList.AddStreamProducer( privateId,
                                                        streamDesc )
+                                                       
+                    try:
+                        log.debug('sending AddStream event; stream=%s', str(streamDesc))
+                        self.eventClient.Send(Event.ADD_STREAM, streamDesc)
+                    except:
+                        log.exception('Exception sending add stream event')
 
         # return all available streams
-        return  self.streamList.GetStreams()    
+        return self.streamList.GetStreams()    
        
     def FindConnection(self, cid):
         if self.clients.has_key(cid):
@@ -1054,7 +1059,12 @@ class Venue:
             try:
                 # Remove user as stream producer
                 log.debug("Called RemoveUser on %s", privateId)
-                self.streamList.RemoveProducer(privateId)
+                
+                # Send events about any streams that were removed as a result of removing the producer
+                removedStreams = self.streamList.RemoveProducer(privateId)
+                for stream in removedStreams:
+                    self.eventClient.Send(Event.REMOVE_STREAM, stream)
+                    
             except:
                 log.exception("Error removing Producers")
                 
@@ -2430,20 +2440,27 @@ class StreamDescriptionList:
         for stream, producerList in self.streams:
             self.__RemoveProducer( producingUser, stream )
 
-        self.CleanupStreams()
+        removedStreams = self.CleanupStreams()
+        
+        return removedStreams
 
     def CleanupStreams( self ):
         """
         Remove streams with empty producer list
         """
         streams = []
+        removedStreams = []
 
         for stream, producerList in self.streams:
 
             if len(producerList) > 0 or stream.static == 1:
                 streams.append( ( stream, producerList ) )
+            else:
+                removedStreams.append(stream)
 
         self.streams = streams
+        
+        return removedStreams
 
     def GetStreams( self ):
         """
