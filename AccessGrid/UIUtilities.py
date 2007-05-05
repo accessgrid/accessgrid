@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.87 2007-05-05 00:44:37 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.88 2007-05-05 00:59:27 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.87 2007-05-05 00:44:37 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.88 2007-05-05 00:59:27 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -1040,18 +1040,10 @@ class TextDialog(wxDialog):
         
 def SetIcon():
    icon = None
-   if IsWindows():
-       agiconfile = os.path.join(AGTkConfig.instance().GetInstallDir(),'install','ag.ico')
-       if os.path.exists(agiconfile):
-           icon = wxIcon(agiconfile,wxBITMAP_TYPE_ICO)
-   elif IsLinux() or IsFreeBSD():
-       agiconfile = os.path.join(AGTkConfig.instance().GetInstallDir(),'share','AccessGrid','ag.ico')
-       if os.path.exists(agiconfile):
-           icon = wxIcon(agiconfile,wxBITMAP_TYPE_ICO)
+   if IsWindows()or IsLinux() or IsFreeBSD():
+        icon = icons.getAGIconIcon()
    elif IsOSX():
-       agiconimage = os.path.join(AGTkConfig.instance().GetInstallDir(),'AGTk.png')
-       if agiconimage:
-           icon = wxIconFromBitmap(wxImage(agiconimage).ConvertToBitmap())
+        icon = icons.getAGIcon128Icon()
    if icon:
        t = wxTaskBarIcon()
        t.SetIcon(icon)
