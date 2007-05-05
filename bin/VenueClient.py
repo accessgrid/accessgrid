@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.284 2007-05-04 20:12:55 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.285 2007-05-05 01:03:09 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.284 2007-05-04 20:12:55 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.285 2007-05-05 01:03:09 turam Exp $"
 
 # Standard Imports
 import os
@@ -33,7 +33,7 @@ from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.VenueClientUI import VenueClientUI
 from AccessGrid.VenueClientController import VenueClientController
 from AccessGrid.VenueClient import VenueClient
-from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog, MessageDialog
+from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog, MessageDialog, SetIcon
 from AccessGrid import icons
 from AccessGrid.Platform import IsOSX,IsWindows
 from AccessGrid.Version import GetVersion, GetStatus
@@ -67,10 +67,8 @@ def main():
     progressDialog.Show(1)
     progressDialog.UpdateGauge('Starting Venue Client',10)
 
-    if IsOSX():
-        t = wxTaskBarIcon()
-        t.SetIcon(icons.getAGIconIcon())
-        
+    SetIcon()
+    
     # Init the toolkit with the standard environment.
     app = WXGUIApplication()
 
