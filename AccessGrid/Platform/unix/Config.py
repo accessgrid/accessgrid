@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.75 2006-09-15 21:34:08 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.76 2007-05-17 12:37:07 douglask Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.75 2006-09-15 21:34:08 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.76 2007-05-17 12:37:07 douglask Exp $"
 
 import sys
 import os
@@ -456,9 +456,7 @@ class SystemConfig(Config.SystemConfig):
                         r = fcntl.ioctl(fd, VIDIOCGCHAN, chan)
                         port = struct.unpack(VIDIOCGCHAN_FMT, r)[1]
                     except Exception, e:
-                        log.info("ioctl %s VIDIOCGCHAN: %s", device, e)
-                        os.close(fd)
-                        continue
+                        log.info("V4L ioctl %s VIDIOCGCHAN: %s", device, e)
                     portList.append(port.replace("\x00", ""))
 
                 os.close(fd)
