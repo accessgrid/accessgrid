@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.20 2007-01-16 11:02:55 willing Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.21 2007-05-18 22:35:27 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -76,7 +76,7 @@ class AudioService( AGService ):
         # Set configuration parameters
         self.talk = OptionSetParameter( "Talk", "Off", ["On", "Off"] )
         self.inputGain = RangeParameter( "Input Gain", 50, 0, 100 )
-        if sys.platform=='darwin':
+        if Platform.isOSX():
             self.outputGain = RangeParameter( "Output Gain", 4, 0, 100 )
         else:
             self.outputGain = RangeParameter( "Output Gain", 50, 0, 100 )
@@ -95,9 +95,6 @@ class AudioService( AGService ):
         self.useSiteId = OptionSetParameter( "Use site id", "On", ["On", "Off"] )
         self.configuration.append(self.useSiteId)
 
-        if Platform.IsOSX():
-            self._x11Started = False
-
         self.profile = None
 
     def __SetRTPDefaults(self, profile):
@@ -108,7 +105,7 @@ class AudioService( AGService ):
             self.log.exception("Invalid profile (None)")
             raise Exception, "Can't set RTP Defaults without a valid profile."
 
-        if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
+        if Platform.isLinux() or Platform.isFreeBSD() or Platform.isOSX():
             try:
                 rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
                 rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
@@ -123,7 +120,7 @@ class AudioService( AGService ):
             except:
                 self.log.exception("Error writing RTP defaults file: %s", rtpDefaultsFile)
 
-        elif sys.platform == 'win32':
+        elif Platform.isWindows():
             try:
                 # Set RTP defaults according to the profile
                 k = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
@@ -213,11 +210,6 @@ class AudioService( AGService ):
 
     def Start( self ):
         """Start service"""
-        if sys.platform=='darwin':
-            os.system("/usr/bin/open -a X11")
-            time.sleep(2)
-            self.log.info("Finished starting X11")
-
         try:
             # Initialize environment for rat
             try:
@@ -245,7 +237,7 @@ class AudioService( AGService ):
             if self.streamDescription.name and \
                    len(self.streamDescription.name.strip()) > 0:
                 options.append( "-C" )
-                if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
+                if Platform.isLinux() or Platform.isFreeBSD() or Platform.isOSX():
                     # Rat doesn't like spaces in linux command line arguments.
                     stream_description_no_spaces = string.replace(
                         self.streamDescription.name, " ", "_")
@@ -254,14 +246,14 @@ class AudioService( AGService ):
                     options.append(self.streamDescription.name)
             
             # pass public id as site id
-            if self.useSiteId.value == 'On' and self.profile and not Platform.IsOSX():
+            if self.useSiteId.value == 'On' and self.profile:
                 # site id not supported in UCL rat yet, which is used on macs.
                 options.append("-S")
                 options.append(self.profile.publicId)
 
             options.append( "-f" )
 
-            if sys.platform == "darwin":
+            if Platform.isOSX():
                 options.append( "L16-8K-Mono" ) # prevent mac mash converter
             else:                               # issues (at least on this G5).
                 options.append( "L16-16K-Mono" )
@@ -298,7 +290,7 @@ class AudioService( AGService ):
             self.log.info("Stop service")
 
             # See if we have rat-kill.
-            if sys.platform == Platform.WIN:
+            if Platform.isWindows():
                 rk = "rat-kill.exe"
             else:
                 rk = "rat-kill"
