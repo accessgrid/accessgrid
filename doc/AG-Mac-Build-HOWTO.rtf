@@ -1,7 +1,7 @@
-{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf410
 {\fonttbl\f0\fswiss\fcharset77 Arial-BoldMT;\f1\fswiss\fcharset77 Arial-BoldItalicMT;\f2\froman\fcharset77 Times-Roman;
 \f3\froman\fcharset77 TimesNewRomanPSMT;\f4\fnil\fcharset77 LastResort;\f5\fnil\fcharset77 Monaco;
-\f6\fmodern\fcharset77 CourierNewPSMT;\f7\fswiss\fcharset77 Helvetica;}
+\f6\fswiss\fcharset77 Helvetica;\f7\fmodern\fcharset77 CourierNewPSMT;}
 {\colortbl;\red255\green255\blue255;}
 \margl1440\margr1440\margb720\margt720\vieww16140\viewh17000\viewkind0
 \deftab720
@@ -61,16 +61,25 @@
 
 \f4 \uc0\u61623 
 \f5  
+\f3 Install Tcl from 
+\f6 http://www.activestate.com/store/activetcl/download 
+\f3 since it supports both Intel and PowerPC macs.
+\f6 \
+        
+\f3  (Note: before intel macs were used, we were using http://tcltkaqua.sourceforge.net for PowerPCs)\
+
+\f4 \uc0\u61623 
+\f5  
 \f3 Install Swig 1.3.24\
 
 \f4 \uc0\u61623 
 \f3  Build and install ZSI to the local machine so it can be used in the build process:\
 \pard\pardeftab720\li360\ri0\ql\qnatural
 
-\f6 \cf0    o (to retrieve the source; refer to the the section below)
+\f7 \cf0    o (to retrieve the source; refer to the the section below)
 \f3 \
 
-\f6    o cd zsi\
+\f7    o cd zsi\
    o python setup.py install\
 \pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
 
@@ -102,10 +111,10 @@
 \f2 \
 \pard\pardeftab720\li1440\fi-360\ri0\ql\qnatural
 
-\f6 \cf0 o export 
+\f7 \cf0 o export 
 \f3 CVSROOT=:pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl\
 
-\f6 o cvs co ag-dist-mac
+\f7 o cvs co ag-dist-mac
 \f2 \
 \pard\pardeftab720\fi720\ri0\ql\qnatural
 
@@ -113,17 +122,17 @@
 \f2 \
 \pard\pardeftab720\li1440\fi-360\ri0\ql\qnatural
 
-\f6 \cf0 o 
+\f7 \cf0 o 
 \f3 ag-packaging
 \f2 \
 
-\f6 o 
+\f7 o 
 \f3 pyOpenSSL
 \f2 \
 \pard\pardeftab720\li360\ri0\ql\qnatural
 \cf0 	Also checkout "common":\
 	     
-\f6 o cvs co common
+\f7 o cvs co common
 \f2 \
 \
 \pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
@@ -153,36 +162,37 @@
 
 \f4 \uc0\u61623 
 \f5  
-\f7  pyxml 0.8.3+ (http://sourceforge.net/project/showfiles.php?group_id=6473)\
+\f6  pyxml 0.8.3+ (http://sourceforge.net/project/showfiles.php?group_id=6473)\
 
 \f4 \uc0\u61623 
 \f5  
-\f7  twisted.internet 2.1.0 (http://twistedmatrix.com/projects/core/)\
+\f6  twisted.internet 2.1.0 (http://twistedmatrix.com/projects/core/)\
 
 \f4 \uc0\u61623 
 \f5  
-\f7  zope.interface 3.0.1 (http://www.zope.org/Products/ZopeInterface)\
+\f6  zope.interface 3.0.1 (http://www.zope.org/Products/ZopeInterface)\
 
 \f4 \uc0\u61623 
 \f5  
-\f7  bajjer 0.2.4\
+\f6  bajjer 0.2.4\
 
 \f4 \uc0\u61623 
 \f5  
-\f7  m2crypto 0.15 (http://wiki.osafoundation.org/bin/view/Projects/MeTooCrypto) ( edit setup.py to point to openssl )
+\f6  m2crypto 0.15 (http://wiki.osafoundation.org/bin/view/Projects/MeTooCrypto) ( edit setup.py to point to openssl )
 \f3 \
 
 \f4 \uc0\u61623 
 \f5  
-\f7   feedparser 3.3 (http://directory.fsf.org/livecomm/misc/feedparser.html)\
+\f6   feedparser 3.3 (http://directory.fsf.org/livecomm/misc/feedparser.html)\
 
 \f4 \uc0\u61623 
 \f5  
-\f7  zsi (svn: http://pywebsvcs.sourceforge.net/)\
+\f6  zsi (svn: http://pywebsvcs.sourceforge.net/)\
+	The version is currently listed here: http://www-unix.mcs.anl.gov/fl/research/accessgrid/wiki/moin.cgi/AccessGrid3Dependencies.\
 
 \f4 \uc0\u61623 
 \f5  
-\f7  bonjour-py (http://www-unix.mcs.anl.gov/fl/research/accessgrid/bonjour-py)\
+\f6  bonjour-py (http://www-unix.mcs.anl.gov/fl/research/accessgrid/bonjour-py)\
 
 \f3 	\
 \pard\tx0\pardeftab720\li720\fi-360\ri0\sb240\sa60\ql\qnatural
@@ -198,10 +208,10 @@
 \pard\pardeftab720\li360\ri0\ql\qnatural
 
 \f2 \cf0  	 
-\f6 o cd ag-media
+\f7 o cd ag-media
 \f2 \
  	 
-\f6 o ./vic-build\
+\f7 o ./vic-build\
 \pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
 
 \f4 \cf0 \uc0\u61623 
@@ -209,10 +219,10 @@
 \pard\pardeftab720\li360\ri0\ql\qnatural
 
 \f2 \cf0  	 
-\f6 o cd ucl
+\f7 o cd ucl
 \f2 \
  	 
-\f6 o cd common; ./configure; make; cd ..\
+\f7 o cd common; ./configure; make; cd ..\
    o cd tcl-8.0/unix; ./configure; make; cd ..\
    o cd tk-8.0/unix; ./configure; make; cd ..\
    o Copy rat-kill.c from ag-media/rat to ucl/rat\
@@ -233,7 +243,7 @@
 \f3  Build AG Common:\
 \pard\pardeftab720\li360\ri0\ql\qnatural
 
-\f6 \cf0    o cd common\
+\f7 \cf0    o cd common\
    o ./configure\
    o make
 \f2 \
@@ -246,7 +256,7 @@
 \f2 \
 \pard\pardeftab720\li1440\fi-360\ri0\ql\qnatural
 
-\f6 \cf0 o 
+\f7 \cf0 o 
 \f3 export AGBUILDROOT=/path/to/build/dir
 \f2 \
 \pard\pardeftab720\li720\fi-360\ri0\ql\qnatural
