@@ -164,9 +164,6 @@
         <xs:element name="rate" nillable="true" type="xs:int"/>
         <xs:element name="serviceId" nillable="true" type="xs:string"/>
         <xs:element name="channels" nillable="true" type="xs:int"/>
-        <xs:element name="host"  minOccurs="0" nillable="true" type="xs:string"/>
-        <xs:element name="locationType" minOccurs="0" nillable="true" type="xs:string"/>
-        <xs:element name="port" minOccurs="0"  nillable="true" type="xs:int"/>
         <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
