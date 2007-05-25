@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.64 2006-12-20 17:55:46 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.65 2007-05-25 16:01:15 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.64 2006-12-20 17:55:46 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.65 2007-05-25 16:01:15 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -32,7 +32,11 @@ from AccessGrid.interfaces.AGService_interface import AGService as AGServiceI
 class AGService:
     """
     AGService : Base class for developing services for the AG
+    @group WebServiceMethods: GetCapabilities,GetConfiguration,GetDescription,GetEnabled,GetPackageFile,GetResource,GetResources,GetServiceManagerUrl,IsStarted,IsValid,SetConfiguration,SetEnabled,SetIdentity,SetPackageFile,SetResource,SetServiceManagerUrl,SetStream,Shutdown,Start,Stop
     """
+    START_PRIORITY_MIN = '1'
+    START_PRIORITY_MAX = '10'
+    START_PRIORITY_OPTIONS = [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ]
     def __init__( self ):
         if self.__class__ == AGService:
             raise Exception("Can't instantiate abstract class AGService")
@@ -45,8 +49,12 @@ class AGService:
         self.resource = None
         self.executable = ""
         self.streamDescription = None
+        self.startPriority = "5"
+        
         self.capabilities = []
-        self.configuration = []
+        self.startPriorityOption = OptionSetParameter("Start Priority", self.startPriority, 
+        						self.START_PRIORITY_OPTIONS)
+        self.configuration = [ self.startPriorityOption ]
         self.started = 1
         self.enabled = 1
         self.running = 1
@@ -59,6 +67,8 @@ class AGService:
         self.processManager = ProcessManager()
         
         self.log = Service.instance().GetLog()
+        
+        
 
 
     def Start( self ):
@@ -278,6 +288,7 @@ class AGService:
                                  self.capabilities,
                                  self.GetResource(),
                                  self.packageFile)
+        r.startPriority = self.startPriority
                 
         return r
 
