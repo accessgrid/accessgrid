@@ -1,6 +1,6 @@
 Prerequisites
 =============
-The Access Grid Toolkit requires Python verson 2.3 and wxWindows python 
+The Access Grid Toolkit requires Python verson 2.4 and wxWindows python 
 bindings version 2.6 or greater. For information about where to get 
 these applications, please see the "Links" section below. Special 
 dependencies for specific platforms are listed in their respective 
@@ -10,12 +10,9 @@ Windows 2000/XP Install
 =======================
 Download and install the following packages in the following order.
 
-Python (2.3)
+Python (2.4)
 win32all (ver 154+)
 wxPython (2.6+)
-
-Note: Use wxPython (2.5) if you will be running the AGTk 2.4 
-Shared Browser
 
 Note:  ActiveState Python does not include SSL support, so cannot be
 used without undesirable patching.
