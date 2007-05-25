@@ -2,15 +2,15 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.113 2007-01-11 23:24:37 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.114 2007-05-25 15:58:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.113 2007-01-11 23:24:37 turam Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: AGNodeService.py,v 1.114 2007-05-25 15:58:10 turam Exp $"
+
 
 import os
 import sys
@@ -165,6 +165,7 @@ class AGNodeService:
     AGNodeService is the central engine of an Access Grid node.
     It is the contact point for clients to access underlying Service Managers
     and AGServices, for control and configuration of the node.
+    @group WebServiceMethods: AddServiceManager, AddStream, GetCapabilities, GetConfigurations, GetServiceManagers, GetServices, IsValid, LoadConfiguration, MigrateNodeConfig, NeedMigrateNodeConfig, RemoveServiceManager, RemoveStream, SetServiceEnabled, SetStreams, StopServices, StoreConfiguration, GetVersion
     """
 
     ServiceType = '_nodeservice._tcp'
@@ -337,8 +338,10 @@ class AGNodeService:
         
         # Send the streams to the services
         services = self.GetServices()
+        services.sort(lambda x,y: cmp(int(x.startPriority),int(y.startPriority)))
         for service in services:
             try:
+                log.debug("Starting service %s (priority %s)", service.name , service.startPriority)
                 self.__SendStreamsToService( service.uri )
             except Exception,e:
                 exceptionText += str(e) + "\n"
