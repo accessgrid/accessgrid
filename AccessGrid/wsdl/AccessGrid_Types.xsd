@@ -281,6 +281,7 @@
         <xs:element name="capabilities" minOccurs="0" maxOccurs="unbounded" type="tns:Capability"/>
         <xs:element name="resource" nillable="true" type="tns:ResourceDescription"/>
         <xs:element name="packageFile" type="xs:string"/>
+        <xs:element name="startPriority" minOccurs="0" type="xs:string"/>
         <xs:any minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
