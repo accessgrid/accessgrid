@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.106 2007-05-25 16:06:43 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.107 2007-05-25 16:58:10 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.106 2007-05-25 16:06:43 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.107 2007-05-25 16:58:10 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -522,13 +522,11 @@ class Capability:
                 int(self.channels) != int(capability.channels) or
                 int(self.rate) != int(capability.rate)):
                 # type mismatch
-                print "Capabilities do not match!"
                 return 0
         except:
-            print "Exception in capability compare!"
+            log.exception('Exception in capability compare')
 
         # capability match
-        print "Capability match!"
         return 1
 
 class StreamDescription(ObjectDescription):
