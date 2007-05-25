@@ -2,7 +2,7 @@
 # Name:        AuthorizationManager.py
 # Purpose:     The class that does the authorization work.
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.41 2006-10-14 00:55:16 turam Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.42 2007-05-25 16:10:48 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.41 2006-10-14 00:55:16 turam Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.42 2007-05-25 16:10:48 turam Exp $"
 
 # External Imports
 import os
@@ -55,6 +55,7 @@ class AuthorizationManager:
     The Authorization Manager class is the object that is added to
     objects that want to enable authorization. This provides the
     encapsulation of the authorization implementation.
+    @group WebServiceMethods: AddAction,AddRole,AddRoleToAction,AddRolesToAction,AddSubjectToRole,AddSubjectsToRole,FindRole,GetPolicy,GetRolesForSubject,ImportPolicy,IsAuthorized,ListActions,ListRoles,ListRolesInAction,ListSubjects,RemoveAction,RemoveRole,RemoveRoleFromAction,RemoveSubjectFromRole,RemoveSubjectsFromRole,TestImportExport
     """
     def __init__(self):
         """
@@ -361,8 +362,8 @@ class AuthorizationManager:
         """
         Get a list of actions, perhaps for a subject or a role.
 
-        @param subjectName: name of subject to get the actions for
-        @type subject: string
+        @param inSubject: name of subject to get the actions for
+        @type inSubject: string
         @return: a list of actions
         @rtype: [AccessGrid.Security.Action]
         """
@@ -381,8 +382,8 @@ class AuthorizationManager:
         """
         Get a list of actions, perhaps for a subject or a role.
 
-        @param roleName: name of role to get actions for
-        @type role: string
+        @param inRole: name of role to get actions for
+        @type inRole: string
         @return: a list of actions
         @rtype: [AccessGrid.Security.Action]
         """
@@ -400,8 +401,8 @@ class AuthorizationManager:
         """
         Find an action by name.
 
-        @param name: the name of the action to find
-        @type name: string
+        @param actionName: the name of the action to find
+        @type actionName: string
         @return: Action or None
         @rtype: AccessGrid.Security.Action 
         """
@@ -462,7 +463,7 @@ class AuthorizationManager:
 
         @param role: the role to add
         @param default: a flag indicating if the role is a default role
-                @type role: AccessGrid.Security.Role 
+        @type role: AccessGrid.Security.Role 
         @type default: int
         @return: Added role
         @rtype: AccessGrid.Security.Role
@@ -582,8 +583,8 @@ class AuthorizationManager:
         """
         Get all the roles the specified subject is part of.
 
-        @param subjectName: the name of the subject that the roles must contain
-        @type subjectName: string
+        @param inSubject: the subject that the roles must contain
+        @type inSubject: string
         @return: a list of roles
         @rtype: AccessGrid.Security.Role 
         """
@@ -709,9 +710,9 @@ class AuthorizationManager:
         """ 
         Remove multiple subjects from the role.
         
-        @param subjectList: the list of subjects to remove
+        @param subject: the subject to remove
         @param role: the role to remove the subject from
-        @type subjectList: [AccessGrid.Security.X509Subject] 
+        @type subject: AccessGrid.Security.X509Subject 
         @type role: AccessGrid.Security.Role 
         """
         r = self.FindRole(role.name)
