@@ -3,14 +3,15 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.346 2007-05-04 21:58:01 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.347 2007-05-25 16:30:03 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.346 2007-05-04 21:58:01 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.347 2007-05-25 16:30:03 turam Exp $"
+
 
 import sys
 import os
@@ -111,18 +112,19 @@ class BridgePingThread(threading.Thread):
         self.preferences = preferences
         self.registryClient = registryClient;
         self.bridges = bridges
-        self.running = 1
         self.bridgesDone = 0
         threading.Thread.__init__ (self)
         self._running = threading.Event()
         self.refreshDelay = int(self.preferences.GetPreference(Preferences.BRIDGE_PING_UPDATE_DELAY))
     
     def run(self):
+
         self._running.set()
         while self._running.isSet():    
 
             # wait for refresh time to expire, but wait incrementally to allow early exit
             self.refreshDelay = int(self.preferences.GetPreference(Preferences.BRIDGE_PING_UPDATE_DELAY))
+
             t = time.time()
             while time.time() - t < self.refreshDelay:
                 if not self._running.isSet():
@@ -168,6 +170,7 @@ class VenueClient:
     relationship with a Virtual Venue. This object provides the
     programmatic interface to the Access Grid for a Venues User
     Interface.  The VenueClient can only be in one venue at a    time.
+    @group WebServiceMethods: EnterVenue,GetApplications,GetBeaconSourceData,GetBeaconSources,GetClientProfile,GetConnections,GetDataStoreUploadUrl,GetNodeServiceURL,GetServices,GetStreams,GetUsers,GetVenueData,GetVenueURL,GetVersion,IsValid
     """    
     ServiceType = '_venueclient._tcp'
     
@@ -400,6 +403,7 @@ class VenueClient:
 
         # use first enabled bridge in sorted list
         for b in bridgeList:
+
             if (b.status == STATUS_ENABLED):
                 retBridge = b
                 break
@@ -493,7 +497,6 @@ class VenueClient:
 
         if(self.profile != None):
             self.profile.venueClientURL = uri
-            log.debug("__StartWebService: venueclient: %s", uri)
 
         if pnode:
             from AccessGrid.AGServiceManager import AGServiceManager
@@ -998,7 +1001,6 @@ class VenueClient:
         # next line needed until zsi can handle dictionaries.
         self.venueState = VenueState(uniqueId=state.uniqueId, name=state.name, description=state.description, uri=state.uri, connections=state.connections, clients=state.clients, data=state.data, eventLocation=evtLocation, textLocation=state.textLocation, dataLocation = state.dataLocation, applications=state.applications, services=state.services)
         
-        
         # Retreive stream descriptions
         self.streamDescList = []
         if len(self.capabilities) > 0:
@@ -1248,10 +1250,13 @@ class VenueClient:
             if klass == "CertificateRequired":
                 raise CertificateRequired
                 self.warningString += "A certificate is required for entry into this Venue,\nand this version of the software does not support\nthe use of certificates with the Venue Client.\nUpgrade to the next version of the Access Grid\nsoftware before trying to enter this Venue."
+            else:
+                log.exception('"EnterVenue: failed with hosting exception')
+                #self.warningString += 'exception: %s:%s' % (str(mod),str(klass))
         except Exception, e:
             log.exception("EnterVenue: failed")
             enterSuccess = 0
-            self.warningString = str(e.faultstring)
+            self.warningString = str(e)
 
         for s in self.observers:
             try:
@@ -1266,6 +1271,7 @@ class VenueClient:
 
         # Cancel the heartbeat
         if self.heartBeatTimer is not None:
+            log.debug('ExitVenue: cancelling heartbeat timer')
             self.heartBeatTimer.cancel()
 
         self.exitingLock.acquire()
@@ -1295,7 +1301,7 @@ class VenueClient:
 
         try:
             self.jabber.SendPresence('unavailable')
-            #self.jabber.SetChatRoom("")
+            self.jabber.ClearChatRoom()
         except:
             log.exception("ExitVenue: Exit jabber failed")
 
