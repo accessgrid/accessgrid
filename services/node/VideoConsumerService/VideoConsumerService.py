@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.14 2007-04-16 16:44:59 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.15 2007-05-25 16:50:46 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -39,6 +39,9 @@ class VideoConsumerService( AGService ):
         self.sysConf = SystemConfig.instance()
 
         self.profile = None
+
+        self.startPriority = '7'
+        self.startPriorityOption.value = self.startPriority
 
         # Set configuration parameters
         self.tiles = OptionSetParameter( "Thumbnail Columns", "2", VideoConsumerService.tileOptions )
