@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.232 2007-04-23 21:55:46 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.233 2007-05-25 16:48:42 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.232 2007-04-23 21:55:46 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.233 2007-05-25 16:48:42 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -27,6 +27,7 @@ import re
 import sys
 from twisted.internet import reactor
 import threading
+import urlparse
 
 from time import localtime , strftime
 from AccessGrid import Log
@@ -170,7 +171,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_HELP = wxNewId()
     ID_HELP_ABOUT = wxNewId()
     ID_HELP_MANUAL = wxNewId()
-    ID_HELP_AGDP = wxNewId()
     ID_HELP_AGORG = wxNewId()
     ID_HELP_FL = wxNewId()
     ID_HELP_FLAG = wxNewId()
@@ -398,7 +398,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         his or her information.
         """
         p = self.venueClient.GetPreferences()
-        profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', 1)
+        profileDialog = ProfileDialog(NULL, -1, 'Fill in your profile', 1)
         profileDialog.SetProfile(p.GetProfile())
         
         if (profileDialog.ShowModal() == wxID_OK):
@@ -496,6 +496,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                                 "Save current configuration")
         self.preferences.AppendSeparator()
         
+	# Append plugin menu, only if plugins exist
+        self.pluginMenu = self.BuildPluginMenu()
+        if self.pluginMenu:
+            self.preferences.Append(self.pluginMenu, "&Plugins")
+            self.preferences.AppendSeparator()
+
+
         # - enable display/video/audio
         self.preferences.AppendCheckItem(self.ID_ENABLE_AUDIO, "Enable Audio",
                                          "Enable/disable audio for your node")
@@ -558,16 +565,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         self.menubar.Append(self.navigation, "&Navigation")
 
-        self.pluginMenu = self.BuildPluginMenu()
-        if self.pluginMenu:
-            self.menubar.Append(self.pluginMenu, "&Plugins")
-        
         self.help = wxMenu()
         self.help.Append(self.ID_HELP_MANUAL, "Venue Client &Manual",
                          "Venue Client Manual")
-        self.help.Append(self.ID_HELP_AGDP,
-                         "AG &Documentation Project Web Site",
-                         "")
         self.help.AppendSeparator()
         self.help.Append(self.ID_HELP_AGORG, "Access &Grid (accessgrid.org) Web Site",
                          "")
@@ -744,7 +744,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # Help Menu
         EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialogCB)
         EVT_MENU(self, self.ID_HELP_MANUAL,self.OpenManualCB)
-        EVT_MENU(self, self.ID_HELP_AGDP,self.OpenAGDPCB)
         EVT_MENU(self, self.ID_HELP_AGORG,self.OpenAGOrgCB)
         EVT_MENU(self, self.ID_HELP_FLAG, self.OpenFLAGCB)
         EVT_MENU(self, self.ID_HELP_FL,self.OpenFLCB)
@@ -1129,7 +1128,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         desc = None
         dirList =[]
         
-        dlgDirName = wxTextEntryDialog(self, "Enter the name of the directory! Please only use letters and numbers!","Directory name", "directory", wxOK | wxCANCEL)
+        dlgDirName = wxTextEntryDialog(self, "Enter the name of the directory to create","Create Directory", "", wxOK | wxCANCEL)
         retVal = dlgDirName.ShowModal()
         if retVal == wxID_OK:
             name = dlgDirName.GetValue()
@@ -1384,7 +1383,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
     def AddServiceCB(self, event):
         addServiceDialog = ServicePropertiesDialog(self, -1,
-                                         'Please, fill in service details')
+                                         'Add Service')
         if (addServiceDialog.ShowModal() == wxID_OK):
 
             try:
@@ -2105,9 +2104,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             # - define a mess of regular expressions for matching venue urls
             hostre = re.compile('^[\w.-]*$')
             hostportre = re.compile('^[\w.-]*:[\d]*$')
+            hostpathre = re.compile('^[\w.-]*/[\w]*')
             protohostre = re.compile('^[\w]*://[\w.-]*$')
             protohostportre = re.compile('^[\w]*://[\w.-]*:[\d]*$')
-
+            protohostportpathre = re.compile('^[\w]*://[\w.-]*:[\d]*/[\w]*')
+            protohostpathre = re.compile('^[\w]*://[\w.-^/]*/[\w]*')
+            
             # - check for host only
             if hostre.match(venueUrl):
                 host = venueUrl
@@ -2116,17 +2118,32 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             elif hostportre.match(venueUrl):
                 hostport = venueUrl
                 venueUrl = '%s://%s/Venues/default' % (defaultproto,hostport)
+            elif hostpathre.match(venueUrl):
+                parts = venueUrl.split('/')
+                host = parts[0]
+                path = '/'.join(parts[1:])
+                venueUrl = '%s://%s:%d/%s' % (defaultproto,host,defaultport,path)
             elif protohostre.match(venueUrl):
                 protohost = venueUrl
                 venueUrl = '%s:%d/Venues/default' % (protohost,defaultport)
             elif protohostportre.match(venueUrl):
                 protohostport = venueUrl
                 venueUrl = '%s/Venues/default' % (protohostport)
+            elif protohostportpathre.match(venueUrl):
+                pass
+            elif protohostpathre.match(venueUrl):
+                parts = urlparse.urlparse(venueUrl)
+                proto = parts[0]
+                host = parts[1]
+                path = parts[2]
+                venueUrl = '%s://%s:%d%s' % (proto,host,defaultport,path)
 
             # - update the venue url
             self.venueAddressBar.SetAddress(venueUrl)
             
             self.SetStatusText("Entering venue at %s" % (venueUrl,))
+            
+            log.info('Entering venue at %s', venueUrl)
 
             self.controller.EnterVenueCB(venueUrl)
             
@@ -2135,7 +2152,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.statusbar.SetStatusText("",1)
             wxEndBusyCursor()
         except CertificateRequired:
-            log.exception('Certificate required to enter venue')
+            wxEndBusyCursor()
+            log.info('Certificate required to enter venue')
             try:
                 self.usingCert = 1
                 self.controller.EnterVenueCB(venueUrl,withcert=1)
@@ -2143,7 +2161,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             except:
                 log.exception("Something went wrong trying to enter with a certificate")
                 self.Notify('A certificate is required to enter this Venue, but you do not have one.  Press OK to launch the certificate manager so that you can import or request a certificate, or Cancel to not.')
-            wxEndBusyCursor()
         except:
             wxEndBusyCursor()
             log.exception("VenueClientUI.EnterVenueCB: Failed to connect to %s"%venueUrl)
@@ -2163,7 +2180,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             profileView.ShowModal()
             profileView.Destroy()
         else:
-            self.Notify("Please, select the participant you want to view information about", "View Profile") 
+            self.Notify("Select the participant you want to view information about", "View Profile") 
 
     def AddPersonalDataCB(self, event=None):
         dlg = wxFileDialog(self, "Choose file(s):", style = wxOPEN | wxMULTIPLE)
@@ -2192,7 +2209,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         if data:
             self.controller.OpenDataCB(data)
         else:
-            self.Notify("Please, select the data you want to open", "Open Data")
+            self.Notify("Select the data you want to open", "Open Data")
               
     def SaveDataCB(self, event):
         data = self.GetSelectedItem()
@@ -2203,7 +2220,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             if path:
                 self.controller.SaveDataCB(data,path)
         else:
-            self.Notify("Please, select the data you want to save", "Save Data")
+            self.Notify("Select the data you want to save", "Save Data")
 
     def RemoveDataCB(self, event):
         itemList = self.GetSelectedItems()
@@ -2231,7 +2248,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                             log.exception("bin.VenueClient::RemoveData: Error occured when trying to remove data")
                             self.Error("The file could not be removed", "Remove Files Error")
         else:
-            self.Notify("Please, select the data you want to delete", "No file selected")
+            self.Notify("Select the data you want to delete", "No file selected")
             
     #Added by NA2-HPCE
     def RemoveDirCB(self, event):
@@ -2262,7 +2279,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                             #self.Error("The file could not be removed", "Remove Files Error")
                             
         else:
-            self.Notify("Please, select the data or directory you want to delete", "No file selected")
+            self.Notify("Select the data or directory you want to delete", "No file selected")
         
     def UpdateDataCB(self,dataDesc):
         try:
@@ -2284,7 +2301,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         if service:
             self.controller.OpenServiceCB(service)
         else:
-            self.Notify("Please, select the service you want to open","Open Service")       
+            self.Notify("Select the service you want to open","Open Service")       
     
     def RemoveServiceCB(self, event):
         serviceList = self.GetSelectedItems()
@@ -2298,7 +2315,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                         except:
                             self.Error("The service could not be removed", "Remove Service Error")
         else:
-           self.Notify("Please, select the service you want to delete", "Delete Service")       
+           self.Notify("Select the service you want to delete", "Delete Service")       
 
     def UpdateServiceCB(self,serviceDesc):
         try:
@@ -2320,7 +2337,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 self.Error("Error removing application","Remove Application Error")
                 
         else:
-            self.Notify( "Please, select the application you want to delete", "Delete Application")
+            self.Notify( "Select the application you want to delete", "Delete Application")
 
     def StartApplicationCB(self, app):
         timestamp = time.strftime("%I:%M:%S %p %B %d, %Y")
@@ -2651,7 +2668,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.venueAddressBar.SetTitle("You are not in a venue",
                                                 'Click "Go" to connect to the venue, which address is displayed in the address bar') 
             self.venueClient.ExitVenue()
-            MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", 
+            MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nTry to connect again.", 
                           "Lost Connection")
 
     def AddToMyVenues(self,name,url):
@@ -2731,6 +2748,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 menu.Append(appId,menuEntryLabel,menuEntryLabel)
                 callback = lambda event,theApp=app: self.StartApplicationCB(theApp)
                 EVT_MENU(self, appId, callback)
+
+        if menu.GetMenuItemCount() == 0:
+            log.info('building no applications menu')
+            itemid = wxNewId()
+            menu.Append(itemid,"No applications available")
+            menu.Enable(itemid,false)
 
         return menu
 
@@ -2976,7 +2999,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         log.debug("EVENT - Add service: %s" %(serviceDescription.name))
         wxCallAfter(self.statusbar.SetStatusText, 
-                    "Service '%s' just got added to the venue" 
+                    "Service '%s' was added to the venue" 
                     %serviceDescription.name)
         wxCallAfter(self.contentListPanel.AddService, serviceDescription)
 
@@ -3007,7 +3030,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         """
         log.debug("EVENT - Update service: %s" %(serviceDescription.name))
         wxCallAfter(self.SetStatusText, 
-                    "Service '%s' just got updated." %serviceDescription.name)
+                    "Service '%s' was updated." %serviceDescription.name)
         wxCallAfter(self.contentListPanel.UpdateService, serviceDescription)
     
     def AddApplication(self, appDescription):
@@ -3052,7 +3075,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         *appDescription* The ApplicationDescription representing the application that should be updated.
         """
         wxCallAfter(self.SetStatusText,
-                    "Application '%s' just got updated." %appDescription.name)
+                    "Application '%s' was updated." %appDescription.name)
         log.debug("EVENT - Update application: %s, Mime Type: %s"
                   % (appDescription.name, appDescription.mimeType))
         wxCallAfter(self.contentListPanel.UpdateApplication, appDescription)
@@ -3304,7 +3327,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             enterUISuccess = 0
 
         if not enterUISuccess:
-            text = "You have not entered the venue located at %s.\nAn error occured.  Please, try again."%URL
+            text = "You have not entered the venue located at %s.\nAn error occured.  Please try again."%URL
             wxCallAfter(self.Error, text, "Enter Venue Error")
             
 
@@ -3326,7 +3349,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def HandleError(self,err):
         if isinstance(err,DisconnectError):
             wxCallAfter(MessageDialog, None, 
-                        "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", 
+                        "Your connection to the venue is interrupted and you will be removed from the venue.  \nTry to connect again.", 
                         "Lost Connection")
         else:
             log.info("Unhandled observer exception in VenueClientUI")
@@ -5005,7 +5028,7 @@ class JabberClientPanel(wxPanel):
         # Add time to event message
         if not messagetime:
            messagetime = localtime()
-        dateAndTime = strftime("%b %d, %I:%M", messagetime )
+        dateAndTime = strftime("%d %b %I:%M", messagetime )
         
         # Event message
         if name == None:
@@ -5331,7 +5354,7 @@ class UrlDialog(wxDialog):
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.Centre()
         if text == None:
-            info = "Please, enter venue URL address"
+            info = "Enter venue URL address"
         else:
             info = text
         self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
@@ -5546,11 +5569,11 @@ class TextValidator(wxPyValidator):
         #for view
         if profile == None:
             if val ==  '<Insert Name Here>':
-                MessageDialog(NULL, "Please, fill in the %s field" % (self.fieldName,))
+                MessageDialog(NULL, "Fill in the %s field" % (self.fieldName,))
                 return false
             
             if val ==  '<Insert Email Address Here>':
-                MessageDialog(NULL, "Please, fill in the %s field" % (self.fieldName,))
+                MessageDialog(NULL, "Fill in the %s field" % (self.fieldName,))
                 return false
             
         #for real profile dialog
@@ -5563,7 +5586,7 @@ class TextValidator(wxPyValidator):
             elif profile.email ==  '<Insert Email Address Here>':
                 self.fieldName = 'Email'
                                                    
-            MessageDialog(NULL, "Please, fill in the %s field" %(self.fieldName,))
+            MessageDialog(NULL, "Fill in the %s field" %(self.fieldName,))
             return false
         return true
 
@@ -5648,14 +5671,14 @@ class AddAppDialogValidator(wxPyValidator):
         desc = win.GetDescription()
         
         if name == "":
-            info = "Please, enter a name for this application session." 
+            info = "Enter a name for this application session." 
             dlg = wxMessageDialog(None, info, "Enter Name", style = wxOK | wxICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
             return false
 
         if desc == "":
-            info = "Please, enter a description for this application session." 
+            info = "Enter a description for this application session." 
             dlg = wxMessageDialog(None, info, "Enter Description", style = wxOK | wxICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
@@ -5765,7 +5788,7 @@ class DataPropertiesDialog(wxDialog):
         self.description = None
         
     def __SetProperties(self):
-        self.SetTitle("Please, fill in data information")
+        self.SetTitle("Fill in data information")
         
     def __SetEditable(self, editable):
         if not editable:
