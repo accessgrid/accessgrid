@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.284 2007-05-04 22:00:03 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.285 2007-05-25 16:08:13 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.284 2007-05-04 22:00:03 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.285 2007-05-25 16:08:13 turam Exp $"
 
 import sys
 import time
@@ -262,6 +262,7 @@ class VenueClientState:
 class Venue:
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
+    @group WebServiceMethods: Enter,RegisterNetworkService,UnRegisterNetworkService,Exit,GetState,AsVenueDescription,NegotiateCapabilities,CreateApplication,UpdateApplication,DestroyApplication,AllocateMulticastLocation,RecycleMulticastLocation,AddNetworkLocationToStream,Shutdown,RegenerateEncryptionKeys,ImportPolicy,ExportPolicy,UpdateLifetime,SetConnections,GetConnections,GetUploadDescriptor,UpdateData,RemoveData,GetDataDescriptions,AddService,RemoveService,UpdateService,UpdateClientProfile,GetDataStoreInformation,GetVersion,GetStreams
     """
     
     
@@ -1217,7 +1218,7 @@ class Venue:
         """
         Registers a network service with the venue.
         
-        @Param networkServiceDescription: A network service description.
+        @Param nsd: A network service description.
         """
         log.debug('register network service %s'%nsd.name)
         try:
@@ -1232,7 +1233,7 @@ class Venue:
         """
         Removes a network service from the venue
         
-        @Param networkServiceDescription: A network service description.*
+        @Param nsd: A network service description.*
         """
         try:
             self.networkServicesManager.UnRegisterService(nsd)

@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.217 2006-12-20 17:55:47 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.218 2007-05-25 16:10:12 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.217 2006-12-20 17:55:47 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.218 2007-05-25 16:10:12 turam Exp $"
 
 
 # Standard stuff
@@ -105,6 +105,7 @@ class VenueServer:
     """
     The Virtual Venue Server object is responsible for creating,
     destroying, and configuring Virtual Venue objects.
+    @group WebServiceMethods: AddVenue,Checkpoint,GetAddressAllocationMethod,GetAddressMask,GetBaseAddress,GetDefaultVenue,GetEncryptAllMedia,GetVenueDescriptions,GetVenues,GetVersion,ModifyVenue,RemoveVenue,SetAddressAllocationMethod,SetAddressMask,SetBaseAddress,SetDefaultVenue,SetEncryptAllMedia,Shutdown        
     """
 
     configDefaults = {

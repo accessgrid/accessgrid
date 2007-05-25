@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.38 2006-07-07 18:53:52 turam Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.39 2007-05-25 16:07:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,8 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.38 2006-07-07 18:53:52 turam Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: SharedApplication.py,v 1.39 2007-05-25 16:07:25 turam Exp $"
 
 from AccessGrid import Log
 from AccessGrid.GUID import GUID
@@ -48,6 +47,7 @@ class InvalidPrivateToken(Exception):
 class SharedApplication:
     """
     SharedApplication is the implementation class for an application
+    @group WebServiceMethods: GetComponents, GetData, GetDataChannel, GetDataKeys, GetId, GetParticipants, GetState, GetVenueURL, Join, Leave, RemoveData, SetData, SetParticipantProfile, SetParticipantStatus
     """
     def __init__(self, name, description, mimeType, eventService, id = None):
         """
