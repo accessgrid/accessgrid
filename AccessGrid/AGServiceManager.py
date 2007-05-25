@@ -2,15 +2,15 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.103 2006-12-20 17:55:46 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.104 2007-05-25 16:01:44 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.103 2006-12-20 17:55:46 turam Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: AGServiceManager.py,v 1.104 2007-05-25 16:01:44 turam Exp $"
+
 
 import sys
 import os
@@ -40,6 +40,8 @@ log = Log.GetLogger(Log.ServiceManager)
 
 class AGServiceManager:
     """
+    AGServiceManager implements a basic web service for starting and stopping AGService packages
+    @group WebServiceMethods: AddService, AddServiceByName, GetDescription, GetNodeServiceUrl, GetServicePackageDescriptions, GetServices, GetResources, IsValid, RegisterService, RemoveService, RemoveServices, SetNodeServiceUrl, Shutdown, StopServices, GetVersion
     """
     
     ServiceType = '_servicemanager._tcp'
