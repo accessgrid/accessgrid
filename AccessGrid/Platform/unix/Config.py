@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.77 2007-05-29 06:26:05 douglask Exp $
+# RCS-ID:      $Id: Config.py,v 1.78 2007-05-29 08:26:25 douglask Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.77 2007-05-29 06:26:05 douglask Exp $"
+__revision__ = "$Id: Config.py,v 1.78 2007-05-29 08:26:25 douglask Exp $"
 
 import sys
 import os
@@ -435,7 +435,7 @@ class SystemConfig(Config.SystemConfig):
                     cap = struct.pack(VIDIOCGCAP_FMT, "", 0, 0, 0, 0, 0, 0, 0);
                     r = fcntl.ioctl(fd, VIDIOCGCAP, cap)
                     (desc, capType, numPorts, x, x, x, x, x) = struct.unpack(VIDIOCGCAP_FMT, r)
-                    desc.replace("\x00", "")
+                    desc = desc.replace("\x00", "")
                 except Exception, e:
                     log.info("V4L ioctl %s VIDIOCGCAP: %s", device, e)
                     os.close(fd)
