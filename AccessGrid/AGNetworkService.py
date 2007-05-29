@@ -288,7 +288,7 @@ if __name__ == "__main__":
     nsProxy = AGNetworkServiceIW(service.url)
 
     result = nsProxy.Transform3([])
-    if not result == []
+    if not result == []:
         raise Exception, 'Transform failed'
     
     result = nsProxy.StopTransform3([])
