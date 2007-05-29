@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.76 2007-05-17 12:37:07 douglask Exp $
+# RCS-ID:      $Id: Config.py,v 1.77 2007-05-29 06:26:05 douglask Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.76 2007-05-17 12:37:07 douglask Exp $"
+__revision__ = "$Id: Config.py,v 1.77 2007-05-29 06:26:05 douglask Exp $"
 
 import sys
 import os
@@ -427,7 +427,7 @@ class SystemConfig(Config.SystemConfig):
                 try:
                     fd = os.open(device, os.O_RDWR)
                 except Exception, e:
-                    log.info("open: %s", e)
+                    log.info("V4L open: %s", e)
                     continue
 
                 desc = ""; capType = 0; numPorts = 0
@@ -437,7 +437,7 @@ class SystemConfig(Config.SystemConfig):
                     (desc, capType, numPorts, x, x, x, x, x) = struct.unpack(VIDIOCGCAP_FMT, r)
                     desc.replace("\x00", "")
                 except Exception, e:
-                    log.info("ioctl %s VIDIOCGCAP: %s", device, e)
+                    log.info("V4L ioctl %s VIDIOCGCAP: %s", device, e)
                     os.close(fd)
                     continue
 
@@ -455,18 +455,101 @@ class SystemConfig(Config.SystemConfig):
                         chan = struct.pack(VIDIOCGCHAN_FMT, i, "", 0, 0, 0, 0);
                         r = fcntl.ioctl(fd, VIDIOCGCHAN, chan)
                         port = struct.unpack(VIDIOCGCHAN_FMT, r)[1]
+                        portList.append(port.replace("\x00", ""))
                     except Exception, e:
                         log.info("V4L ioctl %s VIDIOCGCHAN: %s", device, e)
-                    portList.append(port.replace("\x00", ""))
 
                 os.close(fd)
 
                 if len(portList) > 0:
-                    deviceList[device] = portList
+                    deviceList["V4L:" + device] = portList
                     log.info("V4L %s has ports: %s", device, portList)
                 else:
                     log.info("V4L %s: no suitable input ports found", device)
 
+
+            # V4L2 capability struct defined in linux/videodev2.h :
+            #   struct v4l2_capability {
+            #        __u8    driver[16];      # i.e. "bttv"
+            #        __u8    card[32];        # i.e. "Hauppauge WinTV"
+            #        __u8    bus_info[32];    # "PCI:" + pci_name(pci_dev)
+            #        __u32   version;         # should use KERNEL_VERSION()
+            #        __u32   capabilities;    # Device capabilities
+            #        __u32   reserved[4];
+            #   };
+            V4L2_CAPABILITY_FMT = "16s32s32sII4I"   # v4l2_capability struct format string
+
+            if sys.byteorder == "little":
+                VIDIOC_QUERYCAP = -2140645888 # 0x80685600
+            else:
+                VIDIOC_QUERYCAP = 0x40685600
+
+            # V4L2 input struct defined in linux/videodev2.h :
+            #   struct v4l2_input {
+            #        __u32        index;      #  Which input
+            #        __u8         name[32];   #  Label
+            #        __u32        type;       #  Type of input
+            #        __u32        audioset;   #  Associated audios
+            #        __u32        tuner;      #  Associated tuner
+            #        __u64        std;
+            #        __u32        status;
+            #        __u32        reserved[4];
+            #   };
+            V4L2_INPUT_FMT = "I32sIIILI4I"   # v4l2_input struct format string
+
+            VIDIOC_ENUMINPUT = -1068739046 # 0xC04C561A
+
+            V4L2_CAP_VIDEO_CAPTURE = 0x01  # V4L2 device can capture capability flag
+
+            for device in glob.glob("/dev/video[0-9]*"):
+                if os.path.isdir(device):
+                    continue
+
+                fd = None
+                try:
+                    fd = os.open(device, os.O_RDWR)
+                except Exception, e:
+                    log.info("V4L2 open: %s", e)
+                    continue
+
+                desc = ""; capType = 0
+                try:
+                    cap = struct.pack(V4L2_CAPABILITY_FMT, "", "", "", 0, 0, 0, 0, 0, 0);
+                    r = fcntl.ioctl(fd, VIDIOC_QUERYCAP, cap)
+                    (x, desc, x, x, capType, x, x, x, x) = struct.unpack(V4L2_CAPABILITY_FMT, r)
+                    desc = desc.replace("\x00", "")
+                    log.info("V4L2 %s description: %s", device, desc)
+                except Exception, e:
+                    print "ioctl", device, "VIDIOC_QUERYCAP:", e
+                    os.close(fd)
+                    continue
+
+                if not (capType & V4L2_CAP_VIDEO_CAPTURE):
+                    os.close(fd)
+                    log.info("V4L2 %s: device can not capture", device)
+                    continue
+
+                portList = []
+                index = 0
+                while (1):
+                    try:
+                        input = struct.pack(V4L2_INPUT_FMT, index, "", 0, 0, 0, 0, 0, 0, 0, 0, 0);
+                        r = fcntl.ioctl(fd, VIDIOC_ENUMINPUT, input)
+                        (index, inputName, x, x, x, x, x, x, x, x, x ) = struct.unpack(V4L2_INPUT_FMT, r)
+ 
+                        portList.append(inputName.replace("\x00", ""))
+                        index += 1
+
+                    except Exception :
+                        break
+
+                os.close(fd)
+
+                if len(portList) > 0:
+                    deviceList["V4L2:" + device] = portList
+                    log.info("V4L2 %s has ports: %s", device, portList)
+                else:
+                    log.info("V4L2 %s: no suitable input ports found", device)
 
             # Force x11 onto the list
             deviceList['x11'] = ['x11']

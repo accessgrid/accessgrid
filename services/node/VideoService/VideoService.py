@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.23 2007-04-16 16:44:59 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.24 2007-05-29 06:26:04 douglask Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -47,17 +47,6 @@ proc user_hook {} {
             build.menu
         }
 
-        if { ![info exists env(VIC_DEVICE)] } {
-            set deviceName \"%s\"
-
-            foreach v $inputDeviceList {
-                if { [string last $deviceName [$v nickname]] != -1 } {
-                    set videoDevice $v
-                    select_device $v
-                    break
-                }
-            }
-        }
         set inputPort \"%s\"
         grabber port \"%s\"
 
@@ -314,7 +303,6 @@ class VideoService( AGService ):
                                     email,
                                     email,
                                     OnOff(self.transmitOnStart.value),
-                                    vicDevice,
                                     portstr,
                                     portstr ) )
             f.close()
@@ -366,9 +354,6 @@ class VideoService( AGService ):
             # Set number of columns to use for thumbnail display
             options.append("-Xtile=%s" % self.tiles.value)
 
-            # Set the device for vic to use
-            os.environ["VIC_DEVICE"] = vicDevice
-                                           
             self.log.info("Starting VideoService")
             self.log.info(" executable = %s" % self.executable)
             self.log.info(" options = %s" % options)

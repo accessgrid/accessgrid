@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.20 2007-04-16 16:44:59 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.21 2007-05-29 06:26:05 douglask Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -44,17 +44,6 @@ proc user_hook {} {
             build.menu
         }
  
-        if { ![info exists env(VIC_DEVICE)] } {
-            set deviceName \"%s\"
-
-            foreach v $inputDeviceList {
-                if { [string last $deviceName [$v nickname]] != -1 } {
-                    set videoDevice $v
-                    select_device $v
-                    break
-                }
-            }
-        }
         set inputPort \"%s\"
         grabber port \"%s\"
 
@@ -278,7 +267,6 @@ class VideoProducerService( AGService ):
                                     "%s(%s)" % (name,self.streamname.value),
                                     email,
                                     email,
-                                    vicDevice,
                                     portstr,
                                     portstr ) )
             f.close()
@@ -322,10 +310,7 @@ class VideoProducerService( AGService ):
                     options.append( '%d' % (self.streamDescription.location.ttl) )
             options.append( '%s/%d' % ( self.streamDescription.location.host,
                                            self.streamDescription.location.port) )
-                                           
-            # Set the device for vic to use
-            os.environ["VIC_DEVICE"] = vicDevice
-                                           
+
             self.log.info("Starting VideoProducerService")
             self.log.info(" executable = %s" % self.executable)
             self.log.info(" options = %s" % options)
