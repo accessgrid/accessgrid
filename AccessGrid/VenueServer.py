@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.218 2007-05-25 16:10:12 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.219 2007-05-29 18:20:07 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.218 2007-05-25 16:10:12 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.219 2007-05-29 18:20:07 turam Exp $"
 
 
 # Standard stuff
@@ -402,10 +402,17 @@ class VenueServer:
         try:
             if hasattr(ctx.connection,'get_peer_cert'):
                 cert = ctx.connection.get_peer_cert()
-                if ProxyGen.IsProxyCert(cert):
-                    cert = ctx.connection.get_peer_cert_chain()[0]
-                subjectStr = cert.get_subject().as_text()
-                subject = X509Subject.X509Subject(subjectStr)
+                if cert:
+                    if ProxyGen.IsProxyCert(cert):
+                        cert = ctx.connection.get_peer_cert_chain()[0]
+                    subjectStr = cert.get_subject().as_text()
+                    subject = X509Subject.X509Subject(subjectStr)
+                else:
+                    if self.authManager.IsIdentificationRequired():
+                        raise CertificateRequired
+                    
+                    subject = None
+                    
                 action = action.split('#')[-1]
                 return self.authManager.IsAuthorized(subject, action)
         except:
