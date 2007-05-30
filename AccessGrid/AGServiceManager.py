@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.104 2007-05-25 16:01:44 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.105 2007-05-30 20:16:59 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.104 2007-05-25 16:01:44 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.105 2007-05-30 20:16:59 turam Exp $"
 
 
 import sys
@@ -231,6 +231,7 @@ class AGServiceManager:
 
     def RegisterService(self,token,url):
         if token in self.registeringServices.keys():
+            log.info('Service registered: token,url = %s,%s', token, url)
             self.registeringServices[token] = url
         self.registerFlag.set()
         
