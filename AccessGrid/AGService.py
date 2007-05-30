@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.65 2007-05-25 16:01:15 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.66 2007-05-30 20:06:06 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.65 2007-05-25 16:01:15 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.66 2007-05-30 20:06:06 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -360,14 +360,15 @@ def RunService(service,serviceInterface,unusedCompatabilityArg=None):
     port = svc.GetOption("port")
     serviceManagerUri = svc.GetOption('serviceManagerUri')
     test = svc.GetOption('test')
-    
     if test:
         from AccessGrid.NetworkLocation import MulticastNetworkLocation
         stream = StreamDescription('test stream',
                                    MulticastNetworkLocation('224.2.2.2',20000,1))
         stream.capability = service.capabilities
+        resources = service.GetResources()
+        if len(resources) > 0:
+            service.SetResource(resources[0])
         service.SetStream(stream)
-        service.Start()
         return
     
     # Create the server
