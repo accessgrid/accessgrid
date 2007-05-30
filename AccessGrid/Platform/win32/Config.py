@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.75 2007-04-23 21:53:38 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.76 2007-05-30 20:08:38 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.75 2007-04-23 21:53:38 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.76 2007-05-30 20:08:38 turam Exp $"
 
 import os
 import socket
@@ -577,11 +577,11 @@ class SystemConfig(Config.SystemConfig):
                 win32process.SetProcessAffinityMask(cp, mask)
 
         except Exception,e:
-            log.exception("Exception setting processor affinity")
+            log.exception("Exception setting processor affinity; mask=%d", mask)
             
     def GetResources(self):
             
-        deviceList = list()
+        deviceList = {}
         
         try:
             # scan for vfw devices
@@ -600,7 +600,8 @@ class SystemConfig(Config.SystemConfig):
                     log.debug("vfwscan filelines = %s", filelines)
 
                     devices = map( lambda d: d.strip(), filelines)
-                    deviceList += devices
+                    for d in devices:
+                        deviceList[d] = ['external-in']
                 except:
                     log.exception("vfw device scan failed")
 
@@ -622,8 +623,10 @@ class SystemConfig(Config.SystemConfig):
 
                     log.debug("wdmscan filelines = %s", filelines)
 
-                    devices = map( lambda d: d.strip(), filelines)
-                    deviceList += devices
+                    filelines = map( lambda d: d.strip(), filelines)
+                    for f in filelines:
+                        parts = f.split(',')
+                        deviceList[parts[0]] = parts[1:]
                 except:
                     log.exception("wdm device scan failed")
 
@@ -650,8 +653,7 @@ class SystemConfig(Config.SystemConfig):
                     for i in range(0, nValues):
                         (vName, vData, vType) = _winreg.EnumValue(sKey, i)
                         if vName == "FriendlyName":
-                            deviceList.append(vData)
-                    
+                            deviceList[vData] = ['external-in']
             log.info("GetResources: %s", deviceList)
 
         except Exception:
@@ -659,8 +661,8 @@ class SystemConfig(Config.SystemConfig):
             raise
     
         resourceList = list()
-        for d in deviceList:
-            resourceList.append((d,['external-in']))
+        for device,rlist in deviceList.items():
+            resourceList.append((device,rlist))
         return resourceList
 
 
