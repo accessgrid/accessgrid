@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.347 2007-05-25 16:30:03 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.348 2007-05-31 20:37:04 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.347 2007-05-25 16:30:03 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.348 2007-05-31 20:37:04 turam Exp $"
 
 
 import sys
@@ -71,6 +71,8 @@ from AccessGrid.hosting import GetHostingExceptionModuleAndClassName
 from ZSI import client
 from M2Crypto import httpslib
 client.Binding.defaultHttpsTransport = httpslib.HTTPSConnection
+
+
 
 try:
     from AccessGrid.Beacon.rtpBeacon import Beacon
@@ -1503,10 +1505,13 @@ class VenueClient:
     This method returns the node configurations
     """
     def GetNodeConfigurations(self):
+        nodeConfigurations = []
         if self.nodeService:
-            return self.nodeService.GetConfigurations()
-        else:
-            return []
+            try:
+                nodeConfigurations = self.nodeService.GetConfigurations()
+            except:
+                log.exception('Exception retrieving node configurations')
+        return nodeConfigurations
     
     def LoadNodeConfiguration(self, configuration):
 	return self.nodeService.LoadConfiguration( configuration )
