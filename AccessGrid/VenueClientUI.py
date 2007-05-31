@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.233 2007-05-25 16:48:42 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.234 2007-05-31 20:26:37 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.233 2007-05-25 16:48:42 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.234 2007-05-31 20:26:37 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -499,7 +499,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 	# Append plugin menu, only if plugins exist
         self.pluginMenu = self.BuildPluginMenu()
         if self.pluginMenu:
-            self.preferences.Append(self.pluginMenu, "&Plugins")
+            self.preferences.AppendMenu(wxNewId(), "&Plugins", self.pluginMenu)
             self.preferences.AppendSeparator()
 
 
