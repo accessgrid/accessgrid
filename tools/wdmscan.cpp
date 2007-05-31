@@ -106,6 +106,7 @@ DirectShowScanner::DirectShowScanner() {
 
 		 // Find ports on this device
 		 numports = 0;
+		 pXBar = 0;
          hr = pBuild_->FindInterface(&LOOK_UPSTREAM_ONLY, NULL, pCap, IID_IAMCrossbar, 
                                      (void**)&pXBar);
 		 if(debug==2) printf("post FindInterface: pXBar=%x\n", pXBar);
