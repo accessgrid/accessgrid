@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.89 2007-05-30 20:13:07 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.90 2007-05-31 20:55:58 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.89 2007-05-30 20:13:07 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.90 2007-05-31 20:55:58 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -1032,15 +1032,14 @@ class TextDialog(wxDialog):
     def GetChars(self):
         return self.text.GetValue()
         
-def SetIcon():
-   icon = None
-   if IsWindows()or IsLinux() or IsFreeBSD():
-        icon = icons.getAGIconIcon()
-   elif IsOSX():
-        icon = icons.getAGIcon128Icon()
-   if icon:
-       t = wxTaskBarIcon()
-       t.SetIcon(icon)
+def SetIcon(app):
+        icon = None
+        if IsWindows()or IsLinux() or IsFreeBSD():
+             icon = icons.getAGIconIcon()
+        elif IsOSX():
+             icon = icons.getAGIcon128Icon()
+        if icon:
+            app.SetIcon(icon)
 
 if __name__ == "__main__":
     app = wxPySimpleApp()
