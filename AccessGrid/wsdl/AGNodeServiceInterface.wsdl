@@ -178,6 +178,7 @@
           <xsd:element name="SetServiceEnabledRequest">
             <xsd:complexType>
               <xsd:sequence>
+                <xsd:element minOccurs="1" maxOccurs="1" name="serviceUrl" type="xsd:string" />
                 <xsd:element minOccurs="1" maxOccurs="1" name="enabledFlag" type="xsd:integer" />
               </xsd:sequence>
             </xsd:complexType>
