@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.174 2007-05-02 22:12:20 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.175 2007-05-31 20:56:42 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.174 2007-05-02 22:12:20 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.175 2007-05-31 20:56:42 turam Exp $"
 
 # Standard imports
 import sys
@@ -37,7 +37,7 @@ from AccessGrid.Security.CertificateManager import CertificateManager
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid import icons
-from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
+from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog, SetIcon
 from AccessGrid.Utilities import VENUE_MANAGEMENT_LOG
 from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIPanel, AuthorizationUIDialog
 from AccessGrid.interfaces.AuthorizationManager_client import AuthorizationManagerIW
@@ -216,7 +216,7 @@ class VenueManagementClient(wxApp):
             Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
                
     def __setProperties(self):
-        self.frame.SetIcon(icons.getAGIconIcon())
+        SetIcon(self.frame)
         self.frame.SetSize(wxSize(600, 350))
         self.SetTopWindow(self.frame)
         self.frame.Show()

@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.55 2006-09-21 12:05:36 braitmai Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.56 2007-05-31 20:56:42 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid.Utilities import NODE_SETUP_WIZARD_LOG
 
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
-from AccessGrid.UIUtilities import ProgressDialog
+from AccessGrid.UIUtilities import ProgressDialog, SetIcon
 
 from AccessGrid.interfaces.AGService_client import AGServiceIW
 
@@ -127,7 +127,7 @@ class NodeSetupWizard(wxWizard):
         self.debugMode = debugMode
         self.progress = progress
         self.step = 1
-        self.SetIcon(icons.getAGIconIcon())
+        SetIcon(self)
         self.SetPageSize(wxSize(510, 350))
         self.nodeClient = NodeClient(app)
         
