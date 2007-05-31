@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.234 2007-05-31 20:26:37 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.235 2007-05-31 20:55:45 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.234 2007-05-31 20:26:37 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.235 2007-05-31 20:55:45 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -834,13 +834,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
     def __SetProperties(self):
         self.SetTitle("Venue Client")
-        agiconfile = None
-        if IsWindows():
-            agiconfile = os.path.join(Config.AGTkConfig.instance().GetInstallDir(),'install','ag.ico')
-        elif IsLinux() or IsFreeBSD():
-            agiconfile = os.path.join(Config.AGTkConfig.instance().GetInstallDir(),'share','AccessGrid','ag.ico')
-        if agiconfile and os.path.exists(agiconfile):
-            self.SetIcon(wxIcon(agiconfile,wxBITMAP_TYPE_ICO))
         #self.venueListPanel.SetSize(wxSize(160, 300))
         #self.venueAddressBar.SetSize(wxSize(self.GetSize().GetWidth(),65))
         
