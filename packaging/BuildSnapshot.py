@@ -367,10 +367,7 @@ if ret:
 
 
 # copy media tools to bin directory
-if sys.platform == 'darwin':
-    cmd = '%s %s %s %s'%(sys.executable, 'BuildUclRat.py', SourceDir, os.path.join(DestDir,"bin"))
-else:
-    cmd = '%s %s %s %s'%(sys.executable, 'BuildRat.py', SourceDir, os.path.join(DestDir,"bin"))
+cmd = '%s %s %s %s'%(sys.executable, 'BuildRat.py', SourceDir, os.path.join(DestDir,"bin"))
 print "\n ********* cmd = ",cmd
 ret = os.system(cmd)
 if ret:
