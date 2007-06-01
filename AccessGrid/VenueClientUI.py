@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.235 2007-05-31 20:55:45 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.236 2007-06-01 23:24:29 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.235 2007-05-31 20:55:45 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.236 2007-06-01 23:24:29 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3698,7 +3698,7 @@ class NavigationPanel(wxPanel):
 
         exits = None
         if venue:
-            exits = VenueIW(venue.uri).GetConnections()
+            exits = VenueIW(str(venue.uri)).GetConnections()
         else:
             # If we did not get click on a venue, ignore
             return
