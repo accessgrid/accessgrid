@@ -18,8 +18,8 @@ if sys.platform == "win32":
 elif sys.platform=="darwin":
     dstPath = os.path.join("..", "AccessGrid", "interfaces")
     srcPath = os.path.join("..", "AccessGrid", "wsdl")
-    w2pyExec = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/wsdl2py.py"
-    w2dExec = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/wsdl2dispatch.py"
+    w2pyExec = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/wsdl2py"
+    w2dExec = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/wsdl2dispatch"
 else:
     dstPath = os.path.join("..", "AccessGrid", "interfaces")
     srcPath = os.path.join("..", "AccessGrid", "wsdl")
