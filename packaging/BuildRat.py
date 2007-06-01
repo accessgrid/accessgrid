@@ -8,7 +8,7 @@ import sys
 SOURCE=sys.argv[1]
 DEST=sys.argv[2]
 
-RATDIR=os.path.join(SOURCE,'ag-media')
+RATDIR=os.path.join(SOURCE,'mmedia')
 
 def build_win(dir):
     # Find the version of visual studio by peering at cl
@@ -48,7 +48,7 @@ if sys.platform == 'win32':
                  os.path.join(dir,'rat-kill.exe') ]
     copyExe = 'copy'
     build = build_win
-elif sys.platform == 'linux2':
+elif sys.platform == 'linux2' or sys.platform == 'darwin':
     dir = os.path.join(RATDIR,'rat')
     ratFiles = [ os.path.join(dir,'rat'),
                  os.path.join(dir,'rat-4.2.22'),
@@ -66,8 +66,6 @@ elif sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
                  os.path.join(dir,'rat-4.2.22-kill') ]
     copyExe = 'cp'
     build = build_freebsd
-elif sys.platform == 'darwin':
-    raise Exception, 'Unsupported platform: ' + sys.platform + ".  BuildUclRat.py should be used on OSX instead."
 else:
     raise Exception, 'Unsupported platform: ' + sys.platform
     

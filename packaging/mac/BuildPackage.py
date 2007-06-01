@@ -94,15 +94,15 @@ shutil.copy2("postflight", pkgResourcesDir)
 
 # copy vic and rat to the bin directory
 try:
-    shutil.copy2(os.path.join(SourceDir, "ag-media", "vic", "vic"), os.path.join(DestDir, "bin") )
+    shutil.copy2(os.path.join(SourceDir, "mmedia", "vic", "vic"), os.path.join(DestDir, "bin") )
 except:
     import traceback
     traceback.print_exc()
 try:
     ratFiles = [ 'rat', 'rat-4.2.26', 'rat-4.2.26-media', 'rat-4.2.26-ui' ]
     for ratFile in ratFiles:
-        shutil.copy2(os.path.join(SourceDir, "ucl", "rat", ratFile), os.path.join(DestDir, "bin") )
-    shutil.copy2(os.path.join(SourceDir, "ucl", "rat", "rat-4.2.26-kill"), os.path.join(DestDir, "bin", "rat-kill") )
+        shutil.copy2(os.path.join(SourceDir, "mmedia", "rat", ratFile), os.path.join(DestDir, "bin") )
+    shutil.copy2(os.path.join(SourceDir, "mmedia", "rat", "rat-4.2.26-kill"), os.path.join(DestDir, "bin", "rat-kill") )
 except:
     import traceback
     traceback.print_exc()

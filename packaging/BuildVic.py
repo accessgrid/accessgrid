@@ -9,7 +9,7 @@ import sys
 SOURCE=sys.argv[1]
 DEST=sys.argv[2]
 
-VICDIR = os.path.join(SOURCE,'ag-media')
+VICDIR = os.path.join(SOURCE,'mmedia')
 
 
 def build_win(dir):
