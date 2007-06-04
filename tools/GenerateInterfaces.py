@@ -23,8 +23,8 @@ elif sys.platform=="darwin":
 else:
     dstPath = os.path.join("..", "AccessGrid", "interfaces")
     srcPath = os.path.join("..", "AccessGrid", "wsdl")
-    w2pyExec = "wsdl2py.py"
-    w2dExec = "wsdl2dispatch.py"
+    w2pyExec = "wsdl2py"
+    w2dExec = "wsdl2dispatch"
 
 if not os.path.exists(dstPath):
     os.mkdir(dstPath)
