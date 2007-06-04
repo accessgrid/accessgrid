@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.348 2007-05-31 20:37:04 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.349 2007-06-04 19:39:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.348 2007-05-31 20:37:04 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.349 2007-06-04 19:39:20 turam Exp $"
 
 
 import sys
@@ -286,7 +286,7 @@ class VenueClient:
             self.transport = "unicast"
 
         if progressCB: progressCB("Loading bridge information",50)
-        self.LoadBridges()
+        self.LoadBridges(progressCB)
         self.bridgeCache.StoreBridges(self.bridges.values())
                     
         self.observers = []
@@ -345,7 +345,7 @@ class VenueClient:
             if protoMatched:
                 self.registryUrls.append(regUrl)
 
-    def LoadBridges(self):
+    def LoadBridges(self, progressCB=None):
         '''
         Gets bridge information from bridge registry. Sets current
         bridge to the first one in the sorted list. Also, check preferences
@@ -369,10 +369,17 @@ class VenueClient:
                 if self.registryClient == None:
                     continue
                 bridgeList = self.registryClient.LookupBridge()
+                
+                unkeyedBridges = filter( lambda x: not self.bridges.has_key(x.GetKey()), bridgeList )
+                
+                i = 1
                 for b in bridgeList:
                     if not self.bridges.has_key(b.GetKey()):
+                    	if progressCB:  progressCB("Initializing bridge cache: %d of %d" % (i,len(unkeyedBridges)), 50)
+                        print ' pinging bridge ' ,  b.name, b.host
                         self.registryClient.PingBridge(b)
                         self.bridges[b.GetKey()] = b
+                        i += 1
     
             except:
                 log.exception("LoadBridges: Can not connect to bridge registry %s ", registryUrl)
