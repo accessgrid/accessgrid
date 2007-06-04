@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.90 2007-05-31 20:55:58 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.91 2007-06-04 15:05:52 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.90 2007-05-31 20:55:58 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.91 2007-06-04 15:05:52 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -297,15 +297,14 @@ class AboutDialog(wxDialog):
 def ProgressDialogTest():
     maxSize = 100
      
-    dlg = ProgressDialog("Start up", "Loading Venue Client.", maxSize)
+    dlg = ProgressDialog(None, icons.getSplashBitmap(),100, "VERSION")
     dlg.Show()
-  
-    keepGoing = True
+
     count = 0
-    while keepGoing and count < maxSize:
+    while count < maxSize:
         count = count + 1
         wxSleep(1)
-        keepGoing = dlg.Update(count)
+        dlg.UpdateGauge('update '+ str(count), count)
 
     dlg.Destroy()
 
@@ -1035,18 +1034,19 @@ class TextDialog(wxDialog):
 def SetIcon(app):
         icon = None
         if IsWindows()or IsLinux() or IsFreeBSD():
-             icon = icons.getAGIconIcon()
+            icon = icons.getAGIconIcon()
+            app.SetIcon(icon)
         elif IsOSX():
              icon = icons.getAGIcon128Icon()
-        if icon:
-            app.SetIcon(icon)
+             t = wxTaskBarIcon()
+             t.SetIcon(icon)
 
 if __name__ == "__main__":
     app = wxPySimpleApp()
-
+    
     ProgressDialogTest()
     AboutDialogTest()
-
+    
 
     # Test for bug report
     b = BugReportCommentDialog(None)
