@@ -58,7 +58,7 @@ else:
 
 print "Python: ", PYVER
 
-print "*********** Building bajjer\n"
+print "*********** Building elementtree\n"
 SetupModule("elementtree-1.2.6", SOURCE, DEST)
 
 print "*********** Building bajjer\n"
