@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.24 2007-05-29 06:26:04 douglask Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.25 2007-06-06 15:46:49 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -333,6 +333,9 @@ class VideoService( AGService ):
                 
             # Set drop time to something reasonable
             options.append('-XsiteDropTime=5')
+
+            # Set number of columns to use for thumbnail display
+            options.append("-Xtile=%s" % self.tiles.value)
                     
             if self.profile:
                 options.append("-X")
@@ -351,9 +354,6 @@ class VideoService( AGService ):
             options.append( '%s/%d' % ( self.streamDescription.location.host,
                                            self.streamDescription.location.port) )
                                            
-            # Set number of columns to use for thumbnail display
-            options.append("-Xtile=%s" % self.tiles.value)
-
             self.log.info("Starting VideoService")
             self.log.info(" executable = %s" % self.executable)
             self.log.info(" options = %s" % options)
