@@ -8,7 +8,7 @@ import sys
 SOURCE=sys.argv[1]
 DEST=sys.argv[2]
 
-UCLDIR=os.path.join(SOURCE,'ucl')
+UCLDIR=os.path.join(SOURCE,'mmedia')
 
 def build_win(dir):
     raise "no action defined"
@@ -30,10 +30,10 @@ def build_mac(dir):
 if sys.platform == 'darwin':
     dir = os.path.join(UCLDIR,'rat')
     uclRatFiles = [ os.path.join(dir,'rat'),
-                 os.path.join(dir,'rat-4.2.26'),
-                 os.path.join(dir,'rat-4.2.26-media'),
-                 os.path.join(dir,'rat-4.2.26-ui'),
-                 os.path.join(dir,'rat-4.2.26-kill') ]
+                 os.path.join(dir,'rat-4.4.00'),
+                 os.path.join(dir,'rat-4.4.00-media'),
+                 os.path.join(dir,'rat-4.4.00-ui'),
+                 os.path.join(dir,'rat-4.4.00-kill') ]
     copyExe = 'cp -p'
     build = build_mac
 else:
