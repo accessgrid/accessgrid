@@ -216,13 +216,12 @@ os.environ['PYTHONPATH'] = nppath
 # Build stuff that needs to be built for modules to work
 os.chdir(StartDir)
 
-if sys.platform != 'darwin':
-    buildcmd = "BuildOpenSSL.py"
-    cmd = "%s %s %s" % (sys.executable, buildcmd, DestDir)
-    ret = os.system(cmd)
-    if ret:
-        print '%s failed with %d; exiting' % (cmd,ret)
-        sys.exit(1)
+buildcmd = "BuildOpenSSL.py"
+cmd = "%s %s %s" % (sys.executable, buildcmd, DestDir)
+ret = os.system(cmd)
+if ret:
+    print '%s failed with %d; exiting' % (cmd,ret)
+    sys.exit(1)
 
 if sys.platform == 'win32':
     td = os.getcwd()
