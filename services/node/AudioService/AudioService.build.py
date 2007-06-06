@@ -20,16 +20,16 @@ if sys.platform == 'win32':
     copyExe = 'copy'
 elif sys.platform == 'linux2' or sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
     ratFiles = [ 'rat',
-                 'rat-4.2.22',
-                 'rat-4.2.22-media',
-                 'rat-4.2.22-ui',
+                 'rat-4.4.00',
+                 'rat-4.4.00-media',
+                 'rat-4.4.00-ui',
                  'rat-kill' ]
     copyExe = 'cp'
 elif sys.platform == 'darwin':
     ratFiles = [ 'rat',
-                 'rat-4.2.26',
-                 'rat-4.2.26-media',
-                 'rat-4.2.26-ui',
+                 'rat-4.4.00',
+                 'rat-4.4.00-media',
+                 'rat-4.4.00-ui',
                  'rat-kill' ]
     copyExe = 'cp -p'
 else:
