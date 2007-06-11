@@ -49,7 +49,17 @@ if not os.path.exists(servicesPath):
     os.mkdir(servicesPath)
 
 # copy AGNodeServiceMac.cfg to AGNodeService.cfg
-shutil.copy2(os.path.join(BuildDir, "packaging", "config", "AGNodeServiceMac.cfg"), os.path.join(DestDir, "Config", "AGNodeService.cfg"))
+#shutil.copy2(os.path.join(BuildDir, "packaging", "config", "AGNodeServiceMac.cfg"), os.path.join(DestDir, "Config", "AGNodeService.cfg"))
+
+# build mac-specific python modules
+cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
+                          BuildDir, DestDir)
+if options.verbose:
+    print "Building python modules with the command:", cmd
+ret = os.system(cmd)
+if ret:
+    print '%s failed with %d; exiting' % (cmd,ret)
+    sys.exit(1)
 
 # ----- Make package tree and copy files there -----
 
