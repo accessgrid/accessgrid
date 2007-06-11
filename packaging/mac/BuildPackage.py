@@ -109,7 +109,7 @@ except:
 
 # Remove shared applications that don't work on the mac yet.
 sharedAppDir = os.path.join(DestDir, "SharedApplications")
-sharedAppsToRemove = ["SharedBrowser", "SharedPresentation", "SharedPDF", "SharedQuestionTool"]
+sharedAppsToRemove = ["SharedBrowser", "SharedPDF", "SharedQuestionTool"]
 for appName in sharedAppsToRemove:
     for ext in [".agpkg", ".zip", ".agpkg3"]:
         appPath = os.path.join(sharedAppDir, appName + ext)
