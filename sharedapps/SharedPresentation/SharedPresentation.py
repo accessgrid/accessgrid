@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.48 2007-03-05 23:46:30 turam Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.49 2007-06-11 21:34:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1667,7 +1667,7 @@ if __name__ == "__main__":
     connectionId = None
     name = "SharedPresentation"
     debug = 0
-    file = None
+    presentationFile = None
     startSession = 0
 
     app = WXGUIApplication()
