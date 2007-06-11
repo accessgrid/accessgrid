@@ -70,8 +70,8 @@ SetupModule("feedparser", SOURCE, DEST)
 print "*********** Building pyxml\n"
 SetupModule("PyXML-0.8.4", SOURCE, DEST)
 
-print "*********** Building ZopeInterface\n"
-SetupModule("ZopeInterface-3.0.1", SOURCE, DEST)
+print "*********** Building zope interface\n"
+SetupModule("zope.interface-3.3.0", SOURCE, DEST)
 
 print "*********** Building zsi\n"
 SetupModule("zsi", SOURCE, DEST)
