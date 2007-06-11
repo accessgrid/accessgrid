@@ -10,7 +10,7 @@
 #-----------------------------------------------------------------------------    
 
 from appscript import *
-import macfile
+import mactypes
 
 class MacPPTViewer:
     """
@@ -96,7 +96,7 @@ class MacPPTViewer:
         # Open a new presentation and keep a reference to it in self.presentation
         
         file.replace("%20", " ")
-        self.ppt.open(macfile.Alias(file))
+        self.ppt.open(mactypes.Alias(file))
         self.presentation = self.ppt.active_presentation
         self.lastSlide = len(self.presentation.slides.get())
         print '================== set open file to ', file
