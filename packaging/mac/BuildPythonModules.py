@@ -61,7 +61,7 @@ print "Python: ", PYVER
 
 # appscript is required for SharedPresentation to work on OSX
 print "*********** Building appscript\n"
-SetupModule("appscript-0.17.2", SOURCE, DEST, moreinstallopts=['--single-version-externally-managed', '--root=%s' % DEST] )
+SetupModule("appscript-0.17.2", SOURCE, DEST, moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
 
 # LaunchServices is required by appscript; HACK!
 # http://svn.red-bean.com/bob/Python23Compat/trunk/LaunchServices
