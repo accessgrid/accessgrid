@@ -46,12 +46,7 @@ for f in ratFiles:
 # Build rat if necessary
 if needBuild:
     print "source dist = ", SOURCE, DEST
-    if sys.platform == 'darwin':
-        buildCmd = '%s %s %s %s' % (sys.executable,
-                                os.path.join(AGDIR,'packaging','BuildUclRat.py'),
-                                SOURCE, servicesDir)
-    else:
-        buildCmd = '%s %s %s %s' % (sys.executable,
+    buildCmd = '%s %s %s %s' % (sys.executable,
                                 os.path.join(AGDIR,'packaging','BuildRat.py'),
                                 SOURCE, servicesDir)
     os.system(buildCmd)
