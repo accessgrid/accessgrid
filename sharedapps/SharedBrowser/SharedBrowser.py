@@ -22,9 +22,10 @@ from AccessGrid.Toolkit import WXGUIApplication
 
 try:
     from twisted.internet import threadedselectreactor
-    threadedselectreactor.install()
 except:
-    pass
+    from twisted.internet import _threadedselect as threadedselectreactor
+
+threadedselectreactor.install()
 from twisted.internet import reactor
 
 class WebBrowser(wxPanel):

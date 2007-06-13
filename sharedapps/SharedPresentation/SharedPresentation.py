@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.49 2007-06-11 21:34:09 turam Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.50 2007-06-13 22:01:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,9 +25,10 @@ from AccessGrid import Log
 
 try:
     from twisted.internet import threadedselectreactor
-    threadedselectreactor.install()
 except:
-    pass
+    from twisted.internet import _threadedselect as threadedselectreactor
+
+threadedselectreactor.install()
 
 from twisted.internet import reactor
 
