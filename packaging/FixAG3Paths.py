@@ -22,7 +22,7 @@ else:
 
 here = os.getcwd()
 #line_to_insert = 'sys.path.insert' + '(0, \'' + os.path.join(eppath, 'AccessGrid3') + '\')\n'
-line_to_insert = 'import agversion\nagversion.select(3)\n'
+lines_to_insert = ['import agversion', 'agversion.select(3)' ]
 #eppath = '/usr/lib/python2.4/site-packages'
 
 def fixAG3paths(dir):
@@ -39,13 +39,14 @@ def fixAG3paths(dir):
             while not done:
                 line = infile.readline()
                 # Don't modify a previously fixed file
-                if len(line) > 0 and line.startswith(line_to_insert):
+                if len(line) > 0 and line.startswith(lines_to_insert[0]):
                     line_inserted = True
                 if len(line) == 0:
                     done = True
                 else:
                     if not line_inserted and line.find('AccessGrid') > 4:
-                        outfile.write(line_to_insert)
+                        for ln in lines_to_insert:
+                            outfile.write(ln + '\n')
                         line_inserted = True
                     outfile.write(line)
 
