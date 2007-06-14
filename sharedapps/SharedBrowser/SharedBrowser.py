@@ -8,18 +8,6 @@ import getopt
 
 from AccessGrid import Platform
 
-from wxPython.wx import *
-if sys.platform == Platform.WIN:
-    import wx.lib.iewin as iewin
-else:
-    from wxPython.mozilla import *
-
-from AccessGrid.SharedAppClient import SharedAppClient
-from AccessGrid.Platform.Config import UserConfig
-from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid import icons
-from AccessGrid.Toolkit import WXGUIApplication
-
 try:
     from twisted.internet import threadedselectreactor
 except:
@@ -28,6 +16,20 @@ except:
 threadedselectreactor.install()
 
 from twisted.internet import reactor
+
+from wxPython.wx import *
+if sys.platform == Platform.WIN:
+    import wx.lib.iewin as iewin
+else:
+    from wxPython.mozilla import *
+
+
+from AccessGrid.SharedAppClient import SharedAppClient
+from AccessGrid.Platform.Config import UserConfig
+from AccessGrid.ClientProfile import ClientProfile
+from AccessGrid import icons
+from AccessGrid.Toolkit import WXGUIApplication
+
 
 class WebBrowser(wxPanel):
     """
