@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.50 2007-06-13 22:01:23 turam Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.51 2007-06-14 22:04:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1735,6 +1735,7 @@ if __name__ == "__main__":
         clientProfile = venueClient.GetClientProfile()
         connectionId = clientProfile.connectionId
 
+        venueURL = str(venueURL)
         venueProxy = VenueIW(venueURL)
         presentationFilename = os.path.basename(presentationFile)
 
@@ -1743,8 +1744,7 @@ if __name__ == "__main__":
         app = venueProxy.CreateApplication(appName,
                                               SharedPresentation.appDescription,
                                               SharedPresentation.appMimetype)
-        appURL = app.uri
-
+        appURL = str(app.uri)
    
     # This is all that really matters!
     presentation = SharedPresentation(appURL, venueURL, name, connectionId=connectionId)
