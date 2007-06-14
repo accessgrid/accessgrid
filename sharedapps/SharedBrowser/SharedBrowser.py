@@ -26,6 +26,7 @@ except:
     from twisted.internet import _threadedselect as threadedselectreactor
 
 threadedselectreactor.install()
+
 from twisted.internet import reactor
 
 class WebBrowser(wxPanel):
@@ -288,7 +289,7 @@ class WebBrowser(wxPanel):
             if sys.platform == Platform.WIN:
                 self.wxbrowser.Navigate(url)
             else:
-                wxCallAfter(self.wxbrowser.LoadURL, url)
+                wxCallAfter(self.wxbrowser.LoadUrl, url)
 
     def OnLocationSelect(self, event):
         self.LocalEvent()
@@ -296,7 +297,7 @@ class WebBrowser(wxPanel):
         if sys.platform == Platform.WIN:
             self.wxbrowser.Navigate(url)
         else:
-            self.wxbrowser.LoadURL(url)
+            self.wxbrowser.LoadUrl(url)
 
     def OnLocationKey(self, event):
         if event.KeyCode() == WXK_RETURN:
@@ -304,7 +305,7 @@ class WebBrowser(wxPanel):
             URL = self.location.GetValue()
             if self.current and self.location.FindString(self.current) == wxNOT_FOUND:
                 self.location.Append(self.current)
-            self.wxbrowser.LoadURL(URL)
+            self.wxbrowser.LoadUrl(URL)
         else:
             event.Skip()
 
@@ -328,7 +329,7 @@ class SharedBrowser( wxApp ):
         self.sharedAppClient.Shutdown()
         os._exit(1)
 
-    def __init__( self, appUrl, name):
+    def __init__( self, appUrl, name,size=None):
         '''
         Creates the shared application client, used for
         application service interaction, and opens a web browser
@@ -356,7 +357,7 @@ class SharedBrowser( wxApp ):
         self.sharedAppClient.RegisterEventCallback("browse", self.BrowseCallback )
 
         # Create Browser Window
-        self.frame = wxFrame(None, -1, "Browser")
+        self.frame = wxFrame(None, -1, "Browser", size=size)
         if sys.platform != Platform.WIN:
             self.frame.CreateStatusBar()
         self.browser = WebBrowser(self.frame, -1, self.log, self.frame)
@@ -473,7 +474,7 @@ if __name__ == "__main__":
         am.Usage()
     else:
         wxInitAllImageHandlers()
-        sb = SharedBrowser( appUrl, name)
+        sb = SharedBrowser( appUrl, name, size=(800,1024))
         sb.MainLoop()
 
     #
