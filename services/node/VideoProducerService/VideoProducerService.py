@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.22 2007-06-15 16:05:00 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.23 2007-06-15 21:50:44 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -82,7 +82,11 @@ class VideoProducerService( AGService ):
         self.streamname = TextParameter( "Stream Name", "" )
         self.port = TextParameter( "Port", "" )
         self.encoding = OptionSetParameter( "Encoding", "h261", VideoProducerService.encodings )
-        self.standard = OptionSetParameter( "Standard", "NTSC", VideoProducerService.standards )
+        if IsWindows(): 
+            standard = "PAL"
+        else:
+            standard = "NTSC"
+        self.standard = OptionSetParameter( "Standard", standard, VideoProducerService.standards )
         self.bandwidth = RangeParameter( "Bandwidth", 800, 0, 3072 )
         self.framerate = RangeParameter( "Frame Rate", 24, 1, 30 )
         self.quality = RangeParameter( "Quality", 75, 1, 100 )

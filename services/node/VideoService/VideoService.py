@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.26 2007-06-15 16:04:29 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.27 2007-06-15 21:51:21 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -102,7 +102,11 @@ class VideoService( AGService ):
         self.streamname = TextParameter( "Stream Name", "" )
         self.port = TextParameter( "port", "" )
         self.encoding = OptionSetParameter( "Encoding", "h261", VideoService.encodingOptions )
-        self.standard = OptionSetParameter( "Standard", "NTSC", VideoService.standardOptions )
+        if IsWindows(): 
+            standard = "PAL"
+        else:
+            standard = "NTSC"
+        self.standard = OptionSetParameter( "Standard", standard, VideoProducerService.standards )
         self.tiles = OptionSetParameter( "Thumbnail Columns", "2", VideoService.tileOptions )
         self.bandwidth = RangeParameter( "Bandwidth", 800, 0, 3072 )
         self.framerate = RangeParameter( "Frame Rate", 24, 1, 30 )
