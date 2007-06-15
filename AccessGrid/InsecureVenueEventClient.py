@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service client that handles Access Grid
 #                 venue events.
 # Created:     2005/09/09
-# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.4 2006-09-21 17:42:25 turam Exp $
+# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.5 2007-06-15 14:42:52 turam Exp $
 # Copyright:   (c) 2005,2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -392,7 +392,10 @@ if __name__ == '__main__':
             useUI = False
     if useUI:
         from wxPython.wx import *
-        from twisted.internet import threadedselectreactor
+        try:
+            from twisted.internet import _threadedselect as threadedselectreactor
+        except:
+            from twisted.internet import threadedselectreactor
         threadedselectreactor.install()
     from twisted.internet import reactor
 
