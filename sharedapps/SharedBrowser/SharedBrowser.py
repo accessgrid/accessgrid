@@ -359,7 +359,7 @@ class SharedBrowser( wxApp ):
         self.sharedAppClient.RegisterEventCallback("browse", self.BrowseCallback )
 
         # Create Browser Window
-        self.frame = wxFrame(None, -1, "Browser", size=size)
+        self.frame = wxFrame(None, -1, "SharedBrowser", size=size)
         if sys.platform != Platform.WIN:
             self.frame.CreateStatusBar()
         self.browser = WebBrowser(self.frame, -1, self.log, self.frame)
