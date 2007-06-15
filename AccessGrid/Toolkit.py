@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.128 2007-04-19 22:12:33 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.129 2007-06-15 18:55:01 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.128 2007-04-19 22:12:33 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.129 2007-06-15 18:55:01 turam Exp $"
 
 # Standard imports
 import os
@@ -26,7 +26,7 @@ from AccessGrid.Platform.Config import AGTkConfig, MimeConfig
 from AccessGrid.Platform.Config import SystemConfig, UserConfig
 from AccessGrid.Platform import IsWindows
 from AccessGrid.ServiceProfile import ServiceProfile
-from AccessGrid.Version import GetVersion
+from AccessGrid.Version import GetVersion, GetStatus
 from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.wsdl import SchemaToPyTypeMap
 from AccessGrid.Security import ProxyGen
@@ -113,7 +113,7 @@ class AppBase:
        
        # This initializes logging
        self.log = Log.GetLogger(Log.Toolkit)
-       self.log.debug("Initializing AG Toolkit version %s", GetVersion())
+       self.log.debug("Initializing AG Toolkit version %s %s", GetVersion(), GetStatus())
        self.log.info("Command and arguments: %s" % sys.argv )
        
        self.__context = None
