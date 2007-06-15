@@ -4,7 +4,7 @@ description = Vic-based video service to send and receive video
 capabilities = Capability1 Capability2
 executable = VideoService.py
 platform = neutral
-version = 3.3
+version = 3.4
 inlineClass = VideoService
 resourceNeeded = 1
 
