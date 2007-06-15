@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.15 2007-05-25 16:50:46 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.16 2007-06-15 16:03:38 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ class VideoConsumerService( AGService ):
                 # get number of processors
                 systemInfo = win32api.GetSystemInfo()
                 numprocs = systemInfo[5]
-                self.allProcsMask = 2**numprocs
+                self.allProcsMask = 2**numprocs-1
 
                 self.procOptions = ['All']
                 for i in range(numprocs):
@@ -124,7 +124,7 @@ class VideoConsumerService( AGService ):
                         self.log.info('Setting processor affinity to all processors')
                         SystemConfig.instance().SetProcessorAffinity(self.allProcsMask)
                     else:
-                        val = 2**int(self.processorUsage.value)
+                        val = 2**(int(self.processorUsage.value)-1)
                         self.log.info('Ssetting processor affinity : use processor %s', self.processorUsage.value)
                         SystemConfig.instance().SetProcessorAffinity(int(self.processorUsage.value))
                 except:

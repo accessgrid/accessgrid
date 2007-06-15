@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.21 2007-05-29 06:26:05 douglask Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.22 2007-06-15 16:05:00 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -101,7 +101,7 @@ class VideoProducerService( AGService ):
                 # get number of processors
                 systemInfo = win32api.GetSystemInfo()
                 numprocs = systemInfo[5]
-                self.allProcsMask = 2**numprocs
+                self.allProcsMask = 2**numprocs-1
 
                 self.procOptions = ['All']
                 for i in range(numprocs):
@@ -213,7 +213,7 @@ class VideoProducerService( AGService ):
                         self.log.info('Setting processor affinity to all processors')
                         SystemConfig.instance().SetProcessorAffinity(self.allProcsMask)
                     else:
-                        val = 2**int(self.processorUsage.value)
+                        val = 2**(int(self.processorUsage.value)-1)
                         self.log.info('Ssetting processor affinity : use processor %s', self.processorUsage.value)
                         SystemConfig.instance().SetProcessorAffinity(int(self.processorUsage.value))
                 except:
@@ -286,7 +286,7 @@ class VideoProducerService( AGService ):
             options.append( "-u" )
             options.append( startupfile )
             options.append( "-C" )
-            options.append( str(self.streamname.value) )
+            options.append( "STREAM" + str(self.streamname.value) )
             if IsOSX():
                 options.append( "-X")
                 options.append( "transmitOnStartup=1")
