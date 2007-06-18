@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.236 2007-06-01 23:24:29 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.237 2007-06-18 17:33:48 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.236 2007-06-01 23:24:29 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.237 2007-06-18 17:33:48 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2226,19 +2226,19 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                         try:
                             self.controller.RemoveDataCB(item)
                         except NotAuthorizedError:
-                            log.info("bin.VenueClient::RemoveData: Not authorized to remove data")
+                            log.info("RemoveDataCB: Not authorized to remove data")
                             self.Notify("You are not authorized to remove the file", 
                                         "Remove Personal Files")        
                         except LegacyCallInvalid:
-                            log.info("bin.VenueClient::RemoveData: Invalid legacy call on non-root data")
+                            log.info("RemoveDataCB: Invalid legacy call on non-root data")
                             self.Notify("You tried to remove data, that is not accesible for AG3.0.2 users in the data stroe structure ", 
                                         "Remove Files")        
                         except LegacyCallOnDir:
-                            log.info("bin.VenueClient::RemoveData: No delete of directories for AG3.0.2 clients")
+                            log.info("RemoveDataCB: No delete of directories for AG3.0.2 clients")
                             self.Notify("You are not to delete directories with an AG3.0.2 client ", 
                                         "Remove Files")        
                         except:
-                            log.exception("bin.VenueClient::RemoveData: Error occured when trying to remove data")
+                            log.exception("RemoveDataCB: Error occured when trying to remove data")
                             self.Error("The file could not be removed", "Remove Files Error")
         else:
             self.Notify("Select the data you want to delete", "No file selected")
@@ -2264,11 +2264,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                                 self.__venueProxy.RemoveDir(item)
                                 
                         except NotAuthorizedError:
-                            log.info("bin.VenueClient::RemoveData: Not authorized to remove data")
+                            log.info("RemoveDirCB: Not authorized to remove data")
                             self.Notify("You are not authorized to remove the file", 
                                         "Remove Personal Files")        
                         #except:
-                            #log.exception("bin.VenueClient::RemoveData: Error occured when trying to remove data")
+                            #log.exception("RemoveDirCB: Error occured when trying to remove data")
                             #self.Error("The file could not be removed", "Remove Files Error")
                             
         else:
@@ -2278,7 +2278,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         try:
             self.controller.UpdateDataCB(dataDesc)
         except:
-            log.exception("bin.VenueClient::UpdateData: Error occured when trying to update data")
+            log.exception("UpdateDataCB: Error occured when trying to update data")
             self.Error("The file could not be updated", "Update Files Error")
 
     #
@@ -2702,7 +2702,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                     pass
 
         else:
-            log.info("note that bin.VenueClient.OnExit() was called twice.")
+            log.info("note that OnExit() was called twice.")
        
     def SetVenueUrl(self, url = None):
         fixedUrlList = []
@@ -3179,7 +3179,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         *back* Boolean value, true if the back button was pressed, else false.
         
         """
-        log.debug("bin.VenueClient::EnterVenue: Enter venue with url: %s", URL)
+        log.debug("EnterVenue: Enter venue with url: %s", URL)
     
         # Show warnings, do not enter venue
         if not enterSuccess:
@@ -3284,7 +3284,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             #  Load exits
             # log.debug("Add exits")
             wxCallAfter(self.statusbar.SetStatusText, "Load exits")
-            wxCallAfter(self.venueListPanel.AddConnections)
+            wxCallAfter(self.venueListPanel.AddConnections, venueState.connections.values())
                 # log.debug("   %s" %(conn.name))
 
            
@@ -3316,7 +3316,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                             "Entered %s successfully" %self.venueClient.GetVenueName())
        
         except Exception, e:
-            log.exception("bin.VenueClient::EnterVenue failed")
+            log.exception("EnterVenue failed")
             enterUISuccess = 0
 
         if not enterUISuccess:
@@ -3557,10 +3557,15 @@ class VenueListPanel(wxSashLayoutWindow):
     def AddVenueDoor(self,connectionDescription):
         self.list.AddVenueDoor(connectionDescription)
 
-    def AddConnections(self):
-        displayMode = self.GetDisplayMode()
-        if displayMode == Preferences.EXITS or displayMode == Preferences.ALL_VENUES:
-            self.list.UpdateView()
+    def AddConnections(self, connections=[]):
+        try:
+            displayMode = self.GetDisplayMode()
+            log.info('AddConnections:  displayMode = %s', displayMode)
+            
+            if displayMode == Preferences.EXITS or displayMode == Preferences.ALL_VENUES:
+                self.list.UpdateView(venues=connections)
+        except:
+            log.exception('Error updating connections list')
         
     def RemoveVenueDoor(self,connectionDescription):
         self.list.RemoveVenueDoor(connectionDescription)
@@ -3752,7 +3757,7 @@ class NavigationPanel(wxPanel):
         self.tree.SetItemData(newItem, wxTreeItemData(venue)) 
       
  
-    def UpdateView(self, displayMode = None):
+    def UpdateView(self, displayMode = None, venues=None):
         '''
         Add entries to the list of venues depending on preferences. 
         '''
@@ -3780,7 +3785,9 @@ class NavigationPanel(wxPanel):
 
         # Show connections to this venue
         elif dm == Preferences.EXITS:
-            venues = self.app.controller.GetVenueConnections(self.app.venueClient.GetVenue())
+            if not venues:
+                # if exits not passed in, retrieve them from the venue
+                venues = self.app.controller.GetVenueConnections(self.app.venueClient.GetVenue())
             self.parent.viewSelector.SetValue("Exits")
 
         if venues:
@@ -3983,10 +3990,6 @@ class ContentListPanel(wxPanel):
             imageId = self.nodeId
         else:
             log.exception("ContentListPanel.AddParticipant: The user type is not a user nor a node, something is wrong")
-
-        log.debug("ContentListPanel.AddParticipant:: AddParticipant %s (called from %s)", 
-                  profile.name,
-                  (traceback.extract_stack())[-2])
 
         # Add the participant to the list
         participant = self.tree.AppendItem(self.participants, profile.name, 
