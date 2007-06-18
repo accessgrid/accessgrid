@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.349 2007-06-04 19:39:20 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.350 2007-06-18 23:30:45 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.349 2007-06-04 19:39:20 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.350 2007-06-18 23:30:45 turam Exp $"
 
 
 import sys
@@ -297,6 +297,7 @@ class VenueClient:
 
         self.venueUri = None
         self.__venueProxy = None
+        self.__secondaryVenueProxy = None
 
         # Cache profiles in case we need to look at them later.
         # specifically, the cache makes it easier to add roles when
@@ -430,6 +431,7 @@ class VenueClient:
         self.venueState = None
         self.venueUri = None
         self.__venueProxy = None
+        self.__secondaryVenueProxy = None
         #self.privateId = None
 
 
@@ -587,7 +589,7 @@ class VenueClient:
             # Note:  heartbeat timeout is a dummy argument for now;
             #        remove it when 3.0 servers are no longer a concern
             dummyClientTimeout = 30
-            nextTimeout = self.__venueProxy.UpdateLifetime(
+            nextTimeout = self.__secondaryVenueProxy.UpdateLifetime(
                 self.profile.connectionId,dummyClientTimeout)
                 
             if nextTimeout == -1:
@@ -982,8 +984,10 @@ class VenueClient:
             transdict = {'ssl_context':ctx}
             log.info("Using certificate with VenueIW")
             self.__venueProxy = VenueIW(URL,transdict=transdict) #, tracefile=sys.stdout)
+            self.__secondaryVenueProxy = VenueIW(URL,transdict=transdict) #, tracefile=sys.stdout)
         else:
             self.__venueProxy = VenueIW(URL) #, tracefile=sys.stdout)
+            self.__secondaryVenueProxy = VenueIW(URL) #, tracefile=sys.stdout)
 
         if not self.__venueClientUI == None:
             self.__venueClientUI.SetVenueProxy(self.__venueProxy)
@@ -1423,6 +1427,7 @@ class VenueClient:
             # start the beacon
             self.StartBeacon()
 
+
     def UpdateStream(self,stream):
         """
         Apply selections of transport and netloc provider to the given stream.
@@ -1437,10 +1442,10 @@ class VenueClient:
             if self.transport == "multicast" and netloc.GetType() == self.transport:
                 stream.location = netloc
                 found = 1
-	    # If UMTP, use the multicast location
-	    elif self.transport == "unicast" and self.currentBridge.serverType == UMTP_TYPE and netloc.GetType() == "multicast":
-		stream.location = netloc
-		found = 1
+            # If UMTP, use the multicast location
+            elif self.transport == "unicast" and self.currentBridge.serverType == UMTP_TYPE and netloc.GetType() == "multicast":
+                stream.location = netloc
+                found = 1
                                     
         if not found and self.transport == "unicast" and self.currentBridge.serverType == QUICKBRIDGE_TYPE:
             # If no unicast network location was found, connect to
