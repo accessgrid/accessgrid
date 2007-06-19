@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.27 2007-06-15 21:51:21 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.28 2007-06-19 01:55:28 willing Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -106,7 +106,7 @@ class VideoService( AGService ):
             standard = "PAL"
         else:
             standard = "NTSC"
-        self.standard = OptionSetParameter( "Standard", standard, VideoProducerService.standards )
+        self.standard = OptionSetParameter( "Standard", standard, VideoService.standardOptions )
         self.tiles = OptionSetParameter( "Thumbnail Columns", "2", VideoService.tileOptions )
         self.bandwidth = RangeParameter( "Bandwidth", 800, 0, 3072 )
         self.framerate = RangeParameter( "Frame Rate", 24, 1, 30 )
