@@ -1,0 +1,38 @@
+
+get_srcpkg () {
+if [ ! -f ${here}/${1} ]; then
+  #echo "DISTDIR = ${distdir}"
+  if [ ! -f ${distdir}/${1} ]; then
+    echo "Fetching ... "
+    wget -nH -nd ${master_sites}/${1}
+  else
+    cp -p ${distdir}/${1} .
+  fi
+fi
+if [ ! -f ${here}/${1} ]; then
+  echo "Don't have ${1} - exiting now ..."
+  exit 9
+else
+  echo "Have local copy of ${1} - ready to commence build ..."
+fi
+
+}
+
+do_patch () {
+
+echo "Patching with ${1}"
+
+cat ${1} |patch -p0 --dry-run
+if [ $? -ne 0 ]; then
+  echo "Can't patch ${1}. Exiting now ..."
+  exit 1
+fi
+cat ${1} |patch -p0
+if [ $? -ne 0 ]; then
+  echo "Couldn't patch ${1}. Exiting now ..."
+  exit 2
+fi
+
+}
+
+
