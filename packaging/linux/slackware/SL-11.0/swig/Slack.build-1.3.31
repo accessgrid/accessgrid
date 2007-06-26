@@ -1,0 +1,101 @@
+name=swig
+version=1.3.31
+release=1
+arch=${ARCH:-`uname -m`}
+srcpkg=${name}-${version}.tar.gz
+buildroot=/var/tmp
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.tgz
+releasedir=${RELEASEDIR:-/tmp}
+
+master_sites=http://www.vislab.uq.edu.au/ag3/freebsd/distfiles/
+distdir=/nfs/distfiles/
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+here=`pwd`
+
+PATH=/sbin:${PATH}
+. ../functions
+
+get_srcpkg ${srcpkg}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+cd ${builddir}
+
+# Do patches like:
+#	do_patch ${patch0}
+#
+
+#autoconf
+CFLAGS="$SLKCFLAGS" \
+./configure	\
+	--prefix=/usr	\
+&& make	\
+&& make install DESTDIR=${pkgdir}
+
+
+mkdir -p ${docdir}
+cp ANNOUNCE CHANGES CHANGES.current FUTURE INSTALL LICENSE NEW README TODO \
+	${docdir}
+
+# 
+#
+mkdir -p ${pkgdir}/install
+cat <<EOF >${pkgdir}/install/slack-desc
+${name}: ${name}-${version}
+${name}:
+${name}: ${name} is a compiler that integrates C and C++ with
+${name}: languages including Perl, Python, Tcl, Guile, Mzscheme,
+${name}: Java, Ruby, PHP, Ocaml, Pike, C#, Modula-3, CHICKEN, and
+${name}: Allegro Common Lisp.
+${name}:
+EOF
+chmod 0644 ${pkgdir}/install/slack-desc
+
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# CKW 20061213 - release 1 of version 1.3.31
+#
+
+

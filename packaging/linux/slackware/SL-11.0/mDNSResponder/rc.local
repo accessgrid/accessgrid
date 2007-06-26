@@ -1,0 +1,7 @@
+
+# Startup the mDNSResponder daemon
+#
+if [ -x /etc/rc.d/rc.mdnsd ]; then
+  /etc/rc.d/rc.mdnsd restart
+fi
+

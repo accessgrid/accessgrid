@@ -1,0 +1,136 @@
+name=ag-vic
+version=2.8ucl-1.3.0
+release=1
+arch=${ARCH:-`uname -m`}
+srcpkg=mmedia-31.tar.gz
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.tgz
+
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/distfiles/
+releasedir=${RELEASEDIR:-/tmp}
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+  LIBDIR="/usr/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+  LIBDIR="/usr/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mcpu=i686"
+  LIBDIR="/usr/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR="/usr/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR="/usr/lib64"
+  ARCH_CONFIGURE="--libdir=$LIBDIR"
+fi
+
+here=`pwd`
+
+patch0=${here}/patches/patch-mpeg4-tcl-ui-ctrlmenu.tcl
+patch1=${here}/patches/patch-mpeg4-tcl-ui-windows.tcl
+
+PATH=/sbin:${PATH}
+. ../../functions
+
+get_srcpkg ${srcpkg}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+mv mmedia ${name}-${version}
+cd ${builddir}
+
+# Apply patches
+# like this: do_patch ${patch0}
+#
+do_patch ${patch0}
+do_patch ${patch1}
+
+echo -n "Post-patch sleep ..."
+sleep 5
+echo
+
+# Build
+(cd common && ./configure && make) || exit 1
+(cd tcl-8.0/unix && ./configure && make) || exit 1
+(cd tk-8.0/unix && ./configure && make) || exit 1
+(cd mpeg4 && ./configure --with-ucltcl --with-ucltk && make) || exit 1
+
+# Install
+cd ${builddir}
+install -d ${pkgdir}/usr/bin
+install -d ${pkgdir}/usr/share/man/man1
+install -m 755 \
+    mpeg4/vic mpeg4/histtolut \
+    ${pkgdir}/usr/bin/
+install -m 644 mpeg4/vic.1 ${pkgdir}/usr/share/man/man1/
+
+
+# Docs
+#
+cd ${builddir}/mpeg4
+mkdir -p ${docdir}
+cp -a html CHANGES.html FILES README README.WIN32 VERSION \
+	${docdir}
+
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+cat <<EOF >${pkgdir}/install/slack-desc
+${name}: ${name}-${version}
+${name}:
+${name}: New UCL vic video tool
+${name}: using ucl svn revision 4059 versions of
+${name}: common, tcl-8.0, tk-8.0 libraries
+${name}:
+EOF
+chmod 0644 ${pkgdir}/install/slack-desc
+
+cp ${here}/Slack.build ${pkgdir}/install/
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# 20070606 CKW First release
+#  - svn checkout http://mediatools.cs.ucl.ac.uk/repos/mmedia/vic/branches/mpeg4 mpeg4
+#

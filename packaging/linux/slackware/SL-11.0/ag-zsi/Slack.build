@@ -1,0 +1,103 @@
+name=ag-zsi
+version=r1385
+release=2
+arch=${ARCH:-`uname -m`}
+srcpkg=zsi-${version}.tar.gz
+buildroot=/var/tmp
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.tgz
+releasedir=${RELEASEDIR:-/tmp}
+
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles
+distdir=/usr/ports/distfiles
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+here=`pwd`
+patch0=${here}/patches/patch-ZSI-client.py
+
+PATH=/sbin:${PATH}
+. ../functions
+
+get_srcpkg ${srcpkg}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+mv zsi-${version} ${name}-${version}
+cd ${builddir} || exit 1
+
+do_patch ${patch0}
+
+python setup.py install --root=${pkgdir}
+( cd ${pkgdir}/usr/bin && ln wsdl2dispatch wsdl2dispatch.py && ln wsdl2py wsdl2py.py )
+
+
+mkdir -p ${docdir}
+cp CHANGES Copyright README RELEASE \
+	${docdir}
+
+# 
+#
+mkdir -p ${pkgdir}/install
+cat <<EOF >${pkgdir}/install/slack-desc
+${name}: ${name}-${version}
+${name}:
+${name}: ZSI, the Zolera SOAP Infrastructure, is a pure-Python
+${name}: module that provides an implementation of SOAP messaging,
+${name}: as described in SOAP 1.1 Specification
+${name}: (see http://www.w3.org/TR/soap).
+${name}: It can also be used to build applications using SOAP Messages
+${name}: with Attachments (see http://www.w3.org/TR/SOAP-attachments).
+${name}: ZSI is intended to make it easier to write web services in Python
+${name}:
+EOF
+chmod 0644 ${pkgdir}/install/slack-desc
+
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# CKW 20070604 - release 2
+#   add Tom's self.h = None patch
+#
+# CKW 20070528 - release 1 of r1385 from svn
+# svn co https://pywebsvcs.svn.sourceforge.net/svnroot/pywebsvcs/branches/ZSI_v2_0_0 zsi
+#
+

@@ -1,0 +1,3 @@
+CKW 20070612
+    frg64-2.14.3 installs a libcairo which makes wxmozilla build fail. Fix by removing frg version and reinstalling original slamd64 libcairo.
+

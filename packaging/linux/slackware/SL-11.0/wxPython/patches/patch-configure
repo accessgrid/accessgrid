@@ -1,0 +1,11 @@
+--- configure.orig	2006-03-29 05:51:03.000000000 +1000
++++ configure	2007-02-12 16:28:47.054658947 +1000
+@@ -23536,7 +23536,7 @@
+ echo "$as_me:$LINENO: result: $wx_cv_std_libpath" >&5
+ echo "${ECHO_T}$wx_cv_std_libpath" >&6
+ 
+-SEARCH_LIB="`echo "$SEARCH_INCLUDE" | sed s@include@$wx_cv_std_libpath@g` /usr/$wx_cv_std_libpath"
++SEARCH_LIB="`echo "$SEARCH_INCLUDE" | sed s@include@$wx_cv_std_libpath@g` /usr/$wx_cv_std_libpath /usr/X11/lib"
+ 
+ if test "$build" != "$host" -a "$GCC" = yes; then
+                     if cross_root=`$CC -print-prog-name=ld 2>/dev/null`; then

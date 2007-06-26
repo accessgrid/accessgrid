@@ -1,0 +1,101 @@
+name=zopeinterface
+version=3.3.0
+release=1
+arch=${ARCH:-`uname -m`}
+srcpkg=zope.interface-${version}.tar.gz
+buildroot=/var/tmp
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.tgz
+releasedir=${RELEASEDIR:-/tmp}
+
+master_sites=http://www.zope.org/Products/ZopeInterface/3.3.0/
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/usr/ports/distfiles/
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+here=`pwd`
+patch0=${here}/patches/
+
+PATH=/sbin:${PATH}
+. ../functions
+
+get_srcpkg ${srcpkg}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+mv zope.interface-${version} ${builddir}
+cd ${builddir}
+
+
+# Build\#
+python setup.py build
+
+#Install
+#
+python setup.py install --root=${pkgdir}
+
+
+mkdir -p ${docdir}
+cp CHANGES.txt README.txt \
+	${docdir}
+
+# 
+#
+mkdir -p ${pkgdir}/install
+cat <<EOF >${pkgdir}/install/slack-desc
+${name}: ${name}-${version}
+${name}:
+${name}: Zope is an open source web application server primarily
+${name}: written in the Python programming language.
+${name}:
+${name}: From:
+${name}:       http://www.zope.org/
+${name}:
+EOF
+chmod 0644 ${pkgdir}/install/slack-desc
+
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm ${srcpkg}
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# CKW 20070626 - initial package
+#
+

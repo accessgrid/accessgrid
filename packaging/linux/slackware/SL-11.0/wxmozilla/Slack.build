@@ -1,0 +1,128 @@
+name=wxmozilla
+version=20061219cvs
+release=1
+prefix=${PREFIX:-/usr}
+arch=${ARCH:-`uname -m`}
+srcpkg=${name}-${version}.tar.gz
+releasedir=${RELEASEDIR:-/tmp}
+pyver=2.4
+tmp=${TMP:-/var/tmp}
+buildroot=${tmp}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.tgz
+
+master_sites=http://www.vislab.uq.edu.au/ag3/freebsd/distfiles/
+distdir=/nfs/distfiles/
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+  LIBDIR=/usr/lib
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+  LIBDIR=/usr/lib
+elif [ "${arch}" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mcpu=i686"
+  LIBDIR=/usr/lib
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR=/usr/lib
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR=/usr/lib64
+fi
+
+here=`pwd`
+
+PATH=/sbin:${PATH}
+. ../functions
+
+get_srcpkg ${srcpkg}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+cd ${builddir}
+
+# Apply patches
+# like this: do_patch ${patch0}
+#
+
+
+#autoconf
+# Build & install
+#
+CFLAGS="$SLKCFLAGS" \
+./configure	\
+	--prefix=${prefix} \
+	--disable-gtktest \
+	--enable-python \
+	--enable-seamonkey \
+&& make	\
+&& make install DESTDIR=${pkgdir}
+
+#        --libdir=${LIBDIR} \
+
+# Documentation
+#
+cd ${builddir}
+mkdir -p doc/html
+doxygen doxygen.config
+
+docdir=${pkgdir}/usr/doc/${name}-${version}
+mkdir -p ${docdir}
+cp -a doc/html/* AUTHORS BUILD.Unix.txt COPYING INSTALL NEWS README \
+        ${docdir}/
+
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+cat <<EOF >${pkgdir}/install/slack-desc
+${name}: ${name}-${version}
+${name}:
+${name}: wxWindows interface to Mozilla
+${name}:
+${name}: This version for python${pyver}
+${name}:
+${name}: From:
+${name}:       http://wxmozilla.sourceforge.net
+${name}:
+${name}:
+EOF
+chmod 0644 ${pkgdir}/install/slack-desc
+
+cp ${here}/doinst.sh ${pkgdir}/install/
+chmod 0755 ${pkgdir}/install/doinst.sh
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+# Changelog
+#
+# 20061219 CKW, release 1
+#  - 0.5.7 is not actually released; using CVS code
+#
+

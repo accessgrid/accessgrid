@@ -1,0 +1,27 @@
+#!/bin/sh
+
+LDSOCONF="/etc/ld.so.conf"
+
+d=`find /usr/lib -type d -name "mozilla*"`
+for i in $d; do
+  location=`find $i -name "libgtkembed*"`
+done
+#echo $location
+
+if [ -z $location ]; then
+  /sbin/ldconfig
+  exit 1
+fi
+
+dir2add=`dirname $location`
+
+inld=`grep ${dir2add} ${LDSOCONF}`
+if [ $? -ne 0 ];then
+  echo "Adding ${dir2add} to ${LDSOCONF}"
+  echo "$dir2add" >>${LDSOCONF}
+else
+  echo "$dir2add already exists in ${LDSOCONF}"
+fi
+
+/sbin/ldconfig
+

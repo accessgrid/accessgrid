@@ -1,0 +1,329 @@
+# This is a build script for combined GTK2 version of
+# wxGTK and wxPython
+
+arch=${ARCH:-`uname -m`}
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+  LIBDIR=/usr/lib
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+  LIBDIR=/usr/lib
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mcpu=i686"
+  LIBDIR=/usr/lib
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR=/usr/lib
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR=/usr/lib64
+  ARCH_CONFIGURE="--libdir=${LIBDIR}"
+fi
+
+here=`pwd`
+_prefix=/usr
+_datadir=${_prefix}/share
+pyver=2.4
+releasedir=${RELEASEDIR:-/tmp}
+tmp=${TMP:-/var/tmp}
+
+port=gtk2
+unicode=0
+
+# Should the builtin image and etc. libs be used, or system libs?
+# Distro specific RPMs should probably set this to 0, generic ones
+# should use 1
+builtin_libs=0
+
+# Should --enable-debug_flag be used in release builds?  Using it
+# defines __WXDEBUG__ and gives us runtime diagnostics that are turned
+# into Python exceptions starting with 2.3.4.  (So turning it on is a
+# very helpful thing IMO and is recommended.)
+debug_flag=1
+
+fullver=${fullver:-0}
+
+# Whether to add --enable-mediactrl to the wxWidgets configure.  For
+# some older versions of gstreamer-0.8 it currently incorerctly allows
+# its use eventhough there is a compatibility problem that causes a
+# failed compile.
+mediactrl=${mediactrl:-1}
+
+
+pref=${_prefix}
+python=/usr/bin/python${pyver}
+tarname=wxPython-src
+version=2.6.3.2
+ver2=2.6
+
+chartype=$(if [ "${unicode}" = "1" ]; then echo unicode; else echo ansi; fi)
+gtktype=""; if [ "${port}" = "gtk2" ]; then gtktype=2; fi
+wxprefbase=${LIBDIR}/wxPython
+wxpref=${wxprefbase}-${version}-${port}-${chartype}
+release=4
+name=wxPython-${ver2}-${port}-${chartype}
+buildroot=${tmp}
+builddir=${buildroot}/wxPython-${version}
+pkgdir=${buildroot}/wxPython-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+
+pkgname=${name}-${version}-${arch}-${release}.tgz
+
+srcpkg=${tarname}-${version}.tar.gz
+master_sites=http://www.vislab.uq.edu.au/ag3/freebsd/distfiles/
+distdir=/usr/ports/distfiles
+
+
+. ../functions
+get_srcpkg ${srcpkg}
+
+patch0=${here}/patch-wxPython-config.py
+patch1=${here}/patch-configure
+
+
+MAKE="make"
+
+
+# Prepare build & package directories
+#
+echo "Preparing build area ..."
+[ -d "${builddir}" -a "${builddir}" != "/" ] && rm -rf ${builddir}
+[ -d "${pkgdir}" -a "${pkgdir}" != "/" ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}${LIBDIR}
+
+cd ${buildroot}
+echo "Looking for ${here}/${srcpkg}"
+tar zxvf ${here}/${srcpkg}
+mv ${tarname}-${version} wxPython-${version}
+
+cd ${builddir} 
+do_patch ${patch0}
+do_patch ${patch1}
+sleep 2
+
+WXDIR=${builddir}
+mkdir -p bld
+cd bld
+
+# Configure, trying to reduce external dependencies
+CFLAGS="${SLKCFLAGS}" \
+../configure	\
+	--with-gtk=2	\
+	--disable-gtktest \
+	--prefix=${wxpref} \
+	--enable-monolithic \
+	--disable-rpath \
+	--enable-soname \
+	--enable-shared \
+	--with-opengl \
+	--enable-sound --with-sdl \
+	--with-gnomeprint \
+	--enable-geometry \
+	--enable-optimise \
+	--enable-display \
+	--enable-debug_flag
+
+if [ ! $? -eq 0 ]; then
+  echo "Couldn't configure package: wxWxindows"
+  exit 2
+fi
+
+
+# Build wxWidgets
+#
+echo
+echo
+echo "############################################## Running $MAKE (in `pwd`) ####################################"
+cd ${builddir}/bld
+$MAKE \
+    && $MAKE -C contrib/src/animate \
+    && $MAKE -C contrib/src/gizmos \
+    && $MAKE -C contrib/src/stc
+if [ $? -ne 0 ]; then
+  echo "Couldn't $MAKE in `pwd`"
+  exit 4
+fi
+
+# Install wxWidgets
+echo
+echo
+echo "############################################## Installing wxWindows ####################################"
+$MAKE prefix=${wxpref} install DESTDIR=${pkgdir} \
+    && $MAKE -C contrib/src/animate prefix=${wxpref} install DESTDIR=${pkgdir} \
+    && $MAKE -C contrib/src/gizmos prefix=${wxpref} install DESTDIR=${pkgdir} \
+    && $MAKE -C contrib/src/stc prefix=${wxpref} install DESTDIR=${pkgdir}
+if [ $? -ne 0 ]; then
+  echo "Couldn't $MAKE install in ${builddir}"
+  exit 5
+fi
+
+
+echo
+echo
+echo "############################################## Building wxPython (in ${WXDIR}/wxPython) ####################################"
+# Now build wxPython
+cd $WXDIR/wxPython
+${python} setup.py \
+	SWIG=/usr/bin/swig-1.3.27 \
+	WXPORT=${port} \
+	UNICODE=${unicode} \
+	EP_ADD_OPTS=1 \
+	EP_FULL_VER=${fullver} \
+	NO_SCRIPTS=1 \
+	WX_CONFIG="$WXDIR/bld/wx-config --no_rpath" \
+	build_ext --rpath=${wxpref}/lib \
+	build
+
+
+# Install wxPython
+cd $WXDIR/wxPython
+echo
+echo
+echo "############################################## Installing wxPython ####################################"
+${python} setup.py \
+	SWIG=/usr/bin/swig-1.3.27 \
+	WXPORT=${port} \
+	UNICODE=${unicode} \
+	EP_ADD_OPTS=1 \
+	EP_FULL_VER=${fullver} \
+	NO_SCRIPTS=1 \
+	WX_CONFIG="${pkgdir}/${wxpref}/bin/wx-config --prefix=${pkgdir}/${wxpref} --no_rpath" \
+	build_ext --rpath=${wxpref}/lib \
+	install \
+	--root=${pkgdir}
+
+# Strip debug info
+strip ${pkgdir}/${pref}/lib*/python${pyver}/site-packages/wx-${ver2}*-${port}-${chartype}/wx/*.so
+
+
+# Since I want this RPM to be as generic as possible I won't let
+# distutils copy the scripts since it will mangle the #! line to use
+# the real python pathname.  Since some distros install python 2.2 as
+# python2 and others as python, then I can't let distutils do that
+# otherwise the dependencies will be fouled up.  Copy them manually
+# instead, leaving the #!/bin/env line intact.
+#
+echo
+echo
+echo "############################################## Copying Scripts ####################################"
+
+mkdir -p ${pkgdir}/${pref}/bin
+cd $WXDIR/wxPython
+for s in \
+	helpviewer \
+	img2png \
+	img2py \
+	img2xpm \
+	pyalacarte \
+	pyalamode \
+	pycrust \
+	pywrap \
+	pyshell \
+	pywxrc \
+	xrced; do
+    cp scripts/$s ${pkgdir}/${pref}/bin
+done
+
+
+# Install GNOME menu items
+mkdir -p ${pkgdir}/${_datadir}/applications
+for d in distrib/*.desktop; do
+    install -m 644 $d ${pkgdir}/${_datadir}/applications
+done
+
+# Install icons
+mkdir -p ${pkgdir}/${_datadir}/icons/hicolor/{16x16,32x32}/apps
+mkdir -p ${pkgdir}/${_datadir}/pixmaps
+install -m 644 wx/py/PyCrust_16.png ${pkgdir}/${_datadir}/icons/hicolor/16x16/apps/PyCrust.png
+install -m 644 wx/py/PyCrust_32.png ${pkgdir}/${_datadir}/icons/hicolor/32x32/apps/PyCrust.png
+install -m 644 wx/py/PyCrust_32.png ${pkgdir}/${_datadir}/pixmaps/PyCrust.png
+install -m 644 wx/tools/XRCed/XRCed_16.png ${pkgdir}/${_datadir}/icons/hicolor/16x16/apps/XRCed.png
+install -m 644 wx/tools/XRCed/XRCed_32.png ${pkgdir}/${_datadir}/icons/hicolor/32x32/apps/XRCed.png
+install -m 644 wx/tools/XRCed/XRCed_32.png ${pkgdir}/${_datadir}/pixmaps/XRCed.png
+
+## Correct the prefix path in wxgtk2d-config
+##
+#sed -i 's/^prefix=.*.$/prefix=\/usr/' ${pkgdir}/usr/bin/wxgtk2d-2.4-config
+#(cd ${pkgdir}/${pref}/bin; rm -f wx-config; ln -s /usr/lib/wx/config/gtk2-ansi-debug-2.6 wx-config)
+#(cd ${pkgdir}/${pref}/bin; rm -f wx-config; ln -s ${pref}/lib/wxPython-2.6.3.2-gtk2-ansi/lib/wx/config/gtk2-ansi-debug-2.6 wx-config)
+(cd ${pkgdir}/${wxpref}/bin; rm -f wx-config; ln -s ${wxpref}/lib/wx/config/gtk2-ansi-debug-2.6 wx-config)
+(cd ${pkgdir}/${pref}/bin; rm -f wx-config; ln -s ${wxpref}/bin/wx-config wx-config)
+
+# Manual fix till I work out what's making it go into inlude, rather than usr/include
+# (from previous version 2.6.2.1 - I think its not needed here)
+#
+if [ -d ${pkgdir}/include ]; then
+  echo "DOING MANUAL MOVE"
+  mv ${pkgdir}/include/wx-2.6/wx/wxPython ${pkgdir}/usr/include/wx-2.6/wx/
+  rm -rf ${pkgdir}/include
+fi
+
+# Make the package
+#
+echo
+echo
+echo "################################### Building Package #########################"
+mkdir -p ${docdir}
+cd ${builddir}
+cp -a wxPython/samples \
+    ${docdir}/
+cd ${builddir}/docs
+cp -a gtk publicity changes.txt gpl.txt lgpl.txt licence.txt licendoc.txt \
+    preamble.txt readme.txt toback24.txt todo.txt todo30.txt \
+    ${docdir}/
+
+cd ${pkgdir}
+mkdir -p install
+cat <<EOF >${pkgdir}/install/slack-desc
+               |-----handy-ruler------------------------------------------------------|
+wxPython${port}: wxPython-${version}
+wxPython${port}: 
+wxPython${port}: wxPython is a GUI toolkit for Python that is a wrapper around
+wxPython${port}: the wxWindows C++ GUI library.  wxPython provides a large variety
+wxPython${port}: of window types and controls, all implemented with a native look and
+wxPython${port}: feel (and native runtime speed) on the platforms it is supported on.
+wxPython${port}: 
+wxPython${port}: This package is implemented using the ${port} port of wxWindows, and
+wxPython${port}: includes the wx${port} shared libs and etc.
+wxPython${port}: 
+wxPython${port}: 
+EOF
+chmod 0644 ${pkgdir}/install/slack-desc
+
+# Installation script (Add lib path to /etc/ld.so.conf)
+#
+cp ${here}/doinst.sh ${pkgdir}/install/
+chmod 0755 ${pkgdir}/install/doinst.sh
+
+
+/sbin/makepkg -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+
+# Clean up
+#
+[ -d ${pkgdir} -a "${pkgdir}" != "/" ] && rm -rf ${pkgdir}
+[ -d ${builddir} -a "${builddir}" != "/" ] && rm -rf ${builddir}
+rm ${srcpkg}
+
+exit 0
+
+# Changelog
+#
+# CKW 20070109, release 4
+#  - add documentation & samples to /usr/doc/${name}
+#
+# CKW 20061214, release 3
+#  - uses patched swig-1.3.27 (as per SWIG/README.txt)
+#
+# CKW 20060629, release 2
+#  - remove config option:	--enable-mediactrl \
+#  - (which needed unavailable -lgstplay)
+#
+# CKW 20060602, release 1 of 2.6.3.2
+#
+
