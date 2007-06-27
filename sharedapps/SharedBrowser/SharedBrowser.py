@@ -291,7 +291,7 @@ class WebBrowser(wxPanel):
             if sys.platform == Platform.WIN:
                 self.wxbrowser.Navigate(url)
             else:
-                wxCallAfter(self.wxbrowser.LoadUrl, url)
+                wxCallAfter(self.wxbrowser.LoadURL, url)
 
     def OnLocationSelect(self, event):
         self.LocalEvent()
@@ -299,7 +299,7 @@ class WebBrowser(wxPanel):
         if sys.platform == Platform.WIN:
             self.wxbrowser.Navigate(url)
         else:
-            self.wxbrowser.LoadUrl(url)
+            self.wxbrowser.LoadURL(url)
 
     def OnLocationKey(self, event):
         if event.KeyCode() == WXK_RETURN:
@@ -307,7 +307,7 @@ class WebBrowser(wxPanel):
             URL = self.location.GetValue()
             if self.current and self.location.FindString(self.current) == wxNOT_FOUND:
                 self.location.Append(self.current)
-            self.wxbrowser.LoadUrl(URL)
+            self.wxbrowser.LoadURL(URL)
         else:
             event.Skip()
 
