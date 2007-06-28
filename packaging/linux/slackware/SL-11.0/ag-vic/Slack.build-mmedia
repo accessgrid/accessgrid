@@ -40,9 +40,10 @@ here=`pwd`
 
 patch0=${here}/patches/patch-mpeg4-tcl-ui-ctrlmenu.tcl
 patch1=${here}/patches/patch-mpeg4-tcl-ui-windows.tcl
+patch2=${here}/patches/patch-mpeg4-configure.in.tk
 
 PATH=/sbin:${PATH}
-. ../../functions
+. ../functions
 
 get_srcpkg ${srcpkg}
 
@@ -65,6 +66,7 @@ cd ${builddir}
 #
 do_patch ${patch0}
 do_patch ${patch1}
+do_patch ${patch2}
 
 echo -n "Post-patch sleep ..."
 sleep 5
@@ -72,9 +74,15 @@ echo
 
 # Build
 (cd common && ./configure && make) || exit 1
-(cd tcl-8.0/unix && ./configure && make) || exit 1
-(cd tk-8.0/unix && ./configure && make) || exit 1
-(cd mpeg4 && ./configure --with-ucltcl --with-ucltk && make) || exit 1
+#(cd tcl-8.0/unix && ./configure && make) || exit 1
+#(cd tk-8.0/unix && ./configure && make) || exit 1
+#(cd mpeg4 && ./configure --with-ucltcl --with-ucltk && make) || exit 1
+(
+cd mpeg4 \
+&& autoconf -f \
+&& ./configure --with-tcl=/usr --with-tk=/usr \
+&& make
+) || exit 1
 
 # Install
 cd ${builddir}
