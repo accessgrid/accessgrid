@@ -1,0 +1,198 @@
+name=AccessGrid
+version=3.1
+release=cvs20070627
+arch=${ARCH:-`uname -m`}
+prefix=${PREFIX:-/usr}
+#srcpkg=${name}-${version}.src.tar.gz
+srcpkg=${name}-${version}-${release}.tar.gz
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.tgz
+
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/distfiles/
+releasedir=${RELEASEDIR:-/tmp}
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+elif [ "${arch}" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mcpu=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+here=`pwd`
+
+patch0=${here}/patches/patch-packaging-BuildSnapshot.py
+patch1=${here}/patches/patch-AccessGrid-hosting-ZSI-Server.py
+
+patch10=${here}/patches/patch-services-node-AudioService-AudioService.build.py
+patch11=${here}/patches/patch-services-node-AudioService-AudioService.py
+patch12=${here}/patches/patch-services-node-VideoService-VideoService.build.py
+patch13=${here}/patches/patch-services-node-VideoService-VideoService.py
+patch14=${here}/patches/patch-services-node-VideoProducerService-VideoProducerService.build.py
+patch15=${here}/patches/patch-services-node-VideoProducerService-VideoProducerService.py
+patch16=${here}/patches/patch-services-node-VideoConsumerService-VideoConsumerService.build.py
+patch17=${here}/patches/patch-services-node-VideoConsumerService-VideoConsumerService.py
+
+patch20=${here}/patches/patch-xfce4-desktop-menu.xml
+
+. ../functions
+
+get_srcpkg ${srcpkg}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+mkdir -p ${builddir}
+cd ${builddir}
+tar zxvf ${here}/${srcpkg}
+
+# Apply patches
+#
+cd ${builddir}/AccessGrid
+do_patch ${patch0}
+do_patch ${patch1}
+
+do_patch ${patch10}
+do_patch ${patch11}
+do_patch ${patch12}
+do_patch ${patch13}
+do_patch ${patch14}
+do_patch ${patch15}
+do_patch ${patch16}
+do_patch ${patch17}
+
+#cp ${here}/replace-SharedBrowser.py sharedapps/SharedBrowser/SharedBrowser.py
+
+echo -n "Post-patch sleep ..."
+sleep 5
+echo
+
+# Build & install
+#
+cd ${builddir}/AccessGrid/packaging; export AGBUILDROOT=${builddir}; python BuildSnapshot.py --no-checkout --dist=slackware
+
+
+if [ ! -d ${builddir}/dist ]; then mv ${builddir}/dist-* ${builddir}/dist; fi;
+cd ${builddir}/dist
+
+mkdir -p ${pkgdir}/${prefix}/bin
+install -m 0755 bin/* ${pkgdir}/${prefix}/bin
+if [ -d lib64 ]; then
+  cp -R lib64/ ${pkgdir}/${prefix}/lib64
+else
+  cp -R lib/ ${pkgdir}/${prefix}/lib
+fi
+rm -rf share/applnk share/gnome
+cp -R share/ ${pkgdir}/${prefix}/share
+mv ${pkgdir}/${prefix}/share/doc/AccessGrid ${pkgdir}/${prefix}/share/doc/${name}-${version}
+cp -R etc/ ${pkgdir}/etc
+cp -R SharedApplications ${pkgdir}/etc/AccessGrid3
+cp -R NodeServices ${pkgdir}/etc/AccessGrid3
+
+# Gnome main menu
+mkdir -p ${pkgdir}/etc/xdg/menus/applications-merged
+cp ${builddir}/AccessGrid/packaging/linux/xdg/AccessGrid3.menu \
+	${pkgdir}/etc/xdg/menus/applications-merged/
+# KDE main menu
+mkdir -p ${pkgdir}/opt/kde/etc/xdg/menus/applications-merged
+cp ${builddir}/AccessGrid/packaging/linux/xdg/AccessGrid3.menu \
+	${pkgdir}/opt/kde/etc/xdg/menus/applications-merged/
+
+mkdir -p ${pkgdir}/${prefix}/share/desktop-directories
+cp ${builddir}/AccessGrid/packaging/linux/xdg/*3*.directory \
+	${pkgdir}/${prefix}/share/desktop-directories/
+mkdir -p ${pkgdir}/${prefix}/share/applications
+cp ${builddir}/AccessGrid/packaging/linux/xdg/*3*.desktop \
+	${pkgdir}/${prefix}/share/applications/
+
+mkdir -p ${pkgdir}/${prefix}/share/AccessGrid
+cp -R ${builddir}/AccessGrid/packaging/linux/ag-ellipse.png \
+	${pkgdir}/${prefix}/share/AccessGrid/
+
+mkdir -p ${pkgdir}/etc/AccessGrid3/Services
+mkdir -p ${pkgdir}/etc/AccessGrid3/PackageCache
+mkdir -p ${pkgdir}/etc/AccessGrid3/Logs
+
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+
+cp ${patch20} ${pkgdir}/install/
+cat <<EOF > ${pkgdir}/install/doinst.sh
+#!/bin/sh
+
+# Install SharedApplications
+#
+agpm3.py --post-install
+
+# Menues for XFCE
+#
+patchfile=install/`basename ${patch20}`
+cat \${patchfile} |patch -p0 -Ns --dry-run >/dev/null
+if [ \$? -eq 0 ]; then
+  cat \${patchfile} |patch -p0 -Ns
+fi
+if [ -e etc/X11/xdg/xfce4/desktop/menu.xml ]; then
+  touch etc/X11/xdg/xfce4/desktop/menu.xml
+fi
+rm -f \${patchfile}
+
+EOF
+chmod +x ${pkgdir}/install/doinst.sh
+
+cat <<EOF >${pkgdir}/install/slack-desc
+${name}: ${name}-${version}
+${name}:
+${name}: The Access Grid Toolkit provides the necessary components for
+${name}: users to participate in Access Grid based collaborations,
+${name}: and also for developers to work on network services,
+${name}: applications services and node services to extend the
+${name}: functionality of the Access Grid.
+${name}:
+${name}: This module provides the core components
+${name}: to start participating in the Access Grid.
+${name}:
+EOF
+chmod 0644 ${pkgdir}/install/slack-desc
+
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+exit
+
+# Changelog
+#
+# CKW 20070627 - 3.1beta1
+

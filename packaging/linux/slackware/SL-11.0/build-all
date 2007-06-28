@@ -1,0 +1,56 @@
+#!/bin/sh
+
+releasedir=${RELEASEDIR:-/scratch/AG3/releases}
+here=`pwd`
+
+
+subdirs="
+elementtree
+Bajjer
+feedparser
+pyxml
+ZopeInterface
+ag-zsi
+swig
+m2crypto
+twisted
+common
+quickbridge
+ag-vic
+ag-rat
+"
+
+no_avahi_pkgs="
+mDNSResponder
+bonjour
+"
+
+wx_pkgs="
+wxPython
+wxmozilla
+"
+
+
+# This is the main stuff
+#
+for sd in ${subdirs} ; do
+  cd ${sd}; RELEASEDIR=${releasedir} sudo sh Slack.build install; cd ${here}
+done
+
+# no_avahi_pkgs
+#
+for sd in ${no_avahi_pkgs} ; do
+  cd ${sd}; RELEASEDIR=${releasedir} sudo sh Slack.build install; cd ${here}
+done
+
+# wxPython
+#
+for sd in ${wx_pkgs} ; do
+  cd ${sd}; RELEASEDIR=${releasedir} sudo sh Slack.build install; cd ${here}
+done
+
+# AccessGrid
+#
+cd AccessGrid; RELEASEDIR=${releasedir} sudo sh Slack.build install; cd ${here}
+
+
