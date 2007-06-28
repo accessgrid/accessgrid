@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.23 2007-06-15 21:50:44 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.24 2007-06-28 23:03:31 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -290,7 +290,7 @@ class VideoProducerService( AGService ):
             options.append( "-u" )
             options.append( startupfile )
             options.append( "-C" )
-            options.append( "STREAM" + str(self.streamname.value) )
+            options.append( str(self.streamname.value) )
             if IsOSX():
                 options.append( "-X")
                 options.append( "transmitOnStartup=1")
