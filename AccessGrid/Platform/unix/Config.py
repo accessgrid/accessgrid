@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.78 2007-05-29 08:26:25 douglask Exp $
+# RCS-ID:      $Id: Config.py,v 1.79 2007-06-28 07:32:16 douglask Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.78 2007-05-29 08:26:25 douglask Exp $"
+__revision__ = "$Id: Config.py,v 1.79 2007-06-28 07:32:16 douglask Exp $"
 
 import sys
 import os
@@ -19,6 +19,7 @@ import socket
 import getpass
 import shutil
 import resource
+import struct
 
 
 from AccessGrid import Log
@@ -497,7 +498,13 @@ class SystemConfig(Config.SystemConfig):
             #   };
             V4L2_INPUT_FMT = "I32sIIILI4I"   # v4l2_input struct format string
 
-            VIDIOC_ENUMINPUT = -1068739046 # 0xC04C561A
+            if struct.calcsize('P') == 8:
+                # 64 bit V4L2
+                VIDIOC_ENUMINPUT = 0xC050561A
+            else:
+                # 32 bit V4L2
+                VIDIOC_ENUMINPUT = -1068739046 # 0xC04C561A
+
 
             V4L2_CAP_VIDEO_CAPTURE = 0x01  # V4L2 device can capture capability flag
 
