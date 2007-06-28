@@ -77,7 +77,7 @@ print "*********** Building zsi\n"
 SetupModule("zsi", SOURCE, DEST)
 
 print "*********** Building m2crypto\n"
-SetupModule("m2crypto-0.17", SOURCE, DEST)
+SetupModule("m2crypto-0.17", SOURCE, DEST,['--openssl=%s\openssl-0.9.8e' % SOURCE ])
 
 print "*********** Building twisted\n"
 SetupModule("TwistedCore-2.5.0", SOURCE, DEST)
