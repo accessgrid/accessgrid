@@ -44,6 +44,7 @@ patch17=${here}/patches/patch-services-node-VideoConsumerService-VideoConsumerSe
 
 patch20=${here}/patches/patch-xfce4-desktop-menu.xml
 
+PATH=/sbin:${PATH}
 . ../functions
 
 get_srcpkg ${srcpkg}
