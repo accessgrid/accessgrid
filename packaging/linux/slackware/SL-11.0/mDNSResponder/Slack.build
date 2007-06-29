@@ -151,3 +151,9 @@ cd ${here}
 [ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
 rm -f ${srcpkg}
 
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
