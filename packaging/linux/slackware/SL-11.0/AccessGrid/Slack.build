@@ -77,8 +77,6 @@ do_patch ${patch15}
 do_patch ${patch16}
 do_patch ${patch17}
 
-#cp ${here}/replace-SharedBrowser.py sharedapps/SharedBrowser/SharedBrowser.py
-
 echo -n "Post-patch sleep ..."
 sleep 5
 echo
@@ -183,6 +181,7 @@ cd ${here}
 #
 [ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
 [ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
 
 # Install immediately?
 #

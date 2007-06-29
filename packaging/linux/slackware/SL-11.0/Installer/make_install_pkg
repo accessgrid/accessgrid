@@ -11,12 +11,7 @@ fi
 PATH=/sbin:${PATH}
 
 arch=${ARCH:-`uname -m`}
-grep "Slackware 11." /etc/slackware-version 2>&1 >/dev/null
-if [ $? -eq 0 ]; then
-  SL_VERSION="SL11"
-else
-  SL_VERSION="SL10"
-fi
+SL_VERSION="SL11"
 
 # Package names
 #
@@ -40,9 +35,8 @@ mDNSResponder-107.6-${arch}-1.tgz
 "
 prereqs="
 wxPython-2.6-gtk2-ansi-2.6.3.2-${arch}-4.tgz
+wxmozilla-20061219cvs-${arch}-1.tgz
 "
-WXMOZ_SL10=wxmozilla-0.5.6-${arch}-1.tgz
-WXMOZ_SL11=wxmozilla-20061219cvs-${arch}-1.tgz
 
 version=3.1
 release=cvs20070627
@@ -67,8 +61,6 @@ done
 for p in ${prereqs}; do
   cp ${releasedir}/${p} ${bundledir}/
 done
-cp ${releasedir}/${WXMOZ_SL10} ${bundledir}/
-cp ${releasedir}/${WXMOZ_SL11} ${bundledir}/
 
 cat <<EOF >install-${SL_VERSION}-${arch}.sh
 #!/bin/sh
@@ -83,9 +75,6 @@ fi
 PATH=/sbin:\${PATH}
 
 arch=\`uname -m\`
-
-WXMOZ_SL10=${WXMOZ_SL10}
-WXMOZ_SL11=${WXMOZ_SL11}
 
 pkg () 
 { 
@@ -146,15 +135,6 @@ for p in \${pkgs}; do
   upgradepkg --reinstall --install-new \${p}
 done
 
-# wxmozilla depends on SL release
-#
-SLR=\`grep "Slackware 11." /etc/slackware-version\`
-if [ \$? -eq 0 ]; then
-  upgradepkg --reinstall --install-new \${WXMOZ_SL11}
-else
-  upgradepkg --reinstall --install-new \${WXMOZ_SL10}
-fi
-
 # May have to install mDNS too
 #
 proc avahi
@@ -170,41 +150,11 @@ EOF
 cp install-${SL_VERSION}-${arch}.sh ${bundledir}/
 chmod 0755 ${bundledir}/install-${SL_VERSION}-${arch}.sh
 
-#if [ ${arch} = "x86_64" ]; then
-#  mkdir ${bundledir}/tmp
-#  cd ${bundledir}/tmp
-#  tar-1.13 zxvf ../AccessGrid-3.0.2-${arch}-4.tgz
-#  cp ${releasedir}/AudioService.zip.32bit etc/AccessGrid3/NodeServices/AudioService.zip
-#  chown -R root:root .
-#  tar-1.13 zcvf ../AccessGrid-3.0.2-${arch}-4.tgz .
-#  cd ${bundledir} && rm -rf tmp
-#
-#fi
-
 cd ${tempdirname} && tar zcvf ${bundledirname}.tar.gz ${bundledirname}
 rm -rf ${bundledir}
 
 # Changelog
 #
-# Release 6, 20070507
-#  - update ag-zsi (r1376)
-#  - separate ag-vic & ag-rat
+# Release cvs20070627 - 3.1 beta1 snapshot (actually 20070629)
 #
-# Release 5, 20070312
-#  - update wxPython2.6 to release 4 (include docs & samples)
-#  - update ag-zsi to r1365 (from branches) and
-#    rebuild m2crypto, TwistedCore, common, AccessGrid
-#
-# Release 4, 20061219
-#  - Updated common TwistedCore m2crypto swig ag-zsi ZopeInterface
-#    Bajjer pyOpenSSL wxPython
-#  - Included RegistryClient.py from cvs in AccessGrid-3.0.2
-#  - New wxmozilla for SL11
-#
-# Release 3, 20061011
-#  - Replaced x86_64 AudioService with that of 32bit release
-#    (since x_86_64 compiled rat doesn't display properly)
-#
-# Release 2, 20060810
-#  - updated to release 2 of Twisted-2.1.0 with threadedselectreactor patch
-#
+
