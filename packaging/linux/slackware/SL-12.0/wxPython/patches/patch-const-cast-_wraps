@@ -1,0 +1,340 @@
+--- wxPython/src/gtk/_controls_wrap.cpp.orig	2006-04-04 14:19:53.000000000 +1000
++++ wxPython/src/gtk/_controls_wrap.cpp	2007-06-20 21:52:27.097712072 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -38325,7 +38325,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/src/gtk/_core_wrap.cpp.orig	2006-04-04 14:19:28.000000000 +1000
++++ wxPython/src/gtk/_core_wrap.cpp	2007-06-20 15:52:50.772628321 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -49116,7 +49116,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/src/gtk/_gdi_wrap.cpp.orig	2006-04-04 14:19:35.000000000 +1000
++++ wxPython/src/gtk/_gdi_wrap.cpp	2007-06-20 16:15:04.823974865 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -23657,7 +23657,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/src/gtk/_misc_wrap.cpp.orig	2006-04-04 14:20:00.000000000 +1000
++++ wxPython/src/gtk/_misc_wrap.cpp	2007-06-20 21:57:13.108531833 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -35257,7 +35257,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/src/gtk/_windows_wrap.cpp.orig	2006-04-04 14:19:43.000000000 +1000
++++ wxPython/src/gtk/_windows_wrap.cpp	2007-06-20 16:31:34.862071588 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -31077,7 +31077,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/src/gtk/calendar_wrap.cpp.orig	2006-04-04 14:20:04.000000000 +1000
++++ wxPython/src/gtk/calendar_wrap.cpp	2007-06-20 22:28:36.180125428 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -4993,7 +4993,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/src/gtk/grid_wrap.cpp.orig	2006-04-04 14:20:11.000000000 +1000
++++ wxPython/src/gtk/grid_wrap.cpp	2007-06-20 22:30:33.184585689 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -20837,7 +20837,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/src/gtk/html_wrap.cpp.orig	2006-04-04 14:20:16.000000000 +1000
++++ wxPython/src/gtk/html_wrap.cpp	2007-06-20 22:33:01.690267231 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -15178,7 +15178,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/src/gtk/media_wrap.cpp.orig	2006-04-04 14:20:20.000000000 +1000
++++ wxPython/src/gtk/media_wrap.cpp	2007-06-20 22:34:44.694206837 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -4024,7 +4024,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/src/gtk/webkit_wrap.cpp.orig	2006-04-04 14:20:23.000000000 +1000
++++ wxPython/src/gtk/webkit_wrap.cpp	2007-06-20 22:36:27.198126650 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -3827,7 +3827,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/src/gtk/wizard_wrap.cpp.orig	2006-04-04 14:20:27.000000000 +1000
++++ wxPython/src/gtk/wizard_wrap.cpp	2007-06-20 22:38:17.202332496 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -5913,7 +5913,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/src/gtk/xrc_wrap.cpp.orig	2006-04-04 14:20:31.000000000 +1000
++++ wxPython/src/gtk/xrc_wrap.cpp	2007-06-20 22:41:18.709270493 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -7951,7 +7951,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/contrib/stc/gtk/stc_wrap.cpp.orig	2006-04-04 14:20:41.000000000 +1000
++++ wxPython/contrib/stc/gtk/stc_wrap.cpp	2007-06-20 23:48:45.363632272 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -19592,7 +19592,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/contrib/ogl/gtk/ogl_wrap.cpp.orig	2005-03-10 08:37:50.000000000 +1000
++++ wxPython/contrib/ogl/gtk/ogl_wrap.cpp	2007-06-20 23:52:05.371246230 +1000
+@@ -1174,7 +1174,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name);
+@@ -38701,7 +38701,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/contrib/glcanvas/gtk/glcanvas_wrap.cpp.orig	2006-04-04 14:20:34.000000000 +1000
++++ wxPython/contrib/glcanvas/gtk/glcanvas_wrap.cpp	2007-06-20 23:54:04.375776612 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -3517,7 +3517,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/contrib/gizmos/gtk/gizmos_wrap.cpp.orig	2006-04-04 14:20:49.000000000 +1000
++++ wxPython/contrib/gizmos/gtk/gizmos_wrap.cpp	2007-06-20 23:55:49.379774155 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -11968,7 +11968,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;
+--- wxPython/contrib/animate/gtk/animate_wrap.cpp.orig	2006-04-04 14:20:54.000000000 +1000
++++ wxPython/contrib/animate/gtk/animate_wrap.cpp	2007-06-20 23:57:54.884552520 +1000
+@@ -1228,7 +1228,7 @@
+     obj = pyobj;
+     if (PyCFunction_Check(obj)) {
+       /* here we get the method pointer for callbacks */
+-      char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
++      char *doc = const_cast<char*>(((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
+       c = doc ? strstr(doc, "swig_ptr: ") : 0;
+       if (c) {
+ 	c = ty ? SWIG_UnpackVoidPtr(c + 10, &vptr, ty->name) : 0;
+@@ -5601,7 +5601,7 @@
+     swig_type_info **types_initial) {
+         size_t i;
+         for (i = 0; methods[i].ml_name; ++i) {
+-            char *c = methods[i].ml_doc;
++            char *c = const_cast<char*>(methods[i].ml_doc);
+             if (c && (c = strstr(c, "swig_ptr: "))) {
+                 int j;
+                 swig_const_info *ci = 0;

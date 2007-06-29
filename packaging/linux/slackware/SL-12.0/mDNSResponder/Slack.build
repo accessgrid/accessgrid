@@ -1,0 +1,161 @@
+name=mDNSResponder
+version=107.6
+release=1
+arch=${ARCH:-`uname -m`}
+srcsrc=
+srcpkg=mDNSResponder-${version}.tar.gz
+buildroot=/var/tmp
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.tgz
+
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/usr/ports/distfiles/
+releasedir=${RELEASEDIR:-/tmp}
+
+here=`pwd`
+
+PATH=/sbin:${PATH}
+. ../functions
+
+get_srcpkg ${srcpkg}
+
+patch0=${here}/patches/mDNSResponder-107.5-fix-possible-overflow.diff
+patch1=${here}/patches/patch-mDNSCore-mDNSEmbeddedAPI.h
+patch2=${here}/patches/patch-mDNSPosix-Makefile
+
+libversion=1
+nsslibversion=2
+nssversion=0.2
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+mdns_install() {
+  echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+  install -m 0755 -D ${builddir}/mDNSPosix/build/prod/mdnsd ${pkgdir}/usr/sbin/mdnsd
+  echo /usr/sbin/mdnsd " installed"
+
+  install -m 0755 -D ${builddir}/mDNSPosix/build/prod/libdns_sd.so ${pkgdir}/usr/lib/libdns_sd.so.${libversion}
+  (cd ${pkgdir}/usr/lib && ln -s -f libdns_sd.so.${libversion} libdns_sd.so)
+  install -m 0755 -D ${builddir}/mDNSShared/dns_sd.h ${pkgdir}/usr/include/dns_sd.h
+
+  install -m 0444 -D ${builddir}/mDNSShared/mDNSResponder.8 ${pkgdir}/usr/share/man/man8/mDNSResponder.8
+
+  install -m 0755 -D ${builddir}/mDNSPosix/build/prod/mDNSIdentify ${pkgdir}/usr/sbin/mDNSIdentify
+  install -m 0755 -D ${builddir}/mDNSPosix/build/prod/mDNSNetMonitor ${pkgdir}/usr/sbin/mDNSNetMonitor
+  install -m 0755 -D ${builddir}/mDNSPosix/build/prod/mDNSProxyResponderPosix ${pkgdir}/usr/sbin/mDNSProxyResponder
+  install -m 0755 -D ${builddir}/mDNSPosix/build/prod/mDNSClientPosix ${pkgdir}/usr/bin/mDNSClient
+
+  install -m 0755 -D ${builddir}/Clients/build/dns-sd ${pkgdir}/usr/bin/dns-sd
+
+  install -m 0755 -D ${builddir}/mDNSPosix/build/prod/libnss_mdns-${nssversion}.so ${pkgdir}/usr/lib/libnss_mdns-${nssversion}.so.${nsslibversion}
+  (cd ${pkgdir}/usr/lib && ln -s -f libnss_mdns-${nssversion}.so.${nsslibversion} libnss_mdns.so)
+  install -m 0644 -D ${builddir}/mDNSPosix/nss_mdns.conf ${pkgdir}/etc/nss_mdns.conf
+  install -m 0644 -D ${builddir}/mDNSPosix/nss_mdns.conf.5 ${pkgdir}/usr/share/man/man5/nss_mdns.conf.5
+}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+cd ${builddir}
+
+# Apply patches
+#
+do_patch ${patch0}
+if [ "${arch}" = "x86_64" ]; then
+  do_patch ${patch1}
+fi
+do_patch ${patch2}
+
+
+# Build
+#
+CFLAGS="$SLKCFLAGS" \
+DESTDIR=${pkgdir} make -C mDNSPosix os=linux
+
+# Install
+#
+install -d ${pkgdir}/usr/sbin ${pkgdir}/usr/bin ${pkgdir}/etc/rc.d
+install -d ${pkgdir}/lib ${pkgdir}/usr/lib ${pkgdir}/var/run
+install -d ${pkgdir}/usr/share/man/man5 ${pkgdir}/usr/share/man/man8
+install -d ${pkgdir}/usr/include
+DESTDIR=${pkgdir} make -C mDNSPosix install os=linux
+
+
+
+mkdir -p ${docdir}
+cp LICENSE README.txt \
+	${docdir}
+cp mDNSPosix/ReadMe.txt\
+	${docdir}/README-Posix.txt
+
+# Startup file
+#
+#install -m 0644 -D ${here}/rc.mdnsd ${pkgdir}/install/rc.mdnsd.new
+install -m 0644 -D ${pkgdir}/etc/rc.d/rc.mdnsd ${pkgdir}/install/rc.mdnsd.new && rm -f ${pkgdir}/etc/rc.d/rc.mdnsd
+install -m 0644 -D ${here}/rc.local ${pkgdir}/install/rc.local
+cat <<EOF >${pkgdir}/install/slack-desc
+${name}: ${name}-${version}
+${name}:
+${name}: The mDNSResponder project is a component of Bonjour,
+${name}: Apple's ease-of-use IP networking initiative:
+${name}:    http://developer.apple.com/bonjour/
+${name}:
+EOF
+chmod 0644 ${pkgdir}/install/slack-desc
+
+cat <<EOF >${pkgdir}/install/doinst.sh
+
+#  cp -f etc/nsswitch.conf etc/nsswitch.conf.pre-mdns
+#  sed -e '/mdns/!s/^\(hosts:.*\)dns\(.*\)/\1mdns dns\2/' /etc/nsswitch.conf.pre-mdns > /etc/nsswitch.conf >etc/nsswitch.conf.new
+
+  if [ ! -f etc/rc.d/rc.mdnsd ]; then
+    cp install/rc.mdnsd.new etc/rc.d/rc.mdnsd
+    chmod a+x etc/rc.d/rc.mdnsd
+  else
+    cp install/rc.mdnsd.new etc/rc.d/rc.mdnsd.new
+  fi
+  etc/rc.d/rc.mdnsd restart
+
+  grep "# Startup the mDNSResponder daemon" etc/rc.d/rc.local
+  HAVEMDNSD=\$?
+  [ \$HAVEMDNSD = 0 ] || (cat install/rc.local >>etc/rc.d/rc.local)
+
+EOF
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -c n -l y -p ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+

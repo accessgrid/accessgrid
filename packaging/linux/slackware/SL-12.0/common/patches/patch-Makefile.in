@@ -1,0 +1,11 @@
+--- Makefile.in.orig    2005-12-01 12:31:42.000000000 +1000
++++ Makefile.in 2006-06-28 09:40:47.019030250 +1000
+@@ -3,7 +3,7 @@
+ # This probably requires GNU make.
+ #
+ 
+-SUBDIRS=src tests @OPTDOC@
++SUBDIRS=src tests
+ 
+ all: all-recursive
+ 

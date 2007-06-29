@@ -1,0 +1,33 @@
+--- wxPython/src/helpers.cpp.orig	2007-06-21 22:23:20.903017185 +1000
++++ wxPython/src/helpers.cpp	2007-06-21 22:24:41.171591430 +1000
+@@ -1976,7 +1976,8 @@
+         str = PyObject_Str(source);
+         if (PyErr_Occurred()) return NULL;
+     }
+-    char* tmpPtr; int tmpSize;
++    char* tmpPtr;
++    Py_ssize_t tmpSize;
+     PyString_AsStringAndSize(str, &tmpPtr, &tmpSize);
+     target = new wxString(tmpPtr, tmpSize);
+ 
+@@ -2019,7 +2020,8 @@
+         str = PyObject_Str(source);
+         if (PyErr_Occurred()) return wxEmptyString;    // TODO:  should we PyErr_Clear?
+     }
+-    char* tmpPtr; int tmpSize;
++    char* tmpPtr;
++    Py_ssize_t tmpSize;
+     PyString_AsStringAndSize(str, &tmpPtr, &tmpSize);
+     target = wxString(tmpPtr, tmpSize);
+ 
+--- wxPython/src/gtk/_gdi_wrap.cpp.orig	2007-06-21 22:27:04.975786000 +1000
++++ wxPython/src/gtk/_gdi_wrap.cpp	2007-06-21 22:37:08.090155894 +1000
+@@ -1978,7 +1978,7 @@
+         }
+ static wxBitmap *new_wxBitmap(PyObject *bits,int width,int height,int depth=1){
+             char* buf;
+-            int   length;
++            Py_ssize_t   length;
+             PyString_AsStringAndSize(bits, &buf, &length);
+             return new wxBitmap(buf, width, height, depth);
+         }

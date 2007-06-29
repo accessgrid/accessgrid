@@ -1,0 +1,107 @@
+name=bajjer
+version=0.2.5
+release=1
+arch=${ARCH:-`uname -m`}
+srcpkg=Bajjer-${version}.tar.gz
+buildroot=/var/tmp
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.tgz
+releasedir=${RELEASEDIR:-/tmp}
+
+master_sites=https://codeforge.lbl.gov/projects/pccejt/
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/linux/distfiles/
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+here=`pwd`
+
+PATH=/sbin:${PATH}
+. ../functions
+
+get_srcpkg ${srcpkg}
+
+if [ ! -f ${here}/${srcpkg} ]; then
+  echo "Don't have ${srcpkg} - exiting now ..."
+  exit 9
+else
+  echo "Have local copy of ${srcpkg} - commencing build ..."
+fi
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+mv Bajjer-${version} ${builddir}
+cd ${builddir}
+
+# Build/install
+#
+python setup.py install --root=${pkgdir}
+
+
+mkdir -p ${docdir}
+cp CHANGELOG LICENSE PKG-INFO README \
+	${docdir}
+
+# 
+#
+mkdir -p ${pkgdir}/install
+cat <<EOF >${pkgdir}/install/slack-desc
+${name}: ${name}-${version}
+${name}:
+${name}: The Bajjer library provides an API for dealing with
+${name}: XML streams. It provides SSL support using Python's
+${name}: socket.ssl or PyOpenSSL, and it provides the ability
+${name}: to set handlers, which call a callback function when
+${name}: a certain type of jabber packet is received.
+${name}:
+${name}: From:
+${name}:      https://codeforge.lbl.gov/projects/pccejt/
+${name}:
+EOF
+chmod 0644 ${pkgdir}/install/slack-desc
+
+cp ${here}/Slack.build ${pkgdir}/install/
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# CKW 20070506 - release 1 of version 0.2.5
+#
+

@@ -1,0 +1,11 @@
+--- mDNSPosix/ProxyResponder.c.orig	2005-02-21 14:05:39.000000000 +0000
++++ mDNSPosix/ProxyResponder.c	2005-02-21 14:06:32.000000000 +0000
+@@ -240,7 +240,7 @@
+ 		int len = strlen(argv[0]);
+ 		printf("STR: %s\n", argv[0]);
+ 		bptr[0] = len;
+-		strcpy((char*)(bptr+1), argv[0]);
++		strncpy((char*)(bptr+1), argv[0], 1022);
+ 		bptr += 1 + len;
+ 		argc--;
+ 		argv++;

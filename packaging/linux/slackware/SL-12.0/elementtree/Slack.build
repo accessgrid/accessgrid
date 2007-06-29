@@ -1,0 +1,126 @@
+name=elementtree
+version=1.2.6-20050316
+release=1
+arch=${ARCH:-`uname -m`}
+srcpkg=${name}-${version}.tar.gz
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.tgz
+
+master_sites=http://effbot.org/downloads/
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/linux/distfiles/
+releasedir=${RELEASEDIR:-/tmp}
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+  LIBDIR="/usr/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+  LIBDIR="/usr/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mcpu=i686"
+  LIBDIR="/usr/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR="/usr/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR="/usr/lib64"
+  ARCH_CONFIGURE="--libdir=$LIBDIR"
+fi
+
+here=`pwd`
+#patch0=${here}/patch-something.c
+
+PATH=/sbin:${PATH}
+. ../functions
+
+get_srcpkg ${srcpkg}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+cd ${builddir}
+
+# Apply patches
+# like this: do_patch ${patch0}
+#
+
+
+## Build & install
+##
+#CFLAGS="$SLKCFLAGS" \
+#./configure	\
+#	--prefix=/usr	\
+#&& make	\
+#&& make install DESTDIR=${pkgdir}
+#[ $? -eq 0 ] || exit 1
+python setup.py install --root=${pkgdir}
+
+
+# Docs
+#
+mkdir -p ${docdir}
+cp -a docs CHANGES PKG-INFO README \
+	${docdir}
+
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+cat <<EOF >${pkgdir}/install/slack-desc
+${name}: ${name}-${version}
+${name}:
+${name}: ${name} light-weight toolkit for XML processing in Python
+${name}:
+${name}: From:
+${name}:       http://effbot.org/zone/element.htm
+${name}:
+EOF
+chmod 0644 ${pkgdir}/install/slack-desc
+
+# Include build script
+cp ${here}/Slack.build ${pkgdir}/install/
+
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# 20070506 CKW - release 1
+#
+

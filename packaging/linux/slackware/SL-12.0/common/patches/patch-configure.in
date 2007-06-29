@@ -1,0 +1,11 @@
+--- configure.in.orig   2004-02-28 00:39:51.000000000 +1000
++++ configure.in        2006-06-28 09:51:26.110971000 +1000
+@@ -362,7 +362,7 @@
+ # GCC-specific warning flags
+ if test "$GCC" = yes
+ then
+-        CFLAGS="$CFLAGS -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations"
++        CFLAGS="$CFLAGS -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -fPIC"
+ fi
+
+ ###############################################################################

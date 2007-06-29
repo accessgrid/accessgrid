@@ -1,0 +1,109 @@
+name=bonjour-py
+version=0.1
+release=1
+arch=${ARCH:-`uname -m`}
+srcpkg=${name}-${version}.tar.gz
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.tgz
+releasedir=${RELEASEDIR:-/tmp}
+
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/distfiles/
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+here=`pwd`
+
+PATH=/sbin:${PATH}
+. ../functions
+
+get_srcpkg ${srcpkg}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+cd ${builddir}
+
+# Apply patches
+#
+
+# Temorarily install a dns_sd.h in cases where mDNSResponder is not installed
+extra_dns_sd=0
+if [ ! -f /usr/include/dns_sd.h ]; then
+  cp ${here}/dns_sd.h /usr/include/
+  extra_dns_sd=1
+fi
+
+# Build & install
+#
+python setup.py build   
+python setup.py install --root=${pkgdir}        
+
+
+# Docs
+#
+mkdir -p ${docdir}
+cp README \
+	${docdir}
+
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+cat <<EOF >${pkgdir}/install/slack-desc
+${name}: ${name}-${version}
+${name}:
+${name}: Bonjour provides service advertising and discovery on the 
+${name}: local network via multicast DNS.  These files use SWIG to 
+${name}: provide a Python interface for use by applications to interact 
+${name}: with Bonjour.
+${name}:
+${name}:
+${name}:
+EOF
+chmod 0644 ${pkgdir}/install/slack-desc
+
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+if [ ${extra_dns_sd} -eq 1 ]; then
+  rm -f /usr/include/dns_sd.h
+fi
+
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+

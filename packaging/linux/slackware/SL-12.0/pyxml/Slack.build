@@ -1,0 +1,105 @@
+name=pyxml
+version=0.8.4
+release=1
+arch=${ARCH:-`uname -m`}
+srcpkg=PyXML-${version}.tar.gz
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.tgz
+releasedir=${RELEASEDIR:-/tmp}
+
+master_sites=http://www.vislab.uq.edu.au/ag3/freebsd/distfiles/
+distdir=/usr/ports/distfiles/
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+here=`pwd`
+
+PATH=/sbin:${PATH}
+. ../functions
+
+get_srcpkg ${srcpkg}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+mv PyXML-${version} pyxml-${version}
+cd ${builddir}
+
+# Apply patches
+#
+
+
+# Build & install
+#
+python setup.py build
+
+python setup.py install --root=${pkgdir}
+
+
+# Docs
+#
+mkdir -p ${docdir}
+cp ANNOUNCE CREDITS LICENCE README README.dom README.pyexpat README.sgmlop TODO \
+	${docdir}
+
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+cat <<EOF >${pkgdir}/install/slack-desc
+${name}: ${name}-${version}
+${name}:
+${name}: This is the Python XML package.  The distribution contains a
+${name}: validating XML parser, an implementation of the SAX and DOM
+${name}: programming interfaces, an interface to the Expat parser (and the
+${name}: Expat parser itself), and a C helper module that can speed up
+${name}: xmllib.py by a factor of 5.  There's even documentation!
+${name}:
+${name}: From:
+${name}:       http://pyxml.sourceforge.net/
+${name}:
+EOF
+chmod 0644 ${pkgdir}/install/slack-desc
+
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+# Changelog
+#
+
