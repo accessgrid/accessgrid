@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.79 2007-06-28 07:32:16 douglask Exp $
+# RCS-ID:      $Id: Config.py,v 1.80 2007-06-30 08:15:59 douglask Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.79 2007-06-28 07:32:16 douglask Exp $"
+__revision__ = "$Id: Config.py,v 1.80 2007-06-30 08:15:59 douglask Exp $"
 
 import sys
 import os
@@ -19,7 +19,6 @@ import socket
 import getpass
 import shutil
 import resource
-import struct
 
 
 from AccessGrid import Log
