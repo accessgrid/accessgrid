@@ -43,6 +43,10 @@ class PreferencesDialog(wxDialog):
                                               wxSize(200, -1))
         self.sideTree = wxTreeCtrl(self.sideWindow, wxNewId(), wxDefaultPosition, 
                                    wxDefaultSize, style = wxTR_HIDE_ROOT)
+
+        # wxPython 2.8 workaround - sideWindow width doesn't get set otherwise
+        self.sideWindow.SetSize((150, -1))
+
         self.okButton = wxButton(self, wxID_OK, "Save")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Close")
         self.preferences = preferences
