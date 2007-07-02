@@ -57,7 +57,6 @@ else:
 #
 
 print "Python: ", PYVER
-
 print "*********** Building elementtree\n"
 SetupModule("elementtree-1.2.6", SOURCE, DEST)
 
@@ -75,10 +74,8 @@ SetupModule("zope.interface-3.3.0", SOURCE, DEST, moreinstallopts=['--single-ver
 
 print "*********** Building zsi\n"
 SetupModule("zsi", SOURCE, DEST, moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
-
 print "*********** Building m2crypto\n"
-SetupModule("m2crypto-0.17", SOURCE, DEST, ['--openssl=%s\openssl-0.9.8e' % SOURCE ], moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
-
+SetupModule("m2crypto-0.17", SOURCE, DEST, ['--openssl=%s' % DEST ], moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
 print "*********** Building twisted\n"
 SetupModule("TwistedCore-2.5.0", SOURCE, DEST)
 
