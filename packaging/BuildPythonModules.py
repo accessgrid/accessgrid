@@ -20,7 +20,7 @@ PYVER=sys.version[:3]
 #
 # Setup the given module in the given dest directory
 #
-def SetupModule(modName, source, dest, morebuildopts=[]):
+def SetupModule(modName, source, dest, morebuildopts=[],moreinstallopts=[]):
     os.chdir(os.path.join(source,modName))
     ret = os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","clean","--all")
     if ret:
@@ -33,7 +33,7 @@ def SetupModule(modName, source, dest, morebuildopts=[]):
         print 'Build of Python module %s failed' % modName
         sys.exit(1)
 
-    installopts = [sys.executable, 'setup.py','install','--prefix=%s'%(dest,),'--no-compile'] + morebuildopts
+    installopts = [sys.executable, 'setup.py','install','--prefix=%s'%(dest,),'--no-compile'] + moreinstallopts
     ret = os.spawnv(os.P_WAIT,sys.executable,installopts)
     if ret:
         print 'Install of Python module %s failed' % modName
@@ -68,16 +68,16 @@ print "*********** Building feedparser\n"
 SetupModule("feedparser", SOURCE, DEST)
 
 print "*********** Building pyxml\n"
-SetupModule("PyXML-0.8.4", SOURCE, DEST)
+SetupModule("PyXML-0.8.4", SOURCE, DEST )
 
 print "*********** Building zope interface\n"
-SetupModule("zope.interface-3.3.0", SOURCE, DEST)
+SetupModule("zope.interface-3.3.0", SOURCE, DEST, moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
 
 print "*********** Building zsi\n"
-SetupModule("zsi", SOURCE, DEST)
+SetupModule("zsi", SOURCE, DEST, moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
 
 print "*********** Building m2crypto\n"
-SetupModule("m2crypto-0.17", SOURCE, DEST,['--openssl=%s\openssl-0.9.8e' % SOURCE ])
+SetupModule("m2crypto-0.17", SOURCE, DEST, ['--openssl=%s\openssl-0.9.8e' % SOURCE ], moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
 
 print "*********** Building twisted\n"
 SetupModule("TwistedCore-2.5.0", SOURCE, DEST)
