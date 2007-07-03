@@ -30,8 +30,6 @@ def BuildWindows():
 def BuildDarwin():
     os.system("./config --openssldir=%s" % DEST)
     os.system("make")
-    os.system("make test")
-    os.system("make install")
 
 os.chdir(os.path.abspath(os.path.join(os.environ['AGBUILDROOT'],
                                       "openssl-0.9.8e")))
