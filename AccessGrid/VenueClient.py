@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.350 2007-06-18 23:30:45 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.351 2007-07-07 03:32:38 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.350 2007-06-18 23:30:45 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.351 2007-07-07 03:32:38 willing Exp $"
 
 
 import sys
@@ -1079,6 +1079,10 @@ class VenueClient:
                 self.__StartJabber(self.textLocation)
         except Exception,e:
             log.exception("EnterVenue.__StartJabber failed")
+
+        # Create the beacon client
+        if int(self.preferences.GetPreference(Preferences.BEACON)):
+            self.StartBeacon()
 
         # 
         # Update the node service with stream descriptions
