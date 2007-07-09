@@ -72,7 +72,7 @@ class Preferences:
                          self.ENABLE_VIDEO: 1,
                          self.ENABLE_AUDIO: 1,
                          self.DISPLAY_MODE: self.EXITS,
-                         self.BRIDGE_REGISTRY: "http://www.accessgrid.org/registry/peers.txt | http://www.ap-accessgrid.org/registry/peers.txt",
+                         self.BRIDGE_REGISTRY: "http://www.accessgrid.org/registry/peers.txt|http://www.ap-accessgrid.org/registry/peers.txt",
                          self.PROXY_HOST: "",
                          self.PROXY_PORT: "",
                          self.MULTICAST_DETECT_HOST: "233.4.200.18",
