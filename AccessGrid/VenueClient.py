@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.351 2007-07-07 03:32:38 willing Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.352 2007-07-16 19:10:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.351 2007-07-07 03:32:38 willing Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.352 2007-07-16 19:10:46 turam Exp $"
 
 
 import sys
@@ -1089,8 +1089,6 @@ class VenueClient:
         #
 
         try:
-            # Ensure that streams are using the intended addresses (multicast or a particular bridge)
-            self.UpdateStreams()
 
             # Update node with those streams
             self.UpdateNodeService()
@@ -1397,6 +1395,9 @@ class VenueClient:
         log.debug("UpdateNodeService: Method UpdateNodeService called")
         exc = None
 
+        # Ensure that streams are using the intended addresses (multicast or a particular bridge)
+        self.UpdateStreams()
+
         # Send streams to the node service
         try:
             log.debug("Setting node service streams")
@@ -1420,7 +1421,7 @@ class VenueClient:
             
     def UpdateStreams(self):
         for stream in self.streamDescList:
-	    self.UpdateStream(stream)
+            self.UpdateStream(stream)
 
         # Restart the beacon so the new transport is used
         if int(self.preferences.GetPreference(Preferences.BEACON)):
