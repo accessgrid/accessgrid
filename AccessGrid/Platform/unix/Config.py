@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.80 2007-06-30 08:15:59 douglask Exp $
+# RCS-ID:      $Id: Config.py,v 1.81 2007-07-16 19:14:04 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.80 2007-06-30 08:15:59 douglask Exp $"
+__revision__ = "$Id: Config.py,v 1.81 2007-07-16 19:14:04 turam Exp $"
 
 import sys
 import os
@@ -714,6 +714,9 @@ class MimeConfig(Config.MimeConfig):
         
         ----
         """
+        if sys.platform in ['darwin']:
+            return
+
         # Temporarily handle one command until code is added for multiple commands.
         cmd = cmds[0]
 
