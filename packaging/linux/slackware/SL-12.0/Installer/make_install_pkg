@@ -16,7 +16,7 @@ SL_VERSION=SL12
 # Package names
 #
 pkgs="
-AccessGrid-3.1-${arch}-cvs20070627.tgz
+AccessGrid-3.1-noarch-cvs20070721.tgz
 quickbridge-3.0.2-${arch}-1.tgz
 elementtree-1.2.6-20050316-${arch}-1.tgz
 bajjer-0.2.5-${arch}-1.tgz
@@ -27,8 +27,8 @@ zopeinterface-3.3.0-${arch}-1.tgz
 twistedcore-2.5.0-${arch}-1.tgz
 ag-zsi-r1385-${arch}-2.tgz
 common-0.1-${arch}-3.tgz
-ag-rat-4.4.00-${arch}-2.tgz
-ag-vic-2.8ucl-1.3.0-${arch}-1.tgz
+ag-rat-4.4.00-r4080-${arch}-1.tgz
+ag-vic-2.8ucl-1.3.0-r4080-${arch}-3.tgz
 "
 noAvahi="
 mDNSResponder-107.6-${arch}-1.tgz
@@ -39,10 +39,13 @@ wxPython-2.6-gtk2-ansi-2.6.3.2-${arch}-4.tgz
 xulrunner-1.8.0.4-${arch}-1.tgz
 wxmozilla-20070620cvs-${arch}-1.tgz
 "
+noinstall="
+hdvideoservices-0.1-noarch-1.tgz
+"
 
 
 version=3.1
-release=cvs20070627
+release=cvs20070705
 releasedir=${RELEASEDIR:-/scratch/AG3/releases-12.0}
 pkgdir=${PKGDIR:-/tmp}
 
