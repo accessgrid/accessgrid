@@ -17,6 +17,7 @@ import struct
 import os
 
 from AccessGrid import Log
+from AccessGrid.Platform import IsWindows
 
 class PublisherError(Exception):  pass
 class BrowserError(Exception):    pass
@@ -52,14 +53,18 @@ try:
     haveAvahi = True
 except ImportError,e:
     try:
-        # Hack to avoid warning dialog on Windows in absence of Bonjour libs
-        if os.path.exists(r'c:\windows\system32\dnssd.dll'):
+        if IsWindows():
+            # Hack to avoid warning dialog on Windows in absence of Bonjour libs
+            if os.path.exists(r'c:\windows\system32\dnssd.dll'):
+                import bonjour
+                haveBonjour = True
+            else:
+                log.info("Required bonjour libs not found; service discovery disabled")
+                Publisher = _Publisher
+                Browser = _Browser
+        else:
             import bonjour
             haveBonjour = True
-        else:
-            log.info("Required bonjour libs not found; service discovery disabled")
-            Publisher = _Publisher
-            Browser = _Browser
     except ImportError,e:
         log.info("Failed to import bonjour; service discovery disabled")
         Publisher = _Publisher
