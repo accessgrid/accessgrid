@@ -38,6 +38,7 @@ fi
 
 here=`pwd`
 #patch0=${here}/patch-something.c
+patch0=${here}/patches/patch-common-src-net_udp.c
 
 PATH=/sbin:${PATH}
 . ../functions
@@ -61,6 +62,9 @@ cd ${builddir}
 # Apply patches
 # like this: do_patch ${patch0}
 #
+if [ "${arch}" = "x86_64" ]; then
+ do_patch ${patch0}
+fi
 
 
 ## Build & install

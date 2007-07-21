@@ -1,5 +1,5 @@
---- rat/configure.in.orig	2007-06-06 12:10:48.613827000 +1000
-+++ rat/configure.in	2007-06-06 12:44:18.972960990 +1000
+--- rat/configure.in.orig	2007-07-18 22:33:07.000000000 +1000
++++ rat/configure.in	2007-07-21 22:49:38.037465337 +1000
 @@ -178,15 +178,6 @@
  		 AC_DEFINE(HAVE_OSPREY_AUDIO)])
  	;;

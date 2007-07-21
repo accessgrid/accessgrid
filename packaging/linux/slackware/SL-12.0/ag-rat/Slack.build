@@ -1,8 +1,8 @@
 name=ag-rat
-version=4.4.00
-release=2
+version=4.4.00-r4080
+release=3
 arch=${ARCH:-`uname -m`}
-srcpkg=mmedia-31.tar.gz
+srcpkg=mmedia-r4080.tar.gz
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
@@ -38,6 +38,8 @@ fi
 
 here=`pwd`
 patch0=${here}/patches/patch-rat-configure.in
+patch1=${here}/patches/patch-rat-64bit
+patch2=${here}/patches/patch-common-64bit
 
 PATH=/sbin:${PATH}
 . ../functions
@@ -55,13 +57,15 @@ mkdir -p ${pkgdir}
 #
 cd ${buildroot}
 tar zxvf ${here}/${srcpkg}
-mv mmedia ${name}-${version}
+mv mmedia-r4080 ${name}-${version}
 cd ${builddir}
 
 # Apply patches
 # like this: do_patch ${patch0}
 #
 do_patch ${patch0}
+do_patch ${patch1}
+do_patch ${patch2}
 
 # Build
 (cd common && ./configure && make) || exit 1
@@ -131,6 +135,9 @@ fi
 
 
 # Changelog
+#
+# 20070721 CKW release 3 using UCL svn version r4080
+#  - common & rat patched to fix 64 bit issues
 #
 # 20070504 CKW First release
 #  - svn checkout http://mediatools.cs.ucl.ac.uk/repos/mmedia/rat/trunk rat

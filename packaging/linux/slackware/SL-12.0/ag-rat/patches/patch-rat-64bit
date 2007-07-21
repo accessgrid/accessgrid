@@ -1,0 +1,155 @@
+Index: rat/ui_send_rtp.c
+===================================================================
+--- rat/ui_send_rtp.c	(revision 4077)
++++ rat/ui_send_rtp.c	(working copy)
+@@ -34,13 +34,13 @@
+                 val = "";
+         }
+         arg = mbus_encode_str(val);
+-	mbus_qmsgf(sp->mbus_engine, addr, FALSE, item, "\"%08lx\" %s", ssrc, arg);
++	mbus_qmsgf(sp->mbus_engine, addr, FALSE, item, "\"%08lx\" %s", (unsigned long)ssrc, arg);
+ 	xfree(arg);
+ }
+ 
+ void ui_send_rtp_cname(session_t *sp, char *addr, uint32_t ssrc)
+ {
+-	ui_info_update_sdes(sp, addr, "rtp.source.cname", rtp_get_sdes(sp->rtp_session[0], ssrc, RTCP_SDES_CNAME), ssrc);
++	ui_info_update_sdes(sp, addr, "rtp.source.cname", rtp_get_sdes(sp->rtp_session[0], (unsigned long)ssrc, RTCP_SDES_CNAME), (unsigned long)ssrc);
+ }
+ 
+ void ui_send_rtp_name(session_t *sp, char *addr, uint32_t ssrc)
+@@ -106,7 +106,7 @@
+         pdb_entry_t *pdbe;
+ 	if (!sp->ui_on) return;
+         if (pdb_item_get(sp->pdb, ssrc, &pdbe)) {
+-                mbus_qmsgf(sp->mbus_engine, addr, TRUE, "rtp.source.gain", "\"%08lx\" %.2f", pdbe->ssrc, pdbe->gain);
++                mbus_qmsgf(sp->mbus_engine, addr, TRUE, "rtp.source.gain", "\"%08lx\" %.2f", (unsigned long)pdbe->ssrc, pdbe->gain);
+         }
+ }
+ 
+@@ -116,7 +116,7 @@
+         pdb_entry_t *pdbe;
+ 	if (!sp->ui_on) return;
+         if (pdb_item_get(sp->pdb, ssrc, &pdbe)) {
+-                mbus_qmsgf(sp->mbus_engine, addr, TRUE, "rtp.source.mute", "\"%08lx\" %d", pdbe->ssrc, pdbe->mute);
++                mbus_qmsgf(sp->mbus_engine, addr, TRUE, "rtp.source.mute", "\"%08lx\" %d", (unsigned long)pdbe->ssrc, pdbe->mute);
+         }
+ }
+ 
+@@ -124,14 +124,14 @@
+ ui_send_rtp_remove(session_t *sp, char *addr, uint32_t ssrc)
+ {
+ 	if (!sp->ui_on) return;
+-        mbus_qmsgf(sp->mbus_engine, addr, TRUE, "rtp.source.remove", "\"%08lx\"", ssrc);
++        mbus_qmsgf(sp->mbus_engine, addr, TRUE, "rtp.source.remove", "\"%08lx\"", (unsigned long)ssrc);
+ }
+ 
+ void
+ ui_send_rtp_active(session_t *sp, char *addr, uint32_t ssrc)
+ {
+ 	if (!sp->ui_on) return;
+-        mbus_qmsgf(sp->mbus_engine, addr, TRUE, "rtp.source.active", "\"%08lx\"", ssrc);
++        mbus_qmsgf(sp->mbus_engine, addr, TRUE, "rtp.source.active", "\"%08lx\"", (unsigned long)ssrc);
+ }
+ 
+ void
+@@ -139,28 +139,28 @@
+ {
+ 	session_validate(sp);
+ 	if (!sp->ui_on) return;
+-        mbus_qmsgf(sp->mbus_engine, addr, TRUE, "rtp.source.inactive", "\"%08lx\"", ssrc);
++        mbus_qmsgf(sp->mbus_engine, addr, TRUE, "rtp.source.inactive", "\"%08lx\"", (unsigned long)ssrc);
+ }
+ 
+ void
+ ui_send_rtp_packet_loss(session_t *sp, char *addr, uint32_t srce, uint32_t dest, int loss)
+ {
+ 	if (!sp->ui_on) return;
+-	mbus_qmsgf(sp->mbus_engine, addr, FALSE, "rtp.source.packet.loss", "\"%08lx\" \"%08lx\" %3d", srce, dest, loss);
++	mbus_qmsgf(sp->mbus_engine, addr, FALSE, "rtp.source.packet.loss", "\"%08lx\" \"%08lx\" %3d", (unsigned long)srce, (unsigned long)dest, loss);
+ }
+ 
+ void
+ ui_send_rtp_rtt(session_t *sp, char *addr, uint32_t ssrc, double rtt_sec)
+ {
+ 	if (!sp->ui_on) return;
+-        mbus_qmsgf(sp->mbus_engine, addr, FALSE, "rtp.source.rtt", "\"%08lx\" %6ld", ssrc, (uint32_t) (1000 * rtt_sec));
++        mbus_qmsgf(sp->mbus_engine, addr, FALSE, "rtp.source.rtt", "\"%08lx\" %6ld", (unsigned long)ssrc, (uint32_t) (1000 * rtt_sec));
+ }
+ 
+ void
+ ui_send_rtp_ssrc(session_t *sp, char *addr)
+ {
+ 	if (!sp->ui_on) return;
+-	mbus_qmsgf(sp->mbus_engine, addr, TRUE, "rtp.ssrc", "\"%08lx\"", rtp_my_ssrc(sp->rtp_session[0]));
++	mbus_qmsgf(sp->mbus_engine, addr, TRUE, "rtp.ssrc", "\"%08lx\"", (unsigned long)rtp_my_ssrc(sp->rtp_session[0]));
+ }
+ 
+ void
+@@ -193,6 +193,6 @@
+         char *enc_siteid;
+ 	if (!sp->ui_on) return;
+ 	enc_siteid = mbus_encode_str(siteid);
+-	mbus_qmsgf(sp->mbus_engine, addr, TRUE, "rtp.source.app.site", "\"%08lx\" %s", ssrc, enc_siteid);
++	mbus_qmsgf(sp->mbus_engine, addr, TRUE, "rtp.source.app.site", "\"%08lx\" %s", (unsigned long)ssrc, enc_siteid);
+ 	xfree(enc_siteid);
+ }
+Index: rat/ui_send_stats.c
+===================================================================
+--- rat/ui_send_stats.c	(revision 4077)
++++ rat/ui_send_stats.c	(working copy)
+@@ -74,11 +74,11 @@
+                 skew_rate = 1.0;
+         }
+ 
+-        mbus_qmsgf(sp->mbus_engine, addr, FALSE, "tool.rat.audio.buffered", "\"%08lx\" %ld", pdbe->ssrc, buffered);
+-        mbus_qmsgf(sp->mbus_engine, addr, FALSE, "tool.rat.audio.delay", "\"%08lx\" %ld", pdbe->ssrc, delay);
+-        mbus_qmsgf(sp->mbus_engine, addr, FALSE, "tool.rat.audio.skew", "\"%08lx\" %.5f", pdbe->ssrc, skew_rate);
+-        mbus_qmsgf(sp->mbus_engine, addr, FALSE, "tool.rat.spike.events", "\"%08lx\" %ld", pdbe->ssrc, pdbe->spike_events);
+-        mbus_qmsgf(sp->mbus_engine, addr, FALSE, "tool.rat.spike.toged", "\"%08lx\" %ld",  pdbe->ssrc, pdbe->spike_toged);
++        mbus_qmsgf(sp->mbus_engine, addr, FALSE, "tool.rat.audio.buffered", "\"%08lx\" %ld", (unsigned long)pdbe->ssrc, buffered);
++        mbus_qmsgf(sp->mbus_engine, addr, FALSE, "tool.rat.audio.delay", "\"%08lx\" %ld", (unsigned long)pdbe->ssrc, delay);
++        mbus_qmsgf(sp->mbus_engine, addr, FALSE, "tool.rat.audio.skew", "\"%08lx\" %.5f", (unsigned long)pdbe->ssrc, skew_rate);
++        mbus_qmsgf(sp->mbus_engine, addr, FALSE, "tool.rat.spike.events", "\"%08lx\" %ld", (unsigned long)pdbe->ssrc, pdbe->spike_events);
++        mbus_qmsgf(sp->mbus_engine, addr, FALSE, "tool.rat.spike.toged", "\"%08lx\" %ld",  (unsigned long)pdbe->ssrc, pdbe->spike_toged);
+         my_ssrc = rtp_my_ssrc(sp->rtp_session[0]);
+         rr = rtp_get_rr(sp->rtp_session[0], my_ssrc, pdbe->ssrc);
+         if (rr != NULL) {
+@@ -92,9 +92,9 @@
+ 
+         ui_send_rtp_packet_loss(sp, addr, my_ssrc, pdbe->ssrc, fract_lost);
+ 	mbus_qmsgf(sp->mbus_engine, addr, FALSE, "rtp.source.reception", "\"%08lx\" %6ld %6ld %6ld %6ld %6ld %6d",
+-		  pdbe->ssrc, pdbe->received, total_lost, pdbe->misordered, pdbe->duplicates, timestamp_to_ms(pdbe->jitter), pdbe->jit_toged);
++		  (unsigned long)pdbe->ssrc, pdbe->received, total_lost, pdbe->misordered, pdbe->duplicates, timestamp_to_ms(pdbe->jitter), pdbe->jit_toged);
+ 	mbus_qmsgf(sp->mbus_engine, addr, FALSE, "rtp.source.packet.duration", "\"%08lx\" %3d",
+-	           pdbe->ssrc, pdbe->inter_pkt_gap * 1000 / pdbe->sample_rate);
++	           (unsigned long)pdbe->ssrc, pdbe->inter_pkt_gap * 1000 / pdbe->sample_rate);
+ }
+ 
+ void
+Index: rat/ui_send_audio.c
+===================================================================
+--- rat/ui_send_audio.c	(revision 4077)
++++ rat/ui_send_audio.c	(working copy)
+@@ -606,7 +606,7 @@
+ 
+         render_3D_get_parameters(p->render_3D_data, &azimuth, &filter_type, &filter_length);
+         filter_name = mbus_encode_str(render_3D_filter_get_name(filter_type));
+-        mbus_qmsgf(sp->mbus_engine, addr, TRUE, "audio.3d.user.settings", "\"%08lx\" %s %d %d", ssrc, filter_name, filter_length, azimuth);
++        mbus_qmsgf(sp->mbus_engine, addr, TRUE, "audio.3d.user.settings", "\"%08lx\" %s %d %d", (unsigned long) ssrc, filter_name, filter_length, azimuth);
+         xfree(filter_name);
+ }
+ 
+Index: rat/mbus_engine.c
+===================================================================
+--- rat/mbus_engine.c	(revision 4077)
++++ rat/mbus_engine.c	(working copy)
+@@ -1044,7 +1044,7 @@
+ 	mbus_parse_int(mp, &tx_port);
+ 	mbus_parse_int(mp, &ttl);
+ 	mbus_parse_done(mp);
+-	debug_msg("rx_rtp_addr: New Addr:%d,rx_port:%d,tx_port:%d,ttl:%d\n",addr, rx_port, tx_port, ttl);
++	debug_msg("rx_rtp_addr: New Addr:%s,rx_port:%d,tx_port:%d,ttl:%d\n",addr, rx_port, tx_port, ttl);
+ 
+ 	if (sp->rtp_session_count) {
+ 		/* Existing session present - delete and recreate with new params */

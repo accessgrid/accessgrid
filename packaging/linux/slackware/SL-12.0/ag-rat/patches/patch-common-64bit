@@ -1,0 +1,22 @@
+Index: common/src/rtp.c
+===================================================================
+--- common/src/rtp.c	(revision 4080)
++++ common/src/rtp.c	(working copy)
+@@ -2507,7 +2507,7 @@
+ 	common->count   = 1;
+ 	common->pt      = RTCP_SDES;
+ 	common->length  = 0;
+-	packet += sizeof(common);
++	packet += sizeof(rtcp_common);
+ 
+ 	*((uint32_t *) packet) = htonl(ssrc);
+ 	packet += 4;
+@@ -2851,7 +2851,7 @@
+ 	common->count   = 1;
+ 	common->pt      = RTCP_BYE;
+ 	common->length  = htons(1);
+-	ptr += sizeof(common);
++	ptr += sizeof(rtcp_common);
+ 	
+ 	*((uint32_t *) ptr) = htonl(session->my_ssrc);  
+ 	ptr += 4;
