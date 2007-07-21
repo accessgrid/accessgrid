@@ -45,7 +45,7 @@ hdvideoservices-0.1-noarch-1.tgz
 
 
 version=3.1
-release=cvs20070705
+release=cvs20070721
 releasedir=${RELEASEDIR:-/scratch/AG3/releases-12.0}
 pkgdir=${PKGDIR:-/tmp}
 

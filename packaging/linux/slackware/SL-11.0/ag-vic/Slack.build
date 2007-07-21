@@ -1,8 +1,8 @@
 name=ag-vic
-version=2.8ucl-1.3.0
+version=2.8ucl-1.3.0-r4080
 release=1
 arch=${ARCH:-`uname -m`}
-srcpkg=mmedia-31.tar.gz
+srcpkg=mmedia-r4080.tar.gz
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
@@ -38,9 +38,7 @@ fi
 
 here=`pwd`
 
-patch0=${here}/patches/patch-mpeg4-tcl-ui-ctrlmenu.tcl
-patch1=${here}/patches/patch-mpeg4-tcl-ui-windows.tcl
-patch2=${here}/patches/patch-mpeg4-configure.in.tk
+patch0=${here}/patches/patch-vic-configure.in.tk
 
 PATH=/sbin:${PATH}
 . ../functions
@@ -58,46 +56,42 @@ mkdir -p ${pkgdir}
 #
 cd ${buildroot}
 tar zxvf ${here}/${srcpkg}
-mv mmedia ${name}-${version}
+mv mmedia-r4080 ${name}-${version}
 cd ${builddir}
 
 # Apply patches
 # like this: do_patch ${patch0}
 #
 do_patch ${patch0}
-do_patch ${patch1}
-do_patch ${patch2}
 
-echo -n "Post-patch sleep ..."
-sleep 5
-echo
 
-# Build
+sleep 3
+## Build & install
+##
+#CFLAGS="$SLKCFLAGS" \
+#./configure	\
+#	--prefix=/usr	\
+#&& make	\
+#&& make install DESTDIR=${pkgdir}
+
+# Build with system tcl & tk
 (cd common && ./configure && make) || exit 1
-#(cd tcl-8.0/unix && ./configure && make) || exit 1
-#(cd tk-8.0/unix && ./configure && make) || exit 1
-#(cd mpeg4 && ./configure --with-ucltcl --with-ucltk && make) || exit 1
-(
-cd mpeg4 \
-&& autoconf -f \
-&& ./configure --with-tcl=/usr --with-tk=/usr \
-&& make
-) || exit 1
+(cd vic && autoconf -f && ./configure --prefix=/usr && make) || exit 1
 
 # Install
 cd ${builddir}
 install -d ${pkgdir}/usr/bin
 install -d ${pkgdir}/usr/share/man/man1
 install -m 755 \
-    mpeg4/vic mpeg4/histtolut \
+    vic/vic vic/histtolut \
     ${pkgdir}/usr/bin/
-install -m 644 mpeg4/vic.1 ${pkgdir}/usr/share/man/man1/
+install -m 644 vic/vic.1 ${pkgdir}/usr/share/man/man1/
 
 
 # Docs
 #
-cd ${builddir}/mpeg4
 mkdir -p ${docdir}
+cd ${builddir}/vic
 cp -a html CHANGES.html FILES README README.WIN32 VERSION \
 	${docdir}
 
@@ -109,8 +103,7 @@ cat <<EOF >${pkgdir}/install/slack-desc
 ${name}: ${name}-${version}
 ${name}:
 ${name}: New UCL vic video tool
-${name}: using ucl svn revision 4059 versions of
-${name}: common, tcl-8.0, tk-8.0 libraries
+${name}: using ucl svn revision 4080
 ${name}:
 EOF
 chmod 0644 ${pkgdir}/install/slack-desc
@@ -138,6 +131,9 @@ fi
 
 
 # Changelog
+#
+# 20070720 CKW
+#  - release 1 of svn version r4080
 #
 # 20070606 CKW First release
 #  - svn checkout http://mediatools.cs.ucl.ac.uk/repos/mmedia/vic/branches/mpeg4 mpeg4

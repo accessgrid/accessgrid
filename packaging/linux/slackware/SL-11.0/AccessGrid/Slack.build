@@ -1,7 +1,7 @@
 name=AccessGrid
 version=3.1
-release=cvs20070627
-arch=${ARCH:-`uname -m`}
+release=cvs20070721
+arch=${ARCH:-noarch}
 prefix=${PREFIX:-/usr}
 #srcpkg=${name}-${version}.src.tar.gz
 srcpkg=${name}-${version}-${release}.tar.gz
