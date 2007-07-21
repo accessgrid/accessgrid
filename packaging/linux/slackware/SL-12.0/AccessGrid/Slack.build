@@ -1,7 +1,7 @@
 name=AccessGrid
 version=3.1
-release=cvs20070627
-arch=${ARCH:-`uname -m`}
+release=cvs20070721
+arch=${ARCH:-noarch}
 prefix=${PREFIX:-/usr}
 #srcpkg=${name}-${version}.src.tar.gz
 srcpkg=${name}-${version}-${release}.tar.gz
@@ -148,8 +148,8 @@ cat \${patchfile} |patch -p0 -Ns --dry-run >/dev/null
 if [ \$? -eq 0 ]; then
   cat \${patchfile} |patch -p0 -Ns
 fi
-if [ -e etc/X11/xdg/xfce4/desktop/menu.xml ]; then
-  touch etc/X11/xdg/xfce4/desktop/menu.xml
+if [ -e etc/xfce/xdg/xfce4/desktop/menu.xml ]; then
+  touch etc/xfce/xdg/xfce4/desktop/menu.xml
 fi
 rm -f \${patchfile}
 
