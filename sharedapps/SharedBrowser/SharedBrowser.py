@@ -302,7 +302,7 @@ class WebBrowser(wxPanel):
             self.wxbrowser.LoadURL(url)
 
     def OnLocationKey(self, event):
-        if event.KeyCode() == WXK_RETURN:
+        if event.GetKeyCode() == WXK_RETURN:
             self.LocalEvent()
             URL = self.location.GetValue()
             if self.current and self.location.FindString(self.current) == wxNOT_FOUND:
