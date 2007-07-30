@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.237 2007-06-18 17:33:48 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.238 2007-07-30 02:46:22 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.237 2007-06-18 17:33:48 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.238 2007-07-30 02:46:22 willing Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -873,9 +873,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # menus that contain only radio items (would be better to work
         # around it only when it occurs, but GTK prints to the console
         # when the problem occurs)
-        itemId = wxNewId()
-        self.configSubmenu.Append(itemId,"")
-        self.configSubmenu.Delete(itemId)
+        try:
+            itemId = wxNewId()
+            self.configSubmenu.Append(itemId,"")
+            self.configSubmenu.Delete(itemId)
+        except:
+            pass
 
         # Build up the list of menu items 
         configs = self.venueClient.GetNodeConfigurations()
