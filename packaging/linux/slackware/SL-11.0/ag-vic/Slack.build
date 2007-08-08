@@ -14,6 +14,7 @@ master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/nfs/distfiles/
 releasedir=${RELEASEDIR:-/tmp}
 
+TCLTKCONFIGOPTS=""
 if [ "${arch}" = "i386" ]; then
   SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
   LIBDIR="/usr/lib"
@@ -34,6 +35,7 @@ elif [ "${arch}" = "x86_64" ]; then
   SLKCFLAGS="-O2"
   LIBDIR="/usr/lib64"
   ARCH_CONFIGURE="--libdir=$LIBDIR"
+  TCLTKCONFIGOPTS="--with-tcl=/usr --with-tk=/usr"
 fi
 
 here=`pwd`
@@ -76,7 +78,7 @@ sleep 3
 
 # Build with system tcl & tk
 (cd common && ./configure && make) || exit 1
-(cd vic && autoconf -f && ./configure --prefix=/usr && make) || exit 1
+(cd vic && autoconf -f && ./configure ${TCLTKCONFIGOPTS} && make) || exit 1
 
 # Install
 cd ${builddir}

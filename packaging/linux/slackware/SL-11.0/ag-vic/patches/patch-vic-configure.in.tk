@@ -1,5 +1,5 @@
---- mpeg4/configure.in.tk.orig	2007-06-06 09:48:51.000000000 +1000
-+++ mpeg4/configure.in.tk	2007-06-27 16:58:25.954448000 +1000
+--- vic/configure.in.tk.orig	2007-06-06 09:48:51.000000000 +1000
++++ vic/configure.in.tk	2007-06-27 16:58:25.954448000 +1000
 @@ -50,7 +50,13 @@
  		$d/lib/libtcl8.4.a \
  		$d/lib/libtcl.so \
