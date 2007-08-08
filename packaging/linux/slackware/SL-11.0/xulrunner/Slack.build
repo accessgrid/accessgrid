@@ -1,0 +1,250 @@
+name=xulrunner
+version=1.8.0.4
+release=1
+arch=${ARCH:-`uname -m`}
+srcpkg=${name}-${version}-source.tar.bz2
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.tgz
+
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/linux/distfiles/
+releasedir=${RELEASEDIR:-/tmp}
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+  LIBDIR="/usr/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+  LIBDIR="/usr/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mcpu=i686"
+  LIBDIR="/usr/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR="/usr/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIR="/usr/lib64"
+  ARCH_CONFIGURE="--libdir=$LIBDIR"
+fi
+
+here=`pwd`
+patch0=${here}/patches/patch-epiphany.patch
+patch1=${here}/patches/patch-moz_plugin_path.diff
+
+PATH=/sbin:${PATH}
+. ../functions
+
+get_srcpkg ${srcpkg}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar jxvf ${here}/${srcpkg}
+mv mozilla ${builddir}
+cd ${builddir}
+
+# Apply patches
+# like this: do_patch ${patch0}
+#
+do_patch ${patch0}
+do_patch ${patch1}
+
+# Support for pragma is broken on GCC 4.1.x and x86_64.  
+if [ x"${arch}" == x"x86_64" ]; then
+  export ac_cv_visibility_pragma=no
+  echo "Disabling pragma support!"
+fi
+echo "Post patch sleep ...."
+sleep 5
+
+
+# Build & install
+#
+CFLAGS=${SLKCFLAGS} \
+CXXFLAGS=${SLKCFLAGS} \
+./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --mandir=/usr/man \
+    --localstatedir=/var \
+    --libdir=${LIBDIR} \
+    --disable-static \
+    --enable-shared \
+    --with-default-mozilla-five-home=${LIBDIR}/${name}-${version} \
+    --enable-application=xulrunner \
+    --enable-svg \
+    --enable-svg-renderer=cairo \
+    --enable-canvas \
+    --enable-default-toolkit=gtk2 \
+    --enable-system=cairo \
+    --enable-xft \
+    --enable-extensions=default,cookie,permissions \
+    --enable-strip \
+    --enable-xprint \
+    --enable-crypto \
+    --disable-short-wchar \
+    --disable-debug \
+    --disable-installer \
+    --disable-tests \
+    --disable-pendantic \
+    --disable-mailnews \
+    --disable-short-wchar \
+    --enable-optimize=-O2 \
+    --enable-libxul \
+    --with-system-zlib \
+    --with-system-jpeg \
+    --with-system-png \
+    --with-system-mng \
+    --with-system-bz2 \
+    --enable-nspr-autoconf \
+    --without-system-nspr \
+    --with-x \
+    --disable-javaxpcom \
+&& make	-j5 \
+&& make install DESTDIR=${pkgdir}
+[ $? -eq 0 ] || exit 1
+
+
+# Docs
+#
+mkdir -p ${docdir}
+cp LEGAL LICEN*E README* \
+	${docdir}
+
+
+# Create plugin-path.
+mkdir -p ${pkgdir}/${LIBDIR}/mozilla/plugins
+
+# Install nss headers.
+mkdir -p ${pkgdir}/usr/include/${name}-${version}/nss
+find security/nss/lib -name "*.h" -type f -exec cp -a {} ${pkgdir}/usr/include/${name}-${version}/nss \;
+chown -R root:root ${pkgdir}/usr/include/${name}-${version}/nss
+chmod 644 ${pkgdir}/usr/include/${name}-${version}/nss/*
+
+( mkdir -p ${pkgdir}/${LIBDIR};
+  cd ${pkgdir}/${LIBDIR};
+  for LIBRARY in libmozjs.so libnspr4.so libnss3.so libplc4.so libplds4.so libsmime3.so libsoftokn3.so libssl3.so ; do
+    rm -f "${LIBRARY}"; ln -sf ${LIBDIR}/${name}-${version}/$LIBRARY .
+  done
+)
+
+(
+  cd ${pkgdir}
+  for a in bin sbin usr/bin usr/sbin usr/X11R6/bin usr/X11/bin ; do
+    if [ -d "$a" ]; then
+      SUID_FILES=$(find "$a/" -type f -perm -4000 -print)
+      chown -R root:root "$a"
+      # Reset SUID-bit since chown will always reset this for security
+      # Also display a waring about SUID-files found in this package.
+      if [ x"" != x"$SUID_FILES" ]; then
+        echo "    Warning: Found files with SUID-bit set:"
+        echo "$SUID_FILES" | sed "s,^,    ->,g"
+        chmod u+s $SUID_FILES
+      fi
+    fi
+  done
+)
+
+# Strip binary files
+( cd ${pkgdir}
+  find . | xargs file | grep "executable"    | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null
+  find . | xargs file | grep "shared object" | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null
+)
+
+# Prepare symlinks to manpages
+if [ -d ${pkgdir}/usr/man ]; then
+  for a in $(find ${pkgdir}/usr/man -type l);do
+    ( file=$(readlink $a); cd $(dirname $a); rm $(basename $a); ln -s $file.gz $(basename $a).gz )
+  done
+fi
+
+# gzip man-pages (if available)
+if [ -f ${pkgdir}/usr/info/dir ]; then
+  rm ${pkgdir}/usr/info/dir
+fi
+for a in ${pkgdir}/usr/info \
+         ${pkgdir}/usr/man \
+         ${pkgdir}/usr/share/man ; do
+  if [ -d "$a" ]; then
+    find "$a/" -type f -name "*[[:digit:]]" -exec gzip -9 {} \;
+  fi
+done
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+cat <<EOF >${pkgdir}/install/slack-desc
+${name}: ${name}-${version}
+${name}:
+${name}: ${name} is a Mozilla runtime package that can be
+${name}: used to bootstrap XUL+XPCOM applications that are
+${name}: as rich as Firefox and Thunderbird. It will provide
+${name}: mechanisms for installing, upgrading, and uninstalling
+${name}: these applications.
+${name}:     XULRunner will also provide libxul,
+${name}: a solution which allows the embedding of
+${name}: Mozilla technologies in other projects and products.
+${name}:
+EOF
+chmod 0644 ${pkgdir}/install/slack-desc
+
+# Include build script
+cp ${here}/Slack.build ${docdir}/
+
+# Make libraries visible
+#
+mkdir -p ${pkgdir}/etc/ld.so.conf.d
+echo "${LIBDIR}/${name}-${version}/" >${pkgdir}/etc/ld.so.conf.d/${name}-${version}.conf
+
+cat <<EOF >${pkgdir}/install/doinst.sh
+#!/bin/sh
+LDSOCONF=/etc/ld.so.conf
+PATHFOUND=\`grep "^include[ ]*/etc/ld.so.conf.d/\*.conf" \${LDSOCONF}\` >/dev/null
+if [ \$? -eq 1 ]; then
+  echo "include /etc/ld.so.conf.d/*.conf" >>\${LDSOCONF}
+fi
+/sbin/ldconfig
+EOF
+chmod 0755 ${pkgdir}/install/doinst.sh
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# CKW 20070628 - first release modelled after xulrunner.slackpack
+#
+
