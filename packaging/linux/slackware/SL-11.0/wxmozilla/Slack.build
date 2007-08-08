@@ -1,5 +1,5 @@
 name=wxmozilla
-version=20061219cvs
+version=20070620cvs
 release=1
 prefix=${PREFIX:-/usr}
 arch=${ARCH:-`uname -m`}
@@ -13,7 +13,7 @@ pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
 pkgname=${name}-${version}-${arch}-${release}.tgz
 
-master_sites=http://www.vislab.uq.edu.au/ag3/freebsd/distfiles/
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/nfs/distfiles/
 
 if [ "${arch}" = "i386" ]; then
@@ -34,6 +34,7 @@ elif [ "${arch}" = "x86_64" ]; then
 fi
 
 here=`pwd`
+patch3=${here}/patches/patch-contrib-mozilla25-wx-mozilla.py
 
 PATH=/sbin:${PATH}
 . ../functions
@@ -56,21 +57,23 @@ cd ${builddir}
 # Apply patches
 # like this: do_patch ${patch0}
 #
+do_patch ${patch3}
+echo "Post-patch sleep"
+sleep 3
 
-
-#autoconf
+autoconf
 # Build & install
 #
 CFLAGS="$SLKCFLAGS" \
 ./configure	\
 	--prefix=${prefix} \
+        --libdir=${LIBDIR} \
 	--disable-gtktest \
 	--enable-python \
-	--enable-seamonkey \
+	--enable-xul \
 && make	\
 && make install DESTDIR=${pkgdir}
 
-#        --libdir=${LIBDIR} \
 
 # Documentation
 #
@@ -90,9 +93,9 @@ mkdir -p ${pkgdir}/install
 cat <<EOF >${pkgdir}/install/slack-desc
 ${name}: ${name}-${version}
 ${name}:
-${name}: wxWindows interface to Mozilla
+${name}: wxWindows interface to Mozilla using xulrunner
 ${name}:
-${name}: This version for python${pyver}
+${name}: This version is for python${pyver}
 ${name}:
 ${name}: From:
 ${name}:       http://wxmozilla.sourceforge.net
@@ -101,8 +104,6 @@ ${name}:
 EOF
 chmod 0644 ${pkgdir}/install/slack-desc
 
-cp ${here}/doinst.sh ${pkgdir}/install/
-chmod 0755 ${pkgdir}/install/doinst.sh
 
 #
 #
@@ -110,7 +111,7 @@ cd ${pkgdir}
 /sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
 cd ${here}
 
-#
+# Clean up
 #
 [ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
 [ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
@@ -122,7 +123,8 @@ fi
 
 # Changelog
 #
-# 20061219 CKW, release 1
-#  - 0.5.7 is not actually released; using CVS code
+# CKW 20070728 release 1 for wxPython-2.8.4.0
+#
+
 #
 
