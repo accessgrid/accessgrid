@@ -34,9 +34,7 @@ elif [ "${arch}" = "x86_64" ]; then
 fi
 
 here=`pwd`
-patch0=${here}/patches/patch-configure.in
-patch1=${here}/patches/patch-src-wxMozillaBrowser.cpp
-patch2=${here}/patches/patch-const_cast-mozilla_wrap.cpp
+patch3=${here}/patches/patch-contrib-mozilla25-wx-mozilla.py
 
 PATH=/sbin:${PATH}
 . ../functions
@@ -59,11 +57,7 @@ cd ${builddir}
 # Apply patches
 # like this: do_patch ${patch0}
 #
-if [ ${version} = "20061219cvs" ]; then
-  do_patch ${patch0}
-  do_patch ${patch1}
-fi
-do_patch ${patch2}
+do_patch ${patch3}
 echo "Post-patch sleep"
 sleep 3
 
@@ -73,13 +67,13 @@ autoconf
 CFLAGS="$SLKCFLAGS" \
 ./configure	\
 	--prefix=${prefix} \
+        --libdir=${LIBDIR} \
 	--disable-gtktest \
 	--enable-python \
 	--enable-xul \
 && make	\
 && make install DESTDIR=${pkgdir}
 
-#        --libdir=${LIBDIR} \
 
 # Documentation
 #
@@ -110,8 +104,11 @@ ${name}:
 EOF
 chmod 0644 ${pkgdir}/install/slack-desc
 
-cp ${here}/doinst.sh ${pkgdir}/install/
-chmod 0755 ${pkgdir}/install/doinst.sh
+# This doinst.sh, which found the path to the correct libgtkembedmoz.so
+# and entered it in /etc/ld.so.conf, is now not needed; xulrunner (which
+# supplies libgtkembedmoz.so) already does it.
+#cp ${here}/doinst.sh ${pkgdir}/install/
+#chmod 0755 ${pkgdir}/install/doinst.sh
 
 #
 #

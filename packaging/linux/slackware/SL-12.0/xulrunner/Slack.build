@@ -81,8 +81,9 @@ CXXFLAGS=${SLKCFLAGS} \
 ./configure \
     --prefix=/usr \
     --sysconfdir=/etc \
-    --mandir=//usr/man \
+    --mandir=/usr/man \
     --localstatedir=/var \
+    --libdir=${LIBDIR} \
     --disable-static \
     --enable-shared \
     --with-default-mozilla-five-home=/usr/lib/${name}-${version} \
@@ -206,7 +207,24 @@ EOF
 chmod 0644 ${pkgdir}/install/slack-desc
 
 # Include build script
-cp ${here}/Slack.build ${pkgdir}/install/
+cp ${here}/Slack.build ${docdir}/
+
+# Make libraries visible
+#
+mkdir -p ${pkgdir}/etc/ld.so.conf.d
+echo "${LIBDIR}/${name}-${version}/" >${pkgdir}/etc/ld.so.conf.d/${name}-${version}.conf
+
+cat <<EOF >${pkgdir}/install/doinst.sh
+#!/bin/sh
+LDSOCONF=/etc/ld.so.conf
+PATHFOUND=\`grep "^include[ ]*/etc/ld.so.conf.d/\*.conf" \${LDSOCONF}\` >/dev/null
+if [ \$? -eq 1 ]; then
+  echo "include /etc/ld.so.conf.d/*.conf" >>\${LDSOCONF}
+fi
+/sbin/ldconfig
+EOF
+chmod 0755 ${pkgdir}/install/doinst.sh
+
 
 
 #
