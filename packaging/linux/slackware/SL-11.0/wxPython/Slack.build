@@ -11,7 +11,7 @@ elif [ "${arch}" = "i486" ]; then
   LIBDIR=/usr/lib
   ARCH_CONFIGURE=""
 elif [ "${arch}" = "i686" ]; then
-  SLKCFLAGS="-O2 -march=i686 -mcpu=i686"
+  SLKCFLAGS="-O2 -march=i686 -mcpu=i686 -fno-const-strings"
   LIBDIR=/usr/lib
   ARCH_CONFIGURE=""
 elif [ "${arch}" = "s390" ]; then
@@ -57,15 +57,17 @@ mediactrl=${mediactrl:-1}
 pref=${_prefix}
 python=/usr/bin/python${pyver}
 tarname=wxPython-src
-version=2.6.3.2
-ver2=2.6
+#version=2.6.3.2
+#ver2=2.6
+version=2.8.4.0
+ver2=2.8
 
 chartype=$(if [ "${unicode}" = "1" ]; then echo unicode; else echo ansi; fi)
 gtktype=""; if [ "${port}" = "gtk2" ]; then gtktype=2; fi
 wxprefbase=${LIBDIR}/wxPython
 wxpref=${wxprefbase}-${version}-${port}-${chartype}
-release=4
-name=wxPython-${ver2}-${port}-${chartype}
+release=1
+name=wxPython-${ver2}-${port}-${chartype}-py${pyver}
 buildroot=${tmp}
 builddir=${buildroot}/wxPython-${version}
 pkgdir=${buildroot}/wxPython-${version}-pkg
@@ -73,16 +75,20 @@ docdir=${pkgdir}/usr/doc/${name}-${version}
 
 pkgname=${name}-${version}-${arch}-${release}.tgz
 
-srcpkg=${tarname}-${version}.tar.gz
-master_sites=http://www.vislab.uq.edu.au/ag3/freebsd/distfiles/
+#srcpkg=${tarname}-${version}.tar.gz
+srcpkg=${tarname}-${version}.tar.bz2
+master_sites=http://heanet.dl.sourceforge.net/sourceforge/wxpython/wxPython-src-2.8.4.0.tar.bz2
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/usr/ports/distfiles
 
 
+PATH=/sbin:${PATH}
 . ../functions
+
 get_srcpkg ${srcpkg}
 
-patch0=${here}/patch-wxPython-config.py
-patch1=${here}/patch-configure
+patch0=${here}/patches/patch-wxPython-config.py
+patch1=${here}/patches/patch-configure
 
 
 MAKE="make"
@@ -97,7 +103,8 @@ mkdir -p ${pkgdir}${LIBDIR}
 
 cd ${buildroot}
 echo "Looking for ${here}/${srcpkg}"
-tar zxvf ${here}/${srcpkg}
+#tar zxvf ${here}/${srcpkg}
+tar jxvf ${here}/${srcpkg}
 mv ${tarname}-${version} wxPython-${version}
 
 cd ${builddir} 
@@ -110,12 +117,12 @@ mkdir -p bld
 cd bld
 
 # Configure, trying to reduce external dependencies
+#	--enable-monolithic \
 CFLAGS="${SLKCFLAGS}" \
 ../configure	\
 	--with-gtk=2	\
 	--disable-gtktest \
 	--prefix=${wxpref} \
-	--enable-monolithic \
 	--disable-rpath \
 	--enable-soname \
 	--enable-shared \
@@ -123,6 +130,7 @@ CFLAGS="${SLKCFLAGS}" \
 	--enable-sound --with-sdl \
 	--with-gnomeprint \
 	--enable-geometry \
+	--enable-richtext \
 	--enable-optimise \
 	--enable-display \
 	--enable-debug_flag
@@ -140,7 +148,6 @@ echo
 echo "############################################## Running $MAKE (in `pwd`) ####################################"
 cd ${builddir}/bld
 $MAKE \
-    && $MAKE -C contrib/src/animate \
     && $MAKE -C contrib/src/gizmos \
     && $MAKE -C contrib/src/stc
 if [ $? -ne 0 ]; then
@@ -153,7 +160,6 @@ echo
 echo
 echo "############################################## Installing wxWindows ####################################"
 $MAKE prefix=${wxpref} install DESTDIR=${pkgdir} \
-    && $MAKE -C contrib/src/animate prefix=${wxpref} install DESTDIR=${pkgdir} \
     && $MAKE -C contrib/src/gizmos prefix=${wxpref} install DESTDIR=${pkgdir} \
     && $MAKE -C contrib/src/stc prefix=${wxpref} install DESTDIR=${pkgdir}
 if [ $? -ne 0 ]; then
@@ -248,9 +254,7 @@ install -m 644 wx/tools/XRCed/XRCed_32.png ${pkgdir}/${_datadir}/pixmaps/XRCed.p
 ## Correct the prefix path in wxgtk2d-config
 ##
 #sed -i 's/^prefix=.*.$/prefix=\/usr/' ${pkgdir}/usr/bin/wxgtk2d-2.4-config
-#(cd ${pkgdir}/${pref}/bin; rm -f wx-config; ln -s /usr/lib/wx/config/gtk2-ansi-debug-2.6 wx-config)
-#(cd ${pkgdir}/${pref}/bin; rm -f wx-config; ln -s ${pref}/lib/wxPython-2.6.3.2-gtk2-ansi/lib/wx/config/gtk2-ansi-debug-2.6 wx-config)
-(cd ${pkgdir}/${wxpref}/bin; rm -f wx-config; ln -s ${wxpref}/lib/wx/config/gtk2-ansi-debug-2.6 wx-config)
+(cd ${pkgdir}/${wxpref}/bin; rm -f wx-config; ln -s ${wxpref}/lib/wx/config/gtk2-ansi-debug-${ver2} wx-config)
 (cd ${pkgdir}/${pref}/bin; rm -f wx-config; ln -s ${wxpref}/bin/wx-config wx-config)
 
 # Manual fix till I work out what's making it go into inlude, rather than usr/include
@@ -258,15 +262,21 @@ install -m 644 wx/tools/XRCed/XRCed_32.png ${pkgdir}/${_datadir}/pixmaps/XRCed.p
 #
 if [ -d ${pkgdir}/include ]; then
   echo "DOING MANUAL MOVE"
-  mv ${pkgdir}/include/wx-2.6/wx/wxPython ${pkgdir}/usr/include/wx-2.6/wx/
+  #mv ${pkgdir}/include/wx-${ver2}/wx/wxPython ${pkgdir}/usr/include/wx-${ver2}/wx/
+  mv ${pkgdir}/include/wx-${ver2}/wx/wxPython ${pkgdir}/${wxpref}/include/wx-${ver2}/wx/
   rm -rf ${pkgdir}/include
 fi
+mkdir -p ${pkgdir}/usr/include/
+(cd ${pkgdir}/usr/include/ && ln -s ${wxpref}/include/wx-${ver2}/wx )
 
 # Make the package
 #
 echo
 echo
 echo "################################### Building Package #########################"
+
+# Documentation
+#
 mkdir -p ${docdir}
 cd ${builddir}
 cp -a wxPython/samples \
@@ -294,10 +304,22 @@ wxPython${port}:
 EOF
 chmod 0644 ${pkgdir}/install/slack-desc
 
-# Installation script (Add lib path to /etc/ld.so.conf)
+# Installation script (Add lib path to /etc/ld.so.conf.d/ file)
 #
-cp ${here}/doinst.sh ${pkgdir}/install/
+cat <<EOF >${pkgdir}/install/doinst.sh
+#!/bin/sh
+LDSOCONF=/etc/ld.so.conf
+PATHFOUND=\`grep "^include[ ]*/etc/ld.so.conf.d/\*.conf" \${LDSOCONF}\` >/dev/null
+if [ \$? -eq 1 ]; then
+  echo "include /etc/ld.so.conf.d/*.conf" >>\${LDSOCONF}
+fi
+/sbin/ldconfig
+
+EOF
 chmod 0755 ${pkgdir}/install/doinst.sh
+
+mkdir -p ${pkgdir}/etc/ld.so.conf.d
+echo "${LIBDIR}/wxPython-${version}-gtk2-ansi/lib" >${pkgdir}/etc/ld.so.conf.d/wxPython-${version}.conf
 
 
 /sbin/makepkg -c n -l y ${releasedir}/${pkgname}
@@ -310,9 +332,18 @@ cd ${here}
 [ -d ${builddir} -a "${builddir}" != "/" ] && rm -rf ${builddir}
 rm ${srcpkg}
 
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
 exit 0
 
 # Changelog
+#
+# CKW 20070616, release 1 of 2.8.4.0
+#
 #
 # CKW 20070109, release 4
 #  - add documentation & samples to /usr/doc/${name}
