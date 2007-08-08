@@ -157,11 +157,23 @@ EOF
 cp install-${SL_VERSION}-${arch}.sh ${bundledir}/
 chmod 0755 ${bundledir}/install-${SL_VERSION}-${arch}.sh
 
+# Make a self extracting installer
+#
+if [ -x /usr/bin/makeself.sh ]; then
+  echo "Creating self installer ..."
+  makeself.sh ${bundledir} ${releasedir}/${bundledirname}.run "AG3.1 installer for Slackware ${SL_VERSION}" ./install-${SL_VERSION}-${arch}.sh
+else
+  echo "Can't generate self installer"
+fi
 
 cd ${tempdirname} && tar zcvf ${bundledirname}.tar.gz ${bundledirname}
 rm -rf ${bundledir}
 
 # Changelog
+#
+# Release cvs20070808-1 20070808
+#  - new snapshot
+#  - add self-extracting installer
 #
 # Release 1, 20070629 for SL-12.0
 #
