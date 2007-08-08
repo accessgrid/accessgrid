@@ -35,7 +35,7 @@ mDNSResponder-107.6-${arch}-1.tgz
 bonjour-py-0.1-${arch}-1.tgz
 "
 prereqs="
-wxPython-2.6-gtk2-ansi-2.6.3.2-${arch}-4.tgz
+wxPython-2.8-gtk2-ansi-py2.5-2.8.4.0-${arch}-1.tgz
 xulrunner-1.8.0.4-${arch}-1.tgz
 wxmozilla-20070620cvs-${arch}-1.tgz
 "
