@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.238 2007-07-30 02:46:22 willing Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.239 2007-08-10 18:28:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.238 2007-07-30 02:46:22 willing Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.239 2007-08-10 18:28:10 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2336,7 +2336,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.Notify( "Select the application you want to delete", "Delete Application")
 
     def StartApplicationCB(self, app):
-        timestamp = time.strftime("%I:%M:%S %p %B %d, %Y")
+        timestamp = time.strftime("%Y-%m-%d %I:%M:%S %p")
         id = self.venueClient.GetPreferences().GetProfile().GetName()
         name = "%s" % (timestamp)
         app.description = "Started by %s at %s" % (id, timestamp)
