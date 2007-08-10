@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.133 2007-07-27 20:34:35 turam Exp $
+; RCS-ID: $Id: agtk.iss,v 1.134 2007-08-10 16:10:09 turam Exp $
 ;
 
 ; Set externally
@@ -137,6 +137,7 @@ Source: config\nodeConfig\default; DestDir: {app}\config\nodeConfig
 ; System wide files, windows wierdness no doubt
 Source: install\ag.ico; DestDir: {app}\install
 Source: install\msvcr70.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
+Source: install\msvcp71.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 Source: install\msvcr71.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 Source: install\msvcr71d.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 ;Source: install\ssleay32.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
