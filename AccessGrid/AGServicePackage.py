@@ -3,13 +3,13 @@
 # Purpose:     
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: AGServicePackage.py,v 1.4 2006-01-24 18:06:55 lefvert Exp $
+# RCS-ID:      $Id: AGServicePackage.py,v 1.5 2007-08-15 19:20:27 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AGServicePackage.py,v 1.4 2006-01-24 18:06:55 lefvert Exp $"
+__revision__ = "$Id: AGServicePackage.py,v 1.5 2007-08-15 19:20:27 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -21,6 +21,7 @@ import ConfigParser
 
 from AccessGrid import Log
 from AccessGrid.Descriptions import AGServicePackageDescription
+from AccessGrid import Utilities
 
 log = Log.GetLogger("AGServicePackage")
 
@@ -106,63 +107,12 @@ class AGServicePackage:
         except Exception, e:
             log.exception("AGServicePackage.__ReadPackageFile: failed")
             raise InvalidServiceDescription(str(e))
-            
-                
+
     def Extract( self, path ):
-        """
-        Extract files from service package
-        """
-        
         try:
-        
-            if not os.path.exists(path):
-                os.mkdir(path)
-        
-            zf = zipfile.ZipFile( self.packageFile, "r" )
-            filenameList = zf.namelist()
-            for filename in filenameList:
-                try:
-                    # create subdirs if needed
-                    pathparts = string.split(filename, '/')
-                    
-                    if len(pathparts) > 1:
-                        temp_dir = str(path)
-                        for i in range(len(pathparts) - 1):
-                            log.info("this is temp dir: %s"%(temp_dir))
-                            log.info("this is pathparts: %s"%(pathparts))
-                            temp_dir = os.path.join(temp_dir, pathparts[i])
-                        
-                        if not os.access(temp_dir, os.F_OK):
-                            try:
-                                os.makedirs(temp_dir)
-                            except:
-                                log.exception("Failed to make temp dir %s"%(temp_dir))
-                    destfilename = os.path.join(path,filename)
-
-                    # Extract the file
-                    # Treat directory names different than files.
-                    if os.path.isdir(destfilename):
-                        pass  # skip if dir already exists
-                    elif destfilename.endswith("/"):
-                        os.makedirs(destfilename) # create dir if needed
-                    else: # It's a file so extract it
-                        filecontent = zf.read( filename )
-                        f = open( destfilename, "wb" )
-                        f.write( filecontent )
-                        f.close()
-
-                    #print "setting permissions on file", destfilename
-                    
-                    # Mark the file executable (indiscriminately)
-                    os.chmod(destfilename,0755)
-                    
-                    #s = os.stat(destfilename)
-                    #print "%s mode %d" % (destfilename, s[0])
-                except:
-                    log.exception("Error extracting file %s"%(filename))
-
-            zf.close()
+            Utilities.ExtractZip(self.packageFile, path)
         except zipfile.BadZipfile:
+            log.exception("BadZipFile")
             raise InvalidServicePackage(self.packageFile)
             
     def GetName(self):

@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.88 2007-06-15 18:53:58 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.89 2007-08-15 19:20:27 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.88 2007-06-15 18:53:58 turam Exp $"
+__revision__ = "$Id: Utilities.py,v 1.89 2007-08-15 19:20:27 eolson Exp $"
 
 import os
 import string
@@ -25,6 +25,7 @@ import urllib
 from threading import Lock, Condition
 import re
 import urlparse
+import zipfile
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.Utilities)
@@ -501,6 +502,69 @@ def IsExecFileAvailable(file, path=None):
     return 0
 
 # split_quoted ()
+
+class InvalidZipFile(Exception):
+    pass
+
+def ExtractZip(zippath, dstpath):
+    """
+    Extract files from zipfile
+    Requires Toolkit to be initialized.
+    """
+    try:
+        if not os.path.exists(dstpath):
+            os.mkdir(dstpath)
+
+        zf = zipfile.ZipFile( zippath, "r" )
+        filenameList = zf.namelist()
+        for filename in filenameList:
+            try:
+                # create subdirs if needed
+                pathparts = string.split(filename, '/')
+
+                if len(pathparts) > 1:
+                    temp_dir = str(dstpath)
+                    for i in range(len(pathparts) - 1):
+                        log.info("this is temp dir: %s"%(temp_dir))
+                        log.info("this is pathparts: %s"%(pathparts))
+                        temp_dir = os.path.join(temp_dir, pathparts[i])
+
+                    if not os.access(temp_dir, os.F_OK):
+                        try:
+                            os.makedirs(temp_dir)
+                        except:
+                            log.exception("Failed to make temp dir %s"%(temp_dir))
+                destfilename = os.path.join(dstpath,filename)
+
+                # Extract the file
+                # Treat directory names different than files.
+                if os.path.isdir(destfilename):
+                    pass  # skip if dir already exists
+                elif destfilename.endswith("/"):
+                    os.makedirs(destfilename) # create dir if needed
+                else: # It's a file so extract it
+                    filecontent = zf.read( filename )
+                    f = open( destfilename, "wb" )
+                    f.write( filecontent )
+                    f.close()
+
+                #print "setting permissions on file", destfilename
+
+                # Mark the file executable (indiscriminately)
+                os.chmod(destfilename,0755)
+
+                #s = os.stat(destfilename)
+                #print "%s mode %d" % (destfilename, s[0])
+            except:
+                from AccessGrid import Toolkit
+                log.exception("Error extracting file %s"%(filename))
+
+        zf.close()
+    except zipfile.BadZipfile:
+        log.exception("Bad zipfile: %s", zippath)
+        raise InvalidZipFile(zippath)
+
+
 
 if __name__ == "__main__":
     SubmitBug("This is just a test for the Bug Reporting Tool", None,

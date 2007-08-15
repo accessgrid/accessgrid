@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.35 2006-10-02 19:29:43 turam Exp $
+# RCS-ID:      $Id: agpm.py,v 1.36 2007-08-15 19:20:27 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.35 2006-10-02 19:29:43 turam Exp $"
+__revision__ = "$Id: agpm.py,v 1.36 2007-08-15 19:20:27 eolson Exp $"
 
 import os
 import re
@@ -20,12 +20,17 @@ import sys
 import zipfile
 import tempfile
 import shutil
-from optparse import OptionParser
+from optparse import OptionParser, Option
+
+from AccessGrid import Log
 
 from AccessGrid.AppDb import AppDb
 from AccessGrid.PluginDb import PluginDb
 from AccessGrid.Utilities import LoadConfig
 from AccessGrid.Platform.Config import SystemConfig, AGTkConfig, UserConfig
+from AccessGrid import Toolkit, Utilities
+
+log = Log.GetLogger(Log.Agpm)
 
 tempfile.tmpdir = SystemConfig.instance().GetTempDir()
 gUseGui=False
@@ -43,7 +48,7 @@ def ShowResult(result, title="Package Manager"):
     else:
         print str(result)
 
-def ProcessArgs():
+def InitAppAndProcessArgs(app):
     doc = """
     By default this program registers/installs a shared application
     or node service with the users environment. Using the -u argument applications 
@@ -52,83 +57,102 @@ def ProcessArgs():
     """
     tkConf = AGTkConfig.instance()
 
-    parser = OptionParser(doc)
-    parser.add_option("-u", "--unregister", action="store_true",
+    app.AddCmdLineOption(Option("-u", "--unregister", action="store_true",
                       dest="unregister", default=0,
           help="Unregister the application, instead of registering it. \
-                Specify application with '-n'")
-    parser.add_option("--unregister-service", action="store_true",
+                Specify application with '-n'"))
+    app.AddCmdLineOption(Option("--unregister-service", action="store_true",
                       dest="unregisterservice", default=0,
           help="Unregister the service, instead of registering it. \
-                Specify service with '-n'. (Requires administrative access)")
-    parser.add_option("--unregister-plugin", action="store_true",
+                Specify service with '-n'. (Requires administrative access)"))
+    app.AddCmdLineOption(Option("--unregister-plugin", action="store_true",
                       dest="unregisterplugin", default=0,
           help="Unregister the plugin, instead of registering it. \
-                Specify plugin with '-n'.")
-    parser.add_option("-n", "--name", dest="appname",
-          help="specify a name other than the default on from the .app file.")
-    parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
-                      default=0, help="Be verbose during app processing.")
-    parser.add_option("-f", "--file", dest="appfile",
-          help="The name of a .app file to install.")
-    parser.add_option("-d", "--dir", dest="appdir",
-                      help="The name of a directory containing a .app file.")
-    parser.add_option("-z", "--zip", dest="appzip",
+                Specify plugin with '-n'."))
+    app.AddCmdLineOption(Option("-n", "--name", dest="appname",
+          help="specify a name other than the default on from the .app file."))
+    app.AddCmdLineOption(Option("-v", "--verbose", action="store_true", dest="verbose",
+                      default=0, help="Be verbose during app processing."))
+    app.AddCmdLineOption(Option("-f", "--file", dest="appfile",
+          help="The name of a .app file to install."))
+
+    # Remove conflicting options and readd without the shorter option.
+    app.parser.remove_option("-d") # remove debug option
+    app.parser.remove_option("-l") # remove logfile option
+    # Unnecessary options
+    app.parser.remove_option("--cert")
+    app.parser.remove_option("--key")
+    app.parser.remove_option("--cadir")
+    app.parser.remove_option("--secure")
+
+    # Readd debug option without the shorter -d.
+    app.parser.add_option("--debug", action="store_true",
+                           dest="debug", default=0,
+                           help="Set the debug level of this program.")
+
+    # Readd logfile option without the shorter -l.
+    app.parser.add_option("--logfile", dest="logfilename",
+                           metavar="LOGFILE", default=None,
+                           help="Specify a log file to output logging to.")
+
+    app.AddCmdLineOption(Option("-d", "--dir", dest="appdir",
+                      help="The name of a directory containing a .app file."))
+    app.AddCmdLineOption(Option("-z", "--zip", dest="appzip",
                       help="The name of a .zip file containing a .app or .svc file.\
-                            (Requires administrative access to install services)")
-    parser.add_option("-p", "--package", dest="apppkg",
+                            (Requires administrative access to install services)"))
+    app.AddCmdLineOption(Option("-p", "--package", dest="apppkg",
                     help="The name of an agpkg file containing a .app or .svc \
-                    file. (Requires administrative access to install services)")
-    parser.add_option("-l", "--list-apps", action="store_true",
-                      dest="listapps", help="List installed shared apps.")
-    parser.add_option("--list-services", action="store_true",
-                      dest="listservices", help="List installed node services.")
-    parser.add_option("--list-plugins", action="store_true",
-                      dest="listplugins", help="List installed plugins.")
+                    file. (Requires administrative access to install services)"))
+    app.AddCmdLineOption(Option("-l", "--list-apps", action="store_true",
+                      dest="listapps", help="List installed shared apps."))
+    app.AddCmdLineOption(Option("--list-services", action="store_true",
+                      dest="listservices", help="List installed node services."))
+    app.AddCmdLineOption(Option("--list-plugins", action="store_true",
+                      dest="listplugins", help="List installed plugins."))
     
-    parser.add_option("-s", "--system", action="store_true",
+    app.AddCmdLineOption(Option("-s", "--system", action="store_true",
                       dest="sys_install", default=0,
                       help="Install the package for all users. \
-                      (This requires administrative access)")
-    parser.add_option("--post-install", action="store_true",
+                      (This requires administrative access)"))
+    app.AddCmdLineOption(Option("--post-install", action="store_true",
                       dest="post_install", default=0,
                       help="Do a post-installation run, which will install \
                       all apps distributed with the toolkit in the system \
-                      if possible. (This requires administrative access)")
-    parser.add_option("--wait-for-input", action="store_true",
+                      if possible. (This requires administrative access)"))
+    app.AddCmdLineOption(Option("--wait-for-input", action="store_true",
                       dest="wait_for_input", default=0,
                       help="After completing wait for the user to confirm by\
-                      pressing a key.")
-    parser.add_option("--gui", action="store_true",
-                      dest="useGui", help="Show if the installation was successful with a GUI dialog.")
+                      pressing a key."))
+    app.AddCmdLineOption(Option("--gui", action="store_true",
+                      dest="useGui", help="Show if the installation was successful with a GUI dialog."))
                       
-    (options, args) = parser.parse_args()
-    if True == options.useGui:
+    args = app.Initialize("agpm")
+    if True == app.GetOption("useGui"):
         global gUseGui
         gUseGui = True
 
     # Validate arguments
     if not (
             # these args imply an action
-            options.appzip 
-            or options.apppkg 
-            or options.appfile 
-            or options.appdir 
+            app.options.appzip 
+            or app.options.apppkg 
+            or app.options.appfile 
+            or app.options.appdir 
             
             # these are explicit actions
-            or options.post_install
-            or options.listservices
-            or options.listapps
-            or options.listplugins
-            or options.unregister
-            or options.unregisterservice
-            or options.unregisterplugin
+            or app.options.post_install
+            or app.options.listservices
+            or app.options.listapps
+            or app.options.listplugins
+            or app.options.unregister
+            or app.options.unregisterservice
+            or app.options.unregisterplugin
             ):
-        parser.print_help()
+        app.parser.print_help()
         ShowResult("Error: no action specified")
         sys.exit(1)
     
-    if options.sys_install or options.post_install:
+    if app.options.sys_install or app.options.post_install:
         appdb = AppDb(path=tkConf.GetConfigDir())
         plugindb = PluginDb(path=tkConf.GetConfigDir())
         appdest = tkConf.GetSharedAppDir()
@@ -139,13 +163,65 @@ def ProcessArgs():
         appdest = UserConfig.instance().GetSharedAppDir()
         plugindest = UserConfig.instance().GetPluginDir()
 
-    return options, appdb, plugindb, appdest, plugindest
+    return app.options, appdb, plugindb, appdest, plugindest
+
+"""
+def ExtractZip_(zippath, dstpath):
+    if not os.path.exists(path):
+        os.mkdir(path)
+
+    zf = zipfile.ZipFile( zippath, "r" )
+    filenameList = zf.namelist()
+    for filename in filenameList:
+        try:
+            # create subdirs if needed
+            pathparts = string.split(filename, '/')
+
+            if len(pathparts) > 1:
+                temp_dir = str(path)
+                for i in range(len(pathparts) - 1):
+                    log.info("this is temp dir: %s"%(temp_dir))
+                    log.info("this is pathparts: %s"%(pathparts))
+                    temp_dir = os.path.join(temp_dir, pathparts[i])
+
+                if not os.access(temp_dir, os.F_OK):
+                    try:
+                        os.makedirs(temp_dir)
+                    except:
+                        log.exception("Failed to make temp dir %s"%(temp_dir))
+            destfilename = os.path.join(path,filename)
+
+            # Extract the file
+            # Treat directory names different than files.
+            if os.path.isdir(destfilename):
+                pass  # skip if dir already exists
+            elif destfilename.endswith("/"):
+                os.makedirs(destfilename) # create dir if needed
+            else: # It's a file so extract it
+                filecontent = zf.read( filename )
+                f = open( destfilename, "wb" )
+                f.write( filecontent )
+                f.close()
+
+            #print "setting permissions on file", destfilename
+
+            # Mark the file executable (indiscriminately)
+            os.chmod(destfilename,0755)
+
+            #s = os.stat(destfilename)
+            #print "%s mode %d" % (destfilename, s[0])
+        except:
+            log.exception("Error extracting file %s"%(filename))
+    zf.close()
+"""
+
 
 def UnpackPkg(filename):
     """
     This function takes the name of a zip file and unpacks it returning the
     directory it unpacked the zip into.
     """
+    print "UnpackPkg:", filename
     zipArchive = zipfile.ZipFile(filename)
     # We have to unpack things some where we can use them
     if hasattr(tempfile, "mkdtemp"):
@@ -154,23 +230,17 @@ def UnpackPkg(filename):
         workingDir = tempfile.mktemp()
         os.mkdir(workingDir)
     appFile = None
-    for filename in zipArchive.namelist():
-        parts = filename.split('.')
+
+    for f in zipArchive.namelist():
+        parts = f.split('.')
         if len(parts) == 2 and parts[1] == 'app':
-            appFile = filename
-        bytes = zipArchive.read(filename)
-        outpath = os.path.join(workingDir, filename)
-        out = file(outpath, "wb")
-        out.write(bytes)
-        out.close()
-        zinfo = zipArchive.getinfo(filename)
-        if zinfo.external_attr == 2179792896:
-            os.chmod(outpath, 0755)
+            appFile = f
+
+    Utilities.ExtractZip(filename, workingDir)
 
     if appFile == None:
         raise Exception, "Invalid Shared Application Package."
 
-    
     return (appFile, workingDir)
 
 def UnpackPlugin(filename):
@@ -316,6 +386,7 @@ def PrepPackage(package):
         appFile = os.path.join(workingDir, appFile)
         cleanup = 1
     except Exception:
+        log.exception("PrepPackage")
         if workingDir is not None:
             shutil.rmtree(workingDir)
         raise
@@ -339,6 +410,7 @@ def PrepPlugin(package):
         pluginFile = os.path.join(workingDir, pluginFile)
         cleanup = 1
     except Exception:
+        log.exception("PrepPlugin")
         if workingDir is not None:
             shutil.rmtree(workingDir)
         raise
@@ -413,6 +485,7 @@ def RegisterServicePackage(servicePackage):
         # Set the permissions correctly
         os.chmod(servicePackagePath,0644)
     except Exception, e:
+        log.exception("RegisterServicePackage")
         ShowResult(str(e))
         return
     
@@ -487,6 +560,7 @@ def UnregisterServicePackage(servicePackageFile):
         os.remove(servicePackagePath)
         ShowResult( "Unregistration of service package %s complete." % (servicePackageFile,) )
     except Exception, e:
+        log.exception("UnregisterServicePackage")
         ShowResult( e )
 
 def main():
@@ -507,7 +581,8 @@ def main():
     # We also have the ability to pass in a zip file that contains a .app
     # file and the other parts of the shared application.
 
-    options, appdb, plugindb, appdest, plugindest = ProcessArgs()
+    app = Toolkit.CmdlineApplication.instance()
+    options, appdb, plugindb, appdest, plugindest = InitAppAndProcessArgs(app)
 
     #
     # Handle list-only options
@@ -565,6 +640,7 @@ def main():
                     isPluginPackage = 1
                     break
         except zipfile.BadZipfile,e:
+            log.exception("Error in zipfile %s", filename)
             ShowResult( "Error in zipfile %s: %s" % (filename,e.args[0]))
             sys.exit(1)
             
@@ -657,6 +733,7 @@ def main():
                 pkgInfo = PrepPackageFromCmdLine(options)
                 pkgList.append(pkgInfo)
             except Exception, e:
+                log.exception("Error in package file")
                 ShowResult("Error in package file: %s" % e)
 
         excList = []
@@ -682,9 +759,11 @@ def main():
                                     workingDir, cleanup)
             except InvalidApplicationDescription,e:
                 msg = '%s %s: Invalid application description: %s\n' % (pkg, appInfo["application.name"],str(e))
+                log.exception(msg)
                 excList.append(msg)
             except Exception,e:
                 msg = '%s: %s: %s\n' % (appInfo["application.name"], str(e.__class__), str(e))
+                log.exception(msg)
                 excList.append(msg)
 
         if excList:

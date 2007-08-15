@@ -79,6 +79,7 @@ def GetLogLevels():
 # ---- Predefined categories ----
 AGService = "AGService"
 AppDb = "AppDb"
+Agpm = "Agpm"
 PluginDb = "PluginDb"
 AppMonitor = "AppMonitor"
 AsyncService = "AsyncService"
