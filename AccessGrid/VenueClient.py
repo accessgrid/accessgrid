@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.352 2007-07-16 19:10:46 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.353 2007-08-16 21:01:06 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.352 2007-07-16 19:10:46 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.353 2007-08-16 21:01:06 turam Exp $"
 
 
 import sys
@@ -493,7 +493,11 @@ class VenueClient:
             else:
                 port = NetworkAddressAllocator().AllocatePort()
                         
-        self.server = InsecureServer((self.hostname, port))
+        try:
+            self.server = InsecureServer((self.hostname, port))
+        except socket.error:
+            port = NetworkAddressAllocator().AllocatePort()
+            self.server = InsecureServer((self.hostname, port))
 
         from AccessGrid.interfaces.VenueClient_interface import VenueClient as VenueClientI
         vci = VenueClientI(impl=self,auth_method_name=None)
@@ -1080,10 +1084,6 @@ class VenueClient:
         except Exception,e:
             log.exception("EnterVenue.__StartJabber failed")
 
-        # Create the beacon client
-        if int(self.preferences.GetPreference(Preferences.BEACON)):
-            self.StartBeacon()
-
         # 
         # Update the node service with stream descriptions
         #
@@ -1424,13 +1424,18 @@ class VenueClient:
             self.UpdateStream(stream)
 
         # Restart the beacon so the new transport is used
+        log.debug('Checking preference and starting beacon')
         if int(self.preferences.GetPreference(Preferences.BEACON)):
-          if self.beaconLocation and self.beacon:
-            # stop the beacon
-            self.StopBeacon()
-            
+            if self.beacon:
+                # stop the beacon
+                log.debug('Stopping beacon')
+                self.StopBeacon()
+                
             # start the beacon
+            log.debug('Starting beacon')
             self.StartBeacon()
+        else:
+            log.debug('NOT starting beacon, user preference turned off')
 
 
     def UpdateStream(self,stream):
