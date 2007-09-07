@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.114 2007-05-25 15:58:10 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.115 2007-09-07 18:36:21 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.114 2007-05-25 15:58:10 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.115 2007-09-07 18:36:21 turam Exp $"
 
 
 import os
@@ -710,20 +710,21 @@ class AGNodeService:
                 #log.debug("capability type: %s", streamDescription.capability[0].type)
                 
                 # each service capability has to be present in the stream.
+                match = 0
                 for cap in serviceCapabilities:
-                    match = 0
                     for c in streamDescription.capability:
                         if c.matches(cap):
                             match = 1
-                    if match:
-                        log.info("Sending stream (type=%s) to service: %s", 
-                                 streamDescription.capability,
-                                 serviceUri )
-                        
-                        AGServiceIW( serviceUri ).SetStream( streamDescription )
-                        return
-                    else:
-                        log.debug("No stream match! Sending no new streams!")
+                            break
+                if match:
+                    log.info("Sending stream (type=%s) to service: %s", 
+                             streamDescription.capability,
+                             serviceUri )
+                    
+                    AGServiceIW( serviceUri ).SetStream( streamDescription )
+                    #return
+                else:
+                    log.debug("No stream match! Sending no new streams!")
             except:
                 log.exception("Exception in AGNodeService.__SendStreamsToService.")
                 failedSends += "Error updating %s\n" % \
