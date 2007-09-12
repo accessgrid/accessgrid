@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.51 2007-06-14 22:04:12 turam Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.52 2007-09-12 06:46:27 douglask Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -345,7 +345,10 @@ class SharedPresentationFrame(wxFrame):
         #self.slidesText = wxTextCtrl(self,-1)
         self.slidesCombo = wxComboBox(self.panel ,wxNewId(), style=wxCB_DROPDOWN|wxCB_SORT)
         self.slidesCombo.Append("")
-        self.loadButton = wxButton(self.panel ,-1,"Load", wxDefaultPosition, wxSize(40,21) )
+        if sys.platform == Platform.LINUX or sys.platform == Platform.FREEBSD5 or sys.platform == Platform.FREEBSD6:
+            self.loadButton = wxButton(self.panel ,-1,"Load", wxDefaultPosition, wxSize(42,27) )
+        else:
+            self.loadButton = wxButton(self.panel ,-1,"Load", wxDefaultPosition, wxSize(40,21) )
 
         gridSizer.Add( staticText, 0, wxALIGN_LEFT)
         gridSizer.Add( self.slidesCombo, 1, wxEXPAND | wxALIGN_LEFT)
@@ -357,8 +360,12 @@ class SharedPresentationFrame(wxFrame):
 
         # - Create textctrl for slide num
         staticText = wxStaticText(self.panel, -1, "Slide number")
-        self.slideNumText = wxTextCtrl(self.panel ,-1, size = wxSize(40, 20))
-        self.goButton = wxButton(self.panel ,-1,"Go", wxDefaultPosition, wxSize(40,21))
+        if sys.platform == Platform.LINUX or sys.platform == Platform.FREEBSD5 or sys.platform == Platform.FREEBSD6:
+            self.slideNumText = wxTextCtrl(self.panel ,-1, size = wxSize(40, 23))
+            self.goButton = wxButton(self.panel ,-1,"Go", wxDefaultPosition, wxSize(42,27))
+        else:
+            self.slideNumText = wxTextCtrl(self.panel ,-1, size = wxSize(40, 20))
+            self.goButton = wxButton(self.panel ,-1,"Go", wxDefaultPosition, wxSize(40,21))
         gridSizer.Add( staticText, wxALIGN_LEFT)
         gridSizer.Add( self.slideNumText )
         gridSizer.Add( self.goButton, wxALIGN_RIGHT )
