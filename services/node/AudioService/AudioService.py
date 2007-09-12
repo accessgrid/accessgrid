@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.21 2007-05-18 22:35:27 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.22 2007-09-12 07:00:14 douglask Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -67,9 +67,14 @@ class AudioService( AGService ):
             ratkill = "rat-kill"
 
         self.executable = os.path.join(os.getcwd(), rat)
-        self.rat_media = os.path.join(os.getcwd(), ratmedia) 
+        self.rat_media = os.path.join(os.getcwd(), ratmedia)
         self.rat_ui = os.path.join(os.getcwd(), ratui)
         self.rat_kill = os.path.join(os.getcwd(), ratkill)
+        if not os.path.isfile(self.executable):
+            self.executable = rat
+            self.rat_media = ratmedia
+            self.rat_ui = ratui
+            self.rat_kill = ratkill
 
         self.sysConf = SystemConfig.instance()
 
@@ -296,6 +301,8 @@ class AudioService( AGService ):
                 rk = "rat-kill"
 
             ratKillExe = os.path.join('.', rk)
+            if not os.path.isfile(ratKillExe) and not Platform.isWindows():
+                ratKillExe = "/usr/bin/rat-kill"
 
             if os.access(ratKillExe, os.X_OK):
                 self.log.info("Executing rat-kill")
