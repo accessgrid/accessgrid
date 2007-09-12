@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.239 2007-08-10 18:28:10 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.240 2007-09-12 05:18:04 douglask Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.239 2007-08-10 18:28:10 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.240 2007-09-12 05:18:04 douglask Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3392,12 +3392,21 @@ class VenueAddressBar(wxSashLayoutWindow):
                                   defaultVenue,
                                   choices = venuesList.keys(),
                                   style = wxCB_DROPDOWN)
-        self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go",
-                             wxDefaultPosition, wxSize(40, 21))
+        if IsLinux() or IsFreeBSD():
+            self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go",
+                                     wxDefaultPosition, wxSize(38, 27))
+        else:
+            self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go",
+                                     wxDefaultPosition, wxSize(40, 21))
         self.goButton.SetToolTip(wxToolTip("Enter venue"))
-        self.backButton = wxBitmapButton(self.addressPanel, self.ID_BACK ,
-                                         icons.getPreviousBitmap(),
-                                         wxDefaultPosition, wxSize(40, 21))
+        if IsLinux() or IsFreeBSD():
+            self.backButton = wxBitmapButton(self.addressPanel, self.ID_BACK ,
+                                             icons.getPreviousBitmap(),
+                                             wxDefaultPosition, wxSize(38, 27))
+        else:
+            self.backButton = wxBitmapButton(self.addressPanel, self.ID_BACK ,
+                                             icons.getPreviousBitmap(),
+                                             wxDefaultPosition, wxSize(40, 21))
         self.backButton.SetToolTip(wxToolTip("Go to previous venue"))
         self.__Layout()
         self.__AddEvents()
