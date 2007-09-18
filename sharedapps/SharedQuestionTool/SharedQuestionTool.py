@@ -4,8 +4,8 @@
 #
 # Author:      Susanne Lefvert
 #
-# Created:     $Date: 2006-01-16 20:45:27 $
-# RCS-ID:      $Id: SharedQuestionTool.py,v 1.8 2006-01-16 20:45:27 eolson Exp $
+# Created:     $Date: 2007-09-18 20:45:33 $
+# RCS-ID:      $Id: SharedQuestionTool.py,v 1.9 2007-09-18 20:45:33 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ import getopt
 from time import localtime, strftime
 import xml.dom.minidom
 
-from wxPython.wx import *
+import wx
 
 from ObserverPattern import Observer, Model
 
@@ -211,7 +211,7 @@ class SharedQuestionTool(Model):
         return questions
          
     
-class SharedQuestionToolUI(wxApp):
+class SharedQuestionToolUI(wx.App):
     '''
     User interface to shared question tool including a moderator
     and participant view.
@@ -232,15 +232,15 @@ class SharedQuestionToolUI(wxApp):
         Create ui components and register as observers to the
         shared question tool model.
         '''
-        wxApp.__init__(self, False)
+        wx.App.__init__(self, False)
         self.log = log
         self.questionTool = questionTool
         self.mainSizer = None
-        self.frame = wxFrame(None, -1, "Shared Question Tool",
-                             size = wxSize(500, 500))
+        self.frame = wx.Frame(None, -1, "Shared Question Tool",
+                             size = wx.Size(500, 500))
         self.frame.SetIcon(icons.getAGIconIcon())
         self.SetTopWindow(self.frame)
-        self.topPanel = wxNotebook(self.frame, -1)
+        self.topPanel = wx.Notebook(self.frame, -1)
 
 
 
@@ -263,7 +263,7 @@ class SharedQuestionToolUI(wxApp):
     def Close(self):
 	self.frame.Destroy()
     
-class ModeratorView(wxPanel, Observer):
+class ModeratorView(wx.Panel, Observer):
     '''
     View for the moderator showing all sent and received questions.
     '''
@@ -271,20 +271,20 @@ class ModeratorView(wxPanel, Observer):
         '''
         Create ui components.
         '''
-        wxPanel.__init__(self, parent, -1)
+        wx.Panel.__init__(self, parent, -1)
         Observer.__init__(self)
         self.questionTool = questionTool
         self.parent = parent
         self.app = app
-        self.questionList = wxListCtrl(self, wxNewId(), size = wxSize(460, 150), style=wxLC_REPORT)
+        self.questionList = wx.ListCtrl(self, wx.NewId(), size = wx.Size(460, 150), style=wx.LC_REPORT)
         self.questionList.InsertColumn(0, "Question")
         self.questionList.InsertColumn(1, "Sender")
         self.questionList.InsertColumn(2, "Time Sent")
         self.questionList.SetColumnWidth(0, 150)
         self.questionList.SetColumnWidth(1, 150)
         self.questionList.SetColumnWidth(2, 150)
-        self.currentQuestion = wxTextCtrl(self, -1, style= wxTE_MULTILINE| wxTE_READONLY)
-        self.closeButton = wxButton(self, wxNewId(), "Close")
+        self.currentQuestion = wx.TextCtrl(self, -1, style= wx.TE_MULTILINE| wx.TE_READONLY)
+        self.closeButton = wx.Button(self, wx.NewId(), "Close")
         self.__Layout()
         self.__PopulateQList()
 
@@ -309,7 +309,7 @@ class ModeratorView(wxPanel, Observer):
         '''
         Invoked when shared question tool model changes state.
         '''
-        wxCallAfter(self.__PopulateQList)
+        wx.CallAfter(self.__PopulateQList)
         
     def __PopulateQList(self):
         '''
@@ -335,28 +335,28 @@ class ModeratorView(wxPanel, Observer):
         '''
         Layout ui components.
         '''
-        mainSizer = wxBoxSizer(wxVERTICAL)
-        sizer = wxBoxSizer(wxVERTICAL)
-	sizer.Add(wxStaticText(self, -1, "Received Questions"), 0, 
-		  wxLEFT, 10)
-	sizer.Add(self.questionList, 1, wxEXPAND| wxALL, 10)
-        mainSizer.Add(sizer, 1, wxEXPAND|wxALL, 10)
+        mainSizer = wx.BoxSizer(wx.VERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+	sizer.Add(wx.StaticText(self, -1, "Received Questions"), 0, 
+		  wx.LEFT, 10)
+	sizer.Add(self.questionList, 1, wx.EXPAND| wx.ALL, 10)
+        mainSizer.Add(sizer, 1, wx.EXPAND|wx.ALL, 10)
 
-        sizer = wxBoxSizer(wxVERTICAL)
-	sizer.Add(wxStaticText(self, -1, "Selected Questions"), 0, 
-		  wxLEFT|wxTOP, 10)
-	sizer.Add(self.currentQuestion, 1, wxEXPAND| wxALL, 10)
-        mainSizer.Add(sizer, 1, wxEXPAND|wxALL, 10)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+	sizer.Add(wx.StaticText(self, -1, "Selected Questions"), 0, 
+		  wx.LEFT|wx.TOP, 10)
+	sizer.Add(self.currentQuestion, 1, wx.EXPAND| wx.ALL, 10)
+        mainSizer.Add(sizer, 1, wx.EXPAND|wx.ALL, 10)
       
-        mainSizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxLEFT|wxRIGHT, 5)
-        mainSizer.Add(self.closeButton, 0, wxALIGN_CENTER| wxALL, 10)
+        mainSizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.LEFT|wx.RIGHT, 5)
+        mainSizer.Add(self.closeButton, 0, wx.ALIGN_CENTER| wx.ALL, 10)
         
         self.SetSizer(mainSizer)
         mainSizer.Fit(self)
         self.SetAutoLayout(1)
                  
 
-class AudienceView(wxPanel, Observer):
+class AudienceView(wx.Panel, Observer):
     '''
     View for an audience member allowing the user to send and view
     questions.
@@ -365,23 +365,23 @@ class AudienceView(wxPanel, Observer):
         '''
         Create ui components.
         '''
-        wxPanel.__init__(self, parent, -1)
+        wx.Panel.__init__(self, parent, -1)
         Observer.__init__(self)
         self.app = app
         self.parent = parent
         self.questionTool = questionTool
-        self.questionList = wxListCtrl(self, wxNewId(), size = wxSize(460, 150),style=wxLC_REPORT)
+        self.questionList = wx.ListCtrl(self, wx.NewId(), size = wx.Size(460, 150),style=wx.LC_REPORT)
         self.questionList.InsertColumn(0, "Questions")
         self.questionList.InsertColumn(1, "Time Sent")
         self.questionList.SetColumnWidth(0, 300)
         self.questionList.SetColumnWidth(1, 150)
         
-        self.currentQuestion = wxTextCtrl(self, -1, style= wxTE_MULTILINE)
+        self.currentQuestion = wx.TextCtrl(self, -1, style= wx.TE_MULTILINE)
         self.currentQuestion.Enable()
 	self.currentQuestion.SetEditable(True)
         
-        self.sendButton = wxButton(self, wxNewId(), "Send")
-        self.closeButton = wxButton(self,  wxID_CLOSE, "Close")
+        self.sendButton = wx.Button(self, wx.NewId(), "Send")
+        self.closeButton = wx.Button(self,  wx.ID_CLOSE, "Close")
         
         self.__Layout()
         
@@ -405,9 +405,9 @@ class AudienceView(wxPanel, Observer):
         '''
         Ivoked when shared question tool model changes state.
         '''
-        # Use wxCallAfter when calling ui outside of main thread.
-        wxCallAfter(self.__PopulateQList)
-        wxCallAfter(self.currentQuestion.Clear)
+        # Use wx.CallAfter when calling ui outside of main thread.
+        wx.CallAfter(self.__PopulateQList)
+        wx.CallAfter(self.currentQuestion.Clear)
         
     def __PopulateQList(self):
         '''
@@ -427,25 +427,25 @@ class AudienceView(wxPanel, Observer):
         '''
         Layout ui components.
         '''
-        mainSizer = wxBoxSizer(wxVERTICAL)
-        sizer = wxBoxSizer(wxVERTICAL)
-	sizer.Add(wxStaticText(self, -1, "Your Sent ande Received Questions"),
-		  0, wxLEFT, 10)
-	sizer.Add(self.questionList, 1, wxEXPAND| wxALL, 10)
-        mainSizer.Add(sizer, 1, wxEXPAND|wxALL, 10)
+        mainSizer = wx.BoxSizer(wx.VERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+	sizer.Add(wx.StaticText(self, -1, "Your Sent ande Received Questions"),
+		  0, wx.LEFT, 10)
+	sizer.Add(self.questionList, 1, wx.EXPAND| wx.ALL, 10)
+        mainSizer.Add(sizer, 1, wx.EXPAND|wx.ALL, 10)
         
-        sizer = wxBoxSizer(wxVERTICAL)
-	sizer.Add(wxStaticText(self, -1, "New Question"), 0, wxLEFT|wxTOP, 10)
-	sizer.Add(self.currentQuestion, 1, wxEXPAND| wxALL, 10)
-        mainSizer.Add(sizer, 1, wxEXPAND|wxALL, 10)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+	sizer.Add(wx.StaticText(self, -1, "New Question"), 0, wx.LEFT|wx.TOP, 10)
+	sizer.Add(self.currentQuestion, 1, wx.EXPAND| wx.ALL, 10)
+        mainSizer.Add(sizer, 1, wx.EXPAND|wx.ALL, 10)
         
-        mainSizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxLEFT|wxRIGHT, 5)
+        mainSizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.LEFT|wx.RIGHT, 5)
          
-        sizer = wxBoxSizer(wxHORIZONTAL)
-        sizer.Add(self.sendButton, 0, wxCENTER | wxALL, 10)
-        sizer.Add(self.closeButton, 0, wxCENTER | wxALL, 10)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(self.sendButton, 0, wx.CENTER | wx.ALL, 10)
+        sizer.Add(self.closeButton, 0, wx.CENTER | wx.ALL, 10)
         
-        mainSizer.Add(sizer, 0, wxALIGN_CENTER)
+        mainSizer.Add(sizer, 0, wx.ALIGN_CENTER)
         
         self.SetSizer(mainSizer)
         mainSizer.Fit(self)
@@ -517,7 +517,7 @@ if __name__ == "__main__":
     if not appUrl:
         am.Usage()
     else:
-        wxInitAllImageHandlers()
+        wx.InitAllImageHandlers()
 
         # Create Question Tool 
         qt = SharedQuestionTool(appUrl, name)

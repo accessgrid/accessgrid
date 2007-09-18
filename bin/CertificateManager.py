@@ -3,7 +3,7 @@
 # Name:        CertificateManager.py
 # Purpose:     User tool for managing certificates.
 # Created:     2003/08/02
-# RCS-ID:      $Id: CertificateManager.py,v 1.8 2006-09-21 12:05:36 braitmai Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.9 2007-09-18 20:45:20 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 # The standard imports
 import os, sys
 from optparse import Option
-from wxPython.wx import *
+import wx
 
 # Our imports
 from AccessGrid.Toolkit import WXGUIApplication, MissingDependencyError
@@ -20,7 +20,7 @@ from AccessGrid.Security.wxgui import CertificateManagerWXGUI
 from AccessGrid.UIUtilities import MessageDialog
 
 def main():
-    pyapp = wxPySimpleApp()
+    pyapp = wx.PySimpleApp()
 
     app = WXGUIApplication()
 
@@ -36,7 +36,7 @@ def main():
                     "Please satisfy this dependency and restart the software"
             msg = msg % e.args[0]
         MessageDialog(None,msg, "Initialization Error",
-                      style=wxICON_ERROR )
+                      style=wx.ICON_ERROR )
         sys.exit(-1)
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
@@ -44,7 +44,7 @@ def main():
         MessageDialog(None,
                       "The following error occurred during initialization:\n\n\t%s %s" % (e.__class__.__name__,e), 
                       "Initialization Error",
-                      style=wxICON_ERROR )
+                      style=wx.ICON_ERROR )
         sys.exit(-1)
 
     certMgr = app.GetCertificateManager()

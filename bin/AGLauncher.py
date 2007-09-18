@@ -6,10 +6,10 @@ import sys
 from AccessGrid.Platform import IsOSX, IsWindows
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Toolkit import WXGUIApplication
-from wxPython.wx import *
+import wx
 import webbrowser
 
-class LauncherFrame(wxFrame):
+class LauncherFrame(wx.Frame):
     BUTTON_MAIN_ID = 1000   # Main binaries
     BUTTON_VC_ID = 1001       # Venue Client
     BUTTON_DOCS_ID = 2000   # Documentation
@@ -35,49 +35,49 @@ class LauncherFrame(wxFrame):
     BUTTON_VSD_ID = 5005      # Venue Server Debug
         
     def __init__(self, parent=None, id=-1, title="Access Grid Launcher",agtk_location=None):
-        wxFrame.__init__(self,parent,id,title,size=wxSize(400,125),style=wxDEFAULT_FRAME_STYLE&(~wxMAXIMIZE_BOX))
+        wx.Frame.__init__(self,parent,id,title,size=wx.Size(400,125),style=wx.DEFAULT_FRAME_STYLE&(~wx.MAXIMIZE_BOX))
 
         self.processManager=ProcessManager();
         self.browser=None;
         
         if IsOSX():
-            self.mainButton=wxRadioButton(self,self.BUTTON_MAIN_ID,"Main",style=wxRB_GROUP);
+            self.mainButton=wx.RadioButton(self,self.BUTTON_MAIN_ID,"Main",style=wx.RB_GROUP);
             EVT_RADIOBUTTON(self,self.BUTTON_MAIN_ID,self.OnToggle);
         else:
-            self.mainButton=wxToggleButton(self,self.BUTTON_MAIN_ID,"Main");
+            self.mainButton=wx.ToggleButton(self,self.BUTTON_MAIN_ID,"Main");
             EVT_TOGGLEBUTTON(self,self.BUTTON_MAIN_ID,self.OnToggle);
         self.mainButton.SetValue(true);
 
         if IsOSX():
-            self.docButton=wxRadioButton(self,self.BUTTON_DOCS_ID,"Documentation");
+            self.docButton=wx.RadioButton(self,self.BUTTON_DOCS_ID,"Documentation");
             EVT_RADIOBUTTON(self,self.BUTTON_DOCS_ID,self.OnToggle);
         else:
-            self.docButton=wxToggleButton(self,self.BUTTON_DOCS_ID,"Documentation");
+            self.docButton=wx.ToggleButton(self,self.BUTTON_DOCS_ID,"Documentation");
             EVT_TOGGLEBUTTON(self,self.BUTTON_DOCS_ID,self.OnToggle);
         self.docButton.SetValue(false);
         
         if IsOSX():
-            self.confButton=wxRadioButton(self,self.BUTTON_CONFIG_ID,"Configuration");
+            self.confButton=wx.RadioButton(self,self.BUTTON_CONFIG_ID,"Configuration");
             EVT_RADIOBUTTON(self,self.BUTTON_CONFIG_ID,self.OnToggle);
         else:
-            self.confButton=wxToggleButton(self,self.BUTTON_CONFIG_ID,"Configuration");
+            self.confButton=wx.ToggleButton(self,self.BUTTON_CONFIG_ID,"Configuration");
             EVT_TOGGLEBUTTON(self,self.BUTTON_CONFIG_ID,self.OnToggle);
         self.confButton.SetValue(false);
 
         if IsOSX():
-            self.servButton=wxRadioButton(self,self.BUTTON_SERVICE_ID,"Services");
+            self.servButton=wx.RadioButton(self,self.BUTTON_SERVICE_ID,"Services");
             EVT_RADIOBUTTON(self,self.BUTTON_SERVICE_ID,self.OnToggle);
         else:
-            self.servButton=wxToggleButton(self,self.BUTTON_CONFIG_ID,"Services");
+            self.servButton=wx.ToggleButton(self,self.BUTTON_CONFIG_ID,"Services");
             EVT_TOGGLEBUTTON(self,self.BUTTON_SERVICE_ID,self.OnToggle);
         self.servButton.SetValue(false);
         
         
         if IsOSX():
-            self.debugButton=wxRadioButton(self,self.BUTTON_DEBUG_ID,"Debug");
+            self.debugButton=wx.RadioButton(self,self.BUTTON_DEBUG_ID,"Debug");
             EVT_RADIOBUTTON(self,self.BUTTON_DEBUG_ID,self.OnToggle);
         else:
-            self.debugButton=wxToggleButton(self,self.BUTTON_DEBUG_ID,"Debug");
+            self.debugButton=wx.ToggleButton(self,self.BUTTON_DEBUG_ID,"Debug");
             EVT_TOGGLEBUTTON(self,self.BUTTON_DEBUG_ID,self.OnToggle);
         self.debugButton.SetValue(false)
         self.debugButton.Disable()
@@ -88,7 +88,7 @@ class LauncherFrame(wxFrame):
             
         self.mainButtonList=[];
         self.mainButtonActions=[];
-        self.mainButtonList.append(wxButton(self,self.BUTTON_VC_ID,"Venue Client"));
+        self.mainButtonList.append(wx.Button(self,self.BUTTON_VC_ID,"Venue Client"));
         venueClientPath = "%s/bin/VenueClient3.py"%(agtk_location)
         if not os.path.exists("%s/bin/VenueClient3.py"%(agtk_location)) and os.path.exists("%s/bin/VenueClient.py"%(agtk_location)):
             venueClientPath = "%s/bin/VenueClient.py"%(agtk_location)
@@ -98,37 +98,37 @@ class LauncherFrame(wxFrame):
         
         self.docsButtonList=[];
         self.docsButtonActions=[];
-        self.docsButtonList.append(wxButton(self,self.BUTTON_README_ID,"Read Me"));
+        self.docsButtonList.append(wx.Button(self,self.BUTTON_README_ID,"Read Me"));
         self.docsButtonActions.append([self.LoadURL,"file://%s/doc/README"%(agtk_location),[]]);
-        self.docsButtonList.append(wxButton(self,self.BUTTON_VCM_ID,"Venue Client Manual"));
+        self.docsButtonList.append(wx.Button(self,self.BUTTON_VCM_ID,"Venue Client Manual"));
         self.docsButtonActions.append([self.LoadURL,"http://www.mcs.anl.gov/fl/research/accessgrid/documentation/manuals/VenueClient/3_0",[]]);
-        self.docsButtonList.append(wxButton(self,self.BUTTON_VMCM_ID,"Venue Management Manual"));
+        self.docsButtonList.append(wx.Button(self,self.BUTTON_VMCM_ID,"Venue Management Manual"));
         self.docsButtonActions.append([self.LoadURL,"http://www.mcs.anl.gov/fl/research/accessgrid/documentation/manuals/VenueManagement/3_0",[]]);
-        self.docsButtonList.append(wxButton(self,self.BUTTON_LIC_ID,"License"));
+        self.docsButtonList.append(wx.Button(self,self.BUTTON_LIC_ID,"License"));
         self.docsButtonActions.append([self.LoadURL,"file://%s/COPYING.txt"%(agtk_location),[]]);
         for button in self.docsButtonList:
             button.Show(false);
         
         self.configButtonList=[];
         self.configButtonActions=[];
-        self.configButtonList.append(wxButton(self,self.BUTTON_NM_ID,"Node Management"));
+        self.configButtonList.append(wx.Button(self,self.BUTTON_NM_ID,"Node Management"));
         nodeManagementPath = "%s/bin/NodeManagement3.py"%(agtk_location)
         if not os.path.exists("%s/bin/NodeManagement3.py"%(agtk_location)) and os.path.exists("%s/bin/NodeManagement.py"%(agtk_location)):
             nodeManagementPath = "%s/bin/NodeManagement.py"%(agtk_location)
         self.configButtonActions.append([self.RunPython,nodeManagementPath,[]]);
-        self.configButtonList.append(wxButton(self,self.BUTTON_VM_ID,"Venue Management"));
+        self.configButtonList.append(wx.Button(self,self.BUTTON_VM_ID,"Venue Management"));
         venueManagementPath = "%s/bin/VenueManagement3.py"%(agtk_location)
         if not os.path.exists("%s/bin/VenueManagement3.py"%(agtk_location)) and os.path.exists("%s/bin/VenueManagement.py"%(agtk_location)):
             venueManagementPath = "%s/bin/VenueManagement.py"%(agtk_location)
         self.configButtonActions.append([self.RunPython,venueManagementPath,[]]);
-        self.configButtonList.append(wxButton(self,self.BUTTON_NSW_ID,"Node Setup Wizard"));
+        self.configButtonList.append(wx.Button(self,self.BUTTON_NSW_ID,"Node Setup Wizard"));
         nodeSetupWizardPath = "%s/bin/NodeSetupWizard3.py"%(agtk_location)
         if not os.path.exists("%s/bin/NodeSetupWizard3.py"%(agtk_location)) and os.path.exists("%s/bin/NodeSetupWizard.py"%(agtk_location)):
             nodeSetupWizardPath = "%s/bin/NodeSetupWizard.py"%(agtk_location)
         self.configButtonActions.append([self.RunPython,nodeSetupWizardPath,[]]);
-        #self.configButtonList.append(wxButton(self,self.BUTTON_CRW_ID,"Certificate Request Wizard"));
+        #self.configButtonList.append(wx.Button(self,self.BUTTON_CRW_ID,"Certificate Request Wizard"));
         #self.configButtonActions.append([self.RunPython,"%s/bin/CertificateRequestTool.py"%(agtk_location),[]]);
-        self.configButtonList.append(wxButton(self,self.BUTTON_CM_ID,"Certificate Management"));
+        self.configButtonList.append(wx.Button(self,self.BUTTON_CM_ID,"Certificate Management"));
         certManagerPath = "%s/bin/CertificateManager3.py"%(agtk_location)
         if not os.path.exists("%s/bin/CertificateManager3.py"%(agtk_location)) and os.path.exists("%s/bin/CertificateManager.py"%(agtk_location)):
             certManagerPath = "%s/bin/CertificateManager.py"%(agtk_location)
@@ -138,7 +138,7 @@ class LauncherFrame(wxFrame):
 
         self.serviceButtonList=[];
         self.serviceButtonActions=[];
-        self.serviceButtonList.append(wxButton(self,self.BUTTON_NS_ID,"Node Service"));
+        self.serviceButtonList.append(wx.Button(self,self.BUTTON_NS_ID,"Node Service"));
         if IsOSX():
             self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit3.app/Contents/MacOS/runns.sh"]]);
         else:
@@ -146,12 +146,12 @@ class LauncherFrame(wxFrame):
             if not os.path.exists("%s/bin/AGServiceManager3.py"%(agtk_location)) and os.path.exists("%s/bin/AGServiceManager.py"%(agtk_location)):
                 serviceManagerPath = "%s/bin/AGServiceManager.py"%(agtk_location)
             self.serviceButtonActions.append([self.RunPython,serviceManagerPath,["-n"]]);
-        self.serviceButtonList.append(wxButton(self,self.BUTTON_SM_ID,"Service Manager"));
+        self.serviceButtonList.append(wx.Button(self,self.BUTTON_SM_ID,"Service Manager"));
         if IsOSX():
             self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit3.app/Contents/MacOS/runsm.sh"]]);
         else:
             self.serviceButtonActions.append([self.RunPython,serviceManagerPath,[]]);
-        self.serviceButtonList.append(wxButton(self,self.BUTTON_VS_ID,"Venue Server"));
+        self.serviceButtonList.append(wx.Button(self,self.BUTTON_VS_ID,"Venue Server"));
         if IsOSX():
             self.serviceButtonActions.append([self.RunCommandline,"/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal", ["-ps", "-e", "/Applications/AccessGridToolkit3.app/Contents/MacOS/runvs.sh"]]);
         else:
@@ -164,15 +164,15 @@ class LauncherFrame(wxFrame):
         
         self.debugButtonList=[];
         self.debugButtonActions=[];
-        self.debugButtonList.append(wxButton(self,self.BUTTON_VCD_ID,"Venue Client (Debug)"));
+        self.debugButtonList.append(wx.Button(self,self.BUTTON_VCD_ID,"Venue Client (Debug)"));
         self.debugButtonActions.append([self.RunPythonDebug,venueClientPath,["-d"]]);
-        self.debugButtonList.append(wxButton(self,self.BUTTON_CMD_ID,"Certificate Management (Debug)"));
+        self.debugButtonList.append(wx.Button(self,self.BUTTON_CMD_ID,"Certificate Management (Debug)"));
         self.debugButtonActions.append([self.RunPythonDebug,certManagerPath,["-d"]]);
-        self.debugButtonList.append(wxButton(self,self.BUTTON_NSD_ID,"Node Service (Debug)"));
+        self.debugButtonList.append(wx.Button(self,self.BUTTON_NSD_ID,"Node Service (Debug)"));
         self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/AGNodeService.py"%(agtk_location),["-d"]]);
-        self.debugButtonList.append(wxButton(self,self.BUTTON_SMD_ID,"Service Manager (Debug)"));
+        self.debugButtonList.append(wx.Button(self,self.BUTTON_SMD_ID,"Service Manager (Debug)"));
         self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/AGServiceManager.py"%(agtk_location),["-d"]]);
-        self.debugButtonList.append(wxButton(self,self.BUTTON_VSD_ID,"Venue Server (Debug)"));
+        self.debugButtonList.append(wx.Button(self,self.BUTTON_VSD_ID,"Venue Server (Debug)"));
         self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/VenueServer.py"%(agtk_location),["-d"]]);
         for button in self.debugButtonList:
             button.Show(false);
@@ -196,7 +196,7 @@ class LauncherFrame(wxFrame):
         EVT_BUTTON(self,self.BUTTON_SMD_ID,self.OnButton);
         EVT_BUTTON(self,self.BUTTON_VSD_ID,self.OnButton);
         
-        self.myLine=wxStaticLine(self,-1,style=wxLI_VERTICAL);
+        self.myLine=wx.StaticLine(self,-1,style=wx.LI_VERTICAL);
         
         self.__doLayout();
         
@@ -319,36 +319,36 @@ class LauncherFrame(wxFrame):
         else:
             buttonSet=[];
         
-        menuButtonSizer=wxBoxSizer(wxVERTICAL);
-        menuButtonSizer.Add(wxSize(0,0),1);
-        menuButtonSizer.Add(self.mainButton,0,wxEXPAND);
-        menuButtonSizer.Add(wxSize(0,0),1);
-        menuButtonSizer.Add(self.docButton,0,wxEXPAND);
-        menuButtonSizer.Add(wxSize(0,0),1);
-        menuButtonSizer.Add(self.confButton,0,wxEXPAND);
-        menuButtonSizer.Add(wxSize(0,0),1);
-        menuButtonSizer.Add(self.servButton,0,wxEXPAND);
-        menuButtonSizer.Add(wxSize(0,0),1);
-        menuButtonSizer.Add(self.debugButton,0,wxEXPAND);
-        menuButtonSizer.Add(wxSize(0,0),1);
+        menuButtonSizer=wx.BoxSizer(wx.VERTICAL);
+        menuButtonSizer.Add(wx.Size(0,0),1);
+        menuButtonSizer.Add(self.mainButton,0,wx.EXPAND);
+        menuButtonSizer.Add(wx.Size(0,0),1);
+        menuButtonSizer.Add(self.docButton,0,wx.EXPAND);
+        menuButtonSizer.Add(wx.Size(0,0),1);
+        menuButtonSizer.Add(self.confButton,0,wx.EXPAND);
+        menuButtonSizer.Add(wx.Size(0,0),1);
+        menuButtonSizer.Add(self.servButton,0,wx.EXPAND);
+        menuButtonSizer.Add(wx.Size(0,0),1);
+        menuButtonSizer.Add(self.debugButton,0,wx.EXPAND);
+        menuButtonSizer.Add(wx.Size(0,0),1);
         
-        submenuButtonSizer=wxBoxSizer(wxVERTICAL);
-        submenuButtonSizer.Add(wxSize(0,0),1);
+        submenuButtonSizer=wx.BoxSizer(wx.VERTICAL);
+        submenuButtonSizer.Add(wx.Size(0,0),1);
         if len(buttonSet):
             for button in buttonSet:
                 button.Show(true);
-                submenuButtonSizer.Add(button,0,wxEXPAND);
-                submenuButtonSizer.Add(wxSize(0,0),1);
+                submenuButtonSizer.Add(button,0,wx.EXPAND);
+                submenuButtonSizer.Add(wx.Size(0,0),1);
         
-        mainSizer=wxBoxSizer(wxHORIZONTAL);
-        mainSizer.Add(menuButtonSizer,0,wxEXPAND|wxALL,10);
-        mainSizer.Add(self.myLine,0,wxEXPAND);
-        mainSizer.Add(submenuButtonSizer,1,wxEXPAND|wxALL,10);
+        mainSizer=wx.BoxSizer(wx.HORIZONTAL);
+        mainSizer.Add(menuButtonSizer,0,wx.EXPAND|wx.ALL,10);
+        mainSizer.Add(self.myLine,0,wx.EXPAND);
+        mainSizer.Add(submenuButtonSizer,1,wx.EXPAND|wx.ALL,10);
         
         self.SetSizer(mainSizer);
         self.Layout()
     
-class MyApp(wxApp):
+class MyApp(wx.App):
     def OnInit(self):
         self.frame=LauncherFrame(None,-1,"Access Grid Launcher","/Applications/Access Grid Toolkit.app");
         self.frame.Show();
@@ -366,7 +366,7 @@ if __name__ == '__main__':
 
     # Check to see if this was launched to handle an agpkg file.
     if ".agpkg" in str(sys.argv).lower(): # also finds agpkg3 files
-        pp = wxPySimpleApp();
+        pp = wx.PySimpleApp();
         for arg in sys.argv:
             if ".agpkg" in str(arg).lower(): # also finds agpkg3 files
                 # Register an agpkg
@@ -380,7 +380,7 @@ if __name__ == '__main__':
 
         import sys
 
-        pp = wxPySimpleApp();
+        pp = wx.PySimpleApp();
     
         app=WXGUIApplication();
         #try:

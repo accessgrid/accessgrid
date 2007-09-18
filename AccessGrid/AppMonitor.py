@@ -1,4 +1,5 @@
-from wxPython.wx import *
+
+import wx
 
 from AccessGrid import Log
 from AccessGrid.Events import Event
@@ -65,7 +66,7 @@ class AppMonitor:
         self.sharedAppClient.RegisterEventCallback(Event.APP_UPDATE_PARTICIPANT, self.UpdateParticipant)
 
     #
-    # Callbacks. Every UI access have to be made by using wxCallAfter.
+    # Callbacks. Every UI access have to be made by using wx.CallAfter.
     #
         
     def ParticipantJoined(self, event):
@@ -73,21 +74,21 @@ class AppMonitor:
         This method is called when a new participant joined the application session.
         '''
         appParticipantDescription = event.data
-        wxCallAfter(self.frame.AddParticipant, appParticipantDescription)
+        wx.CallAfter(self.frame.AddParticipant, appParticipantDescription)
                 
     def ParticipantLeft(self, event):
         '''
         This method is called when a participant left the application session.
         '''
         appParticipantDescription = event.data
-        wxCallAfter(self.frame.RemoveParticipant, appParticipantDescription)
+        wx.CallAfter(self.frame.RemoveParticipant, appParticipantDescription)
 
     def SetData(self, event):
         '''
         This method is called when data changed in application service.
         '''
         appDataDescription = event.data
-        wxCallAfter(self.frame.AddData, appDataDescription)
+        wx.CallAfter(self.frame.AddData, appDataDescription)
 
     def UpdateParticipant(self, event):
         '''
@@ -95,7 +96,7 @@ class AppMonitor:
         '''
         
         appParticipantDescription = event.data
-        wxCallAfter(self.frame.UpdateParticipant, appParticipantDescription)
+        wx.CallAfter(self.frame.UpdateParticipant, appParticipantDescription)
 
     #
     # ----- Callbacks end.
@@ -131,57 +132,57 @@ class AppMonitor:
         self.frame.SetDescription(appState.description)
 
         
-class AppMonitorFrame(wxFrame):
+class AppMonitorFrame(wx.Frame):
     '''
     The AppMonitor Frame includes all user interface components for the
     Application Monitor.
     '''
 
-    ID_WINDOW_TOP = wxNewId()
-    ID_WINDOW_BOTTOM = wxNewId()
+    ID_WINDOW_TOP = wx.NewId()
+    ID_WINDOW_BOTTOM = wx.NewId()
     
     def __init__(self, parent, id, title, appMonitor, **kw):
-        wxFrame.__init__(self, parent, id, title, **kw)
+        wx.Frame.__init__(self, parent, id, title, **kw)
         self.appMonitor = appMonitor
 
         # upper sash window
-        self.topWindow = wxSashLayoutWindow(self, self.ID_WINDOW_TOP,
-                                            wxDefaultPosition)
-        self.topWindow.SetOrientation(wxLAYOUT_HORIZONTAL)
-        self.topWindow.SetAlignment(wxLAYOUT_TOP)
-        self.topWindow.SetSashVisible(wxSASH_BOTTOM, TRUE)
+        self.topWindow = wx.SashLayoutWindow(self, self.ID_WINDOW_TOP,
+                                            wx.DefaultPosition)
+        self.topWindow.SetOrientation(wx.LAYOUT_HORIZONTAL)
+        self.topWindow.SetAlignment(wx.LAYOUT_TOP)
+        self.topWindow.SetSashVisible(wx.SASH_BOTTOM, TRUE)
         self.topWindow.SetExtraBorderSize(2)
         
         # lower sash window
-        self.bottomWindow = wxSashLayoutWindow(self, self.ID_WINDOW_BOTTOM,
-                                               wxDefaultPosition)
-        self.bottomWindow.SetOrientation(wxLAYOUT_HORIZONTAL)
-        self.bottomWindow.SetAlignment(wxLAYOUT_BOTTOM)
+        self.bottomWindow = wx.SashLayoutWindow(self, self.ID_WINDOW_BOTTOM,
+                                               wx.DefaultPosition)
+        self.bottomWindow.SetOrientation(wx.LAYOUT_HORIZONTAL)
+        self.bottomWindow.SetAlignment(wx.LAYOUT_BOTTOM)
         self.bottomWindow.SetExtraBorderSize(2)
                       
         # widgets for upper sash window
-        self.panelTop = wxPanel(self.topWindow, -1, wxDefaultPosition,
-                                wxDefaultSize)
-        self.nameText = wxStaticText(self.panelTop, -1,
+        self.panelTop = wx.Panel(self.topWindow, -1, wx.DefaultPosition,
+                                wx.DefaultSize)
+        self.nameText = wx.StaticText(self.panelTop, -1,
                                      "This is the name",
-                                     style = wxALIGN_CENTER)
-        font = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
+                                     style = wx.ALIGN_CENTER)
+        font = wx.Font(wx.DEFAULT, wx.NORMAL, wx.NORMAL, wx.BOLD)
         self.nameText.SetFont(font)
 
-        self.descriptionText = wxStaticText(self.panelTop, -1,
+        self.descriptionText = wx.StaticText(self.panelTop, -1,
                                             "No description",
-                                            size = wxSize(10,40))
-        self.partListCtrl = wxListCtrl(self.panelTop, -1,
-                                       style = wxLC_REPORT)
+                                            size = wx.Size(10,40))
+        self.partListCtrl = wx.ListCtrl(self.panelTop, -1,
+                                       style = wx.LC_REPORT)
         self.partListCtrl.InsertColumn(0, "Participants")
         self.partListCtrl.InsertColumn(1, "Status")
 
         # widgets for lower sash window
-        self.panelBottom = wxPanel(self.bottomWindow, -1,
-                                   wxDefaultPosition, wxDefaultSize)
-        self.textCtrl = wxTextCtrl(self.panelBottom, -1,
-                                   style = wxTE_MULTILINE |
-                                   wxTE_READONLY | wxTE_RICH)
+        self.panelBottom = wx.Panel(self.bottomWindow, -1,
+                                   wx.DefaultPosition, wx.DefaultSize)
+        self.textCtrl = wx.TextCtrl(self.panelBottom, -1,
+                                   style = wx.TE_MULTILINE |
+                                   wx.TE_READONLY | wx.TE_RICH)
         
         self.idToProfile = {}
         self.profileToId = {}
@@ -193,8 +194,8 @@ class AppMonitorFrame(wxFrame):
         self.__layout()
 
         # finally set size to get proper layout
-        self.SetSize(wxSize(400,400))
-        self.topWindow.SetDefaultSize(wxSize(200, 200))
+        self.SetSize(wx.Size(400,400))
+        self.topWindow.SetDefaultSize(wx.Size(200, 200))
 
         
 
@@ -203,20 +204,20 @@ class AppMonitorFrame(wxFrame):
         Called when a sash window has been dragged.
         '''
         
-        if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
+        if event.GetDragStatus() == wx.SASH_STATUS_OUT_OF_RANGE:
             return
         
         id = event.GetId()
         if id == self.ID_WINDOW_TOP:
-            self.topWindow.SetDefaultSize(wxSize(1000, event.GetDragRect().height))
+            self.topWindow.SetDefaultSize(wx.Size(1000, event.GetDragRect().height))
                     
-        wxLayoutAlgorithm().LayoutWindow(self)
+        wx.LayoutAlgorithm().LayoutWindow(self)
               
     def OnSize(self, event):
         """
         Sets correct column widths.
         """
-        wxLayoutAlgorithm().LayoutWindow(self)
+        wx.LayoutAlgorithm().LayoutWindow(self)
 
         w = self.partListCtrl.GetClientSize().width
         self.partListCtrl.SetColumnWidth(0, w*(0.50) )
@@ -234,7 +235,7 @@ class AppMonitorFrame(wxFrame):
         '''
         Shows a message dialog
         '''
-        messageDialog = wxMessageDialog(None, message, "Application Monitor", style = wxOK|wxICON_INFORMATION)
+        messageDialog = wx.MessageDialog(None, message, "Application Monitor", style = wx.OK|wx.ICON_INFORMATION)
         messageDialog.ShowModal()
         messageDialog.Destroy()
                 
@@ -269,9 +270,9 @@ class AppMonitorFrame(wxFrame):
         message = message + " ("+dateAndTime+")" 
         
         # Events are coloured blue
-        self.textCtrl.SetDefaultStyle(wxTextAttr(wxBLUE))
+        self.textCtrl.SetDefaultStyle(wx.TextAttr(wx.BLUE))
         self.textCtrl.AppendText(message+'\n')
-        self.textCtrl.SetDefaultStyle(wxTextAttr(wxBLACK))
+        self.textCtrl.SetDefaultStyle(wx.TextAttr(wx.BLACK))
 
         self.__SetRightScroll()
                         
@@ -294,7 +295,7 @@ class AppMonitorFrame(wxFrame):
         self.partListCtrl.SetStringItem(idx, 1, pDesc.status)
         self.partListCtrl.SetItemData(idx, idx)
         
-        wxLayoutAlgorithm().LayoutWindow(self)
+        wx.LayoutAlgorithm().LayoutWindow(self)
 
     def RemoveParticipant(self, pDesc):
         '''
@@ -315,9 +316,9 @@ class AppMonitorFrame(wxFrame):
             message = message + " ("+dateAndTime+")" 
             
             # Events are coloured blue
-            self.textCtrl.SetDefaultStyle(wxTextAttr(wxBLUE))
+            self.textCtrl.SetDefaultStyle(wx.TextAttr(wx.BLUE))
             self.textCtrl.AppendText(message+'\n')
-            self.textCtrl.SetDefaultStyle(wxTextAttr(wxBLACK))
+            self.textCtrl.SetDefaultStyle(wx.TextAttr(wx.BLACK))
 
             self.__SetRightScroll()
 
@@ -373,7 +374,7 @@ class AppMonitorFrame(wxFrame):
         stamp is included in text.
         """
         # Data is coloured red
-        self.textCtrl.SetDefaultStyle(wxTextAttr(wxRED))
+        self.textCtrl.SetDefaultStyle(wx.TextAttr(wx.RED))
        
         for key in dataDict.keys():
             text = str(key) + "=" + str(dataDict[key]) + '\n'
@@ -381,7 +382,7 @@ class AppMonitorFrame(wxFrame):
             
             #self.__SetRightScroll()
 
-        self.textCtrl.SetDefaultStyle(wxTextAttr(wxBLACK))
+        self.textCtrl.SetDefaultStyle(wx.TextAttr(wx.BLACK))
         
     def __SetRightScroll(self):
         '''
@@ -389,8 +390,8 @@ class AppMonitorFrame(wxFrame):
         '''
 
         if IsWindows():
-            # Added due to wxPython bug. The wxTextCtrl doesn't
-            # scroll properly when the wxTE_AUTO_URL flag is set.
+            # Added due to wx.Python bug. The wx.TextCtrl doesn't
+            # scroll properly when the wx.TE_AUTO_URL flag is set.
             self.textCtrl.ScrollLines(-1)
                                         
     def __setEvents(self):
@@ -407,21 +408,21 @@ class AppMonitorFrame(wxFrame):
         '''
         Handles UI layout.
         '''
-        sizer = wxBoxSizer(wxVERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
         
-        vs = wxBoxSizer(wxVERTICAL)
+        vs = wx.BoxSizer(wx.VERTICAL)
       
-        vs.Add(self.nameText, 0, wxEXPAND | wxALL, 4)
+        vs.Add(self.nameText, 0, wx.EXPAND | wx.ALL, 4)
         
-        vs.Add(self.descriptionText, 0, wxEXPAND | wxALL, 4)
-        vs.Add(wxStaticLine(self.panelTop, -1), 0, wxEXPAND)
+        vs.Add(self.descriptionText, 0, wx.EXPAND | wx.ALL, 4)
+        vs.Add(wx.StaticLine(self.panelTop, -1), 0, wx.EXPAND)
         vs.Add((5,5))
-        vs.Add(self.partListCtrl, 2, wxEXPAND | wxALL, 4)
+        vs.Add(self.partListCtrl, 2, wx.EXPAND | wx.ALL, 4)
 
-        sizer.Add(vs, 1, wxEXPAND|wxALL, 5)
+        sizer.Add(vs, 1, wx.EXPAND|wx.ALL, 5)
 
-        sizer2 = wxBoxSizer(wxVERTICAL)
-        sizer2.Add(self.textCtrl, 1, wxEXPAND | wxALL, 8)
+        sizer2 = wx.BoxSizer(wx.VERTICAL)
+        sizer2.Add(self.textCtrl, 1, wx.EXPAND | wx.ALL, 8)
                
         self.panelTop.SetSizer(sizer)
         sizer.Fit(self.panelTop)
@@ -434,7 +435,7 @@ class AppMonitorFrame(wxFrame):
         self.panelBottom.SetAutoLayout(1)
         self.panelBottom.Layout()
 
-        wxLayoutAlgorithm().LayoutWindow(self, self.panelTop)
+        wx.LayoutAlgorithm().LayoutWindow(self, self.panelTop)
                        
 def SetLogging():
     logFile = None
@@ -506,7 +507,7 @@ if __name__ == "__main__":
 
     appUrl = arguments['appUrl']
     
-    pp = wxPySimpleApp()
+    pp = wx.PySimpleApp()
     monitor = AppMonitor(None, appUrl)
     
     pp.MainLoop()

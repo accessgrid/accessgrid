@@ -18,7 +18,6 @@ from threading import Thread
 import Queue
 import shutil
 
-from wxPython.wx import *
 
 # Imports we need from the Access Grid Module
 from AccessGrid.Events import ConnectEvent, Event

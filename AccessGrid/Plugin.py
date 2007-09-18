@@ -7,7 +7,7 @@ from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.Platform import IsWindows
 from AccessGrid.Platform.ProcessManager import ProcessManager
 
-from wxPython.wx import *
+import wx
 
 log = Log.GetLogger("Plugin")
 
@@ -98,21 +98,21 @@ class Plugin(VenueClientObserver):
             #
             icon = os.path.join(self.directory, icon)
             try:
-                img = wxImage(icon, wxBITMAP_TYPE_ANY)
+                img = wx.Image(icon, wx.BITMAP_TYPE_ANY)
             except Exception, e:
                 log.debug("Failed to load icon %s: %s" % (icon, e))
                 continue
 
-            toolid = wxNewId()
+            toolid = wx.NewId()
             
             callback = lambda event, description="Toolbar: " + name, callback=cb: self.__callback_wrapper(description, callback)
 
-            button = wxBitmapButton(toolbar,
+            button = wx.BitmapButton(toolbar,
                                     toolid,
-                                    wxBitmapFromImage(img),
+                                    wx.BitmapFromImage(img),
                                     size=toolsize)
 
-            button.SetToolTip(wxToolTip(desc))
+            button.SetToolTip(wx.ToolTip(desc))
             toolbar.AddControl(button)
 
             EVT_BUTTON(frame, toolid, callback)
@@ -294,7 +294,7 @@ class Plugin(VenueClientObserver):
                          
     def __create_menu_from_itemlist(self, frame, name, itemlist):
         """
-        Returns a wxMenuItem based on the list of items in item list.
+        Returns a wx.MenuItem based on the list of items in item list.
 
         """
         
@@ -314,7 +314,7 @@ class Plugin(VenueClientObserver):
             return self.__create_menu_from_item(frame, itemlist[0])
 
         else:
-            menu = wxMenu(name)
+            menu = wx.Menu(name)
             itemCount = 0
 
             for item in itemlist:
@@ -324,7 +324,7 @@ class Plugin(VenueClientObserver):
                     itemCount = itemCount + 1
 
             if itemCount > 0:
-                return wxMenuItem(wxMenu(), -1, name, "", wxITEM_NORMAL, menu)
+                return wx.MenuItem(wx.Menu(), -1, name, "", wx.ITEM_NORMAL, menu)
             else:
                 #
                 # Don't want empty menus hanging around so return None in
@@ -335,7 +335,7 @@ class Plugin(VenueClientObserver):
 
     def __create_menu_from_item(self, frame, item):
         """
-        Create a wxMenuItem from one item in an item list. Sets up callbacks
+        Create a wx.MenuItem from one item in an item list. Sets up callbacks
         as required.
 
         """
@@ -355,8 +355,8 @@ class Plugin(VenueClientObserver):
             return None
         
         if callable(cb):
-            itemid = wxNewId()
-            item = wxMenuItem(wxMenu(), itemid, name, "", wxITEM_NORMAL, NULL)
+            itemid = wx.NewId()
+            item = wx.MenuItem(wx.Menu(), itemid, name, "", wx.ITEM_NORMAL, NULL)
             callback = lambda event, description=name, callback=cb: self.__callback_wrapper(description, callback)
             EVT_MENU(frame, itemid, callback)
 
@@ -367,7 +367,7 @@ class Plugin(VenueClientObserver):
             if not submenu:
                 return None
 
-            return wxMenuItem(wxMenu(), -1, name, "", wxITEM_NORMAL, submenu)
+            return wx.MenuItem(wx.Menu(), -1, name, "", wx.ITEM_NORMAL, submenu)
         else:
             log.debug("Expected callback or submenu for second element of tuple.")
             return None

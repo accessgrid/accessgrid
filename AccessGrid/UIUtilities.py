@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.91 2007-06-04 15:05:52 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.92 2007-09-18 20:45:16 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.91 2007-06-04 15:05:52 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.92 2007-09-18 20:45:16 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -23,8 +23,7 @@ try:
 except:
     pass
 
-from wxPython.wx import *
-from wxPython.lib.imagebrowser import *
+import wx
 
 from AccessGrid import icons
 from AccessGrid.Utilities import SubmitBug, VENUE_CLIENT_LOG
@@ -35,23 +34,23 @@ from AccessGrid.Platform.Config import UserConfig, AGTkConfig
 from AccessGrid.Platform import Config
 
 class MessageDialog:
-    def __init__(self, frame, text, text2 = "", style = wxOK|wxICON_INFORMATION):
-        messageDialog = wxMessageDialog(frame, text, text2, style)
+    def __init__(self, frame, text, text2 = "", style = wx.OK|wx.ICON_INFORMATION):
+        messageDialog = wx.MessageDialog(frame, text, text2, style)
         messageDialog.ShowModal()
         messageDialog.Destroy()
 
 class ErrorDialog:
     def __init__(self, frame, text, text2 = "",
-                 style =  wxICON_ERROR |wxYES_NO | wxNO_DEFAULT, logFile = VENUE_CLIENT_LOG,
+                 style =  wx.ICON_ERROR |wx.YES_NO | wx.NO_DEFAULT, logFile = VENUE_CLIENT_LOG,
                  extraBugCommentText=""):
         info = text + "\n\nDo you wish to send an automated error report?"
-        errorDialog = wxMessageDialog(frame, info, text2, style)
+        errorDialog = wx.MessageDialog(frame, info, text2, style)
 
-        if(errorDialog.ShowModal() == wxID_YES):
+        if(errorDialog.ShowModal() == wx.ID_YES):
             # The user wants to send an error report
             bugReportCommentDialog = BugReportCommentDialog(frame)
 
-            if(bugReportCommentDialog.ShowModal() == wxID_OK):
+            if(bugReportCommentDialog.ShowModal() == wx.ID_OK):
                 # Submit the error report to Bugzilla
                 comment = bugReportCommentDialog.GetComment()
                 email = bugReportCommentDialog.GetEmail()
@@ -67,8 +66,8 @@ class ErrorDialog:
                 if len(extraBugCommentText) > 0:
                     comment = comment + "\n\n----------------\n\n" + extraBugCommentText
                 SubmitBug(comment, profile, email, logFile)
-                bugFeedbackDialog = wxMessageDialog(frame, "Your error report has been sent, thank you.",
-                                                    "Error Reported", style = wxOK|wxICON_INFORMATION)
+                bugFeedbackDialog = wx.MessageDialog(frame, "Your error report has been sent, thank you.",
+                                                    "Error Reported", style = wx.OK|wx.ICON_INFORMATION)
                 bugFeedbackDialog.ShowModal()
                 bugFeedbackDialog.Destroy()       
 
@@ -77,32 +76,32 @@ class ErrorDialog:
         errorDialog.Destroy()
 
 
-class BugReportCommentDialog(wxDialog):
+class BugReportCommentDialog(wx.Dialog):
     def __init__(self, parent):
-        wxDialog.__init__(self, parent, -1, "Bug Report")
-        self.text = wxStaticText(self, -1, "Please, enter a description of the problem you are experiencing.  You may \nreceive periodic mailings from us with information on this problem.  If you \ndo not wish to be contacted, please leave the 'E-mail' field blank.", style=wxALIGN_LEFT)
+        wx.Dialog.__init__(self, parent, -1, "Bug Report")
+        self.text = wx.StaticText(self, -1, "Please, enter a description of the problem you are experiencing.  You may \nreceive periodic mailings from us with information on this problem.  If you \ndo not wish to be contacted, please leave the 'E-mail' field blank.", style=wx.ALIGN_LEFT)
         
-        self.commentBox = wxTextCtrl(self, -1, "", size = wxSize(300,100),
-                                     style = wxTE_MULTILINE,
+        self.commentBox = wx.TextCtrl(self, -1, "", size = wx.Size(300,100),
+                                     style = wx.TE_MULTILINE,
                                      validator = TextValidator())
-        self.line = wxStaticLine(self, -1)
+        self.line = wx.StaticLine(self, -1)
         
-        # I have to add this due to a wxPython bug. A wxTextCtrl that
-        # has wxTE_MULTILINE flag set ignores focus of next child. If
+        # I have to add this due to a wxPython bug. A wx.TextCtrl that
+        # has wx.TE_MULTILINE flag set ignores focus of next child. If
         # I don't have tmp, the email text ctrl will never get focus
         # when you use the TAB key.  --
 
         if IsWindows():
-            temp = wxBitmapButton(self, -1, wxEmptyBitmap(1,1),
-                                  size = wxSize(1,1))
+            temp = wx.BitmapButton(self, -1, wx.EmptyBitmap(1,1),
+                                  size = wx.Size(1,1))
         # --
         
-        self.commentText =  wxStaticText(self, -1, "Comment:")
-        self.emailText = wxStaticText(self, -1, "E-mail:")
-        self.emailBox =  wxTextCtrl(self, -1, "")
-        self.infoText = wxStaticText(self, -1, "For more information on bugs, visit http://bugzilla.mcs.anl.gov/AccessGrid ")
-        self.okButton = wxButton(self, wxID_OK, "Ok")
-        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.commentText =  wx.StaticText(self, -1, "Comment:")
+        self.emailText = wx.StaticText(self, -1, "E-mail:")
+        self.emailBox =  wx.TextCtrl(self, -1, "")
+        self.infoText = wx.StaticText(self, -1, "For more information on bugs, visit http://bugzilla.mcs.anl.gov/AccessGrid ")
+        self.okButton = wx.Button(self, wx.ID_OK, "Ok")
+        self.cancelButton = wx.Button(self, wx.ID_CANCEL, "Cancel")
         self.Centre()
         self.Layout()
     
@@ -113,29 +112,29 @@ class BugReportCommentDialog(wxDialog):
         return self.commentBox.GetValue()
 
     def Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add(self.text, 0, wxALL, 10)
-        sizer.Add(self.commentText, 0, wxLEFT| wxRIGHT | wxEXPAND, 10)
-        sizer.Add(self.commentBox, 0,  wxLEFT| wxRIGHT | wxEXPAND, 10)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.text, 0, wx.ALL, 10)
+        sizer.Add(self.commentText, 0, wx.LEFT| wx.RIGHT | wx.EXPAND, 10)
+        sizer.Add(self.commentBox, 0,  wx.LEFT| wx.RIGHT | wx.EXPAND, 10)
         sizer.Add((10,10))
-        sizer.Add(self.emailText, 0, wxLEFT| wxRIGHT | wxTOP| wxEXPAND, 10)
-        sizer.Add(self.emailBox, 0,  wxLEFT| wxRIGHT | wxBOTTOM | wxEXPAND, 10)
-        sizer.Add(self.infoText, 0, wxLEFT | wxRIGHT | wxTOP |  wxEXPAND, 10)
-        sizer.Add(self.line, 0, wxALL | wxEXPAND, 10)
+        sizer.Add(self.emailText, 0, wx.LEFT| wx.RIGHT | wx.TOP| wx.EXPAND, 10)
+        sizer.Add(self.emailBox, 0,  wx.LEFT| wx.RIGHT | wx.BOTTOM | wx.EXPAND, 10)
+        sizer.Add(self.infoText, 0, wx.LEFT | wx.RIGHT | wx.TOP |  wx.EXPAND, 10)
+        sizer.Add(self.line, 0, wx.ALL | wx.EXPAND, 10)
 
-        buttonSizer = wxBoxSizer(wxHORIZONTAL)
-        buttonSizer.Add(self.okButton, 0, wxALL, 5)
-        buttonSizer.Add(self.cancelButton, 0, wxALL, 5)
-        sizer.Add(buttonSizer, 0, wxALIGN_CENTER | wxBOTTOM, 5) 
+        buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+        buttonSizer.Add(self.okButton, 0, wx.ALL, 5)
+        buttonSizer.Add(self.cancelButton, 0, wx.ALL, 5)
+        sizer.Add(buttonSizer, 0, wx.ALIGN_CENTER | wx.BOTTOM, 5) 
             
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(1)
 
 
-class TextValidator(wxPyValidator):
+class TextValidator(wx.PyValidator):
     def __init__(self):
-        wxPyValidator.__init__(self)
+        wx.PyValidator.__init__(self)
             
     def Clone(self):
         return TextValidator()
@@ -151,15 +150,15 @@ class TextValidator(wxPyValidator):
         return true
 
     def TransferToWindow(self):
-        # Prevent wxDialog from complaining.
+        # Prevent wx.Dialog from complaining.
         return true 
 
     def TransferFromWindow(self):
-        # Prevent wxDialog from complaining.
+        # Prevent wx.Dialog from complaining.
         return true 
         
 class ErrorDialogWithTraceback:
-    def __init__(self, frame, text, text2 = "", style = wxOK | wxICON_ERROR):
+    def __init__(self, frame, text, text2 = "", style = wx.OK | wx.ICON_ERROR):
         
        (name, args, traceback_string_list) = formatExceptionInfo()
 
@@ -171,11 +170,11 @@ class ErrorDialogWithTraceback:
        print sys.exc_type
        print sys.exc_value
        info = text + "\n\n"+"Type: "+str(sys.exc_type)+"\n"+"Value: "+str(sys.exc_value) + "\nTraceback:\n" + tbstr
-       errorDialog = wxMessageDialog(frame, info, text2, style)
+       errorDialog = wx.MessageDialog(frame, info, text2, style)
        errorDialog.ShowModal()
        errorDialog.Destroy()
         
-class ProgressDialog(wxFrame):
+class ProgressDialog(wx.Frame):
     def __init__(self, parent, bmp, max, versionText=""):
         height = bmp.GetHeight()
         width = bmp.GetWidth()
@@ -186,36 +185,36 @@ class ProgressDialog(wxFrame):
         gaugeWidth = min(300, width - 100)
         padding = 5
 
-        wxFrame.__init__(self, parent=parent, title="Starting AccessGrid", style=wxSIMPLE_BORDER)
+        wx.Frame.__init__(self, parent=parent, title="Starting AccessGrid", style=wx.SIMPLE_BORDER)
         SetIcon(self)
         self.CenterOnScreen()
-        self.SetBackgroundColour(wxWHITE)
+        self.SetBackgroundColour(wx.WHITE)
         
-        self.bitmapCtrl = wxStaticBitmap(self, -1, bmp, wxPoint(0, 0), wxSize(width, height))
-        self.versionTextCtrl = wxStaticText(self,-1,versionText,
-                                    size=wxSize(width,-1),
-                                    style = wxALIGN_CENTRE)
-        self.lineCtrl = wxStaticLine(self,-1,size=wxSize(width,-1))
-        self.progressText = wxStaticText(self, -1, "",  
-                                size=wxSize(width, msgHeight),
-                                style=wxALIGN_CENTRE | wxST_NO_AUTORESIZE)
-        self.progressText.SetBackgroundColour(wxWHITE)
-        gaugeBox = wxWindow(self, -1, 
-                        size=wxSize(gaugeWidth, gaugeHeight))
-        gaugeBox.SetBackgroundColour(wxWHITE)
-        self.gauge = wxGauge(gaugeBox, -1,
+        self.bitmapCtrl = wx.StaticBitmap(self, -1, bmp, wx.Point(0, 0), wx.Size(width, height))
+        self.versionTextCtrl = wx.StaticText(self,-1,versionText,
+                                    size=wx.Size(width,-1),
+                                    style = wx.ALIGN_CENTRE)
+        self.lineCtrl = wx.StaticLine(self,-1,size=wx.Size(width,-1))
+        self.progressText = wx.StaticText(self, -1, "",  
+                                size=wx.Size(width, msgHeight),
+                                style=wx.ALIGN_CENTRE | wx.ST_NO_AUTORESIZE)
+        self.progressText.SetBackgroundColour(wx.WHITE)
+        gaugeBox = wx.Window(self, -1, 
+                        size=wx.Size(gaugeWidth, gaugeHeight))
+        gaugeBox.SetBackgroundColour(wx.WHITE)
+        self.gauge = wx.Gauge(gaugeBox, -1,
                               range = max,
-                              style = wxGA_HORIZONTAL|wxGA_SMOOTH,
+                              style = wx.GA_HORIZONTAL|wx.GA_SMOOTH,
                               size  = (gaugeWidth - 2 * gaugeBorder,
                                        gaugeHeight - 2 * gaugeBorder))
-        #self.gauge.SetBackgroundColour(wxColour(0xff, 0xff, 0xff))
+        #self.gauge.SetBackgroundColour(wx.Colour(0xff, 0xff, 0xff))
         
-        sizer = wxBoxSizer(wxVERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.bitmapCtrl,0)
-        sizer.Add(self.versionTextCtrl,0,wxBOTTOM,10)
+        sizer.Add(self.versionTextCtrl,0,wx.BOTTOM,10)
         sizer.Add(self.lineCtrl,0)
-        sizer.Add(self.progressText,0,wxTOP,10)
-        sizer.Add(gaugeBox,0,wxALIGN_CENTRE)
+        sizer.Add(self.progressText,0,wx.TOP,10)
+        sizer.Add(gaugeBox,0,wx.ALIGN_CENTRE)
         
         self.SetSizer(sizer)
         self.Fit()
@@ -226,36 +225,36 @@ class ProgressDialog(wxFrame):
         self.lineCtrl.Update()
         self.versionTextCtrl.Update()
         self.bitmapCtrl.Update()
-        wxYield()
+        wx.Yield()
 
     def Destroy(self):
         self._startup = False
         self.gauge.SetValue(self.max)
-        wxYield()
+        wx.Yield()
         #time.sleep(.25) #give the user a chance to see the gauge reach 100%
-        wxFrame.Destroy(self)
+        wx.Frame.Destroy(self)
 
-class AboutDialog(wxDialog):
+class AboutDialog(wx.Dialog):
             
     def __init__(self, parent):
         version = str(GetVersion()) + " "+GetStatus() + "  (build %s)" % GetBuildNumber()
-        wxDialog.__init__(self, parent, -1, version)
+        wx.Dialog.__init__(self, parent, -1, version)
         bmp = icons.getSplashBitmap()
         info = "Version: %s \nPlease visit www.accessgrid.org for more information" %version
         self.ReadLicenseFile()
 
         
-        self.SetSize(wxSize(bmp.GetWidth()+20, 400))
+        self.SetSize(wx.Size(bmp.GetWidth()+20, 400))
         
-        self.panel = wxPanel(self, -1, size = wxSize(bmp.GetWidth()+20, 400))
-        self.image = wxStaticBitmap(self.panel, -1, bmp,
-                                    size = wxSize(bmp.GetWidth(), bmp.GetHeight()))
-        self.text = wxStaticText(self.panel, -1, info)
+        self.panel = wx.Panel(self, -1, size = wx.Size(bmp.GetWidth()+20, 400))
+        self.image = wx.StaticBitmap(self.panel, -1, bmp,
+                                    size = wx.Size(bmp.GetWidth(), bmp.GetHeight()))
+        self.text = wx.StaticText(self.panel, -1, info)
         self.text.SetBackgroundColour("WHITE")
-        self.license = wxTextCtrl(self.panel, -1, self.licenseText,
-                                  size = wxSize(bmp.GetWidth()-10, 200),
-                                  style = wxTE_MULTILINE)
-        self.okButton = wxButton(self.panel, wxID_OK, "Ok" )
+        self.license = wx.TextCtrl(self.panel, -1, self.licenseText,
+                                  size = wx.Size(bmp.GetWidth()-10, 200),
+                                  style = wx.TE_MULTILINE)
+        self.okButton = wx.Button(self.panel, wx.ID_OK, "Ok" )
         self.panel.SetBackgroundColour("WHITE")
 
         self.okButton.SetDefault()
@@ -277,17 +276,17 @@ class AboutDialog(wxDialog):
         '''
         Handle UI layout.
         '''
-        sizer = wxBoxSizer(wxHORIZONTAL)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
         
-        sizer.Add(self.panel, 1, wxEXPAND)
+        sizer.Add(self.panel, 1, wx.EXPAND)
         
-        boxSizer = wxBoxSizer(wxVERTICAL)
+        boxSizer = wx.BoxSizer(wx.VERTICAL)
         boxSizer.Add((5,5))
-        boxSizer.Add(self.image, 0 ,wxALIGN_CENTER)
-        boxSizer.Add(self.text, 0 ,wxALIGN_LEFT | wxALL, 10)
-        boxSizer.Add(self.license, 1 ,wxALIGN_CENTER |wxEXPAND| wxLEFT | wxRIGHT| wxBOTTOM, 10)
-        boxSizer.Add(wxStaticLine(self.panel, -1), 0, wxALL | wxEXPAND, 10)
-        boxSizer.Add(self.okButton, 0, wxALIGN_CENTER|wxBOTTOM, 10)
+        boxSizer.Add(self.image, 0 ,wx.ALIGN_CENTER)
+        boxSizer.Add(self.text, 0 ,wx.ALIGN_LEFT | wx.ALL, 10)
+        boxSizer.Add(self.license, 1 ,wx.ALIGN_CENTER |wx.EXPAND| wx.LEFT | wx.RIGHT| wx.BOTTOM, 10)
+        boxSizer.Add(wx.StaticLine(self.panel, -1), 0, wx.ALL | wx.EXPAND, 10)
+        boxSizer.Add(self.okButton, 0, wx.ALIGN_CENTER|wx.BOTTOM, 10)
 
         self.panel.SetSizer(boxSizer)
         boxSizer.Fit(self.panel)
@@ -303,7 +302,7 @@ def ProgressDialogTest():
     count = 0
     while count < maxSize:
         count = count + 1
-        wxSleep(1)
+        wx.Sleep(1)
         dlg.UpdateGauge('update '+ str(count), count)
 
     dlg.Destroy()
@@ -314,7 +313,7 @@ def AboutDialogTest():
     dlg.Destroy()
        
 
-class FileLocationWidget(wxPanel):
+class FileLocationWidget(wx.Panel):
     """
     A FileLocationWidget has a label, text field, and browse button.
 
@@ -325,7 +324,7 @@ class FileLocationWidget(wxPanel):
     """
 
     def __init__(self, parent, title, label, wildcardDesc, fileSelectCB):
-        wxPanel.__init__(self, parent, -1, style = 0)
+        wx.Panel.__init__(self, parent, -1, style = 0)
 
         self.title = title
         self.fileSelectCB = fileSelectCB
@@ -333,17 +332,17 @@ class FileLocationWidget(wxPanel):
         self.path = ""
         self.lastFilterIndex = 0
         
-        sizer = self.sizer = wxBoxSizer(wxHORIZONTAL)
-        t = wxStaticText(self, -1, label)
-        sizer.Add(t, 0, wxALIGN_CENTER_VERTICAL)
+        sizer = self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        t = wx.StaticText(self, -1, label)
+        sizer.Add(t, 0, wx.ALIGN_CENTER_VERTICAL)
         
-        self.text = wxTextCtrl(self, -1, style = wxTE_PROCESS_ENTER)
-        sizer.Add(self.text, 1, wxALIGN_CENTER_VERTICAL)
+        self.text = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER)
+        sizer.Add(self.text, 1, wx.ALIGN_CENTER_VERTICAL)
         EVT_TEXT_ENTER(self, self.text.GetId(), self.OnTextEnter)
-        if not(IsOSX() and wxVERSION >= (2,5,3,0)):
+        if not(IsOSX() and wx.VERSION >= (2,5,3,0)):
             EVT_KILL_FOCUS(self.text, self.OnTextLoseFocus)
         
-        b = wxButton(self, -1, "Browse")
+        b = wx.Button(self, -1, "Browse")
         sizer.Add(b, 0)
         EVT_BUTTON(self, b.GetId(), self.OnBrowse)
 
@@ -381,16 +380,16 @@ class FileLocationWidget(wxPanel):
                 ffile = ""
 
         wildcard = "|".join(map(lambda a: "|".join(a), self.wildcardDesc))
-        dlg = wxFileDialog(self, self.title,
+        dlg = wx.FileDialog(self, self.title,
                            defaultDir = fdir,
                            defaultFile = ffile,
                            wildcard = wildcard,
-                           style = wxOPEN)
+                           style = wx.OPEN)
         dlg.SetFilterIndex(self.lastFilterIndex)
 
         rc = dlg.ShowModal()
 
-        if rc != wxID_OK:
+        if rc != wx.ID_OK:
             dlg.Destroy()
             return
 
@@ -403,7 +402,7 @@ class FileLocationWidget(wxPanel):
         if self.fileSelectCB is not None:
             self.fileSelectCB(self, self.path)
 
-class SecureTextCtrl(wxTextCtrl):
+class SecureTextCtrl(wx.TextCtrl):
     """
     Securely read passwords.
 
@@ -415,10 +414,10 @@ class SecureTextCtrl(wxTextCtrl):
 
     """
     
-    def __init__(self, parent, id, size = wxDefaultSize):
+    def __init__(self, parent, id, size = wx.DefaultSize):
 
-        wxTextCtrl.__init__(self, parent, id,
-                            style = wxTE_RICH2,
+        wx.TextCtrl.__init__(self, parent, id,
+                            style = wx.TE_RICH2,
                             size = size)
 
         EVT_TEXT_ENTER(self, self.GetId(), self.OnEnter)
@@ -457,10 +456,10 @@ class SecureTextCtrl(wxTextCtrl):
         self.doPaste()
 
     def doPaste(self):
-        wxTheClipboard.Open()
-        data = wxTextDataObject()
-        wxTheClipboard.GetData(data)
-        wxTheClipboard.Close()
+        wx.TheClipboard.Open()
+        data = wx.TextDataObject()
+        wx.TheClipboard.GetData(data)
+        wx.TheClipboard.Close()
         txt = str(data.GetText())
         for k in txt:
             ch, = struct.unpack('b', k)
@@ -469,7 +468,7 @@ class SecureTextCtrl(wxTextCtrl):
     def deleteSelection(self, sel):
         del self.chars[sel[0]: sel[1]]
         self.Remove(sel[0], sel[1])
-        if IsOSX() and wxVERSION >= (2,6,0,0):
+        if IsOSX() and wx.VERSION >= (2,6,0,0):
             self.SetInsertionPoint(sel[0])
         
     def insertChar(self, k):
@@ -489,9 +488,9 @@ class SecureTextCtrl(wxTextCtrl):
         k = event.GetKeyCode()
 
         # We only worry about control keys here.
-        # sigh, special handling for osx/wx2.6
+        # sigh, special handling for osx/wx.2.6
         controlDown = 0
-        if wxVERSION >= (2,6,0,0):
+        if wx.VERSION >= (2,6,0,0):
             controlDown = event.CmdDown()
         else:
             controlDown = event.ControlDown()
@@ -524,7 +523,7 @@ class SecureTextCtrl(wxTextCtrl):
                 if pos > 0:
                     del self.chars[pos - 1 : pos]
                     self.Remove(pos - 1, pos)
-                    if IsOSX() and wxVERSION >= (2,6,0,0):
+                    if IsOSX() and wx.VERSION >= (2,6,0,0):
                         self.SetInsertionPoint(pos-1)
         elif k == WXK_RETURN:
             event.Skip()
@@ -542,7 +541,7 @@ class SecureTextCtrl(wxTextCtrl):
                 if pos < self.GetLastPosition():
                     del self.chars[pos : pos + 1]
                     self.Remove(pos , pos + 1)
-                    if IsOSX() and wxVERSION >= (2,6,0,0):
+                    if IsOSX() and wx.VERSION >= (2,6,0,0):
                         self.SetInsertionPoint(pos)
         elif k < 127 and k >= 32:
             self.insertChar(k)
@@ -562,32 +561,32 @@ class SecureTextCtrl(wxTextCtrl):
             event.Skip()
             
     def Remove(self,start,end):
-        if IsOSX() and wxVERSION >= (2,6,0,0):
+        if IsOSX() and wx.VERSION >= (2,6,0,0):
             # Special handling for wx 2.6, while it's broken
             val = self.GetValue()
             newval = val[:start] + val[end:]
             cursor = self.GetInsertionPoint()
             self.SetValue(newval)
         else:
-            wxTextCtrl.Remove(self,start,end)
+            wx.TextCtrl.Remove(self,start,end)
         
     def Replace(self,start,end,text):
-        if IsOSX() and wxVERSION >= (2,6,0,0):
+        if IsOSX() and wx.VERSION >= (2,6,0,0):
             # Special handling for wx 2.6, while it's broken
             val = self.GetValue()
             newval = val[:start] + text + val[end:]
             self.SetValue(newval)
         else:
-            wxTextCtrl.Replace(self,start,end,text)
+            wx.TextCtrl.Replace(self,start,end,text)
 
-class PassphraseDialog(wxDialog):
+class PassphraseDialog(wx.Dialog):
     """
     Dialog to retrieve a passphrase from  the user.
 
     Uses SecureTextCtrl so the returned passphrase is a list of integers.
     """
     
-    def __init__(self, parent, message, caption, size = wxSize(400,400)):
+    def __init__(self, parent, message, caption, size = wx.Size(400,400)):
         """
         Create passphrase dialog.
 
@@ -596,22 +595,22 @@ class PassphraseDialog(wxDialog):
         @param caption: string to show in window title.
         """
 
-        wxDialog.__init__(self, parent, -1, caption,
-                          style = wxDEFAULT_DIALOG_STYLE,
+        wx.Dialog.__init__(self, parent, -1, caption,
+                          style = wx.DEFAULT_DIALOG_STYLE,
                           size = size)
 
-        topsizer = wxBoxSizer(wxVERTICAL)
+        topsizer = wx.BoxSizer(wx.VERTICAL)
 
         ts = self.CreateTextSizer(message)
-        topsizer.Add(ts, 0, wxALL, 10)
+        topsizer.Add(ts, 0, wx.ALL, 10)
 
-        self.text = SecureTextCtrl(self, -1, size = wxSize(300, -1))
-        topsizer.Add(self.text, 0, wxEXPAND | wxLEFT | wxRIGHT, 15)
+        self.text = SecureTextCtrl(self, -1, size = wx.Size(300, -1))
+        topsizer.Add(self.text, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 15)
 
-        buttons = self.CreateButtonSizer(wxOK | wxCANCEL)
-        topsizer.Add(buttons, 0, wxCENTRE | wxALL, 10)
+        buttons = self.CreateButtonSizer(wx.OK | wx.CANCEL)
+        topsizer.Add(buttons, 0, wx.CENTRE | wx.ALL, 10)
 
-        EVT_BUTTON(self, wxID_OK, self.OnOK)
+        EVT_BUTTON(self, wx.ID_OK, self.OnOK)
         EVT_CLOSE(self, self.OnClose)
         
         self.text.SetFocus()
@@ -622,11 +621,11 @@ class PassphraseDialog(wxDialog):
 
     def OnClose(self, event):
         self.FlushChars()
-        self.EndModal(wxID_CANCEL)
+        self.EndModal(wx.ID_CANCEL)
         self.Destroy()
 
     def OnOK(self, event):
-        self.EndModal(wxID_OK)
+        self.EndModal(wx.ID_OK)
 
     def GetChars(self):
         return self.text.GetChars()
@@ -634,7 +633,7 @@ class PassphraseDialog(wxDialog):
     def FlushChars(self):
         return self.text.FlushChars()
 
-class PassphraseVerifyDialog(wxDialog):
+class PassphraseVerifyDialog(wx.Dialog):
     """
     Dialog to retrieve a passphrase from user. It requires the
     user to type the passphrase twice to verify it.
@@ -643,7 +642,7 @@ class PassphraseVerifyDialog(wxDialog):
     """
     
     def __init__(self, parent, message1, message2, caption,
-                 size = wxSize(400,400)):
+                 size = wx.Size(400,400)):
         """
         Create passphrase dialog.
 
@@ -653,9 +652,9 @@ class PassphraseVerifyDialog(wxDialog):
         @param caption: string to show in window title.
         """
 
-        wxDialog.__init__(self, parent, -1, caption,
+        wx.Dialog.__init__(self, parent, -1, caption,
                           size = size,
-                          style = wxDEFAULT_DIALOG_STYLE)
+                          style = wx.DEFAULT_DIALOG_STYLE)
 
         # Need to create a panel so that tab traversal works properly.
         # Should be fixed in wx 2.5.
@@ -663,26 +662,26 @@ class PassphraseVerifyDialog(wxDialog):
         # http://lists.wxwidgets.org/cgi-bin/ezmlm-cgi?11:mss:26416:200403:laipomedjcjdlbblliki
         #
         
-        panel = wxPanel(self, -1, style = wxTAB_TRAVERSAL)
-        topsizer = wxBoxSizer(wxVERTICAL)
+        panel = wx.Panel(self, -1, style = wx.TAB_TRAVERSAL)
+        topsizer = wx.BoxSizer(wx.VERTICAL)
 
-        txt = wxStaticText(panel, -1, message1)
-        topsizer.Add(txt, 0, wxALL, 10)
+        txt = wx.StaticText(panel, -1, message1)
+        topsizer.Add(txt, 0, wx.ALL, 10)
 
-        self.text1 = SecureTextCtrl(panel, -1, size = wxSize(300, -1))
-        topsizer.Add(self.text1, 0, wxEXPAND | wxLEFT | wxRIGHT, 15)
+        self.text1 = SecureTextCtrl(panel, -1, size = wx.Size(300, -1))
+        topsizer.Add(self.text1, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 15)
 
-        txt = wxStaticText(panel, -1, message2)
-        topsizer.Add(txt, 0, wxALL, 10)
+        txt = wx.StaticText(panel, -1, message2)
+        topsizer.Add(txt, 0, wx.ALL, 10)
 
-        self.text2 = SecureTextCtrl(panel, -1, size = wxSize(300, -1))
+        self.text2 = SecureTextCtrl(panel, -1, size = wx.Size(300, -1))
 
-        topsizer.Add(self.text2, 0, wxEXPAND | wxLEFT | wxRIGHT, 15)
+        topsizer.Add(self.text2, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 15)
 
-        b = wxButton(panel, wxID_OK, "OK")
-        topsizer.Add(b, 0, wxALIGN_RIGHT | wxALL, 10)
+        b = wx.Button(panel, wx.ID_OK, "OK")
+        topsizer.Add(b, 0, wx.ALIGN_RIGHT | wx.ALL, 10)
 
-        EVT_BUTTON(self, wxID_OK, self.OnOK)
+        EVT_BUTTON(self, wx.ID_OK, self.OnOK)
         EVT_CLOSE(self, self.OnClose)
         
         self.text1.SetFocus()
@@ -695,21 +694,21 @@ class PassphraseVerifyDialog(wxDialog):
 
     def OnClose(self, event):
         self.FlushChars()
-        self.EndModal(wxID_CANCEL)
+        self.EndModal(wx.ID_CANCEL)
         self.Destroy()
 
     def OnOK(self, event):
 
         # Doublecheck to see if the passphrases match.
         if self.text1.GetChars() != self.text2.GetChars():
-            dlg = wxMessageDialog(self,
+            dlg = wx.MessageDialog(self,
                                   "Entered passphrases do not match.",
                                   "Verification error.",
-                                  style = wxOK)
+                                  style = wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
             return
-        self.EndModal(wxID_OK)
+        self.EndModal(wx.ID_OK)
 
     def GetChars(self):
         return self.text1.GetChars()
@@ -720,7 +719,7 @@ class PassphraseVerifyDialog(wxDialog):
 
 def PassphraseDialogTest():
     
-    wxPySimpleApp()
+    wx.PySimpleApp()
 
     d = PassphraseDialog(None, "Message", "Caption")
 
@@ -733,7 +732,7 @@ def PassphraseDialogTest():
         
 def PassphraseVerifyDialogTest():
     
-    wxPySimpleApp()
+    wx.PySimpleApp()
 
     d = PassphraseVerifyDialog(None, "Message", "And again", "Caption")
 
@@ -745,41 +744,41 @@ def PassphraseVerifyDialogTest():
     print chars
    
 # Add URL Base Dialog
-class AddURLBaseDialog(wxDialog):
+class AddURLBaseDialog(wx.Dialog):
        
     def __init__(self, parent, id, name, url, type = 'venue'):
-        wxDialog.__init__(self, parent, id, "Add %s"%(type))
-        self.okButton = wxButton(self, wxID_OK, "Ok")
-        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        wx.Dialog.__init__(self, parent, id, "Add %s"%(type))
+        self.okButton = wx.Button(self, wx.ID_OK, "Ok")
+        self.cancelButton = wx.Button(self, wx.ID_CANCEL, "Cancel")
         self.type = type
         self.Centre()
         info = "Specify the URL of the %s to add to your list of %ss."%(self.type,self.type)
-        self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
-        self.addressText = wxStaticText(self, -1, "Name: ", style=wxALIGN_LEFT)
-        self.address = wxTextCtrl(self, -1, name, size = wxSize(300,20))
-        self.urlText =  wxStaticText(self, -1, "URL: ", style=wxALIGN_LEFT)
-        self.url = wxTextCtrl(self, -1, url, size = wxSize(300,20))
+        self.text = wx.StaticText(self, -1, info, style=wx.ALIGN_LEFT)
+        self.addressText = wx.StaticText(self, -1, "Name: ", style=wx.ALIGN_LEFT)
+        self.address = wx.TextCtrl(self, -1, name, size = wx.Size(300,20))
+        self.urlText =  wx.StaticText(self, -1, "URL: ", style=wx.ALIGN_LEFT)
+        self.url = wx.TextCtrl(self, -1, url, size = wx.Size(300,20))
         self.Layout()
                         
     def Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer1 = wx.BoxSizer(wx.VERTICAL)
+        sizer1.Add(self.text, 0, wx.LEFT|wx.RIGHT|wx.TOP, 20)
 
-        sizer2 = wxFlexGridSizer(2,2,10,10)
+        sizer2 = wx.FlexGridSizer(2,2,10,10)
         sizer2.Add(self.addressText, 0)
-        sizer2.Add(self.address, 1, wxEXPAND)
+        sizer2.Add(self.address, 1, wx.EXPAND)
         sizer2.Add(self.urlText, 0)
-        sizer2.Add(self.url, 1, wxEXPAND)
+        sizer2.Add(self.url, 1, wx.EXPAND)
 
-        sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
+        sizer1.Add(sizer2, 0, wx.EXPAND | wx.ALL, 20)
 
-        sizer3 =  wxBoxSizer(wxHORIZONTAL)
-        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer3 =  wx.BoxSizer(wx.HORIZONTAL)
+        sizer3.Add(self.okButton, 0, wx.ALIGN_CENTER | wx.ALL, 10)
+        sizer3.Add(self.cancelButton, 0, wx.ALIGN_CENTER | wx.ALL, 10)
 
-        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer.Add(sizer3, 0, wxALIGN_CENTER)
+        sizer.Add(sizer1, 0, wx.ALIGN_CENTER | wx.ALL, 10)
+        sizer.Add(sizer3, 0, wx.ALIGN_CENTER)
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(1)
@@ -791,33 +790,33 @@ class AddURLBaseDialog(wxDialog):
         return self.url.GetValue()
 
 # Edit URL Base Dialog
-class EditURLBaseDialog(wxDialog):
-    ID_DELETE = wxNewId() 
-    ID_RENAME = wxNewId()
-    ID_LIST = wxNewId()
+class EditURLBaseDialog(wx.Dialog):
+    ID_DELETE = wx.NewId() 
+    ID_RENAME = wx.NewId()
+    ID_LIST = wx.NewId()
     listWidth = 500
     listHeight = 200
     currentItem = 0
              
     def __init__(self, parent, id, title, myUrlsDict, type = 'venue'):
-        wxDialog.__init__(self, parent, id, title)
+        wx.Dialog.__init__(self, parent, id, title)
         self.parent = parent 
         self.dictCopy = myUrlsDict.copy()
-        self.okButton = wxButton(self, wxID_OK, "Ok")
-        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.okButton = wx.Button(self, wx.ID_OK, "Ok")
+        self.cancelButton = wx.Button(self, wx.ID_CANCEL, "Cancel")
         self.Centre()
         self.type = type
         info = "Please, right click on the %s you want to edit and choose from the \noptions available in the menu."%(self.type)
-        self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
-        self.myUrlsList= wxListCtrl(self, self.ID_LIST, 
-                                       size = wxSize(self.listWidth, self.listHeight), 
-                                       style=wxLC_REPORT)
+        self.text = wx.StaticText(self, -1, info, style=wx.ALIGN_LEFT)
+        self.myUrlsList= wx.ListCtrl(self, self.ID_LIST, 
+                                       size = wx.Size(self.listWidth, self.listHeight), 
+                                       style=wx.LC_REPORT)
         self.myUrlsList.InsertColumn(0, "Name")
         self.myUrlsList.SetColumnWidth(0, self.listWidth * 1.0/3.0)
         self.myUrlsList.InsertColumn(1, "Url ")
         self.myUrlsList.SetColumnWidth(1, self.listWidth * 2.0/3.0)
         
-        self.menu = wxMenu()
+        self.menu = wx.Menu()
         self.menu.Append(self.ID_RENAME,"Rename", "Rename selected %s" %self.type)
         self.menu.Append(self.ID_DELETE,"Delete", "Delete selected %s" %self.type)
         self.Layout()
@@ -840,17 +839,17 @@ class EditURLBaseDialog(wxDialog):
             i = i + 1
 
     def Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 10)
-        sizer1.Add(self.myUrlsList, 1, wxALL, 10)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer1 = wx.BoxSizer(wx.VERTICAL)
+        sizer1.Add(self.text, 0, wx.LEFT|wx.RIGHT|wx.TOP, 10)
+        sizer1.Add(self.myUrlsList, 1, wx.ALL, 10)
 
-        sizer3 =  wxBoxSizer(wxHORIZONTAL)
-        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer3 =  wx.BoxSizer(wx.HORIZONTAL)
+        sizer3.Add(self.okButton, 0, wx.ALIGN_CENTER | wx.ALL, 10)
+        sizer3.Add(self.cancelButton, 0, wx.ALIGN_CENTER | wx.ALL, 10)
 
-        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer.Add(sizer3, 0, wxALIGN_CENTER)
+        sizer.Add(sizer1, 0, wx.ALIGN_CENTER | wx.ALL, 10)
+        sizer.Add(sizer3, 0, wx.ALIGN_CENTER)
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(1)
@@ -864,7 +863,7 @@ class EditURLBaseDialog(wxDialog):
         else:
             text = "Please, select the %s you want to delete"%self.type
             title = "Notification"
-            MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
+            MessageDialog(self, text, title, style = wx.OK|wx.ICON_INFORMATION)
 
     def OnRename(self, event):
         if(self.dictCopy.has_key(self.currentItem)):
@@ -873,7 +872,7 @@ class EditURLBaseDialog(wxDialog):
         else:
             text = "Please, select the %s you want to rename"%self.type
             title = "Notification"
-            MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
+            MessageDialog(self, text, title, style = wx.OK|wx.ICON_INFORMATION)
 
     def DoesNameExist(self, name):
         return self.dictCopy.has_key(name)
@@ -895,53 +894,53 @@ class EditURLBaseDialog(wxDialog):
     def OnRightDown(self, event):
         self.x = event.GetX() + self.myUrlsList.GetPosition().x
         self.y = event.GetY() + self.myUrlsList.GetPosition().y
-        self.PopupMenu(self.menu, wxPoint(self.x, self.y))
+        self.PopupMenu(self.menu, wx.Point(self.x, self.y))
         event.Skip()
         
     def GetValue(self):
         return self.dictCopy
 
 
-class RenameDialog(wxDialog):
+class RenameDialog(wx.Dialog):
 
     def __init__(self, parent, id, title, type = 'venue'):
-        wxDialog.__init__(self, parent, id, title)
+        wx.Dialog.__init__(self, parent, id, title)
         self.type = type
-        self.text = wxStaticText(self, -1, "Please, fill in the new name of your %s"%self.type,
-                                 style=wxALIGN_LEFT)
-        self.nameText = wxStaticText(self, -1, "New Name: ",
-                                     style=wxALIGN_LEFT)
+        self.text = wx.StaticText(self, -1, "Please, fill in the new name of your %s"%self.type,
+                                 style=wx.ALIGN_LEFT)
+        self.nameText = wx.StaticText(self, -1, "New Name: ",
+                                     style=wx.ALIGN_LEFT)
         log.debug( 'before creating my urls %s', self.type)
         v = MyUrlsEditValidator(type = self.type)
-        self.name = wxTextCtrl(self, -1, "", size = wxSize(300,20),
+        self.name = wx.TextCtrl(self, -1, "", size = wx.Size(300,20),
                                validator = v)
-        self.okButton = wxButton(self, wxID_OK, "Ok")
-        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.okButton = wx.Button(self, wx.ID_OK, "Ok")
+        self.cancelButton = wx.Button(self, wx.ID_CANCEL, "Cancel")
         self.Centre()
         self.Layout()
         self.parent = parent
         
-        if(self.ShowModal() == wxID_OK):
+        if(self.ShowModal() == wx.ID_OK):
             parent.Rename(self.name.GetValue())
         self.Destroy()
                        
     def Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 10)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer1 = wx.BoxSizer(wx.VERTICAL)
+        sizer1.Add(self.text, 0, wx.LEFT|wx.RIGHT|wx.TOP, 10)
       
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
         sizer2.Add(self.nameText, 0)
-        sizer2.Add(self.name, 1, wxEXPAND)
+        sizer2.Add(self.name, 1, wx.EXPAND)
 
-        sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
+        sizer1.Add(sizer2, 0, wx.EXPAND | wx.ALL, 20)
 
-        sizer3 =  wxBoxSizer(wxHORIZONTAL)
-        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer3 =  wx.BoxSizer(wx.HORIZONTAL)
+        sizer3.Add(self.okButton, 0, wx.ALIGN_CENTER | wx.ALL, 10)
+        sizer3.Add(self.cancelButton, 0, wx.ALIGN_CENTER | wx.ALL, 10)
 
-        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer.Add(sizer3, 0, wxALIGN_CENTER)
+        sizer.Add(sizer1, 0, wx.ALIGN_CENTER | wx.ALL, 10)
+        sizer.Add(sizer3, 0, wx.ALIGN_CENTER)
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(1)
@@ -951,9 +950,9 @@ class RenameDialog(wxDialog):
         
         
         
-class MyUrlsEditValidator(wxPyValidator):
+class MyUrlsEditValidator(wx.PyValidator):
     def __init__(self, type = 'venue'):
-        wxPyValidator.__init__(self)
+        wx.PyValidator.__init__(self)
         self.type = type
 
     def Clone(self):
@@ -966,8 +965,8 @@ class MyUrlsEditValidator(wxPyValidator):
 
         if nameExists:
             info = "A %s with the same name is already added, please select a different name."%self.type
-            dlg = wxMessageDialog(None, info, "Duplicated %s"%self.type, 
-                                  style = wxOK | wxICON_INFORMATION)
+            dlg = wx.MessageDialog(None, info, "Duplicated %s"%self.type, 
+                                  style = wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
             return false
@@ -975,19 +974,19 @@ class MyUrlsEditValidator(wxPyValidator):
         return true
     
     def TransferToWindow(self):
-        # Prevent wxDialog from complaining.
+        # Prevent wx.Dialog from complaining.
         return true 
 
     def TransferFromWindow(self):
-        # Prevent wxDialog from complaining.
+        # Prevent wx.Dialog from complaining.
         return true 
         
-class TextDialog(wxDialog):
+class TextDialog(wx.Dialog):
     """
     Dialog to retrieve a text string from the user.
     """
     
-    def __init__(self, parent, message, caption, size = wxSize(400,400), text = ""):
+    def __init__(self, parent, message, caption, size = wx.Size(400,400), text = ""):
         """
         Create passphrase dialog.
 
@@ -996,22 +995,22 @@ class TextDialog(wxDialog):
         @param caption: string to show in window title.
         """
 
-        wxDialog.__init__(self, parent, -1, caption,
-                          style = wxDEFAULT_DIALOG_STYLE,
+        wx.Dialog.__init__(self, parent, -1, caption,
+                          style = wx.DEFAULT_DIALOG_STYLE,
                           size = size)
 
-        topsizer = wxBoxSizer(wxVERTICAL)
+        topsizer = wx.BoxSizer(wx.VERTICAL)
 
         ts = self.CreateTextSizer(message)
-        topsizer.Add(ts, 0, wxALL, 10)
+        topsizer.Add(ts, 0, wx.ALL, 10)
 
-        self.text = wxTextCtrl(self, -1, value = text, style = wxTE_RICH2, size = wxSize(300, -1))
-        topsizer.Add(self.text, 0, wxEXPAND | wxLEFT | wxRIGHT, 15)
+        self.text = wx.TextCtrl(self, -1, value = text, style = wx.TE_RICH2, size = wx.Size(300, -1))
+        topsizer.Add(self.text, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 15)
 
-        buttons = self.CreateButtonSizer(wxOK | wxCANCEL)
-        topsizer.Add(buttons, 0, wxCENTRE | wxALL, 10)
+        buttons = self.CreateButtonSizer(wx.OK | wx.CANCEL)
+        topsizer.Add(buttons, 0, wx.CENTRE | wx.ALL, 10)
 
-        EVT_BUTTON(self, wxID_OK, self.OnOK)
+        EVT_BUTTON(self, wx.ID_OK, self.OnOK)
         EVT_CLOSE(self, self.OnClose)
         
         self.text.SetFocus()
@@ -1022,11 +1021,11 @@ class TextDialog(wxDialog):
 
     def OnClose(self, event):
         self.FlushChars()
-        self.EndModal(wxID_CANCEL)
+        self.EndModal(wx.ID_CANCEL)
         self.Destroy()
 
     def OnOK(self, event):
-        self.EndModal(wxID_OK)
+        self.EndModal(wx.ID_OK)
 
     def GetChars(self):
         return self.text.GetValue()
@@ -1038,11 +1037,11 @@ def SetIcon(app):
             app.SetIcon(icon)
         elif IsOSX():
              icon = icons.getAGIcon128Icon()
-             t = wxTaskBarIcon()
+             t = wx.TaskBarIcon()
              t.SetIcon(icon)
 
 if __name__ == "__main__":
-    app = wxPySimpleApp()
+    app = wx.PySimpleApp()
     
     ProgressDialogTest()
     AboutDialogTest()
@@ -1055,7 +1054,7 @@ if __name__ == "__main__":
 
     # Test for error dialog (includes bug report)
     e = ErrorDialog(None, "test", "Enter Venue Error",
-                    style = wxOK  | wxICON_ERROR)
+                    style = wx.OK  | wx.ICON_ERROR)
     
     app.MainLoop()
     

@@ -4,14 +4,14 @@
 #
 # Author:      Susanne Lefvert
 #
-# Created:     $Date: 2006-02-04 00:04:36 $
-# RCS-ID:      $Id: SharedPDF.py,v 1.6 2006-02-04 00:04:36 lefvert Exp $
+# Created:     $Date: 2007-09-18 20:45:30 $
+# RCS-ID:      $Id: SharedPDF.py,v 1.7 2007-09-18 20:45:30 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 # wxPython imports
-from wxPython.wx import *
+import wx
 
 if wxPlatform == '__WXMSW__':
     from wx.lib.pdfwin import PDFWindow
@@ -39,7 +39,7 @@ import os
 from optparse import Option
 import sys
 
-class PdfViewer(wxPanel):
+class PdfViewer(wx.Panel):
     '''
     Shared application that uses the ActiveX interface to
     Adobe Acrobate Reader version 4 and higher. This
@@ -48,9 +48,9 @@ class PdfViewer(wxPanel):
     '''
     
     def __init__(self, parent, name, appUrl, venueUrl, connectionId):
-        wxPanel.__init__(self, parent, -1)
+        wx.Panel.__init__(self, parent, -1)
 
-        reactor.interleave(wxCallAfter)
+        reactor.interleave(wx.CallAfter)
         
         # Create ActiveX interface to adobe acrobate reader
         self.pdf = PDFWindow(self)
@@ -110,10 +110,10 @@ class PdfViewer(wxPanel):
         '''
         dlg = FileSelectorDialog(self, -1, "Select File Location", self.dataStoreClient)
 
-        if dlg.ShowModal() == wxID_OK:
+        if dlg.ShowModal() == wx.ID_OK:
             selectedFile = dlg.GetFile()
             if selectedFile:
-                wxBeginBusyCursor()
+                wx.BeginBusyCursor()
 
                 # Get file from venue
                 try:
@@ -125,8 +125,8 @@ class PdfViewer(wxPanel):
 
                 except:
                     self.log.exception("PdfViewer.OnOpenButton: Failed to download %s"%(selectedFile))
-                    dlg = wxMessageDialog(self, 'Failed to download %s.'%(selectedFile),
-                                          'Download Failed', wxOK | wxICON_ERROR)
+                    dlg = wx.MessageDialog(self, 'Failed to download %s.'%(selectedFile),
+                                          'Download Failed', wx.OK | wx.ICON_ERROR)
                     dlg.ShowModal()
                     dlg.Destroy()
 
@@ -139,7 +139,7 @@ class PdfViewer(wxPanel):
                     self.sharedAppClient.SendEvent("openFile", self.file)
                     self.sharedAppClient.SendEvent("changePage",  str(self.pageNr))
                                        
-                wxEndBusyCursor()
+                wx.EndBusyCursor()
           
     def OnPrevPageButton(self, event):
         '''
@@ -183,11 +183,11 @@ class PdfViewer(wxPanel):
             except:
                 self.log.exception("PdfViewer.__OpenCallback: Download failed %s"%(self.file))
     	
-	    wxBeginBusyCursor()
-            wxCallAfter(self.pdf.LoadFile, "tmp")
-            #wxCallAfter(self.pdf.setCurrentPage, self.pageNr)
-            wxCallAfter(self.Refresh)
-            wxEndBusyCursor()
+	    wx.BeginBusyCursor()
+            wx.CallAfter(self.pdf.LoadFile, "tmp")
+            #wx.CallAfter(self.pdf.setCurrentPage, self.pageNr)
+            wx.CallAfter(self.Refresh)
+            wx.EndBusyCursor()
 	              
     def ChangePageCallback(self, event):
         '''
@@ -198,8 +198,8 @@ class PdfViewer(wxPanel):
         # Ignore my own events
         if self.id != id:
             self.pageNr = int(event.GetData())
-            wxCallAfter(self.pdf.setCurrentPage, int(self.pageNr))        
-            wxCallAfter(self.Refresh)
+            wx.CallAfter(self.pdf.setCurrentPage, int(self.pageNr))        
+            wx.CallAfter(self.Refresh)
                
     def __Layout(self):
         '''
@@ -207,40 +207,40 @@ class PdfViewer(wxPanel):
         '''
 
         # Create UI objects
-        self.openButton = wxButton(self, wxNewId(), "Open PDF File")
-        self.prevButton = wxButton(self, wxNewId(), "<-- Previous Page")
-        self.nextButton = wxButton(self, wxNewId(), "Next Page -->")
+        self.openButton = wx.Button(self, wx.NewId(), "Open PDF File")
+        self.prevButton = wx.Button(self, wx.NewId(), "<-- Previous Page")
+        self.nextButton = wx.Button(self, wx.NewId(), "Next Page -->")
         
-        sizer = wxBoxSizer(wxVERTICAL)
-        btnSizer = wxBoxSizer(wxHORIZONTAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        btnSizer = wx.BoxSizer(wx.HORIZONTAL)
         
-        sizer.Add(self.pdf, proportion=1, flag=wxEXPAND)
+        sizer.Add(self.pdf, proportion=1, flag=wx.EXPAND)
 
-        btnSizer.Add(self.openButton, proportion=1, flag=wxEXPAND|wxALL, border=5)
-        btnSizer.Add(self.prevButton, proportion=1, flag=wxEXPAND|wxALL, border=5)
-        btnSizer.Add(self.nextButton, proportion=1, flag=wxEXPAND|wxALL, border=5)
+        btnSizer.Add(self.openButton, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
+        btnSizer.Add(self.prevButton, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
+        btnSizer.Add(self.nextButton, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
 
-        btnSizer.Add((50,-1), proportion=2, flag=wxEXPAND)
-        sizer.Add(btnSizer, proportion=0, flag=wxEXPAND)
+        btnSizer.Add((50,-1), proportion=2, flag=wx.EXPAND)
+        sizer.Add(btnSizer, proportion=0, flag=wx.EXPAND)
 
         self.SetSizer(sizer)
         self.SetAutoLayout(True)
 
 #----------------------------------------------------------------------
 
-class FileSelectorDialog(wxDialog):
+class FileSelectorDialog(wx.Dialog):
     def __init__(self, parent, id, title, dataStoreClient):
-        wxDialog.__init__(self, parent, id, title)
+        wx.Dialog.__init__(self, parent, id, title)
 
         # Create UI components.
-        self.infoText = wxStaticText(self, -1, "Select pdf file to open: ",
-                                     size = wxSize(300, 20), style=wxALIGN_LEFT)
-        self.infoText2 = wxStaticText(self, -1, "File:")
-        self.pdfList = wxComboBox(self, wxNewId(), size = wxSize(200, 20),
-                                  choices = [], style=wxCB_DROPDOWN|wxCB_SORT)
-        self.addFileButton = wxButton(self, wxNewId(), "Add File")
-        self.okButton = wxButton(self, wxID_OK, "Ok")
-        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.infoText = wx.StaticText(self, -1, "Select pdf file to open: ",
+                                     size = wx.Size(300, 20), style=wx.ALIGN_LEFT)
+        self.infoText2 = wx.StaticText(self, -1, "File:")
+        self.pdfList = wx.ComboBox(self, wx.NewId(), size = wx.Size(200, 20),
+                                  choices = [], style=wx.CB_DROPDOWN|wx.CB_SORT)
+        self.addFileButton = wx.Button(self, wx.NewId(), "Add File")
+        self.okButton = wx.Button(self, wx.ID_OK, "Ok")
+        self.cancelButton = wx.Button(self, wx.ID_CANCEL, "Cancel")
         self.__Layout()
 
         EVT_BUTTON(self, self.addFileButton.GetId(), self.OpenFileDialog)
@@ -253,13 +253,13 @@ class FileSelectorDialog(wxDialog):
         # Get pdf files from venue
         fileNames = []
 
-        wxBeginBusyCursor()
+        wx.BeginBusyCursor()
         try:
             self.dataStoreClient.LoadData()
             fileNames = self.dataStoreClient.QueryMatchingFiles("*.pdf")
         except:
             self.log.exception("FileSelectorDialog.PopulateCombobox: QueryMatchingFiles failed.")
-        wxEndBusyCursor()
+        wx.EndBusyCursor()
                 
         self.pdfList.Clear()
         for file in fileNames:
@@ -271,11 +271,11 @@ class FileSelectorDialog(wxDialog):
             self.pdfList.SetSelection(0)
 
     def OpenFileDialog(self, event):
-        dlg = wxFileDialog(self, wildcard="*.pdf")
+        dlg = wx.FileDialog(self, wildcard="*.pdf")
         filePath = None
                 
-        if dlg.ShowModal() == wxID_OK:
-            wxBeginBusyCursor()
+        if dlg.ShowModal() == wx.ID_OK:
+            wx.BeginBusyCursor()
             self.pageNr = 1
             filePath = dlg.GetPath()
 
@@ -287,7 +287,7 @@ class FileSelectorDialog(wxDialog):
                 self.log.exception("OpenFileDialog: Upload file %s failed"%(filePath))
 
             self.PopulateCombobox(default = os.path.basename(filePath))
-            wxEndBusyCursor()
+            wx.EndBusyCursor()
 
         dlg.Destroy()
                
@@ -296,29 +296,29 @@ class FileSelectorDialog(wxDialog):
                             
     def __Layout(self):
         # Create UI objects
-        mainSizer = wxBoxSizer(wxVERTICAL)
+        mainSizer = wx.BoxSizer(wx.VERTICAL)
         
-        sizer = wxBoxSizer(wxVERTICAL)
-        btnSizer1 = wxBoxSizer(wxHORIZONTAL)
-        btnSizer = wxBoxSizer(wxHORIZONTAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        btnSizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        btnSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        sizer.Add(wxSize(5,5))
-        sizer.Add(self.infoText, 0, wxEXPAND|wxALL, 5)
-        sizer.Add(wxSize(5,5))
+        sizer.Add(wx.Size(5,5))
+        sizer.Add(self.infoText, 0, wx.EXPAND|wx.ALL, 5)
+        sizer.Add(wx.Size(5,5))
 
-        btnSizer1.Add(self.infoText2, 0, wxEXPAND|wxALL, 5)
-        btnSizer1.Add(self.pdfList, 0, wxEXPAND|wxALL, 5)
-        btnSizer1.Add(self.addFileButton, 0, wxEXPAND|wxALL, 5)
-        sizer.Add(btnSizer1, 0, wxEXPAND, 10)
+        btnSizer1.Add(self.infoText2, 0, wx.EXPAND|wx.ALL, 5)
+        btnSizer1.Add(self.pdfList, 0, wx.EXPAND|wx.ALL, 5)
+        btnSizer1.Add(self.addFileButton, 0, wx.EXPAND|wx.ALL, 5)
+        sizer.Add(btnSizer1, 0, wx.EXPAND, 10)
         
-        sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND|wxALL, 10)
+        sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 10)
         
-        btnSizer.Add(self.okButton, 1, wxRIGHT, 5)
+        btnSizer.Add(self.okButton, 1, wx.RIGHT, 5)
         btnSizer.Add(self.cancelButton, 1)
         
-        sizer.Add(btnSizer, 0, wxALIGN_CENTER)
+        sizer.Add(btnSizer, 0, wx.ALIGN_CENTER)
 
-        mainSizer.Add(sizer, 0, wxALL, 10)
+        mainSizer.Add(sizer, 0, wx.ALL, 10)
         
         self.SetSizer(mainSizer)
         mainSizer.Fit(self)
@@ -339,8 +339,8 @@ def Usage():
 if __name__ == '__main__':
       
     # Create the wx python application
-    wxapp = wxPySimpleApp()
-    wxBeginBusyCursor()
+    wxapp = wx.PySimpleApp()
+    wx.BeginBusyCursor()
        
     # Inizialize AG application
     app = WXGUIApplication()
@@ -386,20 +386,20 @@ if __name__ == '__main__':
 
     if wxPlatform == '__WXMSW__':
         # Create the UI
-        mainFrame = wxFrame(None, -1, name, size = wxSize(600, 600))
+        mainFrame = wx.Frame(None, -1, name, size = wx.Size(600, 600))
         mainFrame.SetIcon(icons.getAGIconIcon())
         viewer = PdfViewer(mainFrame, name, appUrl, venueUrl, conId)
 
         # Start the UI main loop
         mainFrame.Show()
-        wxEndBusyCursor()
+        wx.EndBusyCursor()
            
         wxapp.MainLoop()
 
     else:
-        wxEndBusyCursor()
-        dlg = wxMessageDialog(frame, 'This application only works on MSW.',
-                              'Sorry', wxOK | wxICON_INFORMATION)
+        wx.EndBusyCursor()
+        dlg = wx.MessageDialog(frame, 'This application only works on MSW.',
+                              'Sorry', wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
 

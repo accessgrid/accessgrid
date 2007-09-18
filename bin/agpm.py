@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.36 2007-08-15 19:20:27 eolson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.37 2007-09-18 20:48:35 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.36 2007-08-15 19:20:27 eolson Exp $"
+__revision__ = "$Id: agpm.py,v 1.37 2007-09-18 20:48:35 turam Exp $"
 
 import os
 import re
@@ -41,10 +41,10 @@ class InvalidApplicationDescription(Exception):
 def ShowResult(result, title="Package Manager"):
     if True == gUseGui:
         from AccessGrid.UIUtilities import MessageDialog
-        from wxPython.wx import wxPySimpleApp, wxOK, wxICON_INFORMATION
-        try: wxapp = wxPySimpleApp()
+        import wx
+        try: wxapp = wx.PySimpleApp()
         except: pass
-        dialog = MessageDialog(None, str(result), title, style = wxOK | wxICON_INFORMATION)
+        dialog = MessageDialog(None, str(result), title, style = wx.OK | wx.ICON_INFORMATION)
     else:
         print str(result)
 
@@ -788,12 +788,12 @@ if __name__ == "__main__":
         import traceback
         traceback.print_exc()
         if "--gui" in sys.argv:
+            import wx
             from AccessGrid.UIUtilities import ErrorDialog
-            from wxPython.wx import wxPySimpleApp, wxOK, wxICON_ERROR
             ex_class, ex_instance, trace_obj = sys.exc_info()
             text = traceback.format_exception(ex_class, ex_instance, trace_obj)
             message = "".join(text)
-            try: wxapp = wxPySimpleApp()
+            try: wxapp = wx.PySimpleApp()
             except: pass
             dialog = ErrorDialog(None, "Error running the Package Manager.", "Package Manager Error", extraBugCommentText=message)
 

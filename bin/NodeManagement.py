@@ -3,14 +3,14 @@
 # Name:        NodeManagement.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.32 2006-09-21 12:05:36 braitmai Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.33 2007-09-18 20:45:22 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import os
 import sys
 
-from wxPython.wx import *
+import wx
 
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.Toolkit import WXGUIApplication, MissingDependencyError
@@ -20,7 +20,7 @@ from AccessGrid.UIUtilities import MessageDialog
 log = None
 app = None
 
-class MyApp(wxApp):
+class MyApp(wx.App):
     global log
     global app
 
@@ -51,7 +51,7 @@ def main():
     global log
     global app
     
-    wxInitAllImageHandlers()
+    wx.InitAllImageHandlers()
 
     app = WXGUIApplication()
 
@@ -68,7 +68,7 @@ def main():
                     "Please satisfy this dependency and restart the software"
             msg = msg % e.args[0]
         MessageDialog(None,msg, "Initialization Error",
-                      style=wxICON_ERROR )
+                      style=wx.ICON_ERROR )
         sys.exit(-1)
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
@@ -76,7 +76,7 @@ def main():
         MessageDialog(None,
                       "The following error occurred during initialization:\n\n\t%s %s" % (e.__class__.__name__,e), 
                       "Initialization Error",
-                      style=wxICON_ERROR )
+                      style=wx.ICON_ERROR )
         sys.exit(-1)
 
     log = app.GetLog()

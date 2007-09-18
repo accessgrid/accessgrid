@@ -11,14 +11,13 @@ from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
 from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
 from AccessGrid.UIUtilities import MessageDialog, TextDialog
 
-from wxPython.wx import *
-from wxPython.gizmos import wxTreeListCtrl
+import wx
 import  wx.lib.intctrl
 from AccessGrid import icons
 
 log = Log.GetLogger(Log.VenueClient)
 
-class PreferencesDialog(wxDialog):
+class PreferencesDialog(wx.Dialog):
     ID_WINDOW_LEFT = 0
     ID_WINDOW_RIGHT = 1
     
@@ -26,49 +25,49 @@ class PreferencesDialog(wxDialog):
         '''
         Initialize ui components and events.
         '''
-        wxDialog.__init__(self, parent, id, title,
-                          style = wxRESIZE_BORDER | wxDEFAULT_DIALOG_STYLE,
-                          size = wxSize(720, 576))
+        wx.Dialog.__init__(self, parent, id, title,
+                          style = wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE,
+                          size = wx.Size(720, 576))
         self.Centre()
        
       
-        self.sideWindow = wxSashWindow(self, self.ID_WINDOW_LEFT,
-                                       wxDefaultPosition,
-                                       wxSize(150, -1))
+        self.sideWindow = wx.SashWindow(self, self.ID_WINDOW_LEFT,
+                                       wx.DefaultPosition,
+                                       wx.Size(150, -1))
 
-        self.sideWindow.SetSashVisible(wxSASH_RIGHT, TRUE)
+        self.sideWindow.SetSashVisible(wx.SASH_RIGHT, TRUE)
         
-        self.preferencesWindow = wxSashWindow(self, self.ID_WINDOW_RIGHT,
-                                              wxDefaultPosition,
-                                              wxSize(200, -1))
-        self.sideTree = wxTreeCtrl(self.sideWindow, wxNewId(), wxDefaultPosition, 
-                                   wxDefaultSize, style = wxTR_HIDE_ROOT)
+        self.preferencesWindow = wx.SashWindow(self, self.ID_WINDOW_RIGHT,
+                                              wx.DefaultPosition,
+                                              wx.Size(200, -1))
+        self.sideTree = wx.TreeCtrl(self.sideWindow, wx.NewId(), wx.DefaultPosition, 
+                                   wx.DefaultSize, style = wx.TR_HIDE_ROOT)
 
         # wxPython 2.8 workaround - sideWindow width doesn't get set otherwise
         self.sideWindow.SetSize((150, -1))
 
-        self.okButton = wxButton(self, wxID_OK, "Save")
-        self.cancelButton = wxButton(self, wxID_CANCEL, "Close")
+        self.okButton = wx.Button(self, wx.ID_OK, "Save")
+        self.cancelButton = wx.Button(self, wx.ID_CANCEL, "Close")
         self.preferences = preferences
 
         # Create panels for preferences
-        self.preferencesPanel = wxPanel(self.preferencesWindow, wxNewId(),
-                                        style = wxSUNKEN_BORDER)
-        self.title = wxTextCtrl(self.preferencesPanel, wxNewId(), "TITLE",
-                                style = wxTE_READONLY | wxTE_CENTRE )
-        self.nodePanel = NodePanel(self.preferencesPanel, wxNewId(),
+        self.preferencesPanel = wx.Panel(self.preferencesWindow, wx.NewId(),
+                                        style = wx.SUNKEN_BORDER)
+        self.title = wx.TextCtrl(self.preferencesPanel, wx.NewId(), "TITLE",
+                                style = wx.TE_READONLY | wx.TE_CENTRE )
+        self.nodePanel = NodePanel(self.preferencesPanel, wx.NewId(),
                                          self.preferences)
-        self.profilePanel = ProfilePanel(self.preferencesPanel, wxNewId(),
+        self.profilePanel = ProfilePanel(self.preferencesPanel, wx.NewId(),
                                          self.preferences)
-        self.loggingPanel = LoggingPanel(self.preferencesPanel, wxNewId(),
+        self.loggingPanel = LoggingPanel(self.preferencesPanel, wx.NewId(),
                                          self.preferences)
-        self.venueConnectionPanel = VenueConnectionPanel(self.preferencesPanel, wxNewId(),
+        self.venueConnectionPanel = VenueConnectionPanel(self.preferencesPanel, wx.NewId(),
                                          self.preferences)
-        self.networkPanel = NetworkPanel(self.preferencesPanel, wxNewId(),
+        self.networkPanel = NetworkPanel(self.preferencesPanel, wx.NewId(),
                                          self.preferences)
-        self.bridgingPanel = BridgingPanel(self.preferencesPanel, wxNewId(),
+        self.bridgingPanel = BridgingPanel(self.preferencesPanel, wx.NewId(),
                                          self.preferences)
-        self.navigationPanel = NavigationPanel(self.preferencesPanel, wxNewId(),
+        self.navigationPanel = NavigationPanel(self.preferencesPanel, wx.NewId(),
                                                self.preferences)
 
         self.loggingPanel.Hide()
@@ -87,9 +86,9 @@ class PreferencesDialog(wxDialog):
         self.__InitTree()
 
         if IsOSX():
-            self.title.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+            self.title.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
         else:
-            self.title.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+            self.title.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
 
         # Set correct dimensions on current panel.
         if self.currentPanel.GetSizer():
@@ -144,6 +143,8 @@ class PreferencesDialog(wxDialog):
                                        self.networkPanel.GetProxyPort())
         self.preferences.SetPreference(Preferences.MULTICAST,
                                        self.bridgingPanel.GetMulticast())
+        self.preferences.SetPreference(Preferences.REPAIR_NETWORK,
+                                       self.bridgingPanel.GetRepairNetwork())
         self.preferences.SetPreference(Preferences.BRIDGE_REGISTRY,
                                        self.bridgingPanel.GetRegistry(-1))
         self.preferences.SetBridges(self.bridgingPanel.GetBridges())
@@ -207,19 +208,19 @@ class PreferencesDialog(wxDialog):
         self.logging = self.sideTree.AppendItem(self.root,
                                                 " Logging")
         self.sideTree.SetItemData(self.profile,
-                                  wxTreeItemData(self.profilePanel))
+                                  wx.TreeItemData(self.profilePanel))
         self.sideTree.SetItemData(self.node,
-                                  wxTreeItemData(self.nodePanel))
+                                  wx.TreeItemData(self.nodePanel))
         self.sideTree.SetItemData(self.logging,
-                                  wxTreeItemData(self.loggingPanel))
+                                  wx.TreeItemData(self.loggingPanel))
         self.sideTree.SetItemData(self.venueConnection,
-                                  wxTreeItemData(self.venueConnectionPanel))
+                                  wx.TreeItemData(self.venueConnectionPanel))
         self.sideTree.SetItemData(self.network,
-                                  wxTreeItemData(self.networkPanel))
+                                  wx.TreeItemData(self.networkPanel))
         self.sideTree.SetItemData(self.bridging,
-                                  wxTreeItemData(self.bridgingPanel))
+                                  wx.TreeItemData(self.bridgingPanel))
         self.sideTree.SetItemData(self.navigation,
-                                  wxTreeItemData(self.navigationPanel))
+                                  wx.TreeItemData(self.navigationPanel))
         self.sideTree.SelectItem(self.profile)
 
     def __OnSize(self,event):
@@ -227,7 +228,7 @@ class PreferencesDialog(wxDialog):
         Called when window is resized.
         '''
         #
-        # Work around a suspected wx bug. Get the size of the sideWindow and
+        # Work around a suspected wx. bug. Get the size of the sideWindow and
         # reset it after the layout is updated. Without this code, the sash
         # gradually shifts right when the window is sized, regardless of
         # of whether the width increases or decreases.
@@ -240,18 +241,18 @@ class PreferencesDialog(wxDialog):
         '''
         Called when sash panel is moved, resizes sash windows accordingly.
         '''
-        if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
+        if event.GetDragStatus() == wx.SASH_STATUS_OUT_OF_RANGE:
             return
         
         eID = event.GetId()
         
         if eID == self.ID_WINDOW_LEFT:
             width = event.GetDragRect().width
-            self.sideWindow.SetSize(wxSize(width, -1))
+            self.sideWindow.SetSize(wx.Size(width, -1))
             
         elif eID == self.ID_WINDOW_RIGHT:
             width = event.GetDragRect().width
-            self.preferencesWindow.SetSize(wxSize(width, -1))
+            self.preferencesWindow.SetSize(wx.Size(width, -1))
 
         self.__Layout()
         
@@ -259,28 +260,28 @@ class PreferencesDialog(wxDialog):
         '''
         Fix ui layout
         '''
-        mainSizer = wxBoxSizer(wxVERTICAL)
+        mainSizer = wx.BoxSizer(wx.VERTICAL)
         
-        sizer = wxBoxSizer(wxHORIZONTAL)
-        sizer.Add(self.sideWindow,0,wxEXPAND)
-        sizer.Add(self.preferencesWindow,1,wxEXPAND)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(self.sideWindow,0,wx.EXPAND)
+        sizer.Add(self.preferencesWindow,1,wx.EXPAND)
 
-        mainSizer.Add(sizer, 1, wxEXPAND)
+        mainSizer.Add(sizer, 1, wx.EXPAND)
         
-        prefPanelBox = wxBoxSizer(wxVERTICAL)
+        prefPanelBox = wx.BoxSizer(wx.VERTICAL)
         self.preferencesPanel.SetSizer(prefPanelBox)
-        prefPanelBox.Add(self.title, 0, wxEXPAND)
-        prefPanelBox.Add(self.currentPanel, 1, wxEXPAND|wxTOP, 5)
+        prefPanelBox.Add(self.title, 0, wx.EXPAND)
+        prefPanelBox.Add(self.currentPanel, 1, wx.EXPAND|wx.TOP, 5)
 
-        prefBox = wxBoxSizer(wxHORIZONTAL)
+        prefBox = wx.BoxSizer(wx.HORIZONTAL)
         self.preferencesWindow.SetSizer(prefBox)
-        prefBox.Add(self.preferencesPanel, 1, wxEXPAND)
+        prefBox.Add(self.preferencesPanel, 1, wx.EXPAND)
         
-        buttonSizer = wxBoxSizer(wxHORIZONTAL)
-        buttonSizer.Add(self.okButton, 0, wxRIGHT | wxALIGN_CENTER, 5)
-        buttonSizer.Add(self.cancelButton, 0, wxALIGN_CENTER)
+        buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+        buttonSizer.Add(self.okButton, 0, wx.RIGHT | wx.ALIGN_CENTER, 5)
+        buttonSizer.Add(self.cancelButton, 0, wx.ALIGN_CENTER)
 
-        mainSizer.Add(buttonSizer, 0, wxALL| wxALIGN_CENTER, 5)
+        mainSizer.Add(buttonSizer, 0, wx.ALL| wx.ALIGN_CENTER, 5)
 
         #w,h = self.preferencesWindow.GetSizeTuple()
         #if self.currentPanel.GetSizer():
@@ -289,33 +290,33 @@ class PreferencesDialog(wxDialog):
         self.SetSizer(mainSizer)
         self.Layout()
         
-class NodePanel(wxPanel):
+class NodePanel(wx.Panel):
     def __init__(self, parent, id, preferences):
-        wxPanel.__init__(self, parent, id)
+        wx.Panel.__init__(self, parent, id)
         self.preferences = preferences
         self.Centre()
 
-        self.nodeText = wxStaticText(self, -1, "Node")
-        self.nodeLine = wxStaticLine(self, -1)
-        self.mediaButton = wxCheckBox(self, wxNewId(), "  Launch node services on startup ")
-        self.nodeUrlText = wxStaticText(self, -1, "Node service")
-        self.nodeBuiltInCheckbox = wxRadioButton(self,wxNewId(),'Built-in', style=wxRB_GROUP)
-        self.nodeExternalCheckbox = wxRadioButton(self,wxNewId(),'External')
-        self.nodeUrlCtrl = wxTextCtrl(self, -1, "", size = wxSize(250, -1))
-        self.nodeConfigText = wxStaticText(self, -1, "Node configuration")
-        self.nodeConfigRefresh = wxButton(self,-1,'Refresh')
-        self.mediaText = wxStaticText(self, -1, "Media")
-        self.mediaLine = wxStaticLine(self, -1)
-        self.audioButton = wxCheckBox(self, wxNewId(), " Enable Audio")
-        self.displayButton = wxCheckBox(self, wxNewId(), " Enable Display")
-        self.videoButton = wxCheckBox(self, wxNewId(), " Enable Video")
+        self.nodeText = wx.StaticText(self, -1, "Node")
+        self.nodeLine = wx.StaticLine(self, -1)
+        self.mediaButton = wx.CheckBox(self, wx.NewId(), "  Launch node services on startup ")
+        self.nodeUrlText = wx.StaticText(self, -1, "Node service")
+        self.nodeBuiltInCheckbox = wx.RadioButton(self,wx.NewId(),'Built-in', style=wx.RB_GROUP)
+        self.nodeExternalCheckbox = wx.RadioButton(self,wx.NewId(),'External')
+        self.nodeUrlCtrl = wx.TextCtrl(self, -1, "", size = wx.Size(250, -1))
+        self.nodeConfigText = wx.StaticText(self, -1, "Node configuration")
+        self.nodeConfigRefresh = wx.Button(self,-1,'Refresh')
+        self.mediaText = wx.StaticText(self, -1, "Media")
+        self.mediaLine = wx.StaticLine(self, -1)
+        self.audioButton = wx.CheckBox(self, wx.NewId(), " Enable Audio")
+        self.displayButton = wx.CheckBox(self, wx.NewId(), " Enable Display")
+        self.videoButton = wx.CheckBox(self, wx.NewId(), " Enable Video")
 
         if IsOSX():
-            self.nodeText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
-            self.mediaText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+            self.nodeText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
+            self.mediaText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
         else:
-            self.nodeText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
-            self.mediaText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+            self.nodeText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
+            self.mediaText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
 
         self.mediaButton.SetValue(int(preferences.GetPreference(Preferences.STARTUP_MEDIA)))
         nodeBuiltin = int(preferences.GetPreference(Preferences.NODE_BUILTIN))
@@ -336,8 +337,8 @@ class NodePanel(wxPanel):
         self.videoButton.SetValue(int(preferences.GetPreference(Preferences.ENABLE_VIDEO)))
 
         self.configMap = {}
-        self.nodeConfigCtrl = wxChoice(self, wxNewId(),
-                                       size = wxSize(235, -1))
+        self.nodeConfigCtrl = wx.Choice(self, wx.NewId(),
+                                       size = wx.Size(235, -1))
                                        
         self.OnRefresh()
 
@@ -434,69 +435,69 @@ class NodePanel(wxPanel):
             return 0
     
     def __Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
 
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.nodeText, 0, wxALL, 5)
-        sizer2.Add(self.nodeLine, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer.Add(sizer2, 0, wxEXPAND)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(self.nodeText, 0, wx.ALL, 5)
+        sizer2.Add(self.nodeLine, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        sizer.Add(sizer2, 0, wx.EXPAND)
 
-        gridSizer = wxFlexGridSizer(0, 2, 5, 5)
-        gridSizer2 = wxFlexGridSizer(3, 1, 5, 5)
-        gridSizer.Add(self.nodeUrlText, 0, wxALL, 5)
+        gridSizer = wx.FlexGridSizer(0, 2, 5, 5)
+        gridSizer2 = wx.FlexGridSizer(3, 1, 5, 5)
+        gridSizer.Add(self.nodeUrlText, 0, wx.ALL, 5)
         gridSizer2.Add(self.nodeBuiltInCheckbox)
         gridSizer2.Add(self.nodeExternalCheckbox)
         gridSizer2.Add(self.nodeUrlCtrl)
         gridSizer.Add(gridSizer2)
-        sizer.Add(gridSizer, 0, wxALL, 5)
+        sizer.Add(gridSizer, 0, wx.ALL, 5)
                 
-        sizer.Add(self.mediaButton, 0, wxALL|wxEXPAND, 10)
-        gridSizer = wxFlexGridSizer(0, 2, 5, 5)
-        gridSizer.Add(self.nodeConfigText, 0, wxTOP | wxBOTTOM, 5)
+        sizer.Add(self.mediaButton, 0, wx.ALL|wx.EXPAND, 10)
+        gridSizer = wx.FlexGridSizer(0, 2, 5, 5)
+        gridSizer.Add(self.nodeConfigText, 0, wx.TOP | wx.BOTTOM, 5)
         gridSizer.Add(self.nodeConfigCtrl)
-        gridSizer.Add(wxStaticText(self,-1,''))
-        gridSizer.Add(self.nodeConfigRefresh,0,wxRIGHT)
-        sizer.Add(gridSizer, 0, wxLEFT, 30)
+        gridSizer.Add(wx.StaticText(self,-1,''))
+        gridSizer.Add(self.nodeConfigRefresh,0,wx.RIGHT)
+        sizer.Add(gridSizer, 0, wx.LEFT, 30)
 
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.mediaText, 0, wxALL, 5)
-        sizer2.Add(self.mediaLine, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer.Add(sizer2, 0, wxEXPAND)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(self.mediaText, 0, wx.ALL, 5)
+        sizer2.Add(self.mediaLine, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        sizer.Add(sizer2, 0, wx.EXPAND)
 
-        sizer.Add(self.audioButton, 0, wxEXPAND|wxALL, 10)
-        sizer.Add(self.displayButton, 0, wxEXPAND|wxALL, 10)
-        sizer.Add(self.videoButton, 0, wxEXPAND|wxALL, 10)
+        sizer.Add(self.audioButton, 0, wx.EXPAND|wx.ALL, 10)
+        sizer.Add(self.displayButton, 0, wx.EXPAND|wx.ALL, 10)
+        sizer.Add(self.videoButton, 0, wx.EXPAND|wx.ALL, 10)
                                        
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(1)
                
-class ProfilePanel(wxPanel):
+class ProfilePanel(wx.Panel):
     def __init__(self, parent, id, preferences):
-        wxPanel.__init__(self, parent, id)
+        wx.Panel.__init__(self, parent, id)
         self.Centre()
-        self.nameText = wxStaticText(self, -1, "Name:")
-        self.nameCtrl = wxTextCtrl(self, -1, "", size = (400,-1),
+        self.nameText = wx.StaticText(self, -1, "Name:")
+        self.nameCtrl = wx.TextCtrl(self, -1, "", size = (400,-1),
                                    validator = TextValidator("Name"))
-        self.emailText = wxStaticText(self, -1, "Email:")
-        self.emailCtrl = wxTextCtrl(self, -1, "",
+        self.emailText = wx.StaticText(self, -1, "Email:")
+        self.emailCtrl = wx.TextCtrl(self, -1, "",
                                     validator = TextValidator("Email"))
         
-        self.phoneNumberText = wxStaticText(self, -1, "Phone Number:")
-        self.phoneNumberCtrl = wxTextCtrl(self, -1, "")
-        self.locationText = wxStaticText(self, -1, "Location:")
-        self.locationCtrl = wxTextCtrl(self, -1, "")
-        self.homeVenue= wxStaticText(self, -1, "Home Venue:")
-        self.homeVenueCtrl = wxTextCtrl(self, -1, "")
-        self.profileTypeText = wxStaticText(self, -1, "Profile Type:")
+        self.phoneNumberText = wx.StaticText(self, -1, "Phone Number:")
+        self.phoneNumberCtrl = wx.TextCtrl(self, -1, "")
+        self.locationText = wx.StaticText(self, -1, "Location:")
+        self.locationCtrl = wx.TextCtrl(self, -1, "")
+        self.homeVenue= wx.StaticText(self, -1, "Home Venue:")
+        self.homeVenueCtrl = wx.TextCtrl(self, -1, "")
+        self.profileTypeText = wx.StaticText(self, -1, "Profile Type:")
        
         self.profile = None
         self.profileTypeBox = None
         self.dnText = None
         self.dnTextCtrl = None
        
-        self.titleLine = wxStaticLine(self,-1)
-        self.buttonLine = wxStaticLine(self,-1)
+        self.titleLine = wx.StaticLine(self,-1)
+        self.buttonLine = wx.StaticLine(self,-1)
         self.__Layout()
         self.SetProfile(preferences.GetProfile())
         
@@ -519,27 +520,27 @@ class ProfilePanel(wxPanel):
         log.debug("VenueClientUI.py: Set editable in successfully dialog")
            
     def __Layout(self):
-        self.sizer1 = wxBoxSizer(wxVERTICAL)
-        self.gridSizer = wxFlexGridSizer(0, 2, 5, 5)
-        self.gridSizer.Add(self.nameText, 0, wxALIGN_LEFT, 0)
-        self.gridSizer.Add(self.nameCtrl, 0, wxEXPAND, 0)
-        self.gridSizer.Add(self.emailText, 0, wxALIGN_LEFT, 0)
-        self.gridSizer.Add(self.emailCtrl, 0, wxEXPAND, 0)
-        self.gridSizer.Add(self.phoneNumberText, 0, wxALIGN_LEFT, 0)
-        self.gridSizer.Add(self.phoneNumberCtrl, 0, wxEXPAND, 0)
-        self.gridSizer.Add(self.locationText, 0, wxALIGN_LEFT, 0)
-        self.gridSizer.Add(self.locationCtrl, 0, wxEXPAND, 0)
-        self.gridSizer.Add(self.homeVenue, 0, wxALIGN_LEFT, 0)
-        self.gridSizer.Add(self.homeVenueCtrl, 0, wxEXPAND, 0)
-        self.gridSizer.Add(self.profileTypeText, 0, wxALIGN_LEFT, 0)
+        self.sizer1 = wx.BoxSizer(wx.VERTICAL)
+        self.gridSizer = wx.FlexGridSizer(0, 2, 5, 5)
+        self.gridSizer.Add(self.nameText, 0, wx.ALIGN_LEFT, 0)
+        self.gridSizer.Add(self.nameCtrl, 0, wx.EXPAND, 0)
+        self.gridSizer.Add(self.emailText, 0, wx.ALIGN_LEFT, 0)
+        self.gridSizer.Add(self.emailCtrl, 0, wx.EXPAND, 0)
+        self.gridSizer.Add(self.phoneNumberText, 0, wx.ALIGN_LEFT, 0)
+        self.gridSizer.Add(self.phoneNumberCtrl, 0, wx.EXPAND, 0)
+        self.gridSizer.Add(self.locationText, 0, wx.ALIGN_LEFT, 0)
+        self.gridSizer.Add(self.locationCtrl, 0, wx.EXPAND, 0)
+        self.gridSizer.Add(self.homeVenue, 0, wx.ALIGN_LEFT, 0)
+        self.gridSizer.Add(self.homeVenueCtrl, 0, wx.EXPAND, 0)
+        self.gridSizer.Add(self.profileTypeText, 0, wx.ALIGN_LEFT, 0)
         if self.profileTypeBox:
-            self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
+            self.gridSizer.Add(self.profileTypeBox, 0, wx.EXPAND, 0)
         if self.dnText:
-            self.gridSizer.Add(self.dnText, 0, wxALIGN_LEFT, 0)
-            self.gridSizer.Add(self.dnTextCtrl, 0, wxEXPAND, 0)
+            self.gridSizer.Add(self.dnText, 0, wx.ALIGN_LEFT, 0)
+            self.gridSizer.Add(self.dnTextCtrl, 0, wx.EXPAND, 0)
 
         self.gridSizer.AddGrowableCol(1)
-        self.sizer1.Add(self.gridSizer, 1, wxALL|wxEXPAND, 10)
+        self.sizer1.Add(self.gridSizer, 1, wx.ALL|wx.EXPAND, 10)
         self.SetSizer(self.sizer1)
         self.sizer1.Fit(self)
         self.SetAutoLayout(1)
@@ -567,8 +568,8 @@ class ProfilePanel(wxPanel):
 
     def SetProfile(self, profile):
         self.profile = profile
-        self.profileTypeBox = wxComboBox(self, -1, choices =['user', 'node'], 
-                                         style = wxCB_DROPDOWN|wxCB_READONLY)
+        self.profileTypeBox = wx.ComboBox(self, -1, choices =['user', 'node'], 
+                                         style = wx.CB_DROPDOWN|wx.CB_READONLY)
         self.profileTypeBox.SetValue(self.profile.GetProfileType())
         self.__Layout()
         self.nameCtrl.SetValue(self.profile.GetName())
@@ -584,18 +585,18 @@ class ProfilePanel(wxPanel):
         self.__SetEditable(true)
         log.debug("ProfileDialog.SetProfile: Set profile information successfully in dialog")
 
-class LoggingPanel(wxPanel):
+class LoggingPanel(wx.Panel):
     def __init__(self, parent, id, preferences):
-        wxPanel.__init__(self, parent, id)
+        wx.Panel.__init__(self, parent, id)
         self.Centre()
         self.preferences = preferences
-        self.cmdButton = wxCheckBox(self, wxNewId(), "  Display log messages in command window ")
-        self.locationText = wxStaticText(self, -1, "Location of log files")
-        self.locationCtrl = wxTextCtrl(self, -1, UserConfig.instance().GetLogDir(),
-                                       size = wxSize(30, -1),  style = wxTE_READONLY)
-        self.levelText = wxStaticText(self, -1, "Log levels ")
-        self.scWindow = wxScrolledWindow(self, -1, size = wxSize(10,50),
-                                         style = wxSUNKEN_BORDER)
+        self.cmdButton = wx.CheckBox(self, wx.NewId(), "  Display log messages in command window ")
+        self.locationText = wx.StaticText(self, -1, "Location of log files")
+        self.locationCtrl = wx.TextCtrl(self, -1, UserConfig.instance().GetLogDir(),
+                                       size = wx.Size(30, -1),  style = wx.TE_READONLY)
+        self.levelText = wx.StaticText(self, -1, "Log levels ")
+        self.scWindow = wx.ScrolledWindow(self, -1, size = wx.Size(10,50),
+                                         style = wx.SUNKEN_BORDER)
         self.scWindow.SetBackgroundColour("WHITE")
         self.scWindow.EnableScrolling(true, true)
         self.scWindow.SetScrollbars(20, 20, 10, 10)
@@ -637,49 +638,49 @@ class LoggingPanel(wxPanel):
     def __Layout(self):
         self.logWidgets.clear()
         
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add(self.cmdButton, 0, wxALL|wxEXPAND, 10)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.cmdButton, 0, wx.ALL|wx.EXPAND, 10)
        
-        gridSizer = wxFlexGridSizer(0, 2, 5, 5)
+        gridSizer = wx.FlexGridSizer(0, 2, 5, 5)
         gridSizer.Add(self.locationText, 0)
-        gridSizer.Add(self.locationCtrl,0 , wxEXPAND)
+        gridSizer.Add(self.locationCtrl,0 , wx.EXPAND)
         gridSizer.AddGrowableCol(1)
-        sizer.Add(gridSizer, 0, wxEXPAND| wxALL, 10)
-        sizer.Add(self.levelText, 0, wxLEFT, 10)
+        sizer.Add(gridSizer, 0, wx.EXPAND| wx.ALL, 10)
+        sizer.Add(self.levelText, 0, wx.LEFT, 10)
 
-        gridSizer = wxFlexGridSizer(0, 2, 5, 5)
-        gridSizer.Add(wxSize(5,5))
-        gridSizer.Add(wxSize(5,5))
+        gridSizer = wx.FlexGridSizer(0, 2, 5, 5)
+        gridSizer.Add(wx.Size(5,5))
+        gridSizer.Add(wx.Size(5,5))
         for logName in self.logs:
-            gridSizer.Add(wxStaticText(self.scWindow, -1, logName), 0, wxLEFT, 5)
+            gridSizer.Add(wx.StaticText(self.scWindow, -1, logName), 0, wx.LEFT, 5)
             try:
                 logLevel = int(self.preferences.GetPreference(logName))
             except:
                 logLevel = Log.DEBUG
            
-            combo = wxComboBox(self.scWindow, -1,
+            combo = wx.ComboBox(self.scWindow, -1,
                                self.logLevels[logLevel], 
                                choices = self.logLevelsSorted,
-                               style = wxCB_DROPDOWN)
-            gridSizer.Add(combo, 0, wxEXPAND|wxRIGHT, 5)
+                               style = wx.CB_DROPDOWN)
+            gridSizer.Add(combo, 0, wx.EXPAND|wx.RIGHT, 5)
             # Save widget so we can retreive value later.
             self.logWidgets[logName] = combo
 
-        gridSizer.Add(wxSize(5,5))
+        gridSizer.Add(wx.Size(5,5))
         gridSizer.AddGrowableCol(1)
         self.scWindow.SetSizer(gridSizer)
         gridSizer.Fit(self.scWindow)
         self.scWindow.SetAutoLayout(1)
                 
-        sizer.Add(self.scWindow, 1, wxEXPAND| wxALL, 10)
+        sizer.Add(self.scWindow, 1, wx.EXPAND| wx.ALL, 10)
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(1)
 
 
-class TextValidator(wxPyValidator):
+class TextValidator(wx.PyValidator):
     def __init__(self, fieldName):
-        wxPyValidator.__init__(self)
+        wx.PyValidator.__init__(self)
         self.fieldName = fieldName
             
     def Clone(self):
@@ -704,23 +705,23 @@ class TextValidator(wxPyValidator):
         return true
 
     def TransferToWindow(self):
-        return true # Prevent wxDialog from complaining.
+        return true # Prevent wx.Dialog from complaining.
 
     def TransferFromWindow(self):
-        return true # Prevent wxDialog from complaining.
+        return true # Prevent wx.Dialog from complaining.
         
-class VenueConnectionPanel(wxPanel):
+class VenueConnectionPanel(wx.Panel):
     def __init__(self, parent, id, preferences):
-        wxPanel.__init__(self, parent, id)
+        wx.Panel.__init__(self, parent, id)
         self.Centre()
-        self.titleText = wxStaticText(self, -1, "Recovery")
-        self.titleLine = wxStaticLine(self, -1)
-        self.shutdownMediaButton = wxCheckBox(self, wxNewId(), "  Shut down media tools on removal from Venue")
-        self.reconnectButton = wxCheckBox(self, wxNewId(), "  Reconnect to venue automatically")
-        self.maxText = wxStaticText(self, -1, "Recovery attempts ")
-        self.maxReconnect = wx.lib.intctrl.IntCtrl(self, -1, 3, size = wxSize(30, -1))
-        self.timeoutText = wxStaticText(self, -1, "Recovery timeout (seconds) ")
-        self.timeout = wx.lib.intctrl.IntCtrl(self, -1, 10, size = wxSize(30, -1)) 
+        self.titleText = wx.StaticText(self, -1, "Recovery")
+        self.titleLine = wx.StaticLine(self, -1)
+        self.shutdownMediaButton = wx.CheckBox(self, wx.NewId(), "  Shut down media tools on removal from Venue")
+        self.reconnectButton = wx.CheckBox(self, wx.NewId(), "  Reconnect to venue automatically")
+        self.maxText = wx.StaticText(self, -1, "Recovery attempts ")
+        self.maxReconnect = wx..lib.intctrl.IntCtrl(self, -1, 3, size = wx.Size(30, -1))
+        self.timeoutText = wx.StaticText(self, -1, "Recovery timeout (seconds) ")
+        self.timeout = wx..lib.intctrl.IntCtrl(self, -1, 10, size = wx.Size(30, -1)) 
         shutdownMedia = int(preferences.GetPreference(Preferences.SHUTDOWN_MEDIA))
         self.shutdownMediaButton.SetValue(shutdownMedia)
         reconnect = int(preferences.GetPreference(Preferences.RECONNECT))
@@ -730,10 +731,10 @@ class VenueConnectionPanel(wxPanel):
         self.EnableCtrls(reconnect)
                 
         if IsOSX():
-            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+            self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
                                 
         else:
-            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+            self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
                                 
         self.__Layout()
 
@@ -759,18 +760,18 @@ class VenueConnectionPanel(wxPanel):
         self.EnableCtrls(event.IsChecked())
 
     def __Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.titleText, 0, wxALL, 5)#,0,wxEXPAND|wxALL,10)
-        sizer2.Add(self.titleLine, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer.Add(sizer2, 0, wxEXPAND)
-        sizer.Add(self.shutdownMediaButton, 0, wxALL|wxEXPAND, 10)
-        sizer.Add(self.reconnectButton, 0, wxALL|wxEXPAND, 10)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(self.titleText, 0, wx.ALL, 5)#,0,wx.EXPAND|wx.ALL,10)
+        sizer2.Add(self.titleLine, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        sizer.Add(sizer2, 0, wx.EXPAND)
+        sizer.Add(self.shutdownMediaButton, 0, wx.ALL|wx.EXPAND, 10)
+        sizer.Add(self.reconnectButton, 0, wx.ALL|wx.EXPAND, 10)
 
-        gridSizer = wxGridSizer(0, 2, 5, 5)
-        gridSizer.Add(self.maxText, 0, wxLEFT, 30)
+        gridSizer = wx.GridSizer(0, 2, 5, 5)
+        gridSizer.Add(self.maxText, 0, wx.LEFT, 30)
         gridSizer.Add(self.maxReconnect)
-        gridSizer.Add(self.timeoutText, 0, wxLEFT, 30)
+        gridSizer.Add(self.timeoutText, 0, wx.LEFT, 30)
         gridSizer.Add(self.timeout)
         sizer.Add(gridSizer)
 
@@ -778,11 +779,11 @@ class VenueConnectionPanel(wxPanel):
         sizer.Fit(self)
         self.SetAutoLayout(1)
 
-class EditBridgeRegistryPanel(wxDialog):
+class EditBridgeRegistryPanel(wx.Dialog):
     def __init__(self, parent, id, preferences):
-        wxDialog.__init__(self, parent, id, 'Edit Bridge Registry URLs',
+        wx.Dialog.__init__(self, parent, id, 'Edit Bridge Registry URLs',
                                 size = (560, 250),
-                                style=wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+                                style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 
         self.parent = parent
         self.preferences = preferences
@@ -790,22 +791,22 @@ class EditBridgeRegistryPanel(wxDialog):
         self.permanentRegistries = self.preferences.GetPermanentRegistries()
 
         if self.permanentRegistries > 0:
-            self.fixedRegistryText = wxStaticText(self, -1, "Fixed: ",
-                             size = wxSize(60, -1),
-                             style=wxALIGN_RIGHT)
-            self.fixedRegistryCtrl = wxTextCtrl(self, -1,
-                             size = wxSize(480, 21*self.permanentRegistries),
-                             style = wxTE_RICH | wxTE_MULTILINE | wxTE_READONLY)
+            self.fixedRegistryText = wx.StaticText(self, -1, "Fixed: ",
+                             size = wx.Size(60, -1),
+                             style=wx.ALIGN_RIGHT)
+            self.fixedRegistryCtrl = wx.TextCtrl(self, -1,
+                             size = wx.Size(480, 21*self.permanentRegistries),
+                             style = wx.TE_RICH | wx.TE_MULTILINE | wx.TE_READONLY)
             self.fixedRegistryCtrl.SetBackgroundColour(self.GetBackgroundColour())
-        self.editableRegistryText = wxStaticText(self, -1, "Editable: ",
-                             size = wxSize(60, -1),
-                             style=wxALIGN_RIGHT)
-        self.editableRegistryCtrl = wxTextCtrl(self, -1,
-                       size = wxSize(480, 19*(self.maxRegistries-self.permanentRegistries)),
-                       style = wxTE_RICH | wxTE_MULTILINE)
+        self.editableRegistryText = wx.StaticText(self, -1, "Editable: ",
+                             size = wx.Size(60, -1),
+                             style=wx.ALIGN_RIGHT)
+        self.editableRegistryCtrl = wx.TextCtrl(self, -1,
+                       size = wx.Size(480, 19*(self.maxRegistries-self.permanentRegistries)),
+                       style = wx.TE_RICH | wx.TE_MULTILINE)
 
-        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
-        self.okButton = wxButton(self, wxID_OK, "OK")
+        self.cancelButton = wx.Button(self, wx.ID_CANCEL, "Cancel")
+        self.okButton = wx.Button(self, wx.ID_OK, "OK")
                                 
         EVT_BUTTON(self, self.cancelButton.GetId(), self.OnCancel)
         EVT_BUTTON(self, self.okButton.GetId(), self.OnOK)
@@ -854,13 +855,13 @@ class EditBridgeRegistryPanel(wxDialog):
             self.editableRegistryCtrl.SetInsertionPoint(
                                 self.editableRegistryCtrl.XYToPosition(
                                 self.editableRegistryCtrl.GetLineLength(0), 0))
-        wxCallAfter(self.editableRegistryCtrl.SetFocus)
+        wx.CallAfter(self.editableRegistryCtrl.SetFocus)
 
         self.__Layout()
         
 
     def OnCancel(self, event):
-        self.EndModal(wxID_CANCEL)
+        self.EndModal(wx.ID_CANCEL)
 
     def OnOK(self, event):
         # Remove existing editable entries
@@ -880,7 +881,7 @@ class EditBridgeRegistryPanel(wxDialog):
             self.parent.registryCtrl.GetLastPosition())
         self.Validate()
         self.TransferDataFromWindow()
-        self.EndModal(wxID_OK)
+        self.EndModal(wx.ID_OK)
 
 
     def OnChar(self, event):
@@ -936,59 +937,59 @@ class EditBridgeRegistryPanel(wxDialog):
             event.Skip()
 
     def __Layout(self):
-        gridsizer = wxFlexGridSizer(0, 2, 5, 5)
+        gridsizer = wx.FlexGridSizer(0, 2, 5, 5)
         if self.permanentRegistries > 0:
-            gridsizer.Add(self.fixedRegistryText, 0, wxEXPAND | wxALL, 0)
-            gridsizer.Add(self.fixedRegistryCtrl, 0, wxEXPAND | wxALL, 0)
-        gridsizer.Add(self.editableRegistryText, 0, wxEXPAND | wxALL, 0)
-        gridsizer.Add(self.editableRegistryCtrl, 0, wxEXPAND | wxALL, 0)
+            gridsizer.Add(self.fixedRegistryText, 0, wx.EXPAND | wx.ALL, 0)
+            gridsizer.Add(self.fixedRegistryCtrl, 0, wx.EXPAND | wx.ALL, 0)
+        gridsizer.Add(self.editableRegistryText, 0, wx.EXPAND | wx.ALL, 0)
+        gridsizer.Add(self.editableRegistryCtrl, 0, wx.EXPAND | wx.ALL, 0)
 
-        buttonSizer = wxBoxSizer(wxHORIZONTAL)
-        buttonSizer.Add(self.cancelButton, 0, wxALL, 10)
-        buttonSizer.Add(self.okButton, 0, wxALL, 10)
+        buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+        buttonSizer.Add(self.cancelButton, 0, wx.ALL, 10)
+        buttonSizer.Add(self.okButton, 0, wx.ALL, 10)
 
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer.AddSpacer(wxSize(-1,10))
-        sizer.Add(gridsizer, 0, wxALIGN_CENTER)
-        sizer.Add(buttonSizer, 0, wxALIGN_CENTER)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.AddSpacer(wx.Size(-1,10))
+        sizer.Add(gridsizer, 0, wx.ALIGN_CENTER)
+        sizer.Add(buttonSizer, 0, wx.ALIGN_CENTER)
 
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(1)
         
 
-class NetworkPanel(wxPanel):
+class NetworkPanel(wx.Panel):
     
     def __init__(self, parent, id, preferences):
-        wxPanel.__init__(self, parent, id)
+        wx.Panel.__init__(self, parent, id)
         self.preferences = preferences
         self.Centre()
         
         # multicast detection and monitoring
-        self.titleText = wxStaticText(self, -1, "Multicast detection and monitoring")
-        self.titleLine = wxStaticLine(self, -1)
+        self.titleText = wx.StaticText(self, -1, "Multicast detection and monitoring")
+        self.titleLine = wx.StaticLine(self, -1)
         self.keyMap = {}
         self.selected = None
         
-        self.beaconButton = wxCheckBox(self, wxNewId(), "  Run integrated multicast beacon client ")
+        self.beaconButton = wx.CheckBox(self, wx.NewId(), "  Run integrated multicast beacon client ")
         self.beaconButton.SetValue(int(preferences.GetPreference(Preferences.BEACON)))
         
-        self.multicastDetectionLabel = wxStaticText(self,-1,'Detect multicast connectivity using the following multicast group')
-        self.multicastDetectionHostLabel = wxStaticText(self,-1,'Host')
-        self.multicastDetectionHost = wxTextCtrl(self,-1,
+        self.multicastDetectionLabel = wx.StaticText(self,-1,'Detect multicast connectivity using the following multicast group')
+        self.multicastDetectionHostLabel = wx.StaticText(self,-1,'Host')
+        self.multicastDetectionHost = wx.TextCtrl(self,-1,
                                         preferences.GetPreference(Preferences.MULTICAST_DETECT_HOST))
-        self.multicastDetectionPortLabel = wxStaticText(self,-1,'Port')
-        self.multicastDetectionPort = wxTextCtrl(self,-1,
+        self.multicastDetectionPortLabel = wx.StaticText(self,-1,'Port')
+        self.multicastDetectionPort = wx.TextCtrl(self,-1,
                                         str(preferences.GetPreference(Preferences.MULTICAST_DETECT_PORT)))
         
         
         # proxy configuration                  
-        self.proxyTitleText = wxStaticText(self, -1, "Proxy server configuration")
-        self.proxyTitleLine = wxStaticLine(self, -1)
-        self.hostText = wxStaticText(self, -1, "Host:")
-        self.hostCtrl = wxTextCtrl(self, -1, "")
-        self.portText = wxStaticText(self, -1, "Port:")
-        self.portCtrl = wxTextCtrl(self, -1, "")
+        self.proxyTitleText = wx.StaticText(self, -1, "Proxy server configuration")
+        self.proxyTitleLine = wx.StaticLine(self, -1)
+        self.hostText = wx.StaticText(self, -1, "Host:")
+        self.hostCtrl = wx.TextCtrl(self, -1, "")
+        self.portText = wx.StaticText(self, -1, "Port:")
+        self.portCtrl = wx.TextCtrl(self, -1, "")
        
         self.SetProxyHost(preferences.GetPreference(Preferences.PROXY_HOST))
         self.SetProxyPort(preferences.GetPreference(Preferences.PROXY_PORT))
@@ -996,42 +997,42 @@ class NetworkPanel(wxPanel):
         
         
         if IsOSX():
-            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
-            self.proxyTitleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+            self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
+            self.proxyTitleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
         else:
-            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
-            self.proxyTitleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+            self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
+            self.proxyTitleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
 
         self.__Layout()
     
     def __Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
         
         # multicast
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.titleText, 0, wxALL, 5)
-        sizer2.Add(self.titleLine, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer.Add(sizer2, 0, wxEXPAND)
-        sizer.Add(self.beaconButton, 0, wxALL|wxEXPAND, 10)
-        sizer.Add(self.multicastDetectionLabel, 0, wxALL|wxEXPAND,10)
-        sizer3 = wxBoxSizer(wxHORIZONTAL)
-        sizer3.Add(self.multicastDetectionHostLabel, 0, wxALL|wxEXPAND,10)
-        sizer3.Add(self.multicastDetectionHost, 1, wxALL|wxEXPAND,10)
-        sizer3.Add(self.multicastDetectionPortLabel, 0, wxALL|wxEXPAND,10)
-        sizer3.Add(self.multicastDetectionPort, 0, wxALL|wxEXPAND,10)
-        sizer.Add(sizer3,0,wxEXPAND)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(self.titleText, 0, wx.ALL, 5)
+        sizer2.Add(self.titleLine, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        sizer.Add(sizer2, 0, wx.EXPAND)
+        sizer.Add(self.beaconButton, 0, wx.ALL|wx.EXPAND, 10)
+        sizer.Add(self.multicastDetectionLabel, 0, wx.ALL|wx.EXPAND,10)
+        sizer3 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer3.Add(self.multicastDetectionHostLabel, 0, wx.ALL|wx.EXPAND,10)
+        sizer3.Add(self.multicastDetectionHost, 1, wx.ALL|wx.EXPAND,10)
+        sizer3.Add(self.multicastDetectionPortLabel, 0, wx.ALL|wx.EXPAND,10)
+        sizer3.Add(self.multicastDetectionPort, 0, wx.ALL|wx.EXPAND,10)
+        sizer.Add(sizer3,0,wx.EXPAND)
         
         # proxy server configuration
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.proxyTitleText, 0, wxALL, 5)
-        sizer2.Add(self.proxyTitleLine, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer.Add(sizer2, 0, wxEXPAND)
-        sizer3 = wxBoxSizer(wxHORIZONTAL)
-        sizer3.Add(self.hostText, 0, wxALL|wxEXPAND,10)
-        sizer3.Add(self.hostCtrl, 1, wxALL|wxEXPAND,10)
-        sizer3.Add(self.portText, 0, wxALL|wxEXPAND,10)
-        sizer3.Add(self.portCtrl, 0, wxALL|wxEXPAND,10)
-        sizer.Add(sizer3,0,wxEXPAND)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(self.proxyTitleText, 0, wx.ALL, 5)
+        sizer2.Add(self.proxyTitleLine, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        sizer.Add(sizer2, 0, wx.EXPAND)
+        sizer3 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer3.Add(self.hostText, 0, wx.ALL|wx.EXPAND,10)
+        sizer3.Add(self.hostCtrl, 1, wx.ALL|wx.EXPAND,10)
+        sizer3.Add(self.portText, 0, wx.ALL|wx.EXPAND,10)
+        sizer3.Add(self.portCtrl, 0, wx.ALL|wx.EXPAND,10)
+        sizer.Add(sizer3,0,wx.EXPAND)
                 
         self.SetSizer(sizer)
         sizer.Fit(self)
@@ -1069,19 +1070,19 @@ class NetworkPanel(wxPanel):
                 
 
 
-class BridgingPanel(wxPanel):
+class BridgingPanel(wx.Panel):
     
     def __init__(self, parent, id, preferences):
-        wxPanel.__init__(self, parent, id)
+        wx.Panel.__init__(self, parent, id)
         self.preferences = preferences
         self.Centre()
-        self.bridgingTitleText = wxStaticText(self, -1, "Bridging")
-        self.bridgingTitleLine = wxStaticLine(self, -1)
-        self.registriesTitleText = wxStaticText(self, -1, "Bridge Registries")
-        self.registriesTitleLine = wxStaticLine(self, -1)
-        self.bridgesTitleText = wxStaticText(self, -1, "Bridges")
-        self.bridgesTitleLine = wxStaticLine(self, -1)
-        self.multicastButton = wxCheckBox(self, wxNewId(), "  Always use unicast bridges instead of multicast ")
+        self.bridgingTitleText = wx.StaticText(self, -1, "Bridging")
+        self.bridgingTitleLine = wx.StaticLine(self, -1)
+        self.registriesTitleText = wx.StaticText(self, -1, "Bridge Registries")
+        self.registriesTitleLine = wx.StaticLine(self, -1)
+        self.bridgesTitleText = wx.StaticText(self, -1, "Bridges")
+        self.bridgesTitleLine = wx.StaticLine(self, -1)
+        self.multicastButton = wx.CheckBox(self, wx.NewId(), "  Always use unicast bridges instead of multicast ")
         self.keyMap = {}
         self.selected = None
         self.editBridgeRegistryPanel = None
@@ -1099,14 +1100,14 @@ class BridgingPanel(wxPanel):
 
         self.multicastButton.SetValue(not int(preferences.GetPreference(Preferences.MULTICAST)))
 
-        self.listHelpText = wxStaticText(self,-1,'Right-click a bridge below to enable or disable it')
+        self.listHelpText = wx.StaticText(self,-1,'Right-click a bridge below to enable or disable it')
         
-        self.orderBridgesByPingButton = wxCheckBox(self, wxNewId(), "  Measure closeness to bridges and use the closest bridge")
-        self.bridgePingTimeText = wxStaticText(self, -1, "How often to measure bridge closeness (seconds):  ")
-        self.bridgePingTimeBox = wxTextCtrl(self, -1, str(self.bridgePingDelay), size = wxSize(40, -1));
+        self.orderBridgesByPingButton = wx.CheckBox(self, wx.NewId(), "  Measure closeness to bridges and use the closest bridge")
+        self.bridgePingTimeText = wx.StaticText(self, -1, "How often to measure bridge closeness (seconds):  ")
+        self.bridgePingTimeBox = wx.TextCtrl(self, -1, str(self.bridgePingDelay), size = wx.Size(40, -1));
         self.orderBridgesByPingButton.SetValue(int(self.orderBridgesByPing))
 
-        self.list = wxListCtrl(self, wxNewId(),style=wxLC_REPORT|wxLC_SINGLE_SEL)
+        self.list = wx.ListCtrl(self, wx.NewId(),style=wx.LC_REPORT|wx.LC_SINGLE_SEL)
         self.list.InsertColumn(0, "Bridge")
         self.list.InsertColumn(1, "Host")
         self.list.InsertColumn(2, "Port")
@@ -1124,16 +1125,16 @@ class BridgingPanel(wxPanel):
         self.list.SetColumnWidth(6, 90)
         self.__InitList()
         
-        self.upButton = wxButton(self, wxNewId(), 'Move Up')
-        self.downButton = wxButton(self, wxNewId(), 'Move Down')
-        self.refreshButton = wxButton(self, -1, 'Find Additional Bridges')
-        self.updatePingButton = wxButton(self, -1, 'Update Ping Times')
-        self.orderByPingButton = wxButton(self, -1, 'Order Bridges by Ping Time')
-        self.purgeCacheButton = wxButton(self, -1, 'Purge Bridge Cache')
-        self.registryList = wxListCtrl(self, wxNewId(), style = wxLC_LIST | wxLC_SINGLE_SEL | wxLC_NO_HEADER)
-        self.addRegistryButton = wxButton(self, wxNewId(), 'Add')
-        self.removeRegistryButton = wxButton(self, wxNewId(), 'Remove')
-        self.editRegistryButton = wxButton(self, wxNewId(), 'Edit')
+        self.upButton = wx.Button(self, wx.NewId(), 'Move Up')
+        self.downButton = wx.Button(self, wx.NewId(), 'Move Down')
+        self.refreshButton = wx.Button(self, -1, 'Find Additional Bridges')
+        self.updatePingButton = wx.Button(self, -1, 'Update Ping Times')
+        self.orderByPingButton = wx.Button(self, -1, 'Order Bridges by Ping Time')
+        self.purgeCacheButton = wx.Button(self, -1, 'Purge Bridge Cache')
+        self.registryList = wx.ListCtrl(self, wx.NewId(), style = wx.LC_LIST | wx.LC_SINGLE_SEL | wx.LC_NO_HEADER)
+        self.addRegistryButton = wx.Button(self, wx.NewId(), 'Add')
+        self.removeRegistryButton = wx.Button(self, wx.NewId(), 'Remove')
+        self.editRegistryButton = wx.Button(self, wx.NewId(), 'Edit')
         
         for index in range(len(self.registries)):
             self.registryList.InsertStringItem(index, self.registries[index])
@@ -1161,13 +1162,13 @@ class BridgingPanel(wxPanel):
         EVT_BUTTON(self, self.purgeCacheButton.GetId(), self.OnPurgeCache)
                                       
         if IsOSX():
-            self.bridgingTitleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
-            self.registriesTitleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
-            self.bridgesTitleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+            self.bridgingTitleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
+            self.registriesTitleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
+            self.bridgesTitleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
         else:
-            self.bridgingTitleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
-            self.registriesTitleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
-            self.bridgesTitleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+            self.bridgingTitleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
+            self.registriesTitleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
+            self.bridgesTitleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
                                 
         self.__Layout()
     
@@ -1184,52 +1185,52 @@ class BridgingPanel(wxPanel):
     def __Layout(self):
     
         # bridging config
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.bridgingTitleText, 0, wxALL, 5)
-        sizer2.Add(self.bridgingTitleLine, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer.Add(sizer2, 0, wxEXPAND)
-        sizer.Add(self.multicastButton, 0, wxALL|wxEXPAND, 10)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(self.bridgingTitleText, 0, wx.ALL, 5)
+        sizer2.Add(self.bridgingTitleLine, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        sizer.Add(sizer2, 0, wx.EXPAND)
+        sizer.Add(self.multicastButton, 0, wx.ALL|wx.EXPAND, 10)
         
 
         # bridge registries
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.registriesTitleText, 0, wxALL, 5)
-        sizer2.Add(self.registriesTitleLine, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer.Add(sizer2, 0, wxEXPAND)
-        registrySizer = wxBoxSizer(wxHORIZONTAL)
-        registrySizer.Add(self.registryList, 1, wxEXPAND, 0)
-        registryButtonSizer = wxBoxSizer(wxVERTICAL)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(self.registriesTitleText, 0, wx.ALL, 5)
+        sizer2.Add(self.registriesTitleLine, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        sizer.Add(sizer2, 0, wx.EXPAND)
+        registrySizer = wx.BoxSizer(wx.HORIZONTAL)
+        registrySizer.Add(self.registryList, 1, wx.EXPAND, 0)
+        registryButtonSizer = wx.BoxSizer(wx.VERTICAL)
         registryButtonSizer.Add(self.addRegistryButton, 0, 0, 0)
-        registryButtonSizer.Add(self.removeRegistryButton, 0, wxTOP, 10)
-        registryButtonSizer.Add(self.editRegistryButton, 0, wxTOP, 10)
-        registrySizer.Add(registryButtonSizer, 0, wxLEFT|wxEXPAND, 10)
-        sizer.Add(registrySizer, 0, wxALL|wxEXPAND, 10)
+        registryButtonSizer.Add(self.removeRegistryButton, 0, wx.TOP, 10)
+        registryButtonSizer.Add(self.editRegistryButton, 0, wx.TOP, 10)
+        registrySizer.Add(registryButtonSizer, 0, wx.LEFT|wx.EXPAND, 10)
+        sizer.Add(registrySizer, 0, wx.ALL|wx.EXPAND, 10)
         
         # bridges
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.bridgesTitleText, 0, wxALL, 5)
-        sizer2.Add(self.bridgesTitleLine, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer.Add(sizer2, 0, wxEXPAND)
-        sizer.Add(self.orderBridgesByPingButton, 0, wxALL|wxEXPAND, 10)
-        sizerBridgePingTime = wxBoxSizer(wxHORIZONTAL)
-        sizerBridgePingTime.Add(self.bridgePingTimeText, 0, wxRIGHT, 0)
-        sizerBridgePingTime.Add(self.bridgePingTimeBox, 0, wxLEFT, 0)
-        sizer.Add(sizerBridgePingTime, 0, wxALL|wxEXPAND, 10)
-        sizer.Add(self.listHelpText, 0, wxTOP|wxLEFT|wxRIGHT|wxEXPAND, 10)
-        bridgeListSizer = wxBoxSizer(wxHORIZONTAL)
-        bridgeListSizer.Add(self.list, 1, wxALL|wxEXPAND, 0)
-        updownSizer = wxBoxSizer(wxVERTICAL)
-        updownSizer.Add(self.upButton, 0, wxLEFT|wxEXPAND, 10)
-        updownSizer.Add(self.downButton, 0, wxLEFT|wxEXPAND, 10)
-        bridgeListSizer.Add(updownSizer,0,wxLEFT|wxALIGN_CENTER_VERTICAL,10)
-        sizer.Add(bridgeListSizer, 1, wxALL|wxEXPAND, 10)
-        sizerButtons = wxBoxSizer(wxHORIZONTAL)
-        sizerButtons.Add(self.refreshButton, 0, wxLEFT, 10)
-        sizerButtons.Add(self.updatePingButton, 0, wxLEFT, 10)
-        sizerButtons.Add(self.orderByPingButton, 0, wxLEFT, 10)
-        sizerButtons.Add(self.purgeCacheButton, 0, wxLEFT, 10)
-        sizer.Add(sizerButtons, 0, wxBOTTOM|wxEXPAND, 10)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(self.bridgesTitleText, 0, wx.ALL, 5)
+        sizer2.Add(self.bridgesTitleLine, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        sizer.Add(sizer2, 0, wx.EXPAND)
+        sizer.Add(self.orderBridgesByPingButton, 0, wx.ALL|wx.EXPAND, 10)
+        sizerBridgePingTime = wx.BoxSizer(wx.HORIZONTAL)
+        sizerBridgePingTime.Add(self.bridgePingTimeText, 0, wx.RIGHT, 0)
+        sizerBridgePingTime.Add(self.bridgePingTimeBox, 0, wx.LEFT, 0)
+        sizer.Add(sizerBridgePingTime, 0, wx.ALL|wx.EXPAND, 10)
+        sizer.Add(self.listHelpText, 0, wx.TOP|wx.LEFT|wx.RIGHT|wx.EXPAND, 10)
+        bridgeListSizer = wx.BoxSizer(wx.HORIZONTAL)
+        bridgeListSizer.Add(self.list, 1, wx.ALL|wx.EXPAND, 0)
+        updownSizer = wx.BoxSizer(wx.VERTICAL)
+        updownSizer.Add(self.upButton, 0, wx.LEFT|wx.EXPAND, 10)
+        updownSizer.Add(self.downButton, 0, wx.LEFT|wx.EXPAND, 10)
+        bridgeListSizer.Add(updownSizer,0,wx.LEFT|wx.ALIGN_CENTER_VERTICAL,10)
+        sizer.Add(bridgeListSizer, 1, wx.ALL|wx.EXPAND, 10)
+        sizerButtons = wx.BoxSizer(wx.HORIZONTAL)
+        sizerButtons.Add(self.refreshButton, 0, wx.LEFT, 10)
+        sizerButtons.Add(self.updatePingButton, 0, wx.LEFT, 10)
+        sizerButtons.Add(self.orderByPingButton, 0, wx.LEFT, 10)
+        sizerButtons.Add(self.purgeCacheButton, 0, wx.LEFT, 10)
+        sizer.Add(sizerButtons, 0, wx.BOTTOM|wx.EXPAND, 10)
         
         self.SetSizer(sizer)
         sizer.Fit(self)
@@ -1248,7 +1249,7 @@ class BridgingPanel(wxPanel):
     def OnEditReg(self, event):
         if self.regSelected != None:
             d = TextDialog(self, "Enter the new URL", "Registry URL", text = self.registries[self.regSelected])
-            if d.ShowModal() == wxID_OK:
+            if d.ShowModal() == wx.ID_OK:
                 newreg = d.GetChars()
                 d.Destroy()
                 self.registries[self.regSelected] = newreg
@@ -1256,14 +1257,14 @@ class BridgingPanel(wxPanel):
     
     def OnRemoveReg(self, event):
         if self.regSelected != None:
-            d = wxMessageDialog(self, "Are you sure that you want to remove this registry?", "Confirm", wxYES_NO)
-            if d.ShowModal() == wxID_YES:
+            d = wx.MessageDialog(self, "Are you sure that you want to remove this registry?", "Confirm", wx.YES_NO)
+            if d.ShowModal() == wx.ID_YES:
                 self.registries.pop(self.regSelected)
                 self.registryList.DeleteItem(self.regSelected)
     
     def OnAddReg(self, event):
         d = TextDialog(self, "Enter the new URL", "Registry URL")
-        if d.ShowModal() == wxID_OK:
+        if d.ShowModal() == wx.ID_OK:
             newreg = d.GetChars()
             d.Destroy()
             self.registries.append(newreg)
@@ -1311,7 +1312,7 @@ class BridgingPanel(wxPanel):
         self.y = event.GetY()
         item, flags = self.list.HitTest((self.x, self.y))
 
-        if flags & wx.LIST_HITTEST_ONITEM:
+        if flags & wx..LIST_HITTEST_ONITEM:
             self.list.Select(item)
             self.selected = item
    
@@ -1321,15 +1322,15 @@ class BridgingPanel(wxPanel):
         '''
         # only do this part the first time so the events are only bound once
         if not hasattr(self, "enableId"):
-            self.enableId = wx.NewId()
-            self.moveupId = wx.NewId()
-            self.movedownId = wx.NewId()
+            self.enableId = wx..NewId()
+            self.moveupId = wx..NewId()
+            self.movedownId = wx..NewId()
             EVT_MENU(self, self.enableId, self.Enable)
             EVT_MENU(self, self.moveupId, self.MoveUp)
             EVT_MENU(self, self.movedownId, self.MoveDown)
             
         # make a menu
-        self.menu = wx.Menu()
+        self.menu = wx..Menu()
         self.menu.AppendCheckItem(self.enableId, "Enabled")
         if self.orderBridgesByPing == 0:
             self.menu.AppendSeparator()
@@ -1349,7 +1350,7 @@ class BridgingPanel(wxPanel):
         if self.selected == (len(self.bridges) - 1):
             self.menu.Enable(self.movedownId, 0)
 
-        self.list.PopupMenu(self.menu, wxPoint(self.x, self.y))
+        self.list.PopupMenu(self.menu, wx.Point(self.x, self.y))
         self.menu.Destroy()
     
     def OnPurgeCache(self, event):
@@ -1358,7 +1359,7 @@ class BridgingPanel(wxPanel):
 
     def OnRefresh(self,event):
     
-        wxBeginBusyCursor()
+        wx.BeginBusyCursor()
     
         try:
             venueClient = self.preferences.venueClient
@@ -1371,7 +1372,7 @@ class BridgingPanel(wxPanel):
             # Refresh the bridge list in the UI
             self.__InitList()
         finally:
-            wxEndBusyCursor()
+            wx.EndBusyCursor()
 
     def OnEdit(self, event):
         if self.editBridgeRegistryPanel:
@@ -1386,9 +1387,9 @@ class BridgingPanel(wxPanel):
 
 
         self.editBridgeRegistryPanel = EditBridgeRegistryPanel(self,
-                                         wxNewId(), self.preferences)
+                                         wx.NewId(), self.preferences)
 
-        if self.editBridgeRegistryPanel.ShowModal() == wxID_OK:
+        if self.editBridgeRegistryPanel.ShowModal() == wx.ID_OK:
             log.info("Edited bridge registries OK")
 
         # The Ctrl is displaying the desired registry prefs, but
@@ -1492,15 +1493,15 @@ class BridgingPanel(wxPanel):
 
 
 
-class NavigationPanel(wxPanel):
+class NavigationPanel(wx.Panel):
     def __init__(self, parent, id, preferences):
-        wxPanel.__init__(self, parent, id)
+        wx.Panel.__init__(self, parent, id)
         self.Centre()
-        self.titleText = wxStaticText(self, -1, "Navigation View")
-        self.titleLine = wxStaticLine(self, -1)
-        self.exitsButton = wxRadioButton(self, wxNewId(), "  Show exits from the current venue ")
-        self.myVenuesButton = wxRadioButton(self, wxNewId(), "  Show my saved venues")
-        self.allVenuesButton = wxRadioButton(self, wxNewId(), "  Show all venues on the current server")
+        self.titleText = wx.StaticText(self, -1, "Navigation View")
+        self.titleLine = wx.StaticLine(self, -1)
+        self.exitsButton = wx.RadioButton(self, wx.NewId(), "  Show exits from the current venue ")
+        self.myVenuesButton = wx.RadioButton(self, wx.NewId(), "  Show my saved venues")
+        self.allVenuesButton = wx.RadioButton(self, wx.NewId(), "  Show all venues on the current server")
 
         value = preferences.GetPreference(Preferences.DISPLAY_MODE)
         if value == Preferences.EXITS:
@@ -1511,9 +1512,9 @@ class NavigationPanel(wxPanel):
             self.allVenuesButton.SetValue(1)
                
         if IsOSX():
-            self.titleText.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+            self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
         else:
-            self.titleText.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+            self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
                                 
         self.__Layout()
          
@@ -1526,14 +1527,14 @@ class NavigationPanel(wxPanel):
             return Preferences.ALL_VENUES
           
     def __Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.titleText, 0, wxALL, 5)
-        sizer2.Add(self.titleLine, 1, wxALIGN_CENTER | wxALL, 5)
-        sizer.Add(sizer2, 0, wxEXPAND)
-        sizer.Add(self.exitsButton, 0, wxALL|wxEXPAND, 10)
-        sizer.Add(self.myVenuesButton, 0, wxALL|wxEXPAND, 10)
-        sizer.Add(self.allVenuesButton, 0, wxALL|wxEXPAND, 10)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(self.titleText, 0, wx.ALL, 5)
+        sizer2.Add(self.titleLine, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        sizer.Add(sizer2, 0, wx.EXPAND)
+        sizer.Add(self.exitsButton, 0, wx.ALL|wx.EXPAND, 10)
+        sizer.Add(self.myVenuesButton, 0, wx.ALL|wx.EXPAND, 10)
+        sizer.Add(self.allVenuesButton, 0, wx.ALL|wx.EXPAND, 10)
                
         self.SetSizer(sizer)
         sizer.Fit(self)
@@ -1542,7 +1543,7 @@ class NavigationPanel(wxPanel):
 if __name__ == "__main__":
     from AccessGrid.Toolkit import WXGUIApplication
     
-    pp = wxPySimpleApp()
+    pp = wx.PySimpleApp()
 
     # Init the toolkit with the standard environment.
     app = WXGUIApplication()

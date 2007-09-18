@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.56 2007-05-31 20:56:42 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.57 2007-09-18 20:45:23 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,8 +14,8 @@ import sys
 import urlparse
 
 # Imports for user interface
-from wxPython.wx import *
-from wxPython.wizard import *
+import wx
+import wx.wizard
 
 # Agtk specific imports
 from AccessGrid.Toolkit import WXGUIApplication, CmdlineApplication
@@ -64,13 +64,13 @@ def HostnameFromServiceName(serviceName):
 class ServiceUnavailableException(Exception):
     pass
      
-class TitledPage(wxPyWizardPage):
+class TitledPage(wx.wizard.PyWizardPage):
     '''
     Base class for all wizard pages.  Creates a title.
     '''
     def __init__(self, parent, title):
     
-        wxPyWizardPage.__init__(self, parent)
+        wx.wizard.PyWizardPage.__init__(self, parent)
         self.title = title
         self.next = None
         self.prev = None
@@ -80,13 +80,13 @@ class TitledPage(wxPyWizardPage):
         '''
         Create page title
         '''
-        self.sizer = wxBoxSizer(wxVERTICAL)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
-        title = wxStaticText(self, -1, self.title, style = wxALIGN_CENTER)
+        title = wx.StaticText(self, -1, self.title, style = wx.ALIGN_CENTER)
         title.SetLabel(self.title)
-        title.SetFont(wxFont(wxNORMAL_FONT.GetPointSize(), wxNORMAL, wxNORMAL, wxBOLD))
-        self.sizer.AddWindow(title, 0, wxALL|wxEXPAND, 5)
-        self.sizer.AddWindow(wxStaticLine(self, -1), 0, wxEXPAND|wxALL, 5)
+        title.SetFont(wx.Font(wx.NORMAL_FONT.GetPointSize(), wx.NORMAL, wx.NORMAL, wx.BOLD))
+        self.sizer.AddWindow(title, 0, wx.ALL|wx.EXPAND, 5)
+        self.sizer.AddWindow(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
         self.sizer.Add((10, 10))
                
     def SetNext(self, next):
@@ -114,13 +114,13 @@ class TitledPage(wxPyWizardPage):
         return self.prev
 
 
-class NodeSetupWizard(wxWizard):
+class NodeSetupWizard(wx.wizard.Wizard):
     '''
     The node setup wizard guides users through the steps necessary for
     creating and testing a node configuration. 
     '''
     def __init__(self, parent, debugMode, progress, app = None):
-        wxWizard.__init__(self, parent, 10,"Setup Node", wxNullBitmap)
+        wx.wizard.Wizard.__init__(self, parent, 10,"Setup Node", wx.NullBitmap)
         '''
         This class creates a wizard for node setup
         '''
@@ -128,7 +128,7 @@ class NodeSetupWizard(wxWizard):
         self.progress = progress
         self.step = 1
         SetIcon(self)
-        self.SetPageSize(wxSize(510, 350))
+        self.SetPageSize(wx.Size(510, 350))
         self.nodeClient = NodeClient(app)
         
         # Start the node service which will store the configuration
@@ -137,8 +137,8 @@ class NodeSetupWizard(wxWizard):
             self.nodeClient.StartNodeService()
         except:
             log.exception("NodeSetupWizard.__init__: Can not start node service")
-            dlg = wxMessageDialog(None, "Do you want to clear the node service that is already running? (not recommended if you currently are participating in a meeting).", "Warning", style = wxOK | wxCANCEL | wxICON_INFORMATION)
-            if not dlg.ShowModal() == wxID_OK:
+            dlg = wx.MessageDialog(None, "Do you want to clear the node service that is already running? (not recommended if you currently are participating in a meeting).", "Warning", style = wx.OK | wx.CANCEL | wx.ICON_INFORMATION)
+            if not dlg.ShowModal() == wx.ID_OK:
                 dlg.Destroy()
                 return
             else:
@@ -226,12 +226,12 @@ class WelcomeWindow(TitledPage):
     '''
     def __init__(self, parent, title):
         TitledPage.__init__(self, parent, title)
-        self.info = wxStaticText(self, -1, "This wizard will help you setup and test your Node. The node is your configuration of machines \ncontrolling the display, cameras, speakers, and microphones.")
-        self.beforeText = wxStaticText(self, -1,"Before continuing:")
-        self.beforeText.SetFont(wxFont(wxNORMAL_FONT.GetPointSize(), wxNORMAL, wxNORMAL, wxBOLD))
-        self.beforeText2 =  wxStaticText(self, -1,
+        self.info = wx.StaticText(self, -1, "This wizard will help you setup and test your Node. The node is your configuration of machines \ncontrolling the display, cameras, speakers, and microphones.")
+        self.beforeText = wx.StaticText(self, -1,"Before continuing:")
+        self.beforeText.SetFont(wx.Font(wx.NORMAL_FONT.GetPointSize(), wx.NORMAL, wx.NORMAL, wx.BOLD))
+        self.beforeText2 =  wx.StaticText(self, -1,
                                 "Make sure you have Service Managers running on each machine in your node.")
-        self.contText =  wxStaticText(self, -1, "Click 'Next' to continue.", style = wxCENTER)
+        self.contText =  wx.StaticText(self, -1, "Click 'Next' to continue.", style = wx.CENTER)
        
         self.Layout()
 
@@ -240,12 +240,12 @@ class WelcomeWindow(TitledPage):
           
     def Layout(self):
         ''' Handles UI layout '''
-        self.sizer.Add(self.info, 0, wxALL, 5)
+        self.sizer.Add(self.info, 0, wx.ALL, 5)
         self.sizer.Add((10,10))
-        self.sizer.Add(self.beforeText, 0, wxALL|wxEXPAND, 5)
-        self.sizer.Add(self.beforeText2, 0, wxALL, 5)
+        self.sizer.Add(self.beforeText, 0, wx.ALL|wx.EXPAND, 5)
+        self.sizer.Add(self.beforeText2, 0, wx.ALL, 5)
         self.sizer.Add((10, 100))
-        self.sizer.Add(self.contText, 0, wxALIGN_CENTER|wxALL|wxEXPAND, 5)
+        self.sizer.Add(self.contText, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 5)
         
 
 class VideoCaptureWindow(TitledPage):
@@ -257,23 +257,23 @@ class VideoCaptureWindow(TitledPage):
         TitledPage.__init__(self, parent, title)
         self.parent = parent
         self.nodeClient = nodeClient
-        self.text = wxStaticText(self, -1, "Which machine controls your cameras?")
-        self.machineText = wxStaticText(self, -1, "Machine Name:")
-        self.portText = wxStaticText(self, -1, "Service Manager Port:")
-        self.MACHINE_ID = wxNewId()
-        self.PORT_ID =  wxNewId()
-        self.BUTTON_ID = wxNewId()
+        self.text = wx.StaticText(self, -1, "Which machine controls your cameras?")
+        self.machineText = wx.StaticText(self, -1, "Machine Name:")
+        self.portText = wx.StaticText(self, -1, "Service Manager Port:")
+        self.MACHINE_ID = wx.NewId()
+        self.PORT_ID =  wx.NewId()
+        self.BUTTON_ID = wx.NewId()
         self.services = browser.GetServices()
         hostnames = self.services.keys()
         if nodeClient.app.GetHostname() in hostnames:
             hostnameToSelect = nodeClient.app.GetHostname()
         else:
             hostnameToSelect = hostnames[0]
-        self.machineCtrl = wxComboBox(self, self.MACHINE_ID, choices=hostnames)
+        self.machineCtrl = wx.ComboBox(self, self.MACHINE_ID, choices=hostnames)
         self.machineCtrl.SetValue(hostnameToSelect)
-        self.portCtrl = wxTextCtrl(self, self.PORT_ID, "11000")
-        self.CHECK_ID = wxNewId()
-        self.checkBox = wxCheckBox(self, self.CHECK_ID, "I do not want to use a video capture machine (you will not be able to send video).")
+        self.portCtrl = wx.TextCtrl(self, self.PORT_ID, "11000")
+        self.CHECK_ID = wx.NewId()
+        self.checkBox = wx.CheckBox(self, self.CHECK_ID, "I do not want to use a video capture machine (you will not be able to send video).")
         
         # The result after clicking the test button
         # True - we can connect to current machine
@@ -321,10 +321,10 @@ class VideoCaptureWindow(TitledPage):
         # avoid misunderstandings the user have to give a machine name.
         if self.machineCtrl.GetValue() == "":
             MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
-                          style = wxICON_ERROR|wxOK)
+                          style = wx.ICON_ERROR|wx.OK)
             return false
         
-        wxBeginBusyCursor()
+        wx.BeginBusyCursor()
 
         # Verify access to machine
         try:
@@ -349,13 +349,13 @@ class VideoCaptureWindow(TitledPage):
                 # Set capture cards
                 self.GetNext().SetCaptureCards(cards)
 
-            wxEndBusyCursor()
+            wx.EndBusyCursor()
             return true
         
         else:
             MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
-                          style = wxICON_ERROR|wxOK)
-            wxEndBusyCursor()
+                          style = wx.ICON_ERROR|wx.OK)
+            wx.EndBusyCursor()
             return false
           
     def CheckBoxEvent(self, event):
@@ -388,18 +388,18 @@ class VideoCaptureWindow(TitledPage):
         '''
         Handles UI layout
         '''
-        self.sizer.Add(self.text, 0, wxALL, 5)
+        self.sizer.Add(self.text, 0, wx.ALL, 5)
         self.sizer.Add((20,20))
         
-        gridSizer = wxFlexGridSizer(2, 2, 6, 6)
+        gridSizer = wx.FlexGridSizer(2, 2, 6, 6)
         gridSizer.Add(self.machineText)
-        gridSizer.Add(self.machineCtrl, 0, wxEXPAND)
+        gridSizer.Add(self.machineCtrl, 0, wx.EXPAND)
         gridSizer.Add(self.portText)
-        gridSizer.Add(self.portCtrl, 0, wxEXPAND)
+        gridSizer.Add(self.portCtrl, 0, wx.EXPAND)
         gridSizer.AddGrowableCol(1)
-        self.sizer.Add(gridSizer, 0, wxALL | wxEXPAND, 5)
+        self.sizer.Add(gridSizer, 0, wx.ALL | wx.EXPAND, 5)
         self.sizer.Add((10,10))
-        self.sizer.Add(self.checkBox, 0, wxEXPAND)
+        self.sizer.Add(self.checkBox, 0, wx.EXPAND)
         
         self.sizer.Add((20, 20))
 
@@ -410,11 +410,11 @@ class VideoCaptureWindow2(TitledPage):
     '''
     def __init__(self, parent, nodeClient, title):
         TitledPage.__init__(self, parent, title)
-        self.scrolledWindow = wxScrolledWindow(self, -1, size = wxSize(100,100), style = wxSIMPLE_BORDER)
+        self.scrolledWindow = wx.ScrolledWindow(self, -1, size = wx.Size(100,100), style = wx.SIMPLE_BORDER)
         self.scrolledWindow.SetScrollbars(0,20,15,8)
-        self.text = wxStaticText(self, -1, "Choose appropriate camera settings from the drop down boxes below. If the camera settings \nare wrong, your video might show up blue or black and white.")
-        self.text2 = wxStaticText(self, -1, "Installed capture devices")
-        self.text2.SetFont(wxFont(wxNORMAL_FONT.GetPointSize(), wxNORMAL, wxNORMAL, wxBOLD))
+        self.text = wx.StaticText(self, -1, "Choose appropriate camera settings from the drop down boxes below. If the camera settings \nare wrong, your video might show up blue or black and white.")
+        self.text2 = wx.StaticText(self, -1, "Installed capture devices")
+        self.text2.SetFont(wx.Font(wx.NORMAL_FONT.GetPointSize(), wx.NORMAL, wx.NORMAL, wx.BOLD))
         
         self.scrolledWindow.SetBackgroundColour('white')
         self.nodeClient = nodeClient
@@ -456,23 +456,23 @@ class VideoCaptureWindow2(TitledPage):
             self.boxSizer.Remove(self.gridSizer)
             
         # Create a new sizer and add it
-        self.gridSizer  = wxFlexGridSizer(nrOfCameras, 2, 6, 6)
-        self.boxSizer.Add(self.gridSizer, 1, wxALL | wxEXPAND, 5)
+        self.gridSizer  = wx.FlexGridSizer(nrOfCameras, 2, 6, 6)
+        self.boxSizer.Add(self.gridSizer, 1, wx.ALL | wx.EXPAND, 5)
        
         # No cameras are installed
         if nrOfCameras == 0:
             text = "No cameras found."
-            self.gridSizer.Add(wxStaticText(self.scrolledWindow, -1, text))
+            self.gridSizer.Add(wx.StaticText(self.scrolledWindow, -1, text))
             
         i = 0
         # Add camera widgets
         for camera in self.cameras:
-            cameraText = wxStaticText(self.scrolledWindow, -1, self.cameras[i].name)
+            cameraText = wx.StaticText(self.scrolledWindow, -1, self.cameras[i].name)
             ports = []
 
             # Save widgets so we can delete them later
             self.widgets.append((cameraText, ''))          
-            self.gridSizer.Add(cameraText, 0, wxALIGN_CENTER)
+            self.gridSizer.Add(cameraText, 0, wx.ALIGN_CENTER)
                 
         self.gridSizer.AddGrowableCol(1)
         self.scrolledWindow.Layout()
@@ -487,13 +487,13 @@ class VideoCaptureWindow2(TitledPage):
         '''
         if IsWindows():
             # For some reason the static text doesn't get the right size on windows
-            self.text2.SetSize(wxSize(150, 20))
+            self.text2.SetSize(wx.Size(150, 20))
 
-        self.sizer.Add(self.text, 0, wxALL, 5)
+        self.sizer.Add(self.text, 0, wx.ALL, 5)
         self.sizer.Add((10,10))
-        self.sizer.Add(self.text2, 0, wxLEFT, 5)
-        self.sizer.Add(self.scrolledWindow, 1, wxEXPAND|wxLEFT|wxRIGHT, 5)
-        self.boxSizer = wxBoxSizer(wxVERTICAL)
+        self.sizer.Add(self.text2, 0, wx.LEFT, 5)
+        self.sizer.Add(self.scrolledWindow, 1, wx.EXPAND|wx.LEFT|wx.RIGHT, 5)
+        self.boxSizer = wx.BoxSizer(wx.VERTICAL)
         self.boxSizer.Add((10,10))
         self.scrolledWindow.SetSizer(self.boxSizer)
         self.scrolledWindow.SetAutoLayout(1)
@@ -506,23 +506,23 @@ class VideoDisplayWindow(TitledPage):
     def __init__(self, parent, nodeClient, title):
         TitledPage.__init__(self, parent, title)
         self.nodeClient = nodeClient
-        self.text = wxStaticText(self, -1, "Which machine displays your video?")
-        self.machineText = wxStaticText(self, -1, "Machine Name:")
-        self.portText = wxStaticText(self, -1, "Service Manager Port:")
-        self.MACHINE_ID = wxNewId()
-        self.PORT_ID =  wxNewId()
-        self.CHECK_ID = wxNewId()
+        self.text = wx.StaticText(self, -1, "Which machine displays your video?")
+        self.machineText = wx.StaticText(self, -1, "Machine Name:")
+        self.portText = wx.StaticText(self, -1, "Service Manager Port:")
+        self.MACHINE_ID = wx.NewId()
+        self.PORT_ID =  wx.NewId()
+        self.CHECK_ID = wx.NewId()
         self.services = browser.GetServices()
         hostnames = self.services.keys()
         if nodeClient.app.GetHostname() in hostnames:
             hostnameToSelect = nodeClient.app.GetHostname()
         else:
             hostnameToSelect = hostnames[0]
-        self.machineCtrl = wxComboBox(self, self.MACHINE_ID, choices=hostnames,
+        self.machineCtrl = wx.ComboBox(self, self.MACHINE_ID, choices=hostnames,
                                     name=hostnameToSelect)
         self.machineCtrl.SetValue(hostnameToSelect)
-        self.portCtrl = wxTextCtrl(self, self.PORT_ID, "11000")
-        self.checkBox = wxCheckBox(self, self.CHECK_ID,
+        self.portCtrl = wx.TextCtrl(self, self.PORT_ID, "11000")
+        self.checkBox = wx.CheckBox(self, self.CHECK_ID,
                                    "I do not want to use a video display machine (you will not be able to see video).")
         
         # The result after clicking the test button
@@ -566,11 +566,11 @@ class VideoDisplayWindow(TitledPage):
         # avoid misunderstandings the user have to give a machine name.
         if self.machineCtrl.GetValue() == "":
             MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
-                          style = wxICON_ERROR|wxOK)
+                          style = wx.ICON_ERROR|wx.OK)
             return false
 
         # Verify access to machine
-        wxBeginBusyCursor()
+        wx.BeginBusyCursor()
         try:
             hostname = HostnameFromServiceName(self.machineCtrl.GetValue())
             self.nodeClient.CheckServiceManager(self.machineCtrl.GetValue(), self.portCtrl.GetValue())
@@ -580,14 +580,14 @@ class VideoDisplayWindow(TitledPage):
             log.exception("VideoDisplayWindow.Validate: Service manager is not started")
             self.canConnect = false
 
-        wxEndBusyCursor()
+        wx.EndBusyCursor()
         
         if self.canConnect:
             return true
             
         else:
             MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
-                          style = wxICON_ERROR|wxOK)
+                          style = wx.ICON_ERROR|wx.OK)
             return false
         
     def CheckBoxEvent(self, event):
@@ -612,18 +612,18 @@ class VideoDisplayWindow(TitledPage):
         '''
         Handles UI layout
         '''
-        self.sizer.Add(self.text, 0, wxALL, 5)
+        self.sizer.Add(self.text, 0, wx.ALL, 5)
         self.sizer.Add((20,20))
         
-        gridSizer = wxFlexGridSizer(2, 2, 6, 6)
+        gridSizer = wx.FlexGridSizer(2, 2, 6, 6)
         gridSizer.Add(self.machineText)
-        gridSizer.Add(self.machineCtrl, 0, wxEXPAND)
+        gridSizer.Add(self.machineCtrl, 0, wx.EXPAND)
         gridSizer.Add(self.portText)
-        gridSizer.Add(self.portCtrl, 0, wxEXPAND)
-        self.sizer.Add(gridSizer, 0, wxALL | wxEXPAND, 5)
+        gridSizer.Add(self.portCtrl, 0, wx.EXPAND)
+        self.sizer.Add(gridSizer, 0, wx.ALL | wx.EXPAND, 5)
         gridSizer.AddGrowableCol(1)
         self.sizer.Add((10,10))
-        self.sizer.Add(self.checkBox, 0, wxEXPAND)
+        self.sizer.Add(self.checkBox, 0, wx.EXPAND)
         self.sizer.Add((20, 20))
 
         
@@ -634,23 +634,23 @@ class AudioWindow(TitledPage):
     def __init__(self, parent, nodeClient, title):
         TitledPage.__init__(self, parent, title)
         self.nodeClient = nodeClient
-        self.text = wxStaticText(self, -1, "Which machine controls your microphones and speakers?")
-        self.machineText = wxStaticText(self, -1, "Machine Name:")
-        self.portText = wxStaticText(self, -1, "Service Manager Port:")
-        self.MACHINE_ID = wxNewId()
-        self.PORT_ID =  wxNewId()
-        self.CHECK_ID = wxNewId()
+        self.text = wx.StaticText(self, -1, "Which machine controls your microphones and speakers?")
+        self.machineText = wx.StaticText(self, -1, "Machine Name:")
+        self.portText = wx.StaticText(self, -1, "Service Manager Port:")
+        self.MACHINE_ID = wx.NewId()
+        self.PORT_ID =  wx.NewId()
+        self.CHECK_ID = wx.NewId()
         self.services = browser.GetServices()
         hostnames = self.services.keys()
         if nodeClient.app.GetHostname() in hostnames:
             hostnameToSelect = nodeClient.app.GetHostname()
         else:
             hostnameToSelect = hostnames[0]
-        self.machineCtrl = wxComboBox(self, self.MACHINE_ID, choices=hostnames,
+        self.machineCtrl = wx.ComboBox(self, self.MACHINE_ID, choices=hostnames,
                                     name=hostnameToSelect)
         self.machineCtrl.SetValue(hostnameToSelect)
-        self.portCtrl = wxTextCtrl(self, self.PORT_ID, "11000")
-        self.checkBox = wxCheckBox(self, self.CHECK_ID,
+        self.portCtrl = wx.TextCtrl(self, self.PORT_ID, "11000")
+        self.checkBox = wx.CheckBox(self, self.CHECK_ID,
                                    "I do not want to use an audio machine (you will not be able to hear or send audio).")
         self.canConnect = None
         self.__SetEvents()
@@ -690,10 +690,10 @@ class AudioWindow(TitledPage):
         # avoid misunderstandings the user have to give a machine name.
         if self.machineCtrl.GetValue() == "":
             MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
-                          style = wxICON_ERROR|wxOK)
+                          style = wx.ICON_ERROR|wx.OK)
             return false
         
-        wxBeginBusyCursor()
+        wx.BeginBusyCursor()
         try:
             hostname = HostnameFromServiceName(self.machineCtrl.GetValue())
             port = self.portCtrl.GetValue()
@@ -703,13 +703,13 @@ class AudioWindow(TitledPage):
             log.exception("AudioWindow.Validate: Service manager is not started")
             self.canConnect = false
 
-        wxEndBusyCursor()
+        wx.EndBusyCursor()
   
         if self.canConnect:
             return true
         else:
             MessageDialog(self, "Could not connect. Is a service manager running\nat %s:%s?" % (hostname,port),  
-                          style = wxICON_ERROR|wxOK)
+                          style = wx.ICON_ERROR|wx.OK)
             return false
     
     def CheckBoxEvent(self, event):
@@ -734,17 +734,17 @@ class AudioWindow(TitledPage):
         '''
         Handles UI layout
         '''
-        self.sizer.Add(self.text, 0, wxALL, 5)
+        self.sizer.Add(self.text, 0, wx.ALL, 5)
         self.sizer.Add((20,20))
-        gridSizer = wxFlexGridSizer(2, 2, 6, 6)
+        gridSizer = wx.FlexGridSizer(2, 2, 6, 6)
         gridSizer.Add(self.machineText)
-        gridSizer.Add(self.machineCtrl, 0, wxEXPAND)
+        gridSizer.Add(self.machineCtrl, 0, wx.EXPAND)
         gridSizer.Add(self.portText)
-        gridSizer.Add(self.portCtrl, 0, wxEXPAND)
+        gridSizer.Add(self.portCtrl, 0, wx.EXPAND)
         gridSizer.AddGrowableCol(1)
-        self.sizer.Add(gridSizer, 0, wxALL | wxEXPAND, 5)
+        self.sizer.Add(gridSizer, 0, wx.ALL | wx.EXPAND, 5)
         self.sizer.Add((10,10))
-        self.sizer.Add(self.checkBox, 0, wxEXPAND)
+        self.sizer.Add(self.checkBox, 0, wx.EXPAND)
         self.sizer.Add((20, 20))
 
 
@@ -758,22 +758,22 @@ class ConfigWindow(TitledPage):
         self.audioUrl = None
         self.videoCaptUrl = None
         self.videoDispUrl = None
-        self.info = wxStaticText(self, -1, 
+        self.info = wx.StaticText(self, -1, 
                                  "This is your node configuration. Click 'Back' if you want to change something.")
-        self.vCapHeading = wxStaticText(self, -1, "Video Capture Machine", style = wxALIGN_LEFT)
-        self.vCapHeading.SetFont(wxFont(wxNORMAL_FONT.GetPointSize(), wxNORMAL, wxNORMAL, wxBOLD))
-        self.vDispHeading = wxStaticText(self, -1, "Video Display Machine", style = wxALIGN_LEFT)
-        self.vDispHeading.SetFont(wxFont(wxNORMAL_FONT.GetPointSize(), wxNORMAL, wxNORMAL, wxBOLD))
+        self.vCapHeading = wx.StaticText(self, -1, "Video Capture Machine", style = wx.ALIGN_LEFT)
+        self.vCapHeading.SetFont(wx.Font(wx.NORMAL_FONT.GetPointSize(), wx.NORMAL, wx.NORMAL, wx.BOLD))
+        self.vDispHeading = wx.StaticText(self, -1, "Video Display Machine", style = wx.ALIGN_LEFT)
+        self.vDispHeading.SetFont(wx.Font(wx.NORMAL_FONT.GetPointSize(), wx.NORMAL, wx.NORMAL, wx.BOLD))
 
-        self.audioHeading = wxStaticText(self, -1, "Audio Machine", style = wxALIGN_LEFT)
-        self.audioHeading.SetFont(wxFont(wxNORMAL_FONT.GetPointSize(), wxNORMAL, wxNORMAL, wxBOLD))
-        self.vCapMachineText = wxStaticText(self, -1, "")
-        self.vDispMachineText = wxStaticText(self, -1, "")
-        self.audioMachineText = wxStaticText(self, -1, "")
-        self.configName = wxStaticText(self, -1, "Configuration Name: ")
-        self.configNameCtrl = wxTextCtrl(self, -1, "")
-        self.CHECK_ID = wxNewId()
-        self.checkBox = wxCheckBox(self, self.CHECK_ID, 
+        self.audioHeading = wx.StaticText(self, -1, "Audio Machine", style = wx.ALIGN_LEFT)
+        self.audioHeading.SetFont(wx.Font(wx.NORMAL_FONT.GetPointSize(), wx.NORMAL, wx.NORMAL, wx.BOLD))
+        self.vCapMachineText = wx.StaticText(self, -1, "")
+        self.vDispMachineText = wx.StaticText(self, -1, "")
+        self.audioMachineText = wx.StaticText(self, -1, "")
+        self.configName = wx.StaticText(self, -1, "Configuration Name: ")
+        self.configNameCtrl = wx.TextCtrl(self, -1, "")
+        self.CHECK_ID = wx.NewId()
+        self.checkBox = wx.CheckBox(self, self.CHECK_ID, 
                             "Always use this node setup for Access Grid meetings (default configuration)")
         self.checkBox.SetValue(true)
         self.Layout()
@@ -821,7 +821,7 @@ class ConfigWindow(TitledPage):
         service manager, appropriate services are added. Then save the configuration
         possibly as default.
         """
-        wxBeginBusyCursor()
+        wx.BeginBusyCursor()
         errors = ""
 
         configName = self.configNameCtrl.GetValue()
@@ -829,15 +829,15 @@ class ConfigWindow(TitledPage):
         
         if configName == "":
             MessageDialog(self, "Please enter a name for this configuration.", "Enter Configuration Name")
-            wxEndBusyCursor()
+            wx.EndBusyCursor()
             return false
 
         if string.find(configName, "/") != -1 or string.find(configName, "\\") != -1:
             info = "Configuration name %s is invalid." % configName
-            dlg = wxMessageDialog(None, info, "Invalid Configuration Name", style = wxOK | wxICON_INFORMATION)
+            dlg = wx.MessageDialog(None, info, "Invalid Configuration Name", style = wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
-            wxEndBusyCursor()
+            wx.EndBusyCursor()
             return false
             
             
@@ -852,12 +852,12 @@ class ConfigWindow(TitledPage):
         # Confirm overwrite
         if configName in configs:
             text ="The configuration %s already exists. Do you want to overwrite?" % (configName,)
-            dlg = wxMessageDialog(self, text, "Confirm",
-                                  style = wxICON_INFORMATION | wxOK | wxCANCEL)
+            dlg = wx.MessageDialog(self, text, "Confirm",
+                                  style = wx.ICON_INFORMATION | wx.OK | wx.CANCEL)
             ret = dlg.ShowModal()
             dlg.Destroy()
-            if ret != wxID_OK:
-                wxEndBusyCursor()
+            if ret != wx.ID_OK:
+                wx.EndBusyCursor()
                 # User does not want to overwrite.
                 return false
                 
@@ -901,9 +901,9 @@ class ConfigWindow(TitledPage):
             if setAsDefault:
                 messageText += "\nand set as default node configuration"
             MessageDialog(self, messageText,  
-                          style = wxICON_INFORMATION|wxOK)
+                          style = wx.ICON_INFORMATION|wx.OK)
      
-        wxEndBusyCursor()
+        wx.EndBusyCursor()
         return true
                        
     def Layout(self):
@@ -912,48 +912,48 @@ class ConfigWindow(TitledPage):
         '''
         if IsWindows():
             # For some reason the static text doesn't get the right size on windows
-            self.vCapHeading.SetSize(wxSize(150, 20))
-            self.vDispHeading.SetSize(wxSize(150, 20))
-            self.audioHeading.SetSize(wxSize(100, 20))
+            self.vCapHeading.SetSize(wx.Size(150, 20))
+            self.vDispHeading.SetSize(wx.Size(150, 20))
+            self.audioHeading.SetSize(wx.Size(100, 20))
                      
-        self.sizer.Add(self.info, 0, wxALL, 5)
+        self.sizer.Add(self.info, 0, wx.ALL, 5)
         self.sizer.Add((20, 20))
-        box = wxBoxSizer(wxHORIZONTAL)
+        box = wx.BoxSizer(wx.HORIZONTAL)
        
-        box.Add(self.vCapHeading, 0, wxALIGN_CENTER)
-        box.Add(wxStaticLine(self, -1), 1, wxALIGN_CENTER)
-        self.sizer.Add(box, 0, wxEXPAND)
+        box.Add(self.vCapHeading, 0, wx.ALIGN_CENTER)
+        box.Add(wx.StaticLine(self, -1), 1, wx.ALIGN_CENTER)
+        self.sizer.Add(box, 0, wx.EXPAND)
 
         self.sizer.Add((5,5))
-        self.sizer.Add(self.vCapMachineText, 0, wxLEFT | wxEXPAND, 30)
+        self.sizer.Add(self.vCapMachineText, 0, wx.LEFT | wx.EXPAND, 30)
         self.sizer.Add((10, 10))
 
-        box = wxBoxSizer(wxHORIZONTAL)
-        box.Add(self.vDispHeading, 0, wxALIGN_CENTER)
-        box.Add(wxStaticLine(self, -1), 1, wxALIGN_CENTER)
-        self.sizer.Add(box, 0, wxEXPAND)
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(self.vDispHeading, 0, wx.ALIGN_CENTER)
+        box.Add(wx.StaticLine(self, -1), 1, wx.ALIGN_CENTER)
+        self.sizer.Add(box, 0, wx.EXPAND)
         
         self.sizer.Add((5,5))
-        self.sizer.Add(self.vDispMachineText, 0, wxLEFT | wxEXPAND, 30)
+        self.sizer.Add(self.vDispMachineText, 0, wx.LEFT | wx.EXPAND, 30)
         self.sizer.Add((10, 10))
         
-        box = wxBoxSizer(wxHORIZONTAL)
+        box = wx.BoxSizer(wx.HORIZONTAL)
        
         box.Add(self.audioHeading)
-        box.Add(wxStaticLine(self, -1), 1, wxALIGN_CENTER)
-        self.sizer.Add(box, 0, wxEXPAND)
+        box.Add(wx.StaticLine(self, -1), 1, wx.ALIGN_CENTER)
+        self.sizer.Add(box, 0, wx.EXPAND)
 
         self.sizer.Add((5,5))
-        self.sizer.Add(self.audioMachineText, 0, wxLEFT | wxEXPAND, 30)
+        self.sizer.Add(self.audioMachineText, 0, wx.LEFT | wx.EXPAND, 30)
 
         self.sizer.Add((5,5))
-        box = wxBoxSizer(wxHORIZONTAL)
-        box.Add(self.configName, 0, wxCENTER|wxALL, 5)
-        box.Add(self.configNameCtrl, 1, wxALL, 5)
-        self.sizer.Add(box, 0, wxEXPAND)
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(self.configName, 0, wx.CENTER|wx.ALL, 5)
+        box.Add(self.configNameCtrl, 1, wx.ALL, 5)
+        self.sizer.Add(box, 0, wx.EXPAND)
 
         self.sizer.Add((20,20))
-        self.sizer.Add(self.checkBox, 0, wxCENTER, 5)
+        self.sizer.Add(self.checkBox, 0, wx.CENTER, 5)
 
 
 
@@ -1151,8 +1151,8 @@ def main():
     browser = Browser(AGServiceManager.ServiceType)
     browser.Start()
 
-    # Create the wxpython app
-    wxapp = wxPySimpleApp()
+    # Create the wx.python app
+    wxapp = wx.PySimpleApp()
 
     # Init the toolkit with the standard environment.
     app = WXGUIApplication()
@@ -1171,7 +1171,7 @@ def main():
                     "Please satisfy this dependency and restart the software"
             msg = msg % e.args[0]
         MessageDialog(None,msg, "Initialization Error",
-                      style=wxICON_ERROR )
+                      style=wx.ICON_ERROR )
         sys.exit(-1)
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
@@ -1179,7 +1179,7 @@ def main():
         MessageDialog(None,
                       "The following error occurred during initialization:\n\n\t%s %s" % (e.__class__.__name__,e), 
                       "Initialization Error",
-                      style=wxICON_ERROR )
+                      style=wx.ICON_ERROR )
         sys.exit(-1)
 
     

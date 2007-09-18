@@ -3,13 +3,27 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.286 2007-05-31 20:56:42 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.287 2007-09-18 20:45:24 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.286 2007-05-31 20:56:42 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.287 2007-09-18 20:45:24 turam Exp $"
+
+
+from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog, MessageDialog, SetIcon
+from AccessGrid import icons
+import wx
+from AccessGrid.Version import GetVersion, GetStatus
+
+# Display the progress dialog as soon as possible
+wxapp = wx.PySimpleApp(clearSigInt=0)
+versionText = "Version %s %s" % (str(GetVersion()), str(GetStatus()) )
+progressDialog = ProgressDialog(None,icons.getSplashBitmap(), 100, versionText)
+progressDialog.Show(1)
+progressDialog.UpdateGauge('Starting Venue Client',10)
+
 
 # Standard Imports
 import os
@@ -19,7 +33,7 @@ import signal
 from optparse import Option
 
 # GUI related imports
-from wxPython.wx import wxPySimpleApp, wxTaskBarIcon, wxICON_ERROR
+
 try:
     from twisted.internet import _threadedselect as threadedselectreactor
 except:
@@ -33,8 +47,8 @@ from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.VenueClientUI import VenueClientUI
 from AccessGrid.VenueClientController import VenueClientController
 from AccessGrid.VenueClient import VenueClient
-from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog, MessageDialog, SetIcon
-from AccessGrid import icons
+#from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog, MessageDialog, SetIcon
+#from AccessGrid import icons
 from AccessGrid.Platform import IsOSX,IsWindows
 from AccessGrid.Version import GetVersion, GetStatus
 from twisted.internet import reactor
@@ -59,16 +73,9 @@ def main():
 
     m2threading.init()
 
-    # Create the wxpython app
-    wxapp = wxPySimpleApp(clearSigInt=0)
-    
-    versionText = "Version %s %s" % (str(GetVersion()), str(GetStatus()) )
-    progressDialog = ProgressDialog(None,icons.getSplashBitmap(), 100, versionText)
-    progressDialog.Show(1)
-    progressDialog.UpdateGauge('Starting Venue Client',10)
 
     if IsOSX():
-        t = wxTaskBarIcon()
+        t = wx.TaskBarIcon()
         t.SetIcon(icons.getAGIconIcon())
     
     # Init the toolkit with the standard environment.
@@ -102,7 +109,7 @@ def main():
                     "Please satisfy this dependency and restart the software"
             msg = msg % e.args[0]
         MessageDialog(None,msg, "Initialization Error",
-                      style=wxICON_ERROR )
+                      style=wx.ICON_ERROR )
         sys.exit(-1)
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
@@ -110,7 +117,7 @@ def main():
         MessageDialog(None,
                       "The following error occurred during initialization:\n\n\t%s %s" % (e.__class__.__name__,e), 
                       "Initialization Error",
-                      style=wxICON_ERROR )
+                      style=wx.ICON_ERROR )
         sys.exit(-1)
         
     # Get the log
@@ -121,8 +128,8 @@ def main():
     nodeConfig = app.GetOption("configfilename")
 
     try:
-        import wxPython
-        wxversion_str = str(wxPython.wx.__version__)
+        import wx
+        wxversion_str = str(wx.VERSION_STRING)
         log.info("wx version is: " + wxversion_str)
     except:
         log.exception("Unable to log wx version.")

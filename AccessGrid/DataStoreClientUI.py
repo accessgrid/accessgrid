@@ -5,18 +5,18 @@
 # Author:      Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClientUI.py,v 1.4 2004-02-24 23:32:48 turam Exp $
+# RCS-ID:      $Id: DataStoreClientUI.py,v 1.5 2007-09-18 20:45:13 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClientUI.py,v 1.4 2004-02-24 23:32:48 turam Exp $"
+__revision__ = "$Id: DataStoreClientUI.py,v 1.5 2007-09-18 20:45:13 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import DataStoreClient
 
-from wxPython.wx import *
+import wx
 
 class DataStoreFileChooser:
     def __init__(self, datastoreClient, pattern = "*", message = "", caption = ""):
@@ -25,7 +25,7 @@ class DataStoreFileChooser:
 
         filenames = self.datastoreClient.QueryMatchingFiles(pattern)
         print "Got filenames ", filenames
-        self.dlg = wxSingleChoiceDialog(None, message, caption, filenames)
+        self.dlg = wx.SingleChoiceDialog(None, message, caption, filenames)
 
     def run(self):
         ret = self.dlg.ShowModal()
@@ -34,7 +34,7 @@ class DataStoreFileChooser:
 
         file = None
 
-        if ret == wxID_OK:
+        if ret == wx.ID_OK:
             file = self.dlg.GetStringSelection()
 
         self.dlg.Destroy()
@@ -42,7 +42,7 @@ class DataStoreFileChooser:
 
 if __name__ == "__main__":
 
-    app = wxPySimpleApp()
+    app = wx.PySimpleApp()
 
     if len(sys.argv) < 2:
         url = "https://localhost:8000/Venues/default"

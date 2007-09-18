@@ -1,5 +1,4 @@
-# GUI related imports
-from wxPython.wx import wxPySimpleApp
+
 
 # Our imports
 from AccessGrid.Toolkit import WXGUIApplication

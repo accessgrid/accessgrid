@@ -3,21 +3,21 @@
 # Name:        CertificateRequestTool.py
 # Purpose:     Starts the CertificateRequestTool
 # Created:     2003/08/12
-# RCS_ID:      $Id: CertificateRequestTool.py,v 1.11 2006-03-19 23:38:34 willing Exp $
+# RCS_ID:      $Id: CertificateRequestTool.py,v 1.12 2007-09-18 20:45:21 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the tool used to get certificates.
 """
-__revision__ = "$Id: CertificateRequestTool.py,v 1.11 2006-03-19 23:38:34 willing Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.12 2007-09-18 20:45:21 turam Exp $"
 
 import sys
 from AccessGrid.Toolkit import WXGUIApplication
-from wxPython.wx import wxPySimpleApp
+import wx
 from AccessGrid.Security.wxgui import CertificateManagerWXGUI
 
-pp = wxPySimpleApp()
+pp = wx.PySimpleApp()
 app = WXGUIApplication()
 
 # This will not work if we don't have any certificates
