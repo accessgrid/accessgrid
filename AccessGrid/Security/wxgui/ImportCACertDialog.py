@@ -4,11 +4,11 @@ import logging
 import re
 log = logging.getLogger("AG.CertificateManagerWXGUI")
 
-from wxPython.wx import *
+import wx
 
 from AccessGrid.Security import CertificateRepository
 
-class ImportCACertDialog(wxDialog):
+class ImportCACertDialog(wx.Dialog):
 
     """
     Dialog for importing a new trusted CA certificate.
@@ -27,8 +27,8 @@ class ImportCACertDialog(wxDialog):
     SPFile = 2
 
     def __init__(self, parent, certMgr, id = -1, title = "Import Trusted CA Certificate"):
-        wxDialog.__init__(self, parent, id, title, size = wxSize(600, 200),
-                          style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU)
+        wx.Dialog.__init__(self, parent, id, title, size = wx.Size(600, 200),
+                          style = wx.CAPTION | wx.RESIZE_BORDER | wx.SYSTEM_MENU)
 
         self.certMgr = certMgr
         
@@ -52,8 +52,8 @@ class ImportCACertDialog(wxDialog):
         """
 
         ret = self.ShowModal()
-        print "Ret is", wxID_OK
-        if ret != wxID_OK:
+        print "Ret is", wx.ID_OK
+        if ret != wx.ID_OK:
             return None
 
         #
@@ -90,13 +90,13 @@ class ImportCACertDialog(wxDialog):
 
         """
 
-        topsizer = wxBoxSizer(wxVERTICAL)
+        topsizer = wx.BoxSizer(wx.VERTICAL)
 
         #
         # Create these and make them align in size.
         #
-        static1 = wxStaticText(self, -1, "Certificate file:")
-        static2 = wxStaticText(self, -1, "Signing policy file:")
+        static1 = wx.StaticText(self, -1, "Certificate file:")
+        static2 = wx.StaticText(self, -1, "Signing policy file:")
         s1 = static1.GetSize()
         s2 = static2.GetSize()
 
@@ -118,45 +118,45 @@ class ImportCACertDialog(wxDialog):
         introText = """Enter the pathname to the CA certificate below,
 or use the Browse button to browse to it.         
     """
-        intro = wxStaticText(self, -1, introText)
-        topsizer.Add(intro, 0, wxEXPAND)
+        intro = wx.StaticText(self, -1, introText)
+        topsizer.Add(intro, 0, wx.EXPAND)
 
         #
         # Certificate file browser
         #
 
-        hb = wxBoxSizer(wxHORIZONTAL)
+        hb = wx.BoxSizer(wx.HORIZONTAL)
 
-        topsizer.Add(hb, 0, wxEXPAND)
+        topsizer.Add(hb, 0, wx.EXPAND)
         
-        hb.Add(static1, 0, wxALIGN_CENTER_VERTICAL | wxALL, 3)
+        hb.Add(static1, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 3)
 
-        self.certFileText = wxTextCtrl(self, -1, style = wxTE_PROCESS_ENTER)
-        hb.Add(self.certFileText, 1, wxALL | wxALIGN_CENTER_VERTICAL, 3)
+        self.certFileText = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER)
+        hb.Add(self.certFileText, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 3)
         EVT_TEXT_ENTER(self, self.certFileText.GetId(), self.OnCertFileEnter)
 
-        b = wxButton(self, -1, "Browse")
-        hb.Add(b, 0, wxALL, 3)
+        b = wx.Button(self, -1, "Browse")
+        hb.Add(b, 0, wx.ALL, 3)
         EVT_BUTTON(self, b.GetId(), self.OnCertBrowse)
 
         #
         # Cert name.
         #
         
-        hb = wxBoxSizer(wxHORIZONTAL)
+        hb = wx.BoxSizer(wx.HORIZONTAL)
 
-        topsizer.Add(hb, 0, wxEXPAND)
+        topsizer.Add(hb, 0, wx.EXPAND)
 
-        hb.Add(wxStaticText(self, -1, "Certificate name: "), 0, wxALL | wxALIGN_CENTER_VERTICAL, 3)
+        hb.Add(wx.StaticText(self, -1, "Certificate name: "), 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 3)
         
-        self.certName = wxStaticText(self, -1, "")
-        hb.Add(self.certName, 1, wxALL | wxALIGN_CENTER_VERTICAL, 3)
+        self.certName = wx.StaticText(self, -1, "")
+        hb.Add(self.certName, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 3)
 
         #
         # Separate from SP stuff.
         #
 
-        topsizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxTOP | wxBOTTOM, 4)
+        topsizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 4)
 
 
         #
@@ -169,9 +169,9 @@ certificate below, or use the Browse button to browse for
 it. Alternatively, it may be possible to construct the 
 signing policy from the CA certificate.
     """
-        sp = wxStaticText(self, -1, spText)
+        sp = wx.StaticText(self, -1, spText)
         
-        topsizer.Add(sp, 0, wxEXPAND)
+        topsizer.Add(sp, 0, wx.EXPAND)
 
         #
         # Signing policy box
@@ -179,64 +179,64 @@ signing policy from the CA certificate.
         # Two radio buttons, plus another text/textctrl/browse button.
         #
 
-        rb1 = wxRadioButton(self, -1, "Construct from certificate", style = wxRB_GROUP)
+        rb1 = wx.RadioButton(self, -1, "Construct from certificate", style = wx.RB_GROUP)
         EVT_RADIOBUTTON(self, rb1.GetId(),
                         lambda event, self = self: self.setSPMode(self.SPConstruct))
         
-        self.fileRadioButton = rb2 = wxRadioButton(self, -1, "Import from file")
+        self.fileRadioButton = rb2 = wx.RadioButton(self, -1, "Import from file")
         EVT_RADIOBUTTON(self, rb2.GetId(), 
                         lambda event, self = self: self.setSPMode(self.SPFile))
 
-        topsizer.Add(rb1, 0, wxEXPAND | wxALL, 3)
-        topsizer.Add(rb2, 0, wxEXPAND | wxALL, 3)
+        topsizer.Add(rb1, 0, wx.EXPAND | wx.ALL, 3)
+        topsizer.Add(rb2, 0, wx.EXPAND | wx.ALL, 3)
 
         #
         # Hsizer hb for the text label, file location, and browse button
         #
 
-        hb = wxBoxSizer(wxHORIZONTAL)
+        hb = wx.BoxSizer(wx.HORIZONTAL)
 
-        topsizer.Add(hb, 0, wxEXPAND | wxALL, 3)
+        topsizer.Add(hb, 0, wx.EXPAND | wx.ALL, 3)
 
-        hb.Add(static2, 0, wxALIGN_CENTER_VERTICAL | wxALL, 3)
+        hb.Add(static2, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 3)
 
-        self.signingPolicyFileText = wxTextCtrl(self, -1, style = wxTE_PROCESS_ENTER)
+        self.signingPolicyFileText = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER)
         EVT_TEXT_ENTER(self, self.signingPolicyFileText.GetId(), self.OnSPFileEnter)
 
-        self.signingPolicyBrowseButton = b = wxButton(self, -1, "Browse")
+        self.signingPolicyBrowseButton = b = wx.Button(self, -1, "Browse")
         EVT_BUTTON(self, b.GetId(), self.OnSigningPolicyBrowse)
 
-        hb.Add(self.signingPolicyFileText, 1, wxALL | wxEXPAND, 3)
-        hb.Add(b, 0, wxALL, 3)
+        hb.Add(self.signingPolicyFileText, 1, wx.ALL | wx.EXPAND, 3)
+        hb.Add(b, 0, wx.ALL, 3)
 
         #
         # and a hbox with signing policy's CA name.
         #
         
-        hb = wxBoxSizer(wxHORIZONTAL)
+        hb = wx.BoxSizer(wx.HORIZONTAL)
 
-        topsizer.Add(hb, 0, wxEXPAND)
+        topsizer.Add(hb, 0, wx.EXPAND)
 
-        hb.Add(wxStaticText(self, -1, "Signing policy for CA: "), 0, wxALL | wxALIGN_CENTER_VERTICAL, 3)
+        hb.Add(wx.StaticText(self, -1, "Signing policy for CA: "), 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 3)
         
-        self.spName = wxStaticText(self, -1, "")
-        hb.Add(self.spName, 1, wxALL | wxALIGN_CENTER_VERTICAL, 3)
+        self.spName = wx.StaticText(self, -1, "")
+        hb.Add(self.spName, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 3)
 
         #
         # Import/Cancel buttons
         #
 
-        hb = wxBoxSizer(wxHORIZONTAL)
-        b = wxButton(self, -1, "Import")
+        hb = wx.BoxSizer(wx.HORIZONTAL)
+        b = wx.Button(self, -1, "Import")
         EVT_BUTTON(self, b.GetId(), self.OnImport)
-        hb.Add(b, 0, wxALL, 3)
+        hb.Add(b, 0, wx.ALL, 3)
 
-        b = wxButton(self, -1, "Cancel")
+        b = wx.Button(self, -1, "Cancel")
         EVT_BUTTON(self, b.GetId(),
-                   lambda event, self = self: self.EndModal(wxID_CANCEL))
-        hb.Add(b, 0, wxALL, 3)
+                   lambda event, self = self: self.EndModal(wx.ID_CANCEL))
+        hb.Add(b, 0, wx.ALL, 3)
 
-        topsizer.Add(hb, 0, wxALIGN_RIGHT)
+        topsizer.Add(hb, 0, wx.ALIGN_RIGHT)
 
         #
         # Default to using file.
@@ -273,16 +273,16 @@ signing policy from the CA certificate.
 
         """
 
-        dlg = wxMessageDialog(self, "%s\n\nRetry import?" % (message),
+        dlg = wx.MessageDialog(self, "%s\n\nRetry import?" % (message),
                               "Import problem",
-                              style = wxYES_NO | wxYES_DEFAULT)
+                              style = wx.YES_NO | wx.YES_DEFAULT)
         ret = dlg.ShowModal()
 
-        if ret == wxID_YES:
+        if ret == wx.ID_YES:
             print "Retrying"
             return
         else:
-            self.EndModal(wxID_CANCEL)
+            self.EndModal(wx.ID_CANCEL)
 
     def OnImport(self, event):
         """
@@ -333,14 +333,14 @@ signing policy from the CA certificate.
         validCerts = filter(lambda a: not a.IsExpired(), matchingCerts)
 
         if matchingCerts != []:
-            dlg = wxMessageDialog(self, 
+            dlg = wx.MessageDialog(self, 
                                   "Another certificate with this name is already present\n\n" +
                                   "Attempt to import anyway?",
                                   "Certificate already exists",
-                                  style = wxYES_NO | wxNO_DEFAULT)
+                                  style = wx.YES_NO | wx.NO_DEFAULT)
             ret = dlg.ShowModal()
 
-            if ret == wxID_NO:
+            if ret == wx.ID_NO:
                 return
 
         #
@@ -388,16 +388,16 @@ signing policy from the CA certificate.
 
             subj = str(cert.GetSubject())
             if caName != subj:
-                dlg = wxMessageDialog(self, 
+                dlg = wx.MessageDialog(self, 
                                       ("Name in certificate does not match name in signing policy:\n" +
                                        "   certificate:    %(subj)s\n" +
                                        "   signing policy: %(caName)s\n" +
                                        "Import anyway?" ) % locals(),
                                       "Error in signing policy",
-                                      style = wxYES_NO | wxNO_DEFAULT)
+                                      style = wx.YES_NO | wx.NO_DEFAULT)
                 ret = dlg.ShowModal()
 
-                if ret == wxID_NO:
+                if ret == wx.ID_NO:
                     return
             self.signingPolicy = open(spFile).read()
         else:
@@ -409,7 +409,7 @@ signing policy from the CA certificate.
 
         self.certFile = certPath
 
-        self.EndModal(wxID_OK)
+        self.EndModal(wx.ID_OK)
             
 
     def OnSigningPolicyBrowse(self, event):
@@ -440,11 +440,11 @@ signing policy from the CA certificate.
         # Construct and show browser.
         #
             
-        dlg = wxFileDialog(None, "Choose a signing policy file",
+        dlg = wx.FileDialog(None, "Choose a signing policy file",
                            defaultDir = dir,
                            defaultFile = file,
                            wildcard = "Signing policy files (*.signing_policy)|*.signing_policy|All files|*",
-                           style = wxOPEN)
+                           style = wx.OPEN)
         dlg.SetFilterIndex(self.lastSPFilterIndex)
         rc = dlg.ShowModal()
 
@@ -452,7 +452,7 @@ signing policy from the CA certificate.
         # If user cancelled, just return.
         #
 
-        if rc != wxID_OK:
+        if rc != wx.ID_OK:
             dlg.Destroy()
             return
 
@@ -507,11 +507,11 @@ signing policy from the CA certificate.
         # Construct and show browser.
         #
             
-        dlg = wxFileDialog(None, "Choose a trusted CA certificate file",
+        dlg = wx.FileDialog(None, "Choose a trusted CA certificate file",
                            defaultDir = dir,
                            defaultFile = file,
                            wildcard = "Trusted cert files (*.0)|*.0|PEM Files (*.pem)|*.pem|All files|*",
-                           style = wxOPEN)
+                           style = wx.OPEN)
         dlg.SetFilterIndex(self.lastFilterIndex)
         rc = dlg.ShowModal()
 
@@ -519,7 +519,7 @@ signing policy from the CA certificate.
         # If user cancelled, just return.
         #
 
-        if rc != wxID_OK:
+        if rc != wx.ID_OK:
             dlg.Destroy()
             return
 

@@ -1,11 +1,11 @@
-from wxPython.wx import *
+import wx
 import types
 
-class CertificateBrowserBase(wxPanel):
+class CertificateBrowserBase(wx.Panel):
     """
     Base class for certificate browser panels.
 
-    This class defines the look and feel (a wxListCtrl in report mode, with
+    This class defines the look and feel (a wx.ListCtrl in report mode, with
     buttons alongside whose state may change depending on which certificate
     is selected) and manages the list of certificates.
 
@@ -18,7 +18,7 @@ class CertificateBrowserBase(wxPanel):
 
         self.certMgr = certMgr
 
-        wxPanel.__init__(self, parent, id)
+        wx.Panel.__init__(self, parent, id)
 
         self.__build()
 
@@ -69,7 +69,7 @@ class CertificateBrowserBase(wxPanel):
         if len(certs) == 0:
             sizes = self._getListColumnWidths()
             for col in range(0, len(sizes)):
-                self.list.SetColumnWidth(col, wxLIST_AUTOSIZE_USEHEADER)
+                self.list.SetColumnWidth(col, wx.LIST_AUTOSIZE_USEHEADER)
             return
 
         #
@@ -124,11 +124,11 @@ class CertificateBrowserBase(wxPanel):
         # vsizer to which the extra-builder should add its widgets.
         #
 
-        self.topsizer = wxBoxSizer(wxVERTICAL)
-        self.sizer = wxBoxSizer(wxHORIZONTAL)
+        self.topsizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.list = wxListCtrl(self, -1, style = wxLC_REPORT | wxLC_SINGLE_SEL | wxLC_VRULES)
-        self.sizer.Add(self.list, 1, wxEXPAND)
+        self.list = wx.ListCtrl(self, -1, style = wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_VRULES)
+        self.sizer.Add(self.list, 1, wx.EXPAND)
 
         EVT_LIST_ITEM_SELECTED(self.list, self.list.GetId(),
                                self.OnListItemSelected)
@@ -137,12 +137,12 @@ class CertificateBrowserBase(wxPanel):
         EVT_LIST_ITEM_ACTIVATED(self.list, self.list.GetId(),
                                 self.OnListItemActivated)
 
-        bsizer = wxBoxSizer(wxVERTICAL)
-        self.sizer.Add(bsizer, 0, wxEXPAND)
+        bsizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.Add(bsizer, 0, wx.EXPAND)
 
         self._buildButtons(bsizer)
 
-        self.topsizer.Add(self.sizer, 1, wxEXPAND)
+        self.topsizer.Add(self.sizer, 1, wx.EXPAND)
         self._buildExtra(self, self.topsizer)
         
         self._initList()
@@ -266,15 +266,15 @@ class CertificateBrowserBase(wxPanel):
         return self.listItemMap[id]
 
     def _getNewItemId(self):
-        return wxNewId();
+        return wx.NewId();
 
-    def _getSelectedIndices(self, state =  wxLIST_STATE_SELECTED):
+    def _getSelectedIndices(self, state =  wx.LIST_STATE_SELECTED):
         indices = []
         found = 1
         lastFound = -1
         while found:
             index = self.list.GetNextItem(lastFound,
-                                          wxLIST_NEXT_ALL,
+                                          wx.LIST_NEXT_ALL,
                                           state,
                                           )
             if index == -1:
@@ -294,8 +294,8 @@ class CertificateBrowserBase(wxPanel):
         # Default implementation.
         #
 
-        b = wxButton(self, -1, "FOo")
-        sizer.Add(b, 0, wxEXPAND)
+        b = wx.Button(self, -1, "FOo")
+        sizer.Add(b, 0, wx.EXPAND)
 
     def _buildExtra(self, panel, sizer):
         """
@@ -318,7 +318,7 @@ class CertificateBrowserBase(wxPanel):
         return ["test 1", "test 2", "test 3"]
         
     def _getListColumnWidths(self):
-        return [wxLIST_AUTOSIZE, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE]
+        return [wx.LIST_AUTOSIZE, wx.LIST_AUTOSIZE, wx.LIST_AUTOSIZE]
 
     def _LoadCerts(self):
         """

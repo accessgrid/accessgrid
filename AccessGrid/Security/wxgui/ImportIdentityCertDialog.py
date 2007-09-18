@@ -5,12 +5,12 @@ log = logging.getLogger("AG.CertificateManagerWXGUI")
 
 log.setLevel(logging.DEBUG)
 
-from wxPython.wx import *
+import wx
 
 from AccessGrid.Security import CertificateRepository
 from AccessGrid.UIUtilities import FileLocationWidget
 
-class ImportIdentityCertDialog(wxDialog):
+class ImportIdentityCertDialog(wx.Dialog):
 
     """
     Dialog for importing a new identity certificate.
@@ -22,8 +22,8 @@ class ImportIdentityCertDialog(wxDialog):
     """
 
     def __init__(self, parent, certMgr, id = -1, title = "Import Identity Certificate"):
-        wxDialog.__init__(self, parent, id, title, size = wxSize(600, 200),
-                          style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU)
+        wx.Dialog.__init__(self, parent, id, title, size = wx.Size(600, 200),
+                          style = wx.CAPTION | wx.RESIZE_BORDER | wx.SYSTEM_MENU)
 
         self.certMgr = certMgr
         
@@ -51,8 +51,8 @@ class ImportIdentityCertDialog(wxDialog):
         """
 
         ret = self.ShowModal()
-        # print "Ret is", wxID_OK
-        if ret != wxID_OK:
+        # print "Ret is", wx.ID_OK
+        if ret != wx.ID_OK:
             return None
 
         #
@@ -86,7 +86,7 @@ class ImportIdentityCertDialog(wxDialog):
 
         """
 
-        topsizer = wxBoxSizer(wxVERTICAL)
+        topsizer = wx.BoxSizer(wx.VERTICAL)
 
         #
         # Introductory text.
@@ -95,8 +95,8 @@ class ImportIdentityCertDialog(wxDialog):
         introText = """Enter the pathname to your identity certificate below,
 or use the Browse button to browse to it.         
     """
-        intro = wxStaticText(self, -1, introText)
-        topsizer.Add(intro, 0, wxEXPAND)
+        intro = wx.StaticText(self, -1, introText)
+        topsizer.Add(intro, 0, wx.EXPAND)
 
         #
         # Certificate file browser
@@ -108,26 +108,26 @@ or use the Browse button to browse to it.
                                              [("PEM files (*.pem)", "*.pem"),
                                               ("All files", "*")],
                                              self.OnCertSelect)
-        topsizer.Add(self.certWidget, 0, wxEXPAND | wxALL, 3)
+        topsizer.Add(self.certWidget, 0, wx.EXPAND | wx.ALL, 3)
         
         #
         # Cert name.
         #
         
-        hb = wxBoxSizer(wxHORIZONTAL)
+        hb = wx.BoxSizer(wx.HORIZONTAL)
 
-        topsizer.Add(hb, 0, wxEXPAND)
+        topsizer.Add(hb, 0, wx.EXPAND)
 
-        hb.Add(wxStaticText(self, -1, "Certificate name: "), 0, wxALL | wxALIGN_CENTER_VERTICAL, 3)
+        hb.Add(wx.StaticText(self, -1, "Certificate name: "), 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 3)
         
-        self.certName = wxStaticText(self, -1, "")
-        hb.Add(self.certName, 1, wxALL | wxALIGN_CENTER_VERTICAL, 3)
+        self.certName = wx.StaticText(self, -1, "")
+        hb.Add(self.certName, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 3)
 
         #
         # Separate from PK stuff.
         #
 
-        topsizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxTOP | wxBOTTOM, 4)
+        topsizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 4)
 
         #
         # Private key text.
@@ -138,9 +138,9 @@ Enter the filename of the private key for this identity
 certificate below, or use the Browse button to browse for
 it. The private key may be included in the certificate file.
     """
-        sp = wxStaticText(self, -1, pkText)
+        sp = wx.StaticText(self, -1, pkText)
         
-        topsizer.Add(sp, 0, wxEXPAND)
+        topsizer.Add(sp, 0, wx.EXPAND)
 
         #
         # Private key box.
@@ -148,8 +148,8 @@ it. The private key may be included in the certificate file.
         # Two radio buttons, plus another text/textctrl/browse button.
         #
 
-        self.pkCertRadioButton = rb1 = wxRadioButton(self, -1, "Load private key from certificate file", style = wxRB_GROUP)
-        self.pkFileRadioButton = rb2 = wxRadioButton(self, -1,
+        self.pkCertRadioButton = rb1 = wx.RadioButton(self, -1, "Load private key from certificate file", style = wx.RB_GROUP)
+        self.pkFileRadioButton = rb2 = wx.RadioButton(self, -1,
                                                      "Load private key from separate file")
 
         EVT_RADIOBUTTON(self, rb1.GetId(),
@@ -158,8 +158,8 @@ it. The private key may be included in the certificate file.
         EVT_RADIOBUTTON(self, rb2.GetId(), 
                         lambda event, self = self: self.SetRequirePKFile(1))
 
-        topsizer.Add(rb1, 0, wxEXPAND | wxALL, 3)
-        topsizer.Add(rb2, 0, wxEXPAND | wxALL, 3)
+        topsizer.Add(rb1, 0, wx.EXPAND | wx.ALL, 3)
+        topsizer.Add(rb2, 0, wx.EXPAND | wx.ALL, 3)
 
         self.pkWidget = FileLocationWidget(self,
                                            "Private key file",
@@ -167,23 +167,23 @@ it. The private key may be included in the certificate file.
                                            [("PEM files (*.pem)", "*.pem"),
                                             ("All files", "*")],
                                            self.OnPKSelect)
-        topsizer.Add(self.pkWidget, 0, wxEXPAND | wxALL, 3)
+        topsizer.Add(self.pkWidget, 0, wx.EXPAND | wx.ALL, 3)
 
         #
         # Import/Cancel buttons
         #
 
-        hb = wxBoxSizer(wxHORIZONTAL)
-        b = wxButton(self, -1, "Import")
+        hb = wx.BoxSizer(wx.HORIZONTAL)
+        b = wx.Button(self, -1, "Import")
         EVT_BUTTON(self, b.GetId(), self.OnImport)
-        hb.Add(b, 0, wxALL, 3)
+        hb.Add(b, 0, wx.ALL, 3)
 
-        b = wxButton(self, -1, "Cancel")
+        b = wx.Button(self, -1, "Cancel")
         EVT_BUTTON(self, b.GetId(),
-                   lambda event, self = self: self.EndModal(wxID_CANCEL))
-        hb.Add(b, 0, wxALL, 3)
+                   lambda event, self = self: self.EndModal(wx.ID_CANCEL))
+        hb.Add(b, 0, wx.ALL, 3)
 
-        topsizer.Add(hb, 0, wxALIGN_RIGHT)
+        topsizer.Add(hb, 0, wx.ALIGN_RIGHT)
 
         #
         # Default to using file.
@@ -243,16 +243,16 @@ it. The private key may be included in the certificate file.
 
         """
 
-        dlg = wxMessageDialog(self, "%s\n\nRetry import?" % (message),
+        dlg = wx.MessageDialog(self, "%s\n\nRetry import?" % (message),
                               "Import problem",
-                              style = wxYES_NO | wxYES_DEFAULT)
+                              style = wx.YES_NO | wx.YES_DEFAULT)
         ret = dlg.ShowModal()
 
-        if ret == wxID_YES:
+        if ret == wx.ID_YES:
             #print "Retrying"
             return
         else:
-            self.EndModal(wxID_CANCEL)
+            self.EndModal(wx.ID_CANCEL)
 
     def OnImport(self, event):
         """
@@ -278,10 +278,10 @@ it. The private key may be included in the certificate file.
         #
 
         if certPath == "":
-            dlg = wxMessageDialog(self,
+            dlg = wx.MessageDialog(self,
                                   "No certificate pathname provided.",
                                   "Import error",
-                                  style = wxOK)
+                                  style = wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -291,10 +291,10 @@ it. The private key may be included in the certificate file.
         #
 
         if not os.path.isfile(certPath):
-            dlg = wxMessageDialog(self,
+            dlg = wx.MessageDialog(self,
                                   "Certificate pathname %s is not a readable file." % (certPath),
                                   "Import error",
-                                  style = wxOK)
+                                  style = wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -316,15 +316,15 @@ it. The private key may be included in the certificate file.
 
         if not classify and not suppressDialogs:
 
-            dlg = wxMessageDialog(self,
+            dlg = wx.MessageDialog(self,
                                   "Cannot identify the type of this certificate; it might not be valid\n\n" +
                                   "Attempt to import anyway?",
                                   "Possibly invalid certificate",
-                                  style = wxYES_NO | wxNO_DEFAULT)
+                                  style = wx.YES_NO | wx.NO_DEFAULT)
             rc = dlg.ShowModal()
             dlg.Destroy()
 
-            if rc != wxID_YES:
+            if rc != wx.ID_YES:
                 return
             else:
                 suppressDialogs = 1
@@ -332,15 +332,15 @@ it. The private key may be included in the certificate file.
         (certType, cert, needPK ) = classify
 
         if certType == "Unknown" and not suppressDialogs:
-            dlg = wxMessageDialog(self,
+            dlg = wx.MessageDialog(self,
                                   "Cannot identify the type of this certificate; it might not be valid\n\n" +
                                   "Attempt to import anyway?",
                                   "Possibly invalid certificate",
-                                  style = wxYES_NO | wxNO_DEFAULT)
+                                  style = wx.YES_NO | wx.NO_DEFAULT)
             rc = dlg.ShowModal()
             dlg.Destroy()
 
-            if rc != wxID_YES:
+            if rc != wx.ID_YES:
                 return
             else:
                 suppressDialogs = 1
@@ -353,24 +353,24 @@ it. The private key may be included in the certificate file.
             pkPath = self.pkWidget.GetPath()
 
             if pkPath == "" and not suppressDialogs:
-                dlg = wxMessageDialog(self,
+                dlg = wx.MessageDialog(self,
                                      "Private key file is required, but was not provided.\n\n" +
                                       "Attempt to import anyway?",
                                       "Private key required.",
-                                      style = wxYES_NO | wxNO_DEFAULT)
+                                      style = wx.YES_NO | wx.NO_DEFAULT)
                 rc = dlg.ShowModal()
                 dlg.Destroy()
 
-                if rc != wxID_YES:
+                if rc != wx.ID_YES:
                     return
                 else:
                     suppressDialogs = 1
 
             if pkPath != "" and not os.path.isfile(pkPath):
-                dlg = wxMessageDialog(self,
+                dlg = wx.MessageDialog(self,
                                       "Private key pathname %s is not a readable file." % (pkPath),
                                       "Import error",
-                                      style = wxOK)
+                                      style = wx.OK)
                 dlg.ShowModal()
                 dlg.Destroy()
                 return
@@ -396,22 +396,22 @@ it. The private key may be included in the certificate file.
             validCerts = filter(lambda a: not a.IsExpired(), matchingCerts)
 
             if validCerts != []:
-                dlg = wxMessageDialog(
+                dlg = wx.MessageDialog(
                     self, 
                     "Another certificate with this name is already present.\n\n" +
                     "Attempt to import anyway?",
                     "Certificate already exists",
-                    style = wxYES_NO | wxNO_DEFAULT)
+                    style = wx.YES_NO | wx.NO_DEFAULT)
                 ret = dlg.ShowModal()
                 
-                if ret == wxID_NO:
+                if ret == wx.ID_NO:
                     return
                 
         self.certType = certType
         self.certFile = certPath
         self.pkFile = pkPath
 
-        self.EndModal(wxID_OK)
+        self.EndModal(wx.ID_OK)
             
 
 if __name__ == "__main__":
@@ -419,7 +419,7 @@ if __name__ == "__main__":
     logging.root.setLevel(logging.DEBUG)
     logging.root.addHandler(logging.StreamHandler())
 
-    pyapp = wxPySimpleApp()
+    pyapp = wx.PySimpleApp()
 
     import AccessGrid.Toolkit
     app = AccessGrid.Toolkit.WXGUIApplication()

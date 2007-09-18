@@ -1,6 +1,6 @@
 import time
 
-from wxPython.wx import *
+import wx
 
 from AccessGrid.Security.Utilities import GetCNFromX509Subject
 from AccessGrid import Platform
@@ -13,7 +13,7 @@ import ImportExportUtils
 
 from ImportIdentityCertDialog import ImportIdentityCertDialog
 
-class DeleteCertificateDialog(wxDialog):
+class DeleteCertificateDialog(wx.Dialog):
     """
     Dialog to use for asking the user if he wants to delete the cert.
 
@@ -22,29 +22,29 @@ class DeleteCertificateDialog(wxDialog):
     """
 
     def __init__(self, parent, msg):
-        wxDialog.__init__(self, parent, -1, title = "Really delete?")
+        wx.Dialog.__init__(self, parent, -1, title = "Really delete?")
 
-        sizer = wxBoxSizer(wxVERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
 
         for l in msg.split("\n"):
             l = l.strip()
-            txt = wxStaticText(self, -1, l)
-            sizer.Add(txt, 0, wxEXPAND | wxTOP | wxRIGHT | wxLEFT, 10)
+            txt = wx.StaticText(self, -1, l)
+            sizer.Add(txt, 0, wx.EXPAND | wx.TOP | wx.RIGHT | wx.LEFT, 10)
 
-        self.checkbox = wxCheckBox(self, -1, "Retain private key for certificate.")
-        sizer.Add(self.checkbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, 10)
+        self.checkbox = wx.CheckBox(self, -1, "Retain private key for certificate.")
+        sizer.Add(self.checkbox, 0, wx.ALIGN_LEFT | wx.LEFT | wx.RIGHT | wx.TOP, 10)
 
-        hs = wxBoxSizer(wxHORIZONTAL)
+        hs = wx.BoxSizer(wx.HORIZONTAL)
 
-        b = wxButton(self, wxID_YES, "Yes")
-        hs.Add(b, 0, wxALL, 3)
-        EVT_BUTTON(self, wxID_YES, lambda e, self = self: self.EndModal(wxID_YES))
+        b = wx.Button(self, wx.ID_YES, "Yes")
+        hs.Add(b, 0, wx.ALL, 3)
+        EVT_BUTTON(self, wx.ID_YES, lambda e, self = self: self.EndModal(wx.ID_YES))
 
-        b = wxButton(self, wxID_NO, "No")
-        hs.Add(b, 0, wxALL, 3)
-        EVT_BUTTON(self, wxID_NO, lambda e, self = self: self.EndModal(wxID_NO))
+        b = wx.Button(self, wx.ID_NO, "No")
+        hs.Add(b, 0, wx.ALL, 3)
+        EVT_BUTTON(self, wx.ID_NO, lambda e, self = self: self.EndModal(wx.ID_NO))
 
-        sizer.Add(hs, 0, wxTOP | wxBOTTOM |  wxALIGN_CENTER, 10)
+        sizer.Add(hs, 0, wx.TOP | wx.BOTTOM |  wx.ALIGN_CENTER, 10)
 
         self.SetSizer(sizer)
         self.Fit()
@@ -61,45 +61,45 @@ class IdentityBrowser(CertificateBrowserBase):
         # Buttons that are only valid when a cert is selected.
         self.certOnlyButtons = []
 
-        b = wxButton(self, -1, "Import")
+        b = wx.Button(self, -1, "Import")
         EVT_BUTTON(self, b.GetId(), self.OnImport)
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
 
-        b = wxButton(self, -1, "Export")
+        b = wx.Button(self, -1, "Export")
         EVT_BUTTON(self, b.GetId(), self.OnExport)
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "Delete")
+        b = wx.Button(self, -1, "Delete")
         EVT_BUTTON(self, b.GetId(), self.OnDelete)
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "Make Default")
+        b = wx.Button(self, -1, "Make Default")
         EVT_BUTTON(self, b.GetId(), self.OnSetDefault)
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
         self.defaultButton = b
         b.Enable(0)
 
-        b = wxButton(self, -1, "View Certificate")
+        b = wx.Button(self, -1, "View Certificate")
         EVT_BUTTON(self, b.GetId(), self.OnViewCertificate)
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
-        sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxALL , 3)
+        sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.ALL , 3)
 
-        self.exportServiceProfileButton = wxButton(self, -1,
+        self.exportServiceProfileButton = wx.Button(self, -1,
                                                    "Export Service Profile")
         EVT_BUTTON(self, self.exportServiceProfileButton.GetId(),
                    self.OnExportServiceProfile)
-        sizer.Add(self.exportServiceProfileButton, 0, wxEXPAND)
+        sizer.Add(self.exportServiceProfileButton, 0, wx.EXPAND)
         self.exportServiceProfileButton.Enable(0)
         
-        sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxALL , 3)
+        sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.ALL , 3)
 
-        b = wxButton(self, -1, "Refresh")
+        b = wx.Button(self, -1, "Refresh")
         EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
 
 
         for b in self.certOnlyButtons:
@@ -123,10 +123,10 @@ class IdentityBrowser(CertificateBrowserBase):
             impCert = ImportExportUtils.ImportPEMIdentityCertificate(self.certMgr, certFile, privateKeyFile)
         else:
 
-            dlg = wxMessageDialog(self,
+            dlg = wx.MessageDialog(self,
                                   "Unknown certificate type in import."
                                   "Import failed",
-                                  style = wxOK)
+                                  style = wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -162,7 +162,7 @@ class IdentityBrowser(CertificateBrowserBase):
         
         dlg.Destroy()
 
-        if ret == wxID_NO:
+        if ret == wx.ID_NO:
             return
 
         self.certMgr.GetCertificateRepository().RemoveCertificate(cert, dlg.GetRetainPrivateKey())
@@ -239,12 +239,12 @@ class IdentityBrowser(CertificateBrowserBase):
         dir = Platform.Config.UserConfig.instance().GetServicesDir()
         file = "%s.profile" % (serviceName)
 
-        dlg = wxFileDialog(self, "Export service profile",
+        dlg = wx.FileDialog(self, "Export service profile",
                            dir, file,
                            "Service profiles|*.profile|All files|*.*",
-                           wxSAVE | wxOVERWRITE_PROMPT)
+                           wx.SAVE | wx.OVERWRITE_PROMPT)
         rc = dlg.ShowModal()
-        if rc == wxID_OK:
+        if rc == wx.ID_OK:
             path = dlg.GetPath()
             dlg.Destroy()
             try:
@@ -291,11 +291,11 @@ class IdentityBrowser(CertificateBrowserBase):
         return ["Certificate Type", "Subject Name", "Issuer", "Default", "Validity"]
 
     def _getListColumnWidths(self):
-        return [wxLIST_AUTOSIZE_USEHEADER, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE_USEHEADER, wxLIST_AUTOSIZE]
+        return [wx.LIST_AUTOSIZE_USEHEADER, wx.LIST_AUTOSIZE, wx.LIST_AUTOSIZE, wx.LIST_AUTOSIZE_USEHEADER, wx.LIST_AUTOSIZE]
 
 
 if __name__ == "__main__":
-    a = wxPySimpleApp()
+    a = wx.PySimpleApp()
     dlg = DeleteCertificateDialog(None, "You can't undo this\n" +
                               "Really delete certificate for identity ?")
     rc = dlg.ShowModal()

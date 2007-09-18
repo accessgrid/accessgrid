@@ -1,4 +1,4 @@
-from wxPython.wx import *
+import wx
 
 import time
 import md5
@@ -13,33 +13,33 @@ import CertificateRequestTool
 
 log = Log.GetLogger('CertificateStatusDialog')
 
-class CertificateStatusDialog(wxDialog):
+class CertificateStatusDialog(wx.Dialog):
     '''
     Dialog showing submitted certificate requests.  It allows users to check status
     of requests and store them to right location.
     '''
     def __init__(self, parent, id, title):
-        wxDialog.__init__(self, parent, id, title,
-                          style=wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER )
+        wx.Dialog.__init__(self, parent, id, title,
+                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER )
 
-        self.SetSize(wxSize(700,350))
+        self.SetSize(wx.Size(700,350))
 
-        self.info = wxStaticText(self, -1, "You have requested following certificates:")
-        self.list = wxListCtrl(self, wxNewId(),
-                               style = wxLC_REPORT | wxSUNKEN_BORDER)
+        self.info = wx.StaticText(self, -1, "You have requested following certificates:")
+        self.list = wx.ListCtrl(self, wx.NewId(),
+                               style = wx.LC_REPORT | wx.SUNKEN_BORDER)
         
-        self.importButton = wxButton(self, -1, "Import certificate")
+        self.importButton = wx.Button(self, -1, "Import certificate")
         self.importButton.Enable(0)
 
-        self.deleteButton = wxButton(self, -1, "Delete request")
+        self.deleteButton = wx.Button(self, -1, "Delete request")
         self.deleteButton.Enable(0)
 
-        self.getStatusButton = wxButton(self, -1, "Update Status")
-        self.closeButton = wxButton(self, wxID_CLOSE, "Close")
+        self.getStatusButton = wx.Button(self, -1, "Update Status")
+        self.closeButton = wx.Button(self, wx.ID_CLOSE, "Close")
 
         self.proxyPanel = CertificateRequestTool.HTTPProxyConfigPanel(self)
         
-        self.newRequestButton = wxButton(self, wxNewId(), "New Request")
+        self.newRequestButton = wx.Button(self, wx.NewId(), "New Request")
 
         self.certReqDict = {}
         self.certStatus = {}
@@ -65,27 +65,27 @@ class CertificateStatusDialog(wxDialog):
                                self.OnCertSelected)
 
     def __layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add(self.info, 0, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.info, 0, wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, 10)
 
-        hs = wxBoxSizer(wxHORIZONTAL)
-        vs = wxBoxSizer(wxVERTICAL)
+        hs = wx.BoxSizer(wx.HORIZONTAL)
+        vs = wx.BoxSizer(wx.VERTICAL)
         
-        hs.Add(self.list, 1, wxEXPAND|wxALL, 10)
-        hs.Add(vs, 0, wxEXPAND)
+        hs.Add(self.list, 1, wx.EXPAND|wx.ALL, 10)
+        hs.Add(vs, 0, wx.EXPAND)
         
-        vs.Add(self.importButton, 0, wxALL | wxEXPAND, 2)
-        vs.Add(self.deleteButton, 0, wxALL | wxEXPAND, 2)
+        vs.Add(self.importButton, 0, wx.ALL | wx.EXPAND, 2)
+        vs.Add(self.deleteButton, 0, wx.ALL | wx.EXPAND, 2)
         
-        sizer.Add(hs, 1, wxEXPAND | wxRIGHT, 8)
+        sizer.Add(hs, 1, wx.EXPAND | wx.RIGHT, 8)
         
-        sizer.Add(self.proxyPanel, 0, wxEXPAND | wxALL, 10)
+        sizer.Add(self.proxyPanel, 0, wx.EXPAND | wx.ALL, 10)
 
-        box = wxBoxSizer(wxHORIZONTAL)
-        box.Add(self.getStatusButton, 0 , wxALL, 5)
-        box.Add(self.newRequestButton, 0 , wxALL, 5)
-        box.Add(self.closeButton, 0 , wxALL, 5)
-        sizer.Add(box, 0, wxCENTER | wxBOTTOM, 5)
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(self.getStatusButton, 0 , wx.ALL, 5)
+        box.Add(self.newRequestButton, 0 , wx.ALL, 5)
+        box.Add(self.closeButton, 0 , wx.ALL, 5)
+        sizer.Add(box, 0, wx.CENTER | wx.BOTTOM, 5)
 
         self.SetAutoLayout(1)
         self.SetSizer(sizer)
@@ -236,14 +236,14 @@ class CertificateStatusDialog(wxDialog):
             row = row+1
 
         if len(self.reqList) == 0:
-            self.list.SetColumnWidth(0, wxLIST_AUTOSIZE_USEHEADER)
-            self.list.SetColumnWidth(1, wxLIST_AUTOSIZE_USEHEADER)
+            self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE_USEHEADER)
+            self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE_USEHEADER)
         else:
-            self.list.SetColumnWidth(0, wxLIST_AUTOSIZE)
-            self.list.SetColumnWidth(1, wxLIST_AUTOSIZE)
+            self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+            self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
             
-        self.list.SetColumnWidth(2, wxLIST_AUTOSIZE_USEHEADER)
-        self.list.SetColumnWidth(3, wxLIST_AUTOSIZE_USEHEADER)
+        self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE_USEHEADER)
+        self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE_USEHEADER)
 
         self.CheckStatus()
                                 
@@ -304,7 +304,7 @@ class CertificateStatusDialog(wxDialog):
                 self.list.SetStringItem(row, 3, "Ready for installation")
                 self.certStatus[row] = ("Ready", msg)
 
-            self.list.SetColumnWidth(3, wxLIST_AUTOSIZE)
+            self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
             
 #              self.cancelButton.Enable(false)
 

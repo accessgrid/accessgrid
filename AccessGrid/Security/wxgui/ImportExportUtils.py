@@ -5,12 +5,12 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: ImportExportUtils.py,v 1.7 2007-04-04 22:03:43 turam Exp $
+# RCS-ID:      $Id: ImportExportUtils.py,v 1.8 2007-09-18 20:23:45 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-__revision__ = "$Id: ImportExportUtils.py,v 1.7 2007-04-04 22:03:43 turam Exp $"
+__revision__ = "$Id: ImportExportUtils.py,v 1.8 2007-09-18 20:23:45 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -21,7 +21,7 @@ import os.path
 import re
 import shutil
 
-from wxPython.wx import *
+import wx
 
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog, ErrorDialogWithTraceback
 from AccessGrid import Log
@@ -61,7 +61,7 @@ def ValidateExportPath(path):
 
     return (0, "OK")
 
-class ExportIDCertDialog(wxDialog):
+class ExportIDCertDialog(wx.Dialog):
     """
     Dialog for exporting an identity certificate.
 
@@ -87,13 +87,13 @@ class ExportIDCertDialog(wxDialog):
     """
 
     def __init__(self, parent, cert, id = -1, title = "Export Identity Certificate"):
-        wxDialog.__init__(self, parent, id, title,
-                          size = wxSize(600,200),
-                          style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU)
+        wx.Dialog.__init__(self, parent, id, title,
+                          size = wx.Size(600,200),
+                          style = wx.CAPTION | wx.RESIZE_BORDER | wx.SYSTEM_MENU)
 
         self.cert = cert
 
-        self.sizer = wxBoxSizer(wxVERTICAL)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
 
@@ -102,58 +102,58 @@ class ExportIDCertDialog(wxDialog):
         #
 
 
-        hb = wxBoxSizer(wxHORIZONTAL)
-        t = wxStaticText(self, -1, "Export identity ")
-        t.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxBOLD))
+        hb = wx.BoxSizer(wx.HORIZONTAL)
+        t = wx.StaticText(self, -1, "Export identity ")
+        t.SetFont(wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD))
 
         hb.Add(t, 0)
 
-        t = wxStaticText(self, -1, str(cert.GetShortSubject()))
-        t.SetFont(wxFont(12, wxSWISS, wxITALIC, wxBOLD))
+        t = wx.StaticText(self, -1, str(cert.GetShortSubject()))
+        t.SetFont(wx.Font(12, wx.SWISS, wx.ITALIC, wx.BOLD))
 
         hb.Add(t, 0)
-        self.sizer.Add(hb, 0, wxEXPAND | wxALL, 5)
+        self.sizer.Add(hb, 0, wx.EXPAND | wx.ALL, 5)
 
         #
         # Create radio boxes.
         #
 
-        rb1 = wxRadioButton(self, -1, "Write certificate and private key to a single file",
-                                   style = wxRB_GROUP)
-        rb2 = wxRadioButton(self, -1, "Write certificate and private key to separate files")
+        rb1 = wx.RadioButton(self, -1, "Write certificate and private key to a single file",
+                                   style = wx.RB_GROUP)
+        rb2 = wx.RadioButton(self, -1, "Write certificate and private key to separate files")
         EVT_RADIOBUTTON(self, rb1.GetId(), self.OnSelectOne)
         EVT_RADIOBUTTON(self, rb2.GetId(), self.OnSelectSep)
 
-        self.sizer.Add(rb1, 0, wxEXPAND | wxALL, 3)
-        self.sizer.Add(rb2, 0, wxEXPAND | wxALL, 3)
+        self.sizer.Add(rb1, 0, wx.EXPAND | wx.ALL, 3)
+        self.sizer.Add(rb2, 0, wx.EXPAND | wx.ALL, 3)
 
-        self.sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND)
+        self.sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND)
 
         #
         # Create text input grid.
         #
 
-        gs = wxFlexGridSizer(cols = 3, hgap = 3, vgap = 3)
+        gs = wx.FlexGridSizer(cols = 3, hgap = 3, vgap = 3)
 
-        t = wxStaticText(self, -1, "Certificate file:")
-        gs.Add(t, 0, wxALIGN_CENTER_VERTICAL)
-        self.certFileText = wxTextCtrl(self, -1, "")
-        gs.Add(self.certFileText, 1, wxEXPAND)
-        b = wxButton(self, -1, "Browse")
+        t = wx.StaticText(self, -1, "Certificate file:")
+        gs.Add(t, 0, wx.ALIGN_CENTER_VERTICAL)
+        self.certFileText = wx.TextCtrl(self, -1, "")
+        gs.Add(self.certFileText, 1, wx.EXPAND)
+        b = wx.Button(self, -1, "Browse")
         EVT_BUTTON(self, b.GetId(), self.OnCertBrowse)
         gs.Add(b, 0)
 
-        t = wxStaticText(self, -1, "Private key file:")
-        gs.Add(t, 0, wxALIGN_CENTER_VERTICAL)
-        self.keyFileText = wxTextCtrl(self, -1, "")
-        gs.Add(self.keyFileText, 1, wxEXPAND)
-        b = wxButton(self, -1, "Browse")
+        t = wx.StaticText(self, -1, "Private key file:")
+        gs.Add(t, 0, wx.ALIGN_CENTER_VERTICAL)
+        self.keyFileText = wx.TextCtrl(self, -1, "")
+        gs.Add(self.keyFileText, 1, wx.EXPAND)
+        b = wx.Button(self, -1, "Browse")
         EVT_BUTTON(self, b.GetId(), self.OnKeyBrowse)
         gs.Add(b, 0)
 
         gs.AddGrowableCol(1)
 
-        self.sizer.Add(gs, 1, wxEXPAND | wxALL, 4)
+        self.sizer.Add(gs, 1, wx.EXPAND | wx.ALL, 4)
 
         #
         # These will get disabled if we're not using a separate key file.
@@ -171,17 +171,17 @@ class ExportIDCertDialog(wxDialog):
         # And the export/cancel buttons.
         #
 
-        hs = wxBoxSizer(wxHORIZONTAL)
-        b = wxButton(self, -1, "Export Certificate")
+        hs = wx.BoxSizer(wx.HORIZONTAL)
+        b = wx.Button(self, -1, "Export Certificate")
         b.SetDefault()
         EVT_BUTTON(self, b.GetId(), self.OnExport)
-        hs.Add(b, 0, wxALL, 4)
+        hs.Add(b, 0, wx.ALL, 4)
         
-        b = wxButton(self, wxID_CANCEL, "Cancel")
+        b = wx.Button(self, wx.ID_CANCEL, "Cancel")
         # EVT_BUTTON(self, b.GetId(), self.OnCancel)
-        hs.Add(b, 0, wxALL, 4)
+        hs.Add(b, 0, wx.ALL, 4)
 
-        self.sizer.Add(hs, 0, wxALIGN_CENTER_HORIZONTAL)
+        self.sizer.Add(hs, 0, wx.ALIGN_CENTER_HORIZONTAL)
         
     def enableKeyWidgets(self, val):
         for w in self.keyWidgets:
@@ -205,9 +205,9 @@ class ExportIDCertDialog(wxDialog):
 
     def HandleBrowse(self, title, textCtrl):
 
-        dlg = wxFileDialog(self, title,
+        dlg = wx.FileDialog(self, title,
                            wildcard = "PEM files (*.pem)|*.pem|All files|*.*",
-                           style = wxSAVE)
+                           style = wx.SAVE)
 
         txtVal =  textCtrl.GetValue()
         if txtVal != "":
@@ -218,7 +218,7 @@ class ExportIDCertDialog(wxDialog):
 
         rc = dlg.ShowModal()
 
-        if rc == wxID_CANCEL:
+        if rc == wx.ID_CANCEL:
             return
 
         print "Got path ", dlg.GetPath()
@@ -244,9 +244,9 @@ class ExportIDCertDialog(wxDialog):
         certPath = self.certFileText.GetValue()
 
         if certPath == "":
-            dlg = wxMessageDialog(self, "Please specify a certificate file",
+            dlg = wx.MessageDialog(self, "Please specify a certificate file",
                                   "Please specify a certificate file",
-                                  style = wxOK)
+                                  style = wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -257,9 +257,9 @@ class ExportIDCertDialog(wxDialog):
             keyPath = None
 
         if self.useKeyFile and keyPath == "":
-            dlg = wxMessageDialog(self, "Please specify a private key file",
+            dlg = wx.MessageDialog(self, "Please specify a private key file",
                                   "Please specify a private key file",
-                                  style = wxOK)
+                                  style = wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -268,21 +268,21 @@ class ExportIDCertDialog(wxDialog):
         certStatus, certMsg = ValidateExportPath(certPath)
 
         if certStatus == 1:
-            dlg = wxMessageDialog(self,
+            dlg = wx.MessageDialog(self,
                                   "Cannot write to certificate file:\n" + certMsg,
                                   "Cannot write certificate file",
-                                  style = wxOK)
+                                  style = wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
             return
         elif certStatus == 2:
-            dlg = wxMessageDialog(self,
+            dlg = wx.MessageDialog(self,
                                   "Certificate file %s already exists.\nOverwrite it?" % (certPath),
                                   "Certificate file already exists",
-                                  style = wxYES_NO | wxNO_DEFAULT)
+                                  style = wx.YES_NO | wx.NO_DEFAULT)
             rc = dlg.ShowModal()
             dlg.Destroy()
-            if rc != wxID_YES:
+            if rc != wx.ID_YES:
                 return
 
         #
@@ -293,21 +293,21 @@ class ExportIDCertDialog(wxDialog):
             keyStatus, keyMsg = ValidateExportPath(keyPath)
 
             if keyStatus == 1:
-                dlg = wxMessageDialog(self,
+                dlg = wx.MessageDialog(self,
                                       "Cannot write to private key file:\n" + keyMsg,
                                       "Cannot write private key file",
-                                      style = wxOK)
+                                      style = wx.OK)
                 dlg.ShowModal()
                 dlg.Destroy()
                 return
             elif keyStatus == 2:
-                dlg = wxMessageDialog(self,
+                dlg = wx.MessageDialog(self,
                                       "Private key file %s already exists.\nOverwrite it?" % (keyPath),
                                       "Private key file already exists",
-                                      style = wxYES_NO | wxNO_DEFAULT)
+                                      style = wx.YES_NO | wx.NO_DEFAULT)
                 rc = dlg.ShowModal()
                 dlg.Destroy()
-                if rc != wxID_YES:
+                if rc != wx.ID_YES:
                     return
 
         #
@@ -321,7 +321,7 @@ class ExportIDCertDialog(wxDialog):
         #
 
         if self.IsModal():
-            self.EndModal(wxID_OK)
+            self.EndModal(wx.ID_OK)
         else:
             self.Show(0)
         
@@ -351,9 +351,9 @@ class ExportIDCertDialog(wxDialog):
         
         except Exception, e:
             log.exception("Export failed")
-            dlg = wxMessageDialog(self, "Certificate export failed:\n" + str(e),
+            dlg = wx.MessageDialog(self, "Certificate export failed:\n" + str(e),
                                   "Export failed",
-                                  wxID_OK)
+                                  wx.ID_OK)
             dlg.ShowModal()
             dlg.Destroy()
             return 0
@@ -371,7 +371,7 @@ class ExportIDCertDialog(wxDialog):
     def OnCancel(self, event):
         print "Cancel"
 
-class ExportCACertDialog(wxDialog):
+class ExportCACertDialog(wx.Dialog):
     """
     Dialog for exporting a trusted CA certificate.
 
@@ -388,13 +388,13 @@ class ExportCACertDialog(wxDialog):
     """
 
     def __init__(self, parent, cert, id = -1, title = "Export Trusted CA Certificate"):
-        wxDialog.__init__(self, parent, id, title,
-                          size = wxSize(600,200),
-                          style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU)
+        wx.Dialog.__init__(self, parent, id, title,
+                          size = wx.Size(600,200),
+                          style = wx.CAPTION | wx.RESIZE_BORDER | wx.SYSTEM_MENU)
 
         self.cert = cert
 
-        self.sizer = wxBoxSizer(wxVERTICAL)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
 
@@ -402,63 +402,63 @@ class ExportCACertDialog(wxDialog):
         # Title.
         #
 
-        hb = wxBoxSizer(wxHORIZONTAL)
-        t = wxStaticText(self, -1, "Export trusted CA cert for ")
-        t.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxBOLD))
+        hb = wx.BoxSizer(wx.HORIZONTAL)
+        t = wx.StaticText(self, -1, "Export trusted CA cert for ")
+        t.SetFont(wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD))
 
         hb.Add(t, 0)
 
-        t = wxStaticText(self, -1, str(cert.GetShortSubject()))
-        t.SetFont(wxFont(12, wxSWISS, wxITALIC, wxBOLD))
+        t = wx.StaticText(self, -1, str(cert.GetShortSubject()))
+        t.SetFont(wx.Font(12, wx.SWISS, wx.ITALIC, wx.BOLD))
 
         hb.Add(t, 0)
 
-        self.sizer.Add(hb, 0, wxEXPAND | wxALL, 5)
+        self.sizer.Add(hb, 0, wx.EXPAND | wx.ALL, 5)
 
         #
         # Create text input grid.
         #
 
-        gs = wxFlexGridSizer(cols = 3, hgap = 3, vgap = 3)
+        gs = wx.FlexGridSizer(cols = 3, hgap = 3, vgap = 3)
 
-        t = wxStaticText(self, -1, "Certificate file:")
-        gs.Add(t, 0, wxALIGN_CENTER_VERTICAL)
-        self.certFileText = wxTextCtrl(self, -1, "")
+        t = wx.StaticText(self, -1, "Certificate file:")
+        gs.Add(t, 0, wx.ALIGN_CENTER_VERTICAL)
+        self.certFileText = wx.TextCtrl(self, -1, "")
         EVT_KILL_FOCUS(self.certFileText, self.OnCertFileText)
-        gs.Add(self.certFileText, 1, wxEXPAND)
-        b = wxButton(self, -1, "Browse")
+        gs.Add(self.certFileText, 1, wx.EXPAND)
+        b = wx.Button(self, -1, "Browse")
         EVT_BUTTON(self, b.GetId(), self.OnCertBrowse)
         gs.Add(b, 0)
 
-        t = wxStaticText(self, -1, "Signing policy file:")
-        gs.Add(t, 0, wxALIGN_CENTER_VERTICAL)
-        self.spFileText = wxTextCtrl(self, -1, "")
+        t = wx.StaticText(self, -1, "Signing policy file:")
+        gs.Add(t, 0, wx.ALIGN_CENTER_VERTICAL)
+        self.spFileText = wx.TextCtrl(self, -1, "")
         EVT_CHAR(self.spFileText, self.OnSPFileChar)
-        gs.Add(self.spFileText, 1, wxEXPAND)
+        gs.Add(self.spFileText, 1, wx.EXPAND)
 
-        b = wxButton(self, -1, "Browse")
+        b = wx.Button(self, -1, "Browse")
         EVT_BUTTON(self, b.GetId(), self.OnSPBrowse)
         gs.Add(b, 0)
 
         gs.AddGrowableCol(1)
 
-        self.sizer.Add(gs, 1, wxEXPAND)
+        self.sizer.Add(gs, 1, wx.EXPAND)
 
         #
         # And the export/cancel buttons.
         #
 
-        hs = wxBoxSizer(wxHORIZONTAL)
-        b = wxButton(self, -1, "Export Certificate")
+        hs = wx.BoxSizer(wx.HORIZONTAL)
+        b = wx.Button(self, -1, "Export Certificate")
         b.SetDefault()
         EVT_BUTTON(self, b.GetId(), self.OnExport)
-        hs.Add(b, 0, wxALL, 4)
+        hs.Add(b, 0, wx.ALL, 4)
         
-        b = wxButton(self, wxID_CANCEL, "Cancel")
+        b = wx.Button(self, wx.ID_CANCEL, "Cancel")
         # EVT_BUTTON(self, b.GetId(), self.OnCancel)
-        hs.Add(b, 0, wxALL, 4)
+        hs.Add(b, 0, wx.ALL, 4)
 
-        self.sizer.Add(hs, 0, wxALIGN_CENTER_HORIZONTAL)
+        self.sizer.Add(hs, 0, wx.ALIGN_CENTER_HORIZONTAL)
 
         self.userEnteredSPFile = 0
 
@@ -508,9 +508,9 @@ class ExportCACertDialog(wxDialog):
 
     def HandleBrowse(self, title, textCtrl, wildcard, defaultFile = None):
 
-        dlg = wxFileDialog(self, title,
+        dlg = wx.FileDialog(self, title,
                            wildcard = wildcard,
-                           style = wxSAVE)
+                           style = wx.SAVE)
 
         txtVal =  textCtrl.GetValue()
         if txtVal != "":
@@ -523,7 +523,7 @@ class ExportCACertDialog(wxDialog):
 
         rc = dlg.ShowModal()
 
-        if rc == wxID_CANCEL:
+        if rc == wx.ID_CANCEL:
             return
 
         print "Got path ", dlg.GetPath()
@@ -549,9 +549,9 @@ class ExportCACertDialog(wxDialog):
         certPath = self.certFileText.GetValue()
 
         if certPath == "":
-            dlg = wxMessageDialog(self, "Please specify a certificate file",
+            dlg = wx.MessageDialog(self, "Please specify a certificate file",
                                   "Please specify a certificate file",
-                                  style = wxOK)
+                                  style = wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -559,9 +559,9 @@ class ExportCACertDialog(wxDialog):
         spPath = self.spFileText.GetValue()
 
         if spPath == "":
-            dlg = wxMessageDialog(self, "Please specify a signing policy file",
+            dlg = wx.MessageDialog(self, "Please specify a signing policy file",
                                   "Please specify a signing policy file",
-                                  style = wxOK)
+                                  style = wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -569,21 +569,21 @@ class ExportCACertDialog(wxDialog):
         certStatus, certMsg = ValidateExportPath(certPath)
 
         if certStatus == 1:
-            dlg = wxMessageDialog(self,
+            dlg = wx.MessageDialog(self,
                                   "Cannot write to certificate file:\n" + certMsg,
                                   "Cannot write certificate file",
-                                  style = wxOK)
+                                  style = wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
             return
         elif certStatus == 2:
-            dlg = wxMessageDialog(self,
+            dlg = wx.MessageDialog(self,
                                   "Certificate file %s already exists.\nOverwrite it?" % (certPath),
                                   "Certificate file already exists",
-                                  style = wxYES_NO | wxNO_DEFAULT)
+                                  style = wx.YES_NO | wx.NO_DEFAULT)
             rc = dlg.ShowModal()
             dlg.Destroy()
-            if rc != wxID_YES:
+            if rc != wx.ID_YES:
                 return
 
         #
@@ -594,22 +594,22 @@ class ExportCACertDialog(wxDialog):
         spStatus, spMsg = ValidateExportPath(spPath)
 
         if spStatus == 1:
-            dlg = wxMessageDialog(self,
+            dlg = wx.MessageDialog(self,
                                   "Cannot write to signing policy file:\n" + spMsg,
                                   "Cannot write signing policy file",
-                                  style = wxOK)
+                                  style = wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
             return
         
         elif spStatus == 2:
-            dlg = wxMessageDialog(self,
+            dlg = wx.MessageDialog(self,
                                   "Signing policy file %s already exists.\nOverwrite it?" % (spPath),
                                   "Signing policy file already exists",
-                                  style = wxYES_NO | wxNO_DEFAULT)
+                                  style = wx.YES_NO | wx.NO_DEFAULT)
             rc = dlg.ShowModal()
             dlg.Destroy()
-            if rc != wxID_YES:
+            if rc != wx.ID_YES:
                 return
 
         #
@@ -623,7 +623,7 @@ class ExportCACertDialog(wxDialog):
         #
 
         if self.IsModal():
-            self.EndModal(wxID_OK)
+            self.EndModal(wx.ID_OK)
         else:
             self.Show(0)
         
@@ -664,9 +664,9 @@ def ImportPEMIdentityCertificate(certMgr, certFile, keyFile):
         why = ex.args[0]
         log.exception("Import fails: %s. cert file %s keyfile %s",
                       why, certFile, keyFile)
-        dlg = wxMessageDialog(None, "Error occurred during certificate import:\n" + why,
+        dlg = wx.MessageDialog(None, "Error occurred during certificate import:\n" + why,
                               "Error on import",
-                              style = wxOK | wxICON_ERROR)
+                              style = wx.OK | wx.ICON_ERROR)
         dlg.ShowModal()
         dlg.Destroy()
         return
@@ -674,9 +674,9 @@ def ImportPEMIdentityCertificate(certMgr, certFile, keyFile):
     except:
         log.exception("Error importing certificate from %s keyfile %s",
                       certFile, keyFile)
-        dlg = wxMessageDialog(None, "Error occurred during certificate import.",
+        dlg = wx.MessageDialog(None, "Error occurred during certificate import.",
                               "Error on import",
-                              style = wxOK | wxICON_ERROR)
+                              style = wx.OK | wx.ICON_ERROR)
         dlg.ShowModal()
         dlg.Destroy()
         return
@@ -688,7 +688,7 @@ def ImportPEMIdentityCertificate(certMgr, certFile, keyFile):
 
     if not certMgr.VerifyCertificatePath(impCert):
         log.warn("can't verify issuer")
-        dlg = wxMessageDialog(None, "Cannot verify the certificate path for \n" +
+        dlg = wx.MessageDialog(None, "Cannot verify the certificate path for \n" +
                               str(impCert.GetSubject()) + "\n"
                               "This certificate may not be usable until the \n" +
                               "appropriate CA certificates are imported. At the least,\n" +
@@ -728,10 +728,10 @@ def ImportPEMIdentityCertificate(certMgr, certFile, keyFile):
         log.exception("InitEnvironment raised an exception during import")
 
 
-    dlg = wxMessageDialog(None, "Certificate imported successfully. Subject is\n" +
+    dlg = wx.MessageDialog(None, "Certificate imported successfully. Subject is\n" +
                           str(impCert.GetSubject()),
                           "Import successful",
-                          style = wxOK | wxICON_INFORMATION)
+                          style = wx.OK | wx.ICON_INFORMATION)
 
     dlg.ShowModal()
     dlg.Destroy()
@@ -766,9 +766,9 @@ def ImportCACertificate(certMgr, certFile, signingPolicy):
 
     except:
         log.exception("Error importing certificate from %s", certFile)
-        dlg = wxMessageDialog(None, "Error occurred during certificate import.",
+        dlg = wx.MessageDialog(None, "Error occurred during certificate import.",
                               "Error on import",
-                              style = wxOK | wxICON_ERROR)
+                              style = wx.OK | wx.ICON_ERROR)
         dlg.ShowModal()
         dlg.Destroy()
         return None

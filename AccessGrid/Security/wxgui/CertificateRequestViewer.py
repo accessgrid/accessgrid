@@ -1,11 +1,11 @@
-from wxPython.wx import *
+import wx
 
 import time
 import os
 
 from AccessGrid.Security.Utilities import GetCNFromX509Subject
 
-class CertificateRequestViewerPanel(wxPanel):
+class CertificateRequestViewerPanel(wx.Panel):
     """
     Panel subclass that incorporates the majority of the
     certificate request viewer code.
@@ -27,7 +27,7 @@ class CertificateRequestViewerPanel(wxPanel):
 
         """
         
-        wxPanel.__init__(self, parent, id, style = 0)
+        wx.Panel.__init__(self, parent, id, style = 0)
 
         self.reqWrapper = request
         self.request, self.token, self.server, self.creationTime = request.GetRequestInfo()
@@ -39,17 +39,17 @@ class CertificateRequestViewerPanel(wxPanel):
         # Set up text styles.
         #
 
-        boldFont = wxFont(-1, wxDEFAULT, wxNORMAL, wxBOLD)
-        self.bold = bold = wxTextAttr()
+        boldFont = wx.Font(-1, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        self.bold = bold = wx.TextAttr()
         self.bold.SetFont(boldFont)
       
-        normalFont = wxFont(-1, wxDEFAULT, wxNORMAL, wxNORMAL)
-        self.normal = normal = wxTextAttr()
+        normalFont = wx.Font(-1, wx.DEFAULT, wx.NORMAL, wx.NORMAL)
+        self.normal = normal = wx.TextAttr()
         self.normal.SetFont(normalFont)
 
         defaultPoints = self.text.GetFont().GetPointSize()
-        hdrFont = wxFont(defaultPoints + 4, wxDEFAULT, wxNORMAL, wxBOLD)
-        self.hdr = hdr = wxTextAttr()
+        hdrFont = wx.Font(defaultPoints + 4, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        self.hdr = hdr = wx.TextAttr()
         self.hdr.SetFont(hdrFont)
 
         name = GetCNFromX509Subject(self.request.GetSubject())
@@ -104,33 +104,33 @@ class CertificateRequestViewerPanel(wxPanel):
 
         """
 
-        sizer = wxBoxSizer(wxHORIZONTAL)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         panel = self
         
-        self.text = wxTextCtrl(panel, -1, style = wxTE_READONLY | wxTE_MULTILINE | wxTE_LINEWRAP | wxTE_RICH)
-        sizer.Add(self.text, 1, wxEXPAND)
+        self.text = wx.TextCtrl(panel, -1, style = wx.TE_READONLY | wx.TE_MULTILINE | wx.TE_LINEWRAP | wx.TE_RICH)
+        sizer.Add(self.text, 1, wx.EXPAND)
 
         panel.SetSizer(sizer)
         panel.SetAutoLayout(1)
         panel.Fit()
 
 
-class CertificateRequestViewer(wxDialog):
+class CertificateRequestViewer(wx.Dialog):
     def __init__(self, parent, id, req, certMgr):
 
-        wxDialog.__init__(self, None, id, "", size = wxSize(700, 400),
-                          style= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+        wx.Dialog.__init__(self, None, id, "", size = wx.Size(700, 400),
+                          style= wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 
         title = req.GetShortName()
         self.SetTitle(title)
 
-        sizer = wxBoxSizer(wxVERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
         
         self.panel = CertificateRequestViewerPanel(self, -1, req, certMgr)
-        sizer.Add(self.panel, 1, wxEXPAND)
+        sizer.Add(self.panel, 1, wx.EXPAND)
 
-        b = wxButton(self, -1, "Close")
+        b = wx.Button(self, -1, "Close")
         sizer.Add(b, 0)
         EVT_BUTTON(self, b.GetId(), self.OnClose)
         EVT_CLOSE(self, self.OnClose)

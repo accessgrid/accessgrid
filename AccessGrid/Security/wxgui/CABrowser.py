@@ -1,6 +1,6 @@
 import time
 
-from wxPython.wx import *
+import wx
 
 from AccessGrid.Security.Utilities import GetCNFromX509Subject
 from AccessGrid import Toolkit
@@ -22,28 +22,28 @@ class CABrowser(CertificateBrowserBase):
         #
         self.certOnlyButtons = []
 
-        b = wxButton(self, -1, "Import")
+        b = wx.Button(self, -1, "Import")
         EVT_BUTTON(self, b.GetId(), self.OnImport)
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
 
-        b = wxButton(self, -1, "Export")
+        b = wx.Button(self, -1, "Export")
         EVT_BUTTON(self, b.GetId(), self.OnExport)
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "Delete")
+        b = wx.Button(self, -1, "Delete")
         EVT_BUTTON(self, b.GetId(), self.OnDelete)
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "View Certificate")
+        b = wx.Button(self, -1, "View Certificate")
         EVT_BUTTON(self, b.GetId(), self.OnViewCertificate)
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "Refresh")
+        b = wx.Button(self, -1, "Refresh")
         EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
 
         for b in self.certOnlyButtons:
             b.Enable(0)
@@ -74,16 +74,16 @@ class CABrowser(CertificateBrowserBase):
             return
 
 
-        dlg = wxMessageDialog(self,
+        dlg = wx.MessageDialog(self,
                               "Deleting a certificate is an irreversible operation.\n" +
                               "Really delete certificate for identity " +
                               cert.GetShortSubject() + "?",
                               "Really delete?",
-                              style = wxYES_NO | wxNO_DEFAULT)
+                              style = wx.YES_NO | wx.NO_DEFAULT)
         ret = dlg.ShowModal()
         dlg.Destroy()
 
-        if ret == wxID_NO:
+        if ret == wx.ID_NO:
             return
 
         self.certMgr.GetCertificateRepository().RemoveCertificate(cert)
@@ -151,5 +151,5 @@ class CABrowser(CertificateBrowserBase):
         return ["Name", "Issuer", "Validity"]
 
     def _getListColumnWidths(self):
-        return [wxLIST_AUTOSIZE, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE_USEHEADER]
+        return [wx.LIST_AUTOSIZE, wx.LIST_AUTOSIZE, wx.LIST_AUTOSIZE_USEHEADER]
 

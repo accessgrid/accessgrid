@@ -1,13 +1,13 @@
-from wxPython.wx import *
+import wx
 
 from AccessGrid.Platform.Config import SystemConfig
 
-class HTTPProxyConfigPanel(wxPanel):
+class HTTPProxyConfigPanel(wx.Panel):
     def __init__(self, parent):
-        wxPanel.__init__(self, parent, -1)
+        wx.Panel.__init__(self, parent, -1)
 
-        sbox = wxStaticBox(self, -1, "Proxy server")
-        self.sizer = wxStaticBoxSizer(sbox, wxVERTICAL)
+        sbox = wx.StaticBox(self, -1, "Proxy server")
+        self.sizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
 
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
@@ -28,12 +28,12 @@ class HTTPProxyConfigPanel(wxPanel):
             if defaultProxyPort is None:
                 defaultProxyPort = ""
 
-        self.proxyEnabled = wxCheckBox(self, -1, "Use a proxy server to connect to the certificate server")
+        self.proxyEnabled = wx.CheckBox(self, -1, "Use a proxy server to connect to the certificate server")
 
         EVT_CHECKBOX(self, self.proxyEnabled.GetId(), self.OnCheckbox)
 
-        self.proxyText = wxTextCtrl(self, -1, defaultProxyHost)
-        self.proxyPort = wxTextCtrl(self, -1, defaultProxyPort)
+        self.proxyText = wx.TextCtrl(self, -1, defaultProxyHost)
+        self.proxyPort = wx.TextCtrl(self, -1, defaultProxyPort)
 
         self.proxyEnabled.SetValue(defaultEnabled)
         self.UpdateProxyEnabledState()
@@ -46,14 +46,14 @@ class HTTPProxyConfigPanel(wxPanel):
         # Labelled box for the proxy stuff.
         #
 
-        self.sizer.Add(self.proxyEnabled, 0, wxEXPAND | wxALL, 5)
-        hsizer = wxBoxSizer(wxHORIZONTAL)
-        hsizer.Add(wxStaticText(self, -1, "Address: "), 0, wxALIGN_CENTER_VERTICAL | wxALL, 2)
-        hsizer.Add(self.proxyText, 1, wxEXPAND|wxRIGHT, 5)
-        hsizer.Add(wxStaticText(self, -1, "Port: "), 0, wxALIGN_CENTER_VERTICAL | wxALL, 2)
-        hsizer.Add(self.proxyPort, 0, wxEXPAND|wxRIGHT, 5)
+        self.sizer.Add(self.proxyEnabled, 0, wx.EXPAND | wx.ALL, 5)
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        hsizer.Add(wx.StaticText(self, -1, "Address: "), 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 2)
+        hsizer.Add(self.proxyText, 1, wx.EXPAND|wx.RIGHT, 5)
+        hsizer.Add(wx.StaticText(self, -1, "Port: "), 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 2)
+        hsizer.Add(self.proxyPort, 0, wx.EXPAND|wx.RIGHT, 5)
         
-        self.sizer.Add(hsizer, 0, wxEXPAND |wxBOTTOM, 5)
+        self.sizer.Add(hsizer, 0, wx.EXPAND |wx.BOTTOM, 5)
 
     def OnCheckbox(self, event):
         self.UpdateProxyEnabledState()

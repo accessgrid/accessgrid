@@ -1,10 +1,10 @@
-from wxPython.wx import *
+import wx
 
 import os
 
 from AccessGrid.Security.Utilities import GetCNFromX509Subject
 
-class CertificateViewerPanel(wxPanel):
+class CertificateViewerPanel(wx.Panel):
     """
     Panel subclass that incorporates the majority of the
     certificate viewer code.
@@ -16,7 +16,7 @@ class CertificateViewerPanel(wxPanel):
     """
     
     def __init__(self, parent, id, cert, certMgr):
-        wxPanel.__init__(self, parent, id, style = 0)
+        wx.Panel.__init__(self, parent, id, style = 0)
 
         self.cert = cert
         self.certMgr = certMgr
@@ -30,16 +30,16 @@ class CertificateViewerPanel(wxPanel):
         #
 
         defaultPoints = self.text.GetFont().GetPointSize()
-        boldFont = wxFont(defaultPoints, wxDEFAULT, wxNORMAL, wxBOLD)
-        self.bold = bold = wxTextAttr()
+        boldFont = wx.Font(defaultPoints, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        self.bold = bold = wx.TextAttr()
         self.bold.SetFont(boldFont)
 
-        normalFont = wxFont(defaultPoints, wxDEFAULT, wxNORMAL, wxNORMAL)
-        self.normal = normal = wxTextAttr()
+        normalFont = wx.Font(defaultPoints, wx.DEFAULT, wx.NORMAL, wx.NORMAL)
+        self.normal = normal = wx.TextAttr()
         self.normal.SetFont(normalFont)
 
-        hdrFont = wxFont(defaultPoints + 4, wxDEFAULT, wxNORMAL, wxBOLD)
-        self.hdr = hdr = wxTextAttr()
+        hdrFont = wx.Font(defaultPoints + 4, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        self.hdr = hdr = wx.TextAttr()
         self.hdr.SetFont(hdrFont)
 
         name = GetCNFromX509Subject(cert.GetSubject())
@@ -100,7 +100,7 @@ class CertificateViewerPanel(wxPanel):
             #
         
             name = GetCNFromX509Subject(cert.GetSubject())
-            item = self.tree.AddRoot(name, data = wxTreeItemData(cert))
+            item = self.tree.AddRoot(name, data = wx.TreeItemData(cert))
             del path[0]
 
         else:
@@ -111,13 +111,13 @@ class CertificateViewerPanel(wxPanel):
             # it if this item is doubleclicked.
             #
             name = GetCNFromX509Subject(cert.GetIssuer())
-            item = self.tree.AddRoot(name + "(missing)", data = wxTreeItemData(name))
-            self.tree.SetItemTextColour(item, wxLIGHT_GREY)
+            item = self.tree.AddRoot(name + "(missing)", data = wx.TreeItemData(name))
+            self.tree.SetItemTextColour(item, wx.LIGHT_GREY)
             
         self.tree.Expand(item)
         for cert in path:
             name = GetCNFromX509Subject(cert.GetSubject())
-            nitem = self.tree.AppendItem(item, name, data = wxTreeItemData(cert))
+            nitem = self.tree.AppendItem(item, name, data = wx.TreeItemData(cert))
             self.tree.Expand(item)
             item = nitem
 
@@ -140,17 +140,17 @@ class CertificateViewerPanel(wxPanel):
 
         """
 
-        sizer = wxBoxSizer(wxHORIZONTAL)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
         
-        nb = self.notebook = wxNotebook(self, -1)
-        sizer.Add(nb, 1, wxEXPAND)
+        nb = self.notebook = wx.Notebook(self, -1)
+        sizer.Add(nb, 1, wx.EXPAND)
 
-        #self.htmlWindow = wxHtmlWindow(nb, -1)
-        self.text = wxTextCtrl(nb, -1, style = wxTE_READONLY | wxTE_MULTILINE | wxTE_LINEWRAP | wxTE_RICH)
+        #self.htmlWindow = wx.HtmlWindow(nb, -1)
+        self.text = wx.TextCtrl(nb, -1, style = wx.TE_READONLY | wx.TE_MULTILINE | wx.TE_LINEWRAP | wx.TE_RICH)
         nb.AddPage(self.text, "General")
 
-        self.tree = wxTreeCtrl(nb, -1,
-                               style = wxTR_NO_BUTTONS | wxTR_SINGLE)
+        self.tree = wx.TreeCtrl(nb, -1,
+                               style = wx.TR_NO_BUTTONS | wx.TR_SINGLE)
         nb.AddPage(self.tree, "Certification path")
 
         #
@@ -175,9 +175,9 @@ class CertificateViewerPanel(wxPanel):
         #
 
         if type(cert) == str:
-            dlg = wxMessageDialog(self, "No certificate for %s is installed." % (cert),
+            dlg = wx.MessageDialog(self, "No certificate for %s is installed." % (cert),
                                   "Missing certificate",
-                                  style = wxOK)
+                                  style = wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
         else:
@@ -185,21 +185,21 @@ class CertificateViewerPanel(wxPanel):
             dlg.Show()
         
 
-class CertificateViewer(wxDialog):
+class CertificateViewer(wx.Dialog):
     def __init__(self, parent, id, cert, certMgr):
 
-        wxDialog.__init__(self, None, id, "", size = wxSize(700, 400),
-                          style= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+        wx.Dialog.__init__(self, None, id, "", size = wx.Size(700, 400),
+                          style= wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 
         title = GetCNFromX509Subject(cert.GetSubject())
         self.SetTitle(title)
 
-        sizer = wxBoxSizer(wxVERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
         
         self.panel = CertificateViewerPanel(self, -1, cert, certMgr)
-        sizer.Add(self.panel, 1, wxEXPAND)
+        sizer.Add(self.panel, 1, wx.EXPAND)
 
-        b = wxButton(self, -1, "Close")
+        b = wx.Button(self, -1, "Close")
         sizer.Add(b, 0)
         EVT_BUTTON(self, b.GetId(), self.OnClose)
         EVT_CLOSE(self, self.OnClose)
@@ -212,7 +212,7 @@ class CertificateViewer(wxDialog):
 
 if __name__ == "__main__":
 
-    pyapp = wxPySimpleApp()
+    pyapp = wx.PySimpleApp()
 
     import AccessGrid.Toolkit
     app = AccessGrid.Toolkit.WXGUIApplication()

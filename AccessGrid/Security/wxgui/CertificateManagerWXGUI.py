@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.29 2007-04-24 22:32:04 turam Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.30 2007-09-18 20:23:45 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.29 2007-04-24 22:32:04 turam Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.30 2007-09-18 20:23:45 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -27,7 +27,7 @@ import re
 import shutil
 
 
-from wxPython.wx import *
+import wx
 from AccessGrid import UIUtilities
 from AccessGrid import Platform
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog, ErrorDialogWithTraceback
@@ -51,11 +51,11 @@ import CertificateManagerDialog
 # Custom event types for the cert browser.
 #
 
-CERTSELECTED = wxNewEventType()
-CERTIMPORT = wxNewEventType()
-CERTEXPORT = wxNewEventType()
-CERTDELETE = wxNewEventType()
-CERTSETDEFAULT = wxNewEventType()
+CERTSELECTED = wx.NewEventType()
+CERTIMPORT = wx.NewEventType()
+CERTEXPORT = wx.NewEventType()
+CERTDELETE = wx.NewEventType()
+CERTSETDEFAULT = wx.NewEventType()
 
 def EVT_CERT_SELECTED(window, fun):
     window.Connect(-1, -1, CERTSELECTED, fun)
@@ -72,43 +72,43 @@ def EVT_CERT_DELETE(window, fun):
 def EVT_CERT_SET_DEFAULT(window, fun):
     window.Connect(-1, -1, CERTSETDEFAULT, fun)
 
-class CertSelectedEvent(wxPyCommandEvent):
+class CertSelectedEvent(wx.PyCommandEvent):
     eventType = CERTSELECTED
     def __init__(self, id, cert):
         self.cert = cert
-        wxPyCommandEvent.__init__(self, self.eventType, id)
+        wx.PyCommandEvent.__init__(self, self.eventType, id)
     def Clone( self ):
         self.__class__( self.GetId() )
 
-class CertImportEvent(wxPyCommandEvent):
+class CertImportEvent(wx.PyCommandEvent):
     eventType = CERTIMPORT
     def __init__(self, id):
 
-        wxPyCommandEvent.__init__(self, self.eventType, id)
+        wx.PyCommandEvent.__init__(self, self.eventType, id)
     def Clone( self ):
         self.__class__( self.GetId() )
 
-class CertExportEvent(wxPyCommandEvent):
+class CertExportEvent(wx.PyCommandEvent):
     eventType = CERTEXPORT
     def __init__(self, id, cert):
         self.cert = cert
-        wxPyCommandEvent.__init__(self, self.eventType, id)
+        wx.PyCommandEvent.__init__(self, self.eventType, id)
     def Clone( self ):
         self.__class__( self.GetId() )
 
-class CertDeleteEvent(wxPyCommandEvent):
+class CertDeleteEvent(wx.PyCommandEvent):
     eventType = CERTDELETE
     def __init__(self, id, cert):
         self.cert = cert
-        wxPyCommandEvent.__init__(self, self.eventType, id)
+        wx.PyCommandEvent.__init__(self, self.eventType, id)
     def Clone( self ):
         self.__class__( self.GetId() )
 
-class CertSetDefaultEvent(wxPyCommandEvent):
+class CertSetDefaultEvent(wx.PyCommandEvent):
     eventType = CERTSETDEFAULT
     def __init__(self, id, cert):
         self.cert = cert
-        wxPyCommandEvent.__init__(self, self.eventType, id)
+        wx.PyCommandEvent.__init__(self, self.eventType, id)
     def Clone( self ):
         self.__class__( self.GetId() )
 
@@ -127,7 +127,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
         rc = dlg.ShowModal()
 
-        if rc == wxID_OK:
+        if rc == wx.ID_OK:
             ret = dlg.GetChars()
             dlg.FlushChars()
         else:
@@ -138,18 +138,18 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         return ret
 
     def ReportError(self, err):
-        dlg = wxMessageDialog(None, err, "Certificate manager error",
-                              style = wxOK)
+        dlg = wx.MessageDialog(None, err, "Certificate manager error",
+                              style = wx.OK)
         dlg.ShowModal()
         dlg.Destroy()
 
     def ReportBadPassphrase(self):
-        dlg = wxMessageDialog(None,
+        dlg = wx.MessageDialog(None,
                               "Incorrect passphrase. Try again?",
-                              style = wxYES_NO | wxYES_DEFAULT)
+                              style = wx.YES_NO | wx.YES_DEFAULT)
         rc = dlg.ShowModal()
         dlg.Destroy()
-        if rc == wxID_YES:
+        if rc == wx.ID_YES:
             return 1
         else:
             return 0
@@ -162,15 +162,15 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
         dlg = PassphraseDialog(None, -1, "Enter passphrase", cert, msg)
         rc = dlg.ShowModal()
-        if rc == wxID_OK:
+        if rc == wx.ID_OK:
             return dlg.GetInfo()
         else:
             return None
 
     def GetMenu(self, win):
-        certMenu = wxMenu()
+        certMenu = wx.Menu()
 
-        i = wxNewId()
+        i = wx.NewId()
         certMenu.Append(i, "Manage Certificates...")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnShowNew(event, win))
@@ -181,50 +181,50 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         """
         Keep this in here for now.
         """
-        certMenu = wxMenu()
+        certMenu = wx.Menu()
 
-        i = wxNewId()
+        i = wx.NewId()
         certMenu.Append(i, "Import Identity Certificate")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnImportIdentityCert(event, win))
 
-        i = wxNewId()
+        i = wx.NewId()
         certMenu.Append(i, "View &Identity Certificates")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnOpenIdentityCertDialog(event, win))
 
         certMenu.AppendSeparator()
 
-        i = wxNewId()
+        i = wx.NewId()
         certMenu.Append(i, "Import Trusted CA Certificate")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnImportTrustedCert(event, win))
 
-        i = wxNewId()
+        i = wx.NewId()
         certMenu.Append(i, "View &Trusted CA Certificates")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnOpenTrustedCertDialog(event, win))
 
         certMenu.AppendSeparator()
 
-        i = wxNewId()
+        i = wx.NewId()
         certMenu.Append(i, "Import Default Globus Certificates")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnImportGlobusDefaultEnv(event, win))
 
-        i = wxNewId()
+        i = wx.NewId()
         certMenu.Append(i, "Request a certificate")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnOpenCertRequestDialog(event, win))
 
-        i = wxNewId()
+        i = wx.NewId()
         certMenu.Append(i, "View pending requests")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnOpenPendingRequestsDialog(event, win))
 
         certMenu.AppendSeparator()
 
-        i = wxNewId()
+        i = wx.NewId()
         certMenu.Append(i, "NEW Browser")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnShowNew(event, win))
@@ -268,9 +268,9 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
             self.certificateManager.InitRepoFromGlobus(certRepo)
             Toolkit.GetDefaultApplication.GetCertificateManagerUI().InitEnvironment()
 
-            dlg = wxMessageDialog(None, "Globus environment imported successfully.",
+            dlg = wx.MessageDialog(None, "Globus environment imported successfully.",
                                   "Import successful",
-                                  style = wxOK | wxICON_INFORMATION)
+                                  style = wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
         except:
@@ -316,7 +316,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                 break
 
             except CertificateManager.NoDefaultIdentity:
-                dlg = wxMessageDialog(None,
+                dlg = wx.MessageDialog(None,
                                       "There are more than one certificates loaded and a unique default is not set; using the first one.",
                                       "Multiple default identities");
                 dlg.ShowModal()
@@ -385,10 +385,10 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         #
 
         if ident is None:
-            dlg = wxMessageDialog(None,
+            dlg = wx.MessageDialog(None,
                                   "No default identity is available.",
                                   "No default identity",
-                                  style = wxOK)
+                                  style = wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
             return 0
@@ -399,10 +399,10 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
         keypath = ident.GetKeyPath()
         if keypath is None or not os.path.isfile(keypath):
-            dlg = wxMessageDialog(None, "Private key is not available for this certificate:\n" +
+            dlg = wx.MessageDialog(None, "Private key is not available for this certificate:\n" +
                                   str(ident.GetSubject()) + "\nYou will have to reimport or otherwise obtain a new copy.",
                                   "Missing private key",
-                                  style = wxOK)
+                                  style = wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
             return 0
@@ -428,7 +428,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
             ppdlg = PassphraseDialog(None, -1, "Enter the passphrase for your certificate", ident)
             rc = ppdlg.ShowModal()
-            if rc != wxID_OK:
+            if rc != wx.ID_OK:
                 ppdlg.Destroy()
                 return 0
                 break
@@ -449,10 +449,10 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                 bits = int(bits)
                 lifetime = int(lifetime)
                 try:
-                    wxBeginBusyCursor()
+                    wx.BeginBusyCursor()
                     self.certificateManager.CreateProxyCertificate(passphrase,bits, lifetime)
                 finally:
-                    wxEndBusyCursor()
+                    wx.EndBusyCursor()
 
                 log.debug("Proxy successfully created")
                 #
@@ -463,13 +463,13 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                 self.certificateManager.InitEnvironment()
                 break
             except ProxyGen.InvalidPassphraseException:
-                dlg = wxMessageDialog(None, "Invalid passphrase. Try again?",
+                dlg = wx.MessageDialog(None, "Invalid passphrase. Try again?",
                                       "Invalid passphrase",
-                                      style= wxYES_NO | wxYES_DEFAULT)
+                                      style= wx.YES_NO | wx.YES_DEFAULT)
                 rc = dlg.ShowModal()
                 dlg.Destroy()
 
-                if rc != wxID_YES:
+                if rc != wx.ID_YES:
                     return 0
             except ProxyGen.GridProxyInitError, e:
                 msg = "Error in proxy initialization:\n"
@@ -480,13 +480,13 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                     if len(e.args) > 1 and e.args[1] != "":
                         msg += "\n" + e.args[1]
                 msg += "\nTry again? "
-                dlg = wxMessageDialog(None, msg,
+                dlg = wx.MessageDialog(None, msg,
                                       "Error in proxy initialization",
-                                      style= wxYES_NO | wxYES_DEFAULT)
+                                      style= wx.YES_NO | wx.YES_DEFAULT)
                 rc = dlg.ShowModal()
                 dlg.Destroy()
 
-                if rc != wxID_YES:
+                if rc != wx.ID_YES:
                     return 0
 
         return 1
@@ -564,25 +564,25 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
             except CRSClientInvalidURL:
                 MessageDialog(None,
                               "Certificate request failed: invalid request URL",
-                              style = wxICON_ERROR)
+                              style = wx.ICON_ERROR)
                 return 0
             except CRSClientConnectionFailed:
                 if proxyEnabled:
                     MessageDialog(None,
                                   "Certificate request failed: Connection failed.\n"  +
                                   "Did you specify the http proxy address correctly?",
-                                  style = wxICON_ERROR)
+                                  style = wx.ICON_ERROR)
                 else:
                     MessageDialog(None,
                                   "Certificate request failed: Connection failed.\n"  +
                                   "Do you need to configure an http proxy address?",
-                                  style = wxICON_ERROR)
+                                  style = wx.ICON_ERROR)
                 return 0
             except:
                 log.exception("Unexpected error in cert request")
                 MessageDialog(None,
                               "Certificate request failed",
-                              style = wxICON_ERROR)
+                              style = wx.ICON_ERROR)
                 return 0
             
             
@@ -591,79 +591,79 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
             MessageDialog(None,
                           "You do not have a certificate repository. Certificate request can not be completed.",
-                          style = wxICON_ERROR)
+                          style = wx.ICON_ERROR)
 
         except:
             log.exception("SubmitRequest:Validate: Certificate request can not be completed")
             MessageDialog(None,
                           "Error occured. Certificate request can not be completed.",
-                          style = wxICON_ERROR)
+                          style = wx.ICON_ERROR)
 
 #
 # Toplevel functions for the various high-level certificate options.
 #
 
-class PassphraseDialog(wxDialog):
+class PassphraseDialog(wx.Dialog):
     def __init__(self, parent, id, title, cert, msg = ""):
 
         self.cert = cert
 
-        wxDialog.__init__(self, parent, id, title)
+        wx.Dialog.__init__(self, parent, id, title)
 
-        sizer = wxBoxSizer(wxVERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
 
 
         if msg != "":
-            t = wxStaticText(self, -1, msg)
-            sizer.Add(t, 0, wxEXPAND | wxALL, 4)
+            t = wx.StaticText(self, -1, msg)
+            sizer.Add(t, 0, wx.EXPAND | wx.ALL, 4)
 
 
-        t = wxStaticText(self, -1, "Create a proxy for %s" % cert.GetSubject())
-        sizer.Add(t, 0, wxEXPAND | wxALL, 10)
+        t = wx.StaticText(self, -1, "Create a proxy for %s" % cert.GetSubject())
+        sizer.Add(t, 0, wx.EXPAND | wx.ALL, 10)
 
-        self.proxySizer = wxFlexGridSizer(cols = 2, hgap = 10, vgap = 10)
+        self.proxySizer = wx.FlexGridSizer(cols = 2, hgap = 10, vgap = 10)
 
-        t = wxStaticText(self, -1, "Pass phrase:")
+        t = wx.StaticText(self, -1, "Pass phrase:")
         self.proxySizer.Add(t)
 
-        passId = wxNewId()
+        passId = wx.NewId()
         self.passphraseText = UIUtilities.SecureTextCtrl(self, passId)
 
-        self.proxySizer.Add(self.passphraseText, 0, wxEXPAND)
+        self.proxySizer.Add(self.passphraseText, 0, wx.EXPAND)
 
-        sizer.Add(self.proxySizer, 0, wxEXPAND | wxALL, 10)
+        sizer.Add(self.proxySizer, 0, wx.EXPAND | wx.ALL, 10)
 
-        self.detailsButton = wxButton(self, wxNewId(), "Proxy Details...")
-        sizer.Add(self.detailsButton, 0, wxALL, 10)
+        self.detailsButton = wx.Button(self, wx.NewId(), "Proxy Details...")
+        sizer.Add(self.detailsButton, 0, wx.ALL, 10)
         EVT_BUTTON(self, self.detailsButton.GetId(), self.OnProxyDetails)
 
 
-        h = wxBoxSizer(wxHORIZONTAL)
+        h = wx.BoxSizer(wx.HORIZONTAL)
 
-        sizer.Add(h, 0, wxALIGN_CENTER | wxALL, 4)
+        sizer.Add(h, 0, wx.ALIGN_CENTER | wx.ALL, 4)
 
-        b = wxButton(self, -1, "OK")
-        h.Add(b, 0, wxALL, 10)
+        b = wx.Button(self, -1, "OK")
+        h.Add(b, 0, wx.ALL, 10)
         b.SetDefault()
         EVT_BUTTON(self, b.GetId(), self.OnOK)
 
-        b = wxButton(self, -1, "Cancel")
-        h.Add(b, 0, wxALL, 10)
+        b = wx.Button(self, -1, "Cancel")
+        h.Add(b, 0, wx.ALL, 10)
         EVT_BUTTON(self, b.GetId(), self.OnCancel)
 
         EVT_TEXT_ENTER(self, passId, self.KeyDown)
 
         self.proxySizer.AddGrowableCol(1)
 
-        keyId = wxNewId()
-        self.keyList = wxComboBox(self, keyId,
-                                  style = wxCB_READONLY,
+        keyId = wx.NewId()
+        self.keyList = wx.ComboBox(self, keyId,
+                                  style = wx.CB_READONLY,
                                   choices = ["512", "1024", "2048", "4096"])
         self.keyList.SetSelection(1)
         self.keyList.Hide()
 
-        lifeTimeId = wxNewId()
-        self.lifetimeText = wxTextCtrl(self, lifeTimeId, "8", style = wxTE_PROCESS_ENTER )
+        lifeTimeId = wx.NewId()
+        self.lifetimeText = wx.TextCtrl(self, lifeTimeId, "8", style = wx.TE_PROCESS_ENTER )
         self.lifetimeText.Hide()
 
         EVT_TEXT_ENTER(self, keyId, self.KeyDown)
@@ -676,19 +676,19 @@ class PassphraseDialog(wxDialog):
     def OnProxyDetails(self, event):
         self.detailsButton.Destroy()
 
-        t = wxStaticText(self, -1, "Key size:")
+        t = wx.StaticText(self, -1, "Key size:")
         self.proxySizer.Add(t)
 
 
-        self.proxySizer.Add(self.keyList, 0, wxEXPAND)
+        self.proxySizer.Add(self.keyList, 0, wx.EXPAND)
         self.keyList.Show()
 
-        box = wxBoxSizer(wxHORIZONTAL)
-        t = wxStaticText(self, -1, "Proxy lifetime (hours):")
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        t = wx.StaticText(self, -1, "Proxy lifetime (hours):")
         self.proxySizer.Add(t)
 
 
-        self.proxySizer.Add(self.lifetimeText, 0, wxEXPAND)
+        self.proxySizer.Add(self.lifetimeText, 0, wx.EXPAND)
         self.lifetimeText.Show()
 
 
@@ -701,16 +701,16 @@ class PassphraseDialog(wxDialog):
                 self.keyList.GetValue())
 
     def OnOK(self, event):
-        self.EndModal(wxID_OK)
+        self.EndModal(wx.ID_OK)
 
     def OnCancel(self, event):
-        self.EndModal(wxID_CANCEL)
+        self.EndModal(wx.ID_CANCEL)
 
     def KeyDown(self, event):
-        self.EndModal(wxID_OK)
+        self.EndModal(wx.ID_OK)
 
 
-class RepositoryBrowser(wxPanel):
+class RepositoryBrowser(wx.Panel):
     """
     A RepositoryBrowser provides the basic GUI for browsing certificates.
 
@@ -736,7 +736,7 @@ class RepositoryBrowser(wxPanel):
 
         """
 
-        wxPanel.__init__(self, parent, id)
+        wx.Panel.__init__(self, parent, id)
 
         if browserType == self.TYPE_IDENTITY:
             self.certPred = lambda c: c.GetMetadata("AG.CertificateManager.certType") == "identity"
@@ -817,12 +817,12 @@ class RepositoryBrowser(wxPanel):
         vboxMidR: middle row, right column vbox
         """
 
-        self.sizer = wxBoxSizer(wxVERTICAL)
-        hboxTop = wxBoxSizer(wxHORIZONTAL)
-        hboxMid = wxBoxSizer(wxHORIZONTAL)
-        vboxTop = wxBoxSizer(wxVERTICAL)
-        vboxMidL = wxBoxSizer(wxVERTICAL)
-        vboxMidR = wxBoxSizer(wxVERTICAL)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        hboxTop = wx.BoxSizer(wx.HORIZONTAL)
+        hboxMid = wx.BoxSizer(wx.HORIZONTAL)
+        vboxTop = wx.BoxSizer(wx.VERTICAL)
+        vboxMidL = wx.BoxSizer(wx.VERTICAL)
+        vboxMidR = wx.BoxSizer(wx.VERTICAL)
 
         #
         # We want the various fields to have the same
@@ -835,13 +835,13 @@ class RepositoryBrowser(wxPanel):
         # Build the top row.
         #
 
-        self.sizer.Add(hboxTop, 1, wxEXPAND)
-        self.certList = wxListBox(self, -1, style = wxLB_SINGLE)
+        self.sizer.Add(hboxTop, 1, wx.EXPAND)
+        self.certList = wx.ListBox(self, -1, style = wx.LB_SINGLE)
 
-        hboxTop.Add(self.certList, 1, wxEXPAND)
+        hboxTop.Add(self.certList, 1, wx.EXPAND)
         EVT_LISTBOX(self, self.certList.GetId(), self.OnSelectCert)
 
-        hboxTop.Add(vboxTop, 0, wxEXPAND)
+        hboxTop.Add(vboxTop, 0, wx.EXPAND)
 
         #
         # If we're browsing identity certs, we have a set as default option.
@@ -849,28 +849,28 @@ class RepositoryBrowser(wxPanel):
 
 
         if self._IsIdentityBrowser():
-            b = wxButton(self, -1, "Set as default identity")
+            b = wx.Button(self, -1, "Set as default identity")
             EVT_BUTTON(self, b.GetId(), self.OnSetDefaultIdentity)
-            vboxTop.Add(b, 0, wxEXPAND)
+            vboxTop.Add(b, 0, wx.EXPAND)
             b.Enable(False)
             self.buttonSetDefault = b
 
-        b = wxButton(self, -1, "Import...")
+        b = wx.Button(self, -1, "Import...")
         EVT_BUTTON(self, b.GetId(), self.OnImport)
-        vboxTop.Add(b, 0, wxEXPAND)
+        vboxTop.Add(b, 0, wx.EXPAND)
         self.buttonImport = b
         # b.Enable(False)
 
 
-        b = wxButton(self, -1, "Export...")
+        b = wx.Button(self, -1, "Export...")
         EVT_BUTTON(self, b.GetId(), self.OnExport)
-        vboxTop.Add(b, 0, wxEXPAND)
+        vboxTop.Add(b, 0, wx.EXPAND)
         # b.Enable(False)
         self.buttonExport = b
 
-        b = wxButton(self, -1, "Delete")
+        b = wx.Button(self, -1, "Delete")
         EVT_BUTTON(self, b.GetId(), self.OnDelete)
-        vboxTop.Add(b, 0, wxEXPAND)
+        vboxTop.Add(b, 0, wx.EXPAND)
         self.buttonDelete = b
         # b.Enable(False)
 
@@ -878,30 +878,30 @@ class RepositoryBrowser(wxPanel):
         # Middle row
         #
 
-        self.sizer.Add(hboxMid, 1, wxEXPAND)
+        self.sizer.Add(hboxMid, 1, wx.EXPAND)
 
-        hboxMid.Add(vboxMidL, 1, wxEXPAND)
-        t = wxStaticText(self, -1, "Certificate name")
-        vboxMidL.Add(t, 0, wxEXPAND)
+        hboxMid.Add(vboxMidL, 1, wx.EXPAND)
+        t = wx.StaticText(self, -1, "Certificate name")
+        vboxMidL.Add(t, 0, wx.EXPAND)
 
-        self.nameText = wxTextCtrl(self, -1, style = wxTE_MULTILINE | wxTE_READONLY)
-        vboxMidL.Add(self.nameText, 1, wxEXPAND)
+        self.nameText = wx.TextCtrl(self, -1, style = wx.TE_MULTILINE | wx.TE_READONLY)
+        vboxMidL.Add(self.nameText, 1, wx.EXPAND)
         self.nameText.SetBackgroundColour(bgcolor)
 
-        hboxMid.Add(vboxMidR, 1, wxEXPAND)
-        t = wxStaticText(self, -1, "Issuer")
-        vboxMidR.Add(t, 0, wxEXPAND)
+        hboxMid.Add(vboxMidR, 1, wx.EXPAND)
+        t = wx.StaticText(self, -1, "Issuer")
+        vboxMidR.Add(t, 0, wx.EXPAND)
 
-        self.issuerText = wxTextCtrl(self, -1, style = wxTE_MULTILINE | wxTE_READONLY)
-        vboxMidR.Add(self.issuerText, 1, wxEXPAND)
+        self.issuerText = wx.TextCtrl(self, -1, style = wx.TE_MULTILINE | wx.TE_READONLY)
+        vboxMidR.Add(self.issuerText, 1, wx.EXPAND)
         self.issuerText.SetBackgroundColour(bgcolor)
 
         #
         # Bottom row
         #
 
-        self.certText = wxTextCtrl(self, -1, style = wxTE_MULTILINE | wxTE_READONLY)
-        self.sizer.Add(self.certText, 1, wxEXPAND)
+        self.certText = wx.TextCtrl(self, -1, style = wx.TE_MULTILINE | wx.TE_READONLY)
+        self.sizer.Add(self.certText, 1, wx.EXPAND)
         self.certText.SetBackgroundColour(bgcolor)
 
         self.SetSizer(self.sizer)
@@ -998,19 +998,19 @@ class RepositoryBrowser(wxPanel):
         self.GetEventHandler().AddPendingEvent(event)
 
 
-class TrustedCertDialog(wxDialog):
+class TrustedCertDialog(wx.Dialog):
     def __init__(self, parent, id, title, certMgr):
-        wxDialog.__init__(self, parent, id, title, size = wxSize(400, 400))
+        wx.Dialog.__init__(self, parent, id, title, size = wx.Size(400, 400))
 
         self.certMgr = certMgr
 
-        sizer = wxBoxSizer(wxVERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
         self.browser = cpanel = RepositoryBrowser(self, -1, self.certMgr, RepositoryBrowser.TYPE_CA)
-        sizer.Add(cpanel, 1, wxEXPAND)
+        sizer.Add(cpanel, 1, wx.EXPAND)
 
-        b = wxButton(self, -1, "Close")
+        b = wx.Button(self, -1, "Close")
         EVT_BUTTON(self, b.GetId(), self.OnOK)
-        sizer.Add(b, 0, wxALIGN_CENTER)
+        sizer.Add(b, 0, wx.ALIGN_CENTER)
 
         self.SetSizer(sizer)
         self.SetAutoLayout(1)
@@ -1031,13 +1031,13 @@ class TrustedCertDialog(wxDialog):
         Import to repo.
         """
 
-        dlg = wxFileDialog(None, "Choose a trusted CA certificate file",
+        dlg = wx.FileDialog(None, "Choose a trusted CA certificate file",
                            defaultDir = "",
                            wildcard = "Trusted cert files (*.o)|*.0|PEM Files (*.pem)|*.pem|All files|*",
-                           style = wxOPEN)
+                           style = wx.OPEN)
         rc = dlg.ShowModal()
 
-        if rc != wxID_OK:
+        if rc != wx.ID_OK:
             dlg.Destroy()
             return
 
@@ -1057,7 +1057,7 @@ class TrustedCertDialog(wxDialog):
         dlg.SetWildcard("Signing policy files (*.signing_policy)|*.signing_policy|All files|*")
 
         rc = dlg.ShowModal()
-        if rc == wxID_OK:
+        if rc == wx.ID_OK:
             spPath = dlg.GetPath()
             log.debug("Got signing policy %s", spPath)
         else:
@@ -1084,10 +1084,10 @@ class TrustedCertDialog(wxDialog):
         except IOError:
             log.error("Could not open certificate file %s", path)
             dlg.Destroy()
-            dlg = wxMessageDialog(None,
+            dlg = wx.MessageDialog(None,
                                   "Could not open certificate file %s." % (path),
                                   "File error",
-                                  style = wxOK | wxICON_ERROR)
+                                  style = wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -1095,10 +1095,10 @@ class TrustedCertDialog(wxDialog):
         except:
             log.exception("Unexpected error opening certificate file %s", path)
             dlg.Destroy()
-            dlg = wxMessageDialog(None,
+            dlg = wx.MessageDialog(None,
                                   "Unexpected error opening certificate file %s." % (path),
                                   "File error",
-                                  style = wxOK | wxICON_ERROR)
+                                  style = wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -1110,10 +1110,10 @@ class TrustedCertDialog(wxDialog):
         if not validCert:
             log.error("BEGIN CERTIFICATE not found in %s", path)
             dlg.Destroy()
-            dlg = wxMessageDialog(None,
+            dlg = wx.MessageDialog(None,
                                   "File %s does not appear to contain a PEM-encoded certificate." % (path),
                                   "File error",
-                                  style = wxOK | wxICON_ERROR)
+                                  style = wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -1134,19 +1134,19 @@ class TrustedCertDialog(wxDialog):
             Toolkit.GetDefaultApplication.GetCertificateManagerUI().InitEnvironment()
             self.browser.LoadCerts()
 
-            dlg = wxMessageDialog(None, "Certificate imported successfully. Subject is\n" +
+            dlg = wx.MessageDialog(None, "Certificate imported successfully. Subject is\n" +
                                   str(impCert.GetSubject()),
                                   "Import successful",
-                                  style = wxOK | wxICON_INFORMATION)
+                                  style = wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
 
 
         except:
             log.exception("Error importing certificate from %s", path)
-            dlg = wxMessageDialog(None, "Error occurred during certificate import.",
+            dlg = wx.MessageDialog(None, "Error occurred during certificate import.",
                                   "Error on import",
-                                  style = wxOK | wxICON_ERROR)
+                                  style = wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -1179,21 +1179,21 @@ class TrustedCertDialog(wxDialog):
         print "Got cert sel ", event, event.cert
 
     def OnOK(self, event):
-        self.EndModal(wxOK)
+        self.EndModal(wx.OK)
 
-class IdentityCertDialog(wxDialog):
+class IdentityCertDialog(wx.Dialog):
     def __init__(self, parent, id, title, certMgr):
-        wxDialog.__init__(self, parent, id, title, size = wxSize(400, 400))
+        wx.Dialog.__init__(self, parent, id, title, size = wx.Size(400, 400))
 
         self.certMgr = certMgr
 
-        sizer = wxBoxSizer(wxVERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
         self.browser = cpanel = RepositoryBrowser(self, -1, self.certMgr, RepositoryBrowser.TYPE_IDENTITY)
-        sizer.Add(cpanel, 1, wxEXPAND)
+        sizer.Add(cpanel, 1, wx.EXPAND)
 
-        b = wxButton(self, -1, "Close")
+        b = wx.Button(self, -1, "Close")
         EVT_BUTTON(self, b.GetId(), self.OnOK)
-        sizer.Add(b, 0, wxALIGN_CENTER)
+        sizer.Add(b, 0, wx.ALIGN_CENTER)
 
         self.SetSizer(sizer)
         self.SetAutoLayout(1)
@@ -1226,13 +1226,13 @@ class IdentityCertDialog(wxDialog):
         Import to repo.
         """
 
-        dlg = wxFileDialog(None, "Choose a certificate file",
+        dlg = wx.FileDialog(None, "Choose a certificate file",
                            defaultDir = "",
                            wildcard = "PEM Files (*.pem)|*.pem|All files|*",
-                           style = wxOPEN)
+                           style = wx.OPEN)
         rc = dlg.ShowModal()
 
-        if rc != wxID_OK:
+        if rc != wx.ID_OK:
             dlg.Destroy()
             return
 
@@ -1270,10 +1270,10 @@ class IdentityCertDialog(wxDialog):
         except IOError:
             log.error("Could not open certificate file %s", path)
             dlg.Destroy()
-            dlg = wxMessageDialog(None,
+            dlg = wx.MessageDialog(None,
                                   "Could not open certificate file %s." % (path),
                                   "File error",
-                                  style = wxOK | wxICON_ERROR)
+                                  style = wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -1281,10 +1281,10 @@ class IdentityCertDialog(wxDialog):
         except:
             log.exception("Unexpected error opening certificate file %s", path)
             dlg.Destroy()
-            dlg = wxMessageDialog(None,
+            dlg = wx.MessageDialog(None,
                                   "Unexpected error opening certificate file %s." % (path),
                                   "File error",
-                                  style = wxOK | wxICON_ERROR)
+                                  style = wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -1296,10 +1296,10 @@ class IdentityCertDialog(wxDialog):
         if not validCert:
             log.error("BEGIN CERTIFICATE not found in %s", path)
             dlg.Destroy()
-            dlg = wxMessageDialog(None,
+            dlg = wx.MessageDialog(None,
                                   "File %s does not appear to contain a PEM-encoded certificate." % (path),
                                   "File error",
-                                  style = wxOK | wxICON_ERROR)
+                                  style = wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -1333,7 +1333,7 @@ class IdentityCertDialog(wxDialog):
             dlg.SetMessage("Select the file containing the private key for this certificate.")
             rc = dlg.ShowModal()
 
-            if rc != wxID_OK:
+            if rc != wx.ID_OK:
                 return
 
             kfile = dlg.GetFilename();
@@ -1353,9 +1353,9 @@ class IdentityCertDialog(wxDialog):
 
         except:
             log.exception("Error importing certificate from %s keyfile %s", path, kpath)
-            dlg = wxMessageDialog(None, "Error occurred during certificate import.",
+            dlg = wx.MessageDialog(None, "Error occurred during certificate import.",
                                   "Error on import",
-                                  style = wxOK | wxICON_ERROR)
+                                  style = wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -1367,7 +1367,7 @@ class IdentityCertDialog(wxDialog):
 
         if not self.certMgr.VerifyCertificatePath(impCert):
             log.warn("can't verify issuer")
-            dlg = wxMessageDialog(None, "Cannot verify the certificate path for \n" +
+            dlg = wx.MessageDialog(None, "Cannot verify the certificate path for \n" +
                                   str(impCert.GetSubject()) + "\n"
                                   "This certificate may not be usable until the \n" +
                                   "appropriate CA certificates are imported. At the least,\n" +
@@ -1403,10 +1403,10 @@ class IdentityCertDialog(wxDialog):
             log.exception("InitEnvironment raised an exception during import")
         
             
-        dlg = wxMessageDialog(None, "Certificate imported successfully. Subject is\n" +
+        dlg = wx.MessageDialog(None, "Certificate imported successfully. Subject is\n" +
                               str(impCert.GetSubject()),
                               "Import successful",
-                              style = wxOK | wxICON_INFORMATION)
+                              style = wx.OK | wx.ICON_INFORMATION)
         self.browser.LoadCerts()
         
         dlg.ShowModal()
@@ -1453,12 +1453,12 @@ class IdentityCertDialog(wxDialog):
         print "Got cert sel ", event
 
     def OnOK(self, event):
-        self.EndModal(wxOK)
+        self.EndModal(wx.OK)
 
 
 if __name__ == "__main__":
 
-    pyapp = wxPySimpleApp()
+    pyapp = wx.PySimpleApp()
 
     import AccessGrid.Toolkit
     app = AccessGrid.Toolkit.WXGUIApplication()

@@ -1,5 +1,5 @@
 
-from wxPython.wx import *
+import wx
 
 from AccessGrid import Toolkit
 from AccessGrid.Security.Utilities import GetCNFromX509Subject
@@ -21,23 +21,23 @@ class ProxyBrowser(CertificateBrowserBase):
         #
         self.certOnlyButtons = []
 
-        b = wxButton(self, -1, "Create")
+        b = wx.Button(self, -1, "Create")
         EVT_BUTTON(self, b.GetId(), self.OnCreate)
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
 
-        b = wxButton(self, -1, "Destroy")
+        b = wx.Button(self, -1, "Destroy")
         EVT_BUTTON(self, b.GetId(), self.OnDestroy)
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "View Proxy")
+        b = wx.Button(self, -1, "View Proxy")
         EVT_BUTTON(self, b.GetId(), self.OnViewCertificate)
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "Refresh")
+        b = wx.Button(self, -1, "Refresh")
         EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
-        sizer.Add(b, 0, wxEXPAND)
+        sizer.Add(b, 0, wx.EXPAND)
 
         for b in self.certOnlyButtons:
             b.Enable(0)
@@ -53,16 +53,16 @@ class ProxyBrowser(CertificateBrowserBase):
         if cert is None:
             return
 
-        dlg = wxMessageDialog(self,
+        dlg = wx.MessageDialog(self,
                               "Really delete proxy for identity " +
                               cert.GetShortSubject() + "?",
                               "Really delete?",
-                              style = wxYES_NO | wxNO_DEFAULT)
+                              style = wx.YES_NO | wx.NO_DEFAULT)
 
         ret = dlg.ShowModal()
         dlg.Destroy()
 
-        if ret == wxID_NO:
+        if ret == wx.ID_NO:
             return
 
         #
@@ -72,7 +72,7 @@ class ProxyBrowser(CertificateBrowserBase):
         try:
             os.unlink(self.certMgr.GetProxyPath())
         except:
-            dlg = wxMessageDialog(self,
+            dlg = wx.MessageDialog(self,
                                   "Unable to destroy proxy certificate for " +
                                   cert.GetShortSubject() + "?",
                                   "Destroy Error")
@@ -179,5 +179,5 @@ class ProxyBrowser(CertificateBrowserBase):
         return ["Proxy for", "Issuer", "Validity"]
 
     def _getListColumnWidths(self):
-        return [wxLIST_AUTOSIZE, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE_USEHEADER ]
+        return [wx.LIST_AUTOSIZE, wx.LIST_AUTOSIZE, wx.LIST_AUTOSIZE_USEHEADER ]
 

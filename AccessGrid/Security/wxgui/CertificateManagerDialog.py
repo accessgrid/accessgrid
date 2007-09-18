@@ -1,26 +1,26 @@
 import logging
 
-from wxPython.wx import *
+import wx
 
 from AccessGrid.Security.wxgui.ProxyBrowser import ProxyBrowser
 from AccessGrid.Security.wxgui.IdentityBrowser import IdentityBrowser
 from AccessGrid.Security.wxgui.CABrowser import CABrowser
 from AccessGrid.Security.wxgui.CertificateStatusBrowser import CertificateStatusBrowser
 
-class CertificateManagerDialog(wxDialog):
+class CertificateManagerDialog(wx.Dialog):
     def __init__(self, parent, id, title, certMgr, certMgrUI):
-        wxDialog.__init__(self, parent, id, title, size = wxSize(700, 400),
-                          style= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+        wx.Dialog.__init__(self, parent, id, title, size = wx.Size(700, 400),
+                          style= wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 
         self.certMgr = certMgr
 
         # Toplevel vsizer with a notebook and a hsizer with
         # window ops buttons.
-        sizer = wxBoxSizer(wxVERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
 
         # Build the notebook.
-        self.notebook = wxNotebook(self, -1)
-        sizer.Add(self.notebook, 1, wxEXPAND)
+        self.notebook = wx.Notebook(self, -1)
+        sizer.Add(self.notebook, 1, wx.EXPAND)
 
         self.identBrowser = IdentityBrowser(self.notebook, -1, self.certMgr)
         self.notebook.AddPage(self.identBrowser, "Certificates")
@@ -37,12 +37,12 @@ class CertificateManagerDialog(wxDialog):
         # Default to certificate pane.
         self.notebook.SetSelection(0)
 
-        hsizer = wxBoxSizer(wxHORIZONTAL)
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(hsizer, 0)
 
-        b = wxButton(self, -1, "Close")
+        b = wx.Button(self, -1, "Close")
         EVT_BUTTON(self, b.GetId(), self.OnOK)
-        sizer.Add(b, 0, wxALIGN_RIGHT)
+        sizer.Add(b, 0, wx.ALIGN_RIGHT)
 
         self.SetSizer(sizer)
         self.SetAutoLayout(1)
@@ -54,24 +54,24 @@ class CertificateManagerDialog(wxDialog):
 
     def OnOK(self, event):
         if self.IsModal():
-            self.EndModal(wxOK)
+            self.EndModal(wx.OK)
         else:
             self.Close(1)
 
 
-class CertificateManagerPanel(wxPanel):
+class CertificateManagerPanel(wx.Panel):
     def __init__(self, parent, id, certMgr, certMgrUI):
-        wxPanel.__init__(self, parent, id, size = wxSize(700, 400))
+        wx.Panel.__init__(self, parent, id, size = wx.Size(700, 400))
 
         self.certMgr = certMgr
 
         # Toplevel vsizer with a notebook and a hsizer with
         # window ops buttons.
-        sizer = wxBoxSizer(wxVERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
 
         # Build the notebook.
-        self.notebook = wxNotebook(self, -1)
-        sizer.Add(self.notebook, 1, wxEXPAND)
+        self.notebook = wx.Notebook(self, -1)
+        sizer.Add(self.notebook, 1, wx.EXPAND)
 
         self.identBrowser = IdentityBrowser(self.notebook, -1, self.certMgr)
         self.notebook.AddPage(self.identBrowser, "Certificates")
@@ -88,7 +88,7 @@ class CertificateManagerPanel(wxPanel):
         # Default to certificate pane.
         self.notebook.SetSelection(0)
 
-        hsizer = wxBoxSizer(wxHORIZONTAL)
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(hsizer, 0)
 
         self.SetSizer(sizer)
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     logging.root.setLevel(logging.DEBUG)
     logging.root.addHandler(logging.StreamHandler())
 
-    pyapp = wxPySimpleApp()
+    pyapp = wx.PySimpleApp()
 
     import AccessGrid.Toolkit
     app = AccessGrid.Toolkit.WXGUIApplication()

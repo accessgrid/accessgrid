@@ -12,7 +12,7 @@ from AccessGrid.Security.CRSClient import CRSClient
 from AccessGrid import Log
 log = Log.GetLogger("CertificateStatus")
 
-from wxPython.wx import *
+import wx
 
 from AccessGrid.Security.Utilities import GetCNFromX509Subject
 
@@ -374,30 +374,30 @@ class CertificateStatusBrowser(CertificateBrowserBase):
         #
         self.certOnlyButtons = []
 
-        b = wxButton(self, -1, "Install Certificate")
+        b = wx.Button(self, -1, "Install Certificate")
         EVT_BUTTON(self, b.GetId(), self.OnInstallCert)
-        sizer.Add(b, 0, wxEXPAND | wxALL, 3)
+        sizer.Add(b, 0, wx.EXPAND | wx.ALL, 3)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "Delete Request")
+        b = wx.Button(self, -1, "Delete Request")
         EVT_BUTTON(self, b.GetId(), self.OnDeleteRequest)
-        sizer.Add(b, 0, wxEXPAND | wxALL, 3)
+        sizer.Add(b, 0, wx.EXPAND | wx.ALL, 3)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "View Request")
+        b = wx.Button(self, -1, "View Request")
         EVT_BUTTON(self, b.GetId(), self.OnViewRequest)
-        sizer.Add(b, 0, wxEXPAND | wxALL, 3)
+        sizer.Add(b, 0, wx.EXPAND | wx.ALL, 3)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "Check Status")
+        b = wx.Button(self, -1, "Check Status")
         EVT_BUTTON(self, b.GetId(), self.OnCheckStatus)
-        sizer.Add(b, 0, wxEXPAND | wxALL, 3)
+        sizer.Add(b, 0, wx.EXPAND | wx.ALL, 3)
 
-        sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxALL , 3)
+        sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.ALL , 3)
 
-        b = wxButton(self, -1, "Request New Certificate")
+        b = wx.Button(self, -1, "Request New Certificate")
         EVT_BUTTON(self, b.GetId(), self.OnRequestNewCertificate)
-        sizer.Add(b, 0, wxEXPAND | wxALL, 3)
+        sizer.Add(b, 0, wx.EXPAND | wx.ALL, 3)
 
         for b in self.certOnlyButtons:
             b.Enable(0)
@@ -408,7 +408,7 @@ class CertificateStatusBrowser(CertificateBrowserBase):
         """
 
         self.httpProxyPanel = HTTPProxyConfigPanel(panel)
-        sizer.Add(self.httpProxyPanel, 0, wxEXPAND)
+        sizer.Add(self.httpProxyPanel, 0, wx.EXPAND)
 
     def OnRequestNewCertificate(self, event):
         self.certMgrUI.RunCertificateRequestTool(self)
@@ -423,8 +423,8 @@ class CertificateStatusBrowser(CertificateBrowserBase):
             req.Install()
         except:
             log.exception("")
-            dlg = wxMessageDialog(self,
-                                  "The selected certificate is not ready for installation.", "Not ready.", style = wxICON_INFORMATION | wxOK )
+            dlg = wx.MessageDialog(self,
+                                  "The selected certificate is not ready for installation.", "Not ready.", style = wx.ICON_INFORMATION | wx.OK )
             ret = dlg.ShowModal()
             dlg.Destroy()
         self.Load()
@@ -432,17 +432,17 @@ class CertificateStatusBrowser(CertificateBrowserBase):
     def OnDeleteRequest(self, event):
         req = self.GetSelectedCertificate()
 
-        dlg = wxMessageDialog(self,
+        dlg = wx.MessageDialog(self,
                               "Deleting a certificate request is an irreversible operation.\n" +
                               "If you delete this request, you will not be able to retreive the certificate.\n" +
                               "Really delete certificate request for identity " +
                               req.GetShortName() + "?",
                               "Really delete?",
-                              style = wxYES_NO | wxNO_DEFAULT)
+                              style = wx.YES_NO | wx.NO_DEFAULT)
         ret = dlg.ShowModal()
         dlg.Destroy()
 
-        if ret == wxID_NO:
+        if ret == wx.ID_NO:
             return
 
         log.debug("Removing request %s", req.GetRequest().GetSubject())
@@ -512,11 +512,11 @@ class CertificateStatusBrowser(CertificateBrowserBase):
         reqList = self.certMgr.GetPendingRequests()
 
         if self.updateStatus:
-            progressDlg = wxProgressDialog("Checking request status",
+            progressDlg = wx.ProgressDialog("Checking request status",
                                                 "Checking request status",
                                                 len(reqList) * 2,
                                                 self,
-                                                style = wxPD_CAN_ABORT | wxPD_AUTO_HIDE | wxPD_APP_MODAL)
+                                                style = wx.PD_CAN_ABORT | wx.PD_AUTO_HIDE | wx.PD_APP_MODAL)
         l = []
         n = 1
         for r in reqList:
@@ -552,5 +552,5 @@ class CertificateStatusBrowser(CertificateBrowserBase):
         return ["Certificate Type", "Subject Name", "Date Requested", "Status"]
 
     def _getListColumnWidths(self):
-        return [wxLIST_AUTOSIZE_USEHEADER, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE]
+        return [wx.LIST_AUTOSIZE_USEHEADER, wx.LIST_AUTOSIZE, wx.LIST_AUTOSIZE, wx.LIST_AUTOSIZE]
 
