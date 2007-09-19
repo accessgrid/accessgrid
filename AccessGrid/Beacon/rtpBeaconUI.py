@@ -6,12 +6,12 @@
 # Author:      Thomas Uram, Susanne Lefvert
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeaconUI.py,v 1.14 2007-09-18 20:45:29 turam Exp $
+# RCS-ID:      $Id: rtpBeaconUI.py,v 1.15 2007-09-19 16:51:22 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
 
-__revision__ = "$Id: rtpBeaconUI.py,v 1.14 2007-09-18 20:45:29 turam Exp $"
+__revision__ = "$Id: rtpBeaconUI.py,v 1.15 2007-09-19 16:51:22 turam Exp $"
 
 import wx
 import wx.grid
@@ -60,7 +60,7 @@ class BeaconFrame(wx.Frame):
         # Create the beacon grid
         self.grid = wx.grid.Grid(self.panel,-1)
         self.grid.SetToolTip(wx.ToolTip("test"))
-        self.grid.EnableEditing(false)
+        self.grid.EnableEditing(False)
         self.grid.SetColLabelSize(0)
         self.grid.SetRowLabelAlignment(wx.LEFT,wx.BOTTOM)
         self.grid.DisableDragRowSize()
@@ -71,8 +71,8 @@ class BeaconFrame(wx.Frame):
         self.grid.CreateGrid(1,1)
         
         # Register event handlers
-        EVT_CLOSE(self, self.OnExit)
-        EVT_GRID_CELL_LEFT_CLICK(self.grid, self.OnLeftClick) 
+        wx.EVT_CLOSE(self, self.OnExit)
+        wx.grid.EVT_GRID_CELL_LEFT_CLICK(self.grid, self.OnLeftClick) 
         
         # Layout
         self.__Layout()

@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.40 2007-09-18 20:23:45 turam Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.41 2007-09-19 16:51:22 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.40 2007-09-18 20:23:45 turam Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.41 2007-09-19 16:51:22 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -164,6 +164,7 @@ class AuthorizationUIPanel(wx.Panel):
         try:
            
             self.allActions = self.authClient.ListActions()
+            self.allActions.sort()
             actions = []
             for action in self.allActions:
                 actions.append(action.name)
@@ -253,7 +254,7 @@ class AuthorizationUIPanel(wx.Panel):
             self.tree.SortChildren(self.root)
 
         cookie = 0
-        if WXVERSION[0] <= 2 and WXVERSION[1] <= 4:
+        if wx.VERSION[0] <= 2 and wx.VERSION[1] <= 4:
             firstItem, cookie = self.tree.GetFirstChild(self.root, cookie)
         else:
             firstItem, cookie = self.tree.GetFirstChild(self.root)
@@ -266,31 +267,31 @@ class AuthorizationUIPanel(wx.Panel):
         '''
         Set events.
         '''
-        EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
+        wx.EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
 
-        #EVT_TREE_END_LABEL_EDIT(self.tree, self.tree.GetId(), self.EndRename)
-        EVT_TREE_BEGIN_DRAG(self.tree, self.tree.GetId(), self.BeginDrag)
-        EVT_TREE_END_DRAG(self.tree, self.tree.GetId(), self.EndDrag)
-        EVT_TREE_SEL_CHANGED(self.tree, self.tree.GetId(), self.OnSelect)
+        #wx.EVT_TREE_END_LABEL_EDIT(self.tree, self.tree.GetId(), self.EndRename)
+        wx.EVT_TREE_BEGIN_DRAG(self.tree, self.tree.GetId(), self.BeginDrag)
+        wx.EVT_TREE_END_DRAG(self.tree, self.tree.GetId(), self.EndDrag)
+        wx.EVT_TREE_SEL_CHANGED(self.tree, self.tree.GetId(), self.OnSelect)
 
-        EVT_CHECKLISTBOX(self.actionList, self.actionList.GetId(),
+        wx.EVT_CHECKLISTBOX(self.actionList, self.actionList.GetId(),
                          self.CheckAction)
-        EVT_LISTBOX(self, self.actionList.GetId(), self.SelectAction)
+        wx.EVT_LISTBOX(self, self.actionList.GetId(), self.SelectAction)
              
-        EVT_MENU(self, self.ID_PERSON_ADDPERSON, self.AddPerson)
-        #EVT_MENU(self, self.ID_PERSON_ADDROLE, self.CreateRole)
-        EVT_MENU(self, self.ID_PERSON_DELETE, self.RemovePerson)
-        #EVT_MENU(self, self.ID_PERSON_RENAME, self.Rename)
-        EVT_MENU(self, self.ID_PERSON_COPY, self.Copy)
-        EVT_MENU(self, self.ID_PERSON_PASTE, self.Paste)
-        EVT_MENU(self, self.ID_PERSON_PROPERTIES, self.OpenPersonProperties)
+        wx.EVT_MENU(self, self.ID_PERSON_ADDPERSON, self.AddPerson)
+        #wx.EVT_MENU(self, self.ID_PERSON_ADDROLE, self.CreateRole)
+        wx.EVT_MENU(self, self.ID_PERSON_DELETE, self.RemovePerson)
+        #wx.EVT_MENU(self, self.ID_PERSON_RENAME, self.Rename)
+        wx.EVT_MENU(self, self.ID_PERSON_COPY, self.Copy)
+        wx.EVT_MENU(self, self.ID_PERSON_PASTE, self.Paste)
+        wx.EVT_MENU(self, self.ID_PERSON_PROPERTIES, self.OpenPersonProperties)
 
-        EVT_MENU(self, self.ID_ROLE_ADDPERSON, self.AddPerson)
-        EVT_MENU(self, self.ID_ROLE_ADDROLE, self.CreateRole)
-        EVT_MENU(self, self.ID_ROLE_REMOVEROLE, self.RemoveRole)
+        wx.EVT_MENU(self, self.ID_ROLE_ADDPERSON, self.AddPerson)
+        wx.EVT_MENU(self, self.ID_ROLE_ADDROLE, self.CreateRole)
+        wx.EVT_MENU(self, self.ID_ROLE_REMOVEROLE, self.RemoveRole)
         
-        EVT_SASH_DRAGGED(self, self.ID_WINDOW_LEFT, self.__OnSashDrag)
-        EVT_SIZE(self, self.__OnSize)
+        wx.EVT_SASH_DRAGGED(self, self.ID_WINDOW_LEFT, self.__OnSashDrag)
+        wx.EVT_SIZE(self, self.__OnSize)
 
     def __OnSashDrag(self, event):
         '''
@@ -609,7 +610,7 @@ class AuthorizationUIPanel(wx.Panel):
         '''
         self.dragItem = event.GetItem()
        
-        # Need to call Allow to get an EVT_TREE_END_DRAG event
+        # Need to call Allow to get an wx.EVT_TREE_END_DRAG event
         event.Allow()
 
    
@@ -1264,16 +1265,16 @@ class AddPeopleDialog(wx.Dialog):
         self.addList.SetColumnWidth(0, wx.LIST_AUTOSIZE)
 
     def __setEvents(self):
-        EVT_BUTTON(self.addButton1, self.addButton1.GetId(),
+        wx.EVT_BUTTON(self.addButton1, self.addButton1.GetId(),
                    self.AddDistinguished)
-        EVT_BUTTON(self.addButton2, self.addButton2.GetId(),
+        wx.EVT_BUTTON(self.addButton2, self.addButton2.GetId(),
                    self.AddFromPeopleList) 
-        EVT_COMBOBOX(self.selections, self.selections.GetId(),
+        wx.EVT_COMBOBOX(self.selections, self.selections.GetId(),
                      self.ComboEvent)
-        EVT_BUTTON(self.removeUserButton, self.removeUserButton.GetId(),
+        wx.EVT_BUTTON(self.removeUserButton, self.removeUserButton.GetId(),
                    self.RemoveSelectedUsersFromList)
 
-        EVT_LIST_ITEM_SELECTED(self.list, self.list.GetId(),
+        wx.EVT_LIST_ITEM_SELECTED(self.list, self.list.GetId(),
                                self.SelectPeople)
 
     def __addToList(self, item):
@@ -1286,11 +1287,11 @@ class AddPeopleDialog(wx.Dialog):
             self.addList.SetColumnWidth(0, wx.LIST_AUTOSIZE)
             return true
 
-        return false
+        return False
 
     def __removeFromList(self, index):
         if index == -1:
-            return false
+            return False
         item_name = self.addList.GetItemText(index)
         list = self.infoDict[self.selections.GetValue()]
 
@@ -1300,7 +1301,7 @@ class AddPeopleDialog(wx.Dialog):
             self.addList.DeleteItem(index)
             return true
  
-        return false
+        return False
         
     def SelectNewRole(self, role):
         self.selectedRole = role

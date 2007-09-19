@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service client that handles Access Grid
 #                 venue events.
 # Created:     2005/09/09
-# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.5 2007-06-15 14:42:52 turam Exp $
+# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.6 2007-09-19 16:51:21 turam Exp $
 # Copyright:   (c) 2005,2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -250,7 +250,7 @@ def mainWithUI(group="Test", venueEventClientClass=InsecureVenueEventClient, gro
             menu.Append(self.ID_EXIT, "E&xit", "Terminate the program")
             menuBar.Append(menu, "&File");
             self.SetMenuBar(menuBar)
-            EVT_MENU(self,self.ID_EXIT,self.TimeToQuit)
+            wx.EVT_MENU(self,self.ID_EXIT,self.TimeToQuit)
             
             sizer = wxBoxSizer(wxVERTICAL)
             self.SetSizer(sizer)
@@ -261,7 +261,7 @@ def mainWithUI(group="Test", venueEventClientClass=InsecureVenueEventClient, gro
             sizer.Add(self.log,1,wxEXPAND|wxALL,1)
             
             # trap characters
-            EVT_CHAR(self.log, self.OnChar)
+            wx.EVT_CHAR(self.log, self.OnChar)
             
             # start the event server thread
             eventHost = "localhost"
@@ -280,7 +280,7 @@ def mainWithUI(group="Test", venueEventClientClass=InsecureVenueEventClient, gro
             #self.eventClient.Send("connect", "")    
                         
             # cleanup
-            EVT_CLOSE(self, self.OnCloseWindow)
+            wx.EVT_CLOSE(self, self.OnCloseWindow)
             
             self.show_status("Connecting to %s on port %d." % 
                              (eventHost, eventPort))

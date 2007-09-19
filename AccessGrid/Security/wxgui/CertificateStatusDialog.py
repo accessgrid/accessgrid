@@ -55,13 +55,13 @@ class CertificateStatusDialog(wx.Dialog):
         self.AddCertificates()
                                      
     def __setEvents(self):
-        EVT_BUTTON(self, self.importButton.GetId(), self.OnImportCertificate)
-        EVT_BUTTON(self, self.deleteButton.GetId(), self.OnDeleteRequest)
-        EVT_BUTTON(self, self.getStatusButton.GetId(), self.OnUpdateStatus)
-        EVT_BUTTON(self, self.closeButton.GetId(), self.OnClose)
-        EVT_BUTTON(self, self.newRequestButton.GetId(), self.RequestCertificate)
+        wx.EVT_BUTTON(self, self.importButton.GetId(), self.OnImportCertificate)
+        wx.EVT_BUTTON(self, self.deleteButton.GetId(), self.OnDeleteRequest)
+        wx.EVT_BUTTON(self, self.getStatusButton.GetId(), self.OnUpdateStatus)
+        wx.EVT_BUTTON(self, self.closeButton.GetId(), self.OnClose)
+        wx.EVT_BUTTON(self, self.newRequestButton.GetId(), self.RequestCertificate)
 
-        EVT_LIST_ITEM_SELECTED(self.list, self.list.GetId(),
+        wx.EVT_LIST_ITEM_SELECTED(self.list, self.list.GetId(),
                                self.OnCertSelected)
 
     def __layout(self):
@@ -306,7 +306,7 @@ class CertificateStatusDialog(wx.Dialog):
 
             self.list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
             
-#              self.cancelButton.Enable(false)
+#              self.cancelButton.Enable(False)
 
 #              if cert != "":
 #                  self.certificateClient.SaveCertificate(cert)

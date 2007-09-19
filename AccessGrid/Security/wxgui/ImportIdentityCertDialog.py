@@ -152,10 +152,10 @@ it. The private key may be included in the certificate file.
         self.pkFileRadioButton = rb2 = wx.RadioButton(self, -1,
                                                      "Load private key from separate file")
 
-        EVT_RADIOBUTTON(self, rb1.GetId(),
+        wx.EVT_RADIOBUTTON(self, rb1.GetId(),
                         lambda event, self = self: self.SetRequirePKFile(0))
         
-        EVT_RADIOBUTTON(self, rb2.GetId(), 
+        wx.EVT_RADIOBUTTON(self, rb2.GetId(), 
                         lambda event, self = self: self.SetRequirePKFile(1))
 
         topsizer.Add(rb1, 0, wx.EXPAND | wx.ALL, 3)
@@ -175,11 +175,11 @@ it. The private key may be included in the certificate file.
 
         hb = wx.BoxSizer(wx.HORIZONTAL)
         b = wx.Button(self, -1, "Import")
-        EVT_BUTTON(self, b.GetId(), self.OnImport)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnImport)
         hb.Add(b, 0, wx.ALL, 3)
 
         b = wx.Button(self, -1, "Cancel")
-        EVT_BUTTON(self, b.GetId(),
+        wx.EVT_BUTTON(self, b.GetId(),
                    lambda event, self = self: self.EndModal(wx.ID_CANCEL))
         hb.Add(b, 0, wx.ALL, 3)
 

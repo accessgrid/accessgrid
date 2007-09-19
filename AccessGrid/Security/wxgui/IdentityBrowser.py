@@ -38,11 +38,11 @@ class DeleteCertificateDialog(wx.Dialog):
 
         b = wx.Button(self, wx.ID_YES, "Yes")
         hs.Add(b, 0, wx.ALL, 3)
-        EVT_BUTTON(self, wx.ID_YES, lambda e, self = self: self.EndModal(wx.ID_YES))
+        wx.EVT_BUTTON(self, wx.ID_YES, lambda e, self = self: self.EndModal(wx.ID_YES))
 
         b = wx.Button(self, wx.ID_NO, "No")
         hs.Add(b, 0, wx.ALL, 3)
-        EVT_BUTTON(self, wx.ID_NO, lambda e, self = self: self.EndModal(wx.ID_NO))
+        wx.EVT_BUTTON(self, wx.ID_NO, lambda e, self = self: self.EndModal(wx.ID_NO))
 
         sizer.Add(hs, 0, wx.TOP | wx.BOTTOM |  wx.ALIGN_CENTER, 10)
 
@@ -62,27 +62,27 @@ class IdentityBrowser(CertificateBrowserBase):
         self.certOnlyButtons = []
 
         b = wx.Button(self, -1, "Import")
-        EVT_BUTTON(self, b.GetId(), self.OnImport)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnImport)
         sizer.Add(b, 0, wx.EXPAND)
 
         b = wx.Button(self, -1, "Export")
-        EVT_BUTTON(self, b.GetId(), self.OnExport)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnExport)
         sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
         b = wx.Button(self, -1, "Delete")
-        EVT_BUTTON(self, b.GetId(), self.OnDelete)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnDelete)
         sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
         b = wx.Button(self, -1, "Make Default")
-        EVT_BUTTON(self, b.GetId(), self.OnSetDefault)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnSetDefault)
         sizer.Add(b, 0, wx.EXPAND)
         self.defaultButton = b
         b.Enable(0)
 
         b = wx.Button(self, -1, "View Certificate")
-        EVT_BUTTON(self, b.GetId(), self.OnViewCertificate)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnViewCertificate)
         sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
@@ -90,7 +90,7 @@ class IdentityBrowser(CertificateBrowserBase):
 
         self.exportServiceProfileButton = wx.Button(self, -1,
                                                    "Export Service Profile")
-        EVT_BUTTON(self, self.exportServiceProfileButton.GetId(),
+        wx.EVT_BUTTON(self, self.exportServiceProfileButton.GetId(),
                    self.OnExportServiceProfile)
         sizer.Add(self.exportServiceProfileButton, 0, wx.EXPAND)
         self.exportServiceProfileButton.Enable(0)
@@ -98,7 +98,7 @@ class IdentityBrowser(CertificateBrowserBase):
         sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.ALL , 3)
 
         b = wx.Button(self, -1, "Refresh")
-        EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
+        wx.EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
         sizer.Add(b, 0, wx.EXPAND)
 
 

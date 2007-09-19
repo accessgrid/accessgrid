@@ -375,28 +375,28 @@ class CertificateStatusBrowser(CertificateBrowserBase):
         self.certOnlyButtons = []
 
         b = wx.Button(self, -1, "Install Certificate")
-        EVT_BUTTON(self, b.GetId(), self.OnInstallCert)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnInstallCert)
         sizer.Add(b, 0, wx.EXPAND | wx.ALL, 3)
         self.certOnlyButtons.append(b)
 
         b = wx.Button(self, -1, "Delete Request")
-        EVT_BUTTON(self, b.GetId(), self.OnDeleteRequest)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnDeleteRequest)
         sizer.Add(b, 0, wx.EXPAND | wx.ALL, 3)
         self.certOnlyButtons.append(b)
 
         b = wx.Button(self, -1, "View Request")
-        EVT_BUTTON(self, b.GetId(), self.OnViewRequest)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnViewRequest)
         sizer.Add(b, 0, wx.EXPAND | wx.ALL, 3)
         self.certOnlyButtons.append(b)
 
         b = wx.Button(self, -1, "Check Status")
-        EVT_BUTTON(self, b.GetId(), self.OnCheckStatus)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnCheckStatus)
         sizer.Add(b, 0, wx.EXPAND | wx.ALL, 3)
 
         sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.ALL , 3)
 
         b = wx.Button(self, -1, "Request New Certificate")
-        EVT_BUTTON(self, b.GetId(), self.OnRequestNewCertificate)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnRequestNewCertificate)
         sizer.Add(b, 0, wx.EXPAND | wx.ALL, 3)
 
         for b in self.certOnlyButtons:

@@ -132,8 +132,8 @@ class CertificateRequestViewer(wx.Dialog):
 
         b = wx.Button(self, -1, "Close")
         sizer.Add(b, 0)
-        EVT_BUTTON(self, b.GetId(), self.OnClose)
-        EVT_CLOSE(self, self.OnClose)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnClose)
+        wx.EVT_CLOSE(self, self.OnClose)
 
         self.SetSizer(sizer)
         self.SetAutoLayout(1)

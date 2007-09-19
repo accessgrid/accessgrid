@@ -133,11 +133,11 @@ or use the Browse button to browse to it.
 
         self.certFileText = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER)
         hb.Add(self.certFileText, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 3)
-        EVT_TEXT_ENTER(self, self.certFileText.GetId(), self.OnCertFileEnter)
+        wx.EVT_TEXT_ENTER(self, self.certFileText.GetId(), self.OnCertFileEnter)
 
         b = wx.Button(self, -1, "Browse")
         hb.Add(b, 0, wx.ALL, 3)
-        EVT_BUTTON(self, b.GetId(), self.OnCertBrowse)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnCertBrowse)
 
         #
         # Cert name.
@@ -180,11 +180,11 @@ signing policy from the CA certificate.
         #
 
         rb1 = wx.RadioButton(self, -1, "Construct from certificate", style = wx.RB_GROUP)
-        EVT_RADIOBUTTON(self, rb1.GetId(),
+        wx.EVT_RADIOBUTTON(self, rb1.GetId(),
                         lambda event, self = self: self.setSPMode(self.SPConstruct))
         
         self.fileRadioButton = rb2 = wx.RadioButton(self, -1, "Import from file")
-        EVT_RADIOBUTTON(self, rb2.GetId(), 
+        wx.EVT_RADIOBUTTON(self, rb2.GetId(), 
                         lambda event, self = self: self.setSPMode(self.SPFile))
 
         topsizer.Add(rb1, 0, wx.EXPAND | wx.ALL, 3)
@@ -201,10 +201,10 @@ signing policy from the CA certificate.
         hb.Add(static2, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 3)
 
         self.signingPolicyFileText = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER)
-        EVT_TEXT_ENTER(self, self.signingPolicyFileText.GetId(), self.OnSPFileEnter)
+        wx.EVT_TEXT_ENTER(self, self.signingPolicyFileText.GetId(), self.OnSPFileEnter)
 
         self.signingPolicyBrowseButton = b = wx.Button(self, -1, "Browse")
-        EVT_BUTTON(self, b.GetId(), self.OnSigningPolicyBrowse)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnSigningPolicyBrowse)
 
         hb.Add(self.signingPolicyFileText, 1, wx.ALL | wx.EXPAND, 3)
         hb.Add(b, 0, wx.ALL, 3)
@@ -228,11 +228,11 @@ signing policy from the CA certificate.
 
         hb = wx.BoxSizer(wx.HORIZONTAL)
         b = wx.Button(self, -1, "Import")
-        EVT_BUTTON(self, b.GetId(), self.OnImport)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnImport)
         hb.Add(b, 0, wx.ALL, 3)
 
         b = wx.Button(self, -1, "Cancel")
-        EVT_BUTTON(self, b.GetId(),
+        wx.EVT_BUTTON(self, b.GetId(),
                    lambda event, self = self: self.EndModal(wx.ID_CANCEL))
         hb.Add(b, 0, wx.ALL, 3)
 

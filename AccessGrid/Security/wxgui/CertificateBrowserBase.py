@@ -130,11 +130,11 @@ class CertificateBrowserBase(wx.Panel):
         self.list = wx.ListCtrl(self, -1, style = wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_VRULES)
         self.sizer.Add(self.list, 1, wx.EXPAND)
 
-        EVT_LIST_ITEM_SELECTED(self.list, self.list.GetId(),
+        wx.EVT_LIST_ITEM_SELECTED(self.list, self.list.GetId(),
                                self.OnListItemSelected)
-        EVT_LIST_ITEM_DESELECTED(self.list, self.list.GetId(),
+        wx.EVT_LIST_ITEM_DESELECTED(self.list, self.list.GetId(),
                                self.OnListItemDeselected)
-        EVT_LIST_ITEM_ACTIVATED(self.list, self.list.GetId(),
+        wx.EVT_LIST_ITEM_ACTIVATED(self.list, self.list.GetId(),
                                 self.OnListItemActivated)
 
         bsizer = wx.BoxSizer(wx.VERTICAL)

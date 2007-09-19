@@ -399,10 +399,10 @@ class AppMonitorFrame(wx.Frame):
         Initialize events.
         '''
 
-        EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_TOP, self.ID_WINDOW_BOTTOM, self.OnSashDrag)
-        EVT_SIZE(self, self.OnSize)
+        wx.EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_TOP, self.ID_WINDOW_BOTTOM, self.OnSashDrag)
+        wx.EVT_SIZE(self, self.OnSize)
         
-        EVT_CLOSE(self, self.OnExit)
+        wx.EVT_CLOSE(self, self.OnExit)
     
     def __layout(self):
         '''

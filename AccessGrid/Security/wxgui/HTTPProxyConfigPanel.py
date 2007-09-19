@@ -30,7 +30,7 @@ class HTTPProxyConfigPanel(wx.Panel):
 
         self.proxyEnabled = wx.CheckBox(self, -1, "Use a proxy server to connect to the certificate server")
 
-        EVT_CHECKBOX(self, self.proxyEnabled.GetId(), self.OnCheckbox)
+        wx.EVT_CHECKBOX(self, self.proxyEnabled.GetId(), self.OnCheckbox)
 
         self.proxyText = wx.TextCtrl(self, -1, defaultProxyHost)
         self.proxyPort = wx.TextCtrl(self, -1, defaultProxyPort)

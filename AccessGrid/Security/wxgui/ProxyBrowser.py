@@ -22,21 +22,21 @@ class ProxyBrowser(CertificateBrowserBase):
         self.certOnlyButtons = []
 
         b = wx.Button(self, -1, "Create")
-        EVT_BUTTON(self, b.GetId(), self.OnCreate)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnCreate)
         sizer.Add(b, 0, wx.EXPAND)
 
         b = wx.Button(self, -1, "Destroy")
-        EVT_BUTTON(self, b.GetId(), self.OnDestroy)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnDestroy)
         sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
         b = wx.Button(self, -1, "View Proxy")
-        EVT_BUTTON(self, b.GetId(), self.OnViewCertificate)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnViewCertificate)
         sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
         b = wx.Button(self, -1, "Refresh")
-        EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
+        wx.EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
         sizer.Add(b, 0, wx.EXPAND)
 
         for b in self.certOnlyButtons:

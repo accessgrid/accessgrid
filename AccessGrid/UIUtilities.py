@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.92 2007-09-18 20:45:16 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.93 2007-09-19 16:51:21 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.92 2007-09-18 20:45:16 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.93 2007-09-19 16:51:21 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -145,7 +145,7 @@ class TextValidator(wx.PyValidator):
 
         if val == "":
             MessageDialog(NULL, "Please, enter a comment.")
-            return false
+            return False
        
         return true
 
@@ -338,13 +338,13 @@ class FileLocationWidget(wx.Panel):
         
         self.text = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER)
         sizer.Add(self.text, 1, wx.ALIGN_CENTER_VERTICAL)
-        EVT_TEXT_ENTER(self, self.text.GetId(), self.OnTextEnter)
+        wx.EVT_TEXT_ENTER(self, self.text.GetId(), self.OnTextEnter)
         if not(IsOSX() and wx.VERSION >= (2,5,3,0)):
-            EVT_KILL_FOCUS(self.text, self.OnTextLoseFocus)
+            wx.EVT_KILL_FOCUS(self.text, self.OnTextLoseFocus)
         
         b = wx.Button(self, -1, "Browse")
         sizer.Add(b, 0)
-        EVT_BUTTON(self, b.GetId(), self.OnBrowse)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnBrowse)
 
         self.SetSizer(sizer)
         self.SetAutoLayout(1)
@@ -420,9 +420,9 @@ class SecureTextCtrl(wx.TextCtrl):
                             style = wx.TE_RICH2,
                             size = size)
 
-        EVT_TEXT_ENTER(self, self.GetId(), self.OnEnter)
-        EVT_CHAR(self, self.OnChar)
-        EVT_KEY_DOWN(self, self.OnKeyDown)
+        wx.EVT_TEXT_ENTER(self, self.GetId(), self.OnEnter)
+        wx.EVT_CHAR(self, self.OnChar)
+        wx.EVT_KEY_DOWN(self, self.OnKeyDown)
 
         self.chars = []
 
@@ -610,8 +610,8 @@ class PassphraseDialog(wx.Dialog):
         buttons = self.CreateButtonSizer(wx.OK | wx.CANCEL)
         topsizer.Add(buttons, 0, wx.CENTRE | wx.ALL, 10)
 
-        EVT_BUTTON(self, wx.ID_OK, self.OnOK)
-        EVT_CLOSE(self, self.OnClose)
+        wx.EVT_BUTTON(self, wx.ID_OK, self.OnOK)
+        wx.EVT_CLOSE(self, self.OnClose)
         
         self.text.SetFocus()
         
@@ -681,8 +681,8 @@ class PassphraseVerifyDialog(wx.Dialog):
         b = wx.Button(panel, wx.ID_OK, "OK")
         topsizer.Add(b, 0, wx.ALIGN_RIGHT | wx.ALL, 10)
 
-        EVT_BUTTON(self, wx.ID_OK, self.OnOK)
-        EVT_CLOSE(self, self.OnClose)
+        wx.EVT_BUTTON(self, wx.ID_OK, self.OnOK)
+        wx.EVT_CLOSE(self, self.OnClose)
         
         self.text1.SetFocus()
         
@@ -824,11 +824,11 @@ class EditURLBaseDialog(wx.Dialog):
         self.__SetEvents()
         
     def __SetEvents(self):
-        EVT_RIGHT_DOWN(self.myUrlsList, self.OnRightDown)
-        EVT_LIST_ITEM_SELECTED(self.myUrlsList, self.ID_LIST,
+        wx.EVT_RIGHT_DOWN(self.myUrlsList, self.OnRightDown)
+        wx.EVT_LIST_ITEM_SELECTED(self.myUrlsList, self.ID_LIST,
                                self.OnItemSelected)
-        EVT_MENU(self.menu, self.ID_RENAME, self.OnRename)
-        EVT_MENU(self.menu, self.ID_DELETE, self.OnDelete)
+        wx.EVT_MENU(self.menu, self.ID_RENAME, self.OnRename)
+        wx.EVT_MENU(self.menu, self.ID_DELETE, self.OnDelete)
                
     def __PopulateList(self):
         i = 0
@@ -969,7 +969,7 @@ class MyUrlsEditValidator(wx.PyValidator):
                                   style = wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
-            return false
+            return False
 
         return true
     
@@ -1010,8 +1010,8 @@ class TextDialog(wx.Dialog):
         buttons = self.CreateButtonSizer(wx.OK | wx.CANCEL)
         topsizer.Add(buttons, 0, wx.CENTRE | wx.ALL, 10)
 
-        EVT_BUTTON(self, wx.ID_OK, self.OnOK)
-        EVT_CLOSE(self, self.OnClose)
+        wx.EVT_BUTTON(self, wx.ID_OK, self.OnOK)
+        wx.EVT_CLOSE(self, self.OnClose)
         
         self.text.SetFocus()
         

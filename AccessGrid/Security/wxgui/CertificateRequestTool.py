@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.24 2007-09-18 20:23:45 turam Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.25 2007-09-19 16:51:22 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import wx
@@ -129,8 +129,8 @@ class CertificateRequestTool(wx.wizard.Wizard):
 
         self.log.debug("__init__:Create the pages")
 
-        EVT_WIZARD_PAGE_CHANGING(self, wizardId, self.ChangingPage)
-        EVT_WIZARD_CANCEL(self, wizardId, self.CancelPage) 
+        wx.wizard.EVT_WIZARD_PAGE_CHANGING(self, wizardId, self.ChangingPage)
+        wx.wizard.EVT_WIZARD_CANCEL(self, wizardId, self.CancelPage) 
         
         self.log.debug("__init__:Run the wizard")
         
@@ -410,13 +410,13 @@ passphrase from the certificate, and it cannot be reset.""")
                                           style = wx.TE_PASSWORD)
         self.SetValidator(IdentityCertValidator())
 
-        EVT_TEXT(self, self.firstNameId, self.EnterText)
-        EVT_TEXT(self, self.lastNameId, self.EnterText)
-        EVT_TEXT(self.emailCtrl, self.emailId, self.EnterEmailText)
-        EVT_TEXT(self.domainCtrl, self.domainId, self.EnterDomainText)
-        EVT_TEXT(self.passwordCtrl, self.passwrdId , self.EnterText)
-        EVT_TEXT(self.passwordVerCtrl, self.passwrd2Id, self.EnterText)
-        EVT_CHAR(self.domainCtrl, self.EnterDomainChar)
+        wx.EVT_TEXT(self, self.firstNameId, self.EnterText)
+        wx.EVT_TEXT(self, self.lastNameId, self.EnterText)
+        wx.EVT_TEXT(self.emailCtrl, self.emailId, self.EnterEmailText)
+        wx.EVT_TEXT(self.domainCtrl, self.domainId, self.EnterDomainText)
+        wx.EVT_TEXT(self.passwordCtrl, self.passwrdId , self.EnterText)
+        wx.EVT_TEXT(self.passwordVerCtrl, self.passwrd2Id, self.EnterText)
+        wx.EVT_CHAR(self.domainCtrl, self.EnterDomainChar)
         self.__Layout()
 
         #
@@ -550,7 +550,7 @@ class ValidatorHelp(wx.PyValidator):
             domainPartsList.append(part)
 
         if domain == "":
-            return false
+            return False
 
         hostlow = host.lower()
         # Check if some part of the domain matches the host name
@@ -558,7 +558,7 @@ class ValidatorHelp(wx.PyValidator):
            if hostlow.find(part.lower()) != -1:
                return true
 
-        return false
+        return False
 
     def CheckHost(self, host):
         '''
@@ -568,7 +568,7 @@ class ValidatorHelp(wx.PyValidator):
         for char in host:
             return char in string.letters
               
-        return false
+        return False
 
     
 class IdentityCertValidator(wx.PyValidator):
@@ -604,40 +604,40 @@ class IdentityCertValidator(wx.PyValidator):
             MessageDialog(NULL, "Please enter your first name.",
                           style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.firstNameCtrl)
-            return false
+            return False
 
         elif lastName == "":
             MessageDialog(NULL, "Please enter your last name.",
                           style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.lastNameCtrl)
-            return false
+            return False
         
         elif email == "":
             MessageDialog(NULL, "Please enter your e-mail address.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
-            return false
+            return False
 
         elif email.find("@") == -1:
             MessageDialog(NULL, "Pleas enter a valid e-mail address, for example name@example.com.",
                           style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
-            return false
+            return False
         
         elif password == "":
             MessageDialog(NULL, "Please enter your passphrase.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.passwordCtrl)
-            return false
+            return False
             
         elif password != password2:
             MessageDialog(NULL, "Your passphrase entries do not match. Please retype them.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.passwordCtrl)
             self.helpClass.SetColour(win.passwordVerCtrl)
-            return false
+            return False
 
         elif domain == "":
             MessageDialog(NULL, "Please enter the domain name of your home site; for example, example.com..", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.domainCtrl)
-            return false
+            return False
             
 
         return true
@@ -694,8 +694,8 @@ class HostCertWindow(TitledPage):
         '''
         Sets events
         '''
-        EVT_TEXT(self.emailCtrl, self.emailId, self.EnterText)
-        EVT_TEXT(self.hostCtrl , self.hostId , self.EnterText)
+        wx.EVT_TEXT(self.emailCtrl, self.emailId, self.EnterText)
+        wx.EVT_TEXT(self.hostCtrl , self.hostId , self.EnterText)
             
     def EnterText(self, event):
         '''
@@ -748,34 +748,34 @@ class HostCertValidator(wx.PyValidator):
         if hostName == "":
             MessageDialog(NULL, "Please enter the machine name (mcs.anl.gov).", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.hostCtrl)
-            return false
+            return False
         
         elif hostName.find('.') == -1:
             MessageDialog(NULL, "Please enter complete machine name (machine.mcs.anl.gov).", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.hostCtrl)
-            return false
+            return False
 
         elif not self.helpClass.CheckHost(hostName):
             MessageDialog(NULL, "Please enter valid machine name (machine.mcs.anl.gov). \nIP address is not a valid machine name.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.hostCtrl)
-            return false
+            return False
             
         elif email == "":
             MessageDialog(NULL, "Please enter your e-mail address.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
-            return false
+            return False
 
         elif email.find("@") == -1:
             MessageDialog(NULL, "Pleas enter a valid e-mail address, for example name@mcs.anl.gov.",
                           style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
-            return false
+            return False
 
         elif not self.helpClass.CheckEmail(hostName, email):
             MessageDialog(NULL, "The e-mail address and machine name should be on same domain. \n\nFor machine name: video.mcs.anl.gov  \n\nValid e-mail addresses could be: \n\nname@mcs.anl.gov or name@anl.gov \n",
                           style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
-            return false
+            return False
         
         return true
 
@@ -819,13 +819,13 @@ class ServiceCertWindow(TitledPage):
 
         self.SetValidator(ServiceCertValidator())
 
-        EVT_COMBOBOX(self.serviceDropdown, self.serviceDropdown.GetId(),
+        wx.EVT_COMBOBOX(self.serviceDropdown, self.serviceDropdown.GetId(),
                      self.OnServiceSelected)
 
-        EVT_TEXT(self.serviceCtrl, self.serviceId, self.OnServiceText)
-        EVT_TEXT(self.emailCtrl, self.emailId, self.EnterText)
-        EVT_TEXT(self.hostCtrl, self.hostId , self.EnterText)
-        EVT_CHAR(self.serviceCtrl, self.OnServiceChar)
+        wx.EVT_TEXT(self.serviceCtrl, self.serviceId, self.OnServiceText)
+        wx.EVT_TEXT(self.emailCtrl, self.emailId, self.EnterText)
+        wx.EVT_TEXT(self.hostCtrl, self.hostId , self.EnterText)
+        wx.EVT_CHAR(self.serviceCtrl, self.OnServiceChar)
         self.Layout()
 
     def GetValidity(self):
@@ -916,44 +916,44 @@ class ServiceCertValidator(wx.PyValidator):
         if serviceType == "":
             MessageDialog(NULL, "Please select a service type.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.serviceDropdown)
-            return false
+            return False
             
         elif serviceType == "Other" and name == "":
             MessageDialog(NULL, "Please enter service name.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.serviceCtrl)
-            return false
+            return False
              
         elif host == "":
             MessageDialog(NULL, "Please enter machine name (machine.mcs.anl.gov).", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.hostCtrl)
-            return false
+            return False
 
         elif host.find('.') == -1:
             MessageDialog(NULL, "Please enter complete machine name (machine.mcs.anl.gov).", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.hostCtrl)
-            return false
+            return False
             
         elif not self.helpClass.CheckHost(host):
             MessageDialog(NULL, "Please enter valid machine name (machine.mcs.anl.gov). \nIP address is not a valid machine name.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.hostCtrl)
-            return false
+            return False
 
         elif email == "":
             MessageDialog(NULL, "Please enter e-mail address.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
-            return false
+            return False
 
         elif email.find("@") == -1:
             MessageDialog(NULL, "Pleas enter a valid e-mail address, for example name@mcs.anl.gov.",
                           style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
-            return false
+            return False
         
         elif not self.helpClass.CheckEmail(host, email):
             MessageDialog(NULL, "The e-mail address and machine name should be on same domain. \n\nFor machine name: video.mcs.anl.gov  \n\nValid e-mail addresses could be: \n\nname@mcs.anl.gov or name@anl.gov \n",
                           style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
-            return false
+            return False
             
         return true
 
@@ -980,7 +980,7 @@ class SubmitReqWindow(TitledPage):
 
         self.proxyPanel = HTTPProxyConfigPanel(self)
         self.ExportProfileButton = wx.Button(self, -1, "Export service profile...")
-        EVT_BUTTON(self, self.ExportProfileButton.GetId(),
+        wx.EVT_BUTTON(self, self.ExportProfileButton.GetId(),
                    self.ExportServiceProfile)
         self.__Layout()
 
@@ -1052,7 +1052,7 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
         self.Refresh()
         self.Update()
 
-        success = false
+        success = False
 
         try:
             proxyInfo = self.proxyPanel.GetInfo()

@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.30 2007-09-18 20:23:45 turam Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.31 2007-09-19 16:51:22 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.30 2007-09-18 20:23:45 turam Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.31 2007-09-19 16:51:22 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -172,7 +172,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
         i = wx.NewId()
         certMenu.Append(i, "Manage Certificates...")
-        EVT_MENU(win, i,
+        wx.EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnShowNew(event, win))
         
         return certMenu
@@ -185,48 +185,48 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
         i = wx.NewId()
         certMenu.Append(i, "Import Identity Certificate")
-        EVT_MENU(win, i,
+        wx.EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnImportIdentityCert(event, win))
 
         i = wx.NewId()
         certMenu.Append(i, "View &Identity Certificates")
-        EVT_MENU(win, i,
+        wx.EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnOpenIdentityCertDialog(event, win))
 
         certMenu.AppendSeparator()
 
         i = wx.NewId()
         certMenu.Append(i, "Import Trusted CA Certificate")
-        EVT_MENU(win, i,
+        wx.EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnImportTrustedCert(event, win))
 
         i = wx.NewId()
         certMenu.Append(i, "View &Trusted CA Certificates")
-        EVT_MENU(win, i,
+        wx.EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnOpenTrustedCertDialog(event, win))
 
         certMenu.AppendSeparator()
 
         i = wx.NewId()
         certMenu.Append(i, "Import Default Globus Certificates")
-        EVT_MENU(win, i,
+        wx.EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnImportGlobusDefaultEnv(event, win))
 
         i = wx.NewId()
         certMenu.Append(i, "Request a certificate")
-        EVT_MENU(win, i,
+        wx.EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnOpenCertRequestDialog(event, win))
 
         i = wx.NewId()
         certMenu.Append(i, "View pending requests")
-        EVT_MENU(win, i,
+        wx.EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnOpenPendingRequestsDialog(event, win))
 
         certMenu.AppendSeparator()
 
         i = wx.NewId()
         certMenu.Append(i, "NEW Browser")
-        EVT_MENU(win, i,
+        wx.EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OnShowNew(event, win))
 
         return certMenu
@@ -635,7 +635,7 @@ class PassphraseDialog(wx.Dialog):
 
         self.detailsButton = wx.Button(self, wx.NewId(), "Proxy Details...")
         sizer.Add(self.detailsButton, 0, wx.ALL, 10)
-        EVT_BUTTON(self, self.detailsButton.GetId(), self.OnProxyDetails)
+        wx.EVT_BUTTON(self, self.detailsButton.GetId(), self.OnProxyDetails)
 
 
         h = wx.BoxSizer(wx.HORIZONTAL)
@@ -645,13 +645,13 @@ class PassphraseDialog(wx.Dialog):
         b = wx.Button(self, -1, "OK")
         h.Add(b, 0, wx.ALL, 10)
         b.SetDefault()
-        EVT_BUTTON(self, b.GetId(), self.OnOK)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnOK)
 
         b = wx.Button(self, -1, "Cancel")
         h.Add(b, 0, wx.ALL, 10)
-        EVT_BUTTON(self, b.GetId(), self.OnCancel)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnCancel)
 
-        EVT_TEXT_ENTER(self, passId, self.KeyDown)
+        wx.EVT_TEXT_ENTER(self, passId, self.KeyDown)
 
         self.proxySizer.AddGrowableCol(1)
 
@@ -666,8 +666,8 @@ class PassphraseDialog(wx.Dialog):
         self.lifetimeText = wx.TextCtrl(self, lifeTimeId, "8", style = wx.TE_PROCESS_ENTER )
         self.lifetimeText.Hide()
 
-        EVT_TEXT_ENTER(self, keyId, self.KeyDown)
-        EVT_TEXT_ENTER(self, lifeTimeId, self.KeyDown)
+        wx.EVT_TEXT_ENTER(self, keyId, self.KeyDown)
+        wx.EVT_TEXT_ENTER(self, lifeTimeId, self.KeyDown)
 
         self.SetSizer(sizer)
         self.SetAutoLayout(1)
@@ -839,7 +839,7 @@ class RepositoryBrowser(wx.Panel):
         self.certList = wx.ListBox(self, -1, style = wx.LB_SINGLE)
 
         hboxTop.Add(self.certList, 1, wx.EXPAND)
-        EVT_LISTBOX(self, self.certList.GetId(), self.OnSelectCert)
+        wx.EVT_LISTBOX(self, self.certList.GetId(), self.OnSelectCert)
 
         hboxTop.Add(vboxTop, 0, wx.EXPAND)
 
@@ -850,26 +850,26 @@ class RepositoryBrowser(wx.Panel):
 
         if self._IsIdentityBrowser():
             b = wx.Button(self, -1, "Set as default identity")
-            EVT_BUTTON(self, b.GetId(), self.OnSetDefaultIdentity)
+            wx.EVT_BUTTON(self, b.GetId(), self.OnSetDefaultIdentity)
             vboxTop.Add(b, 0, wx.EXPAND)
             b.Enable(False)
             self.buttonSetDefault = b
 
         b = wx.Button(self, -1, "Import...")
-        EVT_BUTTON(self, b.GetId(), self.OnImport)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnImport)
         vboxTop.Add(b, 0, wx.EXPAND)
         self.buttonImport = b
         # b.Enable(False)
 
 
         b = wx.Button(self, -1, "Export...")
-        EVT_BUTTON(self, b.GetId(), self.OnExport)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnExport)
         vboxTop.Add(b, 0, wx.EXPAND)
         # b.Enable(False)
         self.buttonExport = b
 
         b = wx.Button(self, -1, "Delete")
-        EVT_BUTTON(self, b.GetId(), self.OnDelete)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnDelete)
         vboxTop.Add(b, 0, wx.EXPAND)
         self.buttonDelete = b
         # b.Enable(False)
@@ -1009,7 +1009,7 @@ class TrustedCertDialog(wx.Dialog):
         sizer.Add(cpanel, 1, wx.EXPAND)
 
         b = wx.Button(self, -1, "Close")
-        EVT_BUTTON(self, b.GetId(), self.OnOK)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnOK)
         sizer.Add(b, 0, wx.ALIGN_CENTER)
 
         self.SetSizer(sizer)
@@ -1192,7 +1192,7 @@ class IdentityCertDialog(wx.Dialog):
         sizer.Add(cpanel, 1, wx.EXPAND)
 
         b = wx.Button(self, -1, "Close")
-        EVT_BUTTON(self, b.GetId(), self.OnOK)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnOK)
         sizer.Add(b, 0, wx.ALIGN_CENTER)
 
         self.SetSizer(sizer)

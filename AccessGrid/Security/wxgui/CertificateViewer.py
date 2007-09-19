@@ -156,8 +156,8 @@ class CertificateViewerPanel(wx.Panel):
         #
         # Force the tree to stay open.
         #
-        EVT_TREE_ITEM_COLLAPSING(self, self.tree.GetId(), lambda event: event.Veto())
-        EVT_TREE_ITEM_ACTIVATED(self, self.tree.GetId(), self.OnTreeItemActivated)
+        wx.EVT_TREE_ITEM_COLLAPSING(self, self.tree.GetId(), lambda event: event.Veto())
+        wx.EVT_TREE_ITEM_ACTIVATED(self, self.tree.GetId(), self.OnTreeItemActivated)
 
 
         self.SetSizer(sizer)
@@ -201,8 +201,8 @@ class CertificateViewer(wx.Dialog):
 
         b = wx.Button(self, -1, "Close")
         sizer.Add(b, 0)
-        EVT_BUTTON(self, b.GetId(), self.OnClose)
-        EVT_CLOSE(self, self.OnClose)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnClose)
+        wx.EVT_CLOSE(self, self.OnClose)
 
         self.SetSizer(sizer)
         self.SetAutoLayout(1)

@@ -5,12 +5,12 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: ImportExportUtils.py,v 1.8 2007-09-18 20:23:45 turam Exp $
+# RCS-ID:      $Id: ImportExportUtils.py,v 1.9 2007-09-19 16:51:22 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-__revision__ = "$Id: ImportExportUtils.py,v 1.8 2007-09-18 20:23:45 turam Exp $"
+__revision__ = "$Id: ImportExportUtils.py,v 1.9 2007-09-19 16:51:22 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -121,8 +121,8 @@ class ExportIDCertDialog(wx.Dialog):
         rb1 = wx.RadioButton(self, -1, "Write certificate and private key to a single file",
                                    style = wx.RB_GROUP)
         rb2 = wx.RadioButton(self, -1, "Write certificate and private key to separate files")
-        EVT_RADIOBUTTON(self, rb1.GetId(), self.OnSelectOne)
-        EVT_RADIOBUTTON(self, rb2.GetId(), self.OnSelectSep)
+        wx.EVT_RADIOBUTTON(self, rb1.GetId(), self.OnSelectOne)
+        wx.EVT_RADIOBUTTON(self, rb2.GetId(), self.OnSelectSep)
 
         self.sizer.Add(rb1, 0, wx.EXPAND | wx.ALL, 3)
         self.sizer.Add(rb2, 0, wx.EXPAND | wx.ALL, 3)
@@ -140,7 +140,7 @@ class ExportIDCertDialog(wx.Dialog):
         self.certFileText = wx.TextCtrl(self, -1, "")
         gs.Add(self.certFileText, 1, wx.EXPAND)
         b = wx.Button(self, -1, "Browse")
-        EVT_BUTTON(self, b.GetId(), self.OnCertBrowse)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnCertBrowse)
         gs.Add(b, 0)
 
         t = wx.StaticText(self, -1, "Private key file:")
@@ -148,7 +148,7 @@ class ExportIDCertDialog(wx.Dialog):
         self.keyFileText = wx.TextCtrl(self, -1, "")
         gs.Add(self.keyFileText, 1, wx.EXPAND)
         b = wx.Button(self, -1, "Browse")
-        EVT_BUTTON(self, b.GetId(), self.OnKeyBrowse)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnKeyBrowse)
         gs.Add(b, 0)
 
         gs.AddGrowableCol(1)
@@ -174,11 +174,11 @@ class ExportIDCertDialog(wx.Dialog):
         hs = wx.BoxSizer(wx.HORIZONTAL)
         b = wx.Button(self, -1, "Export Certificate")
         b.SetDefault()
-        EVT_BUTTON(self, b.GetId(), self.OnExport)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnExport)
         hs.Add(b, 0, wx.ALL, 4)
         
         b = wx.Button(self, wx.ID_CANCEL, "Cancel")
-        # EVT_BUTTON(self, b.GetId(), self.OnCancel)
+        # wx.EVT_BUTTON(self, b.GetId(), self.OnCancel)
         hs.Add(b, 0, wx.ALL, 4)
 
         self.sizer.Add(hs, 0, wx.ALIGN_CENTER_HORIZONTAL)
@@ -424,20 +424,20 @@ class ExportCACertDialog(wx.Dialog):
         t = wx.StaticText(self, -1, "Certificate file:")
         gs.Add(t, 0, wx.ALIGN_CENTER_VERTICAL)
         self.certFileText = wx.TextCtrl(self, -1, "")
-        EVT_KILL_FOCUS(self.certFileText, self.OnCertFileText)
+        wx.EVT_KILL_FOCUS(self.certFileText, self.OnCertFileText)
         gs.Add(self.certFileText, 1, wx.EXPAND)
         b = wx.Button(self, -1, "Browse")
-        EVT_BUTTON(self, b.GetId(), self.OnCertBrowse)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnCertBrowse)
         gs.Add(b, 0)
 
         t = wx.StaticText(self, -1, "Signing policy file:")
         gs.Add(t, 0, wx.ALIGN_CENTER_VERTICAL)
         self.spFileText = wx.TextCtrl(self, -1, "")
-        EVT_CHAR(self.spFileText, self.OnSPFileChar)
+        wx.EVT_CHAR(self.spFileText, self.OnSPFileChar)
         gs.Add(self.spFileText, 1, wx.EXPAND)
 
         b = wx.Button(self, -1, "Browse")
-        EVT_BUTTON(self, b.GetId(), self.OnSPBrowse)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnSPBrowse)
         gs.Add(b, 0)
 
         gs.AddGrowableCol(1)
@@ -451,11 +451,11 @@ class ExportCACertDialog(wx.Dialog):
         hs = wx.BoxSizer(wx.HORIZONTAL)
         b = wx.Button(self, -1, "Export Certificate")
         b.SetDefault()
-        EVT_BUTTON(self, b.GetId(), self.OnExport)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnExport)
         hs.Add(b, 0, wx.ALL, 4)
         
         b = wx.Button(self, wx.ID_CANCEL, "Cancel")
-        # EVT_BUTTON(self, b.GetId(), self.OnCancel)
+        # wx.EVT_BUTTON(self, b.GetId(), self.OnCancel)
         hs.Add(b, 0, wx.ALL, 4)
 
         self.sizer.Add(hs, 0, wx.ALIGN_CENTER_HORIZONTAL)

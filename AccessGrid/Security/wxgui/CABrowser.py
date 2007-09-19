@@ -23,26 +23,26 @@ class CABrowser(CertificateBrowserBase):
         self.certOnlyButtons = []
 
         b = wx.Button(self, -1, "Import")
-        EVT_BUTTON(self, b.GetId(), self.OnImport)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnImport)
         sizer.Add(b, 0, wx.EXPAND)
 
         b = wx.Button(self, -1, "Export")
-        EVT_BUTTON(self, b.GetId(), self.OnExport)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnExport)
         sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
         b = wx.Button(self, -1, "Delete")
-        EVT_BUTTON(self, b.GetId(), self.OnDelete)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnDelete)
         sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
         b = wx.Button(self, -1, "View Certificate")
-        EVT_BUTTON(self, b.GetId(), self.OnViewCertificate)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnViewCertificate)
         sizer.Add(b, 0, wx.EXPAND)
         self.certOnlyButtons.append(b)
 
         b = wx.Button(self, -1, "Refresh")
-        EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
+        wx.EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
         sizer.Add(b, 0, wx.EXPAND)
 
         for b in self.certOnlyButtons:

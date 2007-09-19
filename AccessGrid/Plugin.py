@@ -115,7 +115,7 @@ class Plugin(VenueClientObserver):
             button.SetToolTip(wx.ToolTip(desc))
             toolbar.AddControl(button)
 
-            EVT_BUTTON(frame, toolid, callback)
+            wx.EVT_BUTTON(frame, toolid, callback)
         
     def CreateMenuItems(self):
         if self.commandline:
@@ -358,7 +358,7 @@ class Plugin(VenueClientObserver):
             itemid = wx.NewId()
             item = wx.MenuItem(wx.Menu(), itemid, name, "", wx.ITEM_NORMAL, NULL)
             callback = lambda event, description=name, callback=cb: self.__callback_wrapper(description, callback)
-            EVT_MENU(frame, itemid, callback)
+            wx.EVT_MENU(frame, itemid, callback)
 
             return item
             

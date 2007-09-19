@@ -78,9 +78,9 @@ class PreferencesDialog(wx.Dialog):
         self.nodePanel.Hide()
         self.currentPanel = self.loggingPanel
         
-        EVT_SASH_DRAGGED(self.sideWindow, self.ID_WINDOW_LEFT, self.__OnSashDrag)
-        EVT_TREE_SEL_CHANGED(self, self.sideTree.GetId(), self.OnSelect)
-        EVT_SIZE(self, self.__OnSize)
+        wx.EVT_SASH_DRAGGED(self.sideWindow, self.ID_WINDOW_LEFT, self.__OnSashDrag)
+        wx.EVT_TREE_SEL_CHANGED(self, self.sideTree.GetId(), self.OnSelect)
+        wx.EVT_SIZE(self, self.__OnSize)
 
         self.__Layout()
         self.__InitTree()
@@ -327,7 +327,7 @@ class NodePanel(wx.Panel):
         self.nodeUrlCtrl.SetValue(nodeUrl)
         if  nodeBuiltin:
             self.nodeBuiltInCheckbox.SetValue(true)
-            self.nodeUrlCtrl.SetEditable(false)
+            self.nodeUrlCtrl.SetEditable(False)
         else:
             self.nodeExternalCheckbox.SetValue(true)
             self.nodeUrlCtrl.SetEditable(true)
@@ -343,10 +343,10 @@ class NodePanel(wx.Panel):
         self.OnRefresh()
 
         # Set events
-        EVT_RADIOBUTTON(self,self.nodeBuiltInCheckbox.GetId(),self.OnNodeBuiltIn)
-        EVT_RADIOBUTTON(self,self.nodeExternalCheckbox.GetId(),self.OnNodeExternal)
-        EVT_TEXT_ENTER(self,self.nodeUrlCtrl.GetId(),self.OnRefresh)
-        EVT_BUTTON(self,self.nodeConfigRefresh.GetId(),self.OnRefresh)
+        wx.EVT_RADIOBUTTON(self,self.nodeBuiltInCheckbox.GetId(),self.OnNodeBuiltIn)
+        wx.EVT_RADIOBUTTON(self,self.nodeExternalCheckbox.GetId(),self.OnNodeExternal)
+        wx.EVT_TEXT_ENTER(self,self.nodeUrlCtrl.GetId(),self.OnRefresh)
+        wx.EVT_BUTTON(self,self.nodeConfigRefresh.GetId(),self.OnRefresh)
         self.__Layout()
         
         
@@ -503,13 +503,13 @@ class ProfilePanel(wx.Panel):
         
     def __SetEditable(self, editable):
         if not editable:
-            self.nameCtrl.SetEditable(false)
-            self.emailCtrl.SetEditable(false)
-            self.phoneNumberCtrl.SetEditable(false)
-            self.locationCtrl.SetEditable(false)
-            self.homeVenueCtrl.SetEditable(false)
-            #self.profileTypeBox.SetEditable(false)
-            self.dnTextCtrl.SetEditable(false)
+            self.nameCtrl.SetEditable(False)
+            self.emailCtrl.SetEditable(False)
+            self.phoneNumberCtrl.SetEditable(False)
+            self.locationCtrl.SetEditable(False)
+            self.homeVenueCtrl.SetEditable(False)
+            #self.profileTypeBox.SetEditable(False)
+            self.dnTextCtrl.SetEditable(False)
         else:
             self.nameCtrl.SetEditable(true)
             self.emailCtrl.SetEditable(true)
@@ -701,7 +701,7 @@ class TextValidator(wx.PyValidator):
                 self.fieldName = 'Email'
                 
             MessageDialog(NULL, "Please, fill in the %s field" %(self.fieldName,))
-            return false
+            return False
         return true
 
     def TransferToWindow(self):
@@ -719,9 +719,9 @@ class VenueConnectionPanel(wx.Panel):
         self.shutdownMediaButton = wx.CheckBox(self, wx.NewId(), "  Shut down media tools on removal from Venue")
         self.reconnectButton = wx.CheckBox(self, wx.NewId(), "  Reconnect to venue automatically")
         self.maxText = wx.StaticText(self, -1, "Recovery attempts ")
-        self.maxReconnect = wx..lib.intctrl.IntCtrl(self, -1, 3, size = wx.Size(30, -1))
+        self.maxReconnect = wx.lib.intctrl.IntCtrl(self, -1, 3, size = wx.Size(30, -1))
         self.timeoutText = wx.StaticText(self, -1, "Recovery timeout (seconds) ")
-        self.timeout = wx..lib.intctrl.IntCtrl(self, -1, 10, size = wx.Size(30, -1)) 
+        self.timeout = wx.lib.intctrl.IntCtrl(self, -1, 10, size = wx.Size(30, -1)) 
         shutdownMedia = int(preferences.GetPreference(Preferences.SHUTDOWN_MEDIA))
         self.shutdownMediaButton.SetValue(shutdownMedia)
         reconnect = int(preferences.GetPreference(Preferences.RECONNECT))
@@ -738,7 +738,7 @@ class VenueConnectionPanel(wx.Panel):
                                 
         self.__Layout()
 
-        EVT_CHECKBOX(self, self.reconnectButton.GetId(), self.ReconnectCB)
+        wx.EVT_CHECKBOX(self, self.reconnectButton.GetId(), self.ReconnectCB)
 
     def GetReconnect(self):
         if self.reconnectButton.IsChecked():
@@ -808,9 +808,9 @@ class EditBridgeRegistryPanel(wx.Dialog):
         self.cancelButton = wx.Button(self, wx.ID_CANCEL, "Cancel")
         self.okButton = wx.Button(self, wx.ID_OK, "OK")
                                 
-        EVT_BUTTON(self, self.cancelButton.GetId(), self.OnCancel)
-        EVT_BUTTON(self, self.okButton.GetId(), self.OnOK)
-        EVT_CHAR(self.editableRegistryCtrl, self.OnChar)
+        wx.EVT_BUTTON(self, self.cancelButton.GetId(), self.OnCancel)
+        wx.EVT_BUTTON(self, self.okButton.GetId(), self.OnOK)
+        wx.EVT_CHAR(self.editableRegistryCtrl, self.OnChar)
 
         # Populate with existing registries.
         # The single registry TextCtrl in the parent has to be split
@@ -843,7 +843,7 @@ class EditBridgeRegistryPanel(wx.Dialog):
         # of the editable TextCtrl. If there is no 'None" entry, then position
         # it at the end of the end of the first entry.
         #
-        self.foundNone = false
+        self.foundNone = False
         for lineNo in range(0, self.editableRegistryCtrl.GetNumberOfLines()):
             if self.editableRegistryCtrl.GetLineText(lineNo).startswith("None"):
                 self.editableRegistryCtrl.SetInsertionPoint(
@@ -1145,21 +1145,21 @@ class BridgingPanel(wx.Panel):
             self.upButton.Enable(0)
             self.downButton.Enable(0)
         
-        EVT_RIGHT_DOWN(self.list, self.OnRightDown)
-        EVT_RIGHT_UP(self.list, self.OnRightClick)
-        EVT_LIST_ITEM_SELECTED(self, self.list.GetId(), self.OnSelect)
-        EVT_BUTTON(self, self.refreshButton.GetId(), self.OnRefresh)
-        EVT_BUTTON(self, self.updatePingButton.GetId(), self.OnUpdatePing)
-        EVT_BUTTON(self, self.orderByPingButton.GetId(), self.OnOrderByPing)
-        EVT_CHECKBOX(self, self.orderBridgesByPingButton.GetId(), self.OnChangeOrderByPing)
-        EVT_BUTTON(self, self.upButton.GetId(), self.MoveUp)
-        EVT_BUTTON(self, self.downButton.GetId(), self.MoveDown)
-        EVT_LIST_ITEM_SELECTED(self, self.registryList.GetId(), self.OnSelectReg)
-        EVT_LIST_ITEM_DESELECTED(self, self.registryList.GetId(), self.OnDeselectReg)
-        EVT_BUTTON(self, self.editRegistryButton.GetId(), self.OnEditReg)
-        EVT_BUTTON(self, self.addRegistryButton.GetId(), self.OnAddReg)
-        EVT_BUTTON(self, self.removeRegistryButton.GetId(), self.OnRemoveReg)
-        EVT_BUTTON(self, self.purgeCacheButton.GetId(), self.OnPurgeCache)
+        wx.EVT_RIGHT_DOWN(self.list, self.OnRightDown)
+        wx.EVT_RIGHT_UP(self.list, self.OnRightClick)
+        wx.EVT_LIST_ITEM_SELECTED(self, self.list.GetId(), self.OnSelect)
+        wx.EVT_BUTTON(self, self.refreshButton.GetId(), self.OnRefresh)
+        wx.EVT_BUTTON(self, self.updatePingButton.GetId(), self.OnUpdatePing)
+        wx.EVT_BUTTON(self, self.orderByPingButton.GetId(), self.OnOrderByPing)
+        wx.EVT_CHECKBOX(self, self.orderBridgesByPingButton.GetId(), self.OnChangeOrderByPing)
+        wx.EVT_BUTTON(self, self.upButton.GetId(), self.MoveUp)
+        wx.EVT_BUTTON(self, self.downButton.GetId(), self.MoveDown)
+        wx.EVT_LIST_ITEM_SELECTED(self, self.registryList.GetId(), self.OnSelectReg)
+        wx.EVT_LIST_ITEM_DESELECTED(self, self.registryList.GetId(), self.OnDeselectReg)
+        wx.EVT_BUTTON(self, self.editRegistryButton.GetId(), self.OnEditReg)
+        wx.EVT_BUTTON(self, self.addRegistryButton.GetId(), self.OnAddReg)
+        wx.EVT_BUTTON(self, self.removeRegistryButton.GetId(), self.OnRemoveReg)
+        wx.EVT_BUTTON(self, self.purgeCacheButton.GetId(), self.OnPurgeCache)
                                       
         if IsOSX():
             self.bridgingTitleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
@@ -1312,7 +1312,7 @@ class BridgingPanel(wx.Panel):
         self.y = event.GetY()
         item, flags = self.list.HitTest((self.x, self.y))
 
-        if flags & wx..LIST_HITTEST_ONITEM:
+        if flags & wx.LIST_HITTEST_ONITEM:
             self.list.Select(item)
             self.selected = item
    
@@ -1322,15 +1322,15 @@ class BridgingPanel(wx.Panel):
         '''
         # only do this part the first time so the events are only bound once
         if not hasattr(self, "enableId"):
-            self.enableId = wx..NewId()
-            self.moveupId = wx..NewId()
-            self.movedownId = wx..NewId()
-            EVT_MENU(self, self.enableId, self.Enable)
-            EVT_MENU(self, self.moveupId, self.MoveUp)
-            EVT_MENU(self, self.movedownId, self.MoveDown)
+            self.enableId = wx.NewId()
+            self.moveupId = wx.NewId()
+            self.movedownId = wx.NewId()
+            wx.EVT_MENU(self, self.enableId, self.Enable)
+            wx.EVT_MENU(self, self.moveupId, self.MoveUp)
+            wx.EVT_MENU(self, self.movedownId, self.MoveDown)
             
         # make a menu
-        self.menu = wx..Menu()
+        self.menu = wx.Menu()
         self.menu.AppendCheckItem(self.enableId, "Enabled")
         if self.orderBridgesByPing == 0:
             self.menu.AppendSeparator()

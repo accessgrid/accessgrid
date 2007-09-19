@@ -41,13 +41,13 @@ class CertificateManagerDialog(wx.Dialog):
         sizer.Add(hsizer, 0)
 
         b = wx.Button(self, -1, "Close")
-        EVT_BUTTON(self, b.GetId(), self.OnOK)
+        wx.EVT_BUTTON(self, b.GetId(), self.OnOK)
         sizer.Add(b, 0, wx.ALIGN_RIGHT)
 
         self.SetSizer(sizer)
         self.SetAutoLayout(1)
 
-        EVT_CLOSE(self, self.OnClose)
+        wx.EVT_CLOSE(self, self.OnClose)
 
     def OnClose(self, event):
         self.Destroy()
