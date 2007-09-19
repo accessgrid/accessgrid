@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.66 2007-05-30 20:06:06 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.67 2007-09-19 18:27:24 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.66 2007-05-30 20:06:06 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.67 2007-09-19 18:27:24 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -21,13 +21,15 @@ from AccessGrid import Log
 from AccessGrid.GUID import GUID
 from AccessGrid.AGParameter import *
 from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD
-from AccessGrid.Toolkit import Service
+from AccessGrid.Toolkit import Service,GetDefaultApplication
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.Descriptions import AGServiceDescription
 
 from AccessGrid.interfaces.AGService_client import AGServiceIW
 from AccessGrid.interfaces.AGService_interface import AGService as AGServiceI
+
+    
 
 class AGService:
     """
@@ -66,7 +68,7 @@ class AGService:
         
         self.processManager = ProcessManager()
         
-        self.log = Service.instance().GetLog()
+        self.log = GetDefaultApplication().GetLog()
         
         
 
@@ -110,6 +112,7 @@ class AGService:
         try:
             self.started = 0
             self.processManager.TerminateAllProcesses()
+            self.streamDescription = None
 
         except Exception, e:
             self.log.exception("Exception in AGService.Stop")
@@ -180,9 +183,14 @@ class AGService:
         Set the StreamDescription
         """
         try:
-            self.log.info("SetStream: %s %s %s" % (streamDescription.capability, 
+            self.log.info("SetStream: incoming stream %s %s %s" % (streamDescription.capability, 
                                                    streamDescription.location.host,   
                                                    streamDescription.location.port) )
+
+            if self.streamDescription:
+                self.log.info("SetStream: current stream %s %s %s" % (self.streamDescription.capability, 
+                                                       self.streamDescription.location.host,   
+                                                       self.streamDescription.location.port) )
 
             # Detect trivial re-configuration
             if self.streamDescription and \
@@ -329,7 +337,7 @@ def SignalHandler(signum, frame, service):
     """
     service.Shutdown()
 
-def RunService(service,serviceInterface,unusedCompatabilityArg=None):
+def RunService(service,serviceInterface,unusedCompatabilityArg=None,app=None):
     import signal, time
     from AccessGrid.hosting import SecureServer, InsecureServer
     from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
@@ -372,7 +380,10 @@ def RunService(service,serviceInterface,unusedCompatabilityArg=None):
         return
     
     # Create the server
-    hostname = Service.instance().GetHostname()
+    
+    if not app:
+        app = GetDefaultApplication()
+    hostname = app.GetHostname()
     server = None
     if svc.GetOption("secure"):
         server = SecureServer( (hostname, port) )
