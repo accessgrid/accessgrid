@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.176 2007-09-18 20:45:25 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.177 2007-09-19 16:45:23 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.176 2007-09-18 20:45:25 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.177 2007-09-19 16:45:23 turam Exp $"
 
 # Standard imports
 import sys
@@ -88,11 +88,11 @@ class VenueManagementClient(wx.App):
         self.serverUrl = None
         self.currentVenueClient = None
         self.currentVenue = None
-        self.encrypt = false
+        self.encrypt = False
         self.venueList = []
         self.help_open = 0
           
-        self.frame = wx.Frame(NULL, -1, "Venue Management" )
+        self.frame = wx.Frame(None, -1, "Venue Management" )
         self.address = VenueServerAddress(self.frame, self)
         self.tabs = VenueManagementTabs(self.frame, -1, self)
         self.statusbar = self.frame.CreateStatusBar(1)
@@ -147,26 +147,26 @@ class VenueManagementClient(wx.App):
         if venueServerUrl:
             self.ConnectToServer(venueServerUrl)
             
-        return true
+        return True
 
     def __setEvents(self):
         # File menu
-        EVT_MENU(self, self.ID_FILE_EXIT, self.Exit)
+        wx.EVT_MENU(self, self.ID_FILE_EXIT, self.Exit)
 
         # Server menu
-        EVT_MENU(self, self.ID_SERVER_CHECKPOINT, self.Checkpoint)
-        EVT_MENU(self, self.ID_SERVER_SHUTDOWN, self.Shutdown)
+        wx.EVT_MENU(self, self.ID_SERVER_CHECKPOINT, self.Checkpoint)
+        wx.EVT_MENU(self, self.ID_SERVER_SHUTDOWN, self.Shutdown)
 
         # Help menu
-        EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
-        EVT_MENU(self, self.ID_HELP_MANUAL,
+        wx.EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
+        wx.EVT_MENU(self, self.ID_HELP_MANUAL,
                  lambda event, url=self.manual_url: self.OpenHelpURL(url))
 
         # My Servers Menu
-        EVT_MENU(self, self.ID_MYSERVERS_ADD, self.AddToMyServersCB)
-        EVT_MENU(self, self.ID_MYSERVERS_EDIT, self.EditMyServersCB)
+        wx.EVT_MENU(self, self.ID_MYSERVERS_ADD, self.AddToMyServersCB)
+        wx.EVT_MENU(self, self.ID_MYSERVERS_EDIT, self.EditMyServersCB)
 
-        EVT_CLOSE(self, self.OnCloseWindow)
+        wx.EVT_CLOSE(self, self.OnCloseWindow)
         
     def __setMenuBar(self):
         self.frame.SetMenuBar(self.menubar)
@@ -269,7 +269,7 @@ class VenueManagementClient(wx.App):
             url = self.myServersDict[name]
             text = "Go to: " + url
             self.myServersMenu.Append(ID, name, text)
-            EVT_MENU(self, ID, self.GoToMenuAddressCB)
+            wx.EVT_MENU(self, ID, self.GoToMenuAddressCB)
 
     def __saveMyServersToFile(self):
         """
@@ -373,7 +373,7 @@ class VenueManagementClient(wx.App):
         self.myServersMenu.Append(ID, name, text)
         self.myServersMenuIds[name] = ID
         self.myServersDict[name] = url
-        EVT_MENU(self, ID, self.GoToMenuAddressCB)
+        wx.EVT_MENU(self, ID, self.GoToMenuAddressCB)
     
     def RemoveFromMyServers(self,serverName):
         # Remove the server from my servers menu list
@@ -401,7 +401,7 @@ class VenueManagementClient(wx.App):
         aboutDialog.Destroy()
         
     def Exit(self, event):
-        self.frame.Close(true)
+        self.frame.Close(True)
 
     def Checkpoint(self, event):
         self.server.Checkpoint(0)
@@ -452,13 +452,15 @@ class VenueManagementClient(wx.App):
             # Fill in venues
             
             if len(self.venueList) != 0 :
-                for venue in self.venueList.values():
+                venueList = self.venueList.values()
+                venueList.sort()
+                for venue in venueList:
                     log.debug("VenueManagementClient.ConnectToServer: Add venue %s" % venue.name)
                     vlp.venuesList.Append(venue.name, venue)
                     
                     # Set default venue
                     if venue.uri == defaultVenueUrl:
-                        vlp.SetDefaultVenue(venue, init = true)
+                        vlp.SetDefaultVenue(venue, init = True)
                         
                 currentVenue = vlp.venuesList.GetClientData(0)
                 vp.venueProfilePanel.ChangeCurrentVenue(currentVenue)
@@ -478,14 +480,14 @@ class VenueManagementClient(wx.App):
 
             if method == MulticastAddressAllocator.RANDOM:
                 log.debug("VenueManagementClient.ConnectToServer: Set multicast address to: RANDOM")
-                dp.ipAddress.Enable(false)
-                dp.changeButton.Enable(false)
-                dp.randomButton.SetValue(true)
+                dp.ipAddress.Enable(False)
+                dp.changeButton.Enable(False)
+                dp.randomButton.SetValue(True)
             else:
                 log.debug("VenueManagementClient.ConnectToServer: Set multicast address to: INTERVAL, ip: %s, mask: %s" %(ip, mask))
-                dp.ipAddress.Enable(true)
-                dp.changeButton.Enable(true)
-                dp.intervalButton.SetValue(true)
+                dp.ipAddress.Enable(True)
+                dp.changeButton.Enable(True)
+                dp.intervalButton.SetValue(True)
 
             # add address to address list, if not already there
             if self.address.addressText.FindString(self.serverUrl) == wx.NOT_FOUND:
@@ -501,7 +503,7 @@ class VenueManagementClient(wx.App):
             dp.encryptionButton.SetValue(key)
             self.encrypt = key
            
-            self.tabs.Enable(true)
+            self.tabs.Enable(True)
             self.EnableMenu(1)
             
             wx.EndBusyCursor()
@@ -609,8 +611,8 @@ class VenueServerAddress(wx.Panel):
         self.__addEvents()
 
     def __addEvents(self):
-        EVT_BUTTON(self, self.ID_BUTTON, self.CallAddress)
-        EVT_TEXT_ENTER(self, self.ID_ADDRESS, self.CallAddress)
+        wx.EVT_BUTTON(self, self.ID_BUTTON, self.CallAddress)
+        wx.EVT_TEXT_ENTER(self, self.ID_ADDRESS, self.CallAddress)
 
     def CallAddress(self, event):
         venueServerUrl = self.addressText.GetValue()
@@ -678,7 +680,7 @@ class VenueManagementTabs(wx.Notebook):
         self.AddPage(self.venuesPanel, "Venues")
         self.AddPage(self.configurationPanel, "Configuration")
         self.AddPage(self.securityPanel, "Security")
-        self.Enable(false)
+        self.Enable(False)
         
 
 # --------------------- TAB 1 -----------------------------------
@@ -703,7 +705,7 @@ class VenuesPanel(wx.Panel):
         self.dividingLine = wx.StaticLine(self,-1,style=wx.LI_VERTICAL)
         self.venuesListPanel = VenueListPanel(self, application)
         self.__doLayout()
-        EVT_SIZE(self,self.__onSize)
+        wx.EVT_SIZE(self,self.__onSize)
         
     def __onSize(self,evt):
         self.__doLayout()
@@ -750,9 +752,9 @@ class VenueProfilePanel(wx.Panel):
         self.description.SetValue("Not connected to server")
         self.description.SetBackgroundColour(self.GetBackgroundColour())
         self.url.SetBackgroundColour(self.GetBackgroundColour())
-        self.description.Enable(true)
+        self.description.Enable(True)
         self.__doLayout()
-        EVT_SIZE(self, self.__onSize)
+        wx.EVT_SIZE(self, self.__onSize)
 
     def __onSize(self,evt):
         self.__doLayout()
@@ -835,13 +837,13 @@ class VenueListPanel(wx.Panel):
         self.__addEvents()
 
     def __addEvents(self):
-        EVT_BUTTON(self, self.ID_ADD, self.OpenAddVenueDialog)
-        EVT_BUTTON(self, self.ID_MODIFY, self.OpenModifyVenueDialog)
-        EVT_BUTTON(self, self.ID_DELETE, self.DeleteVenue)
-        EVT_LISTBOX(self, self.ID_LIST, self.EvtListBox)
-        EVT_LISTBOX_DCLICK(self,self.ID_LIST, self.OnDoubleClick)
-        EVT_KEY_UP(self.venuesList, self.OnKey)
-        EVT_SIZE(self, self.__onSize)
+        wx.EVT_BUTTON(self, self.ID_ADD, self.OpenAddVenueDialog)
+        wx.EVT_BUTTON(self, self.ID_MODIFY, self.OpenModifyVenueDialog)
+        wx.EVT_BUTTON(self, self.ID_DELETE, self.DeleteVenue)
+        wx.EVT_LISTBOX(self, self.ID_LIST, self.EvtListBox)
+        wx.EVT_LISTBOX_DCLICK(self,self.ID_LIST, self.OnDoubleClick)
+        wx.EVT_KEY_UP(self.venuesList, self.OnKey)
+        wx.EVT_SIZE(self, self.__onSize)
 
     def OnKey(self, event):
         key = event.GetKeyCode()
@@ -972,7 +974,7 @@ class VenueListPanel(wx.Panel):
             message.ShowModal()
             message.Destroy()
 
-    def SetDefaultVenue(self, venue, init = false):
+    def SetDefaultVenue(self, venue, init = False):
         '''
         Sets default venue.
 
@@ -1080,7 +1082,7 @@ class ConfigurationPanel(wx.Panel):
         
         self.detailPanel = DetailPanel(self, application)
         self.__doLayout()
-        EVT_SIZE(self,self.__onSize)
+        wx.EVT_SIZE(self,self.__onSize)
     
     def __onSize(self,evt):
         self.__doLayout()
@@ -1133,15 +1135,15 @@ class DetailPanel(wx.Panel):
         self.maskString = "17"
         self.__doLayout()
         self.__setEvents()
-        self.ipAddress.Enable(false)
-        self.changeButton.Enable(false)
+        self.ipAddress.Enable(False)
+        self.changeButton.Enable(False)
 
     def __setEvents(self):
-        EVT_BUTTON(self, self.ID_CHANGE, self.OpenIntervalDialog)
-        EVT_CHECKBOX(self.randomButton, self.ID_RANDOM, self.ClickedOnRandom)
-        EVT_CHECKBOX(self.intervalButton, self.ID_INTERVAL, self.ClickedOnInterval)
-        EVT_CHECKBOX(self, self.ID_ENCRYPT, self.ClickedOnEncrypt)
-        EVT_SIZE(self,self.__onSize)
+        wx.EVT_BUTTON(self, self.ID_CHANGE, self.OpenIntervalDialog)
+        wx.EVT_CHECKBOX(self.randomButton, self.ID_RANDOM, self.ClickedOnRandom)
+        wx.EVT_CHECKBOX(self.intervalButton, self.ID_INTERVAL, self.ClickedOnInterval)
+        wx.EVT_CHECKBOX(self, self.ID_ENCRYPT, self.ClickedOnEncrypt)
+        wx.EVT_SIZE(self,self.__onSize)
     
     def __onSize(self,evt):
         self.__doLayout()
@@ -1169,17 +1171,17 @@ class DetailPanel(wx.Panel):
                         logFile = VENUE_MANAGEMENT_LOG)
           
     def ClickedOnRandom(self, event):
-        self.ipAddress.Enable(false)
-        self.changeButton.Enable(false)
+        self.ipAddress.Enable(False)
+        self.changeButton.Enable(False)
 
         try:
             log.debug("DetailPanel.ClickedOnRandom: Set multicast address to random")
             self.application.SetRandom()
-            self.intervalButton.SetValue(false)
+            self.intervalButton.SetValue(False)
         except Exception, e:
-            self.ipAddress.Enable(true)
-            self.changeButton.Enable(true)
-            self.intervalButton.SetValue(true)
+            self.ipAddress.Enable(True)
+            self.changeButton.Enable(True)
+            self.intervalButton.SetValue(True)
             if "faultstring" in dir(e) and e.faultstring == "NotAuthorized":
                 text = "You are not an administrator on this server and are not authorized to set multicast addressing to random.\n"
                 MessageDialog(None, text, "Authorization Error", wx.OK|wx.ICON_WARNING)
@@ -1190,28 +1192,28 @@ class DetailPanel(wx.Panel):
                 ErrorDialog(None, text, "Set Multicast Error", logFile = VENUE_MANAGEMENT_LOG)
                
         except:
-            self.ipAddress.Enable(true)
-            self.changeButton.Enable(true)
-            self.intervalButton.SetValue(true)
+            self.ipAddress.Enable(True)
+            self.changeButton.Enable(True)
+            self.intervalButton.SetValue(True)
             log.exception("DetailPanel.ClickedOnEncrypt: Set multicast address to random failed")
             text = "The multicast option could not be set."
             ErrorDialog(None, text, "Set Multicast Error",
                         logFile = VENUE_MANAGEMENT_LOG)
                     
     def ClickedOnInterval(self, event):
-        self.ipAddress.Enable(true)
-        self.changeButton.Enable(true)
+        self.ipAddress.Enable(True)
+        self.changeButton.Enable(True)
         maskInt = int(self.maskString)
       
         try:
             log.debug("DetailPanel.ClickedOnInterval: Set multicast address to interval")
             self.application.SetInterval(self.ipString, maskInt)
-            self.randomButton.SetValue(false)
+            self.randomButton.SetValue(False)
         except Exception, e:
             log.exception('DetailPanel.ClickedOnInterval: failed')
-            self.ipAddress.Enable(false)
-            self.changeButton.Enable(false)
-            self.randomButton.SetValue(true)
+            self.ipAddress.Enable(False)
+            self.changeButton.Enable(False)
+            self.randomButton.SetValue(True)
             #if e.faultstring == "NotAuthorized":
             #    text = "You are not an administrator on this server and are not authorized to set multicast addressing to interval.\n"
             #    MessageDialog(None, text, "Authorization Error", wx.OK|wx.ICON_WARNING)
@@ -1223,9 +1225,9 @@ class DetailPanel(wx.Panel):
 
         except:
             log.exception('DetailPanel.ClickedOnInterval: failed')
-            self.ipAddress.Enable(false)
-            self.changeButton.Enable(false)
-            self.randomButton.SetValue(true)
+            self.ipAddress.Enable(False)
+            self.changeButton.Enable(False)
+            self.randomButton.SetValue(True)
             log.exception("DetailPanel.ClickedOnInterval: Set multicast address to interval failed")
             text = "The multicast option could not be set."
             ErrorDialog(None, text, "Set Multicast Error",
@@ -1307,7 +1309,7 @@ class SecurityPanel(wx.Panel):
         self.securityText = wx.StaticText(self, -1, "Manage access to venue server including which users are allowed to administrate.")
         self.securityButton = wx.Button(self, self.ID_SECURITY, "Manage Security")
         self.__doLayout()
-        EVT_BUTTON(self, self.ID_SECURITY, self.OpenSecurityDialog)
+        wx.EVT_BUTTON(self, self.ID_SECURITY, self.OpenSecurityDialog)
 
     def OpenSecurityDialog(self, event):
         f = AuthorizationUIDialog(self, -1, "Security", log)
@@ -1548,7 +1550,7 @@ class AddVenueFrame(VenueParamFrame):
         self.noteBook.AddPage(self.authorizationPanel, "Security")
         self.authorizationPanel.Disable()
         
-        EVT_BUTTON (self.okButton, wx.ID_OK, self.OnOK)
+        wx.EVT_BUTTON (self.okButton, wx.ID_OK, self.OnOK)
         self.ShowModal()
 
     def OnOK (self, event):
@@ -1610,7 +1612,7 @@ class ModifyVenueFrame(VenueParamFrame):
         
         wx.EndBusyCursor()
 
-        EVT_BUTTON (self.okButton, wx.ID_OK, self.OnOK)
+        wx.EVT_BUTTON (self.okButton, wx.ID_OK, self.OnOK)
         self.ShowModal()
 
     def OnOK (self, event):
@@ -1683,26 +1685,26 @@ class ModifyVenueFrame(VenueParamFrame):
 
         if(self.venue.encryptMedia):
             log.debug("ModifyVenueFrame.__loadCurrentVenueInfo: We have a key %s" % self.venue.encryptionKey)
-            self.encryptionPanel.ClickEncryptionButton(None, true)
+            self.encryptionPanel.ClickEncryptionButton(None, True)
             self.encryptionPanel.keyCtrl.SetValue(self.venue.encryptionKey)
         else:
             log.debug("ModifyVenueFrame.__loadCurrentVenueInfo: Key is None")
-            self.encryptionPanel.ClickEncryptionButton(None, false)
+            self.encryptionPanel.ClickEncryptionButton(None, False)
 
         for e in self.venue.connections:
             self.generalPanel.exits.Append(e.name, e)
             
         if(len(self.venue.streams)==0):
             log.debug("ModifyVenueFrame.__loadCurrentVenueInfo: No static streams to load")
-            self.staticAddressingPanel.panel.Enable(false)
-            self.staticAddressingPanel.staticAddressingButton.SetValue(false)
+            self.staticAddressingPanel.panel.Enable(False)
+            self.staticAddressingPanel.staticAddressingButton.SetValue(False)
         elif(len(self.venue.streams)>2):
             log.exception("ModifyVenueFrame.__loadCurrentVenueInfo: Venue returned more than 2 static streams")
           
         else:
-            self.staticAddressingPanel.panel.Enable(true)
-            self.staticAddressingPanel.staticAddressingButton.SetValue(true)
-            self.staticAddressingPanel.genAddrButton.Enable(true)
+            self.staticAddressingPanel.panel.Enable(True)
+            self.staticAddressingPanel.staticAddressingButton.SetValue(True)
+            self.staticAddressingPanel.genAddrButton.Enable(True)
             for stream in self.venue.streams:
                 if(stream.capability[0].type == Capability.VIDEO):
                     sl = stream.location
@@ -1776,11 +1778,11 @@ class GeneralPanel(wx.Panel):
         
         self.SetValidator(GeneralPanelValidator())
         
-        EVT_MENU(self, self.ID_EXIT_EDIT, self.UpdateExit)
-        EVT_MENU(self, self.ID_EXIT_ADD, self.ManuallyAddExit)
-        EVT_MENU(self, self.ID_EXIT_REMOVE, self.RemoveExit)
-        EVT_RIGHT_DOWN(self.exits, self.OnRightClick)
-        EVT_SIZE(self,self.__onSize)
+        wx.EVT_MENU(self, self.ID_EXIT_EDIT, self.UpdateExit)
+        wx.EVT_MENU(self, self.ID_EXIT_ADD, self.ManuallyAddExit)
+        wx.EVT_MENU(self, self.ID_EXIT_REMOVE, self.RemoveExit)
+        wx.EVT_RIGHT_DOWN(self.exits, self.OnRightClick)
+        wx.EVT_SIZE(self,self.__onSize)
         
         self.__doLayout()
         self.__setEvents()
@@ -1820,6 +1822,7 @@ class GeneralPanel(wx.Panel):
             cdl = map(lambda x: ConnectionDescription(x.name,
                                                       x.description,
                                                       x.uri, x.id), vl)
+            cdl.sort()
             map(lambda x: self.venues.Append(x.name, x), cdl)
             
             self.currentVenueUrl = URL
@@ -1906,8 +1909,8 @@ class GeneralPanel(wx.Panel):
             self.exits.Delete(index)
     
     def __setEvents(self):
-        EVT_BUTTON(self, self.ID_TRANSFER, self.AddExit)
-        EVT_BUTTON(self, self.ID_LOAD, self.LoadRemoteVenues)
+        wx.EVT_BUTTON(self, self.ID_TRANSFER, self.AddExit)
+        wx.EVT_BUTTON(self, self.ID_LOAD, self.LoadRemoteVenues)
 
     def __doLayout(self):
         titleSizer=wx.BoxSizer(wx.HORIZONTAL)
@@ -1984,15 +1987,15 @@ class GeneralPanelValidator(wx.PyValidator):
         
         if len(title) < 1 or len(description) < 1:
             MessageDialog(None, "Please, fill in your name and description in the 'General' tab", "Notification")
-            return false
+            return False
         else:
-            return true
+            return True
         
     def TransferToWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 
     def TransferFromWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 
 class EncryptionPanel(wx.Panel):
     ID_BUTTON = wx.NewId()
@@ -2008,9 +2011,9 @@ class EncryptionPanel(wx.Panel):
         self.keyCtrl = wx.TextCtrl(self, -1, "", size = wx.Size(200,-1))
         self.genKeyButton = wx.Button(self, self.ID_GENKEYBUTTON,
                                      "Generate New Key")# size= wx.Size(100, 20))
-        self.keyText.Enable(false)
-        self.keyCtrl.Enable(false)
-        self.genKeyButton.Enable(false)
+        self.keyText.Enable(False)
+        self.keyCtrl.Enable(False)
+        self.genKeyButton.Enable(False)
         self.__doLayout()
         self.__setEvents()
 
@@ -2031,8 +2034,8 @@ class EncryptionPanel(wx.Panel):
         self.keyCtrl.SetValue(newKey)
 
     def __setEvents(self):
-        EVT_CHECKBOX(self, self.ID_BUTTON, self.ClickEncryptionButton)
-        EVT_BUTTON(self, self.ID_GENKEYBUTTON, self.ClickGenKeyButton)
+        wx.EVT_CHECKBOX(self, self.ID_BUTTON, self.ClickEncryptionButton)
+        wx.EVT_BUTTON(self, self.ID_GENKEYBUTTON, self.ClickGenKeyButton)
         
     def __doLayout(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -2102,11 +2105,11 @@ class StaticAddressingPanel(wx.Panel):
                                      "Generate New Addresses")
 
         if self.staticAddressingButton.GetValue():
-            self.panel.Enable(true)
-            self.genAddrButton.Enable(true)
+            self.panel.Enable(True)
+            self.genAddrButton.Enable(True)
         else:
-            self.panel.Enable(false)
-            self.genAddrButton.Enable(false)
+            self.panel.Enable(False)
+            self.genAddrButton.Enable(False)
 
         self.SetValidator(StaticAddressingValidator())
 
@@ -2178,8 +2181,8 @@ class StaticAddressingPanel(wx.Panel):
         self.SetAutoLayout(1)
 
     def __setEvents(self):
-        EVT_CHECKBOX(self, 5, self.ClickStaticButton)
-        EVT_BUTTON(self, self.ID_GENADDRBUTTON, self.ClickGenAddrButton)
+        wx.EVT_CHECKBOX(self, 5, self.ClickStaticButton)
+        wx.EVT_BUTTON(self, self.ID_GENADDRBUTTON, self.ClickGenAddrButton)
 
     def ClickGenAddrButton(self, event = None, value = None):
         vNL = self.application.currentVenueClient.AllocateMulticastLocation()
@@ -2230,17 +2233,17 @@ class StaticAddressingPanel(wx.Panel):
 
     def ClickStaticButton(self, event):
         if event.Checked():
-            self.genAddrButton.Enable(true)
-            self.panel.Enable(true)
+            self.genAddrButton.Enable(True)
+            self.panel.Enable(True)
         else:
-            self.genAddrButton.Enable(false)
-            self.panel.Enable(false)
+            self.genAddrButton.Enable(False)
+            self.panel.Enable(False)
 
     def Validate(self):
         if(self.staticAddressingButton.GetValue()):
             return self.GetValidator().Validate(self)
         else:
-            return true
+            return True
 
 class StaticAddressingValidator(wx.PyValidator):
     '''
@@ -2277,43 +2280,43 @@ class StaticAddressingValidator(wx.PyValidator):
             i4 = int(ip4.GetValue())
         except ValueError:
             MessageDialog(None,"Please, fill in all IP Address fields in 'Addressing' tab.", "Notification")
-            return false
+            return False
         
         if (i1 in range(224, 240) and
             i2 in range(0,256) and
             i3 in range(0,256) and
             i4 in range(0,256)):
-            return true
+            return True
         else:
             MessageDialog(None, "Allowed values for IP Address are between 224.0.0.0 - 239.255.255.255 in 'Addressing' tab", "Notification")
-            return false
+            return False
 
     def __CheckPort(self, port):
         try:
             int(port.GetValue())
-            return true
+            return True
         except ValueError:
             MessageDialog(None,"%s is not a valid port in 'Addressing' tab."%(port.GetValue()), "Notification")
-            return false
+            return False
 
     def __CheckTTL(self, ttl):
         try:
             ttl = int(ttl.GetValue())
         except ValueError:
             MessageDialog(None,"%s is not a valid time to live (TTL) value in 'Addressing' tab."%(ttl.GetValue()), "Notification")
-            return false
+            return False
 
         if not ttl in range(0,128):
             MessageDialog(None, "Time to live (TTL) should be a value between 0 - 127 in 'Addressing' tab.", "Notification")
-            return false
+            return False
         else:
-            return true
+            return True
                             
     def TransferToWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 
     def TransferFromWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 
 
 
@@ -2366,7 +2369,7 @@ class DigitValidator(wx.PyValidator):
     def __init__(self, flag):
         wx.PyValidator.__init__(self)
         self.flag = flag
-        EVT_CHAR(self, self.OnChar)
+        wx.EVT_CHAR(self, self.OnChar)
 
     def Clone(self):
         return DigitValidator(self.flag)
@@ -2379,34 +2382,34 @@ class DigitValidator(wx.PyValidator):
             index = index+1
             if x not in string.digits:
                 MessageDialog(None, "Please, use digits for the mask.", "Notification")
-                return false
+                return False
         if (self.flag == IP or self.flag == IP_1) and index == 0:
             MessageDialog(None,"Please, fill in all IP Address fields.", "Notification")
-            return false
+            return False
 
         elif self.flag == IP and (int(val)<0 or int(val)>255):
             MessageDialog(None, "Allowed values for IP Address are between 224.0.0.0 - 239.255.255.255", "Notification")
-            return false
+            return False
 
         elif self.flag == IP_1 and (int(val)<224 or int(val)>239):
             MessageDialog(None, "Allowed values for IP Address are between 224.0.0.0 - 239.255.255.255", "Notification")
-            return false
+            return False
 
         elif index == 0 and self.flag == MASK:
             MessageDialog(None, "Please, fill in mask.", "Notification")
-            return false
+            return False
 
         elif self.flag == MASK and (int(val)>31 or int(val)<0):
             MessageDialog(None, "Allowed values for mask are between 0 - 31.", "Notification")
-            return false
+            return False
 
-        return true
+        return True
 
     def TransferToWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 
     def TransferFromWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 
     def OnChar(self, event):
         key = event.KeyCode()
@@ -2456,15 +2459,15 @@ class DigitValidator(wx.PyValidator):
 
         if len(val) < 1:
             MessageDialog(None, "Please, fill in your name and description", "Notification")
-            return false
+            return False
         else:
-            return true
+            return True
 
     def TransferToWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 
     def TransferFromWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 '''
 
 
