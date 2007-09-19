@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: Action.py,v 1.13 2005-11-01 18:37:03 turam Exp $
+# RCS-ID:      $Id: Action.py,v 1.14 2007-09-19 18:27:59 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ method invocation on services. There's no real limitation to what
 actions can be or what they can be used for however.
 """
 
-__revision__ = "$Id: Action.py,v 1.13 2005-11-01 18:37:03 turam Exp $"
+__revision__ = "$Id: Action.py,v 1.14 2007-09-19 18:27:59 turam Exp $"
 
 import xml.dom.minidom
 from AccessGrid.Security.Role import RoleNotFound, Role
@@ -76,6 +76,16 @@ class Action:
         The __str__ method provides a way to print this object as a string.
         """
         return self._repr_()
+        
+    def __cmp__(self,other):
+        if other == None:
+            return 1
+        if self.name < other.name:
+            return -1
+        elif self.name == other.name:
+            return 0
+        else:
+            return 1
 
     def CreateAction(action):
         roles = []
