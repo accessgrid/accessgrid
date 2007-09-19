@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.57 2007-09-18 20:45:23 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.58 2007-09-19 16:45:32 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -163,7 +163,7 @@ class NodeSetupWizard(wx.wizard.Wizard):
         self.page6 = ConfigWindow(self, self.nodeClient, "Your Node Setup")
         self.FitToPage(self.page1)
                
-        EVT_WIZARD_PAGE_CHANGING(self, 10, self.ChangingPage) 
+        wx.EVT_WIZARD_PAGE_CHANGING(self, 10, self.ChangingPage) 
         
         # Set the initial order of the pages
         self.page1.SetNext(self.page2)
@@ -285,10 +285,10 @@ class VideoCaptureWindow(TitledPage):
 
     def __SetEvents(self):
         ''' Set the events '''
-        EVT_TEXT(self.machineCtrl, self.MACHINE_ID, self.EnterText)
-        EVT_COMBOBOX(self.machineCtrl, self.MACHINE_ID, self.OnSelect)
-        EVT_TEXT(self.portCtrl, self.PORT_ID, self.EnterText)
-        EVT_CHECKBOX(self, self.CHECK_ID, self.CheckBoxEvent)
+        wx.EVT_TEXT(self.machineCtrl, self.MACHINE_ID, self.EnterText)
+        wx.EVT_COMBOBOX(self.machineCtrl, self.MACHINE_ID, self.OnSelect)
+        wx.EVT_TEXT(self.portCtrl, self.PORT_ID, self.EnterText)
+        wx.EVT_CHECKBOX(self, self.CHECK_ID, self.CheckBoxEvent)
   
     def OnSelect(self,event):
         selectedHostname = self.machineCtrl.GetValue()
@@ -322,7 +322,7 @@ class VideoCaptureWindow(TitledPage):
         if self.machineCtrl.GetValue() == "":
             MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
                           style = wx.ICON_ERROR|wx.OK)
-            return false
+            return False
         
         wx.BeginBusyCursor()
 
@@ -334,7 +334,7 @@ class VideoCaptureWindow(TitledPage):
             self.canConnect = true
         except:
             log.exception("VideoCaptureWindow.Validate: Check service manager failed")
-            self.canConnect = false
+            self.canConnect = False
             
         if self.canConnect:
             cards = []
@@ -356,7 +356,7 @@ class VideoCaptureWindow(TitledPage):
             MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
                           style = wx.ICON_ERROR|wx.OK)
             wx.EndBusyCursor()
-            return false
+            return False
           
     def CheckBoxEvent(self, event):
         '''
@@ -364,10 +364,10 @@ class VideoCaptureWindow(TitledPage):
         '''
         if self.checkBox.GetValue():
             # Checked
-            self.machineText.Enable(false)
-            self.portText.Enable(false)
-            self.machineCtrl.Enable(false)
-            self.portCtrl.Enable(false)
+            self.machineText.Enable(False)
+            self.portText.Enable(False)
+            self.machineCtrl.Enable(False)
+            self.portCtrl.Enable(False)
                 
             # Ignore camera information
             self.next = self.parent.page4
@@ -534,9 +534,9 @@ class VideoDisplayWindow(TitledPage):
         self.Layout()
     
     def __SetEvents(self):
-        EVT_COMBOBOX(self.machineCtrl, self.MACHINE_ID, self.OnSelect)
-        EVT_TEXT(self.portCtrl, self.PORT_ID, self.EnterText)
-        EVT_CHECKBOX(self, self.CHECK_ID, self.CheckBoxEvent)
+        wx.EVT_COMBOBOX(self.machineCtrl, self.MACHINE_ID, self.OnSelect)
+        wx.EVT_TEXT(self.portCtrl, self.PORT_ID, self.EnterText)
+        wx.EVT_CHECKBOX(self, self.CHECK_ID, self.CheckBoxEvent)
 
     def EnterText(self, event):
         '''
@@ -567,7 +567,7 @@ class VideoDisplayWindow(TitledPage):
         if self.machineCtrl.GetValue() == "":
             MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
                           style = wx.ICON_ERROR|wx.OK)
-            return false
+            return False
 
         # Verify access to machine
         wx.BeginBusyCursor()
@@ -578,7 +578,7 @@ class VideoDisplayWindow(TitledPage):
             
         except:
             log.exception("VideoDisplayWindow.Validate: Service manager is not started")
-            self.canConnect = false
+            self.canConnect = False
 
         wx.EndBusyCursor()
         
@@ -588,7 +588,7 @@ class VideoDisplayWindow(TitledPage):
         else:
             MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
                           style = wx.ICON_ERROR|wx.OK)
-            return false
+            return False
         
     def CheckBoxEvent(self, event):
         '''
@@ -596,10 +596,10 @@ class VideoDisplayWindow(TitledPage):
         '''
         if self.checkBox.GetValue():
             # Checked
-            self.machineText.Enable(false)
-            self.portText.Enable(false)
-            self.machineCtrl.Enable(false)
-            self.portCtrl.Enable(false)
+            self.machineText.Enable(False)
+            self.portText.Enable(False)
+            self.machineCtrl.Enable(False)
+            self.portCtrl.Enable(False)
          
         else:
             # Not checked
@@ -657,10 +657,10 @@ class AudioWindow(TitledPage):
         self.Layout()
 
     def __SetEvents(self):
-        EVT_TEXT(self.machineCtrl, self.MACHINE_ID, self.EnterText)
-        EVT_COMBOBOX(self.machineCtrl, self.MACHINE_ID, self.OnSelect)
-        EVT_TEXT(self.portCtrl, self.PORT_ID , self.EnterText)
-        EVT_CHECKBOX(self, self.CHECK_ID, self.CheckBoxEvent)
+        wx.EVT_TEXT(self.machineCtrl, self.MACHINE_ID, self.EnterText)
+        wx.EVT_COMBOBOX(self.machineCtrl, self.MACHINE_ID, self.OnSelect)
+        wx.EVT_TEXT(self.portCtrl, self.PORT_ID , self.EnterText)
+        wx.EVT_CHECKBOX(self, self.CHECK_ID, self.CheckBoxEvent)
 
     def EnterText(self, event):
         '''
@@ -691,7 +691,7 @@ class AudioWindow(TitledPage):
         if self.machineCtrl.GetValue() == "":
             MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
                           style = wx.ICON_ERROR|wx.OK)
-            return false
+            return False
         
         wx.BeginBusyCursor()
         try:
@@ -701,7 +701,7 @@ class AudioWindow(TitledPage):
             self.canConnect = true
         except:
             log.exception("AudioWindow.Validate: Service manager is not started")
-            self.canConnect = false
+            self.canConnect = False
 
         wx.EndBusyCursor()
   
@@ -710,7 +710,7 @@ class AudioWindow(TitledPage):
         else:
             MessageDialog(self, "Could not connect. Is a service manager running\nat %s:%s?" % (hostname,port),  
                           style = wx.ICON_ERROR|wx.OK)
-            return false
+            return False
     
     def CheckBoxEvent(self, event):
         '''
@@ -718,10 +718,10 @@ class AudioWindow(TitledPage):
         '''
         if self.checkBox.GetValue():
             # Checked
-            self.machineText.Enable(false)
-            self.portText.Enable(false)
-            self.machineCtrl.Enable(false)
-            self.portCtrl.Enable(false)
+            self.machineText.Enable(False)
+            self.portText.Enable(False)
+            self.machineCtrl.Enable(False)
+            self.portCtrl.Enable(False)
             
         else:
             # Not checked
@@ -830,7 +830,7 @@ class ConfigWindow(TitledPage):
         if configName == "":
             MessageDialog(self, "Please enter a name for this configuration.", "Enter Configuration Name")
             wx.EndBusyCursor()
-            return false
+            return False
 
         if string.find(configName, "/") != -1 or string.find(configName, "\\") != -1:
             info = "Configuration name %s is invalid." % configName
@@ -838,7 +838,7 @@ class ConfigWindow(TitledPage):
             dlg.ShowModal()
             dlg.Destroy()
             wx.EndBusyCursor()
-            return false
+            return False
             
             
         configs = []
@@ -859,7 +859,7 @@ class ConfigWindow(TitledPage):
             if ret != wx.ID_OK:
                 wx.EndBusyCursor()
                 # User does not want to overwrite.
-                return false
+                return False
                 
         # Build up config to send to writer
         config = {}

@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.287 2007-09-18 20:45:24 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.288 2007-09-19 16:45:32 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.287 2007-09-18 20:45:24 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.288 2007-09-19 16:45:32 turam Exp $"
 
 
 from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog, MessageDialog, SetIcon
@@ -65,6 +65,8 @@ def SignalHandler(signum, frame):
     pass
 
 def main():
+
+    import wx
 
     log = None
 

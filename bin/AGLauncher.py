@@ -42,46 +42,46 @@ class LauncherFrame(wx.Frame):
         
         if IsOSX():
             self.mainButton=wx.RadioButton(self,self.BUTTON_MAIN_ID,"Main",style=wx.RB_GROUP);
-            EVT_RADIOBUTTON(self,self.BUTTON_MAIN_ID,self.OnToggle);
+            wx.EVT_RADIOBUTTON(self,self.BUTTON_MAIN_ID,self.OnToggle);
         else:
             self.mainButton=wx.ToggleButton(self,self.BUTTON_MAIN_ID,"Main");
-            EVT_TOGGLEBUTTON(self,self.BUTTON_MAIN_ID,self.OnToggle);
+            wx.EVT_TOGGLEBUTTON(self,self.BUTTON_MAIN_ID,self.OnToggle);
         self.mainButton.SetValue(true);
 
         if IsOSX():
             self.docButton=wx.RadioButton(self,self.BUTTON_DOCS_ID,"Documentation");
-            EVT_RADIOBUTTON(self,self.BUTTON_DOCS_ID,self.OnToggle);
+            wx.EVT_RADIOBUTTON(self,self.BUTTON_DOCS_ID,self.OnToggle);
         else:
             self.docButton=wx.ToggleButton(self,self.BUTTON_DOCS_ID,"Documentation");
-            EVT_TOGGLEBUTTON(self,self.BUTTON_DOCS_ID,self.OnToggle);
-        self.docButton.SetValue(false);
+            wx.EVT_TOGGLEBUTTON(self,self.BUTTON_DOCS_ID,self.OnToggle);
+        self.docButton.SetValue(False);
         
         if IsOSX():
             self.confButton=wx.RadioButton(self,self.BUTTON_CONFIG_ID,"Configuration");
-            EVT_RADIOBUTTON(self,self.BUTTON_CONFIG_ID,self.OnToggle);
+            wx.EVT_RADIOBUTTON(self,self.BUTTON_CONFIG_ID,self.OnToggle);
         else:
             self.confButton=wx.ToggleButton(self,self.BUTTON_CONFIG_ID,"Configuration");
-            EVT_TOGGLEBUTTON(self,self.BUTTON_CONFIG_ID,self.OnToggle);
-        self.confButton.SetValue(false);
+            wx.EVT_TOGGLEBUTTON(self,self.BUTTON_CONFIG_ID,self.OnToggle);
+        self.confButton.SetValue(False);
 
         if IsOSX():
             self.servButton=wx.RadioButton(self,self.BUTTON_SERVICE_ID,"Services");
-            EVT_RADIOBUTTON(self,self.BUTTON_SERVICE_ID,self.OnToggle);
+            wx.EVT_RADIOBUTTON(self,self.BUTTON_SERVICE_ID,self.OnToggle);
         else:
             self.servButton=wx.ToggleButton(self,self.BUTTON_CONFIG_ID,"Services");
-            EVT_TOGGLEBUTTON(self,self.BUTTON_SERVICE_ID,self.OnToggle);
-        self.servButton.SetValue(false);
+            wx.EVT_TOGGLEBUTTON(self,self.BUTTON_SERVICE_ID,self.OnToggle);
+        self.servButton.SetValue(False);
         
         
         if IsOSX():
             self.debugButton=wx.RadioButton(self,self.BUTTON_DEBUG_ID,"Debug");
-            EVT_RADIOBUTTON(self,self.BUTTON_DEBUG_ID,self.OnToggle);
+            wx.EVT_RADIOBUTTON(self,self.BUTTON_DEBUG_ID,self.OnToggle);
         else:
             self.debugButton=wx.ToggleButton(self,self.BUTTON_DEBUG_ID,"Debug");
-            EVT_TOGGLEBUTTON(self,self.BUTTON_DEBUG_ID,self.OnToggle);
-        self.debugButton.SetValue(false)
+            wx.EVT_TOGGLEBUTTON(self,self.BUTTON_DEBUG_ID,self.OnToggle);
+        self.debugButton.SetValue(False)
         self.debugButton.Disable()
-        self.debugButton.Show(false)
+        self.debugButton.Show(False)
         
         if not agtk_location:
             agtk_location=".."
@@ -94,7 +94,7 @@ class LauncherFrame(wx.Frame):
             venueClientPath = "%s/bin/VenueClient.py"%(agtk_location)
         self.mainButtonActions.append([self.RunPython,venueClientPath,[]]);
         for button in self.mainButtonList:
-            button.Show(false);
+            button.Show(False);
         
         self.docsButtonList=[];
         self.docsButtonActions=[];
@@ -107,7 +107,7 @@ class LauncherFrame(wx.Frame):
         self.docsButtonList.append(wx.Button(self,self.BUTTON_LIC_ID,"License"));
         self.docsButtonActions.append([self.LoadURL,"file://%s/COPYING.txt"%(agtk_location),[]]);
         for button in self.docsButtonList:
-            button.Show(false);
+            button.Show(False);
         
         self.configButtonList=[];
         self.configButtonActions=[];
@@ -134,7 +134,7 @@ class LauncherFrame(wx.Frame):
             certManagerPath = "%s/bin/CertificateManager.py"%(agtk_location)
         self.configButtonActions.append([self.RunPython,certManagerPath,[]]);
         for button in self.configButtonList:
-            button.Show(false);
+            button.Show(False);
 
         self.serviceButtonList=[];
         self.serviceButtonActions=[];
@@ -160,7 +160,7 @@ class LauncherFrame(wx.Frame):
                 venueserverPath = "%s/bin/VenueServer.py"%(agtk_location)
             self.serviceButtonActions.append([self.RunPython,venueserverPath,[]]);
         for button in self.serviceButtonList:
-            button.Show(false);
+            button.Show(False);
         
         self.debugButtonList=[];
         self.debugButtonActions=[];
@@ -175,37 +175,37 @@ class LauncherFrame(wx.Frame):
         self.debugButtonList.append(wx.Button(self,self.BUTTON_VSD_ID,"Venue Server (Debug)"));
         self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/VenueServer.py"%(agtk_location),["-d"]]);
         for button in self.debugButtonList:
-            button.Show(false);
+            button.Show(False);
         
-        EVT_BUTTON(self,self.BUTTON_VC_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_CM_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_NS_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_SM_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_VS_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_README_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_VCM_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_VMCM_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_LIC_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_NM_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_VM_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_NSW_ID,self.OnButton);
-        #EVT_BUTTON(self,self.BUTTON_CRW_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_VCD_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_CMD_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_NSD_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_SMD_ID,self.OnButton);
-        EVT_BUTTON(self,self.BUTTON_VSD_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_VC_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_CM_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_NS_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_SM_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_VS_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_README_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_VCM_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_VMCM_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_LIC_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_NM_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_VM_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_NSW_ID,self.OnButton);
+        #wx.EVT_BUTTON(self,self.BUTTON_CRW_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_VCD_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_CMD_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_NSD_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_SMD_ID,self.OnButton);
+        wx.EVT_BUTTON(self,self.BUTTON_VSD_ID,self.OnButton);
         
         self.myLine=wx.StaticLine(self,-1,style=wx.LI_VERTICAL);
         
         self.__doLayout();
         
     def OnToggle(self,evt):
-        self.mainButton.SetValue(false);
-        self.docButton.SetValue(false);
-        self.confButton.SetValue(false);
-        self.servButton.SetValue(false);
-        self.debugButton.SetValue(false);
+        self.mainButton.SetValue(False);
+        self.docButton.SetValue(False);
+        self.confButton.SetValue(False);
+        self.servButton.SetValue(False);
+        self.debugButton.SetValue(False);
        
         if evt.GetId() == self.BUTTON_DOCS_ID:
             self.docButton.SetValue(true);
@@ -295,15 +295,15 @@ class LauncherFrame(wx.Frame):
     
     def __doLayout(self):
         for button in self.mainButtonList:
-            button.Show(false);
+            button.Show(False);
         for button in self.docsButtonList:
-            button.Show(false);
+            button.Show(False);
         for button in self.configButtonList:
-            button.Show(false);
+            button.Show(False);
         for button in self.serviceButtonList:
-            button.Show(false);
+            button.Show(False);
         for button in self.debugButtonList:
-            button.Show(false);
+            button.Show(False);
 
         # Figure out which button set is active
         if self.mainButton.GetValue():
