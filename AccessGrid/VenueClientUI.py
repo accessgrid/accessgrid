@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.240 2007-09-12 05:18:04 douglask Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.241 2007-09-26 23:40:14 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.240 2007-09-12 05:18:04 douglask Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.241 2007-09-26 23:40:14 willing Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -5036,7 +5036,7 @@ class JabberClientPanel(wxPanel):
         # Add time to event message
         if not messagetime:
            messagetime = localtime()
-        dateAndTime = strftime("%d %b %I:%M", messagetime )
+        dateAndTime = strftime("%d %b %H:%M", messagetime )
         
         # Event message
         if name == None:
