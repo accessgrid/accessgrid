@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.79 2007-07-16 19:11:08 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.80 2007-09-26 13:44:14 willing Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.79 2007-07-16 19:11:08 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.80 2007-09-26 13:44:14 willing Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -429,6 +429,10 @@ class VenueClientController:
         uri = self.__venueClientApp.PopHistory()
         if not uri:
             raise Exception("Invalid venue url retrieved from history list; %s", uri)
+
+        # Exit the venue you are currently in before entering a new venue
+        if self.__venueClient.IsInVenue():
+            self.__venueClient.ExitVenue()
             
         self.__venueClient.EnterVenue(uri)
     
