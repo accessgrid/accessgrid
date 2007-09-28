@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.108 2007-02-22 23:47:17 willing Exp $
+# RCS-ID:      $Id: setup.py,v 1.109 2007-09-28 17:14:21 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -50,6 +50,7 @@ win32_data = [
                  r'packaging/ag.ico',
                  r'packaging/windows/msvcr70.dll',
                  r'packaging/windows/msvcr71.dll',
+                 r'packaging/windows/msvcp71.dll',
                  r'packaging/windows/msvcr71d.dll']),
     ('config/CAcertificates',
      glob.glob('packaging/config/CAcertificates/*.*')),
