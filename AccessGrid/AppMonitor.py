@@ -150,7 +150,7 @@ class AppMonitorFrame(wx.Frame):
                                             wx.DefaultPosition)
         self.topWindow.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.topWindow.SetAlignment(wx.LAYOUT_TOP)
-        self.topWindow.SetSashVisible(wx.SASH_BOTTOM, TRUE)
+        self.topWindow.SetSashVisible(wx.SASH_BOTTOM, True)
         self.topWindow.SetExtraBorderSize(2)
         
         # lower sash window
