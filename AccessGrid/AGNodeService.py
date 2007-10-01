@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.115 2007-09-07 18:36:21 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.116 2007-10-01 17:58:39 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.115 2007-09-07 18:36:21 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.116 2007-10-01 17:58:39 turam Exp $"
 
 
 import os
@@ -257,15 +257,13 @@ class AGNodeService:
         """Get list of installed services """
         log.info("NodeService.GetServices")
         services = []
-        try:
-            for serviceManager in self.serviceManagers.values():
+	    for serviceManager in self.serviceManagers.values():
+            try:
                 serviceSubset = AGServiceManagerIW(
                     serviceManager.uri ).GetServices()
                 services += serviceSubset
-        except:
-            log.exception("Exception in AGNodeService.GetServices.")
-            raise Exception("AGNodeService.GetServices failed: %s" \
-                            % str( sys.exc_value ) )
+            except:
+                log.exception("Exception in AGNodeService.GetServices.")
 
         return services
 
