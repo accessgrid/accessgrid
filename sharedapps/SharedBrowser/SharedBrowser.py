@@ -17,7 +17,7 @@ threadedselectreactor.install()
 
 from twisted.internet import reactor
 
-from wxPython.wx import *
+import wx
 if sys.platform == Platform.WIN:
     import wx.lib.iewin as iewin
 else:
@@ -31,12 +31,12 @@ from AccessGrid import icons
 from AccessGrid.Toolkit import WXGUIApplication
 
 
-class WebBrowser(wxPanel):
+class WebBrowser(wx.Panel):
     """
     WebBrowser is a basic web browser class
     """
     def __init__(self, parent, id, log, frame = None):
-        wxPanel.__init__(self, parent, id)
+        wx.Panel.__init__(self, parent, id)
 
         self.log = log
         self.current = None
@@ -65,20 +65,20 @@ class WebBrowser(wxPanel):
         self.navigation_callbacks.remove(listener)
 
     def add_button(self, name, func, sizer):
-        b = wxButton(self, -1, name)
-        EVT_BUTTON(self, b.GetId(), func)
-        sizer.Add(b, 0, wxEXPAND)
+        b = wx.Button(self, -1, name)
+        wx.EVT_BUTTON(self, b.GetId(), func)
+        sizer.Add(b, 0, wx.EXPAND)
         return b
 
     def populate(self):
 
-        sizer = wxBoxSizer(wxVERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
 
         #
         # Create the button bar
         #
 
-        bsizer = wxBoxSizer(wxHORIZONTAL)
+        bsizer = wx.BoxSizer(wx.HORIZONTAL)
 
         self.back_button = self.add_button("Back", self.OnBack, bsizer)
         self.forward_button = self.add_button("Forward", self.OnForward,
@@ -89,42 +89,42 @@ class WebBrowser(wxPanel):
         self.refresh_button = self.add_button("Refresh", self.OnRefresh,
                                               bsizer)
 
-        t = wxStaticText(self, -1, "Location: ")
-        bsizer.Add(t, 0, wxEXPAND)
+        t = wx.StaticText(self, -1, "Location: ")
+        bsizer.Add(t, 0, wx.EXPAND)
 
-        self.location = wxComboBox(self, wxNewId(), "",
-                                   style=wxCB_DROPDOWN|wxPROCESS_ENTER)
-        EVT_COMBOBOX(self, self.location.GetId(), self.OnLocationSelect)
-        EVT_KEY_UP(self.location, self.OnLocationKey)
-        EVT_CHAR(self.location, self.IgnoreReturn)
-        bsizer.Add(self.location, 1, wxEXPAND)
+        self.location = wx.ComboBox(self, wx.NewId(), "",
+                                   style=wx.CB_DROPDOWN|wx.PROCESS_ENTER)
+        wx.EVT_COMBOBOX(self, self.location.GetId(), self.OnLocationSelect)
+        wx.EVT_KEY_UP(self.location, self.OnLocationKey)
+        wx.EVT_CHAR(self.location, self.IgnoreReturn)
+        bsizer.Add(self.location, 1, wx.EXPAND)
 
-        sizer.Add(bsizer, 0, wxEXPAND)
+        sizer.Add(bsizer, 0, wx.EXPAND)
 
         #
         # Now we can set up the browser widget
         #
 
         if sys.platform == Platform.WIN:
-            self.wxbrowser = iewin.IEHtmlWindow(self, -1, style = wxNO_FULL_REPAINT_ON_RESIZE)
-            sizer.Add(self.wxbrowser, 1, wxEXPAND)
+            self.wxbrowser = iewin.IEHtmlWindow(self, -1, style = wx.NO_FULL_REPAINT_ON_RESIZE)
+            sizer.Add(self.wxbrowser, 1, wx.EXPAND)
 
             # Hook up the event handlers for the IE window
             iewin.EVT_BeforeNavigate2(self, -1, self.OnBeforeNavigate2)
             iewin.EVT_NewWindow2(self, -1, self.OnNewWindow2)
             iewin.EVT_DocumentComplete(self, -1, self.OnDocumentComplete)
-            # EVT_MSHTML_STATUSTEXTCHANGE(self, -1, self.OnStatusTextChange)
+            # wx.EVT_MSHTML_STATUSTEXTCHANGE(self, -1, self.OnStatusTextChange)
             iewin.EVT_TitleChange(self, -1, self.OnTitleChange)
         else:
-            self.wxbrowser = wxMozillaBrowser(self, -1, style = wxNO_FULL_REPAINT_ON_RESIZE)
-            sizer.Add(self.wxbrowser, 1, wxEXPAND)
+            self.wxbrowser = wxMozillaBrowser(self, -1, style = wx.NO_FULL_REPAINT_ON_RESIZE)
+            sizer.Add(self.wxbrowser, 1, wx.EXPAND)
 
             # Hook up the event handlers for the Mozilla window
-            EVT_MOZILLA_BEFORE_LOAD(self, -1, self.OnBeforeLoad)
-            EVT_MOZILLA_URL_CHANGED(self, -1, self.UpdateURL)
-            EVT_MOZILLA_LOAD_COMPLETE(self, -1, self.OnLoadComplete)
-            EVT_MOZILLA_STATUS_CHANGED(self, -1, self.UpdateStatus)
-            EVT_MOZILLA_STATE_CHANGED(self, -1, self.UpdateState)
+            wx.EVT_MOZILLA_BEFORE_LOAD(self, -1, self.OnBeforeLoad)
+            wx.EVT_MOZILLA_URL_CHANGED(self, -1, self.UpdateURL)
+            wx.EVT_MOZILLA_LOAD_COMPLETE(self, -1, self.OnLoadComplete)
+            wx.EVT_MOZILLA_STATUS_CHANGED(self, -1, self.UpdateStatus)
+            wx.EVT_MOZILLA_STATE_CHANGED(self, -1, self.UpdateState)
 
         self.SetSizer(sizer)
         self.SetAutoLayout(1)
@@ -196,7 +196,7 @@ class WebBrowser(wxPanel):
                 #   events to tell if they refer to a popup (and other sub-
                 #   pages) or a user clicking on a url.
                 self.log.debug("Finished loading.")
-                if self.location.FindString(self.current) == wxNOT_FOUND:
+                if self.location.FindString(self.current) == wx.NOT_FOUND:
                     self.location.Append(self.current)
                 self.just_received_navigate = 0
                 self.current = event.URL
@@ -226,7 +226,7 @@ class WebBrowser(wxPanel):
             #   events to tell if they refer to a popup (and other sub-
             #   pages) or a user clicking on a url.
             self.log.debug("Finished loading.")
-            if self.location.FindString(self.current) == wxNOT_FOUND:
+            if self.location.FindString(self.current) == wx.NOT_FOUND:
                 self.location.Append(self.current)
             self.just_received_navigate = 0
             self.location.SetValue(self.current)
@@ -277,7 +277,7 @@ class WebBrowser(wxPanel):
     def OnRefresh(self, event):
         self.LocalEvent()
         if sys.platform == Platform.WIN:
-            self.wxbrowser.Refresh(wxIEHTML_REFRESH_COMPLETELY)
+            self.wxbrowser.Refresh(iewin.REFRESH_COMPLETELY)
         else:
             self.wxbrowser.Reload()
 
@@ -291,7 +291,7 @@ class WebBrowser(wxPanel):
             if sys.platform == Platform.WIN:
                 self.wxbrowser.Navigate(url)
             else:
-                wxCallAfter(self.wxbrowser.LoadURL, url)
+                wx.CallAfter(self.wxbrowser.LoadURL, url)
 
     def OnLocationSelect(self, event):
         self.LocalEvent()
@@ -305,7 +305,7 @@ class WebBrowser(wxPanel):
         if event.GetKeyCode() == WXK_RETURN:
             self.LocalEvent()
             URL = self.location.GetValue()
-            if self.current and self.location.FindString(self.current) == wxNOT_FOUND:
+            if self.current and self.location.FindString(self.current) == wx.NOT_FOUND:
                 self.location.Append(self.current)
             self.wxbrowser.LoadURL(URL)
         else:
@@ -316,7 +316,7 @@ class WebBrowser(wxPanel):
             event.Skip()
 
 
-class SharedBrowser( wxApp ):
+class SharedBrowser( wx.App ):
     """
     SharedBrowser combines a SharedApplication and a WebBrowser
     to provide shared web browsing to venue users
@@ -337,9 +337,9 @@ class SharedBrowser( wxApp ):
         application service interaction, and opens a web browser
         for UI display.
         '''
-        wxApp.__init__(self, False)
+        wx.App.__init__(self, False)
 
-        reactor.interleave(wxCallAfter)
+        reactor.interleave(wx.CallAfter)
         # Create shared application client
         self.sharedAppClient = SharedAppClient(name)
         self.log = self.sharedAppClient.InitLogging()
@@ -359,7 +359,7 @@ class SharedBrowser( wxApp ):
         self.sharedAppClient.RegisterEventCallback("browse", self.BrowseCallback )
 
         # Create Browser Window
-        self.frame = wxFrame(None, -1, "SharedBrowser", size=size)
+        self.frame = wx.Frame(None, -1, "SharedBrowser", size=size)
         if sys.platform != Platform.WIN:
             self.frame.CreateStatusBar()
         self.browser = WebBrowser(self.frame, -1, self.log, self.frame)
@@ -475,8 +475,9 @@ if __name__ == "__main__":
     if not appUrl:
         am.Usage()
     else:
-        wxInitAllImageHandlers()
+        wx.InitAllImageHandlers()
         sb = SharedBrowser( appUrl, name, size=(800,1024))
+
         sb.MainLoop()
 
     #

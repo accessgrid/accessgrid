@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.52 2007-09-12 06:46:27 douglask Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.53 2007-10-01 17:25:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ import Queue
 import shutil
 import time
 
-from wxPython.wx import *
+import wx
 from AccessGrid import Platform
 from AccessGrid import Log
 
@@ -267,17 +267,17 @@ else:
 # GUI code
 #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class SharedPresentationFrame(wxFrame):
+class SharedPresentationFrame(wx.Frame):
 
-    ID_SYNC = wxNewId()
-    ID_LOCALUPLOAD = wxNewId()
-    ID_CLEAR = wxNewId()
-    ID_EXIT = wxNewId()
-    ID_HELP_INST = wxNewId()
+    ID_SYNC = wx.NewId()
+    ID_LOCALUPLOAD = wx.NewId()
+    ID_CLEAR = wx.NewId()
+    ID_EXIT = wx.NewId()
+    ID_HELP_INST = wx.NewId()
 
     def __init__(self, parent, ID, title, log=None):
-        wxFrame.__init__(self, parent, ID, title,
-                         wxDefaultPosition)
+        wx.Frame.__init__(self, parent, ID, title,
+                         wx.DefaultPosition)
 
         self.log = log
         
@@ -293,14 +293,14 @@ class SharedPresentationFrame(wxFrame):
         self.syncCallback = noOp
         self.exitCallback = noOp
         self.localUploadCallback = noOp
-        reactor.interleave(wxCallAfter)
+        reactor.interleave(wx.CallAfter)
         #
         # Create UI controls
         #
                 
         # - Create menu bar
-        menubar = wxMenuBar()
-        fileMenu = wxMenu()
+        menubar = wx.MenuBar()
+        fileMenu = wx.Menu()
         self.fileMenu = fileMenu
         fileMenu.Append(self.ID_SYNC,"&Sync", "Sync to app state")
         fileMenu.Append(self.ID_LOCALUPLOAD,"&Upload Local File", "Upload local file to venue.")
@@ -309,7 +309,7 @@ class SharedPresentationFrame(wxFrame):
         fileMenu.Append(self.ID_EXIT,"&Exit", "Exit")
      	menubar.Append(fileMenu, "&File")
 
-        self.helpMenu = wxMenu()
+        self.helpMenu = wx.Menu()
         self.helpMenu.Append(self.ID_HELP_INST, "&Instructions", "Instructions on how to use the shared presentation viewer.")
         menubar.Append(self.helpMenu, "&Help")
         self.SetMenuBar(menubar)
@@ -317,67 +317,68 @@ class SharedPresentationFrame(wxFrame):
         self.SetIcon(icons.getAGIconIcon())
       
         # - Create main panel
-        self.panel = wxPanel(self, -1, size = wxSize(320, 140))
+        self.panel = wx.Panel(self, -1, size = wx.Size(320, 140))
         # - Create main sizer 
-        mainSizer = wxBoxSizer(wxVERTICAL)
+        mainSizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(mainSizer)
     
-        mainSizer.Add(self.panel, 1, wxEXPAND)
+        mainSizer.Add(self.panel, 1, wx.EXPAND)
         
         # - Create panel sizer
-        sizer = wxBoxSizer(wxVERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
         self.panel.SetSizer(sizer)
                     
         # - Create checkbox for master
-        self.masterCheckBox = wxCheckBox(self.panel,-1,"Take control as presentation master")
+        self.masterCheckBox = wx.CheckBox(self.panel,-1,"Take control as presentation master")
         sizer.Add((5, 5))
-        sizer.Add( self.masterCheckBox, 0, wxEXPAND | wxALL, 5)
+        sizer.Add( self.masterCheckBox, 0, wx.EXPAND | wx.ALL, 5)
 
         # - Create sizer for remaining ctrls
-        staticBoxSizer = wxBoxSizer(wxVERTICAL)
-        gridSizer = wxFlexGridSizer(2, 3, 5, 5)
+        staticBoxSizer = wx.BoxSizer(wx.VERTICAL)
+        gridSizer = wx.FlexGridSizer(2, 3, 5, 5)
         gridSizer.AddGrowableCol(1)
-        staticBoxSizer.Add(gridSizer, 0, wxEXPAND)
-        sizer.Add(staticBoxSizer, 0, wxEXPAND| wxALL, 5)
+        staticBoxSizer.Add(gridSizer, 0, wx.EXPAND)
+        sizer.Add(staticBoxSizer, 0, wx.EXPAND| wx.ALL, 5)
 
         # - Create textctrl for slide url
-        staticText = wxStaticText(self.panel, -1, "Slides")
-        #self.slidesText = wxTextCtrl(self,-1)
-        self.slidesCombo = wxComboBox(self.panel ,wxNewId(), style=wxCB_DROPDOWN|wxCB_SORT)
+        staticText = wx.StaticText(self.panel, -1, "Slides")
+        #self.slidesText = wx.TextCtrl(self,-1)
+        self.slidesCombo = wx.ComboBox(self.panel ,wx.NewId(), style=wx.CB_DROPDOWN|wx.CB_SORT)
         self.slidesCombo.Append("")
-        if sys.platform == Platform.LINUX or sys.platform == Platform.FREEBSD5 or sys.platform == Platform.FREEBSD6:
-            self.loadButton = wxButton(self.panel ,-1,"Load", wxDefaultPosition, wxSize(42,27) )
+        if sys.platform in [Platform.LINUX,Platform.FREEBSD5,Platform.FREEBSD6]:
+            self.loadButton = wx.Button(self.panel ,-1,"Load", wx.DefaultPosition, wx.Size(42,27) )
         else:
-            self.loadButton = wxButton(self.panel ,-1,"Load", wxDefaultPosition, wxSize(40,21) )
+            self.loadButton = wx.Button(self.panel ,-1,"Load", wx.DefaultPosition, wx.Size(40,21) )
 
-        gridSizer.Add( staticText, 0, wxALIGN_LEFT)
-        gridSizer.Add( self.slidesCombo, 1, wxEXPAND | wxALIGN_LEFT)
-        gridSizer.Add( self.loadButton, 2, wxALIGN_RIGHT)
+        gridSizer.Add( staticText, 0, wx.ALIGN_LEFT)
+        gridSizer.Add( self.slidesCombo, 1, wx.EXPAND | wx.ALIGN_LEFT)
+        gridSizer.Add( self.loadButton, 2, wx.ALIGN_RIGHT)
 
         # Don't update the filelist until user becomes a master (it won't 
         #   be needed unless user is a master).
         # self.updateVenueFileList()
 
         # - Create textctrl for slide num
-        staticText = wxStaticText(self.panel, -1, "Slide number")
-        if sys.platform == Platform.LINUX or sys.platform == Platform.FREEBSD5 or sys.platform == Platform.FREEBSD6:
-            self.slideNumText = wxTextCtrl(self.panel ,-1, size = wxSize(40, 23))
-            self.goButton = wxButton(self.panel ,-1,"Go", wxDefaultPosition, wxSize(42,27))
+
+        staticText = wx.StaticText(self.panel, -1, "Slide number")
+        if sys.platform in [Platform.LINUX,Platform.FREEBSD5,Platform.FREEBSD6]:
+            self.slideNumText = wx.TextCtrl(self.panel ,-1, size = wx.Size(40, 23))
+            self.goButton = wx.Button(self.panel ,-1,"Go", wx.DefaultPosition, wx.Size(42,27))
         else:
-            self.slideNumText = wxTextCtrl(self.panel ,-1, size = wxSize(40, 20))
-            self.goButton = wxButton(self.panel ,-1,"Go", wxDefaultPosition, wxSize(40,21))
-        gridSizer.Add( staticText, wxALIGN_LEFT)
+            self.slideNumText = wx.TextCtrl(self.panel ,-1, size = wx.Size(40, 20))
+            self.goButton = wx.Button(self.panel ,-1,"Go", wx.DefaultPosition, wx.Size(40,21))
+        gridSizer.Add( staticText, wx.ALIGN_LEFT)
         gridSizer.Add( self.slideNumText )
-        gridSizer.Add( self.goButton, wxALIGN_RIGHT )
+        gridSizer.Add( self.goButton, wx.ALIGN_RIGHT )
 
         # - Create buttons for control 
-        rowSizer = wxBoxSizer(wxHORIZONTAL)
-        self.prevButton = wxButton(self.panel ,-1,"<Prev")
-        self.nextButton = wxButton(self.panel ,-1,"Next>")
-        rowSizer.Add( self.prevButton , 0, wxRIGHT, 5)
+        rowSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.prevButton = wx.Button(self.panel ,-1,"<Prev")
+        self.nextButton = wx.Button(self.panel ,-1,"Next>")
+        rowSizer.Add( self.prevButton , 0, wx.RIGHT, 5)
         rowSizer.Add( self.nextButton )
 
-        sizer.Add(rowSizer, 0, wxALIGN_CENTER|wxALL, 5)
+        sizer.Add(rowSizer, 0, wx.ALIGN_CENTER|wx.ALL, 5)
         sizer.Add((5,5))
         
         self.SetAutoLayout(1)
@@ -387,20 +388,20 @@ class SharedPresentationFrame(wxFrame):
         self.SetMaster(0)
                
         # Set up event callbacks
-        EVT_TEXT_ENTER(self, self.slidesCombo.GetId(), self.OpenCB)
-        EVT_CHECKBOX(self, self.masterCheckBox.GetId(), self.MasterCB)
-        EVT_SET_FOCUS(self.slidesCombo, self.ComboCB)
-        EVT_BUTTON(self, self.prevButton.GetId(), self.PrevSlideCB)
-        EVT_TEXT_ENTER(self, self.slideNumText.GetId(), self.GotoSlideNumCB)
-        EVT_BUTTON(self, self.nextButton.GetId(), self.NextSlideCB)
-        EVT_BUTTON(self, self.loadButton.GetId(), self.OpenCB)
-        EVT_BUTTON(self, self.goButton.GetId(), self.GotoSlideNumCB)
+        wx.EVT_TEXT_ENTER(self, self.slidesCombo.GetId(), self.OpenCB)
+        wx.EVT_CHECKBOX(self, self.masterCheckBox.GetId(), self.MasterCB)
+        wx.EVT_SET_FOCUS(self.slidesCombo, self.ComboCB)
+        wx.EVT_BUTTON(self, self.prevButton.GetId(), self.PrevSlideCB)
+        wx.EVT_TEXT_ENTER(self, self.slideNumText.GetId(), self.GotoSlideNumCB)
+        wx.EVT_BUTTON(self, self.nextButton.GetId(), self.NextSlideCB)
+        wx.EVT_BUTTON(self, self.loadButton.GetId(), self.OpenCB)
+        wx.EVT_BUTTON(self, self.goButton.GetId(), self.GotoSlideNumCB)
 
-        EVT_MENU(self, self.ID_SYNC, self.SyncCB)
-        EVT_MENU(self, self.ID_LOCALUPLOAD, self.LocalUploadCB)
-        EVT_MENU(self, self.ID_CLEAR, self.ClearSlidesCB)
-        EVT_MENU(self, self.ID_EXIT, self.ExitCB)
-        EVT_MENU(self, self.ID_HELP_INST, self.OpenInstructionsCB)
+        wx.EVT_MENU(self, self.ID_SYNC, self.SyncCB)
+        wx.EVT_MENU(self, self.ID_LOCALUPLOAD, self.LocalUploadCB)
+        wx.EVT_MENU(self, self.ID_CLEAR, self.ClearSlidesCB)
+        wx.EVT_MENU(self, self.ID_EXIT, self.ExitCB)
+        wx.EVT_MENU(self, self.ID_HELP_INST, self.OpenInstructionsCB)
 
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -480,7 +481,7 @@ class SharedPresentationFrame(wxFrame):
                     self.loadCallback(slidesUrl)
                 except:
                     self.log.exception('SharedPresentation.OpenCB: Can not load presentation %s'%(slidesUrl))
-                    wxCallAfter(self.ShowMessage,"Can not load presentation %s"%slidesUrl, "Notification")
+                    wx.CallAfter(self.ShowMessage,"Can not load presentation %s"%slidesUrl, "Notification")
         except:
             self.log.exception("OpenCB")
             MessageDialog(self, "An error occurred when opening a url.", "Open Error")
@@ -500,9 +501,9 @@ class SharedPresentationFrame(wxFrame):
         Callback for "LocalUpload" menu item
         """
         try:
-            dlg = wxFileDialog(self, "Choose a file to upload:", style = wxOPEN | wxMULTIPLE)
+            dlg = wx.FileDialog(self, "Choose a file to upload:", style = wx.OPEN | wx.MULTIPLE)
 
-            if dlg.ShowModal() == wxID_OK:
+            if dlg.ShowModal() == wx.ID_OK:
                 files = dlg.GetPaths()
                 self.log.debug("SharedPresentation.LocalUploadCB:%s " %str(files))
 
@@ -512,7 +513,7 @@ class SharedPresentationFrame(wxFrame):
                         self.localUploadCallback([file])
                     except:
                         self.log.exception("Can not upload file %s to data store"%file)
-                        wxCallAfter(self.ShowMessage, "Can not upload presentation %s"%file, "Notification")
+                        wx.CallAfter(self.ShowMessage, "Can not upload presentation %s"%file, "Notification")
                     
                 self.updateVenueFileList()
         except:
@@ -596,7 +597,7 @@ class SharedPresentationFrame(wxFrame):
         """
         This method is used to display a message dialog to the user.
         """
-        MessageDialog(self, message, title, style = wxOK|wxICON_INFORMATION)
+        MessageDialog(self, message, title, style = wx.OK|wx.ICON_INFORMATION)
   
     def SetMaster(self, flag):
         """
@@ -635,11 +636,11 @@ class SharedPresentationFrame(wxFrame):
         self.slidesCombo.SetValue(old_value)
 
 
-class UIController(wxApp):
+class UIController(wx.App):
 
     def __init__(self,arg, log=None):
         self.log = log
-        wxApp.__init__(self,arg)
+        wx.App.__init__(self,arg)
 
     def OnInit(self):
         self.frame = SharedPresentationFrame(NULL, -1, "Shared Presentation Controller", log=self.log)
@@ -766,7 +767,7 @@ class SharedPresentation:
         self.controller = UIController(0, self.log)
 
         # Necessary for UI applications that sends event messages
-        reactor.interleave(wxCallAfter)
+        reactor.interleave(wx.CallAfter)
         
         # Initialize state in the shared presentation
         self.url = url
@@ -1162,9 +1163,9 @@ class SharedPresentation:
         # Call the viewers Next method
         if self.viewer != None:
             self.viewer.Next()
-            wxCallAfter(self.controller.SetSlideNum,self.viewer.GetSlideNum())
+            wx.CallAfter(self.controller.SetSlideNum,self.viewer.GetSlideNum())
         else:
-            wxCallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
+            wx.CallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
             self.log.debug("No presentation loaded")
         
     def Previous(self, data=None):
@@ -1177,9 +1178,9 @@ class SharedPresentation:
         # Call the viewers Previous method
         if self.viewer != None:
             self.viewer.Previous()
-            wxCallAfter(self.controller.SetSlideNum,self.viewer.GetSlideNum())
+            wx.CallAfter(self.controller.SetSlideNum,self.viewer.GetSlideNum())
         else:
-            wxCallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
+            wx.CallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
             self.log.debug("No presentation loaded!")
 
     def GoToSlide(self, slideNum):
@@ -1193,10 +1194,10 @@ class SharedPresentation:
         if self.viewer != None:
             self.viewer.GoToSlide(slideNum)
         else:
-            wxCallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
+            wx.CallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
             self.log.debug("No presentation loaded!")
 
-        wxCallAfter(self.controller.SetSlideNum, slideNum)
+        wx.CallAfter(self.controller.SetSlideNum, slideNum)
                    
     def LoadPresentation(self, data):
         """
@@ -1230,7 +1231,7 @@ class SharedPresentation:
                 self.viewer.LoadPresentation(tmpFile)
             except:
                 self.log.exception("Can not load presentation %s"%slidesUrl)
-                wxCallAfter(self.controller.ShowMessage,
+                wx.CallAfter(self.controller.ShowMessage,
                             "Can not load presentation %s." %slidesUrl, "Notification")
                
         else:
@@ -1238,19 +1239,19 @@ class SharedPresentation:
                 self.viewer.LoadPresentation(slidesUrl)
             except:
                 self.log.exception("Can not load presentation %s" %slidesUrl)
-                wxCallAfter(self.controller.ShowMessage,
+                wx.CallAfter(self.controller.ShowMessage,
                             "Can not load presentation %s." %slidesUrl, "Notification")
               
         if slidesUrl[:6] == "ftps:":
             # Remove datastore prefix on local url in UI since master checks
             #  if file is in venue and sends full datastore url if it is.
             short_filename = self.stripDatastorePrefix(slidesUrl)
-            wxCallAfter(self.controller.SetSlides, short_filename)
+            wx.CallAfter(self.controller.SetSlides, short_filename)
             #self.controller.SetSlides(slidesUrl)
         else:
-            wxCallAfter(self.controller.SetSlides, slidesUrl)
+            wx.CallAfter(self.controller.SetSlides, slidesUrl)
             
-        wxCallAfter(self.controller.SetSlideNum, 1)
+        wx.CallAfter(self.controller.SetSlideNum, 1)
         self.slideNum = 1
         self.stepNum = 0
         
@@ -1289,9 +1290,9 @@ class SharedPresentation:
 
         # Update the controller accordingly
         if self.masterId == self.sharedAppClient.GetPublicId():
-            wxCallAfter(self.controller.SetMaster, true)
+            wx.CallAfter(self.controller.SetMaster, true)
         else:
-            wxCallAfter(self.controller.SetMaster, false)
+            wx.CallAfter(self.controller.SetMaster, False)
 
     def ClosePresentation(self,data=None):
         """
@@ -1305,7 +1306,7 @@ class SharedPresentation:
             self.log.exception("Can not end show, ignore")
 
     def NoViewer(self, data=None):
-        wxCallAfter(self.controller.ShowMessage, "The necessary viewer software (for example PowerPoint) is not installed", "Viewer Not Installed")
+        wx.CallAfter(self.controller.ShowMessage, "The necessary viewer software (for example PowerPoint) is not installed", "Viewer Not Installed")
         self.Quit()
         
     def Quit(self, data=None):
@@ -1329,7 +1330,7 @@ class SharedPresentation:
         # Destroy controller
         try:
             self.controller.frame.Destroy()
-        except wxPyDeadObjectError:
+        except wx.PyDeadObjectError:
             self.log.info("Exception destroying controller. This happens when using the x button in the top right corner. Not critical.")
         except:
             self.log.exception("Exception destroy controller.")
@@ -1359,7 +1360,7 @@ class SharedPresentation:
         if self.viewer != None and self.viewer.win != None:
             # Careful not to slip off the end of the presentation, cause that mean an exception
             if self.slideNum == self.viewer.GetLastSlide() and self.stepNum >= self.viewer.GetStepNum()-1:
-                wxCallAfter(self.controller.ShowMessage,
+                wx.CallAfter(self.controller.ShowMessage,
                             "This is the last slide. You can not go to next.", "Notification")
                 return
 
@@ -1373,7 +1374,7 @@ class SharedPresentation:
                 if slideNum != self.slideNum:
 
                     # Set the slide number in the controller
-                    wxCallAfter(self.controller.SetSlideNum, slideNum)
+                    wx.CallAfter(self.controller.SetSlideNum, slideNum)
 
                     # Store the slide number in the app object
                     self.sharedAppClient.SetData(SharedPresKey.SLIDENUM, slideNum)
@@ -1390,7 +1391,7 @@ class SharedPresentation:
                 # Send the next event to other app users
                 self.sharedAppClient.SendEvent(SharedPresEvent.NEXT, "")
         else:
-            wxCallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
+            wx.CallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
             self.log.debug("No presentation loaded!")
         
     def LocalPrev(self, data):
@@ -1402,7 +1403,7 @@ class SharedPresentation:
        
         if self.viewer != None and self.viewer.win != None:
             if self.slideNum < 2:
-                wxCallAfter(self.controller.ShowMessage,
+                wx.CallAfter(self.controller.ShowMessage,
                             "This is the first slide. You can not go to previous.", "Notification")
                 
             if self.slideNum > 0:
@@ -1414,7 +1415,7 @@ class SharedPresentation:
                 slideNum = self.viewer.GetSlideNum()
                 if slideNum != self.slideNum:
                     # Set the slide number in the controller
-                    wxCallAfter(self.controller.SetSlideNum, slideNum)
+                    wx.CallAfter(self.controller.SetSlideNum, slideNum)
 
                     self.slideNum = slideNum
                     self.stepNum = self.viewer.GetStepNum() - 1
@@ -1437,7 +1438,7 @@ class SharedPresentation:
                 self.log.debug("slide %d step %d"%(self.slideNum, self.stepNum))
 
         else:
-            wxCallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
+            wx.CallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
             self.log.debug("No presentation loaded!")
 
         
@@ -1460,10 +1461,10 @@ class SharedPresentation:
                 self.sharedAppClient.SendEvent(SharedPresEvent.GOTO, self.slideNum)
                 
         else:
-            wxCallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
+            wx.CallAfter(self.controller.ShowMessage, "No slides are loaded.", "Notification")
             self.log.debug("No presentation loaded!")
 
-        wxCallAfter(self.controller.SetSlideNum, slideNum)
+        wx.CallAfter(self.controller.SetSlideNum, slideNum)
     
     def LocalLoad(self, slidesUrl):
         """
@@ -1490,30 +1491,30 @@ class SharedPresentation:
                
             except:
                 self.log.exception("Can not load presentation %s"%slidesUrl)
-                wxCallAfter(self.controller.ShowMessage,
+                wx.CallAfter(self.controller.ShowMessage,
                             "Can not load presentation %s." %slidesUrl,
                             "Notification")
                
             # Remove datastore prefix on local url in UI since master checks
             #  if file is in venue and sends full datastore url if it is.
             short_url = self.stripDatastorePrefix(slidesUrl)
-            wxCallAfter(self.controller.SetSlides, short_url)
+            wx.CallAfter(self.controller.SetSlides, short_url)
             #self.controller.SetSlides(slidesUrl)
         else:
             try:
                 self.viewer.LoadPresentation(slidesUrl)
             except:
                 self.log.exception("Can not load presentation %s"%slidesUrl)
-                wxCallAfter(self.controller.ShowMessage,
+                wx.CallAfter(self.controller.ShowMessage,
                             "Can not load presentation %s." %slidesUrl,
                             "Notification")
                
                 
-            wxCallAfter(self.controller.SetSlides, slidesUrl)
+            wx.CallAfter(self.controller.SetSlides, slidesUrl)
 
         self.slideNum = 1
         self.stepNum = 0
-        wxCallAfter(self.controller.SetSlideNum, self.slideNum)
+        wx.CallAfter(self.controller.SetSlideNum, self.slideNum)
 
         self.sharedAppClient.SetData(SharedPresKey.SLIDEURL, slidesUrl)
         self.sharedAppClient.SetData(SharedPresKey.SLIDENUM, self.slideNum)
@@ -1534,14 +1535,14 @@ class SharedPresentation:
 
         # Retrieve the current presentation
         self.presentation = self.sharedAppClient.GetData(SharedPresKey.SLIDEURL)
-        errorFlag = false
+        errorFlag = False
         # Check i presentation still exists.
 
         # Set the slide URL in the UI
         if self.presentation and len(self.presentation) != 0:
             self.presentation.replace("%20", " ")
             self.log.debug("Got presentation: %s"%self.presentation)
-            wxCallAfter( self.controller.SetSlides, self.presentation)
+            wx.CallAfter( self.controller.SetSlides, self.presentation)
                                 
             # Retrieve the current slide
             self.slideNum = int(self.sharedAppClient.GetData(SharedPresKey.SLIDENUM))
@@ -1599,7 +1600,7 @@ class SharedPresentation:
 
             else:
                 self.log.error("SharedPresentation.LocalLoadVenue: Can not load presentation %s"%(self.presentation))
-                wxCallAfter(self.controller.ShowMessage,
+                wx.CallAfter(self.controller.ShowMessage,
                             "Can not load presentation %s." %self.presentation, "Notification")
                 self.slideNum = ''
                 
@@ -1608,10 +1609,10 @@ class SharedPresentation:
             self.slideNum = 1
         else:
             self.log.debug("Got slide num: %d"%self.slideNum)
-            wxCallAfter(self.controller.SetSlideNum, '%s' % self.slideNum)
+            wx.CallAfter(self.controller.SetSlideNum, '%s' % self.slideNum)
 
         # Set the master in the UI
-        wxCallAfter(self.controller.SetMaster, false)
+        wx.CallAfter(self.controller.SetMaster, False)
 
     def LocalUpload(self, filenames):
         dsc = GetVenueDataStore(self.venueUrl, self.connectionId)
@@ -1685,7 +1686,7 @@ if __name__ == "__main__":
        
     app.Initialize(name,args=init_args)
     
-    wxInitAllImageHandlers()
+    wx.InitAllImageHandlers()
 
     # Here we parse command line options
 
