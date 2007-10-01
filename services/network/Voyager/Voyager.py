@@ -4,8 +4,8 @@
 # 
 # Author:      Susanne Lefvert 
 # 
-# Created:     $Date: 2005-01-13 23:04:24 $ 
-# RCS-ID:      $Id: Voyager.py,v 1.6 2005-01-13 23:04:24 lefvert Exp $ 
+# Created:     $Date: 2007-10-01 16:53:27 $ 
+# RCS-ID:      $Id: Voyager.py,v 1.7 2007-10-01 16:53:27 turam Exp $ 
 # Copyright:   (c) 2002 
 # Licence:     See COPYING.TXT 
 #----------------------------------------------------------------------------- 
@@ -749,16 +749,16 @@ class VoyagerView(wxFrame, Observer):
         ''' 
         Set UI event callbacks 
         ''' 
-        EVT_BUTTON(self, self.playButton.GetId(), self.PlayCB) 
-        EVT_BUTTON(self, self.recordButton.GetId(), self.RecordCB) 
-        EVT_BUTTON(self, self.stopButton.GetId(), self.StopCB) 
-        EVT_RIGHT_DOWN(self.recordingList, self.OnRightClickCB) 
-        EVT_MENU(self, self.RECORDING_MENU_REMOVE, self.RemoveRecordingCB)
-        EVT_MENU(self, self.RECORDING_MENU_EXPORT, self.ExportRecordingCB)
-        EVT_MENU(self, self.RECORDING_MENU_EXPORT_ALL,
+        wx.EVT_BUTTON(self, self.playButton.GetId(), self.PlayCB) 
+        wx.EVT_BUTTON(self, self.recordButton.GetId(), self.RecordCB) 
+        wx.EVT_BUTTON(self, self.stopButton.GetId(), self.StopCB) 
+        wx.EVT_RIGHT_DOWN(self.recordingList, self.OnRightClickCB) 
+        wx.EVT_MENU(self, self.RECORDING_MENU_REMOVE, self.RemoveRecordingCB)
+        wx.EVT_MENU(self, self.RECORDING_MENU_EXPORT, self.ExportRecordingCB)
+        wx.EVT_MENU(self, self.RECORDING_MENU_EXPORT_ALL,
                  self.ExportRecordingAllCB)
-        EVT_MENU(self, self.RECORDING_MENU_IMPORT, self.ImportRecordingCB)
-        EVT_MENU(self, self.RECORDING_MENU_PROPERTIES, self.PropertiesCB)
+        wx.EVT_MENU(self, self.RECORDING_MENU_IMPORT, self.ImportRecordingCB)
+        wx.EVT_MENU(self, self.RECORDING_MENU_PROPERTIES, self.PropertiesCB)
 
     def ShowMessage(self, parent, text, title, style):
         '''

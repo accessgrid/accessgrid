@@ -4,8 +4,8 @@
 # 
 # Author:      Susanne Lefvert 
 # 
-# Created:     $Date: 2005-07-08 21:22:13 $ 
-# RCS-ID:      $Id: VenueRecorder.py,v 1.11 2005-07-08 21:22:13 lefvert Exp $ 
+# Created:     $Date: 2007-10-01 16:53:27 $ 
+# RCS-ID:      $Id: VenueRecorder.py,v 1.12 2007-10-01 16:53:27 turam Exp $ 
 # Copyright:   (c) 2002 
 # Licence:     See COPYING.TXT 
 #----------------------------------------------------------------------------- 
@@ -1049,19 +1049,19 @@ class VenueRecorderView(wxFrame, Observer):
         ''' 
         Set UI event callbacks 
         ''' 
-        EVT_BUTTON(self, self.playButton.GetId(), self.PlayCB) 
-        EVT_BUTTON(self, self.recordButton.GetId(), self.RecordCB) 
-        EVT_BUTTON(self, self.stopButton.GetId(), self.StopCB) 
-        EVT_RIGHT_DOWN(self.recordingList, self.OnRightClickCB)
-        EVT_LIST_ITEM_SELECTED(self, self.recordingList.GetId(), self.OnRecordingSelectedCB)
-        EVT_MENU(self, self.RECORDING_MENU_REMOVE, self.RemoveRecordingCB)
-        EVT_MENU(self, self.RECORDING_MENU_EXPORT, self.ExportRecordingCB)
-        EVT_MENU(self, self.RECORDING_MENU_EXPORT_ALL,
+        wx.EVT_BUTTON(self, self.playButton.GetId(), self.PlayCB) 
+        wx.EVT_BUTTON(self, self.recordButton.GetId(), self.RecordCB) 
+        wx.EVT_BUTTON(self, self.stopButton.GetId(), self.StopCB) 
+        wx.EVT_RIGHT_DOWN(self.recordingList, self.OnRightClickCB)
+        wx.EVT_LIST_ITEM_SELECTED(self, self.recordingList.GetId(), self.OnRecordingSelectedCB)
+        wx.EVT_MENU(self, self.RECORDING_MENU_REMOVE, self.RemoveRecordingCB)
+        wx.EVT_MENU(self, self.RECORDING_MENU_EXPORT, self.ExportRecordingCB)
+        wx.EVT_MENU(self, self.RECORDING_MENU_EXPORT_ALL,
                  self.ExportRecordingAllCB)
-        EVT_MENU(self, self.RECORDING_MENU_IMPORT, self.ImportRecordingCB)
-        EVT_MENU(self, self.RECORDING_MENU_PROPERTIES, self.PropertiesCB)
+        wx.EVT_MENU(self, self.RECORDING_MENU_IMPORT, self.ImportRecordingCB)
+        wx.EVT_MENU(self, self.RECORDING_MENU_PROPERTIES, self.PropertiesCB)
 
-        EVT_MENU(self, self.MENU_PREFERENCES, self.PreferencesCB)
+        wx.EVT_MENU(self, self.MENU_PREFERENCES, self.PreferencesCB)
  
     def ShowMessage(self, parent, text, title, style):
         '''
@@ -1921,10 +1921,10 @@ class PreferencesDialog(wxDialog):
 
         self.__Layout()
 
-        EVT_RADIOBUTTON(self, self.playInVenueButton.GetId(), self.PlayVenueCB)
-        EVT_RADIOBUTTON(self, self.playInMulticastButton.GetId(), self.PlayMulticastCB)
-        EVT_RADIOBUTTON(self, self.recordInVenueButton.GetId(), self.RecordVenueCB)
-        EVT_RADIOBUTTON(self, self.recordInMulticastButton.GetId(), self.RecordMulticastCB)
+        wx.EVT_RADIOBUTTON(self, self.playInVenueButton.GetId(), self.PlayVenueCB)
+        wx.EVT_RADIOBUTTON(self, self.playInMulticastButton.GetId(), self.PlayMulticastCB)
+        wx.EVT_RADIOBUTTON(self, self.recordInVenueButton.GetId(), self.RecordVenueCB)
+        wx.EVT_RADIOBUTTON(self, self.recordInMulticastButton.GetId(), self.RecordMulticastCB)
 
         if self.model.GetPlaybackMode() == VenueRecorderModel.MODE_VENUE:
             self.EnablePlayVenue(0)

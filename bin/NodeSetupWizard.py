@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.58 2007-09-19 16:45:32 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.59 2007-10-01 16:51:31 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -85,8 +85,8 @@ class TitledPage(wx.wizard.PyWizardPage):
         title = wx.StaticText(self, -1, self.title, style = wx.ALIGN_CENTER)
         title.SetLabel(self.title)
         title.SetFont(wx.Font(wx.NORMAL_FONT.GetPointSize(), wx.NORMAL, wx.NORMAL, wx.BOLD))
-        self.sizer.AddWindow(title, 0, wx.ALL|wx.EXPAND, 5)
-        self.sizer.AddWindow(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
+        self.sizer.Add(title, 0, wx.ALL|wx.EXPAND, 5)
+        self.sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
         self.sizer.Add((10, 10))
                
     def SetNext(self, next):
@@ -163,7 +163,7 @@ class NodeSetupWizard(wx.wizard.Wizard):
         self.page6 = ConfigWindow(self, self.nodeClient, "Your Node Setup")
         self.FitToPage(self.page1)
                
-        wx.EVT_WIZARD_PAGE_CHANGING(self, 10, self.ChangingPage) 
+        wx.wizard.EVT_WIZARD_PAGE_CHANGING(self, 10, self.ChangingPage) 
         
         # Set the initial order of the pages
         self.page1.SetNext(self.page2)
@@ -197,8 +197,6 @@ class NodeSetupWizard(wx.wizard.Wizard):
         direction = event.GetDirection()
         page = event.GetPage()
         forward = 1
-        
-        print ' 222 = ', self.page2.machineCtrl.GetValue()
         
         # Show users configuration in last page
         if isinstance(page.GetNext(), ConfigWindow):
@@ -236,7 +234,7 @@ class WelcomeWindow(TitledPage):
         self.Layout()
 
     def GetValidity(self):
-        return true
+        return True
           
     def Layout(self):
         ''' Handles UI layout '''
@@ -315,7 +313,7 @@ class VideoCaptureWindow(TitledPage):
         '''
         # User decides to not have a video capture machine
         if self.checkBox.GetValue():
-            return true
+            return True
 
         # A uri built with empty host will point at local host, to
         # avoid misunderstandings the user have to give a machine name.
@@ -331,7 +329,7 @@ class VideoCaptureWindow(TitledPage):
             hostname = HostnameFromServiceName(self.machineCtrl.GetValue())
             self.nodeClient.CheckServiceManager(hostname,
                                                 self.portCtrl.GetValue())
-            self.canConnect = true
+            self.canConnect = True
         except:
             log.exception("VideoCaptureWindow.Validate: Check service manager failed")
             self.canConnect = False
@@ -350,7 +348,7 @@ class VideoCaptureWindow(TitledPage):
                 self.GetNext().SetCaptureCards(cards)
 
             wx.EndBusyCursor()
-            return true
+            return True
         
         else:
             MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
@@ -375,10 +373,10 @@ class VideoCaptureWindow(TitledPage):
                                        
         else:
             # Not checked
-            self.machineText.Enable(true)
-            self.portText.Enable(true)
-            self.machineCtrl.Enable(true)
-            self.portCtrl.Enable(true)
+            self.machineText.Enable(True)
+            self.portText.Enable(True)
+            self.machineCtrl.Enable(True)
+            self.portCtrl.Enable(True)
 
             # Next page shows cameras
             self.next = self.parent.page3
@@ -479,7 +477,7 @@ class VideoCaptureWindow2(TitledPage):
         self.Layout()
 
     def GetValidity(self):
-        return true
+        return True
     
     def __layout(self):
         '''
@@ -560,7 +558,7 @@ class VideoDisplayWindow(TitledPage):
         the specified machine and port. 
         '''
         if self.checkBox.GetValue():
-            return true
+            return True
 
         # A uri built with empty host will point at local host, to
         # avoid misunderstandings the user have to give a machine name.
@@ -574,7 +572,7 @@ class VideoDisplayWindow(TitledPage):
         try:
             hostname = HostnameFromServiceName(self.machineCtrl.GetValue())
             self.nodeClient.CheckServiceManager(self.machineCtrl.GetValue(), self.portCtrl.GetValue())
-            self.canConnect = true
+            self.canConnect = True
             
         except:
             log.exception("VideoDisplayWindow.Validate: Service manager is not started")
@@ -583,7 +581,7 @@ class VideoDisplayWindow(TitledPage):
         wx.EndBusyCursor()
         
         if self.canConnect:
-            return true
+            return True
             
         else:
             MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
@@ -603,10 +601,10 @@ class VideoDisplayWindow(TitledPage):
          
         else:
             # Not checked
-            self.machineText.Enable(true)
-            self.portText.Enable(true)
-            self.machineCtrl.Enable(true)
-            self.portCtrl.Enable(true)
+            self.machineText.Enable(True)
+            self.portText.Enable(True)
+            self.machineCtrl.Enable(True)
+            self.portCtrl.Enable(True)
                                
     def Layout(self):
         '''
@@ -684,7 +682,7 @@ class AudioWindow(TitledPage):
         the specified machine and port. 
         '''
         if self.checkBox.GetValue():
-            return true
+            return True
 
         # A uri built with empty host will point at local host, to
         # avoid misunderstandings the user have to give a machine name.
@@ -698,7 +696,7 @@ class AudioWindow(TitledPage):
             hostname = HostnameFromServiceName(self.machineCtrl.GetValue())
             port = self.portCtrl.GetValue()
             self.nodeClient.CheckServiceManager(self.machineCtrl.GetValue(), port)
-            self.canConnect = true
+            self.canConnect = True
         except:
             log.exception("AudioWindow.Validate: Service manager is not started")
             self.canConnect = False
@@ -706,7 +704,7 @@ class AudioWindow(TitledPage):
         wx.EndBusyCursor()
   
         if self.canConnect:
-            return true
+            return True
         else:
             MessageDialog(self, "Could not connect. Is a service manager running\nat %s:%s?" % (hostname,port),  
                           style = wx.ICON_ERROR|wx.OK)
@@ -725,10 +723,10 @@ class AudioWindow(TitledPage):
             
         else:
             # Not checked
-            self.machineText.Enable(true)
-            self.portText.Enable(true)
-            self.machineCtrl.Enable(true)
-            self.portCtrl.Enable(true)
+            self.machineText.Enable(True)
+            self.portText.Enable(True)
+            self.machineCtrl.Enable(True)
+            self.portCtrl.Enable(True)
                                         
     def Layout(self):
         '''
@@ -775,7 +773,7 @@ class ConfigWindow(TitledPage):
         self.CHECK_ID = wx.NewId()
         self.checkBox = wx.CheckBox(self, self.CHECK_ID, 
                             "Always use this node setup for Access Grid meetings (default configuration)")
-        self.checkBox.SetValue(true)
+        self.checkBox.SetValue(True)
         self.Layout()
 
     def SetAudio(self, host, port, flag):
@@ -904,7 +902,7 @@ class ConfigWindow(TitledPage):
                           style = wx.ICON_INFORMATION|wx.OK)
      
         wx.EndBusyCursor()
-        return true
+        return True
                        
     def Layout(self):
         '''

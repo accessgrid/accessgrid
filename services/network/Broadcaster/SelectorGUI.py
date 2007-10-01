@@ -24,8 +24,8 @@ class SelectorGUI(wxFrame):
         self.__Layout()
         self.Show()
                
-        EVT_BUTTON(self, self.closeButton.GetId(), self.OnClose) 
-        EVT_BUTTON(self, self.refreshButton.GetId(), self.OnRefresh) 
+        wx.EVT_BUTTON(self, self.closeButton.GetId(), self.OnClose) 
+        wx.EVT_BUTTON(self, self.refreshButton.GetId(), self.OnRefresh) 
 
     def OnClose(self, event):
         self.Destroy()
@@ -68,7 +68,7 @@ class SelectorGUI(wxFrame):
             sourceOption = wxCheckBox(self.scrolledWindow, wxNewId(),
                                       str(self.sourceDict[ssrc]))
             self.gridSizer.Add(sourceOption, 0, wxEXPAND|wxALL, 5)
-            EVT_CHECKBOX(self, sourceOption.GetId(), self.OnCheck)
+            wx.EVT_CHECKBOX(self, sourceOption.GetId(), self.OnCheck)
             self.widgets[sourceOption] = ssrc
                 
         self.gridSizer.AddGrowableCol(1)

@@ -46,7 +46,7 @@ class LauncherFrame(wx.Frame):
         else:
             self.mainButton=wx.ToggleButton(self,self.BUTTON_MAIN_ID,"Main");
             wx.EVT_TOGGLEBUTTON(self,self.BUTTON_MAIN_ID,self.OnToggle);
-        self.mainButton.SetValue(true);
+        self.mainButton.SetValue(True);
 
         if IsOSX():
             self.docButton=wx.RadioButton(self,self.BUTTON_DOCS_ID,"Documentation");
@@ -208,15 +208,15 @@ class LauncherFrame(wx.Frame):
         self.debugButton.SetValue(False);
        
         if evt.GetId() == self.BUTTON_DOCS_ID:
-            self.docButton.SetValue(true);
+            self.docButton.SetValue(True);
         elif evt.GetId() == self.BUTTON_CONFIG_ID:
-            self.confButton.SetValue(true);
+            self.confButton.SetValue(True);
         elif evt.GetId() == self.BUTTON_SERVICE_ID:
-            self.servButton.SetValue(true);
+            self.servButton.SetValue(True);
         elif evt.GetId() == self.BUTTON_DEBUG_ID:
-            self.debugButton.SetValue(true);
+            self.debugButton.SetValue(True);
         else:
-            self.mainButton.SetValue(true);
+            self.mainButton.SetValue(True);
         self.__doLayout();
     
     def OnButton(self,evt):
@@ -336,7 +336,7 @@ class LauncherFrame(wx.Frame):
         submenuButtonSizer.Add(wx.Size(0,0),1);
         if len(buttonSet):
             for button in buttonSet:
-                button.Show(true);
+                button.Show(True);
                 submenuButtonSizer.Add(button,0,wx.EXPAND);
                 submenuButtonSizer.Add(wx.Size(0,0),1);
         
