@@ -9,9 +9,9 @@ import getopt
 from AccessGrid import Platform
 
 try:
-    from twisted.internet import threadedselectreactor
-except:
     from twisted.internet import _threadedselect as threadedselectreactor
+except:
+    from twisted.internet import threadedselectreactor
 
 threadedselectreactor.install()
 
@@ -277,7 +277,7 @@ class WebBrowser(wx.Panel):
     def OnRefresh(self, event):
         self.LocalEvent()
         if sys.platform == Platform.WIN:
-            self.wxbrowser.Refresh(iewin.REFRESH_COMPLETELY)
+            self.wxbrowser.RefreshPage(iewin.REFRESH_COMPLETELY)
         else:
             self.wxbrowser.Reload()
 
@@ -291,7 +291,7 @@ class WebBrowser(wx.Panel):
             if sys.platform == Platform.WIN:
                 self.wxbrowser.Navigate(url)
             else:
-                wx.CallAfter(self.wxbrowser.LoadURL, url)
+                wx.CallAfter(self.wxbrowser.LoadUrl, url)
 
     def OnLocationSelect(self, event):
         self.LocalEvent()
@@ -299,20 +299,20 @@ class WebBrowser(wx.Panel):
         if sys.platform == Platform.WIN:
             self.wxbrowser.Navigate(url)
         else:
-            self.wxbrowser.LoadURL(url)
+            self.wxbrowser.LoadUrl(url)
 
     def OnLocationKey(self, event):
-        if event.GetKeyCode() == WXK_RETURN:
+        if event.GetKeyCode() == wx.WXK_RETURN:
             self.LocalEvent()
             URL = self.location.GetValue()
             if self.current and self.location.FindString(self.current) == wx.NOT_FOUND:
                 self.location.Append(self.current)
-            self.wxbrowser.LoadURL(URL)
+            self.wxbrowser.LoadUrl(URL)
         else:
             event.Skip()
 
     def IgnoreReturn(self, event):
-        if event.GetKeyCode() != WXK_RETURN:
+        if event.GetKeyCode() != wx.WXK_RETURN:
             event.Skip()
 
 
