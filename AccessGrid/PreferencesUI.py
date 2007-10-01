@@ -35,7 +35,7 @@ class PreferencesDialog(wx.Dialog):
                                        wx.DefaultPosition,
                                        wx.Size(150, -1))
 
-        self.sideWindow.SetSashVisible(wx.SASH_RIGHT, TRUE)
+        self.sideWindow.SetSashVisible(wx.SASH_RIGHT, True)
         
         self.preferencesWindow = wx.SashWindow(self, self.ID_WINDOW_RIGHT,
                                               wx.DefaultPosition,
@@ -326,11 +326,11 @@ class NodePanel(wx.Panel):
         nodeUrl = preferences.GetPreference(Preferences.NODE_URL)
         self.nodeUrlCtrl.SetValue(nodeUrl)
         if  nodeBuiltin:
-            self.nodeBuiltInCheckbox.SetValue(true)
+            self.nodeBuiltInCheckbox.SetValue(True)
             self.nodeUrlCtrl.SetEditable(False)
         else:
-            self.nodeExternalCheckbox.SetValue(true)
-            self.nodeUrlCtrl.SetEditable(true)
+            self.nodeExternalCheckbox.SetValue(True)
+            self.nodeUrlCtrl.SetEditable(True)
             
         self.audioButton.SetValue(int(preferences.GetPreference(Preferences.ENABLE_AUDIO)))
         self.displayButton.SetValue(int(preferences.GetPreference(Preferences.ENABLE_DISPLAY)))
@@ -511,12 +511,12 @@ class ProfilePanel(wx.Panel):
             #self.profileTypeBox.SetEditable(False)
             self.dnTextCtrl.SetEditable(False)
         else:
-            self.nameCtrl.SetEditable(true)
-            self.emailCtrl.SetEditable(true)
-            self.phoneNumberCtrl.SetEditable(true)
-            self.locationCtrl.SetEditable(true)
-            self.homeVenueCtrl.SetEditable(true)
-            #self.profileTypeBox.SetEditable(true)
+            self.nameCtrl.SetEditable(True)
+            self.emailCtrl.SetEditable(True)
+            self.phoneNumberCtrl.SetEditable(True)
+            self.locationCtrl.SetEditable(True)
+            self.homeVenueCtrl.SetEditable(True)
+            #self.profileTypeBox.SetEditable(True)
         log.debug("VenueClientUI.py: Set editable in successfully dialog")
            
     def __Layout(self):
@@ -582,7 +582,7 @@ class ProfilePanel(wx.Panel):
         else:
             self.profileTypeBox.SetSelection(1)
        
-        self.__SetEditable(true)
+        self.__SetEditable(True)
         log.debug("ProfileDialog.SetProfile: Set profile information successfully in dialog")
 
 class LoggingPanel(wx.Panel):
@@ -598,7 +598,7 @@ class LoggingPanel(wx.Panel):
         self.scWindow = wx.ScrolledWindow(self, -1, size = wx.Size(10,50),
                                          style = wx.SUNKEN_BORDER)
         self.scWindow.SetBackgroundColour("WHITE")
-        self.scWindow.EnableScrolling(true, true)
+        self.scWindow.EnableScrolling(True, True)
         self.scWindow.SetScrollbars(20, 20, 10, 10)
 
         self.logWidgets = {}
@@ -702,13 +702,13 @@ class TextValidator(wx.PyValidator):
                 
             MessageDialog(NULL, "Please, fill in the %s field" %(self.fieldName,))
             return False
-        return true
+        return True
 
     def TransferToWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 
     def TransferFromWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
         
 class VenueConnectionPanel(wx.Panel):
     def __init__(self, parent, id, preferences):
@@ -849,7 +849,7 @@ class EditBridgeRegistryPanel(wx.Dialog):
                 self.editableRegistryCtrl.SetInsertionPoint(
                       self.editableRegistryCtrl.XYToPosition(
                       self.editableRegistryCtrl.GetLineLength(lineNo), lineNo))
-                self.foundNone = true
+                self.foundNone = True
                 break
         if not self.foundNone:
             self.editableRegistryCtrl.SetInsertionPoint(
@@ -899,7 +899,7 @@ class EditBridgeRegistryPanel(wx.Dialog):
         k = event.GetKeyCode()
         maxEditableEntries = self.maxRegistries - self.permanentRegistries
 
-        if k == WXK_BACK:
+        if k == wx.WXK_BACK:
             # Don't process if insertion point is at beginning of entry
             # (and would result in reducing number of entries)
             position = self.editableRegistryCtrl.GetInsertionPoint()
@@ -916,7 +916,7 @@ class EditBridgeRegistryPanel(wx.Dialog):
                     pass
                 else:
                     event.Skip()
-        elif k == WXK_RETURN:
+        elif k == wx.WXK_RETURN:
             # Don't process if we'd be adding and extra entry beyond the max
             # (maybe the test itself isn't needed if we've otherwise caught
             #  all possibilites of deleting any entries)
@@ -924,7 +924,7 @@ class EditBridgeRegistryPanel(wx.Dialog):
                 pass
             else:
                 event.Skip()
-        elif k == WXK_DELETE:
+        elif k == wx.WXK_DELETE:
             # Don't process if we're at the end of any entry
             position = self.editableRegistryCtrl.GetInsertionPoint()
             (x,y) = self.editableRegistryCtrl.PositionToXY(position)
@@ -1380,7 +1380,7 @@ class BridgingPanel(wx.Panel):
             return
 
         # This _should_ be redundant, since no Edit button should
-        # be available when the condition is true.
+        # be available when the condition is True.
         if self.permanentRegistries >= self.maxRegistries:
             MessageDialog(NULL, "There are no editable entries")
             return
