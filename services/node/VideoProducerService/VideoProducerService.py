@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.25 2007-09-12 07:01:56 douglask Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.26 2007-10-01 17:28:56 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -77,6 +77,10 @@ class VideoProducerService( AGService ):
             self.executable = vic
 
         self.sysConf = SystemConfig.instance()
+
+        self.startPriority = '5'
+        self.startPriorityOption.value = self.startPriority
+
 
         # Set configuration parameters
 
