@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.29 2007-09-12 07:01:56 douglask Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.30 2007-10-01 17:14:20 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -98,6 +98,9 @@ class VideoService( AGService ):
         self.sysConf = SystemConfig.instance()
 
         self.profile = None
+        
+        self.startPriority = '7'
+        self.startPriorityOption.value = self.startPriority
 
         # Set configuration parameters
         # note: the datatype of the port parameter changes when a resource is set!
@@ -347,6 +350,9 @@ class VideoService( AGService ):
                 options.append("-X")
                 options.append("site=%s" % self.profile.publicId)
                 
+            # Set number of columns to use for thumbnail display
+            options.append("-Xtile=%s" % self.tiles.value)
+
             # Check whether the network location has a "type" attribute
             # Note: this condition is only to maintain compatibility between
             # older venue servers creating network locations without this attribute
