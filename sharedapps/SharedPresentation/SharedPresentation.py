@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.53 2007-10-01 17:25:27 turam Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.54 2007-10-01 23:00:22 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,9 +24,9 @@ from AccessGrid import Platform
 from AccessGrid import Log
 
 try:
-    from twisted.internet import threadedselectreactor
-except:
     from twisted.internet import _threadedselect as threadedselectreactor
+except:
+    from twisted.internet import threadedselectreactor
 
 threadedselectreactor.install()
 
@@ -643,11 +643,11 @@ class UIController(wx.App):
         wx.App.__init__(self,arg)
 
     def OnInit(self):
-        self.frame = SharedPresentationFrame(NULL, -1, "Shared Presentation Controller", log=self.log)
+        self.frame = SharedPresentationFrame(None, -1, "Shared Presentation Controller", log=self.log)
         self.frame.Fit()
-        self.frame.Show(true)
+        self.frame.Show(True)
         self.SetTopWindow(self.frame)
-        return true
+        return True
 
     def Start(self):
         """
@@ -1290,7 +1290,7 @@ class SharedPresentation:
 
         # Update the controller accordingly
         if self.masterId == self.sharedAppClient.GetPublicId():
-            wx.CallAfter(self.controller.SetMaster, true)
+            wx.CallAfter(self.controller.SetMaster, True)
         else:
             wx.CallAfter(self.controller.SetMaster, False)
 
@@ -1523,7 +1523,7 @@ class SharedPresentation:
         # Send event
         self.sharedAppClient.SendEvent(SharedPresEvent.LOAD, slidesUrl)
                                     
-        self.SendMaster(true)
+        self.SendMaster(True)
 
 
     def LocalLoadVenue(self, data=None):
