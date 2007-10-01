@@ -2,7 +2,7 @@
 # Name:        CertificateRepository.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.31 2007-05-04 20:35:16 eolson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.32 2007-10-01 16:49:40 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,7 +25,7 @@ The on-disk repository looks like this:
 
 from __future__ import generators
 
-__revision__ = "$Id: CertificateRepository.py,v 1.31 2007-05-04 20:35:16 eolson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.32 2007-10-01 16:49:40 turam Exp $"
 
 import re
 import sys
@@ -49,6 +49,7 @@ import cStringIO
 from AccessGrid import Log
 from AccessGrid import Utilities
 from AccessGrid.Security import ProxyGen
+from AccessGrid.Security.Utilities import IsExpired
 
 log = Log.GetLogger(Log.CertificateRepository)
 
@@ -1519,22 +1520,7 @@ class Certificate:
         return self.modulusHash
 
     def IsExpired(self):
-    
-        isExpired = 0
-        now = time.time()
-        before_time = self.cert.get_not_before()
-        after_time = self.cert.get_not_after()
-        format = '%b %d %H:%M:%S %Y %Z'
-        before_tuple = time.strptime(str(before_time),format)
-        after_tuple = time.strptime(str(after_time), format)
-        before = time.mktime(before_tuple) - time.timezone
-        after = time.mktime(after_tuple) - time.timezone
-        if now < before:
-            isExpired = -1
-        if now > after:
-            isExpired = 1
-            
-        return isExpired
+        return IsExpired(self.cert)
 
     def IsServiceCert(self):
         """

@@ -2,7 +2,7 @@
 # Name:        ProxyGen.py
 # Purpose:     Proxy Generation utitities.
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.26 2007-04-04 22:24:58 turam Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.27 2007-10-01 16:49:40 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 Proxy certificate generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.26 2007-04-04 22:24:58 turam Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.27 2007-10-01 16:49:40 turam Exp $"
 
 import sys
 import os
@@ -21,6 +21,7 @@ import re
 import time
 
 from AccessGrid import Log
+from AccessGrid.Security.Utilities import IsExpired
 
 from M2Crypto import X509
 from M2Crypto.RSA import RSAError
@@ -256,9 +257,9 @@ def IsValidProxy(certfile):
         return 0
         
     # check if it has expired (or is not yet valid, which is another possibility)
-    if c.is_expired():
+    if IsExpired(c):
         return 0
-    
+
     # appears to be ok
     return 1
 

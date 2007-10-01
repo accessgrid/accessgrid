@@ -2,7 +2,7 @@
 # Name:        Utilities.py
 # Purpose:     helper code
 # Created:     2003/08/02
-# RCS-ID:      $Id: Utilities.py,v 1.8 2006-10-12 18:52:55 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.9 2007-10-01 16:49:40 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -11,7 +11,10 @@
 utility classes and functions.
 """
 
-__revision__ = "$Id: Utilities.py,v 1.8 2006-10-12 18:52:55 turam Exp $"
+import time
+
+
+__revision__ = "$Id: Utilities.py,v 1.9 2007-10-01 16:49:40 turam Exp $"
 
 def GetCNFromX509Subject(subject):
     """
@@ -23,3 +26,17 @@ def GetCNFromX509Subject(subject):
     
     cn = []
     return subject.CN
+
+def IsExpired(x509):
+    isExpired = 0
+    now = time.time()
+    before_time = x509.get_not_before()
+    after_time = x509.get_not_after()
+    format = '%b %d %H:%M:%S %Y %Z'
+    before_tuple = time.strptime(str(before_time),format)
+    after_tuple = time.strptime(str(after_time), format)
+    before = time.mktime(before_tuple) - time.timezone
+    after = time.mktime(after_tuple) - time.timezone
+    if now < before or now > after:
+        return 0
+
