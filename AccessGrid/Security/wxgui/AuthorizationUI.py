@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.41 2007-09-19 16:51:22 turam Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.42 2007-10-01 20:04:47 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.41 2007-09-19 16:51:22 turam Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.42 2007-10-01 20:04:47 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -119,11 +119,9 @@ class AuthorizationUIPanel(wx.Panel):
         
     def ConnectToAuthManager(self, authManagerIW):
         '''
-        Connects to an authorization manager running at url. After a successful connect,
+        Connects to the specified authorization manager. After a successful connect,
         roles and actions are displayed in the UI.
 
-        @param url: location of authorization manager SOAP service.
-        @type name: string.
         '''
         self.authClient = authManagerIW
 
@@ -135,14 +133,15 @@ class AuthorizationUIPanel(wx.Panel):
             if self.requireCertOption:
                 self.requireCert.SetValue(requireCertFlag)
         except Exception,e:
-            print 'exception', e
+            self.log.exception("Error calling IsIdentificationRequired; assume old server")
+            requireCertFlag = 0
 
         # Get roles
         try:
             for r in self.authClient.ListRoles():
                 self.allRoles.append(r)
         except:
-            self.log.exception("AuthorizationUIPanel.ConnectToAuthManager:Failed to list roles. %s"%(authUrl))
+            self.log.exception("AuthorizationUIPanel.ConnectToAuthManager:Failed to list roles.")
 
 
         # Add cached subjects.
@@ -172,7 +171,7 @@ class AuthorizationUIPanel(wx.Panel):
             self.actionList.InsertItems(actions, 0)
 
         except:
-            self.log.exception("AuthorizationUIPanel.ConnectToAuthManager: List actions failed. %s"%(authUrl))
+            self.log.exception("AuthorizationUIPanel.ConnectToAuthManager: List actions failed.")
             self.allActions = []
             #MessageDialog(None, "Failed to load actions", "Error")
 
@@ -751,7 +750,7 @@ class AuthorizationUIPanel(wx.Panel):
             try:
                 self.authClient.RequireIdentification(self.requireCert.GetValue())
             except Exception,e:
-                print 'exception',e
+                self.log.exception("Error calling RequireIdentification; assume old server")
 
         if not self.changed:
             # Ignore if user didn't change anything 
@@ -1364,7 +1363,7 @@ class AuthorizationUIDialog(wx.Dialog):
                
     def ConnectToAuthManager(self, authManagerIW):
         '''
-        Connect to authorization manager located at url.
+        Connect to specified authorization manager.
         '''
         self.panel.ConnectToAuthManager(authManagerIW)
 
