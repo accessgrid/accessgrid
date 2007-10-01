@@ -3,7 +3,7 @@
 # Name:        RegistryClient.py
 # Purpose:     This is the client side of the (bridge) Registry
 # Created:     2006/01/01
-# RCS-ID:      $Id: RegistryClient.py,v 1.35 2007-04-27 22:43:59 turam Exp $
+# RCS-ID:      $Id: RegistryClient.py,v 1.36 2007-10-01 20:15:52 turam Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -95,7 +95,7 @@ class RegistryClient:
                 else:
                     raise
         except socket.timeout:
-            self.log.info('Timeout pinging bridge: %s', host)
+            self.log.exception('Timeout pinging bridge: %s', host)
             return -1
         except socket.error,e:
             self.log.info('Socket error pinging bridge: %s %s', host, str(e.args))
