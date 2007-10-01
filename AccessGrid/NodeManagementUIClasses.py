@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.116 2007-10-01 18:10:20 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.117 2007-10-01 19:04:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.116 2007-10-01 18:10:20 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.117 2007-10-01 19:04:27 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -546,7 +546,7 @@ class NodeManagementClientFrame(wx.Frame):
     def OnKeyDown(self,event):
         key = event.GetKeyCode()
       
-        if key == WXK_DELETE:
+        if key == wx.WXK_DELETE:
 
             dlg = wx.MessageDialog(self, "Delete selected items?" , "Confirm",
                                   style = wx.ICON_INFORMATION | wx.OK | wx.CANCEL)
@@ -555,7 +555,7 @@ class NodeManagementClientFrame(wx.Frame):
             if ret == wx.ID_OK:
                 self.RemoveSelectedItems()
             
-        elif key == WXK_F5:
+        elif key == wx.WXK_F5:
             self.UpdateUI()
         
     def Connected(self):
@@ -790,16 +790,16 @@ class NodeManagementClientFrame(wx.Frame):
             for serviceManager in self.serviceManagers:
                 name = urlparse.urlsplit(serviceManager.uri)[1]
                 sm = self.tree.AppendItem(root,name)
-                self.tree.SetItemImage(sm, self.smImage,which=wxTreeItemIcon_Normal)
-                self.tree.SetItemImage(sm, self.smImage, which=wxTreeItemIcon_Expanded)
-                self.tree.SetItemData(sm,wxTreeItemData(serviceManager))
+                self.tree.SetItemImage(sm, self.smImage,which=wx.TreeItemIcon_Normal)
+                self.tree.SetItemImage(sm, self.smImage, which=wx.TreeItemIcon_Expanded)
+                self.tree.SetItemData(sm,wx.TreeItemData(serviceManager))
                 services = AGServiceManagerIW( serviceManager.uri ).GetServices()
                         
                 if services: 
                     for service in services:
                         s = self.tree.AppendItem(sm,service.name)
-                        self.tree.SetItemImage(s, self.svcImage, which = wxTreeItemIcon_Normal)
-                        self.tree.SetItemData(s,wxTreeItemData(service))
+                        self.tree.SetItemImage(s, self.svcImage, which = wx.TreeItemIcon_Normal)
+                        self.tree.SetItemData(s,wx.TreeItemData(service))
                         resource = AGServiceIW(service.uri).GetResource()
                         if resource:
                             self.tree.SetItemText(s,resource.name,1)
@@ -960,7 +960,7 @@ class NodeManagementClientFrame(wx.Frame):
                 #
                 # Add the service
                 #
-                wxBeginBusyCursor()
+                wx.BeginBusyCursor()
                 serviceDescription = AGServiceManagerIW(serviceManager.uri).AddService( serviceToAdd,
                                                                                         None, [],
                                                                                         self.app.GetPreferences().GetProfile())
@@ -1148,7 +1148,7 @@ class NodeManagementClientFrame(wx.Frame):
 
         # Get configuration
         try:
-            wxBeginBusyCursor()
+            wx.BeginBusyCursor()
             config = AGServiceIW( service.uri ).GetConfiguration()
         except:
             wx.EndBusyCursor()

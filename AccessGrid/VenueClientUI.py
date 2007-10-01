@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.242 2007-10-01 18:27:56 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.243 2007-10-01 19:01:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.242 2007-10-01 18:27:56 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.243 2007-10-01 19:01:20 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -232,7 +232,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
             if c.name == prefNodeConfigName:
                 self.currentConfig = c
        
-        wx.Frame.__init__(self, NULL, -1, "")
+        wx.Frame.__init__(self, None, -1, "")
         self.__BuildUI(app)
         self.SetSize(wx.Size(400, 600))
         
@@ -399,7 +399,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         his or her information.
         """
         p = self.venueClient.GetPreferences()
-        profileDialog = ProfileDialog(NULL, -1, 'Fill in your profile', 1)
+        profileDialog = ProfileDialog(None, -1, 'Fill in your profile', 1)
         profileDialog.SetProfile(p.GetProfile())
         
         if (profileDialog.ShowModal() == wx.ID_OK):
@@ -1467,7 +1467,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         profile = None
         p = self.venueClient.GetPreferences()
         
-        profileDialog = ProfileDialog(NULL, -1,
+        profileDialog = ProfileDialog(None, -1,
                                   'Your profile information', 1)
         profileDialog.SetProfile(self.venueClient.GetPreferences().GetProfile())
         if (profileDialog.ShowModal() == wx.ID_OK):
@@ -1565,7 +1565,6 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         try:
             self.controller.EnableVideoCB(enabledFlag)
         except NoServices:
-            print 'exception NoServices'
             if enabledFlag:
                 d = AddVideoServiceDialog(self,-1,'Add Video Service')
                 ret = d.ShowModal()
@@ -1736,7 +1735,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
     def PreferencesCB(self, event = None):
         profile = None
         p = self.venueClient.GetPreferences()
-        preferencesDialog = PreferencesDialog(NULL, -1,
+        preferencesDialog = PreferencesDialog(None, -1,
                                               'Preferences', p)
         if (preferencesDialog.ShowModal() == wx.ID_OK):
             p = preferencesDialog.GetPreferences()
@@ -5566,11 +5565,11 @@ class TextValidator(wx.PyValidator):
         #for view
         if profile == None:
             if val ==  '<Insert Name Here>':
-                MessageDialog(NULL, "Fill in the %s field" % (self.fieldName,))
+                MessageDialog(None, "Fill in the %s field" % (self.fieldName,))
                 return False
             
             if val ==  '<Insert Email Address Here>':
-                MessageDialog(NULL, "Fill in the %s field" % (self.fieldName,))
+                MessageDialog(None, "Fill in the %s field" % (self.fieldName,))
                 return False
             
         #for real profile dialog
@@ -5583,7 +5582,7 @@ class TextValidator(wx.PyValidator):
             elif profile.email ==  '<Insert Email Address Here>':
                 self.fieldName = 'Email'
                                                    
-            MessageDialog(NULL, "Fill in the %s field" %(self.fieldName,))
+            MessageDialog(None, "Fill in the %s field" %(self.fieldName,))
             return False
         return True
 
