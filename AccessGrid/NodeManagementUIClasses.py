@@ -5,22 +5,21 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.115 2007-04-23 21:52:53 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.116 2007-10-01 18:10:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.115 2007-04-23 21:52:53 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.116 2007-10-01 18:10:20 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
 import re
 import socket
 
-from wxPython.wx import *
-from wxPython.lib.dialogs import wxMultipleChoiceDialog
-from wxPython.gizmos import wxTreeListCtrl
+import wx
+from wx.gizmos import TreeListCtrl
 
 # AG imports
 from AccessGrid import Log
@@ -81,39 +80,39 @@ class UnresolvableService(Exception):   pass
 
 
 
-class ServiceChoiceDialog(wxDialog):
-    def __init__(self, parent, id, title, choices, serviceType, text, size=wxSize(450,130) ):
+class ServiceChoiceDialog(wx.Dialog):
+    def __init__(self, parent, id, title, choices, serviceType, text, size=wx.Size(450,130) ):
     
     
-        wxDialog.__init__(self, parent, id, title, style =
-                          wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER,
+        wx.Dialog.__init__(self, parent, id, title, style =
+                          wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
                           size=size)
                           
         self.serviceType = serviceType
               
         # Set up sizers
-        sizer1 = wxBoxSizer(wxVERTICAL)
+        sizer1 = wx.BoxSizer(wx.VERTICAL)
        
-        self.text = wxStaticText(self,-1,text)
-        sizer1.Add( self.text,0,border=5,flag=wxALL)
+        self.text = wx.StaticText(self,-1,text)
+        sizer1.Add( self.text,0,border=5,flag=wx.ALL)
 
-        self.comboBoxCtrl = wxComboBox(self,-1, choices=choices)
-        sizer1.Add( self.comboBoxCtrl, 0, flag=wxALL|wxEXPAND,border=5)
+        self.comboBoxCtrl = wx.ComboBox(self,-1, choices=choices)
+        sizer1.Add( self.comboBoxCtrl, 0, flag=wx.ALL|wx.EXPAND,border=5)
         
         # Create ok/cancel buttons
-        sizer3 = wxBoxSizer(wxHORIZONTAL)
-        okButton = wxButton( self, wxID_OK, "OK")
-        cancelButton = wxButton( self, wxID_CANCEL, "Cancel" )
-        sizer3.Add(okButton, 0, wxALL, 10)
-        sizer3.Add(cancelButton, 0, wxALL, 10)
-        sizer1.Add(sizer3, 0, wxALIGN_CENTER)
+        sizer3 = wx.BoxSizer(wx.HORIZONTAL)
+        okButton = wx.Button( self, wx.ID_OK, "OK")
+        cancelButton = wx.Button( self, wx.ID_CANCEL, "Cancel" )
+        sizer3.Add(okButton, 0, wx.ALL, 10)
+        sizer3.Add(cancelButton, 0, wx.ALL, 10)
+        sizer1.Add(sizer3, 0, wx.ALIGN_CENTER)
         
         self.SetSizer( sizer1 )
         
-        x,y = wxGetMousePosition()
+        x,y = wx.GetMousePosition()
         w,h = self.GetSize()
         self.Move( (x-w/2,y-h/2) )
-        EVT_TEXT_ENTER(self, self.comboBoxCtrl.GetId(), self.OnOK)
+        wx.EVT_TEXT_ENTER(self, self.comboBoxCtrl.GetId(), self.OnOK)
 
         self.exists = threading.Event()
         self.exists.set()
@@ -126,15 +125,15 @@ class ServiceChoiceDialog(wxDialog):
         self.Fit()
 
     def OnOK(self,event):
-        self.EndModal(wxID_OK)
+        self.EndModal(wx.ID_OK)
         
 
     def BrowseCallback(self,op,serviceName,url=None):
         if self.exists.isSet() and op == ServiceDiscovery.Browser.ADD:
-            wxCallAfter(self.AddItem,serviceName,url)
+            wx.CallAfter(self.AddItem,serviceName,url)
         
     def AddItem(self,name,url):
-        if self.comboBoxCtrl.FindString(url) == wxNOT_FOUND:
+        if self.comboBoxCtrl.FindString(url) == wx.NOT_FOUND:
             self.comboBoxCtrl.Append(url)
             
             val = self.comboBoxCtrl.GetValue()
@@ -151,13 +150,13 @@ class ServiceChoiceDialog(wxDialog):
     def Destroy(self):
         self.exists.clear()
         self.browser.Stop()
-        wxDialog.Destroy(self)
+        wx.Dialog.Destroy(self)
 
 def BuildServiceManagerMenu( ):
     """
     Used in the pulldown and popup menus to display the service manager menu
     """
-    menu = wxMenu()
+    menu = wx.Menu()
     menu.Append(ID_HOST_ADD, "Add...", "Add a ServiceManager")
     menu.Append(ID_HOST_REMOVE, "Remove", "Remove a ServiceManager")
     return menu
@@ -166,7 +165,7 @@ def BuildServiceMenu( ):
     """
     Used in the pulldown and popup menus to display the service menu
     """
-    svcmenu = wxMenu()
+    svcmenu = wx.Menu()
     svcmenu.Append(ID_SERVICE_ADD_SERVICE, "Add...", "Add a Service")
     svcmenu.Append(ID_SERVICE_REMOVE, "Remove", "Remove the selected Service")
     svcmenu.AppendSeparator()
@@ -177,7 +176,7 @@ def BuildServiceMenu( ):
     return svcmenu
 
 
-class StoreConfigDialog(wxDialog):
+class StoreConfigDialog(wx.Dialog):
     """
     StoreConfigDialog displays the following:
         - a list of configurations
@@ -189,8 +188,8 @@ class StoreConfigDialog(wxDialog):
     """
     def __init__(self, parent, id, title, choices ):
 
-        wxDialog.__init__(self, parent, id, title, style =
-                          wxDEFAULT_DIALOG_STYLE)
+        wx.Dialog.__init__(self, parent, id, title, style =
+                          wx.DEFAULT_DIALOG_STYLE)
 
         # Create a display name - config map
         sysConfigs = []
@@ -210,42 +209,42 @@ class StoreConfigDialog(wxDialog):
         displayNames = sysConfigs + userConfigs
             
         # Set up sizers
-        gridSizer = wxFlexGridSizer(5, 1, 5, 5)
+        gridSizer = wx.FlexGridSizer(5, 1, 5, 5)
         gridSizer.AddGrowableCol(0)
-        sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxHORIZONTAL)
-        sizer2.Add(gridSizer, 1, wxALL, 10)
-        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
+        sizer1 = wx.BoxSizer(wx.VERTICAL)
+        sizer2 = wx.StaticBoxSizer(wx.StaticBox(self, -1, ""), wx.HORIZONTAL)
+        sizer2.Add(gridSizer, 1, wx.ALL, 10)
+        sizer1.Add(sizer2, 1, wx.ALL|wx.EXPAND, 10)
         self.SetSizer( sizer1 )
         self.SetAutoLayout(1)
 
         # Create config list label and listctrl
-        configLabel = wxStaticText(self,-1,"Configuration name")
-        self.configList = wxListBox(self,wxNewId(), style=wxLB_SINGLE, choices=displayNames)
+        configLabel = wx.StaticText(self,-1,"Configuration name")
+        self.configList = wx.ListBox(self,wx.NewId(), style=wx.LB_SINGLE, choices=displayNames)
         gridSizer.Add( configLabel, 1 )
-        gridSizer.Add( self.configList, 0, wxEXPAND )
-        EVT_LISTBOX(self, self.configList.GetId(), self.__ListItemSelectedCallback)
+        gridSizer.Add( self.configList, 0, wx.EXPAND )
+        wx.EVT_LISTBOX(self, self.configList.GetId(), self.__ListItemSelectedCallback)
 
         # Create config text label and field
-        self.configText = wxTextCtrl(self,-1,"")
-        gridSizer.Add( self.configText, 1, wxEXPAND )
-        EVT_TEXT(self,self.configText.GetId(), self.__TextEnteredCallback)
+        self.configText = wx.TextCtrl(self,-1,"")
+        gridSizer.Add( self.configText, 1, wx.EXPAND )
+        wx.EVT_TEXT(self,self.configText.GetId(), self.__TextEnteredCallback)
 
         # Create default checkbox
-        self.defaultCheckbox = wxCheckBox(self,-1,"Set as default")
-        gridSizer.Add( self.defaultCheckbox, 1, wxEXPAND )
+        self.defaultCheckbox = wx.CheckBox(self,-1,"Set as default")
+        gridSizer.Add( self.defaultCheckbox, 1, wx.EXPAND )
 
         # Create system checkbox
-        self.systemCheckbox = wxCheckBox(self,-1,"Save as system configuration")
-        gridSizer.Add( self.systemCheckbox, 1, wxEXPAND )
+        self.systemCheckbox = wx.CheckBox(self,-1,"Save as system configuration")
+        gridSizer.Add( self.systemCheckbox, 1, wx.EXPAND )
 
         # Create ok/cancel buttons
-        sizer3 = wxBoxSizer(wxHORIZONTAL)
-        self.okButton = wxButton( self, wxID_OK, "OK" )
-        cancelButton = wxButton( self, wxID_CANCEL, "Cancel" )
-        sizer3.Add(self.okButton, 0, wxALL, 10)
-        sizer3.Add(cancelButton, 0, wxALL, 10)
-        sizer1.Add(sizer3, 0, wxALIGN_CENTER)
+        sizer3 = wx.BoxSizer(wx.HORIZONTAL)
+        self.okButton = wx.Button( self, wx.ID_OK, "OK" )
+        cancelButton = wx.Button( self, wx.ID_CANCEL, "Cancel" )
+        sizer3.Add(self.okButton, 0, wx.ALL, 10)
+        sizer3.Add(cancelButton, 0, wx.ALL, 10)
+        sizer1.Add(sizer3, 0, wx.ALIGN_CENTER)
 
         # Ensure nothing is selected 
         items = self.configList.GetSelections()
@@ -253,7 +252,7 @@ class StoreConfigDialog(wxDialog):
             self.configList.Deselect(item)
 
         # Disable the ok button until something is selected
-        self.okButton.Enable(false)
+        self.okButton.Enable(False)
 
         sizer1.Fit(self)
 
@@ -275,15 +274,15 @@ class StoreConfigDialog(wxDialog):
             else:
                 self.systemCheckbox.SetValue(0)
 
-        self.okButton.Enable(true)
+        self.okButton.Enable(True)
 
     def __TextEnteredCallback(self,event):
 
         # Enable the ok button if text in text field
         if self.configText.GetValue():
-            self.okButton.Enable(true)
+            self.okButton.Enable(True)
         else:
-            self.okButton.Enable(false)
+            self.okButton.Enable(False)
 
     def GetValue(self):
         # Get value of textfield, default checkbox, and system checkbox
@@ -301,13 +300,13 @@ class StoreConfigDialog(wxDialog):
 
 
               
-class ServiceConfigurationPanel( wxPanel ):
+class ServiceConfigurationPanel( wx.Panel ):
     """
     A panel that displays service configuration parameters based on
     their type.
     """
-    def __init__( self, parent, ID, pos=wxDefaultPosition, size=(400,400), style=0 ):
-        wxPanel.__init__( self, parent, ID, pos, size, style )
+    def __init__( self, parent, ID, pos=wx.DefaultPosition, size=(400,400), style=0 ):
+        wx.Panel.__init__( self, parent, ID, pos, size, style )
         self.panel = self
         self.parent = parent
         self.callback = None
@@ -332,33 +331,33 @@ class ServiceConfigurationPanel( wxPanel ):
         self.guiComponents = []
 
         rows = len(self.config)
-        self.boxSizer = wxBoxSizer(wxHORIZONTAL)
-        self.panelSizer = wxFlexGridSizer( rows, 2, 5, 5 ) #rows, cols, hgap, vgap
+        self.boxSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.panelSizer = wx.FlexGridSizer( rows, 2, 5, 5 ) #rows, cols, hgap, vgap
         self.panelSizer.AddGrowableCol(1)
         
         #
         # Build resource entry
         #
         if self.resource:
-            pt = wxStaticText( self, -1, "Resource", style=wxALIGN_LEFT)
-            pComp = wxTextCtrl( self, -1, self.resource.name, size = wxSize(300, 20))
-            pComp.SetEditable( false )
+            pt = wx.StaticText( self, -1, "Resource", style=wx.ALIGN_LEFT)
+            pComp = wx.TextCtrl( self, -1, self.resource.name, size = wx.Size(300, 20))
+            pComp.SetEditable( False )
             self.panelSizer.Add( pt)
-            self.panelSizer.Add( pComp, 0, wxEXPAND )
+            self.panelSizer.Add( pComp, 0, wx.EXPAND )
 
         #
         # Build entries for config parms
         #
         for parameter in self.config:
-            pt = wxStaticText( self, -1, parameter.name, style=wxALIGN_LEFT )
-            self.panelSizer.Add(pt, -1, wxEXPAND)
+            pt = wx.StaticText( self, -1, parameter.name, style=wx.ALIGN_LEFT )
+            self.panelSizer.Add(pt, -1, wx.EXPAND)
             
             pComp = None
             if parameter.type == RangeParameter.TYPE:
-                pComp = wxSlider( self, -1, parameter.value, parameter.low, parameter.high, style = wxSL_LABELS )
+                pComp = wx.Slider( self, -1, parameter.value, parameter.low, parameter.high, style = wx.SL_LABELS )
                 
             elif parameter.type == OptionSetParameter.TYPE:
-                pComp = wxComboBox( self, -1, "", style=wxCB_READONLY )
+                pComp = wx.ComboBox( self, -1, "", style=wx.CB_READONLY )
                 for option in parameter.options:
                     pComp.Append( option )
                 pComp.SetValue( parameter.value )
@@ -367,22 +366,22 @@ class ServiceConfigurationPanel( wxPanel ):
                 val = parameter.value
                 if type(val) == int:
                     val = '%d' % (val)
-                pComp = wxTextCtrl( self.panel, -1, val )
+                pComp = wx.TextCtrl( self.panel, -1, val )
             
             self.guiComponents.append( pComp )
           
-            self.panelSizer.Add( pComp, 0, wxEXPAND )
+            self.panelSizer.Add( pComp, 0, wx.EXPAND )
 
-        self.boxSizer.Add(self.panelSizer, 1, wxALL | wxEXPAND, 10)
+        self.boxSizer.Add(self.panelSizer, 1, wx.ALL | wx.EXPAND, 10)
         self.panel.SetSizer( self.boxSizer )
-        self.panel.SetAutoLayout( true )
+        self.panel.SetAutoLayout( True )
 
     def GetConfiguration( self ):
 
         # build modified configuration from ui
         
         for i in range( 0, len(self.guiComponents) ):
-            if isinstance( self.guiComponents[i], wxRadioBox ):
+            if isinstance( self.guiComponents[i], wx.RadioBox ):
                 self.config[i].value = self.guiComponents[i].GetStringSelection()
             else:
                 self.config[i].value = self.guiComponents[i].GetValue()
@@ -395,54 +394,54 @@ class ServiceConfigurationPanel( wxPanel ):
     def Cancel(self, event):
         self.parent.Destroy()
 
-class ServiceConfigurationDialog(wxDialog):
+class ServiceConfigurationDialog(wx.Dialog):
     """
     """
     def __init__(self, parent, id, title, resource, serviceConfig ):
 
-        wxDialog.__init__(self, parent, id, title, 
-                          style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+        wx.Dialog.__init__(self, parent, id, title, 
+                          style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
 
         # Set up sizers
-        sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
-        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
+        sizer1 = wx.BoxSizer(wx.VERTICAL)
+        sizer2 = wx.StaticBoxSizer(wx.StaticBox(self, -1, ""), wx.VERTICAL)
+        sizer1.Add(sizer2, 1, wx.ALL|wx.EXPAND, 10)
         self.SetSizer( sizer1 )
         self.SetAutoLayout(1)
 
         self.serviceConfigPanel = ServiceConfigurationPanel( self, -1 )
         self.serviceConfigPanel.SetResource( resource )
         self.serviceConfigPanel.SetConfiguration( serviceConfig )
-        self.serviceConfigPanel.SetSize( wxSize(200,200) )
-        self.serviceConfigPanel.SetAutoLayout(true)
+        self.serviceConfigPanel.SetSize( wx.Size(200,200) )
+        self.serviceConfigPanel.SetAutoLayout(True)
         self.serviceConfigPanel.Layout()
         self.serviceConfigPanel.Fit()
-        sizer2.Add( self.serviceConfigPanel, 1, wxEXPAND )
+        sizer2.Add( self.serviceConfigPanel, 1, wx.EXPAND )
 
         # Create ok/cancel buttons
-        sizer3 = wxBoxSizer(wxHORIZONTAL)
-        okButton = wxButton( self, wxID_OK, "OK" )
-        cancelButton = wxButton( self, wxID_CANCEL, "Cancel" )
-        sizer3.Add(okButton, 0, wxALL, 10)
-        sizer3.Add(cancelButton, 0, wxALL, 10)
-        sizer1.Add(sizer3, 0, wxALIGN_CENTER)
+        sizer3 = wx.BoxSizer(wx.HORIZONTAL)
+        okButton = wx.Button( self, wx.ID_OK, "OK" )
+        cancelButton = wx.Button( self, wx.ID_CANCEL, "Cancel" )
+        sizer3.Add(okButton, 0, wx.ALL, 10)
+        sizer3.Add(cancelButton, 0, wx.ALL, 10)
+        sizer1.Add(sizer3, 0, wx.ALIGN_CENTER)
 
         sizer1.Fit(self)
         
-        x,y = wxGetMousePosition()
+        x,y = wx.GetMousePosition()
         w,h = self.GetSize()
         self.Move( (x-w/2,y-h/2) )
 
     def GetConfiguration(self):
         return self.serviceConfigPanel.GetConfiguration()
 
-class NodeManagementClientFrame(wxFrame):
+class NodeManagementClientFrame(wx.Frame):
     """
     The main UI frame for Node Management
     """
-    def __init__(self, parent, ID, title,size=wxSize(450,300),callback=None):
-        wxFrame.__init__(self, parent, ID, title,
-                         wxDefaultPosition, size=size)
+    def __init__(self, parent, ID, title,size=wx.Size(450,300),callback=None):
+        wx.Frame.__init__(self, parent, ID, title,
+                         wx.DefaultPosition, size=size)
                          
         self.callback = callback
         self.Center()
@@ -453,10 +452,10 @@ class NodeManagementClientFrame(wxFrame):
 
         self.app = Toolkit.Application.instance()
 
-        menuBar = wxMenuBar()
+        menuBar = wx.MenuBar()
 
         ## FILE menu
-        self.fileMenu = wxMenu()
+        self.fileMenu = wx.Menu()
         self.fileMenu.Append(ID_FILE_ATTACH, "Connect to Node...", 
                              "Connect to a NodeService")
         self.fileMenu.AppendSeparator()
@@ -478,15 +477,15 @@ class NodeManagementClientFrame(wxFrame):
         menuBar.Append(self.serviceMenu, "&Service");
         
         ## HELP menu
-        self.helpMenu = wxMenu()
+        self.helpMenu = wx.Menu()
         self.helpMenu.Append(ID_HELP_ABOUT, "&About",
                     "More information about this program")
         menuBar.Append(self.helpMenu, "&Help");
 
         self.SetMenuBar(menuBar)
 
-        self.tree = wxTreeListCtrl(self,-1,
-                                   style = wxTR_MULTIPLE|wxTR_HIDE_ROOT|wxTR_TWIST_BUTTONS)
+        self.tree = TreeListCtrl(self,-1,
+                                   style = wx.TR_MULTIPLE|wx.TR_HIDE_ROOT|wx.TR_TWIST_BUTTONS)
         self.tree.AddColumn("Name")
         self.tree.AddColumn("Resource")
         self.tree.AddColumn("Status")
@@ -497,13 +496,13 @@ class NodeManagementClientFrame(wxFrame):
         self.tree.SetColumnWidth(2,90)
         
         
-        EVT_TREE_ITEM_RIGHT_CLICK(self, self.tree.GetId(), self.PopupThatMenu)
-        EVT_TREE_ITEM_ACTIVATED(self, self.tree.GetId(), self.DoubleClickCB )
+        wx.EVT_TREE_ITEM_RIGHT_CLICK(self, self.tree.GetId(), self.PopupThatMenu)
+        wx.EVT_TREE_ITEM_ACTIVATED(self, self.tree.GetId(), self.DoubleClickCB )
 
-        wxInitAllImageHandlers()
+        wx.InitAllImageHandlers()
 
         imageSize = 22
-        imageList = wxImageList(imageSize,imageSize)
+        imageList = wx.ImageList(imageSize,imageSize)
 
         bm = icons.getComputerBitmap()
         self.smImage = imageList.Add(bm)
@@ -520,26 +519,26 @@ class NodeManagementClientFrame(wxFrame):
         self.SetStatusText("Not Connected",1)
 
         # Associate menu items with callbacks
-        EVT_MENU(self, ID_FILE_ATTACH            ,  self.Attach )
-        EVT_MENU(self, ID_FILE_EXIT              ,  self.TimeToQuit )
-        EVT_MENU(self, ID_FILE_LOAD_CONFIG       ,  self.LoadConfiguration )
-        EVT_MENU(self, ID_FILE_STORE_CONFIG      ,  self.StoreConfiguration )
-        EVT_MENU(self, ID_HELP_ABOUT             ,  self.OnAbout)
-        EVT_MENU(self, ID_HOST_ADD               ,  self.AddHost )
-        EVT_MENU(self, ID_HOST_REMOVE            ,  self.RemoveServiceManager )
-        EVT_MENU(self, ID_SERVICE_ADD_SERVICE    ,  self.AddService )
-        EVT_MENU(self, ID_SERVICE_CONFIGURE      ,  self.ConfigureService )
-        EVT_MENU(self, ID_SERVICE_REMOVE         ,  self.RemoveService )
-        EVT_MENU(self, ID_SERVICE_ENABLE         ,  self.EnableServices )
-        EVT_MENU(self, ID_SERVICE_ENABLE_ONE     ,  self.EnableService )
-        EVT_MENU(self, ID_SERVICE_DISABLE        ,  self.DisableServices )
-        EVT_MENU(self, ID_SERVICE_DISABLE_ONE    ,  self.DisableService )
+        wx.EVT_MENU(self, ID_FILE_ATTACH            ,  self.Attach )
+        wx.EVT_MENU(self, ID_FILE_EXIT              ,  self.TimeToQuit )
+        wx.EVT_MENU(self, ID_FILE_LOAD_CONFIG       ,  self.LoadConfiguration )
+        wx.EVT_MENU(self, ID_FILE_STORE_CONFIG      ,  self.StoreConfiguration )
+        wx.EVT_MENU(self, ID_HELP_ABOUT             ,  self.OnAbout)
+        wx.EVT_MENU(self, ID_HOST_ADD               ,  self.AddHost )
+        wx.EVT_MENU(self, ID_HOST_REMOVE            ,  self.RemoveServiceManager )
+        wx.EVT_MENU(self, ID_SERVICE_ADD_SERVICE    ,  self.AddService )
+        wx.EVT_MENU(self, ID_SERVICE_CONFIGURE      ,  self.ConfigureService )
+        wx.EVT_MENU(self, ID_SERVICE_REMOVE         ,  self.RemoveService )
+        wx.EVT_MENU(self, ID_SERVICE_ENABLE         ,  self.EnableServices )
+        wx.EVT_MENU(self, ID_SERVICE_ENABLE_ONE     ,  self.EnableService )
+        wx.EVT_MENU(self, ID_SERVICE_DISABLE        ,  self.DisableServices )
+        wx.EVT_MENU(self, ID_SERVICE_DISABLE_ONE    ,  self.DisableService )
         
-        EVT_TREE_KEY_DOWN(self.tree, self.tree.GetId(), self.OnKeyDown)
+        wx.EVT_TREE_KEY_DOWN(self.tree, self.tree.GetId(), self.OnKeyDown)
     
         self.menuBar = menuBar
         
-        self.EnableMenus(false)
+        self.EnableMenus(False)
             
         self.recentNodeServiceList = []
         self.recentServiceManagerList = []
@@ -549,11 +548,11 @@ class NodeManagementClientFrame(wxFrame):
       
         if key == WXK_DELETE:
 
-            dlg = wxMessageDialog(self, "Delete selected items?" , "Confirm",
-                                  style = wxICON_INFORMATION | wxOK | wxCANCEL)
+            dlg = wx.MessageDialog(self, "Delete selected items?" , "Confirm",
+                                  style = wx.ICON_INFORMATION | wx.OK | wx.CANCEL)
             ret = dlg.ShowModal()
             dlg.Destroy()
-            if ret == wxID_OK:
+            if ret == wx.ID_OK:
                 self.RemoveSelectedItems()
             
         elif key == WXK_F5:
@@ -593,7 +592,7 @@ class NodeManagementClientFrame(wxFrame):
         ret = dlg.ShowModal()
 
 
-        if ret == wxID_OK:
+        if ret == wx.ID_OK:
             url = dlg.GetValue()
             dlg.Destroy()
             
@@ -603,17 +602,17 @@ class NodeManagementClientFrame(wxFrame):
                 self.recentNodeServiceList.append(url)
             
             # Attach (or fail)
-            wxBeginBusyCursor()
+            wx.BeginBusyCursor()
             self.AttachToNode(AGNodeServiceIW(url))
 
             if not self.Connected():
                 self.Error( "Could not attach to AGNodeService at " + url  )
-                wxEndBusyCursor()
+                wx.EndBusyCursor()
                 return
 
             # Update the servicemanager and service lists
             self.UpdateUI()
-            wxEndBusyCursor()
+            wx.EndBusyCursor()
         else:
             dlg.Destroy()
             
@@ -629,7 +628,7 @@ class NodeManagementClientFrame(wxFrame):
 
         if self.nodeServiceHandle and self.nodeServiceHandle.IsValid():
             self.SetStatusText("Connected",1)
-            self.EnableMenus(true)
+            self.EnableMenus(True)
       
     def LoadConfiguration( self, event ):
         """
@@ -654,11 +653,11 @@ class NodeManagementClientFrame(wxFrame):
         userConfigs.sort()
         displayNames = sysConfigs + userConfigs
 
-        d = wxSingleChoiceDialog( self, "Select a configuration file to load", 
+        d = wx.SingleChoiceDialog( self, "Select a configuration file to load", 
                                   "Load Configuration Dialog", displayNames)
         ret = d.ShowModal()
 
-        if ret == wxID_OK:
+        if ret == wx.ID_OK:
             conf = d.GetStringSelection()
 
             if len( conf ) == 0:
@@ -675,7 +674,7 @@ class NodeManagementClientFrame(wxFrame):
                     config = c
 
             try:
-                wxBeginBusyCursor()
+                wx.BeginBusyCursor()
                 self.nodeServiceHandle.LoadConfiguration( config )
             except:
                 log.exception("NodeManagementClientFrame.LoadConfiguration: Can not load configuration from node service")
@@ -689,7 +688,7 @@ class NodeManagementClientFrame(wxFrame):
                 except:
                     log.exception('exception from registered callback')
             
-            wxEndBusyCursor()
+            wx.EndBusyCursor()
 
     def StoreConfiguration( self, event ):
         """
@@ -703,7 +702,7 @@ class NodeManagementClientFrame(wxFrame):
         d = StoreConfigDialog(self,-1,"Store Configuration", configs)
         ret = d.ShowModal()
 
-        if ret == wxID_OK:
+        if ret == wx.ID_OK:
             ret = d.GetValue()
             if ret:
                 (configName,isDefault,isSystem) = ret
@@ -716,11 +715,11 @@ class NodeManagementClientFrame(wxFrame):
                 # Confirm overwrite
                 if configName in map(lambda x: x.name, configs): #configs:
                     text ="Overwrite %s?" % (configName,)
-                    dlg = wxMessageDialog(self, text, "Confirm",
-                                          style = wxICON_INFORMATION | wxOK | wxCANCEL)
+                    dlg = wx.MessageDialog(self, text, "Confirm",
+                                          style = wx.ICON_INFORMATION | wx.OK | wx.CANCEL)
                     ret = dlg.ShowModal()
                     dlg.Destroy()
-                    if ret != wxID_OK:
+                    if ret != wx.ID_OK:
                         return
 
                 config = None
@@ -738,7 +737,7 @@ class NodeManagementClientFrame(wxFrame):
                                     
                 # Store the configuration
                 try:
-                    wxBeginBusyCursor()
+                    wx.BeginBusyCursor()
                     self.nodeServiceHandle.StoreConfiguration( config )
                 except:
                     log.exception("Error storing node configuration %s" % (configName,))
@@ -757,7 +756,7 @@ class NodeManagementClientFrame(wxFrame):
                     except:
                         log.exception('exception from registered callback')
                     
-                wxEndBusyCursor()
+                wx.EndBusyCursor()
 
         d.Destroy()
 
@@ -766,7 +765,7 @@ class NodeManagementClientFrame(wxFrame):
         """
         Exit
         """
-        self.Close(true)
+        self.Close(True)
 
     ############################
     ## VIEW menu
@@ -840,7 +839,7 @@ class NodeManagementClientFrame(wxFrame):
                                   'Select a Service Manager URL from the list, or enter the hostname or \nservice URL of the Service Manager')
         dlg.Center()
         ret = dlg.ShowModal()
-        if ret == wxID_OK:
+        if ret == wx.ID_OK:
 
             url = dlg.GetValue()
             dlg.Destroy()
@@ -850,7 +849,7 @@ class NodeManagementClientFrame(wxFrame):
             if url not in self.recentServiceManagerList:
                 self.recentServiceManagerList.append(url)
             try:
-                wxBeginBusyCursor()
+                wx.BeginBusyCursor()
                 self.nodeServiceHandle.AddServiceManager( url )
             except (socket.gaierror,socket.error),e:
                 log.exception("Exception in AddHost")
@@ -862,7 +861,7 @@ class NodeManagementClientFrame(wxFrame):
             # Update the service manager list
             self.UpdateUI()
             
-            wxEndBusyCursor()
+            wx.EndBusyCursor()
         else:
             dlg.Destroy()
 
@@ -879,7 +878,7 @@ class NodeManagementClientFrame(wxFrame):
             return
 
         # Find selected service manager and remove it
-        wxBeginBusyCursor()
+        wx.BeginBusyCursor()
         try:
             index = -1
             for obj in selections:
@@ -891,10 +890,10 @@ class NodeManagementClientFrame(wxFrame):
             # Update the service list
             self.UpdateUI()
         finally:
-            wxEndBusyCursor()
+            wx.EndBusyCursor()
 
     def ServiceManagerSelectedCB(self, event):
-        index = self.serviceManagerList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
+        index = self.serviceManagerList.GetNextItem( -1, state = wx.LIST_STATE_SELECTED )
         uri = self.serviceManagers[index].uri
         #try:
         #    AGServiceManagerIW(uri).IsValid()
@@ -928,23 +927,23 @@ class NodeManagementClientFrame(wxFrame):
 
         # Get services available
         try:
-            wxBeginBusyCursor()
+            wx.BeginBusyCursor()
             servicePackages =  AGServiceManagerIW(serviceManager.uri).GetServicePackageDescriptions()
         except:
             log.exception("Exception getting service packages")
-        wxEndBusyCursor()
+        wx.EndBusyCursor()
         availServiceNames = map( lambda servicePkg: servicePkg.name, servicePackages )
 
         #
         # Prompt for service to add
         #
-        dlg = wxSingleChoiceDialog( self, "Select Service to Add", "Add Service: Select Service",
+        dlg = wx.SingleChoiceDialog( self, "Select Service to Add", "Add Service: Select Service",
                                     availServiceNames )
 
-        dlg.SetSize(wxSize(300,200))
+        dlg.SetSize(wx.Size(300,200))
         ret = dlg.ShowModal()
 
-        if ret == wxID_OK:
+        if ret == wx.ID_OK:
             #
             # Find the selected service description based on the name
             serviceToAdd = None
@@ -975,16 +974,16 @@ class NodeManagementClientFrame(wxFrame):
                         log.info("Prompt for resource")
                         log.debug("Resources: %s" % (resources,))
 
-                        dlg = wxSingleChoiceDialog( self, 
+                        dlg = wx.SingleChoiceDialog( self, 
                                                     "Select resource for service", 
                                                     "Add Service: Select Resource",
                                                     resourceNames )
 
-                        dlg.SetSize(wxSize(300,200))
+                        dlg.SetSize(wx.Size(300,200))
 
                         ret = dlg.ShowModal()
 
-                        if ret != wxID_OK:
+                        if ret != wx.ID_OK:
                             return
 
                         selectedResourceName = dlg.GetStringSelection()
@@ -1005,7 +1004,7 @@ class NodeManagementClientFrame(wxFrame):
                     except:
                         log.exception('exception from registered callback')
             except:
-                wxEndBusyCursor()
+                wx.EndBusyCursor()
                 log.exception( "Add Service failed:" + serviceToAdd.name)
                 self.Error( "Add Service failed:" + serviceToAdd.name )
                 return
@@ -1013,7 +1012,7 @@ class NodeManagementClientFrame(wxFrame):
             self.UpdateUI()
             
             
-            wxEndBusyCursor()
+            wx.EndBusyCursor()
 
     def EnableService( self, event=None ):
         """
@@ -1028,7 +1027,7 @@ class NodeManagementClientFrame(wxFrame):
             return
 
         try:
-            wxBeginBusyCursor()
+            wx.BeginBusyCursor()
 
             # Enable all selected services
             index = -1
@@ -1043,7 +1042,7 @@ class NodeManagementClientFrame(wxFrame):
             log.exception("Error enabling service")
             self.Error("Error enabling service")
             
-        wxEndBusyCursor()
+        wx.EndBusyCursor()
         
 
     def EnableServices( self, event ):
@@ -1069,7 +1068,7 @@ class NodeManagementClientFrame(wxFrame):
             return
 
         try:
-            wxBeginBusyCursor()
+            wx.BeginBusyCursor()
             # Disable all selected services
             index = -1
             for service in selections:
@@ -1081,7 +1080,7 @@ class NodeManagementClientFrame(wxFrame):
             log.exception("Error disabling service")
             self.Error("Error disabling service")
 
-        wxEndBusyCursor()
+        wx.EndBusyCursor()
 
     def DisableServices( self, event ):
         """
@@ -1106,7 +1105,7 @@ class NodeManagementClientFrame(wxFrame):
             return
             
         try:
-            wxBeginBusyCursor()
+            wx.BeginBusyCursor()
             # Remove all selected services
             for s in selections:
                 obj = self.tree.GetPyData(s)
@@ -1119,7 +1118,7 @@ class NodeManagementClientFrame(wxFrame):
             self.UpdateUI()
             
         finally:
-            wxEndBusyCursor()
+            wx.EndBusyCursor()
             
     def DoubleClickCB(self,event):
         selections = self.GetSelectedItems()
@@ -1152,31 +1151,31 @@ class NodeManagementClientFrame(wxFrame):
             wxBeginBusyCursor()
             config = AGServiceIW( service.uri ).GetConfiguration()
         except:
-            wxEndBusyCursor()
+            wx.EndBusyCursor()
             log.exception("Service is unreachable at %s" % (service.uri,))
             self.Error("Service is unreachable at %s" % (service.uri,))
             return
             
         resource = AGServiceIW( service.uri ).GetResource()
 
-        wxEndBusyCursor()
+        wx.EndBusyCursor()
         if config:
             # Display the service configuration panel
             dlg = ServiceConfigurationDialog(self,-1,"Service Config Dialog",
                                              resource, 
                                              config)
             ret = dlg.ShowModal()
-            if ret == wxID_OK:
+            if ret == wx.ID_OK:
             
                 # Get config from the dialog and set it in the service
                 config = dlg.GetConfiguration()
-                wxBeginBusyCursor()
+                wx.BeginBusyCursor()
                 try:
                     # Send the modified configuration to the service
                     AGServiceIW( service.uri ).SetConfiguration( config )
                 except:
                     log.exception("Exception setting configuration")
-                wxEndBusyCursor()
+                wx.EndBusyCursor()
         else:
             self.Error("Service has no configurable options")
 
@@ -1201,7 +1200,7 @@ class NodeManagementClientFrame(wxFrame):
     ## UTILITY methods
     ############################
     def Error( self, message ):
-        wxMessageDialog( self, message, style = wxOK | wxICON_INFORMATION ).ShowModal()
+        wx.MessageDialog( self, message, style = wx.OK | wx.ICON_INFORMATION ).ShowModal()
         
     def PopupThatMenu(self, evt):
     
@@ -1231,14 +1230,14 @@ class NodeManagementClientFrame(wxFrame):
         """
         
             
-        menu = wxMenu()
+        menu = wx.Menu()
         menu.Append(ID_SERVICE_ENABLE_ONE, "Enable", "Enable the selected service")
         menu.Append(ID_SERVICE_DISABLE_ONE, "Disable", "Disable the selected service")
         menu.Append(ID_SERVICE_CONFIGURE, "Configure...", "Configure the selected service")
         menu.Append(ID_SERVICE_REMOVE, "Remove", "Remove the selected service")
 
         # Get the Mouse Position on the Screen 
-        (windowx, windowy) = wxGetMousePosition() 
+        (windowx, windowy) = wx.GetMousePosition() 
         # Translate the Mouse's Screen Position to the Mouse's Control Position 
         pos = self.tree.ScreenToClientXY(windowx, windowy)
         posl = [ pos[0] + 155, pos[1] + 25 ]
@@ -1249,14 +1248,14 @@ class NodeManagementClientFrame(wxFrame):
         Popup the service manager menu
         """
         
-        menu = wxMenu()
+        menu = wx.Menu()
         
         menu.Append(ID_SERVICE_ADD_SERVICE, "Add Service...", "Add a service")
         menu.AppendSeparator()
         menu.Append(ID_HOST_REMOVE, "Remove Service Manager", "Remove a service manager")
 
         # Get the Mouse Position on the Screen 
-        (windowx, windowy) = wxGetMousePosition() 
+        (windowx, windowy) = wx.GetMousePosition() 
         # Translate the Mouse's Screen Position to the Mouse's Control Position 
         pos = self.tree.ScreenToClientXY(windowx, windowy)
         posl = [ pos[0] + 25, pos[1] + 25 ]
@@ -1344,7 +1343,7 @@ class NodeManagementClientFrame(wxFrame):
 
 if __name__ == "__main__":
     
-    app = wxPySimpleApp()
+    app = wx.PySimpleApp()
 
     # Service config dialog test
     resource = ResourceDescription("resource")
