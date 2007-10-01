@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.353 2007-08-16 21:01:06 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.354 2007-10-01 18:38:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.353 2007-08-16 21:01:06 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.354 2007-10-01 18:38:12 turam Exp $"
 
 
 import sys
@@ -377,7 +377,6 @@ class VenueClient:
                 for b in bridgeList:
                     if not self.bridges.has_key(b.GetKey()):
                     	if progressCB:  progressCB("Initializing bridge cache: %d of %d" % (i,len(unkeyedBridges)), 50)
-                        print ' pinging bridge ' ,  b.name, b.host
                         self.registryClient.PingBridge(b)
                         self.bridges[b.GetKey()] = b
                         i += 1
