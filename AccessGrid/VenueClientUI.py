@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.244 2007-10-01 20:57:50 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.245 2007-10-01 22:36:02 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.244 2007-10-01 20:57:50 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.245 2007-10-01 22:36:02 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2350,7 +2350,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         """
         # Create new application monitor
         try:
-            AppMonitor(self, application.uri)
+            AppMonitor(self, str(application.uri))
         except:
             self.Error("Error opening application monitor","Monitor App Error")
     
