@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.354 2007-10-01 18:38:12 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.355 2007-10-01 20:28:05 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.354 2007-10-01 18:38:12 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.355 2007-10-01 20:28:05 turam Exp $"
 
 
 import sys
@@ -1512,7 +1512,6 @@ class VenueClient:
             
         if self.bridgePinger:
             log.info('Shutting down bridge ping thread')
-            print 'shutting down bridge ping'
             self.bridgePinger.close()
        
     def UpdateProfileCache(self, profile):
