@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.67 2007-09-19 18:27:24 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.68 2007-10-01 21:52:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.67 2007-09-19 18:27:24 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.68 2007-10-01 21:52:52 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -68,11 +68,11 @@ class AGService:
         
         self.processManager = ProcessManager()
         
-        self.log = GetDefaultApplication().GetLog()
+        app = GetDefaultApplication()
+        if not app: 
+            app = Service.instance()
+        self.log = app.GetLog()
         
-        
-
-
     def Start( self ):
         """
         Start the service
@@ -112,7 +112,6 @@ class AGService:
         try:
             self.started = 0
             self.processManager.TerminateAllProcesses()
-            self.streamDescription = None
 
         except Exception, e:
             self.log.exception("Exception in AGService.Stop")
@@ -192,15 +191,15 @@ class AGService:
                                                        self.streamDescription.location.host,   
                                                        self.streamDescription.location.port) )
 
-            # Detect trivial re-configuration
-            if self.streamDescription and \
-                self.streamDescription.location.host == streamDescription.location.host       \
-                and self.streamDescription.location.port == streamDescription.location.port \
-                and self.streamDescription.encryptionKey == streamDescription.encryptionKey:
-                # configuration with identical stream description;
-                # bail out
-                self.log.info("SetStream: ignoring trivial re-configuration")
-                return 1
+                # Detect trivial re-configuration
+                if self.streamDescription and \
+                    self.streamDescription.location.host == streamDescription.location.host       \
+                    and self.streamDescription.location.port == streamDescription.location.port \
+                    and self.streamDescription.encryptionKey == streamDescription.encryptionKey:
+                    # configuration with identical stream description;
+                    # bail out
+                    self.log.info("SetStream: ignoring trivial re-configuration")
+                    return 1
 
             self.log.info("SetStream: new configuration, set everything new!")
             
@@ -211,18 +210,18 @@ class AGService:
                     if c.matches(cap):
                         match = 1
                 if not match:
-		    self.log.debug("No match found leave!")
                     return 0
 
             if isinstance(streamDescription, StreamDescription):
-	        self.log.debug("StreamDescription okay, assign it to service!")
+                self.log.debug("StreamDescription okay, assign it to service!")
                 self.streamDescription = streamDescription
             else:
-		if streamDescription == None:
+                if streamDescription == None:
                     self.log.debug("StreamDescription invalid  == None!")
-		else:
+                else:
                     self.log.debug("StreamDescription invalid format!")
-		    self.streamDescription = streamDescription
+                    self.streamDescription = streamDescription
+
 
         except:
             self.log.exception("Exception in SetStream ")
