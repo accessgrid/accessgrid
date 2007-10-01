@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.243 2007-10-01 19:01:20 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.244 2007-10-01 20:57:50 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.243 2007-10-01 19:01:20 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.244 2007-10-01 20:57:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3282,7 +3282,8 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
             wx.CallAfter(self.venueListPanel.AddConnections)
                 # log.debug("   %s" %(conn.name))
 
-           
+            # Update scroll position to the top after adding everything
+            wx.CallAfter(self.contentListPanel.tree.SetScrollPos, wx.VERTICAL, 0, True)
 
             wx.CallAfter(self.SetVenueUrl, URL)
                                               
@@ -3913,11 +3914,9 @@ class ContentListPanel(wx.Panel):
             d = self.tree.GetPyData(id)
             if d:
                 dataList.append(d)
-                log.debug("ContentListPanel.__GetPersonalDataFromItem: First child's name = %s " %(d.name))
                 for nr in range(self.tree.GetChildrenCount(treeId)-1):
                     id, cookie = self.tree.GetNextChild(treeId, cookie)
                     dataList.append(self.tree.GetPyData(id))
-                    log.debug("ContentListPanel.__GetPersonalDataFromItem: Next child's name = %s " %self.tree.GetPyData(id).name)
                     
         return dataList
             
