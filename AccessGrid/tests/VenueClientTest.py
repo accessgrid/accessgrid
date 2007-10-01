@@ -5,17 +5,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientTest.py,v 1.8 2006-08-30 08:23:39 braitmai Exp $
+# RCS-ID:      $Id: VenueClientTest.py,v 1.9 2007-10-01 16:50:10 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import sys
 import os
 import threading
-
-from wxPython.wx import *
-
-from pyGlobus.io import GSITCPSocketException
 
 from AccessGrid import Log
 from AccessGrid import DataStore
