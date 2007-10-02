@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.246 2007-10-02 19:39:09 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.247 2007-10-02 20:17:59 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.246 2007-10-02 19:39:09 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.247 2007-10-02 20:17:59 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -900,7 +900,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         self.venueAddressBar = VenueAddressBar(self, self.ID_WINDOW_TOP, 
                                                self.myVenuesDict,
                                                'default venue')
-        self.venueAddressBar.SetDefaultSize((1000, 35))
+        self.venueAddressBar.SetDefaultSize((1000, 55))
         self.venueAddressBar.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.venueAddressBar.SetAlignment(wx.LAYOUT_TOP)
         self.venueAddressBar.SetSashVisible(wx.SASH_BOTTOM, True)
@@ -3404,8 +3404,7 @@ class VenueAddressBar(wx.SashLayoutWindow):
         self.backButton.SetToolTip(wx.ToolTip("Go to previous venue"))
         self.__Layout()
         self.__AddEvents()
-        self.title.Hide()
-        
+
     def __AddEvents(self):
         wx.EVT_BUTTON(self, self.ID_GO, self.CallAddress)
         wx.EVT_BUTTON(self, self.ID_BACK, self.GoBack)
