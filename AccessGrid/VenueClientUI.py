@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.245 2007-10-01 22:36:02 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.246 2007-10-02 19:39:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.245 2007-10-01 22:36:02 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.246 2007-10-02 19:39:09 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3326,7 +3326,8 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
                     "You are not in a venue",
                     'Click "Go" to connect to the venue, which address is displayed in the address bar')
 
-        wx.CallAfter(self.textClientPanel.Clear)
+        # Don't clear text panel when exiting venue
+        #wx.CallAfter(self.textClientPanel.Clear)
 
         # Disable menus
         wx.CallAfter(self.__HideMenu)
