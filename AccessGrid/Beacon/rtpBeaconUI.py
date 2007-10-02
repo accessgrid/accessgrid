@@ -6,12 +6,12 @@
 # Author:      Thomas Uram, Susanne Lefvert
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: rtpBeaconUI.py,v 1.15 2007-09-19 16:51:22 turam Exp $
+# RCS-ID:      $Id: rtpBeaconUI.py,v 1.16 2007-10-02 19:38:39 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #----------------------------------------------------------------------------
 
-__revision__ = "$Id: rtpBeaconUI.py,v 1.15 2007-09-19 16:51:22 turam Exp $"
+__revision__ = "$Id: rtpBeaconUI.py,v 1.16 2007-10-02 19:38:39 turam Exp $"
 
 import wx
 import wx.grid
@@ -127,8 +127,8 @@ class BeaconFrame(wx.Frame):
             # Resize grid as needed
             numRows = self.grid.GetNumberRows()
             if numRows > len(self.sources) and numRows > 1:
-                wx.CallAfter(self.grid.DeleteCols,numRows - len(self.sources))
-                wx.CallAfter(self.grid.DeleteRows,numRows - len(self.sources))
+                wx.CallAfter(self.grid.DeleteCols,0,numRows - len(self.sources))
+                wx.CallAfter(self.grid.DeleteRows,0,numRows - len(self.sources))
             elif numRows < len(self.sources):
                 wx.CallAfter(self.grid.AppendCols,len(self.sources) - numRows )
                 wx.CallAfter(self.grid.AppendRows,len(self.sources) - numRows )
