@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service client that handles Access Grid
 #                 venue events.
 # Created:     2005/09/09
-# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.6 2007-09-19 16:51:21 turam Exp $
+# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.7 2007-10-03 08:48:17 douglask Exp $
 # Copyright:   (c) 2005,2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -206,21 +206,21 @@ def mainWithUI(group="Test", venueEventClientClass=InsecureVenueEventClient, gro
     # This is a good example on how to interact with the wx main thread from
     # the network thread.
  
-    class NetworkEvent(wxPyEvent):
+    class NetworkEvent(wx.PyEvent):
         '''
         the network thread communicates back to the main GUI thread via
         this sythetic event
         '''
         def __init__(self,msg=""):
-            wxPyEvent.__init__(self)
-            self.SetEventType(wxEVT_NETWORK)
+            wx.PyEvent.__init__(self)
+            self.SetEventType(wx.EVT_NETWORK)
             self.msg = msg
-    wxEVT_NETWORK = 2000
+    wx.EVT_NETWORK = 2000
 
     def EVT_NETWORK(win, func):
-        win.Connect(-1, -1, wxEVT_NETWORK, func)
+        win.Connect(-1, -1, wx.EVT_NETWORK, func)
 
-    class MyApp(wxApp):
+    class MyApp(wx.App):
         '''
         main wx ui app.
         '''
@@ -231,34 +231,34 @@ def mainWithUI(group="Test", venueEventClientClass=InsecureVenueEventClient, gro
             frame.Show(1)
             return 1
   
-    class MainFrame(wxFrame):
+    class MainFrame(wx.Frame):
         '''
         all the ui components.
         '''
         ID_EXIT  = 102
 
         def __init__(self, parent, ID, title):
-            wxFrame.__init__(self, parent, ID,
+            wx.Frame.__init__(self, parent, ID,
                              title,
-                             wxDefaultPosition, # position
-                             wxSize(512,512))
+                             wx.DefaultPosition, # position
+                             wx.Size(512,512))
             self.SetAutoLayout(1)
             self.CreateStatusBar()
-            menuBar = wxMenuBar()
-            menu    = wxMenu()
+            menuBar = wx.MenuBar()
+            menu    = wx.Menu()
             menu.AppendSeparator()
             menu.Append(self.ID_EXIT, "E&xit", "Terminate the program")
             menuBar.Append(menu, "&File");
             self.SetMenuBar(menuBar)
             wx.EVT_MENU(self,self.ID_EXIT,self.TimeToQuit)
             
-            sizer = wxBoxSizer(wxVERTICAL)
+            sizer = wxBoxSizer(wx.VERTICAL)
             self.SetSizer(sizer)
             
             # a logging window
-            self.log = wxTextCtrl(self,-1,style = wxTE_MULTILINE)
-            wxLog_SetActiveTarget(wxLogTextCtrl(self.log))
-            sizer.Add(self.log,1,wxEXPAND|wxALL,1)
+            self.log = wx.TextCtrl(self,-1,style = wx.TE_MULTILINE)
+            wx.Log_SetActiveTarget(wx.LogTextCtrl(self.log))
+            sizer.Add(self.log,1,wx.EXPAND|wx.ALL,1)
             
             # trap characters
             wx.EVT_CHAR(self.log, self.OnChar)
@@ -286,7 +286,7 @@ def mainWithUI(group="Test", venueEventClientClass=InsecureVenueEventClient, gro
                              (eventHost, eventPort))
 
             from twisted.internet import reactor
-            reactor.interleave(wxCallAfter)
+            reactor.interleave(wx.CallAfter)
 
         def MadeConnection(self):
             eventHost = self.eventClient.location[0]
@@ -314,10 +314,10 @@ def mainWithUI(group="Test", venueEventClientClass=InsecureVenueEventClient, gro
 
         def OnTest(self, evt):
             string = "channelId = %s, senderId = %s, data = %s"%(evt.GetChannelId(), evt.GetSenderId(), evt.GetData())
-            wxCallAfter(wxLogMessage,"Received: \"%s\"." % string)
+            wx.CallAfter(wx.LogMessage,"Received: \"%s\"." % string)
 
         def shutdown_network(self):
-            wxLogMessage('Shutting down event client.')
+            wx.LogMessage('Shutting down event client.')
             self.eventClient.Stop()
 
         def LostConnection(self, connector, reason):
@@ -391,7 +391,7 @@ if __name__ == '__main__':
         if arg.startswith("--perf"):
             useUI = False
     if useUI:
-        from wxPython.wx import *
+        import wx
         try:
             from twisted.internet import _threadedselect as threadedselectreactor
         except:
@@ -401,5 +401,5 @@ if __name__ == '__main__':
 
     main()
 
-from wxPython.wx import *
+import wx
 
