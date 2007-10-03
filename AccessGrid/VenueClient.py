@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.355 2007-10-01 20:28:05 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.356 2007-10-03 06:36:48 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.355 2007-10-01 20:28:05 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.356 2007-10-03 06:36:48 willing Exp $"
 
 
 import sys
@@ -217,6 +217,9 @@ class VenueClient:
         self.homeVenue = None
         self.houseKeeper = Scheduler()
         self.heartBeatTimer = None
+        self.heartBeatCounter = 0
+        self.jabberIdRetries = 0
+
        
         if progressCB: progressCB("Starting web services",30)
         self.__StartWebService(pnode, port)
@@ -613,7 +616,22 @@ class VenueClient:
             
         except Exception, e:
             log.exception("Error sending heartbeat; next heartbeat in %ds", nextTimeout)
-                
+
+        # Check jabber status by occasionally sending a presence stanza.
+        # If that fails, we'll know a new jabber connection will be needed.
+        # This also lets the jabber server know we're still alive, perhaps
+        # preventing server side disconnections which we're trying to catch here.
+        self.heartBeatCounter += 1
+        log.debug("heartBeatCounter = %d", self.heartBeatCounter)
+        if self.heartBeatCounter > 60:
+            self.heartBeatCounter = 0
+            try:
+                self.jabber.SendNameChange(self.profile.name)
+            except Exception, e:
+                log.exception("Couldn't send name change: %s", e)
+                log.info("Will try to __RestartJabber")
+                self.__RestartJabber()
+
         self.heartBeatTimer = threading.Timer(nextTimeout,
                                               self.Heartbeat)
         self.heartBeatTimer.start()
@@ -1158,7 +1176,7 @@ class VenueClient:
         except:
 	    log.exception("VenueClient.StartBeacon failed")
                    
-    def __StartJabber(self, textLocation):
+    def __StartJabber(self, textLocation, restart=False):
         jabberHost = textLocation[0]
         jabberPort = textLocation[1]
         
@@ -1174,10 +1192,18 @@ class VenueClient:
             jabberPwd = str(self.profile.connectionId)
             
             # Set the user information
+            # In the case of a restart, we have to generate a different
+            # jabberId in order to Register() successfully.
+            if restart:
+                self.jabberIdRetries += 1
+                idRetries = self.jabberIdRetries
+                while idRetries > 0:
+                    jabberId = jabberId + "_"
+                    idRetries -= 1
             self.jabber.SetUserInfo(self.profile.name,
                                     jabberId, jabberPwd, 'AG')
         
-             ## Register the user in the jabber server
+            ## Register the user in the jabber server
             self.jabber.Register()
             self.jabber.Login()
                
@@ -1198,7 +1224,37 @@ class VenueClient:
         self.chatLocation = "%s@%s" % (currentRoom,conferenceHost)
         self.jabber.SetChatRoom(currentRoom, conferenceHost)
         self.jabber.SendPresence('available')
-                                        
+
+    def __RestartJabber(self):
+        """
+        Following an unexpected jabber disconnection, establish a new one.
+
+        On normal disconnection e.g. changing venues, we would execute:
+            self.jabber.SendPresence('unavailable')
+            self.jabber.ClearChatRoom()
+            self.jabber.Logout()
+        but these generate exceptions in this (unexpected disconnect) case,
+        so we just go ahead and create an entirely new connection.
+        """
+
+        # Try to tell the user we have a problem
+        self.jabber.jabberPanel.OutputText("Internal Notification",
+                              "Trying to reconnect to text server")
+
+        self.jabber = JabberClient()
+        self.jabber.SetPresenceCB(self.JabberPresenceCB)
+        self.maxJabberNameRetries = 3
+        self.jabberNameRetries = 0
+        self.jabberHost = None
+
+        state = self.__venueProxy.GetState()
+        self.textLocation = state.textLocation.split(":")
+        if len(self.textLocation) > 1:
+            self.textLocation = (str(self.textLocation[0]), int(self.textLocatin[1]))
+            self.__StartJabber(self.textLocation, True)
+        else:
+            log.debug("Can't __RestartJabber - no self.textLocation")
+
     def EnterVenue(self, URL,withcert=0):
         """
         EnterVenue puts this client into the specified venue.
