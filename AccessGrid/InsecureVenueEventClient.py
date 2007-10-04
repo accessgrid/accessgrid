@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service client that handles Access Grid
 #                 venue events.
 # Created:     2005/09/09
-# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.7 2007-10-03 08:48:17 douglask Exp $
+# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.8 2007-10-04 17:36:56 turam Exp $
 # Copyright:   (c) 2005,2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -225,7 +225,7 @@ def mainWithUI(group="Test", venueEventClientClass=InsecureVenueEventClient, gro
         main wx ui app.
         '''
         def OnInit(self):
-            self.frame = frame = MainFrame(NULL, -1, 
+            self.frame = frame = MainFrame(None, -1, 
                                            "wxPython+threading")
             self.SetTopWindow(frame)
             frame.Show(1)

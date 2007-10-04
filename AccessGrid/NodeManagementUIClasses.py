@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.117 2007-10-01 19:04:27 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.118 2007-10-04 17:36:56 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.117 2007-10-01 19:04:27 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.118 2007-10-04 17:36:56 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -954,7 +954,7 @@ class NodeManagementClientFrame(wx.Frame):
                     break
 
             if serviceToAdd == None:
-                raise Exception("Can't add NULL service")
+                raise Exception("Can't add None service")
 
             try:
                 #

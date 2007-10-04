@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.25 2007-09-19 16:51:22 turam Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.26 2007-10-04 17:37:52 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import wx
@@ -601,41 +601,41 @@ class IdentityCertValidator(wx.PyValidator):
         password2 = win.passwordVerCtrl.GetValue()
                
         if firstName == "":
-            MessageDialog(NULL, "Please enter your first name.",
+            MessageDialog(None, "Please enter your first name.",
                           style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.firstNameCtrl)
             return False
 
         elif lastName == "":
-            MessageDialog(NULL, "Please enter your last name.",
+            MessageDialog(None, "Please enter your last name.",
                           style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.lastNameCtrl)
             return False
         
         elif email == "":
-            MessageDialog(NULL, "Please enter your e-mail address.", style = wx.OK | wx.ICON_INFORMATION)
+            MessageDialog(None, "Please enter your e-mail address.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
             return False
 
         elif email.find("@") == -1:
-            MessageDialog(NULL, "Pleas enter a valid e-mail address, for example name@example.com.",
+            MessageDialog(None, "Pleas enter a valid e-mail address, for example name@example.com.",
                           style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
             return False
         
         elif password == "":
-            MessageDialog(NULL, "Please enter your passphrase.", style = wx.OK | wx.ICON_INFORMATION)
+            MessageDialog(None, "Please enter your passphrase.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.passwordCtrl)
             return False
             
         elif password != password2:
-            MessageDialog(NULL, "Your passphrase entries do not match. Please retype them.", style = wx.OK | wx.ICON_INFORMATION)
+            MessageDialog(None, "Your passphrase entries do not match. Please retype them.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.passwordCtrl)
             self.helpClass.SetColour(win.passwordVerCtrl)
             return False
 
         elif domain == "":
-            MessageDialog(NULL, "Please enter the domain name of your home site; for example, example.com..", style = wx.OK | wx.ICON_INFORMATION)
+            MessageDialog(None, "Please enter the domain name of your home site; for example, example.com..", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.domainCtrl)
             return False
             
@@ -746,33 +746,33 @@ class HostCertValidator(wx.PyValidator):
         email = win.emailCtrl.GetValue()
               
         if hostName == "":
-            MessageDialog(NULL, "Please enter the machine name (mcs.anl.gov).", style = wx.OK | wx.ICON_INFORMATION)
+            MessageDialog(None, "Please enter the machine name (mcs.anl.gov).", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.hostCtrl)
             return False
         
         elif hostName.find('.') == -1:
-            MessageDialog(NULL, "Please enter complete machine name (machine.mcs.anl.gov).", style = wx.OK | wx.ICON_INFORMATION)
+            MessageDialog(None, "Please enter complete machine name (machine.mcs.anl.gov).", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.hostCtrl)
             return False
 
         elif not self.helpClass.CheckHost(hostName):
-            MessageDialog(NULL, "Please enter valid machine name (machine.mcs.anl.gov). \nIP address is not a valid machine name.", style = wx.OK | wx.ICON_INFORMATION)
+            MessageDialog(None, "Please enter valid machine name (machine.mcs.anl.gov). \nIP address is not a valid machine name.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.hostCtrl)
             return False
             
         elif email == "":
-            MessageDialog(NULL, "Please enter your e-mail address.", style = wx.OK | wx.ICON_INFORMATION)
+            MessageDialog(None, "Please enter your e-mail address.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
             return False
 
         elif email.find("@") == -1:
-            MessageDialog(NULL, "Pleas enter a valid e-mail address, for example name@mcs.anl.gov.",
+            MessageDialog(None, "Pleas enter a valid e-mail address, for example name@mcs.anl.gov.",
                           style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
             return False
 
         elif not self.helpClass.CheckEmail(hostName, email):
-            MessageDialog(NULL, "The e-mail address and machine name should be on same domain. \n\nFor machine name: video.mcs.anl.gov  \n\nValid e-mail addresses could be: \n\nname@mcs.anl.gov or name@anl.gov \n",
+            MessageDialog(None, "The e-mail address and machine name should be on same domain. \n\nFor machine name: video.mcs.anl.gov  \n\nValid e-mail addresses could be: \n\nname@mcs.anl.gov or name@anl.gov \n",
                           style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
             return False
@@ -914,43 +914,43 @@ class ServiceCertValidator(wx.PyValidator):
           
           
         if serviceType == "":
-            MessageDialog(NULL, "Please select a service type.", style = wx.OK | wx.ICON_INFORMATION)
+            MessageDialog(None, "Please select a service type.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.serviceDropdown)
             return False
             
         elif serviceType == "Other" and name == "":
-            MessageDialog(NULL, "Please enter service name.", style = wx.OK | wx.ICON_INFORMATION)
+            MessageDialog(None, "Please enter service name.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.serviceCtrl)
             return False
              
         elif host == "":
-            MessageDialog(NULL, "Please enter machine name (machine.mcs.anl.gov).", style = wx.OK | wx.ICON_INFORMATION)
+            MessageDialog(None, "Please enter machine name (machine.mcs.anl.gov).", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.hostCtrl)
             return False
 
         elif host.find('.') == -1:
-            MessageDialog(NULL, "Please enter complete machine name (machine.mcs.anl.gov).", style = wx.OK | wx.ICON_INFORMATION)
+            MessageDialog(None, "Please enter complete machine name (machine.mcs.anl.gov).", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.hostCtrl)
             return False
             
         elif not self.helpClass.CheckHost(host):
-            MessageDialog(NULL, "Please enter valid machine name (machine.mcs.anl.gov). \nIP address is not a valid machine name.", style = wx.OK | wx.ICON_INFORMATION)
+            MessageDialog(None, "Please enter valid machine name (machine.mcs.anl.gov). \nIP address is not a valid machine name.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.hostCtrl)
             return False
 
         elif email == "":
-            MessageDialog(NULL, "Please enter e-mail address.", style = wx.OK | wx.ICON_INFORMATION)
+            MessageDialog(None, "Please enter e-mail address.", style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
             return False
 
         elif email.find("@") == -1:
-            MessageDialog(NULL, "Pleas enter a valid e-mail address, for example name@mcs.anl.gov.",
+            MessageDialog(None, "Pleas enter a valid e-mail address, for example name@mcs.anl.gov.",
                           style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
             return False
         
         elif not self.helpClass.CheckEmail(host, email):
-            MessageDialog(NULL, "The e-mail address and machine name should be on same domain. \n\nFor machine name: video.mcs.anl.gov  \n\nValid e-mail addresses could be: \n\nname@mcs.anl.gov or name@anl.gov \n",
+            MessageDialog(None, "The e-mail address and machine name should be on same domain. \n\nFor machine name: video.mcs.anl.gov  \n\nValid e-mail addresses could be: \n\nname@mcs.anl.gov or name@anl.gov \n",
                           style = wx.OK | wx.ICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
             return False

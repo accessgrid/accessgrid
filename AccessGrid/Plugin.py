@@ -135,7 +135,7 @@ class Plugin(VenueClientObserver):
 
     def StartExecutable(self):
         if not self.commandline:
-            log.exception("Commandline is NULL.")
+            log.exception("Commandline is None.")
             return
 
         if len(self.commandline) == 0:
@@ -356,7 +356,7 @@ class Plugin(VenueClientObserver):
         
         if callable(cb):
             itemid = wx.NewId()
-            item = wx.MenuItem(wx.Menu(), itemid, name, "", wx.ITEM_NORMAL, NULL)
+            item = wx.MenuItem(wx.Menu(), itemid, name, "", wx.ITEM_NORMAL, None)
             callback = lambda event, description=name, callback=cb: self.__callback_wrapper(description, callback)
             wx.EVT_MENU(frame, itemid, callback)
 

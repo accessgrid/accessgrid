@@ -700,7 +700,7 @@ class TextValidator(wx.PyValidator):
             elif profile.email ==  '<Insert Email Address Here>':
                 self.fieldName = 'Email'
                 
-            MessageDialog(NULL, "Please, fill in the %s field" %(self.fieldName,))
+            MessageDialog(None, "Please, fill in the %s field" %(self.fieldName,))
             return False
         return True
 
@@ -1382,7 +1382,7 @@ class BridgingPanel(wx.Panel):
         # This _should_ be redundant, since no Edit button should
         # be available when the condition is True.
         if self.permanentRegistries >= self.maxRegistries:
-            MessageDialog(NULL, "There are no editable entries")
+            MessageDialog(None, "There are no editable entries")
             return
 
 
@@ -1552,7 +1552,7 @@ if __name__ == "__main__":
     app.Initialize("Preferences")
     
     p = Preferences()
-    pDialog = PreferencesDialog(NULL, -1,
+    pDialog = PreferencesDialog(None, -1,
                                 'Preferences', p)
     pDialog.ShowModal()
     p = pDialog.GetPreferences()

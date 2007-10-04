@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.94 2007-10-04 17:02:48 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.95 2007-10-04 17:36:56 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.94 2007-10-04 17:02:48 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.95 2007-10-04 17:36:56 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -144,7 +144,7 @@ class TextValidator(wx.PyValidator):
         val = tc.GetValue()
 
         if val == "":
-            MessageDialog(NULL, "Please, enter a comment.")
+            MessageDialog(None, "Please, enter a comment.")
             return False
        
         return true
