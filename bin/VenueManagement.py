@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.177 2007-09-19 16:45:23 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.178 2007-10-04 17:00:22 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.177 2007-09-19 16:45:23 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.178 2007-10-04 17:00:22 turam Exp $"
 
 # Standard imports
 import sys
@@ -847,7 +847,7 @@ class VenueListPanel(wx.Panel):
 
     def OnKey(self, event):
         key = event.GetKeyCode()
-        if key == WXK_DELETE:
+        if key == wx.WXK_DELETE:
             self.DeleteVenue()
 
     def OnDoubleClick(self, event):
@@ -1618,8 +1618,7 @@ class ModifyVenueFrame(VenueParamFrame):
     def OnOK (self, event):
         wx.BeginBusyCursor()
         if(VenueParamFrame.Validate(self)):
-            #if(self.staticAddressingPanel.Validate()):
-            if 1:
+            if(self.staticAddressingPanel.Validate()):
 #FIXME - This is obviously an immediately-before-release fix;
 #        it needs to be resolved corectly
                 venueUri = self.venue.uri
@@ -1627,7 +1626,6 @@ class ModifyVenueFrame(VenueParamFrame):
                 self.Ok()
                 self.venue.uri = venueUri
                 self.venue.id = id
-                print 'venue = ', self.venue, self.venue.streams
                 try:
                     log.debug("ModifyVenueFrame.OnOk: Modify venue")
                     self.parent.ModifyVenue(self.venue)
@@ -2414,7 +2412,7 @@ class DigitValidator(wx.PyValidator):
     def OnChar(self, event):
         key = event.KeyCode()
 
-        if key < WXK_SPACE or key == WXK_DELETE or key > 255:
+        if key < wx.WXK_SPACE or key == wx.WXK_DELETE or key > 255:
             event.Skip()
             return
 
