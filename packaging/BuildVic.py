@@ -13,8 +13,8 @@ VICDIR = os.path.join(SOURCE,'mmedia')
 
 
 def build_win(dir):
-    p = os.path.join(dir, "vic", "vic.sln")
-    os.system('devenv %s /rebuild "DDraw Release"' % (p,))
+    p = os.path.join(dir, "vic", "vic.2003.sln")
+    os.system('devenv %s /rebuild "DDraw Debug"' % (p,))
     
 def build_linux(dir):
     os.chdir(dir)
