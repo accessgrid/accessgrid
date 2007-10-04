@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.93 2007-09-19 16:51:21 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.94 2007-10-04 17:02:48 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.93 2007-09-19 16:51:21 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.94 2007-10-04 17:02:48 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -513,7 +513,7 @@ class SecureTextCtrl(wx.TextCtrl):
     def OnChar(self, event):
         k = event.GetKeyCode()
 
-        if k == WXK_BACK:
+        if k == wx.WXK_BACK:
             sel = self.GetSelection()
 
             if sel[0] < sel[1]:
@@ -525,13 +525,13 @@ class SecureTextCtrl(wx.TextCtrl):
                     self.Remove(pos - 1, pos)
                     if IsOSX() and wx.VERSION >= (2,6,0,0):
                         self.SetInsertionPoint(pos-1)
-        elif k == WXK_RETURN:
+        elif k == wx.WXK_RETURN:
             event.Skip()
             return
-        elif k == WXK_TAB:
+        elif k == wx.WXK_TAB:
             event.Skip()
             return
-        elif k == WXK_DELETE:
+        elif k == wx.WXK_DELETE:
             sel = self.GetSelection()
             pos = self.GetInsertionPoint()
 
@@ -546,11 +546,11 @@ class SecureTextCtrl(wx.TextCtrl):
         elif k < 127 and k >= 32:
             self.insertChar(k)
                          
-        elif k == WXK_LEFT:
+        elif k == wx.WXK_LEFT:
             pos = self.GetInsertionPoint()
             if pos > 0:
                 self.SetInsertionPoint(pos - 1)
-        elif k == WXK_RIGHT:
+        elif k == wx.WXK_RIGHT:
             pos = self.GetInsertionPoint()
             if pos < self.GetLastPosition():
                 self.SetInsertionPoint(pos + 1)
