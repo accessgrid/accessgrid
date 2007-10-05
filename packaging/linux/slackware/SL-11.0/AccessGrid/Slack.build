@@ -1,6 +1,6 @@
 name=AccessGrid
 version=3.1
-release=cvs20070808
+release=cvs20071005
 arch=${ARCH:-`uname -m`}
 prefix=${PREFIX:-/usr}
 #srcpkg=${name}-${version}.src.tar.gz
@@ -34,13 +34,9 @@ patch0=${here}/patches/patch-packaging-BuildSnapshot.py
 patch1=${here}/patches/patch-AccessGrid-hosting-ZSI-Server.py
 
 patch10=${here}/patches/patch-services-node-AudioService-AudioService.build.py
-patch11=${here}/patches/patch-services-node-AudioService-AudioService.py
-patch12=${here}/patches/patch-services-node-VideoService-VideoService.build.py
-patch13=${here}/patches/patch-services-node-VideoService-VideoService.py
-patch14=${here}/patches/patch-services-node-VideoProducerService-VideoProducerService.build.py
-patch15=${here}/patches/patch-services-node-VideoProducerService-VideoProducerService.py
-patch16=${here}/patches/patch-services-node-VideoConsumerService-VideoConsumerService.build.py
-patch17=${here}/patches/patch-services-node-VideoConsumerService-VideoConsumerService.py
+patch11=${here}/patches/patch-services-node-VideoService-VideoService.build.py
+patch12=${here}/patches/patch-services-node-VideoProducerService-VideoProducerService.build.py
+patch13=${here}/patches/patch-services-node-VideoConsumerService-VideoConsumerService.build.py
 
 patch20=${here}/patches/patch-xfce4-desktop-menu.xml
 
@@ -73,10 +69,6 @@ do_patch ${patch10}
 do_patch ${patch11}
 do_patch ${patch12}
 do_patch ${patch13}
-do_patch ${patch14}
-do_patch ${patch15}
-do_patch ${patch16}
-do_patch ${patch17}
 
 echo -n "Post-patch sleep ..."
 sleep 5

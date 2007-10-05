@@ -16,10 +16,10 @@ SL_VERSION="SL11"
 # Package names
 #
 pkgs="
-AccessGrid-3.1-${arch}-cvs20070808.tgz
+AccessGrid-3.1-${arch}-cvs20071005.tgz
 quickbridge-3.0.2-${arch}-1.tgz
 elementtree-1.2.6-20050316-${arch}-1.tgz
-bajjer-0.2.5-${arch}-1.tgz
+bajjer-0.2.5-${arch}-2.tgz
 feedparser-4.1-${arch}-1.tgz
 pyxml-0.8.4-${arch}-1.tgz
 m2crypto-0.17-${arch}-2.tgz
@@ -45,7 +45,7 @@ wxmozilla-20070620cvs-${arch}-1.tgz
 "
 
 version=3.1
-release=cvs20070808-3
+release=cvs20071005-1
 releasedir=${RELEASEDIR:-/scratch/AG3/releases-11.0}
 pkgdir=${PKGDIR:-/tmp}
 
@@ -183,6 +183,10 @@ cd ${tempdirname} && tar zcvf ${bundledirname}.tar.gz ${bundledirname}
 rm -rf ${bundledir}
 
 # Changelog
+#
+# Release cvs 20071005-1
+#  - AG 3.1 beta-2
+#  - update bajjer to 0.2.5 release 2
 #
 # Release cvs20070808-3 20070926
 #  - update wxPython (release 4)
