@@ -15,7 +15,7 @@
                      self._server.handle_request()
 +            except socket.error, ex:
 +                if ex[0] == 4: # interrupted system call
-+                    contiue
++                    continue
 +                log.exception("Exception in SOAP server main loop")
              except:
                  log.exception("Exception in SOAP server main loop")

@@ -11,6 +11,7 @@ builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
 pkgname=${name}-${version}-${arch}-${release}.tgz
+XDG_MERGEDIR=etc/xdg/menus/gnome-applications-merged
 
 master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/nfs/distfiles/
@@ -105,9 +106,9 @@ cp -R SharedApplications ${pkgdir}/etc/AccessGrid3
 cp -R NodeServices ${pkgdir}/etc/AccessGrid3
 
 # Gnome main menu
-mkdir -p ${pkgdir}/etc/xdg/menus/applications-merged
+mkdir -p ${pkgdir}/${XDG_MERGEDIR}
 cp ${builddir}/AccessGrid/packaging/linux/xdg/AccessGrid3.menu \
-	${pkgdir}/etc/xdg/menus/applications-merged/
+	${pkgdir}/${XDG_MERGEDIR}/
 # KDE main menu
 mkdir -p ${pkgdir}/opt/kde/etc/xdg/menus/applications-merged
 cp ${builddir}/AccessGrid/packaging/linux/xdg/AccessGrid3.menu \
@@ -193,6 +194,8 @@ fi
 exit
 
 # Changelog
+#
+#  - introduce XDG_MERGEDIR to support slackbot Gnome desktop
 #
 # CKW 20070627 - 3.1beta1
 

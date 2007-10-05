@@ -30,9 +30,21 @@ _datadir=${_prefix}/share
 pyver=2.4
 releasedir=${RELEASEDIR:-/tmp}
 tmp=${TMP:-/var/tmp}
+swig_binary=/usr/bin/swig-wxPython1.3.29
+#swig_binary=${here}/swig-wxPython1.3.29-${arch}
+use_swig=1
+
+# Check whether swig is needed and available
+#
+if [ ${use_swig} -eq 1 ]; then
+  if [ ! -x ${swig_binary} ]; then
+    echo "can't find ${swig_binary} - exiting now"
+    exit 1
+  fi
+fi
 
 port=gtk2
-unicode=0
+unicode=1
 
 # Should the builtin image and etc. libs be used, or system libs?
 # Distro specific RPMs should probably set this to 0, generic ones
@@ -66,7 +78,7 @@ chartype=$(if [ "${unicode}" = "1" ]; then echo unicode; else echo ansi; fi)
 gtktype=""; if [ "${port}" = "gtk2" ]; then gtktype=2; fi
 wxprefbase=${LIBDIR}/wxPython
 wxpref=${wxprefbase}-${version}-${port}-${chartype}
-release=1
+release=4
 name=wxPython-${ver2}-${port}-${chartype}-py${pyver}
 buildroot=${tmp}
 builddir=${buildroot}/wxPython-${version}
@@ -75,7 +87,6 @@ docdir=${pkgdir}/usr/doc/${name}-${version}
 
 pkgname=${name}-${version}-${arch}-${release}.tgz
 
-#srcpkg=${tarname}-${version}.tar.gz
 srcpkg=${tarname}-${version}.tar.bz2
 master_sites=http://heanet.dl.sourceforge.net/sourceforge/wxpython/wxPython-src-2.8.4.0.tar.bz2
 master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
@@ -117,7 +128,6 @@ mkdir -p bld
 cd bld
 
 # Configure, trying to reduce external dependencies
-#	--enable-monolithic \
 CFLAGS="${SLKCFLAGS}" \
 ../configure	\
 	--with-gtk=2	\
@@ -174,7 +184,8 @@ echo "############################################## Building wxPython (in ${WXD
 # Now build wxPython
 cd $WXDIR/wxPython
 ${python} setup.py \
-	SWIG=/usr/bin/swig-1.3.27 \
+	USE_SWIG=${use_swig} \
+	SWIG=${swig_binary} \
 	WXPORT=${port} \
 	UNICODE=${unicode} \
 	EP_ADD_OPTS=1 \
@@ -191,7 +202,8 @@ echo
 echo
 echo "############################################## Installing wxPython ####################################"
 ${python} setup.py \
-	SWIG=/usr/bin/swig-1.3.27 \
+	USE_SWIG=${use_swig} \
+	SWIG=${swig_binary} \
 	WXPORT=${port} \
 	UNICODE=${unicode} \
 	EP_ADD_OPTS=1 \
@@ -253,7 +265,7 @@ install -m 644 wx/tools/XRCed/XRCed_32.png ${pkgdir}/${_datadir}/pixmaps/XRCed.p
 
 ## Correct the prefix path in wxgtk2d-config
 ##
-#sed -i 's/^prefix=.*.$/prefix=\/usr/' ${pkgdir}/usr/bin/wxgtk2d-2.4-config
+#sed -i 's/^prefix=.*.$/prefix=\/usr/' ${pkgdir}/usr/bin/wxgtk2d-${pyver}-config
 (cd ${pkgdir}/${wxpref}/bin; rm -f wx-config; ln -s ${wxpref}/lib/wx/config/gtk2-ansi-debug-${ver2} wx-config)
 (cd ${pkgdir}/${pref}/bin; rm -f wx-config; ln -s ${wxpref}/bin/wx-config wx-config)
 
@@ -286,6 +298,29 @@ cp -a gtk publicity changes.txt gpl.txt lgpl.txt licence.txt licendoc.txt \
     preamble.txt readme.txt toback24.txt todo.txt todo30.txt \
     ${docdir}/
 
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds
+cp ${here}/Slack.build ${pkgdir}/usr/src/slackbuilds/
+
+# Make libraries visible
+#
+mkdir -p ${pkgdir}/etc/ld.so.conf.d
+echo "${LIBDIR}/wxPython-${version}-${port}-${chartype}/lib" >${pkgdir}/etc/ld.so.conf.d/wxPython-${version}.conf
+
+mkdir -p ${pkgdir}/install
+cat <<EOF >${pkgdir}/install/doinst.sh
+#!/bin/sh
+LDSOCONF=/etc/ld.so.conf
+PATHFOUND=\`grep "^include[ ]*/etc/ld.so.conf.d/\*.conf" \${LDSOCONF}\` >/dev/null
+if [ \$? -eq 1 ]; then
+  echo "include /etc/ld.so.conf.d/*.conf" >>\${LDSOCONF}
+fi
+/sbin/ldconfig
+
+EOF
+chmod 0755 ${pkgdir}/install/doinst.sh
+cp -p ${pkgdir}/install/doinst.sh ${docdir}/
+
 cd ${pkgdir}
 mkdir -p install
 cat <<EOF >${pkgdir}/install/slack-desc
@@ -303,23 +338,6 @@ wxPython${port}:
 wxPython${port}: 
 EOF
 chmod 0644 ${pkgdir}/install/slack-desc
-
-# Installation script (Add lib path to /etc/ld.so.conf.d/ file)
-#
-cat <<EOF >${pkgdir}/install/doinst.sh
-#!/bin/sh
-LDSOCONF=/etc/ld.so.conf
-PATHFOUND=\`grep "^include[ ]*/etc/ld.so.conf.d/\*.conf" \${LDSOCONF}\` >/dev/null
-if [ \$? -eq 1 ]; then
-  echo "include /etc/ld.so.conf.d/*.conf" >>\${LDSOCONF}
-fi
-/sbin/ldconfig
-
-EOF
-chmod 0755 ${pkgdir}/install/doinst.sh
-
-mkdir -p ${pkgdir}/etc/ld.so.conf.d
-echo "${LIBDIR}/wxPython-${version}-gtk2-ansi/lib" >${pkgdir}/etc/ld.so.conf.d/wxPython-${version}.conf
 
 
 /sbin/makepkg -c n -l y ${releasedir}/${pkgname}
@@ -341,6 +359,16 @@ fi
 exit 0
 
 # Changelog
+#
+# CKW 20070926, release 4
+#  - explicitly create ${pkgdir}/install directory
+#  - archive Slack.build in ${pkgdir}/usr/src/slackbuilds
+#
+# CKW 20070813, release 3
+#  - add unicode support
+#
+# CKW 20070810, release 2
+#  - fixed SWIG usage
 #
 # CKW 20070616, release 1 of 2.8.4.0
 #

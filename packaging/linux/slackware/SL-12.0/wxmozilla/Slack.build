@@ -1,6 +1,6 @@
 name=wxmozilla
 version=20070620cvs
-release=1
+release=2
 prefix=${PREFIX:-/usr}
 arch=${ARCH:-`uname -m`}
 srcpkg=${name}-${version}.tar.gz
@@ -34,7 +34,8 @@ elif [ "${arch}" = "x86_64" ]; then
 fi
 
 here=`pwd`
-patch3=${here}/patches/patch-contrib-mozilla25-wx-mozilla.py
+swig_binary=${here}/swig-wxPython1.3.29
+patch4=${here}/patches/patch-contrib-mozilla25-wxPython-mozilla.py
 
 PATH=/sbin:${PATH}
 . ../functions
@@ -57,9 +58,19 @@ cd ${builddir}
 # Apply patches
 # like this: do_patch ${patch0}
 #
-do_patch ${patch3}
+do_patch ${patch4}
 echo "Post-patch sleep"
 sleep 3
+
+# Generate new mozilla.py & mozilla_wrap.c
+#
+echo -n "Swigging ... " && ( cd wxPython/contrib/mozilla25 && \
+	${swig_binary} -c++ -python -new_repr -modern -fastdispatch -fvirtual -fastinit -fastunpack -D__WXGTK__ -I/usr/include/wx/wxPython/i_files -module mozilla -o mozilla_wrap.cpp  mozilla.i && \
+	cp mozilla.py wx/ && \
+	cp mozilla.py gtk/ && \
+	cp mozilla_wrap.cpp gtk/ 
+)
+echo
 
 autoconf
 # Build & install
@@ -127,6 +138,9 @@ if [ $# -gt 0 -a "${1}" = "install" ]; then
 fi
 
 # Changelog
+#
+# CKW 20070810 - release 2
+#  - generate new swig stuff
 #
 # CKW 20070629 - first release with xulrunner
 #

@@ -1,6 +1,6 @@
 name=wxmozilla
 version=20070620cvs
-release=1
+release=3
 prefix=${PREFIX:-/usr}
 arch=${ARCH:-`uname -m`}
 srcpkg=${name}-${version}.tar.gz
@@ -34,7 +34,8 @@ elif [ "${arch}" = "x86_64" ]; then
 fi
 
 here=`pwd`
-patch3=${here}/patches/patch-contrib-mozilla25-wx-mozilla.py
+swig_binary=/usr/bin/swig-wxPython1.3.29
+patch4=${here}/patches/patch-contrib-mozilla25-wxPython-mozilla.py
 
 PATH=/sbin:${PATH}
 . ../functions
@@ -57,10 +58,21 @@ cd ${builddir}
 # Apply patches
 # like this: do_patch ${patch0}
 #
-do_patch ${patch3}
+do_patch ${patch4}
 echo "Post-patch sleep"
 sleep 3
 
+# Generate new mozilla.py & mozilla_wrap.c
+#
+echo -n "Swigging ... " && ( cd wxPython/contrib/mozilla25 && \
+	${swig_binary} -c++ -python -new_repr -modern -fastdispatch -fvirtual -fastinit -fastunpack -D__WXGTK__ -I/usr/include/wx/wxPython/i_files -module mozilla -o mozilla_wrap.cpp  mozilla.i && \
+	cp mozilla.py wx/ && \
+	cp mozilla.py gtk/ && \
+	cp mozilla_wrap.cpp gtk/ 
+)
+echo
+
+exit
 autoconf
 # Build & install
 #
@@ -104,6 +116,11 @@ ${name}:
 EOF
 chmod 0644 ${pkgdir}/install/slack-desc
 
+# This doinst.sh, which found the path to the correct libgtkembedmoz.so
+# and entered it in /etc/ld.so.conf, is now not needed; xulrunner (which
+# supplies libgtkembedmoz.so) already does it.
+#cp ${here}/doinst.sh ${pkgdir}/install/
+#chmod 0755 ${pkgdir}/install/doinst.sh
 
 #
 #
@@ -123,8 +140,12 @@ fi
 
 # Changelog
 #
-# CKW 20070728 release 1 for wxPython-2.8.4.0
+# CKW 20070813 - release 3
+#  - build against new wxPython  (unicode)
 #
-
+# CKW 20070810 - release 2
+#  - generate new swig stuff
+#
+# CKW 20070629 - first release with xulrunner
 #
 

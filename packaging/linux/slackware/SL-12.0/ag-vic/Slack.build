@@ -1,8 +1,8 @@
 name=ag-vic
-version=2.8ucl-1.3.0-r4080
+version=2.8ucl-1.3.0-r4086
 release=1
 arch=${ARCH:-`uname -m`}
-srcpkg=mmedia-r4080.tar.gz
+srcpkg=mmedia-r4086.tar.gz
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
@@ -14,6 +14,7 @@ master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/nfs/distfiles/
 releasedir=${RELEASEDIR:-/tmp}
 
+TCLTKCONFIGOPTS=""
 if [ "${arch}" = "i386" ]; then
   SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
   LIBDIR="/usr/lib"
@@ -34,11 +35,12 @@ elif [ "${arch}" = "x86_64" ]; then
   SLKCFLAGS="-O2"
   LIBDIR="/usr/lib64"
   ARCH_CONFIGURE="--libdir=$LIBDIR"
+  TCLTKCONFIGOPTS="--with-tcl=/usr --with-tk=/usr"
 fi
 
 here=`pwd`
 
-patch0=${here}/patches/patch-vic-configure.in.tk
+#patch0=${here}/patches/patch-vic-configure.in.tk
 
 PATH=/sbin:${PATH}
 . ../functions
@@ -56,13 +58,13 @@ mkdir -p ${pkgdir}
 #
 cd ${buildroot}
 tar zxvf ${here}/${srcpkg}
-mv mmedia-r4080 ${name}-${version}
+mv mmedia-r4086 ${name}-${version}
 cd ${builddir}
 
 # Apply patches
 # like this: do_patch ${patch0}
 #
-do_patch ${patch0}
+#do_patch ${patch0}
 
 
 sleep 3
@@ -76,7 +78,8 @@ sleep 3
 
 # Build with system tcl & tk
 (cd common && ./configure && make) || exit 1
-(cd vic && autoconf -f && ./configure --prefix=/usr && make) || exit 1
+#(cd vic && autoconf -f && ./configure ${TCLTKCONFIGOPTS} && make) || exit 1
+(cd vic && ./configure ${TCLTKCONFIGOPTS} && make) || exit 1
 
 # Install
 cd ${builddir}
@@ -94,6 +97,7 @@ mkdir -p ${docdir}
 cd ${builddir}/vic
 cp -a html CHANGES.html FILES README README.WIN32 VERSION \
 	${docdir}
+cp ${here}/Slack.build ${docdir}/
 
 
 # Package it 
@@ -103,12 +107,11 @@ cat <<EOF >${pkgdir}/install/slack-desc
 ${name}: ${name}-${version}
 ${name}:
 ${name}: New UCL vic video tool
-${name}: using ucl svn revision 4080
+${name}: using ucl svn revision 4086
 ${name}:
 EOF
 chmod 0644 ${pkgdir}/install/slack-desc
 
-cp ${here}/Slack.build ${pkgdir}/install/
 
 #
 #
@@ -132,9 +135,21 @@ fi
 
 # Changelog
 #
+# 20070808 CKW
+#  - release 1 of svn version r4086
+#
 # 20070720 CKW
 #  - release 1 of svn version r4080
 #
 # 20070606 CKW First release
-#  - svn checkout http://mediatools.cs.ucl.ac.uk/repos/mmedia/vic/branches/mpeg4 mpeg4
 #
+#
+###################################
+# Retrieve from SVN with:
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/vic/branches/mpeg4 vic
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/rat/trunk rat
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/common/trunk common
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/tcl-8.0/trunk tcl-8.0
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/tk-8.0/trunk tk-8.0
+###################################
+
