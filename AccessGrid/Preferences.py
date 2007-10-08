@@ -27,7 +27,6 @@ class Preferences:
     NODE_CONFIG = "defaultNodeConfig"
     NODE_CONFIG_TYPE = "defaultNodeConfigType"
     MULTICAST = "multicast"
-    REPAIR_NETWORK = "repair network"
     BEACON = "beacon"
     LOG_TO_CMD = "logToCmd"
     ENABLE_DISPLAY = "enableDisplay"
@@ -67,7 +66,6 @@ class Preferences:
                          self.NODE_CONFIG_TYPE : NodeConfigDescription.SYSTEM,
                          self.NODE_CONFIG: "default",
                          self.MULTICAST: 1,
-                         self.REPAIR_NETWORK: 1,
                          self.BEACON: 1,
                          self.LOG_TO_CMD: 0,
                          self.ENABLE_DISPLAY: 1,

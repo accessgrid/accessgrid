@@ -143,8 +143,6 @@ class PreferencesDialog(wx.Dialog):
                                        self.networkPanel.GetProxyPort())
         self.preferences.SetPreference(Preferences.MULTICAST,
                                        self.bridgingPanel.GetMulticast())
-        self.preferences.SetPreference(Preferences.REPAIR_NETWORK,
-                                       self.bridgingPanel.GetRepairNetwork())
         self.preferences.SetPreference(Preferences.BRIDGE_REGISTRY,
                                        self.bridgingPanel.GetRegistry(-1))
         self.preferences.SetBridges(self.bridgingPanel.GetBridges())
