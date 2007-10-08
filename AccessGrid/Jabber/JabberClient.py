@@ -91,6 +91,13 @@ class JabberClient:
         if self._stream:    
             self._stream.write(req)
         
+    def SendPing(self):
+        """
+        Ping the jabber server.
+        Use SendPresence() till we find something better
+        """
+        self.SendPresence()
+
     def SendNameChange(self, name):
         if len(self.currentRoomId) < 1:
             log.debug("Can't SendNameChange - not in venue")

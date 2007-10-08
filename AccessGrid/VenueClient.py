@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.356 2007-10-03 06:36:48 willing Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.357 2007-10-08 02:42:34 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.356 2007-10-03 06:36:48 willing Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.357 2007-10-08 02:42:34 willing Exp $"
 
 
 import sys
@@ -624,12 +624,16 @@ class VenueClient:
         self.heartBeatCounter += 1
         log.debug("heartBeatCounter = %d", self.heartBeatCounter)
         if self.heartBeatCounter > 60:
+            jabberRestartNeeded = False
             self.heartBeatCounter = 0
             try:
-                self.jabber.SendNameChange(self.profile.name)
+                self.jabber.SendPing()
             except Exception, e:
-                log.exception("Couldn't send name change: %s", e)
-                log.info("Will try to __RestartJabber")
+                log.exception("Couln't ping jabber: %s", e)
+                jabberRestartNeeded = True
+            self.__RestartJabber()
+            if jabberRestartNeeded:
+                log.info("Jabber restart needed")
                 self.__RestartJabber()
 
         self.heartBeatTimer = threading.Timer(nextTimeout,
@@ -1247,13 +1251,13 @@ class VenueClient:
         self.jabberNameRetries = 0
         self.jabberHost = None
 
-        state = self.__venueProxy.GetState()
-        self.textLocation = state.textLocation.split(":")
-        if len(self.textLocation) > 1:
-            self.textLocation = (str(self.textLocation[0]), int(self.textLocatin[1]))
-            self.__StartJabber(self.textLocation, True)
-        else:
-            log.debug("Can't __RestartJabber - no self.textLocation")
+        try:
+            if self.textLocation:
+                self.__StartJabber(self.textLocation, True)
+            else:
+                log.debug("Can't __RestartJabber - no textLocation")
+        except Exception, e:
+            log.exception("__RestartJabber - __StartJabber failed: %s" % e)
 
     def EnterVenue(self, URL,withcert=0):
         """
