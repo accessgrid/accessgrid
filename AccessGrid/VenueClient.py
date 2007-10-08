@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.357 2007-10-08 02:42:34 willing Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.358 2007-10-08 02:51:53 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.357 2007-10-08 02:42:34 willing Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.358 2007-10-08 02:51:53 willing Exp $"
 
 
 import sys
@@ -631,7 +631,6 @@ class VenueClient:
             except Exception, e:
                 log.exception("Couln't ping jabber: %s", e)
                 jabberRestartNeeded = True
-            self.__RestartJabber()
             if jabberRestartNeeded:
                 log.info("Jabber restart needed")
                 self.__RestartJabber()
