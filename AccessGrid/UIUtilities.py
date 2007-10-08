@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.95 2007-10-04 17:36:56 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.96 2007-10-08 01:38:53 willing Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.95 2007-10-04 17:36:56 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.96 2007-10-08 01:38:53 willing Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -147,15 +147,15 @@ class TextValidator(wx.PyValidator):
             MessageDialog(None, "Please, enter a comment.")
             return False
        
-        return true
+        return True
 
     def TransferToWindow(self):
         # Prevent wx.Dialog from complaining.
-        return true 
+        return True 
 
     def TransferFromWindow(self):
         # Prevent wx.Dialog from complaining.
-        return true 
+        return True 
         
 class ErrorDialogWithTraceback:
     def __init__(self, frame, text, text2 = "", style = wx.OK | wx.ICON_ERROR):
@@ -971,15 +971,15 @@ class MyUrlsEditValidator(wx.PyValidator):
             dlg.Destroy()
             return False
 
-        return true
+        return True
     
     def TransferToWindow(self):
         # Prevent wx.Dialog from complaining.
-        return true 
+        return True 
 
     def TransferFromWindow(self):
         # Prevent wx.Dialog from complaining.
-        return true 
+        return True 
         
 class TextDialog(wx.Dialog):
     """
