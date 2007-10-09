@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.358 2007-10-08 02:51:53 willing Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.359 2007-10-09 04:42:55 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.358 2007-10-08 02:51:53 willing Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.359 2007-10-09 04:42:55 willing Exp $"
 
 
 import sys
@@ -399,6 +399,8 @@ class VenueClient:
         self.currentBridge = self.FindBridge(bridgeList)
         
         log.debug('exiting loadbridges')
+        if not hasattr(self, 'registryClient'):
+            self.registryClient = None
         self.bridgePinger = BridgePingThread(self.preferences, self.registryClient, bridgeList)
         self.bridgePinger.start()
         
