@@ -11,12 +11,12 @@ fi
 PATH=/sbin:${PATH}
 
 arch=${ARCH:-`uname -m`}
-SL_VERSION=SL12
+SL_VERSION="SL12"
 
 # Package names
 #
 pkgs="
-AccessGrid-3.1-noarch-cvs20071005.tgz
+AccessGrid-3.1-noarch-cvs20071010.tgz
 quickbridge-3.0.2-${arch}-1.tgz
 elementtree-1.2.6-20050316-${arch}-1.tgz
 bajjer-0.2.5-${arch}-2.tgz
@@ -45,7 +45,7 @@ hdvideoservices-0.1-noarch-1.tgz
 
 
 version=3.1
-release=cvs20071005-1
+release=cvs20071010-1
 releasedir=${RELEASEDIR:-/scratch/AG3/releases-12.0}
 pkgdir=${PKGDIR:-/tmp}
 
@@ -185,8 +185,10 @@ rm -rf ${bundledir}
 
 # Changelog
 #
+# Release cvs 20071010-1
+#  - 3.1beta2
+#
 # Release cvs 20071005-1
-#  - AG 3.1 beta-2
 #  - update bajjer to 0.2.5 release 2
 #
 # Release cvs20070808-3 20070926
@@ -194,7 +196,7 @@ rm -rf ${bundledir}
 #  - added --uninstall option
 #
 # Release cvs20070808-2 20070810
-#  - upgrade ag-vic to 4086
+#  - update ag-vic to r4086
 #
 # Release cvs20070808-1 20070808
 #  - new snapshot

@@ -1,6 +1,6 @@
 name=AccessGrid
 version=3.1
-release=cvs20071005
+release=cvs20071010
 arch=${ARCH:-noarch}
 prefix=${PREFIX:-/usr}
 #srcpkg=${name}-${version}.src.tar.gz
@@ -187,7 +187,8 @@ exit
 
 # Changelog
 #
-#  - introduce XDG_MERGEDIR to support slackbot Gnome desktop
+# CKW 20071010 - 3.1beta2
+#  - introduce XDG_MERGEDIR
 #
 # CKW 20070627 - 3.1beta1
 
