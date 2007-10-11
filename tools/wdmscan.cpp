@@ -8,7 +8,8 @@
 
 
 
-static int NUM_DEVS = 20;
+static const int NUM_DEVS = 20;
+static const int NUM_PORTS = 20;
 int debug=0;
 
 void printcsv(const char *str) {
@@ -57,12 +58,14 @@ DirectShowScanner::DirectShowScanner() {
    long								output    = -1;
    long								related;
    long								pinType;    
-   char								*ports[10];
+   char								*ports[NUM_PORTS];
    int								numports = 0;
    int								devNum;
    char								nameBuf[80];
    CComPtr<IGraphBuilder>			pGraph_;
    CComPtr<ICaptureGraphBuilder2>   pBuild_;
+   int								svideoPortNum=1;
+   int								compositePortNum=1;
 
 
    // Set up filter graph builder and filter graph
@@ -82,6 +85,13 @@ DirectShowScanner::DirectShowScanner() {
  
    // Get the capture filter for each device installed, up to NUM_DEVS devices
    for( devNum=0; devNum < NUM_DEVS; ++devNum) {
+	  numports = 0;
+	  for( int i=0;i<NUM_PORTS ;i++ )
+	  {
+		  ports[i] = NULL;
+	  }
+	  compositePortNum = 1;
+	  svideoPortNum = 1;
       if ( pEnum->Next(1, &pMoniker, NULL) == S_OK ) {
 
          hr = pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag);
@@ -120,10 +130,26 @@ DirectShowScanner::DirectShowScanner() {
 				 pXBar->get_CrossbarPinInfo(TRUE, i, &related, &pinType);
 				 if (debug)  printf("input %d pintype %d\n", i, pinType);
 				 if( pinType == PhysConn_Video_SVideo ) {
-					ports[numports] = "S-Video";  numports++;
+					if( svideoPortNum > 1 ) {
+						char *portstr = new char[64];
+						sprintf(portstr,"S-Video%d", svideoPortNum);
+						ports[numports] = portstr;
+					} 
+					else {
+						ports[numports] = "S-Video";
+					}
+					numports++; svideoPortNum++;
 				 }
 				 if( pinType == PhysConn_Video_Composite ) {
-					 ports[numports] = "Composite"; numports++;
+					if( compositePortNum > 1 ) {
+						char *portstr = new char[64];
+						sprintf(portstr,"Composite%d", compositePortNum);
+						ports[numports] = portstr;
+					}
+					else {
+						ports[numports] = "Composite";
+					}
+					numports++; compositePortNum++;
 				 }
 			 }
 		 }
