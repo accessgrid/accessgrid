@@ -31,7 +31,7 @@ def build_freebsd(dir):
 
 # Set plat-specific bits
 if sys.platform == 'win32':
-    VIC_EXE = os.path.join(VICDIR,'vic','DDraw_release','vic.exe')
+    VIC_EXE = os.path.join(VICDIR,'vic','ddraw_debug','vic.exe')
     copyExe = 'copy'
     build = build_win
 elif sys.platform == 'linux2':
