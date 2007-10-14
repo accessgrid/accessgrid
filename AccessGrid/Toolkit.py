@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.129 2007-06-15 18:55:01 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.130 2007-10-14 03:38:22 willing Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.129 2007-06-15 18:55:01 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.130 2007-10-14 03:38:22 willing Exp $"
 
 # Standard imports
 import os
@@ -92,13 +92,13 @@ class AppBase:
                               help="Specify whether the service uses SSL.")
        self.parser.add_option("--cert", dest="cert",
                               metavar="CERTFILE", default=None,
-                         help="Specify a configuration file for the program.")
+                         help="Specify a certificate file to use.")
        self.parser.add_option("--key", dest="key",
                               metavar="KEYFILE", default=None,
-                         help="Specify a configuration file for the program.")
+                         help="Specify a certificate key file to use.")
        self.parser.add_option("--cadir", dest="cadir",
                               metavar="CADIR", default=None,
-                         help="Specify a configuration file for the program.")
+                         help="Specify the directory containing CA certificates.")
 
        self.options = None
        self.userConfig = None
