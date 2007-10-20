@@ -4,7 +4,7 @@
 # Purpose:     A group messaging service client that handles Access Grid
 #                 venue events.
 # Created:     2005/09/09
-# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.8 2007-10-04 17:36:56 turam Exp $
+# RCS-ID:      $Id: InsecureVenueEventClient.py,v 1.9 2007-10-20 02:47:21 douglask Exp $
 # Copyright:   (c) 2005,2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -252,7 +252,7 @@ def mainWithUI(group="Test", venueEventClientClass=InsecureVenueEventClient, gro
             self.SetMenuBar(menuBar)
             wx.EVT_MENU(self,self.ID_EXIT,self.TimeToQuit)
             
-            sizer = wxBoxSizer(wx.VERTICAL)
+            sizer = wx.BoxSizer(wx.VERTICAL)
             self.SetSizer(sizer)
             
             # a logging window
