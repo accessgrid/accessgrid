@@ -1,11 +1,11 @@
-# New ports collection makefile for:	py-zsi
-# Date created:		17 September 2001
-# Whom:	      		Johann Visagie <wjv@FreeBSD.org>
+# New ports collection makefile for:	bajjer
+# Date created:		16th October 2007
+# Whom:	      		Chris Willing <c.willing@uq.edu.au>
 #
 #
 
 PORTNAME=	Bajjer
-DISTVERSION=	0.2.4
+DISTVERSION=	0.2.5
 #PORTEPOCH=	1
 CATEGORIES=	net python
 MASTER_SITES=	http://www.vislab.uq.edu.au/ag3/freebsd/distfiles/ \
@@ -17,10 +17,12 @@ DISTNAME=	${PORTNAME}-${DISTVERSION}
 MAINTAINER=	
 COMMENT=	A Jabber library for Python
 
-BUILD_DEPENDS=	${PYXML}
-RUN_DEPENDS=	${PYXML}
+BUILD_DEPENDS=	${PYXML} \
+		py24-elementtree>=1.2:${PORTSDIR}/devel/py-elementtree
+RUN_DEPENDS=	${PYXML} \
+		py24-elementtree>=1.2:${PORTSDIR}/devel/py-elementtree
 
-CONFLICTS=	py*-elementtree-*
+#CONFLICTS=	py*-elementtree-*
 
 NO_LATEST_LINK=	yes
 

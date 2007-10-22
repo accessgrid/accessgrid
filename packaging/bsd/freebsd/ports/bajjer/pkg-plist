@@ -1,36 +1,3 @@
-lib/python2.4/site-packages/elementtree/ElementInclude.py
-lib/python2.4/site-packages/elementtree/ElementInclude.pyc
-lib/python2.4/site-packages/elementtree/ElementInclude.pyo
-lib/python2.4/site-packages/elementtree/ElementPath.py
-lib/python2.4/site-packages/elementtree/ElementPath.pyc
-lib/python2.4/site-packages/elementtree/ElementPath.pyo
-lib/python2.4/site-packages/elementtree/ElementTree.py
-lib/python2.4/site-packages/elementtree/ElementTree.pyc
-lib/python2.4/site-packages/elementtree/ElementTree.pyo
-lib/python2.4/site-packages/elementtree/HTMLTreeBuilder.py
-lib/python2.4/site-packages/elementtree/HTMLTreeBuilder.pyc
-lib/python2.4/site-packages/elementtree/HTMLTreeBuilder.pyo
-lib/python2.4/site-packages/elementtree/SgmlopXMLTreeBuilder.py
-lib/python2.4/site-packages/elementtree/SgmlopXMLTreeBuilder.pyc
-lib/python2.4/site-packages/elementtree/SgmlopXMLTreeBuilder.pyo
-lib/python2.4/site-packages/elementtree/SimpleXMLTreeBuilder.py
-lib/python2.4/site-packages/elementtree/SimpleXMLTreeBuilder.pyc
-lib/python2.4/site-packages/elementtree/SimpleXMLTreeBuilder.pyo
-lib/python2.4/site-packages/elementtree/SimpleXMLWriter.py
-lib/python2.4/site-packages/elementtree/SimpleXMLWriter.pyc
-lib/python2.4/site-packages/elementtree/SimpleXMLWriter.pyo
-lib/python2.4/site-packages/elementtree/TidyHTMLTreeBuilder.py
-lib/python2.4/site-packages/elementtree/TidyHTMLTreeBuilder.pyc
-lib/python2.4/site-packages/elementtree/TidyHTMLTreeBuilder.pyo
-lib/python2.4/site-packages/elementtree/TidyTools.py
-lib/python2.4/site-packages/elementtree/TidyTools.pyc
-lib/python2.4/site-packages/elementtree/TidyTools.pyo
-lib/python2.4/site-packages/elementtree/XMLTreeBuilder.py
-lib/python2.4/site-packages/elementtree/XMLTreeBuilder.pyc
-lib/python2.4/site-packages/elementtree/XMLTreeBuilder.pyo
-lib/python2.4/site-packages/elementtree/__init__.py
-lib/python2.4/site-packages/elementtree/__init__.pyc
-lib/python2.4/site-packages/elementtree/__init__.pyo
 lib/python2.4/site-packages/gov/__init__.py
 lib/python2.4/site-packages/gov/__init__.pyc
 lib/python2.4/site-packages/gov/__init__.pyo
@@ -46,6 +13,9 @@ lib/python2.4/site-packages/gov/lbl/dsd/bajjer/__init__.pyo
 lib/python2.4/site-packages/gov/lbl/dsd/bajjer/auth.py
 lib/python2.4/site-packages/gov/lbl/dsd/bajjer/auth.pyc
 lib/python2.4/site-packages/gov/lbl/dsd/bajjer/auth.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/etreeadapter.py
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/etreeadapter.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/etreeadapter.pyo
 lib/python2.4/site-packages/gov/lbl/dsd/bajjer/io.py
 lib/python2.4/site-packages/gov/lbl/dsd/bajjer/io.pyc
 lib/python2.4/site-packages/gov/lbl/dsd/bajjer/io.pyo
@@ -67,14 +37,23 @@ lib/python2.4/site-packages/gov/lbl/dsd/bajjer/stream.pyo
 lib/python2.4/site-packages/gov/lbl/dsd/bajjer/util.py
 lib/python2.4/site-packages/gov/lbl/dsd/bajjer/util.pyc
 lib/python2.4/site-packages/gov/lbl/dsd/bajjer/util.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/x/__init__.py
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/x/__init__.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/x/__init__.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/x/delay.py
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/x/delay.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/x/delay.pyo
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/x/external.py
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/x/external.pyc
+lib/python2.4/site-packages/gov/lbl/dsd/bajjer/x/external.pyo
 lib/python2.4/site-packages/gov/lbl/dsd/bajjer/xutil.py
 lib/python2.4/site-packages/gov/lbl/dsd/bajjer/xutil.pyc
 lib/python2.4/site-packages/gov/lbl/dsd/bajjer/xutil.pyo
 share/bajjer/etc/logging.cfg
 @dirrm share/bajjer/etc
 @dirrm share/bajjer
+@dirrm lib/python2.4/site-packages/gov/lbl/dsd/bajjer/x
 @dirrm lib/python2.4/site-packages/gov/lbl/dsd/bajjer
 @dirrm lib/python2.4/site-packages/gov/lbl/dsd
 @dirrm lib/python2.4/site-packages/gov/lbl
 @dirrm lib/python2.4/site-packages/gov
-@dirrm lib/python2.4/site-packages/elementtree
