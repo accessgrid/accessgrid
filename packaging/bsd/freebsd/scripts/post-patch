@@ -1,0 +1,9 @@
+XDGDIR=${WRKSRC}/packaging/linux/xdg
+echo "Patching desktop files in XDGDIR = ${XDGDIR}"
+
+for f in ${XDGDIR}/AccessGrid3*.directory; do
+sed -i .orig -e 's/^Icon=\/usr\/share\/AccessGrid\/ag-ellipse\.png/Icon=\/usr\/local\/share\/accessgrid\/ag-ellipse\.png/' $f; done
+for f in ${XDGDIR}/*3*.desktop; do
+sed -i .orig -e 's/^Icon=\/usr\/share\/AccessGrid\/ag\.ico/Icon=\/usr\/local\/share\/accessgrid\/ag\.ico/' $f; done
+rm -f ${XDGDIR}/*.orig
+

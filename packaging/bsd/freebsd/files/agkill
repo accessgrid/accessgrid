@@ -1,0 +1,40 @@
+#!/bin/sh
+
+# CKW 20071022
+#
+# This script is intended for FreeBSD (6.2).
+# It finds orphaned processes (now owned by init) which include the TARGET string
+# (default "python") and kills them.
+#
+# By default, root isn't allowed to run it. Don't change this unless you know
+# the implications of what you're doing.
+
+if [ "`id -u`" = "0" ]; then
+  echo "Shouldn't run this script as root!"
+  exit 1
+fi
+
+
+if [ $# -gt 0 ]; then
+  TARGET=$1
+else
+  TARGET=python
+fi
+echo "Target: ${TARGET}"
+
+for i in `ps alx | grep ${TARGET} | grep -v grep | awk ' $3 == 1 { print $2 }'`
+do
+  echo "kill -HUP $i"
+  kill -KILL $i
+done
+for i in `ps alx | grep ${TARGET} | grep -v grep | awk ' $3 == 1 { print $2 }'`
+do
+  echo "kill -TERM $i"
+  kill -TERM $i
+done
+for i in `ps alx | grep ${TARGET} | grep -v grep | awk ' $3 == 1 { print $2 }'`
+do
+  echo "kill -TERM $i"
+  kill -KILL $i
+done
+

@@ -3,27 +3,10 @@ X11BASE=/usr/X11R6
 
 case "$2" in
   "DEINSTALL")
-    # Menu stuff
-    rm -f ${LOCALBASE}/share/AccessGrid/xdg/*.orig
-    rm -rf ${X11BASE}/share/applications/AccessGrid
-    rm -rf ${X11BASE}/share/desktop-directories/*3*
-    dtopdir=${X11BASE}/share/desktop-directories
-    if [ -d ${dtopdir} -a `ls ${dtopdir}|wc -l` -eq 0 ]; then
-      rmdir ${dtopdir}
-    fi
-    rm -rf ${X11BASE}/etc/xdg/menus/applications-merged/AccessGrid3.menu
-    mergedir=${X11BASE}/etc/xdg/menus/applications-merged
-    if [ -d ${mergedir} -a `ls ${mergedir}|wc -l` -eq 0 ]; then
-      rmdir ${mergedir}
-    fi
-    # Shared Apps
-    rm -f ${LOCALBASE}/etc/AccessGrid3/Config/ApplicationDatabase
-    find ${LOCALBASE}/etc/AccessGrid3/SharedApplications/* -type d |xargs rm -rf
     ;;
   "POST-DEINSTALL")
-    rm -rf ${LOCALBASE}/etc/AccessGrid3/Logs
-    rm -rf ${LOCALBASE}/etc/AccessGrid3/Services
-    rm -rf ${LOCALBASE}/etc/AccessGrid3/PackageCache
+    rm -rf ${LOCALBASE}/etc/AccessGrid3
+    rm -rf ${LOCALBASE}/lib/python2.4/site-packages/AccessGrid3
     ;;
 esac
 

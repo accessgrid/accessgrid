@@ -15,6 +15,9 @@ while [ $# -gt 0 ]; do
     -a)
       ALLDIRS=1
       ;;
+    -t)
+      CLEANTBZ=1
+      ;;
     *)
       echo "Unknown option ($1). Exiting!"
       exit 1

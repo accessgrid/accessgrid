@@ -1,0 +1,19 @@
+Bajjer0.2.5 depends on py-elementtree (builtin 1.2 but using 1.2.6 elsewhere)
+feedparser (builtin 4.1)
+??? pyxml
+ZopeInterface (devel/py-zopeInterface 3.0.1)
+ag-zsi
+?? swig
+m2crypto
+twisted
+(mDNSResponder)
+(bonjour)
+common
+quickbridge
+
+ag-vic
+ag-rat
+
+wxPython
+wxmozilla
+

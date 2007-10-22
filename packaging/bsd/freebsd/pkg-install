@@ -3,26 +3,13 @@ case "$2" in
   "PRE-INSTALL")
     ;;
   "POST-INSTALL")
-    X11BASE=/usr/X11R6;
-    mkdir -p ${X11BASE}/etc/xdg/menus/applications-merged;
-    cp ${PKG_PREFIX}/share/AccessGrid/xdg/AccessGrid3.menu ${X11BASE}/etc/xdg/menus/applications-merged;
-    
-    mkdir -p ${X11BASE}/share/desktop-directories;
-    for f in ${PKG_PREFIX}/share/AccessGrid/xdg/*3*.directory; do
-    sed -i .orig -e 's/^Icon=\/usr\/share\/AccessGrid\/ag\.ico/Icon=\/usr\/local\/share\/AccessGrid\/ag\.ico/' $f; done
-    cp ${PKG_PREFIX}/share/AccessGrid/xdg/*3*.directory ${X11BASE}/share/desktop-directories;
-    
-    for f in ${PKG_PREFIX}/share/AccessGrid/xdg/*3*.desktop; do
-    sed -i .orig -e 's/^Icon=\/usr\/share\/AccessGrid\/ag\.ico/Icon=\/usr\/local\/share\/AccessGrid\/ag\.ico/' $f; done
-    mkdir -p ${X11BASE}/share/applications/AccessGrid;
-    cp ${PKG_PREFIX}/share/AccessGrid/xdg/*3*.desktop ${X11BASE}/share/applications/AccessGrid;
-
+    PKG_PREFIX=${PKG_PREFIX:-${LOCALBASE}}
     mkdir -p ${PKG_PREFIX}/etc/AccessGrid3/Services
     mkdir -p ${PKG_PREFIX}/etc/AccessGrid3/PackageCache
     mkdir -p ${PKG_PREFIX}/etc/AccessGrid3/Logs
 
     # install Shared apps
-#    ${PKG_PREFIX}/bin/agpm3.py --post-install
+    ${PKG_PREFIX}/bin/agpm3.py --post-install
     ;;
   *)
     echo "Unknown Install cycle"
