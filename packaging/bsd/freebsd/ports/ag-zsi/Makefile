@@ -1,19 +1,19 @@
 # New ports collection makefile for:	py-zsi
-# Date created:		17 September 2001
-# Whom:	      		Johann Visagie <wjv@FreeBSD.org>
+# Date created:				16 October 2007
+# Whom:	      				Chris Willing <c.willing@uq.edu.au>
 #
 #
 
 PORTNAME=	ag-zsi
-DISTVERSION=	0.1
+DISTVERSION=	r1385
 CATEGORIES=	net python
 MASTER_SITES=	http://www.vislab.uq.edu.au/ag3/freebsd/distfiles/
 #PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 PKGNAMESUFFIX=	-devel
 #DISTNAME=	${PORTNAME}-${DISTVERSION}
-USE_BZIP2=	yes
-DISTNAME=	ZSI-20060601svn
-WRKSRC=		${WRKDIR}/zsi
+USE_TGZ=	yes
+DISTNAME=	zsi-${DISTVERSION}
+WRKSRC=		${WRKDIR}/zsi-${DISTVERSION}
 
 MAINTAINER=	
 COMMENT=	Zsi for AccessGrid

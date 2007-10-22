@@ -1,5 +1,5 @@
-bin/wsdl2dispatch.py
-bin/wsdl2py.py
+bin/wsdl2dispatch
+bin/wsdl2py
 lib/python2.4/site-packages/ZSI/ServiceContainer.py
 lib/python2.4/site-packages/ZSI/ServiceContainer.pyc
 lib/python2.4/site-packages/ZSI/ServiceContainer.pyo
@@ -45,6 +45,9 @@ lib/python2.4/site-packages/ZSI/fault.pyo
 lib/python2.4/site-packages/ZSI/generate/__init__.py
 lib/python2.4/site-packages/ZSI/generate/__init__.pyc
 lib/python2.4/site-packages/ZSI/generate/__init__.pyo
+lib/python2.4/site-packages/ZSI/generate/commands.py
+lib/python2.4/site-packages/ZSI/generate/commands.pyc
+lib/python2.4/site-packages/ZSI/generate/commands.pyo
 lib/python2.4/site-packages/ZSI/generate/containers.py
 lib/python2.4/site-packages/ZSI/generate/containers.pyc
 lib/python2.4/site-packages/ZSI/generate/containers.pyo
@@ -66,6 +69,9 @@ lib/python2.4/site-packages/ZSI/parse.pyo
 lib/python2.4/site-packages/ZSI/resolvers.py
 lib/python2.4/site-packages/ZSI/resolvers.pyc
 lib/python2.4/site-packages/ZSI/resolvers.pyo
+lib/python2.4/site-packages/ZSI/schema.py
+lib/python2.4/site-packages/ZSI/schema.pyc
+lib/python2.4/site-packages/ZSI/schema.pyo
 lib/python2.4/site-packages/ZSI/twisted/WSresource.py
 lib/python2.4/site-packages/ZSI/twisted/WSresource.pyc
 lib/python2.4/site-packages/ZSI/twisted/WSresource.pyo
@@ -117,8 +123,6 @@ lib/python2.4/site-packages/ZSI/wstools/c14n.pyo
 lib/python2.4/site-packages/ZSI/wstools/logging.py
 lib/python2.4/site-packages/ZSI/wstools/logging.pyc
 lib/python2.4/site-packages/ZSI/wstools/logging.pyo
-@dirrm share/nls/en_US.US-ASCII
-@dirrm share/nls/POSIX
 @dirrm lib/python2.4/site-packages/ZSI/wstools
 @dirrm lib/python2.4/site-packages/ZSI/twisted
 @dirrm lib/python2.4/site-packages/ZSI/generate
