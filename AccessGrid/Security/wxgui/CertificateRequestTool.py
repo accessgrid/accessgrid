@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.26 2007-10-04 17:37:52 turam Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.27 2007-10-22 20:51:43 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import wx
@@ -279,7 +279,7 @@ class IntroWindow(TitledPage):
         self.Layout()
 
     def GetValidity(self):
-        return true
+        return True
   
     def Layout(self):
         self.sizer.Add(self.info, 0, wx.ALL, 5)
@@ -310,7 +310,7 @@ class SelectCertWindow(TitledPage):
         self.__Layout()
 
     def GetValidity(self):
-        return true
+        return True
 
     def GetNext(self):
         """
@@ -556,7 +556,7 @@ class ValidatorHelp(wx.PyValidator):
         # Check if some part of the domain matches the host name
         for part in domainPartsList:
            if hostlow.find(part.lower()) != -1:
-               return true
+               return True
 
         return False
 
@@ -640,13 +640,13 @@ class IdentityCertValidator(wx.PyValidator):
             return False
             
 
-        return true
+        return True
 
     def TransferToWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 
     def TransferFromWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 
   
 class AnonCertWindow(TitledPage):
@@ -662,7 +662,7 @@ class AnonCertWindow(TitledPage):
         self.Layout()
 
     def GetValidity(self):
-        return true
+        return True
 
     def Layout(self):
         '''
@@ -777,13 +777,13 @@ class HostCertValidator(wx.PyValidator):
             self.helpClass.SetColour(win.emailCtrl)
             return False
         
-        return true
+        return True
 
     def TransferToWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 
     def TransferFromWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 
         
 class ServiceCertWindow(TitledPage):
@@ -955,13 +955,13 @@ class ServiceCertValidator(wx.PyValidator):
             self.helpClass.SetColour(win.emailCtrl)
             return False
             
-        return true
+        return True
 
     def TransferToWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 
     def TransferFromWindow(self):
-        return true # Prevent wx.Dialog from complaining.
+        return True # Prevent wx.Dialog from complaining.
 
 
 class SubmitReqWindow(TitledPage):

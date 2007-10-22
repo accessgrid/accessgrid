@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.42 2007-10-01 20:04:47 turam Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.43 2007-10-22 20:51:43 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.42 2007-10-01 20:04:47 turam Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.43 2007-10-22 20:51:43 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -1284,7 +1284,7 @@ class AddPeopleDialog(wx.Dialog):
             self.infoDict[self.selections.GetValue()] = list
             self.addList.InsertStringItem(0, item)
             self.addList.SetColumnWidth(0, wx.LIST_AUTOSIZE)
-            return true
+            return True
 
         return False
 
@@ -1298,7 +1298,7 @@ class AddPeopleDialog(wx.Dialog):
             list.remove(item_name)
             self.infoDict[self.selections.GetValue()] = list
             self.addList.DeleteItem(index)
-            return true
+            return True
  
         return False
         
