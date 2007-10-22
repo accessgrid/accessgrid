@@ -1,0 +1,28 @@
+include/wxmozilla/wxMozilla.h
+include/wxmozilla/wxMozillaBrowser.h
+include/wxmozilla/wxMozillaBrowserChrome.h
+include/wxmozilla/wxMozillaComponents.h
+include/wxmozilla/wxMozillaEvents.h
+include/wxmozilla/wxMozillaProtocolHandler.h
+include/wxmozilla/wxMozillaSettings.h
+include/wxmozilla/wxMozillaWindow.h
+lib/libwxmozilla_gtk2-2.6.a
+lib/libwxmozilla_gtk2-2.6.la
+lib/libwxmozilla_gtk2-2.6.so
+lib/libwxmozilla_gtk2-2.6.so.0
+lib/python2.4/site-packages/wx-2.6-gtk2-ansi/wx/_mozilla.a
+lib/python2.4/site-packages/wx-2.6-gtk2-ansi/wx/_mozilla.la
+lib/python2.4/site-packages/wx-2.6-gtk2-ansi/wx/_mozilla.so
+lib/python2.4/site-packages/wx-2.6-gtk2-ansi/wx/mozilla.py
+lib/python2.4/site-packages/wx-2.6-gtk2-ansi/wx/mozilla.pyc
+lib/python2.4/site-packages/wx-2.6-gtk2-ansi/wx/mozilla.pyo
+lib/python2.4/site-packages/wx-2.6-gtk2-ansi/wxPython/mozilla.py
+lib/python2.4/site-packages/wx-2.6-gtk2-ansi/wxPython/mozilla.pyc
+lib/python2.4/site-packages/wx-2.6-gtk2-ansi/wxPython/mozilla.pyo
+libdata/pkgconfig/wxmozilla.pc
+@dirrmtry lib/python2.4/site-packages/wx-2.6-gtk2-ansi/wxPython
+@dirrmtry lib/python2.4/site-packages/wx-2.6-gtk2-ansi/wx
+@dirrmtry lib/python2.4/site-packages/wx-2.6-gtk2-ansi
+@dirrmtry lib/python2.4/site-packages
+@dirrmtry lib/python2.4
+@dirrmtry include/wxmozilla
