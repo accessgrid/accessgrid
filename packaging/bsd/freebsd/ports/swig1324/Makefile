@@ -7,8 +7,8 @@
 
 PORTNAME=	swig
 PORTVERSION=	1.3.24
-PORTREVISION=	1
-CATEGORIES=	devel
+PORTREVISION=	2
+CATEGORIES=
 MASTER_SITES=	${MASTER_SITE_SOURCEFORGE} \
 		http://www.vislab.uq.edu.au/ag3/freebsd/distfiles/
 MASTER_SITE_SUBDIR=	${PORTNAME}
@@ -25,6 +25,7 @@ PLIST_SUB+=	PORTVERSION=${PORTVERSION}
 #                      allegrocl modula3 chicken
 
 WRKSRC=		${WRKDIR}/SWIG-1.3.24
+CONFIGURE_ARGS=	--with-release-suffix=-${PORTVERSION}
 CONFIGURE_ENV+=	CFLAGS="${CFLAGS} -fPIC -DPIC"
 ALL_TARGET=	swig
 PLIST_SUB+=	VER="${VER}"
@@ -39,7 +40,7 @@ post-configure:
 	${REINPLACE_CMD} -e 's#null#&|| true#' ${WRKSRC}/Makefile
 
 post-install:
-	${LN} -f ${PREFIX}/bin/swig ${PREFIX}/bin/swig${VER}
+#	${LN} -f ${PREFIX}/bin/swig ${PREFIX}/bin/swig${VER}
 	${MKDIR} ${EXAMPLESDIR}/${PORTVERSION}
 	cd ${WRKSRC}/Examples && ${FIND} . -type d \
 		-exec ${INSTALL} -d ${EXAMPLESDIR}/${PORTVERSION}/{} \;
