@@ -6,9 +6,9 @@
 #
 
 PORTNAME=	m2crypto
-PORTVERSION=	0.15
+PORTVERSION=	0.17
 CATEGORIES=	security python
-MASTER_SITES=	http://www.vislab.uq.edu.au/ag3/freebsd/distfiles/ \
+MASTER_SITES=	http://www.vislab.uq.edu.au/ag3/distfiles/ \
 		http://sandbox.rulemaker.net/ngps/Dist/
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 DISTNAME=	${PORTNAME}-${PORTVERSION:S/.1$//}
@@ -18,17 +18,20 @@ PATCH_SITES=	${MASTER_SITES}
 MAINTAINER=	mnag@FreeBSD.org
 COMMENT=	Crypto and SSL toolkit for Python
 
-#BUILD_DEPENDS=	swig1.3:${PORTSDIR}/devel/swig13
-BUILD_DEPENDS=  swig=1.3.24_1:../swig1324
+BUILD_DEPENDS=	swig1.3:${PORTSDIR}/devel/swig13
+#BUILD_DEPENDS=  swig=1.3.24_1:../swig1324
 
 #PATCHFILES+=	patch-SWIG-_m2crypto_wrap.c
 
 DIST_SUBDIR=	python
 USE_PYTHON=	yes
 USE_PYDISTUTILS=yes
-USE_ZIP=	yes
+#USE_ZIP=	yes
+USE_TGZ=	yes
 USE_OPENSSL=	yes
 USE_REINPLACE=	yes
+
+CONFLICTS=     *m2crypto<0.17
 
 #`post-patch:
 #`	@${REINPLACE_CMD} "s|%%PYTHON_INCLUDEDIR%%|${PYTHON_INCLUDEDIR}|g" ${WRKSRC}/SWIG/Makefile
