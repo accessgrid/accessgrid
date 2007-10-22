@@ -1,0 +1,74 @@
+--- configure.in.tk.orig	Wed Aug  8 21:26:36 2007
++++ configure.in.tk	Wed Oct 17 11:52:45 2007
+@@ -5,14 +5,14 @@
+ 
+ AC_ARG_WITH(tcl,	--with-tcl=path	specify a pathname for tcl, d=$withval, d="")
+ 
+-if test "$aquatcl" == yes; then
++if test "$aquatcl" = yes; then
+ 	echo "Using AquaTCL"
+         V_LIB_TCL="-framework Tcl"
+         V_DEFINE="$V_DEFINE -DMAC_OSX_TCL"
+         V_LIBRARY_TCL=/Library/Frameworks/Tcl.framework/Versions/8.4/Resources/Scripts
+         V_INCLUDE_TCL="-I/Library/Frameworks/Tcl.framework/Headers -I/Library/Frameworks/Tcl.framework/PrivateHeaders"
+ 
+-elif test "$ucltcl" == yes; then
++elif test "$ucltcl" = yes; then
+ 	if test -z "$tcl"; then 
+ 		# UCL defaults
+ 		ucltcl=../tcl-8.0
+@@ -41,7 +41,9 @@
+ 		exit 1
+ 	fi
+ 	V_INCLUDE_TCL=-I$d/include
+-	if test ! -r $d/include/tcl.h ; then
++	if test -r $d/include/tcl8.4/tcl.h ; then
++		V_INCLUDE_TCL=-I$d/include/tcl8.4
++	elif test ! -r $d/include/tcl.h ; then
+ 		echo "can't find tcl.h in $d/include"
+ 		exit 1
+ 	fi
+@@ -54,6 +56,7 @@
+ 		$d/lib/libtcl8.4.so \
+ 		$d/lib/libtcl8.4.dylib \
+ 		$d/lib/libtcl8.4.a \
++		$d/lib/libtcl84.a \
+ 		$d/lib/libtcl.so \
+ 		$d/lib/libtcl.dylib \
+ 		$d/lib/libtcl.a"
+@@ -183,14 +186,14 @@
+ 
+ AC_ARG_WITH(tk,	--with-tk=path	specify a pathname for tk, d=$withval, d="")
+ 
+-if test "$aquatk" == yes; then
++if test "$aquatk" = yes; then
+ 	echo "Using AquaTk"
+         V_LIB_TK="-framework Tk"
+         V_DEFINE="$V_DEFINE -DMAC_OSX_TK"
+         V_LIBRARY_TK=/Library/Frameworks/Tk.framework/Versions/8.4/Resources/Scripts
+         V_INCLUDE_TK="-I/Library/Frameworks/Tk.framework/Headers -I/Library/Frameworks/Tk.framework/PrivateHeaders"
+ 
+-elif test "$ucltk" == yes; then
++elif test "$ucltk" = yes; then
+ 	if test -z "$tk"; then 
+ 		# UCL defaults
+ 		ucltk=../tk-8.0
+@@ -219,7 +222,9 @@
+ 		exit 1
+ 	fi
+ 	V_INCLUDE_TK=-I$d/include
+-	if test ! -r $d/include/tk.h ; then
++	if test -r $d/include/tk8.4/tk.h ; then
++		V_INCLUDE_TK=-I$d/include/tk8.4
++	elif test ! -r $d/include/tk.h ; then
+ 		echo "can't find tk.h in $d/include"
+ 		exit 1
+ 	fi
+@@ -229,6 +234,7 @@
+ 		$d/lib64/libtk.a \
+ 		$d/lib/libtk8.4.so \
+ 		$d/lib/libtk8.4.a \
++		$d/lib/libtk84.a \
+ 		$d/lib/libtk.so \
+ 		$d/lib/libtk.a"
+ 	V_LIB_TK=FAIL

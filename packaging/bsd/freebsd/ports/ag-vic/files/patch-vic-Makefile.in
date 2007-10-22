@@ -1,0 +1,35 @@
+--- Makefile.in.orig	Wed Aug  8 21:26:35 2007
++++ Makefile.in	Wed Oct 17 16:00:01 2007
+@@ -168,7 +168,6 @@
+ 	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
+ 	dct.o huffcode.o bv.o iohandler.o timer.o \
+ 	ui-vdd.o tk.o random.o
+-	# color-true.o color-hi.o
+ 
+ OBJ_H261PLAY = h261_play.o p64/p64.o p64/p64dump.o \
+ 	module.o renderer.o renderer-window.o color.o \
+@@ -178,7 +177,6 @@
+ 	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
+ 	dct.o huffcode.o bv.o iohandler.o timer.o \
+ 	ui-h261_play.o tk.o random.o
+-	# color-true.o color-hi.o
+ 
+ OBJ_JPEGPLAY = jpeg_play.o jpeg/jpeg.o \
+ 	renderer.o renderer-window.o color.o \
+@@ -188,7 +186,6 @@
+ 	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
+ 	dct.o huffcode.o jpeg_play_tcl.o bv.o iohandler.o timer.o \
+ 	ui-jpeg_play.o tk.o random.o
+-	# color-true.o color-hi.o
+ 	
+ LIB_CB = @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ -lm
+ OBJ_CB = net/cbAppInit.o net/cb.o net/confbus.o net/group-ipc.o iohandler.o \
+@@ -352,7 +349,7 @@
+ 	 chown bin @prefix@/bin/vic
+ 	 chgrp bin @prefix@/bin/vic
+ 	 chmod 555 @prefix@/bin/vic
+-	 cp vic.1 @prefix@/man/vic.1
++	 cp vic.1 @prefix@/man/man1/vic.1
+ 	 cp histtolut @prefix@/bin/histtolut
+ 	 chown bin @prefix@/bin/histtolut
+ 	 chgrp bin @prefix@/bin/histtolut
