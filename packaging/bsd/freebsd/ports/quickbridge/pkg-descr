@@ -1,0 +1,1 @@
+QuickBridge is intended to connect unicast mbone clients to multicast groups. You can supply an access control list to limit which clients can connect to the gateway
