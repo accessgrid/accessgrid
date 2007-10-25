@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.359 2007-10-09 04:42:55 willing Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.360 2007-10-25 02:29:42 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.359 2007-10-09 04:42:55 willing Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.360 2007-10-25 02:29:42 willing Exp $"
 
 
 import sys
@@ -1243,10 +1243,12 @@ class VenueClient:
         """
 
         # Try to tell the user we have a problem
-        self.jabber.jabberPanel.OutputText("Internal Notification",
+        self.jabber.jabberPanel.OutputText("Internal Notification: ",
                               "Trying to reconnect to text server")
+        textPanel = self.jabber.jabberPanel
 
         self.jabber = JabberClient()
+        self.jabber.SetPanel(textPanel)
         self.jabber.SetPresenceCB(self.JabberPresenceCB)
         self.maxJabberNameRetries = 3
         self.jabberNameRetries = 0
