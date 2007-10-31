@@ -1,6 +1,6 @@
 name=wxmozilla
 version=20070620cvs
-release=2
+release=3
 prefix=${PREFIX:-/usr}
 arch=${ARCH:-`uname -m`}
 srcpkg=${name}-${version}.tar.gz
@@ -34,7 +34,8 @@ elif [ "${arch}" = "x86_64" ]; then
 fi
 
 here=`pwd`
-swig_binary=${here}/swig-wxPython1.3.29
+#swig_binary=${here}/swig-wxPython1.3.29
+swig_binary=/usr/bin/swig-wxPython1.3.29
 patch4=${here}/patches/patch-contrib-mozilla25-wxPython-mozilla.py
 
 PATH=/sbin:${PATH}
@@ -138,6 +139,9 @@ if [ $# -gt 0 -a "${1}" = "install" ]; then
 fi
 
 # Changelog
+#
+# CKW 20070813 - release 3
+#  - build against new wxPython  (unicode)
 #
 # CKW 20070810 - release 2
 #  - generate new swig stuff

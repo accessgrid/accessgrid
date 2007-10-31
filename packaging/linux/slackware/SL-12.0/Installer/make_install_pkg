@@ -16,7 +16,7 @@ SL_VERSION="SL12"
 # Package names
 #
 pkgs="
-AccessGrid-3.1-noarch-cvs20071010.tgz
+AccessGrid-3.1-noarch-cvs20071031-1.tgz
 quickbridge-3.0.2-${arch}-1.tgz
 elementtree-1.2.6-20050316-${arch}-1.tgz
 bajjer-0.2.5-${arch}-2.tgz
@@ -37,7 +37,7 @@ bonjour-py-0.1-${arch}-1.tgz
 prereqs="
 wxPython-2.8-gtk2-unicode-py2.5-2.8.4.0-${arch}-4.tgz
 xulrunner-1.8.0.4-${arch}-1.tgz
-wxmozilla-20070620cvs-${arch}-1.tgz
+wxmozilla-20070620cvs-${arch}-3.tgz
 "
 noinstall="
 hdvideoservices-0.1-noarch-1.tgz
@@ -45,7 +45,7 @@ hdvideoservices-0.1-noarch-1.tgz
 
 
 version=3.1
-release=cvs20071010-1
+release=cvs20071031-1
 releasedir=${RELEASEDIR:-/scratch/AG3/releases-12.0}
 pkgdir=${PKGDIR:-/tmp}
 
@@ -91,6 +91,11 @@ proc ()
     ps -ef | grep \$* | grep -v grep
 }
 
+cruft_to_remove="
+AccessGrid-3.1-noarch-cvs20070808
+AccessGrid-3.1-noarch-cvs20071010
+"
+
 pkgs="
 EOF
 for p in $pkgs; do
@@ -121,6 +126,12 @@ if [ \$UNINSTALL -gt 0 ]; then
   exit 1
 fi
 
+echo -n "Removing cruft ... "
+for cruft in \${cruft_to_remove} ; do
+  echo -n " ."
+  removepkg \${cruft} >/dev/null 2>/dev/null
+done
+echo
 EOF
 
 cat <<EOF >>install-${SL_VERSION}-${arch}.sh
@@ -185,8 +196,15 @@ rm -rf ${bundledir}
 
 # Changelog
 #
-# Release cvs 20071010-1
-#  - 3.1beta2
+# Release 20071031-1
+#  - new 3.1beta2 snapshot
+#
+# Release 20071010-2
+#  - patched 3.1beta2 (cvs20071010-1)
+#  - update wxmozilla to 20070620cvs-${arch}-3
+#
+# Release 20071010-1
+#  - 3.1beta2 (cvs20071010)
 #
 # Release cvs 20071005-1
 #  - update bajjer to 0.2.5 release 2
