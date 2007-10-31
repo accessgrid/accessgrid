@@ -1,16 +1,15 @@
 name=AccessGrid
 version=3.1
-release=cvs20071010
-arch=${ARCH:-noarch}
+release=cvs20071031
+arch=${ARCH:-`uname -m`}
 prefix=${PREFIX:-/usr}
-#srcpkg=${name}-${version}.src.tar.gz
 srcpkg=${name}-${version}-${release}.tar.gz
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
-pkgname=${name}-${version}-${arch}-${release}.tgz
+pkgname=${name}-${version}-${arch}-${release}-1.tgz
 
 master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/nfs/distfiles/
@@ -32,6 +31,7 @@ here=`pwd`
 
 patch0=${here}/patches/patch-packaging-BuildSnapshot.py
 patch1=${here}/patches/patch-AccessGrid-hosting-ZSI-Server.py
+patch2=${here}/patches/patch-sharedapps-SharedBrowser-SharedBrowser.py
 
 patch10=${here}/patches/patch-services-node-AudioService-AudioService.build.py
 patch11=${here}/patches/patch-services-node-VideoService-VideoService.build.py
@@ -64,6 +64,7 @@ tar zxvf ${here}/${srcpkg}
 cd ${builddir}/AccessGrid
 do_patch ${patch0}
 do_patch ${patch1}
+do_patch ${patch2}
 
 do_patch ${patch10}
 do_patch ${patch11}
@@ -83,6 +84,7 @@ if [ ! -d ${builddir}/dist ]; then mv ${builddir}/dist-* ${builddir}/dist; fi;
 cd ${builddir}/dist
 
 mkdir -p ${pkgdir}/${prefix}/bin
+install -m 0755 ${here}/agkill ${pkgdir}/${prefix}/bin
 install -m 0755 bin/* ${pkgdir}/${prefix}/bin
 if [ -d lib64 ]; then
   cp -R lib64/ ${pkgdir}/${prefix}/lib64
@@ -148,6 +150,12 @@ rm -f \${patchfile}
 EOF
 chmod +x ${pkgdir}/install/doinst.sh
 
+# Keep the build scripts
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches
+cp -p ${here}/Slack.build ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+cp -p ${here}/patches/patch* ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches/
+
+
 cat <<EOF >${pkgdir}/install/slack-desc
 ${name}: ${name}-${version}
 ${name}:
@@ -186,7 +194,18 @@ exit
 
 # Changelog
 #
-# CKW 20071010 - 3.1beta2
+# CKW 20071031 release cvs20071031-1
+#  - new snapshot date
+#  - revert to arch dependent name (for slamd64)
+#
+# CKW 20071011 release cvs20071010-1
+#  - added patch for SharedBrowser
+#  - include the build scripts
+#  - include 'agkill' script
+#
+# CKW 20071010 release cvs20071010
+#  - 3.1beta2
 #
 # CKW 20070627 - 3.1beta1
+#
 
