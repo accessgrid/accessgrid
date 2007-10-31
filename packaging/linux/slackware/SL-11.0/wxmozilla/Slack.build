@@ -72,7 +72,6 @@ echo -n "Swigging ... " && ( cd wxPython/contrib/mozilla25 && \
 )
 echo
 
-exit
 autoconf
 # Build & install
 #
