@@ -31,6 +31,9 @@ RUN_DEPENDS=	py24-wxPython>=2.6.3.2:${PORTSDIR}/x11-toolkits/py-wxPython26 \
 	py24-feedparser>=4.1_2:${PORTSDIR}/textproc/py-feedparser	\
         tightvnc>=1.2.9_1:${PORTSDIR}/net/tightvnc	\
 	ag-zsi-devel>=r1385:ports/ag-zsi	\
+	ag-vic2.8ucl>=1.3.0:ports/ag-vic	\
+	ag-rat-r4086>=4.4.00:ports/ag-rat	\
+	quickbridge>=3.1:ports/quickbridge	\
 	py24-agtwistedCore>=2.5.0:ports/agtwisted \
 	py24-Bajjer-devel>=0.2.5:ports/bajjer	\
 	py24-m2crypto>=0.17:ports/py-m2crypto	\
