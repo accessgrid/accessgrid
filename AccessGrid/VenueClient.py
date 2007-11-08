@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.360 2007-10-25 02:29:42 willing Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.361 2007-11-08 04:51:18 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.360 2007-10-25 02:29:42 willing Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.361 2007-11-08 04:51:18 willing Exp $"
 
 
 import sys
@@ -345,7 +345,7 @@ class VenueClient:
                 protoMatched = False
                 if parsedUrl[0].endswith(proto):
                     protoMatched = True
-                    continue
+                    break
             if protoMatched:
                 self.registryUrls.append(regUrl)
 
