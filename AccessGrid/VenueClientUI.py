@@ -5,18 +5,19 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.249 2007-10-10 01:45:11 willing Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.250 2007-11-09 05:29:13 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.249 2007-10-10 01:45:11 willing Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.250 2007-11-09 05:29:13 willing Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
 import os
 import os.path
+from stat import ST_SIZE
 import time
 from wx import VERSION as WXVERSION
 import wx
@@ -1328,6 +1329,17 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         # Check if data exists, and prompt to replace
         #
         if fileList:
+            # Check file size
+            # Hard coded for now - later query server
+            MAX_UPLOAD_SIZE = 2147400000
+            for filepath in fileList:
+                size = os.stat(filepath)[ST_SIZE]
+                if size > MAX_UPLOAD_SIZE:
+                    MessageDialog(self, \
+                        'File %s is too big to upload\n (%d > %d)'% \
+                        (os.path.split(filepath)[-1],size,MAX_UPLOAD_SIZE), \
+                        'File size warning!')
+                    fileList.remove(filepath)
             filesToAdd = []
             dataDescriptions = self.venueClient.GetVenueData()
             for filepath in fileList:
