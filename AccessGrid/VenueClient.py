@@ -3,14 +3,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.361 2007-11-08 04:51:18 willing Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.362 2007-11-29 11:31:44 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.361 2007-11-08 04:51:18 willing Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.362 2007-11-29 11:31:44 willing Exp $"
 
 
 import sys
@@ -1030,10 +1030,21 @@ class VenueClient:
         if len(evtLocation) > 1:
             evtLocation = (str(evtLocation[0]), int(evtLocation[1]))
 
+        # Are we changing textLocation?
+        if self.textLocation:
+            prevTextLocation = self.textLocation
+        else:
+            prevTextLocation = None
+
         self.textLocation = state.textLocation.split(":")
     
         if len(self.textLocation) > 1:
             self.textLocation = (str(self.textLocation[0]), int(self.textLocation[1]))
+        if prevTextLocation and not self.textLocation[0].startswith(prevTextLocation[0]):
+            try:
+                self.jabber.Logout()
+            except:
+                log.exception("Moving textLocation: jabber.Logout failed")
 
         self.dataStoreUploadUrl = state.dataLocation
                         
