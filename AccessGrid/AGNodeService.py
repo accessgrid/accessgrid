@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.117 2007-10-01 19:04:09 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.118 2007-12-06 22:43:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.117 2007-10-01 19:04:09 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.118 2007-12-06 22:43:20 turam Exp $"
 
 
 import os
@@ -613,7 +613,8 @@ class AGNodeService:
                     # Create Service section
                     #
                     servicemanager_services += serviceSection + " "
-                    configParser.set( serviceSection, "packageName", os.path.basename( service.packageFile ) )
+                    packageName = os.path.basename(service.packageFile).split('\\')[-1]   
+                    configParser.set( serviceSection, "packageName", packageName)
 
                     numServices += 1
 
