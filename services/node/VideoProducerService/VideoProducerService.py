@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.26 2007-10-01 17:28:56 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.27 2007-12-11 16:51:08 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -307,6 +307,9 @@ class VideoProducerService( AGService ):
             if self.profile:
                 options.append("-X")
                 options.append("site=%s" % self.profile.publicId)
+                
+            options.append('-X')
+            options.append('noMulticastBind=true')
                 
             # Check whether the network location has a "type" attribute
             # Note: this condition is only to maintain compatibility between
