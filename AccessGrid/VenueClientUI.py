@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.250 2007-11-09 05:29:13 willing Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.251 2007-12-14 23:03:06 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.250 2007-11-09 05:29:13 willing Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.251 2007-12-14 23:03:06 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -65,7 +65,7 @@ from AccessGrid.interfaces.Venue_client import VenueIW
 from AccessGrid import ServiceDiscovery   
 from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
 from AccessGrid.Security.wxgui import CertificateManagerWXGUI
-
+from AccessGrid.DataStore import LegacyCallInvalid, LegacyCallOnDir
 
 from AccessGrid.Venue import CertificateRequired
 try:
@@ -1172,72 +1172,50 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
     
     """
     Added by NA2-HPCE
-    Deprecated and yet unused code
-    Needs to be redone for AG3
     """
-    def RecursiveDataAdd(self, parent, dir, level):
-            
-        files = os.listdir(dir)
+    def RecursiveDataAdd(self, parent, localPath, level):
+
+        # This method uploads the specified file/directory to the specified parent
+        
         filesToAdd = []
-        filesWaiting = False
-        noServerDir = False
-        curDirDesc = None
-	
-        log.debug("Starting RecursiveAdd with parent %s", parent) 
-                
-        for file in files:
-            curDirDesc = None
-            if not os.path.isdir(dir+ os.path.sep + file):
-                #add directory
-                filesWaiting = True
-                filesToAdd.append(dir + os.path.sep + file)
-            else:
-                                           
-                path = os.path.join(dir, file)
-                    
-                
-                
-                #do recursive file add to currently created directory
-                if (not self.__venueProxy == None):
-                    #try:
-                    if parent == None:
-                        locDirectoryDescription=self.__venueProxy.AddDir(file, "",1,0)
-			time.sleep(2)
-                    else:
-                        locDirectoryDescription=self.__venueProxy.AddDir(file,"",parent.GetLevel()+1,parent.GetId())
-			time.sleep(2)                            
-                    
-                        
-                    noServerDir = False
-                    #except:
-                    #    noServerDir = True
-                    #    pass
-                        
-                
-		log.debug("Value of directory: %s ", path)
-                self.RecursiveDataAdd(locDirectoryDescription, path, level + 1)
-                                        
-        if noServerDir:
-            self.Notify("Creation of directories is not supported on server-side", "No directory service available!")
-            return
-                    
-        if filesWaiting:
-            if not parent == None:
-                #add to given directory in data store
-		serverPath = parent.GetURI()                
-		log.debug("Parent <> None!")
-            else:
-		serverPath = ""
-		log.debug("Parent == None")
-                
-	    log.debug("Serverpath: %s", serverPath)
-            self.controller.AddDataCB(filesToAdd, serverPath)
+        destinationDirectory = None
+        # ** Prepare list of files to upload
+        
+        # if localPath is a file
+        if os.path.isfile(localPath):
+            # upload to given parent directory
+            filesToAdd.append(localPath)
+
             
-        try:
-            self.__venueProxy.HDDump()
-        except:
-            log.debug("Dump failed!!!!!!!!")
+        # if localPath is a directory
+        elif os.path.isdir(localPath):
+            # create the directory on the server
+            dirname = os.path.split(localPath)[1]
+            if parent == None:
+                locDirectoryDescription=self.__venueProxy.AddDir(dirname, "",1,0)
+                time.sleep(2)
+            else:
+                locDirectoryDescription=self.__venueProxy.AddDir(dirname,"",parent.GetLevel()+1,parent.GetId())
+                time.sleep(2)  
                 
+            # upload files in this directory
+            fileList = os.listdir(localPath)      
+            for f in fileList:    
+                path = os.path.join(localPath,f)
+                self.RecursiveDataAdd(locDirectoryDescription, path, level + 1)                       
+
+        
+        # upload files, if any
+        if filesToAdd:
+            if parent == None:
+                # add to root
+                serverPath = ""
+            else:
+                #add to given directory in data store
+                serverPath = parent.GetURI()
+    
+            self.AddDataCB(None, filesToAdd, serverPath)            
+
     
     #Added by NA2-HPCE    
     def DecideDragDropType(self, x, y, fileList):
@@ -1246,13 +1224,16 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
                       
         if(treeId.IsOk()):
             item = self.contentListPanel.tree.GetItemData(treeId).GetData()
+
         
+        # if the drop point was a directory, upload to that directory
+        isDirectoryTarget = (item and item.GetObjectType() == DataDescription.TYPE_DIR)
+
         for entry in fileList:
-            if not item == None:
+            if isDirectoryTarget:
                 self.RecursiveDataAdd(item,entry,item.GetLevel())
             else:
-                self.RecursiveDataAdd(None,entry,0)
-    
+                self.RecursiveDataAdd(None,entry,1)    
 
     """
     Added by NA2-HPCE    
@@ -1284,7 +1265,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
             self.RecursiveDataAdd(dirDesc,strDirToUpload,1)
     
     #Modified by NA2-HPCE
-    def AddDataCB(self, event = None, fileList = []):
+    def AddDataCB(self, event = None, fileList = [], serverPath=None):
     
         #
         # Verify that we have a valid upload URL. If we don't have one,
@@ -1324,6 +1305,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
 
             dlg.Destroy()
 
+        uploadRoot = self.venueClient.GetDataStoreUploadUrl()
 
         #
         # Check if data exists, and prompt to replace
@@ -1347,23 +1329,27 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
                 name = pathParts[-1]
 
                 fileExists = 0
-                for data in dataDescriptions:
-                    if data.name == name:
-                        # file exists; prompt for replacement
-                        fileExists = 1
-                        title = "Duplicated File"
-                        info = "A file named %s already exists, do you want to overwrite?" % name
-                        if self.Prompt(info,title):
-                            try:
-                                
-                                self.controller.RemoveDataCB(data)
-                                filesToAdd.append(filepath)
-                            except:
-                                log.exception("Error overwriting file %s", data)
-                                self.Error("Can't overwrite file","Replace Data Error")
-                        break
+                if serverPath:
+                    pathToMatch = os.path.join(uploadRoot,serverPath,name)
+                else:
+                    pathToMatch = os.path.join(uploadRoot,name)
+                matchingFiles = filter( lambda x: x.GetURI() == pathToMatch, dataDescriptions)
+                if matchingFiles:
+                    data = matchingFiles[0]
+                    title = "Duplicated File"
+                    info = "A file named %s already exists, do you want to overwrite?" % name
+                    if self.Prompt(info,title):
+                        try:
+                            
+                            self.controller.RemoveDataCB(data)
+                            filesToAdd.append(filepath)
+                        except:
+                            log.exception("Error overwriting file %s", data)
+                            self.Error("Can't overwrite file","Replace Data Error")
+                    break
+
                         
-                if not fileExists:
+                else:
                     # File does not exist; add the file
                     filesToAdd.append(filepath)
 
@@ -1372,10 +1358,11 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
             # empty until the mechanisms are available to determine the server directory
             # where the file should be added.
             #
-            if dirDesc == None:
-                serverPath=""
-            else:
-                serverPath = dirDesc.GetURI()
+            if serverPath == None:
+                if dirDesc == None:
+                    serverPath=""
+                else:
+                    serverPath = dirDesc.GetURI()
                 
             log.debug("AddDataCB: URI of parent is %s", serverPath)
             
@@ -2135,7 +2122,6 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
                 protohost = venueUrl
                 venueUrl = '%s:%d/Venues/default' % (protohost,defaultport)
             elif protohostportre.match(venueUrl):
-                print 'protohostport match'
                 protohostport = venueUrl
                 venueUrl = '%s/Venues/default' % (protohostport)
             elif protohostportpathre.match(venueUrl):
