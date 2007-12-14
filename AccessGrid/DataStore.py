@@ -2,14 +2,14 @@
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.104 2007-01-16 18:55:13 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.105 2007-12-14 22:41:02 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.104 2007-01-16 18:55:13 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.105 2007-12-14 22:41:02 turam Exp $"
 
 import os
 import time
@@ -961,14 +961,13 @@ class DataStore:
         log.debug("AddFile: URI is %s", url)
         desc.SetLastModified(self.GetTime())
         
-
-
-        if self.GetDescbyName(filename):
+        matchingFiles = filter( lambda x: x.GetURI() == url, self.descriptionDict.values())
+        if matchingFiles:
             #Perform actual file adding; get lock
             self.cbLock.acquire()
             desc.SetURI(url)
             try:
-                self.descriptionDict[desc] = desc
+                self.descriptionDict[desc.GetId()] = desc
                 self.callbackClass.UpdateData(desc, 1)
             except:
                 log.exception("DataStore.RemoveData: Failed")
