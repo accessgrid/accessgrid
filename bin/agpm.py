@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.37 2007-09-18 20:48:35 turam Exp $
+# RCS-ID:      $Id: agpm.py,v 1.38 2007-12-14 23:07:55 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.37 2007-09-18 20:48:35 turam Exp $"
+__revision__ = "$Id: agpm.py,v 1.38 2007-12-14 23:07:55 turam Exp $"
 
 import os
 import re
@@ -540,7 +540,7 @@ def RegisterPluginPackage(plugindb, dest, pluginInfo, commands, workingDir=None,
                                      workingDir,
                                      dstPath=dest)
     if 0==result:
-        ShowResult("Unable to register plugin %s" % appInfo["application.name"])
+        ShowResult("Unable to register plugin %s" % pluginInfo["plugin.name"])
         sys.exit(1)
 
     # Clean up, remove the temporary directory and files from
