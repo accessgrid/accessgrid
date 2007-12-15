@@ -1,6 +1,6 @@
 name=bajjer
 version=0.2.5
-release=2
+release=3
 arch=${ARCH:-`uname -m`}
 srcpkg=Bajjer-${version}.tar.gz
 buildroot=/var/tmp
@@ -26,6 +26,7 @@ fi
 
 here=`pwd`
 patch0=${here}/patches/patch-gov-lbl-dsd-bajjer-io.py
+patch1=${here}/patches/patch-gov-lbl-dsd-bajjer-stream.py
 
 PATH=/sbin:${PATH}
 . ../functions
@@ -46,6 +47,10 @@ mv Bajjer-${version} ${builddir}
 cd ${builddir}
 
 do_patch ${patch0}
+do_patch ${patch1}
+
+echo -n "Post patch sleep ..."
+sleep 5
 
 # Build/install
 #
@@ -96,6 +101,9 @@ fi
 
 
 # Changelog
+#
+# CKW 20071215 - release 3
+#  - added patch to fully close stream
 #
 # CKW 20071005 - release 2
 #  - added read speedup patch (patch0)

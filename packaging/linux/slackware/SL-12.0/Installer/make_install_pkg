@@ -19,7 +19,7 @@ pkgs="
 AccessGrid-3.1-noarch-cvs20071215-1.tgz
 quickbridge-3.0.2-${arch}-1.tgz
 elementtree-1.2.6-20050316-${arch}-1.tgz
-bajjer-0.2.5-${arch}-2.tgz
+bajjer-0.2.5-${arch}-3.tgz
 feedparser-4.1-${arch}-1.tgz
 pyxml-0.8.4-${arch}-1.tgz
 m2crypto-0.17-${arch}-2.tgz
@@ -198,6 +198,7 @@ rm -rf ${bundledir}
 #
 # Release 20071215-1
 #  - new 3.1beta2 snapshot
+#  - update bajjer to 0.2.5 release 3
 #
 # Release 20071031-1
 #  - new 3.1beta2 snapshot
