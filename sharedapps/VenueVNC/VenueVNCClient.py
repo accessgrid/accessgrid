@@ -97,7 +97,7 @@ class vncSharedAppClient:
             else:
 		execString='chmod +x ./vncviewer; ./vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
         elif IsOSX():
-            vncviewer='/Applications/Chicken\ of\ the\ VNC.app/Contents/MacOS/Chicken\ of\ the\ VNC'
+            vncviewer='./Chicken\ of\ the\ VNC'
             execString='%s --PasswordFile %s %s' % (vncviewer,self.passwdFilename,self.vncContact)
         else:
             raise Exception("Unsupported platform")
