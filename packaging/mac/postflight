@@ -40,6 +40,7 @@ cat $2/AccessGridToolkit3.app/Contents/Resources/setupenv.csh.template >> $2/Acc
 # setup shared applications
 . $2/AccessGridToolkit3.app/Contents/Resources/setupenv.sh
 # Use pythonw so installed applications can start a user interface
+export AGTK_USER=/var/log/accessgrid
 /usr/bin/pythonw $2/AccessGridToolkit3.app/Contents/Resources/bin/agpm3.py --post-install
 
 # remove temporary files used during installation above
