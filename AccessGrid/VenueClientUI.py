@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.252 2007-12-20 19:53:52 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.253 2007-12-20 20:43:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.252 2007-12-20 19:53:52 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.253 2007-12-20 20:43:18 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -151,7 +151,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
     ID_VENUE_SAVE_TEXT = wx.NewId()
     ID_VENUE_PROPERTIES = wx.NewId()
     ID_VENUE_OPEN_CHAT = wx.NewId()
-    ID_VENUE_CLOSE = wx.ID_EXIT # wx.NewId()
+    ID_VENUE_CLOSE = wx.NewId()
     ID_PROFILE = wx.NewId()
     ID_PROFILE_EDIT = wx.NewId()
     ID_CERTIFICATE_MANAGE = wx.NewId()
@@ -460,9 +460,8 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         self.venue.Append(self.ID_VENUE_PROPERTIES,"Properties...",
                           "View information about the venue.")
         
-        if sys.platform not in ['darwin']:
-            self.venue.AppendSeparator()
-            self.venue.Append(self.ID_VENUE_CLOSE,"&Exit", "Exit venue")
+        self.venue.AppendSeparator()
+        self.venue.Append(self.ID_VENUE_CLOSE,"&Exit", "Exit venue")
         
         self.menubar.Append(self.venue, "&Venue")
               
@@ -724,6 +723,8 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         wx.EVT_MENU(self, self.ID_VENUE_ADMINISTRATE_VENUE_ROLES,
                  self.ModifyVenueRolesCB)
         wx.EVT_MENU(self, self.ID_VENUE_CLOSE, self.ExitCB)
+        if IsOSX():
+            wx.EVT_MENU(self, wx.ID_EXIT, self.ExitCB)
         
         # Preferences Menu
         wx.EVT_MENU(self, self.ID_USE_MULTICAST, self.UseMulticastCB)
