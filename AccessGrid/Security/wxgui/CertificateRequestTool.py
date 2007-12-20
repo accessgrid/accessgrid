@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.27 2007-10-22 20:51:43 turam Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.28 2007-12-20 18:12:24 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import wx
@@ -68,7 +68,7 @@ class CertificateRequestTool(wx.wizard.Wizard):
         '''
 
         wizardId =  wx.NewId()
-        wx.wizard.Wizard.__init__(self, parent, wizardId,"", wx.NullBitmap, style=wx.RESIZE_BORDER)
+        wx.wizard.Wizard.__init__(self, parent, wizardId,"", wx.NullBitmap)
         global log
         self.log = log
 
@@ -864,7 +864,7 @@ class ServiceCertWindow(TitledPage):
         Sets background color of the item that triggered the event to white.
         '''   
         item = event.GetEventObject()
-        item.SetBackgroundColour("white")
+        item.SetBackgroundColour((254, 254, 254))
         item.Refresh()
                    
     def Layout(self):
