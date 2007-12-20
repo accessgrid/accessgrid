@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.107 2007-05-25 16:58:10 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.108 2007-12-20 16:37:23 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.107 2007-05-25 16:58:10 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.108 2007-12-20 16:37:23 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -84,6 +84,30 @@ class ObjectDescription:
         
     def GetURI(self):
         return self.uri
+
+    def Copy(obj):
+        """
+        Copy constructor.  Creates a new instance of the input type, copying 
+        attributes defined in that class.  By so doing, it skips any additional
+        attributes that have been added to the input instance.  For example, ZSI
+        adds attributes to describe data present in the incoming XML instance 
+        but not present in the XMLSchema.
+        
+        Note:  For now, this is being applied to DataDescriptions only.  Issues not
+        addressed include:  nested descriptions, deep copies, and integration with
+        the standard copy module (__copy__).
+        """
+        objCopy = obj.__class__()
+        
+        attrs = objCopy.__dict__.keys()
+        for attr in attrs:
+            try:
+                setattr(objCopy,attr,getattr(obj,attr))
+            except:
+                log.exception('Exception copying attribute %s of class %s', attr, obj.__class__)
+        return objCopy
+    Copy = staticmethod(Copy)
+
 
 class BadDataDescription(Exception):
     pass

@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.285 2007-05-25 16:08:13 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.286 2007-12-20 16:37:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.285 2007-05-25 16:08:13 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.286 2007-12-20 16:37:23 turam Exp $"
 
 import sys
 import time
@@ -1900,7 +1900,7 @@ class Venue:
 	
 	return locDataDesc
 
-    def RemoveData(self, dataDescription):
+    def RemoveData(self, inDataDescription):
         """
         RemoveData removes persistent data from the Virtual Venue.
         **Arguments:**
@@ -1916,6 +1916,8 @@ class Venue:
         *dataDescription* Upon successfully removing the data.
         """
 
+        dataDescription = DataDescription.Copy(inDataDescription)
+
         name = dataDescription.name
 
         # This is venue resident so delete the file
@@ -1923,8 +1925,10 @@ class Venue:
             log.debug("Entered Event activiation!")
             self.dataStore.DumpDataStack()
             self.dataStore.RemoveFiles([dataDescription])
-            self.eventClient.Send(Event.REMOVE_DATA, dataDescription)
-            self.dataStore.DumpDataStack()
+            try:
+                self.eventClient.Send(Event.REMOVE_DATA, dataDescription)
+            except:
+                log.exception("Error sending RemoveData event for %s", dataDescription.name)
         else:
             log.info("Venue.RemoveData tried to remove non venue data.")
 
