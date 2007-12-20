@@ -5,13 +5,13 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.251 2007-12-14 23:03:06 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.252 2007-12-20 19:53:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClientUI.py,v 1.251 2007-12-14 23:03:06 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.252 2007-12-20 19:53:52 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -163,7 +163,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
     ID_SAVE_CONFIG = wx.NewId()
     ID_CONFIG_BUTTON = wx.NewId()
     ID_MYNODE_MANAGE = wx.NewId()
-    ID_PREFERENCES = wx.ID_PREFERENCES #wx.NewId()
+    ID_PREFERENCES = wx.NewId()
     ID_MYVENUE_ADD = wx.NewId()
     ID_MYVENUE_EDIT = wx.NewId()
     ID_MYVENUE_GOTODEFAULT = wx.NewId()
@@ -543,6 +543,8 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
             self.preferences.AppendItem(item)
         
         self.preferences.Append(self.ID_PREFERENCES, "&Preferences...")
+        if IsOSX():
+            self.preferences.Append(wx.ID_PREFERENCES, "&Preferences...")
         self.menubar.Append(self.preferences, "&Tools")
         
         self.navigation = wx.Menu()
@@ -734,6 +736,8 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         
         wx.EVT_MENU(self, self.ID_MYNODE_MANAGE, self.ManageNodeCB)
         wx.EVT_MENU(self, self.ID_PREFERENCES, self.PreferencesCB)
+        if IsOSX():
+            wx.EVT_MENU(self, wx.ID_PREFERENCES, self.PreferencesCB)
         
         # Navigation Menu
         wx.EVT_MENU(self, self.ID_MYVENUE_GOTODEFAULT, self.GoToDefaultVenueCB)
