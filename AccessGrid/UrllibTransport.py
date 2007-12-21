@@ -11,7 +11,7 @@
 import httplib
 import xmlrpclib
 import socket
-
+import base64
 
 
 class TimeoutHTTPConnection(httplib.HTTPConnection):
@@ -64,11 +64,9 @@ class TimeoutTransport(xmlrpclib.Transport):
         httpconn = TimeoutHTTP(host,timeout=self.timeout)
         return httpconn
     
-
-#
+    
 # The following code is adapted from:
-# http://starship.python.net/crew/jjkunce/python/xmlrpc_urllib_transport.py
-#
+# http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/523016
 class UrllibTransport(xmlrpclib.Transport):
     '''Handles an HTTP transaction to an XML-RPC server via urllib
     (urllib includes proxy-server support)
@@ -78,20 +76,42 @@ class UrllibTransport(xmlrpclib.Transport):
         self.proxy = proxy
         self.timeout = timeout
 
+    def set_proxy(self, proxy):
+        self.proxyurl = proxy
+
     def request(self, host, handler, request_body, verbose = None):
         '''issue XML-RPC request
-        jjk  07/02/99'''
+        cflewis 08/03/07'''
         import urllib
-        self.verbose = verbose
-        urlopener = urllib.URLopener(proxies = {"http": self.proxy})
-        urlopener.addheaders = [('User-agent', self.user_agent)]
-        # probably should use appropriate 'join' methods instead of 'http://'+host+handler
-        f = urlopener.open('http://'+host+handler, request_body)
-        return(self.parse_response(f))
+        from urllib import unquote, splittype, splithost
+
+        type, r_type = splittype(self.proxy)
+        phost, XXX = splithost(r_type)
+
+        puser_pass = None
+        if '@' in phost:
+            user_pass, phost = phost.split('@', 1)
+            if ':' in user_pass:
+                user, password = user_pass.split(':', 1)
+                puser_pass = base64.encodestring('%s:%s' % (unquote(user),
+                                                unquote(password))).strip()
+
+        urlopener = urllib.FancyURLopener({'http':'http://%s'%phost})
+
+        if not puser_pass:
+            urlopener.addheaders = [('User-agent', self.user_agent)]
+        else:
+            urlopener.addheaders = [('User-agent', self.user_agent),
+                                    ('Proxy-authorization', 'Basic ' + puser_pass) ]
+
+        host = unquote(host)
+        f = urlopener.open("http://%s%s"%(host,handler), request_body)
+
+        self.verbose = verbose 
+        return self.parse_response(f)
 
     def make_connection(self, host):
         host, extra_headers, x509 = self.get_host_info(host)
         httpconn = TimeoutHTTP(host,timeout=self.timeout)
         return httpconn
-    
 

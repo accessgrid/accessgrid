@@ -21,7 +21,7 @@ from AccessGrid.Descriptions import BridgeDescription
 from AccessGrid.BridgeCache import BridgeCache
 from AccessGrid.Preferences import Preferences
 from AccessGrid.UrllibTransport import UrllibTransport, TimeoutTransport
-
+from AccessGrid.Utilities import OpenURL, BuildPreferencesProxyURL
 
 class RegistryClient:
     def __init__(self, url, proxyHost=None, proxyPort=None):
@@ -31,13 +31,9 @@ class RegistryClient:
         self.bridges = None
         self.bridgeCache = BridgeCache()
         self.log = Log.GetLogger('RegistryClient')
-       
-        self.proxyURL = None
-        if proxyHost:
-            if proxyPort:
-                self.proxyURL = "http://%s:%s" % (proxyHost, proxyPort)
-            else:
-                self.proxyURL = "http://%s" % (proxyHost)
+        
+        # Should consider losing the proxyHost and proxyPort calls
+        self.proxyURL = BuildPreferencesProxyURL()
 
     def _connectToRegistry(self):
         if not self.registryPeers:
@@ -154,12 +150,14 @@ class RegistryClient:
             filename = url[7:]
             f = open(filename, "r")
         else:
-            preferences = Preferences()
-            if self.proxyURL:
-                proxyList = {'http': self.proxyURL}
-                f = urllib.urlopen(url, proxies=proxyList)
-            else:
-                f = urllib.urlopen(url)
+            f = OpenURL(url)
+            
+            # preferences = Preferences()
+            # if self.proxyURL:
+            #     proxyList = {'http': self.proxyURL}
+            #     f = urllib.urlopen(url, proxies=proxyList)
+            # else:
+            #     f = urllib.urlopen(url)
             if f and f.info().gettype() != 'text/plain':
                 raise ValueError('Registry retrieval returned non-plain text; type=%s', f.info().gettype())
         contents = f.read()

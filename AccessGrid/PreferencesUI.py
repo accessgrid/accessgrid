@@ -141,6 +141,11 @@ class PreferencesDialog(wx.Dialog):
                                        self.networkPanel.GetProxyHost())
         self.preferences.SetPreference(Preferences.PROXY_PORT,
                                        self.networkPanel.GetProxyPort())
+        self.preferences.SetPreference(Preferences.PROXY_USERNAME,
+                                       self.networkPanel.GetProxyUsername())
+        self.preferences.SetProxyPassword(self.networkPanel.GetProxyPassword())
+        self.preferences.SetPreference(Preferences.PROXY_AUTH_ENABLED,
+                                       self.networkPanel.GetProxyEnabled())
         self.preferences.SetPreference(Preferences.MULTICAST,
                                        self.bridgingPanel.GetMulticast())
         self.preferences.SetPreference(Preferences.BRIDGE_REGISTRY,
@@ -980,7 +985,6 @@ class NetworkPanel(wx.Panel):
         self.multicastDetectionPort = wx.TextCtrl(self,-1,
                                         str(preferences.GetPreference(Preferences.MULTICAST_DETECT_PORT)))
         
-        
         # proxy configuration                  
         self.proxyTitleText = wx.StaticText(self, -1, "Proxy server configuration")
         self.proxyTitleLine = wx.StaticLine(self, -1)
@@ -989,8 +993,27 @@ class NetworkPanel(wx.Panel):
         self.portText = wx.StaticText(self, -1, "Port:")
         self.portCtrl = wx.TextCtrl(self, -1, "")
        
+        
+        self.usernameText = wx.StaticText(self, -1, "Username:")
+        self.usernameCtrl = wx.TextCtrl(self, -1, "")
+        self.passwordText = wx.StaticText(self, -1, "Password:")
+        
+        # Intel OS X has issues with the password control, but we aren't
+        # granular enough to know if this is an Intel chip or not.
+        # This might be fixed in the latest wxPython, but AG won't
+        # run with it because of deprecated functionality
+        if IsOSX() and wx.VERSION <= (2,8,0,0):
+            self.passwordCtrl = wx.TextCtrl(self, -1, "")
+        else:
+            self.passwordCtrl = wx.TextCtrl(self, -1, "", style=wx.TE_PASSWORD)
+            
+        self.authProxyButton = wx.CheckBox(self, wx.NewId(), "  Use an authenticated proxy ")
+        self.authProxyButton.SetValue(int(preferences.GetPreference(Preferences.PROXY_AUTH_ENABLED)))
+
         self.SetProxyHost(preferences.GetPreference(Preferences.PROXY_HOST))
         self.SetProxyPort(preferences.GetPreference(Preferences.PROXY_PORT))
+        self.SetProxyUsername(preferences.GetPreference(Preferences.PROXY_USERNAME))
+        self.SetProxyPassword(preferences.GetProxyPassword())
         
         
         
@@ -1032,6 +1055,14 @@ class NetworkPanel(wx.Panel):
         sizer3.Add(self.portCtrl, 0, wx.ALL|wx.EXPAND,10)
         sizer.Add(sizer3,0,wx.EXPAND)
                 
+        sizer4 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer4.Add(self.usernameText, 0, wx.ALL|wx.EXPAND,10)
+        sizer4.Add(self.usernameCtrl, 1, wx.ALL|wx.EXPAND,10)
+        sizer4.Add(self.passwordText, 0, wx.ALL|wx.EXPAND,10)
+        sizer4.Add(self.passwordCtrl, 0, wx.ALL|wx.EXPAND,10)
+        sizer4.Add(self.authProxyButton, 0, wx.ALL|wx.EXPAND, 10)
+        sizer.Add(sizer4,0,wx.EXPAND)
+
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(1)
@@ -1060,10 +1091,33 @@ class NetworkPanel(wx.Panel):
         return self.hostCtrl.GetValue()
         
     def GetProxyPort(self):
+        returnValue = 0;
+        
         port = self.portCtrl.GetValue()
+        
         try:
-            return int(port)
-        finally:
+            returnValue = int(port)
+        except Exception, e:
+            returnValue = 0;
+                    
+        return returnValue
+            
+    def SetProxyUsername(self,username):
+        self.usernameCtrl.SetValue(username)
+        
+    def SetProxyPassword(self,password):
+        self.passwordCtrl.SetValue(password)
+    
+    def GetProxyUsername(self):
+        return self.usernameCtrl.GetValue()
+    
+    def GetProxyPassword(self):
+        return self.passwordCtrl.GetValue()
+            
+    def GetProxyEnabled(self):
+        if self.authProxyButton.IsChecked():
+            return 1
+        else:
             return 0
                 
 

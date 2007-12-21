@@ -1030,6 +1030,77 @@ class TextDialog(wx.Dialog):
     def GetChars(self):
         return self.text.GetValue()
         
+class ProxyAuthDialog(wx.Dialog):
+    def __init__(self, parent, ID, title):
+        """
+        A dialog box to retrieve the username/password for a proxy.
+        Unfortunately, the password has to be sent in the clear to the
+        proxy, so there is no way we can use any password mangling
+        like SecureTxtControl. When the password is saved to the
+        preferences, it's automatically encrypted, and only decrypted
+        when retrieved, but it's still not ideal. 
+        """      
+        wx.Dialog.__init__(self, parent, ID, title)
+
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.Centre()
+
+        self.guideText = wxStaticText(self, -1, "HTTP connection failed. You are using an authenticated proxy server.\nPlease check your settings are correct.")
+        self.usernameText = wxStaticText(self, -1, "Username:")
+        self.usernameCtrl = wxTextCtrl(self, -1, "")
+        self.passwordText = wxStaticText(self, -1, "Password:")
+        
+        # Intel OS X has issues with the password control, but we aren't
+        # granular enough to know if this is an Intel chip or not.
+        # This might be fixed in the latest wxPython, but AG won't
+        # run with it because of deprecated functionality
+        if IsOSX() and wxVERSION <= (2,8,0,0):
+            self.passwordCtrl = wxTextCtrl(self, -1, "")
+        else:
+            self.passwordCtrl = wxTextCtrl(self, -1, "", style=wxTE_PASSWORD)
+        
+        self.authProxyButton = wxCheckBox(self, wxNewId(), "  Use an authenticated proxy ")
+        self.authProxyButton.SetValue(1)
+
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer.Add(self.guideText, 0, wxALL|wxEXPAND,10)
+        sizer.Add(self.usernameText, 0, wxALL|wxEXPAND,10)
+        sizer.Add(self.usernameCtrl, 1, wxALL|wxEXPAND,10)
+        sizer.Add(self.passwordText, 0, wxALL|wxEXPAND,10)
+        sizer.Add(self.passwordCtrl, 0, wxALL|wxEXPAND,10)
+        sizer.Add(self.authProxyButton, 0, wxALL|wxEXPAND, 10)
+
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer2.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer.Add(sizer2)
+
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+
+    def GetProxyUsername(self):
+        return self.usernameCtrl.GetValue()
+
+    def GetProxyPassword(self):
+        return self.passwordCtrl.GetValue()
+
+    def GetProxyEnabled(self):
+        if self.authProxyButton.IsChecked():
+            return 1
+        else:
+            return 0
+
+    def SetProxyUsername(self,username):
+        self.usernameCtrl.SetValue(username)
+
+    def SetProxyPassword(self,password):
+        self.passwordCtrl.SetValue(password)
+
+    def SetProxyEnabled(self, value):
+        self.authProxyButton.SetValue(value)
+        
 def SetIcon(app):
         icon = None
         if IsWindows()or IsLinux() or IsFreeBSD():

@@ -25,6 +25,7 @@ import urllib
 from threading import Lock, Condition
 import re
 import urlparse
+import urllib2
 import zipfile
 
 from AccessGrid import Log
@@ -614,5 +615,103 @@ def BuildServiceUrl(url,defaultproto,defaultport,defaultpath):
             host = parts[1]
             path = parts[2]
             url = '%s://%s:%d%s' % (proto,host,defaultport,path)
-    return url
+    return url   
 
+def BuildProxyURL(proxyHost=None, proxyPort=None, proxyUsername=None, proxyPassword=None):
+    """Build a proxy URL access string"""
+    proxyURL = ""
+    
+    if proxyHost:
+        if proxyUsername and proxyPassword:
+            if proxyPort:
+                proxyURL = "http://%s:%s@%s:%s" % (proxyUsername, proxyPassword, proxyHost, proxyPort)
+            else:
+                proxyURL = "http://%s:%s@%s" % (proxyUsername, proxyPassword, proxyHost)
+        else:
+            if proxyPort:
+                proxyURL = "http://%s:%s" % (proxyHost, proxyPort)
+            else:
+                proxyURL = "http://%s" % (proxyHost)
+        
+
+    return proxyURL
+
+def BuildPreferencesProxyURL():
+    """Build a proxy URL based on the settings in the preferences file"""
+    from AccessGrid.Preferences import Preferences
+    
+    preferences = Preferences()
+    proxyUsername = None
+    proxyPassword = None
+    
+    if int(preferences.GetPreference(Preferences.PROXY_AUTH_ENABLED)) == 1:
+        proxyUsername = preferences.GetPreference(Preferences.PROXY_USERNAME)
+        proxyPassword = preferences.GetProxyPassword()
+        
+    return BuildProxyURL(preferences.GetPreference(Preferences.PROXY_HOST), \
+                         preferences.GetPreference(Preferences.PROXY_PORT), \
+                         proxyUsername, \
+                         proxyPassword)
+
+def OpenURL(url):
+    """
+    This is a proxy-agnostic way of opening a URL and retrieving
+    the response. The proxy settings are extracted from the preferences.
+    If the connection fails, a dialog is opened to query the user
+    for their username and password. This means users do not have to store
+    their password in the preferences file, which is insecure to a determined
+    attacker.
+    """
+    from AccessGrid.Preferences import Preferences
+    from AccessGrid.UIUtilities import ProxyAuthDialog
+    from wxPython.wx import NULL, wxID_OK
+    
+    preferences = Preferences()
+    
+    if preferences.GetPreference(Preferences.PROXY_HOST) != "":
+        # There is a proxy set, so build the URL of the proxy
+        proxySupport = urllib2.ProxyHandler({"http" : BuildPreferencesProxyURL()})
+        opener = urllib2.build_opener(proxySupport, urllib2.HTTPHandler)
+        urllib2.install_opener(opener)
+    
+    try:
+        response = urllib2.urlopen(url)
+    except urllib2.URLError, e:
+        errorCode = 0
+        
+        # URLError is the superclass of HTTPError, which will return an error
+        # code. URLError *won't*, so that has to be extracted with a regex
+        if hasattr(e, 'code'):
+            errorCode = int(e.code)
+        elif hasattr(e, 'reason'):
+            # This is a URLError, so extract the error code from reason.
+            result = re.search("^\((\d+)", str(e.reason))
+            errorCode = int(result.group(1))
+            log.debug("URLlib failed: " + str(e.reason))
+        
+        # Technically only 407 should come up from a proxy authentication
+        # failure
+        if errorCode == 407:
+            log.info("Proxy authentication failed for: " + url)
+            
+            # Only show the dialog if an authenticated proxy was enabled
+            if int(preferences.GetPreference(Preferences.PROXY_AUTH_ENABLED)) == 1:
+                dialog = ProxyAuthDialog(NULL, -1, "Check proxy authentication settings")
+                dialog.SetProxyUsername(preferences.GetPreference(Preferences.PROXY_USERNAME))
+                dialog.SetProxyPassword(preferences.GetProxyPassword())
+                dialog.SetProxyEnabled(int(preferences.GetPreference(Preferences.PROXY_AUTH_ENABLED)))
+
+                if dialog.ShowModal() == wxID_OK:
+                     preferences.SetPreference(Preferences.PROXY_USERNAME, dialog.GetProxyUsername())
+                     preferences.SetProxyPassword(dialog.GetProxyPassword())
+                     preferences.SetPreference(Preferences.PROXY_AUTH_ENABLED, dialog.GetProxyEnabled())
+                     preferences.StorePreferences()
+
+                     # Try again
+                     return OpenURL(url)
+             
+        elif hasattr(e, 'reason'):
+            log.debug("URLlib failed: " + str(e.reason))
+            response = None
+            
+    return response

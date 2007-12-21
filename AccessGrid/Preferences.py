@@ -10,6 +10,7 @@ from AccessGrid.Descriptions import NodeConfigDescription
 from AccessGrid.GUID import GUID
 from AccessGrid.BridgeCache import BridgeCache
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
+from XTEACrypto import crypt
 
 log = Log.GetLogger(Log.VenueClient)
 
@@ -39,6 +40,10 @@ class Preferences:
     BRIDGE_REGISTRY = "bridgeRegistry"
     PROXY_HOST = "proxyHost"
     PROXY_PORT = "proxyPort"
+    PROXY_USERNAME = "proxyAuthUsername"
+    PROXY_PASSWORD = "proxyAuthPassword"
+    PROXY_AUTH_ENABLED = "proxyAuthEnabled"
+    PROXY_AUTH_KEY = "proxyAuthPasswordKey"
     MULTICAST_DETECT_HOST = "multicastDetectHost"
     MULTICAST_DETECT_PORT = "multicastDetectPort"
     BRIDGE_PING_UPDATE_DELAY = "bridgePingUpdateDelay"
@@ -75,6 +80,10 @@ class Preferences:
                          self.BRIDGE_REGISTRY: "http://www.accessgrid.org/registry/peers.txt|http://www.ap-accessgrid.org/registry/peers.txt",
                          self.PROXY_HOST: "",
                          self.PROXY_PORT: "",
+                         self.PROXY_USERNAME: "",
+                         self.PROXY_PASSWORD: "",
+                         self.PROXY_AUTH_KEY: "stR1ng 1s SixTEN",
+                         self.PROXY_AUTH_ENABLED: 0,
                          self.MULTICAST_DETECT_HOST: "233.4.200.18",
                          self.MULTICAST_DETECT_PORT: 10002,
                          self.BRIDGE_PING_UPDATE_DELAY: 600,
@@ -290,4 +299,20 @@ class Preferences:
         * clientProfile * ClientProfile with your information. 
         '''
         return self.profile
+        
+    def SetProxyPassword(self, password):
+        '''
+        Encrypts a password using the "secret" key
+        '''
+        self.SetPreference(Preferences.PROXY_PASSWORD, (crypt(self.GetPreference(self.PROXY_AUTH_KEY), password)).encode("hex"))
+            
+    def GetProxyPassword(self):
+        '''
+        Retrieves and decrypts the password
+        
+        ** Returns **
+                
+        The password in cleartext
+        '''
+        return crypt(self.GetPreference(self.PROXY_AUTH_KEY), (self.GetPreference(self.PROXY_PASSWORD)).decode("hex"))
     
