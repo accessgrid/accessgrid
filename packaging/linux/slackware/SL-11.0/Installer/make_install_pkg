@@ -97,6 +97,8 @@ AccessGrid-3.1-noarch-cvs20071010
 AccessGrid-3.1-${arch}-cvs20071010
 AccessGrid-3.1-noarch-cvs20071010-1
 AccessGrid-3.1-${arch}-cvs20071010-1
+AccessGrid-3.1-${arch}-cvs20071031-1
+AccessGrid-3.1-${arch}-cvs20071215-1
 "
 
 pkgs="

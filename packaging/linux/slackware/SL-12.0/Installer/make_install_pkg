@@ -94,6 +94,9 @@ proc ()
 cruft_to_remove="
 AccessGrid-3.1-noarch-cvs20070808
 AccessGrid-3.1-noarch-cvs20071010
+AccessGrid-3.1-noarch-cvs20071010-1
+AccessGrid-3.1-noarch-cvs20071031-1
+AccessGrid-3.1-noarch-cvs20071215-1
 "
 
 pkgs="
