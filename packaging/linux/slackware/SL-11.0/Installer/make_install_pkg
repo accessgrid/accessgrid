@@ -15,7 +15,7 @@ SL_VERSION="SL11"
 # Package names
 #
 pkgs="
-AccessGrid-3.1-${arch}-1-1.tgz
+AccessGrid-3.1-${arch}-1.tgz
 quickbridge-3.0.2-${arch}-1.tgz
 elementtree-1.2.6-20050316-${arch}-1.tgz
 bajjer-0.2.5-${arch}-3.tgz

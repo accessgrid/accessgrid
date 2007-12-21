@@ -9,7 +9,7 @@ buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
-pkgname=${name}-${version}-${arch}-${release}-1.tgz
+pkgname=${name}-${version}-${arch}-${release}.tgz
 
 master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/nfs/distfiles/
