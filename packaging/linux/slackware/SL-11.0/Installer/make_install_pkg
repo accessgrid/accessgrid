@@ -1,5 +1,3 @@
-#!/bin/sh
-
 
 if [ ! "${EUID}" = "0" ]; then
   echo "Must be root to run this script"
@@ -17,7 +15,7 @@ SL_VERSION="SL11"
 # Package names
 #
 pkgs="
-AccessGrid-3.1-${arch}-cvs20071215-1.tgz
+AccessGrid-3.1-${arch}-1-1.tgz
 quickbridge-3.0.2-${arch}-1.tgz
 elementtree-1.2.6-20050316-${arch}-1.tgz
 bajjer-0.2.5-${arch}-3.tgz
@@ -46,7 +44,7 @@ wxmozilla-20070620cvs-${arch}-3.tgz
 "
 
 version=3.1
-release=cvs20071215-1
+release=1-1
 releasedir=${RELEASEDIR:-/scratch/AG3/releases-11.0}
 pkgdir=${PKGDIR:-/tmp}
 
@@ -200,6 +198,9 @@ cd ${tempdirname} && tar zcvf ${bundledirname}.tar.gz ${bundledirname}
 rm -rf ${bundledir}
 
 # Changelog
+#
+# Realease 3.1-1
+#  - 3.1 release
 #
 # Release 20071215-1
 #  - new 3.1beta2 snapshot

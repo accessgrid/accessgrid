@@ -1,6 +1,6 @@
 name=AccessGrid
 version=3.1
-release=cvs20071215
+release=1
 arch=${ARCH:-`uname -m`}
 prefix=${PREFIX:-/usr}
 srcpkg=${name}-${version}-${release}.tar.gz
@@ -193,6 +193,9 @@ fi
 exit
 
 # Changelog
+#
+# CKW 20071221
+#  - 3.1 release
 #
 # CKW 20071215 release cvs20071215-1
 #  - new 3.1beta2 snapshot
