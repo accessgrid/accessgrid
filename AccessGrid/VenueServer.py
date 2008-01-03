@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.219 2007-05-29 18:20:07 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.219 2007/05/29 18:20:07 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.219 2007-05-29 18:20:07 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.219 2007/05/29 18:20:07 turam Exp $"
 
 
 # Standard stuff
@@ -21,6 +21,7 @@ import threading
 import time
 import ConfigParser
 import csv
+import base64
 
 from AccessGrid.Toolkit import Service
 from AccessGrid import Log
@@ -344,13 +345,14 @@ class VenueServer:
         vsi = VenueServerI(impl=self, auth_method_name="authorize")
         asi = AuthorizationManagerI(impl=self.authManager)
 
-        from AccessGrid.interfaces.VenueServer_client import VenueServerIW
+        #from AccessGrid.interfaces.VenueServer_client import VenueServerIW
 
         # Add actions and roles to the authorization policy
 
         # Remove methods starting with underscore
-        venueServerActions = filter(lambda x: not x.startswith("_"),
-                                    dir(VenueServerIW))
+        #venueServerActions = filter(lambda x: not x.startswith("_"),
+        #                            dir(VenueServerIW))
+        venueServerActions = []
         venueServerActions = map(lambda x: Action.Action(x),
                                  venueServerActions)
         self.authManager.AddActions(venueServerActions)
@@ -532,6 +534,7 @@ class VenueServer:
         """
     
         cp = ConfigParser.ConfigParser()
+        cp.optionxform = str
         cp.read(filename)
 
         log.debug("Reading persisted Venues from: %s", filename)
@@ -677,7 +680,6 @@ class VenueServer:
                 # Deal with identification requirement
                 try:
                     idRequiredFlag = cp.getint(sec,'identificationRequired')
-                    print 'type id required ', idRequiredFlag
                     v.authManager.RequireIdentification(idRequiredFlag)
                 except ConfigParser.NoOptionError,e:
                     log.warn(e)
@@ -689,6 +691,7 @@ class VenueServer:
                     appList = ""
 
                 if len(appList) != 0:
+                    print 'loading apps'
                     for oid in string.split(appList, ':'):
                         try:
                             name = cp.get(oid, 'name')
@@ -698,13 +701,26 @@ class VenueServer:
                             appDesc = v.CreateApplication(name, description,
                                                       mimeType, oid)
                             appImpl = v.applications[appDesc.id]
+                            
+                            encoding = None
+                            if 'encoding' in cp.options(oid):
+                                encoding = cp.get(oid,'encoding')
+                            print 'encoding :', encoding
 
                             for o in cp.options(oid):
-                                if o != 'name' and o != 'description' and \
-                                   o != 'id' and o != 'uri' and o != mimeType:
+                                #if o != 'name' and o != 'description' and \
+                                #   o != 'id' and o != 'uri' and o != mimeType:
+                                print 'handling o = ', o
+                                if o not in ['name','description','id','uri','encoding','mimeType','authorizationPolicy','startable']:
                                     value = cp.get(oid, o)
+                                    if encoding == 'base64':
+                                        print 'decoding value for ',o,' : ', value
+                                        value = base64.decodestring(value)
+
                                     appImpl.app_data[o] = value
                         except:
+                            import traceback
+                            traceback.print_exc()
                             log.exception("Failed to load shared app")
                 else:
                     log.debug("No applications to load for Venue %s", sec)
@@ -830,13 +846,13 @@ class VenueServer:
         else:
             log.info("Checkpointing active; skipping")
             return
-        
-        # Open the persistent store
-        store = file(self.persistenceFilename, "w")
-        store.write("# AGTk %s\n" % (Version.GetVersion()))
 
+        store = None
         try:
-                       
+            # Open the persistent store
+            store = file(self.persistenceFilename, "w")
+            store.write("# AGTk %s\n" % (Version.GetVersion()))
+                   
             for venuePath in self.venues.keys():
                 # Change out the uri for storage,
                 # we don't bother to store the path since this is
@@ -848,30 +864,35 @@ class VenueServer:
                     self.simpleLock.release()
                 except:
                     self.simpleLock.release()
-                    log.exception("Exception Storing Venue!")
-                    return 0
+                    log.exception("Exception Storing Venue %s", venuePath)
 
-            # Close the persistent store
-            store.close()
         except:
-            store.close()
-            log.exception("Exception Checkpointing!")
-            return 0
+            log.exception("Checkpoint error while saving venues")
 
-        log.info("Checkpointing completed at: %s", time.asctime())
+        # Close the persistent store
+        try:
+            if store:
+                store.close()
+        except:
+            log.exception("Checkpoint error closing venues file: %s", self.persistenceFilename)
 
-        # Get authorization policy.
-        pol = self.authManager.ExportPolicy()
-        pol  = re.sub("\r\n", "<CRLF>", pol )
-        pol  = re.sub("\r", "<CR>", pol )
-        pol  = re.sub("\n", "<LF>", pol )
-        self.config["VenueServer.authorizationPolicy"] = pol
-        # Finally we save the current config
-        SaveConfig(self.configFile, self.config)
-      
+        log.info("Checkpointing venues completed at: %s", time.asctime())
+
+        try: 
+            # Get authorization policy.
+            pol = self.authManager.ExportPolicy()
+            pol  = re.sub("\r\n", "<CRLF>", pol )
+            pol  = re.sub("\r", "<CR>", pol )
+            pol  = re.sub("\n", "<LF>", pol )
+            self.config["VenueServer.authorizationPolicy"] = pol
+            # Finally we save the current config
+            SaveConfig(self.configFile, self.config)
+        except:
+            log.exception("Checkpoint error while saving config")
+
         self.checkpointing = 0
 
-        return 1
+        return
 
     def AddVenue(self, venueDesc, authPolicy = None):
         """
