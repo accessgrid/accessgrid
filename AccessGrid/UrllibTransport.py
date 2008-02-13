@@ -2,7 +2,7 @@
 # Name:        UrllibTransport.py
 # Purpose:     Transport class for doing xmlrpc through a proxy server
 # Created:     2006/03/08
-# RCS-ID:      $Id: UrllibTransport.py,v 1.5 2007-05-04 20:27:19 eolson Exp $
+# RCS-ID:      $Id: UrllibTransport.py,v 1.5 2007/05/04 20:27:19 eolson Exp $
 # Copyright:   (c) 2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,6 +12,7 @@ import httplib
 import xmlrpclib
 import socket
 import base64
+
 
 
 class TimeoutHTTPConnection(httplib.HTTPConnection):
@@ -59,12 +60,22 @@ class TimeoutTransport(xmlrpclib.Transport):
         if hasattr(xmlrpclib.Transport,'__init__'):
             xmlrpclib.Transport.__init__(self)
         self.timeout = timeout
+        self.httpconn = None
     def make_connection(self, host):
         host, extra_headers, x509 = self.get_host_info(host)
-        httpconn = TimeoutHTTP(host,timeout=self.timeout)
-        return httpconn
-    
-    
+        if self.httpconn:
+            self.freeconn()
+        self.httpconn = TimeoutHTTP(host,timeout=self.timeout)
+        return self.httpconn
+            
+    def freeconn(self):
+        if self.httpconn:
+            self.httpconn.close()
+            self.httpconn = None
+            
+    def __del__(self):
+        self.freeconn()
+#
 # The following code is adapted from:
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/523016
 class UrllibTransport(xmlrpclib.Transport):
@@ -75,6 +86,7 @@ class UrllibTransport(xmlrpclib.Transport):
     def __init__(self, proxy, timeout=0):
         self.proxy = proxy
         self.timeout = timeout
+        self.httpconn = None
 
     def set_proxy(self, proxy):
         self.proxyurl = proxy
@@ -110,8 +122,18 @@ class UrllibTransport(xmlrpclib.Transport):
         self.verbose = verbose 
         return self.parse_response(f)
 
+
     def make_connection(self, host):
         host, extra_headers, x509 = self.get_host_info(host)
-        httpconn = TimeoutHTTP(host,timeout=self.timeout)
-        return httpconn
-
+        self.httpconn = TimeoutHTTP(host,timeout=self.timeout)
+        return self.httpconn
+        
+    def freeconn(self):
+        if self.httpconn:
+            self.httpconn.close()
+            self.httpconn = None
+            
+    def __del__(self):
+        self.freeconn()
+        
+        
