@@ -1410,7 +1410,6 @@ class BridgingPanel(wx.Panel):
         self.OnRefresh(event)
 
     def OnRefresh(self,event):
-    
         wx.BeginBusyCursor()
     
         try:
@@ -1423,8 +1422,10 @@ class BridgingPanel(wx.Panel):
 
             # Refresh the bridge list in the UI
             self.__InitList()
-        finally:
-            wx.EndBusyCursor()
+        except:
+            log.exception("Exception refreshing bridge list")
+            
+        wx.EndBusyCursor()
 
     def OnEdit(self, event):
         if self.editBridgeRegistryPanel:
@@ -1587,6 +1588,73 @@ class NavigationPanel(wx.Panel):
         sizer.Add(self.exitsButton, 0, wx.ALL|wx.EXPAND, 10)
         sizer.Add(self.myVenuesButton, 0, wx.ALL|wx.EXPAND, 10)
         sizer.Add(self.allVenuesButton, 0, wx.ALL|wx.EXPAND, 10)
+               
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+        
+class JabberPanel(wx.Panel):
+    def __init__(self, parent, id, preferences):
+        wx.Panel.__init__(self, parent, id)
+        self.Centre()
+        self.titleText = wx.StaticText(self, -1, "Jabber Preferences")
+        self.titleLine = wx.StaticLine(self, -1)
+
+        self.useDynamicJabberAccount = wx.RadioButton(self, wx.NewId(), "Use dynamic Jabber account")
+        self.useSpecificJabberAccount = wx.RadioButton(self, wx.NewId(), "Use specific Jabber account")
+        self.jabberUsernameText = wx.StaticText(self, -1, "Account")
+        self.jabberUsernameCtrl = wx.TextCtrl(self, -1, preferences.GetJabberUsername())
+        self.jabberPasswordText = wx.StaticText(self, -1, "Password")
+        try:
+            p = preferences.GetJabberPassword()
+        except:
+            import traceback
+            traceback.print_exc()
+            p = ""
+        self.jabberPasswordCtrl = wx.TextCtrl(self, -1, p)    
+        
+        # default to using dynamic Jabber account
+        useJabberAccount = preferences.UseJabberAccount()
+        self.useDynamicJabberAccount.SetValue( not useJabberAccount)
+        self.useSpecificJabberAccount.SetValue(bool(useJabberAccount))
+        self.EnableJabberAccountInfo(bool(useJabberAccount))
+
+        wx.EVT_RADIOBUTTON(self,self.useSpecificJabberAccount.GetId(),self.OnUseJabberAccount)
+                                
+        self.__Layout()
+         
+    def GetJabberUsername(self):
+        return self.jabberUsernameCtrl.GetValue()
+    
+    def GetJabberPassword(self):
+        return self.jabberPasswordCtrl.GetValue()
+    
+    def UseJabberAccount(self):
+        return self.useSpecificJabberAccount.GetValue()
+    
+    def OnUseJabberAccount(self,event):
+        self.EnableJabberAccountInfo(event.IsChecked())   
+            
+    def EnableJabberAccountInfo(self,enabledFlag):
+        self.jabberUsernameText.Enable(enabledFlag)
+        self.jabberUsernameCtrl.Enable(enabledFlag)
+        self.jabberPasswordText.Enable(enabledFlag)
+        self.jabberPasswordCtrl.Enable(enabledFlag)
+
+    def __Layout(self):
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(self.titleText, 0, wx.ALL, 5)
+        sizer2.Add(self.titleLine, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        sizer.Add(sizer2, 0, wx.EXPAND)
+        sizer.Add(self.useDynamicJabberAccount, 0, wx.ALL|wx.EXPAND, 10)
+        sizer.Add(self.useSpecificJabberAccount, 0, wx.ALL|wx.EXPAND, 10)
+        sizer2 = wx.GridSizer(rows=2,cols=2)
+        sizer2.Add(self.jabberUsernameText, 0, wx.ALL, 5)
+        sizer2.Add(self.jabberUsernameCtrl, 1, wx.EXPAND, 5)
+        sizer2.Add(self.jabberPasswordText, 0, wx.ALL, 5)
+        sizer2.Add(self.jabberPasswordCtrl, 1, wx.EXPAND, 5)
+        sizer.Add(sizer2, 0, wx.EXPAND)
                
         self.SetSizer(sizer)
         sizer.Fit(self)
