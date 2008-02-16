@@ -10,7 +10,7 @@ from AccessGrid.Descriptions import NodeConfigDescription
 from AccessGrid.GUID import GUID
 from AccessGrid.BridgeCache import BridgeCache
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
-from XTEACrypto import crypt
+from AccessGrid.Security import Crypto
 
 log = Log.GetLogger(Log.VenueClient)
 
@@ -304,7 +304,7 @@ class Preferences:
         '''
         Encrypts a password using the "secret" key
         '''
-        self.SetPreference(Preferences.PROXY_PASSWORD, (crypt(self.GetPreference(self.PROXY_AUTH_KEY), password)).encode("hex"))
+        self.SetPreference(Preferences.PROXY_PASSWORD, (Crypto.encrypt(password, self.GetPreference(self.PROXY_AUTH_KEY))).encode("hex"))
             
     def GetProxyPassword(self):
         '''
@@ -314,5 +314,5 @@ class Preferences:
                 
         The password in cleartext
         '''
-        return crypt(self.GetPreference(self.PROXY_AUTH_KEY), (self.GetPreference(self.PROXY_PASSWORD)).decode("hex"))
+        return Crypto.decrypt((self.GetPreference(self.PROXY_PASSWORD)).decode("hex"), self.GetPreference(self.PROXY_AUTH_KEY) )
     
