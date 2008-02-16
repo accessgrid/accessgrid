@@ -1109,7 +1109,7 @@ def SetIcon(app):
         elif IsOSX():
              icon = icons.getAGIcon128Icon()
              t = wx.TaskBarIcon()
-             t.SetIcon(icon)
+             t.SetIcon(icon,"VenueClient")
 
 if __name__ == "__main__":
     app = wx.PySimpleApp()
