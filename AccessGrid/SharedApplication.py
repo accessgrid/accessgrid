@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.39 2007-05-25 16:07:25 turam Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.39 2007/05/25 16:07:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,8 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.39 2007-05-25 16:07:25 turam Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.39 2007/05/25 16:07:25 turam Exp $"
+import base64
 
 from AccessGrid import Log
 from AccessGrid.GUID import GUID
@@ -153,9 +154,13 @@ class SharedApplication:
     def AsINIBlock(self):
         # Got the basic description
         string = self.AsApplicationDescription().AsINIBlock()
+        
+        string += "encoding: base64\n"
 
         # Now to save data (state)
         for key, value in self.app_data.items():
+            print 'encoding value for ', key, ' : ', value
+            value = base64.encodestring(value)
             string += "%s : %s\n" % (key, value)
 
         # Save application authorization policy
