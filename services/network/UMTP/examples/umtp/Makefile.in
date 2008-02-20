@@ -1,0 +1,36 @@
+#
+# Makefile for the UMTP example.
+# This probably requires GNU make.
+#
+
+# Location of includes and library
+CSRC   = ../../src
+
+# Library name
+LNAME  = uclmmbase -lpthread
+
+DEFS   = @DEFS@
+CFLAGS = @CFLAGS@ $(DEFS) -I$(CSRC)
+LIBS   = @LIBS@ -L$(CSRC) -l$(LNAME)
+CC     = @CC@
+
+TARGET = umtp_exec
+OBJS   = umtp_exec.o
+SRCS   = $(OBJS:%.o=%.c)
+
+all: $(TARGET)
+
+umtp_exec: $(OBJS) $(CSRC)/lib$(LNAME).a
+	 $(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
+
+.c.o:
+	$(CC) $(CFLAGS) $(INC) -c $<
+
+$(CSRC)/lib$(LNAME).a:
+	cd $(CSRC) && $(MAKE)
+
+clean:
+	-rm -f $(OBJS) $(TARGET)
+
+distclean: clean
+	-rm -f Makefile

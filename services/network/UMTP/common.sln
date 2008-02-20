@@ -1,0 +1,64 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common", "src\common.vcproj", "{26ED6142-6C7B-43BC-A456-A1582D80AB50}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "umtpdemo", "examples\umtp\umtp.vcproj", "{171E73FF-9393-4202-A951-B29A15547612}"
+	ProjectSection(ProjectDependencies) = postProject
+		{26ED6142-6C7B-43BC-A456-A1582D80AB50} = {26ED6142-6C7B-43BC-A456-A1582D80AB50}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "umtp_agent", "umtp_agent\umtp_agent.vcproj", "{6752E1CB-66C3-4B88-8879-C5B84B216446}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Debug IPv6 = Debug IPv6
+		Debug IPv6 MSR = Debug IPv6 MSR
+		Debug IPv6 Musica = Debug IPv6 Musica
+		Debug IPv6 Win2000 = Debug IPv6 Win2000
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{26ED6142-6C7B-43BC-A456-A1582D80AB50}.Debug.ActiveCfg = Debug|Win32
+		{26ED6142-6C7B-43BC-A456-A1582D80AB50}.Debug.Build.0 = Debug|Win32
+		{26ED6142-6C7B-43BC-A456-A1582D80AB50}.Debug IPv6.ActiveCfg = Debug IPv6 MSR|Win32
+		{26ED6142-6C7B-43BC-A456-A1582D80AB50}.Debug IPv6.Build.0 = Debug IPv6 MSR|Win32
+		{26ED6142-6C7B-43BC-A456-A1582D80AB50}.Debug IPv6 MSR.ActiveCfg = Debug IPv6 MSR|Win32
+		{26ED6142-6C7B-43BC-A456-A1582D80AB50}.Debug IPv6 MSR.Build.0 = Debug IPv6 MSR|Win32
+		{26ED6142-6C7B-43BC-A456-A1582D80AB50}.Debug IPv6 Musica.ActiveCfg = Debug IPv6 Musica|Win32
+		{26ED6142-6C7B-43BC-A456-A1582D80AB50}.Debug IPv6 Musica.Build.0 = Debug IPv6 Musica|Win32
+		{26ED6142-6C7B-43BC-A456-A1582D80AB50}.Debug IPv6 Win2000.ActiveCfg = Debug IPv6 Win2000|Win32
+		{26ED6142-6C7B-43BC-A456-A1582D80AB50}.Debug IPv6 Win2000.Build.0 = Debug IPv6 Win2000|Win32
+		{26ED6142-6C7B-43BC-A456-A1582D80AB50}.Release.ActiveCfg = Release|Win32
+		{171E73FF-9393-4202-A951-B29A15547612}.Debug.ActiveCfg = Debug|Win32
+		{171E73FF-9393-4202-A951-B29A15547612}.Debug.Build.0 = Debug|Win32
+		{171E73FF-9393-4202-A951-B29A15547612}.Debug IPv6.ActiveCfg = Debug|Win32
+		{171E73FF-9393-4202-A951-B29A15547612}.Debug IPv6.Build.0 = Debug|Win32
+		{171E73FF-9393-4202-A951-B29A15547612}.Debug IPv6 MSR.ActiveCfg = Debug|Win32
+		{171E73FF-9393-4202-A951-B29A15547612}.Debug IPv6 MSR.Build.0 = Debug|Win32
+		{171E73FF-9393-4202-A951-B29A15547612}.Debug IPv6 Musica.ActiveCfg = Debug|Win32
+		{171E73FF-9393-4202-A951-B29A15547612}.Debug IPv6 Musica.Build.0 = Debug|Win32
+		{171E73FF-9393-4202-A951-B29A15547612}.Debug IPv6 Win2000.ActiveCfg = Debug|Win32
+		{171E73FF-9393-4202-A951-B29A15547612}.Debug IPv6 Win2000.Build.0 = Debug|Win32
+		{171E73FF-9393-4202-A951-B29A15547612}.Release.ActiveCfg = Release|Win32
+		{6752E1CB-66C3-4B88-8879-C5B84B216446}.Debug.ActiveCfg = Debug|Win32
+		{6752E1CB-66C3-4B88-8879-C5B84B216446}.Debug.Build.0 = Debug|Win32
+		{6752E1CB-66C3-4B88-8879-C5B84B216446}.Debug IPv6.ActiveCfg = Debug|Win32
+		{6752E1CB-66C3-4B88-8879-C5B84B216446}.Debug IPv6.Build.0 = Debug|Win32
+		{6752E1CB-66C3-4B88-8879-C5B84B216446}.Debug IPv6 MSR.ActiveCfg = Debug|Win32
+		{6752E1CB-66C3-4B88-8879-C5B84B216446}.Debug IPv6 MSR.Build.0 = Debug|Win32
+		{6752E1CB-66C3-4B88-8879-C5B84B216446}.Debug IPv6 Musica.ActiveCfg = Debug|Win32
+		{6752E1CB-66C3-4B88-8879-C5B84B216446}.Debug IPv6 Musica.Build.0 = Debug|Win32
+		{6752E1CB-66C3-4B88-8879-C5B84B216446}.Debug IPv6 Win2000.ActiveCfg = Debug|Win32
+		{6752E1CB-66C3-4B88-8879-C5B84B216446}.Debug IPv6 Win2000.Build.0 = Debug|Win32
+		{6752E1CB-66C3-4B88-8879-C5B84B216446}.Release.ActiveCfg = Release|Win32
+		{6752E1CB-66C3-4B88-8879-C5B84B216446}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

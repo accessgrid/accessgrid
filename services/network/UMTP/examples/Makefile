@@ -1,0 +1,26 @@
+# Generated automatically from Makefile.in by configure.
+#
+# Makefile for the common code library project. 
+# This probably requires GNU make.
+#
+
+SUBDIRS=umtp
+
+all: all-recursive
+
+all-recursive:
+	for s in $(SUBDIRS) ; do (cd $$s && $(MAKE)) || exit 1; done
+
+clean: clean-recursive
+
+clean-recursive:
+	for s in $(SUBDIRS) ; do (cd $$s && $(MAKE) clean); done
+
+distclean: distclean-recursive
+	rm -f Makefile
+
+distclean-recursive:
+	for s in $(SUBDIRS) ; do (cd $$s && $(MAKE) distclean) ; done
+
+.PHONY: clean clean-recursive distclean
+

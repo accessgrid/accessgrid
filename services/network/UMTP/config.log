@@ -1,0 +1,42 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:562: checking host system type
+configure:586: checking for gcc
+configure:699: checking whether the C compiler (gcc  ) works
+configure:715: gcc -o conftest    conftest.c  1>&5
+configure:741: checking whether the C compiler (gcc  ) is a cross-compiler
+configure:746: checking whether we are using GNU C
+configure:774: checking whether gcc accepts -g
+configure:806: checking how to run the C preprocessor
+configure:888: checking for ranlib
+configure:917: checking for ANSI C header files
+configure:1021: checking for sys/wait.h that is POSIX.1 compatible
+configure:1066: checking for sys/time.h
+configure:1104: checking whether time.h and sys/time.h may both be included
+configure:1140: checking for working const
+configure:1215: checking for size_t
+configure:1252: checking for stropts.h
+configure:1252: checking for sys/filio.h
+configure:1292: checking for stdint.h
+configure:1292: checking for inttypes.h
+configure:1333: checking for int8_t
+configure:1366: checking for int16_t
+configure:1399: checking for int32_t
+configure:1432: checking for int64_t
+configure:1467: checking for uint8_t in <stdint.h>
+configure:1527: checking for uint16_t in <stdint.h>
+configure:1587: checking for uint32_t in <stdint.h>
+configure:1649: checking whether byte ordering is bigendian
+configure:1739: checking whether char is unsigned
+configure:1828: checking for /dev/urandom
+configure:1860: checking for vsnprintf
+configure:1923: checking for inet_pton in <arpa/inet.h>
+configure:1954: checking for inet_ntop in <arpa/inet.h>
+configure:1994: checking for library containing socket
+configure:2056: checking for library containing inet_addr
+configure:2184: checking whether to enable IPv6
+configure:2382: checking for getipnodebyname in <netdb.h>
+configure:2413: checking for struct addrinfo in <netdb.h>
+configure:2444: checking for sin6_len in struct sockaddr_in6
+configure:2489: checking for gtkdoc-scan
