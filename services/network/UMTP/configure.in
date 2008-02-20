@@ -371,11 +371,6 @@ AC_CONFIG_HEADER(src/uclconf.h:src/config.h.in)
 AC_OUTPUT(Makefile \
           doc/Makefile \
 	  examples/Makefile \
-	  examples/rtp/Makefile \
-	  examples/sap/Makefile \
-	  examples/sdp/Makefile \
 	  examples/umtp/Makefile \
-	  examples/mbus/Makefile \
-	  examples/_common/Makefile \
 	  src/Makefile \
 	  tests/Makefile)
