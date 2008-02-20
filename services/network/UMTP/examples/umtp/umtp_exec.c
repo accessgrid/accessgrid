@@ -51,7 +51,7 @@ main(int argc, char *argv[])
 
 	if( argc < 4 ) 
 	{
-		fprintf(stdout, "Usage: umtp [-s|-m] <hostname> <port>\n");
+		fprintf(stdout, "Usage: umtp [-s|-m] <hostname> <port> [<mcast group address> <mcast group port>]\n");
 		exit(EXIT_SUCCESS);
 	}
 	type	= argv[ac++];
