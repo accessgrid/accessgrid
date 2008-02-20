@@ -14,13 +14,13 @@ CFLAGS = @CFLAGS@ $(DEFS) -I$(CSRC)
 LIBS   = @LIBS@ -L$(CSRC) -l$(LNAME)
 CC     = @CC@
 
-TARGET = umtp_exec
-OBJS   = umtp_exec.o
+TARGET = umtp
+OBJS   = umtp_exec.o umtp.o  umtp_util.o umtp_rx_handler.o ring_buf.o
 SRCS   = $(OBJS:%.o=%.c)
 
 all: $(TARGET)
 
-umtp_exec: $(OBJS) $(CSRC)/lib$(LNAME).a
+umtp: $(OBJS) $(CSRC)/lib$(LNAME).a
 	 $(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
 
 .c.o:

@@ -3342,7 +3342,8 @@ fi
 
 
 
-for ac_header in stropts.h sys/filio.h
+#for ac_header in stropts.h sys/filio.h
+for ac_header in sys/filio.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
@@ -5463,7 +5464,7 @@ fi
 # Done, create the output files....
           ac_config_headers="$ac_config_headers src/uclconf.h:src/config.h.in"
 
-                                                            ac_config_files="$ac_config_files Makefile doc/Makefile examples/Makefile examples/umtp/Makefile src/Makefile tests/Makefile"
+                                                            ac_config_files="$ac_config_files Makefile examples/Makefile examples/umtp/Makefile src/Makefile"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -5989,7 +5990,6 @@ do
   case "$ac_config_target" in
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-  "doc/Makefile" ) CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
   "examples/Makefile" ) CONFIG_FILES="$CONFIG_FILES examples/Makefile" ;;
   "examples/umtp/Makefile" ) CONFIG_FILES="$CONFIG_FILES examples/umtp/Makefile" ;;
   "src/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
