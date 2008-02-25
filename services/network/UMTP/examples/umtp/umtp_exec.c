@@ -93,7 +93,7 @@ main(int argc, char *argv[])
 	    probe_sent = umtp_send_probe(  session, umtp_host_addr(address), port);		
 	    probe_count = 0;
 	    time(&last_time);
-	    while( 0 && *probe_sent == 1 ) {
+	    while( *probe_sent == 1 ) {
 			time(&now);
 			if( now - last_time > 1 ) {
 				probe_count++;				
