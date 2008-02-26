@@ -3,7 +3,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common", "src\common.2003.v
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "umtp_exec", "examples\umtp\umtp.2003.vcproj", "{171E73FF-9393-4202-A951-B29A15547612}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "umtp", "examples\umtp\umtp.2003.vcproj", "{171E73FF-9393-4202-A951-B29A15547612}"
 	ProjectSection(ProjectDependencies) = postProject
 		{26ED6142-6C7B-43BC-A456-A1582D80AB50} = {26ED6142-6C7B-43BC-A456-A1582D80AB50}
 	EndProjectSection
