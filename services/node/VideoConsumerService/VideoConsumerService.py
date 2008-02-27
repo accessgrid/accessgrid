@@ -2,7 +2,7 @@
 # Name:        VideoConsumerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.17 2007-09-12 07:01:56 douglask Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.17 2007/09/12 07:01:56 douglask Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,6 +11,8 @@ try:    import _winreg
 except: pass
 
 from AccessGrid import Toolkit
+import socket
+import select
 
 from AccessGrid.Descriptions import Capability
 from AccessGrid.AGService import AGService
@@ -120,6 +122,7 @@ class VideoConsumerService( AGService ):
         """Start service"""
         try:
 
+
             # Set processor affinity (windows only)
             if IsWindows():
                 try:
@@ -181,6 +184,29 @@ class VideoConsumerService( AGService ):
             # add options beyond here)
             options.append( '%s/%d' % (self.streamDescription.location.host,
                                        self.streamDescription.location.port))
+
+            # Create a socket, send some data out, and listen for incoming data
+            try:
+                host = self.streamDescription.location.host
+                port = self.streamDescription.location.port
+                timeout = 1
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                if IsOSX():
+                    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+                s.bind(('', port))
+                s.sendto('qwe',(host,port))
+                fdList = []
+                while not fdList:
+                    fdList = select.select([s.fileno()],[],[],timeout)
+                s.close()
+                s = None
+            except:
+                self.log.warn("Failed attempt to open firewall by sending data out on video port; continuing anyway")
+                if s:
+                    s.close()
+                    s = None
+
             self.log.info("Starting VideoConsumerService")
             self.log.info(" executable = %s" % self.executable)
             self.log.info(" options = %s" % options)
