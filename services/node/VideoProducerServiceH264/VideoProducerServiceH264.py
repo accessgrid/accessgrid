@@ -59,7 +59,7 @@ proc user_hook {} {
 
 class VideoProducerServiceH264( AGService ):
 
-    encodings = [ "mpeg4","h264","h261" ]
+    encodings = [ "mpeg4","h264","h261","h261as" ]
     standards = [ "NTSC", "PAL" ]
     inputsizes = [ "Small", "Normal", "Large" ]
 
@@ -76,8 +76,11 @@ class VideoProducerServiceH264( AGService ):
                                Capability( Capability.PRODUCER,
                                           Capability.VIDEO,
                                           "H261",
-                                          90000,self.id)
-                                          ]
+                                          90000,self.id),
+                               Capability( Capability.PRODUCER,
+                                          Capability.VIDEO,
+                                          "H261AS",
+                                          90000,self.id)                                          ]
         
         if IsWindows():
             vic = "vic.exe"
