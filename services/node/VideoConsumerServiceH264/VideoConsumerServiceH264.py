@@ -38,7 +38,12 @@ class VideoConsumerServiceH264( AGService ):
                                 Capability( Capability.CONSUMER,
                                           Capability.VIDEO,
                                           "MPEG4",
-                                          90000, self.id) ]
+                                          90000, self.id),
+                                Capability( Capability.CONSUMER,
+                                          Capability.VIDEO,
+                                          "H261AS",
+                                          90000, self.id) 
+                                          ]
 
         if IsWindows():
             vic = "vic.exe"
