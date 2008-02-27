@@ -1,0 +1,12 @@
+[ServiceDescription]
+name = VideoConsumerServiceH264
+description = Vic-based video service to receive mpeg4 and h264 video
+capabilities = Capability1
+executable = VideoConsumerServiceH264.py
+platform = neutral
+version = 3.1
+
+[Capability1]
+role = consumer
+type = video
+
