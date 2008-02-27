@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="umtp_exec"
+	Name="umtp"
 	ProjectGUID="{171E73FF-9393-4202-A951-B29A15547612}"
 	Keyword="MakeFileProj">
 	<Platforms>
@@ -55,17 +55,22 @@
 			Name="Release|Win32"
 			OutputDirectory="Release"
 			IntermediateDirectory="Release"
-			ConfigurationType="1">
+			ConfigurationType="1"
+			UseOfMFC="1">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\src\"
-				PreprocessorDefinitions="WIN32"/>
+				AdditionalIncludeDirectories="..\..\src\;..\..\pthreads\include"
+				PreprocessorDefinitions="WIN32"
+				RuntimeLibrary="0"
+				DebugInformationFormat="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="uclmm.lib winmm.lib wsock32.lib Ws2_32.lib"
-				AdditionalLibraryDirectories="..\..\src\Release"/>
+				AdditionalDependencies="uclmm.lib winmm.lib wsock32.lib Ws2_32.lib pthread.lib $(NOINHERIT)"
+				AdditionalLibraryDirectories="..\..\src\Release;..\..\pthreads\lib"
+				IgnoreAllDefaultLibraries="FALSE"
+				IgnoreDefaultLibraryNames="libcmt.lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -131,12 +136,36 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
 			<File
+				RelativePath=".\ring_buf.c">
+			</File>
+			<File
+				RelativePath=".\umtp.c">
+			</File>
+			<File
 				RelativePath="umtp_exec.c">
+			</File>
+			<File
+				RelativePath=".\umtp_rx_handler.c">
+			</File>
+			<File
+				RelativePath=".\umtp_util.c">
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc">
+			<File
+				RelativePath=".\ring_buf.h">
+			</File>
+			<File
+				RelativePath=".\umtp.h">
+			</File>
+			<File
+				RelativePath=".\umtp_rx_handler.h">
+			</File>
+			<File
+				RelativePath=".\umtp_util.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

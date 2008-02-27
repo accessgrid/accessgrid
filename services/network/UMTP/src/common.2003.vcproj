@@ -433,9 +433,6 @@
 				RelativePath=".\rijndael-api-fst.c">
 			</File>
 			<File
-				RelativePath=".\ring_buf.c">
-			</File>
-			<File
 				RelativePath=".\rtp.c">
 			</File>
 			<File
@@ -446,15 +443,6 @@
 			</File>
 			<File
 				RelativePath="sdp.c">
-			</File>
-			<File
-				RelativePath="umtp.c">
-			</File>
-			<File
-				RelativePath=".\umtp_rx_handler.c">
-			</File>
-			<File
-				RelativePath=".\umtp_util.c">
 			</File>
 			<File
 				RelativePath=".\util.c">
