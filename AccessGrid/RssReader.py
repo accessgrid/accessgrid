@@ -115,13 +115,16 @@ class RssReader:
             else:
                 d = feedparser.parse(rssUrl)
             
-        channelTime = d['feed']['modified']
-        docDate = strtimeToSecs(channelTime)
+        try:
+            channelTime = d['feed']['modified']
+            docDate = strtimeToSecs(channelTime)
+        except KeyError:
+            docDate = 0
     
         store = 0
         if rssUrl in self.entries.keys():
             lastDocDate = self.entries[rssUrl][1]
-            if lastDocDate < docDate:
+            if lastDocDate < docDate or docDate == 0:
                 # document has been updated; store it
                 store = 1
         else:
