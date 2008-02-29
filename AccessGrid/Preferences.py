@@ -5,7 +5,7 @@ from AccessGrid import Log
 from AccessGrid.Platform import IsWindows, IsOSX
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Utilities import LoadConfig, SaveConfig
-from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
+from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE, UMTP_TYPE
 from AccessGrid.Descriptions import NodeConfigDescription
 from AccessGrid.GUID import GUID
 from AccessGrid.BridgeCache import BridgeCache
@@ -38,6 +38,7 @@ class Preferences:
     MY_VENUES = "my venues"
     ALL_VENUES = "all venues"
     BRIDGE_REGISTRY = "bridgeRegistry"
+    PROXY_ENABLED = "proxyEnabled"
     PROXY_HOST = "proxyHost"
     PROXY_PORT = "proxyPort"
     PROXY_USERNAME = "proxyAuthUsername"
@@ -48,6 +49,7 @@ class Preferences:
     MULTICAST_DETECT_PORT = "multicastDetectPort"
     BRIDGE_PING_UPDATE_DELAY = "bridgePingUpdateDelay"
     ORDER_BRIDGES_BY_PING = "orderBridgesByPing"
+    VENUESERVER_URLS = "venueServerUrls"
                 
     def __init__(self):
         '''
@@ -78,6 +80,7 @@ class Preferences:
                          self.ENABLE_AUDIO: 1,
                          self.DISPLAY_MODE: self.EXITS,
                          self.BRIDGE_REGISTRY: "http://www.accessgrid.org/registry/peers.txt|http://www.ap-accessgrid.org/registry/peers.txt",
+                         self.PROXY_ENABLED: 0,
                          self.PROXY_HOST: "",
                          self.PROXY_PORT: "",
                          self.PROXY_USERNAME: "",
@@ -88,6 +91,7 @@ class Preferences:
                          self.MULTICAST_DETECT_PORT: 10002,
                          self.BRIDGE_PING_UPDATE_DELAY: 600,
                          self.ORDER_BRIDGES_BY_PING: 1,
+                         self.VENUESERVER_URLS: "https://vv3.mcs.anl.gov:8000/VenueServer"
                          }
 
         # Set default log levels to Log.DEBUG.
@@ -173,7 +177,7 @@ class Preferences:
         try:
             log.debug("Preferences.StorePreferences: open file")
             SaveConfig(self.config.GetPreferences(), tempDict)
-        
+            os.chmod(self.config.GetPreferences(),0600)
         except:
             log.exception("Preferences.StorePreferences: store file error")
 
@@ -208,6 +212,15 @@ class Preferences:
             # Add any default preferences that are missing
             for key in self.default:
                 if not self.preferences.has_key(key):
+                    
+                    # set the initial value of the proxy enabled preference based on whether
+                    # the user has specified a proxy host previously
+                    # note:  this only happens the first time a preferences file is loaded that
+                    # is missing the PROXY_ENABLED preference
+                    if key == self.PROXY_ENABLED:
+                        if self.preferences.has_key(self.PROXY_HOST) and len(self.preferences[self.PROXY_HOST]) > 0:
+                            self.preferences[key] = 1
+                            continue
                     self.preferences[key] = self.default[key]
              
         except:
@@ -304,7 +317,11 @@ class Preferences:
         '''
         Encrypts a password using the "secret" key
         '''
-        self.SetPreference(Preferences.PROXY_PASSWORD, (Crypto.encrypt(password, self.GetPreference(self.PROXY_AUTH_KEY))).encode("hex"))
+        if password:
+        	encryptedPassword = Crypto.encrypt(password, self.GetPreference(self.PROXY_AUTH_KEY)).encode("hex")
+        	self.SetPreference(Preferences.PROXY_PASSWORD, encryptedPassword)
+        else:
+            self.SetPreference(Preferences.PROXY_PASSWORD, "")
             
     def GetProxyPassword(self):
         '''
@@ -314,5 +331,10 @@ class Preferences:
                 
         The password in cleartext
         '''
-        return Crypto.decrypt((self.GetPreference(self.PROXY_PASSWORD)).decode("hex"), self.GetPreference(self.PROXY_AUTH_KEY) )
+        encryptedPassword = self.GetPreference(self.PROXY_PASSWORD)
+        if encryptedPassword:
+        	password = Crypto.decrypt(encryptedPassword.decode("hex"), self.GetPreference(self.PROXY_AUTH_KEY) )
+        	return password
+        else:
+        	return ""
     
