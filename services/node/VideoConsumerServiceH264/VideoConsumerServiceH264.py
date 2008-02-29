@@ -27,10 +27,10 @@ class VideoConsumerServiceH264( AGService ):
 
     def __init__( self ):
         AGService.__init__( self )
-        self.capabilities = [ Capability( Capability.CONSUMER,
-                                          Capability.VIDEO,
-                                          "H261",
-                                          90000, self.id) ,
+        self.capabilities = [  #Capability( Capability.CONSUMER,
+                               #           Capability.VIDEO,
+                               #           "H261",
+                               #           90000, self.id) ,
                                 Capability( Capability.CONSUMER,
                                           Capability.VIDEO,
                                           "H264",
