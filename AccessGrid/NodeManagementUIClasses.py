@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.118 2007-10-04 17:36:56 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.118 2007/10/04 17:36:56 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.118 2007-10-04 17:36:56 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.118 2007/10/04 17:36:56 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 import threading
@@ -793,17 +793,17 @@ class NodeManagementClientFrame(wx.Frame):
                 self.tree.SetItemImage(sm, self.smImage,which=wx.TreeItemIcon_Normal)
                 self.tree.SetItemImage(sm, self.smImage, which=wx.TreeItemIcon_Expanded)
                 self.tree.SetItemData(sm,wx.TreeItemData(serviceManager))
-                services = AGServiceManagerIW( serviceManager.uri ).GetServices()
+                services = serviceManager.GetObject().GetServices()
                         
                 if services: 
                     for service in services:
                         s = self.tree.AppendItem(sm,service.name)
                         self.tree.SetItemImage(s, self.svcImage, which = wx.TreeItemIcon_Normal)
                         self.tree.SetItemData(s,wx.TreeItemData(service))
-                        resource = AGServiceIW(service.uri).GetResource()
+                        resource = service.GetObject().GetResource()
                         if resource:
                             self.tree.SetItemText(s,resource.name,1)
-                        if AGServiceIW( service.uri ).GetEnabled():
+                        if service.GetObject().GetEnabled():
                             status = "Enabled"
                         else:
                             status = "Disabled"
@@ -884,6 +884,8 @@ class NodeManagementClientFrame(wx.Frame):
             for obj in selections:
                 try:
                     self.nodeServiceHandle.RemoveServiceManager( obj.uri )
+                except ServiceManagerCannotBeRemovedBuiltIn:
+                    self.Error("Cannot remove built in Service Manager")
                 except:
                     log.exception("Error removing service manager %s", self.serviceManagers[index].uri)
 
@@ -961,14 +963,13 @@ class NodeManagementClientFrame(wx.Frame):
                 # Add the service
                 #
                 wx.BeginBusyCursor()
-                serviceDescription = AGServiceManagerIW(serviceManager.uri).AddService( serviceToAdd,
+                serviceDescription = serviceManager.GetObject().AddService( serviceToAdd,                                                                            
                                                                                         None, [],
                                                                                         self.app.GetPreferences().GetProfile())
                 
                 # Configure resource
                 if serviceToAdd.resourceNeeded:
-                    service = AGServiceIW(serviceDescription.uri)
-                    resources = service.GetResources()
+                    resources = serviceDescription.GetObject().GetResources()
                     resourceNames = map(lambda x:x.name,resources)
                     if len(resources) > 0:
                         log.info("Prompt for resource")
@@ -991,7 +992,7 @@ class NodeManagementClientFrame(wx.Frame):
                         foundResource = 0
                         for r in resources:
                             if r.name == selectedResourceName:
-                                service.SetResource(r)
+                                serviceDescription.GetObject().SetResource(r)
                                 foundResource = 1
                         if not foundResource:
                             raise Exception("Unknown resource selected: %s", selectedResourceName)
@@ -1149,14 +1150,14 @@ class NodeManagementClientFrame(wx.Frame):
         # Get configuration
         try:
             wx.BeginBusyCursor()
-            config = AGServiceIW( service.uri ).GetConfiguration()
+            config = service.GetObject().GetConfiguration()
         except:
             wx.EndBusyCursor()
             log.exception("Service is unreachable at %s" % (service.uri,))
             self.Error("Service is unreachable at %s" % (service.uri,))
             return
             
-        resource = AGServiceIW( service.uri ).GetResource()
+        resource = service.GetObject().GetResource()
 
         wx.EndBusyCursor()
         if config:
@@ -1172,7 +1173,7 @@ class NodeManagementClientFrame(wx.Frame):
                 wx.BeginBusyCursor()
                 try:
                     # Send the modified configuration to the service
-                    AGServiceIW( service.uri ).SetConfiguration( config )
+                    service.GetObject().SetConfiguration( config )
                 except:
                     log.exception("Exception setting configuration")
                 wx.EndBusyCursor()
