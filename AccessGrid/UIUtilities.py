@@ -220,8 +220,17 @@ class ProgressDialog(wx.Frame):
         self.Fit()
         
     def UpdateGauge(self, text, progress):
-        self.gauge.SetValue(progress)
+
         self.progressText.SetLabel(text)
+        curval = self.gauge.GetValue()
+        for i in range(progress-curval):
+            self.gauge.SetValue(curval+i)
+            self.lineCtrl.Update()
+            self.versionTextCtrl.Update()
+            self.bitmapCtrl.Update()
+            time.sleep(0.03)
+            
+        self.gauge.SetValue(progress)
         self.lineCtrl.Update()
         self.versionTextCtrl.Update()
         self.bitmapCtrl.Update()
@@ -231,7 +240,7 @@ class ProgressDialog(wx.Frame):
         self._startup = False
         self.gauge.SetValue(self.max)
         wx.Yield()
-        #time.sleep(.25) #give the user a chance to see the gauge reach 100%
+        #time.sleep(0.2) #give the user a chance to see the gauge reach 100%
         wx.Frame.Destroy(self)
 
 class AboutDialog(wx.Dialog):
@@ -302,7 +311,7 @@ def ProgressDialogTest():
     count = 0
     while count < maxSize:
         count = count + 1
-        wx.Sleep(1)
+        wx.Sleep(0.2)
         dlg.UpdateGauge('update '+ str(count), count)
 
     dlg.Destroy()
@@ -1110,6 +1119,179 @@ def SetIcon(app):
              icon = icons.getAGIcon128Icon()
              t = wx.TaskBarIcon()
              t.SetIcon(icon,"VenueClient")
+
+
+class ItemBrowserCtrl(wx.Panel):
+    def __init__(self, parent, id, choices, **kw):
+        self.parent = parent
+        self.choices = choices
+        wx.Panel.__init__(self, parent, id)
+        
+        self.listCtrl = wx.ListCtrl(self, id, style=wx.LC_REPORT|wx.TAB_TRAVERSAL|wx.LC_NO_HEADER|wx.LC_SINGLE_SEL, size=(500, 599))
+        self.listCtrl.InsertColumn(0, 'Name')
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(sizer)
+
+        # - search panel
+        
+        self.searchPanel = wx.Panel(self, -1, size=(100, 100))
+        #self.searchPanel.SetBackgroundColour(wx.GREEN)
+        self.panelSizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        
+        self.searchLabel = wx.StaticText(self.searchPanel, -1, 'Search')
+        
+        self.searchTextCtrl = wx.TextCtrl(self.searchPanel, -1, size=(150, -1), style=wx.TE_PROCESS_ENTER|wx.TAB_TRAVERSAL)
+        
+        self.searchResetButton = wx.Button(self, -1, 'Reset')
+        
+        self.searchPanel.SetSizer(self.panelSizer)
+        
+        sizer.Add(self.searchPanel, 0, wx.EXPAND)
+        self.panelSizer.Add(self.searchLabel, 0, wx.ALL, border=5)
+        self.panelSizer.Add(self.searchTextCtrl, 1, wx.ALL|wx.EXPAND, border=5)
+        self.panelSizer.Add(self.searchResetButton, 0, wx.ALL, border=5)
+        sizer.Add(self.listCtrl, 1, wx.EXPAND)
+        
+
+        self.ShowAll()
+        
+        if self.listCtrl.GetItemCount():
+             self.listCtrl.SetItemState(0, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
+    
+        self.Fit()
+        self.OnSize()
+        
+        self.value = -1
+        
+        
+        # - set up event handlers
+        wx.EVT_CHAR(self.searchTextCtrl, self.OnChar)
+        wx.EVT_CHAR(self.listCtrl, self.OnChar)
+        wx.EVT_TEXT(parent, self.searchTextCtrl.GetId(), self.OnSearchText)
+        wx.EVT_TEXT_ENTER(parent, self.searchTextCtrl.GetId(), self.OnSearchTextEnter)
+        wx.EVT_BUTTON(parent, self.searchResetButton.GetId(), self.OnSearchReset)
+        
+        wx.EVT_LIST_ITEM_ACTIVATED(parent, self.listCtrl.GetId(), self.HandleSelection)
+                
+        wx.EVT_SIZE(self, self.OnSize)
+        
+        self.searchTextCtrl.SetFocus()
+        self.ignoreTextChanges= 0
+        
+    def AppendProfileItem(self, profile,data):
+
+        item = self.listCtrl.InsertStringItem(self.listCtrl.GetItemCount(), profile.name)
+        self.listCtrl.SetItemData(item, data)
+
+        if self.listCtrl.GetItemCount() % 2 == 0:
+            self.listCtrl.SetItemBackgroundColour(item, wx.Colour(240, 240, 240))
+            
+        return item        
+    def OnSearchText(self, event):
+        
+        if self.ignoreTextChanges:
+            return
+
+        searchText = self.searchTextCtrl.GetValue()
+        if len(searchText) == 0:
+            self.ShowAll()
+            return
+    
+        self.listCtrl.DeleteAllItems()
+    
+        num = 0
+        for profile in self.choices:
+            if profile.name.lower().startswith(searchText.lower()):
+                retitem = self.AppendProfileItem(profile,num)
+            num += 1
+    
+                
+        if self.listCtrl.GetItemCount():
+            self.listCtrl.SetItemState(0, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
+            ind = self.listCtrl.GetItemData(0)
+            self.ignoreTextChanges = 1
+            self.searchTextCtrl.SetValue(self.choices[ind].name)
+            self.searchTextCtrl.SetSelection(len(searchText),len(self.choices[ind].name))
+            self.ignoreTextChanges = 0
+
+
+    
+    def OnChar(self, event):
+        if event.GetKeyCode() == wx.WXK_ESCAPE:
+            self.OnSearchReset(event)
+            return
+        elif event.GetKeyCode() == wx.WXK_TAB:
+            if event.GetEventObject() == self.searchTextCtrl:
+                self.listCtrl.SetFocus()
+            elif event.GetEventObject() == self.listCtrl:
+                self.searchTextCtrl.SetFocus()
+        elif event.GetKeyCode() == wx.WXK_BACK:
+            sel = self.searchTextCtrl.GetSelection()
+            if sel[1] - sel[0] > 0:
+                self.searchTextCtrl.Remove(sel[0],sel[1])
+            else:
+                p = self.searchTextCtrl.GetInsertionPoint()
+                self.searchTextCtrl.Remove(p-1,p)
+                self.OnSearchText(None)
+        else:
+            event.Skip()
+    
+    def OnSearchTextEnter(self, event):
+        self.HandleSelection(event)
+        
+    def HandleSelection(self, event):  
+        item = -1
+        item = self.listCtrl.GetNextItem(item, 
+                                     wx.LIST_NEXT_ALL, 
+                                     wx.LIST_STATE_SELECTED)
+        ind = self.listCtrl.GetItemData(item)
+        self.value = self.choices[ind]
+        self.parent.EndModal(0)  
+    
+    def GetSelection(self):
+        return self.value
+    
+    def OnSearchReset(self, event):
+        self.searchTextCtrl.SetValue('')
+    
+        self.ShowAll()
+    
+    def ShowAll(self):
+        self.listCtrl.DeleteAllItems()
+        
+        num=0
+        for profile in self.choices:
+            self.AppendProfileItem(profile,num)
+            num += 1
+
+    
+    def OnSize(self, event=None):
+        self.listCtrl.SetColumnWidth(0, self.GetSize()[0]-30)
+        if event:
+            event.Skip()
+            
+            
+            
+class ItemBrowserDialog(wx.Dialog):
+    def __init__(self,parent,id,title,choices,**kw):
+        wx.Dialog.__init__(self,parent,id,title,style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,**kw)
+        buttonSizer = self.CreateButtonSizer(wx.OK|wx.CANCEL)
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        self.itemBrowser = ItemBrowserCtrl(self,-1,choices)
+        
+        self.SetSizer(sizer)
+        
+        sizer.Add(self.itemBrowser,1,wx.EXPAND)
+        sizer.Add(buttonSizer)
+        
+        
+    def GetValue(self):
+        return self.itemBrowser.GetSelection()
+
+
 
 if __name__ == "__main__":
     app = wx.PySimpleApp()
