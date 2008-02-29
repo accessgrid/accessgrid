@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.108 2007-12-20 16:37:23 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.108 2007/12/20 16:37:23 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.108 2007-12-20 16:37:23 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.108 2007/12/20 16:37:23 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -84,7 +84,20 @@ class ObjectDescription:
         
     def GetURI(self):
         return self.uri
+        
+    def __str__(self):
+        return self.name
 
+    def __cmp__(self,other):
+        if other == None:
+            return 1
+        if self.name < other.name:
+            return -1
+        elif self.name == other.name:
+            return 0
+        else:
+            return 1
+        
     def Copy(obj):
         """
         Copy constructor.  Creates a new instance of the input type, copying 
@@ -107,6 +120,8 @@ class ObjectDescription:
                 log.exception('Exception copying attribute %s of class %s', attr, obj.__class__)
         return objCopy
     Copy = staticmethod(Copy)
+      
+
 
 
 class BadDataDescription(Exception):
@@ -267,7 +282,8 @@ class DataDescription(ObjectDescription):
     #Added by NA2-HPCE
     def GetLevel(self):
         return self.hierarchyLevel
-      
+        
+        
 
 #Added by NA2-HPCE    
 class DirectoryDescription(DataDescription):
@@ -328,6 +344,7 @@ class DirectoryDescription(DataDescription):
     def Search(self, directoryDict, pathList):
         log.debug("Search: Size of pathList: %s", len(pathList))
         log.debug("Search: Examining path part: %s", pathList[0])
+
 
         nextDD = None
 
@@ -600,21 +617,34 @@ class StreamDescription(ObjectDescription):
 
        return string
 
-class AGServiceManagerDescription:
+from AccessGrid.DispatchMixIn import DispatchMixIn
+class AGServiceManagerDescription(DispatchMixIn):
+
     def __init__( self, name="", uri="" ):
+        from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
+
         self.name = name
         self.uri = uri
         self.builtin = 0
-
         
-class AGServiceDescription:
+        self.serviceIWClass = AGServiceManagerIW
+        DispatchMixIn.__init__(self)
+        
+
+
+class AGServiceDescription(DispatchMixIn):
     def __init__( self, name="", uri="", capabilities=[], resource="", packageFile=""):
+        from AccessGrid.interfaces.AGService_client import AGServiceIW
+
         self.name = name
         self.uri = uri
         self.capabilities = capabilities
         self.resource = resource
         self.packageFile = packageFile
         self.startPriority = 0
+        
+        self.serviceIWClass = AGServiceIW
+        DispatchMixIn.__init__(self)
         
 class AGServicePackageDescription:
     def __init__(self,name="",description="",packageFile="",resourceNeeded=0):
