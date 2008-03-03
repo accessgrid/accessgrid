@@ -2,13 +2,13 @@
 # Name:        ProcessManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.7 2007-04-16 19:40:56 turam Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.7 2007/04/16 19:40:56 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.7 2007-04-16 19:40:56 turam Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.7 2007/04/16 19:40:56 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import signal
@@ -102,7 +102,7 @@ class ProcessManager:
         os.kill(pid, signal.SIGINT)
         elapsedWaits = 0
         maxWaits = 5
-        waitTime = 1
+        waitTime = 0.1
         retpid = 0
         try:
             while elapsedWaits < maxWaits:
@@ -150,7 +150,7 @@ class ProcessManager:
         """
         os.kill(pid,signal.SIGKILL)
         maxWaits = 5
-        waitTime = 1
+        waitTime = 0.1
         elapsedWaits = 0
         retpid = 0
         try:
