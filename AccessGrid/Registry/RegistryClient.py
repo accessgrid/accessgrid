@@ -24,7 +24,7 @@ from AccessGrid.UrllibTransport import UrllibTransport, TimeoutTransport
 from AccessGrid.Utilities import OpenURL, BuildPreferencesProxyURL
 
 class RegistryClient:
-    def __init__(self, url, proxyHost=None, proxyPort=None):
+    def __init__(self, url):
         self.url = url
         self.serverProxy = None
         self.registryPeers = None
@@ -32,7 +32,6 @@ class RegistryClient:
         self.bridgeCache = BridgeCache()
         self.log = Log.GetLogger('RegistryClient')
         
-        # Should consider losing the proxyHost and proxyPort calls
         self.proxyURL = BuildPreferencesProxyURL()
 
     def _connectToRegistry(self):
