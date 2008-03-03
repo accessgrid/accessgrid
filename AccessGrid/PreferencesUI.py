@@ -81,15 +81,18 @@ class PreferencesDialog(wx.Dialog):
         wx.EVT_SASH_DRAGGED(self.sideWindow, self.ID_WINDOW_LEFT, self.__OnSashDrag)
         wx.EVT_TREE_SEL_CHANGED(self, self.sideTree.GetId(), self.OnSelect)
         wx.EVT_SIZE(self, self.__OnSize)
+        
+        self.title.Hide()
 
         self.__Layout()
         self.__InitTree()
 
+        """
         if IsOSX():
             self.title.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
         else:
             self.title.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-
+        """
         # Set correct dimensions on current panel.
         if self.currentPanel.GetSizer():
             w,h = self.preferencesWindow.GetSizeTuple()
@@ -137,6 +140,8 @@ class PreferencesDialog(wx.Dialog):
                                        self.networkPanel.GetMulticastDetectionHost())
         self.preferences.SetPreference(Preferences.MULTICAST_DETECT_PORT,
                                        self.networkPanel.GetMulticastDetectionPort())
+        self.preferences.SetPreference(Preferences.PROXY_ENABLED,
+                                       self.networkPanel.GetProxyEnabled())
         self.preferences.SetPreference(Preferences.PROXY_HOST,
                                        self.networkPanel.GetProxyHost())
         self.preferences.SetPreference(Preferences.PROXY_PORT,
@@ -145,7 +150,7 @@ class PreferencesDialog(wx.Dialog):
                                        self.networkPanel.GetProxyUsername())
         self.preferences.SetProxyPassword(self.networkPanel.GetProxyPassword())
         self.preferences.SetPreference(Preferences.PROXY_AUTH_ENABLED,
-                                       self.networkPanel.GetProxyEnabled())
+                                       self.networkPanel.GetAuthProxyEnabled())
         self.preferences.SetPreference(Preferences.MULTICAST,
                                        self.bridgingPanel.GetMulticast())
         self.preferences.SetPreference(Preferences.BRIDGE_REGISTRY,
@@ -314,6 +319,7 @@ class NodePanel(wx.Panel):
         self.displayButton = wx.CheckBox(self, wx.NewId(), " Enable Display")
         self.videoButton = wx.CheckBox(self, wx.NewId(), " Enable Video")
 
+        """
         if IsOSX():
             self.nodeText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
             self.mediaText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
@@ -321,6 +327,8 @@ class NodePanel(wx.Panel):
             self.nodeText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
             self.mediaText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
 
+        """
+        
         self.mediaButton.SetValue(int(preferences.GetPreference(Preferences.STARTUP_MEDIA)))
         nodeBuiltin = int(preferences.GetPreference(Preferences.NODE_BUILTIN))
         self.nodeBuiltInCheckbox.SetValue(nodeBuiltin)
@@ -732,13 +740,17 @@ class VenueConnectionPanel(wx.Panel):
         self.maxReconnect.SetValue(int(preferences.GetPreference(Preferences.MAX_RECONNECT)))
         self.timeout.SetValue(int(preferences.GetPreference(Preferences.RECONNECT_TIMEOUT)))
         self.EnableCtrls(reconnect)
-                
+           
+        """     
         if IsOSX():
-            self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
+            self.titleText.SetFont(wx.Font(12,wx.DEFAULT,wx.NORMAL,wx.BOLD))
+
                                 
         else:
             self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-                                
+           
+        """
+                             
         self.__Layout()
 
         wx.EVT_CHECKBOX(self, self.reconnectButton.GetId(), self.ReconnectCB)
@@ -988,6 +1000,9 @@ class NetworkPanel(wx.Panel):
         # proxy configuration                  
         self.proxyTitleText = wx.StaticText(self, -1, "Proxy server configuration")
         self.proxyTitleLine = wx.StaticLine(self, -1)
+        self.proxyButton = wx.CheckBox(self,-1,"Use an HTTP proxy server for network connections")
+        proxyEnabled = int(preferences.GetPreference(Preferences.PROXY_ENABLED))
+        self.proxyButton.SetValue(proxyEnabled)
         self.hostText = wx.StaticText(self, -1, "Host:")
         self.hostCtrl = wx.TextCtrl(self, -1, "")
         self.portText = wx.StaticText(self, -1, "Port:")
@@ -1007,23 +1022,30 @@ class NetworkPanel(wx.Panel):
         else:
             self.passwordCtrl = wx.TextCtrl(self, -1, "", style=wx.TE_PASSWORD)
             
-        self.authProxyButton = wx.CheckBox(self, wx.NewId(), "  Use an authenticated proxy ")
-        self.authProxyButton.SetValue(int(preferences.GetPreference(Preferences.PROXY_AUTH_ENABLED)))
+        self.authProxyButton = wx.CheckBox(self, wx.NewId(), "Authenticate with the following user information")
+        authProxyEnabled = int(preferences.GetPreference(Preferences.PROXY_AUTH_ENABLED))
+        self.authProxyButton.SetValue(authProxyEnabled)
 
         self.SetProxyHost(preferences.GetPreference(Preferences.PROXY_HOST))
         self.SetProxyPort(preferences.GetPreference(Preferences.PROXY_PORT))
         self.SetProxyUsername(preferences.GetPreference(Preferences.PROXY_USERNAME))
         self.SetProxyPassword(preferences.GetProxyPassword())
         
+        wx.EVT_CHECKBOX(self,self.proxyButton.GetId(),self.OnEnableProxy)
+        wx.EVT_CHECKBOX(self,self.authProxyButton.GetId(),self.OnAuthProxy)
         
-        
+        """                          
         if IsOSX():
             self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
             self.proxyTitleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
         else:
             self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
             self.proxyTitleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-
+        """      
+        
+        self.EnableProxy(proxyEnabled)
+        self.EnableAuthProxy(proxyEnabled and authProxyEnabled)
+                    
         self.__Layout()
     
     def __Layout(self):
@@ -1048,6 +1070,7 @@ class NetworkPanel(wx.Panel):
         sizer2.Add(self.proxyTitleText, 0, wx.ALL, 5)
         sizer2.Add(self.proxyTitleLine, 1, wx.ALIGN_CENTER | wx.ALL, 5)
         sizer.Add(sizer2, 0, wx.EXPAND)
+        sizer.Add(self.proxyButton, 0, wx.ALL|wx.EXPAND, 10)
         sizer3 = wx.BoxSizer(wx.HORIZONTAL)
         sizer3.Add(self.hostText, 0, wx.ALL|wx.EXPAND,10)
         sizer3.Add(self.hostCtrl, 1, wx.ALL|wx.EXPAND,10)
@@ -1055,12 +1078,12 @@ class NetworkPanel(wx.Panel):
         sizer3.Add(self.portCtrl, 0, wx.ALL|wx.EXPAND,10)
         sizer.Add(sizer3,0,wx.EXPAND)
                 
+        sizer.Add(self.authProxyButton, 0, wx.ALL|wx.EXPAND, 10)
         sizer4 = wx.BoxSizer(wx.HORIZONTAL)
         sizer4.Add(self.usernameText, 0, wx.ALL|wx.EXPAND,10)
         sizer4.Add(self.usernameCtrl, 1, wx.ALL|wx.EXPAND,10)
         sizer4.Add(self.passwordText, 0, wx.ALL|wx.EXPAND,10)
-        sizer4.Add(self.passwordCtrl, 0, wx.ALL|wx.EXPAND,10)
-        sizer4.Add(self.authProxyButton, 0, wx.ALL|wx.EXPAND, 10)
+        sizer4.Add(self.passwordCtrl, 1, wx.ALL|wx.EXPAND,10)
         sizer.Add(sizer4,0,wx.EXPAND)
 
         self.SetSizer(sizer)
@@ -1068,6 +1091,30 @@ class NetworkPanel(wx.Panel):
         self.SetAutoLayout(1)
         
         self.Layout()
+        
+    
+        
+    def EnableProxy(self,enableFlag):
+        # this method just makes the proxy controls clickable or not
+        self.hostText.Enable(enableFlag)
+        self.hostCtrl.Enable(enableFlag)
+        self.portText.Enable(enableFlag)
+        self.portCtrl.Enable(enableFlag)
+        self.authProxyButton.Enable(enableFlag)
+        self.EnableAuthProxy(enableFlag)
+        
+    def EnableAuthProxy(self,enableFlag):
+        # this method just makes the auth proxy controls clickable or not
+        self.usernameCtrl.Enable(enableFlag)
+        self.usernameText.Enable(enableFlag)
+        self.passwordCtrl.Enable(enableFlag)
+        self.passwordText.Enable(enableFlag)
+           
+    def OnEnableProxy(self,event):
+        self.EnableProxy(event.IsChecked())
+        
+    def OnAuthProxy(self,event):
+        self.EnableAuthProxy(event.IsChecked())
 
     def GetBeacon(self):
         if self.beaconButton.IsChecked():
@@ -1115,6 +1162,12 @@ class NetworkPanel(wx.Panel):
         return self.passwordCtrl.GetValue()
             
     def GetProxyEnabled(self):
+        if self.proxyButton.IsChecked():
+            return 1
+        else:
+            return 0
+                
+    def GetAuthProxyEnabled(self):
         if self.authProxyButton.IsChecked():
             return 1
         else:
@@ -1212,7 +1265,8 @@ class BridgingPanel(wx.Panel):
         wx.EVT_BUTTON(self, self.addRegistryButton.GetId(), self.OnAddReg)
         wx.EVT_BUTTON(self, self.removeRegistryButton.GetId(), self.OnRemoveReg)
         wx.EVT_BUTTON(self, self.purgeCacheButton.GetId(), self.OnPurgeCache)
-                                      
+            
+        """                          
         if IsOSX():
             self.bridgingTitleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
             self.registriesTitleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
@@ -1221,7 +1275,7 @@ class BridgingPanel(wx.Panel):
             self.bridgingTitleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
             self.registriesTitleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
             self.bridgesTitleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-                                
+        """                          
         self.__Layout()
     
     def __InitList(self):
@@ -1563,12 +1617,13 @@ class NavigationPanel(wx.Panel):
             self.myVenuesButton.SetValue(1)
         elif value == Preferences.ALL_VENUES:
             self.allVenuesButton.SetValue(1)
-               
+            
+        """
         if IsOSX():
             self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
         else:
             self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-                                
+        """                        
         self.__Layout()
          
     def GetDisplayMode(self):
