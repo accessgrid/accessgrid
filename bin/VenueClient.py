@@ -16,6 +16,7 @@ from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog, MessageDialog, S
 from AccessGrid import icons
 import wx
 from AccessGrid.Version import GetVersion, GetStatus
+from AccessGrid.Preferences import Preferences
 
 # Display the progress dialog as soon as possible
 wxapp = wx.PySimpleApp(clearSigInt=0)
@@ -44,7 +45,7 @@ threadedselectreactor.install()
 from AccessGrid.Toolkit import WXGUIApplication, MissingDependencyError
 from AccessGrid import Log
 from AccessGrid.Platform.Config import UserConfig
-from AccessGrid.VenueClientUI import VenueClientUI
+from AccessGrid.VenueClientUI import VenueClientUI, ProfileDialog
 from AccessGrid.VenueClientController import VenueClientController
 from AccessGrid.VenueClient import VenueClient
 #from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog, MessageDialog, SetIcon
@@ -76,10 +77,6 @@ def main():
     m2threading.init()
 
 
-    if IsOSX():
-        t = wx.TaskBarIcon()
-        t.SetIcon(icons.getAGIconIcon())
-    
     # Init the toolkit with the standard environment.
     app = WXGUIApplication()
 
@@ -136,35 +133,75 @@ def main():
     except:
         log.exception("Unable to log wx version.")
     
-    # Create venue client components
-    progressDialog.UpdateGauge('Creating VenueClient components',20)
-    vc = VenueClient(pnode=pnode, port=port,
-                     app=app, progressCB=progressDialog.UpdateGauge,
-                     nodeConfigName=nodeConfig)
-    progressDialog.UpdateGauge('Creating venue client internals',70)
-    vcc = VenueClientController()
-    vcc.SetVenueClient(vc)
-    progressDialog.UpdateGauge('Creating venue client user interface',80)
-    vcui = VenueClientUI(vc, vcc, app)
-    vc.SetVCUI(vcui)
-
-    # Associate the components with the ui
-    vcc.SetGui(vcui)
-    vc.AddObserver(vcui)
-    
-    # Enter the specified venue
-    if url:
-        progressDialog.UpdateGauge('Entering venue...',90)
-        vc.EnterVenue(url)
+    try:
         
-    progressDialog.UpdateGauge('Finished',100)
-    progressDialog.Destroy()
-    # Spin
-    wxapp.SetTopWindow(vcui)
-    SetIcon(vcui)
+        # Create venue client components
+        progressDialog.UpdateGauge('Creating VenueClient components',20)
+        vc = VenueClient(pnode=pnode, port=port,
+                         app=app, progressCB=progressDialog.UpdateGauge,
+                         nodeConfigName=nodeConfig)
+        progressDialog.UpdateGauge('Creating venue client internals',70)
+        vcc = VenueClientController()
+        vcc.SetVenueClient(vc)
+        progressDialog.UpdateGauge('Creating venue client user interface',80)
+        vcui = VenueClientUI(vc, vcc, app,progressDialog.UpdateGauge)
+        vc.SetVCUI(vcui)
+    
+        # Associate the components with the ui
+        vcc.SetGui(vcui)
+        vc.AddObserver(vcui)
+        
 
-    wxapp.MainLoop()
-    m2threading.cleanup()
+        # 
+        # If profile is the default profile, do first-time user initialization
+        #
+        profile = app.preferences.GetProfile()
+        if profile.IsDefault():  # not your profile
+            log.debug("the profile is the default profile - open profile dialog")
+
+            profileDialog = ProfileDialog(None, -1, 'Fill in your profile', 1)
+            profileDialog.SetProfile(profile)
+            
+            if (profileDialog.ShowModal() != wx.ID_OK):
+                profileDialog.Destroy()
+                os._exit(0)
+                
+            profile = profileDialog.GetNewProfile()
+            profileDialog.Destroy()    
+                    
+            # Change profile based on values filled in to the profile dialog
+            vcc.ChangeProfile(profile)
+
+
+            # Build a customized default node configuration
+            vc.BuildDefaultNodeConfiguration()
+            
+            
+            # Check multicast status, set to use unicast appropriately
+            multicastStatus = vc.GetMulticastStatus()
+            if multicastStatus == 0:
+                vcui.SetMcastStatus(multicastStatus)
+                vcui.UseUnicastCB()
+            
+                app.preferences.SetPreference(Preferences.MULTICAST,0)
+                app.preferences.StorePreferences()
+
+        vcui.Show(True)
+        
+        
+        # Enter the specified venue
+        if url:
+            vc.EnterVenue(url)
+        
+        progressDialog.Destroy()
+        # Spin
+        wxapp.SetTopWindow(vcui)
+        SetIcon(vcui)
+    
+        wxapp.MainLoop()
+        m2threading.cleanup()
+    except:
+        log.exception("Error in VenueClient main")
 
 # The main block
 if __name__ == "__main__":
