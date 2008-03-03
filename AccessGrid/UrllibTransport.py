@@ -89,7 +89,7 @@ class UrllibTransport(xmlrpclib.Transport):
         self.httpconn = None
 
     def set_proxy(self, proxy):
-        self.proxyurl = proxy
+        self.proxy = proxy
 
     def request(self, host, handler, request_body, verbose = None):
         '''issue XML-RPC request
