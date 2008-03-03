@@ -17,6 +17,7 @@ from AccessGrid.Platform import IsWindows, IsOSX, IsLinux, IsFreeBSD
 import string
 import struct
 import os
+import time
 
 try:
     import _winreg
