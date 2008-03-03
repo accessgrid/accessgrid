@@ -12,12 +12,12 @@ import xmlrpclib
 from NetworkLocation import MulticastNetworkLocation, UnicastNetworkLocation
 from GUID import GUID
 from BridgeClient import BridgeClient
-from AccessGrid.UrllibTransport import UrllibTransport
+from AccessGrid.UrllibTransport import UrllibTransport, TimeoutTransport
 
 class ConnectionError(Exception): pass
 
 class QuickBridgeClient(BridgeClient):
-    def __init__(self, host, port, proxyHost=None, proxyPort=None):
+    def __init__(self, host, port, proxyHost=None, proxyPort=None,timeout=1):
         BridgeClient.__init__(self, host, port)
         
         transport = None
@@ -27,7 +27,9 @@ class QuickBridgeClient(BridgeClient):
             else:
                 proxyURL = "http://%s" % (proxyHost)
 
-            transport = UrllibTransport(proxyURL)
+            transport = UrllibTransport(proxyURL,timeout)
+        else:
+            transport = TimeoutTransport(timeout)
         url = "http://%s:%s" % (host,str(port))
         self.serverProxy = xmlrpclib.ServerProxy(url, transport = transport, verbose = 0)
         self.host = host
