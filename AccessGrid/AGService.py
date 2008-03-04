@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.68 2007-10-01 21:52:52 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.68 2007/10/01 21:52:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.68 2007-10-01 21:52:52 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.68 2007/10/01 21:52:52 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -209,8 +209,8 @@ class AGService:
                 for c in streamDescription.capability:
                     if c.matches(cap):
                         match = 1
-                if not match:
-                    return 0
+#                if not match:
+#                    return 0
 
             if isinstance(streamDescription, StreamDescription):
                 self.log.debug("StreamDescription okay, assign it to service!")
@@ -310,7 +310,8 @@ class AGService:
         self.packageFile = packageFile
         if resource: self.SetResource(resource)
         self.SetConfiguration(config)
-        self.SetIdentity(identity)
+        if identity:
+            self.SetIdentity(identity)
         
     def GetPackageFile(self):
         return self.packageFile
