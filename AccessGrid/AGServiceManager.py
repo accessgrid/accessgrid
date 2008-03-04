@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.105 2007-05-30 20:16:59 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.105 2007/05/30 20:16:59 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.105 2007-05-30 20:16:59 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.105 2007/05/30 20:16:59 turam Exp $"
 
 
 import sys
@@ -67,7 +67,7 @@ class AGServiceManager:
         
         toolkitConfig = self.app.GetToolkitConfig()
         self.servicesDir = toolkitConfig.GetNodeServicesDir()
-
+        
     def Shutdown(self):
         log.info("AGServiceManager.Shutdown")
         log.info("Remove services")
@@ -102,59 +102,65 @@ class AGServiceManager:
         """
         log.info("AGServiceManager.AddService")
         
-        servicePackage = \
-            self.GetServicePackage(servicePackageDesc.GetPackageFile())
+        try:
+            servicePackage = \
+                self.GetServicePackage(servicePackageDesc.GetPackageFile())
+
+            # prevent SOAP socket from being inherited by child processes
+            # which we're about to spawn
+            try:
+                import posix # will fail on non-posix systems, which don't need this patch
+                import fcntl
+                from ZSI.ServiceContainer import GetSOAPContext
+                ctx = GetSOAPContext()
+                if ctx:
+                    fd = ctx.connection.fileno()
+                    old = fcntl.fcntl(fd, fcntl.F_GETFD)
+                    fcntl.fcntl(fd, fcntl.F_SETFD, old | fcntl.FD_CLOEXEC)
+            except ImportError:
+				pass
+
+            #
+            # Extract the service package
+            #
+            try:
+                # Create dir for package
+                servicePath = self.__GetServicePath(servicePackage)
+
+                # Only extract package if version is greater than existing service
+                if self.__CheckServiceVersion(servicePath, servicePackage):
+                    log.info("Extracting service package to %s", servicePath)
+
+                    # Extract the package
+                    servicePackage.Extract(servicePath)
+
+            except:
+                log.exception("Service Manager failed to extract service implementation %s", 
+                              servicePackage.packageFile)
+                raise Exception("Service Manager failed to extract service implementation")
+
+            # Change to the services directory to start the process     
+            # Note: services rely on this being true    
+            os.chdir(servicePath) 
+
+            # Start the service  
+            if servicePackage.inlineService:
+				serviceObj,pid = self.__AddInlineService(servicePackage)
+            else:
+                serviceUrl,pid = self.__ExecuteService(servicePackage)
+                serviceObj = AGServiceIW(serviceUrl)   
+
+            # Set the package name (and other stuff) in the service
+            serviceObj.SetPackageFile(servicePackage.packageFile, resource, config, identity)
             
-        # prevent SOAP socket from being inherited by child processes
-        # which we're about to spawn
-        try:
-            import posix # will fail on non-posix systems, which don't need this patch
-            import fcntl
-            from ZSI.ServiceContainer import GetSOAPContext
-            ctx = GetSOAPContext()
-            if ctx:
-                fd = ctx.connection.fileno()
-                old = fcntl.fcntl(fd, fcntl.F_GETFD)
-                fcntl.fcntl(fd, fcntl.F_SETFD, old | fcntl.FD_CLOEXEC)
-        except ImportError:
-            pass
+            serviceDescription = serviceObj.GetDescription()
+            self.services[pid] = serviceDescription
 
-
-        #
-        # Extract the service package
-        #
-        try:
-            # Create dir for package
-            servicePath = self.__GetServicePath(servicePackage)
-
-            # Only extract package if version is greater than existing service
-            if self.__CheckServiceVersion(servicePath, servicePackage):
-                log.info("Extracting service package to %s", servicePath)
-                
-                # Extract the package
-                servicePackage.Extract(servicePath)
-                
         except:
-            log.exception("Service Manager failed to extract service implementation %s", 
-                          servicePackage.packageFile)
-            raise Exception("Service Manager failed to extract service implementation")
-            
-        # Change to the services directory to start the process     
-        # Note: services rely on this being true    
-        os.chdir(servicePath) 
-        
-        # Start the service  
-        serviceUrl,pid = self.__ExecuteService(servicePackage)
-            
-        # Set the package name in the service
-        AGServiceIW(serviceUrl).SetPackageFile(servicePackage.packageFile, resource, config, identity)
+            log.exception("AddService")
+            raise
+  
 
-        # Get the description from the service
-        serviceDescription = AGServiceIW(serviceUrl).GetDescription()
-
-        # Add service to list of services
-        self.services[pid] = serviceDescription
-            
         return serviceDescription
 
     def RemoveService( self, serviceToRemove ):
@@ -179,14 +185,13 @@ class AGServiceManager:
                         #
                         # Remove service from list
                         #
-                        if pid and self.services.has_key(pid):
-                            del self.services[pid]
-                        AGServiceIW( service.uri ).Shutdown()
+                        service.GetObject().Shutdown()
+                        del self.services[pid]
                        
                     except:
                         log.exception("Error shutting down service %s", serviceToRemove.name)
 
-                    if 1: # not service.inlineClass:
+                    if not service.inlineClass:
                         #
                         # Kill service
                         #
@@ -195,11 +200,8 @@ class AGServiceManager:
 
         except:
             log.exception("Exception removing service %s", serviceToRemove.name)
-            exc = sys.exc_value
+            raise
 
-        # raise exception now, if one occurred
-        if exc:
-            raise Exception("AGServiceManager.RemoveService failed : ", str( exc ) )
 
 
 
@@ -219,15 +221,15 @@ class AGServiceManager:
         """
         log.info("AGServiceManager.GetServices")
         return self.services.values()
-
-
+    
+    
     def StopServices( self ):
         """
         Stop all services on service manager
         """
         log.info("AGServiceManager.StopServices")
         for service in self.services.values():
-            AGServiceIW( service.uri ).Stop()
+            service.GetObject().Stop()
 
     def RegisterService(self,token,url):
         if token in self.registeringServices.keys():
@@ -259,7 +261,9 @@ class AGServiceManager:
         return self.name
         
     def GetDescription(self):
-        return AGServiceManagerDescription(self.name,self.uri)
+        serviceManagerDescription = AGServiceManagerDescription(self.name,self.uri)
+        serviceManagerDescription.SetObject(self)
+        return serviceManagerDescription
         
     def GetServicePackageDescriptions( self ):
         serviceDescriptions = []
@@ -358,9 +362,12 @@ class AGServiceManager:
         # instantiate the service object
         serviceClass = getattr(mod,servicePackage.name)
         serviceObj = serviceClass()
+        serviceObj.inlineClass = 1
     
         # instantiate the interface object
         serviceObjI = AGServiceI(serviceObj)
+        serviceObjI.impl = serviceObj
+        serviceObjI.auth_method_name = None    
     
         # register the interface object
         pid = str(GUID())
@@ -372,7 +379,12 @@ class AGServiceManager:
     
         log.info("Service registered at url %s", serviceUrl)
         
-        return serviceUrl,pid
+        # Get the description from the service
+        serviceDescription = serviceObj.GetDescription()
+        serviceDescription.SetObject(serviceObj)
+        serviceDescription.packageFile = servicePackage.packageFile
+
+        return serviceObj,pid
     
     def __ExecuteService(self,servicePackage):
         log.debug("Executing service %s", servicePackage.name)
@@ -426,7 +438,7 @@ class AGServiceManager:
 
         # Remove service from registration list
         del self.registeringServices[token]
-        
+
         return serviceUrl,pid
 
     def IsValid(self):
