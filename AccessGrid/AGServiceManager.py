@@ -112,7 +112,10 @@ class AGServiceManager:
                 import posix # will fail on non-posix systems, which don't need this patch
                 import fcntl
                 from ZSI.ServiceContainer import GetSOAPContext
-                ctx = GetSOAPContext()
+                try:
+                    ctx = GetSOAPContext()
+                except:
+                    ctx = None
                 if ctx:
                     fd = ctx.connection.fileno()
                     old = fcntl.fcntl(fd, fcntl.F_GETFD)
@@ -144,7 +147,7 @@ class AGServiceManager:
             os.chdir(servicePath) 
 
             # Start the service  
-            if servicePackage.inlineService:
+            if servicePackage.inlineClass:
 				serviceObj,pid = self.__AddInlineService(servicePackage)
             else:
                 serviceUrl,pid = self.__ExecuteService(servicePackage)
