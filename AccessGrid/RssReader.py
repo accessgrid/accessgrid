@@ -20,6 +20,7 @@ Timeout = socket.getdefaulttimeout()
 import feedparser
 import urllib2
 from AccessGrid.Preferences import Preferences
+from AccessGrid import Utilities
 from AccessGrid import Log
 
 
@@ -99,18 +100,9 @@ class RssReader:
             rssFile = rssUrl[7:]
             d = feedparser.parse(rssFile)
         else:
-            proxyHost = self.preferences.GetPreference(Preferences.PROXY_HOST)
-            proxyPort = self.preferences.GetPreference(Preferences.PROXY_PORT)
-            proxyURL = None
-            if proxyHost:
-                if proxyPort:
-                    proxyURL = "http://%s:%s" % (proxyHost, proxyPort)
-                else:
-                    proxyURL = "http://%s" % (proxyHost)
-            if proxyURL:
-                self.log.debug('Using proxy %s' % (proxyURL))
-                proxyList = {'http':proxyURL}
-                proxy = urllib2.ProxyHandler(proxyList)
+            proxyEnabled = self.preferences.GetPreference(Preferences.PROXY_ENABLED)
+            if proxyEnabled:
+                proxy = urllib2.ProxyHandler({"http" : Utilities.BuildPreferencesProxyURL()})
                 d = feedparser.parse(rssUrl,handlers = [proxy])
             else:
                 d = feedparser.parse(rssUrl)
