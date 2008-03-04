@@ -7,13 +7,17 @@
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
+import select
 import socket
 import xmlrpclib
-from NetworkLocation import MulticastNetworkLocation, UnicastNetworkLocation
+from AccessGrid.NetworkLocation import MulticastNetworkLocation, UnicastNetworkLocation
 from GUID import GUID
 from BridgeClient import BridgeClient
 from AccessGrid.UrllibTransport import UrllibTransport, TimeoutTransport
 from AccessGrid import Utilities
+from AccessGrid import Log
+log = Log.GetLogger("QuickBridgeClient")
+
 class ConnectionError(Exception): pass
 
 class QuickBridgeClient(BridgeClient):
@@ -51,6 +55,32 @@ class QuickBridgeClient(BridgeClient):
         except socket.error,e:
             raise ConnectionError(e.args)
 
+    def TestBridge(self,multicastNetworkLocation):
+        timeout = 1
+        MSGSIZE = 500
+        ret = 0
+        s = None
+        try:
+            desc = self.JoinBridge(multicastNetworkLocation)
+        
+            # Create a socket, send some data to the bridge, and listen for data from the bridge
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.settimeout(2)
+            s.bind(('', desc.GetPort()))
+            s.sendto('qwe',(desc.host,desc.port))
+            fdList = select.select([s.fileno()],[],[],timeout)
+            if fdList[0] and s.fileno() in fdList[0]:
+                data,src_addr = s.recvfrom(MSGSIZE)
+                ret = 1
+        except Exception, e:
+            log.exception("Error testing bridge")
+        if s:
+            s.close()
+            
+        return ret
+            
+
+
 if __name__=="__main__":
     # Example below.  You should start Bridge.py first.
     bc = QuickBridgeClient(host="milton.mcs.anl.gov", port=8030)
@@ -62,4 +92,5 @@ if __name__=="__main__":
     print multicastNetworkLocation.__dict__
     desc = bc.JoinBridge(multicastNetworkLocation)
     print desc
+    print bc.TestBridge("233.4.200.18", 10002)
 
