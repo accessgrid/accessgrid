@@ -7,11 +7,15 @@
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
+
 class BridgeClient:
     def __init__(self, host, port):
         self.host = host
         self.port = port
 
     def JoinBridge(self, multicastNetworkLocation):
-        raise Exception("Unimplemented.  Specific BridgeClients should implementthis base BridgeClient function.")
+        raise Exception("Unimplemented.  Specific BridgeClients should implement this base BridgeClient function.")
 
+	def TestBridge(self, multicastNetworkLocation):
+        raise Exception("Unimplemented.  Specific BridgeClients should implement this base BridgeClient function.")
+		
