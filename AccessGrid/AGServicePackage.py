@@ -3,13 +3,13 @@
 # Purpose:     
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: AGServicePackage.py,v 1.5 2007-08-15 19:20:27 eolson Exp $
+# RCS-ID:      $Id: AGServicePackage.py,v 1.5 2007/08/15 19:20:27 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AGServicePackage.py,v 1.5 2007-08-15 19:20:27 eolson Exp $"
+__revision__ = "$Id: AGServicePackage.py,v 1.5 2007/08/15 19:20:27 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -102,6 +102,10 @@ class AGServicePackage:
             self.version = c.get("ServiceDescription","version")
             if c.has_option("ServiceDescription","resourceNeeded"):
                 self.resourceNeeded = c.get( "ServiceDescription", "resourceNeeded" )
+            
+			# Note:  This is a hack for now; it should be specified in the node service code
+			# 		 unless it is decided that services should be inlined generally
+            self.inlineClass = self.name
             if c.has_option("ServiceDescription","inlineClass"):
                 self.inlineClass = c.get("ServiceDescription","inlineClass")
         except Exception, e:
