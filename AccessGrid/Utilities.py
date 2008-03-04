@@ -644,6 +644,10 @@ def BuildPreferencesProxyURL():
     proxyUsername = None
     proxyPassword = None
     
+    proxyEnabled = int(preferences.GetPreference(Preferences.PROXY_ENABLED))
+    if not proxyEnabled:
+        return ""
+    
     if int(preferences.GetPreference(Preferences.PROXY_AUTH_ENABLED)) == 1:
         proxyUsername = preferences.GetPreference(Preferences.PROXY_USERNAME)
         proxyPassword = preferences.GetProxyPassword()
@@ -652,6 +656,10 @@ def BuildPreferencesProxyURL():
                          preferences.GetPreference(Preferences.PROXY_PORT), \
                          proxyUsername, \
                          proxyPassword)
+    
+def GetPreferencesProxyHandler():
+    proxySupport = urllib2.ProxyHandler({"http" : BuildPreferencesProxyURL()})
+    return proxySupport
 
 def OpenURL(url):
     """
@@ -668,7 +676,7 @@ def OpenURL(url):
     
     preferences = Preferences()
     
-    if preferences.GetPreference(Preferences.PROXY_HOST) != "":
+    if preferences.GetPreference(Preferences.PROXY_ENABLED):
         # There is a proxy set, so build the URL of the proxy
         proxySupport = urllib2.ProxyHandler({"http" : BuildPreferencesProxyURL()})
         opener = urllib2.build_opener(proxySupport, urllib2.HTTPHandler)
@@ -701,7 +709,8 @@ def OpenURL(url):
                 dialog.SetProxyPassword(preferences.GetProxyPassword())
                 dialog.SetProxyEnabled(int(preferences.GetPreference(Preferences.PROXY_AUTH_ENABLED)))
 
-                if dialog.ShowModal() == wxID_OK:
+                if dialog.ShowModal() == wx.ID_OK:
+                     preferences.SetPreference(Preferences.PROXY_ENABLED, 1)
                      preferences.SetPreference(Preferences.PROXY_USERNAME, dialog.GetProxyUsername())
                      preferences.SetProxyPassword(dialog.GetProxyPassword())
                      preferences.SetPreference(Preferences.PROXY_AUTH_ENABLED, dialog.GetProxyEnabled())
