@@ -16,6 +16,6 @@ class BridgeClient:
     def JoinBridge(self, multicastNetworkLocation):
         raise Exception("Unimplemented.  Specific BridgeClients should implement this base BridgeClient function.")
 
-	def TestBridge(self, multicastNetworkLocation):
+    def TestBridge(self, multicastNetworkLocation):
         raise Exception("Unimplemented.  Specific BridgeClients should implement this base BridgeClient function.")
 		
