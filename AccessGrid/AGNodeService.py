@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.118 2007-12-06 22:43:20 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.118 2007/12/06 22:43:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.118 2007-12-06 22:43:20 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.118 2007/12/06 22:43:20 turam Exp $"
 
 
 import os
@@ -33,6 +33,7 @@ from AccessGrid.Descriptions import NodeConfigDescription
 from AccessGrid.AGServiceManager import AGServiceManager
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 
+
 from AccessGrid.interfaces.AGNodeService_interface import AGNodeService as AGNodeServiceI
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 
@@ -41,6 +42,7 @@ log = Log.GetLogger(Log.NodeService)
 class SetStreamException(Exception): pass
 class ServiceManagerAlreadyExists(Exception): pass
 class ServiceManagerNotFound(Exception): pass
+class ServiceManagerCannotBeRemovedBuiltIn(Exception): pass
 
 def WriteNodeConfig(configName,config):
     """
@@ -170,7 +172,7 @@ class AGNodeService:
 
     ServiceType = '_nodeservice._tcp'
 
-    def __init__( self, app=None ):
+    def __init__( self, app=None, builtInServiceManager=None ):
         if app:
             self.app = app
         else:
@@ -183,12 +185,56 @@ class AGNodeService:
         
         self.streamDescriptionList = []
         
+        self.builtInServiceManager = builtInServiceManager
+        if builtInServiceManager:
+            builtInServiceManagerDesc = builtInServiceManager.GetDescription()
+            self.serviceManagers[builtInServiceManager.uri] = builtInServiceManager
+        
         self.uri = 0
+        
+        self.services = {}
 
     ####################
     ## SERVICE MANAGER methods
     ####################
    
+    def AddServiceManagerObj( self, serviceManagerObj ):
+        """
+        Add a service manager
+        """
+        serviceManagerUrl = "no url, built in service manager"
+        log.info("NodeService.AddServiceManager")
+        log.debug("  serviceManagerUrl = %s", serviceManagerUrl)
+        
+        # Check whether the service manager has already been added
+        #if self.serviceManagers.has_key( serviceManagerUrl ):
+        #    raise ServiceManagerAlreadyExists(serviceManagerUrl)
+                            
+                            
+        log.info("try to reach service amnager")
+        # Try to reach the service manager
+        try:
+            log.info("get sm description")
+            serviceManagerDescription = serviceManagerObj.GetDescription()
+            log.info("set ns url")
+            serviceManagerObj.SetNodeServiceUrl(self.uri)
+            log.info("done setting ns url")
+        except Exception:
+                log.exception("Failed to add service manager %s", serviceManagerUrl)
+                raise
+        except:
+            log.exception("AddServiceManager: Invalid service manager url (%s)"
+                          % serviceManagerUrl)
+            raise Exception("Service Manager is unreachable at "
+                            + serviceManagerUrl)
+
+        log.info("add sm to list")
+
+        # Add service manager to list
+        self.serviceManagers[serviceManagerUrl] = serviceManagerObj
+        
+        return serviceManagerDescription
+
     def AddServiceManager( self, serviceManagerUrl ):
         """
         Add a service manager
@@ -231,12 +277,15 @@ class AGNodeService:
         """
         log.info("NodeService.RemoveServiceManager")
         log.debug("  url = %s", serviceManagerUrl)
+
+        if not self.serviceManagers.has_key(serviceManagerUrl):
+            raise ServiceManagerNotFound(serviceManagerUrl)        
+        
+        if self.serviceManagers[serviceManagerUrl].builtin:
+            raise ServiceManagerBuiltIn("Unable to remove builtin service manager")
         
         try:
-            if self.serviceManagers.has_key(serviceManagerUrl):
-                del self.serviceManagers[serviceManagerUrl]
-            else:
-                raise ServiceManagerNotFound(serviceManagerUrl)
+            del self.serviceManagers[serviceManagerUrl]
         except:
             log.exception("Exception in AGNodeService.RemoveServiceManager.")
             raise Exception("AGNodeService.RemoveServiceManager failed: " + 
@@ -257,13 +306,17 @@ class AGNodeService:
         """Get list of installed services """
         log.info("NodeService.GetServices")
         services = []
+
         for serviceManager in self.serviceManagers.values():
             try:
-                serviceSubset = AGServiceManagerIW(
-                    serviceManager.uri ).GetServices()
+                serviceSubset = serviceManager.GetObject().GetServices()
                 services += serviceSubset
             except:
                 log.exception("Exception in AGNodeService.GetServices.")
+
+        self.services = {}
+        for service in services:
+            self.services[service.uri] = service
 
         return services
 
@@ -273,10 +326,11 @@ class AGNodeService:
         Enable the service, and send it a stream configuration if we have one
         """
         log.info("NodeService.SetServiceEnabled")
+        self.GetServices()
         try:
             if enabled:
                 self.__SendStreamsToService( serviceUri )
-            AGServiceIW( serviceUri ).SetEnabled(enabled)
+            self.services[serviceUri].GetObject().SetEnabled(enabled)
 
         except:
             log.exception(serviceUri)
@@ -303,7 +357,7 @@ class AGNodeService:
 
         for serviceManager in self.serviceManagers.values():
             try:
-                AGServiceManagerIW(serviceManager.uri).StopServices()
+                serviceManager.GetObject().StopServices()
             except:
                 log.exception("Exception stopping services")
                 exceptionText += str(sys.exc_info()[1])
@@ -325,7 +379,6 @@ class AGNodeService:
         The stream descriptions are applied to the installed services
         according to matching capabilities
         """
-
         log.info("NodeService.SetStreams")
         exceptionText = ""
 
@@ -376,7 +429,7 @@ class AGNodeService:
         """
         Load named node configuration
         """
-        log.info("NodeService.LoadConfiguration")
+        log.info("NodeService.LoadConfiguration")        
         exceptionText = ""
 
         class IncomingService:
@@ -471,23 +524,20 @@ class AGNodeService:
         # Add service managers and services
         #
         # - reset sm list, preserving builtin service manager if exists
-        builtinsmlist = filter( lambda x: x.builtin, self.serviceManagers.values())
-        if builtinsmlist:
-            builtinsm = builtinsmlist[0]
-            self.serviceManagers = { builtinsm.uri:builtinsm}
-        else:
-            self.serviceManagers = dict()
         for serviceManager, serviceList in serviceManagerList:
-
             if serviceManager.builtin:
-                log.debug('using builtin service manager at %s', builtinsm.uri)
-                serviceManager.uri = builtinsm.uri
+                if not self.builtInServiceManager:
+                    # skip the configuration for the built-in service manager since it does not exist;
+                    # consider, in this case, creating it instead
+                    log.warn("Configuration specifies built in service manager, which does not exist; skipping")
+                    exceptionText += "Built-in service manager does not exist; skipped relevant configuration"
+                    continue
+                
+                # use the built in service manager
+                serviceManagerObj = self.builtInServiceManager
             else:
-                # Add service manager to list
-                log.debug('using external service manager at %s', serviceManager.uri)
-                self.serviceManagers[serviceManager.uri] = serviceManager
-            
-            serviceManagerObj = AGServiceManagerIW(serviceManager.uri)
+                # use the service manager object from the description (probably a ws proxy)
+                serviceManagerObj = serviceManager.GetObject()
 
             #
             # Remove services from service manager
@@ -569,7 +619,7 @@ class AGNodeService:
                     configParser.set( serviceManagerSection, "name", serviceManager.name )
                     configParser.set( serviceManagerSection, "url", key )
                 
-                services = AGServiceManagerIW( serviceManager.uri ).GetServices()
+                services = serviceManager.GetObject().GetServices()
 
                 if not services:
                     services = []
@@ -582,8 +632,7 @@ class AGNodeService:
                     # 
                     # Create Resource section
                     #
-                  
-                    resource = AGServiceIW( service.uri ).GetResource()
+                    resource = service.GetObject().GetResource()
                     if resource and resource.name:
                         log.debug('Storing resource: %s', resource.name)
                         resourceSection = 'resource%d' % numServices
@@ -599,7 +648,7 @@ class AGNodeService:
                     # Create Service Config section
                     #
 
-                    serviceConfig = AGServiceIW( service.uri ).GetConfiguration()
+                    serviceConfig = service.GetObject().GetConfiguration()
                                                             
                     if serviceConfig:
                         serviceConfigSection = 'serviceconfig%d' % numServices
@@ -699,9 +748,11 @@ class AGNodeService:
         """
         
         log.info("NodeService.__SendStreamsToService")
+        if not self.streamDescriptionList:
+            return
         failedSends = ""
         
-        serviceCapabilities = AGServiceIW( serviceUri ).GetCapabilities()
+        serviceCapabilities = self.services[serviceUri].GetObject().GetCapabilities()
         log.debug("service capabilities: %s", str(serviceCapabilities))
         for streamDescription in self.streamDescriptionList:
             log.debug("streamDescriptions: %s", str(streamDescription))
@@ -720,10 +771,11 @@ class AGNodeService:
                              streamDescription.capability,
                              serviceUri )
                     
-                    AGServiceIW( serviceUri ).SetStream( streamDescription )
+                    self.services[serviceUri].GetObject().SetStream(streamDescription)
                     #return
                 else:
                     log.debug("No stream match! Sending no new streams!")
+
             except:
                 log.exception("Exception in AGNodeService.__SendStreamsToService.")
                 failedSends += "Error updating %s\n" % \
