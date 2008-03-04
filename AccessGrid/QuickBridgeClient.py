@@ -13,20 +13,16 @@ from NetworkLocation import MulticastNetworkLocation, UnicastNetworkLocation
 from GUID import GUID
 from BridgeClient import BridgeClient
 from AccessGrid.UrllibTransport import UrllibTransport, TimeoutTransport
-
+from AccessGrid import Utilities
 class ConnectionError(Exception): pass
 
 class QuickBridgeClient(BridgeClient):
-    def __init__(self, host, port, proxyHost=None, proxyPort=None,timeout=1):
+    def __init__(self, host, port,timeout=1):
         BridgeClient.__init__(self, host, port)
         
         transport = None
-        if proxyHost:
-            if proxyPort:
-                proxyURL = "http://%s:%s" % (proxyHost, proxyPort)
-            else:
-                proxyURL = "http://%s" % (proxyHost)
-
+        proxyURL = Utilities.BuildPreferencesProxyURL()
+        if proxyURL:
             transport = UrllibTransport(proxyURL,timeout)
         else:
             transport = TimeoutTransport(timeout)
