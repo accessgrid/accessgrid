@@ -455,7 +455,8 @@ class VideoService( AGService ):
         """
         Set the identity of the user driving the node
         """
-        self.log.info("SetIdentity: %s %s", profile.name, profile.email)
+        if profile:
+            self.log.info("SetIdentity: %s %s", profile.name, profile.email)
         self.profile = profile
         self.__SetRTPDefaults(profile)
 
