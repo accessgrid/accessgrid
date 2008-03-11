@@ -17,7 +17,8 @@ import sys
 import os
 import string
 import threading
-import cPickle
+
+
 import time
 import socket
 import urlparse
@@ -28,7 +29,7 @@ from AccessGrid import hosting
 from AccessGrid import Version
 from AccessGrid.Toolkit import Application, Service
 from AccessGrid.Preferences import Preferences
-from AccessGrid.Descriptions import Capability, STATUS_ENABLED
+from AccessGrid.Descriptions import Capability, STATUS_ENABLED, STATUS_DISABLED
 from AccessGrid.Descriptions import BeaconSource, BeaconSourceData
 from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE, UMTP_TYPE
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
@@ -37,7 +38,7 @@ from AccessGrid.Venue import ServiceAlreadyPresent, CertificateRequired
 from AccessGrid.interfaces.Venue_client import VenueIW
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.hosting import InsecureServer, SecureServer
-from AccessGrid.Utilities import LoadConfig
+from AccessGrid.Utilities import LoadConfig, BuildServiceUrl
 from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.scheduler import Scheduler
@@ -58,9 +59,13 @@ from AccessGrid.MulticastWatcher import MulticastWatcher
 from AccessGrid.Registry.RegistryClient import RegistryClient
 from AccessGrid import QuickBridgeClient
 from AccessGrid.BridgeCache import BridgeCache
+from AccessGrid.VenueCache import VenueCache
+from AccessGrid.NetworkLocation import MulticastNetworkLocation
+from AccessGrid import UMTPClient
+
 
 from AccessGrid.GUID import GUID
-from AccessGrid.Jabber.JabberClient import JabberClient
+from AccessGrid.Jabber.JabberClient import JabberClient, AuthorizationFailure
 
 from AccessGrid.interfaces.AGService_client import AGServiceIW
 from AccessGrid.interfaces.VenueClient_client import VenueClientIW
@@ -100,24 +105,30 @@ class NetworkLocationNotFound(Exception):
 class DisconnectError(Exception):
     pass
 
+class UserWarning(Exception):
+    pass
+
 
 class NoServices(Exception):
     pass
 
 log = Log.GetLogger(Log.VenueClient)
-
+from AccessGrid.BridgeUtilities import TestBridges
 class BridgePingThread(threading.Thread):
     """
     This is used to keep the bridge ping times up to date
     """
     def __init__(self, preferences, registryClient, bridges):
         self.preferences = preferences
-        self.registryClient = registryClient;
+        self.registryClient = registryClient
         self.bridges = bridges
         self.bridgesDone = 0
         threading.Thread.__init__ (self)
         self._running = threading.Event()
         self.refreshDelay = int(self.preferences.GetPreference(Preferences.BRIDGE_PING_UPDATE_DELAY))
+        mcaddr = self.preferences.GetPreference(Preferences.MULTICAST_DETECT_HOST)
+        mcport = int(self.preferences.GetPreference(Preferences.MULTICAST_DETECT_PORT))
+        self.multicastTestLocation = MulticastNetworkLocation(mcaddr,mcport,1)
     
     def run(self):
 
@@ -131,19 +142,13 @@ class BridgePingThread(threading.Thread):
             while time.time() - t < self.refreshDelay:
                 if not self._running.isSet():
                     return
-                time.sleep(0.2)
+                time.sleep(0.1)
 
             try:
                 # Ping the bridges to measure distance
                 starttime = time.time()
-                log.debug("Updating Bridge Ping Times for %d bridges" % (len(self.bridges)))
-                for b in self.bridges:
-                    pingstart =time.time()
-                    self.PingBridge(b)
-
-                    # stop pinging immediately if we've been stopped
-                    if not self._running.isSet():
-                        return
+                log.debug("Updating %d bridges" % (len(self.bridges)))
+                TestBridges(self.bridges,self.multicastTestLocation)
 
                 # Update the bridge list in the user preferences
                 bridgeList = {}
@@ -151,7 +156,7 @@ class BridgePingThread(threading.Thread):
                     bridgeList[b.GetKey()] = b
                 self.preferences.SetBridges(bridgeList)
 
-                log.debug("Finished Updating Ping Times (waiting %d seconds)" % (self.refreshDelay))
+                log.debug("Finished Updating Bridges (waiting %d seconds)" % (self.refreshDelay))
             except: 
                 log.exception('Exception in BridgePingThread; continuing')
                 
@@ -193,6 +198,7 @@ class VenueClient:
         self.bridgeCache = BridgeCache()
         self.bridgePinger = None
         self.__venueClientUI = None
+        self.registryClient = None
         
         self.certRequired = 0
               
@@ -219,6 +225,17 @@ class VenueClient:
         self.heartBeatTimer = None
         self.heartBeatCounter = 0
         self.jabberIdRetries = 0
+        
+        
+        self.venueList = []
+        venueServerUrls = self.preferences.GetPreference(Preferences.VENUESERVER_URLS)
+        venueServerUrls = venueServerUrls.split('|')
+        venuesFile = os.path.join(self.app.GetUserConfig().GetConfigDir(), 'venues')
+        self.venueCache = VenueCache(venuesFile,venueServerUrls)
+        self.venueCache.Load()
+        
+        self.houseKeeper.AddTask(self.venueCache.Update, 300, 300)
+        self.houseKeeper.StartAllTasks()
 
        
         if progressCB: progressCB("Starting web services",30)
@@ -240,41 +257,6 @@ class VenueClient:
             self.nodeServiceUri = self.preferences.GetPreference(Preferences.NODE_URL) 
             self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
 
-        try:
-            if nodeConfigName:
-                # Load specified node configuration
-                nodeConfigurations = self.nodeService.GetConfigurations()
-                userNodeConfig = None
-                sysNodeConfig = None
-                for n in nodeConfigurations:
-                    if n.name == nodeConfigName:
-                        if n.type == NodeConfigDescription.USER:
-                            userNodeConfig = n
-                        elif n.type == NodeConfigDescription.SYSTEM:
-                            sysNodeConfig = n
-    
-                # Look for the named node config in the user's dir first,
-                # then in the system dir 
-                if userNodeConfig:
-                    nodeConfig = NodeConfigDescription(nodeConfigName,NodeConfigDescription.USER)
-                elif sysNodeConfig:
-                    nodeConfig = NodeConfigDescription(nodeConfigName,NodeConfigDescription.SYSTEM)
-                
-            else:
-                # Load default node configuration
-                prefs = self.app.GetPreferences()
-                nodeConfig = prefs.GetDefaultNodeConfig()
-
-            if nodeConfig:
-                if progressCB: progressCB("Loading node configuration '%s'" % nodeConfig.name,40)
-                log.debug('Loading node configuration: %s', nodeConfig)
-                self.nodeService.LoadConfiguration(nodeConfig)
-            else:
-                log.debug('Null node configuration, not loading')
-
-        except:
-            log.exception("Error loading node configuration: %s", nodeConfigName)
-
         self.isInVenue = 0
         self.isIdentitySet = 0
 
@@ -285,13 +267,8 @@ class VenueClient:
         if int(self.preferences.GetPreference(Preferences.MULTICAST)):   
             self.transport = "multicast"
         else:
-           
             self.transport = "unicast"
 
-        if progressCB: progressCB("Loading bridge information",50)
-        self.LoadBridges(progressCB)
-        self.bridgeCache.StoreBridges(self.bridges.values())
-                    
         self.observers = []
 
         # Manage the currently-exiting state
@@ -331,9 +308,34 @@ class VenueClient:
         self.beaconCapabilities = [Capability(Capability.PRODUCER, "Beacon", "ANY", 0, 1),
                                    Capability(Capability.CONSUMER, "Beacon", "ANY", 0, 1)]
             
+    def BuildDefaultNodeConfiguration(self,nodeConfigName='default_auto',default=1):
+        resources = self.sm.GetResources()
+        
+        # On Windows, skip old style (VFW) capture devices
+        if sys.platform in ['win32']:
+            resources = filter( lambda x: x.name != 'Microsoft WDM Image Capture (Win32)' , resources)
+        profile = self.preferences.GetProfile()
+        
+        if resources:
+            self.sm.AddServiceByName('VideoService.zip',resources[0],config=[],identity=profile)
+            for r in resources[1:]:
+                self.sm.AddServiceByName('VideoProducerService.zip',r,config=[],identity=profile)
+        else:
+            self.sm.AddServiceByName('VideoConsumerService.zip',config=[],identity=profile)
+            
+        self.sm.AddServiceByName('AudioService.zip',config=[],identity=profile)
+        
+        nodeConfig = NodeConfigDescription(nodeConfigName,NodeConfigDescription.USER)
+        self.builtInNodeService.StoreConfiguration(nodeConfig)
+        if default:
+			self.preferences.SetPreference(Preferences.NODE_CONFIG,nodeConfig.name)
+        	self.preferences.SetPreference(Preferences.NODE_CONFIG_TYPE,nodeConfig.type)
+        self.preferences.StorePreferences()
+
+    
     def SetupBridgePrefs(self):
         self.allowedUrlProtocols = ['file', 'http']
-        self.bridges = {}
+        self.bridges = self.preferences.GetBridges()
         self.currentBridge = None
         self.registryUrls = []
         regPrefs = self.preferences.GetPreference(Preferences.BRIDGE_REGISTRY).split('|')
@@ -355,53 +357,58 @@ class VenueClient:
         bridge to the first one in the sorted list. Also, check preferences
         to see if any of the retreived bridges are disabled.
         '''
-        proxyHost = self.preferences.GetPreference(Preferences.PROXY_HOST)
-        proxyPort = self.preferences.GetPreference(Preferences.PROXY_PORT)
-
         if self.bridgePinger != None:
             self.bridgePinger.close()
             self.bridgePinger = None
         
-        log.debug('get bridges from registry')
+        log.debug('get bridges from preferences')
         self.bridges = self.preferences.GetBridges()
         
-        # Get bridges from registry
+        multicastAddr = self.preferences.GetPreference(Preferences.MULTICAST_DETECT_HOST)
+        multicastPort = int(self.preferences.GetPreference(Preferences.MULTICAST_DETECT_PORT))
+        multicastNetworkLocation = MulticastNetworkLocation(host=multicastAddr, port=multicastPort, ttl=1)
+        multicastNetworkLocation.id = GUID()
+        multicastNetworkLocation.privateId = GUID()
+        multicastNetworkLocation.profile=("","")
+        
+        # for all the user's registries
         for registryUrl in self.registryUrls:
             try:
                 log.debug("Trying bridge registry: %s" % registryUrl)
-                self.registryClient = RegistryClient(url=registryUrl,proxyHost=proxyHost,proxyPort=proxyPort)
+                self.registryClient = RegistryClient(url=registryUrl)
                 if self.registryClient == None:
+                    log.debug("Unable to connect with registry (%s); skipping", registryUrl)
                     continue
+                
+                # get bridges from the registry
                 bridgeList = self.registryClient.LookupBridge()
                 
-                unkeyedBridges = filter( lambda x: not self.bridges.has_key(x.GetKey()), bridgeList )
+                # find bridges new to the user
+                newBridges = filter( lambda x: not self.bridges.has_key(x.GetKey()), bridgeList )
                 
-                i = 1
-                for b in bridgeList:
-                    if not self.bridges.has_key(b.GetKey()):
-                    	if progressCB:  progressCB("Initializing bridge cache: %d of %d" % (i,len(unkeyedBridges)), 50)
-                        self.registryClient.PingBridge(b)
-                        self.bridges[b.GetKey()] = b
-                        i += 1
-    
+                # test new bridges only
+                TestBridges(newBridges,multicastNetworkLocation,progressCB)
+                for b in newBridges:
+                    self.bridges[b.GetKey()] = b
+
             except:
                 log.exception("LoadBridges: Can not connect to bridge registry %s ", registryUrl)
         
+        # apply some artificial user rank.  WHY?
         bridgeList = self.bridges.values()
         bridgeList.sort(lambda x,y: BridgeDescription.sort(x, y, 0))
         for index in range(0, len(bridgeList)):
             bridgeList[index].userRank = float(index + 1)
         
+        # update bridges in preferences
         self.preferences.SetBridges(self.bridges)
 
-        log.debug('connect to bridge')
-
+        # probably don't need to do this
         self.currentBridge = self.FindBridge(bridgeList)
         
-        log.debug('exiting loadbridges')
-        if not hasattr(self, 'registryClient'):
-            self.registryClient = None
+        # restart bridge pinger (was shut down above).  WHY SHUT DOWN AND RESTART ?
         self.bridgePinger = BridgePingThread(self.preferences, self.registryClient, bridgeList)
+        self.bridgePinger.setDaemon(True)
         self.bridgePinger.start()
         
         return bridgeList
@@ -536,7 +543,7 @@ class VenueClient:
 
             from AccessGrid.AGNodeService import AGNodeService
             from AccessGrid.interfaces.AGNodeService_interface import AGNodeService as AGNodeServiceI
-            ns = self.builtInNodeService = AGNodeService(self.app)
+            ns = self.builtInNodeService = AGNodeService(self.app,builtInServiceManager=self.sm)
             nsi = AGNodeServiceI(impl=ns,auth_method_name=None)
             nsuri = self.builtInNodeServiceUri = self.server.RegisterObject(nsi, path="/NodeService")
             log.debug("__StartWebService: node service: %s",
@@ -1116,6 +1123,7 @@ class VenueClient:
                 self.__StartJabber(self.textLocation)
         except Exception,e:
             log.exception("EnterVenue.__StartJabber failed")
+            self.warningString += "\nJabber Client failed to initialize"
 
         # 
         # Update the node service with stream descriptions
@@ -1144,8 +1152,15 @@ class VenueClient:
                 self.UpdateProfileCache(client)
         except Exception, e:
             log.exception("Unable to update client profile cache.")
-                
-     
+        
+        if self.warningString:
+            uw = UserWarning(self.warningString)
+            for s in self.observers:
+				try:
+                	s.HandleError(uw)
+				except:
+					log.exception("Observer failed while handling error; class=%s, warning=%s", s.__class__, self.warningString)
+
 
     def StopBeacon(self):
         ''' Stop the beacon client'''
@@ -1202,7 +1217,6 @@ class VenueClient:
             # Create jabber chat client if necessary
             self.jabber.Connect(jabberHost, jabberPort) 
         
-            self.jabberHost = jabberHost
 
             jabberId = str(self.profile.connectionId)
             jabberPwd = str(self.profile.connectionId)
@@ -1217,14 +1231,25 @@ class VenueClient:
                     jabberId = jabberId + "_"
                     idRetries -= 1
             self.jabber.SetUserInfo(self.profile.name,
-                                    jabberId, jabberPwd, 'AG')
-        
-            ## Register the user in the jabber server
-            self.jabber.Register()
-            self.jabber.Login()
-               
-        # Create the jabber text client
+                                    jabberId, jabberPwd, 'AccessGrid'+str(self.profile.connectionId))
+            
+            try:
+                self.jabber.Login()
+                log.info("Successfully logged in to Jabber")
+            except AuthorizationFailure:
+                try:
+                    ## Register the user in the jabber server
+                    log.info("Login failure; registering account %s", jabberId)
+                    self.jabber.Register()
+                    log.info("Logging in to Jabber")
+                    self.jabber.Login()
+                    log.info("Successfully logged in to Jabber")
+                except:
+                    log.exception("Error registering jabber acount %s", jabberId)
+                    raise
 
+            self.jabberHost = jabberHost
+               
         # Create room
         server = str(self.venueState.uri).split('/')[2].split(":")[0]
         currentRoom = self.venueState.name.replace(" ", "-")
@@ -1280,6 +1305,7 @@ class VenueClient:
         URL : url to the venue
         """
         URL = str(URL)
+        URL = BuildServiceUrl(URL,'https',8000,'Venues/default')
         log.debug("EnterVenue; url=%s type=%s", URL,type(URL))
         
         # Initialize a string of warnings that can be displayed to the user.
@@ -1526,14 +1552,16 @@ class VenueClient:
                 stream.location = netloc
                 found = 1
             # If UMTP, use the multicast location
-            elif self.transport == "unicast" and self.currentBridge.serverType == UMTP_TYPE and netloc.GetType() == "multicast":
-                stream.location = netloc
-                found = 1
+            #elif self.transport == "unicast" and self.currentBridge.serverType == UMTP_TYPE and netloc.GetType() == "multicast":
+            #    stream.location = netloc
+            #    found = 1
                                     
-        if not found and self.transport == "unicast" and self.currentBridge.serverType == QUICKBRIDGE_TYPE:
+        if not found:# and self.transport == "unicast":# and self.currentBridge.serverType == QUICKBRIDGE_TYPE:
             # If no unicast network location was found, connect to
             # the bridge to retreive one.
+
             if self.currentBridge:
+                
 
                 if self.currentBridge.status != STATUS_ENABLED:
                     log.info("Current bridge %s is disabled by user, searching for other bridge", self.currentBridge.name)
@@ -1542,15 +1570,16 @@ class VenueClient:
                         raise NetworkLocationNotFound("transport=%s"%(self.transport,))
                     log.info("Using new bridge %s", self.currentBridge.name)
 
-                proxyHost = self.preferences.GetPreference(Preferences.PROXY_HOST)
-                proxyPort = self.preferences.GetPreference(Preferences.PROXY_PORT)
-                qbc = QuickBridgeClient.QuickBridgeClient(self.currentBridge.host, self.currentBridge.port,
-                                            proxyHost, proxyPort)
+                if self.currentBridge.serverType == QUICKBRIDGE_TYPE:
+                    qbc = QuickBridgeClient.QuickBridgeClient(self.currentBridge.host, self.currentBridge.port)
+                elif self.currentBridge.serverType == UMTP_TYPE:
+                    qbc = UMTPClient.UMTPClient(self.currentBridge.host,self.currentBridge.port)
 
                 try:
                     stream.location = qbc.JoinBridge(stream.networkLocations[0])
                     log.debug("Got location from bridge: %s", stream.location)
-                    stream.networkLocations.append(stream.location)
+                    if self.currentBridge.serverType != UMTP_TYPE:        # HACK!
+                        stream.networkLocations.append(stream.location)
                   
                 except QuickBridgeClient.ConnectionError,e:
                     self.currentBridge.rank = BridgeDescription.UNREACHABLE
@@ -1945,7 +1974,7 @@ class VenueClient:
                 for service in serviceList:
                     for cap in service.capabilities:
                         if cap.type == 'video' and cap.role == 'consumer':
-                            AGServiceIW(service.uri).SetEnabled(enableFlag)
+                            service.GetObject().SetEnabled(enableFlag)
                             found = 1
 
             if not found:
@@ -1966,7 +1995,7 @@ class VenueClient:
                 for service in serviceList:
                     for cap in service.capabilities:
                         if cap.type == 'video' and cap.role == 'producer':
-                            AGServiceIW(service.uri).SetEnabled(enableFlag)
+                            service.GetObject().SetEnabled(enableFlag)
                             found = 1
 
             if not found:
