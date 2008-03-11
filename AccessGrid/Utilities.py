@@ -675,8 +675,7 @@ def OpenURL(url):
     from wxPython.wx import NULL, wxID_OK
     
     preferences = Preferences()
-    
-    if preferences.GetPreference(Preferences.PROXY_ENABLED):
+    if int(preferences.GetPreference(Preferences.PROXY_ENABLED)):
         # There is a proxy set, so build the URL of the proxy
         proxySupport = urllib2.ProxyHandler({"http" : BuildPreferencesProxyURL()})
         opener = urllib2.build_opener(proxySupport, urllib2.HTTPHandler)
