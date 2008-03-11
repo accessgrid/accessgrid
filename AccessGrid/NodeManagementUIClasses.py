@@ -930,7 +930,7 @@ class NodeManagementClientFrame(wx.Frame):
         # Get services available
         try:
             wx.BeginBusyCursor()
-            servicePackages =  AGServiceManagerIW(serviceManager.uri).GetServicePackageDescriptions()
+            servicePackages =  serviceManager.GetObject().GetServicePackageDescriptions()
         except:
             log.exception("Exception getting service packages")
         wx.EndBusyCursor()
