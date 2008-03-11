@@ -2,13 +2,13 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.30 2007-10-01 17:14:20 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.30 2007/10/01 17:14:20 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import re
 import sys, os
-
+import wx
 try:   
     import win32api
     import _winreg
@@ -77,6 +77,7 @@ class VideoService( AGService ):
 
     def __init__( self ):
         AGService.__init__( self )
+        self.thepath = os.getcwd()
 
         self.capabilities = [ Capability( Capability.CONSUMER,
                                           Capability.VIDEO,
@@ -112,7 +113,7 @@ class VideoService( AGService ):
         else:
             standard = "NTSC"
         self.standard = OptionSetParameter( "Standard", standard, VideoService.standardOptions )
-        self.tiles = OptionSetParameter( "Thumbnail Columns", "2", VideoService.tileOptions )
+        self.tiles = OptionSetParameter( "Thumbnail Columns", "4", VideoService.tileOptions )
         self.bandwidth = RangeParameter( "Bandwidth", 800, 0, 3072 )
         self.framerate = RangeParameter( "Frame Rate", 24, 1, 30 )
         self.quality = RangeParameter( "Quality", 75, 1, 100 )
@@ -342,10 +343,11 @@ class VideoService( AGService ):
                 
             # Set drop time to something reasonable
             options.append('-XsiteDropTime=5')
+            
+            h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
+            w = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
+            options.append('-Xgeometry=%dx300+300+%d' % (w-300,h-350))
 
-            # Set number of columns to use for thumbnail display
-            options.append("-Xtile=%s" % self.tiles.value)
-                    
             if self.profile:
                 options.append("-X")
                 options.append("site=%s" % self.profile.publicId)
@@ -369,6 +371,7 @@ class VideoService( AGService ):
             self.log.info("Starting VideoService")
             self.log.info(" executable = %s" % self.executable)
             self.log.info(" options = %s" % options)
+            os.chdir(self.thepath)
             self._Start( options )
             #os.remove(startupfile)
         except:
