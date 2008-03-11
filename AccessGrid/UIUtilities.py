@@ -1249,7 +1249,7 @@ class ItemBrowserCtrl(wx.Panel):
                                      wx.LIST_STATE_SELECTED)
         ind = self.listCtrl.GetItemData(item)
         self.value = self.choices[ind]
-        self.parent.EndModal(0)  
+        self.parent.EndModal(wx.ID_OK)  
     
     def GetSelection(self):
         return self.value
