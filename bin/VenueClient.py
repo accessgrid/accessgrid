@@ -143,13 +143,6 @@ def main():
         progressDialog.UpdateGauge('Creating venue client internals',70)
         vcc = VenueClientController()
         vcc.SetVenueClient(vc)
-        progressDialog.UpdateGauge('Creating venue client user interface',80)
-        vcui = VenueClientUI(vc, vcc, app,progressDialog.UpdateGauge)
-        vc.SetVCUI(vcui)
-    
-        # Associate the components with the ui
-        vcc.SetGui(vcui)
-        vc.AddObserver(vcui)
         
 
         # 
@@ -157,6 +150,7 @@ def main():
         #
         profile = app.preferences.GetProfile()
         if profile.IsDefault():  # not your profile
+            progressDialog.UpdateGauge('Initializing user configuration',75)
             log.debug("the profile is the default profile - open profile dialog")
 
             profileDialog = ProfileDialog(None, -1, 'Fill in your profile', 1)
@@ -168,24 +162,54 @@ def main():
                 
             profile = profileDialog.GetNewProfile()
             profileDialog.Destroy()    
-                    
+                  
             # Change profile based on values filled in to the profile dialog
             vcc.ChangeProfile(profile)
 
-
             # Build a customized default node configuration
+            progressDialog.UpdateGauge('Configuring audio and video',77)
             vc.BuildDefaultNodeConfiguration()
             
+            # Build a venue cache
+            progressDialog.UpdateGauge('Building Venue cache',79)
+            vc.venueCache.Update()
+        else:
+            if not nodeConfig:
+                # If no node configuration was specified on the command line,
+                # load default node configuration
+                defaultNodeConfig = app.preferences.GetDefaultNodeConfig()
+                if defaultNodeConfig:
+                    vc.nodeService.LoadConfiguration(defaultNodeConfig)            
             
-            # Check multicast status, set to use unicast appropriately
-            multicastStatus = vc.GetMulticastStatus()
-            if multicastStatus == 0:
-                vcui.SetMcastStatus(multicastStatus)
-                vcui.UseUnicastCB()
+        # If user has no stored bridges, initialize the bridge cache
+        bridges = app.preferences.GetBridges()
+        if not bridges:
+            # Initialize bridge cache
+            progressDialog.UpdateGauge('Initializing bridges',81)
+            vc.LoadBridges(progressDialog.UpdateGauge)
+                    
             
-                app.preferences.SetPreference(Preferences.MULTICAST,0)
-                app.preferences.StorePreferences()
+        progressDialog.UpdateGauge('Creating venue client user interface',85)
+        vcui = VenueClientUI(vc, vcc, app,progressDialog.UpdateGauge)
+        vc.SetVCUI(vcui)
+    
+        # Associate the components with the ui
+        vcc.SetGui(vcui)
+        vc.AddObserver(vcui)
 
+        # Check multicast status, set to use unicast appropriately
+        multicastStatus = vc.GetMulticastStatus()
+        vcui.SetMcastStatus(multicastStatus)
+        if multicastStatus == 0:    
+            vcui.UseUnicastCB()
+        
+            app.preferences.SetPreference(Preferences.MULTICAST,0)
+        app.preferences.StorePreferences()
+        
+        screenWidth = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
+        screenHeight = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
+        vcuiWidth, vcuiHeight = vcui.GetSizeTuple()
+        vcui.SetPosition(wx.Point((screenWidth-vcuiWidth)/2,(screenHeight-vcuiHeight)/2))
         vcui.Show(True)
         
         
@@ -202,6 +226,7 @@ def main():
         m2threading.cleanup()
     except:
         log.exception("Error in VenueClient main")
+        os._exit(1)
 
 # The main block
 if __name__ == "__main__":
