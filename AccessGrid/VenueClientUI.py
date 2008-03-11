@@ -67,9 +67,6 @@ from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
 from AccessGrid.Security.wxgui import CertificateManagerWXGUI
 from AccessGrid.DataStore import LegacyCallInvalid, LegacyCallOnDir
 
-from ContentListPanel2 import ContentListPanel2
-
-
 from AccessGrid.Venue import CertificateRequired
 try:
     import win32api
@@ -3477,7 +3474,8 @@ class VenueAddressBar(wx.SashLayoutWindow):
         box.Add(self.goButton, 0, wx.RIGHT|wx.ALIGN_CENTER, 5)
         self.addressPanel.SetSizer(box)
 
-        venueServerAddressBox.Add(self.addressPanel, 0, wx.EXPAND)        w,h = self.GetSizeTuple()
+        venueServerAddressBox.Add(self.addressPanel, 0, wx.EXPAND)        
+        w,h = self.GetSizeTuple()
         self.SetSizer(venueServerAddressBox)
         self.GetSizer().SetDimension(5,5,w-10,h-10)
 
