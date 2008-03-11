@@ -14,6 +14,7 @@ Log.SetDefaultLevel('JabberClient', Log.DEBUG)
 start = 100000000
 end   = 999999999 
 
+AuthorizationFailure = stream.AuthorizationFailure
 
 class JabberClient:
 
