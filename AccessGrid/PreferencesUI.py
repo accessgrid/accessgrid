@@ -41,7 +41,7 @@ class PreferencesDialog(wx.Dialog):
                                               wx.DefaultPosition,
                                               wx.Size(200, -1))
         self.sideTree = wx.TreeCtrl(self.sideWindow, wx.NewId(), wx.DefaultPosition, 
-                                   wx.DefaultSize, style = wx.TR_HIDE_ROOT)
+                                   size=(200, -1), style = wx.TR_HIDE_ROOT)
 
         # wxPython 2.8 workaround - sideWindow width doesn't get set otherwise
         self.sideWindow.SetSize((150, -1))
@@ -162,6 +162,8 @@ class PreferencesDialog(wx.Dialog):
                                        self.bridgingPanel.GetOrderBridgesByPing())
         self.preferences.SetPreference(Preferences.DISPLAY_MODE,
                                        self.navigationPanel.GetDisplayMode())
+        self.preferences.SetPreference(Preferences.VENUESERVER_URLS,
+                                       self.navigationPanel.GetVenueServers())
 
         cDict = self.loggingPanel.GetLogCategories()
         for category in cDict.keys():
@@ -1609,6 +1611,10 @@ class NavigationPanel(wx.Panel):
         self.exitsButton = wx.RadioButton(self, wx.NewId(), "  Show exits from the current venue ")
         self.myVenuesButton = wx.RadioButton(self, wx.NewId(), "  Show my saved venues")
         self.allVenuesButton = wx.RadioButton(self, wx.NewId(), "  Show all venues on the current server")
+        self.venueCacheTitleText = wx.StaticText(self, -1, "Venue Cache")
+        self.venueCacheTitleLine = wx.StaticLine(self, -1)
+        self.venueServerUrlText = wx.TextCtrl(self,-1,style=wx.TE_MULTILINE)
+        self.venueCacheRefreshButton = wx.Button(self,-1,"Refresh")
 
         value = preferences.GetPreference(Preferences.DISPLAY_MODE)
         if value == Preferences.EXITS:
@@ -1618,6 +1624,14 @@ class NavigationPanel(wx.Panel):
         elif value == Preferences.ALL_VENUES:
             self.allVenuesButton.SetValue(1)
             
+        venueServerUrls = preferences.GetPreference(Preferences.VENUESERVER_URLS)
+        venueServerUrls = venueServerUrls.split('|')
+        for url in venueServerUrls:
+            self.venueServerUrlText.AppendText(url+"\n")
+        
+        wx.EVT_BUTTON(self,self.venueCacheRefreshButton.GetId(), self.OnRefresh)
+        self.preferences = preferences
+            
         """
         if IsOSX():
             self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
@@ -1625,6 +1639,16 @@ class NavigationPanel(wx.Panel):
             self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
         """                        
         self.__Layout()
+        
+    def OnRefresh(self,event):
+        val = str(self.venueServerUrlText.GetValue())
+        urls = val.split('\n')
+        for u in urls:
+            u = u.strip()
+            if u and u not in self.preferences.venueClient.venueCache.venueServers:
+                self.preferences.venueClient.venueCache.venueServers.append(str(u))
+        self.preferences.venueClient.venueCache.Update()
+        self.preferences.venueClient.venueCache.Store()
          
     def GetDisplayMode(self):
         if self.exitsButton.GetValue():
@@ -1643,10 +1667,29 @@ class NavigationPanel(wx.Panel):
         sizer.Add(self.exitsButton, 0, wx.ALL|wx.EXPAND, 10)
         sizer.Add(self.myVenuesButton, 0, wx.ALL|wx.EXPAND, 10)
         sizer.Add(self.allVenuesButton, 0, wx.ALL|wx.EXPAND, 10)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(self.venueCacheTitleText, 0, wx.ALL, 5)
+        sizer2.Add(self.venueCacheTitleLine, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        sizer.Add(sizer2, 0, wx.EXPAND)
+        sizer.Add(self.venueServerUrlText, 0, wx.ALL|wx.EXPAND, 10)
+        sizer.Add(self.venueCacheRefreshButton, 0)
                
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(1)
+        
+    def GetVenueServers(self):
+        urls = (self.venueServerUrlText.GetValue())
+        urls = urls.split('\n')
+        ret = []
+        for u in urls:
+            if not u:
+                continue
+            ret.append(u)
+        ret = '|'.join(ret)
+        return ret
+            
+        
         
 class JabberPanel(wx.Panel):
     def __init__(self, parent, id, preferences):
