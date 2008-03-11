@@ -7,7 +7,7 @@ from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.Platform.Config import AGTkConfig
 from AccessGrid.interfaces.AGNodeService_client import AGNodeServiceIW
 from AccessGrid.GUID import GUID
-from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE
+from AccessGrid.Descriptions import BridgeDescription, QUICKBRIDGE_TYPE, UMTP_TYPE
 from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
 from AccessGrid.UIUtilities import MessageDialog, TextDialog
 
@@ -39,7 +39,7 @@ class PreferencesDialog(wx.Dialog):
         
         self.preferencesWindow = wx.SashWindow(self, self.ID_WINDOW_RIGHT,
                                               wx.DefaultPosition,
-                                              wx.Size(200, -1))
+                                              wx.Size(170, -1))
         self.sideTree = wx.TreeCtrl(self.sideWindow, wx.NewId(), wx.DefaultPosition, 
                                    size=(200, -1), style = wx.TR_HIDE_ROOT)
 
@@ -1161,7 +1161,7 @@ class NetworkPanel(wx.Panel):
         return self.usernameCtrl.GetValue()
     
     def GetProxyPassword(self):
-        return self.passwordCtrl.GetValue()
+        return str(self.passwordCtrl.GetValue())
             
     def GetProxyEnabled(self):
         if self.proxyButton.IsChecked():
@@ -1602,6 +1602,7 @@ class BridgingPanel(wx.Panel):
 
 
 
+
 class NavigationPanel(wx.Panel):
     def __init__(self, parent, id, preferences):
         wx.Panel.__init__(self, parent, id)
@@ -1623,7 +1624,7 @@ class NavigationPanel(wx.Panel):
             self.myVenuesButton.SetValue(1)
         elif value == Preferences.ALL_VENUES:
             self.allVenuesButton.SetValue(1)
-            
+
         venueServerUrls = preferences.GetPreference(Preferences.VENUESERVER_URLS)
         venueServerUrls = venueServerUrls.split('|')
         for url in venueServerUrls:
@@ -1631,7 +1632,6 @@ class NavigationPanel(wx.Panel):
         
         wx.EVT_BUTTON(self,self.venueCacheRefreshButton.GetId(), self.OnRefresh)
         self.preferences = preferences
-            
         """
         if IsOSX():
             self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
