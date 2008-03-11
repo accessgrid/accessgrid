@@ -2,13 +2,14 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.22 2007-09-12 07:00:14 douglask Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.22 2007/09/12 07:00:14 douglask Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys, os
 import time
 import string
+import wx
 try:    import _winreg
 except: pass
 
@@ -26,6 +27,7 @@ class AudioService( AGService ):
 
     def __init__( self ):
         AGService.__init__( self )
+        self.thepath = os.getcwd()
 
         self.capabilities = [ Capability( Capability.CONSUMER,
                                           Capability.AUDIO,
@@ -255,7 +257,9 @@ class AudioService( AGService ):
                 # site id not supported in UCL rat yet, which is used on macs.
                 options.append("-S")
                 options.append(self.profile.publicId)
-
+    
+            h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
+            options.append( "-X geometry=300x300+0+%d" % (h-350) )
             options.append( "-f" )
 
             if Platform.isOSX():
@@ -281,6 +285,7 @@ class AudioService( AGService ):
             self.log.info(" executable = %s" % self.executable)
 
             self.log.info(" options = %s" % options)
+            os.chdir(self.thepath)
             self._Start( options )
 
         except:
