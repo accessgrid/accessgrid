@@ -691,7 +691,6 @@ class VenueServer:
                     appList = ""
 
                 if len(appList) != 0:
-                    print 'loading apps'
                     for oid in string.split(appList, ':'):
                         try:
                             name = cp.get(oid, 'name')
@@ -707,20 +706,18 @@ class VenueServer:
                                 encoding = cp.get(oid,'encoding')
                             print 'encoding :', encoding
 
+                            encoding = None
+                            if 'encoding' in cp.options(oid):
+                                encoding = cp.get(oid,'encoding')
+
                             for o in cp.options(oid):
-                                #if o != 'name' and o != 'description' and \
-                                #   o != 'id' and o != 'uri' and o != mimeType:
-                                print 'handling o = ', o
                                 if o not in ['name','description','id','uri','encoding','mimeType','authorizationPolicy','startable']:
                                     value = cp.get(oid, o)
                                     if encoding == 'base64':
-                                        print 'decoding value for ',o,' : ', value
                                         value = base64.decodestring(value)
 
                                     appImpl.app_data[o] = value
                         except:
-                            import traceback
-                            traceback.print_exc()
                             log.exception("Failed to load shared app")
                 else:
                     log.debug("No applications to load for Venue %s", sec)
