@@ -194,7 +194,7 @@ class AGServiceManager:
                     except:
                         log.exception("Error shutting down service %s", serviceToRemove.name)
 
-                    if not service.inlineClass:
+                    if isinstance(service.GetObject(),AGServiceIW):
                         #
                         # Kill service
                         #
@@ -365,7 +365,6 @@ class AGServiceManager:
         # instantiate the service object
         serviceClass = getattr(mod,servicePackage.name)
         serviceObj = serviceClass()
-        serviceObj.inlineClass = 1
     
         # instantiate the interface object
         serviceObjI = AGServiceI(serviceObj)
