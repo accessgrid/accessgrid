@@ -39,7 +39,7 @@ Log.SetDefaultLevel(Log.VenueClientUI, Log.WARN)
 from AccessGrid import icons
 from AccessGrid import Toolkit
 from AccessGrid.Platform import IsWindows, IsOSX, Config, IsLinux, IsFreeBSD
-from AccessGrid.UIUtilities import AboutDialog, MessageDialog
+from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ItemBrowserDialog
 from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.ClientProfile import *
 from AccessGrid.Preferences import Preferences
@@ -48,14 +48,14 @@ from AccessGrid.Descriptions import DataDescription, ServiceDescription, BridgeD
 from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
 from AccessGrid.Descriptions import DirectoryDescription, FileDescription
 from AccessGrid.Descriptions import ApplicationDescription, VenueDescription
-from AccessGrid.Descriptions import NodeConfigDescription
+from AccessGrid.Descriptions import NodeConfigDescription, ConnectionDescription
 from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIDialog
 from AccessGrid.Utilities import SubmitBug, BuildServiceUrl
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.AppMonitor import AppMonitor
 from AccessGrid.Venue import ServiceAlreadyPresent
 from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError, NoServices
-from AccessGrid.VenueClient import DisconnectError
+from AccessGrid.VenueClient import DisconnectError, UserWarning
 from AccessGrid.VenueClientController import NoAvailableBridges, NoEnabledBridges
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame, StoreConfigDialog
 from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
@@ -66,6 +66,9 @@ from AccessGrid import ServiceDiscovery
 from AccessGrid.interfaces.AGServiceManager_client import AGServiceManagerIW
 from AccessGrid.Security.wxgui import CertificateManagerWXGUI
 from AccessGrid.DataStore import LegacyCallInvalid, LegacyCallOnDir
+
+from ContentListPanel2 import ContentListPanel2
+
 
 from AccessGrid.Venue import CertificateRequired
 try:
@@ -151,6 +154,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
     ID_VENUE_SAVE_TEXT = wx.NewId()
     ID_VENUE_PROPERTIES = wx.NewId()
     ID_VENUE_OPEN_CHAT = wx.NewId()
+    ID_VENUE_OPEN = wx.NewId()
     ID_VENUE_CLOSE = wx.NewId()
     ID_PROFILE = wx.NewId()
     ID_PROFILE_EDIT = wx.NewId()
@@ -189,7 +193,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
 
     TOOLSIZE = (25,25)
 
-    def __init__(self, venueClient, controller, app):
+    def __init__(self, venueClient, controller, app, progressCallback=None):
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
 
@@ -198,7 +202,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         self.bridgeKeyMap = {}
         self.venueClient = venueClient
         self.controller = controller
-
+        
         self.debugMode = 0
         self.browser = None
         self.myVenuesPos = 0
@@ -237,22 +241,13 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         self.__BuildUI(app)
         self.SetSize(wx.Size(400, 600))
         
-        self.__SetMcastStatus(self.venueClient.GetMulticastStatus())
+        if progressCallback:
+            progressCallback('Analyzing network',100)
+                
         
         # Tell the UI about installed applications
         self.__EnableAppMenu( False )
-        
-        #
-        # Check if profile is created then open venue client
-        #
-        profile = prefs.GetProfile()
-
-        if profile.IsDefault():  # not your profile
-            log.debug("the profile is the default profile - open profile dialog")
-            self.__OpenProfileDialog()
-        else:
-            self.__OpenVenueClient()
-                        
+                                
         self.nodeManagementFrame = None
 
         # Help Doc locations
@@ -436,10 +431,10 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
     
     #Modified by NA2-HPCE
     def __SetMenubar(self, app):
-        self.SetMenuBar(self.menubar)
 
         # ---- menus for main menu bar
         self.venue = wx.Menu()
+        self.venue.Append(self.ID_VENUE_OPEN,"&Open...\tCTRL-O", "Open venue")
       
         self.venue.Append(self.ID_VENUE_DATA_ADD,"Add Data...",
                              "Add data to the venue.")
@@ -631,6 +626,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
                                 "Add service to the venue")
         # Do not enable menus until connected
         self.__HideMenu()
+        self.SetMenuBar(self.menubar)
 
     def __CreateBridgeMenu(self):
         
@@ -654,14 +650,12 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         bList.sort(lambda x,y: BridgeDescription.sort(x, y, orderBridgesByPing))
 
         for b in bList:
+            # do not display disabled bridges in the menu
+            if b.status == STATUS_DISABLED:
+                continue
             id = wx.NewId()
             self.bridgeSubmenu.AppendCheckItem(id, b.name)
             self.bridgeKeyMap[b.GetKey()] = id
-
-            if b.status == STATUS_ENABLED:
-                self.bridgeSubmenu.Enable(id, True)
-            else:
-                self.bridgeSubmenu.Enable(id, False)
 
             if (self.currentBridge and b.GetKey() == self.currentBridge.GetKey()
                 and self.venueClient.GetTransport()=="unicast"):
@@ -717,6 +711,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         #ZSI:HO
         #wx.EVT_MENU(self, self.ID_VENUE_DIR_SIZE, self.GetSizeCB)
         #*********************************************************
+        wx.EVT_MENU(self, self.ID_VENUE_OPEN, self.OpenVenueCB)
         wx.EVT_MENU(self, self.ID_VENUE_SERVICE_ADD, self.AddServiceCB)
         wx.EVT_MENU(self, self.ID_VENUE_SAVE_TEXT, self.SaveTextCB)
         wx.EVT_MENU(self, self.ID_VENUE_PROPERTIES, self.OpenVenuePropertiesCB)
@@ -909,10 +904,12 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         self.venueAddressBar = VenueAddressBar(self, self.ID_WINDOW_TOP, 
                                                self.myVenuesDict,
                                                'default venue')
-        self.venueAddressBar.SetDefaultSize((1000, 55))
+        self.venueAddressBar.SetDefaultSize((1000, 35))
         self.venueAddressBar.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.venueAddressBar.SetAlignment(wx.LAYOUT_TOP)
         self.venueAddressBar.SetSashVisible(wx.SASH_BOTTOM, True)
+        
+
 
         self.textClientPanel = TextPanelSash(self, self.ID_WINDOW_BOTTOM)
         self.textClientPanel.SetDefaultSize((1000, 200))
@@ -1269,7 +1266,26 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         else:
             self.RecursiveDataAdd(dirDesc,strDirToUpload,1)
     
-    #Modified by NA2-HPCE
+    
+
+    def OpenVenueCB(self,event):
+        venueCache = self.venueClient.venueCache
+        venueList = []
+        for v in venueCache.GetVenues():
+            venueList += v.venueList
+        
+        # - main frame
+        dialog = ItemBrowserDialog(self,-1,'Open Venue',venueList,size=(400,500))
+        dialog.CenterOnParent()
+        ret = dialog.ShowModal()
+        if ret == wx.ID_OK:
+            ret = dialog.GetValue()
+            if ret:
+                self.SetVenueUrl(ret.uri)
+                self.EnterVenueCB(ret.uri)
+
+        
+        
     def AddDataCB(self, event = None, fileList = [], serverPath=None):
     
         #
@@ -2589,6 +2605,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
 
     def Prompt(self,text,title):
     
+        
         dlg = wx.MessageDialog(self, text, title,
                               style = wx.ICON_INFORMATION | wx.OK | wx.CANCEL)
         ret = dlg.ShowModal()
@@ -3321,9 +3338,9 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
             log.exception("bin.VenueClient::EnterVenue failed")
             enterUISuccess = 0
 
-        if not enterUISuccess:
-            text = "You have not entered the venue located at %s.\nAn error occured.  Please try again."%URL
-            wx.CallAfter(self.Error, text, "Enter Venue Error")
+        #if not enterUISuccess:
+        #    text = "You have not entered the venue located at %s.\nAn error occured.  Please try again."%URL
+        #    wx.CallAfter(self.Error, text, "Enter Venue Error")
             
 
     def ExitVenue(self):
@@ -3347,6 +3364,8 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
             wx.CallAfter(MessageDialog, None, 
                         "Your connection to the venue is interrupted and you will be removed from the venue.  \nTry to connect again.", 
                         "Lost Connection")
+        elif isinstance(err,UserWarning):
+            wx.CallAfter(MessageDialog,None,str(err), "Warning")
         else:
             log.info("Unhandled observer exception in VenueClientUI")
             
@@ -3370,7 +3389,6 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
 ################################################################################
 #
 # Venue Address Bar
-
 class VenueAddressBar(wx.SashLayoutWindow):
     ID_GO = wx.NewId()
     ID_BACK = wx.NewId()
@@ -3408,8 +3426,12 @@ class VenueAddressBar(wx.SashLayoutWindow):
                                              icons.getPreviousBitmap(),
                                              wx.DefaultPosition, wx.Size(40, 21))
         self.backButton.SetToolTip(wx.ToolTip("Go to previous venue"))
+        self.backButton.Hide() #newui
+
         self.__Layout()
         self.__AddEvents()
+        
+        
 
     def __AddEvents(self):
         wx.EVT_BUTTON(self, self.ID_GO, self.CallAddress)
@@ -3417,6 +3439,7 @@ class VenueAddressBar(wx.SashLayoutWindow):
         wx.EVT_TEXT_ENTER(self, self.ID_ADDRESS, self.CallAddress)
         wx.EVT_SIZE(self,self.__OnSize)
         
+                     
     def __OnSize(self,event):
         self.__Layout()
         
@@ -3448,22 +3471,18 @@ class VenueAddressBar(wx.SashLayoutWindow):
         venueServerAddressBox = wx.BoxSizer(wx.VERTICAL)
         
         box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(self.backButton, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        #box.Add(self.backButton, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)  # newui
         box.Add(self.address, 1, wx.RIGHT, 5)
+        #box.Add(self.address2, 1, wx.RIGHT|wx.EXPAND, 5)
         box.Add(self.goButton, 0, wx.RIGHT|wx.ALIGN_CENTER, 5)
         self.addressPanel.SetSizer(box)
 
-        titleBox = wx.BoxSizer(wx.HORIZONTAL)
-        titleBox.Add(self.title, 1, wx.CENTER)
-        self.titlePanel.SetSizer(titleBox)
-
-        venueServerAddressBox.Add(self.addressPanel, 0, wx.EXPAND)
-        venueServerAddressBox.Add(self.titlePanel, 1, wx.EXPAND)
-        w,h = self.GetSizeTuple()
+        venueServerAddressBox.Add(self.addressPanel, 0, wx.EXPAND)        w,h = self.GetSizeTuple()
         self.SetSizer(venueServerAddressBox)
         self.GetSizer().SetDimension(5,5,w-10,h-10)
 
         self.Layout()
+        
         
     def GoBack(self, event):
         self.parent.GoBackCB()
@@ -3476,7 +3495,7 @@ class VenueAddressBar(wx.SashLayoutWindow):
         self.parent.EnterVenueCB(venueUri)
 
         
-        
+    
 ################################################################################
 #
 # Venue List Panel
@@ -3827,7 +3846,7 @@ class NavigationPanel(wx.Panel):
 #############################################################################
 #
 # Content List Panel
-    
+
 class ContentListPanel(wx.Panel):                   
     '''ContentListPanel.
     
@@ -4881,6 +4900,7 @@ class TextPanelSash(wx.SashLayoutWindow):
     def __init__(self, parent, id):
         wx.SashLayoutWindow.__init__(self, parent, id)
         self.parent = parent
+        
         self.textClientPanel = JabberClientPanel(self, -1)#wx.Panel(self, -1)
         wx.EVT_SIZE(self, self.__OnSize)
         self.__Layout()
@@ -4940,6 +4960,8 @@ class JabberClientPanel(wx.Panel):
 
         self.parent = parent
         self.display.SetToolTip(wx.ToolTip("Send text message"))
+        
+        self.display.Hide() # newui
         
         self.__DoLayout()
 
@@ -5026,6 +5048,11 @@ class JabberClientPanel(wx.Panel):
         *message* The actual message.
         '''
         
+        # no-op on null messages
+        # investigate why this happens and handle it properly, it's probably state updates or somesuch
+        if not message:
+            return
+        
         # Add time to event message
         if not messagetime:
            messagetime = localtime()
@@ -5057,7 +5084,6 @@ class JabberClientPanel(wx.Panel):
             textAttr = wx.TextAttr(wx.BLACK)
             textAttr.SetFont(f)
             self.textOutput.SetDefaultStyle(textAttr)
-
             # Detect /me
             if message.startswith("/me ") and len(message.strip()) > 3:
                 nameText = name[:-2] # remove trailing ": "
