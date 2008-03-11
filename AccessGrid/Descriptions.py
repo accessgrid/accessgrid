@@ -642,6 +642,7 @@ class AGServiceDescription(DispatchMixIn):
         self.resource = resource
         self.packageFile = packageFile
         self.startPriority = 0
+        self.inlineClass = None
         
         self.serviceIWClass = AGServiceIW
         DispatchMixIn.__init__(self)
