@@ -39,6 +39,9 @@ proc user_hook {} {
 
     update_note 0 \"%s\"
 
+    # minimize the vic window since we're just transmitting
+    catch { wm iconify [winfo toplevel .top]  } 
+
     after 200 {
         if { ![winfo exists .menu] } {
             build.menu
