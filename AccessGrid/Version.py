@@ -15,9 +15,9 @@ __revision__ = "$Id: Version.py,v 1.25 2007-11-05 16:48:12 turam Exp $"
 
 # Call GetVersion() to get AGTK version information.
 MAJOR_VERSION = 3 
-MINOR_VERSION = 1
+MINOR_VERSION = 2
 POINT_VERSION = 0
-STATUS = ""
+STATUS = "beta"
 
 BUILD_NUMBER = 1
 
