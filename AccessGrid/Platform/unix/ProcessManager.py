@@ -119,7 +119,8 @@ class ProcessManager:
                 rc = os.WEXITSTATUS(status)
             elif os.WIFSIGNALED(status):
                 sig = os.WTERMSIG(status)
-            self.processes.remove(pid)
+            if pid in self.processes:
+                self.processes.remove(pid)
         else:
             self.KillProcess(pid)
 
@@ -171,8 +172,8 @@ class ProcessManager:
         else:
             log.debug("Process %i not killed or waitpid() failed.", pid)
 
-        self.processes.remove(pid)
-
+        if pid in self.processes:
+            self.processes.remove(pid) 
     def ListProcesses(self):
         """
         Return a list of process id's for this process manager.
