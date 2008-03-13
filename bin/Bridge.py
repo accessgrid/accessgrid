@@ -25,7 +25,7 @@ import random
 log = None
 
 class QuickBridgeServer:
-    def __init__(self, name, location, listenPort, qbexec, registryUrl, portRange=None):
+    def __init__(self, name, location, listenPort, qbexec, registryUrlList, portRange=None):
         if not os.path.exists(qbexec):
             raise Exception("QuickBridge executable does not exist at this location:", qbexec)
         self.bridgeFactory = BridgeFactory(qbexec=qbexec, portRange=portRange, logger=log)
@@ -35,7 +35,9 @@ class QuickBridgeServer:
                                                     callback=self.MaintenanceCallback,
                                                     logRequests=0)
         self._RegisterRemoteFunctions()
-        self.registryClient = RegistryClient(url=registryUrl)
+        self.registryClients = []
+        for registryUrl in registryUrlList:
+            self.registryClients.append(RegistryClient(url=registryUrl))
         hostname = SystemConfig.instance().GetHostname()
         self.bridgeDescription = BridgeDescription(guid=GUID(), name=name, host=hostname, 
                                                    port=self.listenPort, serverType=QUICKBRIDGE_TYPE, 
@@ -79,7 +81,15 @@ class QuickBridgeServer:
         return data
 
     def _RegisterWithRegistry(self):
-        self.validSecs = self.registryClient.RegisterBridge(self.bridgeDescription)
+        self.validSecs = -1
+        for registry in self.registryClients:
+            try:
+                secs = registry.RegisterBridge(self.bridgeDescription)
+                if self.validSecs == -1 or self.validSecs > secs:
+                    self.validSecs = secs;
+            except:
+                print("Error connecting to bridge registry at " + registry.url)
+                log.error("Error connecting to bridge registry at " + registry.url)
         now = time.time()
         if self.validSecs == True:  # only needed until registry code is updated
             self.validSecs = 120  # expires every 2 minutes
@@ -130,7 +140,7 @@ def main():
 
     parser = OptionParser()
     parser.add_option("-p", "--listenPort", dest="listenPort", default=defaultListenPort, help="Port to listen on.", type="int")
-    parser.add_option("-u", "--registryUrl", dest="registryUrl", default=defaultRegistryUrl, help="Url to the registry.  Bridge will register with it.")
+    parser.add_option("-u", "--registryUrl", action="append", dest="registryUrl", default=defaultRegistryUrl, help="Url to the registry.  Bridge will register with it.")
     parser.add_option("-r", "--portRange", dest="portRange", default=[50000,52000], help="Minimum and maximum port, space-separated.", nargs=2, type="int")
     parser.add_option("-q", "--qbexec", dest="qbexec", default=defaultQbexec, help="Location of QuickBridge executable.")
     parser.add_option("-n", "--name", dest="name", default=None, help="Name.")
