@@ -140,7 +140,7 @@ def main():
 
     parser = OptionParser()
     parser.add_option("-p", "--listenPort", dest="listenPort", default=defaultListenPort, help="Port to listen on.", type="int")
-    parser.add_option("-u", "--registryUrl", action="append", dest="registryUrl", default=defaultRegistryUrl, help="Url to the registry.  Bridge will register with it.")
+    parser.add_option("-u", "--registryUrl", action="append", dest="registryUrlList", default=[defaultRegistryUrl], help="Url to the registry.  Bridge will register with it.")
     parser.add_option("-r", "--portRange", dest="portRange", default=[50000,52000], help="Minimum and maximum port, space-separated.", nargs=2, type="int")
     parser.add_option("-q", "--qbexec", dest="qbexec", default=defaultQbexec, help="Location of QuickBridge executable.")
     parser.add_option("-n", "--name", dest="name", default=None, help="Name.")
@@ -168,7 +168,7 @@ def main():
         print 'Error: No location specified'
         parser.print_help()
         sys.exit(-1)
-    if options.registryUrl == None:
+    if options.registryUrlList == None:
         print 'Error: No registry url specified'
         parser.print_help()
         sys.exit(-1)
@@ -187,7 +187,7 @@ def main():
         signal.signal(signal.SIGHUP, SignalHandler)
     """
 
-    bridgeServer = QuickBridgeServer(name=options.name, location=options.location, listenPort=options.listenPort, qbexec=options.qbexec, portRange=options.portRange, registryUrl=options.registryUrl)
+    bridgeServer = QuickBridgeServer(name=options.name, location=options.location, listenPort=options.listenPort, qbexec=options.qbexec, portRange=options.portRange, registryUrlList=options.registryUrlList)
 
     bridgeServer.Run()
 
