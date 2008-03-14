@@ -90,7 +90,6 @@ class AGTkConfig:
         tmpstr += "Version: %s\n" % self.GetVersion()
         tmpstr += "InstallDir: %s\n" % self.GetInstallDir()
         #tmpstr += "DocDir: %s\n" % self.GetDocDir()
-        tmpstr += "LogDir: %s\n" % self.GetLogDir()
         tmpstr += "ConfigDir: %s\n" % self.GetConfigDir()
         tmpstr += "SharedAppDir: %s\n" % self.GetSharedAppDir()
         tmpstr += "PluginDir: %s\n" % self.GetPluginDir()
