@@ -311,9 +311,11 @@ class VenueClient:
     def BuildDefaultNodeConfiguration(self,nodeConfigName='default_auto',default=1):
         resources = self.sm.GetResources()
         
-        # On Windows, skip old style (VFW) capture devices
+        # On Windows, skip old style (VFW) capture devices, as long as WDM capture devices exist
         if sys.platform in ['win32']:
-            resources = filter( lambda x: x.name != 'Microsoft WDM Image Capture (Win32)' , resources)
+            wdmresources = filter( lambda x: x.name != 'Microsoft WDM Image Capture (Win32)' , resources)
+            if wdmresources:
+                resources = wdmresources
         profile = self.preferences.GetProfile()
         
         if resources:
