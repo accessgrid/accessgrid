@@ -337,7 +337,7 @@ class DirectoryDescription(DataDescription):
         return self.location
     
     def AsINIBlock(self):
-        string = DataDescription.AsINIBlock()
+        string = DataDescription.AsINIBlock(self)
         string += "status : %s\n" % self.GetLocation()
         
         return string
@@ -892,7 +892,7 @@ class BridgeDescription:
             return cmp(x.rank, y.rank)
         else:
             return rank
-        
+    sort = staticmethod(sort)
         
 class BeaconSource:
     def __init__(self,cname=None,ssrc=None):
