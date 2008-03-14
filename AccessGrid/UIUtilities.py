@@ -1159,7 +1159,7 @@ class ItemBrowserCtrl(wx.Panel):
         self.ShowAll()
         
         if self.listCtrl.GetItemCount():
-             self.listCtrl.SetItemState(0, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
+            self.listCtrl.SetItemState(0, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
     
         self.Fit()
         self.OnSize()
@@ -1172,9 +1172,8 @@ class ItemBrowserCtrl(wx.Panel):
         wx.EVT_CHAR(self.listCtrl, self.OnChar)
         wx.EVT_TEXT(parent, self.searchTextCtrl.GetId(), self.OnSearchText)
         wx.EVT_TEXT_ENTER(parent, self.searchTextCtrl.GetId(), self.OnSearchTextEnter)
+        wx.EVT_LIST_ITEM_ACTIVATED(parent,self.listCtrl.GetId(),self.OnListItemActivated)
         wx.EVT_BUTTON(parent, self.searchResetButton.GetId(), self.OnSearchReset)
-        
-        wx.EVT_LIST_ITEM_ACTIVATED(parent, self.listCtrl.GetId(), self.HandleSelection)
                 
         wx.EVT_SIZE(self, self.OnSize)
         
@@ -1189,7 +1188,8 @@ class ItemBrowserCtrl(wx.Panel):
         if self.listCtrl.GetItemCount() % 2 == 0:
             self.listCtrl.SetItemBackgroundColour(item, wx.Colour(240, 240, 240))
             
-        return item        
+        return item   
+             
     def OnSearchText(self, event):
         
         if self.ignoreTextChanges:
@@ -1240,14 +1240,16 @@ class ItemBrowserCtrl(wx.Panel):
             event.Skip()
     
     def OnSearchTextEnter(self, event):
-        self.HandleSelection(event)
-        
-    def HandleSelection(self, event):  
         item = -1
         item = self.listCtrl.GetNextItem(item, 
                                      wx.LIST_NEXT_ALL, 
                                      wx.LIST_STATE_SELECTED)
         ind = self.listCtrl.GetItemData(item)
+        self.value = self.choices[ind]
+        self.parent.EndModal(wx.ID_OK)  
+        
+    def OnListItemActivated(self, event):  
+        ind = self.listCtrl.GetItemData(event.GetItem())
         self.value = self.choices[ind]
         self.parent.EndModal(wx.ID_OK)  
     
