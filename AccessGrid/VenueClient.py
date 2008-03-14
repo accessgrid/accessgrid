@@ -328,8 +328,8 @@ class VenueClient:
         nodeConfig = NodeConfigDescription(nodeConfigName,NodeConfigDescription.USER)
         self.builtInNodeService.StoreConfiguration(nodeConfig)
         if default:
-			self.preferences.SetPreference(Preferences.NODE_CONFIG,nodeConfig.name)
-        	self.preferences.SetPreference(Preferences.NODE_CONFIG_TYPE,nodeConfig.type)
+            self.preferences.SetPreference(Preferences.NODE_CONFIG,nodeConfig.name)
+      	    self.preferences.SetPreference(Preferences.NODE_CONFIG_TYPE,nodeConfig.type)
         self.preferences.StorePreferences()
 
     
@@ -1156,10 +1156,10 @@ class VenueClient:
         if self.warningString:
             uw = UserWarning(self.warningString)
             for s in self.observers:
-				try:
-                	s.HandleError(uw)
-				except:
-					log.exception("Observer failed while handling error; class=%s, warning=%s", s.__class__, self.warningString)
+                try:
+                    s.HandleError(uw)
+                except:
+                    log.exception("Observer failed while handling error; class=%s, warning=%s", s.__class__, self.warningString)
 
 
     def StopBeacon(self):
