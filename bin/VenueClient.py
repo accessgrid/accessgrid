@@ -12,7 +12,7 @@
 __revision__ = "$Id: VenueClient.py,v 1.288 2007-09-19 16:45:32 turam Exp $"
 
 
-from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog, MessageDialog, SetIcon
+from AccessGrid.UIUtilities import ProgressDialog, MessageDialog, SetIcon
 from AccessGrid import icons
 import wx
 from AccessGrid.Version import GetVersion, GetStatus
@@ -43,15 +43,9 @@ threadedselectreactor.install()
 
 # Our imports
 from AccessGrid.Toolkit import WXGUIApplication, MissingDependencyError
-from AccessGrid import Log
-from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.VenueClientUI import VenueClientUI, ProfileDialog
 from AccessGrid.VenueClientController import VenueClientController
 from AccessGrid.VenueClient import VenueClient
-#from AccessGrid.UIUtilities import ErrorDialog, ProgressDialog, MessageDialog, SetIcon
-#from AccessGrid import icons
-from AccessGrid.Platform import IsOSX,IsWindows
-from AccessGrid.Version import GetVersion, GetStatus
 from twisted.internet import reactor
 
 from M2Crypto import threading as m2threading
@@ -66,8 +60,6 @@ def SignalHandler(signum, frame):
     pass
 
 def main():
-
-    import wx
 
     log = None
 
@@ -205,6 +197,8 @@ def main():
         
             app.preferences.SetPreference(Preferences.MULTICAST,0)
         app.preferences.StorePreferences()
+        
+        vcui.venueAddressBar.SetAddress(app.preferences.GetProfile().homeVenue)
         
         screenWidth = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
         screenHeight = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
