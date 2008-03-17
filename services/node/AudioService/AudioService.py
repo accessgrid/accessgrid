@@ -259,7 +259,8 @@ class AudioService( AGService ):
                 options.append(self.profile.publicId)
     
             h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
-            options.append( "-X geometry=300x300+0+%d" % (h-350) )
+            options.append( "-X" )
+            options.append( "geometry=300x300+0+%d" % (h-375) )
             options.append( "-f" )
 
             if Platform.isOSX():
