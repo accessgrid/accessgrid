@@ -60,6 +60,7 @@ def SignalHandler(signum, frame):
     pass
 
 def main():
+    import wx
 
     log = None
 
