@@ -332,7 +332,7 @@ class VideoService( AGService ):
             options.append( "-u" )
             options.append( startupfile )
             options.append( "-C" )
-            options.append( str(self.streamname.value) )
+            options.append( str(self.streamDescription.name) )
             if IsOSX():
                 if self.transmitOnStart.value:
                     options.append( "-X")
@@ -344,9 +344,18 @@ class VideoService( AGService ):
             # Set drop time to something reasonable
             options.append('-XsiteDropTime=5')
             
+            # - set vic window geometry
             h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
             w = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
-            options.append('-Xgeometry=%dx300+300+%d' % (w-300,h-350))
+            window_width = w-300
+            window_height = 300
+            window_x = 300
+            window_y = h-375
+            border_w = wx.SystemSettings_GetMetric(wx.SYS_FRAMESIZE_X)
+            if border_w > 0:
+                window_width -= 4*border_w
+                window_x += 2*border_w
+            options.append('-Xgeometry=%dx%d+%d+%d' % (window_width,window_height,window_x,window_y))
 
             if self.profile:
                 options.append("-X")
