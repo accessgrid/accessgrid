@@ -7,6 +7,7 @@
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys, os
+import wx
 try:    import _winreg
 except: pass
 
@@ -49,7 +50,7 @@ class VideoConsumerService( AGService ):
         self.startPriorityOption.value = self.startPriority
 
         # Set configuration parameters
-        self.tiles = OptionSetParameter( "Thumbnail Columns", "2", VideoConsumerService.tileOptions )
+        self.tiles = OptionSetParameter( "Thumbnail Columns", "4", VideoConsumerService.tileOptions )
         self.configuration.append( self.tiles )
 
         if IsWindows():
@@ -122,7 +123,6 @@ class VideoConsumerService( AGService ):
         """Start service"""
         try:
 
-
             # Set processor affinity (windows only)
             if IsWindows():
                 try:
@@ -175,8 +175,20 @@ class VideoConsumerService( AGService ):
             options.append('-XrecvOnly=1')
             # - set drop time to something reasonable
             options.append('-XsiteDropTime=5')
+
             # - set vic window geometry
-            options.append('-Xgeometry=500x500')
+            h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
+            w = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
+            window_width = w-300
+            window_height = 300
+            window_x = 300
+            window_y = h-350
+            border_w = wx.SystemSettings_GetMetric(wx.SYS_FRAMESIZE_X)
+            if border_w > 0:
+                window_width -= 4*border_w
+                window_x += 2*border_w
+            options.append('-Xgeometry=%dx%d+%d+%d' % (window_width,window_height,window_x,window_y))
+
             # - set number of columns of thumbnails to display
             options.append('-Xtile=%s' % self.tiles.value)
                     
