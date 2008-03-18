@@ -23,7 +23,7 @@ wxapp = wx.PySimpleApp(clearSigInt=0)
 versionText = "Version %s %s" % (str(GetVersion()), str(GetStatus()) )
 progressDialog = ProgressDialog(None,icons.getSplashBitmap(), 100, versionText)
 progressDialog.Show(1)
-progressDialog.UpdateGauge('Starting Venue Client',10)
+progressDialog.UpdateGauge('Starting VenueClient',10)
 
 
 # Standard Imports
@@ -129,11 +129,9 @@ def main():
     try:
         
         # Create venue client components
-        progressDialog.UpdateGauge('Creating VenueClient components',20)
         vc = VenueClient(pnode=pnode, port=port,
                          app=app, progressCB=progressDialog.UpdateGauge,
                          nodeConfigName=nodeConfig)
-        progressDialog.UpdateGauge('Creating venue client internals',70)
         vcc = VenueClientController()
         vcc.SetVenueClient(vc)
         
@@ -143,7 +141,7 @@ def main():
         #
         profile = app.preferences.GetProfile()
         if profile.IsDefault():  # not your profile
-            progressDialog.UpdateGauge('Initializing user configuration',75)
+            progressDialog.UpdateGauge('Initializing User Profile',increment=20)
             log.debug("the profile is the default profile - open profile dialog")
 
             profileDialog = ProfileDialog(None, -1, 'Fill in your profile', 1)
@@ -160,16 +158,17 @@ def main():
             vcc.ChangeProfile(profile)
 
             # Build and load a customized default node configuration
-            progressDialog.UpdateGauge('Configuring audio and video',77)
+            progressDialog.UpdateGauge('Configuring Audio and Video',increment=20)
             vc.BuildDefaultNodeConfiguration()
             
             # Build a venue cache
-            progressDialog.UpdateGauge('Building Venue cache',79)
+            progressDialog.UpdateGauge('Caching Venues',increment=20)
             vc.venueCache.Update()
         else:
             if not nodeConfig:
                 # If no node configuration was specified on the command line,
                 # load default node configuration
+                progressDialog.UpdateGauge('Configuring Audio and Video',80)
                 defaultNodeConfig = app.preferences.GetDefaultNodeConfig()
                 if defaultNodeConfig:
                     try:
@@ -181,11 +180,8 @@ def main():
         bridges = app.preferences.GetBridges()
         if not bridges:
             # Initialize bridge cache
-            progressDialog.UpdateGauge('Initializing bridges',81)
             vc.LoadBridges(progressDialog.UpdateGauge)
                     
-            
-        progressDialog.UpdateGauge('Creating venue client user interface',85)
         vcui = VenueClientUI(vc, vcc, app,progressDialog.UpdateGauge)
         vc.SetVCUI(vcui)
     
@@ -194,6 +190,7 @@ def main():
         vc.AddObserver(vcui)
 
         # Check multicast status, set to use unicast appropriately
+        progressDialog.UpdateGauge('Analyzing Network',100)
         multicastStatus = vc.GetMulticastStatus()
         vcui.SetMcastStatus(multicastStatus)
         if multicastStatus == 0:    
