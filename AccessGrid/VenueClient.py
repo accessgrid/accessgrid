@@ -238,7 +238,6 @@ class VenueClient:
         self.houseKeeper.StartAllTasks()
 
        
-        if progressCB: progressCB("Starting web services",30)
         self.__StartWebService(pnode, port)
         
         self.__InitVenueData()
@@ -287,7 +286,6 @@ class VenueClient:
                                              self.profileCachePrefix)
         self.cache = ClientProfileCache(self.profileCachePath)
 
-        if progressCB: progressCB("Creating text client",60)
         self.jabber = JabberClient()
         self.jabber.SetPresenceCB(self.JabberPresenceCB)
         self.maxJabberNameRetries = 3
