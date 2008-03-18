@@ -52,7 +52,7 @@ parser.add_option("-s", "--sourcedir", dest="sourcedir", metavar="SOURCEDIR",
                   help="The directory the AG source code is in.")
 parser.add_option("-t", "--tag", dest="tag", metavar="TAG",
                   default=None,
-                  help="Specifies the tag for a revision of code in cvs.")
+                  help="Specifies the tag for a revision of code in subversion.")
 parser.add_option("-m", "--meta", dest="metainfo", metavar="METAINFO",
                   default=None,
                   help="Meta information string about this release.")
@@ -105,15 +105,12 @@ else:
 BuildDir = os.path.join(SourceDir,BuildDirName)
 
 #
-# Grab stuff from cvs
+# Grab stuff from subversion
 #
 
 if not options.nocheckout:
     # Either we check out a copy
-    cvsroot = ":pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl"
-
-    # WE ASSUME YOU HAVE ALREADY LOGGED IN WITH:
-    # cvs -d :pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl login
+    svnroot = "https://www.ci.uchicago.edu/svn/accessgrid/trunk"
 
     if not options.tag:
         tagString = ""
@@ -121,15 +118,13 @@ if not options.nocheckout:
         tagString = "-r " + options.tag
     
     # Go to the source dir, and checkout using relative path;
-    # cvs (linux) complains about checking out to an absolute path
     os.chdir(SourceDir)
 
-    cvs_cmd = "cvs -z6 -d %s export -d %s %s -D now AccessGrid" % (cvsroot,
-                                                   BuildDirName, tagString)
+    checkout_cmd = "svn export %s %s %s" % (tagString, svnroot, BuildDirName)
     if options.verbose:
-        print "BUILD: Checking out code with command: ", cvs_cmd
+        print "BUILD: Checking out code with command: ", checkout_cmd
 
-    os.system(cvs_cmd)
+    os.system(checkout_cmd)
 
 #
 # Get the version via popen
@@ -137,7 +132,7 @@ if not options.nocheckout:
 try:
     cmd = "%s %s" % (sys.executable, os.path.join(BuildDir, "AccessGrid", "Version.py"))
     po = os.popen(cmd)
-except IOError:
+except IOError: 
     print "Error getting AGTk Version."
 
 version = po.read()
