@@ -28,7 +28,6 @@ class QuickBridgeClient(BridgeClient):
         
         transport = None
         self.proxyURL = Utilities.BuildPreferencesProxyURL()
-        print 'QuickBridgeClient using proxyUrl: ', self.proxyURL
         if self.proxyURL:
             self.transport = UrllibTransport(self.proxyURL,timeout)
         else:
