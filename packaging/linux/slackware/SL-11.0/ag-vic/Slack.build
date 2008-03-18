@@ -1,8 +1,12 @@
+svnrevision=r4126
 name=ag-vic
-version=2.8ucl-1.3.0-r4086
-release=1
+version=2.8ucl-1.3.1
+release=0${svnrevision}
 arch=${ARCH:-`uname -m`}
-srcpkg=mmedia-r4086.tar.gz
+srcpkg0=mmedia-${svnrevision}.tar.gz
+srcpkg1=ffmpeg-20061117svn.tar.bz2
+srcpkg2=libswscale-20061128svn.tar.bz2
+srcpkg3=x264-20070413svn.tar.bz2
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
@@ -40,12 +44,18 @@ fi
 
 here=`pwd`
 
-#patch0=${here}/patches/patch-vic-configure.in.tk
+patch0=${here}/patches/vic-libx264.patch
+patch1=${here}/patches/vic-mtrace.patch
+patch2=${here}/patches/vic-render-MMX2.patch
+patch3=${here}/patches/vic-videodev_h.patch
 
 PATH=/sbin:${PATH}
 . ../functions
 
-get_srcpkg ${srcpkg}
+get_srcpkg ${srcpkg0}
+get_srcpkg ${srcpkg1}
+get_srcpkg ${srcpkg2}
+get_srcpkg ${srcpkg3}
 
 
 #
@@ -57,29 +67,41 @@ mkdir -p ${pkgdir}
 #
 #
 cd ${buildroot}
-tar zxvf ${here}/${srcpkg}
-mv mmedia-r4086 ${name}-${version}
+tar zxvf ${here}/${srcpkg0}
+mv mmedia-${svnrevision} ${builddir}
 cd ${builddir}
 
 # Apply patches
 # like this: do_patch ${patch0}
 #
-#do_patch ${patch0}
-
+do_patch ${patch0}
+do_patch ${patch1}
+do_patch ${patch2}
+do_patch ${patch3}
 
 sleep 3
+( cd vic && tar jxvf ${here}/${srcpkg1} ) || exit 1
+( cd vic/ffmpeg && tar jxvf ${here}/${srcpkg2} ) || exit 1
+( cd vic && tar jxvf ${here}/${srcpkg3} ) || exit 1
+
+
 ## Build & install
 ##
-#CFLAGS="$SLKCFLAGS" \
-#./configure	\
-#	--prefix=/usr	\
-#&& make	\
-#&& make install DESTDIR=${pkgdir}
+cd ${builddir}
+rm -f vic/video/videodev*.h
+( cd common \
+&& autoconf -f \
+&& ./configure --enable-ipv6 \
+&& make
+) || exit 1
 
-# Build with system tcl & tk
-(cd common && ./configure && make) || exit 1
-#(cd vic && autoconf -f && ./configure ${TCLTKCONFIGOPTS} && make) || exit 1
-(cd vic && ./configure ${TCLTKCONFIGOPTS} && make) || exit 1
+( cd vic \
+&& autoconf -f \
+&& ./configure ${TCLTKCONFIGOPTS} \
+    --enable-ipv6 \
+    --enable-dvdecode \
+    --enable-gpl \
+&& make) || exit 1
 
 # Install
 cd ${builddir}
@@ -95,9 +117,15 @@ install -m 644 vic/vic.1 ${pkgdir}/usr/share/man/man1/
 #
 mkdir -p ${docdir}
 cd ${builddir}/vic
-cp -a html CHANGES.html FILES README README.WIN32 VERSION \
+cp -a html CHANGES.html FILES README README.WIN32 VERSION LICENSE.txt \
 	${docdir}
-cp ${here}/Slack.build ${docdirè}/
+cp ${here}/Slack.build ${docdir}/
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches
+cp ${here}/Slack.build ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+cp ${here}/patches/*.patch ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches/
 
 
 # Package it 
@@ -107,7 +135,7 @@ cat <<EOF >${pkgdir}/install/slack-desc
 ${name}: ${name}-${version}
 ${name}:
 ${name}: New UCL vic video tool
-${name}: using ucl svn revision 4086
+${name}: using ucl svn revision ${svnrevision}
 ${name}:
 EOF
 chmod 0644 ${pkgdir}/install/slack-desc
@@ -123,7 +151,10 @@ cd ${here}
 #
 [ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
 [ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
-rm -f ${srcpkg}
+rm -f ${srcpkg0}
+rm -f ${srcpkg1}
+rm -f ${srcpkg2}
+rm -f ${srcpkg3}
 
 
 # Install immediately?
@@ -135,6 +166,9 @@ fi
 
 # Changelog
 #
+# 20080315 CKW
+#  - version 1.3.1 release 0r4126
+#
 # 20070808 CKW
 #  - release 1 of svn version r4086
 #
@@ -143,6 +177,7 @@ fi
 #
 # 20070606 CKW First release
 #
+#
 ###################################
 # Retrieve from SVN with:
 # svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/vic/branches/mpeg4 vic
@@ -150,4 +185,5 @@ fi
 # svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/common/trunk common
 # svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/tcl-8.0/trunk tcl-8.0
 # svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/tk-8.0/trunk tk-8.0
-#
+###################################
+

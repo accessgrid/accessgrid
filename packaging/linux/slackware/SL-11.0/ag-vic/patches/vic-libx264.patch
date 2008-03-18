@@ -1,0 +1,36 @@
+diff -up vic-20080113svn/vic/configure.in.libx264 vic-20080113svn/vic/configure.in
+--- vic/configure.in.libx264	2007-10-04 21:02:00.000000000 +1000
++++ vic/configure.in	2008-02-16 18:56:49.000000000 +1000
+@@ -106,7 +106,7 @@ if test "$x264co" = "yes" ; then
+      cd x264; ./configure --prefix=$V_PATH/x264; cd ..
+    fi
+    V_INCLUDE="$V_INCLUDE -Ix264/include"
+-   V_CODEC_LIB="$V_CODEC_LIB x264/lib/libx264.a"
++   V_CODEC_LIB="$V_CODEC_LIB x264/libx264.a"
+   else 
+     echo "x264 not available without --enable-gpl"
+   fi
+--- vic/Makefile.in.orig	2008-03-15 13:01:11.000000000 +1000
++++ vic/Makefile.in	2008-03-15 15:06:54.106847000 +1000
+@@ -440,8 +440,8 @@ ffmpeg/lib/libswscale.a:
+ ffmpeg/lib/libpostproc.a:
+ 	(cd ffmpeg/libpostproc; make; make install )
+ 
+-x264/lib/libx264.a:
+-	(cd x264; make; make install )
++x264/libx264.a:
++	(cd x264; make )
+ 
+ codec/tmn-x/libh263coder.a:
+ 	(cd codec/tmn-x; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" )
+--- vic/codec/x264encoder.cpp.orig	2008-03-15 13:00:58.000000000 +1000
++++ vic/codec/x264encoder.cpp	2008-03-15 14:56:01.134667000 +1000
+@@ -8,7 +8,7 @@
+ #include "ffmpeg/avcodec.h"
+ #include "databuffer.h"
+ extern "C"{
+-#include "x264.h"
++#include "../x264/x264.h"
+ }
+ 
+ typedef struct
