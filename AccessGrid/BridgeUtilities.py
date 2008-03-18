@@ -13,7 +13,7 @@ def TestBridges(bridgeList, multicastNetworkLocation, progressCB=None):
     i = 1
     for b in bridgeList:
         try:
-            if progressCB:  progressCB("Testing bridge: %d of %d" % (i,len(bridgeList)), 50)
+            if progressCB:  progressCB("Testing bridge: %d of %d" % (i,len(bridgeList)), 80+int(10*i/len(bridgeList)))
             bridgeClient.SetHostPort(b.host,b.port)
             b.rank = bridgeClient.PingBridge()
             
