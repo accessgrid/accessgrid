@@ -159,7 +159,7 @@ def main():
             # Change profile based on values filled in to the profile dialog
             vcc.ChangeProfile(profile)
 
-            # Build a customized default node configuration
+            # Build and load a customized default node configuration
             progressDialog.UpdateGauge('Configuring audio and video',77)
             vc.BuildDefaultNodeConfiguration()
             
@@ -172,7 +172,10 @@ def main():
                 # load default node configuration
                 defaultNodeConfig = app.preferences.GetDefaultNodeConfig()
                 if defaultNodeConfig:
-                    vc.nodeService.LoadConfiguration(defaultNodeConfig)            
+                    try:
+                    	vc.nodeService.LoadConfiguration(defaultNodeConfig)   
+                    except:
+                    	log.exception("Error loading configuration")         
             
         # If user has no stored bridges, initialize the bridge cache
         bridges = app.preferences.GetBridges()
