@@ -220,11 +220,21 @@ class ProgressDialog(wx.Frame):
         self.SetSizer(sizer)
         self.Fit()
         
-    def UpdateGauge(self, text, progress):
+    def UpdateGauge(self, text, progress=None, increment=0):
+        curval = self.gauge.GetValue()
+        if progress:
+            increment = progress-curval
+        else:
+            progress = curval+increment
+			
+        # cycle around to the beginning if progress exceeds max
+        # this may seem wrong, but the emphasis is on continuing 
+        # the indication of progress given to the user
+        if progress > self.max:
+            progress -= self.max
 
         self.progressText.SetLabel(text)
-        curval = self.gauge.GetValue()
-        for i in range(progress-curval):
+        for i in range(increment):
             self.gauge.SetValue(curval+i)
             self.lineCtrl.Update()
             self.versionTextCtrl.Update()
@@ -243,6 +253,7 @@ class ProgressDialog(wx.Frame):
         wx.Yield()
         #time.sleep(0.2) #give the user a chance to see the gauge reach 100%
         wx.Frame.Destroy(self)
+        
 
 class AboutDialog(wx.Dialog):
             
