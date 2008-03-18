@@ -238,10 +238,6 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         self.__BuildUI(app)
         self.SetSize(wx.Size(400, 600))
         
-        if progressCallback:
-            progressCallback('Analyzing network',100)
-                
-        
         # Tell the UI about installed applications
         self.__EnableAppMenu( False )
                                 
