@@ -765,7 +765,6 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         wx.EVT_BUTTON(self,self.networkButton.GetId(),self.OnMulticast)
         wx.EVT_BUTTON(self,self.venueBackButton.GetId(),self.GoBackCB)
         wx.EVT_BUTTON(self,self.venueHomeButton.GetId(),self.GoToDefaultVenueCB)
-        wx.EVT_BUTTON(self,self.venueOpenButton.GetId(),self.OpenVenueCB)
         wx.EVT_BUTTON(self,self.audioButton.GetId(),self.EnableAudioCB)
         wx.EVT_BUTTON(self,self.displayButton.GetId(),self.EnableDisplayCB)
         wx.EVT_BUTTON(self,self.videoButton.GetId(),self.EnableVideoCB)
@@ -942,15 +941,10 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         self.toolbar.AddControl(self.venueBackButton)
         
         # - create the venuehome toolbar button
-        self.venueHomeButton = wx.BitmapButton(self.toolbar,-1,icons.getPreviousBitmap(),size=VenueClientUI.TOOLSIZE)
+        self.venueHomeButton = wx.BitmapButton(self.toolbar,-1,icons.getHomeBitmap(),size=VenueClientUI.TOOLSIZE)
         self.venueHomeButton.SetToolTip(wx.ToolTip('Home Venue'))
         self.toolbar.AddControl(self.venueHomeButton)
-        
-        # - create the venueopen toolbar button
-        self.venueOpenButton = wx.BitmapButton(self.toolbar,-1,icons.getPreviousBitmap(),size=VenueClientUI.TOOLSIZE)
-        self.venueOpenButton.SetToolTip(wx.ToolTip('Open Venue...'))
-        self.toolbar.AddControl(self.venueOpenButton)
-        
+
         self.toolbar.AddSeparator()
         
         # - create the audio toolbar button  
