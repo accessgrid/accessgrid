@@ -14,7 +14,7 @@ try:
 except: pass
 
 from AccessGrid import Toolkit
-
+from AccessGrid.GUID import GUID
 from AccessGrid.Descriptions import Capability, ResourceDescription
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
@@ -95,6 +95,7 @@ class VideoProducerServiceH264( AGService ):
 
         self.startPriority = '5'
         self.startPriorityOption.value = self.startPriority
+        self.id = str(GUID())
 
 
         # Set configuration parameters
@@ -268,7 +269,7 @@ class VideoProducerServiceH264( AGService ):
             # Write vic startup file
             #
             startupfile = os.path.join(UserConfig.instance().GetTempDir(),
-               'VideoProducerServiceH264_%d.vic' % ( os.getpid() ) )
+               'VideoProducerServiceH264_%s.vic' % self.id )
 
             f = open(startupfile,"w")
             if self.port.value == '':
@@ -282,7 +283,8 @@ class VideoProducerServiceH264( AGService ):
                 email = self.profile.email
             else:
                 # Error case
-                name = email = Toolkit.GetDefaultSubject().GetCN()
+                name = "User"
+                email = "user@accessgrid.org"
                 self.log.error("Starting service without profile set")
 
             if self.inputsize.value == "Small":
@@ -326,9 +328,6 @@ class VideoProducerServiceH264( AGService ):
             options.append( startupfile )
             options.append( "-C" )
             options.append( str(self.streamname.value) )
-            if IsOSX():
-                options.append( "-X")
-                options.append( "transmitOnStartup=1")
             if self.streamDescription.encryptionFlag != 0:
                 options.append( "-K" )
                 options.append( self.streamDescription.encryptionKey )
@@ -357,7 +356,7 @@ class VideoProducerServiceH264( AGService ):
             #os.remove(startupfile)
         except:
             self.log.exception("Exception in VideoProducerServiceH264.Start")
-            raise Exception("Failed to start service")
+            raise
 
     def Stop( self ):
         """Stop the service"""
