@@ -54,8 +54,8 @@ if options.verbose:
         print "BUILD:   with command-line option -i."
         sys.exit()
 
+# - Build standalone AG installer
 # Add quotes around command.
-
 iscc_cmd = "\"\"%s\" agtk.iss /dAppVersion=\"%s\" /dVersionInformation=\"%s\" \
             /dSourceDir=\"%s\" /dBuildDir=\"%s\" /dPythonSubVersion=\"%s\"\"" % \
             (inno_compiler, options.version,
@@ -64,7 +64,23 @@ iscc_cmd = "\"\"%s\" agtk.iss /dAppVersion=\"%s\" /dVersionInformation=\"%s\" \
 
 
 if options.verbose:
-    print "BUILD: Executing:", iscc_cmd
+    print "BUILD: Building bundled AccessGrid installer:", iscc_cmd
+
+# Compile the installer
+os.system(iscc_cmd)
+
+
+# - Build the bundled AG installer (includes dependencies)
+# Add quotes around command.
+iscc_cmd = "\"\"%s\" agtk_bundle.iss /dAppVersion=\"%s\" /dVersionInformation=\"%s\" \
+            /dSourceDir=\"%s\" /dBuildDir=\"%s\" /dPythonSubVersion=\"%s\"\"" % \
+            (inno_compiler, options.version,
+             options.metainfo.replace(' ', '_'), 
+             options.sourcedir, options.destdir, options.pyver.split('.')[1])
+
+
+if options.verbose:
+    print "BUILD: Building AccessGrid installer:", iscc_cmd
 
 # Compile the installer
 os.system(iscc_cmd)
