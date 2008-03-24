@@ -98,7 +98,7 @@ class VenueServerTest:
         # Set Static Video
         venue.streams = []
         svml = MulticastNetworkLocation("224.2.2.2", 24000, 127)
-        staticVideoCap = Capability3.PRODUCER, Capability3.VIDEO)
+        staticVideoCap = Capability3(Capability3.PRODUCER, Capability3.VIDEO)
         venue.streams.append(StreamDescription3("Static Video",
                                                svml, staticVideoCap,
                                                0, None, 1))
