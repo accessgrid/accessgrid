@@ -448,22 +448,22 @@ class SystemConfig(Config.SystemConfig):
                     log.info("V4L %s: device can not capture", device)
                     continue
 
-                portList = []
+                v4lPortList = []
                 for i in range(numPorts):
                     port = ""
                     try:
                         chan = struct.pack(VIDIOCGCHAN_FMT, i, "", 0, 0, 0, 0);
                         r = fcntl.ioctl(fd, VIDIOCGCHAN, chan)
                         port = struct.unpack(VIDIOCGCHAN_FMT, r)[1]
-                        portList.append(port.replace("\x00", ""))
+                        v4lPortList.append(port.replace("\x00", ""))
                     except Exception, e:
                         log.info("V4L ioctl %s VIDIOCGCHAN: %s", device, e)
 
                 os.close(fd)
 
-                if len(portList) > 0:
-                    deviceList["V4L:" + device] = portList
-                    log.info("V4L %s has ports: %s", device, portList)
+                if len(v4lPortList) > 0:
+                    deviceList["V4L:" + device] = v4lPortList
+                    log.info("V4L %s has ports: %s", device, v4lPortList)
                 else:
                     log.info("V4L %s: no suitable input ports found", device)
 
@@ -535,7 +535,7 @@ class SystemConfig(Config.SystemConfig):
                     log.info("V4L2 %s: device can not capture", device)
                     continue
 
-                portList = []
+                v4l2PortList = []
                 index = 0
                 while (1):
                     try:
@@ -543,17 +543,24 @@ class SystemConfig(Config.SystemConfig):
                         r = fcntl.ioctl(fd, VIDIOC_ENUMINPUT, input)
                         (index, inputName, x, x, x, x, x, x, x, x, x ) = struct.unpack(V4L2_INPUT_FMT, r)
  
-                        portList.append(inputName.replace("\x00", ""))
-                        index += 1
+                        v4l2PortList.append(inputName.replace("\x00", ""))
+
+                    except OverflowError :
+                        log.exception("V4L2 port name probe OverflowError: assume buggy 64bit python2.4 and use name from V4L probe")
+                        if len(v4lPortList) >  index:
+                            v4l2PortList.append(v4lPortList[index])
+                        break
 
                     except Exception :
                         break
 
+                    index += 1
+
                 os.close(fd)
 
-                if len(portList) > 0:
-                    deviceList["V4L2:" + device] = portList
-                    log.info("V4L2 %s has ports: %s", device, portList)
+                if len(v4l2PortList) > 0:
+                    deviceList["V4L2:" + device] = v4l2PortList
+                    log.info("V4L2 %s has ports: %s", device, v4l2PortList)
                 else:
                     log.info("V4L2 %s: no suitable input ports found", device)
 
@@ -562,11 +569,11 @@ class SystemConfig(Config.SystemConfig):
 
             # Create resource objects
             resourceList = list()
-            for device,portList in deviceList.items():
+            for device,v4l2PortList in deviceList.items():
                 try:
-                    resourceList.append([device,portList])
+                    resourceList.append([device,v4l2PortList])
                 except Exception, e:
-                    log.exception("Unable to add video resource to list. device: " + device + "  portlist: " + portList)
+                    log.exception("Unable to add video resource to list. device: " + device + "  portlist: " + v4l2PortList)
 
             return resourceList
 
