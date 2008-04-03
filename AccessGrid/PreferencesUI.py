@@ -713,7 +713,7 @@ class TextValidator(wx.PyValidator):
             elif profile.email ==  '<Insert Email Address Here>':
                 self.fieldName = 'Email'
                 
-            MessageDialog(None, "Please, fill in the %s field" %(self.fieldName,))
+            MessageDialog(None, "Please fill in the %s field" %(self.fieldName,))
             return False
         return True
 
