@@ -994,6 +994,7 @@ class NodeManagementClientFrame(wx.Frame):
                             if r.name == selectedResourceName:
                                 serviceDescription.GetObject().SetResource(r)
                                 foundResource = 1
+                                break
                         if not foundResource:
                             raise Exception("Unknown resource selected: %s", selectedResourceName)
                     else:
