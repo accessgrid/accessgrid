@@ -5,6 +5,7 @@ capabilities = Capability1 Capability2
 platform = neutral
 version = 4.0
 description = Rat-based audio service
+inlineClass = AudioService
 
 [Capability2]
 role = consumer
