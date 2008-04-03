@@ -574,7 +574,7 @@ class StreamDescription(ObjectDescription):
    """A Stream Description represents a stream within a venue"""
    def __init__( self, name=None, 
                  location=0, 
-                 capability=0,
+                 capability=[],
                  encryptionFlag=0, encryptionKey=None,
                  static=0):
       ObjectDescription.__init__( self, name, None, None)
@@ -613,7 +613,8 @@ class StreamDescription(ObjectDescription):
        if self.encryptionFlag:
            string += "encryptionKey : %s\n" % self.encryptionKey
        string += "location : %s\n" % self.location
-       string += "capability : %s\n" % self.capability[0].type
+       if self.capability:
+           string += "capability : %s\n" % self.capability[0].type
 
        return string
 
