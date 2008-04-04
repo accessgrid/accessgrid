@@ -264,9 +264,10 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
             self.reader = RssReader(rssUrlList,self.updateDuration,[self],log=log)
             self.reader.SetUpdateDuration(self.updateDuration)
             
+            # turam : this is being done in RssReader already, why do it here too ?
             # update rss feeds in thread
-            t = threading.Thread(target=self.reader.Synch,name='RssReader.Synch')
-            t.start()
+            #t = threading.Thread(target=self.reader.Synch,name='RssReader.Synch')
+            #t.start()
         except:
             log.exception('Error constructing RSS reader')
             
@@ -899,6 +900,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         self.venueAddressBar = VenueAddressBar(self, self.ID_WINDOW_TOP, 
                                                self.myVenuesDict,
                                                'default venue')
+        self.venueAddressBar.SetSize(self.venueAddressBar.addressPanel.GetSize())
         self.venueAddressBar.SetDefaultSize((1000, 35))
         self.venueAddressBar.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.venueAddressBar.SetAlignment(wx.LAYOUT_TOP)
@@ -4911,6 +4913,7 @@ class TextPanelSash(wx.SashLayoutWindow):
         wx.EVT_SIZE(self, self.__OnSize)
         self.__Layout()
 
+
     #def GetText(self):
     #    return self.textClientPanel.GetText()
        
@@ -4932,6 +4935,7 @@ class TextPanelSash(wx.SashLayoutWindow):
         w,h = self.GetSizeTuple()
         self.SetSizer(box)
         self.GetSizer().SetDimension(5,5,w-10,h-10)
+
 
 class JabberClientPanel(wx.Panel):
     
@@ -4981,6 +4985,16 @@ class JabberClientPanel(wx.Panel):
         self.Show(True)
 
         self.app.venueClient.jabber.SetPanel(self)
+        
+        self.normalTextAttr = wx.TextAttr(wx.BLACK)
+        self.boldTextAttr = wx.TextAttr(wx.Colour(60,60,60))
+        f = wx.SystemSettings_GetFont(wx.SYS_SYSTEM_FONT)
+        boldf = wx.SystemSettings_GetFont(wx.SYS_SYSTEM_FONT)
+        boldf.SetWeight(wx.FONTWEIGHT_BOLD)
+        self.normalTextAttr.SetFont(f)
+        self.boldTextAttr.SetFont(boldf)
+        self.textOutput.SetDefaultStyle(self.normalTextAttr)
+        self.textInput.SetDefaultStyle(self.normalTextAttr)
 
     def __OnSashDrag(self, event):
         eID = event.GetId()
@@ -5069,27 +5083,18 @@ class JabberClientPanel(wx.Panel):
             message = '%s: %s' % (dateAndTime,message)
 
             # Events are coloured blue
-            self.textOutput.SetDefaultStyle(wx.TextAttr(wx.BLUE))
+            self.textOutput.SetDefaultStyle(self.boldTextAttr)
             self.textOutput.AppendText(message+'\n')
-            self.textOutput.SetDefaultStyle(wx.TextAttr(wx.BLACK))
+            self.textOutput.SetDefaultStyle(self.normalTextAttr)
 
         elif name == "enter":
             # Descriptions are coloured black
-            self.textOutput.SetDefaultStyle(wx.TextAttr(wx.BLACK))
+            self.textOutput.SetDefaultStyle(self.boldTextAttr)
             self.textOutput.AppendText(message+'\n')
         # Someone is writing a message
         else:
-            # Fix for osx
-            pointSize = wx.NORMAL_FONT.GetPointSize()
 
-            # Fix for osx
-            if IsOSX():
-                pointSize = 12
-                           
-            f = wx.Font(pointSize, wx.DEFAULT, wx.NORMAL, wx.BOLD)
-            textAttr = wx.TextAttr(wx.BLACK)
-            textAttr.SetFont(f)
-            self.textOutput.SetDefaultStyle(textAttr)
+            self.textOutput.SetDefaultStyle(self.boldTextAttr)
             # Detect /me
             if message.startswith("/me ") and len(message.strip()) > 3:
                 nameText = name[:-2] # remove trailing ": "
@@ -5103,10 +5108,7 @@ class JabberClientPanel(wx.Panel):
             self.textOutput.AppendText(nameText)
           
             # Set text normal
-            f = wx.Font(pointSize, wx.DEFAULT, wx.NORMAL, wx.NORMAL)
-            textAttr = wx.TextAttr(wx.BLACK)
-            textAttr.SetFont(f)
-            self.textOutput.SetDefaultStyle(textAttr)
+            self.textOutput.SetDefaultStyle(self.normalTextAttr)
             self.textOutput.AppendText(messageText)
 
         if IsWindows():
@@ -5203,15 +5205,20 @@ class JabberClientPanel(wx.Panel):
         changes focus to text input field to make it clear for
         users where to write messages.
         '''
-        key = event.GetKeyCode()
-        ctrlKey = event.ControlDown()
-       
-        # If ctrl key is pressed, do not enter text
+        # If ctrl key (or cmd on OSX) is pressed, do not enter text
         # automatically into the text output field.
-        if ctrlKey:
-            event.Skip()
-            return
+        if IsOSX():
+            cmdKey = event.CmdDown()
+            if cmdKey:
+                event.Skip()
+                return
+        else:
+            ctrlKey = event.ControlDown()
+            if ctrlKey:
+                event.Skip()
+                return
         
+        key = event.GetKeyCode()
         self.textInput.SetFocus()
         if(44 < key < 255) and not ctrlKey:
             self.textInput.AppendText(chr(key))
@@ -5458,10 +5465,6 @@ class ProfileDialog(wx.Dialog):
         self.profileTypeBox = None
         
         self.titleText = wx.StaticText(self,-1,"Profile")
-        if IsOSX():
-            self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        else:
-            self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
         self.titleLine = wx.StaticLine(self,-1)
         self.buttonLine = wx.StaticLine(self,-1)
         self.__Layout()
@@ -5489,7 +5492,6 @@ class ProfileDialog(wx.Dialog):
     def __Layout(self):
         self.sizer1 = wx.BoxSizer(wx.VERTICAL)
         #box = wx.StaticBox(self, -1, "Profile")
-        #box.SetFont(wx.Font(wx.DEFAULT, wx.NORMAL, wx.NORMAL, wx.BOLD))
         #sizer2 = wx.StaticBoxSizer(box, wx.HORIZONTAL)
         self.gridSizer = wx.FlexGridSizer(0, 2, 4, 5)
         self.gridSizer.Add(self.nameText, 0, wx.ALIGN_LEFT, 0)
@@ -5747,10 +5749,6 @@ class ExitPropertiesDialog(wx.Dialog):
         self.okButton = wx.Button(self, wx.ID_OK, "Ok")
         
         self.titleText = wx.StaticText(self,-1,"Exit Properties")
-        if IsOSX():
-            self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        else:
-            self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
         self.titleLine = wx.StaticLine(self,-1)
         self.buttonLine = wx.StaticLine(self,-1)
         
@@ -5807,10 +5805,6 @@ class DataPropertiesDialog(wx.Dialog):
         self.cancelButton = wx.Button(self, wx.ID_CANCEL, "Cancel")
 
         self.titleText = wx.StaticText(self,-1,"Data Properties")
-        if IsOSX():
-            self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        else:
-            self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
         self.titleLine = wx.StaticLine(self,-1)
         self.buttonLine = wx.StaticLine(self,-1)
         
@@ -5838,7 +5832,6 @@ class DataPropertiesDialog(wx.Dialog):
     def __Layout(self):
         sizer1 = wx.BoxSizer(wx.VERTICAL)
         #box = wx.StaticBox(self, -1, "Properties")
-        #box.SetFont(wx.Font(wx.DEFAULT, wx.NORMAL, wx.NORMAL, wx.BOLD))
         #sizer2 = wx.StaticBoxSizer(box, wx.HORIZONTAL)
         gridSizer = wx.FlexGridSizer(9, 2, 5, 5)
         gridSizer.Add(self.nameText, 1, wx.ALIGN_LEFT, 0)
@@ -5915,10 +5908,6 @@ class ServicePropertiesDialog(wx.Dialog):
         self.cancelButton = wx.Button(self, wx.ID_CANCEL, "Cancel")
 
         self.titleText = wx.StaticText(self,-1,"Service Properties")
-        if IsOSX():
-            self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        else:
-            self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
         self.titleLine = wx.StaticLine(self,-1)
         self.buttonLine = wx.StaticLine(self,-1)
         
@@ -6017,10 +6006,6 @@ class ApplicationPropertiesDialog(wx.Dialog):
         self.cancelButton = wx.Button(self, wx.ID_CANCEL, "Cancel")
 
         self.titleText = wx.StaticText(self,-1,"Application Properties")
-        if IsOSX():
-            self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        else:
-            self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
         self.titleLine = wx.StaticLine(self,-1)
         self.buttonLine = wx.StaticLine(self,-1)
         
@@ -6130,10 +6115,6 @@ class VenuePropertiesDialog(wx.Dialog):
         self.okButton = wx.Button(self, wx.ID_OK, "Ok")
         
         self.titleText = wx.StaticText(self,-1,"Venue Properties")
-        if IsOSX():
-            self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        else:
-            self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
         self.titleLine = wx.StaticLine(self,-1)
         self.buttonLine = wx.StaticLine(self,-1)
                        
@@ -6177,7 +6158,6 @@ class VenuePropertiesDialog(wx.Dialog):
         '''
         mainSizer = wx.BoxSizer(wx.VERTICAL)
         #box = wx.StaticBox(self, -1, "Multicast Addresses")
-        #box.SetFont(wx.Font(wx.DEFAULT, wx.NORMAL, wx.NORMAL, wx.BOLD))
         #sizer = wx.StaticBoxSizer(box, wx.VERTICAL)
         mainSizer.Add(self.titleText,0,wx.EXPAND|wx.ALL,10)
         mainSizer.Add(self.titleLine,0,wx.EXPAND|wx.LEFT|wx.RIGHT,5)
