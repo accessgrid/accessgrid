@@ -166,8 +166,6 @@ class AppMonitorFrame(wx.Frame):
         self.nameText = wx.StaticText(self.panelTop, -1,
                                      "This is the name",
                                      style = wx.ALIGN_CENTER)
-        font = wx.Font(wx.DEFAULT, wx.NORMAL, wx.NORMAL, wx.BOLD)
-        self.nameText.SetFont(font)
 
         self.descriptionText = wx.StaticText(self.panelTop, -1,
                                             "No description",
