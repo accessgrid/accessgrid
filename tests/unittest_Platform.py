@@ -14,9 +14,10 @@ import unittest
 import os, sys, shutil
 import os.path
 import tempfile
+from AccessGrid import Config
 from AccessGrid import Platform
 from AccessGrid.Platform import Config
-from AccessGrid.Platform.Config import UserConfig, SystemConfig, GlobusConfig, AGTkConfig, MimeConfig
+from AccessGrid.Platform.Config import UserConfig, SystemConfig, AGTkConfig, MimeConfig
 
 class DefaultPaths(unittest.TestCase):
 
@@ -34,12 +35,10 @@ class AGTkConfigTests(unittest.TestCase):
     def setUp(self):
         # only way to clear the config seems to be to
         #  set the instance to None.
-        AGTkConfig.theAGTkConfigInstance = None
-        self.userdir = tempfile.mktemp()
-        self.sysdir = tempfile.mktemp()
+        Config.AGTkConfig.theAGTkConfigInstance = None
+        self.userdir = tempfile.mkdtemp()
+        self.sysdir = tempfile.mkdtemp()
         self.foodir = os.path.join(self.sysdir, "foo")
-        os.mkdir(self.userdir)
-        os.mkdir(self.sysdir)
         os.mkdir(self.foodir)
         try:
             self.origSysDir = os.environ[Platform.AGTK_LOCATION]
@@ -59,9 +58,9 @@ class AGTkConfigTests(unittest.TestCase):
         shutil.rmtree(self.userdir, ignore_errors=1)
         shutil.rmtree(self.sysdir, ignore_errors=1)
         # unitialize instances so we don't keep our modified test paths.
-        AGTkConfig.theAGTkConfigInstance = None
-        UserConfig.theUserConfigInstance = None
-        SystemConfig.theSystemConfigInstance = None
+        Config.AGTkConfig.destroy()
+        Config.UserConfig.destroy()
+        Config.SystemConfig.destroy()
         # restore environment variables we may have changed.
         if self.origSysDir != None:
             os.environ[Platform.AGTK_LOCATION] = self.origSysDir
@@ -96,16 +95,6 @@ class AGTkConfigTests(unittest.TestCase):
         binDir = AGTkConfig.instance().GetBinDir()
         assert binDir != "" and binDir is not None, 'invalid bin dir'
 
-    def testGetDocDir(self):
-        docDir = AGTkConfig.instance().GetDocDir()
-        assert docDir != "" and docDir is not None, 'invalid shared doc dir'
-        assert os.path.isdir(docDir)
-
-    def testGetLogDir(self):
-        logDir = AGTkConfig.instance().GetLogDir()
-        assert logDir != "" and logDir is not None, 'invalid log dir'
-        assert os.path.isdir(logDir)
-
     def testGetSharedAppDir(self):
         appDir = AGTkConfig.instance().GetSharedAppDir()
         assert appDir != "" and appDir is not None, 'invalid app dir'
@@ -121,65 +110,17 @@ class AGTkConfigTests(unittest.TestCase):
         assert servicesDir != "" and servicesDir is not None, 'invalid services dir'
         assert os.path.isdir(servicesDir)
 
-class GlobusConfigTests(unittest.TestCase):
-
-    def setUp(self):
-        # only way to clear the config seems to be to
-        #  set the instance to None.
-        AGTkConfig.theAGTkConfigInstance = None
-        self.userdir = tempfile.mktemp()
-        self.sysdir = tempfile.mktemp()
-        self.foodir = os.path.join(self.sysdir, "foo")
-        os.mkdir(self.userdir)
-        os.mkdir(self.sysdir)
-        os.mkdir(self.foodir)
-        try:
-            self.origSysDir = os.environ[Platform.AGTK_LOCATION]
-        except:
-            self.origSysDir = None
-        try:
-            self.origUserDir = os.environ[Platform.AGTK_USER]
-        except:
-            self.origUserDir = None
-        os.environ[Platform.AGTK_LOCATION] = self.sysdir
-        os.environ[Platform.AGTK_USER] = self.userdir
-        AGTkConfig.instance(initIfNeeded=1)
-
-    def tearDown(self):
-        os.rmdir(self.foodir)
-        shutil.rmtree(self.userdir, ignore_errors=1)
-        shutil.rmtree(self.sysdir, ignore_errors=1)
-        AGTkConfig.theAGTkConfigInstance = None
-        UserConfig.theUserConfigInstance = None
-        SystemConfig.theSystemConfigInstance = None
-        if self.origSysDir != None:
-            os.environ[Platform.AGTK_LOCATION] = self.origSysDir
-        else:
-            del os.environ[Platform.AGTK_LOCATION]
-        if self.origUserDir != None:
-            os.environ[Platform.AGTK_USER] = self.origUserDir
-        else:
-            del os.environ[Platform.AGTK_USER]
-
-    def testInit(self):
-        GlobusConfig.instance(initIfNeeded=1)
-
-    def testInit2(self):
-        GlobusConfig.instance(initIfNeeded=0)
-
 
 class UserConfigTests(unittest.TestCase):
 
     def setUp(self):
         # only way to clear the config seems to be to
         #  set the instance to None.
-        AGTkConfig.theAGTkConfigInstance = None
-        UserConfig.theUserConfigInstance = None
-        self.userdir = tempfile.mktemp()
-        self.sysdir = tempfile.mktemp()
+        Config.AGTkConfig.theAGTkConfigInstance = None
+        Config.UserConfig.theUserConfigInstance = None
+        self.userdir = tempfile.mkdtemp()
+        self.sysdir = tempfile.mkdtemp()
         self.foodir = os.path.join(self.sysdir, "foo")
-        os.mkdir(self.userdir)
-        os.mkdir(self.sysdir)
         os.mkdir(self.foodir)
         try:
             self.origSysDir = os.environ[Platform.AGTK_LOCATION]
@@ -191,15 +132,15 @@ class UserConfigTests(unittest.TestCase):
             self.origUserDir = None
         os.environ[Platform.AGTK_LOCATION] = self.sysdir
         os.environ[Platform.AGTK_USER] = self.userdir
-        AGTkConfig.instance(initIfNeeded=1)
+        UserConfig.instance(initIfNeeded=1)
 
     def tearDown(self):
         os.rmdir(self.foodir)
         shutil.rmtree(self.userdir, ignore_errors=1)
         shutil.rmtree(self.sysdir, ignore_errors=1)
-        AGTkConfig.theAGTkConfigInstance = None
-        UserConfig.theUserConfigInstance = None
-        SystemConfig.theSystemConfigInstance = None
+        Config.AGTkConfig.destroy()
+        Config.UserConfig.destroy()
+        Config.SystemConfig.destroy()
         if self.origSysDir != None:
             os.environ[Platform.AGTK_LOCATION] = self.origSysDir
         else:
@@ -239,11 +180,6 @@ class UserConfigTests(unittest.TestCase):
         assert appDir != "" and appDir is not None, 'empty user app dir'
         assert os.path.isdir(appDir)
 
-    def testGetNodeServicesDir(self):
-        nsDir = UserConfig.instance().GetNodeServicesDir()
-        assert nsDir != "" and nsDir is not None, 'invalid node services dir'
-        assert os.path.isdir(nsDir)
-
     def testGetServicesDir(self):
         servicesDir = UserConfig.instance().GetServicesDir()
         assert servicesDir != "" and servicesDir is not None, 'invalid services dir'
@@ -255,13 +191,11 @@ class SystemConfigTests(unittest.TestCase):
     def setUp(self):
         # only way to clear the config seems to be to
         #  set the instance to None.
-        AGTkConfig.theAGTkConfigInstance = None
+        Config.SystemConfig.theSystemConfigInstance = None
         SystemConfig.theSystemConfigInstance = None
-        self.userdir = tempfile.mktemp()
-        self.sysdir = tempfile.mktemp()
+        self.userdir = tempfile.mkdtemp()
+        self.sysdir = tempfile.mkdtemp()
         self.foodir = os.path.join(self.sysdir, "foo")
-        os.mkdir(self.userdir)
-        os.mkdir(self.sysdir)
         os.mkdir(self.foodir)
         try:
             self.origSysDir = os.environ[Platform.AGTK_LOCATION]
@@ -273,14 +207,15 @@ class SystemConfigTests(unittest.TestCase):
             self.origUserDir = None
         os.environ[Platform.AGTK_LOCATION] = self.sysdir
         os.environ[Platform.AGTK_USER] = self.userdir
+        AGTkConfig.instance(initIfNeeded=1)
 
     def tearDown(self):
         os.rmdir(self.foodir)
         shutil.rmtree(self.userdir, ignore_errors=1)
         shutil.rmtree(self.sysdir, ignore_errors=1)
-        AGTkConfig.theAGTkConfigInstance = None
-        UserConfig.theUserConfigInstance = None
-        SystemConfig.theSystemConfigInstance = None
+        Config.AGTkConfig.destroy()
+        Config.UserConfig.destroy()
+        Config.SystemConfig.destroy()
         if self.origSysDir != None:
             os.environ[Platform.AGTK_LOCATION] = self.origSysDir
         else:
@@ -316,8 +251,8 @@ class SystemConfigTests(unittest.TestCase):
         resources = SystemConfig.instance().GetResources()
         assert type(resources) == type([])
 
-    def testPerformanceSnapshot(self):
-        perf = SystemConfig.instance().PerformanceSnapshot()
+    #def testPerformanceSnapshot(self):
+    #    perf = SystemConfig.instance().PerformanceSnapshot()
 
 
 class MimeConfigTests(unittest.TestCase):
@@ -325,12 +260,10 @@ class MimeConfigTests(unittest.TestCase):
     def setUp(self):
         # only way to clear the config seems to be to
         #  set the instance to None.
-        AGTkConfig.theAGTkConfigInstance = None
-        self.userdir = tempfile.mktemp()
-        self.sysdir = tempfile.mktemp()
+        Config.MimeConfig.theMimeConfigInstance = None
+        self.userdir = tempfile.mkdtemp()
+        self.sysdir = tempfile.mkdtemp()
         self.foodir = os.path.join(self.sysdir, "foo")
-        os.mkdir(self.userdir)
-        os.mkdir(self.sysdir)
         os.mkdir(self.foodir)
         try:
             self.origSysDir = os.environ[Platform.AGTK_LOCATION]
@@ -347,9 +280,9 @@ class MimeConfigTests(unittest.TestCase):
         os.rmdir(self.foodir)
         shutil.rmtree(self.userdir, ignore_errors=1)
         shutil.rmtree(self.sysdir, ignore_errors=1)
-        AGTkConfig.theAGTkConfigInstance = None
-        UserConfig.theUserConfigInstance = None
-        SystemConfig.theSystemConfigInstance = None
+        Config.AGTkConfig.destroy()
+        Config.UserConfig.destroy()
+        Config.SystemConfig.destroy()
         if self.origSysDir != None:
             os.environ[Platform.AGTK_LOCATION] = self.origSysDir
         else:
@@ -359,24 +292,23 @@ class MimeConfigTests(unittest.TestCase):
         else:
             del os.environ[Platform.AGTK_USER]
 
+    """
     def testGetMimeCommands(self):
         commands = MimeConfig.instance().GetMimeCommands(mimeType=None, ext="txt")
 
     def testGetMimeType(self):
         commands = MimeConfig.instance().GetMimeType("txt")
-
+    """
 class EnvPaths(unittest.TestCase):
 
     def setUp(self):
         # only way to clear the config seems to be to
         #  set the instance to None.
-        AGTkConfig.theAGTkConfigInstance = None
+        Config.AGTkConfig.theAGTkConfigInstance = None
         SystemConfig.theSystemConfigInstance = None
-        self.userdir = tempfile.mktemp()
-        self.sysdir = tempfile.mktemp()
+        self.userdir = tempfile.mkdtemp()
+        self.sysdir = tempfile.mkdtemp()
         self.foodir = os.path.join(self.sysdir, "foo")
-        os.mkdir(self.userdir)
-        os.mkdir(self.sysdir)
         os.mkdir(self.foodir)
         try:
             self.origSysDir = os.environ[Platform.AGTK_LOCATION]
@@ -390,14 +322,15 @@ class EnvPaths(unittest.TestCase):
         os.environ[Platform.AGTK_USER] = self.userdir
         # Create a default AGTk configuration
         AGTkConfig.instance(initIfNeeded=1)
+        UserConfig.instance(initIfNeeded=1)
 
     def tearDown(self):
         os.rmdir(self.foodir)
         shutil.rmtree(self.userdir, ignore_errors=1)
         shutil.rmtree(self.sysdir, ignore_errors=1)
-        AGTkConfig.theAGTkConfigInstance = None
-        UserConfig.theUserConfigInstance = None
-        SystemConfig.theSystemConfigInstance = None
+        Config.AGTkConfig.destroy()
+        Config.UserConfig.destroy()
+        Config.SystemConfig.destroy()
         if self.origSysDir != None:
             os.environ[Platform.AGTK_LOCATION] = self.origSysDir
         else:
@@ -420,6 +353,7 @@ class EnvPaths(unittest.TestCase):
         assert configDir != "" and configDir is not None, 'empty config dir'
         expectedDir = os.path.join(self.userdir, "Config")
         assert configDir == expectedDir, 'User config dir %s != UserConfig...GetConfigDir() %s' % (configDir, expectedDir)
+
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
