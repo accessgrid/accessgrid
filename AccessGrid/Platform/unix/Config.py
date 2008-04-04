@@ -49,10 +49,11 @@ class AGTkConfig(Config.AGTkConfig):
         AGTkBasePath = "/etc/AccessGrid3"
 
     def instance(initIfNeeded=0):
-        if AGTkConfig.theAGTkConfigInstance == None:
+        if Config.AGTkConfig.theAGTkConfigInstance == None:
             AGTkConfig(initIfNeeded)
 
-        return AGTkConfig.theAGTkConfigInstance
+
+        return Config.AGTkConfig.theAGTkConfigInstance
 
     instance = staticmethod(instance)
 
@@ -63,13 +64,14 @@ class AGTkConfig(Config.AGTkConfig):
             except:
                 self.installBase = self.AGTkBasePath
 
+
         # remove trailing "\bin" if it's there
         if self.installBase.endswith("bin"):
             self.installBase = os.path.join(os.path.split(self.installBase)[:-1])[0]
             
         # Check the installation
         if not os.path.exists(self.installBase):
-            raise Exception, "AGTkConfig: installation base does not exist."
+            raise Exception, "AGTkConfig: installation base does not exist (%s)" % self.installBase
         
         return self.installBase
         
@@ -127,10 +129,10 @@ class UserConfig(Config.UserConfig):
     """
 
     def instance(initIfNeeded=0):
-        if UserConfig.theUserConfigInstance == None:
+        if Config.UserConfig.theUserConfigInstance == None:
             UserConfig(initIfNeeded)
 
-        return UserConfig.theUserConfigInstance
+        return Config.UserConfig.theUserConfigInstance
 
     instance = staticmethod(instance)
     
@@ -172,6 +174,8 @@ class UserConfig(Config.UserConfig):
                                           proxyFileName)
         return self.proxyFile
 
+
+
 class SystemConfig(Config.SystemConfig):
     """
     The SystemConfig object encapsulates all system dependent
@@ -183,10 +187,10 @@ class SystemConfig(Config.SystemConfig):
     """
 
     def instance():
-        if SystemConfig.theSystemConfigInstance == None:
+        if Config.SystemConfig.theSystemConfigInstance == None:
             SystemConfig()
 
-        return SystemConfig.theSystemConfigInstance
+        return Config.SystemConfig.theSystemConfigInstance
     
     instance = staticmethod(instance)
     
@@ -276,7 +280,7 @@ class SystemConfig(Config.SystemConfig):
         try:
             ru = resource.getrusage(resource.RUSAGE_BOTH)
             perfData["Stats"] = "Both"
-        except ValueError, e:
+        except (ValueError|AttributeError), e:
             try:
                 ru = resource.getrusage(resource.RUSAGE_SELF)
                 perfData["Stats"] = "Self"
