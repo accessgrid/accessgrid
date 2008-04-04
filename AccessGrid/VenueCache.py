@@ -12,7 +12,7 @@ class VenueCache:
     def __init__(self,venuesFile,venueServers):
         self.venuesFile = venuesFile
         self.venueServers = venueServers
-        self.venues = []
+        self.venues = {}
         
     def Update(self):
         log.debug("Updating venue cache")
@@ -24,13 +24,13 @@ class VenueCache:
             try:
                 venueList = VenueServerIW(url).GetVenues()
                 venueList.sort(cmp=lambda x, y: cmp(x.name, y.name))
-                self.venues.append( VenueCache.VenueList(url,venueList))
+                self.venues[url] = VenueCache.VenueList(url,venueList)
                 log.debug("Retrieved %d venues from server %s", len(venueList), url)
             except:
                 log.exception("Exception retrieving venues from %s", url)
 
     def GetVenues(self):
-        return self.venues
+        return self.venues.values()
     
     def Store(self):
         log.debug("Storing venue cache in %s", self.venuesFile)
@@ -45,7 +45,7 @@ class VenueCache:
             configParser = ConfigParser.ConfigParser()
             configParser.read(self.venuesFile)
             
-            self.venues = []
+            self.venues = {}
             
             for s in configParser.sections():
                 if configParser.has_option(s,'venues'):
@@ -58,13 +58,13 @@ class VenueCache:
                                                                 configParser.get(v,'uri'),
                                                                 v
                                                                ))
-                    self.venues.append(VenueCache.VenueList(s,venueList))
+                    self.venues[s] = VenueCache.VenueList(s,venueList)
         except Exception,e:
            log.exception("Exception loading venues from %s", self.venuesFile)
            
     def AsINIBlock(self):
         out = ""
-        for v in self.venues:
+        for v in self.venues.values():
             out += '[%s]' % (v.venueServerUrl)
             venueIds = map( lambda x: x.id, v.venueList)
             venueIdString = ':'.join(venueIds)
@@ -91,24 +91,30 @@ if __name__ == '__main__':
     venueServers = ['https://vv3.mcs.anl.gov:8000/VenueServer']
     venuesFile = 'venues'
     
-    if 0:
-        venueCache = VenueCache(venuesFile,venueServers)
-        venueCache.Update()
-        venueCache.Store()
-        venueList = venueCache.GetVenues()
-        for v in venueList:
-            print v.venueServerUrl
-            for venue in v.venueList:
-                print venue.name
-         
-            
-    venueCache2 = VenueCache(venuesFile,venueServers)
-    venueCache2.Load()
-    venueList = venueCache2.GetVenues()
+
+    venueCache = VenueCache(venuesFile,venueServers)
+    venueCache.Load()
+    venueList = venueCache.GetVenues()
     for v in venueList:
         print v.venueServerUrl
         for venue in v.venueList:
             print venue.name
+    venueCache.Store()
+    
+
+    venueCache.Update()
+    venueList2 = venueCache.GetVenues()
+    print len(venueList2), len(venueList2[0].venueList)
+    venueCache.Update()
+    venueList3 = venueCache.GetVenues()
+    print len(venueList3), len(venueList3[0].venueList)
+    venueCache.Update()
+    venueList4 = venueCache.GetVenues()
+    print len(venueList4), len(venueList4[0].venueList)
+    
+    
+    
+    
 
 
 
