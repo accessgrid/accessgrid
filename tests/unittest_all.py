@@ -15,17 +15,13 @@ import unittest
 def suite():
     # List modules to test
     modules_to_test = [
-        #'unittest_AGNodeService',
         'unittest_AGParameter',
-        #'unittest_AGServiceManager',
         'unittest_ClientProfile',
         'unittest_Descriptions',
         'unittest_GUID',
         'unittest_MulticastAddressAllocator',
         'unittest_NetworkLocation',
-        #'unittest_Node',
         #'unittest_Platform',
-        #'unittest_VenueServer',
         'unittest_version',
         'unittest_RssReader'
         ]
