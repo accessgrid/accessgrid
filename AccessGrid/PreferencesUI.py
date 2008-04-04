@@ -87,12 +87,6 @@ class PreferencesDialog(wx.Dialog):
         self.__Layout()
         self.__InitTree()
 
-        """
-        if IsOSX():
-            self.title.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        else:
-            self.title.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        """
         # Set correct dimensions on current panel.
         if self.currentPanel.GetSizer():
             w,h = self.preferencesWindow.GetSizeTuple()
@@ -321,16 +315,6 @@ class NodePanel(wx.Panel):
         self.displayButton = wx.CheckBox(self, wx.NewId(), " Enable Display")
         self.videoButton = wx.CheckBox(self, wx.NewId(), " Enable Video")
 
-        """
-        if IsOSX():
-            self.nodeText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-            self.mediaText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        else:
-            self.nodeText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-            self.mediaText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-
-        """
-        
         self.mediaButton.SetValue(int(preferences.GetPreference(Preferences.STARTUP_MEDIA)))
         nodeBuiltin = int(preferences.GetPreference(Preferences.NODE_BUILTIN))
         self.nodeBuiltInCheckbox.SetValue(nodeBuiltin)
@@ -743,16 +727,6 @@ class VenueConnectionPanel(wx.Panel):
         self.timeout.SetValue(int(preferences.GetPreference(Preferences.RECONNECT_TIMEOUT)))
         self.EnableCtrls(reconnect)
            
-        """     
-        if IsOSX():
-            self.titleText.SetFont(wx.Font(12,wx.DEFAULT,wx.NORMAL,wx.BOLD))
-
-                                
-        else:
-            self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-           
-        """
-                             
         self.__Layout()
 
         wx.EVT_CHECKBOX(self, self.reconnectButton.GetId(), self.ReconnectCB)
@@ -1036,15 +1010,6 @@ class NetworkPanel(wx.Panel):
         wx.EVT_CHECKBOX(self,self.proxyButton.GetId(),self.OnEnableProxy)
         wx.EVT_CHECKBOX(self,self.authProxyButton.GetId(),self.OnAuthProxy)
         
-        """                          
-        if IsOSX():
-            self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-            self.proxyTitleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        else:
-            self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-            self.proxyTitleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        """      
-        
         self.EnableProxy(proxyEnabled)
         self.EnableAuthProxy(proxyEnabled and authProxyEnabled)
                     
@@ -1268,16 +1233,6 @@ class BridgingPanel(wx.Panel):
         wx.EVT_BUTTON(self, self.removeRegistryButton.GetId(), self.OnRemoveReg)
         wx.EVT_BUTTON(self, self.purgeCacheButton.GetId(), self.OnPurgeCache)
             
-        """                          
-        if IsOSX():
-            self.bridgingTitleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-            self.registriesTitleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-            self.bridgesTitleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        else:
-            self.bridgingTitleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-            self.registriesTitleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-            self.bridgesTitleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        """                          
         self.__Layout()
     
     def __InitList(self):
@@ -1632,12 +1587,6 @@ class NavigationPanel(wx.Panel):
         
         wx.EVT_BUTTON(self,self.venueCacheRefreshButton.GetId(), self.OnRefresh)
         self.preferences = preferences
-        """
-        if IsOSX():
-            self.titleText.SetFont(wx.Font(12,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        else:
-            self.titleText.SetFont(wx.Font(wx.DEFAULT,wx.NORMAL,wx.NORMAL,wx.BOLD))
-        """                        
         self.__Layout()
         
     def OnRefresh(self,event):
