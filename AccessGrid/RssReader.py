@@ -100,7 +100,7 @@ class RssReader:
             rssFile = rssUrl[7:]
             d = feedparser.parse(rssFile)
         else:
-            proxyEnabled = self.preferences.GetPreference(Preferences.PROXY_ENABLED)
+            proxyEnabled = int(self.preferences.GetPreference(Preferences.PROXY_ENABLED))
             if proxyEnabled:
                 proxy = urllib2.ProxyHandler({"http" : Utilities.BuildPreferencesProxyURL()})
                 d = feedparser.parse(rssUrl,handlers = [proxy])
