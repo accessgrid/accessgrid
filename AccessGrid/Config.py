@@ -280,6 +280,7 @@ class UserConfig:
         self.profileFilename = None
         self.preferencesFilename = None
         self.bridgesFilename = None
+        self.venuesFilename = None
         self.logDir = None
         self.proxyFile = None
         self.downloadDir = None
@@ -398,10 +399,17 @@ class UserConfig:
 
     def GetBridges(self):
         if self.bridgesFilename == None:
-            self.bridgesFilename = os.path.join(self.GetConfigDir(),
+            self.bridgesFilename = os.path.join(self.GetCacheDir(),
                                                 "bridges")
 
         return self.bridgesFilename
+    
+    def GetVenuesCache(self):
+        if self.venuesFilename == None:
+            self.venuesFilename = os.path.join(self.GetCacheDir(),
+                                                "venues")
+
+        return self.venuesFilename
 
     def GetBaseDir(self):
         raise Exception, "This method is abstract and should be overridden by subclasses."
@@ -575,7 +583,7 @@ class UserConfig:
                not os.path.exists(self.cacheDir):
             raise Exception, "UserConfig: cache dir does not exist %s."%self.cacheDir
 
-        return str(self.servicesDir)
+        return str(self.cacheDir)
 
 class SystemConfig:
     """
