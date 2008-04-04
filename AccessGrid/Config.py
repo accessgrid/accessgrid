@@ -85,6 +85,10 @@ class AGTkConfig:
         self.GetNodeConfigDir()
         self.GetServicesDir()
 
+    def destroy():
+        AGTkConfig.theAGTkConfigInstance = None
+    destroy = staticmethod(destroy)
+
     def _repr_(self):
         tmpstr = "Access Grid Toolkit Configuration:\n"
         tmpstr += "Version: %s\n" % self.GetVersion()
@@ -278,6 +282,8 @@ class UserConfig:
         self.bridgesFilename = None
         self.logDir = None
         self.proxyFile = None
+        self.downloadDir = None
+        self.cacheDir = None
 
         self._Initialize()
         
@@ -309,6 +315,9 @@ class UserConfig:
         if self.initIfNeeded:
             self._Migrate()
    
+    def destroy():
+        UserConfig.theUserConfigInstance = None
+    destroy = staticmethod(destroy)
 
     def _repr_(self):
         tmpstr = "User Configuration:\n"
@@ -413,7 +422,7 @@ class UserConfig:
         # Check the installation
         if self.logDir is not None and \
                not os.path.exists(self.logDir):
-            raise Exception, "AGTkConfig: log dir does not exist %s."%self.logDir 
+            raise Exception, "UserConfig: log dir does not exist %s."%self.logDir 
 
         return str(self.logDir)
 
@@ -421,7 +430,6 @@ class UserConfig:
         raise Exception, "This method is abstract and should be overridden by subclasses."
     
     def GetConfigDir(self):
-    
         if self.configDir == None:
             ucd = self.GetBaseDir()
             self.configDir = os.path.join(ucd, "Config")
@@ -438,7 +446,7 @@ class UserConfig:
         # Check the installation
         if self.configDir is not None and \
                not os.path.exists(self.configDir):
-            raise Exception, "AGTkConfig: config dir does not exist %s."%self.configDir
+            raise Exception, "UserConfig: config dir does not exist %s."%self.configDir
 
         return str(self.configDir)
         
@@ -455,7 +463,7 @@ class UserConfig:
 
         # Check the installation
         if self.appDir is not None and not os.path.exists(self.appDir):
-            raise Exception, "AGTkConfig: app dir does not exist %s."%self.appDir
+            raise Exception, "UserConfig: app dir does not exist %s."%self.appDir
 
         return str(self.appDir)
 
@@ -487,7 +495,7 @@ class UserConfig:
                 os.mkdir(self.localServicesDir)
 
         if not os.path.exists(self.localServicesDir):
-            raise Exception, "AGTkConfig: local services dir does not exist."
+            raise Exception, "UserConfig: local services dir does not exist."
 
         return str(self.localServicesDir)
 
@@ -502,7 +510,7 @@ class UserConfig:
                 os.mkdir(self.nodeConfigDir)
 
         if not os.path.exists(self.nodeConfigDir):
-            raise Exception, "AGTkConfig: node service dir does not exist."
+            raise Exception, "UserConfig: node service dir does not exist."
 
         return str(self.nodeConfigDir)
 
@@ -520,13 +528,54 @@ class UserConfig:
         # Check the installation
         if self.servicesDir is not None and \
                not os.path.exists(self.servicesDir):
-            raise Exception, "AGTkConfig: services dir does not exist %s."%self.servicesDir
+            raise Exception, "UserConfig: services dir does not exist %s."%self.servicesDir
 
         return str(self.servicesDir)
         
     def GetProxyFile(self):
         raise Exception, "This method is abstract and should be overridden by subclasses."
 
+
+    def GetDownloadDirName(self):
+        return "AccessGrid Downloads"
+    
+    def GetDownloadDir(self):
+        # This method is basically a placeholder which should be overridden
+        # for platform-specific handling
+        if self.downloadDir == None:
+            ucd = self.GetBaseDir()
+            self.downloadDir = os.path.join(ucd, self.GetDownloadDirName())
+
+        # Check dir and create it if needed.
+        if self.initIfNeeded:
+            if self.downloadDir is not None and \
+                   not os.path.exists(self.downloadDir):
+                os.mkdir(self.downloadDir)
+
+        # Check the installation
+        if self.downloadDir is not None and \
+               not os.path.exists(self.downloadDir):
+            raise Exception, "UserConfig: download dir does not exist %s."%self.downloadDir
+
+        return str(self.downloadDir)
+
+    def GetCacheDir(self):
+        if self.cacheDir == None:
+            ucd = self.GetBaseDir()
+            self.cacheDir = os.path.join(ucd, "Caches")
+
+        # Check dir and create it if needed.
+        if self.initIfNeeded:
+            if self.cacheDir is not None and \
+                   not os.path.exists(self.cacheDir):
+                os.mkdir(self.cacheDir)
+
+        # Check the installation
+        if self.cacheDir is not None and \
+               not os.path.exists(self.cacheDir):
+            raise Exception, "UserConfig: cache dir does not exist %s."%self.cacheDir
+
+        return str(self.servicesDir)
 
 class SystemConfig:
     """
@@ -549,6 +598,10 @@ class SystemConfig:
         self.tempDir = None
         self.hostname = None
         self.SetHostname()
+
+    def destroy():
+        SystemConfig.theSystemConfigInstance = None
+    destroy = staticmethod(destroy)
 
     def _repr_(self):
         tmpstr = "System Configuration:\n"
