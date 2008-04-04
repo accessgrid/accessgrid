@@ -56,39 +56,39 @@ class DataDescriptionTestCase(unittest.TestCase):
     """A test case for DataDescription."""
 
     def testDataDescriptionDefaultConstructor(self):
-       d = DataDescription3("name")
+       d = DataDescription("name")
 
     def testDataDescriptionConstructor(self):
-       d = DataDescription3("name")
+       d = DataDescription("name")
        assert "name" == d.GetName()
 
     def testSetGetType(self):
-       d = DataDescription3("name")
+       d = DataDescription("name")
        d.SetType("someType")
        assert "someType" == d.GetType()
 
     def testSetGetStatus(self):
-       d = DataDescription3("name")
+       d = DataDescription("name")
        d.SetStatus(d.STATUS_PENDING)
        assert d.STATUS_PENDING == d.GetStatus()
 
     def testSetGetSize(self):
-       d = DataDescription3("name")
+       d = DataDescription("name")
        d.SetSize(5)
        assert 5 == d.GetSize()
 
     def testSetGetChecksum(self):
-       d = DataDescription3("name")
+       d = DataDescription("name")
        d.SetChecksum(16)
        assert 16 == d.GetChecksum()
 
     def testSetGetOwner(self):
-       d = DataDescription3("name")
+       d = DataDescription("name")
        d.SetOwner("john doe")
        assert "john doe" == d.GetOwner()
 
     def testAsINIBlock(self):
-       d = DataDescription3("name")
+       d = DataDescription("name")
        str = d.AsINIBlock()
 
 class ConnectionDescriptionTestCase(unittest.TestCase):
@@ -109,15 +109,15 @@ class VenueDescriptionTestCase(unittest.TestCase):
     """A test case for VenueDescription."""
 
     def testVenueDescriptionDefaultConstructor(self):
-       v = VenueDescription3()
+       v = VenueDescription()
 
     def testVenueDescriptionConstructor(self):
-       v = VenueDescription3("name", "description", ["admin1","admin2"],(0,''), [], [])
+       v = VenueDescription("name", "description", ["admin1","admin2"],(0,''), [], [])
        assert v.GetName() == "name"
        assert v.GetDescription() == "description"
 
     def testAsINIBlock(self):
-       v = VenueDescription3()
+       v = VenueDescription()
        str = v.AsINIBlock() 
 
 class ServiceDescriptionTestCase(unittest.TestCase):
@@ -153,23 +153,23 @@ class StreamDescriptionTestCase(unittest.TestCase):
     """A test case for StreamDescription."""
 
     def testStreamDescriptionDefaultConstructor(self):
-       v = StreamDescription3()
+       v = StreamDescription()
 
     def testStreamDescriptionConstructor(self):
        location = MulticastNetworkLocation()
-       capability = Capability3()
+       capability = Capability()
        encryptionFlag = 1
        encryptionKey = "abcdefg"
        static = 0
-       v = StreamDescription3("name", location, capability, encryptionFlag, encryptionKey, static )
+       v = StreamDescription("name", location, [capability], encryptionFlag, encryptionKey, static )
        assert "name" == v.GetName()
-       assert capability == v.capability
+       assert capability == v.capability[0]
        assert encryptionFlag == v.encryptionFlag
        assert encryptionKey == v.encryptionKey
        assert static == v.static
 
     def testAsINIBlock(self):
-       v = StreamDescription3()
+       v = StreamDescription()
        str = v.AsINIBlock() 
 
 class AGServiceManagerDescriptionTestCase(unittest.TestCase):
@@ -184,7 +184,7 @@ class AGServiceDescriptionTestCase(unittest.TestCase):
     """A test case for ServiceDescription."""
 
     def testAGServiceDescriptionConstructor(self):
-       s = AGServiceDescription3("name", "http://someuri", "some capabilities", "some resource", "some package file")
+       s = AGServiceDescription("name", "http://someuri", "some capabilities", "some resource", "some package file")
        assert s.name == "name"
        assert s.uri == "http://someuri"
        assert s.resource == "some resource"
