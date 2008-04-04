@@ -188,6 +188,11 @@ class Preferences:
             self.profile.Save(profileFile)
         except:
             log.exception("Preferences.StorePreferences: store profile file error")
+            
+        self.StoreBridges()
+
+
+    def StoreBridges(self):
 
         # Save bridge information in separate file
         self.bridgeCache.StoreBridges(self.__bridges.values())
