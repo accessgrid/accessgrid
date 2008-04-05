@@ -582,400 +582,795 @@ class SystemConfig(Config.SystemConfig):
             return resourceList
 
 
-class MimeConfig(Config.MimeConfig):
-    """
-    The MimeConfig object encapsulates in single object the management
-    of mime types. This provides a cross platform solution so the AGTk
-    can leverage legacy configuration and applications for data
-    viewing.
-    """
-
-    def instance():
-        if MimeConfig.theMimeConfigInstance == None:
-            MimeConfig()
-
-        return MimeConfig.theMimeConfigInstance
-
-    instance = staticmethod(instance)
-
-    def UnregisterMimeType(self, mimeType):
-
-        # --- Remove, General LINUX/UNIX local user mimetype/mailcap --- #
-
-        mimeFile = os.path.join(os.environ['HOME'], ".mime.types")
-        bakMimeFile = os.path.join(os.environ['HOME'], ".mime.types.bak")
-        tmpMimeFile = os.path.join(os.environ['HOME'], ".mime.types.tmp")
-        mailcapFile = os.path.join(os.environ['HOME'], ".mailcap")
-        bakMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.bak")
-        tmpMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.tmp")
-
-        if os.path.exists(mimeFile):
-            # Backup old file
-            shutil.copyfile(mimeFile, bakMimeFile)
-
-            # MimeType file: read line by line and remove the mimeType
-            fr = open(mimeFile, "r")
-            fw = open(tmpMimeFile, "w")
-            line = fr.readline()
-            while len(line) > 0:
-                if not line.startswith(mimeType):
-                    fw.write(line)
-                line = fr.readline()
-            fr.close()
-            fw.close()
-
-            # Now copy tmp file into place
-            shutil.copyfile(tmpMimeFile, mimeFile)
-
-            # Remove tmp file
-            os.remove(tmpMimeFile)
-
-        if os.path.exists(mailcapFile):
-            # Backup old file
-            shutil.copyfile(mailcapFile, bakMailcapFile)
-
-            # Mailcap file: read line by line and remove mimeType
-            fr = open(mailcapFile, "r")
-            fw = open(tmpMailcapFile, "w")
-            line = fr.readline()
-            while len(line) > 0:
-                if not line.startswith(mimeType):
-                    fw.write(line)
-                line = fr.readline()
-            fr.close()
-            fw.close()
-
-            # Now copy tmp file into place
-            shutil.copyfile(tmpMailcapFile, mailcapFile)
-
-            # Remove tmp file
-            os.remove(tmpMailcapFile)
-    
-    def UnregisterMimeType(self, mimeType):
-
-        # --- Remove, General LINUX/UNIX local user mimetype/mailcap --- #
-
-        mimeFile = os.path.join(os.environ['HOME'], ".mime.types")
-        bakMimeFile = os.path.join(os.environ['HOME'], ".mime.types.bak")
-        tmpMimeFile = os.path.join(os.environ['HOME'], ".mime.types.tmp")
-        mailcapFile = os.path.join(os.environ['HOME'], ".mailcap")
-        bakMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.bak")
-        tmpMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.tmp")
-
-        if os.path.exists(mimeFile):
-            # Backup old file
-            shutil.copyfile(mimeFile, bakMimeFile)
-
-            # MimeType file: read line by line and remove the mimeType
-            fr = open(mimeFile, "r")
-            fw = open(tmpMimeFile, "w")
-            line = fr.readline()
-            while len(line) > 0:
-                if not line.startswith(mimeType):
-                    fw.write(line)
-                line = fr.readline()
-            fr.close()
-            fw.close()
-
-            # Now copy tmp file into place
-            shutil.copyfile(tmpMimeFile, mimeFile)
-
-            # Remove tmp file
-            os.remove(tmpMimeFile)
-
-        if os.path.exists(mailcapFile):
-            # Backup old file
-            shutil.copyfile(mailcapFile, bakMailcapFile)
-
-            # Mailcap file: read line by line and remove mimeType
-            fr = open(mailcapFile, "r")
-            fw = open(tmpMailcapFile, "w")
-            line = fr.readline()
-            while len(line) > 0:
-                if not line.startswith(mimeType):
-                    fw.write(line)
-                line = fr.readline()
-            fr.close()
-            fw.close()
-
-            # Now copy tmp file into place
-            shutil.copyfile(tmpMailcapFile, mailcapFile)
-
-            # Remove tmp file
-            os.remove(tmpMailcapFile)
-        
-    
-    def RegisterMimeType(self, mimeType, extension, fileType, description,
-                         cmds):
+if IsOSX():
+    import wx  # sorry, but this is necessary for now
+    class MimeConfig(Config.MimeConfig):
         """
-        mimeType - mimetype designator
-        extension - file extension
-        (doesn't have to be 3 letters, does have to start with a .)
-        fileType - file type, doesn't matter, just unique
-        description - free form description of the type
-        
-        list of:
-        verb - name of command
-        command - the actual command line
-        commandDesc - a description (menu format) for the command
-        example: [ (verb,command,commandDesc), ...  ]
-
-        Written with this use case example:
-        RegisterMimeType("application/x-ag3-pkg", ".agpkg3", "agpkg3 file", "Access Grid 3 Package", ["agpm3.py", "/usr/bin/agpm3.py --wait-for-input --package", ""])
-        
-        ----
+        The MimeConfig object encapsulates in single object the management
+        of mime types. This provides a cross platform solution so the AGTk
+        can leverage legacy configuration and applications for data
+        viewing.
         """
-        if sys.platform in ['darwin']:
-            return
-
-        # Temporarily handle one command until code is added for multiple commands.
-        cmd = cmds[0]
-
-        short_extension = ""
-        if len(extension) > 0:
-            # remove the "." from the front
-            short_extension = extension[1:]
-        homedir = os.environ['HOME']
-
-        # --- General LINUX/UNIX local user mimetype/mailcap --- #
-        
-        # First unregister
-        self.UnregisterMimeType(mimeType)
-
-        # Write to Mime/Mailcap Files
-        mimeFile = os.path.join(os.environ['HOME'], ".mime.types")
-        mailcapFile = os.path.join(os.environ['HOME'], ".mailcap")
+        MimeTypesManager = wx.MimeTypesManager()
        
-        mimeA = open(mimeFile, "a")   # Append 
-        mimeA.write(mimeType + " " + short_extension + "\n")
-        mimeA.close()
-
-        mailcapA = open(mailcapFile, "a")   # Append 
-        generalMimeCommand = cmd[1].replace("%f", "%s") # has %s instead of %f
-        mailcapA.write(mimeType + ";" + generalMimeCommand + "\n")
-        mailcapA.close()
-
-
-        # --- .DESKTOP FILES BASE INFORMATION --- (KDE)
-
-        from AccessGrid.Utilities import IsExecFileAvailable
-        if IsExecFileAvailable("kde-config"):
-
-            # User
-            kdeMimeInfo = """[Desktop Entry]
-Version=%s
-Encoding=UTF-8
-Hidden=1
-Icon=ag.ico
-Type=MimeType
-Patterns=%s
-MimeType=%s
-Comment=%s
-""" % (str(GetVersion()), "*" + extension, mimeType, description) 
-            #   ("2.2", "*.agpkg", "application/x-ag3-pkg", "Access Grid 3 Package")
-
-            kdeAppInfo="""[Desktop Entry]
-Version=%s
-Encoding=UTF-8
-Hidden=1
-MultipleArgs=false
-Terminal=1
-Icon=ag.ico
-Exec=%s
-Type=Application
-MimeType=%s
-Name=%s
-Comment=%s
-""" % (str(GetVersion()), cmd[1], mimeType, cmd[0], cmd[2])
-            #    ("2.2", "/usr/bin/agpm3.py", "application/x-ag3-pkg", "Access Grid 3 Package Manager" or "agpm3.py", comment)
-
-
-        # --- GNOME BASE INFORMATION ---
-
-        defAppId = cmd[0] # use verb for the defaultAppId
-
-        gnomeAppInfo="""
-%s
-        requires_terminal=true
-        command=%s
-        can_open_multiple_files=false
-        name=%s
-        mime_types=%s
-        """ % (defAppId, cmd[1].strip("%f"), defAppId, mimeType)
-        #  %("agpm3.py", "/usr/bin/agpm3.py", "agpm3.py", application/x-ag3-pkg")
-
-        gnomeKeyInfo = """
-%s
-	default_application_id=%s
-        category=Misc
-        default_component_iid=
-        description=%s
-        icon_filename=
-        default_action_type=application
-        short_list_application_user_removals=
-        short_list_application_user_additions=%s
-        use_category_default=no
-        """ % (mimeType, defAppId, description, defAppId)
-        #     ("x-ag3-pkg", "agpm3.py", "Access Grid 3 Package", "agpm3.py")
-
-        gnomeMimeInfo="%s\n        ext: %s\n" % (mimeType, short_extension)  
-        #                                       ("x-ag3-pkg", "agpkg")
-
-
-        # --- KDE USER REGISTRATION ---
-
-        if IsExecFileAvailable("kde-config"):
-            # First find the user and system app paths.
-            # query them since applnk-redhat can't work for everybody.
-            f = os.popen("kde-config --path apps")
-            result = f.read()
-            f.close()
-            pathList = result.split(":")
-            kdeUserApps = ""
-            # if kde-config failed, the paths should stay == ""
-            for path in pathList:
-                if path.find(homedir) != -1:
-                    kdeUserApps = path # expecting /home/user/.kde/share/applnk[-redhat]
-
-            # Find the user and system mime paths.
-            f = os.popen("kde-config --path mime")
-            result = f.read()
-            f.close()
-            pathList = result.split(":")
-            kdeUserMime = ""
-            # if kde-config failed, the paths should stay == ""
-            for path in pathList:
-                if path.find(homedir) != -1:
-                    kdeUserMime = path # expecting /home/user/.kde/share/applnk[-redhat]
-
-            userMimeFile = os.path.join(kdeUserMime, extension[1:] + ".desktop")
-            userAppFile = os.path.join(kdeUserApps, cmd[0] +".desktop")
-
-            # Copy KDE files into place
-            if len(userMimeFile) > 0 and os.path.exists(kdeUserMime):
-                if not os.path.exists(userMimeFile): # don't overwrite
-                    mimeFd = open(userMimeFile, "w")
-                    mimeFd.write(kdeMimeInfo)
-                    mimeFd.close()
-
-            if len(userAppFile) > 0 and os.path.exists(kdeUserApps):
-                if not os.path.exists(userAppFile): # don't overwrite
-                    appFd = open(userAppFile, "w")
+        def instance():
+           
+            if MimeConfig.theMimeConfigInstance == None:
+                MimeConfig()
+                                 
+            return MimeConfig.theMimeConfigInstance
+    
+        instance = staticmethod(instance)
+            
+        def GetMimeCommands(self, mimeType = None, ext = None):
+            if mimeType:
+                filetype = MimeConfig.MimeTypesManager.GetFileTypeFromMimeType(mimeType)
+            elif ext:
+                filetype = MimeConfig.MimeTypesManager.GetFileTypeFromExtension(ext)
+            else:
+                raise Exception("Must provide either mimeType or ext")
+    
+            commandList = filetype.GetAllCommands("%s")
+            cdict = {}
+            if commandList:
+                print 'commandList = ', commandList
+                commandName,command = commandList
+                commandName = commandName[0]
+                command = str(command[0].split('<')[0]).strip()
+                command = command.strip('\'')
+                if commandName.lower() == 'open':
+                    commandName = 'Open'
+                cdict[commandName] = command
+                print 'mimetype, ext, command name, command = ', mimeType, ext, commandName, command
+            return cdict
+    
+        def GetMimeType(self, extension = None):
+            filetype = MimeConfig.MimeTypesManager.GetFileTypeFromExtension(extension)
+            return filetype.GetMimeType()
+    
+        def UnregisterMimeType(self, mimeType):
+    
+            # --- Remove, General LINUX/UNIX local user mimetype/mailcap --- #
+    
+            mimeFile = os.path.join(os.environ['HOME'], ".mime.types")
+            bakMimeFile = os.path.join(os.environ['HOME'], ".mime.types.bak")
+            tmpMimeFile = os.path.join(os.environ['HOME'], ".mime.types.tmp")
+            mailcapFile = os.path.join(os.environ['HOME'], ".mailcap")
+            bakMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.bak")
+            tmpMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.tmp")
+    
+            if os.path.exists(mimeFile):
+                # Backup old file
+                shutil.copyfile(mimeFile, bakMimeFile)
+    
+                # MimeType file: read line by line and remove the mimeType
+                fr = open(mimeFile, "r")
+                fw = open(tmpMimeFile, "w")
+                line = fr.readline()
+                while len(line) > 0:
+                    if not line.startswith(mimeType):
+                        fw.write(line)
+                    line = fr.readline()
+                fr.close()
+                fw.close()
+    
+                # Now copy tmp file into place
+                shutil.copyfile(tmpMimeFile, mimeFile)
+    
+                # Remove tmp file
+                os.remove(tmpMimeFile)
+    
+            if os.path.exists(mailcapFile):
+                # Backup old file
+                shutil.copyfile(mailcapFile, bakMailcapFile)
+    
+                # Mailcap file: read line by line and remove mimeType
+                fr = open(mailcapFile, "r")
+                fw = open(tmpMailcapFile, "w")
+                line = fr.readline()
+                while len(line) > 0:
+                    if not line.startswith(mimeType):
+                        fw.write(line)
+                    line = fr.readline()
+                fr.close()
+                fw.close()
+    
+                # Now copy tmp file into place
+                shutil.copyfile(tmpMailcapFile, mailcapFile)
+    
+                # Remove tmp file
+                os.remove(tmpMailcapFile)
+        
+        def UnregisterMimeType(self, mimeType):
+    
+            # --- Remove, General LINUX/UNIX local user mimetype/mailcap --- #
+    
+            mimeFile = os.path.join(os.environ['HOME'], ".mime.types")
+            bakMimeFile = os.path.join(os.environ['HOME'], ".mime.types.bak")
+            tmpMimeFile = os.path.join(os.environ['HOME'], ".mime.types.tmp")
+            mailcapFile = os.path.join(os.environ['HOME'], ".mailcap")
+            bakMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.bak")
+            tmpMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.tmp")
+    
+            if os.path.exists(mimeFile):
+                # Backup old file
+                shutil.copyfile(mimeFile, bakMimeFile)
+    
+                # MimeType file: read line by line and remove the mimeType
+                fr = open(mimeFile, "r")
+                fw = open(tmpMimeFile, "w")
+                line = fr.readline()
+                while len(line) > 0:
+                    if not line.startswith(mimeType):
+                        fw.write(line)
+                    line = fr.readline()
+                fr.close()
+                fw.close()
+    
+                # Now copy tmp file into place
+                shutil.copyfile(tmpMimeFile, mimeFile)
+    
+                # Remove tmp file
+                os.remove(tmpMimeFile)
+    
+            if os.path.exists(mailcapFile):
+                # Backup old file
+                shutil.copyfile(mailcapFile, bakMailcapFile)
+    
+                # Mailcap file: read line by line and remove mimeType
+                fr = open(mailcapFile, "r")
+                fw = open(tmpMailcapFile, "w")
+                line = fr.readline()
+                while len(line) > 0:
+                    if not line.startswith(mimeType):
+                        fw.write(line)
+                    line = fr.readline()
+                fr.close()
+                fw.close()
+    
+                # Now copy tmp file into place
+                shutil.copyfile(tmpMailcapFile, mailcapFile)
+    
+                # Remove tmp file
+                os.remove(tmpMailcapFile)
+            
+        
+        def RegisterMimeType(self, mimeType, extension, fileType, description,
+                             cmds):
+            """
+            mimeType - mimetype designator
+            extension - file extension
+            (doesn't have to be 3 letters, does have to start with a .)
+            fileType - file type, doesn't matter, just unique
+            description - free form description of the type
+            
+            list of:
+            verb - name of command
+            command - the actual command line
+            commandDesc - a description (menu format) for the command
+            example: [ (verb,command,commandDesc), ...  ]
+    
+            Written with this use case example:
+            RegisterMimeType("application/x-ag3-pkg", ".agpkg3", "agpkg3 file", "Access Grid 3 Package", ["agpm3.py", "/usr/bin/agpm3.py --wait-for-input --package", ""])
+            
+            ----
+            """
+            if sys.platform in ['darwin']:
+                return
+    
+            # Temporarily handle one command until code is added for multiple commands.
+            cmd = cmds[0]
+    
+            short_extension = ""
+            if len(extension) > 0:
+                # remove the "." from the front
+                short_extension = extension[1:]
+            homedir = os.environ['HOME']
+    
+            # --- General LINUX/UNIX local user mimetype/mailcap --- #
+            
+            # First unregister
+            self.UnregisterMimeType(mimeType)
+    
+            # Write to Mime/Mailcap Files
+            mimeFile = os.path.join(os.environ['HOME'], ".mime.types")
+            mailcapFile = os.path.join(os.environ['HOME'], ".mailcap")
+           
+            mimeA = open(mimeFile, "a")   # Append 
+            mimeA.write(mimeType + " " + short_extension + "\n")
+            mimeA.close()
+    
+            mailcapA = open(mailcapFile, "a")   # Append 
+            generalMimeCommand = cmd[1].replace("%f", "%s") # has %s instead of %f
+            mailcapA.write(mimeType + ";" + generalMimeCommand + "\n")
+            mailcapA.close()
+    
+    
+            # --- .DESKTOP FILES BASE INFORMATION --- (KDE)
+    
+            from AccessGrid.Utilities import IsExecFileAvailable
+            if IsExecFileAvailable("kde-config"):
+    
+                # User
+                kdeMimeInfo = """[Desktop Entry]
+    Version=%s
+    Encoding=UTF-8
+    Hidden=1
+    Icon=ag.ico
+    Type=MimeType
+    Patterns=%s
+    MimeType=%s
+    Comment=%s
+    """ % (str(GetVersion()), "*" + extension, mimeType, description) 
+                #   ("2.2", "*.agpkg", "application/x-ag3-pkg", "Access Grid 3 Package")
+    
+                kdeAppInfo="""[Desktop Entry]
+    Version=%s
+    Encoding=UTF-8
+    Hidden=1
+    MultipleArgs=false
+    Terminal=1
+    Icon=ag.ico
+    Exec=%s
+    Type=Application
+    MimeType=%s
+    Name=%s
+    Comment=%s
+    """ % (str(GetVersion()), cmd[1], mimeType, cmd[0], cmd[2])
+                #    ("2.2", "/usr/bin/agpm3.py", "application/x-ag3-pkg", "Access Grid 3 Package Manager" or "agpm3.py", comment)
+    
+    
+            # --- GNOME BASE INFORMATION ---
+    
+            defAppId = cmd[0] # use verb for the defaultAppId
+    
+            gnomeAppInfo="""
+    %s
+            requires_terminal=true
+            command=%s
+            can_open_multiple_files=false
+            name=%s
+            mime_types=%s
+            """ % (defAppId, cmd[1].strip("%f"), defAppId, mimeType)
+            #  %("agpm3.py", "/usr/bin/agpm3.py", "agpm3.py", application/x-ag3-pkg")
+    
+            gnomeKeyInfo = """
+    %s
+        default_application_id=%s
+            category=Misc
+            default_component_iid=
+            description=%s
+            icon_filename=
+            default_action_type=application
+            short_list_application_user_removals=
+            short_list_application_user_additions=%s
+            use_category_default=no
+            """ % (mimeType, defAppId, description, defAppId)
+            #     ("x-ag3-pkg", "agpm3.py", "Access Grid 3 Package", "agpm3.py")
+    
+            gnomeMimeInfo="%s\n        ext: %s\n" % (mimeType, short_extension)  
+            #                                       ("x-ag3-pkg", "agpkg")
+    
+    
+            # --- KDE USER REGISTRATION ---
+    
+            if IsExecFileAvailable("kde-config"):
+                # First find the user and system app paths.
+                # query them since applnk-redhat can't work for everybody.
+                f = os.popen("kde-config --path apps")
+                result = f.read()
+                f.close()
+                pathList = result.split(":")
+                kdeUserApps = ""
+                # if kde-config failed, the paths should stay == ""
+                for path in pathList:
+                    if path.find(homedir) != -1:
+                        kdeUserApps = path # expecting /home/user/.kde/share/applnk[-redhat]
+    
+                # Find the user and system mime paths.
+                f = os.popen("kde-config --path mime")
+                result = f.read()
+                f.close()
+                pathList = result.split(":")
+                kdeUserMime = ""
+                # if kde-config failed, the paths should stay == ""
+                for path in pathList:
+                    if path.find(homedir) != -1:
+                        kdeUserMime = path # expecting /home/user/.kde/share/applnk[-redhat]
+    
+                userMimeFile = os.path.join(kdeUserMime, extension[1:] + ".desktop")
+                userAppFile = os.path.join(kdeUserApps, cmd[0] +".desktop")
+    
+                # Copy KDE files into place
+                if len(userMimeFile) > 0 and os.path.exists(kdeUserMime):
+                    if not os.path.exists(userMimeFile): # don't overwrite
+                        mimeFd = open(userMimeFile, "w")
+                        mimeFd.write(kdeMimeInfo)
+                        mimeFd.close()
+    
+                if len(userAppFile) > 0 and os.path.exists(kdeUserApps):
+                    if not os.path.exists(userAppFile): # don't overwrite
+                        appFd = open(userAppFile, "w")
+                        appFd.write(kdeAppInfo)
+                        appFd.close()
+    
+    
+            # --- GNOME USER REGISTRATION ---
+    
+            # if gnome files exist, register with them.
+            gnomeAppDir = os.path.join(homedir, ".gnome", "application-info")
+            gnomeMimeDir = os.path.join(homedir, ".gnome", "mime-info")
+            gnomeAppFile = os.path.join(gnomeAppDir, cmd[0] + ".applications")
+            gnomeKeysFile = os.path.join(gnomeMimeDir, cmd[0] + ".keys")
+            gnomeMimeFile = os.path.join(gnomeMimeDir, cmd [0] + ".mime")
+            if os.path.exists(gnomeAppDir) and os.path.exists(gnomeMimeDir):
+                log.info("registering file type " + extension + " with gnome")
+    
+                if not os.path.exists(gnomeAppFile): # don't overwrite
+                    f = open(gnomeAppFile, "w")
+                    f.write(gnomeAppInfo)
+                    f.close()
+    
+                if not os.path.exists(gnomeKeysFile): # don't overwrite
+                    f = open(gnomeKeysFile, "w")
+                    f.write(gnomeKeyInfo)
+                    f.close()
+    
+                if not os.path.exists(gnomeMimeFile): # don't overwrite
+                    f = open(gnomeMimeFile, "w")
+                    f.write(gnomeMimeInfo)
+                    f.close()
+    
+            else:
+                log.info("gnome directory " + gnomeAppDir + " or " + gnomeMimeDir + " not found, not registering file type " + extension + " with gnome")
+    
+    
+            """
+            registerSystem = 1
+            if registerSystem:
+    
+            # --- KDE SYSTEM REGISTRATION ---
+    
+                # general paths
+                genSystemAppDir = "/usr/share/applications"
+                genSystemAppFile = os.path.join(genSystemAppDir, cmd[0] + ".desktop")
+                genSystemMimeDir = "/usr/share/mimelnk/application"
+                genSystemMimeFile = os.path.join(genSystemMimeDir, extension[1:] + ".desktop")
+    
+                if len(genSystemAppFile) > 0 and os.path.exists(genSystemAppDir):
+                    appFd = open(genSystemAppFile, "w" )
                     appFd.write(kdeAppInfo)
                     appFd.close()
+    
+                if len(genSystemMimeFile) > 0 and os.path.exists(genSystemMimeDir):
+                    mimeFd = open(genSystemMimeFile, "w" )
+                    mimeFd.write(kdeMimeInfo)
+                    mimeFd.close()
+    
+            # --- GNOME SYSTEM REGISTRATION ---
+    
+                gnomeSystemMimeDir = "/usr/share/mime-info"
+                gnomeSystemMimeFile = os.path.join(gnomeSystemMimeDir, cmd[0] + ".mime")
+                gnomeSystemKeysFile = os.path.join(gnomeSystemMimeDir, cmd[0] + ".keys")
+                gnomeSystemAppDir = "/usr/share/application-registry"
+                gnomeSystemAppFile = os.path.join(gnomeSystemAppDir, cmd[0] + ".applications")
+                if os.path.exists(gnomeSystemMimeDir):
+                    # Keys
+                    f = open(gnomeSystemKeysFile, "w")
+                    f.write(gnomeKeyInfo)
+                    f.close()
+                    # Mime
+                    f = open(gnomeSystemMimeFile, "w")
+                    f.write(gnomeMimeInfo)
+                    f.close()
+                else:
+                    log.info("gnomeSystemMimeDir does not exist: " + gnomeSystemMimeDir)
+                if os.path.exists(gnomeSystemAppDir):
+                    # Application
+                    f = open(gnomeSystemAppFile, "w")
+                    f.write(gnomeAppInfo)
+                    f.close()
+                else:
+                    log.info("gnomeSystemAppDir does not exist: " + gnomeSystemAppDir)
+            """
 
-
-        # --- GNOME USER REGISTRATION ---
-
-        # if gnome files exist, register with them.
-        gnomeAppDir = os.path.join(homedir, ".gnome", "application-info")
-        gnomeMimeDir = os.path.join(homedir, ".gnome", "mime-info")
-        gnomeAppFile = os.path.join(gnomeAppDir, cmd[0] + ".applications")
-        gnomeKeysFile = os.path.join(gnomeMimeDir, cmd[0] + ".keys")
-        gnomeMimeFile = os.path.join(gnomeMimeDir, cmd [0] + ".mime")
-        if os.path.exists(gnomeAppDir) and os.path.exists(gnomeMimeDir):
-            log.info("registering file type " + extension + " with gnome")
-
-            if not os.path.exists(gnomeAppFile): # don't overwrite
-                f = open(gnomeAppFile, "w")
-                f.write(gnomeAppInfo)
-                f.close()
-
-            if not os.path.exists(gnomeKeysFile): # don't overwrite
-                f = open(gnomeKeysFile, "w")
-                f.write(gnomeKeyInfo)
-                f.close()
-
-            if not os.path.exists(gnomeMimeFile): # don't overwrite
-                f = open(gnomeMimeFile, "w")
-                f.write(gnomeMimeInfo)
-                f.close()
-
-        else:
-            log.info("gnome directory " + gnomeAppDir + " or " + gnomeMimeDir + " not found, not registering file type " + extension + " with gnome")
-
-
+else:
+    
+    
+    class MimeConfig(Config.MimeConfig):
         """
-        registerSystem = 1
-        if registerSystem:
-
-        # --- KDE SYSTEM REGISTRATION ---
-
-            # general paths
-            genSystemAppDir = "/usr/share/applications"
-            genSystemAppFile = os.path.join(genSystemAppDir, cmd[0] + ".desktop")
-            genSystemMimeDir = "/usr/share/mimelnk/application"
-            genSystemMimeFile = os.path.join(genSystemMimeDir, extension[1:] + ".desktop")
-
-            if len(genSystemAppFile) > 0 and os.path.exists(genSystemAppDir):
-                appFd = open(genSystemAppFile, "w" )
-                appFd.write(kdeAppInfo)
-                appFd.close()
-
-            if len(genSystemMimeFile) > 0 and os.path.exists(genSystemMimeDir):
-                mimeFd = open(genSystemMimeFile, "w" )
-                mimeFd.write(kdeMimeInfo)
-                mimeFd.close()
-
-        # --- GNOME SYSTEM REGISTRATION ---
-
-            gnomeSystemMimeDir = "/usr/share/mime-info"
-            gnomeSystemMimeFile = os.path.join(gnomeSystemMimeDir, cmd[0] + ".mime")
-            gnomeSystemKeysFile = os.path.join(gnomeSystemMimeDir, cmd[0] + ".keys")
-            gnomeSystemAppDir = "/usr/share/application-registry"
-            gnomeSystemAppFile = os.path.join(gnomeSystemAppDir, cmd[0] + ".applications")
-            if os.path.exists(gnomeSystemMimeDir):
-                # Keys
-                f = open(gnomeSystemKeysFile, "w")
-                f.write(gnomeKeyInfo)
-                f.close()
-                # Mime
-                f = open(gnomeSystemMimeFile, "w")
-                f.write(gnomeMimeInfo)
-                f.close()
-            else:
-                log.info("gnomeSystemMimeDir does not exist: " + gnomeSystemMimeDir)
-            if os.path.exists(gnomeSystemAppDir):
-                # Application
-                f = open(gnomeSystemAppFile, "w")
-                f.write(gnomeAppInfo)
-                f.close()
-            else:
-                log.info("gnomeSystemAppDir does not exist: " + gnomeSystemAppDir)
+        The MimeConfig object encapsulates in single object the management
+        of mime types. This provides a cross platform solution so the AGTk
+        can leverage legacy configuration and applications for data
+        viewing.
         """
     
-    def GetMimeCommands(self, mimeType = None, ext = None):
-        """
-        """
-        cdict = dict()
-        view = 'view'
+        def instance():
+            if MimeConfig.theMimeConfigInstance == None:
+                MimeConfig()
+    
+            return MimeConfig.theMimeConfigInstance
+    
+        instance = staticmethod(instance)
+    
+        def UnregisterMimeType(self, mimeType):
+    
+            # --- Remove, General LINUX/UNIX local user mimetype/mailcap --- #
+    
+            mimeFile = os.path.join(os.environ['HOME'], ".mime.types")
+            bakMimeFile = os.path.join(os.environ['HOME'], ".mime.types.bak")
+            tmpMimeFile = os.path.join(os.environ['HOME'], ".mime.types.tmp")
+            mailcapFile = os.path.join(os.environ['HOME'], ".mailcap")
+            bakMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.bak")
+            tmpMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.tmp")
+    
+            if os.path.exists(mimeFile):
+                # Backup old file
+                shutil.copyfile(mimeFile, bakMimeFile)
+    
+                # MimeType file: read line by line and remove the mimeType
+                fr = open(mimeFile, "r")
+                fw = open(tmpMimeFile, "w")
+                line = fr.readline()
+                while len(line) > 0:
+                    if not line.startswith(mimeType):
+                        fw.write(line)
+                    line = fr.readline()
+                fr.close()
+                fw.close()
+    
+                # Now copy tmp file into place
+                shutil.copyfile(tmpMimeFile, mimeFile)
+    
+                # Remove tmp file
+                os.remove(tmpMimeFile)
+    
+            if os.path.exists(mailcapFile):
+                # Backup old file
+                shutil.copyfile(mailcapFile, bakMailcapFile)
+    
+                # Mailcap file: read line by line and remove mimeType
+                fr = open(mailcapFile, "r")
+                fw = open(tmpMailcapFile, "w")
+                line = fr.readline()
+                while len(line) > 0:
+                    if not line.startswith(mimeType):
+                        fw.write(line)
+                    line = fr.readline()
+                fr.close()
+                fw.close()
+    
+                # Now copy tmp file into place
+                shutil.copyfile(tmpMailcapFile, mailcapFile)
+    
+                # Remove tmp file
+                os.remove(tmpMailcapFile)
         
-        if mimeType == None:
-            mimeType = self.GetMimeType(extension = ext)
+        def UnregisterMimeType(self, mimeType):
+    
+            # --- Remove, General LINUX/UNIX local user mimetype/mailcap --- #
+    
+            mimeFile = os.path.join(os.environ['HOME'], ".mime.types")
+            bakMimeFile = os.path.join(os.environ['HOME'], ".mime.types.bak")
+            tmpMimeFile = os.path.join(os.environ['HOME'], ".mime.types.tmp")
+            mailcapFile = os.path.join(os.environ['HOME'], ".mailcap")
+            bakMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.bak")
+            tmpMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.tmp")
+    
+            if os.path.exists(mimeFile):
+                # Backup old file
+                shutil.copyfile(mimeFile, bakMimeFile)
+    
+                # MimeType file: read line by line and remove the mimeType
+                fr = open(mimeFile, "r")
+                fw = open(tmpMimeFile, "w")
+                line = fr.readline()
+                while len(line) > 0:
+                    if not line.startswith(mimeType):
+                        fw.write(line)
+                    line = fr.readline()
+                fr.close()
+                fw.close()
+    
+                # Now copy tmp file into place
+                shutil.copyfile(tmpMimeFile, mimeFile)
+    
+                # Remove tmp file
+                os.remove(tmpMimeFile)
+    
+            if os.path.exists(mailcapFile):
+                # Backup old file
+                shutil.copyfile(mailcapFile, bakMailcapFile)
+    
+                # Mailcap file: read line by line and remove mimeType
+                fr = open(mailcapFile, "r")
+                fw = open(tmpMailcapFile, "w")
+                line = fr.readline()
+                while len(line) > 0:
+                    if not line.startswith(mimeType):
+                        fw.write(line)
+                    line = fr.readline()
+                fr.close()
+                fw.close()
+    
+                # Now copy tmp file into place
+                shutil.copyfile(tmpMailcapFile, mailcapFile)
+    
+                # Remove tmp file
+                os.remove(tmpMailcapFile)
             
-        # We only care about mapping view to Open
-        caps = mailcap.getcaps()
-
-        # This always returns a tuple, so this should be safe
-        if mimeType != None:
-            match = mailcap.findmatch(caps, mimeType, view)[1]
-        else:
+        
+        def RegisterMimeType(self, mimeType, extension, fileType, description,
+                             cmds):
+            """
+            mimeType - mimetype designator
+            extension - file extension
+            (doesn't have to be 3 letters, does have to start with a .)
+            fileType - file type, doesn't matter, just unique
+            description - free form description of the type
+            
+            list of:
+            verb - name of command
+            command - the actual command line
+            commandDesc - a description (menu format) for the command
+            example: [ (verb,command,commandDesc), ...  ]
+    
+            Written with this use case example:
+            RegisterMimeType("application/x-ag3-pkg", ".agpkg3", "agpkg3 file", "Access Grid 3 Package", ["agpm3.py", "/usr/bin/agpm3.py --wait-for-input --package", ""])
+            
+            ----
+            """
+            if sys.platform in ['darwin']:
+                return
+    
+            # Temporarily handle one command until code is added for multiple commands.
+            cmd = cmds[0]
+    
+            short_extension = ""
+            if len(extension) > 0:
+                # remove the "." from the front
+                short_extension = extension[1:]
+            homedir = os.environ['HOME']
+    
+            # --- General LINUX/UNIX local user mimetype/mailcap --- #
+            
+            # First unregister
+            self.UnregisterMimeType(mimeType)
+    
+            # Write to Mime/Mailcap Files
+            mimeFile = os.path.join(os.environ['HOME'], ".mime.types")
+            mailcapFile = os.path.join(os.environ['HOME'], ".mailcap")
+           
+            mimeA = open(mimeFile, "a")   # Append 
+            mimeA.write(mimeType + " " + short_extension + "\n")
+            mimeA.close()
+    
+            mailcapA = open(mailcapFile, "a")   # Append 
+            generalMimeCommand = cmd[1].replace("%f", "%s") # has %s instead of %f
+            mailcapA.write(mimeType + ";" + generalMimeCommand + "\n")
+            mailcapA.close()
+    
+    
+            # --- .DESKTOP FILES BASE INFORMATION --- (KDE)
+    
+            from AccessGrid.Utilities import IsExecFileAvailable
+            if IsExecFileAvailable("kde-config"):
+    
+                # User
+                kdeMimeInfo = """[Desktop Entry]
+    Version=%s
+    Encoding=UTF-8
+    Hidden=1
+    Icon=ag.ico
+    Type=MimeType
+    Patterns=%s
+    MimeType=%s
+    Comment=%s
+    """ % (str(GetVersion()), "*" + extension, mimeType, description) 
+                #   ("2.2", "*.agpkg", "application/x-ag3-pkg", "Access Grid 3 Package")
+    
+                kdeAppInfo="""[Desktop Entry]
+    Version=%s
+    Encoding=UTF-8
+    Hidden=1
+    MultipleArgs=false
+    Terminal=1
+    Icon=ag.ico
+    Exec=%s
+    Type=Application
+    MimeType=%s
+    Name=%s
+    Comment=%s
+    """ % (str(GetVersion()), cmd[1], mimeType, cmd[0], cmd[2])
+                #    ("2.2", "/usr/bin/agpm3.py", "application/x-ag3-pkg", "Access Grid 3 Package Manager" or "agpm3.py", comment)
+    
+    
+            # --- GNOME BASE INFORMATION ---
+    
+            defAppId = cmd[0] # use verb for the defaultAppId
+    
+            gnomeAppInfo="""
+    %s
+            requires_terminal=true
+            command=%s
+            can_open_multiple_files=false
+            name=%s
+            mime_types=%s
+            """ % (defAppId, cmd[1].strip("%f"), defAppId, mimeType)
+            #  %("agpm3.py", "/usr/bin/agpm3.py", "agpm3.py", application/x-ag3-pkg")
+    
+            gnomeKeyInfo = """
+    %s
+    	default_application_id=%s
+            category=Misc
+            default_component_iid=
+            description=%s
+            icon_filename=
+            default_action_type=application
+            short_list_application_user_removals=
+            short_list_application_user_additions=%s
+            use_category_default=no
+            """ % (mimeType, defAppId, description, defAppId)
+            #     ("x-ag3-pkg", "agpm3.py", "Access Grid 3 Package", "agpm3.py")
+    
+            gnomeMimeInfo="%s\n        ext: %s\n" % (mimeType, short_extension)  
+            #                                       ("x-ag3-pkg", "agpkg")
+    
+    
+            # --- KDE USER REGISTRATION ---
+    
+            if IsExecFileAvailable("kde-config"):
+                # First find the user and system app paths.
+                # query them since applnk-redhat can't work for everybody.
+                f = os.popen("kde-config --path apps")
+                result = f.read()
+                f.close()
+                pathList = result.split(":")
+                kdeUserApps = ""
+                # if kde-config failed, the paths should stay == ""
+                for path in pathList:
+                    if path.find(homedir) != -1:
+                        kdeUserApps = path # expecting /home/user/.kde/share/applnk[-redhat]
+    
+                # Find the user and system mime paths.
+                f = os.popen("kde-config --path mime")
+                result = f.read()
+                f.close()
+                pathList = result.split(":")
+                kdeUserMime = ""
+                # if kde-config failed, the paths should stay == ""
+                for path in pathList:
+                    if path.find(homedir) != -1:
+                        kdeUserMime = path # expecting /home/user/.kde/share/applnk[-redhat]
+    
+                userMimeFile = os.path.join(kdeUserMime, extension[1:] + ".desktop")
+                userAppFile = os.path.join(kdeUserApps, cmd[0] +".desktop")
+    
+                # Copy KDE files into place
+                if len(userMimeFile) > 0 and os.path.exists(kdeUserMime):
+                    if not os.path.exists(userMimeFile): # don't overwrite
+                        mimeFd = open(userMimeFile, "w")
+                        mimeFd.write(kdeMimeInfo)
+                        mimeFd.close()
+    
+                if len(userAppFile) > 0 and os.path.exists(kdeUserApps):
+                    if not os.path.exists(userAppFile): # don't overwrite
+                        appFd = open(userAppFile, "w")
+                        appFd.write(kdeAppInfo)
+                        appFd.close()
+    
+    
+            # --- GNOME USER REGISTRATION ---
+    
+            # if gnome files exist, register with them.
+            gnomeAppDir = os.path.join(homedir, ".gnome", "application-info")
+            gnomeMimeDir = os.path.join(homedir, ".gnome", "mime-info")
+            gnomeAppFile = os.path.join(gnomeAppDir, cmd[0] + ".applications")
+            gnomeKeysFile = os.path.join(gnomeMimeDir, cmd[0] + ".keys")
+            gnomeMimeFile = os.path.join(gnomeMimeDir, cmd [0] + ".mime")
+            if os.path.exists(gnomeAppDir) and os.path.exists(gnomeMimeDir):
+                log.info("registering file type " + extension + " with gnome")
+    
+                if not os.path.exists(gnomeAppFile): # don't overwrite
+                    f = open(gnomeAppFile, "w")
+                    f.write(gnomeAppInfo)
+                    f.close()
+    
+                if not os.path.exists(gnomeKeysFile): # don't overwrite
+                    f = open(gnomeKeysFile, "w")
+                    f.write(gnomeKeyInfo)
+                    f.close()
+    
+                if not os.path.exists(gnomeMimeFile): # don't overwrite
+                    f = open(gnomeMimeFile, "w")
+                    f.write(gnomeMimeInfo)
+                    f.close()
+    
+            else:
+                log.info("gnome directory " + gnomeAppDir + " or " + gnomeMimeDir + " not found, not registering file type " + extension + " with gnome")
+    
+    
+            """
+            registerSystem = 1
+            if registerSystem:
+    
+            # --- KDE SYSTEM REGISTRATION ---
+    
+                # general paths
+                genSystemAppDir = "/usr/share/applications"
+                genSystemAppFile = os.path.join(genSystemAppDir, cmd[0] + ".desktop")
+                genSystemMimeDir = "/usr/share/mimelnk/application"
+                genSystemMimeFile = os.path.join(genSystemMimeDir, extension[1:] + ".desktop")
+    
+                if len(genSystemAppFile) > 0 and os.path.exists(genSystemAppDir):
+                    appFd = open(genSystemAppFile, "w" )
+                    appFd.write(kdeAppInfo)
+                    appFd.close()
+    
+                if len(genSystemMimeFile) > 0 and os.path.exists(genSystemMimeDir):
+                    mimeFd = open(genSystemMimeFile, "w" )
+                    mimeFd.write(kdeMimeInfo)
+                    mimeFd.close()
+    
+            # --- GNOME SYSTEM REGISTRATION ---
+    
+                gnomeSystemMimeDir = "/usr/share/mime-info"
+                gnomeSystemMimeFile = os.path.join(gnomeSystemMimeDir, cmd[0] + ".mime")
+                gnomeSystemKeysFile = os.path.join(gnomeSystemMimeDir, cmd[0] + ".keys")
+                gnomeSystemAppDir = "/usr/share/application-registry"
+                gnomeSystemAppFile = os.path.join(gnomeSystemAppDir, cmd[0] + ".applications")
+                if os.path.exists(gnomeSystemMimeDir):
+                    # Keys
+                    f = open(gnomeSystemKeysFile, "w")
+                    f.write(gnomeKeyInfo)
+                    f.close()
+                    # Mime
+                    f = open(gnomeSystemMimeFile, "w")
+                    f.write(gnomeMimeInfo)
+                    f.close()
+                else:
+                    log.info("gnomeSystemMimeDir does not exist: " + gnomeSystemMimeDir)
+                if os.path.exists(gnomeSystemAppDir):
+                    # Application
+                    f = open(gnomeSystemAppFile, "w")
+                    f.write(gnomeAppInfo)
+                    f.close()
+                else:
+                    log.info("gnomeSystemAppDir does not exist: " + gnomeSystemAppDir)
+            """
+        
+        def GetMimeCommands(self, mimeType = None, ext = None):
+            """
+            """
+            cdict = dict()
+            view = 'view'
+            
+            if mimeType == None:
+                mimeType = self.GetMimeType(extension = ext)
+                
+            # We only care about mapping view to Open
+            caps = mailcap.getcaps()
+    
+            # This always returns a tuple, so this should be safe
+            if mimeType != None:
+                match = mailcap.findmatch(caps, mimeType, view)[1]
+            else:
+                return cdict
+    
+            if match != None:
+                cdict['Open'] = match[view]
+    
             return cdict
-
-        if match != None:
-            cdict['Open'] = match[view]
-
-        return cdict
-
-    def GetMimeType(self, extension = None):
-        fauxFn = ".".join(["Faux", extension])
-        mimeFile = os.path.join(os.environ['HOME'],".mime.types")
-        mimetypes.init([mimeFile])
-        
-        # This is always a tuple so this is Ok
-        mimeType = mimetypes.guess_type(fauxFn)[0]
-        
-        return mimeType
+    
+        def GetMimeType(self, extension = None):
+            fauxFn = ".".join(["Faux", extension])
+            mimeFile = os.path.join(os.environ['HOME'],".mime.types")
+            mimetypes.init([mimeFile])
+            
+            # This is always a tuple so this is Ok
+            mimeType = mimetypes.guess_type(fauxFn)[0]
+            
+            return mimeType
 
 # Simple inline tests to make sure this module and all of it's classes
 # are working
