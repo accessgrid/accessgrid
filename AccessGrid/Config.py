@@ -545,7 +545,7 @@ class UserConfig:
 
 
     def GetDownloadDirName(self):
-        return "AccessGrid Downloads"
+        return "Download"
     
     def GetDownloadDir(self):
         # This method is basically a placeholder which should be overridden
