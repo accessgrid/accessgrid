@@ -230,7 +230,7 @@ class VenueClient:
         self.venueList = []
         venueServerUrls = self.preferences.GetPreference(Preferences.VENUESERVER_URLS)
         venueServerUrls = venueServerUrls.split('|')
-        venuesFile = os.path.join(self.app.GetUserConfig().GetConfigDir(), 'venues')
+        venuesFile = self.app.GetUserConfig().GetVenuesCache()
         self.venueCache = VenueCache(venuesFile,venueServerUrls)
         self.venueCache.Load()
         
@@ -402,6 +402,7 @@ class VenueClient:
         
         # update bridges in preferences
         self.preferences.SetBridges(self.bridges)
+        self.preferences.StoreBridges()
 
         # probably don't need to do this
         self.currentBridge = self.FindBridge(bridgeList)
@@ -1557,39 +1558,32 @@ class VenueClient:
             #    found = 1
                                     
         if not found:# and self.transport == "unicast":# and self.currentBridge.serverType == QUICKBRIDGE_TYPE:
-            # If no unicast network location was found, connect to
-            # the bridge to retreive one.
 
-            if self.currentBridge:
-                
 
-                if self.currentBridge.status != STATUS_ENABLED:
-                    log.info("Current bridge %s is disabled by user, searching for other bridge", self.currentBridge.name)
-                    self.currentBridge = self.FindBridge(self.bridges.values())
-                    if not self.currentBridge:
-                        raise NetworkLocationNotFound("transport=%s"%(self.transport,))
-                    log.info("Using new bridge %s", self.currentBridge.name)
+            if not self.currentBridge or self.currentBridge.status != STATUS_ENABLED:
+                log.info("Current bridge %s is disabled by user, searching for other bridge", self.currentBridge.name)
+                self.currentBridge = self.FindBridge(self.bridges.values())
+                if not self.currentBridge:
+                    raise NetworkLocationNotFound("transport=%s"%(self.transport,))
+                log.info("Using new bridge %s", self.currentBridge.name)
 
-                if self.currentBridge.serverType == QUICKBRIDGE_TYPE:
-                    qbc = QuickBridgeClient.QuickBridgeClient(self.currentBridge.host, self.currentBridge.port)
-                elif self.currentBridge.serverType == UMTP_TYPE:
-                    qbc = UMTPClient.UMTPClient(self.currentBridge.host,self.currentBridge.port)
+            if self.currentBridge.serverType == QUICKBRIDGE_TYPE:
+                qbc = QuickBridgeClient.QuickBridgeClient(self.currentBridge.host, self.currentBridge.port)
+            elif self.currentBridge.serverType == UMTP_TYPE:
+                qbc = UMTPClient.UMTPClient(self.currentBridge.host,self.currentBridge.port)
 
-                try:
-                    stream.location = qbc.JoinBridge(stream.networkLocations[0])
-                    log.debug("Got location from bridge: %s", stream.location)
-                    if self.currentBridge.serverType != UMTP_TYPE:        # HACK!
-                        stream.networkLocations.append(stream.location)
-                  
-                except QuickBridgeClient.ConnectionError,e:
-                    self.currentBridge.rank = BridgeDescription.UNREACHABLE
-                except Exception,e:
-                    log.exception("VenueClient.UpdateStream: Failed to connect to bridge %s"%(self.currentBridge.name))
-                    raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
-                                                  (self.transport, self.currentBridge.name, self.currentBridge.host))
-            else:
-                raise NetworkLocationNotFound("transport=%s"%(self.transport))
-
+            try:
+                stream.location = qbc.JoinBridge(stream.networkLocations[0])
+                log.debug("Got location from bridge: %s", stream.location)
+                if self.currentBridge.serverType != UMTP_TYPE:        # HACK!
+                    stream.networkLocations.append(stream.location)
+              
+            except QuickBridgeClient.ConnectionError,e:
+                self.currentBridge.rank = BridgeDescription.UNREACHABLE
+            except Exception,e:
+                log.exception("VenueClient.UpdateStream: Failed to connect to bridge %s"%(self.currentBridge.name))
+                raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
+                                              (self.transport, self.currentBridge.name, self.currentBridge.host))
     def SendEvent(self,eventType, data):
         self.eventClient.Send(eventType, data)
 
