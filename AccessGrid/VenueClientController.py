@@ -33,7 +33,7 @@ from AccessGrid.PluginFactory import BuildPlugin
 from AccessGrid.Descriptions import STATUS_ENABLED, STATUS_DISABLED
 from AccessGrid.NetworkLocation import ProviderProfile
 from AccessGrid.Platform.Config import UserConfig, MimeConfig, AGTkConfig
-from AccessGrid.Platform import IsWindows, Config
+from AccessGrid.Platform import IsWindows, IsOSX, Config
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.VenueClient import NetworkLocationNotFound
 from AccessGrid import Events
@@ -747,9 +747,10 @@ class VenueClientController:
         self.__venueClient.SavePreferences()
 
         # Update node url
-        self.__venueClient.SetNodeUrl(preferences.GetPreference(Preferences.NODE_URL))
         if preferences.GetPreference(Preferences.NODE_BUILTIN):
             self.__venueClient.nodeService = self.__venueClient.builtInNodeService
+        else:
+            self.__venueClient.SetNodeUrl(preferences.GetPreference(Preferences.NODE_URL))
         
        
         # Update navigation panel
@@ -1331,6 +1332,8 @@ class VenueClientController:
         *verb*
         """
         
+        log.debug("StartCmd: obj %s ; verb %s ; cmd %s", objDesc.name, verb, cmd)
+        
         if objDesc == None:
             raise ValueError("objDesc must not be None")
 
@@ -1341,7 +1344,7 @@ class VenueClientController:
         if verb:
             commandList = self.GetCommands(objDesc)
             command = commandList[verb]
-
+            cmd = command
         elif cmd:
             command = cmd
 
@@ -1352,7 +1355,7 @@ class VenueClientController:
 
         # If objDesc is data, download the filename specified in it.
         if isinstance(objDesc, DataDescription):
-            localFilePath = os.path.join(UserConfig.instance().GetTempDir(),
+            localFilePath = os.path.join(UserConfig.instance().GetDownloadDir(),
                                          objDesc.name.replace(" ", "_"))
             self.SaveFileNoProgress(objDesc, localFilePath)
 
@@ -1518,18 +1521,21 @@ class VenueClientController:
                               pprint.pformat(namedVars))
                 return
 
+
         if IsWindows():
-            #shell = os.environ['ComSpec']
-            #realCommand = "%s %s %s" % (shell, "/c", realCommand)
-            log.info("StartCmd starting command: %s", realCommand)
             cmd = realCommand
             argList = []
+        elif IsOSX():
+            originalCommand = cmd
+            commandArgStr = realCommand[len(cmd):]
+            cmd = "open"
+            argList = ['-a',originalCommand] + str(commandArgStr).strip().split(' ')
         else:
-            log.info("StartCmd starting command: %s", realCommand)
             aList = realCommand.split(' ')
             cmd = aList[0]
             argList = aList[1:]
 
+        log.info("StartCmd starting command with args %s %s", cmd, str(argList))
         processManager.StartProcess(cmd,argList)
         
     def StopApplications(self):
