@@ -1525,15 +1525,18 @@ class VenueClientController:
         if IsWindows():
             cmd = realCommand
             argList = []
-        elif IsOSX():
-            originalCommand = cmd
-            commandArgStr = realCommand[len(cmd):]
-            cmd = "open"
-            argList = ['-a',originalCommand] + str(commandArgStr).strip().split(' ')
         else:
-            aList = realCommand.split(' ')
-            cmd = aList[0]
-            argList = aList[1:]
+            if IsOSX() and cmd.endswith('.app'):
+                # launch OSX app bundles specially
+                originalCommand = cmd
+                commandArgStr = realCommand[len(cmd):]
+                cmd = "open"
+                argList = ['-a',originalCommand] + str(commandArgStr).strip().split(' ')
+            else:
+                # use standard launch
+                aList = realCommand.split(' ')
+                cmd = aList[0]
+                argList = aList[1:]
 
         log.info("StartCmd starting command with args %s %s", cmd, str(argList))
         processManager.StartProcess(cmd,argList)
