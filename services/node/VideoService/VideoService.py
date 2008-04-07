@@ -22,6 +22,7 @@ from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid import Toolkit
+from AccessGrid.UIUtilities import GetScreenWidth
 
 vicstartup="""option add Vic.disable_autoplace %s startupFile
 option add Vic.muteNewSources %s startupFile
@@ -99,6 +100,7 @@ class VideoService( AGService ):
         self.sysConf = SystemConfig.instance()
 
         self.profile = None
+        self.windowDimensions = None
         
         self.startPriority = '7'
         self.startPriorityOption.value = self.startPriority
@@ -119,7 +121,8 @@ class VideoService( AGService ):
         self.quality = RangeParameter( "Quality", 75, 1, 100 )
         self.transmitOnStart = OptionSetParameter( "Transmit on Startup", "On", VideoService.onOffOptions )
         self.muteSources = OptionSetParameter( "Mute Sources", "Off", VideoService.onOffOptions )
-
+        self.positionWindow = OptionSetParameter( 'Position Window', 'On', ['Off','On'])
+        
         self.configuration.append( self.streamname )
         self.configuration.append( self.port )
         self.configuration.append( self.encoding )
@@ -130,6 +133,7 @@ class VideoService( AGService ):
         self.configuration.append (self.quality )
         self.configuration.append (self.transmitOnStart )
         self.configuration.append (self.muteSources )
+        self.configuration.append (self.positionWindow )
         if IsWindows():
             try:
                 import win32api
@@ -344,18 +348,31 @@ class VideoService( AGService ):
             # Set drop time to something reasonable
             options.append('-XsiteDropTime=5')
             
-            # - set vic window geometry
-            h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
-            w = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
-            window_width = w-300
-            window_height = 300
-            window_x = 300
-            window_y = h-375
-            border_w = wx.SystemSettings_GetMetric(wx.SYS_FRAMESIZE_X)
-            if border_w > 0:
-                window_width -= 4*border_w
-                window_x += 2*border_w
-            options.append('-Xgeometry=%dx%d+%d+%d' % (window_width,window_height,window_x,window_y))
+            if self.positionWindow.value == 'On':
+                # - set vic window geometry
+                try:
+                    
+                    if not self.windowDimensions:
+                        h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
+                        w_sys = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
+                        try:
+                            w = GetScreenWidth(w_sys,h)
+                        except ValueError:
+                            self.log.debug('Error computing screen width; using system screen width %d', w_sys)
+                            w = w_sys
+                        window_width = w-300
+                        window_height = 300
+                        window_x = 300
+                        window_y = h-375
+                        border_w = wx.SystemSettings_GetMetric(wx.SYS_FRAMESIZE_X)
+                        if border_w > 0:
+                            window_width -= 4*border_w
+                            window_x += 2*border_w
+                        self.windowDimensions = (window_width,window_height,window_x,window_y)
+                    options.append('-Xgeometry=%dx%d+%d+%d' % self.windowDimensions)
+                except:
+                    self.log.exception('Error calculating window placement')
+
 
             if self.profile:
                 options.append("-X")
