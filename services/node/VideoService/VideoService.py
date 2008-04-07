@@ -100,7 +100,7 @@ class VideoService( AGService ):
         self.sysConf = SystemConfig.instance()
 
         self.profile = None
-        self.windowDimensions = None
+        self.windowGeometry = None
         
         self.startPriority = '7'
         self.startPriorityOption.value = self.startPriority
@@ -352,7 +352,7 @@ class VideoService( AGService ):
                 # - set vic window geometry
                 try:
                     
-                    if not self.windowDimensions:
+                    if not self.windowGeometry:
                         h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
                         w_sys = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
                         try:
@@ -368,8 +368,8 @@ class VideoService( AGService ):
                         if border_w > 0:
                             window_width -= 4*border_w
                             window_x += 2*border_w
-                        self.windowDimensions = (window_width,window_height,window_x,window_y)
-                    options.append('-Xgeometry=%dx%d+%d+%d' % self.windowDimensions)
+                        self.windowGeometry = (window_width,window_height,window_x,window_y)
+                    options.append('-Xgeometry=%dx%d+%d+%d' % self.windowGeometry)
                 except:
                     self.log.exception('Error calculating window placement')
 
