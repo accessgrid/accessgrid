@@ -1561,7 +1561,8 @@ class VenueClient:
 
 
             if not self.currentBridge or self.currentBridge.status != STATUS_ENABLED:
-                log.info("Current bridge %s is disabled by user, searching for other bridge", self.currentBridge.name)
+                if self.currentBridge:
+                    log.info("Current bridge %s is disabled by user, searching for other bridge", self.currentBridge.name)
                 self.currentBridge = self.FindBridge(self.bridges.values())
                 if not self.currentBridge:
                     raise NetworkLocationNotFound("transport=%s"%(self.transport,))
