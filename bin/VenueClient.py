@@ -161,9 +161,6 @@ def main():
             progressDialog.UpdateGauge('Configuring Audio and Video',increment=20)
             vc.BuildDefaultNodeConfiguration()
             
-            # Build a venue cache
-            progressDialog.UpdateGauge('Caching Venues',increment=20)
-            vc.venueCache.Update()
         else:
             if not nodeConfig:
                 # If no node configuration was specified on the command line,
@@ -174,7 +171,15 @@ def main():
                     try:
                     	vc.nodeService.LoadConfiguration(defaultNodeConfig)   
                     except:
-                    	log.exception("Error loading configuration")         
+                    	log.exception("Error loading configuration")    
+                        
+        # If user has no venue cache, build one
+        venues = vc.venueCache.GetVenues()
+        if not venues:
+            progressDialog.UpdateGauge('Caching Venues',increment=20)
+            vc.venueCache.Update()
+            vc.venueCache.Store()
+       
             
         # If user has no stored bridges, initialize the bridge cache
         bridges = app.preferences.GetBridges()
