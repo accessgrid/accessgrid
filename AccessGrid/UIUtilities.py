@@ -1131,6 +1131,39 @@ def SetIcon(app):
              icon = icons.getAGIcon128Icon()
              t = wx.TaskBarIcon()
              t.SetIcon(icon,"VenueClient")
+             
+             
+dimensions = {  600:  800 , 
+                768:  1024,
+               1024:  1280, 
+               1200:  1600,
+               
+               # rotated screen sizes
+               800 : 600,
+               1024 : 768,
+               1280 : 1024,
+               1600:  1200 }
+def GetScreenWidth(w,h):
+    """
+    For a given screen width and height, calculate a related nominal width;
+    This is used in cases where the width is N screens wide, but the width
+    of a single screen is desired; for example, in positioning/sizing
+    windows on the screen.
+    """
+    screenwidth = 0
+    if dimensions.has_key(h):
+        if dimensions[h] == w:
+            # use the given screenwidth
+            screenwidth = w
+        else:
+            # some non-standard screen width; use the standard screenwidth
+            screenwidth = dimensions[h]
+    else:
+        raise ValueError('Unexpected screen dimensions (%d,%d)' % (w,h))
+    
+    return screenwidth
+        
+
 
 
 class ItemBrowserCtrl(wx.Panel):
