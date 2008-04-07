@@ -28,6 +28,7 @@ class AudioService( AGService ):
     def __init__( self ):
         AGService.__init__( self )
         self.thepath = os.getcwd()
+        self.windowGeometry = None
 
         self.capabilities = [ Capability( Capability.CONSUMER,
                                           Capability.AUDIO,
@@ -89,10 +90,13 @@ class AudioService( AGService ):
             self.outputGain = RangeParameter( "Output Gain", 50, 0, 100 )
         self.silenceSuppression = OptionSetParameter( "Silence Suppression", "Off", ["Off","Automatic","Manual"] )
 
+        self.positionWindow = OptionSetParameter( 'Position Window', 'On', ['Off','On'])
+
         self.configuration.append(self.talk)
         self.configuration.append(self.inputGain)
         self.configuration.append(self.outputGain)
         self.configuration.append(self.silenceSuppression)
+        self.configuration.append(self.positionWindow)
 
         if Platform.isLinux() or Platform.isFreeBSD():
             # note: the forceOSSAC97 attribute will only exist for the above platforms
@@ -258,11 +262,17 @@ class AudioService( AGService ):
                 options.append("-S")
                 options.append(self.profile.publicId)
     
-            h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
-            options.append( "-X" )
-            options.append( "geometry=300x300+0+%d" % (h-375) )
+            if self.positionWindow.value == 'On':
+                try:
+                    if not self.windowGeometry:
+                        h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
+                        self.windowGeometry = (h-375)
+                    options.append( "-X" )
+                    options.append( "geometry=300x300+0+%d" % self.windowGeometry )
+                except:
+                    self.log.exception('Error calculating window placement')
+                
             options.append( "-f" )
-
             if Platform.isOSX():
                 options.append( "L16-8K-Mono" ) # prevent mac mash converter
             else:                               # issues (at least on this G5).
@@ -300,6 +310,8 @@ class AudioService( AGService ):
         try:
             self.log.info("Stop service")
 
+            # we've found rat-kill in __init__, so needn't do it here
+            """
             # See if we have rat-kill.
             if Platform.isWindows():
                 rk = "rat-kill.exe"
@@ -309,7 +321,8 @@ class AudioService( AGService ):
             ratKillExe = os.path.join('.', rk)
             if not os.path.isfile(ratKillExe) and not Platform.isWindows():
                 ratKillExe = "/usr/bin/rat-kill"
-
+            """
+            ratKillExe = self.rat_kill
             if os.access(ratKillExe, os.X_OK):
                 self.log.info("Executing rat-kill")
                 self.processManager.StartProcess(ratKillExe, [])
