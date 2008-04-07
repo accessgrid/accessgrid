@@ -21,7 +21,7 @@ def suite():
         'unittest_GUID',
         'unittest_MulticastAddressAllocator',
         'unittest_NetworkLocation',
-        #'unittest_Platform',
+        'unittest_Platform',
         'unittest_version',
         'unittest_RssReader'
         ]
