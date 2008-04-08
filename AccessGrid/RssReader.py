@@ -14,6 +14,8 @@ with the option of adding observers to get notification of changes
 
 import threading
 import calendar
+import email.utils  # for parsing dates
+import time
 
 import socket
 Timeout = socket.getdefaulttimeout()
@@ -39,28 +41,8 @@ def strtimeToSecs(strtime):
     following rules for time specs laid out in RFC 822
     """
     
-    MonthIndex = {'Jan':1, 'Feb':2, 'Mar':3, 'Apr':4, 'May':5, 'Jun':6,
-                  'Jul':7, 'Aug':8, 'Sep':9, 'Oct':10,'Nov':11,'Dec':12 }
-    parts = strtime.split()
-    if len(parts) != 5:
-        raise Exception("Invalid string time input")
-        
-    day = int(parts[0])
-    mon_str = parts[1]
-    mon = MonthIndex[mon_str]
-    year = int(parts[2])
-    
-    time_str = parts[3]
-    time_parts = time_str.split(':')
-    hour = int(time_parts[0])
-    min = int(time_parts[1])
-    sec = 0
-    if len(time_parts) > 2:
-        sec = int(time_parts[2])
-        
-    time_tuple = (year,mon,day,hour,min,sec,-1,-1,-1)
-    
-    time_secs = calendar.timegm(time_tuple)
+    time_tuple = email.utils.parsedate(strtime)
+    time_secs = time.mktime(time_tuple)
     
     return time_secs
 
@@ -109,6 +91,7 @@ class RssReader:
             
         try:
             channelTime = d['feed']['modified']
+            print 'channelTime = ', channelTime
             docDate = strtimeToSecs(channelTime)
         except KeyError:
             docDate = 0
@@ -191,7 +174,7 @@ if __name__ == '__main__':
     rssUrlList = ['http://www.mcs.anl.gov/~turam/rss.cgi',
                   'http://www.mcs.anl.gov/~turam/agschedule.xml'
                   ]
-
+    rssUrlList = ['http://agschedule.ncsa.uiuc.edu/rss.asp']
     observers = [ReaderObserver()]
     reader = RssReader(rssUrlList,updateDuration,observers)
 
