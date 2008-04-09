@@ -51,10 +51,10 @@ if sys.platform == 'win32':
 elif sys.platform == 'linux2' or sys.platform == 'darwin':
     dir = os.path.join(RATDIR,'rat')
     ratFiles = [ os.path.join(dir,'rat'),
-                 os.path.join(dir,'rat-4.4.00'),
-                 os.path.join(dir,'rat-4.4.00-media'),
-                 os.path.join(dir,'rat-4.4.00-ui'),
-                 os.path.join(dir,'rat-4.4.00-kill') ]
+                 os.path.join(dir,'rat-4.4.01'),
+                 os.path.join(dir,'rat-4.4.01-media'),
+                 os.path.join(dir,'rat-4.4.01-ui'),
+                 os.path.join(dir,'rat-4.4.01-kill') ]
     copyExe = 'cp'
     build = build_linux
 elif sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
