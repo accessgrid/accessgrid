@@ -45,7 +45,8 @@ def SetupModule(modName, source, dest, morebuildopts=[],moreinstallopts=[]):
 # Modify the python path to pick up packages as they're built,
 # so inter-package dependencies are satisfied
 #
-BuildPath=SOURCE + os.pathsep + os.path.join(DEST,"lib","python"+PYVER,"site-packages")
+PackagesPath = os.path.join(DEST,"lib","python"+PYVER,"site-packages")
+BuildPath=SOURCE + os.pathsep + PackagesPath
 if os.environ.has_key("PYTHONPATH"):
    os.environ["PYTHONPATH"] = os.environ["PYTHONPATH"] + os.pathsep + BuildPath
 else:
@@ -74,7 +75,7 @@ SetupModule("zope.interface-3.3.0", SOURCE, DEST, moreinstallopts=['--single-ver
 # add module identifer to zope package; this is required as long as we're 
 # using the 'single-version-externally-managed' flag above
 # to avoid using eggs
-initfile = os.path.join(BuildPath,'zope','__init__.py')
+initfile = os.path.join(PackagesPath,'zope','__init__.py')
 if not os.path.exists(initfile):
     file(initfile,'w').close()
 
