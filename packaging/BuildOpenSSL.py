@@ -32,7 +32,7 @@ def BuildDarwin():
     os.system("make")
 
 os.chdir(os.path.abspath(os.path.join(os.environ['AGBUILDROOT'],
-                                      "openssl-0.9.8e")))
+                                      "openssl-0.9.8g")))
 
 if sys.platform == 'linux2':
     BuildLinux()
