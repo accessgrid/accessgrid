@@ -17,10 +17,38 @@ from optparse import OptionParser
 from distutils.spawn import find_executable
 from distutils.sysconfig import get_python_lib
 
-if sys.platform == 'win32' and not os.environ.has_key('MSVC_VERSION'):
-    print "MSVC_VERSION environment must be set, or some modules will not build correctly."
-    sys.exit(1)
-    
+def findExecutable(exefile,args=[]):
+    pathlist = os.environ['PATH'].split(os.pathsep)
+    for path in pathlist:
+        pathfile = os.path.join(path,exefile)
+        if os.path.exists(pathfile) and os.access(pathfile,os.R_OK|os.X_OK):
+            return pathfile
+    return None
+
+# Verify Build Environment
+exelist = []
+# - Perform Windows-specific checks
+if sys.platform == 'win32':
+    # check for visual studio
+    if not os.environ.has_key('MSVC_VERSION'):
+        print "MSVC_VERSION environment must be set, or some modules will not build correctly."
+        sys.exit(1)
+
+    exelist = ['cl.exe','swig.exe']
+
+# - Perform OSX-specific checks
+elif sys.platform == 'darwin':
+    exelist = ['gcc','swig']
+
+# Locate required executables
+for exe in exelist:
+    print 'Locating', exe,': ',
+    pathfile = findExecutable(exe)
+    if not pathfile:
+        print 'not found; exiting'
+        sys.exit(1)
+    print pathfile
+
 # Build packages according to the command line
 if sys.platform == 'win32':
     bdir = 'windows'
@@ -35,7 +63,8 @@ else:
     bdir = None
     sys.exit(1)
 
-StartDir=os.getcwd()
+# StartDir is the dir where this script lives
+StartDir=os.path.dirname(os.path.abspath(__file__))
 
 # Get the version of python used to run this script
 # and use it as the default 
@@ -139,18 +168,6 @@ version = po.read()
 po.close()
 
 version = version[:-1]
-
-#
-# Go to that checkout to build stuff
-#
-
-RunDir = os.path.join(BuildDir, "packaging")
-if not options.nocheckout:
-
-    if options.verbose:
-        print "BUILD: Changing to directory: %s" % RunDir
-    
-    os.chdir(RunDir)
 
 #
 # Run the setup script first to create the distribution directory structure
@@ -321,7 +338,7 @@ elif sys.platform == 'win32':
 
 
 # Change to packaging dir to build packages
-os.chdir(os.path.join(BuildDir,'packaging'))
+os.chdir(StartDir)
 
 # Fix service *.py files before they're packaged
 #
