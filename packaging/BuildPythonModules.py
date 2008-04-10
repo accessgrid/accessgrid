@@ -58,7 +58,7 @@ else:
 
 print "Python: ", PYVER
 print "*********** Building elementtree\n"
-SetupModule("elementtree-1.2.6", SOURCE, DEST)
+SetupModule("elementtree-1.2.6-20050316", SOURCE, DEST)
 
 print "*********** Building bajjer\n"
 SetupModule("Bajjer-0.2.5", SOURCE, DEST)
@@ -71,16 +71,22 @@ SetupModule("PyXML-0.8.4", SOURCE, DEST )
 
 print "*********** Building zope interface\n"
 SetupModule("zope.interface-3.3.0", SOURCE, DEST, moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
+# add module identifer to zope package; this is required as long as we're 
+# using the 'single-version-externally-managed' flag above
+# to avoid using eggs
+initfile = os.path.join(BuildPath,'zope','__init__.py')
+if not os.path.exists(initfile):
+    file(initfile,'w').close()
 
 print "*********** Building zsi\n"
 SetupModule("zsi", SOURCE, DEST, moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
 print "*********** Building m2crypto\n"
-SetupModule("m2crypto-0.17", SOURCE, DEST, ['--openssl=%s' % os.path.join(SOURCE,'openssl-0.9.8e')], moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
+SetupModule("m2crypto-0.17", SOURCE, DEST, ['--openssl=%s' % os.path.join(SOURCE,'openssl-0.9.8g')], moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
 print "*********** Building twisted\n"
 SetupModule("TwistedCore-2.5.0", SOURCE, DEST)
 
 print "*********** Building bonjour-py\n"
-SetupModule("bonjour-py-0.2", SOURCE, DEST)
+SetupModule("bonjour-py-0.3", SOURCE, DEST)
 
 print "*********** Building common\n"
 SetupModule(os.path.join("common","examples", "_common"), SOURCE, DEST,['--debug'])
