@@ -46,7 +46,7 @@ AppVerName={#AppVersion}-{#VersionInformation}
 AppVersion={#AppVersion}
 SourceDir={#BuildDir}
 OutputDir={#SourceDir}
-OutputBaseFilename={#AppNameShort}-{#AppVersion}-{#VersionInformation}-Py-2.{#PythonSubVersion}
+OutputBaseFilename={#AppNameShort}-{#AppVersion}-Bundle-{#VersionInformation}-Py-2.{#PythonSubVersion}
 
 AppName={#AppName}
 AppCopyright=Copyright © 2003-2008 Argonne National Laboratory / University of Chicago. All Rights Reserved.
