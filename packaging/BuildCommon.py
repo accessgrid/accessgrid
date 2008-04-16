@@ -33,8 +33,10 @@ else:
     raise Exception, 'Unsupported platform: ' + sys.platform
     
 # Build if necessary
-if not os.path.exists(TARGET):
-   build(TARGETDIR)
+if os.path.exists(TARGET):
+    print 'Target (%s) exists; skipping build' % TARGET
+else:
+    build(TARGETDIR)
 
 if os.path.exists(TARGET):
     copyCmd = "%s %s %s" % (copyExe, TARGET, DEST)
