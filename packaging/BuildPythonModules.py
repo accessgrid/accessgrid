@@ -45,7 +45,10 @@ def SetupModule(modName, source, dest, morebuildopts=[],moreinstallopts=[]):
 # Modify the python path to pick up packages as they're built,
 # so inter-package dependencies are satisfied
 #
-PackagesPath = os.path.join(DEST,"lib","python"+PYVER,"site-packages")
+if sys.platform in ['win32']:
+	PackagesPath = os.path.join(DEST,"lib","site-packages")
+else:
+	PackagesPath = os.path.join(DEST,"lib","python"+PYVER,"site-packages")
 BuildPath=SOURCE + os.pathsep + PackagesPath
 if os.environ.has_key("PYTHONPATH"):
    os.environ["PYTHONPATH"] = os.environ["PYTHONPATH"] + os.pathsep + BuildPath
@@ -82,7 +85,7 @@ if not os.path.exists(initfile):
 print "*********** Building zsi\n"
 SetupModule("zsi", SOURCE, DEST, moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
 print "*********** Building m2crypto\n"
-SetupModule("m2crypto-0.17", SOURCE, DEST, ['--openssl=%s' % os.path.join(SOURCE,'openssl-0.9.8g')], moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
+SetupModule("m2crypto-0.17", SOURCE, DEST, ['--openssl=%s' % os.path.join(SOURCE,'openssl-0.9.8e','opensslinstall')], moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
 print "*********** Building twisted\n"
 SetupModule("TwistedCore-2.5.0", SOURCE, DEST)
 
@@ -90,5 +93,8 @@ print "*********** Building bonjour-py\n"
 SetupModule("bonjour-py-0.3", SOURCE, DEST)
 
 print "*********** Building common\n"
-SetupModule(os.path.join("common","examples", "_common"), SOURCE, DEST,['--debug'])
+SetupModule(os.path.join("common","examples", "_common"), SOURCE, DEST,['--debug'], moreinstallopts=['--debug'])
 
+if sys.platform in ['win32']:
+    print "*********** Building pywin32 (for bundled package)\n"
+    SetupModule("pywin32-210", SOURCE, DEST)
