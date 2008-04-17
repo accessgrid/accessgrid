@@ -1293,7 +1293,7 @@ class ItemBrowserCtrl(wx.Panel):
         self.parent.EndModal(wx.ID_OK)  
         
     def OnListItemActivated(self, event):  
-        ind = self.listCtrl.GetItemData(event.GetItem())
+        ind = self.listCtrl.GetItemData(event.GetItem().GetId())
         self.value = self.choices[ind]
         self.parent.EndModal(wx.ID_OK)  
     
