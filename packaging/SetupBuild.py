@@ -71,13 +71,12 @@ if not os.environ.has_key('AGBUILDROOT'):
 else:
     buildroot = os.environ['AGBUILDROOT']
     if not os.path.exists(buildroot):
-        os.mkdir(buildroot)
+        os.makedirs(buildroot)
     buildrootset = 1
 
 def GetDependencies(path):
     outlist = os.listdir(path)
     outlist = filter( lambda x: x.split('.')[-1] in ['gz','bz2','zip','msi','exe'], outlist)
-    outlist = filter( lambda x: x.split('.')[-1] in ['zip'], outlist)
     outlist = [os.path.abspath(os.path.join(path,f.strip())) for f in outlist]
     return outlist
     
@@ -115,7 +114,12 @@ for dep in deplist:
         print '* * Error: Unexpected file type: %s ; skipping' % dep
 
 
-print 'Dependency packages have been expanded'
+print 'Dependency packages have been expanded.'
 if not buildrootset:
-    print 'You must set the AGBUILDROOT environment variable to ', buildroot, 'before running the next step (BuildSnapshot.py)'
+    print 'You must set the AGBUILDROOT environment variable.'
+    print 'This can be done with the command:'
+    if sys.platform in ['win32']:
+        print 'set AGBUILDROOT='+buildroot
+    else:
+        print 'export AGBUILDROOT='+buildroot
 
