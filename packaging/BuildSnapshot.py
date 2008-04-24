@@ -26,6 +26,22 @@ def findExecutable(exefile,args=[]):
     return None
 
 # Verify Build Environment
+
+# - Perform general checks
+#   - setuptools
+try:
+    import setuptools
+except ImportError:
+    print '* * Error: Required Python module "setuptools" not found'
+    sys.exit(1)
+
+#   - zsi
+try:
+    import ZSI
+except ImportError:
+    print '* * Error: Required Python module "ZSI" not found'
+    sys.exit(1)
+
 exelist = []
 # - Perform Windows-specific checks
 if sys.platform == 'win32':
@@ -34,11 +50,11 @@ if sys.platform == 'win32':
         print "MSVC_VERSION environment must be set, or some modules will not build correctly."
         sys.exit(1)
 
-    exelist = ['cl.exe','swig.exe']
+    exelist = ['cl.exe','swig.exe','perl.exe']
 
 # - Perform OSX-specific checks
 elif sys.platform == 'darwin':
-    exelist = ['gcc','swig']
+    exelist = ['gcc','swig','perl']
 
 # Locate required executables
 for exe in exelist:
