@@ -136,9 +136,9 @@ for f in fileList:
         shutil.copy2(fpath, resourcesDir)
 
 # Establish filenames and backup any old files.
-nameWithVersion="AGTk-%s" % version
+nameWithVersion="AccessGrid-%s-%s" % (version,metainfo)
 pkgDir  = os.path.join("..", nameWithVersion)
-pkgPath = os.path.join(pkgDir, "AGTk-%s.pkg" % version)
+pkgPath = os.path.join(pkgDir, "%s.pkg" % nameWithVersion)
 
 def makeBackup(filePath, extension=".old"):
     # Rename a file if it exists
