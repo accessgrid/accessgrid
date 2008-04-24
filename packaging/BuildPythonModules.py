@@ -59,7 +59,6 @@ else:
 #
 # Build python modules
 #
-
 print "Python: ", PYVER
 print "*********** Building elementtree\n"
 SetupModule("elementtree-1.2.6-20050316", SOURCE, DEST)
@@ -84,8 +83,11 @@ if not os.path.exists(initfile):
 
 print "*********** Building zsi\n"
 SetupModule("zsi", SOURCE, DEST, moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
+
 print "*********** Building m2crypto\n"
-SetupModule("m2crypto-0.17", SOURCE, DEST, ['--openssl=%s' % os.path.join(SOURCE,'openssl-0.9.8e','opensslinstall')], moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
+openssl='openssl-0.9.8e'
+openssldir=os.path.join(SOURCE,openssl,'opensslinstall')
+SetupModule("m2crypto-0.17", SOURCE, DEST, ['--openssl=%s' % openssldir], moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
 print "*********** Building twisted\n"
 SetupModule("TwistedCore-2.5.0", SOURCE, DEST)
 
