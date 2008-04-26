@@ -33,6 +33,16 @@ def build_win(dir):
 def build_linux(dir):
     os.chdir(dir)
     os.system('./rat-build')
+
+def build_darwin(dir):
+    os.chdir(dir)
+    os.chdir('common')
+    os.system('./configure')
+    os.system('make')
+    os.chdir('../rat')
+    os.system('./configure --with-tcl=/disabled --with-tk=/disabled')
+    os.system('make X_LIB=""')
+    
     
 def build_freebsd(dir):
     os.chdir(dir)
@@ -48,7 +58,16 @@ if sys.platform == 'win32':
                  os.path.join(dir,'rat-kill.exe') ]
     copyExe = 'copy'
     build = build_win
-elif sys.platform == 'linux2' or sys.platform == 'darwin':
+elif sys.platform == 'linux2':
+    dir = os.path.join(RATDIR,'rat')
+    ratFiles = [ os.path.join(dir,'rat'),
+                 os.path.join(dir,'rat-4.4.00'),
+                 os.path.join(dir,'rat-4.4.00-media'),
+                 os.path.join(dir,'rat-4.4.00-ui'),
+                 os.path.join(dir,'rat-4.4.00-kill') ]
+    copyExe = 'cp'
+    build = build_linux
+elif sys.platform == 'darwin':
     dir = os.path.join(RATDIR,'rat')
     ratFiles = [ os.path.join(dir,'rat'),
                  os.path.join(dir,'rat-4.4.01'),
@@ -56,7 +75,7 @@ elif sys.platform == 'linux2' or sys.platform == 'darwin':
                  os.path.join(dir,'rat-4.4.01-ui'),
                  os.path.join(dir,'rat-4.4.01-kill') ]
     copyExe = 'cp'
-    build = build_linux
+    build = build_darwin
 elif sys.platform == 'freebsd5' or sys.platform == 'freebsd6':
     dir = os.path.join(RATDIR,'rat')
     ratFiles = [ os.path.join(dir,'rat'),
@@ -80,6 +99,8 @@ for f in ratFiles:
 # Build and copy if necessary
 if needBuild:
     build(RATDIR)
+else:
+    print 'RAT files found, build not needed; skipping'
 
 if os.path.exists(ratFiles[0]):
     for f in ratFiles:
