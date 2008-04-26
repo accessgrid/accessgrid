@@ -43,7 +43,7 @@ def BuildWindows():
     return ret
     
 def BuildDarwin():
-    ret = os.system("./config --prefix=%s" % opensslinstalldir )
+    ret = os.system("./config shared --prefix=%s" % opensslinstalldir )
     if ret:
         return ret
     ret = os.system("make")
