@@ -24,20 +24,21 @@ by the set up below.
 cdir = os.getcwd()
 
 # Generate interfaces
-if os.environ.has_key('PYTHONPATH'):
-    oldpath = os.environ['PYTHONPATH']
-else:
-    oldpath = ''
-os.environ['PYTHONPATH'] = cdir
-os.chdir(os.path.join(cdir,'tools'))
-cmd = "%s %s"%(sys.executable, "GenerateInterfaces.py")
-#print "cmd = ", cmd
-ret = os.system(cmd)
-os.chdir(cdir)
-os.environ['PYTHONPATH'] = oldpath
-if ret:
-    print '%s failed with %d; exiting' % (cmd,ret)
-    sys.exit(1)
+if sys.argv[1] == 'build':
+    if os.environ.has_key('PYTHONPATH'):
+        oldpath = os.environ['PYTHONPATH']
+    else:
+        oldpath = ''
+    os.environ['PYTHONPATH'] = cdir
+    os.chdir(os.path.join(cdir,'tools'))
+    cmd = "%s %s"%(sys.executable, "GenerateInterfaces.py")
+    #print "cmd = ", cmd
+    ret = os.system(cmd)
+    if ret:
+        print '%s failed with %d; exiting' % (cmd,ret)
+        sys.exit(1)
+    os.chdir(cdir)
+    os.environ['PYTHONPATH'] = oldpath
 
 win32_scripts = list()
 win32_data = [
