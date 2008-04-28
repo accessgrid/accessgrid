@@ -672,7 +672,7 @@ def OpenURL(url):
     """
     from AccessGrid.Preferences import Preferences
     from AccessGrid.UIUtilities import ProxyAuthDialog
-    from wxPython.wx import NULL, wxID_OK
+    ID_OK = 5100 # hard-coding this for now to avoid importing wx
     
     preferences = Preferences()
     if int(preferences.GetPreference(Preferences.PROXY_ENABLED)):
@@ -703,12 +703,12 @@ def OpenURL(url):
             
             # Only show the dialog if an authenticated proxy was enabled
             if int(preferences.GetPreference(Preferences.PROXY_AUTH_ENABLED)) == 1:
-                dialog = ProxyAuthDialog(NULL, -1, "Check proxy authentication settings")
+                dialog = ProxyAuthDialog(None, -1, "Check proxy authentication settings")
                 dialog.SetProxyUsername(preferences.GetPreference(Preferences.PROXY_USERNAME))
                 dialog.SetProxyPassword(preferences.GetProxyPassword())
                 dialog.SetProxyEnabled(int(preferences.GetPreference(Preferences.PROXY_AUTH_ENABLED)))
 
-                if dialog.ShowModal() == wx.ID_OK:
+                if dialog.ShowModal() == ID_OK:
                      preferences.SetPreference(Preferences.PROXY_ENABLED, 1)
                      preferences.SetPreference(Preferences.PROXY_USERNAME, dialog.GetProxyUsername())
                      preferences.SetProxyPassword(dialog.GetProxyPassword())
