@@ -27,9 +27,9 @@ elif sys.platform == 'linux2' or sys.platform == 'freebsd5' or sys.platform == '
     copyExe = 'cp'
 elif sys.platform == 'darwin':
     ratFiles = [ 'rat',
-                 'rat-4.4.00',
-                 'rat-4.4.00-media',
-                 'rat-4.4.00-ui',
+                 'rat-4.4.01',
+                 'rat-4.4.01-media',
+                 'rat-4.4.01-ui',
                  'rat-kill' ]
     copyExe = 'cp -p'
 else:
