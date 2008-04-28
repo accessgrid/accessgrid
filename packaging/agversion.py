@@ -31,7 +31,11 @@ def select(ver):
         installpath = os.path.join(installpath,'lib','site-packages','AccessGrid%s'%ver)
 
     elif sys.platform in ['darwin']:
-        installpath = '/Applications/AccessGridToolkit3.app/Contents/Resources/lib/python%s/site-packages/AccessGrid%s' % (sys.version[:3],ver)
+        modulepath = os.path.dirname(__file__)
+        if not modulepath:
+            modulepath = os.getcwd()
+        accessgriddir = 'AccessGrid%s' % (ver,)
+        installpath = os.path.join(modulepath,accessgriddir)
     elif sys.platform in ['linux2','freebsd5','freebsd6']:
         installpath = '%s/AccessGrid%s' % (get_python_lib(),ver) 
 
