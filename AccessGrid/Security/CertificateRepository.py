@@ -40,7 +40,11 @@ import weakref
 from AccessGrid.Platform import IsOSX
 
 if IsOSX():
-    import bsddb185 as bsddb
+    try:
+        import bsddb185 as bsddb
+    except ImportError:
+        # As of Python 2.5, the bsddb module is there on OSX
+        import bsddb
 else:
     import bsddb
 
