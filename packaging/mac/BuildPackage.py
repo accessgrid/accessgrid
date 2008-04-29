@@ -67,10 +67,10 @@ TmpDir = tempfile.mkdtemp()
 print "TmpDir:", TmpDir
 pkgContentsDir = os.path.join(TmpDir, "pkg_contents")
 pkgResourcesDir = os.path.join(TmpDir, "pkg_resources")
-bundleDir = os.path.join(pkgContentsDir, "AccessGridToolkit3.app")
-contentsDir = os.path.join(pkgContentsDir, "AccessGridToolkit3.app", "Contents")
-resourcesDir = os.path.join(pkgContentsDir, "AccessGridToolkit3.app", "Contents", "Resources")
-macosDir = os.path.join(pkgContentsDir, "AccessGridToolkit3.app", "Contents", "MacOS")
+bundleDir = os.path.join(pkgContentsDir, "AccessGrid3.app")
+contentsDir = os.path.join(pkgContentsDir, "AccessGrid3.app", "Contents")
+resourcesDir = os.path.join(pkgContentsDir, "AccessGrid3.app", "Contents", "Resources")
+macosDir = os.path.join(pkgContentsDir, "AccessGrid3.app", "Contents", "MacOS")
 
 # move previous bundle build dir if it exists
 if os.path.exists( pkgContentsDir ):
@@ -93,6 +93,15 @@ shutil.copy2("Info.plist", contentsDir)
 shutil.copy2("Description.plist", pkgResourcesDir)
 
 #shutil.copy2("AGTk.icns", resourcesDir)
+# fix up templates for python version before copying
+pythonversion=sys.version[:3]
+for template  in ['runag.sh.template','setupenv.sh.template','setupenv.csh.template']:
+    templatecontent = file(template).read()
+    templatecontent = templatecontent.replace('__PYVER__',pythonversion)
+    f = file(template,'w')
+    f.write(templatecontent)
+    f.close()
+    
 shutil.copy2("runag.sh.template", resourcesDir)
 shutil.copy2("setupenv.sh.template", resourcesDir)
 shutil.copy2("setupenv.csh.template", resourcesDir)
@@ -180,14 +189,6 @@ cmd = "hdiutil create -fs HFS+ -volname %s -srcfolder %s %s" % (nameWithVersion,
 print "Creating dmg:", cmd
 os.system(cmd)
 
-
-# gzip package to reduce size by 1/3
-
 dmgLocation = dmgPath
-gzDmgLocation = dmgLocation + ".gz"
-makeBackup(gzDmgLocation)
-print "gzipping:", dmgLocation
-os.system("gzip " + dmgLocation)
-
-print "Your final package:", os.path.abspath(gzDmgLocation)
+print "Your final package:", os.path.abspath(dmgLocation)
 
