@@ -1,0 +1,13 @@
+--- setup.py	2008-04-29 11:10:21.000000000 -0500
++++ setup.py.new	2008-04-29 11:10:58.000000000 -0500
+@@ -109,7 +109,9 @@
+                      sources = ['SWIG/_m2crypto.i'],
+                      include_dirs = include_dirs,
+                      library_dirs = library_dirs,
+-                     libraries = libraries,
++                     # patch to statically link openssl libs into m2crypto
++                     libraries = [],
++                     extra_link_args = ['%s/lib/libssl.a' % option_dict['openssl_prefix'],'%s/lib/libcrypto.a' % option_dict['openssl_prefix']],
+                      extra_compile_args = ['-DTHREADING'],
+                      #extra_link_args = ['-Wl,-search_paths_first'],
+                      swig_opts = [swig_opts_str]
