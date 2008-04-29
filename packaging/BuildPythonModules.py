@@ -17,6 +17,8 @@ DEST=sys.argv[3]
 # Don't pass this in anymore
 PYVER=sys.version[:3]
 
+StartDir=os.path.dirname(os.path.abspath(__file__))
+
 #
 # Setup the given module in the given dest directory
 #
@@ -87,6 +89,13 @@ SetupModule("zsi", SOURCE, DEST, moreinstallopts=['--single-version-externally-m
 print "*********** Building m2crypto\n"
 openssl='openssl-0.9.8e'
 openssldir=os.path.join(SOURCE,openssl,'opensslinstall')
+if sys.platform in ['darwin']:
+    # apply patch to statically link openssl libs into m2crypto
+    os.chdir(os.path.join(SOURCE,'m2crypto-0.17'))
+    patchfile = os.path.join(StartDir,'mac','setup.py.m2crypto-0.17.patch')
+    cmd = 'patch -N < ' + patchfile
+    print 'patching with cmd: ', cmd
+    os.system(cmd)
 SetupModule("m2crypto-0.17", SOURCE, DEST, ['--openssl=%s' % openssldir], moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
 print "*********** Building twisted\n"
 SetupModule("TwistedCore-2.5.0", SOURCE, DEST)
