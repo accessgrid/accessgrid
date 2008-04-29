@@ -1,49 +1,50 @@
 #!/bin/sh
 # create script to start AGLauncher
-echo "#!/bin/sh" > $2/AccessGridToolkit3.app/Contents/MacOS/runag.sh
-echo "export AGTK_APP_ROOT=$2/AccessGridToolkit3.app" >> $2/AccessGridToolkit3.app/Contents/MacOS/runag.sh
-cat $2/AccessGridToolkit3.app/Contents/Resources/runag.sh.template >> $2/AccessGridToolkit3.app/Contents/MacOS/runag.sh
-chmod a+x $2/AccessGridToolkit3.app/Contents/MacOS/runag.sh
+echo "#!/bin/sh" > $2/AccessGrid3.app/Contents/MacOS/runag.sh
+echo "export AGTK_APP_ROOT=$2/AccessGrid3.app" >> $2/AccessGrid3.app/Contents/MacOS/runag.sh
+cat $2/AccessGrid3.app/Contents/Resources/runag.sh.template >> $2/AccessGrid3.app/Contents/MacOS/runag.sh
+echo 'pythonw "$AGTK_LOCATION/bin/AGLauncher3.py"' >> $2/AccessGrid3.app/Contents/MacOS/runag.sh
+chmod a+x $2/AccessGrid3.app/Contents/MacOS/runag.sh
 
 # create script to start AGServiceManager
-echo "#!/bin/sh" > $2/AccessGridToolkit3.app/Contents/MacOS/runsm.sh
-echo "export AGTK_APP_ROOT=$2/AccessGridToolkit3.app" >> $2/AccessGridToolkit3.app/Contents/MacOS/runsm.sh
-cat $2/AccessGridToolkit3.app/Contents/Resources/setupenv.sh.template >> $2/AccessGridToolkit3.app/Contents/MacOS/runsm.sh
-echo 'pythonw "$AGTK_LOCATION/bin/AGServiceManager3.py"' >> $2/AccessGridToolkit3.app/Contents/MacOS/runsm.sh
-chmod a+x $2/AccessGridToolkit3.app/Contents/MacOS/runsm.sh
+echo "#!/bin/sh" > $2/AccessGrid3.app/Contents/MacOS/runsm.sh
+echo "export AGTK_APP_ROOT=$2/AccessGrid3.app" >> $2/AccessGrid3.app/Contents/MacOS/runsm.sh
+cat $2/AccessGrid3.app/Contents/Resources/setupenv.sh.template >> $2/AccessGrid3.app/Contents/MacOS/runsm.sh
+echo 'pythonw "$AGTK_LOCATION/bin/AGServiceManager3.py"' >> $2/AccessGrid3.app/Contents/MacOS/runsm.sh
+chmod a+x $2/AccessGrid3.app/Contents/MacOS/runsm.sh
 
 # create script to start VenueServer
-echo "#!/bin/sh" > $2/AccessGridToolkit3.app/Contents/MacOS/runvs.sh
-echo "export AGTK_APP_ROOT=$2/AccessGridToolkit3.app" >> $2/AccessGridToolkit3.app/Contents/MacOS/runvs.sh
-cat $2/AccessGridToolkit3.app/Contents/Resources/setupenv.sh.template >> $2/AccessGridToolkit3.app/Contents/MacOS/runvs.sh
-echo 'pythonw "$AGTK_LOCATION/bin/VenueServer3.py"' >> $2/AccessGridToolkit3.app/Contents/MacOS/runvs.sh
-chmod a+x $2/AccessGridToolkit3.app/Contents/MacOS/runvs.sh
+echo "#!/bin/sh" > $2/AccessGrid3.app/Contents/MacOS/runvs.sh
+echo "export AGTK_APP_ROOT=$2/AccessGrid3.app" >> $2/AccessGrid3.app/Contents/MacOS/runvs.sh
+cat $2/AccessGrid3.app/Contents/Resources/setupenv.sh.template >> $2/AccessGrid3.app/Contents/MacOS/runvs.sh
+echo 'pythonw "$AGTK_LOCATION/bin/VenueServer3.py"' >> $2/AccessGrid3.app/Contents/MacOS/runvs.sh
+chmod a+x $2/AccessGrid3.app/Contents/MacOS/runvs.sh
 
 # create script to start AGNodeService
-echo "#!/bin/sh" > $2/AccessGridToolkit3.app/Contents/MacOS/runns.sh
-echo "export AGTK_APP_ROOT=$2/AccessGridToolkit3.app" >> $2/AccessGridToolkit3.app/Contents/MacOS/runns.sh
-cat $2/AccessGridToolkit3.app/Contents/Resources/setupenv.sh.template >> $2/AccessGridToolkit3.app/Contents/MacOS/runns.sh
-echo 'pythonw "$AGTK_LOCATION/bin/AGServiceManager3.py" -n' >> $2/AccessGridToolkit3.app/Contents/MacOS/runns.sh
-chmod a+x $2/AccessGridToolkit3.app/Contents/MacOS/runns.sh
+echo "#!/bin/sh" > $2/AccessGrid3.app/Contents/MacOS/runns.sh
+echo "export AGTK_APP_ROOT=$2/AccessGrid3.app" >> $2/AccessGrid3.app/Contents/MacOS/runns.sh
+cat $2/AccessGrid3.app/Contents/Resources/setupenv.sh.template >> $2/AccessGrid3.app/Contents/MacOS/runns.sh
+echo 'pythonw "$AGTK_LOCATION/bin/AGServiceManager3.py" -n' >> $2/AccessGrid3.app/Contents/MacOS/runns.sh
+chmod a+x $2/AccessGrid3.app/Contents/MacOS/runns.sh
 
 
 # create sh environment setup script
-echo "#!/bin/sh" > $2/AccessGridToolkit3.app/Contents/Resources/setupenv.sh
-echo "export AGTK_APP_ROOT=$2/AccessGridToolkit3.app" >> $2/AccessGridToolkit3.app/Contents/Resources/setupenv.sh
-cat $2/AccessGridToolkit3.app/Contents/Resources/setupenv.sh.template >> $2/AccessGridToolkit3.app/Contents/Resources/setupenv.sh
+echo "#!/bin/sh" > $2/AccessGrid3.app/Contents/Resources/setupenv.sh
+echo "export AGTK_APP_ROOT=$2/AccessGrid3.app" >> $2/AccessGrid3.app/Contents/Resources/setupenv.sh
+cat $2/AccessGrid3.app/Contents/Resources/setupenv.sh.template >> $2/AccessGrid3.app/Contents/Resources/setupenv.sh
 
 # create csh environment setup script
-echo "#!/bin/csh" > $2/AccessGridToolkit3.app/Contents/Resources/setupenv.csh
-echo "setenv AGTK_APP_ROOT $2/AccessGridToolkit3.app" >> $2/AccessGridToolkit3.app/Contents/Resources/setupenv.csh
-cat $2/AccessGridToolkit3.app/Contents/Resources/setupenv.csh.template >> $2/AccessGridToolkit3.app/Contents/Resources/setupenv.csh
+echo "#!/bin/csh" > $2/AccessGrid3.app/Contents/Resources/setupenv.csh
+echo "setenv AGTK_APP_ROOT $2/AccessGrid3.app" >> $2/AccessGrid3.app/Contents/Resources/setupenv.csh
+cat $2/AccessGrid3.app/Contents/Resources/setupenv.csh.template >> $2/AccessGrid3.app/Contents/Resources/setupenv.csh
 
 # setup shared applications
-. $2/AccessGridToolkit3.app/Contents/Resources/setupenv.sh
+. $2/AccessGrid3.app/Contents/Resources/setupenv.sh
 # Use pythonw so installed applications can start a user interface
 export AGTK_USER=/var/log/accessgrid
-/usr/bin/pythonw $2/AccessGridToolkit3.app/Contents/Resources/bin/agpm3.py --post-install
+/usr/bin/pythonw $2/AccessGrid3.app/Contents/Resources/bin/agpm3.py --post-install
 
 # remove temporary files used during installation above
-/bin/rm $2/AccessGridToolkit3.app/Contents/Resources/runag.sh.template
-/bin/rm $2/AccessGridToolkit3.app/Contents/Resources/setupenv.sh.template
-/bin/rm $2/AccessGridToolkit3.app/Contents/Resources/setupenv.csh.template
+/bin/rm $2/AccessGrid3.app/Contents/Resources/runag.sh.template
+/bin/rm $2/AccessGrid3.app/Contents/Resources/setupenv.sh.template
+/bin/rm $2/AccessGrid3.app/Contents/Resources/setupenv.csh.template
