@@ -3,10 +3,10 @@
 export AGTK_LOCATION=$AGTK_APP_ROOT/Contents/Resources
 export PYTHONPATH=$AGTK_LOCATION:$AGTK_APP_ROOT/Contents/Resources/lib/python__PYVER__/site-packages
 export PYTHONPATH=$AGTK_APP_ROOT/Contents/Resources/lib/python__PYVER__/site-packages/AccessGrid3:$PYTHONPATH
-WX26PATH="`$AGTK_LOCATION/bin/findwx26`"
+WX26PATH="`python__PYVER__ $AGTK_LOCATION/bin/findwx26`"
 if test -n $WX26PATH; then
     export PYTHONPATH=$PYTHONPATH:$WX26PATH ;
 fi
 
-pythonw "$AGTK_LOCATION/bin/AGLauncher3.py" "$AGTK_LOCATION" $*
+pythonw__PYVER__ "$AGTK_LOCATION/bin/AGLauncher3.py" "$AGTK_LOCATION" $*
 

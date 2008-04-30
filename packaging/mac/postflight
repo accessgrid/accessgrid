@@ -3,7 +3,6 @@
 echo "#!/bin/sh" > $2/AccessGrid3.app/Contents/MacOS/runag.sh
 echo "export AGTK_APP_ROOT=$2/AccessGrid3.app" >> $2/AccessGrid3.app/Contents/MacOS/runag.sh
 cat $2/AccessGrid3.app/Contents/Resources/runag.sh.template >> $2/AccessGrid3.app/Contents/MacOS/runag.sh
-echo 'pythonw "$AGTK_LOCATION/bin/AGLauncher3.py"' >> $2/AccessGrid3.app/Contents/MacOS/runag.sh
 chmod a+x $2/AccessGrid3.app/Contents/MacOS/runag.sh
 
 # create script to start AGServiceManager
