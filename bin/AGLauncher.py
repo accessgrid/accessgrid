@@ -253,7 +253,9 @@ class LauncherFrame(wx.Frame):
         self.processManager.StartProcess(cmd,args);
     
     def RunPython(self,cmd,args):
-        if IsOSX() or IsWindows():
+        if IsOSX():
+            command=sys.executable
+        elif IsWindows():
             command="pythonw";
         else:
             command="python";
@@ -272,7 +274,9 @@ class LauncherFrame(wx.Frame):
         else:
             command="python";
         
-        if IsOSX() or IsWindows():
+        if IsOSX():
+            command2=sys.executable
+        elif IsWindows():
             command2="pythonw";
         else:
             command2="";
