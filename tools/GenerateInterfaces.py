@@ -30,8 +30,26 @@ if not os.path.exists(dstPath):
     os.mkdir(dstPath)
 
 initFile = os.path.join(dstPath, "__init__.py")
-if not os.path.exists(initFile):
-    open(initFile, "w").close()
+#if not os.path.exists(initFile):
+initFileFd = open(initFile, "w")
+initFileFd.write("""
+# Setup the xml reader.
+
+def SetupParser():
+    from ZSI.parse import ParsedSoap
+    from xml.dom import expatbuilder
+    class ExpatReaderClass:
+        fromString = staticmethod(expatbuilder.parseString)
+        fromStream = staticmethod(expatbuilder.parse)
+    ParsedSoap.defaultReaderClass = ExpatReaderClass
+
+try:
+    SetupParser()
+except:
+    traceback.print_exc()
+
+""")
+initFileFd.close()
 
 # FIXME: this call shouldn't need the server wsdl to create the AccessGrid_Types.py
 command = w2pyExec + " -f %s -e -o %s -t AccessGrid_Types --simple-naming -m AccessGrid.wsdl.SchemaToPyTypeMap" % ( os.path.join(srcPath, "VenueServerBinding.wsdl"), dstPath)
