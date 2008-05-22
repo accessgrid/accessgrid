@@ -205,7 +205,7 @@ class VenueClient:
         if app is not None:
             self.app = app
         else:
-            self.app = Application()
+            self.app = Application.instance()
             
         self.preferences = self.app.GetPreferences()
         self.preferences.SetVenueClient(self)
