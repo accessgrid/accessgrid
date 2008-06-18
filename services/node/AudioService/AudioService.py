@@ -90,7 +90,7 @@ class AudioService( AGService ):
             self.outputGain = RangeParameter( "Output Gain", 50, 0, 100 )
         self.silenceSuppression = OptionSetParameter( "Silence Suppression", "Off", ["Off","Automatic","Manual"] )
 
-        self.positionWindow = OptionSetParameter( 'Position Window', 'On', ['Off','On'])
+        self.positionWindow = OptionSetParameter( 'Position Window', 'Off', ['Off','On'])
 
         self.configuration.append(self.talk)
         self.configuration.append(self.inputGain)
