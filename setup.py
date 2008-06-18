@@ -245,7 +245,7 @@ if sys.platform == 'linux2' or sys.platform == 'darwin' or sys.platform == 'free
 setup (
     name = 'AGTk',
     fullname = 'AccessGrid Toolkit',
-    version = '3.0',
+    version = '3.2',
     description = "The Access Grid Toolkit",
     long_description = """
 The Access Grid Toolkit provides the necessary components
