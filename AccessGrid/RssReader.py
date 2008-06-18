@@ -14,8 +14,12 @@ with the option of adding observers to get notification of changes
 
 import threading
 import calendar
-import email.utils  # for parsing dates
 import time
+
+try:
+    import email.utils  # for parsing dates
+except ImportError:
+    import email.Utils
 
 import socket
 Timeout = socket.getdefaulttimeout()
