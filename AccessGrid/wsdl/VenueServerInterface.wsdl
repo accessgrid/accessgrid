@@ -31,6 +31,32 @@
             </xsd:complexType>
           </xsd:element>
 
+          <xsd:element name="DumpDatRequest">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="DumpDatResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="serverLayout" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="DumpCfgRequest">
+            <xsd:complexType>
+            </xsd:complexType>
+          </xsd:element>
+
+          <xsd:element name="DumpCfgResponse">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="serverConfig" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+
           <xsd:element name="ShutdownRequest">
             <xsd:complexType>
               <xsd:sequence>
@@ -271,6 +297,18 @@
     <message name="CheckpointResponse">
 	<part name="parameters" element="agtkvs:CheckpointResponse"/>
     </message>
+    <message name="DumpDatRequest">
+	<part name="parameters" element="agtkvs:DumpDatRequest"/>
+    </message>
+    <message name="DumpDatResponse">
+	<part name="parameters" element="agtkvs:DumpDatResponse"/>
+    </message>
+    <message name="DumpCfgRequest">
+	<part name="parameters" element="agtkvs:DumpCfgRequest"/>
+    </message>
+    <message name="DumpCfgResponse">
+	<part name="parameters" element="agtkvs:DumpCfgResponse"/>
+    </message>
     <message name="ShutdownRequest">
 	<part name="parameters" element="agtkvs:ShutdownRequest"/>
     </message>
@@ -379,6 +417,14 @@
 	<operation name="Checkpoint">
 	    <input message="agtkvs:CheckpointRequest"/>
 	    <output message="agtkvs:CheckpointResponse"/>
+	</operation>
+	<operation name="DumpDat">
+	    <input message="agtkvs:DumpDatRequest"/>
+	    <output message="agtkvs:DumpDatResponse"/>
+	</operation>
+	<operation name="DumpCfg">
+	    <input message="agtkvs:DumpCfgRequest"/>
+	    <output message="agtkvs:DumpCfgResponse"/>
 	</operation>
 	<operation name="Shutdown">
 	    <input message="agtkvs:ShutdownRequest"/>

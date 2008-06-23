@@ -106,7 +106,7 @@ class VenueServer:
     """
     The Virtual Venue Server object is responsible for creating,
     destroying, and configuring Virtual Venue objects.
-    @group WebServiceMethods: AddVenue,Checkpoint,GetAddressAllocationMethod,GetAddressMask,GetBaseAddress,GetDefaultVenue,GetEncryptAllMedia,GetVenueDescriptions,GetVenues,GetVersion,ModifyVenue,RemoveVenue,SetAddressAllocationMethod,SetAddressMask,SetBaseAddress,SetDefaultVenue,SetEncryptAllMedia,Shutdown        
+    @group WebServiceMethods: AddVenue,Checkpoint,DumpCfg,DumpDat,GetAddressAllocationMethod,GetAddressMask,GetBaseAddress,GetDefaultVenue,GetEncryptAllMedia,GetVenueDescriptions,GetVenues,GetVersion,ModifyVenue,RemoveVenue,SetAddressAllocationMethod,SetAddressMask,SetBaseAddress,SetDefaultVenue,SetEncryptAllMedia,Shutdown        
     """
 
     configDefaults = {
@@ -890,6 +890,46 @@ class VenueServer:
         self.checkpointing = 0
 
         return
+
+    def DumpCfg(self):
+        """
+        DumpCfg returns contents of VenueServer.cfg
+        (or whatever self.configFile is set to) as a string.
+        """
+        return self.config
+
+    def DumpDat(self):
+        """
+        DumpDat returns the current state of the running VenueServer,
+        in particular whatever would normally saved as "VenueServer.dat"
+        (or whatever self.persistenceFilename is set to).
+        """
+
+        statusString = "# AGTk %s\n" % (Version.GetVersion())
+
+        try:
+            for venuePath in self.venues.keys():
+                # Change out the uri for storage,
+                # we don't bother to store the path since this is
+                # a copy of the real list we're going to dump anyway
+
+                try:            
+                    self.simpleLock.acquire()
+                    statusString += self.venues[venuePath].AsINIBlock()
+                    self.simpleLock.release()
+                except:
+                    self.simpleLock.release()
+                    log.exception("Exception Dumping Venue %s", venuePath)
+                    return ''
+
+        except:
+            log.exception("Exception error while dumping venues")
+            return ''
+
+        log.info("Dump completed at: %s", time.asctime())
+
+        return statusString
+
 
     def AddVenue(self, venueDesc, authPolicy = None):
         """
