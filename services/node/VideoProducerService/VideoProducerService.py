@@ -8,7 +8,6 @@
 #-----------------------------------------------------------------------------
 import re
 import sys, os
-from random import getrandbits
 
 try:   
     import _winreg
@@ -17,6 +16,7 @@ except: pass
 from AccessGrid import Toolkit
 
 from AccessGrid.Descriptions import Capability, ResourceDescription
+from AccessGrid.GUID import GUID
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
 from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD
@@ -84,6 +84,7 @@ class VideoProducerService( AGService ):
 
         self.startPriority = '5'
         self.startPriorityOption.value = self.startPriority
+        self.id =  str(GUID())
 
 
         # Set configuration parameters
@@ -255,7 +256,7 @@ class VideoProducerService( AGService ):
             # Write vic startup file
             #
             startupfile = os.path.join(UserConfig.instance().GetTempDir(),
-               'VideoProducerService_%d.vic' % ( getrandbits(16) ) )
+               'VideoProducerService_%s.vic' % self.id )
 
             f = open(startupfile,"w")
             if self.port.value == '':

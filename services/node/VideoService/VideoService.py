@@ -9,7 +9,6 @@
 import re
 import sys, os
 import wx
-from random import getrandbits
 try:   
     import win32api
     import _winreg
@@ -17,6 +16,7 @@ except: pass
 
 
 from AccessGrid.Descriptions import Capability, ResourceDescription
+from AccessGrid.GUID import GUID
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
 from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD
@@ -105,6 +105,7 @@ class VideoService( AGService ):
         
         self.startPriority = '7'
         self.startPriorityOption.value = self.startPriority
+        self.id = str(GUID())
 
         # Set configuration parameters
         # note: the datatype of the port parameter changes when a resource is set!
@@ -281,7 +282,7 @@ class VideoService( AGService ):
             # Write vic startup file
             #
             startupfile = os.path.join(UserConfig.instance().GetTempDir(),
-               'VideoService_%d.vic' % ( getrandbits(16) ) )
+               'VideoService_%s.vic' % self.id )
 
             f = open(startupfile,"w")
             if self.port.value == '':
