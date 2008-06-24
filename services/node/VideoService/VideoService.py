@@ -9,6 +9,7 @@
 import re
 import sys, os
 import wx
+from random import getrandbits
 try:   
     import win32api
     import _winreg
@@ -280,7 +281,7 @@ class VideoService( AGService ):
             # Write vic startup file
             #
             startupfile = os.path.join(UserConfig.instance().GetTempDir(),
-               'VideoService_%d.vic' % ( os.getpid() ) )
+               'VideoService_%d.vic' % ( getrandbits(16) ) )
 
             f = open(startupfile,"w")
             if self.port.value == '':
