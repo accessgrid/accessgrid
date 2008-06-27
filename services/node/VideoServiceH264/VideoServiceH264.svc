@@ -1,0 +1,18 @@
+[ServiceDescription]
+name = VideoServiceH264
+description = Vic-based video service using h264 and mpeg4
+capabilities = Capability1 Capability2
+executable = VideoServiceH264.py
+platform = neutral
+version = 3.2
+inlineClass = VideoServiceH264
+resourceNeeded = 1
+
+[Capability1]
+role = producer
+type = video
+
+[Capability2]
+role = consumer
+type = video
+
