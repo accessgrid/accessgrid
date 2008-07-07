@@ -2648,7 +2648,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         time.sleep(delay)
         wx.CallAfter(self.statusbar.SetStatusText,text,0)
 
-    def GoBackCB(self):
+    def GoBackCB(self, event):
         """
         This method is called when the user wants to go back to last visited venue
         """
