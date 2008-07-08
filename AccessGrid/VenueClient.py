@@ -62,7 +62,7 @@ from AccessGrid.BridgeCache import BridgeCache
 from AccessGrid.VenueCache import VenueCache
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid import UMTPClient
-
+from AccessGrid.Platform import IsWindows, IsLinux
 
 from AccessGrid.GUID import GUID
 from AccessGrid.Jabber.JabberClient import JabberClient, AuthorizationFailure
@@ -310,10 +310,14 @@ class VenueClient:
         resources = self.sm.GetResources()
         
         # On Windows, skip old style (VFW) capture devices, as long as WDM capture devices exist
-        if sys.platform in ['win32']:
+        if IsWindows():
             wdmresources = filter( lambda x: x.name != 'Microsoft WDM Image Capture (Win32)' , resources)
             if wdmresources:
                 resources = wdmresources
+        elif IsLinux() or IsFreeBSD():
+            # on linux, skip the x11 capture device
+            resources = filter( lambda x: x.name != 'x11', resources)
+            
         profile = self.preferences.GetProfile()
         
         if resources:
