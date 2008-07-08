@@ -345,14 +345,13 @@ class VenueServer:
         vsi = VenueServerI(impl=self, auth_method_name="authorize")
         asi = AuthorizationManagerI(impl=self.authManager)
 
-        #from AccessGrid.interfaces.VenueServer_client import VenueServerIW
+        from AccessGrid.interfaces.VenueServer_client import VenueServerIW
 
         # Add actions and roles to the authorization policy
 
         # Remove methods starting with underscore
-        #venueServerActions = filter(lambda x: not x.startswith("_"),
-        #                            dir(VenueServerIW))
-        venueServerActions = []
+        venueServerActions = filter(lambda x: not x.startswith("_"),
+                                    dir(VenueServerIW))
         venueServerActions = map(lambda x: Action.Action(x),
                                  venueServerActions)
         self.authManager.AddActions(venueServerActions)
