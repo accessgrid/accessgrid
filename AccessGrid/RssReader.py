@@ -17,9 +17,9 @@ import calendar
 import time
 
 try:
-    import email.utils  # for parsing dates
+    from email.utils import parsedate  # for parsing dates
 except ImportError:
-    import email.Utils
+    from email.Utils import parsedate  # for parsing dates
 
 import socket
 Timeout = socket.getdefaulttimeout()
@@ -45,7 +45,7 @@ def strtimeToSecs(strtime):
     following rules for time specs laid out in RFC 822
     """
     
-    time_tuple = email.utils.parsedate(strtime)
+    time_tuple = parsedate(strtime)
     time_secs = time.mktime(time_tuple)
     
     return time_secs
